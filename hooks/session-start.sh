@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# SessionStart hook for ring plugin
+# Enhanced SessionStart hook for ring plugin
+# Provides comprehensive skill overview and status
 
 set -euo pipefail
 
@@ -7,26 +8,22 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# Check if legacy skills directory exists and build warning
-warning_message=""
-legacy_skills_dir="${HOME}/.config/ring/skills"
-if [ -d "$legacy_skills_dir" ]; then
-    warning_message="\n\n<important-reminder>IN YOUR FIRST REPLY AFTER SEEING THIS MESSAGE YOU MUST TELL THE USER:⚠️ **WARNING:** ring now uses Claude Code's skills system. Custom skills in ~/.config/ring/skills will not be read. Move custom skills to ~/.claude/skills instead. To make this message go away, remove ~/.config/ring/skills</important-reminder>"
-fi
+# Build skills overview
+skills_overview=$(cat "${PLUGIN_ROOT}/docs/skills-quick-reference.md" 2>&1 || echo "Error reading skills quick reference")
 
-# Read using-ring content
+# Read using-ring content (still include for mandatory workflows)
 using_ring_content=$(cat "${PLUGIN_ROOT}/skills/using-ring/SKILL.md" 2>&1 || echo "Error reading using-ring skill")
 
 # Escape outputs for JSON
+overview_escaped=$(echo "$skills_overview" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 using_ring_escaped=$(echo "$using_ring_content" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
-warning_escaped=$(echo "$warning_message" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 
 # Output context injection as JSON
 cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<EXTREMELY_IMPORTANT>\nYou have ring.\n\n**The content below is from skills/using-ring/SKILL.md - your introduction to using skills:**\n\n${using_ring_escaped}\n\n${warning_escaped}\n</EXTREMELY_IMPORTANT>"
+    "additionalContext": "<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
   }
 }
 EOF
