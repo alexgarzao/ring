@@ -36,6 +36,20 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 Write code before the test? Delete it. Start over.
 
+**Delete means DELETE:**
+- `rm -rf the_file.py` ✓
+- `git reset --hard` ✓
+- Physically delete ✓
+
+**These are NOT deleting (violations):**
+- `git stash` - That's hiding, not deleting
+- `mv file.py file.py.bak` - That's keeping
+- Copy to clipboard - That's keeping
+- Comment out - That's keeping
+- "Mental note" - That's keeping
+
+Delete means gone forever. No recovery possible.
+
 **No exceptions:**
 - Don't keep it as "reference"
 - Don't "adapt" it while writing tests
@@ -91,6 +105,13 @@ test('retries failed operations 3 times', async () => {
 Clear name, tests real behavior, one thing
 </Good>
 
+**Time limit:** Writing a test should take <5 minutes. Longer = over-engineering.
+
+If your test needs:
+- Complex mocks → Testing wrong thing
+- Lots of setup → Design too complex
+- Multiple assertions → Split into multiple tests
+
 <Bad>
 ```typescript
 test('retry works', async () => {
@@ -117,6 +138,24 @@ Vague name, tests mock not code
 ```bash
 npm test path/to/test.test.ts
 ```
+
+**Paste the ACTUAL failure output in your response:**
+```
+[PASTE EXACT OUTPUT HERE]
+[NO OUTPUT = VIOLATION]
+```
+
+If you can't paste output, you didn't run the test.
+
+### Required Failure Patterns
+
+| Test Type | Must See This Failure | Wrong Failure = Wrong Test |
+|-----------|----------------------|---------------------------|
+| New feature | `NameError: function not defined` or `AttributeError` | Test passing = testing existing behavior |
+| Bug fix | Actual wrong output/behavior | Test passing = not testing the bug |
+| Refactor | Tests pass before and after | Tests fail after = broke something |
+
+**No failure output = didn't run = violation**
 
 Confirm:
 - Test fails (not errors)
