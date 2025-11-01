@@ -37,6 +37,31 @@ BEFORE claiming any status or expressing satisfaction:
 Skip any step = lying, not verifying
 ```
 
+## The Command-First Rule
+
+**EVERY completion message structure:**
+
+1. FIRST: Run verification command
+2. SECOND: Paste complete output
+3. THIRD: State what output proves
+4. ONLY THEN: Make your claim
+
+**Example structure:**
+```
+Let me verify the implementation:
+
+$ npm test
+[PASTE FULL OUTPUT]
+
+The tests show 15/15 passing. Implementation is complete.
+```
+
+**Wrong structure (violation):**
+```
+Implementation is complete! Let me verify:
+[This is backwards - claimed before verifying]
+```
+
 ## Common Failures
 
 | Claim | Requires | Not Sufficient |
@@ -59,6 +84,36 @@ Skip any step = lying, not verifying
 - Thinking "just this once"
 - Tired and wanting work over
 - **ANY wording implying success without having run verification**
+
+## Banned Phrases (Automatic Violation)
+
+**NEVER use these without evidence:**
+- "appears to" / "seems to" / "looks like"
+- "should be working" / "is now working"
+- "implementation complete" (without test output)
+- "successfully" (without command output)
+- "properly" / "correctly" (without verification)
+- "all good" / "works great" (without evidence)
+- ANY positive adjective before verification
+
+**Using these = lying, not verifying**
+
+## The False Positive Trap
+
+**About to say "all tests pass"?**
+
+Check:
+- Did you run tests THIS message? (Not last message)
+- Did you paste the output? (Not just claim)
+- Does output show 0 failures? (Not assumed)
+
+**No to any = you're lying**
+
+"I ran them earlier" = NOT verification
+"They should pass now" = NOT verification
+"The previous output showed" = NOT verification
+
+**Run. Paste. Then claim.**
 
 ## Rationalization Prevention
 
