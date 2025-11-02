@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with code review between tasks, enabling fast iteration with quality gates
+description: Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with comprehensive code review (code-reviewer, security-reviewer, business-logic-reviewer) between tasks, enabling fast iteration with quality gates
 ---
 
 # Subagent-Driven Development
@@ -58,46 +58,98 @@ Task tool (general-purpose):
 
 **Subagent reports back** with summary of work.
 
-### 3. Review Subagent's Work
+### 3. Review Subagent's Work (Sequential Gates)
 
-**Dispatch code-reviewer subagent:**
+**Dispatch reviewer subagents sequentially, not in parallel:**
+
+**Gate 1: Code Review (Foundation)**
 ```
 Task tool (ring:code-reviewer):
-  Use template at requesting-code-review/code-reviewer.md
-
   WHAT_WAS_IMPLEMENTED: [from subagent's report]
   PLAN_OR_REQUIREMENTS: Task N from [plan-file]
   BASE_SHA: [commit before task]
   HEAD_SHA: [current commit]
   DESCRIPTION: [task summary]
 ```
+**→ If fails: Fix issues, re-run Gate 1, then proceed**
+**→ If passes: Proceed to Gate 2**
 
-**Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
-
-### 4. Apply Review Feedback
-
-**If issues found:**
-- Fix Critical issues immediately
-- Fix Important issues before next task
-- Note Minor issues
-
-**Dispatch follow-up subagent if needed:**
+**Gate 2: Business Logic Review (Correctness)**
 ```
-"Fix issues from code review: [list issues]"
+Task tool (ring:business-logic-reviewer):
+  [Same parameters]
+```
+**→ If fails: Fix issues, re-run from Gate 1, then proceed**
+**→ If passes: Proceed to Gate 3**
+
+**Gate 3: Security Review (Safety)**
+```
+Task tool (ring:security-reviewer):
+  [Same parameters]
+```
+**→ If fails: Fix issues, determine restart point (usually Gate 1 or Gate 3 only)**
+**→ If passes: Task complete**
+
+**Each reviewer returns:** Strengths, Issues (Critical/High/Medium/Low), Assessment (PASS/FAIL)
+
+### 4. Apply Review Feedback at Each Gate
+
+**At each gate:**
+
+**If Critical/High issues:**
+- Dispatch fix subagent to address issues
+- Re-run from appropriate gate:
+  - Major changes → Re-run from Gate 1
+  - Business changes → Re-run from Gate 2
+  - Small security fixes → Re-run Gate 3 only
+- Don't proceed to next gate until current gate passes
+
+**If Medium issues:**
+- Fix before proceeding (prevents tech debt accumulation)
+- Re-run current gate to verify
+
+**If Low/Minor issues only:**
+- Note for tech debt backlog
+- Proceed to next gate
+
+**Dispatch follow-up subagent when needed:**
+```
+"Fix issues from [reviewer name]: [list issues with severity]"
 ```
 
 ### 5. Mark Complete, Next Task
 
+After all three gates pass for current task:
 - Mark task as completed in TodoWrite
 - Move to next task
 - Repeat steps 2-5
 
-### 6. Final Review
+### 6. Final Review (After All Tasks)
 
-After all tasks complete, dispatch final code-reviewer:
-- Reviews entire implementation
-- Checks all plan requirements met
-- Validates overall architecture
+After all tasks complete, run sequential final validation across entire implementation:
+
+**Final Gate 1: Code Review**
+```
+Task tool (ring:code-reviewer):
+  WHAT_WAS_IMPLEMENTED: All tasks from [plan]
+  PLAN_OR_REQUIREMENTS: Complete plan from [plan-file]
+  BASE_SHA: [start of development]
+  HEAD_SHA: [current commit]
+  DESCRIPTION: Full implementation review
+```
+**→ Reviews overall architecture, integration, consistency**
+
+**Final Gate 2: Business Logic Review**
+```
+Task tool (ring:business-logic-reviewer): [Same parameters]
+```
+**→ Validates all plan requirements met, end-to-end workflows work**
+
+**Final Gate 3: Security Review**
+```
+Task tool (ring:security-reviewer): [Same parameters]
+```
+**→ Final security audit across all changes, integration security**
 
 ### 7. Complete Development
 
@@ -118,32 +170,73 @@ Task 1: Hook installation script
 [Dispatch implementation subagent]
 Subagent: Implemented install-hook with tests, 5/5 passing
 
-[Get git SHAs, dispatch code-reviewer]
-Reviewer: Strengths: Good test coverage. Issues: None. Ready.
+[Sequential review process]
+Gate 1 - Code reviewer: PASS. Strengths: Good test coverage. Issues: None.
+Gate 2 - Business reviewer: PASS. Strengths: Meets requirements. Issues: None.
+Gate 3 - Security reviewer: PASS. Strengths: No security concerns. Issues: None.
 
 [Mark Task 1 complete]
 
-Task 2: Recovery modes
+Task 2: User authentication endpoint
 
 [Dispatch implementation subagent]
-Subagent: Added verify/repair, 8/8 tests passing
+Subagent: Added auth endpoint with JWT, 8/8 tests passing
 
-[Dispatch code-reviewer]
-Reviewer: Strengths: Solid. Issues (Important): Missing progress reporting
+[Sequential review process]
+Gate 1 - Code reviewer:
+  Strengths: Clean architecture
+  Issues (Low): Consider extracting token logic
+  Assessment: PASS (low issues don't block)
 
-[Dispatch fix subagent]
-Fix subagent: Added progress every 100 conversations
+Gate 2 - Business reviewer:
+  Strengths: Workflow correct
+  Issues (High): Missing password reset flow (required per PRD)
+  Assessment: FAIL
 
-[Verify fix, mark Task 2 complete]
+[Dispatch fix subagent for password reset]
+Fix subagent: Added password reset flow with email validation
+
+[Re-run from Gate 1 due to new feature]
+Gate 1 - Code reviewer: PASS
+Gate 2 - Business reviewer: PASS. All requirements met.
+
+Gate 3 - Security reviewer:
+  Strengths: Good validation
+  Issues (Critical): JWT secret hardcoded, (High): No rate limiting
+  Assessment: FAIL
+
+[Dispatch fix subagent for security issues]
+Fix subagent: Moved secret to env var, added rate limiting
+
+[Re-run Gate 3 only - small security fixes]
+Gate 3 - Security reviewer: PASS. Issues resolved.
+
+[Mark Task 2 complete]
 
 ...
 
 [After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[Sequential final validation across entire implementation]
+
+Final Gate 1 - Code reviewer:
+  All implementation solid, architecture consistent
+  Assessment: PASS
+
+Final Gate 2 - Business reviewer:
+  All requirements met, workflows complete
+  Assessment: PASS
+
+Final Gate 3 - Security reviewer:
+  No remaining security concerns, ready for production
+  Assessment: PASS
 
 Done!
 ```
+
+**Why sequential worked better:**
+- Business reviewer caught missing feature before security audit
+- Security fixes didn't require re-running business review
+- Each reviewer worked on validated foundation from previous gates
 
 ## Advantages
 
@@ -186,4 +279,4 @@ Done!
 **Alternative workflow:**
 - **executing-plans** - Use for parallel session instead of same-session execution
 
-See code-reviewer template: requesting-code-review/code-reviewer.md
+See reviewer agent definitions: agents/code-reviewer.md, agents/security-reviewer.md, agents/business-logic-reviewer.md

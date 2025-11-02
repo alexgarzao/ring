@@ -75,6 +75,23 @@ No "should work" → Only "does work" with proof
 - **/ring:write-plan** - Create implementation plan
 - **/ring:execute-plan** - Execute plan in batches
 
+### 🔍 Review Agents (3 Sequential Gates)
+**Run in order - each builds on the previous:**
+
+1. **ring:code-reviewer** (Gate 1 - Foundation)
+   - Architecture, design patterns, code quality, maintainability
+   - Must pass before Gate 2
+
+2. **ring:business-logic-reviewer** (Gate 2 - Correctness)
+   - Domain correctness, business rules, edge cases, requirements
+   - Must pass before Gate 3
+
+3. **ring:security-reviewer** (Gate 3 - Safety)
+   - Vulnerabilities, authentication, input validation, OWASP Top 10
+   - Final gate before production
+
+**Critical: Run sequentially (Code → Business → Security), not in parallel.**
+
 ## 📋 By Situation
 
 | Situation | Use This Skill | Key Rule |
@@ -84,7 +101,7 @@ No "should work" → Only "does work" with proof
 | Bug appears | `systematic-debugging` | Root cause before fix |
 | Tests flaky | `condition-based-waiting` | No arbitrary timeouts |
 | Ready to commit | `verification-before-completion` | Evidence before claims |
-| Code complete | `requesting-code-review` | Review before merge |
+| Code complete | `requesting-code-review` | Gate 1→2→3 sequential |
 | Planning work | `writing-plans` | Zero-context detail |
 | Complex task | `pre-dev-*` workflow | 8 gates in order |
 
@@ -95,7 +112,7 @@ No "should work" → Only "does work" with proof
 2. `using-git-worktrees` - Isolate work
 3. `/ring:write-plan` - Plan tasks
 4. `/ring:execute-plan` - Build it
-5. `requesting-code-review` - Review it
+5. `requesting-code-review` - Review it (Gate 1→2→3 sequential)
 
 ### "Fix This Bug" Combo
 1. `systematic-debugging` - Find root cause
