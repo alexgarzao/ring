@@ -16,6 +16,16 @@ compliance_rules:
     pattern: "FAIL|Error|failed"
     severity: "blocking"
     failure_message: "Test does not fail. Write a failing test first (RED phase)."
+prerequisites:
+  - name: "test_framework_installed"
+    check: "npm list jest 2>/dev/null || npm list vitest 2>/dev/null || which pytest 2>/dev/null || go list ./... 2>&1 | grep -q testing"
+    failure_message: "No test framework found. Install jest/vitest (JS), pytest (Python), or use Go's built-in testing."
+    severity: "blocking"
+
+  - name: "can_run_tests"
+    check: "npm test -- --version 2>/dev/null || pytest --version 2>/dev/null || go test -v 2>&1 | grep -q 'testing:'"
+    failure_message: "Cannot run tests. Fix test configuration."
+    severity: "warning"
 ---
 
 # Test-Driven Development (TDD)
