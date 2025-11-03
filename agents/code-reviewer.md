@@ -1,9 +1,40 @@
 ---
 name: code-reviewer
-version: 2.1.0
+version: 2.2.0
 description: "GATE 1 - Foundation Review: Use this agent FIRST in sequential review process. Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Must pass before business-logic-reviewer (Gate 2) runs."
 model: opus
-last_updated: 2025-11-02
+last_updated: 2025-11-03
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "VERDICT"
+      pattern: "^## VERDICT: (PASS|FAIL|NEEDS_DISCUSSION)$"
+      required: true
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Issues Found"
+      pattern: "^## Issues Found"
+      required: true
+    - name: "Critical Issues"
+      pattern: "^## Critical Issues"
+      required: false
+    - name: "High Issues"
+      pattern: "^## High Issues"
+      required: false
+    - name: "Medium Issues"
+      pattern: "^## Medium Issues"
+      required: false
+    - name: "Low Issues"
+      pattern: "^## Low Issues"
+      required: false
+    - name: "What Was Done Well"
+      pattern: "^## What Was Done Well"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
+  verdict_values: ["PASS", "FAIL", "NEEDS_DISCUSSION"]
 ---
 
 # Code Reviewer - GATE 1 (Foundation)

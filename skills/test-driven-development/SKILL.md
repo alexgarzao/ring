@@ -1,6 +1,55 @@
 ---
 name: test-driven-development
 description: Use when implementing any feature or bugfix, before writing implementation code - write the test first, watch it fail, write minimal code to pass; ensures tests actually verify behavior by requiring failure first
+compliance_rules:
+  - id: "test_file_exists"
+    description: "Test file must exist before implementation file"
+    check_type: "file_exists"
+    pattern: "**/*.test.{ts,js,go,py}"
+    severity: "blocking"
+    failure_message: "No test file found. Write test first (RED phase)."
+
+  - id: "test_must_fail_first"
+    description: "Test must produce failure output before implementation"
+    check_type: "command_output_contains"
+    command: "npm test 2>&1 || pytest 2>&1 || go test ./... 2>&1"
+    pattern: "FAIL|Error|failed"
+    severity: "blocking"
+    failure_message: "Test does not fail. Write a failing test first (RED phase)."
+prerequisites:
+  - name: "test_framework_installed"
+    check: "npm list jest 2>/dev/null || npm list vitest 2>/dev/null || which pytest 2>/dev/null || go list ./... 2>&1 | grep -q testing"
+    failure_message: "No test framework found. Install jest/vitest (JS), pytest (Python), or use Go's built-in testing."
+    severity: "blocking"
+
+  - name: "can_run_tests"
+    check: "npm test -- --version 2>/dev/null || pytest --version 2>/dev/null || go test -v 2>&1 | grep -q 'testing:'"
+    failure_message: "Cannot run tests. Fix test configuration."
+    severity: "warning"
+composition:
+  works_well_with:
+    - skill: "systematic-debugging"
+      when: "test reveals unexpected behavior or bug"
+      transition: "Pause TDD at current phase, use systematic-debugging to find root cause, return to TDD after fix"
+
+    - skill: "verification-before-completion"
+      when: "before marking test suite or feature complete"
+      transition: "Run verification to ensure all tests pass, return to TDD if issues found"
+
+    - skill: "requesting-code-review"
+      when: "after completing RED-GREEN-REFACTOR cycle for feature"
+      transition: "Request review before merging, address feedback, mark complete"
+
+  conflicts_with: []
+
+  typical_workflow: |
+    1. Write failing test (RED)
+    2. If test reveals unexpected behavior → switch to systematic-debugging
+    3. Fix root cause
+    4. Return to TDD: minimal implementation (GREEN)
+    5. Refactor (REFACTOR)
+    6. Run verification-before-completion
+    7. Request code review
 ---
 
 # Test-Driven Development (TDD)
@@ -402,6 +451,65 @@ This skill uses these universal patterns:
 - **TodoWrite:** See `skills/shared-patterns/todowrite-integration.md`
 
 Apply ALL patterns when using this skill.
+
+---
+
+## When You Violate This Skill
+
+### Violation: Wrote implementation before test
+
+**How to detect:**
+- Implementation file exists or modified
+- No test file exists yet
+- Git diff shows implementation changed before test
+
+**Recovery procedure:**
+1. Stash or delete the implementation code: `git stash` or `rm [file]`
+2. Write the failing test first
+3. Run test to verify it fails: `npm test` or `pytest`
+4. Rewrite the implementation to make test pass
+
+**Why recovery matters:**
+The test must fail first to prove it actually tests something. If implementation exists first, you can't verify the test works - it might be passing for the wrong reason or not testing anything at all.
+
+---
+
+### Violation: Test passes without implementation (FALSE GREEN)
+
+**How to detect:**
+- Wrote test
+- Test passes immediately
+- Haven't written implementation yet
+
+**Recovery procedure:**
+1. Test is broken - delete or fix it
+2. Make test stricter until it fails
+3. Verify failure shows expected error
+4. Then implement to make it pass
+
+**Why recovery matters:**
+A test that passes without implementation is useless - it's not testing the right thing.
+
+---
+
+### Violation: Kept code "as reference" instead of deleting
+
+**How to detect:**
+- Stashed implementation with `git stash`
+- Moved file to `.bak` or similar
+- Copied to clipboard "just in case"
+- Commented out instead of deleting
+
+**Recovery procedure:**
+1. Find the kept code (stash, backup, clipboard)
+2. Delete it permanently: `git stash drop`, `rm`, clear clipboard
+3. Verify code is truly gone
+4. Start RED phase fresh
+
+**Why recovery matters:**
+Keeping code means you'll adapt it instead of implementing from tests. The whole point is to implement fresh, guided by tests. Delete means delete.
+
+---
 
 ## Final Rule
 

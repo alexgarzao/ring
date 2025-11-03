@@ -353,6 +353,67 @@ This skill uses these universal patterns:
 
 Apply ALL patterns when using this skill.
 
+---
+
+## When You Violate This Skill
+
+### Violation: Jumped to fix before finding root cause
+
+**How to detect:**
+- Found a symptom (error message, stack trace)
+- Immediately proposed a fix
+- Didn't complete investigation phases
+
+**Recovery procedure:**
+1. Undo any attempted fixes: `git checkout .`
+2. Return to Phase 1 (Investigation)
+3. Gather ALL evidence without fixing anything
+4. Complete Phase 2 (Pattern Analysis)
+5. Form hypothesis in Phase 3
+6. THEN implement fix in Phase 4
+
+**Why recovery matters:**
+Fixing symptoms instead of root causes creates whack-a-mole debugging. The bug will reappear in a different form.
+
+---
+
+### Violation: Multiple hypotheses tested simultaneously
+
+**How to detect:**
+- Changed multiple things at once
+- Can't determine which change fixed the issue
+- "Let me try changing A and B and C..."
+
+**Recovery procedure:**
+1. Rollback all changes: `git checkout .`
+2. Test ONE hypothesis at a time
+3. Document result before next hypothesis
+4. Track: Hypothesis → Test → Result
+
+**Why recovery matters:**
+Testing multiple hypotheses simultaneously means you can't isolate the root cause. When something works, you don't know why. When something fails, you don't know what to try next.
+
+---
+
+### Violation: Skipped Phase 1 checklist
+
+**How to detect:**
+- Moved to Phase 2 or 3
+- Phase 1 checklist items not all checked
+- Missing evidence or reproduction steps
+
+**Recovery procedure:**
+1. Stop current work
+2. Return to Phase 1
+3. Complete ENTIRE checklist
+4. Document all findings
+5. Only then proceed to Phase 2
+
+**Why recovery matters:**
+Phase 1 is evidence gathering. Skipping it means guessing instead of debugging. Every failed fix wastes time because you don't have the full picture.
+
+---
+
 ## Real-World Impact
 
 From debugging sessions:
