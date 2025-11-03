@@ -1,6 +1,6 @@
 {
   "name": "ring",
-  "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Comprehensive 8-gate pre-development workflow with systematic testing and debugging skills.",
+  "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Comprehensive 8-gate pre-development workflow with systematic testing and debugging skills. Now with automated review orchestration and compliance validation.",
   "owner": {
     "name": "Presenter Name",
     "email": "fred@fredamaral.com.br"
@@ -8,8 +8,8 @@
   "plugins": [
     {
       "name": "ring",
-      "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Comprehensive 8-gate pre-development workflow with systematic testing and debugging skills.",
-      "version": "0.0.3",
+      "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Comprehensive 8-gate pre-development workflow with systematic testing and debugging skills. Now with automated review orchestration and compliance validation.",
+      "version": "0.1.0",
       "source": "./",
       "author": {
         "name": "Presenter Name",
