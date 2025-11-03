@@ -26,6 +26,30 @@ prerequisites:
     check: "npm test -- --version 2>/dev/null || pytest --version 2>/dev/null || go test -v 2>&1 | grep -q 'testing:'"
     failure_message: "Cannot run tests. Fix test configuration."
     severity: "warning"
+composition:
+  works_well_with:
+    - skill: "systematic-debugging"
+      when: "test reveals unexpected behavior or bug"
+      transition: "Pause TDD at current phase, use systematic-debugging to find root cause, return to TDD after fix"
+
+    - skill: "verification-before-completion"
+      when: "before marking test suite or feature complete"
+      transition: "Run verification to ensure all tests pass, return to TDD if issues found"
+
+    - skill: "requesting-code-review"
+      when: "after completing RED-GREEN-REFACTOR cycle for feature"
+      transition: "Request review before merging, address feedback, mark complete"
+
+  conflicts_with: []
+
+  typical_workflow: |
+    1. Write failing test (RED)
+    2. If test reveals unexpected behavior → switch to systematic-debugging
+    3. Fix root cause
+    4. Return to TDD: minimal implementation (GREEN)
+    5. Refactor (REFACTOR)
+    6. Run verification-before-completion
+    7. Request code review
 ---
 
 # Test-Driven Development (TDD)
