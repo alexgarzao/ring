@@ -3,23 +3,24 @@
 # Metrics Tracker
 # Tracks skill and agent usage, compliance, and effectiveness
 #
-# Usage: ./lib/metrics-tracker.sh <type> <name> [event-data]
+# Usage: ./lib/metrics-tracker.sh <type> <name> <event> [data] [event-id]
 #
 # Examples:
-#   ./lib/metrics-tracker.sh skill test-driven-development used
-#   ./lib/metrics-tracker.sh skill test-driven-development violation "test_before_code"
-#   ./lib/metrics-tracker.sh agent code-reviewer verdict "PASS"
+#   ./lib/metrics-tracker.sh skill test-driven-development used "" "evt-123"
+#   ./lib/metrics-tracker.sh skill test-driven-development violation "test_before_code" "evt-456"
+#   ./lib/metrics-tracker.sh agent code-reviewer verdict "PASS" "evt-789"
 #
 # Exit codes:
-#   0 - Success
+#   0 - Success (including duplicate events)
 #   2 - Invalid usage
 
 set -euo pipefail
 
 if [ $# -lt 3 ]; then
-    echo "Usage: $0 <type> <name> <event> [data]"
+    echo "Usage: $0 <type> <name> <event> [data] [event-id]"
     echo "Types: skill, agent"
     echo "Events: used, violation, verdict"
+    echo "Event-id: Optional unique identifier for idempotency"
     exit 2
 fi
 
@@ -27,6 +28,7 @@ TYPE="$1"      # skill or agent
 NAME="$2"      # skill/agent name
 EVENT="$3"     # used, violation, verdict
 DATA="${4:-}"  # Additional data
+EVENT_ID="${5:-}"  # Optional event ID for deduplication
 
 # Input validation
 validate_inputs() {
@@ -61,6 +63,19 @@ validate_inputs() {
         local data_len=${#DATA}
         if [ "$data_len" -gt 200 ]; then
             echo "Error: Event data too long (max 200 chars)"
+            exit 2
+        fi
+    fi
+
+    # Validate EVENT_ID if provided
+    if [ -n "$EVENT_ID" ]; then
+        if ! echo "$EVENT_ID" | grep -qE '^[a-zA-Z0-9_-]+$'; then
+            echo "Error: Invalid event-id format (use alphanumeric, hyphens, underscores)"
+            exit 2
+        fi
+        local id_len=${#EVENT_ID}
+        if [ "$id_len" -gt 100 ]; then
+            echo "Error: Event-id too long (max 100 chars)"
             exit 2
         fi
     fi
@@ -111,14 +126,22 @@ if [ ! -f "$METRICS_FILE" ]; then
   "version": "1.0.0",
   "last_updated": "",
   "skills": {},
-  "agents": {}
+  "agents": {},
+  "event_ids": {}
 }
 EOF
 fi
 
+# Check for duplicate event-id (idempotency)
+if [ -n "$EVENT_ID" ]; then
+    if jq -e --arg eid "$EVENT_ID" '.event_ids[$eid] != null' "$METRICS_FILE" >/dev/null 2>&1; then
+        echo "✓ Metrics already recorded for event-id: $EVENT_ID (idempotent)"
+        exit 0
+    fi
+fi
+
 # Update timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-jq --arg ts "$TIMESTAMP" '.last_updated = $ts' "$METRICS_FILE" > "$METRICS_FILE.tmp" && mv "$METRICS_FILE.tmp" "$METRICS_FILE"
 
 # Track based on type and event
 # Use separate temp file and verify updates succeeded
@@ -126,38 +149,74 @@ TEMP_FILE="$METRICS_FILE.tmp.$$"
 
 case "$TYPE:$EVENT" in
     skill:used)
-        # Increment usage count
-        if ! jq --arg name "$NAME" --arg ts "$TIMESTAMP" \
-            '.skills[$name].usage_count = (.skills[$name].usage_count // 0) + 1 |
-             .skills[$name].last_used = $ts' \
-            "$METRICS_FILE" > "$TEMP_FILE"; then
-            echo "Error: Failed to update metrics (jq failed)"
-            rm -f "$TEMP_FILE"
-            exit 2
+        # Increment usage count and record event_id if provided
+        if [ -n "$EVENT_ID" ]; then
+            if ! jq --arg name "$NAME" --arg ts "$TIMESTAMP" --arg eid "$EVENT_ID" \
+                '.skills[$name].usage_count = (.skills[$name].usage_count // 0) + 1 |
+                 .skills[$name].last_used = $ts |
+                 .event_ids[$eid] = $ts' \
+                "$METRICS_FILE" > "$TEMP_FILE"; then
+                echo "Error: Failed to update metrics (jq failed)"
+                rm -f "$TEMP_FILE"
+                exit 2
+            fi
+        else
+            if ! jq --arg name "$NAME" --arg ts "$TIMESTAMP" \
+                '.skills[$name].usage_count = (.skills[$name].usage_count // 0) + 1 |
+                 .skills[$name].last_used = $ts' \
+                "$METRICS_FILE" > "$TEMP_FILE"; then
+                echo "Error: Failed to update metrics (jq failed)"
+                rm -f "$TEMP_FILE"
+                exit 2
+            fi
         fi
         ;;
 
     skill:violation)
-        # Record compliance violation
-        if ! jq --arg name "$NAME" --arg vid "$DATA" --arg ts "$TIMESTAMP" \
-            '.skills[$name].violations[$vid].count = (.skills[$name].violations[$vid].count // 0) + 1 |
-             .skills[$name].violations[$vid].last_occurred = $ts' \
-            "$METRICS_FILE" > "$TEMP_FILE"; then
-            echo "Error: Failed to update metrics (jq failed)"
-            rm -f "$TEMP_FILE"
-            exit 2
+        # Record compliance violation and event_id if provided
+        if [ -n "$EVENT_ID" ]; then
+            if ! jq --arg name "$NAME" --arg vid "$DATA" --arg ts "$TIMESTAMP" --arg eid "$EVENT_ID" \
+                '.skills[$name].violations[$vid].count = (.skills[$name].violations[$vid].count // 0) + 1 |
+                 .skills[$name].violations[$vid].last_occurred = $ts |
+                 .event_ids[$eid] = $ts' \
+                "$METRICS_FILE" > "$TEMP_FILE"; then
+                echo "Error: Failed to update metrics (jq failed)"
+                rm -f "$TEMP_FILE"
+                exit 2
+            fi
+        else
+            if ! jq --arg name "$NAME" --arg vid "$DATA" --arg ts "$TIMESTAMP" \
+                '.skills[$name].violations[$vid].count = (.skills[$name].violations[$vid].count // 0) + 1 |
+                 .skills[$name].violations[$vid].last_occurred = $ts' \
+                "$METRICS_FILE" > "$TEMP_FILE"; then
+                echo "Error: Failed to update metrics (jq failed)"
+                rm -f "$TEMP_FILE"
+                exit 2
+            fi
         fi
         ;;
 
     agent:verdict)
-        # Record agent verdict
-        if ! jq --arg name "$NAME" --arg verdict "$DATA" \
-            '.agents[$name].invocations = (.agents[$name].invocations // 0) + 1 |
-             .agents[$name].verdicts[$verdict] = (.agents[$name].verdicts[$verdict] // 0) + 1' \
-            "$METRICS_FILE" > "$TEMP_FILE"; then
-            echo "Error: Failed to update metrics (jq failed)"
-            rm -f "$TEMP_FILE"
-            exit 2
+        # Record agent verdict and event_id if provided
+        if [ -n "$EVENT_ID" ]; then
+            if ! jq --arg name "$NAME" --arg verdict "$DATA" --arg ts "$TIMESTAMP" --arg eid "$EVENT_ID" \
+                '.agents[$name].invocations = (.agents[$name].invocations // 0) + 1 |
+                 .agents[$name].verdicts[$verdict] = (.agents[$name].verdicts[$verdict] // 0) + 1 |
+                 .event_ids[$eid] = $ts' \
+                "$METRICS_FILE" > "$TEMP_FILE"; then
+                echo "Error: Failed to update metrics (jq failed)"
+                rm -f "$TEMP_FILE"
+                exit 2
+            fi
+        else
+            if ! jq --arg name "$NAME" --arg verdict "$DATA" \
+                '.agents[$name].invocations = (.agents[$name].invocations // 0) + 1 |
+                 .agents[$name].verdicts[$verdict] = (.agents[$name].verdicts[$verdict] // 0) + 1' \
+                "$METRICS_FILE" > "$TEMP_FILE"; then
+                echo "Error: Failed to update metrics (jq failed)"
+                rm -f "$TEMP_FILE"
+                exit 2
+            fi
         fi
         ;;
 
