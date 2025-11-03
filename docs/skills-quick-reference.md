@@ -70,10 +70,19 @@ No "should work" → Only "does work" with proof
 - **testing-skills-with-subagents** - Skill validation
 - **sharing-skills** - Contributing back
 
-### 🚀 Commands
+### 🚀 Commands (Enhanced)
+
+**Original:**
 - **/ring:brainstorm** - Interactive design refinement
 - **/ring:write-plan** - Create implementation plan
 - **/ring:execute-plan** - Execute plan in batches
+
+**New Infrastructure:**
+- **/ring:review** - Automated sequential review (Gates 1→2→3)
+- **/ring:which-skill** - Find relevant skills for task
+- **/ring:validate** - Check skill compliance
+- **/ring:metrics** - View usage and effectiveness data
+- **/ring:next-skill** - Get workflow transition suggestions
 
 ### 🔍 Review Agents (3 Sequential Gates)
 **Run in order - each builds on the previous:**
@@ -91,6 +100,19 @@ No "should work" → Only "does work" with proof
    - Final gate before production
 
 **Critical: Run sequentially (Code → Business → Security), not in parallel.**
+
+### 🤖 Orchestration Agents (New)
+
+**review-orchestrator** - Automated sequential review
+- Runs all 3 gates automatically
+- Stops at first failure
+- Returns consolidated report
+- Shares state between gates
+
+**full-reviewer** - All 3 gates in single agent
+- Faster than orchestrator (1 invocation vs 3)
+- Runs all checks internally
+- Use when speed matters
 
 ## 📋 By Situation
 
