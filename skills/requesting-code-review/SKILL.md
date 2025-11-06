@@ -7,9 +7,9 @@ description: Use when completing tasks, implementing major features, or before m
 
 Dispatch reviewer subagents sequentially to catch issues before they cascade.
 
-**Core principle:** Review early, review often. Sequential reviews build on validated foundations.
+**Core principle:** Review early, review often. Reviews build on validated foundations.
 
-## Review Order (Sequential, Not Parallel)
+## Review Order (In Parallel, using the Full Reviewer agent that orchestrates 3 parallel subagents)
 
 Three specialized reviewers run in sequence, each building on the previous:
 
@@ -17,28 +17,27 @@ Three specialized reviewers run in sequence, each building on the previous:
 - **Focus:** Architecture, design patterns, code quality, maintainability
 - **Why first:** Can't review business logic or security in unreadable code
 - **Gates:** Clear structure, testable design, readable names
-- **If fails:** Fix architecture before proceeding to next reviewer
+- **If fails:** Report for final summary
 
 **2. ring:business-logic-reviewer** (Correctness)
 - **Focus:** Domain correctness, business rules, edge cases, requirements
 - **Why second:** Assumes code is now readable and well-structured
 - **Gates:** Meets requirements, handles edge cases, maintains invariants
-- **If fails:** Fix business logic before proceeding to security review
+- **If fails:** Report for final summary
 
 **3. ring:security-reviewer** (Safety)
 - **Focus:** Vulnerabilities, authentication, input validation, OWASP risks
 - **Why last:** Most effective on clean, correct implementation
 - **Gates:** Secure for production
-- **If fails:** Fix security issues (usually smaller scope)
+- **If fails:** Report for final summary
 
-**Critical:** Run sequentially, not parallel. Each reviewer assumes previous gates passed.
+**Critical:** Run in parallel. Summarize after finished. Fix automatically CRITICAL, HIGH, and MEDIUM issues. Report on low/cosmetic issues.
 
 ## When to Request Review
 
 **Mandatory:**
 - After each task in subagent-driven development
 - After completing major feature
-- Before merge to main
 
 **Optional but valuable:**
 - When stuck (fresh perspective)
@@ -47,7 +46,7 @@ Three specialized reviewers run in sequence, each building on the previous:
 
 ## Which Reviewers to Use
 
-**Use all three reviewers (sequential) when:**
+**Use all three reviewers (parallel) when:**
 - Implementing new features (comprehensive check)
 - Before merge to main (final validation)
 - After completing major milestone
@@ -57,7 +56,8 @@ Three specialized reviewers run in sequence, each building on the previous:
 - **Code + Business (skip security):** Internal scripts with no external input
 - **Code + Security (skip business):** Infrastructure/DevOps changes
 
-**Default: Use all three in sequence.** Only skip reviewers when you're certain their domain doesn't apply.
+**Default: Use all three in parallel.** Only skip reviewers when you're certain their domain doesn't apply.
+**Important note: if you wish, the 'full-reviewer' agent orchestrates the other reviewers.**
 
 ## How to Request
 
@@ -67,7 +67,7 @@ BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
-**2. Sequential review process:**
+**2. Parallel review process:**
 
 **Step 1: Code Review (Foundation)**
 ```
@@ -79,8 +79,8 @@ Task tool (ring:code-reviewer):
   DESCRIPTION: [brief summary]
 ```
 
-**If code review passes → Step 2**
-**If code review fails → Fix issues, re-run code review, then proceed**
+**If code review passes → Report**
+**If code review fails → Report**
 
 **Step 2: Business Logic Review (Correctness)**
 ```
@@ -88,8 +88,8 @@ Task tool (ring:business-logic-reviewer):
   [Same parameters as code review]
 ```
 
-**If business review passes → Step 3**
-**If business review fails → Fix issues, re-run from Step 1 (code may have changed)**
+**If code review passes → Report**
+**If code review fails → Report**
 
 **Step 3: Security Review (Safety)**
 ```
@@ -97,133 +97,13 @@ Task tool (ring:security-reviewer):
   [Same parameters as code review]
 ```
 
-**If security review passes → Done**
-**If security review fails → Fix issues, re-run from Step 1 if architecture changed, else re-run from Step 3**
+**If code review passes → Report**
+**If code review fails → Report**
 
 **3. Act on feedback at each gate:**
-- **Critical/High issues:** MUST fix before proceeding to next reviewer
-- **Medium issues:** Fix before proceeding unless time-critical (document tech debt)
-- **Low issues:** Note for later, don't block progress
+- **Critical/High/Medium issues:** MUST fix immediately before proceeding to next task.
+- **Low issues:** Report before proceeding (document tech debt at ``docs/tech-debt/{date}-{subject}.md``)
 - **Push back:** If reviewer is wrong, provide reasoning and evidence
-
-## Example: Sequential Review (Passes All Gates)
-
-```
-[Just completed Task 2: User profile management]
-
-You: Let me request sequential review before proceeding.
-
-BASE_SHA=$(git rev-parse origin/main)
-HEAD_SHA=$(git rev-parse HEAD)
-
-### Gate 1: Code Review
-[Dispatch ring:code-reviewer]
-  WHAT_WAS_IMPLEMENTED: User profile CRUD with validation
-  PLAN_OR_REQUIREMENTS: Task 2 from docs/plans/user-management.md
-  BASE_SHA: a7981ec
-  HEAD_SHA: 3df7661
-
-Code reviewer:
-  Strengths: Clean architecture, good separation of concerns, testable
-  Issues:
-    Minor: Consider extracting validation rules to separate module
-  Assessment: PASS - Minor issues don't block
-
-### Gate 2: Business Logic Review
-[Dispatch ring:business-logic-reviewer - same parameters]
-
-Business reviewer:
-  Strengths: User workflow intuitive, edge cases handled
-  Issues:
-    Low: Could add more descriptive error messages
-  Assessment: PASS - Requirements met
-
-### Gate 3: Security Review
-[Dispatch ring:security-reviewer - same parameters]
-
-Security reviewer:
-  Strengths: Input validation solid, no injection risks
-  Issues:
-    Medium: Add rate limiting on profile updates
-  Assessment: PASS with note - Rate limiting is defense-in-depth, not blocker
-
-You: [Note Minor/Low/Medium issues for tech debt backlog]
-[All gates passed - Continue to Task 3]
-```
-
-## Example: Sequential Review (Fails Early, Saves Time)
-
-```
-[Just completed Task 3: Payment processing]
-
-BASE_SHA=$(git rev-parse origin/main)
-HEAD_SHA=$(git rev-parse HEAD)
-
-### Gate 1: Code Review
-[Dispatch ring:code-reviewer]
-
-Code reviewer:
-  Strengths: Feature complete
-  Issues:
-    Critical: Payment logic mixed with presentation layer
-    Important: No tests for refund calculations
-    Important: Magic numbers throughout (fees, limits)
-  Assessment: FAIL - Major architectural issues
-
-You: [Fix architecture issues]
-[Extract payment service, add tests, create constants]
-[Re-run Gate 1]
-
-Code reviewer (2nd attempt):
-  Strengths: Clean architecture, well-tested
-  Issues: None
-  Assessment: PASS
-
-### Gate 2: Business Logic Review
-[Dispatch ring:business-logic-reviewer]
-
-Business reviewer:
-  Strengths: Calculations correct, edge cases handled
-  Issues:
-    Critical: Missing refund window validation (PRD requires 30-day limit)
-    High: Partial refunds not supported (required per PRD)
-  Assessment: FAIL - Missing required features
-
-You: [Add refund window check, implement partial refunds]
-[Update code, major changes - re-run from Gate 1]
-
-### Gate 1: Code Review (after business logic fix)
-Code reviewer:
-  Assessment: PASS - Architecture maintained
-
-### Gate 2: Business Logic Review (2nd attempt)
-Business reviewer:
-  Assessment: PASS - All requirements met
-
-### Gate 3: Security Review
-[Dispatch ring:security-reviewer]
-
-Security reviewer:
-  Strengths: Good validation
-  Issues:
-    Critical: Refund amount not validated against original charge
-    High: No idempotency key for payment operations
-  Assessment: FAIL - Security vulnerabilities
-
-You: [Add refund validation, implement idempotency]
-[Small security fixes - re-run Gate 3 only]
-
-### Gate 3: Security Review (2nd attempt)
-Security reviewer:
-  Assessment: PASS - Secure for production
-
-Done! All gates passed.
-```
-
-**Why sequential saved time:**
-- Didn't run business/security reviews on broken architecture
-- Business review caught missing features before security audit
-- Security only reviewed clean, correct implementation
 
 ## Integration with Workflows
 
@@ -244,18 +124,17 @@ Done! All gates passed.
 ## Red Flags
 
 **Never:**
-- Run reviewers in parallel (wastes effort on failed gates)
 - Skip Gate 1 because "code is simple" (foundation for other gates)
-- Proceed to next gate with unfixed Critical/High issues
+- Proceed to next task with unfixed Critical/High/Medium issues
 - Skip security review for "just refactoring" (may expose vulnerabilities)
 - Assume business logic is correct without Gate 2 validation
 - Argue with valid technical/security feedback
 
 **Always:**
-- Run sequentially: Code → Business → Security
-- Fix Critical/High issues before next gate
+- Run in parallel: Code / Business / Security
+- Fix Critical/High/Medium issues before next task
 - Re-run from Gate 1 if major architectural changes made
-- Document Medium/Low issues as tech debt
+- Document Low issues as tech debt
 
 **If reviewer wrong:**
 - Push back with technical reasoning
