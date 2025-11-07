@@ -5,53 +5,23 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 # Systematic Debugging
 
-## Overview
-
-Random fixes waste time and create new bugs. Quick patches mask underlying issues.
-
-**Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
-
-**Violating the letter of this process is violating the spirit of debugging.**
-
-## The Iron Law
-
-```
-NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
-```
-
-If you haven't completed Phase 1, you cannot propose fixes.
+**Core principle:** NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST.
 
 ## When to Use
 
-Use for ANY technical issue:
-- Test failures
-- Bugs in production
-- Unexpected behavior
-- Performance problems
-- Build failures
-- Integration issues
+Use for ANY technical issue: test failures, bugs, unexpected behavior, performance problems, build failures, integration issues.
 
-**Use this ESPECIALLY when:**
+**Especially when:**
 - Under time pressure (emergencies make guessing tempting)
 - "Just one quick fix" seems obvious
-- You've already tried multiple fixes
 - Previous fix didn't work
 - You don't fully understand the issue
 
-**Don't skip when:**
-- Issue seems simple (simple bugs have root causes too)
-- You're in a hurry (rushing guarantees rework)
-- Manager wants it fixed NOW (systematic is faster than thrashing)
-
 ## The Four Phases
 
-You MUST complete each phase before proceeding to the next.
+Complete each phase before proceeding to the next.
 
 ### Phase 1: Root Cause Investigation
-
-**BEFORE attempting ANY fix:**
-
-### Phase 1 Gate Checklist
 
 **MUST complete ALL before Phase 2:**
 
@@ -62,285 +32,179 @@ Phase 1 Investigation:
 □ Recent changes reviewed: [git diff output]
 □ Evidence from ALL components: [list components checked]
 □ Data flow traced: [origin → error location]
-
-Status: [Cannot proceed until all checked]
 ```
 
-**Copy this checklist. Check items. Include in response.**
+**Copy this checklist to TodoWrite.**
 
-1. **Read Error Messages Carefully**
-   - Don't skip past errors or warnings
-   - They often contain the exact solution
-   - Read stack traces completely
-   - Note line numbers, file paths, error codes
+1. **Read Error Messages**
+   - Stack traces completely
+   - Line numbers, file paths, error codes
+   - Don't skip past warnings
 
 2. **Reproduce Consistently**
-   - Can you trigger it reliably?
-   - What are the exact steps?
-   - Does it happen every time?
-   - If not reproducible → gather more data, don't guess
+   - Exact steps to trigger
+   - Happens every time? If not → gather more data
 
 3. **Check Recent Changes**
-   - What changed that could cause this?
-   - Git diff, recent commits
+   - `git diff`, recent commits
    - New dependencies, config changes
-   - Environmental differences
 
-4. **Gather Evidence in Multi-Component Systems**
+4. **Multi-Component Systems**
 
-   **WHEN system has multiple components (CI → build → signing, API → service → database):**
-
-   **BEFORE proposing fixes, add diagnostic instrumentation:**
-   ```
-   For EACH component boundary:
-     - Log what data enters component
-     - Log what data exits component
-     - Verify environment/config propagation
-     - Check state at each layer
-
-   Run once to gather evidence showing WHERE it breaks
-   THEN analyze evidence to identify failing component
-   THEN investigate that specific component
-   ```
-
-   **Example (multi-layer system):**
+   **Add diagnostic instrumentation at EACH boundary:**
    ```bash
-   # Layer 1: Workflow
-   echo "=== Secrets available in workflow: ==="
-   echo "IDENTITY: ${IDENTITY:+SET}${IDENTITY:-UNSET}"
-
-   # Layer 2: Build script
-   echo "=== Env vars in build script: ==="
-   env | grep IDENTITY || echo "IDENTITY not in environment"
-
-   # Layer 3: Signing script
-   echo "=== Keychain state: ==="
-   security list-keychains
-   security find-identity -v
-
-   # Layer 4: Actual signing
-   codesign --sign "$IDENTITY" --verbose=4 "$APP"
+   # For each layer, log:
+   - What enters component
+   - What exits component
+   - Environment/config state
    ```
 
-   **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)
+   Run once, analyze evidence, identify failing layer.
 
 5. **Trace Data Flow**
 
-   **WHEN error is deep in call stack:**
+   Error deep in stack? **Use ring:root-cause-tracing skill.**
 
-   **REQUIRED SUB-SKILL:** Use ring:root-cause-tracing for backward tracing technique
-
-   **Quick version:**
+   Quick version:
    - Where does bad value originate?
-   - What called this with bad value?
-   - Keep tracing up until you find the source
-   - Fix at source, not at symptom
+   - Trace up call stack to source
+   - Fix at source, not symptom
 
-### Phase 2: Pattern Analysis
-
-**Find the pattern before fixing:**
-
-### Document Before Proceeding
-
-Before Phase 2, write findings summary:
+**Phase 1 Summary (write before Phase 2):**
 ```
-PHASE 1 FINDINGS:
+FINDINGS:
 - Error: [exact error]
-- Occurs when: [reproduction steps]
-- Recent changes: [relevant commits]
-- Component evidence: [what each component shows]
+- Reproduces: [steps]
+- Recent changes: [commits]
+- Component evidence: [what each shows]
 - Data origin: [where bad data starts]
 ```
 
-No summary = return to Phase 1.
+### Phase 2: Pattern Analysis
 
 1. **Find Working Examples**
-   - Locate similar working code in same codebase
+   - Similar working code in codebase
    - What works that's similar to what's broken?
 
 2. **Compare Against References**
-   - If implementing pattern, read reference implementation COMPLETELY
-   - Don't skim - read every line
-   - Understand the pattern fully before applying
+   - Read reference implementation COMPLETELY
+   - Don't skim - understand fully
 
 3. **Identify Differences**
-   - What's different between working and broken?
-   - List every difference, however small
+   - List EVERY difference (working vs broken)
    - Don't assume "that can't matter"
 
 4. **Understand Dependencies**
-   - What other components does this need?
-   - What settings, config, environment?
+   - What components, config, environment needed?
    - What assumptions does it make?
 
-### Phase 3: Hypothesis and Testing
-
-**Scientific method:**
+### Phase 3: Hypothesis Testing
 
 1. **Form Single Hypothesis**
-   - State clearly: "I think X is the root cause because Y"
-   - Write it down
-   - Be specific, not vague
+   - "I think X is root cause because Y"
+   - Be specific
 
 2. **Test Minimally**
-   - Make the SMALLEST possible change to test hypothesis
+   - SMALLEST possible change
    - One variable at a time
-   - Don't fix multiple things at once
 
-3. **Verify Before Continuing**
-   - Did it work? Yes → Phase 4
-   - Didn't work? Form NEW hypothesis
-   - DON'T add more fixes on top
-
-   **CRITICAL: Track hypothesis count:**
+3. **Verify and Track**
    ```
    Hypothesis #1: [what] → [result]
    Hypothesis #2: [what] → [result]
    Hypothesis #3: [what] → [STOP if fails]
    ```
 
-   **If hypothesis_count >= 3 and all failed:**
+   **If 3 hypotheses fail:**
    - STOP immediately
-   - Document: "3 hypotheses failed, architecture review required"
-   - Discuss with human partner before ANY more attempts
-   - This is MANDATORY, not optional
+   - "3 hypotheses failed, architecture review required"
+   - Discuss with partner before more attempts
 
 4. **When You Don't Know**
    - Say "I don't understand X"
-   - Don't pretend to know
    - Ask for help
    - Research more
 
 ### Phase 4: Implementation
 
-**Fix the root cause, not the symptom:**
+**Fix root cause, not symptom:**
 
-1. **Create Failing Test Case**
-   - Simplest possible reproduction
-   - Automated test if possible
-   - One-off test script if no framework
-   - MUST have before fixing
-   - **REQUIRED SUB-SKILL:** Use ring:test-driven-development for writing proper failing tests
+1. **Create Failing Test**
+   - Simplest reproduction
+   - **Use ring:test-driven-development skill**
 
 2. **Implement Single Fix**
-   - Address the root cause identified
+   - Address root cause only
    - ONE change at a time
    - No "while I'm here" improvements
-   - No bundled refactoring
 
 3. **Verify Fix**
-   - Test passes now?
+   - Test passes?
    - No other tests broken?
-   - Issue actually resolved?
+   - Issue resolved?
 
 4. **If Fix Doesn't Work**
-   - STOP
-   - Count: How many fixes have you tried?
-   - If < 3: Return to Phase 1, re-analyze with new information
-   - **If ≥ 3: STOP and question the architecture (step 5 below)**
-   - DON'T attempt Fix #4 without architectural discussion
+   - Count fixes attempted
+   - If < 3: Return to Phase 1
+   - **If ≥ 3: STOP → Architecture review required**
 
 5. **If 3+ Fixes Failed: Question Architecture**
 
-   **Pattern indicating architectural problem:**
-   - Each fix reveals new shared state/coupling/problem in different place
-   - Fixes require "massive refactoring" to implement
-   - Each fix creates new symptoms elsewhere
+   Pattern indicating architectural problem:
+   - Each fix reveals new problem elsewhere
+   - Fixes require massive refactoring
+   - Each fix creates new symptoms
 
-   **STOP and question fundamentals:**
-   - Is this pattern fundamentally sound?
-   - Are we "sticking with it through sheer inertia"?
-   - Should we refactor architecture vs. continue fixing symptoms?
-
-   **Discuss with your human partner before attempting more fixes**
-
-   This is NOT a failed hypothesis - this is a wrong architecture.
+   **STOP and discuss:** Is architecture sound? Should we refactor vs. fix?
 
 ## Time Limits
 
 **Debugging time boxes:**
-- 30 minutes without root cause → Escalate to human partner
-- 3 failed fixes → Architecture review required
-- 1 hour total → Stop and document what you learned
+- 30 min without root cause → Escalate
+- 3 failed fixes → Architecture review
+- 1 hour total → Stop, document, ask for guidance
 
-**When hitting time limit:**
-1. Document everything you tried
-2. State "Hit debugging time limit"
-3. Ask for human partner guidance
-4. Don't keep trying alone
+## Red Flags
 
-## Red Flags - STOP and Follow Process
-
-If you catch yourself thinking:
+**STOP and return to Phase 1 if thinking:**
 - "Quick fix for now, investigate later"
 - "Just try changing X and see if it works"
 - "Add multiple changes, run tests"
 - "Skip the test, I'll manually verify"
 - "It's probably X, let me fix that"
 - "I don't fully understand but this might work"
-- "Pattern says X but I'll adapt it differently"
-- "Here are the main problems: [lists fixes without investigation]"
-- Proposing solutions before tracing data flow
-- **"One more fix attempt" (when already tried 2+)**
-- **Each fix reveals new problem in different place**
+- "One more fix attempt" (when already tried 2+)
+- "Each fix reveals new problem" (architecture issue)
 
-**ALL of these mean: STOP. Return to Phase 1.**
+**User signals you're wrong:**
+- "Is that not happening?" → You assumed without verifying
+- "Stop guessing" → You're proposing fixes without understanding
+- "We're stuck?" → Your approach isn't working
 
-**If 3+ fixes failed:** Question the architecture (see Phase 4.5)
-
-## your human partner's Signals You're Doing It Wrong
-
-**Watch for these redirections:**
-- "Is that not happening?" - You assumed without verifying
-- "Will it show us...?" - You should have added evidence gathering
-- "Stop guessing" - You're proposing fixes without understanding
-- "Ultrathink this" - Question fundamentals, not just symptoms
-- "We're stuck?" (frustrated) - Your approach isn't working
-
-**When you see these:** STOP. Return to Phase 1.
-
-## Common Rationalizations
-
-| Excuse | Reality |
-|--------|---------|
-| "Issue is simple, don't need process" | Simple issues have root causes too. Process is fast for simple bugs. |
-| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check thrashing. |
-| "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
-| "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |
-| "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
-| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
-| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
-| "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
+**When you see these: STOP. Return to Phase 1.**
 
 ## Quick Reference
 
 | Phase | Key Activities | Success Criteria |
 |-------|---------------|------------------|
-| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
-| **2. Pattern** | Find working examples, compare | Identify differences |
-| **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
-| **4. Implementation** | Create test, fix, verify | Bug resolved, tests pass |
+| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence, trace data flow | Understand WHAT and WHY |
+| **2. Pattern** | Find working examples, compare differences, understand dependencies | Identify what's different |
+| **3. Hypothesis** | Form theory, test minimally, verify one at a time | Confirmed or new hypothesis |
+| **4. Implementation** | Create test, fix root cause, verify | Bug resolved, tests pass |
 
-## When Process Reveals "No Root Cause"
-
-If systematic investigation reveals issue is truly environmental, timing-dependent, or external:
-
-1. You've completed the process
-2. Document what you investigated
-3. Implement appropriate handling (retry, timeout, error message)
-4. Add monitoring/logging for future investigation
-
-**But:** 95% of "no root cause" cases are incomplete investigation.
+**Circuit breakers:**
+- 3 hypotheses fail → STOP, architecture review
+- 3 fixes fail → STOP, question fundamentals
+- 30 min no root cause → Escalate
 
 ## Integration with Other Skills
 
-**This skill requires using:**
-- **root-cause-tracing** - REQUIRED when error is deep in call stack (see Phase 1, Step 5)
-- **test-driven-development** - REQUIRED for creating failing test case (see Phase 4, Step 1)
+**Required sub-skills:**
+- **root-cause-tracing** - When error is deep in call stack (Phase 1, Step 5)
+- **test-driven-development** - For failing test case (Phase 4, Step 1)
 
-**Complementary skills:**
-- **defense-in-depth** - Add validation at multiple layers after finding root cause
-- **condition-based-waiting** - Replace arbitrary timeouts identified in Phase 2
+**Complementary:**
+- **defense-in-depth** - Add validation after finding root cause
 - **verification-before-completion** - Verify fix worked before claiming success
 
 ## Required Patterns
@@ -352,72 +216,3 @@ This skill uses these universal patterns:
 - **TodoWrite:** See `skills/shared-patterns/todowrite-integration.md`
 
 Apply ALL patterns when using this skill.
-
----
-
-## When You Violate This Skill
-
-### Violation: Jumped to fix before finding root cause
-
-**How to detect:**
-- Found a symptom (error message, stack trace)
-- Immediately proposed a fix
-- Didn't complete investigation phases
-
-**Recovery procedure:**
-1. Undo any attempted fixes: `git checkout .`
-2. Return to Phase 1 (Investigation)
-3. Gather ALL evidence without fixing anything
-4. Complete Phase 2 (Pattern Analysis)
-5. Form hypothesis in Phase 3
-6. THEN implement fix in Phase 4
-
-**Why recovery matters:**
-Fixing symptoms instead of root causes creates whack-a-mole debugging. The bug will reappear in a different form.
-
----
-
-### Violation: Multiple hypotheses tested simultaneously
-
-**How to detect:**
-- Changed multiple things at once
-- Can't determine which change fixed the issue
-- "Let me try changing A and B and C..."
-
-**Recovery procedure:**
-1. Rollback all changes: `git checkout .`
-2. Test ONE hypothesis at a time
-3. Document result before next hypothesis
-4. Track: Hypothesis → Test → Result
-
-**Why recovery matters:**
-Testing multiple hypotheses simultaneously means you can't isolate the root cause. When something works, you don't know why. When something fails, you don't know what to try next.
-
----
-
-### Violation: Skipped Phase 1 checklist
-
-**How to detect:**
-- Moved to Phase 2 or 3
-- Phase 1 checklist items not all checked
-- Missing evidence or reproduction steps
-
-**Recovery procedure:**
-1. Stop current work
-2. Return to Phase 1
-3. Complete ENTIRE checklist
-4. Document all findings
-5. Only then proceed to Phase 2
-
-**Why recovery matters:**
-Phase 1 is evidence gathering. Skipping it means guessing instead of debugging. Every failed fix wastes time because you don't have the full picture.
-
----
-
-## Real-World Impact
-
-From debugging sessions:
-- Systematic approach: 15-30 minutes to fix
-- Random fixes approach: 2-3 hours of thrashing
-- First-time fix rate: 95% vs 40%
-- New bugs introduced: Near zero vs common
