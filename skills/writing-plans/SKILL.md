@@ -150,10 +150,65 @@ git commit -m "feat: add specific feature"
    - Stop: Return to human partner
    - Don't: Try to fix without understanding
 
+## Code Review Integration
+
+**REQUIRED: Include code review checkpoint after each task or batch of tasks.**
+
+### Review Step Template
+
+Add this step after task implementation:
+
+```markdown
+**Step N: Run Code Review**
+
+1. **Dispatch all 3 reviewers in parallel:**
+   - REQUIRED SUB-SKILL: Use ring:requesting-code-review
+   - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer)
+   - Wait for all to complete
+
+2. **Handle findings by severity (MANDATORY):**
+
+**Critical/High/Medium Issues:**
+- Fix immediately (do NOT add TODO comments for these severities)
+- Re-run all 3 reviewers in parallel after fixes
+- Repeat until zero Critical/High/Medium issues remain
+
+**Low Issues:**
+- Add `TODO(review):` comments in code at the relevant location
+- Format: `TODO(review): [Issue description] (reported by [reviewer] on [date], severity: Low)`
+- This tracks tech debt for future resolution
+
+**Cosmetic/Nitpick Issues:**
+- Add `FIXME(nitpick):` comments in code at the relevant location
+- Format: `FIXME(nitpick): [Issue description] (reported by [reviewer] on [date], severity: Cosmetic)`
+- Low-priority improvements tracked inline
+
+3. **Proceed only when:**
+   - Zero Critical/High/Medium issues remain
+   - All Low issues have TODO(review): comments added
+   - All Cosmetic issues have FIXME(nitpick): comments added
+```
+
+### Frequency Guidelines
+
+**Run code review:**
+- After each significant feature task
+- After security-sensitive changes
+- After architectural changes
+- At minimum: after each batch of 3-5 tasks
+
+**Don't:**
+- Skip code review "to save time"
+- Add TODO comments for Critical/High/Medium issues (fix them immediately)
+- Proceed with unfixed high-severity issues
+
 ## Remember
 - Exact file paths always
 - Complete code in plan (not "add validation")
 - Exact commands with expected output
+- Include code review checkpoints after tasks/batches
+- Critical/High/Medium issues must be fixed immediately - no TODO comments
+- Only Low issues get TODO(review):, Cosmetic get FIXME(nitpick):
 - Reference relevant skills with @ syntax
 - DRY, YAGNI, TDD, frequent commits
 
