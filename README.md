@@ -258,11 +258,10 @@ ring/
 │   ├── hooks.json             # Hook configuration
 │   ├── session-start.sh       # Loads skills at startup
 │   └── generate-skills-ref.py # Auto-generates quick reference
-├── agents/                     # Specialized review agents (4 agents)
+├── agents/                     # Specialized review agents (3 agents)
 │   ├── code-reviewer.md       # Foundation review (runs in parallel)
 │   ├── business-logic-reviewer.md  # Correctness review (runs in parallel)
-│   ├── security-reviewer.md   # Safety review (runs in parallel)
-│   └── prompt-engineer.md     # Prompt enhancement specialist
+│   └── security-reviewer.md   # Safety review (runs in parallel)
 └── docs/                      # Documentation and plans
     └── plans/                 # Implementation design documents
 ```

@@ -72,8 +72,7 @@ skills/
 agents/
 ├── code-reviewer.md         # Foundation review
 ├── business-logic-reviewer.md # Correctness review
-├── security-reviewer.md      # Safety review
-└── prompt-engineer.md        # Prompt enhancement
+└── security-reviewer.md      # Safety review
 ```
 
 **Key Characteristics:**
@@ -93,8 +92,7 @@ commands/
 ├── brainstorm.md    # Maps to brainstorming skill
 ├── write-plan.md    # Maps to writing-plans skill
 ├── execute-plan.md  # Maps to executing-plans skill
-├── review.md        # Triggers parallel review
-└── improve-prompt.md # Maps to prompt-engineer skill
+└── review.md        # Triggers parallel review
 ```
 
 **Key Characteristics:**

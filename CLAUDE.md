@@ -40,9 +40,8 @@ Ring is a comprehensive skills library and workflow system for Claude Code, impl
 - `code-reviewer.md` - Foundation review (architecture, code quality, design patterns)
 - `business-logic-reviewer.md` - Correctness review (domain logic, requirements, edge cases)
 - `security-reviewer.md` - Safety review (vulnerabilities, OWASP, authentication)
-- `prompt-engineer.md` - Prompt enhancement specialist (reviews and improves prompts using best practices)
 - All reviewers run on Opus model for comprehensive analysis
-- **All 3 code reviewers run in parallel** (not sequentially) for 3x faster feedback
+- **All 3 reviewers run in parallel** (not sequentially) for 3x faster feedback
 - Use `/ring:review` command to orchestrate parallel review workflow
 
 **Documentation** (`docs/`)
@@ -117,26 +116,6 @@ cat .claude-plugin/marketplace.json | jq .
 1. Add `.md` file to `commands/`
 2. Reference corresponding skill
 3. Use clear, actionable language
-
-### Creating or Improving Agents
-1. Draft initial agent definition in `agents/`
-2. Use `/ring:improve-prompt agents/your-agent.md` to enhance with best practices
-3. Test agent with real scenarios
-4. Iterate based on results
-
-### Improving Prompts
-**Use prompt-engineer agent when:**
-- Creating new agent definitions
-- Skills produce inconsistent results
-- Instructions are unclear or ambiguous
-- Need to apply Anthropic best practices
-- Want codebase-aware prompt improvements
-
-**The agent will:**
-- Analyze prompt for clarity, structure, completeness
-- Launch subagents to understand codebase context
-- Apply proven prompt engineering techniques
-- Provide enhanced version with explanations
 
 ## Code Review System (Parallel Execution)
 
