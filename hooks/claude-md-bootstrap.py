@@ -132,19 +132,19 @@ Generate the complete CLAUDE.md now, starting with:
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository."""
 
-        print("[Bootstrap] Invoking Claude Opus (this may take 2-5 minutes)...", file=sys.stderr)
+        print("[Bootstrap] Invoking Claude Opus (this may take 3-10 minutes)...", file=sys.stderr)
 
         result = subprocess.run([
             'claude',
             '--print', prompt,
             '--output-format', 'json',
-            '--max-turns', '50',
+            '--max-turns', '200',
             '--model', 'opus',
             '--allowedTools', 'Glob,Grep,Read,Bash'
         ],
         capture_output=True,
         text=True,
-        timeout=300,  # 5 minutes max for deep analysis
+        timeout=600,  # 10 minutes max for very thorough analysis
         cwd=str(self.project_dir),
         stdin=subprocess.DEVNULL
         )
