@@ -153,10 +153,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
             try:
                 response_data = json.loads(result.stdout)
                 print(f"[DEBUG] Response type: {response_data.get('type')}, subtype: {response_data.get('subtype')}", file=sys.stderr)
+                print(f"[DEBUG] Response keys: {list(response_data.keys())}", file=sys.stderr)
+                print(f"[DEBUG] Num turns: {response_data.get('num_turns')}", file=sys.stderr)
 
                 if isinstance(response_data, dict) and 'result' in response_data:
                     content = response_data['result']
                     print(f"[DEBUG] Got result field, length: {len(content)}, has header: {'# CLAUDE.md' in content}", file=sys.stderr)
+
+                    # Check if empty
+                    if not content or len(content) == 0:
+                        print(f"[DEBUG] Result field is empty! Checking errors field...", file=sys.stderr)
+                        if 'errors' in response_data:
+                            print(f"[DEBUG] Errors: {response_data['errors']}", file=sys.stderr)
+                        print(f"[DEBUG] Full response preview: {str(response_data)[:500]}", file=sys.stderr)
+                        return None
                     # Verify it's actual CLAUDE.md content
                     if '# CLAUDE.md' in content:
                         return content
