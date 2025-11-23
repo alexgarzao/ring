@@ -152,13 +152,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
         if result.returncode == 0:
             try:
                 response_data = json.loads(result.stdout)
+                print(f"[DEBUG] Response type: {response_data.get('type')}, subtype: {response_data.get('subtype')}", file=sys.stderr)
+
                 if isinstance(response_data, dict) and 'result' in response_data:
                     content = response_data['result']
+                    print(f"[DEBUG] Got result field, length: {len(content)}, has header: {'# CLAUDE.md' in content}", file=sys.stderr)
                     # Verify it's actual CLAUDE.md content
                     if '# CLAUDE.md' in content:
                         return content
+                    else:
+                        print(f"[DEBUG] Result doesn't contain '# CLAUDE.md' header", file=sys.stderr)
+                        print(f"[DEBUG] Result preview: {content[:200]}", file=sys.stderr)
+                else:
+                    print(f"[DEBUG] No 'result' field in response. Keys: {list(response_data.keys())}", file=sys.stderr)
             except json.JSONDecodeError as e:
-                print(f"Failed to parse Opus response: {e}", file=sys.stderr)
+                print(f"Failed to parse Opus response JSON: {e}", file=sys.stderr)
+                print(f"Stdout preview: {result.stdout[:500]}", file=sys.stderr)
+        else:
+            print(f"[DEBUG] Claude CLI returned non-zero exit code: {result.returncode}", file=sys.stderr)
+            print(f"Stderr: {result.stderr[:500]}", file=sys.stderr)
 
         return None
 
