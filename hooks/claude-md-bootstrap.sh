@@ -115,7 +115,7 @@ EOF
 fi
 
 # Log start of bootstrap process
-log_info "No CLAUDE.md found. Starting auto-generation process..."
+log_info "No CLAUDE.md found. Starting auto-generation in background..."
 
 # Check if Python orchestrator exists
 if [ ! -f "${SCRIPT_DIR}/claude-md-bootstrap.py" ]; then
@@ -126,40 +126,45 @@ if [ ! -f "${SCRIPT_DIR}/claude-md-bootstrap.py" ]; then
         log_success "Created minimal CLAUDE.md template"
     else
         log_error "Failed to create fallback template"
-        # Continue to output standard JSON (fail gracefully)
     fi
 else
-    # Run the Python bootstrap orchestrator
-    # Temporarily disable exit-on-error to capture exit code
-    set +e
-    bootstrap_output=$("${SCRIPT_DIR}/claude-md-bootstrap.py" 2>&1)
-    bootstrap_exit_code=$?
-    set -e
+    # Create lock file to prevent concurrent executions
+    LOCK_FILE="${PROJECT_DIR}/.claude-md-bootstrap.lock"
 
-    # Check result
-    if [ $bootstrap_exit_code -eq 0 ]; then
-        # Verify file was actually created (addresses inconsistent error recovery)
-        if [ -f "${PROJECT_DIR}/CLAUDE.md" ]; then
-            line_count=$(wc -l < "${PROJECT_DIR}/CLAUDE.md")
-            log_success "Generated CLAUDE.md (${line_count} lines)"
-        else
-            log_warning "Bootstrap completed but CLAUDE.md not created"
-            log_info "Creating minimal fallback template..."
-            if create_fallback_template; then
-                log_success "Created minimal CLAUDE.md template as fallback"
-            else
-                log_error "Failed to create fallback template"
-            fi
-        fi
+    if [ -f "$LOCK_FILE" ]; then
+        log_warning "Bootstrap already in progress"
     else
-        log_error "Failed to generate CLAUDE.md (exit code: ${bootstrap_exit_code})"
-        log_info "Creating minimal fallback template..."
+        # Create log file for background process
+        LOG_FILE="${PROJECT_DIR}/.claude-md-bootstrap.log"
 
-        if create_fallback_template; then
-            log_success "Created minimal CLAUDE.md template as fallback"
-        else
-            log_error "Failed to create fallback template"
-        fi
+        # Fork Python orchestrator to background (non-blocking)
+        {
+            # Set lock
+            echo $$ > "$LOCK_FILE"
+
+            # Run bootstrap
+            if "${SCRIPT_DIR}/claude-md-bootstrap.py" >> "$LOG_FILE" 2>&1; then
+                if [ -f "${PROJECT_DIR}/CLAUDE.md" ]; then
+                    line_count=$(wc -l < "${PROJECT_DIR}/CLAUDE.md" 2>/dev/null || echo "0")
+                    echo "[$(date)] ✓ Generated CLAUDE.md (${line_count} lines)" >> "$LOG_FILE"
+                fi
+            else
+                exit_code=$?
+                echo "[$(date)] ✗ Bootstrap failed (exit code: ${exit_code})" >> "$LOG_FILE"
+            fi
+
+            # Remove lock
+            rm -f "$LOCK_FILE"
+        } &
+
+        # Capture background PID
+        bg_pid=$!
+
+        # Detach from current shell
+        disown 2>/dev/null || true
+
+        log_success "CLAUDE.md generation running in background (PID: ${bg_pid})"
+        log_info "Monitor: tail -f .claude-md-bootstrap.log"
     fi
 fi
 
