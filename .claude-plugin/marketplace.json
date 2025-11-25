@@ -30,7 +30,7 @@
     {
       "name": "ring-developers",
       "description": "Specialized developer agents for technical roles: Go Backend Engineer, DevOps Engineer, Frontend Engineer (React/Next.js), QA Analyst, and Site Reliability Engineer (SRE). Each agent provides domain-specific expertise and best practices for their specialty area.",
-      "version": "0.0.2",
+      "version": "0.1.0",
       "source": "./developers",
       "homepage": "https://github.com/lerianstudio/ring/tree/developers",
       "repository": "https://github.com/lerianstudio/ring/tree/developers",
@@ -54,7 +54,7 @@
     {
       "name": "ring-product-reporter",
       "description": "Financial operations (FinOps) agents and Brazilian regulatory compliance skills. Includes finops-analyzer and finops-automation agents for financial analysis and automation. Contains regulatory templates for BACEN, RFB, and other Brazilian financial regulations with multi-gate workflow support.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./product-reporter",
       "homepage": "https://github.com/lerianstudio/ring/tree/product-reporter",
       "repository": "https://github.com/lerianstudio/ring/tree/product-reporter",
@@ -76,7 +76,7 @@
     {
       "name": "ring-team-product",
       "description": "Product team pre-development workflow skills: 8-gate planning system including PRD creation, feature mapping, TRD creation, API design, data modeling, dependency mapping, task breakdown, and subtask creation. Comprehensive planning framework for product features of any complexity.",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "source": "./team-product",
       "homepage": "https://github.com/lerianstudio/ring/tree/team-product",
       "repository": "https://github.com/lerianstudio/ring/tree/team-product",
@@ -96,5 +96,5 @@
       ]
     }
   ],
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
