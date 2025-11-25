@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with multiple specialized plugin collections, the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **4 active plugins** and **6 reserved plugin slots**, the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 34 specialized skills** - From brainstorming to production deployment
-- **11 specialized agents** - 6 review/planning agents + 5 developer role agents
+- **Providing 33 specialized skills** - From brainstorming to production deployment (20 core + 5 FinOps + 8 product planning)
+- **11 specialized agents** - 4 review/planning agents + 5 developer role agents + 2 FinOps agents
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -73,8 +73,6 @@ Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates find
 - `business-logic-reviewer` - Correctness review (domain logic, requirements, edge cases)
 - `security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
 - `write-plan` - Implementation planning agent
-- `finops-analyzer` - Financial operations analysis
-- `finops-creator` - FinOps template creation
 - Use `/ring:review` command to orchestrate parallel review workflow
 
 **Developer Agents (developers plugin):**
@@ -83,6 +81,10 @@ Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates find
 - `frontend-engineer` - React/Next.js specialist
 - `qa-analyst` - Quality assurance specialist
 - `sre` - Site reliability engineer
+
+**FinOps Agents (product-reporter plugin):**
+- `finops-analyzer` - Financial operations analysis
+- `finops-automation` - FinOps template creation and automation
 
 **Infrastructure Utilities:**
 - Compliance validator - Enforce skill adherence
@@ -158,9 +160,11 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 34 Skills
+## 📚 All 33 Skills (Across 3 Plugins)
 
-### Testing & Debugging (6)
+### Core Skills (default plugin - 20 skills)
+
+**Testing & Debugging (6):**
 - `test-driven-development` - Write test first, watch fail, minimal code
 - `systematic-debugging` - 4-phase root cause investigation
 - `verification-before-completion` - Evidence before claims
@@ -168,7 +172,7 @@ No "should work" → Only "does work" with proof
 - `condition-based-waiting` - Replace timeouts with conditions
 - `defense-in-depth` - Multi-layer validation
 
-### Collaboration & Planning (10)
+**Collaboration & Planning (10):**
 - `brainstorming` - Structured design refinement
 - `writing-plans` - Zero-context implementation plans
 - `executing-plans` - Batch execution with checkpoints
@@ -180,7 +184,15 @@ No "should work" → Only "does work" with proof
 - `finishing-a-development-branch` - Merge/PR decisions
 - `root-cause-tracing` - Backward bug tracking
 
-### Pre-Development Workflow (8 gates)
+**Meta Skills (4):**
+- `using-ring` - Mandatory skill discovery
+- `writing-skills` - TDD for documentation
+- `testing-skills-with-subagents` - Skill validation
+- `testing-agents-with-subagents` - Subagent-specific testing
+
+### Product Planning Skills (team-product plugin - 8 skills)
+
+**Pre-Development Workflow (8 gates):**
 1. `pre-dev-prd-creation` - Business requirements (WHAT/WHY)
 2. `pre-dev-feature-map` - Feature relationships
 3. `pre-dev-trd-creation` - Technical architecture (HOW)
@@ -190,19 +202,14 @@ No "should work" → Only "does work" with proof
 7. `pre-dev-task-breakdown` - Work increments
 8. `pre-dev-subtask-creation` - Atomic units
 
-### Regulatory Templates (5)
+### FinOps & Regulatory Skills (product-reporter plugin - 5 skills)
+
+**Regulatory Templates (5):**
 - `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
 - `regulatory-templates-setup` - Template selection initialization
 - `regulatory-templates-gate1` - Compliance analysis and field mapping
 - `regulatory-templates-gate2` - Field mapping validation
 - `regulatory-templates-gate3` - Template file generation
-
-### Meta Skills (5)
-- `using-ring` - Mandatory skill discovery
-- `writing-skills` - TDD for documentation
-- `testing-skills-with-subagents` - Skill validation
-- `testing-agents-with-subagents` - Subagent-specific testing
-- `shared-patterns` - Reusable patterns library
 
 ## 🎮 Interactive Commands
 
@@ -279,28 +286,24 @@ Claude: Dispatching all 3 reviewers in parallel...
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (2 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (4 active plugins)
 ├── default/                          # Core Ring plugin (ring-default v0.6.1)
-│   ├── skills/                       # 34 specialized skills (13,637 lines)
+│   ├── skills/                       # 20 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
-│   │   ├── regulatory-templates*/   # Brazilian regulatory compliance
 │   │   └── shared-patterns/         # Universal patterns (5 patterns)
-│   ├── commands/                    # 7 slash command definitions
+│   ├── commands/                    # 8 slash command definitions
 │   ├── hooks/                       # Session initialization
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
-│   ├── agents/                      # 6 specialized agents
+│   ├── agents/                      # 4 specialized agents
 │   │   ├── code-reviewer.md        # Foundation review (parallel)
 │   │   ├── business-logic-reviewer.md  # Correctness review (parallel)
 │   │   ├── security-reviewer.md    # Safety review (parallel)
-│   │   ├── write-plan.md           # Implementation planning
-│   │   ├── finops-analyzer.md      # FinOps analysis
-│   │   └── finops-creator.md       # FinOps creation
+│   │   └── write-plan.md           # Implementation planning
 │   ├── lib/                        # Infrastructure utilities (9 scripts)
-│   └── docs/
-│       └── regulatory/             # Brazilian regulatory documentation
+│   └── docs/                       # Documentation
 ├── developers/                      # Developer Agents plugin (ring-developers v0.0.1)
 │   └── agents/                      # 5 specialized developer agents
 │       ├── backend-engineer-golang.md  # Go backend specialist
@@ -308,15 +311,23 @@ ring/                                  # Monorepo root
 │       ├── frontend-engineer.md        # React/Next.js specialist
 │       ├── qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer
+├── product-reporter/                # FinOps plugin (ring-product-reporter v0.0.1)
+│   ├── skills/                      # 5 regulatory compliance skills
+│   │   └── regulatory-templates*/   # Brazilian regulatory compliance
+│   ├── agents/                      # 2 FinOps agents
+│   │   ├── finops-analyzer.md      # FinOps analysis
+│   │   └── finops-automation.md    # FinOps automation
+│   └── docs/
+│       └── regulatory/             # Brazilian regulatory documentation
+├── team-product/                    # Product Planning plugin (ring-team-product v0.0.1)
+│   └── skills/                      # 8 pre-dev workflow skills
+│       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── product-flowker/                 # Product-specific skills (reserved)
 ├── product-matcher/                 # Product-specific skills (reserved)
 ├── product-midaz/                   # Product-specific skills (reserved)
-├── product-reporter/                # Product-specific skills (reserved)
 ├── product-tracer/                  # Product-specific skills (reserved)
-├── team-devops/                     # Team-specific skills (reserved)
 ├── team-ops/                        # Team-specific skills (reserved)
-├── team-pmm/                        # Team-specific skills (reserved)
-└── team-product/                    # Team-specific skills (reserved)
+└── team-pmm/                        # Team-specific skills (reserved)
 ```
 
 ## 🤝 Contributing

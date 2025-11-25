@@ -4,11 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **2 active plugins** and **9 reserved plugin slots**, the skills are agent-agnostic and reusable across different AI systems.
+Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **4 active plugins** and **6 reserved plugin slots**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
-- **ring-default** (v0.6.1): 34 core skills, 7 slash commands, 6 specialized agents
+- **ring-default** (v0.6.1): 20 core skills, 8 slash commands, 4 specialized agents
 - **ring-developers** (v0.0.1): 5 specialized developer agents (Go backend, DevOps, Frontend, QA, SRE)
+- **ring-product-reporter** (v0.0.1): 5 regulatory skills, 2 FinOps agents
+- **ring-team-product** (v0.0.1): 8 product planning skills
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -19,24 +21,20 @@ The architecture uses markdown-based skill definitions with YAML frontmatter, au
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (2 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (4 active plugins)
 ├── default/                          # Core Ring plugin (ring-default v0.6.1)
-│   ├── skills/                       # 34 skills (13,637 lines total)
+│   ├── skills/                       # 20 core skills
 │   │   ├── brainstorming/            # Socratic design refinement
 │   │   ├── test-driven-development/  # RED-GREEN-REFACTOR cycle enforcement
 │   │   ├── systematic-debugging/     # 4-phase root cause analysis
-│   │   ├── pre-dev-*/               # 8-gate workflow (PRD→TRD→API→Data→Tasks)
-│   │   ├── regulatory-templates*/   # Brazilian regulatory compliance (BACEN, RFB)
 │   │   ├── using-ring/              # MANDATORY skill discovery (non-negotiable)
 │   │   └── shared-patterns/         # Reusable: state-tracking, failure-recovery
-│   ├── agents/                      # 6 specialized agents
+│   ├── agents/                      # 4 specialized agents
 │   │   ├── code-reviewer.md         # Foundation review (architecture, patterns)
 │   │   ├── business-logic-reviewer.md # Correctness (requirements, edge cases)
 │   │   ├── security-reviewer.md     # Safety (OWASP, auth, validation)
-│   │   ├── write-plan.md            # Implementation planning
-│   │   ├── finops-analyzer.md       # Financial operations analysis
-│   │   └── finops-creator.md        # FinOps creation
-│   ├── commands/                    # 7 slash commands
+│   │   └── write-plan.md            # Implementation planning
+│   ├── commands/                    # 8 slash commands
 │   │   ├── review.md               # /ring:review - dispatch 3 parallel reviewers
 │   │   ├── brainstorm.md           # /ring:brainstorm - interactive design
 │   │   └── pre-dev-*.md            # /ring:pre-dev-feature or pre-dev-full
@@ -53,7 +51,6 @@ ring/                                  # Monorepo root
 │   │   ├── skill-matcher.sh       # Task-to-skill mapping
 │   │   └── output-validator.sh    # Response format validation
 │   └── docs/                      # Documentation
-│       └── regulatory/            # Brazilian regulatory templates (BACEN, RFB)
 ├── developers/                    # Developer Agents plugin (ring-developers v0.0.1)
 │   └── agents/                    # 5 specialized developer agents
 │       ├── backend-engineer-golang.md  # Go backend specialist
@@ -61,15 +58,23 @@ ring/                                  # Monorepo root
 │       ├── frontend-engineer.md        # React/Next.js specialist
 │       ├── qa-analyst.md               # Quality assurance specialist
 │       └── sre.md                      # Site reliability engineer
+├── product-reporter/              # FinOps plugin (ring-product-reporter v0.0.1)
+│   ├── skills/                    # 5 regulatory compliance skills
+│   │   └── regulatory-templates*/ # Brazilian regulatory compliance (BACEN, RFB)
+│   ├── agents/                    # 2 FinOps agents
+│   │   ├── finops-analyzer.md    # Financial operations analysis
+│   │   └── finops-automation.md  # FinOps automation
+│   └── docs/
+│       └── regulatory/           # Brazilian regulatory documentation
+├── team-product/                  # Product Planning plugin (ring-team-product v0.0.1)
+│   └── skills/                    # 8 pre-dev workflow skills
+│       └── pre-dev-*/            # PRD→TRD→API→Data→Tasks
 ├── product-flowker/               # Product-specific skills (reserved)
 ├── product-matcher/               # Product-specific skills (reserved)
 ├── product-midaz/                 # Product-specific skills (reserved)
-├── product-reporter/              # Product-specific skills (reserved)
 ├── product-tracer/                # Product-specific skills (reserved)
-├── team-devops/                   # Team-specific skills (reserved)
 ├── team-ops/                      # Team-specific skills (reserved)
-├── team-pmm/                      # Team-specific skills (reserved)
-└── team-product/                  # Team-specific skills (reserved)
+└── team-pmm/                      # Team-specific skills (reserved)
 ```
 
 ## Common Commands
@@ -224,10 +229,11 @@ The system loads at SessionStart (from `default/` plugin):
 
 **Monorepo Context:**
 - Repository: Monorepo marketplace with multiple plugin collections
-- Active plugins: 2 (`ring-default` v0.6.1, `ring-developers` v0.0.1)
-- Core plugin: `default/` (34 skills, 6 agents, 7 commands)
+- Active plugins: 4 (`ring-default` v0.6.1, `ring-developers` v0.0.1, `ring-product-reporter` v0.0.1, `ring-team-product` v0.0.1)
+- Core plugin: `default/` (20 skills, 4 agents, 8 commands)
 - Developer agents plugin: `developers/` (5 specialized developer agents)
-- Product plugins: `product-*/` (5 reserved directories)
-- Team plugins: `team-*/` (4 reserved directories)
+- FinOps plugin: `product-reporter/` (5 skills, 2 agents)
+- Product planning plugin: `team-product/` (8 skills)
+- Reserved plugins: `product-*/` (4 directories), `team-*/` (2 directories)
 - Current git branch: `main`
 - Remote: `github.com/LerianStudio/ring`

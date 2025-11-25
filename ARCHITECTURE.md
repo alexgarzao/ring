@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **4 active plugins** and **6 reserved plugin slots**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices.
 
 ### Architecture Philosophy
 
@@ -27,28 +27,27 @@ Ring operates on three core principles:
 ### System Boundaries
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          Claude Code                                 │
-│  ┌────────────────────────────────────────────────────────────────┐ │
-│  │                    Ring Marketplace                             │ │
-│  │  ┌──────────────────────────┐  ┌─────────────────────────────┐ │ │
-│  │  │   ring-default (v0.6.1)  │  │  ring-developers (v0.0.1)   │ │ │
-│  │  │  ┌───────┐ ┌──────────┐  │  │  ┌──────────────────────┐   │ │ │
-│  │  │  │Skills │ │ Agents   │  │  │  │  Developer Agents    │   │ │ │
-│  │  │  │ (34)  │ │  (6)     │  │  │  │       (5)            │   │ │ │
-│  │  │  └───────┘ └──────────┘  │  │  └──────────────────────┘   │ │ │
-│  │  │  ┌───────┐ ┌──────────┐  │  │                             │ │ │
-│  │  │  │Cmds(7)│ │Hooks/Lib │  │  │                             │ │ │
-│  │  │  └───────┘ └──────────┘  │  │                             │ │ │
-│  │  └──────────────────────────┘  └─────────────────────────────┘ │ │
-│  │                                                                 │ │
-│  │  ┌──────────────────────────────────────────────────────────┐  │ │
-│  │  │   Reserved Plugins (9): product-*, team-*                │  │ │
-│  │  └──────────────────────────────────────────────────────────┘  │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-│                                                                      │
-│  Native Tools: Skill, Task, TodoWrite, SlashCommand                 │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              Claude Code                                         │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                          Ring Marketplace                                  │  │
+│  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
+│  │  │ ring-default (v0.6.1)│  │ ring-developers      │                       │  │
+│  │  │ Skills(20) Agents(4) │  │ Agents(5)            │                       │  │
+│  │  │ Cmds(8) Hooks/Lib    │  │                      │                       │  │
+│  │  └──────────────────────┘  └──────────────────────┘                       │  │
+│  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
+│  │  │ ring-product-reporter│  │ ring-team-product    │                       │  │
+│  │  │ Skills(5) Agents(2)  │  │ Skills(8)            │                       │  │
+│  │  └──────────────────────┘  └──────────────────────┘                       │  │
+│  │                                                                            │  │
+│  │  ┌────────────────────────────────────────────────────────────────────┐   │  │
+│  │  │   Reserved Plugins (6): 4 product-*, 2 team-*                      │   │  │
+│  │  └────────────────────────────────────────────────────────────────────┘   │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                  │
+│  Native Tools: Skill, Task, TodoWrite, SlashCommand                             │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Marketplace Structure
@@ -58,27 +57,31 @@ Ring is organized as a monorepo marketplace with multiple plugin collections:
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin registry (2 active plugins)
+│   └── marketplace.json              # Multi-plugin registry (4 active plugins)
 ├── default/                          # Core plugin: ring-default v0.6.1
 ├── developers/                       # Developer agents: ring-developers v0.0.1
-├── product-*/                        # 5 reserved product-specific slots
-└── team-*/                           # 4 reserved team-specific slots
+├── product-reporter/                 # FinOps & regulatory: ring-product-reporter v0.0.1
+├── team-product/                     # Product planning: ring-team-product v0.0.1
+├── product-*/                        # 4 reserved product-specific slots
+└── team-*/                           # 2 reserved team-specific slots
 ```
 
 ### Active Plugins
 
 | Plugin | Version | Description | Components |
 |--------|---------|-------------|------------|
-| **ring-default** | 0.6.1 | Core skills library | 34 skills, 6 agents, 7 commands |
+| **ring-default** | 0.6.1 | Core skills library | 20 skills, 4 agents, 8 commands |
 | **ring-developers** | 0.0.1 | Developer agents | 5 specialized developer agents |
+| **ring-product-reporter** | 0.0.1 | FinOps & regulatory compliance | 5 skills, 2 agents |
+| **ring-team-product** | 0.0.1 | Product planning workflows | 8 skills |
 
 ### Reserved Plugin Slots
 
-**Product Plugins (5):**
-- `product-flowker`, `product-matcher`, `product-midaz`, `product-reporter`, `product-tracer`
+**Product Plugins (4 remaining):**
+- `product-flowker`, `product-matcher`, `product-midaz`, `product-tracer`
 
-**Team Plugins (4):**
-- `team-devops`, `team-ops`, `team-pmm`, `team-product`
+**Team Plugins (2 remaining):**
+- `team-ops`, `team-pmm`
 
 ## Component Hierarchy
 
@@ -593,13 +596,16 @@ Ring's architecture is designed for:
 
 | Component | Count | Location |
 |-----------|-------|----------|
-| Active Plugins | 2 | `default/`, `developers/` |
-| Skills | 34 | `default/skills/` |
-| Agents (default) | 6 | `default/agents/` |
+| Active Plugins | 4 | `default/`, `developers/`, `product-reporter/`, `team-product/` |
+| Skills (default) | 20 | `default/skills/` |
+| Skills (product-reporter) | 5 | `product-reporter/skills/` |
+| Skills (team-product) | 8 | `team-product/skills/` |
+| Agents (default) | 4 | `default/agents/` |
 | Agents (developers) | 5 | `developers/agents/` |
-| Commands | 7 | `default/commands/` |
+| Agents (product-reporter) | 2 | `product-reporter/agents/` |
+| Commands | 8 | `default/commands/` |
 | Hooks | 4 | `default/hooks/` |
 | Lib utilities | 9 | `default/lib/` |
-| Reserved plugins | 9 | `product-*/`, `team-*/` |
+| Reserved plugins | 6 | `product-*/`, `team-*/` |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.

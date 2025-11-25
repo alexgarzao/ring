@@ -8,13 +8,13 @@
   "plugins": [
     {
       "name": "ring-default",
-      "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Comprehensive 8-gate pre-development workflow with systematic testing and debugging skills. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety).",
+      "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety), systematic debugging, and workflow orchestration. 20 essential skills for software engineering excellence.",
       "version": "0.6.1",
       "source": "./default",
       "homepage": "https://github.com/lerianstudio/ring/tree/default",
       "repository": "https://github.com/lerianstudio/ring/tree/default",
       "license": "MIT",
-      "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "pre-dev", "predev", "prd", "trd", "orchestration", "validation", "code-review", "parallel-review"]
+      "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "orchestration", "validation", "code-review", "parallel-review"]
     },
     {
       "name": "ring-developers",
