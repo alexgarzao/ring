@@ -37,7 +37,7 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
             claude plugin install ring-developers &> /dev/null || true
             claude plugin install ring-product-reporter &> /dev/null || true
             
-            update_message="🔄 **Ring marketplace updated to latest version!**\n⚠️  Please restart your Claude session (type 'clear' or restart CLI) for changes to take effect.\n\n"
+            update_message="<system-reminder>\n🔄 **IMPORTANT: Ring marketplace was updated to latest version!**\n\n⚠️  **ACTION REQUIRED:** Please restart your Claude session to load the new changes.\n   • Type 'clear' in the CLI, or\n   • Restart Claude Code entirely\n\nNew skills, agents, and improvements are now available after restart.\n</system-reminder>\n\n"
         fi
     else
         # Marketplace not found, just run updates silently without message
@@ -80,13 +80,14 @@ using_ring_content=$(cat "${PLUGIN_ROOT}/skills/using-ring/SKILL.md" 2>&1 || ech
 # Escape outputs for JSON
 overview_escaped=$(echo "$skills_overview" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 using_ring_escaped=$(echo "$using_ring_content" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
+update_message_escaped=$(echo -e "$update_message" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 
 # Output context injection as JSON
 cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "${update_message}<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
+    "additionalContext": "${update_message_escaped}<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
   }
 }
 EOF
