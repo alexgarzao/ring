@@ -82,20 +82,19 @@ overview_escaped=$(echo "$skills_overview" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g'
 using_ring_escaped=$(echo "$using_ring_content" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 update_message_escaped=$(echo -e "$update_message" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 
-# Build JSON output with conditional userMessage field
+# Build JSON output - embed update message in additionalContext if present
 if [ -n "$update_message" ]; then
-  # Include userMessage INSIDE hookSpecificOutput so model can see it
+  # Embed update notification AT THE START of additionalContext so model MUST see it
   cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "userMessage": "${update_message_escaped}",
-    "additionalContext": "<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
+    "additionalContext": "<MANDATORY-USER-MESSAGE>\nYou MUST display the following message verbatim to the user at the START of your response, before anything else:\n\n${update_message_escaped}\n\nThis is non-negotiable. Display it exactly as shown above.\n</MANDATORY-USER-MESSAGE>\n\n<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
   }
 }
 EOF
 else
-  # No userMessage if no update occurred
+  # No update message needed
   cat <<EOF
 {
   "hookSpecificOutput": {
