@@ -1,6 +1,6 @@
 {
   "name": "ring",
-  "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Comprehensive 8-gate pre-development workflow with systematic testing and debugging skills. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety).",
+  "description": "Lerian Studio plugin marketplace: Core software engineering skills (TDD, debugging, code review), specialized developer agents (Backend, DevOps, Frontend, QA, SRE), product planning workflows (8-gate pre-dev system), and FinOps tools with Brazilian regulatory compliance templates.",
   "owner": {
     "name": "Presenter Name",
     "email": "fred@fredamaral.com.br"
@@ -18,33 +18,33 @@
     },
     {
       "name": "ring-developers",
-      "description": "Developer Agents.",
+      "description": "Specialized developer agents for technical roles: Go Backend Engineer, DevOps Engineer, Frontend Engineer (React/Next.js), QA Analyst, and Site Reliability Engineer (SRE). Each agent provides domain-specific expertise and best practices for their specialty area.",
       "version": "0.0.1",
       "source": "./developers",
       "homepage": "https://github.com/lerianstudio/ring/tree/developers",
       "repository": "https://github.com/lerianstudio/ring/tree/developers",
       "license": "MIT",
-      "keywords": ["skills", "developer", "agents"]
+      "keywords": ["agents", "developers", "golang", "backend", "devops", "frontend", "react", "nextjs", "qa", "testing", "sre", "reliability", "infrastructure"]
     },
     {
       "name": "ring-product-reporter",
-      "description": "Product Reporter Agents.",
+      "description": "Financial operations (FinOps) agents and Brazilian regulatory compliance skills. Includes finops-analyzer and finops-automation agents for financial analysis and automation. Contains regulatory templates for BACEN, RFB, and other Brazilian financial regulations with multi-gate workflow support.",
       "version": "0.0.1",
       "source": "./product-reporter",
       "homepage": "https://github.com/lerianstudio/ring/tree/product-reporter",
       "repository": "https://github.com/lerianstudio/ring/tree/product-reporter",
       "license": "MIT",
-      "keywords": ["skills", "product", "reporter", "agents"]
+      "keywords": ["finops", "financial-operations", "agents", "regulatory", "compliance", "bacen", "rfb", "brazil", "reporting", "templates", "automation"]
     },
     {
       "name": "ring-team-product",
-      "description": "Team Product Agents.",
+      "description": "Product team pre-development workflow skills: 8-gate planning system including PRD creation, feature mapping, TRD creation, API design, data modeling, dependency mapping, task breakdown, and subtask creation. Comprehensive planning framework for product features of any complexity.",
       "version": "0.0.1",
       "source": "./team-product",
       "homepage": "https://github.com/lerianstudio/ring/tree/team-product",
       "repository": "https://github.com/lerianstudio/ring/tree/team-product",
       "license": "MIT",
-      "keywords": ["skills", "team", "product", "agents"]
+      "keywords": ["skills", "product", "pre-dev", "planning", "prd", "trd", "api-design", "data-model", "workflow", "feature-planning", "task-breakdown"]
     }
   ]
 }
