@@ -15,6 +15,16 @@
       "repository": "https://github.com/lerianstudio/ring/tree/default",
       "license": "MIT",
       "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "pre-dev", "predev", "prd", "trd", "orchestration", "validation", "code-review", "parallel-review"]
+    },
+    {
+      "name": "ring-developers",
+      "description": "Developer Agents.",
+      "version": "0.0.1",
+      "source": "./developers",
+      "homepage": "https://github.com/lerianstudio/ring/tree/developers",
+      "repository": "https://github.com/lerianstudio/ring/tree/developers",
+      "license": "MIT",
+      "keywords": ["skills", "developer", "agents]
     }
   ]
 }
