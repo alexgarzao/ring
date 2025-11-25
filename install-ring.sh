@@ -53,12 +53,12 @@ echo "================================================"
 echo ""
 echo "Active plugins:"
 echo "  • ring-developers - 5 specialized developer agents (Go backend, DevOps, Frontend, QA, SRE)"
+echo "  • ring-product-reporter - Product Reporter specialized agents and skills"
 echo ""
 echo "Reserved (coming soon):"
 echo "  • ring-product-flowker"
 echo "  • ring-product-matcher"
 echo "  • ring-product-midaz"
-echo "  • ring-product-reporter"
 echo "  • ring-product-tracer"
 echo "  • ring-team-devops"
 echo "  • ring-team-ops"
@@ -79,6 +79,19 @@ if [[ "$install_developers" =~ ^[Yy]$ ]]; then
     fi
 fi
 
+read -p "Would you like to install ring-product-reporter? (y/N): " install_reporter || install_reporter=""
+
+if [[ "$install_reporter" =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "🔧 Installing/updating ring-product-reporter..."
+    if claude plugin install ring-product-reporter 2>&1; then
+        echo "✅ ring-product-reporter ready"
+    else
+        echo "⚠️  Failed to install ring-product-reporter (might not be published yet)"
+        install_reporter="n"
+    fi
+fi
+
 echo ""
 echo "================================================"
 echo "✨ Setup Complete!"
@@ -90,6 +103,11 @@ if [[ "$install_developers" =~ ^[Yy]$ ]]; then
     echo "  ✓ ring-developers (5 developer agents)"
 else
     echo "  ○ ring-developers (not installed)"
+fi
+if [[ "$install_reporter" =~ ^[Yy]$ ]]; then
+    echo "  ✓ ring-product-reporter (Product Reporter agents & skills)"
+else
+    echo "  ○ ring-product-reporter (not installed)"
 fi
 echo ""
 echo "Next steps:"

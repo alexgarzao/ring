@@ -35,6 +35,7 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
             # Update all installed plugins
             claude plugin install ring-default &> /dev/null || true
             claude plugin install ring-developers &> /dev/null || true
+            claude plugin install ring-product-reporter &> /dev/null || true
             
             update_message="🔄 **Ring marketplace updated to latest version!**\n⚠️  Please restart your Claude session (type 'clear' or restart CLI) for changes to take effect.\n\n"
         fi
@@ -43,6 +44,7 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
         claude plugin marketplace update ring &> /dev/null || true
         claude plugin install ring-default &> /dev/null || true
         claude plugin install ring-developers &> /dev/null || true
+        claude plugin install ring-product-reporter &> /dev/null || true
     fi
 fi
 
