@@ -97,19 +97,31 @@ Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates find
 
 ### Installation as Claude Code Plugin
 
-1. **Install from the Claude Code Plugin Marketplace** (Recommended)
+1. **Quick Install Script** (Easiest)
+
+   **Linux/macOS/Git Bash:**
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.sh | bash
+   ```
+
+   **Windows PowerShell:**
+   ```powershell
+   irm https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.ps1 | iex
+   ```
+
+2. **Install from the Claude Code Plugin Marketplace** (Recommended)
    - Open Claude Code
    - Go to Settings → Plugins
    - Search for "ring"
    - Click Install
 
-2. **Manual Installation**
+3. **Manual Installation**
    ```bash
-   # Clone to your Claude plugins directory
-   git clone https://github.com/lerianstudio/ring.git ~/.claude/plugins/ring
-   
+   # Clone the marketplace repository
+   git clone https://github.com/lerianstudio/ring.git ~/ring
+
    # Install Python dependencies (optional, but recommended)
-   cd ~/.claude/plugins/ring
+   cd ~/ring
    pip install -r requirements.txt
    ```
    

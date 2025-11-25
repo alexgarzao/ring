@@ -14,6 +14,19 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
+## Installation
+
+```bash
+# Quick install via script (Linux/macOS/Git Bash)
+curl -fsSL https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.sh | bash
+
+# Quick install via script (Windows PowerShell)
+irm https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.ps1 | iex
+
+# Or manual clone (marketplace with multiple plugins)
+git clone https://github.com/lerianstudio/ring.git ~/ring
+```
+
 ## Architecture
 
 **Monorepo Structure** - Marketplace with multiple plugin collections:
