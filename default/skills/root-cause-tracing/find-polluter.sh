@@ -19,14 +19,25 @@ echo "Test pattern: $TEST_PATTERN"
 echo ""
 
 # Get list of test files
-TEST_FILES=$(find . -path "$TEST_PATTERN" | sort)
+# Extract filename pattern from glob (e.g., "src/**/*.test.ts" -> "*.test.ts")
+# Note: -name only matches the filename, not full path. For complex path patterns,
+# consider using: find . -type f -name "*.test.ts" | grep -E "src/.*"
+FILENAME_PATTERN="${TEST_PATTERN##*/}"
+TEST_FILES=$(find . -type f -name "$FILENAME_PATTERN" 2>/dev/null | sort)
+
+if [ -z "$TEST_FILES" ]; then
+  echo "No test files found matching pattern: $TEST_PATTERN"
+  echo "Filename pattern extracted: $FILENAME_PATTERN"
+  exit 1
+fi
+
 TOTAL=$(echo "$TEST_FILES" | wc -l | tr -d ' ')
 
 echo "Found $TOTAL test files"
 echo ""
 
 COUNT=0
-for TEST_FILE in $TEST_FILES; do
+while IFS= read -r TEST_FILE; do
   COUNT=$((COUNT + 1))
 
   # Skip if pollution already exists
@@ -56,7 +67,7 @@ for TEST_FILE in $TEST_FILES; do
     echo "  cat $TEST_FILE         # Review test code"
     exit 1
   fi
-done
+done <<< "$TEST_FILES"
 
 echo ""
 echo "✅ No polluter found - all tests clean!"

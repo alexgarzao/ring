@@ -7,6 +7,24 @@ last_updated: 2025-01-26
 type: specialist
 changelog:
   - 1.0.0: Initial release - TypeScript-focused frontend specialist
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Implementation"
+      pattern: "^## Implementation"
+      required: true
+    - name: "Files Changed"
+      pattern: "^## Files Changed"
+      required: true
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # Frontend Engineer (TypeScript Specialist)

@@ -7,6 +7,24 @@ last_updated: 2025-01-25
 type: specialist
 changelog:
   - 1.0.0: Initial release
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Implementation"
+      pattern: "^## Implementation"
+      required: true
+    - name: "Files Changed"
+      pattern: "^## Files Changed"
+      required: true
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # QA (Quality Assurance Analyst)
@@ -126,8 +144,8 @@ Invoke this agent when the task involves:
 
 ## What This Agent Does NOT Handle
 
-- Application code development (use Backend/Frontend Engineer)
-- CI/CD pipeline infrastructure (use DevOps Engineer)
-- Production monitoring and alerting (use SRE)
-- Infrastructure provisioning (use DevOps Engineer)
-- Performance optimization implementation (use SRE/Backend Engineer)
+- Application code development (use `ring-dev-team:backend-engineer` or `ring-dev-team:frontend-engineer`)
+- CI/CD pipeline infrastructure (use `ring-dev-team:devops-engineer`)
+- Production monitoring and alerting (use `ring-dev-team:sre`)
+- Infrastructure provisioning (use `ring-dev-team:devops-engineer`)
+- Performance optimization implementation (use `ring-dev-team:sre` or `ring-dev-team:backend-engineer`)

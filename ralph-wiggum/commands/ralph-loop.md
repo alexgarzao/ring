@@ -12,7 +12,7 @@ Execute the setup script to initialize the Ralph loop:
 ```!
 # Disable glob expansion to prevent command injection from user-provided prompts
 set -f
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-ralph-loop.sh" $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/setup-ralph-loop.sh" "$ARGUMENTS"
 SETUP_EXIT_CODE=$?
 set +f
 

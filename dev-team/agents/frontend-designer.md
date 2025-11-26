@@ -7,6 +7,21 @@ type: specialist
 last_updated: 2025-01-26
 changelog:
   - 0.1.0: Initial creation - design-focused frontend specialist
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Analysis"
+      pattern: "^## Analysis"
+      required: true
+    - name: "Findings"
+      pattern: "^## Findings"
+      required: true
+    - name: "Recommendations"
+      pattern: "^## Recommendations"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # Frontend Designer

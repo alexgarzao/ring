@@ -7,6 +7,24 @@ last_updated: 2025-01-25
 type: specialist
 changelog:
   - 1.0.0: Initial release
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Implementation"
+      pattern: "^## Implementation"
+      required: true
+    - name: "Files Changed"
+      pattern: "^## Files Changed"
+      required: true
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # DevOps Engineer
@@ -167,8 +185,8 @@ Invoke this agent when the task involves:
 
 ## What This Agent Does NOT Handle
 
-- Application code development (use Backend/Frontend Engineer)
-- Production monitoring and incident response (use SRE)
-- Test case design and execution (use QA Analyst)
-- Application performance optimization (use SRE)
-- Business logic implementation (use Backend Engineer Golang)
+- Application code development (use `ring-dev-team:backend-engineer` or `ring-dev-team:frontend-engineer`)
+- Production monitoring and incident response (use `ring-dev-team:sre`)
+- Test case design and execution (use `ring-dev-team:qa-analyst`)
+- Application performance optimization (use `ring-dev-team:sre`)
+- Business logic implementation (use `ring-dev-team:backend-engineer-golang`)

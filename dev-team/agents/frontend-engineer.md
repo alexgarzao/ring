@@ -7,6 +7,24 @@ last_updated: 2025-01-25
 type: specialist
 changelog:
   - 1.0.0: Initial release
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Implementation"
+      pattern: "^## Implementation"
+      required: true
+    - name: "Files Changed"
+      pattern: "^## Files Changed"
+      required: true
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # Frontend Engineer
@@ -95,8 +113,8 @@ Invoke this agent when the task involves:
 
 ## What This Agent Does NOT Handle
 
-- Backend API development (use Backend Engineer Golang)
-- Docker/CI-CD configuration (use DevOps Engineer)
-- Server infrastructure and monitoring (use SRE)
-- API contract testing and load testing (use QA Analyst)
-- Database design and migrations (use Backend Engineer Golang)
+- Backend API development (use `ring-dev-team:backend-engineer` or language-specific variant)
+- Docker/CI-CD configuration (use `ring-dev-team:devops-engineer`)
+- Server infrastructure and monitoring (use `ring-dev-team:sre`)
+- API contract testing and load testing (use `ring-dev-team:qa-analyst`)
+- Database design and migrations (use `ring-dev-team:backend-engineer`)

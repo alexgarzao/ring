@@ -274,6 +274,72 @@ Task.parallel([
 - Commands: `/ring:{action}` prefix
 - Hooks: `{event}-{purpose}.sh` format
 
+### Agent Output Schema Archetypes
+
+Agents use two standard output schema patterns based on their purpose:
+
+**Implementation Schema** (for agents that write code/configs):
+```yaml
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Implementation"
+      pattern: "^## Implementation"
+      required: true
+    - name: "Files Changed"
+      pattern: "^## Files Changed"
+      required: true
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
+```
+
+**Used by:** All backend engineers, frontend engineers, devops-engineer, qa-analyst, sre, finops-automation
+
+**Analysis Schema** (for agents that analyze and recommend):
+```yaml
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Analysis"
+      pattern: "^## Analysis"
+      required: true
+    - name: "Findings"
+      pattern: "^## Findings"
+      required: true
+    - name: "Recommendations"
+      pattern: "^## Recommendations"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
+```
+
+**Used by:** frontend-designer, finops-analyzer
+
+**Reviewer Schema** (for code review agents):
+```yaml
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "VERDICT"
+      pattern: "^## VERDICT: (PASS|FAIL|NEEDS_DISCUSSION)$"
+      required: true
+    - name: "Summary"
+    - name: "Issues Found"
+    - name: "Critical|High|Medium|Low Issues" (categorized)
+    - name: "What Was Done Well"
+    - name: "Next Steps"
+```
+
+**Used by:** code-reviewer, business-logic-reviewer, security-reviewer
+
 ### Anti-Patterns to Avoid
 1. **Never skip using-ring** - It's mandatory, not optional
 2. **Never run reviewers sequentially** - Always dispatch in parallel

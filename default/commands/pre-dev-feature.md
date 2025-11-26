@@ -69,10 +69,10 @@ mkdir -p docs/pre-dev/<feature-name>
    - Security architecture
    - **NO specific tech products** (use "Relational Database" not "PostgreSQL")
 4. Save to: `docs/pre-dev/<feature-name>/trd.md`
-5. Run Gate 3 validation checklist
+5. Run Gate 2 validation checklist
 6. Get human approval before proceeding
 
-**Gate 3 Pass Criteria:**
+**Gate 2 Pass Criteria:**
 - [ ] All PRD features mapped to components
 - [ ] Component boundaries are clear
 - [ ] Interfaces are technology-agnostic
@@ -92,10 +92,10 @@ mkdir -p docs/pre-dev/<feature-name>
    - Dependencies mapped
    - Testing strategy per task
 5. Save to: `docs/pre-dev/<feature-name>/tasks.md`
-6. Run Gate 7 validation checklist
+6. Run Gate 3 validation checklist
 7. Get human approval
 
-**Gate 7 Pass Criteria:**
+**Gate 3 Pass Criteria:**
 - [ ] Every task delivers user value
 - [ ] No task larger than 2 weeks
 - [ ] Dependencies are clear
@@ -110,15 +110,15 @@ Report to human:
 
 Artifacts created:
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
-- docs/pre-dev/<feature-name>/trd.md (Gate 3)
-- docs/pre-dev/<feature-name>/tasks.md (Gate 7)
+- docs/pre-dev/<feature-name>/trd.md (Gate 2)
+- docs/pre-dev/<feature-name>/tasks.md (Gate 3)
 
-Skipped gates (small track):
-- Gate 2: Feature Map (features simple enough to map directly)
-- Gate 4: API Design (no new APIs)
-- Gate 5: Data Model (no new data structures)
-- Gate 6: Dependency Map (no new dependencies)
-- Gate 8: Subtask Creation (tasks small enough already)
+Skipped from full workflow:
+- Feature Map (features simple enough to map directly)
+- API Design (no new APIs)
+- Data Model (no new data structures)
+- Dependency Map (no new dependencies)
+- Subtask Creation (tasks small enough already)
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/

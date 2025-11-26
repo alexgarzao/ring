@@ -8,6 +8,21 @@ color: blue
 last_updated: 2025-01-25
 changelog:
   - 1.0.0: Initial release
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Analysis"
+      pattern: "^## Analysis"
+      required: true
+    - name: "Findings"
+      pattern: "^## Findings"
+      required: true
+    - name: "Recommendations"
+      pattern: "^## Recommendations"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # FinOps Regulatory Analyzer

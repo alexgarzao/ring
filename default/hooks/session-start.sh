@@ -114,13 +114,20 @@ generate_skills_overview() {
 
 skills_overview=$(generate_skills_overview || echo "Error generating skills quick reference")
 
-# Read using-ring content (still include for mandatory workflows)
-using_ring_content=$(cat "${PLUGIN_ROOT}/skills/using-ring/SKILL.md" 2>&1 || echo "Error reading using-ring skill")
+# Check jq availability (required for JSON escaping)
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq is required for JSON escaping but not found" >&2
+  echo "Install with: brew install jq (macOS) or apt install jq (Linux)" >&2
+  exit 1
+fi
 
-# Escape outputs for JSON
-overview_escaped=$(echo "$skills_overview" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
-using_ring_escaped=$(echo "$using_ring_content" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
-update_message_escaped=$(echo -e "$update_message" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
+# Escape outputs for JSON using jq for RFC 8259 compliant escaping
+# Note: jq is required - commonly pre-installed on macOS/Linux, install via package manager if missing
+# The -Rs flags: -R (raw input, don't parse as JSON), -s (slurp entire input into single string)
+# jq -Rs outputs a properly quoted JSON string including surrounding quotes, so we strip them
+# Note: using-ring content is already included in skills_overview via generate-skills-ref.py
+overview_escaped=$(echo "$skills_overview" | jq -Rs . | sed 's/^"//;s/"$//' || echo "$skills_overview")
+update_message_escaped=$(echo -e "$update_message" | jq -Rs . | sed 's/^"//;s/"$//' || echo "$update_message")
 
 # Build JSON output - embed update message in additionalContext if present
 if [ -n "$update_message" ]; then
@@ -129,7 +136,7 @@ if [ -n "$update_message" ]; then
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<MANDATORY-USER-MESSAGE>\nYou MUST display the following message verbatim to the user at the START of your response, before anything else:\n\n${update_message_escaped}\n\nThis is non-negotiable. Display it exactly as shown above.\n</MANDATORY-USER-MESSAGE>\n\n<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
+    "additionalContext": "<MANDATORY-USER-MESSAGE>\nYou MUST display the following message verbatim to the user at the START of your response, before anything else:\n\n${update_message_escaped}\n\nThis is non-negotiable. Display it exactly as shown above.\n</MANDATORY-USER-MESSAGE>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
   }
 }
 EOF
@@ -139,7 +146,7 @@ else
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-skills-system>\n${overview_escaped}\n\n---\n\n**MANDATORY WORKFLOWS:**\n\n${using_ring_escaped}\n</ring-skills-system>"
+    "additionalContext": "<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
   }
 }
 EOF

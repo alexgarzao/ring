@@ -7,6 +7,24 @@ last_updated: 2025-01-25
 type: specialist
 changelog:
   - 1.0.0: Initial release
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Implementation"
+      pattern: "^## Implementation"
+      required: true
+    - name: "Files Changed"
+      pattern: "^## Files Changed"
+      required: true
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+    - name: "Next Steps"
+      pattern: "^## Next Steps"
+      required: true
 ---
 
 # SRE (Site Reliability Engineer)
@@ -114,8 +132,8 @@ Invoke this agent when the task involves:
 
 ## What This Agent Does NOT Handle
 
-- Application feature development (use Backend/Frontend Engineer)
-- CI/CD pipeline creation (use DevOps Engineer)
-- Test case writing and execution (use QA Analyst)
-- Docker/Kubernetes initial setup (use DevOps Engineer)
-- Business logic implementation (use Backend Engineer Golang)
+- Application feature development (use `ring-dev-team:backend-engineer` or `ring-dev-team:frontend-engineer`)
+- CI/CD pipeline creation (use `ring-dev-team:devops-engineer`)
+- Test case writing and execution (use `ring-dev-team:qa-analyst`)
+- Docker/Kubernetes initial setup (use `ring-dev-team:devops-engineer`)
+- Business logic implementation (use `ring-dev-team:backend-engineer-golang`)
