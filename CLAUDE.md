@@ -4,13 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **4 active plugins** and **6 reserved plugin slots**, the skills are agent-agnostic and reusable across different AI systems.
+Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **5 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
-- **ring-default** (v0.6.1): 20 core skills, 8 slash commands, 5 specialized agents
-- **ring-developers** (v0.0.1): 5 specialized developer agents (Go backend, DevOps, Frontend, QA, SRE)
-- **ring-product-reporter** (v0.0.1): 5 regulatory skills, 2 FinOps agents
-- **ring-team-product** (v0.0.1): 8 product planning skills
+- **ring-default** (v0.7.6): 20 core skills, 8 slash commands, 5 specialized agents
+- **ring-dev-team** (v0.1.1): 2 developer skills, 10 specialized developer agents (Backend [generic], Backend Go, Backend TypeScript, Backend Python, DevOps, Frontend [generic], Frontend TypeScript, Frontend Designer, QA, SRE)
+- **ring-finops-team** (v0.2.1): 6 regulatory skills, 2 FinOps agents
+- **ring-pm-team** (v0.1.1): 9 product planning skills
+- **ralph-wiggum** (v0.1.0): 1 skill for iterative AI development loops using Stop hooks
+
+**Total: 38 skills (20 + 2 + 6 + 9 + 1) across 5 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -34,8 +37,8 @@ git clone https://github.com/lerianstudio/ring.git ~/ring
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (4 active plugins)
-├── default/                          # Core Ring plugin (ring-default v0.6.1)
+│   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
+├── default/                          # Core Ring plugin (ring-default v0.7.6)
 │   ├── skills/                       # 20 core skills
 │   │   ├── brainstorming/            # Socratic design refinement
 │   │   ├── test-driven-development/  # RED-GREEN-REFACTOR cycle enforcement
@@ -58,30 +61,47 @@ ring/                                  # Monorepo root
 │   │   ├── generate-skills-ref.py # Parse SKILL.md frontmatter
 │   │   └── claude-md-reminder.sh  # CLAUDE.md reminder on prompt submit
 │   └── docs/                      # Documentation
-├── developers/                    # Developer Agents plugin (ring-developers v0.0.1)
-│   └── agents/                    # 5 specialized developer agents
-│       ├── backend-engineer-golang.md  # Go backend specialist
-│       ├── devops-engineer.md          # DevOps infrastructure specialist
-│       ├── frontend-engineer.md        # React/Next.js specialist
-│       ├── qa-analyst.md               # Quality assurance specialist
-│       └── sre.md                      # Site reliability engineer
-├── product-reporter/              # FinOps plugin (ring-product-reporter v0.0.1)
-│   ├── skills/                    # 5 regulatory compliance skills
+├── dev-team/                      # Developer Agents plugin (ring-dev-team v0.1.1)
+│   ├── skills/                    # 2 developer skills
+│   │   ├── using-dev-team/        # Plugin introduction
+│   │   └── writing-code/          # Developer agent selection
+│   └── agents/                    # 10 specialized developer agents
+│       ├── backend-engineer.md             # Backend specialist (language agnostic)
+│       ├── backend-engineer-golang.md      # Go backend specialist
+│       ├── backend-engineer-typescript.md  # TypeScript/Node.js backend specialist
+│       ├── backend-engineer-python.md      # Python backend specialist
+│       ├── devops-engineer.md              # DevOps infrastructure specialist
+│       ├── frontend-engineer.md            # Frontend specialist (language agnostic)
+│       ├── frontend-engineer-typescript.md # TypeScript/React/Next.js specialist
+│       ├── frontend-designer.md            # Visual design specialist
+│       ├── qa-analyst.md                   # Quality assurance specialist
+│       └── sre.md                          # Site reliability engineer
+├── finops-team/                   # FinOps plugin (ring-finops-team v0.2.1)
+│   ├── skills/                    # 6 regulatory compliance skills
 │   │   └── regulatory-templates*/ # Brazilian regulatory compliance (BACEN, RFB)
 │   ├── agents/                    # 2 FinOps agents
 │   │   ├── finops-analyzer.md    # Financial operations analysis
 │   │   └── finops-automation.md  # FinOps automation
 │   └── docs/
 │       └── regulatory/           # Brazilian regulatory documentation
-├── team-product/                  # Product Planning plugin (ring-team-product v0.0.1)
-│   └── skills/                    # 8 pre-dev workflow skills
+├── pm-team/                  # Product Planning plugin (ring-pm-team v0.1.1)
+│   └── skills/                    # 9 pre-dev workflow skills
 │       └── pre-dev-*/            # PRD→TRD→API→Data→Tasks
-├── product-flowker/               # Product-specific skills (reserved)
-├── product-matcher/               # Product-specific skills (reserved)
-├── product-midaz/                 # Product-specific skills (reserved)
-├── product-tracer/                # Product-specific skills (reserved)
-├── team-ops/                      # Team-specific skills (reserved)
-└── team-pmm/                      # Team-specific skills (reserved)
+├── ralph-wiggum/                  # Iterative AI loops plugin (ralph-wiggum v0.1.0)
+│   ├── commands/                  # 3 slash commands
+│   │   ├── ralph-loop.md         # Start iterative loop
+│   │   ├── cancel-ralph.md       # Cancel active loop
+│   │   └── help.md               # Technique guide
+│   ├── hooks/                     # Session and Stop hooks
+│   │   ├── hooks.json            # Hook configuration
+│   │   ├── session-start.sh      # Context injection
+│   │   └── stop-hook.sh          # Loop control via Stop hook
+│   ├── scripts/                   # Setup utilities
+│   │   └── setup-ralph-loop.sh   # State file creation
+│   └── skills/                    # Plugin skill
+│       └── using-ralph-wiggum/   # Ralph technique guide
+├── ops-team/                      # Team-specific skills (reserved)
+└── pmm-team/                      # Team-specific skills (reserved)
 ```
 
 ## Common Commands
@@ -156,23 +176,29 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Always injected, always mandatory
 - Located: `default/skills/using-ring/SKILL.md`
 
-**Ring Developers Plugin:**
-- `using-developers` → 5 specialist developer agents
-- Auto-loads when ring-developers plugin is enabled
-- Located: `developers/skills/using-developers/SKILL.md`
-- Agents: backend-engineer-golang, devops-engineer, frontend-engineer, qa-analyst, sre
+**Ring Dev Team Plugin:**
+- `using-dev-team` → 10 specialist developer agents
+- Auto-loads when ring-dev-team plugin is enabled
+- Located: `dev-team/skills/using-dev-team/SKILL.md`
+- Agents: backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python, devops-engineer, frontend-engineer, frontend-engineer-typescript, frontend-designer, qa-analyst, sre
 
-**Ring Product Reporter Plugin:**
-- `using-product-reporter` → 2 FinOps agents for Brazilian compliance
-- Auto-loads when ring-product-reporter plugin is enabled
-- Located: `product-reporter/skills/using-product-reporter/SKILL.md`
+**Ring FinOps Team Plugin:**
+- `using-finops-team` → 2 FinOps agents for Brazilian compliance
+- Auto-loads when ring-finops-team plugin is enabled
+- Located: `finops-team/skills/using-finops-team/SKILL.md`
 - Agents: finops-analyzer (compliance analysis), finops-automation (template generation)
 
-**Ring Team Product Plugin:**
-- `using-team-product` → Pre-dev workflow skills (8 gates)
-- Auto-loads when ring-team-product plugin is enabled
-- Located: `team-product/skills/using-team-product/SKILL.md`
+**Ring PM Team Plugin:**
+- `using-pm-team` → Pre-dev workflow skills (8 gates)
+- Auto-loads when ring-pm-team plugin is enabled
+- Located: `pm-team/skills/using-pm-team/SKILL.md`
 - Skills: 8 pre-dev gates for feature planning
+
+**Ralph Wiggum Plugin:**
+- `using-ralph-wiggum` → Iterative AI development loops
+- Auto-loads when ralph-wiggum plugin is enabled
+- Located: `ralph-wiggum/skills/using-ralph-wiggum/SKILL.md`
+- Commands: ralph-loop, cancel-ralph, help
 
 **Hook Configuration:**
 - Each plugin has: `{plugin}/hooks/hooks.json` + `{plugin}/hooks/session-start.sh`
@@ -188,17 +214,17 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 ### Pre-Dev Workflow
 ```
 Simple (<2 days): /ring:pre-dev-feature
-├── Gate 1: default/skills/pre-dev-prd-creation → docs/pre-dev/feature/PRD.md
-├── Gate 2: default/skills/pre-dev-trd-creation → docs/pre-dev/feature/TRD.md
-└── Gate 3: default/skills/pre-dev-task-breakdown → docs/pre-dev/feature/tasks.md
+├── Gate 1: pm-team/skills/pre-dev-prd-creation → docs/pre-dev/feature/PRD.md
+├── Gate 2: pm-team/skills/pre-dev-trd-creation → docs/pre-dev/feature/TRD.md
+└── Gate 3: pm-team/skills/pre-dev-task-breakdown → docs/pre-dev/feature/tasks.md
 
 Complex (≥2 days): /ring:pre-dev-full
 ├── Gates 1-3: Same as above
-├── Gate 4: default/skills/pre-dev-api-design → docs/pre-dev/feature/API.md
-├── Gate 5: default/skills/pre-dev-data-model → docs/pre-dev/feature/data-model.md
-├── Gate 6: default/skills/pre-dev-dependency-map → docs/pre-dev/feature/dependencies.md
-├── Gate 7: default/skills/pre-dev-task-breakdown → docs/pre-dev/feature/tasks.md
-└── Gate 8: default/skills/pre-dev-subtask-creation → docs/pre-dev/feature/subtasks.md
+├── Gate 4: pm-team/skills/pre-dev-api-design → docs/pre-dev/feature/API.md
+├── Gate 5: pm-team/skills/pre-dev-data-model → docs/pre-dev/feature/data-model.md
+├── Gate 6: pm-team/skills/pre-dev-dependency-map → docs/pre-dev/feature/dependencies.md
+├── Gate 7: pm-team/skills/pre-dev-task-breakdown → docs/pre-dev/feature/tasks.md
+└── Gate 8: pm-team/skills/pre-dev-subtask-creation → docs/pre-dev/feature/subtasks.md
 ```
 
 ### Parallel Code Review
@@ -224,7 +250,7 @@ Task.parallel([
 - **Hook Scripts**: Must output JSON with success/error fields
 - **Shared Patterns**: Reference via `default/skills/shared-patterns/*.md`
 - **Documentation**: Artifacts in `docs/pre-dev/{feature}/*.md`
-- **Monorepo Layout**: Each plugin (`default/`, `product-*/`, `team-*/`) is self-contained
+- **Monorepo Layout**: Each plugin (`default/`, `team-*/`, `dev-team/`, `ralph-wiggum/`) is self-contained
 
 ### Naming Conventions
 - Skills: `kebab-case` matching directory name
@@ -267,12 +293,13 @@ The system loads at SessionStart (from `default/` plugin):
 
 **Monorepo Context:**
 - Repository: Monorepo marketplace with multiple plugin collections
-- Active plugins: 4 (`ring-default` v0.6.1, `ring-developers` v0.0.1, `ring-product-reporter` v0.0.1, `ring-team-product` v0.0.1)
-- Core plugin: `default/` (20 skills, 4 agents, 8 commands)
-- Developer agents plugin: `developers/` (5 specialized developer agents)
-- FinOps plugin: `product-reporter/` (5 skills, 2 agents)
-- Product planning plugin: `team-product/` (8 skills)
-- Reserved plugins: `product-*/` (4 directories), `team-*/` (2 directories)
+- Active plugins: 5 (`ring-default` v0.7.6, `ring-dev-team` v0.1.1, `ring-finops-team` v0.2.1, `ring-pm-team` v0.1.1, `ralph-wiggum` v0.1.0)
+- Core plugin: `default/` (20 skills, 5 agents, 8 commands)
+- Developer agents plugin: `dev-team/` (10 specialized developer agents)
+- FinOps plugin: `finops-team/` (6 skills, 2 agents)
+- Product planning plugin: `pm-team/` (9 skills)
+- Ralph plugin: `ralph-wiggum/` (1 skill, 3 commands, Stop hook)
+- Reserved plugins: `team-*/` (2 directories)
 - Current git branch: `main`
 - Remote: `github.com/LerianStudio/ring`
 
@@ -290,15 +317,17 @@ Root Documentation:
 Plugin Hooks (inject context at session start):
 ├── default/hooks/session-start.sh        # Skills reference
 ├── default/hooks/claude-md-reminder.sh   # Agent reminder table
-├── developers/hooks/session-start.sh     # Developer agents
-├── product-reporter/hooks/session-start.sh # FinOps agents
-└── team-product/hooks/session-start.sh   # Pre-dev skills
+├── dev-team/hooks/session-start.sh     # Developer agents
+├── finops-team/hooks/session-start.sh    # FinOps agents
+├── pm-team/hooks/session-start.sh   # Pre-dev skills
+└── ralph-wiggum/hooks/session-start.sh   # Ralph loop commands
 
 Using-* Skills (plugin introductions):
 ├── default/skills/using-ring/SKILL.md           # Core workflow + agent list
-├── developers/skills/using-developers/SKILL.md  # Developer agents guide
-├── product-reporter/skills/using-product-reporter/SKILL.md # FinOps guide
-└── team-product/skills/using-team-product/SKILL.md # Pre-dev workflow
+├── dev-team/skills/using-dev-team/SKILL.md  # Developer agents guide
+├── finops-team/skills/using-finops-team/SKILL.md # FinOps guide
+├── pm-team/skills/using-pm-team/SKILL.md # Pre-dev workflow
+└── ralph-wiggum/skills/using-ralph-wiggum/SKILL.md # Ralph loops guide
 
 Agent Cross-References:
 └── default/agents/write-plan.md          # References reviewers

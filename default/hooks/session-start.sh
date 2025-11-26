@@ -34,8 +34,10 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
         if [ "$before_hash" != "$after_hash" ] && [ "$after_hash" != "none" ]; then
             # Update all installed plugins
             claude plugin install ring-default &> /dev/null || true
-            claude plugin install ring-developers &> /dev/null || true
-            claude plugin install ring-product-reporter &> /dev/null || true
+            claude plugin install ring-dev-team &> /dev/null || true
+            claude plugin install ring-finops-team &> /dev/null || true
+            claude plugin install ring-pm-team &> /dev/null || true
+            claude plugin install ralph-wiggum &> /dev/null || true
 
             update_message="┌───────────────────────────────────────────────────────────┐\n│  🔄 MARKETPLACE UPDATE - ACTION REQUIRED                  │\n├───────────────────────────────────────────────────────────┤\n│                                                           │\n│  Ring marketplace updated to latest version!              │\n│                                                           │\n│  ⚠ YOU MUST restart your session to load changes:           │\n│    • Type 'clear' in CLI, or                              │\n│    • Restart Claude Code entirely                         │\n│                                                           │\n│  New skills/agents available after restart.               │\n│                                                           │\n└───────────────────────────────────────────────────────────┘"
         fi
@@ -43,8 +45,10 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
         # Marketplace not found, just run updates silently without message
         claude plugin marketplace update ring &> /dev/null || true
         claude plugin install ring-default &> /dev/null || true
-        claude plugin install ring-developers &> /dev/null || true
-        claude plugin install ring-product-reporter &> /dev/null || true
+        claude plugin install ring-dev-team &> /dev/null || true
+        claude plugin install ring-finops-team &> /dev/null || true
+        claude plugin install ring-pm-team &> /dev/null || true
+        claude plugin install ralph-wiggum &> /dev/null || true
     fi
 fi
 
@@ -57,10 +61,10 @@ if command -v python3 &> /dev/null; then
             if command -v "$pip_cmd" &> /dev/null; then
                 # Strategy: Try --user first, then --user --break-system-packages
                 # (--break-system-packages only exists in pip 22.1+, needed for PEP 668)
-                if "$pip_cmd" install --quiet --user PyYAML &> /dev/null 2>&1; then
+                if "$pip_cmd" install --quiet --user 'PyYAML>=6.0,<7.0' &> /dev/null 2>&1; then
                     echo "PyYAML installed successfully" >&2
                     break
-                elif "$pip_cmd" install --quiet --user --break-system-packages PyYAML &> /dev/null 2>&1; then
+                elif "$pip_cmd" install --quiet --user --break-system-packages 'PyYAML>=6.0,<7.0' &> /dev/null 2>&1; then
                     echo "PyYAML installed successfully (with --break-system-packages)" >&2
                     break
                 fi

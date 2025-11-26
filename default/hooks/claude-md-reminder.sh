@@ -65,7 +65,7 @@ for file_name in "${INSTRUCTION_FILES[@]}"; do
   while IFS= read -r -d '' file; do
     instruction_files+=("$file")
   done < <(find "$PROJECT_DIR" \
-    -type f \
+    -type f -not -type l \
     -name "$file_name" \
     -not -path "*/\.*" \
     -not -path "*/node_modules/*" \

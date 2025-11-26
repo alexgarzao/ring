@@ -105,21 +105,21 @@ Plans should specify which specialized agents to use for each task type. During 
 
 | Task Type | Agent Pattern | Examples |
 |-----------|---------------|----------|
-| Backend API/services | `ring-developers:backend-engineer-*` | `backend-engineer-golang`, `backend-engineer-python` |
-| Frontend UI/components | `ring-developers:frontend-engineer-*` | `frontend-engineer-react`, `frontend-engineer-vue` |
-| Infrastructure/CI/CD | `ring-developers:devops-engineer` | Single agent |
-| Testing strategy | `ring-developers:qa-analyst` | Single agent |
-| Monitoring/reliability | `ring-developers:sre` | Single agent |
+| Backend API/services | `ring-dev-team:backend-engineer-*` | `backend-engineer-golang`, `backend-engineer-python` |
+| Frontend UI/components | `ring-dev-team:frontend-engineer-*` | `frontend-engineer-react`, `frontend-engineer-vue` |
+| Infrastructure/CI/CD | `ring-dev-team:devops-engineer` | Single agent |
+| Testing strategy | `ring-dev-team:qa-analyst` | Single agent |
+| Monitoring/reliability | `ring-dev-team:sre` | Single agent |
 
 **Plan header should include:**
 ```markdown
 ## Recommended Agents
-- Backend tasks: `ring-developers:backend-engineer-golang` (or language variant)
-- Frontend tasks: `ring-developers:frontend-engineer-react` (or framework variant)
+- Backend tasks: `ring-dev-team:backend-engineer-golang` (or language variant)
+- Frontend tasks: `ring-dev-team:frontend-engineer-react` (or framework variant)
 - Fallback: `general-purpose` if specialized agent unavailable
 ```
 
-**Agent availability check:** If `ring-developers` plugin is not installed, execution falls back to `general-purpose` Task agents automatically.
+**Agent availability check:** If `ring-dev-team` plugin is not installed, execution falls back to `general-purpose` Task agents automatically.
 
 ## Execution Options Reference
 

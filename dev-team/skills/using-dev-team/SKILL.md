@@ -1,0 +1,443 @@
+---
+name: using-dev-team
+description: Specialist developer agents for backend (Go/TypeScript/Python), DevOps, frontend engineering (TypeScript), frontend design, QA, and SRE - dispatch when you need deep expertise
+when_to_use: When you need specialized developer expertise beyond general code review - use when implementing complex backend systems (language-agnostic or specific), infrastructure, frontend applications, distinctive UI design, test strategies, or reliability solutions
+---
+
+# Using Ring Developer Specialists
+
+The ring-dev-team plugin provides 10 specialized developer agents. Use them via `Task tool with subagent_type:`.
+
+**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+
+---
+
+## 10 Developer Specialists
+
+### 1. Backend Engineer (Language-Agnostic)
+**`ring-dev-team:backend-engineer`**
+
+**Specializations:**
+- Language-agnostic backend design (adapts to Go/TypeScript/Python/Java/Rust)
+- Microservices architecture patterns
+- API design (REST, GraphQL, gRPC)
+- Database modeling & optimization
+- Authentication & authorization
+- Message queues & event-driven systems
+- Caching strategies
+
+**Use When:**
+- You need backend expertise without language commitment
+- Designing multi-language systems
+- Comparing backend approaches across languages
+- Architecture that might use multiple languages
+- Language choice is not yet decided
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:backend-engineer"
+  model: "opus"
+  prompt: "Design a user authentication service, recommend the best language and explain trade-offs"
+```
+
+---
+
+### 2. Backend Engineer (Go)
+**`ring-dev-team:backend-engineer-golang`**
+
+**Specializations:**
+- Go microservices & API design
+- Database optimization (PostgreSQL, MongoDB)
+- Message queues (Kafka, RabbitMQ)
+- OAuth2, JWT, API security
+- gRPC and performance optimization
+
+**Use When:**
+- Designing Go services from scratch
+- Optimizing database queries
+- Implementing authentication/authorization
+- Troubleshooting concurrency issues
+- Reviewing Go backend architecture
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:backend-engineer-golang"
+  model: "opus"
+  prompt: "Design a Go service for user authentication with JWT and OAuth2 support"
+```
+
+---
+
+### 3. Backend Engineer (TypeScript/Node.js)
+**`ring-dev-team:backend-engineer-typescript`**
+
+**Specializations:**
+- TypeScript/Node.js backend services
+- Express, Fastify, NestJS frameworks
+- TypeScript type safety & ORM (Prisma, TypeORM)
+- Node.js performance optimization
+- Async/await patterns & error handling
+- REST & GraphQL APIs
+- Testing with Jest/Vitest
+
+**Use When:**
+- Building TypeScript/Node.js backends
+- Migrating from JavaScript to TypeScript
+- NestJS or Express service design
+- Node.js-specific optimization
+- Full-stack TypeScript projects
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:backend-engineer-typescript"
+  model: "opus"
+  prompt: "Design a NestJS service with Prisma ORM for user management"
+```
+
+---
+
+### 4. Backend Engineer (Python)
+**`ring-dev-team:backend-engineer-python`**
+
+**Specializations:**
+- Python backend services (FastAPI, Django, Flask)
+- SQLAlchemy & Django ORM
+- Async Python (asyncio, aiohttp)
+- Data processing & API integration
+- Python type hints & validation (Pydantic)
+- Celery for background tasks
+- Testing with pytest
+
+**Use When:**
+- Building Python backend services
+- FastAPI or Django projects
+- Data-heavy backend services
+- Machine learning API integration
+- Python-specific optimization
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:backend-engineer-python"
+  model: "opus"
+  prompt: "Design a FastAPI service with SQLAlchemy for e-commerce orders"
+```
+
+---
+
+### 5. DevOps Engineer
+**`ring-dev-team:devops-engineer`**
+
+**Specializations:**
+- CI/CD pipelines (GitHub Actions, GitLab CI)
+- Containerization (Docker, Docker Compose)
+- Kubernetes deployment & scaling
+- Infrastructure as Code (Terraform, Helm)
+- Cloud infrastructure setup
+
+**Use When:**
+- Setting up deployment pipelines
+- Containerizing applications
+- Managing Kubernetes clusters
+- Infrastructure provisioning
+- Automating infrastructure changes
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:devops-engineer"
+  model: "opus"
+  prompt: "Create a GitHub Actions CI/CD pipeline for Go service deployment to Kubernetes"
+```
+
+---
+
+### 6. Frontend Engineer
+**`ring-dev-team:frontend-engineer`**
+
+**Specializations:**
+- React/Next.js application architecture
+- TypeScript for type safety
+- State management (Redux, Zustand, Context)
+- Component design patterns
+- Form handling and validation
+- CSS-in-JS and styling solutions
+
+**Use When:**
+- Building React/Next.js applications
+- Implementing complex UI components
+- State management design
+- Performance optimization for frontend
+- Accessibility improvements
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:frontend-engineer"
+  model: "opus"
+  prompt: "Design a React dashboard with real-time data updates and TypeScript"
+```
+
+---
+
+### 7. Frontend Engineer (TypeScript)
+**`ring-dev-team:frontend-engineer-typescript`**
+
+**Specializations:**
+- TypeScript-first React/Next.js architecture
+- Advanced TypeScript patterns (generics, utilities, branded types)
+- Type-safe state management (Zustand, Redux Toolkit)
+- Type-safe API integration (tRPC, React Query)
+- Component library with strict TypeScript
+- Server Components with TypeScript (Next.js App Router)
+- Type-safe routing & form validation
+
+**Use When:**
+- Building TypeScript-first frontend projects
+- Requiring advanced type safety (e.g., branded types, strict inference)
+- Type-safe full-stack integration (tRPC)
+- Migrating JavaScript frontend to TypeScript
+- Complex TypeScript patterns (conditional types, mapped types)
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:frontend-engineer-typescript"
+  model: "opus"
+  prompt: "Design a type-safe React dashboard with tRPC, Zod validation, and branded types"
+```
+
+---
+
+### 8. Frontend Designer
+**`ring-dev-team:frontend-designer`**
+
+**Specializations:**
+- Distinctive, production-grade UI with high visual design quality
+- Bold typography with characterful, non-generic fonts
+- Cohesive color systems with dominant colors and sharp accents
+- High-impact animations and micro-interactions
+- Unexpected layouts with asymmetry, overlap, and spatial tension
+- Atmosphere through textures, gradients, shadows, and visual depth
+
+**Use When:**
+- Building interfaces where aesthetics matter (landing pages, portfolios, marketing)
+- Creating memorable, visually striking user experiences
+- Designing dashboards with distinctive visual identity
+- Implementing creative motion and interaction design
+- Establishing distinctive visual languages and design systems
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:frontend-designer"
+  model: "opus"
+  prompt: "Create a brutalist landing page for a tech startup with bold typography and unexpected layouts"
+```
+
+**Note:** Use frontend-designer for visual aesthetics and design excellence. Use frontend-engineer for complex state management, business logic, and application architecture.
+
+---
+
+### 9. QA Analyst
+**`ring-dev-team:qa-analyst`**
+
+**Specializations:**
+- Test strategy & planning
+- E2E test automation (Cypress, Playwright)
+- Unit test coverage analysis
+- API testing strategies
+- Performance testing
+- Compliance validation
+
+**Use When:**
+- Planning testing strategy for features
+- Setting up E2E test suites
+- Improving test coverage
+- API testing and validation
+- Quality gate design
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:qa-analyst"
+  model: "opus"
+  prompt: "Create a comprehensive E2E test strategy for user authentication flow"
+```
+
+---
+
+### 10. Site Reliability Engineer (SRE)
+**`ring-dev-team:sre`**
+
+**Specializations:**
+- Observability (monitoring, logging, tracing)
+- Alerting strategies & SLOs
+- Incident response automation
+- Performance optimization
+- Scalability analysis
+- System reliability patterns
+
+**Use When:**
+- Designing monitoring/observability systems
+- Setting up alerts and SLOs
+- Incident response planning
+- Performance bottleneck analysis
+- Reliability engineering
+
+**Example dispatch:**
+```
+Task tool:
+  subagent_type: "ring-dev-team:sre"
+  model: "opus"
+  prompt: "Design monitoring and alerting for a Go microservice with 99.9% SLO"
+```
+
+---
+
+## Decision Matrix: Which Specialist?
+
+| Need | Specialist | Use Case |
+|------|-----------|----------|
+| Backend (language-agnostic, multi-language) | Backend Engineer | Architecture without language commitment |
+| Go API, database, concurrency | Backend Engineer (Go) | Go-specific service architecture |
+| TypeScript/Node.js backend, NestJS, Express | Backend Engineer (TypeScript) | TypeScript backend services |
+| Python backend, FastAPI, Django, data | Backend Engineer (Python) | Python-specific backend services |
+| CI/CD, Docker, Kubernetes, IaC | DevOps Engineer | Deployment pipelines, infrastructure |
+| React, TypeScript, components, state | Frontend Engineer | General UI development, performance |
+| Advanced TypeScript, type-safe frontend, tRPC | Frontend Engineer (TypeScript) | Type-safe React/Next.js projects |
+| Visual design, typography, motion, aesthetics | Frontend Designer | Distinctive UI, design systems |
+| Test strategy, E2E, coverage | QA Analyst | Testing architecture, automation |
+| Monitoring, SLOs, performance, reliability | SRE | Observability, incident response |
+
+---
+
+## Choosing Between Generalist and Specialist Agents
+
+### Backend Engineers
+
+**Use `backend-engineer` (language-agnostic) when:**
+- Language hasn't been decided yet
+- Comparing multiple language options
+- Multi-language system architecture
+- You want recommendations on language choice
+
+**Use language-specific engineers when:**
+- Language is already decided
+- You need framework-specific guidance (NestJS, FastAPI, etc.)
+- Performance optimization for specific runtime
+- Language-specific patterns and idioms
+
+**Example decision:**
+- "Should I use Go or TypeScript?" → **backend-engineer** (agnostic)
+- "How do I optimize this Go service?" → **backend-engineer-golang**
+- "Design a FastAPI endpoint" → **backend-engineer-python**
+
+### Frontend Engineers
+
+**Use `frontend-engineer` (general) when:**
+- Standard React/Next.js projects
+- TypeScript is used but not central concern
+- Focus on component design, state, architecture
+- General frontend best practices
+
+**Use `frontend-engineer-typescript` when:**
+- TypeScript is central to project success
+- Need advanced type patterns (branded types, generics)
+- Type-safe API integration (tRPC, Zod)
+- Migrating JavaScript to TypeScript
+- Strict type safety requirements
+
+**Example decision:**
+- "Build a React dashboard" → **frontend-engineer**
+- "Build type-safe full-stack with tRPC" → **frontend-engineer-typescript**
+
+---
+
+## When to Use Developer Specialists vs General Review
+
+### Use Developer Specialists for:
+- ✅ **Deep technical expertise needed** – Architecture decisions, complex implementations
+- ✅ **Technology-specific guidance** – "How do I optimize this Go service?"
+- ✅ **Specialized domains** – Infrastructure, SRE, testing strategy
+- ✅ **Building from scratch** – New service, new pipeline, new testing framework
+
+### Use General Review Agents for:
+- ✅ **Code quality assessment** – Architecture, patterns, maintainability
+- ✅ **Correctness & edge cases** – Business logic verification
+- ✅ **Security review** – OWASP, auth, validation
+- ✅ **Post-implementation** – Before merging existing code
+
+**Both can be used together:** Get developer specialist guidance during design, then run general reviewers before merge.
+
+---
+
+## Dispatching Multiple Specialists
+
+If you need multiple specialists (e.g., backend engineer + DevOps engineer), dispatch in **parallel** (single message, multiple Task calls):
+
+```
+✅ CORRECT:
+Task #1: ring-dev-team:backend-engineer-golang
+Task #2: ring-dev-team:devops-engineer
+(Both run in parallel)
+
+❌ WRONG:
+Task #1: ring-dev-team:backend-engineer-golang
+(Wait for response)
+Task #2: ring-dev-team:devops-engineer
+(Sequential = 2x slower)
+```
+
+---
+
+## ORCHESTRATOR Principle
+
+Remember:
+- **You're the orchestrator** – Dispatch specialists, don't implement directly
+- **Don't read specialist docs yourself** – Dispatch to specialist, they know their domain
+- **Combine with using-ring principle** – Skills + Specialists = complete workflow
+
+### Good Example (ORCHESTRATOR):
+> "I need a Go service. Let me dispatch backend-engineer-golang to design it."
+
+### Bad Example (OPERATOR):
+> "I'll manually read Go best practices and design the service myself."
+
+---
+
+## Available in This Plugin
+
+**Agents:**
+- backend-engineer (language-agnostic)
+- backend-engineer-golang
+- backend-engineer-typescript
+- backend-engineer-python
+- devops-engineer
+- frontend-engineer
+- frontend-engineer-typescript
+- frontend-designer
+- qa-analyst
+- sre
+
+**Skills:**
+- using-dev-team (this skill)
+
+**Note:** If a skill documents a developer agent but you can't find it, you may not have ring-dev-team enabled. Check `.claude-plugin/marketplace.json` or install ring-dev-team plugin.
+
+---
+
+## Integration with Other Plugins
+
+- **using-ring** (default) – ORCHESTRATOR principle for ALL agents
+- **using-finops-team** – Financial/regulatory agents
+- **using-pm-team** – Pre-dev workflow agents
+
+Dispatch based on your need:
+- General code review → default plugin agents
+- Specific domain expertise → ring-dev-team agents
+- Regulatory compliance → ring-finops-team agents
+- Feature planning → ring-pm-team agents

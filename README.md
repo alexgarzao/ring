@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **4 active plugins** and **6 reserved plugin slots**, the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins**, the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 33 specialized skills** - From brainstorming to production deployment (20 core + 5 FinOps + 8 product planning)
-- **12 specialized agents** - 5 review/planning agents + 5 developer role agents + 2 FinOps agents
+- **Providing 38 specialized skills** - From brainstorming to production deployment (20 core + 2 dev-team + 9 product planning + 6 FinOps + 1 ralph-wiggum)
+- **17 specialized agents** - 5 review/planning agents + 10 developer role agents + 2 FinOps agents
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -76,16 +76,21 @@ Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates find
 - `ring-default:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
 - Use `/ring-default:review` command to orchestrate parallel review workflow
 
-**Developer Agents (developers plugin):**
-- `ring-developers:backend-engineer-golang` - Go backend specialist for financial systems
-- `ring-developers:devops-engineer` - DevOps infrastructure specialist
-- `ring-developers:frontend-engineer` - React/Next.js specialist
-- `ring-developers:qa-analyst` - Quality assurance specialist
-- `ring-developers:sre` - Site reliability engineer
+**Developer Agents (dev-team plugin):**
+- `ring-dev-team:backend-engineer` - Language-agnostic backend specialist (adapts to Go/TypeScript/Python/etc)
+- `ring-dev-team:backend-engineer-golang` - Go backend specialist for financial systems
+- `ring-dev-team:backend-engineer-typescript` - TypeScript/Node.js backend specialist (Express, NestJS, Fastify)
+- `ring-dev-team:backend-engineer-python` - Python backend specialist (FastAPI, Django, Flask)
+- `ring-dev-team:devops-engineer` - DevOps infrastructure specialist
+- `ring-dev-team:frontend-engineer` - React/Next.js specialist (JavaScript-first)
+- `ring-dev-team:frontend-engineer-typescript` - TypeScript-first React/Next.js specialist
+- `ring-dev-team:frontend-designer` - Visual design specialist
+- `ring-dev-team:qa-analyst` - Quality assurance specialist
+- `ring-dev-team:sre` - Site reliability engineer
 
-**FinOps Agents (product-reporter plugin):**
-- `ring-product-reporter:finops-analyzer` - Financial operations analysis
-- `ring-product-reporter:finops-automation` - FinOps template creation and automation
+**FinOps Agents (ring-finops-team plugin):**
+- `ring-finops-team:finops-analyzer` - Financial operations analysis
+- `ring-finops-team:finops-automation` - FinOps template creation and automation
 
 ## 🚀 Quick Start
 
@@ -166,9 +171,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 33 Skills (Across 3 Plugins)
+## 📚 All 38 Skills (Across 5 Plugins)
 
-### Core Skills (default plugin - 20 skills)
+### Core Skills (ring-default plugin - 20 skills)
 
 **Testing & Debugging (6):**
 - `test-driven-development` - Write test first, watch fail, minimal code
@@ -196,9 +201,16 @@ No "should work" → Only "does work" with proof
 - `testing-skills-with-subagents` - Skill validation
 - `testing-agents-with-subagents` - Subagent-specific testing
 
-### Product Planning Skills (team-product plugin - 8 skills)
+### Developer Skills (ring-dev-team plugin - 2 skills)
 
-**Pre-Development Workflow (8 gates):**
+**Code Development:**
+- `using-dev-team` - Introduction to developer specialist agents
+- `writing-code` - Best practices for code implementation
+
+### Product Planning Skills (ring-pm-team plugin - 9 skills)
+
+**Pre-Development Workflow (9 gates, includes using-pm-team):**
+- `using-pm-team` - Introduction to product planning workflow
 1. `pre-dev-prd-creation` - Business requirements (WHAT/WHY)
 2. `pre-dev-feature-map` - Feature relationships
 3. `pre-dev-trd-creation` - Technical architecture (HOW)
@@ -208,14 +220,20 @@ No "should work" → Only "does work" with proof
 7. `pre-dev-task-breakdown` - Work increments
 8. `pre-dev-subtask-creation` - Atomic units
 
-### FinOps & Regulatory Skills (product-reporter plugin - 5 skills)
+### FinOps & Regulatory Skills (ring-finops-team plugin - 6 skills)
 
-**Regulatory Templates (5):**
+**Regulatory Templates (6):**
+- `using-finops-team` - Introduction to FinOps team workflow
 - `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
 - `regulatory-templates-setup` - Template selection initialization
 - `regulatory-templates-gate1` - Compliance analysis and field mapping
 - `regulatory-templates-gate2` - Field mapping validation
 - `regulatory-templates-gate3` - Template file generation
+
+### Ralph Wiggum (ralph-wiggum plugin - 1 skill)
+
+**Iterative Development:**
+- `using-ralph-wiggum` - Ralph Wiggum iterative loop technique guide
 
 ## 🎮 Interactive Commands
 
@@ -224,6 +242,12 @@ Ring provides slash commands for common workflows:
 - `/ring:brainstorm` - Interactive design refinement using Socratic method
 - `/ring:write-plan` - Create detailed implementation plan with bite-sized tasks
 - `/ring:execute-plan` - Execute plan in batches with review checkpoints
+
+### Ralph Wiggum (Iterative AI Loops)
+
+- `/ralph-wiggum:ralph-loop "PROMPT" --max-iterations N --completion-promise "TEXT"` - Start autonomous iterative loop
+- `/ralph-wiggum:cancel-ralph` - Cancel active Ralph loop
+- `/ralph-wiggum:help` - Explain Ralph technique and examples
 
 ## 💡 Usage Examples
 
@@ -292,8 +316,8 @@ Claude: Dispatching all 3 reviewers in parallel...
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (4 active plugins)
-├── default/                          # Core Ring plugin (ring-default v0.6.1)
+│   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
+├── default/                          # Core Ring plugin (ring-default v0.7.6)
 │   ├── skills/                       # 20 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
@@ -311,14 +335,19 @@ ring/                                  # Monorepo root
 │   │   └── codebase-explorer.md    # Deep architecture analysis (Opus)
 │   ├── lib/                        # Infrastructure utilities (9 scripts)
 │   └── docs/                       # Documentation
-├── developers/                      # Developer Agents plugin (ring-developers v0.0.1)
-│   └── agents/                      # 5 specialized developer agents
+├── dev-team/                      # Developer Agents plugin (ring-dev-team v0.1.1)
+│   └── agents/                      # 10 specialized developer agents
+│       ├── backend-engineer.md         # Language-agnostic backend specialist
 │       ├── backend-engineer-golang.md  # Go backend specialist
+│       ├── backend-engineer-typescript.md # TypeScript/Node.js backend specialist
+│       ├── backend-engineer-python.md  # Python backend specialist
 │       ├── devops-engineer.md          # DevOps infrastructure
-│       ├── frontend-engineer.md        # React/Next.js specialist
+│       ├── frontend-engineer.md        # React/Next.js specialist (JavaScript-first)
+│       ├── frontend-engineer-typescript.md # TypeScript-first React/Next.js specialist
+│       ├── frontend-designer.md        # Visual design specialist
 │       ├── qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer
-├── product-reporter/                # FinOps plugin (ring-product-reporter v0.0.1)
+├── finops-team/                     # FinOps plugin (ring-finops-team v0.2.1)
 │   ├── skills/                      # 5 regulatory compliance skills
 │   │   └── regulatory-templates*/   # Brazilian regulatory compliance
 │   ├── agents/                      # 2 FinOps agents
@@ -326,15 +355,16 @@ ring/                                  # Monorepo root
 │   │   └── finops-automation.md    # FinOps automation
 │   └── docs/
 │       └── regulatory/             # Brazilian regulatory documentation
-├── team-product/                    # Product Planning plugin (ring-team-product v0.0.1)
+├── pm-team/                    # Product Planning plugin (ring-pm-team v0.1.1)
 │   └── skills/                      # 8 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
-├── product-flowker/                 # Product-specific skills (reserved)
-├── product-matcher/                 # Product-specific skills (reserved)
-├── product-midaz/                   # Product-specific skills (reserved)
-├── product-tracer/                  # Product-specific skills (reserved)
-├── team-ops/                        # Team-specific skills (reserved)
-└── team-pmm/                        # Team-specific skills (reserved)
+├── ralph-wiggum/                    # Iterative AI loops plugin (ralph-wiggum v0.1.0)
+│   ├── commands/                    # 3 slash commands (ralph-loop, cancel-ralph, help)
+│   ├── hooks/                       # SessionStart and Stop hooks
+│   ├── scripts/                     # Setup utilities
+│   └── skills/                      # using-ralph-wiggum skill
+├── ops-team/                        # Team-specific skills (reserved)
+└── pmm-team/                        # Team-specific skills (reserved)
 ```
 
 ## 🤝 Contributing

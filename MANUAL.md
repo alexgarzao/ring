@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 4 plugins with 34+ skills, 12 agents, and 8 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 38 skills, 17 agents, and 11 slash commands for enforcing proven software engineering practices.
 
 ---
 
@@ -12,8 +12,8 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                     (monorepo: .claude-plugin/marketplace.json)              │
 │                                                                              │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│  │  ring-default   │  │ ring-developers │  │ ring-product-   │  ...         │
-│  │    (plugin)     │  │    (plugin)     │  │    reporter     │              │
+│  │  ring-default   │  │ ring-dev-team │  │ ring-finops-    │  ...         │
+│  │    (plugin)     │  │    (plugin)     │  │    team         │              │
 │  │                 │  │                 │  │    (plugin)     │              │
 │  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │              │
 │  │ │   HOOKS     │ │  │ │   HOOKS     │ │  │ │   HOOKS     │ │              │
@@ -24,7 +24,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │              │
 │  │ │   SKILLS    │ │  │ │   SKILLS    │ │  │ │   SKILLS    │ │              │
 │  │ │ (internal)  │ │  │ │ (internal)  │ │  │ │ (internal)  │ │              │
-│  │ │ auto-invoke │ │  │ │ using-devs  │ │  │ │ using-prod  │ │              │
+│  │ │ auto-invoke │ │  │ │using-dev-tm │ │  │ │using-finops │ │              │
 │  │ └─────────────┘ │  │ └─────────────┘ │  │ └─────────────┘ │              │
 │  │                 │  │                 │  │                 │              │
 │  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │              │
@@ -110,11 +110,43 @@ All commands prefixed with `/ring-default:` (can use `/ring:` shorthand in conte
 | `/ring-default:review [files-or-paths]` | Dispatch 3 parallel code reviewers | `/ring-default:review src/auth/` |
 | `/ring-default:commit [message]` | Create git commit with AI trailers | `/ring-default:commit "fix(auth): improve token validation"` |
 
+### Iterative AI Development (ralph-wiggum)
+
+| Command | Use Case | Example |
+|---------|----------|---------|
+| `/ralph-wiggum:ralph-loop PROMPT [options]` | Start autonomous iterative loop | `/ralph-wiggum:ralph-loop "Build API. Output <promise>DONE</promise> when tests pass." --completion-promise "DONE" --max-iterations 20` |
+| `/ralph-wiggum:cancel-ralph` | Cancel active Ralph loop | `/ralph-wiggum:cancel-ralph` |
+| `/ralph-wiggum:help` | Explain Ralph technique | `/ralph-wiggum:help` |
+
+**Ralph options:** `--max-iterations N` (safety limit), `--completion-promise TEXT` (completion signal)
+
+**When Ralph Works Well:**
+
+| ✅ Good Fit | Why |
+|-------------|-----|
+| "Make all tests pass" | Clear, verifiable success criteria |
+| "Implement features from spec" | Additive work visible in files |
+| "Fix CI pipeline errors" | Objective pass/fail feedback |
+| Greenfield with clear requirements | Progress is self-evident |
+
+**When Ralph Struggles:**
+
+| ❌ Poor Fit | Why |
+|-------------|-----|
+| "Design a good API" | Requires judgment, no objective criteria |
+| "Refactor for maintainability" | Success is subjective |
+| "Debug intermittent failure" | May not reproduce consistently |
+| Exploratory/architectural work | Needs human course-correction |
+
+**Key insight:** Ralph excels at **verifiable, additive tasks** where progress is visible in files. It struggles with tasks requiring design judgment or strategic pivoting.
+
+**Session isolation:** Each Claude session gets its own Ralph state file (`ralph-loop-{session-id}.local.md`), so you can run multiple sessions concurrently.
+
 ---
 
 ## 💡 About Skills
 
-Skills (34+) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (38) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
 
@@ -143,26 +175,31 @@ Invoke via `Task tool with subagent_type: "..."`.
 | `ring-default:write-plan` | Generate implementation plans for zero-context execution | Opus |
 | `ring-default:codebase-explorer` | Deep architecture analysis (vs `Explore` for speed) | Opus |
 
-### Developer Specialists (ring-developers)
+### Developer Specialists (ring-dev-team)
 
 Use when you need expert depth in specific domains:
 
 | Agent | Specialization | Technologies |
 |-------|----------------|--------------|
-| `ring-developers:backend-engineer-golang` | Go microservices & APIs | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2 |
-| `ring-developers:devops-engineer` | Infrastructure & CI/CD | Docker, Kubernetes, Terraform, GitHub Actions |
-| `ring-developers:frontend-engineer` | React/Next.js dashboards | React, TypeScript, Tailwind, state management |
-| `ring-developers:qa-analyst` | Quality assurance | Test strategy, automation, coverage |
-| `ring-developers:sre` | Site reliability & ops | Monitoring, alerting, incident response, SLOs |
+| `ring-dev-team:backend-engineer` | Language-agnostic backend design | API architecture, system design, microservices patterns |
+| `ring-dev-team:backend-engineer-golang` | Go microservices & APIs | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2 |
+| `ring-dev-team:backend-engineer-typescript` | TypeScript/Node.js backend | Express, NestJS, Prisma, TypeORM, GraphQL |
+| `ring-dev-team:backend-engineer-python` | Python backend & data services | FastAPI, Django, SQLAlchemy, Celery, data pipelines |
+| `ring-dev-team:devops-engineer` | Infrastructure & CI/CD | Docker, Kubernetes, Terraform, GitHub Actions |
+| `ring-dev-team:frontend-engineer` | React/Next.js dashboards | React, TypeScript, Tailwind, state management |
+| `ring-dev-team:frontend-engineer-typescript` | TypeScript frontend specialist | React, Next.js, Vue, type-safe state management |
+| `ring-dev-team:frontend-designer` | Visual design & aesthetics | Typography, motion, CSS, distinctive UI |
+| `ring-dev-team:qa-analyst` | Quality assurance | Test strategy, automation, coverage |
+| `ring-dev-team:sre` | Site reliability & ops | Monitoring, alerting, incident response, SLOs |
 
-### Regulatory & FinOps (ring-product-reporter)
+### Regulatory & FinOps (ring-finops-team)
 
 For Brazilian financial compliance workflows:
 
 | Agent | Purpose | Use For |
 |-------|---------|---------|
-| `ring-product-reporter:finops-analyzer` | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
-| `ring-product-reporter:finops-automation` | Template generation | Create .tpl files (Gate 3) |
+| `ring-finops-team:finops-analyzer` | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
+| `ring-finops-team:finops-automation` | Template generation | Create .tpl files (Gate 3) |
 
 ---
 
@@ -231,11 +268,16 @@ These enforce quality standards:
 | Need | Agent to Use |
 |------|-------------|
 | General code quality review | 3 parallel reviewers via `/ring-default:review` |
-| Go backend expertise | `ring-developers:backend-engineer-golang` |
-| Infrastructure/DevOps | `ring-developers:devops-engineer` |
-| React/Next.js frontend | `ring-developers:frontend-engineer` |
+| Language-agnostic backend design | `ring-dev-team:backend-engineer` |
+| Go backend expertise | `ring-dev-team:backend-engineer-golang` |
+| TypeScript/Node.js backend | `ring-dev-team:backend-engineer-typescript` |
+| Python backend & data services | `ring-dev-team:backend-engineer-python` |
+| Infrastructure/DevOps | `ring-dev-team:devops-engineer` |
+| React/Next.js frontend | `ring-dev-team:frontend-engineer` |
+| TypeScript frontend specialist | `ring-dev-team:frontend-engineer-typescript` |
+| Visual design & aesthetics | `ring-dev-team:frontend-designer` |
 | Deep codebase analysis | `ring-default:codebase-explorer` |
-| Regulatory compliance | `ring-product-reporter:finops-analyzer` |
+| Regulatory compliance | `ring-finops-team:finops-analyzer` |
 
 ---
 
@@ -244,7 +286,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 34+ skills are auto-discovered and available
+2. All 38 skills are auto-discovered and available
 3. `using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

@@ -81,16 +81,16 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 
 | Task Type | Preferred Agent | Fallback |
 |-----------|-----------------|----------|
-| Backend (Go) | `ring-developers:backend-engineer-golang` | `general-purpose` |
-| Backend (Python) | `ring-developers:backend-engineer-python` | `general-purpose` |
-| Backend (other) | `ring-developers:backend-engineer-*` | `general-purpose` |
-| Frontend (React) | `ring-developers:frontend-engineer-react` | `general-purpose` |
-| Frontend (other) | `ring-developers:frontend-engineer-*` | `general-purpose` |
-| Infrastructure | `ring-developers:devops-engineer` | `general-purpose` |
-| Testing | `ring-developers:qa-analyst` | `general-purpose` |
-| Reliability | `ring-developers:sre` | `general-purpose` |
+| Backend (Go) | `ring-dev-team:backend-engineer-golang` | `general-purpose` |
+| Backend (Python) | `ring-dev-team:backend-engineer-python` | `general-purpose` |
+| Backend (other) | `ring-dev-team:backend-engineer-*` | `general-purpose` |
+| Frontend (React) | `ring-dev-team:frontend-engineer-react` | `general-purpose` |
+| Frontend (other) | `ring-dev-team:frontend-engineer-*` | `general-purpose` |
+| Infrastructure | `ring-dev-team:devops-engineer` | `general-purpose` |
+| Testing | `ring-dev-team:qa-analyst` | `general-purpose` |
+| Reliability | `ring-dev-team:sre` | `general-purpose` |
 
-**Note:** If plan specifies a recommended agent in its header, use that. If `ring-developers` plugin is unavailable, fall back to `general-purpose`.
+**Note:** If plan specifies a recommended agent in its header, use that. If `ring-dev-team` plugin is unavailable, fall back to `general-purpose`.
 
 For each task:
 1. Mark as in_progress
@@ -175,7 +175,7 @@ After all tasks complete and verified:
 ## Remember
 - Review plan critically first
 - **MANDATORY: Use `AskUserQuestion` for execution mode** - NO exceptions, even if user says "don't ask"
-- **Use specialized agents:** Prefer `ring-developers:*` agents over `general-purpose` when available
+- **Use specialized agents:** Prefer `ring-dev-team:*` agents over `general-purpose` when available
 - Follow plan steps exactly
 - Don't skip verifications
 - Run code review after each batch (all 3 reviewers in parallel)

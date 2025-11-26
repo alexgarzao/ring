@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **4 active plugins** and **6 reserved plugin slots**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **5 active plugins**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices.
 
 ### Architecture Philosophy
 
@@ -32,18 +32,18 @@ Ring operates on three core principles:
 │  ┌───────────────────────────────────────────────────────────────────────────┐  │
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
-│  │  │ ring-default (v0.6.1)│  │ ring-developers      │                       │  │
-│  │  │ Skills(20) Agents(4) │  │ Agents(5)            │                       │  │
+│  │  │ ring-default (v0.7.6)│  │ ring-dev-team      │                       │  │
+│  │  │ Skills(20) Agents(5) │  │ Agents(10)           │                       │  │
 │  │  │ Cmds(8) Hooks/Lib    │  │                      │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
-│  │  │ ring-product-reporter│  │ ring-team-product    │                       │  │
+│  │  │ ring-finops-team     │  │ ring-pm-team         │                       │  │
 │  │  │ Skills(5) Agents(2)  │  │ Skills(8)            │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
-│  │                                                                            │  │
-│  │  ┌────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │   Reserved Plugins (6): 4 product-*, 2 team-*                      │   │  │
-│  │  └────────────────────────────────────────────────────────────────────┘   │  │
+│  │  ┌──────────────────────┐                                                 │  │
+│  │  │ ralph-wiggum (v0.1.0)│                                                 │  │
+│  │  │ Skills(1) Cmds(3)    │                                                 │  │
+│  │  └──────────────────────┘                                                 │  │
 │  └───────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                  │
 │  Native Tools: Skill, Task, TodoWrite, SlashCommand                             │
@@ -57,31 +57,23 @@ Ring is organized as a monorepo marketplace with multiple plugin collections:
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin registry (4 active plugins)
-├── default/                          # Core plugin: ring-default v0.6.1
-├── developers/                       # Developer agents: ring-developers v0.0.1
-├── product-reporter/                 # FinOps & regulatory: ring-product-reporter v0.0.1
-├── team-product/                     # Product planning: ring-team-product v0.0.1
-├── product-*/                        # 4 reserved product-specific slots
-└── team-*/                           # 2 reserved team-specific slots
+│   └── marketplace.json              # Multi-plugin registry (5 active plugins)
+├── default/                          # Core plugin: ring-default v0.7.6
+├── dev-team/                         # Developer agents: ring-dev-team v0.1.1
+├── finops-team/                      # FinOps & regulatory: ring-finops-team v0.2.1
+├── pm-team/                          # Product planning: ring-pm-team v0.1.1
+└── ralph-wiggum/                     # Iterative AI loops: ralph-wiggum v0.1.0
 ```
 
 ### Active Plugins
 
 | Plugin | Version | Description | Components |
 |--------|---------|-------------|------------|
-| **ring-default** | 0.6.1 | Core skills library | 20 skills, 4 agents, 8 commands |
-| **ring-developers** | 0.0.1 | Developer agents | 5 specialized developer agents |
-| **ring-product-reporter** | 0.0.1 | FinOps & regulatory compliance | 5 skills, 2 agents |
-| **ring-team-product** | 0.0.1 | Product planning workflows | 8 skills |
-
-### Reserved Plugin Slots
-
-**Product Plugins (4 remaining):**
-- `product-flowker`, `product-matcher`, `product-midaz`, `product-tracer`
-
-**Team Plugins (2 remaining):**
-- `team-ops`, `team-pmm`
+| **ring-default** | 0.7.6 | Core skills library | 20 skills, 5 agents, 8 commands |
+| **ring-dev-team** | 0.1.1 | Developer agents | 2 skills, 10 specialized developer agents |
+| **ring-finops-team** | 0.2.1 | FinOps & regulatory compliance | 6 skills, 2 agents |
+| **ring-pm-team** | 0.1.1 | Product planning workflows | 9 skills |
+| **ralph-wiggum** | 0.1.0 | Iterative AI development loops | 1 skill, 3 commands, Stop hook |
 
 ## Component Hierarchy
 
@@ -116,18 +108,22 @@ default/agents/
 ├── business-logic-reviewer.md # Correctness review (requirements, edge cases)
 ├── security-reviewer.md       # Safety review (OWASP, auth, validation)
 ├── write-plan.md              # Implementation planning
-├── finops-analyzer.md         # Financial operations analysis
-└── finops-creator.md          # FinOps template creation
+└── codebase-explorer.md       # Deep architecture analysis (Opus)
 ```
 
-**Structure (ring-developers plugin):**
+**Structure (ring-dev-team plugin):**
 ```
-developers/agents/
-├── backend-engineer-golang.md  # Go backend specialist for financial systems
-├── devops-engineer.md          # DevOps infrastructure specialist
-├── frontend-engineer.md        # React/Next.js specialist
-├── qa-analyst.md               # Quality assurance specialist
-└── sre.md                      # Site reliability engineer
+dev-team/agents/
+├── backend-engineer.md            # Language-agnostic backend specialist
+├── backend-engineer-golang.md     # Go backend specialist for financial systems
+├── backend-engineer-typescript.md # TypeScript/Node.js backend specialist
+├── backend-engineer-python.md     # Python backend specialist
+├── devops-engineer.md             # DevOps infrastructure specialist
+├── frontend-engineer.md           # Language-agnostic frontend specialist
+├── frontend-engineer-typescript.md # TypeScript/React/Next.js frontend specialist
+├── frontend-designer.md           # Visual design specialist
+├── qa-analyst.md                  # Quality assurance specialist
+└── sre.md                         # Site reliability engineer
 ```
 
 **Key Characteristics:**
@@ -186,8 +182,11 @@ default/hooks/
 ```
 .claude-plugin/
 └── marketplace.json    # Multi-plugin registry
-    ├── ring-default    # Core skills library (v0.6.1)
-    └── ring-developers # Developer agents (v0.0.1)
+    ├── ring-default     # Core skills library (v0.7.6)
+    ├── ring-dev-team    # Developer agents (v0.1.1)
+    ├── ring-pm-team     # Product planning (v0.1.1)
+    ├── ring-finops-team # FinOps & regulatory (v0.2.1)
+    └── ralph-wiggum     # Iterative loops (v0.1.0)
 ```
 
 **marketplace.json Schema:**
@@ -199,15 +198,33 @@ default/hooks/
   "plugins": [
     {
       "name": "ring-default",
-      "version": "0.6.1",
+      "version": "0.7.6",
       "source": "./default",
       "keywords": ["skills", "tdd", "debugging", ...]
     },
     {
-      "name": "ring-developers",
-      "version": "0.0.1",
-      "source": "./developers",
+      "name": "ring-dev-team",
+      "version": "0.1.1",
+      "source": "./dev-team",
       "keywords": ["developer", "agents"]
+    },
+    {
+      "name": "ring-pm-team",
+      "version": "0.1.1",
+      "source": "./pm-team",
+      "keywords": ["product", "planning"]
+    },
+    {
+      "name": "ring-finops-team",
+      "version": "0.2.1",
+      "source": "./finops-team",
+      "keywords": ["finops", "regulatory"]
+    },
+    {
+      "name": "ralph-wiggum",
+      "version": "0.1.0",
+      "source": "./ralph-wiggum",
+      "keywords": ["loops", "iteration"]
     }
   ]
 }
@@ -569,20 +586,24 @@ Ring's architecture is designed for:
 - **Scalability** - Marketplace structure supports product and team-specific plugins
 - **Integration** - Seamless with Claude Code's native tools
 
-### Current State (v0.6.1)
+### Current State (v0.7.6)
 
 | Component | Count | Location |
 |-----------|-------|----------|
-| Active Plugins | 4 | `default/`, `developers/`, `product-reporter/`, `team-product/` |
-| Skills (default) | 20 | `default/skills/` |
-| Skills (product-reporter) | 5 | `product-reporter/skills/` |
-| Skills (team-product) | 8 | `team-product/skills/` |
-| Agents (default) | 4 | `default/agents/` |
-| Agents (developers) | 5 | `developers/agents/` |
-| Agents (product-reporter) | 2 | `product-reporter/agents/` |
-| Commands | 8 | `default/commands/` |
+| Active Plugins | 5 | `default/`, `dev-team/`, `finops-team/`, `pm-team/`, `ralph-wiggum/` |
+| Skills (ring-default) | 20 | `default/skills/` |
+| Skills (ring-dev-team) | 2 | `dev-team/skills/` |
+| Skills (ring-finops-team) | 6 | `finops-team/skills/` |
+| Skills (ring-pm-team) | 9 | `pm-team/skills/` |
+| Skills (ralph-wiggum) | 1 | `ralph-wiggum/skills/` |
+| **Total Skills** | **38** | **All plugins** |
+| Agents (ring-default) | 5 | `default/agents/` |
+| Agents (ring-dev-team) | 10 | `dev-team/agents/` |
+| Agents (ring-finops-team) | 2 | `finops-team/agents/` |
+| **Total Agents** | **17** | **All plugins** |
+| Commands (ring-default) | 8 | `default/commands/` |
+| Commands (ralph-wiggum) | 3 | `ralph-wiggum/commands/` |
 | Hooks | 4 | `default/hooks/` |
 | Lib utilities | 9 | `default/lib/` |
-| Reserved plugins | 6 | `product-*/`, `team-*/` |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.
