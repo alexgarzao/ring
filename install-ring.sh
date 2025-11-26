@@ -60,8 +60,30 @@ echo "================================================"
 echo ""
 echo "📡 Fetching plugin list from marketplace..."
 
-# Download and parse marketplace.json dynamically
-if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+# Check for required dependencies
+if ! command -v curl >/dev/null 2>&1; then
+    echo "⚠️  curl not found - showing static plugin list"
+    echo ""
+    echo "Available plugins (manual installation required):"
+    echo "  • ring-developers - Developer role agents"
+    echo "  • ring-product-reporter - FinOps & regulatory compliance"
+    echo "  • ring-team-product - Product planning workflows"
+    echo ""
+    echo "To install: claude plugin install <plugin-name>"
+elif ! command -v jq >/dev/null 2>&1; then
+    echo "⚠️  jq not found - showing static plugin list"
+    echo "   Install jq for interactive plugin selection:"
+    echo "   • macOS: brew install jq"
+    echo "   • Ubuntu/Debian: sudo apt install jq"
+    echo "   • RHEL/Fedora: sudo dnf install jq"
+    echo ""
+    echo "Available plugins (manual installation required):"
+    echo "  • ring-developers - Developer role agents"
+    echo "  • ring-product-reporter - FinOps & regulatory compliance"
+    echo "  • ring-team-product - Product planning workflows"
+    echo ""
+    echo "To install: claude plugin install <plugin-name>"
+else
     MARKETPLACE_DATA=$(curl -fsSL --connect-timeout 10 --max-time 30 "$MARKETPLACE_JSON_URL" 2>/dev/null)
 
     if [ -n "$MARKETPLACE_DATA" ]; then
@@ -160,15 +182,6 @@ if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
         echo ""
         echo "To install manually: claude plugin install <plugin-name>"
     fi
-else
-    echo "⚠️  curl or jq not found, showing static list..."
-    echo ""
-    echo "Available plugins (manual installation required):"
-    echo "  • ring-developers - Developer role agents"
-    echo "  • ring-product-reporter - FinOps & regulatory compliance"
-    echo "  • ring-team-product - Product planning workflows"
-    echo ""
-    echo "To install manually: claude plugin install <plugin-name>"
 fi
 
 echo ""

@@ -155,14 +155,15 @@ try {
         Write-Host "To install manually: claude plugin install <plugin-name>"
     }
 } catch {
-    Write-Host "⚠️  Could not fetch marketplace data, showing static list..."
+    Write-Host "⚠️  Could not fetch marketplace data - showing static plugin list"
+    Write-Host "   Error: $($_.Exception.Message)"
     Write-Host ""
     Write-Host "Available plugins (manual installation required):"
     Write-Host "  • ring-developers - Developer role agents"
     Write-Host "  • ring-product-reporter - FinOps & regulatory compliance"
     Write-Host "  • ring-team-product - Product planning workflows"
     Write-Host ""
-    Write-Host "To install manually: claude plugin install <plugin-name>"
+    Write-Host "To install: claude plugin install <plugin-name>"
 }
 
 Write-Host ""
