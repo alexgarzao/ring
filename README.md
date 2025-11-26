@@ -69,30 +69,23 @@ Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates find
 ```
 
 **Review & Planning Agents (default plugin):**
-- `code-reviewer` - Foundation review (architecture, code quality, design patterns)
-- `business-logic-reviewer` - Correctness review (domain logic, requirements, edge cases)
-- `security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
-- `write-plan` - Implementation planning agent
-- `codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
-- Use `/ring:review` command to orchestrate parallel review workflow
+- `ring-default:code-reviewer` - Foundation review (architecture, code quality, design patterns)
+- `ring-default:business-logic-reviewer` - Correctness review (domain logic, requirements, edge cases)
+- `ring-default:security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
+- `ring-default:write-plan` - Implementation planning agent
+- `ring-default:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
+- Use `/ring-default:review` command to orchestrate parallel review workflow
 
 **Developer Agents (developers plugin):**
-- `backend-engineer-golang` - Go backend specialist for financial systems
-- `devops-engineer` - DevOps infrastructure specialist
-- `frontend-engineer` - React/Next.js specialist
-- `qa-analyst` - Quality assurance specialist
-- `sre` - Site reliability engineer
+- `ring-developers:backend-engineer-golang` - Go backend specialist for financial systems
+- `ring-developers:devops-engineer` - DevOps infrastructure specialist
+- `ring-developers:frontend-engineer` - React/Next.js specialist
+- `ring-developers:qa-analyst` - Quality assurance specialist
+- `ring-developers:sre` - Site reliability engineer
 
 **FinOps Agents (product-reporter plugin):**
-- `finops-analyzer` - Financial operations analysis
-- `finops-automation` - FinOps template creation and automation
-
-**Infrastructure Utilities:**
-- Compliance validator - Enforce skill adherence
-- Output validator - Ensure consistent agent output
-- Skill matcher - Task-to-skill mapping
-- Pre-flight checker - Validate prerequisites
-- Metrics tracker - Track effectiveness
+- `ring-product-reporter:finops-analyzer` - Financial operations analysis
+- `ring-product-reporter:finops-automation` - FinOps template creation and automation
 
 ## 🚀 Quick Start
 

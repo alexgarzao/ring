@@ -6,7 +6,7 @@ cat <<'EOF'
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-team-product-system>\n**Pre-Dev Planning Workflow**\n\n2 planning tracks available:\n\n**Small Track** (<2 days)\n- Gate 1: PRD → business requirements\n- Gate 2: TRD → technical architecture\n- Gate 3: Tasks → work breakdown\n\n**Large Track** (≥2 days)\n- Gates 1-3: PRD → TRD → Tasks\n- Gate 4: API → component contracts\n- Gate 5: Data → entity models\n- Gate 6: Dependencies → tech selection\n- Gate 7-8: Task/Subtask breakdown\n\nStart with: /ring:pre-dev-feature (small) or /ring:pre-dev-full (large)\nFull details: Skill tool with \"ring-team-product:using-team-product\"\n</ring-team-product-system>"
+    "additionalContext": "<ring-team-product-system>\n**Pre-Dev Planning Skills**\n\n8 skills for structured feature planning (use via Skill tool):\n\n| Skill | Gate | Output |\n|-------|------|--------|\n| `ring-team-product:pre-dev-prd-creation` | 1 | PRD.md |\n| `ring-team-product:pre-dev-feature-map` | 2 | feature-map.md |\n| `ring-team-product:pre-dev-trd-creation` | 3 | TRD.md |\n| `ring-team-product:pre-dev-api-design` | 4 | API.md |\n| `ring-team-product:pre-dev-data-model` | 5 | data-model.md |\n| `ring-team-product:pre-dev-dependency-map` | 6 | dependencies.md |\n| `ring-team-product:pre-dev-task-breakdown` | 7 | tasks.md |\n| `ring-team-product:pre-dev-subtask-creation` | 8 | subtasks.md |\n\nEntry points: `/ring-default:pre-dev-feature` (gates 1,3,7) or `/ring-default:pre-dev-full` (all 8)\n\nFor full details: Skill tool with \"ring-team-product:using-team-product\"\n</ring-team-product-system>"
   }
 }
 EOF

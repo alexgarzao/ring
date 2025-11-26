@@ -212,7 +212,7 @@ Add this step after every 3-5 tasks (or after significant features):
 
 1. **Dispatch all 3 reviewers in parallel:**
    - REQUIRED SUB-SKILL: Use ring:requesting-code-review
-   - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer)
+   - All reviewers run simultaneously (ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer)
    - Wait for all to complete
 
 2. **Handle findings by severity (MANDATORY):**

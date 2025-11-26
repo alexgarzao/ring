@@ -181,12 +181,12 @@ START: I need to do something with the codebase
 │
 ├─▶ Review code quality
 │   └─▶ Use ALL THREE in parallel:
-│       • code-reviewer
-│       • business-logic-reviewer
-│       • security-reviewer
+│       • ring-default:code-reviewer
+│       • ring-default:business-logic-reviewer
+│       • ring-default:security-reviewer
 │
 ├─▶ Create implementation tasks
-│   └─▶ Use write-plan agent
+│   └─▶ Use ring-default:write-plan agent
 │
 ├─▶ Question about Claude Code
 │   └─▶ Use claude-code-guide agent

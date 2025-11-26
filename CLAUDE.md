@@ -275,3 +275,40 @@ The system loads at SessionStart (from `default/` plugin):
 - Reserved plugins: `product-*/` (4 directories), `team-*/` (2 directories)
 - Current git branch: `main`
 - Remote: `github.com/LerianStudio/ring`
+
+### Documentation Sync Checklist
+
+**IMPORTANT:** When modifying agents, skills, commands, or hooks, check ALL these files for consistency:
+
+```
+Root Documentation:
+├── CLAUDE.md              # Project instructions (this file)
+├── MANUAL.md              # Team quick reference guide
+├── README.md              # Public documentation
+└── ARCHITECTURE.md        # Architecture diagrams
+
+Plugin Hooks (inject context at session start):
+├── default/hooks/session-start.sh        # Skills reference
+├── default/hooks/claude-md-reminder.sh   # Agent reminder table
+├── developers/hooks/session-start.sh     # Developer agents
+├── product-reporter/hooks/session-start.sh # FinOps agents
+└── team-product/hooks/session-start.sh   # Pre-dev skills
+
+Using-* Skills (plugin introductions):
+├── default/skills/using-ring/SKILL.md           # Core workflow + agent list
+├── developers/skills/using-developers/SKILL.md  # Developer agents guide
+├── product-reporter/skills/using-product-reporter/SKILL.md # FinOps guide
+└── team-product/skills/using-team-product/SKILL.md # Pre-dev workflow
+
+Agent Cross-References:
+└── default/agents/write-plan.md          # References reviewers
+```
+
+**Checklist when adding/modifying:**
+- [ ] Agent added? Update hooks, using-* skills, MANUAL.md, README.md
+- [ ] Skill added? Update CLAUDE.md architecture, hooks if plugin-specific
+- [ ] Command added? Update MANUAL.md, README.md
+- [ ] Plugin added? Create hooks/, using-* skill, update marketplace.json
+- [ ] Names changed? Search repo for old names: `grep -r "old-name" --include="*.md" --include="*.sh"`
+
+**Always use fully qualified names:** `ring-{plugin}:{component}` (e.g., `ring-default:code-reviewer`)
