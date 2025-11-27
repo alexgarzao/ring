@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 7 plugins with 46 skills, 20 agents, and 14 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 7 plugins with 48 skills, 23 agents, and 15 slash commands for enforcing proven software engineering practices.
 
 ---
 
@@ -14,14 +14,14 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
 │  │  ring-default   │  │ ring-dev-team   │  │ ring-finops-    │              │
 │  │    (plugin)     │  │    (plugin)     │  │    team         │              │
-│  │ Skills(20)      │  │ Skills(2)       │  │ Skills(6)       │              │
+│  │ Skills(21)      │  │ Skills(2)       │  │ Skills(6)       │              │
 │  │ Agents(5)       │  │ Agents(10)      │  │ Agents(2)       │              │
-│  │ Cmds(6)         │  │                 │  │                 │              │
+│  │ Cmds(7)         │  │                 │  │                 │              │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
 │  │ ring-pm-team    │  │ ralph-wiggum    │  │ ring-tw-team    │              │
 │  │    (plugin)     │  │    (plugin)     │  │    (plugin)     │              │
-│  │ Skills(9)       │  │ Skills(1)       │  │ Skills(7)       │              │
+│  │ Skills(10)      │  │ Skills(1)       │  │ Skills(7)       │              │
 │  │ Cmds(2)         │  │ Cmds(3)         │  │ Agents(3)       │              │
 │  │                 │  │                 │  │ Cmds(3)         │              │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
@@ -146,7 +146,7 @@ All commands prefixed with `/ring-default:` (can use `/ring:` shorthand in conte
 
 ## 💡 About Skills
 
-Skills (46) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (48) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
 
@@ -317,7 +317,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 46 skills are auto-discovered and available
+2. All 48 skills are auto-discovered and available
 3. `using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

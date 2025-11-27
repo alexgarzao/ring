@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 46 specialized skills** - From brainstorming to production deployment (20 core + 2 dev-team + 9 product planning + 6 FinOps + 1 ralph-wiggum + 7 technical writing + 1 beads)
-- **20 specialized agents** - 5 review/planning agents + 10 developer role agents + 2 FinOps agents + 3 technical writing agents
+- **Providing 48 specialized skills** - From brainstorming to production deployment (21 core + 2 dev-team + 10 product planning + 6 FinOps + 1 ralph-wiggum + 7 technical writing + 1 beads)
+- **23 specialized agents** - 5 review/planning agents + 10 developer role agents + 3 research agents + 2 FinOps agents + 3 technical writing agents
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -69,6 +69,13 @@ Ring works across multiple AI development platforms:
 - Factory AI: `agents` → `droids` terminology
 - Cursor: Skills/agents → `.cursorrules` and workflows
 - Cline: All content → structured prompts
+
+**Platform-Specific Guides:**
+- [Claude Code Installation Guide](docs/platforms/claude-code.md) - Native format setup and usage
+- [Factory AI Installation Guide](docs/platforms/factory-ai.md) - Droids transformation and configuration
+- [Cursor Installation Guide](docs/platforms/cursor.md) - Rules and workflow setup
+- [Cline Installation Guide](docs/platforms/cline.md) - Prompt-based configuration
+- [Migration Guide](docs/platforms/MIGRATION.md) - Moving between platforms or upgrading
 
 ## 🚀 Quick Start
 
@@ -169,7 +176,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 - test-driven-development (RED-GREEN-REFACTOR cycle)
 - systematic-debugging (4-phase root cause analysis)
 - verification-before-completion (Evidence before claims)
-... and 30 more skills
+... and 44 more skills
 ```
 
 ## 🎯 Core Skills
@@ -204,9 +211,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 46 Skills (Across 7 Plugins)
+## 📚 All 48 Skills (Across 7 Plugins)
 
-### Core Skills (ring-default plugin - 20 skills)
+### Core Skills (ring-default plugin - 21 skills)
 
 **Testing & Debugging (6):**
 - `test-driven-development` - Write test first, watch fail, minimal code
@@ -240,10 +247,11 @@ No "should work" → Only "does work" with proof
 - `using-dev-team` - Introduction to developer specialist agents
 - `writing-code` - Best practices for code implementation
 
-### Product Planning Skills (ring-pm-team plugin - 9 skills)
+### Product Planning Skills (ring-pm-team plugin - 10 skills)
 
-**Pre-Development Workflow (9 gates, includes using-pm-team):**
+**Pre-Development Workflow (includes using-pm-team + 9 gates):**
 - `using-pm-team` - Introduction to product planning workflow
+0. `pre-dev-research` - Research phase (parallel agents)
 1. `pre-dev-prd-creation` - Business requirements (WHAT/WHY)
 2. `pre-dev-feature-map` - Feature relationships
 3. `pre-dev-trd-creation` - Technical architecture (HOW)
@@ -286,11 +294,22 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides slash commands for common workflows:
+Ring provides 15 slash commands across 4 plugins for common workflows.
 
-- `/ring:brainstorm` - Interactive design refinement using Socratic method
-- `/ring:write-plan` - Create detailed implementation plan with bite-sized tasks
-- `/ring:execute-plan` - Execute plan in batches with review checkpoints
+### Core Workflows (ring-default)
+
+- `/ring-default:codereview [files-or-paths]` - Dispatch 3 parallel code reviewers for comprehensive review
+- `/ring-default:codify [description]` - Document a solved problem to build searchable knowledge base
+- `/ring-default:commit [message]` - Create git commit with AI identification via Git trailers
+- `/ring-default:worktree [branch-name]` - Create isolated git workspace for parallel development
+- `/ring-default:brainstorm [topic]` - Interactive design refinement using Socratic method
+- `/ring-default:write-plan [feature]` - Create detailed implementation plan with bite-sized tasks
+- `/ring-default:execute-plan [path]` - Execute plan in batches with review checkpoints
+
+### Product Planning (ring-pm-team)
+
+- `/ring-pm-team:pre-dev-feature [feature-name]` - Lightweight 4-gate pre-dev workflow for small features (<2 days)
+- `/ring-pm-team:pre-dev-full [feature-name]` - Complete 9-gate pre-dev workflow for large features (>=2 days)
 
 ### Ralph Wiggum (Iterative AI Loops)
 
@@ -298,7 +317,7 @@ Ring provides slash commands for common workflows:
 - `/ralph-wiggum:cancel-ralph` - Cancel active Ralph loop
 - `/ralph-wiggum:help` - Explain Ralph technique and examples
 
-### Technical Writing (Documentation)
+### Technical Writing (ring-tw-team)
 
 - `/ring-tw-team:write-guide [topic]` - Start writing a functional guide with voice/tone guidance
 - `/ring-tw-team:write-api [endpoint]` - Start writing API reference documentation
@@ -371,13 +390,13 @@ Claude: Dispatching all 3 reviewers in parallel...
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (7 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 20 core skills
+│   ├── skills/                       # 21 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
 │   │   └── shared-patterns/         # Universal patterns (5 patterns)
-│   ├── commands/                    # 8 slash command definitions
+│   ├── commands/                    # 7 slash command definitions
 │   ├── hooks/                       # Session initialization
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
@@ -411,7 +430,7 @@ ring/                                  # Monorepo root
 │   └── docs/
 │       └── regulatory/             # Brazilian regulatory documentation
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
-│   └── skills/                      # 8 pre-dev workflow skills
+│   └── skills/                      # 10 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── ralph-wiggum/                    # Iterative AI loops plugin (ralph-wiggum)
 │   ├── commands/                    # 3 slash commands (ralph-loop, cancel-ralph, help)
@@ -526,7 +545,14 @@ ring/                                  # Monorepo root
 
 - **Skills Quick Reference** - Auto-generated at session start from skill frontmatter
 - [CLAUDE.md](CLAUDE.md) - Repository guide for Claude Code
+- [MANUAL.md](MANUAL.md) - Quick reference for all commands, agents, and workflows
 - [Design Documents](docs/plans/) - Implementation plans and architecture decisions
+- **Platform Guides:**
+  - [Claude Code](docs/platforms/claude-code.md) - Native format setup
+  - [Factory AI](docs/platforms/factory-ai.md) - Droids transformation
+  - [Cursor](docs/platforms/cursor.md) - Rules and workflows
+  - [Cline](docs/platforms/cline.md) - Prompt-based setup
+  - [Migration](docs/platforms/MIGRATION.md) - Platform switching and upgrades
 
 ## 🎯 Philosophy
 

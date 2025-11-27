@@ -86,7 +86,7 @@ See `docs/platforms/` for platform-specific guides.
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (7 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
 │   ├── skills/                       # 21 core skills
 │   │   ├── brainstorming/            # Socratic design refinement
@@ -381,7 +381,7 @@ Task.parallel([
 ### Naming Conventions
 - Skills: `kebab-case` matching directory name
 - Agents: `{domain}-reviewer.md` format
-- Commands: `/ring:{action}` prefix
+- Commands: `/ring-{plugin}:{action}` format (e.g., `/ring-default:brainstorm`, `/ring-pm-team:pre-dev-feature`)
 - Hooks: `{event}-{purpose}.sh` format
 
 ### Agent Output Schema Archetypes
@@ -549,7 +549,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Repository: Monorepo marketplace with multiple plugin collections
 - Active plugins: 7 (`ring-default`, `ring-dev-team`, `ring-finops-team`, `ring-pm-team`, `ralph-wiggum`, `ring-tw-team`, `beads`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
-- Core plugin: `default/` (20 skills, 5 agents, 6 commands)
+- Core plugin: `default/` (21 skills, 5 agents, 7 commands)
 - Developer agents plugin: `dev-team/` (2 skills, 10 specialized developer agents)
 - FinOps plugin: `finops-team/` (6 skills, 2 agents)
 - Product planning plugin: `pm-team/` (10 skills, 3 research agents, 2 commands)
