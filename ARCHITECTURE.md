@@ -32,16 +32,16 @@ Ring operates on three core principles:
 │  ┌───────────────────────────────────────────────────────────────────────────┐  │
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
-│  │  │ ring-default (v0.7.6)│  │ ring-dev-team      │                       │  │
-│  │  │ Skills(20) Agents(5) │  │ Agents(10)           │                       │  │
+│  │  │ ring-default         │  │ ring-dev-team        │                       │  │
+│  │  │ Skills(20) Agents(5) │  │ Skills(2) Agents(10) │                       │  │
 │  │  │ Cmds(8) Hooks/Lib    │  │                      │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-finops-team     │  │ ring-pm-team         │                       │  │
-│  │  │ Skills(5) Agents(2)  │  │ Skills(8)            │                       │  │
+│  │  │ Skills(6) Agents(2)  │  │ Skills(9)            │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐                                                 │  │
-│  │  │ ralph-wiggum (v0.1.0)│                                                 │  │
+│  │  │ ralph-wiggum         │                                                 │  │
 │  │  │ Skills(1) Cmds(3)    │                                                 │  │
 │  │  └──────────────────────┘                                                 │  │
 │  └───────────────────────────────────────────────────────────────────────────┘  │
@@ -58,22 +58,24 @@ Ring is organized as a monorepo marketplace with multiple plugin collections:
 ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin registry (5 active plugins)
-├── default/                          # Core plugin: ring-default v0.7.6
-├── dev-team/                         # Developer agents: ring-dev-team v0.1.1
-├── finops-team/                      # FinOps & regulatory: ring-finops-team v0.2.1
-├── pm-team/                          # Product planning: ring-pm-team v0.1.1
-└── ralph-wiggum/                     # Iterative AI loops: ralph-wiggum v0.1.0
+├── default/                          # Core plugin: ring-default
+├── dev-team/                         # Developer agents: ring-dev-team
+├── finops-team/                      # FinOps & regulatory: ring-finops-team
+├── pm-team/                          # Product planning: ring-pm-team
+└── ralph-wiggum/                     # Iterative AI loops: ralph-wiggum
 ```
 
 ### Active Plugins
 
-| Plugin | Version | Description | Components |
-|--------|---------|-------------|------------|
-| **ring-default** | 0.7.6 | Core skills library | 20 skills, 5 agents, 8 commands |
-| **ring-dev-team** | 0.1.1 | Developer agents | 2 skills, 10 specialized developer agents |
-| **ring-finops-team** | 0.2.1 | FinOps & regulatory compliance | 6 skills, 2 agents |
-| **ring-pm-team** | 0.1.1 | Product planning workflows | 9 skills |
-| **ralph-wiggum** | 0.1.0 | Iterative AI development loops | 1 skill, 3 commands, Stop hook |
+*Versions managed in `.claude-plugin/marketplace.json`*
+
+| Plugin | Description | Components |
+|--------|-------------|------------|
+| **ring-default** | Core skills library | 20 skills, 5 agents, 8 commands |
+| **ring-dev-team** | Developer agents | 2 skills, 10 specialized developer agents |
+| **ring-finops-team** | FinOps & regulatory compliance | 6 skills, 2 agents |
+| **ring-pm-team** | Product planning workflows | 9 skills |
+| **ralph-wiggum** | Iterative AI development loops | 1 skill, 3 commands, Stop hook |
 
 ## Component Hierarchy
 
@@ -182,11 +184,11 @@ default/hooks/
 ```
 .claude-plugin/
 └── marketplace.json    # Multi-plugin registry
-    ├── ring-default     # Core skills library (v0.7.6)
-    ├── ring-dev-team    # Developer agents (v0.1.1)
-    ├── ring-pm-team     # Product planning (v0.1.1)
-    ├── ring-finops-team # FinOps & regulatory (v0.2.1)
-    └── ralph-wiggum     # Iterative loops (v0.1.0)
+    ├── ring-default     # Core skills library
+    ├── ring-dev-team    # Developer agents
+    ├── ring-pm-team     # Product planning
+    ├── ring-finops-team # FinOps & regulatory
+    └── ralph-wiggum     # Iterative loops
 ```
 
 **marketplace.json Schema:**
@@ -198,31 +200,31 @@ default/hooks/
   "plugins": [
     {
       "name": "ring-default",
-      "version": "0.7.6",
+      "version": "...",
       "source": "./default",
       "keywords": ["skills", "tdd", "debugging", ...]
     },
     {
       "name": "ring-dev-team",
-      "version": "0.1.1",
+      "version": "...",
       "source": "./dev-team",
       "keywords": ["developer", "agents"]
     },
     {
       "name": "ring-pm-team",
-      "version": "0.1.1",
+      "version": "...",
       "source": "./pm-team",
       "keywords": ["product", "planning"]
     },
     {
       "name": "ring-finops-team",
-      "version": "0.2.1",
+      "version": "...",
       "source": "./finops-team",
       "keywords": ["finops", "regulatory"]
     },
     {
       "name": "ralph-wiggum",
-      "version": "0.1.0",
+      "version": "...",
       "source": "./ralph-wiggum",
       "keywords": ["loops", "iteration"]
     }
@@ -517,6 +519,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
      "keywords": [...]
    }
    ```
+   (Note: Initial version is 0.1.0, then managed via version bumps)
 3. Create `{plugin-name}/hooks/hooks.json` for initialization
 4. Add skills/agents following same structure as `default/`
 
@@ -586,7 +589,9 @@ Ring's architecture is designed for:
 - **Scalability** - Marketplace structure supports product and team-specific plugins
 - **Integration** - Seamless with Claude Code's native tools
 
-### Current State (v0.7.6)
+### Current State
+
+*Component counts reflect current state; plugin versions managed in `.claude-plugin/marketplace.json`*
 
 | Component | Count | Location |
 |-----------|-------|----------|

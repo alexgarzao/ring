@@ -440,7 +440,8 @@ Remember:
 - sre
 
 **Skills:**
-- using-dev-team (this skill)
+- using-dev-team: Plugin introduction and agent selection guide
+- writing-code: Developer agent selection and invocation patterns
 
 **Note:** If a skill documents a developer agent but you can't find it, you may not have ring-dev-team enabled. Check `.claude-plugin/marketplace.json` or install ring-dev-team plugin.
 

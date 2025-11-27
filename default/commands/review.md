@@ -1,4 +1,5 @@
 ---
+name: review
 description: Run comprehensive parallel code review with all 3 specialized reviewers
 argument-hint: "[files-or-paths]"
 ---

@@ -1,4 +1,5 @@
 ---
+name: worktree
 description: Create isolated git worktree with interactive setup
 argument-hint: "[branch-name]"
 ---

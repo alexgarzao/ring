@@ -1,4 +1,5 @@
 ---
+name: help
 description: "Explain Ralph Wiggum technique and available commands"
 ---
 
@@ -96,7 +97,7 @@ The "loop" doesn't mean Claude talks to itself. It means:
 ### Interactive Bug Fix
 
 ```
-/ralph-loop "Fix the token refresh logic in auth.ts. Output <promise>FIXED</promise> when all tests pass." --completion-promise "FIXED" --max-iterations 10
+/ralph-wiggum:ralph-loop "Fix the token refresh logic in auth.ts. Output <promise>FIXED</promise> when all tests pass." --completion-promise "FIXED" --max-iterations 10
 ```
 
 You'll see Ralph:

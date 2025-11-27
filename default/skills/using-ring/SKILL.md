@@ -11,9 +11,6 @@ trigger: |
 
 skip_when: |
   - Never skip - this skill is always mandatory
-
-sequence:
-  before: [all-other-skills]
 ---
 
 <EXTREMELY-IMPORTANT>

@@ -1,4 +1,5 @@
 ---
+name: pre-dev-feature
 description: Lightweight 3-gate pre-dev workflow for small features (<2 days)
 argument-hint: "[feature-name]"
 ---
@@ -13,7 +14,7 @@ I'm running the **Small Track** pre-development workflow (3 gates) for your feat
 - ✅ Don't require multi-service integration
 - ✅ Can be completed by a single developer
 
-**If any of the above are false, use `/pre-dev-full` instead.**
+**If any of the above are false, use `/ring-default:pre-dev-full` instead.**
 
 ## Document Organization
 
@@ -122,15 +123,15 @@ Skipped from full workflow:
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
+2. Use /ring-default:worktree to create isolated workspace
+3. Use /ring-default:write-plan to create implementation plan
 4. Execute the plan
 ```
 
 ## Remember
 
 - This is the **Small Track** - lightweight and fast
-- If feature grows during planning, switch to `/pre-dev-full`
+- If feature grows during planning, switch to `/ring-default:pre-dev-full`
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate
 - Technology decisions happen later in Dependency Map (not in this track)

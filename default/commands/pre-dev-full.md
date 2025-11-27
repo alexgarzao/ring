@@ -1,4 +1,5 @@
 ---
+name: pre-dev-full
 description: Complete 8-gate pre-dev workflow for large features (≥2 days)
 argument-hint: "[feature-name]"
 ---
@@ -13,7 +14,7 @@ I'm running the **Full Track** pre-development workflow (8 gates) for your featu
 - ❌ Use new architecture patterns
 - ❌ Require team collaboration
 
-**If feature is simple (<2 days, existing patterns), use `/pre-dev-feature` instead.**
+**If feature is simple (<2 days, existing patterns), use `/ring-default:pre-dev-feature` instead.**
 
 ## Document Organization
 
@@ -222,8 +223,8 @@ Planning time: 2-4 hours (comprehensive)
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
+2. Use /ring-default:worktree to create isolated workspace
+3. Use /ring-default:write-plan to create implementation plan
 4. Execute the plan
 ```
 

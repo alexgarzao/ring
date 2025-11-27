@@ -1,4 +1,5 @@
 ---
+name: brainstorm
 description: Interactive design refinement using Socratic method
 argument-hint: "[topic]"
 ---

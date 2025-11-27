@@ -7,11 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **5 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
-- **ring-default** (v0.7.6): 20 core skills, 8 slash commands, 5 specialized agents
-- **ring-dev-team** (v0.1.1): 2 developer skills, 10 specialized developer agents (Backend [generic], Backend Go, Backend TypeScript, Backend Python, DevOps, Frontend [generic], Frontend TypeScript, Frontend Designer, QA, SRE)
-- **ring-finops-team** (v0.2.1): 6 regulatory skills, 2 FinOps agents
-- **ring-pm-team** (v0.1.1): 9 product planning skills
-- **ralph-wiggum** (v0.1.0): 1 skill for iterative AI development loops using Stop hooks
+- **ring-default**: 20 core skills, 8 slash commands, 5 specialized agents
+- **ring-dev-team**: 2 developer skills, 10 specialized developer agents (Backend [generic], Backend Go, Backend TypeScript, Backend Python, DevOps, Frontend [generic], Frontend TypeScript, Frontend Designer, QA, SRE)
+- **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
+- **ring-pm-team**: 9 product planning skills
+- **ralph-wiggum**: 1 skill for iterative AI development loops using Stop hooks
+
+**Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
 **Total: 38 skills (20 + 2 + 6 + 9 + 1) across 5 plugins**
 
@@ -38,7 +40,7 @@ git clone https://github.com/lerianstudio/ring.git ~/ring
 ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
-├── default/                          # Core Ring plugin (ring-default v0.7.6)
+├── default/                          # Core Ring plugin (ring-default)
 │   ├── skills/                       # 20 core skills
 │   │   ├── brainstorming/            # Socratic design refinement
 │   │   ├── test-driven-development/  # RED-GREEN-REFACTOR cycle enforcement
@@ -61,7 +63,7 @@ ring/                                  # Monorepo root
 │   │   ├── generate-skills-ref.py # Parse SKILL.md frontmatter
 │   │   └── claude-md-reminder.sh  # CLAUDE.md reminder on prompt submit
 │   └── docs/                      # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team v0.1.1)
+├── dev-team/                      # Developer Agents plugin (ring-dev-team)
 │   ├── skills/                    # 2 developer skills
 │   │   ├── using-dev-team/        # Plugin introduction
 │   │   └── writing-code/          # Developer agent selection
@@ -76,7 +78,7 @@ ring/                                  # Monorepo root
 │       ├── frontend-designer.md            # Visual design specialist
 │       ├── qa-analyst.md                   # Quality assurance specialist
 │       └── sre.md                          # Site reliability engineer
-├── finops-team/                   # FinOps plugin (ring-finops-team v0.2.1)
+├── finops-team/                   # FinOps plugin (ring-finops-team)
 │   ├── skills/                    # 6 regulatory compliance skills
 │   │   └── regulatory-templates*/ # Brazilian regulatory compliance (BACEN, RFB)
 │   ├── agents/                    # 2 FinOps agents
@@ -84,10 +86,10 @@ ring/                                  # Monorepo root
 │   │   └── finops-automation.md  # FinOps automation
 │   └── docs/
 │       └── regulatory/           # Brazilian regulatory documentation
-├── pm-team/                  # Product Planning plugin (ring-pm-team v0.1.1)
+├── pm-team/                  # Product Planning plugin (ring-pm-team)
 │   └── skills/                    # 9 pre-dev workflow skills
 │       └── pre-dev-*/            # PRD→TRD→API→Data→Tasks
-├── ralph-wiggum/                  # Iterative AI loops plugin (ralph-wiggum v0.1.0)
+├── ralph-wiggum/                  # Iterative AI loops plugin (ralph-wiggum)
 │   ├── commands/                  # 3 slash commands
 │   │   ├── ralph-loop.md         # Start iterative loop
 │   │   ├── cancel-ralph.md       # Cancel active loop
@@ -276,7 +278,7 @@ Task.parallel([
 
 ### Agent Output Schema Archetypes
 
-Agents use two standard output schema patterns based on their purpose:
+Agents use standard output schema patterns based on their purpose:
 
 **Implementation Schema** (for agents that write code/configs):
 ```yaml
@@ -300,7 +302,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** All backend engineers, frontend engineers, devops-engineer, qa-analyst, sre, finops-automation
+**Used by:** All backend engineers (backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python), all frontend engineers except designer (frontend-engineer, frontend-engineer-typescript), devops-engineer, qa-analyst, sre, finops-automation
 
 **Analysis Schema** (for agents that analyze and recommend):
 ```yaml
@@ -350,6 +352,58 @@ output_schema:
 
 **Used by:** code-reviewer, business-logic-reviewer, security-reviewer
 
+**Note:** business-logic-reviewer and security-reviewer extend the base Reviewer Schema with additional domain-specific required sections:
+- business-logic-reviewer adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
+- security-reviewer adds: "OWASP Top 10 Coverage", "Compliance Status"
+
+**Exploration Schema** (for deep codebase analysis):
+```yaml
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "EXPLORATION SUMMARY"
+      pattern: "^## EXPLORATION SUMMARY$"
+      required: true
+    - name: "KEY FINDINGS"
+      pattern: "^## KEY FINDINGS$"
+      required: true
+    - name: "ARCHITECTURE INSIGHTS"
+      pattern: "^## ARCHITECTURE INSIGHTS$"
+      required: true
+    - name: "RELEVANT FILES"
+      pattern: "^## RELEVANT FILES$"
+      required: true
+    - name: "RECOMMENDATIONS"
+      pattern: "^## RECOMMENDATIONS$"
+      required: true
+```
+
+**Used by:** codebase-explorer
+
+**Planning Schema** (for implementation planning):
+```yaml
+output_schema:
+  format: "markdown"
+  required_sections:
+    - name: "Goal"
+      pattern: "^\\*\\*Goal:\\*\\*"
+      required: true
+    - name: "Architecture"
+      pattern: "^\\*\\*Architecture:\\*\\*"
+      required: true
+    - name: "Tech Stack"
+      pattern: "^\\*\\*Tech Stack:\\*\\*"
+      required: true
+    - name: "Global Prerequisites"
+      pattern: "^\\*\\*Global Prerequisites:\\*\\*"
+      required: true
+    - name: "Task"
+      pattern: "^### Task \\d+:"
+      required: true
+```
+
+**Used by:** write-plan
+
 ### Anti-Patterns to Avoid
 1. **Never skip using-ring** - It's mandatory, not optional
 2. **Never run reviewers sequentially** - Always dispatch in parallel
@@ -385,7 +439,8 @@ The system loads at SessionStart (from `default/` plugin):
 
 **Monorepo Context:**
 - Repository: Monorepo marketplace with multiple plugin collections
-- Active plugins: 5 (`ring-default` v0.7.6, `ring-dev-team` v0.1.1, `ring-finops-team` v0.2.1, `ring-pm-team` v0.1.1, `ralph-wiggum` v0.1.0)
+- Active plugins: 5 (`ring-default`, `ring-dev-team`, `ring-finops-team`, `ring-pm-team`, `ralph-wiggum`)
+- Plugin versions: See `.claude-plugin/marketplace.json`
 - Core plugin: `default/` (20 skills, 5 agents, 8 commands)
 - Developer agents plugin: `dev-team/` (10 specialized developer agents)
 - FinOps plugin: `finops-team/` (6 skills, 2 agents)

@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins**, the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
 
 ## ✨ Why Ring?
 
@@ -20,53 +20,7 @@ Ring solves this by:
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
-## 🏗️ Infrastructure Features (New!)
-
-Ring now includes powerful infrastructure tools for automation and validation:
-
-### Automated Code Review
-
-**Parallel 3-gate review for 3x faster feedback:**
-```bash
-/ring:review src/auth.ts
-```
-
-Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates findings by severity:
-- **Critical/High/Medium** → Fix immediately, re-run all 3
-- **Low** → Add `TODO(review)` comments in code
-- **Cosmetic** → Add `FIXME(nitpick)` comments in code
-
-### Skill Discovery
-
-**Find the right skill for your task:**
-```bash
-/ring:which-skill "debug authentication error"
-# Returns: systematic-debugging (HIGH confidence)
-```
-
-### Compliance Validation
-
-**Verify you're following skill workflows:**
-```bash
-/ring:validate test-driven-development
-# Checks: Test file exists, test fails first, etc.
-```
-
-### Usage Metrics
-
-**Track skill effectiveness:**
-```bash
-/ring:metrics test-driven-development
-# Shows: usage count, compliance rate, common violations
-```
-
-### Workflow Guidance
-
-**Get next skill suggestion:**
-```bash
-/ring:next-skill test-driven-development "test revealed bug"
-# Suggests: systematic-debugging
-```
+## 🤖 Specialized Agents
 
 **Review & Planning Agents (default plugin):**
 - `ring-default:code-reviewer` - Foundation review (architecture, code quality, design patterns)
@@ -91,6 +45,8 @@ Runs all 3 reviewers simultaneously (Code, Business, Security) - aggregates find
 **FinOps Agents (ring-finops-team plugin):**
 - `ring-finops-team:finops-analyzer` - Financial operations analysis
 - `ring-finops-team:finops-automation` - FinOps template creation and automation
+
+*Plugin versions are managed in `.claude-plugin/marketplace.json`*
 
 ## 🚀 Quick Start
 
@@ -317,7 +273,7 @@ Claude: Dispatching all 3 reviewers in parallel...
 ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
-├── default/                          # Core Ring plugin (ring-default v0.7.6)
+├── default/                          # Core Ring plugin (ring-default)
 │   ├── skills/                       # 20 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
@@ -335,7 +291,7 @@ ring/                                  # Monorepo root
 │   │   └── codebase-explorer.md    # Deep architecture analysis (Opus)
 │   ├── lib/                        # Infrastructure utilities (9 scripts)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team v0.1.1)
+├── dev-team/                      # Developer Agents plugin (ring-dev-team)
 │   └── agents/                      # 10 specialized developer agents
 │       ├── backend-engineer.md         # Language-agnostic backend specialist
 │       ├── backend-engineer-golang.md  # Go backend specialist
@@ -347,18 +303,18 @@ ring/                                  # Monorepo root
 │       ├── frontend-designer.md        # Visual design specialist
 │       ├── qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer
-├── finops-team/                     # FinOps plugin (ring-finops-team v0.2.1)
-│   ├── skills/                      # 5 regulatory compliance skills
+├── finops-team/                     # FinOps plugin (ring-finops-team)
+│   ├── skills/                      # 6 regulatory compliance skills
 │   │   └── regulatory-templates*/   # Brazilian regulatory compliance
 │   ├── agents/                      # 2 FinOps agents
 │   │   ├── finops-analyzer.md      # FinOps analysis
 │   │   └── finops-automation.md    # FinOps automation
 │   └── docs/
 │       └── regulatory/             # Brazilian regulatory documentation
-├── pm-team/                    # Product Planning plugin (ring-pm-team v0.1.1)
+├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 8 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
-├── ralph-wiggum/                    # Iterative AI loops plugin (ralph-wiggum v0.1.0)
+├── ralph-wiggum/                    # Iterative AI loops plugin (ralph-wiggum)
 │   ├── commands/                    # 3 slash commands (ralph-loop, cancel-ralph, help)
 │   ├── hooks/                       # SessionStart and Stop hooks
 │   ├── scripts/                     # Setup utilities

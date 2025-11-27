@@ -25,6 +25,9 @@ output_schema:
     - name: "Compliance Status"
       pattern: "^## Compliance Status"
       required: true
+    - name: "What Was Done Well"
+      pattern: "^## What Was Done Well"
+      required: true
     - name: "Next Steps"
       pattern: "^## Next Steps"
       required: true

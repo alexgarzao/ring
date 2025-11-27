@@ -1,4 +1,5 @@
 ---
+name: commit
 description: Create a git commit with AI identification via Git trailers (no visible signature in message)
 argument-hint: "[message]"
 ---

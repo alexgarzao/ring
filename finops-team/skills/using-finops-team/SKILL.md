@@ -222,8 +222,12 @@ Generated .tpl files integrate directly with Reporter platform:
 - finops-automation (Gate 3)
 
 **Skills:**
-- using-finops-team (this skill)
-- regulatory-templates* (multi-gate workflow skills)
+- using-finops-team (this skill - plugin introduction)
+- regulatory-templates (overview/index skill)
+- regulatory-templates-setup (Gate 0: Setup & initialization)
+- regulatory-templates-gate1 (Gate 1: Compliance analysis)
+- regulatory-templates-gate2 (Gate 2: Field mapping & validation)
+- regulatory-templates-gate3 (Gate 3: Template generation)
 
 **Note:** If agents are unavailable, check if ring-finops-team is enabled in `.claude-plugin/marketplace.json`.
 
