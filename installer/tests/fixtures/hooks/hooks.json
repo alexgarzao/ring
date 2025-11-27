@@ -1,0 +1,34 @@
+{
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "triggers": ["startup", "resume", "clear", "compact"],
+      "type": "command",
+      "command": "bash ${RING_PLUGIN_ROOT}/hooks/session-start.sh"
+    },
+    {
+      "event": "UserPromptSubmit",
+      "triggers": ["always"],
+      "type": "command",
+      "command": "bash ${RING_PLUGIN_ROOT}/hooks/prompt-submit.sh"
+    },
+    {
+      "event": "PreToolUse",
+      "triggers": ["Bash"],
+      "type": "prompt",
+      "prompt": "Verify the Bash command is safe to execute."
+    },
+    {
+      "event": "PostToolUse",
+      "triggers": ["Write", "Edit"],
+      "type": "command",
+      "command": "bash ${RING_PLUGIN_ROOT}/hooks/post-edit.sh"
+    },
+    {
+      "event": "Stop",
+      "triggers": ["always"],
+      "type": "command",
+      "command": "bash ${RING_PLUGIN_ROOT}/hooks/stop.sh"
+    }
+  ]
+}

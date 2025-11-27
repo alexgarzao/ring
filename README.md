@@ -53,39 +53,111 @@ Ring solves this by:
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
 
+## 🖥️ Supported Platforms
+
+Ring works across multiple AI development platforms:
+
+| Platform | Format | Status | Features |
+|----------|--------|--------|----------|
+| **Claude Code** | Native | ✅ Source of truth | Skills, agents, commands, hooks |
+| **Factory AI** | Transformed | ✅ Supported | Droids, commands, skills |
+| **Cursor** | Transformed | ✅ Supported | Rules, workflows |
+| **Cline** | Transformed | ✅ Supported | Prompts |
+
+**Transformation Notes:**
+- Claude Code receives Ring content in its native format
+- Factory AI: `agents` → `droids` terminology
+- Cursor: Skills/agents → `.cursorrules` and workflows
+- Cline: All content → structured prompts
+
 ## 🚀 Quick Start
 
-### Installation as Claude Code Plugin
+### Multi-Platform Installation (Recommended)
 
-1. **Quick Install Script** (Easiest)
+The Ring installer automatically detects installed platforms and transforms content appropriately.
 
-   **Linux/macOS/Git Bash:**
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.sh | bash
-   ```
+**Linux/macOS/Git Bash:**
+```bash
+# Interactive installer (auto-detects platforms)
+curl -fsSL https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.sh | bash
 
-   **Windows PowerShell:**
-   ```powershell
-   irm https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.ps1 | iex
-   ```
+# Or clone and run locally
+git clone https://github.com/lerianstudio/ring.git ~/ring
+cd ~/ring
+./installer/install-ring.sh
+```
 
-2. **Install from the Claude Code Plugin Marketplace** (Recommended)
-   - Open Claude Code
-   - Go to Settings → Plugins
-   - Search for "ring"
-   - Click Install
+**Windows PowerShell:**
+```powershell
+# Interactive installer (auto-detects platforms)
+irm https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.ps1 | iex
 
-3. **Manual Installation**
-   ```bash
-   # Clone the marketplace repository
-   git clone https://github.com/lerianstudio/ring.git ~/ring
+# Or clone and run locally
+git clone https://github.com/lerianstudio/ring.git $HOME\ring
+cd $HOME\ring
+.\installer\install-ring.ps1
+```
 
-   # Install Python dependencies (optional, but recommended)
-   cd ~/ring
-   pip install -r requirements.txt
-   ```
-   
-   **Note:** Python dependencies are optional. The hooks will use fallback parsers if PyYAML is unavailable.
+### Direct Platform Installation
+
+Install to specific platforms without the interactive menu:
+
+```bash
+# Install to Claude Code only (native format)
+./installer/install-ring.sh install --platforms claude
+
+# Install to Factory AI only (droids format)
+./installer/install-ring.sh install --platforms factory
+
+# Install to multiple platforms
+./installer/install-ring.sh install --platforms claude,cursor,cline
+
+# Install to all detected platforms
+./installer/install-ring.sh install --platforms auto
+
+# Dry run (preview changes without installing)
+./installer/install-ring.sh install --platforms auto --dry-run
+```
+
+### Installer Commands
+
+```bash
+# List installed platforms and versions
+./installer/install-ring.sh list
+
+# Update existing installation
+./installer/install-ring.sh update
+
+# Check for available updates
+./installer/install-ring.sh check
+
+# Sync (update only changed files)
+./installer/install-ring.sh sync
+
+# Uninstall from specific platform
+./installer/install-ring.sh uninstall --platforms cursor
+
+# Detect available platforms
+./installer/install-ring.sh detect
+```
+
+### Claude Code Plugin Marketplace
+
+For Claude Code users, you can also install from the marketplace:
+- Open Claude Code
+- Go to Settings → Plugins
+- Search for "ring"
+- Click Install
+
+### Manual Installation (Claude Code only)
+
+```bash
+# Clone the marketplace repository
+git clone https://github.com/lerianstudio/ring.git ~/ring
+
+# Skills auto-load at session start via hooks
+# No additional configuration needed for Claude Code
+```
 
 ### First Session
 

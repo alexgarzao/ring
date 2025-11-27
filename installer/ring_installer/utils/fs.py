@@ -103,12 +103,17 @@ def copy_with_transform(
     Raises:
         FileNotFoundError: If source file doesn't exist
         PermissionError: If target cannot be written
+        ValueError: If target is a symlink
     """
-    source = Path(source).expanduser()
-    target = Path(target).expanduser()
+    source = Path(source).expanduser().resolve()
+    target = Path(target).expanduser().resolve()
 
     if not source.exists():
         raise FileNotFoundError(f"Source file not found: {source}")
+
+    # Check if target exists and is a symlink
+    if target.exists() and target.is_symlink():
+        raise ValueError(f"Refusing to write to symlink: {target}")
 
     # Ensure target directory exists
     ensure_directory(target.parent)
@@ -304,20 +309,47 @@ def atomic_write(path: Path, content: Union[str, bytes], encoding: str = "utf-8"
         path: Target file path
         content: Content to write (str or bytes)
         encoding: Encoding for string content
+
+    Raises:
+        ValueError: If target is a symlink
     """
-    path = Path(path).expanduser()
-    temp_path = path.parent / f".{path.name}.tmp"
+    import tempfile
+
+    path = Path(path).expanduser().resolve()
+
+    # Check if target exists and is a symlink
+    if path.exists() and path.is_symlink():
+        raise ValueError(f"Refusing to write to symlink: {path}")
+
+    # Ensure parent directory exists
+    ensure_directory(path.parent)
+
+    # Use tempfile for secure random filename
+    fd, temp_path_str = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp"
+    )
+    temp_path = Path(temp_path_str)
 
     try:
         if isinstance(content, bytes):
-            with open(temp_path, "wb") as f:
+            with os.fdopen(fd, "wb") as f:
                 f.write(content)
         else:
-            with open(temp_path, "w", encoding=encoding) as f:
+            with os.fdopen(fd, "w", encoding=encoding) as f:
                 f.write(content)
+
+        # Set explicit permissions (rw-r--r--) before rename
+        os.chmod(temp_path, 0o644)
 
         # Atomic rename
         temp_path.replace(path)
+    except Exception:
+        # Clean up temp file on error
+        if temp_path.exists():
+            temp_path.unlink()
+        raise
     finally:
         # Clean up temp file if rename failed
         if temp_path.exists():

@@ -23,16 +23,61 @@ The architecture uses markdown-based skill definitions with YAML frontmatter, au
 
 ## Installation
 
+Ring supports multiple AI platforms. The installer auto-detects installed platforms and transforms content appropriately.
+
+### Supported Platforms
+
+| Platform | Install Path | Format | Components |
+|----------|-------------|--------|------------|
+| Claude Code | `~/.claude/` | Native | skills, agents, commands, hooks |
+| Factory AI | `~/.factory/` | Transformed | skills, droids, commands |
+| Cursor | `~/.cursor/` | Transformed | .cursorrules, workflows |
+| Cline | `~/.cline/` | Transformed | prompts |
+
+### Quick Install
+
 ```bash
-# Quick install via script (Linux/macOS/Git Bash)
+# Interactive installer (Linux/macOS/Git Bash)
 curl -fsSL https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.sh | bash
 
-# Quick install via script (Windows PowerShell)
+# Interactive installer (Windows PowerShell)
 irm https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.ps1 | iex
 
-# Or manual clone (marketplace with multiple plugins)
+# Or clone and run locally
 git clone https://github.com/lerianstudio/ring.git ~/ring
+cd ~/ring
+./installer/install-ring.sh
 ```
+
+### Platform-Specific Installation
+
+```bash
+# Install to specific platform
+./installer/install-ring.sh install --platforms claude
+./installer/install-ring.sh install --platforms factory
+./installer/install-ring.sh install --platforms cursor
+./installer/install-ring.sh install --platforms cline
+
+# Install to multiple platforms
+./installer/install-ring.sh install --platforms claude,cursor,cline
+
+# Auto-detect and install all
+./installer/install-ring.sh install --platforms auto
+```
+
+### Installer Commands
+
+```bash
+./installer/install-ring.sh install   # Install to platforms
+./installer/install-ring.sh update    # Update existing installation
+./installer/install-ring.sh sync      # Sync only changed files
+./installer/install-ring.sh list      # List installed platforms
+./installer/install-ring.sh check     # Check for updates
+./installer/install-ring.sh uninstall # Remove from platforms
+./installer/install-ring.sh detect    # Detect available platforms
+```
+
+See `docs/platforms/` for platform-specific guides.
 
 ## Architecture
 
@@ -138,6 +183,18 @@ ring/                                  # Monorepo root
 │       ├── hooks.json            # Hook configuration
 │       ├── session-start.sh      # Context injection
 │       └── stop-hook.sh          # Issue tracking integration
+├── installer/                     # Multi-platform installer
+│   ├── ring_installer/           # Python package
+│   │   ├── adapters/             # Platform adapters (claude, factory, cursor, cline)
+│   │   ├── transformers/         # Content transformers
+│   │   ├── utils/                # Utilities (fs, version, platform_detect)
+│   │   └── core.py               # Installation logic
+│   ├── tests/                    # Test suite
+│   ├── install-ring.sh           # Bash entry point
+│   └── install-ring.ps1          # PowerShell entry point
+├── docs/
+│   ├── plans/                    # Implementation plans
+│   └── platforms/                # Platform-specific guides
 ├── ops-team/                      # Team-specific skills (reserved)
 └── pmm-team/                      # Team-specific skills (reserved)
 ```

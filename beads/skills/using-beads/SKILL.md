@@ -159,6 +159,50 @@ bd show ISSUE-ID --json       # Single issue details
 | Search | `bd search "query"` |
 | Overview | `bd status` |
 
+## End-of-Session Checkpoint (Stop Hook)
+
+The beads plugin includes a Stop hook that automatically runs when you attempt to end a session. This hook ensures no work is lost by prompting you to capture leftover work as beads issues.
+
+**How the checkpoint works:**
+
+1. **Hook triggers** when you try to exit the session
+2. **Checks completion criteria:**
+   - Are there open beads issues? (work captured)
+   - Are there TODO/FIXME markers in recent changes? (work not captured)
+3. **Decision:**
+   - **Approve exit** if work is captured OR no markers found
+   - **Block exit** if markers exist but no issues created (prompts you to capture work)
+
+**The checkpoint prompts you to:**
+- Search for TODO/FIXME/HACK/XXX markers in modified files
+- Check TodoWrite list for incomplete items
+- Review code review findings not yet addressed
+- Create beads issues for each piece of leftover work
+- Update in-progress issues if leaving work incomplete
+
+**Example checkpoint flow:**
+```bash
+# You try to exit - hook blocks with checkpoint prompt
+# You run the checkpoint steps:
+git diff --name-only HEAD~5 | xargs grep -E "(TODO|FIXME):"
+# Found 3 TODOs
+
+# Create issues for each:
+bd create "TODO: Refactor auth module" -t task -p 2
+bd create "FIXME: Handle edge case in parser" -t bug -p 1
+bd create "TODO: Add integration tests" -t task -p 3
+
+# Check status
+bd status  # Shows 3 new open issues
+
+# Try to exit again - hook sees open issues, approves exit
+```
+
+**When the hook approves exit:**
+- Open beads issues exist (indicating work was captured)
+- No TODO/FIXME markers in recent git changes
+- Beads not installed or not initialized
+
 ## Remember
 
 - **`bd ready`** is your starting point - it shows what's actually actionable

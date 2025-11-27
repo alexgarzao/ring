@@ -13,6 +13,33 @@ Supported Platforms:
 
 from typing import Dict, Type, Optional
 
+
+class PlatformID:
+    """
+    Platform identifier constants.
+
+    Use these instead of magic strings when referencing platforms.
+
+    Example:
+        if platform == PlatformID.CLAUDE:
+            # handle Claude Code
+    """
+    CLAUDE = "claude"
+    FACTORY = "factory"
+    CURSOR = "cursor"
+    CLINE = "cline"
+
+    @classmethod
+    def all(cls) -> list:
+        """Return all platform identifiers."""
+        return [cls.CLAUDE, cls.FACTORY, cls.CURSOR, cls.CLINE]
+
+    @classmethod
+    def is_valid(cls, platform: str) -> bool:
+        """Check if a platform identifier is valid."""
+        return platform.lower() in cls.all()
+
+
 from ring_installer.adapters.base import PlatformAdapter
 from ring_installer.adapters.claude import ClaudeAdapter
 from ring_installer.adapters.factory import FactoryAdapter
@@ -21,10 +48,10 @@ from ring_installer.adapters.cline import ClineAdapter
 
 # Registry of supported platforms and their adapters
 ADAPTER_REGISTRY: Dict[str, Type[PlatformAdapter]] = {
-    "claude": ClaudeAdapter,
-    "factory": FactoryAdapter,
-    "cursor": CursorAdapter,
-    "cline": ClineAdapter,
+    PlatformID.CLAUDE: ClaudeAdapter,
+    PlatformID.FACTORY: FactoryAdapter,
+    PlatformID.CURSOR: CursorAdapter,
+    PlatformID.CLINE: ClineAdapter,
 }
 
 # List of supported platform identifiers
@@ -101,6 +128,8 @@ def list_platforms() -> list[dict]:
 
 
 __all__ = [
+    # Platform identifiers
+    "PlatformID",
     # Base class
     "PlatformAdapter",
     # Concrete adapters

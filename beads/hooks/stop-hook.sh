@@ -27,6 +27,22 @@ EOF
   exit 0
 fi
 
+# Check if checkpoint has been completed
+# Strategy: If there are open issues OR no uncommitted changes with markers, approve exit
+OPEN_ISSUES=$(bd status 2>/dev/null | grep -E "Total Issues:|Open:" | head -2 | tail -1 | awk '{print $2}' || echo "0")
+RECENT_MARKERS=$(git diff --name-only HEAD~5 2>/dev/null | head -20 | xargs grep -c -E "(TODO|FIXME|HACK|XXX):" 2>/dev/null | awk '{sum+=$1} END {print sum}' || echo "0")
+
+# If we have open issues capturing work, or no markers found, allow exit
+if [[ "$OPEN_ISSUES" -gt 0 ]] || [[ "$RECENT_MARKERS" -eq 0 ]]; then
+  cat <<'EOF'
+{
+  "decision": "approve",
+  "reason": "beads checkpoint complete - work captured in issues or no markers found"
+}
+EOF
+  exit 0
+fi
+
 # Beads is active - inject prompt to capture leftover work
 prompt='**BEADS END-OF-SESSION CHECKPOINT**
 

@@ -262,33 +262,76 @@ class FactoryAdapter(PlatformAdapter):
         """
         Replace agent references with droid references.
 
+        This function performs selective replacement to avoid replacing
+        "agent" in unrelated contexts like "user agent", URLs, or code blocks.
+
         Args:
             text: Text containing agent references
 
         Returns:
             Text with droid references
         """
-        # Pattern replacements for various contexts
-        replacements = [
-            # Exact matches (case sensitive)
-            (r'\bagent\b', 'droid'),
-            (r'\bAgent\b', 'Droid'),
-            (r'\bAGENT\b', 'DROID'),
-            (r'\bagents\b', 'droids'),
-            (r'\bAgents\b', 'Droids'),
-            (r'\bAGENTS\b', 'DROIDS'),
-            # Compound terms
-            (r'\bsubagent\b', 'subdroid'),
-            (r'\bSubagent\b', 'Subdroid'),
-            (r'\bsubagent_type\b', 'subdroid_type'),
+        # First, protect code blocks and URLs from replacement
+        protected_regions = []
+
+        # Protect code blocks (fenced)
+        code_block_pattern = r'```[\s\S]*?```'
+        for match in re.finditer(code_block_pattern, text):
+            protected_regions.append((match.start(), match.end()))
+
+        # Protect inline code
+        inline_code_pattern = r'`[^`]+`'
+        for match in re.finditer(inline_code_pattern, text):
+            protected_regions.append((match.start(), match.end()))
+
+        # Protect URLs
+        url_pattern = r'https?://[^\s)]+|www\.[^\s)]+'
+        for match in re.finditer(url_pattern, text):
+            protected_regions.append((match.start(), match.end()))
+
+        def is_protected(pos: int) -> bool:
+            """Check if a position is within a protected region."""
+            return any(start <= pos < end for start, end in protected_regions)
+
+        # Ring-specific context patterns
+        ring_contexts = [
             # Tool references
             (r'"ring:([^"]*)-agent"', r'"ring:\1-droid"'),
             (r"'ring:([^']*)-agent'", r"'ring:\1-droid'"),
+            # Subagent references
+            (r'\bsubagent_type\b', 'subdroid_type'),
+            (r'\bsubagent\b', 'subdroid'),
+            (r'\bSubagent\b', 'Subdroid'),
         ]
 
         result = text
-        for pattern, replacement in replacements:
-            result = re.sub(pattern, replacement, result)
+        for pattern, replacement in ring_contexts:
+            # Replace only in non-protected regions
+            matches = list(re.finditer(pattern, result))
+            offset = 0
+            for match in matches:
+                if not is_protected(match.start() + offset):
+                    result = result[:match.start() + offset] + re.sub(pattern, replacement, match.group()) + result[match.end() + offset:]
+                    offset += len(re.sub(pattern, replacement, match.group())) - len(match.group())
+
+        # General agent terminology (with exclusions)
+        general_replacements = [
+            # Skip "user agent" and similar patterns
+            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)agent\b(?!\s+string)(?!\s+header)', 'droid'),
+            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)Agent\b(?!\s+string)(?!\s+header)', 'Droid'),
+            (r'\bAGENT\b(?!\s+STRING)(?!\s+HEADER)', 'DROID'),
+            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)agents\b(?!\s+strings)(?!\s+headers)', 'droids'),
+            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)Agents\b(?!\s+strings)(?!\s+headers)', 'Droids'),
+            (r'\bAGENTS\b(?!\s+STRINGS)(?!\s+HEADERS)', 'DROIDS'),
+        ]
+
+        for pattern, replacement in general_replacements:
+            matches = list(re.finditer(pattern, result))
+            offset = 0
+            for match in matches:
+                if not is_protected(match.start() + offset):
+                    result = result[:match.start() + offset] + replacement + result[match.end() + offset:]
+                    offset += len(replacement) - len(match.group())
 
         return result
 

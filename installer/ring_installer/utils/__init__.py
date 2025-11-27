@@ -14,6 +14,16 @@ from ring_installer.utils.platform_detect import (
     get_platform_version,
     is_platform_installed,
 )
+from ring_installer.utils.version import (
+    Version,
+    InstallManifest,
+    compare_versions,
+    is_update_available,
+    get_ring_version,
+    get_installed_version,
+    check_for_updates,
+    save_install_manifest,
+)
 
 __all__ = [
     # Filesystem utilities
@@ -26,4 +36,13 @@ __all__ = [
     "detect_installed_platforms",
     "get_platform_version",
     "is_platform_installed",
+    # Version management
+    "Version",
+    "InstallManifest",
+    "compare_versions",
+    "is_update_available",
+    "get_ring_version",
+    "get_installed_version",
+    "check_for_updates",
+    "save_install_manifest",
 ]

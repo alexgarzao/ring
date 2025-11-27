@@ -47,7 +47,20 @@ class InstallTarget:
                 f"Supported: {', '.join(SUPPORTED_PLATFORMS)}"
             )
         if self.path is not None:
-            self.path = Path(self.path).expanduser()
+            self.path = Path(self.path).expanduser().resolve()
+            # Validate path is within expected boundaries
+            home = Path.home()
+            try:
+                self.path.relative_to(home)
+            except ValueError:
+                # Path not under home - check if it's a reasonable location
+                allowed = [Path("/opt"), Path("/usr/local")]
+                if not any(
+                    self.path.is_relative_to(p) for p in allowed if p.exists()
+                ):
+                    raise ValueError(
+                        f"Install path must be under home directory or /opt, /usr/local: {self.path}"
+                    )
 
 
 @dataclass
@@ -92,6 +105,7 @@ class InstallResult:
         components_installed: Count of successfully installed components
         components_failed: Count of failed component installations
         components_skipped: Count of skipped components
+        components_removed: Count of removed components (for uninstall operations)
         errors: List of error messages
         warnings: List of warning messages
         details: Detailed results per component
@@ -102,6 +116,7 @@ class InstallResult:
     components_installed: int = 0
     components_failed: int = 0
     components_skipped: int = 0
+    components_removed: int = 0
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     details: List[ComponentResult] = field(default_factory=list)
@@ -139,11 +154,22 @@ class InstallResult:
             message=message
         ))
 
+    def add_removal(self, target: Path, message: str = "") -> None:
+        """Record a successful component removal."""
+        self.components_removed += 1
+        self.details.append(ComponentResult(
+            source_path=Path(""),  # No source for removals
+            target_path=target,
+            status=InstallStatus.SUCCESS,
+            message=message or "Removed"
+        ))
+
     def finalize(self) -> None:
         """Set the overall status based on component results."""
-        if self.components_failed == 0 and self.components_installed > 0:
+        total_success = self.components_installed + self.components_removed
+        if self.components_failed == 0 and total_success > 0:
             self.status = InstallStatus.SUCCESS
-        elif self.components_installed > 0:
+        elif total_success > 0:
             self.status = InstallStatus.PARTIAL
         elif self.components_skipped > 0 and self.components_failed == 0:
             self.status = InstallStatus.SKIPPED
@@ -206,9 +232,17 @@ def discover_ring_components(ring_path: Path, plugin_names: Optional[List[str]] 
         with open(marketplace_path) as f:
             marketplace = json.load(f)
 
+        # Validate marketplace has plugins
+        if not marketplace.get("plugins"):
+            import warnings
+            warnings.warn(f"marketplace.json contains no plugins at {marketplace_path}")
+            return {}
+
         # Process each plugin in marketplace
         for plugin in marketplace.get("plugins", []):
-            plugin_name = plugin.get("name", "").replace("ring-", "")
+            name = plugin.get("name", "")
+            # Only strip "ring-" prefix, not from anywhere in the string
+            plugin_name = name[5:] if name.startswith("ring-") else name
             source = plugin.get("source", "")
 
             # Check filters
@@ -549,3 +583,464 @@ def list_installed(platform: str) -> Dict[str, List[str]]:
                         installed[component_type].append(file.name)
 
     return installed
+
+
+@dataclass
+class UpdateCheckResult:
+    """
+    Result of checking for updates.
+
+    Attributes:
+        platform: Platform identifier
+        installed_version: Currently installed version
+        available_version: Available version in source
+        update_available: Whether an update is available
+        changed_files: Files that have changed
+        new_files: New files to be added
+        removed_files: Files to be removed
+    """
+    platform: str
+    installed_version: Optional[str]
+    available_version: Optional[str]
+    update_available: bool
+    changed_files: List[str] = field(default_factory=list)
+    new_files: List[str] = field(default_factory=list)
+    removed_files: List[str] = field(default_factory=list)
+
+    @property
+    def has_changes(self) -> bool:
+        """Check if there are any changes."""
+        return bool(self.changed_files or self.new_files or self.removed_files)
+
+
+def check_updates(
+    source_path: Path,
+    targets: List[InstallTarget]
+) -> Dict[str, UpdateCheckResult]:
+    """
+    Check for available updates on target platforms.
+
+    Args:
+        source_path: Path to Ring source
+        targets: List of platforms to check
+
+    Returns:
+        Dictionary mapping platform names to UpdateCheckResult
+    """
+    from ring_installer.utils.version import (
+        check_for_updates,
+        get_ring_version,
+    )
+
+    results: Dict[str, UpdateCheckResult] = {}
+    manifest = load_manifest()
+
+    for target in targets:
+        adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
+        install_path = target.path or adapter.get_install_path()
+
+        update_info = check_for_updates(source_path, install_path, target.platform)
+
+        results[target.platform] = UpdateCheckResult(
+            platform=target.platform,
+            installed_version=update_info.installed_version,
+            available_version=update_info.available_version,
+            update_available=update_info.update_available,
+            changed_files=update_info.changed_files,
+            new_files=update_info.new_files,
+            removed_files=update_info.removed_files,
+        )
+
+    return results
+
+
+def update_with_diff(
+    source_path: Path,
+    targets: List[InstallTarget],
+    options: Optional[InstallOptions] = None,
+    progress_callback: Optional[Callable[[str, int, int], None]] = None
+) -> InstallResult:
+    """
+    Update Ring components, only updating changed files.
+
+    This is a smarter update that compares installed files with source
+    and only updates files that have changed.
+
+    Args:
+        source_path: Path to the Ring repository/installation
+        targets: List of installation targets
+        options: Installation options
+        progress_callback: Optional callback for progress updates
+
+    Returns:
+        InstallResult with details about what was updated
+    """
+    from ring_installer.utils.fs import (
+        copy_with_transform,
+        backup_existing,
+        ensure_directory,
+        get_file_hash,
+    )
+    from ring_installer.utils.version import (
+        get_ring_version,
+        get_manifest_path,
+        InstallManifest,
+        save_install_manifest,
+    )
+
+    options = options or InstallOptions()
+    result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
+
+    manifest = load_manifest()
+    source_version = get_ring_version(source_path) or "0.0.0"
+
+    # Discover components
+    components = discover_ring_components(
+        source_path,
+        plugin_names=options.plugin_names,
+        exclude_plugins=options.exclude_plugins
+    )
+
+    # Process each target
+    for target in targets:
+        adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
+        install_path = target.path or adapter.get_install_path()
+        component_mapping = adapter.get_component_mapping()
+
+        # Load existing manifest
+        existing_manifest = InstallManifest.load(get_manifest_path(install_path))
+        existing_files = existing_manifest.files if existing_manifest else {}
+
+        # Track installed files for new manifest
+        installed_files: Dict[str, str] = {}
+        installed_plugins: List[str] = []
+
+        # Process each plugin
+        for plugin_name, plugin_components in components.items():
+            installed_plugins.append(plugin_name)
+
+            # Process each component type
+            for component_type, files in plugin_components.items():
+                if component_type not in component_mapping:
+                    continue
+
+                if target.components and component_type not in target.components:
+                    continue
+
+                target_config = component_mapping[component_type]
+                target_dir = install_path / target_config["target_dir"]
+
+                if len(components) > 1:
+                    target_dir = target_dir / plugin_name
+
+                if not options.dry_run:
+                    ensure_directory(target_dir)
+
+                for source_file in files:
+                    if progress_callback:
+                        progress_callback(
+                            f"Checking {source_file.name}",
+                            result.components_installed + result.components_skipped,
+                            sum(len(f) for pc in components.values() for f in pc.values())
+                        )
+
+                    # Determine target path
+                    if component_type == "skills":
+                        skill_name = source_file.parent.name
+                        target_file = target_dir / skill_name / source_file.name
+                    else:
+                        target_filename = adapter.get_target_filename(
+                            source_file.name,
+                            component_type.rstrip("s")
+                        )
+                        target_file = target_dir / target_filename
+
+                    # Compute source hash
+                    try:
+                        source_hash = get_file_hash(source_file)
+                    except Exception as e:
+                        result.add_failure(source_file, target_file, f"Hash error: {e}")
+                        continue
+
+                    # Check if update needed by comparing source hash with manifest
+                    relative_path = str(target_file.relative_to(install_path))
+                    target_exists = target_file.exists()
+
+                    # Get stored source hash from manifest (backward compatible)
+                    stored_source_hash = existing_files.get(relative_path, "")
+
+                    if target_exists and stored_source_hash:
+                        # Compare current source hash with stored source hash
+                        if source_hash == stored_source_hash:
+                            # Source file unchanged since last install, skip
+                            installed_files[relative_path] = source_hash
+                            result.add_skip(source_file, target_file, "No changes")
+                            continue
+                    elif target_exists and not stored_source_hash:
+                        # Old manifest without source hashes - always update for safety
+                        # This ensures first run after upgrade updates everything
+                        pass
+
+                    # File needs update
+                    try:
+                        with open(source_file, "r", encoding="utf-8") as f:
+                            content = f.read()
+                    except Exception as e:
+                        result.add_failure(source_file, target_file, f"Read error: {e}")
+                        continue
+
+                    # Transform content
+                    try:
+                        metadata = {
+                            "name": source_file.stem,
+                            "source_path": str(source_file),
+                            "plugin": plugin_name
+                        }
+
+                        if component_type == "agents":
+                            transformed = adapter.transform_agent(content, metadata)
+                        elif component_type == "commands":
+                            transformed = adapter.transform_command(content, metadata)
+                        elif component_type == "skills":
+                            transformed = adapter.transform_skill(content, metadata)
+                        elif component_type == "hooks":
+                            transformed = adapter.transform_hook(content, metadata)
+                        else:
+                            transformed = content
+                    except Exception as e:
+                        result.add_failure(source_file, target_file, f"Transform error: {e}")
+                        continue
+
+                    # Write file
+                    if options.dry_run:
+                        if options.verbose:
+                            action = "update" if target_exists else "install"
+                            result.warnings.append(
+                                f"[DRY RUN] Would {action} {source_file} -> {target_file}"
+                            )
+                        result.add_success(source_file, target_file)
+                    else:
+                        try:
+                            backup_path = None
+                            if target_exists and options.backup:
+                                backup_path = backup_existing(target_file)
+
+                            copy_with_transform(
+                                source_file,
+                                target_file,
+                                transform_func=lambda _: transformed
+                            )
+                            result.add_success(source_file, target_file, backup_path)
+                        except Exception as e:
+                            result.add_failure(source_file, target_file, f"Write error: {e}")
+                            continue
+
+                    installed_files[relative_path] = source_hash
+
+        # Save updated manifest
+        if not options.dry_run:
+            save_install_manifest(
+                install_path=install_path,
+                source_path=source_path,
+                platform=target.platform,
+                version=source_version,
+                plugins=installed_plugins,
+                installed_files=installed_files
+            )
+
+    result.finalize()
+    return result
+
+
+@dataclass
+class SyncResult:
+    """
+    Result of syncing platforms.
+
+    Attributes:
+        platforms_synced: List of platforms that were synced
+        platforms_skipped: List of platforms that were skipped
+        drift_detected: Whether drift was detected between platforms
+        drift_details: Details about drift per platform
+    """
+    platforms_synced: List[str] = field(default_factory=list)
+    platforms_skipped: List[str] = field(default_factory=list)
+    drift_detected: bool = False
+    drift_details: Dict[str, List[str]] = field(default_factory=dict)
+    install_results: Dict[str, InstallResult] = field(default_factory=dict)
+
+
+def sync_platforms(
+    source_path: Path,
+    targets: List[InstallTarget],
+    options: Optional[InstallOptions] = None,
+    progress_callback: Optional[Callable[[str, int, int], None]] = None
+) -> SyncResult:
+    """
+    Sync Ring components across multiple platforms.
+
+    Ensures all target platforms have consistent Ring installations
+    by detecting drift and re-applying transformations.
+
+    Args:
+        source_path: Path to Ring source
+        targets: List of platforms to sync
+        options: Sync options
+        progress_callback: Optional progress callback
+
+    Returns:
+        SyncResult with details about the sync operation
+    """
+    from ring_installer.utils.version import (
+        get_installed_version,
+        get_ring_version,
+    )
+
+    options = options or InstallOptions()
+    sync_result = SyncResult()
+
+    manifest = load_manifest()
+    source_version = get_ring_version(source_path) or "0.0.0"
+
+    # Check each platform for drift
+    platform_versions: Dict[str, Optional[str]] = {}
+
+    for target in targets:
+        adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
+        install_path = target.path or adapter.get_install_path()
+
+        installed_version = get_installed_version(install_path, target.platform)
+        platform_versions[target.platform] = installed_version
+
+        # Check for drift from source
+        if installed_version != source_version:
+            sync_result.drift_detected = True
+            sync_result.drift_details[target.platform] = [
+                f"Version mismatch: installed={installed_version}, source={source_version}"
+            ]
+
+    # Sync each platform
+    for target in targets:
+        if progress_callback:
+            progress_callback(
+                f"Syncing {target.platform}",
+                targets.index(target),
+                len(targets)
+            )
+
+        # Use update_with_diff for smart syncing
+        install_result = update_with_diff(
+            source_path,
+            [target],
+            options,
+            progress_callback
+        )
+
+        sync_result.install_results[target.platform] = install_result
+
+        if install_result.status in [InstallStatus.SUCCESS, InstallStatus.SKIPPED]:
+            sync_result.platforms_synced.append(target.platform)
+        else:
+            sync_result.platforms_skipped.append(target.platform)
+
+    return sync_result
+
+
+def uninstall_with_manifest(
+    targets: List[InstallTarget],
+    options: Optional[InstallOptions] = None,
+    progress_callback: Optional[Callable[[str, int, int], None]] = None
+) -> InstallResult:
+    """
+    Remove Ring components using the install manifest for precision.
+
+    Only removes files that were installed by Ring, preserving
+    user modifications outside the manifest.
+
+    Args:
+        targets: List of platforms to uninstall from
+        options: Uninstall options
+        progress_callback: Optional progress callback
+
+    Returns:
+        InstallResult with details about what was removed
+    """
+    from ring_installer.utils.fs import safe_remove
+    from ring_installer.utils.version import get_manifest_path, InstallManifest
+
+    options = options or InstallOptions()
+    result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
+
+    manifest = load_manifest()
+
+    for target in targets:
+        adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
+        install_path = target.path or adapter.get_install_path()
+
+        # Load install manifest
+        install_manifest = InstallManifest.load(get_manifest_path(install_path))
+
+        if not install_manifest:
+            result.warnings.append(
+                f"No install manifest found for {target.platform}, "
+                "falling back to directory removal"
+            )
+            # Fall back to regular uninstall
+            component_mapping = adapter.get_component_mapping()
+            for component_type, config in component_mapping.items():
+                target_dir = install_path / config["target_dir"]
+                if target_dir.exists():
+                    if options.dry_run:
+                        if options.verbose:
+                            result.warnings.append(f"[DRY RUN] Would remove {target_dir}")
+                    else:
+                        try:
+                            if options.backup:
+                                from ring_installer.utils.fs import backup_existing
+                                backup_existing(target_dir)
+                            shutil.rmtree(target_dir)
+                            result.components_installed += 1
+                        except Exception as e:
+                            result.errors.append(f"Failed to remove {target_dir}: {e}")
+                            result.components_failed += 1
+            continue
+
+        # Remove files from manifest
+        for file_path in install_manifest.files.keys():
+            full_path = install_path / file_path
+
+            if progress_callback:
+                progress_callback(
+                    f"Removing {file_path}",
+                    list(install_manifest.files.keys()).index(file_path),
+                    len(install_manifest.files)
+                )
+
+            if options.dry_run:
+                if options.verbose:
+                    result.warnings.append(f"[DRY RUN] Would remove {full_path}")
+                result.components_installed += 1
+                continue
+
+            if not full_path.exists():
+                result.warnings.append(f"File already removed: {full_path}")
+                continue
+
+            try:
+                if options.backup:
+                    from ring_installer.utils.fs import backup_existing
+                    backup_existing(full_path)
+
+                safe_remove(full_path)
+                result.components_installed += 1
+            except Exception as e:
+                result.errors.append(f"Failed to remove {full_path}: {e}")
+                result.components_failed += 1
+
+        # Remove install manifest
+        if not options.dry_run:
+            manifest_path = get_manifest_path(install_path)
+            safe_remove(manifest_path, missing_ok=True)
+
+    result.finalize()
+    return result
