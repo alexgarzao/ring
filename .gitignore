@@ -2,6 +2,7 @@
 .private-journal/
 .test/
 examples/
+.references/
 
 # Ring infrastructure runtime files
 .ring/
