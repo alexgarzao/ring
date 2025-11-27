@@ -9,7 +9,7 @@
     {
       "name": "ring-default",
       "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety), systematic debugging, and workflow orchestration. 20 essential skills for software engineering excellence.",
-      "version": "0.12.2",
+      "version": "0.12.3",
       "source": "./default",
       "homepage": "https://github.com/lerianstudio/ring/tree/default",
       "repository": "https://github.com/lerianstudio/ring/tree/default",
@@ -54,7 +54,7 @@
     {
       "name": "ring-pm-team",
       "description": "Product team pre-development workflow skills: 8-gate planning system including PRD creation, feature mapping, TRD creation, API design, data modeling, dependency mapping, task breakdown, and subtask creation. Comprehensive planning framework for product features of any complexity.",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "source": "./pm-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pm-team",
       "repository": "https://github.com/lerianstudio/ring/tree/pm-team",
@@ -98,7 +98,7 @@
     {
       "name": "ralph-wiggum",
       "description": "Ralph Wiggum iterative AI development loops - autonomous task refinement using Stop hooks. Enables hands-off iteration where Claude continuously works on a task until completion, with progress tracked via state files and completion signaled through XML promise tags.",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "source": "./ralph-wiggum",
       "homepage": "https://github.com/lerianstudio/ring/tree/ralph-wiggum",
       "repository": "https://github.com/lerianstudio/ring/tree/ralph-wiggum",
@@ -116,5 +116,5 @@
       ]
     }
   ],
-  "version": "0.18.0"
+  "version": "0.19.0"
 }
