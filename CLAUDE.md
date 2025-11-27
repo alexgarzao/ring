@@ -7,17 +7,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **7 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
-- **ring-default**: 20 core skills, 6 slash commands, 5 specialized agents
+- **ring-default**: 21 core skills, 7 slash commands, 5 specialized agents
 - **ring-dev-team**: 2 developer skills, 10 specialized developer agents (Backend [generic], Backend Go, Backend TypeScript, Backend Python, DevOps, Frontend [generic], Frontend TypeScript, Frontend Designer, QA, SRE)
 - **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
-- **ring-pm-team**: 9 product planning skills, 2 slash commands
+- **ring-pm-team**: 10 product planning skills, 3 research agents, 2 slash commands
 - **ralph-wiggum**: 1 skill for iterative AI development loops using Stop hooks
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 - **beads**: 1 skill for Beads (bd) issue tracking integration
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 46 skills (20 + 2 + 6 + 9 + 1 + 7 + 1) across 7 plugins**
+**Total: 48 skills (21 + 2 + 6 + 10 + 1 + 7 + 1) across 7 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -43,7 +43,7 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 20 core skills
+│   ├── skills/                       # 21 core skills
 │   │   ├── brainstorming/            # Socratic design refinement
 │   │   ├── test-driven-development/  # RED-GREEN-REFACTOR cycle enforcement
 │   │   ├── systematic-debugging/     # 4-phase root cause analysis
@@ -55,9 +55,10 @@ ring/                                  # Monorepo root
 │   │   ├── security-reviewer.md     # Safety (OWASP, auth, validation)
 │   │   ├── write-plan.md            # Implementation planning
 │   │   └── codebase-explorer.md     # Deep architecture analysis (Opus)
-│   ├── commands/                    # 6 slash commands
+│   ├── commands/                    # 7 slash commands
 │   │   ├── codereview.md           # /ring-default:codereview - dispatch 3 parallel reviewers
-│   │   └── brainstorm.md           # /ring-default:brainstorm - interactive design
+│   │   ├── brainstorm.md           # /ring-default:brainstorm - interactive design
+│   │   └── codify.md               # /ring-default:codify - document solved problems
 │   ├── hooks/                      # Session lifecycle
 │   │   ├── hooks.json             # SessionStart, UserPromptSubmit config
 │   │   ├── session-start.sh       # Load skills quick reference
@@ -89,10 +90,14 @@ ring/                                  # Monorepo root
 │       └── regulatory/           # Brazilian regulatory documentation
 ├── pm-team/                       # Product Planning plugin (ring-pm-team)
 │   ├── commands/                  # 2 slash commands
-│   │   ├── pre-dev-feature.md    # /ring-pm-team:pre-dev-feature - 3-gate workflow
-│   │   └── pre-dev-full.md       # /ring-pm-team:pre-dev-full - 8-gate workflow
-│   └── skills/                    # 9 pre-dev workflow skills
-│       └── pre-dev-*/            # PRD→TRD→API→Data→Tasks
+│   │   ├── pre-dev-feature.md    # /ring-pm-team:pre-dev-feature - 4-gate workflow
+│   │   └── pre-dev-full.md       # /ring-pm-team:pre-dev-full - 9-gate workflow
+│   ├── agents/                    # 3 research agents
+│   │   ├── repo-research-analyst.md      # Codebase pattern research
+│   │   ├── best-practices-researcher.md  # Web/Context7 research
+│   │   └── framework-docs-researcher.md  # Tech stack documentation
+│   └── skills/                    # 10 pre-dev workflow skills
+│       └── pre-dev-*/            # Research→PRD→TRD→API→Data→Tasks
 ├── ralph-wiggum/                  # Iterative AI loops plugin (ralph-wiggum)
 │   ├── commands/                  # 3 slash commands
 │   │   ├── ralph-loop.md         # Start iterative loop
@@ -153,8 +158,8 @@ Skill tool: "ring:using-ring"              # Load mandatory workflows
 # Slash commands
 /ring-default:codereview          # Dispatch 3 parallel reviewers
 /ring-default:brainstorm          # Socratic design refinement
-/ring-pm-team:pre-dev-feature     # <2 day features (3 gates)
-/ring-pm-team:pre-dev-full        # ≥2 day features (8 gates)
+/ring-pm-team:pre-dev-feature     # <2 day features (4 gates)
+/ring-pm-team:pre-dev-full        # ≥2 day features (9 gates)
 /ring-default:execute-plan        # Batch execution with checkpoints
 /ring-default:worktree            # Create isolated development branch
 
@@ -276,11 +281,13 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 ### Pre-Dev Workflow
 ```
 Simple (<2 days): /ring-pm-team:pre-dev-feature
+├── Gate 0: pm-team/skills/pre-dev-research → docs/pre-dev/feature/research.md (parallel agents)
 ├── Gate 1: pm-team/skills/pre-dev-prd-creation → docs/pre-dev/feature/PRD.md
 ├── Gate 2: pm-team/skills/pre-dev-trd-creation → docs/pre-dev/feature/TRD.md
 └── Gate 3: pm-team/skills/pre-dev-task-breakdown → docs/pre-dev/feature/tasks.md
 
 Complex (≥2 days): /ring-pm-team:pre-dev-full
+├── Gate 0: Research Phase (3 parallel agents: repo-research, best-practices, framework-docs)
 ├── Gates 1-3: Same as above
 ├── Gate 4: pm-team/skills/pre-dev-api-design → docs/pre-dev/feature/API.md
 ├── Gate 5: pm-team/skills/pre-dev-data-model → docs/pre-dev/feature/data-model.md
@@ -488,7 +495,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Core plugin: `default/` (20 skills, 5 agents, 6 commands)
 - Developer agents plugin: `dev-team/` (2 skills, 10 specialized developer agents)
 - FinOps plugin: `finops-team/` (6 skills, 2 agents)
-- Product planning plugin: `pm-team/` (9 skills, 2 commands)
+- Product planning plugin: `pm-team/` (10 skills, 3 research agents, 2 commands)
 - Ralph plugin: `ralph-wiggum/` (1 skill, 3 commands, Stop hook)
 - Technical writing plugin: `tw-team/` (7 skills, 3 agents, 3 commands)
 - Beads plugin: `beads/` (1 skill, hooks)

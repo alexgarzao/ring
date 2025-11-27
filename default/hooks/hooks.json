@@ -28,6 +28,14 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/claude-md-reminder.sh"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/detect-solution.sh"
+          }
+        ]
       }
     ]
   }

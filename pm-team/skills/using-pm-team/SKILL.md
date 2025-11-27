@@ -1,8 +1,8 @@
 ---
 name: using-pm-team
 description: |
-  8 pre-dev workflow skills organized into Small Track (3 gates, <2 days) and
-  Large Track (8 gates, 2+ days) for systematic feature planning.
+  10 pre-dev workflow skills + 3 research agents organized into Small Track (4 gates, <2 days) and
+  Large Track (9 gates, 2+ days) for systematic feature planning with research-first approach.
 
 trigger: |
   - Starting any feature implementation
@@ -17,7 +17,7 @@ skip_when: |
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 8 pre-development planning skills. Use them via `Skill tool: "ring-pm-team:gate-name"` or via slash commands.
+The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring-pm-team:gate-name"` or via slash commands.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
@@ -40,7 +40,7 @@ Pre-dev workflow ensures:
 
 ## Two Tracks: Choose Your Path
 
-### Small Track (3 Gates) – <2 Day Features
+### Small Track (4 Gates) – <2 Day Features
 
 **Use when ALL criteria met:**
 - ✅ Implementation: <2 days
@@ -53,11 +53,12 @@ Pre-dev workflow ensures:
 **Gates:**
 | # | Gate | Skill | Output |
 |---|------|-------|--------|
+| 0 | **Research Phase** | pre-dev-research | research.md |
 | 1 | Product Requirements | pre-dev-prd-creation | PRD.md |
 | 2 | Technical Requirements | pre-dev-trd-creation | TRD.md |
 | 3 | Task Breakdown | pre-dev-task-breakdown | tasks.md |
 
-**Planning time:** 30-60 minutes
+**Planning time:** 45-75 minutes
 
 **Examples:**
 - Add logout button
@@ -66,7 +67,7 @@ Pre-dev workflow ensures:
 
 ---
 
-### Large Track (8 Gates) – ≥2 Day Features
+### Large Track (9 Gates) – ≥2 Day Features
 
 **Use when ANY criteria met:**
 - ❌ Implementation: ≥2 days
@@ -79,6 +80,7 @@ Pre-dev workflow ensures:
 **Gates:**
 | # | Gate | Skill | Output |
 |---|------|-------|--------|
+| 0 | **Research Phase** | pre-dev-research | research.md |
 | 1 | Product Requirements | pre-dev-prd-creation | PRD.md |
 | 2 | Feature Map | pre-dev-feature-map | feature-map.md |
 | 3 | Technical Requirements | pre-dev-trd-creation | TRD.md |
@@ -88,7 +90,7 @@ Pre-dev workflow ensures:
 | 7 | Task Breakdown | pre-dev-task-breakdown | tasks.md |
 | 8 | Subtask Creation | pre-dev-subtask-creation | subtasks.md |
 
-**Planning time:** 2-4 hours
+**Planning time:** 2.5-4.5 hours
 
 **Examples:**
 - Add user authentication
@@ -98,7 +100,37 @@ Pre-dev workflow ensures:
 
 ---
 
-## 8 Pre-Dev Skills
+## 10 Pre-Dev Skills + 3 Research Agents
+
+### Gate 0: Research Phase (NEW)
+**Skill:** `pre-dev-research`
+**Output:** `docs/pre-dev/{feature}/research.md`
+
+**What:** Parallel research before planning
+**Covers:**
+- Existing codebase patterns (file:line references)
+- External best practices (URLs)
+- Framework documentation (version-specific)
+- Knowledge base search (docs/solutions/)
+
+**Research Modes:**
+| Mode | Primary Focus | When to Use |
+|------|---------------|-------------|
+| **greenfield** | Web research, best practices | New capability, no existing patterns |
+| **modification** | Codebase patterns | Extending existing functionality |
+| **integration** | API docs, SDK docs | Connecting external systems |
+
+**Dispatches 3 agents in PARALLEL:**
+1. `repo-research-analyst` - Codebase patterns, docs/solutions/
+2. `best-practices-researcher` - Web search, Context7
+3. `framework-docs-researcher` - Tech stack, versions
+
+**Use when:**
+- Starting any feature (always recommended)
+- Need to understand existing patterns
+- Greenfield feature needs best practices research
+
+---
 
 ### Gate 1: Product Requirements
 **Skill:** `pre-dev-prd-creation`
@@ -347,6 +379,7 @@ Remember:
 ## Available in This Plugin
 
 **Skills:**
+- pre-dev-research (Gate 0) ← NEW
 - pre-dev-prd-creation (Gate 1)
 - pre-dev-feature-map (Gate 2)
 - pre-dev-trd-creation (Gate 3)
@@ -357,9 +390,14 @@ Remember:
 - pre-dev-subtask-creation (Gate 8)
 - using-pm-team (this skill)
 
+**Research Agents:**
+- repo-research-analyst (codebase patterns, docs/solutions/)
+- best-practices-researcher (web search, Context7)
+- framework-docs-researcher (tech stack, versions)
+
 **Commands:**
-- `/ring-pm-team:pre-dev-feature` – Small track (3 gates)
-- `/ring-pm-team:pre-dev-full` – Large track (8 gates)
+- `/ring-pm-team:pre-dev-feature` – Small track (4 gates)
+- `/ring-pm-team:pre-dev-full` – Large track (9 gates)
 
 **Note:** If skills are unavailable, check if ring-pm-team is enabled in `.claude-plugin/marketplace.json`.
 

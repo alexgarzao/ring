@@ -164,7 +164,14 @@ FINDINGS:
    - If < 3: Return to Phase 1
    - **If ≥ 3: STOP → Architecture review required**
 
-5. **If 3+ Fixes Failed: Question Architecture**
+5. **After Fix Verified**
+   - Test passes and issue resolved?
+   - **If non-trivial (took > 5 min):** Suggest documentation
+   > "The fix has been verified. Would you like to document this solution for future reference?
+   > Run: `/ring-default:codify`"
+   - **Use ring:codify-solution skill** to capture institutional knowledge
+
+6. **If 3+ Fixes Failed: Question Architecture**
 
    Pattern indicating architectural problem:
    - Each fix reveals new problem elsewhere
@@ -218,6 +225,9 @@ FINDINGS:
 **Required sub-skills:**
 - **root-cause-tracing** - When error is deep in call stack (Phase 1, Step 5)
 - **test-driven-development** - For failing test case (Phase 4, Step 1)
+
+**Post-completion:**
+- **codify-solution** - Document non-trivial fixes (Phase 4, Step 5)
 
 **Complementary:**
 - **defense-in-depth** - Add validation after finding root cause

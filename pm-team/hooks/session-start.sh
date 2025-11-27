@@ -14,6 +14,7 @@ MONOREPO_ROOT="$(cd "$PLUGIN_ROOT/.." && pwd)"
 get_output_file() {
   local skill_name="$1"
   case "$skill_name" in
+    pre-dev-research)          echo "research.md" ;;
     pre-dev-prd-creation)      echo "PRD.md" ;;
     pre-dev-feature-map)       echo "feature-map.md" ;;
     pre-dev-trd-creation)      echo "TRD.md" ;;
@@ -112,7 +113,7 @@ EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-pm-team-system>\n**Pre-Dev Planning Skills**\n\n8 skills for structured feature planning (use via Skill tool):\n\n| Skill | Gate | Output |\n|-------|------|--------|\n| `ring-pm-team:pre-dev-prd-creation` | 1 | PRD.md |\n| `ring-pm-team:pre-dev-feature-map` | 2 | feature-map.md |\n| `ring-pm-team:pre-dev-trd-creation` | 3 | TRD.md |\n| `ring-pm-team:pre-dev-api-design` | 4 | API.md |\n| `ring-pm-team:pre-dev-data-model` | 5 | data-model.md |\n| `ring-pm-team:pre-dev-dependency-map` | 6 | dependencies.md |\n| `ring-pm-team:pre-dev-task-breakdown` | 7 | tasks.md |\n| `ring-pm-team:pre-dev-subtask-creation` | 8 | subtasks.md |\n\nFor full details: Skill tool with \"ring-pm-team:using-pm-team\"\n</ring-pm-team-system>"
+    "additionalContext": "<ring-pm-team-system>\n**Pre-Dev Planning Skills**\n\n9-gate structured feature planning (use via Skill tool):\n\n| Skill | Gate | Output |\n|-------|------|--------|\n| `ring-pm-team:pre-dev-research` | 0 | research.md |\n| `ring-pm-team:pre-dev-prd-creation` | 1 | PRD.md |\n| `ring-pm-team:pre-dev-feature-map` | 2 | feature-map.md |\n| `ring-pm-team:pre-dev-trd-creation` | 3 | TRD.md |\n| `ring-pm-team:pre-dev-api-design` | 4 | API.md |\n| `ring-pm-team:pre-dev-data-model` | 5 | data-model.md |\n| `ring-pm-team:pre-dev-dependency-map` | 6 | dependencies.md |\n| `ring-pm-team:pre-dev-task-breakdown` | 7 | tasks.md |\n| `ring-pm-team:pre-dev-subtask-creation` | 8 | subtasks.md |\n\nFor full details: Skill tool with \"ring-pm-team:using-pm-team\"\n</ring-pm-team-system>"
   }
 }
 EOF
@@ -123,7 +124,7 @@ else
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-pm-team-system>\n**Pre-Dev Planning Skills** (8 gates)\n\nFor full list: Skill tool with \"ring-pm-team:using-pm-team\"\n</ring-pm-team-system>"
+    "additionalContext": "<ring-pm-team-system>\n**Pre-Dev Planning Skills** (9 gates)\n\nFor full list: Skill tool with \"ring-pm-team:using-pm-team\"\n</ring-pm-team-system>"
   }
 }
 EOF

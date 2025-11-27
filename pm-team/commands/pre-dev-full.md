@@ -1,10 +1,10 @@
 ---
 name: pre-dev-full
-description: Complete 8-gate pre-dev workflow for large features (≥2 days)
+description: Complete 9-gate pre-dev workflow for large features (≥2 days)
 argument-hint: "[feature-name]"
 ---
 
-I'm running the **Full Track** pre-development workflow (8 gates) for your feature.
+I'm running the **Full Track** pre-development workflow (9 gates) for your feature.
 
 **This track is for features that have ANY of:**
 - ❌ Take ≥2 days to implement
@@ -29,11 +29,38 @@ Use the AskUserQuestion tool to gather:
 - This will be used for the directory name
 - Use kebab-case (e.g., "auth-system", "payment-processing", "file-upload")
 
-After getting the feature name, create the directory structure and run the 8-gate workflow:
+After getting the feature name, create the directory structure and run the 9-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>
 ```
+
+## Gate 0: Research Phase (NEW)
+
+**Skill:** ring-pm-team:pre-dev-research
+
+1. Determine research mode by asking user or inferring from context:
+   - **greenfield**: New capability, no existing patterns
+   - **modification**: Extending existing functionality
+   - **integration**: Connecting external systems
+
+2. Dispatch 3 research agents in PARALLEL:
+   - ring-pm-team:repo-research-analyst (codebase patterns, file:line refs)
+   - ring-pm-team:best-practices-researcher (web search, Context7)
+   - ring-pm-team:framework-docs-researcher (tech stack, versions)
+
+3. Aggregate findings into research document
+4. Save to: `docs/pre-dev/<feature-name>/research.md`
+5. Run Gate 0 validation checklist
+6. Get human approval before proceeding
+
+**Gate 0 Pass Criteria:**
+- [ ] Research mode determined and documented
+- [ ] All 3 agents dispatched and returned
+- [ ] At least one file:line reference (if modification mode)
+- [ ] At least one external URL (if greenfield mode)
+- [ ] docs/solutions/ knowledge base searched
+- [ ] Tech stack versions documented
 
 ## Gate 1: PRD Creation
 
@@ -207,9 +234,10 @@ mkdir -p docs/pre-dev/<feature-name>
 Report to human:
 
 ```
-✅ Full Track (8 gates) complete for <feature-name>
+✅ Full Track (9 gates) complete for <feature-name>
 
 Artifacts created:
+- docs/pre-dev/<feature-name>/research.md (Gate 0) ← NEW
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
 - docs/pre-dev/<feature-name>/feature-map.md (Gate 2)
 - docs/pre-dev/<feature-name>/trd.md (Gate 3)
@@ -231,7 +259,8 @@ Next steps:
 ## Remember
 
 - This is the **Full Track** - comprehensive and thorough
-- All 8 gates provide maximum planning depth
+- All 9 gates provide maximum planning depth
+- **Gate 0 (Research) runs 3 agents in parallel** for codebase, best practices, and framework docs
 - Technology decisions happen at Gate 6 (Dependency Map)
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate before proceeding

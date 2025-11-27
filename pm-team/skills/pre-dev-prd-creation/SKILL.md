@@ -45,6 +45,29 @@ Use this skill when:
 
 ## Mandatory Workflow
 
+### Phase 0: Load Research Findings (if available)
+
+Before writing the PRD, check for research output from Gate 0:
+
+```bash
+# Check if research.md exists
+ls docs/pre-dev/{feature-name}/research.md 2>/dev/null
+```
+
+**If research.md exists:**
+1. Load `docs/pre-dev/{feature-name}/research.md`
+2. Review codebase patterns (from repo-research-analyst)
+3. Review best practices (from best-practices-researcher)
+4. Review framework constraints (from framework-docs-researcher)
+
+**Required PRD Enhancements from Research:**
+- Reference existing patterns with `file:line` notation where relevant
+- Cite knowledge base findings from `docs/solutions/` if applicable
+- Note any constraints discovered that affect requirements
+- Include external best practice URLs as references
+
+**If research.md doesn't exist:** Proceed without research context (not recommended for complex features).
+
 ### Phase 1: Problem Discovery
 1. **Define the problem** without solution bias
 2. **Identify users** specifically (not "users" generally)

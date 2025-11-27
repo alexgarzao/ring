@@ -1,0 +1,164 @@
+{
+  "version": "1.0.0",
+  "platforms": {
+    "claude": {
+      "name": "Claude Code",
+      "description": "Anthropic's Claude Code CLI agent",
+      "install_path": "~/.claude",
+      "components": {
+        "agents": {
+          "source_dir": "agents",
+          "target_dir": "agents",
+          "file_extension": ".md",
+          "transform": "passthrough"
+        },
+        "commands": {
+          "source_dir": "commands",
+          "target_dir": "commands",
+          "file_extension": ".md",
+          "transform": "passthrough"
+        },
+        "skills": {
+          "source_dir": "skills",
+          "target_dir": "skills",
+          "file_extension": ".md",
+          "transform": "passthrough"
+        },
+        "hooks": {
+          "source_dir": "hooks",
+          "target_dir": "hooks",
+          "file_extension": [".json", ".sh", ".py"],
+          "transform": "passthrough"
+        }
+      },
+      "config_file": ".claude-plugin/plugin.json",
+      "detection": {
+        "config_path": "~/.claude",
+        "binary_name": "claude",
+        "version_command": "claude --version"
+      },
+      "native_format": true
+    },
+    "factory": {
+      "name": "Factory AI",
+      "description": "Factory AI development platform",
+      "install_path": "~/.factory",
+      "components": {
+        "agents": {
+          "source_dir": "agents",
+          "target_dir": "droids",
+          "file_extension": ".md",
+          "transform": "factory_droid"
+        },
+        "commands": {
+          "source_dir": "commands",
+          "target_dir": "commands",
+          "file_extension": ".md",
+          "transform": "factory_command"
+        },
+        "skills": {
+          "source_dir": "skills",
+          "target_dir": "skills",
+          "file_extension": ".md",
+          "transform": "factory_skill"
+        }
+      },
+      "config_file": ".factory/config.json",
+      "detection": {
+        "config_path": "~/.factory",
+        "binary_name": "factory",
+        "version_command": "factory --version"
+      },
+      "native_format": false,
+      "terminology": {
+        "agent": "droid",
+        "skill": "skill",
+        "command": "command"
+      }
+    },
+    "cursor": {
+      "name": "Cursor",
+      "description": "Cursor AI-powered code editor",
+      "install_path": "~/.cursor",
+      "components": {
+        "agents": {
+          "source_dir": "agents",
+          "target_dir": "workflows",
+          "file_extension": ".md",
+          "transform": "cursor_workflow"
+        },
+        "commands": {
+          "source_dir": "commands",
+          "target_dir": "workflows",
+          "file_extension": ".md",
+          "transform": "cursor_workflow"
+        },
+        "skills": {
+          "source_dir": "skills",
+          "target_dir": "rules",
+          "file_extension": ".md",
+          "transform": "cursor_rule"
+        }
+      },
+      "config_file": ".cursorrules",
+      "detection": {
+        "config_path": "~/.cursor",
+        "binary_name": null,
+        "app_path": {
+          "darwin": "/Applications/Cursor.app",
+          "win32": "%LOCALAPPDATA%/Programs/cursor/Cursor.exe",
+          "linux": "/usr/bin/cursor"
+        }
+      },
+      "native_format": false,
+      "terminology": {
+        "agent": "workflow",
+        "skill": "rule",
+        "command": "workflow"
+      }
+    },
+    "cline": {
+      "name": "Cline",
+      "description": "Cline AI coding assistant (VS Code extension)",
+      "install_path": "~/.cline",
+      "components": {
+        "agents": {
+          "source_dir": "agents",
+          "target_dir": "prompts",
+          "file_extension": ".md",
+          "transform": "cline_prompt"
+        },
+        "commands": {
+          "source_dir": "commands",
+          "target_dir": "prompts",
+          "file_extension": ".md",
+          "transform": "cline_prompt"
+        },
+        "skills": {
+          "source_dir": "skills",
+          "target_dir": "prompts",
+          "file_extension": ".md",
+          "transform": "cline_prompt"
+        }
+      },
+      "config_file": ".cline/settings.json",
+      "detection": {
+        "config_path": "~/.cline",
+        "vscode_extension": "saoudrizwan.claude-dev",
+        "extension_paths": {
+          "darwin": "~/.vscode/extensions",
+          "win32": "%USERPROFILE%/.vscode/extensions",
+          "linux": "~/.vscode/extensions"
+        }
+      },
+      "native_format": false,
+      "terminology": {
+        "agent": "prompt",
+        "skill": "prompt",
+        "command": "prompt"
+      }
+    }
+  },
+  "component_types": ["agents", "commands", "skills", "hooks"],
+  "default_platform": "claude"
+}

@@ -1,10 +1,10 @@
 ---
 name: pre-dev-feature
-description: Lightweight 3-gate pre-dev workflow for small features (<2 days)
+description: Lightweight 4-gate pre-dev workflow for small features (<2 days)
 argument-hint: "[feature-name]"
 ---
 
-I'm running the **Small Track** pre-development workflow (3 gates) for your feature.
+I'm running the **Small Track** pre-development workflow (4 gates) for your feature.
 
 **This track is for features that:**
 - ✅ Take <2 days to implement
@@ -29,11 +29,29 @@ Use the AskUserQuestion tool to gather:
 - This will be used for the directory name
 - Use kebab-case (e.g., "user-logout", "email-validation", "rate-limiting")
 
-After getting the feature name, create the directory structure and run the 3-gate workflow:
+After getting the feature name, create the directory structure and run the 4-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>
 ```
+
+## Gate 0: Research Phase (Lightweight)
+
+**Skill:** ring-pm-team:pre-dev-research
+
+Even small features benefit from quick research:
+
+1. Determine research mode (usually **modification** for small features)
+2. Dispatch 3 research agents in PARALLEL (quick mode)
+3. Save to: `docs/pre-dev/<feature-name>/research.md`
+4. Get human approval before proceeding
+
+**Gate 0 Pass Criteria (Small Track):**
+- [ ] Research mode determined
+- [ ] Existing patterns identified (if any)
+- [ ] No conflicting implementations found
+
+**Note:** For very simple changes, Gate 0 can be abbreviated - focus on checking for existing patterns.
 
 ## Gate 1: PRD Creation
 
@@ -107,9 +125,10 @@ mkdir -p docs/pre-dev/<feature-name>
 Report to human:
 
 ```
-✅ Small Track (3 gates) complete for <feature-name>
+✅ Small Track (4 gates) complete for <feature-name>
 
 Artifacts created:
+- docs/pre-dev/<feature-name>/research.md (Gate 0) ← NEW
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
 - docs/pre-dev/<feature-name>/trd.md (Gate 2)
 - docs/pre-dev/<feature-name>/tasks.md (Gate 3)
@@ -131,6 +150,7 @@ Next steps:
 ## Remember
 
 - This is the **Small Track** - lightweight and fast
+- **Gate 0 (Research) checks for existing patterns** even for small features
 - If feature grows during planning, switch to `/ring-pm-team:pre-dev-full`
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate
