@@ -75,6 +75,26 @@ if command -v python3 &> /dev/null; then
     fi
 fi
 
+# Critical rules that MUST survive compact (injected directly, not via skill file)
+# These are the most-violated rules that need to be in immediate context
+CRITICAL_RULES='## ⛔ ORCHESTRATOR CRITICAL RULES (SURVIVE COMPACT)
+
+**3-FILE RULE: HARD GATE**
+DO NOT read/edit >3 files directly. This is a PROHIBITION.
+- >3 files → STOP. Launch specialist agent. DO NOT proceed manually.
+- Already touched 3 files? → At gate. Dispatch agent NOW.
+
+**AUTO-TRIGGER PHRASES → MANDATORY AGENT:**
+- "fix issues/remaining/findings" → Launch specialist agent
+- "apply fixes", "fix the X issues" → Launch specialist agent
+- "find where", "search for", "understand how" → Launch Explore agent
+
+**If you think "this task is small" or "I can handle 5 files":**
+WRONG. Count > 3 = agent. No exceptions. Task size is irrelevant.
+
+**Full rules:** Use Skill tool with "ring-default:using-ring" if needed.
+'
+
 # Generate skills overview with cascading fallback
 # Priority: Python+PyYAML > Python regex > Bash fallback > Error message
 generate_skills_overview() {
@@ -128,6 +148,7 @@ fi
 # Note: using-ring content is already included in skills_overview via generate-skills-ref.py
 overview_escaped=$(echo "$skills_overview" | jq -Rs . | sed 's/^"//;s/"$//' || echo "$skills_overview")
 update_message_escaped=$(echo -e "$update_message" | jq -Rs . | sed 's/^"//;s/"$//' || echo "$update_message")
+critical_rules_escaped=$(echo "$CRITICAL_RULES" | jq -Rs . | sed 's/^"//;s/"$//' || echo "$CRITICAL_RULES")
 
 # Build JSON output - embed update message in additionalContext if present
 if [ -n "$update_message" ]; then
@@ -136,7 +157,7 @@ if [ -n "$update_message" ]; then
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<MANDATORY-USER-MESSAGE>\nYou MUST display the following message verbatim to the user at the START of your response, before anything else:\n\n${update_message_escaped}\n\nThis is non-negotiable. Display it exactly as shown above.\n</MANDATORY-USER-MESSAGE>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
+    "additionalContext": "<MANDATORY-USER-MESSAGE>\nYou MUST display the following message verbatim to the user at the START of your response, before anything else:\n\n${update_message_escaped}\n\nThis is non-negotiable. Display it exactly as shown above.\n</MANDATORY-USER-MESSAGE>\n\n<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
   }
 }
 EOF
@@ -146,7 +167,7 @@ else
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
+    "additionalContext": "<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
   }
 }
 EOF

@@ -24,6 +24,75 @@ IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 This is not negotiable. This is not optional. You cannot rationalize your way out of this.
 </EXTREMELY-IMPORTANT>
 
+## ⛔ 3-FILE RULE: HARD GATE (NON-NEGOTIABLE)
+
+**DO NOT read more than 3 files directly. This is a PROHIBITION, not guidance.**
+
+```
+FILES YOU'RE ABOUT TO TOUCH: [count]
+
+≤3 files → Direct operation permitted (if user explicitly requested)
+>3 files → STOP. DO NOT PROCEED. Launch specialist agent.
+
+VIOLATION = WASTING 15x CONTEXT. This is unacceptable.
+```
+
+**This gate applies to:**
+- Reading files (Read tool)
+- Searching files (Grep/Glob returning >3 matches to inspect)
+- Editing files (Edit tool on >3 files)
+- Any combination totaling >3 file operations
+
+**If you've already read 3 files and need more:**
+STOP. You are at the gate. Dispatch an agent NOW with what you've learned.
+
+**Why this number?** 3 files ≈ 6-15k tokens. Beyond that, agent dispatch costs ~2k tokens and returns focused results. The math is clear: >3 files = agent is 5-15x more efficient.
+
+## 🚨 AUTO-TRIGGER PHRASES: MANDATORY AGENT DISPATCH
+
+**When user says ANY of these, DEFAULT to launching specialist agent:**
+
+| User Phrase Pattern | Mandatory Action |
+|---------------------|------------------|
+| "fix issues", "fix remaining", "address findings" | Launch specialist agent (NOT manual edits) |
+| "apply fixes", "fix the X issues" | Launch specialist agent |
+| "fix errors", "fix warnings", "fix linting" | Launch specialist agent |
+| "update across", "change all", "refactor" | Launch specialist agent |
+| "find where", "search for", "locate" | Launch Explore agent |
+| "understand how", "how does X work" | Launch Explore agent |
+
+**Why?** These phrases imply multi-file operations. You WILL exceed 3 files. Pre-empt the violation.
+
+## MANDATORY PRE-ACTION CHECKPOINT
+
+**Before EVERY tool use, you MUST complete this checkpoint. No exceptions.**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ⛔ STOP. COMPLETE BEFORE PROCEEDING.                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. FILES THIS TASK WILL TOUCH: ___                         │
+│     □ >3 files? → STOP. Launch agent. DO NOT proceed.       │
+│                                                             │
+│  2. USER PHRASE CHECK:                                      │
+│     □ Did user say "fix issues/remaining/findings"?         │
+│     □ Did user say "apply fixes" or "fix the X issues"?     │
+│     □ Did user say "find/search/locate/understand"?         │
+│     → If ANY checked: Launch agent. DO NOT proceed manually.│
+│                                                             │
+│  3. OPERATION TYPE:                                         │
+│     □ Investigation/exploration → Explore agent             │
+│     □ Multi-file edit → Specialist agent                    │
+│     □ Single explicit file (user named it) → Direct OK      │
+│                                                             │
+│  CHECKPOINT RESULT: [Agent dispatch / Direct operation]     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**If you skip this checkpoint, you are in automatic violation.**
+
 # Getting Started with Skills
 
 ## MANDATORY FIRST RESPONSE PROTOCOL
@@ -45,33 +114,9 @@ Before responding to ANY user message, you MUST complete this checklist IN ORDER
 
 ### MANDATORY-USER-MESSAGE Contract
 
-When SessionStart hook additionalContext contains `<MANDATORY-USER-MESSAGE>` tags:
-
-- ✅ **MUST display verbatim** - No paraphrasing, summarizing, or modification
-- ✅ **MUST display in first response** - Cannot wait for "relevant context"
-- ✅ **MUST display at message start** - Before any other content
-- ❌ **MUST NOT skip** - No rationalization ("not relevant", "will mention later")
-
-**Example:**
-
-```
-Hook additionalContext contains:
-<MANDATORY-USER-MESSAGE>
-You MUST display the following message verbatim to the user:
-
-╔═══════════════════════════════════════════════════════════╗
-║  🔄 MARKETPLACE UPDATE - ACTION REQUIRED                  ║
-╚═══════════════════════════════════════════════════════════╝
-
-</MANDATORY-USER-MESSAGE>
-
-Your response:
-╔═══════════════════════════════════════════════════════════╗
-║  🔄 MARKETPLACE UPDATE - ACTION REQUIRED                  ║
-╚═══════════════════════════════════════════════════════════╝
-
-Now, regarding your question about...
-```
+If additionalContext contains `<MANDATORY-USER-MESSAGE>` tags:
+- Display verbatim at message start, no exceptions
+- No paraphrasing, no "will mention later" rationalizations
 
 ## Critical Rules
 
@@ -100,6 +145,16 @@ If you catch yourself thinking ANY of these thoughts, STOP. You are rationalizin
 - "This exploration is too simple for an agent" → WRONG. Simplicity makes agents more efficient.
 - "I already started reading files" → WRONG. Stop. Dispatch agent instead.
 - "It's faster to do it myself" → WRONG. You're burning context. Agents are 15x faster contextually.
+
+**3-File Rule Rationalizations (YOU WILL TRY THESE):**
+- "This task is small" → WRONG. Count files. >3 = agent. Task size is irrelevant.
+- "It's only 5 fixes across 5 files, I can handle it" → WRONG. 5 files > 3 files. Agent mandatory.
+- "User said 'here' so they want me to do it in this conversation" → WRONG. "Here" means get it done, not manually.
+- "TodoWrite took priority so I'll execute sequentially" → WRONG. TodoWrite plans WHAT. Orchestrator decides HOW.
+- "The 3-file rule is guidance, not a gate" → WRONG. It's a PROHIBITION. You DO NOT proceed past 3 files.
+- "User didn't explicitly call an agent so I shouldn't" → WRONG. Agent dispatch is YOUR decision.
+- "I'm confident I know where the files are" → WRONG. Confidence doesn't reduce context cost.
+- "Let me finish these medium/low fixes here" → WRONG. "Fix issues" phrase = auto-trigger for agent.
 
 **Why:** Skills document proven techniques. Agents preserve context. Not using them means repeating mistakes and wasting tokens.
 
@@ -132,20 +187,32 @@ Every time you skip checking for skills:
 **Before EVERY tool call** (Read, Grep, Glob, Bash), complete this check:
 
 ```
-Tool I'm about to use: [tool-name]
-Purpose: [what I'm trying to learn/do]
-
-Orchestration Decision:
-☐ This is explicit user request to read specific file → Direct tool OK
-☐ This is investigation/exploration/search → MUST use agent
-
-Agent I'm dispatching: [agent-name]
-Model: Opus (default, unless user specified otherwise)
-OR
-Exception justification: [why user explicitly requested this specific file]
+┌─────────────────────────────────────────────────────────────┐
+│  Tool I'm about to use: [tool-name]                         │
+│  Purpose: [what I'm trying to learn/do]                     │
+│  Files this will touch: [count] ← CHECK 3-FILE RULE         │
+├─────────────────────────────────────────────────────────────┤
+│  ⛔ 3-FILE GATE:                                             │
+│  □ Will touch >3 files? → STOP. Launch agent. DO NOT proceed│
+│  □ Already touched 3 files? → STOP. At gate. Dispatch now.  │
+├─────────────────────────────────────────────────────────────┤
+│  Orchestration Decision:                                    │
+│  □ User explicitly requested specific file → Direct tool OK │
+│  □ Investigation/exploration/search → MUST use agent        │
+│  □ User said "fix issues/remaining/findings" → MUST use agent│
+├─────────────────────────────────────────────────────────────┤
+│  Agent I'm dispatching: [agent-name]                        │
+│  Model: Opus (default, unless user specified otherwise)     │
+│  OR                                                         │
+│  Exception: [why user explicitly requested this file]       │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**If you skip this check, you are automatically in violation.**
+**CONSEQUENCES OF SKIPPING THIS CHECK:**
+- You waste 15x context (agent returns ~2k, manual exploration ~30k)
+- You deprive user of conversation headroom
+- You violate ORCHESTRATOR principle
+- **This is automatic failure**
 
 **Examples:**
 
@@ -271,86 +338,18 @@ START: I need to do something with the codebase
     └─▶ Read directly (ONLY if user explicitly requested specific file read)
 ```
 
-### Anti-Patterns: Context Sabotage
+### Quick Reference: WRONG → RIGHT
 
-These mean you're breaking the ORCHESTRATOR role and burning context:
+| Your Thought | Action |
+|--------------|--------|
+| "Let me read files to understand X" | Explore agent: "Understand X" |
+| "I'll grep for Y" | Explore agent: "Find Y" |
+| "User mentioned file Z" | Explore agent (unless user said "read Z") |
+| "Need context for good agent instructions" | Dispatch agent with broad topic |
+| "Already read 3 files, just 2 more" | STOP at gate. Dispatch now. |
+| "This search won't find anything" | Dispatch anyway. You're not the validator. |
 
-**Search/Grep Rationalizations:**
-- "I'll quickly grep for X" → WRONG. Use Explore agent.
-- "It's just one grep command" → WRONG. Use Explore agent.
-- "Agent would just run the same grep" → WRONG. Agent manages context, you don't.
-- "This is a targeted lookup, not exploration" → WRONG. All lookups are exploration.
-
-**File Reading Rationalizations:**
-- "Let me scan a few files" → WRONG. Use Explore agent.
-- "I know exactly where it is" → WRONG. Still use agent.
-- "I'll just peek at the structure" → WRONG. Use Explore agent.
-- "It's literally one file" → WRONG. That's what they all say.
-
-**Context/Preparation Rationalizations:**
-- "I need context first, then delegate" → WRONG. Delegate first, agent returns context.
-- "Agents work best with clear context" → WRONG. Agents BUILD context for you.
-- "Bad instructions waste agent time" → WRONG. Reading files wastes YOUR context.
-
-**Sunk Cost Rationalizations:**
-- "I already started reading files" → WRONG. Stop, dispatch agent instead.
-- "I'm 90% done, just one more file" → WRONG. That's the chain reaction trap.
-- "Switching to agent loses my context" → WRONG. Your context is already bloated.
-
-**Efficiency Rationalizations:**
-- "I'll do a quick manual check" → WRONG. That "quick" becomes 20k tokens.
-- "Finding the right file is easier by hand" → WRONG. That's what Explore does.
-- "This doesn't need an agent" → WRONG. If you're unsure, use one.
-- "Agent adds overhead for simple tasks" → WRONG. YOUR overhead is 15x worse.
-- "This search premise is invalid, agent would find nothing" → WRONG. You're not the validator. Dispatch anyway.
-
-### Common Violation Patterns (How You Actually Fail)
-
-These are the ACTUAL patterns where you break ORCHESTRATOR, with what you should do instead:
-
-**Pattern 1: "Let me understand X first"**
-```
-❌ Your thought: "Let me read a few files to understand the auth system"
-✅ Correct: Task tool with Explore agent: "Understand auth system architecture"
-```
-
-**Pattern 2: "I'll quickly check Y"**
-```
-❌ Your thought: "I'll quickly grep for 'handleError' to see where it's used"
-✅ Correct: Task tool with Explore agent: "Find all uses of handleError function"
-```
-
-**Pattern 3: "User mentioned Z"**
-```
-❌ Your thought: "User mentioned config.ts, let me read it"
-✅ Correct: Task tool with Explore agent: "Examine config.ts and related configuration"
-(Exception: User said "read config.ts" explicitly)
-```
-
-**Pattern 4: "I need context to give the agent good instructions"**
-```
-❌ Your thought: "Let me scan the codebase first so I can write better agent instructions"
-✅ Correct: Task tool with Explore agent with broad instructions: "Explore codebase for [topic]"
-(Agent BUILDS context for you)
-```
-
-**Pattern 5: "I already started, might as well finish"**
-```
-❌ Your thought: "I already read 3 files, just 2 more to complete the picture"
-✅ Correct: STOP. Dispatch Explore agent with: "Continue investigation of [topic], considering [what I learned]"
-```
-
-**Pattern 6: "I can see this won't work"**
-```
-❌ Your thought: "This search premise is invalid, dispatching agent would be wasteful"
-✅ Correct: Dispatch agent anyway - let AGENT determine if search is valid
-
-You are ORCHESTRATOR, not premise validator.
-Agent will report back: "Not found" or "Search complete, no results"
-That's the agent's job, not yours.
-```
-
-**If you recognize yourself in ANY of these patterns, you are violating ORCHESTRATOR.**
+**Any of these thoughts = you're about to violate ORCHESTRATOR.**
 
 ### Ring Reviewers: ALWAYS Parallel
 
@@ -370,159 +369,18 @@ When dispatching code reviewers, **single message with 3 Task calls:**
 | Explore agent dispatch | ~2-3k tokens | Orchestrator |
 | **Savings** | **15-25x more efficient** | **Orchestrator always wins** |
 
-## Skills with Checklists
+## TodoWrite Requirements
 
-If a skill has a checklist, YOU MUST create TodoWrite todos for EACH item.
+**First two todos for ANY task:**
+1. "Orchestration decision: [agent-name] with Opus" (or exception justification)
+2. "Check for relevant skills"
 
-**Don't:**
-- Work through checklist mentally
-- Skip creating todos "to save time"
-- Batch multiple items into one todo
-- Mark complete without doing them
-
-**Why:** Checklists without TodoWrite tracking = steps get skipped. Every time. The overhead of TodoWrite is tiny compared to the cost of missing steps.
-
-## TodoWrite Requirement
-
-When starting ANY task:
-1. **First todo: "Orchestration decision: [agent-name or direct+justification]"**
-2. **Second todo: "Check for relevant skills"**
-3. Mark complete only after actual check
-4. Document which skills apply/don't apply
-
-**Orchestration todo is FIRST because it determines if you even use tools directly.**
-
-Skipping either todo = automatic failure.
-
-**Examples:**
-
-✅ **Correct orchestration todo:**
-- "Orchestration decision: Explore agent with Opus for codebase structure"
-- "Orchestration decision: Explore agent with Opus for finding auth code"
-- "Orchestration decision: general-purpose agent with Opus for multi-step analysis"
-- "Orchestration decision: Direct read of src/config.ts (user requested explicitly)"
-
-❌ **Wrong (no orchestration todo):**
-- "Read config files" (skipped orchestration decision)
-- "Search for error handlers" (skipped orchestration decision)
-- "Orchestration decision: Explore agent" (missing model specification)
-
-### MANDATORY-USER-MESSAGE TodoWrite Integration
-
-When SessionStart hook additionalContext contains `<MANDATORY-USER-MESSAGE>` tags:
-
-**MUST create todo:**
-1. Todo content: "Display MANDATORY-USER-MESSAGE to user"
-2. Status: `in_progress` (immediately)
-3. Mark `completed` ONLY after displaying it verbatim
-
-**Verification workflow:**
-```
-Hook additionalContext contains <MANDATORY-USER-MESSAGE>
-  ↓
-Create todo: "Display MANDATORY-USER-MESSAGE"
-  ↓
-Display message verbatim to user (content between the tags)
-  ↓
-Mark todo as completed
-```
-
-**This creates an audit trail** - TodoWrite tracking makes message display verifiable, not just a mental checklist item.
+**If skill has checklist:** Create TodoWrite todo for EACH item. No mental checklists.
 
 ## Announcing Skill Usage
 
-**Announce skill usage when the choice is non-obvious to the user.**
-
-"I'm using [Skill Name] to [what you're doing]."
-
-### When to Announce
-
-**ALWAYS announce when using meta-skills:**
-- brainstorming, writing-plans, systematic-debugging
-- → Meta-skills ALWAYS require announcement, even when contextually obvious
-- → WHY: Meta-skills change HOW you approach work, not just WHAT you do
-- → The announcement tells the user "I'm using a structured methodology"
-
-**Also announce when:**
-- Skill choice isn't obvious from user's request
-- Multiple skills could apply (explain why you picked this one)
-- User might not know this skill exists
-
-**Examples (meta-skills → always announce):**
-- User: "This auth bug is weird" → Announce: "I'm using systematic-debugging to investigate..."
-- User: "Let's add user profiles" → Announce: "I'm using brainstorming to refine this into a design..."
-- User: "Help me plan this feature" → Announce: "I'm using pre-dev-prd-creation to start the planning workflow..."
-
-**Don't announce when obvious (non-meta-skills only):**
-- User: "Write tests first" → Don't announce test-driven-development (duh)
-- User: "Review my code" → Don't announce requesting-code-review (obvious)
-- User: "Run the build and verify it works" → Don't announce verification-before-completion (explicit)
-- ⚠️ This exception does NOT apply to meta-skills listed above
-
-**Why announce meta-skills:** They change your methodology, not just output. Users benefit from knowing you're following a structured framework (4-phase debugging, Socratic brainstorming, etc.).
-
-**Why skip for obvious non-meta-skills:** Reduces ceremony, respects user's time, avoids "well duh" moments.
-
-## Pre-Dev Track Selection
-
-**Before starting pre-dev workflow, choose your track:**
-
-### Small Track (3 gates) - <2 Day Features
-
-**Use when feature meets ALL criteria:**
-- ✅ Implementation: <2 days
-- ✅ No new external dependencies
-- ✅ No new data models/entities
-- ✅ No multi-service integration
-- ✅ Uses existing architecture patterns
-- ✅ Single developer can complete
-
-**Gates:**
-1. **pre-dev-prd-creation** - Business requirements (WHAT/WHY)
-2. **pre-dev-trd-creation** - Technical architecture (HOW)
-3. **pre-dev-task-breakdown** - Work increments
-
-**Planning time:** 30-60 minutes
-
-**Examples:**
-- Add logout button to UI
-- Fix email validation bug
-- Add API rate limiting to existing endpoint
-
-### Large Track (8 gates) - ≥2 Day Features
-
-**Use when feature has ANY:**
-- ❌ Implementation: ≥2 days
-- ❌ New external dependencies (APIs, databases, libraries)
-- ❌ New data models or entities
-- ❌ Multi-service integration
-- ❌ New architecture patterns
-- ❌ Team collaboration required
-
-**Gates:**
-1. **pre-dev-prd-creation** - Business requirements
-2. **pre-dev-feature-map** - Feature relationships
-3. **pre-dev-trd-creation** - Technical architecture
-4. **pre-dev-api-design** - Component contracts
-5. **pre-dev-data-model** - Entity relationships
-6. **pre-dev-dependency-map** - Technology selection
-7. **pre-dev-task-breakdown** - Work increments
-8. **pre-dev-subtask-creation** - Atomic units
-
-**Planning time:** 2-4 hours
-
-**Examples:**
-- Add user authentication
-- Implement payment processing
-- Add file upload with CDN
-
-### Decision Rule
-
-**When in doubt: Use Large Track.**
-
-Better to over-plan than discover mid-implementation that feature is larger than estimated.
-
-**Can switch tracks:** If Small Track feature grows during implementation, pause and complete remaining Large Track gates.
+- **Always announce meta-skills:** brainstorming, writing-plans, systematic-debugging (methodology change)
+- **Skip when obvious:** User says "write tests first" → no need to announce TDD
 
 ## Required Patterns
 
