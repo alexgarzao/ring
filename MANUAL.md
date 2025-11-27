@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 38 skills, 17 agents, and 11 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 7 plugins with 46 skills, 20 agents, and 14 slash commands for enforcing proven software engineering practices.
 
 ---
 
@@ -12,30 +12,22 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                     (monorepo: .claude-plugin/marketplace.json)              │
 │                                                                              │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│  │  ring-default   │  │ ring-dev-team │  │ ring-finops-    │  ...         │
+│  │  ring-default   │  │ ring-dev-team   │  │ ring-finops-    │              │
 │  │    (plugin)     │  │    (plugin)     │  │    team         │              │
-│  │                 │  │                 │  │    (plugin)     │              │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │              │
-│  │ │   HOOKS     │ │  │ │   HOOKS     │ │  │ │   HOOKS     │ │              │
-│  │ │ SessionStart│ │  │ │ SessionStart│ │  │ │ SessionStart│ │              │
-│  │ └──────┬──────┘ │  │ └──────┬──────┘ │  │ └──────┬──────┘ │              │
-│  │        │        │  │        │        │  │        │        │              │
-│  │        ▼        │  │        ▼        │  │        ▼        │              │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │              │
-│  │ │   SKILLS    │ │  │ │   SKILLS    │ │  │ │   SKILLS    │ │              │
-│  │ │ (internal)  │ │  │ │ (internal)  │ │  │ │ (internal)  │ │              │
-│  │ │ auto-invoke │ │  │ │using-dev-tm │ │  │ │using-finops │ │              │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │ └─────────────┘ │              │
-│  │                 │  │                 │  │                 │              │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │              │
-│  │ │  COMMANDS   │ │  │ │   AGENTS    │ │  │ │   AGENTS    │ │              │
-│  │ │ /ring:...   │ │  │ │ specialists │ │  │ │  finops-*   │ │              │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │ └─────────────┘ │              │
-│  │                 │  │                 │  │                 │              │
-│  │ ┌─────────────┐ │  └─────────────────┘  └─────────────────┘              │
-│  │ │   AGENTS    │ │                                                        │
-│  │ │ reviewers   │ │                                                        │
-│  │ └─────────────┘ │                                                        │
+│  │ Skills(20)      │  │ Skills(2)       │  │ Skills(6)       │              │
+│  │ Agents(5)       │  │ Agents(10)      │  │ Agents(2)       │              │
+│  │ Cmds(6)         │  │                 │  │                 │              │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
+│  │ ring-pm-team    │  │ ralph-wiggum    │  │ ring-tw-team    │              │
+│  │    (plugin)     │  │    (plugin)     │  │    (plugin)     │              │
+│  │ Skills(9)       │  │ Skills(1)       │  │ Skills(7)       │              │
+│  │ Cmds(2)         │  │ Cmds(3)         │  │ Agents(3)       │              │
+│  │                 │  │                 │  │ Cmds(3)         │              │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+│  ┌─────────────────┐                                                        │
+│  │ beads (plugin)  │                                                        │
+│  │ Skills(1)       │                                                        │
 │  └─────────────────┘                                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
 
@@ -120,6 +112,14 @@ All commands prefixed with `/ring-default:` (can use `/ring:` shorthand in conte
 
 **Ralph options:** `--max-iterations N` (safety limit), `--completion-promise TEXT` (completion signal)
 
+### Technical Writing (Documentation)
+
+| Command | Use Case | Example |
+|---------|----------|---------|
+| `/ring-tw-team:write-guide [topic]` | Start writing a functional guide | `/ring-tw-team:write-guide authentication` |
+| `/ring-tw-team:write-api [endpoint]` | Start writing API documentation | `/ring-tw-team:write-api POST /accounts` |
+| `/ring-tw-team:review-docs [file]` | Review documentation for quality | `/ring-tw-team:review-docs docs/guide.md` |
+
 **When Ralph Works Well:**
 
 | ✅ Good Fit | Why |
@@ -146,7 +146,7 @@ All commands prefixed with `/ring-default:` (can use `/ring:` shorthand in conte
 
 ## 💡 About Skills
 
-Skills (38) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (46) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
 
@@ -218,6 +218,16 @@ For Brazilian financial compliance workflows:
 |-------|---------|---------|
 | `ring-finops-team:finops-analyzer` | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
 | `ring-finops-team:finops-automation` | Template generation | Create .tpl files (Gate 3) |
+
+### Technical Writing (ring-tw-team)
+
+For documentation creation and review:
+
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `ring-tw-team:functional-writer` | Functional documentation | Guides, tutorials, conceptual docs |
+| `ring-tw-team:api-writer` | API reference documentation | Endpoints, schemas, examples |
+| `ring-tw-team:docs-reviewer` | Documentation quality review | Voice, tone, structure, completeness |
 
 ---
 
@@ -296,6 +306,9 @@ These enforce quality standards:
 | Visual design & aesthetics | `ring-dev-team:frontend-designer` |
 | Deep codebase analysis | `ring-default:codebase-explorer` |
 | Regulatory compliance | `ring-finops-team:finops-analyzer` |
+| Functional documentation (guides) | `ring-tw-team:functional-writer` |
+| API reference documentation | `ring-tw-team:api-writer` |
+| Documentation quality review | `ring-tw-team:docs-reviewer` |
 
 ---
 
@@ -304,7 +317,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 38 skills are auto-discovered and available
+2. All 46 skills are auto-discovered and available
 3. `using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

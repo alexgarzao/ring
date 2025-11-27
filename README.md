@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **7 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 38 specialized skills** - From brainstorming to production deployment (20 core + 2 dev-team + 9 product planning + 6 FinOps + 1 ralph-wiggum)
-- **17 specialized agents** - 5 review/planning agents + 10 developer role agents + 2 FinOps agents
+- **Providing 46 specialized skills** - From brainstorming to production deployment (20 core + 2 dev-team + 9 product planning + 6 FinOps + 1 ralph-wiggum + 7 technical writing + 1 beads)
+- **20 specialized agents** - 5 review/planning agents + 10 developer role agents + 2 FinOps agents + 3 technical writing agents
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -45,6 +45,11 @@ Ring solves this by:
 **FinOps Agents (ring-finops-team plugin):**
 - `ring-finops-team:finops-analyzer` - Financial operations analysis
 - `ring-finops-team:finops-automation` - FinOps template creation and automation
+
+**Technical Writing Agents (ring-tw-team plugin):**
+- `ring-tw-team:functional-writer` - Functional documentation (guides, tutorials, conceptual docs)
+- `ring-tw-team:api-writer` - API reference documentation (endpoints, schemas, examples)
+- `ring-tw-team:docs-reviewer` - Documentation quality review (voice, tone, structure, completeness)
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
 
@@ -127,7 +132,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 38 Skills (Across 5 Plugins)
+## 📚 All 46 Skills (Across 7 Plugins)
 
 ### Core Skills (ring-default plugin - 20 skills)
 
@@ -191,6 +196,22 @@ No "should work" → Only "does work" with proof
 **Iterative Development:**
 - `using-ralph-wiggum` - Ralph Wiggum iterative loop technique guide
 
+### Technical Writing Skills (ring-tw-team plugin - 7 skills)
+
+**Documentation Creation:**
+- `using-tw-team` - Introduction to technical writing specialists
+- `writing-functional-docs` - Patterns for guides, tutorials, conceptual docs
+- `writing-api-docs` - API reference documentation patterns
+- `documentation-structure` - Document hierarchy and organization
+- `voice-and-tone` - Voice and tone guidelines (assertive, encouraging, human)
+- `documentation-review` - Quality checklist and review process
+- `api-field-descriptions` - Field description patterns by type
+
+### Beads Integration (beads plugin - 1 skill)
+
+**Issue Tracking:**
+- `using-beads` - Beads (bd) integration for dependency-aware issue tracking
+
 ## 🎮 Interactive Commands
 
 Ring provides slash commands for common workflows:
@@ -204,6 +225,12 @@ Ring provides slash commands for common workflows:
 - `/ralph-wiggum:ralph-loop "PROMPT" --max-iterations N --completion-promise "TEXT"` - Start autonomous iterative loop
 - `/ralph-wiggum:cancel-ralph` - Cancel active Ralph loop
 - `/ralph-wiggum:help` - Explain Ralph technique and examples
+
+### Technical Writing (Documentation)
+
+- `/ring-tw-team:write-guide [topic]` - Start writing a functional guide with voice/tone guidance
+- `/ring-tw-team:write-api [endpoint]` - Start writing API reference documentation
+- `/ring-tw-team:review-docs [file]` - Review existing documentation for quality
 
 ## 💡 Usage Examples
 
@@ -319,6 +346,14 @@ ring/                                  # Monorepo root
 │   ├── hooks/                       # SessionStart and Stop hooks
 │   ├── scripts/                     # Setup utilities
 │   └── skills/                      # using-ralph-wiggum skill
+├── tw-team/                         # Technical Writing plugin (ring-tw-team)
+│   ├── skills/                      # 7 documentation skills
+│   ├── agents/                      # 3 technical writing agents
+│   ├── commands/                    # 3 slash commands
+│   └── hooks/                       # SessionStart hook
+├── beads/                           # Beads integration plugin (beads)
+│   ├── skills/                      # using-beads skill
+│   └── hooks/                       # SessionStart and Stop hooks
 ├── ops-team/                        # Team-specific skills (reserved)
 └── pmm-team/                        # Team-specific skills (reserved)
 ```
