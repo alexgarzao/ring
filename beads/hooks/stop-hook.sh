@@ -98,7 +98,7 @@ fi
 
 cat <<EOF
 {
-  "decision": "block",
+  "decision": "approve",
   "reason": "${prompt_escaped}"
 }
 EOF
