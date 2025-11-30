@@ -18,9 +18,9 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# Auto-update Ring marketplace and plugins
+# Auto-update Ring marketplace and plugins (using safe git pull, not destructive CLI)
 marketplace_updated="false"
-if command -v claude &> /dev/null && command -v git &> /dev/null; then
+if command -v git &> /dev/null; then
     # Detect marketplace path (common locations)
     marketplace_path=""
     for path in ~/.claude/plugins/marketplaces/ring ~/.config/claude/plugins/marketplaces/ring ~/Library/Application\ Support/Claude/plugins/marketplaces/ring; do
@@ -31,11 +31,19 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
     done
 
     if [ -n "$marketplace_path" ]; then
+        # Safe update using git pull (non-destructive)
         # Get current commit hash before update
         before_hash=$(git -C "$marketplace_path" rev-parse HEAD 2>/dev/null || echo "none")
 
-        # Update marketplace
-        claude plugin marketplace update ring &> /dev/null || true
+        # Use git pull directly - NEVER use 'claude plugin marketplace update' as it deletes before cloning
+        # Try to fetch and pull (fast-forward only to avoid merge conflicts)
+        if git -C "$marketplace_path" fetch --quiet 2>/dev/null; then
+            # Only pull if we're on a branch (not detached HEAD)
+            current_branch=$(git -C "$marketplace_path" symbolic-ref --short HEAD 2>/dev/null || echo "")
+            if [ -n "$current_branch" ]; then
+                git -C "$marketplace_path" pull --ff-only --quiet 2>/dev/null || true
+            fi
+        fi
 
         # Get commit hash after update
         after_hash=$(git -C "$marketplace_path" rev-parse HEAD 2>/dev/null || echo "none")
@@ -43,21 +51,21 @@ if command -v claude &> /dev/null && command -v git &> /dev/null; then
         # If hashes differ, marketplace was actually updated
         if [ "$before_hash" != "$after_hash" ] && [ "$after_hash" != "none" ]; then
             marketplace_updated="true"
-            # Reinstall all plugins to get new versions
-            claude plugin install ring-default &> /dev/null || true
-            claude plugin install ring-dev-team &> /dev/null || true
-            claude plugin install ring-finops-team &> /dev/null || true
-            claude plugin install ring-pm-team &> /dev/null || true
-            claude plugin install ralph-wiggum &> /dev/null || true
+            # Reinstall all plugins to get new versions (only if claude CLI available)
+            if command -v claude &> /dev/null; then
+                claude plugin install ring-default &> /dev/null || true
+                claude plugin install ring-dev-team &> /dev/null || true
+                claude plugin install ring-finops-team &> /dev/null || true
+                claude plugin install ring-pm-team &> /dev/null || true
+                claude plugin install ralph-wiggum &> /dev/null || true
+                claude plugin install ring-tw-team &> /dev/null || true
+            fi
         fi
-    else
-        # Marketplace not found, just run updates silently
-        claude plugin marketplace update ring &> /dev/null || true
-        claude plugin install ring-default &> /dev/null || true
-        claude plugin install ring-dev-team &> /dev/null || true
-        claude plugin install ring-finops-team &> /dev/null || true
-        claude plugin install ralph-wiggum &> /dev/null || true
     fi
+    # NOTE: If marketplace not found, do NOT try to install it automatically.
+    # The destructive 'claude plugin marketplace update' command can fail and leave
+    # the user with no marketplace at all. User should manually run:
+    #   claude plugin marketplace add lerianstudio/ring
 fi
 
 # Auto-install PyYAML if Python is available but PyYAML is not
