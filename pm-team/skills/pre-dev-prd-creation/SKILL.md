@@ -56,9 +56,9 @@ ls docs/pre-dev/{feature-name}/research.md 2>/dev/null
 
 **If research.md exists:**
 1. Load `docs/pre-dev/{feature-name}/research.md`
-2. Review codebase patterns (from repo-research-analyst)
-3. Review best practices (from best-practices-researcher)
-4. Review framework constraints (from framework-docs-researcher)
+2. Review codebase patterns (from ring-pm-team:repo-research-analyst)
+3. Review best practices (from ring-pm-team:best-practices-researcher)
+4. Review framework constraints (from ring-pm-team:framework-docs-researcher)
 
 **Required PRD Enhancements from Research:**
 - Reference existing patterns with `file:line` notation where relevant

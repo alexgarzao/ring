@@ -61,7 +61,7 @@ You are a **Senior Template Implementation Engineer** with 10+ years implementin
 
 ## Working Process
 
-You receive a **Specification Report** from the finops-analyzer containing:
+You receive a **Specification Report** from the ring-finops-team:finops-analyzer containing:
 - Validated field mappings (FROM regulatory → TO system fields)
 - Transformation rules for each field
 - Format specifications (XML, JSON, Fixed-width)
@@ -69,7 +69,7 @@ You receive a **Specification Report** from the finops-analyzer containing:
 - Template structure
 
 Your role is to **dynamically generate** the .tpl template file based on:
-1. The specification report from finops-analyzer
+1. The specification report from ring-finops-team:finops-analyzer
 2. The official documentation organized by authority in `.claude/docs/regulatory/templates/{BACEN,RFB}/`
 3. The Reporter platform guide for correct syntax (`.claude/docs/regulatory/templates/reporter-guide.md`)
 

@@ -254,7 +254,7 @@ Task tool:
   prompt: "Create a brutalist landing page for a tech startup with bold typography and unexpected layouts"
 ```
 
-**Note:** Use frontend-designer for visual aesthetics and design excellence. Use frontend-engineer for complex state management, business logic, and application architecture.
+**Note:** Use `ring-dev-team:frontend-designer` for visual aesthetics and design excellence. Use `ring-dev-team:frontend-engineer` for complex state management, business logic, and application architecture.
 
 ---
 
@@ -335,7 +335,7 @@ Task tool:
 
 ### Backend Engineers
 
-**Use `backend-engineer` (language-agnostic) when:**
+**Use `ring-dev-team:backend-engineer` (language-agnostic) when:**
 - Language hasn't been decided yet
 - Comparing multiple language options
 - Multi-language system architecture
@@ -348,19 +348,19 @@ Task tool:
 - Language-specific patterns and idioms
 
 **Example decision:**
-- "Should I use Go or TypeScript?" → **backend-engineer** (agnostic)
-- "How do I optimize this Go service?" → **backend-engineer-golang**
-- "Design a FastAPI endpoint" → **backend-engineer-python**
+- "Should I use Go or TypeScript?" → **`ring-dev-team:backend-engineer`** (agnostic)
+- "How do I optimize this Go service?" → **`ring-dev-team:backend-engineer-golang`**
+- "Design a FastAPI endpoint" → **`ring-dev-team:backend-engineer-python`**
 
 ### Frontend Engineers
 
-**Use `frontend-engineer` (general) when:**
+**Use `ring-dev-team:frontend-engineer` (general) when:**
 - Standard React/Next.js projects
 - TypeScript is used but not central concern
 - Focus on component design, state, architecture
 - General frontend best practices
 
-**Use `frontend-engineer-typescript` when:**
+**Use `ring-dev-team:frontend-engineer-typescript` when:**
 - TypeScript is central to project success
 - Need advanced type patterns (branded types, generics)
 - Type-safe API integration (tRPC, Zod)
@@ -368,8 +368,8 @@ Task tool:
 - Strict type safety requirements
 
 **Example decision:**
-- "Build a React dashboard" → **frontend-engineer**
-- "Build type-safe full-stack with tRPC" → **frontend-engineer-typescript**
+- "Build a React dashboard" → **`ring-dev-team:frontend-engineer`**
+- "Build type-safe full-stack with tRPC" → **`ring-dev-team:frontend-engineer-typescript`**
 
 ---
 
@@ -418,7 +418,7 @@ Remember:
 - **Combine with using-ring principle** – Skills + Specialists = complete workflow
 
 ### Good Example (ORCHESTRATOR):
-> "I need a Go service. Let me dispatch backend-engineer-golang to design it."
+> "I need a Go service. Let me dispatch `ring-dev-team:backend-engineer-golang` to design it."
 
 ### Bad Example (OPERATOR):
 > "I'll manually read Go best practices and design the service myself."

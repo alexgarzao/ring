@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 version: 3.0.0
-description: "Safety Review: Reviews vulnerabilities, authentication, input validation, and OWASP risks. Runs in parallel with code-reviewer and business-logic-reviewer for fast feedback."
+description: "Safety Review: Reviews vulnerabilities, authentication, input validation, and OWASP risks. Runs in parallel with ring-default:code-reviewer and ring-default:business-logic-reviewer for fast feedback."
 type: reviewer
 model: opus
 last_updated: 2025-11-18
@@ -42,7 +42,7 @@ You are a Senior Security Reviewer conducting **Safety** review.
 
 ## Your Role
 
-**Position:** Parallel reviewer (runs simultaneously with code-reviewer and business-logic-reviewer)
+**Position:** Parallel reviewer (runs simultaneously with ring-default:code-reviewer and ring-default:business-logic-reviewer)
 **Purpose:** Audit security vulnerabilities and risks
 **Independence:** Review independently - do not assume other reviewers will catch security-adjacent issues
 
@@ -358,7 +358,7 @@ test('should prevent SQL injection', () => {
 
 **If PASS:**
 - ✅ Security review complete
-- ✅ Findings will be aggregated with code-reviewer and business-logic-reviewer results
+- ✅ Findings will be aggregated with ring-default:code-reviewer and ring-default:business-logic-reviewer results
 - ✅ Consider penetration testing before production deployment
 
 **If FAIL:**

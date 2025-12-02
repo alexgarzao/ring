@@ -155,10 +155,10 @@ if (fileExists(subSkillPath)) {
 
 ### Agent Dispatch with Gate 1 Context
 
-**Use the Task tool to dispatch the finops-analyzer agent for Gate 2 validation:**
+**Use the Task tool to dispatch the ring-finops-team:finops-analyzer agent for Gate 2 validation:**
 
 1. **Invoke the Task tool with these parameters:**
-   - `subagent_type`: "finops-analyzer" (Same analyzer for Gate 2)
+   - `subagent_type`: "ring-finops-team:finops-analyzer" (Same analyzer for Gate 2)
    - `model`: "opus"
    - `description`: "Gate 2: Technical validation"
    - `prompt`: Use the prompt template below with Gate 1 context
@@ -231,7 +231,7 @@ ${JSON.stringify(gate1_context, null, 2)}
 
 // Call the Task tool - agent should NOT make MCP calls
 Task({
-  subagent_type: "finops-analyzer",
+  subagent_type: "ring-finops-team:finops-analyzer",
   model: "opus",
   description: "Gate 2: Technical validation (no MCP)",
   prompt: gate2Prompt

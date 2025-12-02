@@ -93,7 +93,7 @@ Task tool:
 Brazilian regulatory compliance follows a 3-gate workflow:
 
 ### Gate 1: Compliance Analysis
-**Agent:** finops-analyzer
+**Agent:** ring-finops-team:finops-analyzer
 **Purpose:** Understand requirements, identify fields, validate mappings
 **Output:** compliance analysis document
 
@@ -105,7 +105,7 @@ Brazilian regulatory compliance follows a 3-gate workflow:
 ---
 
 ### Gate 2: Validation & Confirmation
-**Agent:** finops-analyzer (again)
+**Agent:** ring-finops-team:finops-analyzer (again)
 **Purpose:** Confirm mappings are correct, validate against specs
 **Output:** validated specification document
 
@@ -117,7 +117,7 @@ Brazilian regulatory compliance follows a 3-gate workflow:
 ---
 
 ### Gate 3: Template Generation
-**Agent:** finops-automation
+**Agent:** ring-finops-team:finops-automation
 **Purpose:** Generate executable .tpl templates from validated specifications
 **Output:** complete .tpl files for Reporter platform
 
@@ -151,21 +151,21 @@ Brazilian regulatory compliance follows a 3-gate workflow:
 
 | Phase | Agent | Use Case |
 |-------|-------|----------|
-| Understanding requirements | finops-analyzer | Analyze specs, identify fields |
-| Validating mappings | finops-analyzer | Confirm correctness, validate |
-| Generating templates | finops-automation | Create .tpl files, finalize |
+| Understanding requirements | ring-finops-team:finops-analyzer | Analyze specs, identify fields |
+| Validating mappings | ring-finops-team:finops-analyzer | Confirm correctness, validate |
+| Generating templates | ring-finops-team:finops-automation | Create .tpl files, finalize |
 
 ---
 
 ## When to Use FinOps Agents
 
-### Use finops-analyzer for:
+### Use ring-finops-team:finops-analyzer for:
 - ✅ **Understanding regulations** – What does BACEN require?
 - ✅ **Compliance research** – How do we map our data?
 - ✅ **Requirement analysis** – Which fields are required?
 - ✅ **Validation** – Does our mapping match the spec?
 
-### Use finops-automation for:
+### Use ring-finops-team:finops-automation for:
 - ✅ **Template creation** – Build .tpl files
 - ✅ **Specification execution** – Convert analysis to templates
 - ✅ **Reporter platform prep** – Generate deployment files
@@ -179,9 +179,9 @@ If you need both analysis and template generation, **dispatch sequentially** (an
 
 ```
 Workflow:
-Step 1: Dispatch finops-analyzer
+Step 1: Dispatch ring-finops-team:finops-analyzer
   └─ Returns: compliance analysis
-Step 2: Dispatch finops-automation
+Step 2: Dispatch ring-finops-team:finops-automation
   └─ Returns: .tpl templates
 
 Note: These must run sequentially because automation depends on analysis.
@@ -198,7 +198,7 @@ Remember:
 - **Combine with using-ring principle** – Skills + Agents = complete workflow
 
 ### Good Example (ORCHESTRATOR):
-> "I need BACEN compliance. Let me dispatch finops-analyzer to understand requirements, then finops-automation to generate templates."
+> "I need BACEN compliance. Let me dispatch ring-finops-team:finops-analyzer to understand requirements, then ring-finops-team:finops-automation to generate templates."
 
 ### Bad Example (OPERATOR):
 > "I'll manually read BACEN documentation and write templates myself."
@@ -208,7 +208,7 @@ Remember:
 ## Reporter Platform Integration
 
 Generated .tpl files integrate directly with Reporter platform:
-- **Input:** Validated specifications from finops-analyzer
+- **Input:** Validated specifications from ring-finops-team:finops-analyzer
 - **Output:** .tpl files (XML, HTML, TXT formats)
 - **Deployment:** Direct integration with Reporter
 - **Validation:** Compliance verified by template structure
@@ -218,8 +218,8 @@ Generated .tpl files integrate directly with Reporter platform:
 ## Available in This Plugin
 
 **Agents:**
-- finops-analyzer (Gate 1-2)
-- finops-automation (Gate 3)
+- ring-finops-team:finops-analyzer (Gate 1-2)
+- ring-finops-team:finops-automation (Gate 3)
 
 **Skills:**
 - using-finops-team (this skill - plugin introduction)

@@ -11,7 +11,7 @@ trigger: |
 
 skip_when: |
   - Non-Brazilian regulations → not applicable
-  - Analysis-only without template → use finops-analyzer directly
+  - Analysis-only without template → use ring-finops-team:finops-analyzer directly
   - Template already exists, just needs updates → modify directly
 
 sequence:
@@ -41,8 +41,8 @@ sequence:
 - **DIMP:** v10 (Movimentação Patrimonial)
 
 **REQUIRED AGENTS:** The sub-skills dispatch specialized agents:
-- `finops-analyzer` - For Gates 1-2 and Discussion (regulatory analysis and validation)
-- `finops-automation` - For Gate 3 (template file generation)
+- `ring-finops-team:finops-analyzer` - For Gates 1-2 and Discussion (regulatory analysis and validation)
+- `ring-finops-team:finops-automation` - For Gate 3 (template file generation)
 
 ---
 
@@ -254,7 +254,7 @@ TodoWrite({
 1. Call the Skill tool with:
    - `skill`: "regulatory-templates-gate1"
 
-2. The Gate 1 skill will dispatch the finops-analyzer agent to:
+2. The Gate 1 skill will dispatch the ring-finops-team:finops-analyzer agent to:
    - **READ the regulatory specification** from `/docs/regulatory/templates/`
    - **ANALYZE the specification requirements**
    - **GENERATE a SPECIFICATION REPORT**
@@ -279,7 +279,7 @@ TodoWrite({
    - `skill`: "regulatory-templates-gate2"
    - Context includes the **specification report** from Gate 1
 
-2. The Gate 2 skill will dispatch the finops-analyzer agent to:
+2. The Gate 2 skill will dispatch the ring-finops-team:finops-analyzer agent to:
    - **VALIDATE the specification report completeness**
    - **RESOLVE any uncertainties or gaps**
    - **CONFIRM all transformation rules**
@@ -299,7 +299,7 @@ TodoWrite({
    - `skill`: "regulatory-templates-gate3"
    - Context includes the **FINALIZED SPECIFICATION REPORT** from Gate 2
 
-2. The Gate 3 skill will dispatch the finops-automation agent (using sonnet model) to:
+2. The Gate 3 skill will dispatch the ring-finops-team:finops-automation agent (using sonnet model) to:
    - **USE THE SPECIFICATION REPORT as input**
    - **GENERATE the .tpl template based on report**
    - **VALIDATE template against report requirements**
@@ -637,7 +637,7 @@ If you catch yourself thinking ANY of these, STOP and re-read the NO EXCEPTIONS 
 
 Before executing workflow:
 - [ ] All sub-skills exist in skills directory
-- [ ] Agents finops-analyzer and finops-automation available
+- [ ] Agents ring-finops-team:finops-analyzer and ring-finops-team:finops-automation available
 - [ ] User has selected template type
 - [ ] Environment URLs configured
 

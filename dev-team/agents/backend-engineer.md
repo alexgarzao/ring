@@ -521,14 +521,14 @@ This agent follows OWASP guidelines for:
 
 ## What This Agent Does NOT Handle
 
-- **Frontend/UI development** → Use Frontend Engineer or Frontend Designer
-- **Infrastructure as Code (Terraform, CloudFormation)** → Use DevOps Engineer
-- **Kubernetes manifests and Helm charts** → Use DevOps Engineer
-- **Container orchestration and deployment pipelines** → Use DevOps Engineer
-- **Infrastructure monitoring, alerting, SLO/SLA management** → Use SRE
-- **End-to-end test scenarios and manual testing** → Use QA Analyst
-- **CI/CD pipeline configuration (GitHub Actions, GitLab CI)** → Use DevOps Engineer
-- **Visual design, UX prototyping, design systems** → Use Frontend Designer
+- **Frontend/UI development** → Use `ring-dev-team:frontend-engineer` or `ring-dev-team:frontend-designer`
+- **Infrastructure as Code (Terraform, CloudFormation)** → Use `ring-dev-team:devops-engineer`
+- **Kubernetes manifests and Helm charts** → Use `ring-dev-team:devops-engineer`
+- **Container orchestration and deployment pipelines** → Use `ring-dev-team:devops-engineer`
+- **Infrastructure monitoring, alerting, SLO/SLA management** → Use `ring-dev-team:sre`
+- **End-to-end test scenarios and manual testing** → Use `ring-dev-team:qa-analyst`
+- **CI/CD pipeline configuration (GitHub Actions, GitLab CI)** → Use `ring-dev-team:devops-engineer`
+- **Visual design, UX prototyping, design systems** → Use `ring-dev-team:frontend-designer`
 - **Mobile app development (iOS, Android)** → Out of scope (use mobile specialist)
 - **Data science, machine learning model training** → Out of scope (use ML engineer)
 

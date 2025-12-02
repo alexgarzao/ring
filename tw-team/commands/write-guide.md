@@ -62,7 +62,7 @@ For guidance on optimal usage patterns.
 
 ## 4. Dispatch Agent
 
-For complex documentation, dispatch the functional-writer agent:
+For complex documentation, dispatch the ring-tw-team:functional-writer agent:
 
 ```
 Task tool:
@@ -74,7 +74,7 @@ Task tool:
 
 ## 5. Review Before Publishing
 
-After writing, use the docs-reviewer agent:
+After writing, use the ring-tw-team:docs-reviewer agent:
 
 ```
 Task tool:

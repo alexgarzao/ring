@@ -10,7 +10,7 @@ arguments:
 
 # Review Documentation Command
 
-You're reviewing documentation quality. This command dispatches the docs-reviewer agent.
+You're reviewing documentation quality. This command dispatches the ring-tw-team:docs-reviewer agent.
 
 ## Review Process
 

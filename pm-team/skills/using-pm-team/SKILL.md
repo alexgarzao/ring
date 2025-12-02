@@ -121,9 +121,9 @@ Pre-dev workflow ensures:
 | **integration** | API docs, SDK docs | Connecting external systems |
 
 **Dispatches 3 agents in PARALLEL:**
-1. `repo-research-analyst` - Codebase patterns, docs/solutions/
-2. `best-practices-researcher` - Web search, Context7
-3. `framework-docs-researcher` - Tech stack, versions
+1. `ring-pm-team:repo-research-analyst` - Codebase patterns, docs/solutions/
+2. `ring-pm-team:best-practices-researcher` - Web search, Context7
+3. `ring-pm-team:framework-docs-researcher` - Tech stack, versions
 
 **Use when:**
 - Starting any feature (always recommended)
@@ -391,9 +391,9 @@ Remember:
 - using-pm-team (this skill)
 
 **Research Agents:**
-- repo-research-analyst (codebase patterns, docs/solutions/)
-- best-practices-researcher (web search, Context7)
-- framework-docs-researcher (tech stack, versions)
+- ring-pm-team:repo-research-analyst (codebase patterns, docs/solutions/)
+- ring-pm-team:best-practices-researcher (web search, Context7)
+- ring-pm-team:framework-docs-researcher (tech stack, versions)
 
 **Commands:**
 - `/ring-pm-team:pre-dev-feature` – Small track (4 gates)

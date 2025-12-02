@@ -107,7 +107,7 @@ Launching parallel research:
 
 **Agent Prompts:**
 
-### repo-research-analyst
+### ring-pm-team:repo-research-analyst
 ```
 Research the codebase for patterns relevant to: [feature description]
 
@@ -120,7 +120,7 @@ Search docs/solutions/ knowledge base for prior related solutions.
 Return findings with exact file:line references.
 ```
 
-### best-practices-researcher
+### ring-pm-team:best-practices-researcher
 ```
 Research external best practices for: [feature description]
 
@@ -134,7 +134,7 @@ Use WebSearch for industry best practices.
 Return findings with URLs.
 ```
 
-### framework-docs-researcher
+### ring-pm-team:framework-docs-researcher
 ```
 Analyze tech stack and fetch documentation for: [feature description]
 
@@ -162,9 +162,9 @@ date: [YYYY-MM-DD]
 feature: [feature name]
 research_mode: [greenfield|modification|integration]
 agents_dispatched:
-  - repo-research-analyst
-  - best-practices-researcher
-  - framework-docs-researcher
+  - ring-pm-team:repo-research-analyst
+  - ring-pm-team:best-practices-researcher
+  - ring-pm-team:framework-docs-researcher
 ---
 
 # Research: [Feature Name]
@@ -179,19 +179,19 @@ agents_dispatched:
 
 ---
 
-## Codebase Research (repo-research-analyst)
+## Codebase Research (ring-pm-team:repo-research-analyst)
 
 [Paste agent output here]
 
 ---
 
-## Best Practices Research (best-practices-researcher)
+## Best Practices Research (ring-pm-team:best-practices-researcher)
 
 [Paste agent output here]
 
 ---
 
-## Framework Documentation (framework-docs-researcher)
+## Framework Documentation (ring-pm-team:framework-docs-researcher)
 
 [Paste agent output here]
 

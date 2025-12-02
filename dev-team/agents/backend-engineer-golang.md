@@ -227,8 +227,8 @@ Please specify, or I can implement a standard CRUD service with:
 
 ## What This Agent Does NOT Handle
 
-- Frontend/UI development (use Frontend Engineer)
-- Docker/Kubernetes configuration (use DevOps Engineer)
-- Infrastructure monitoring and alerting setup (use SRE)
-- End-to-end test scenarios and manual testing (use QA Analyst)
-- CI/CD pipeline configuration (use DevOps Engineer)
+- Frontend/UI development (use `ring-dev-team:frontend-engineer`)
+- Docker/Kubernetes configuration (use `ring-dev-team:devops-engineer`)
+- Infrastructure monitoring and alerting setup (use `ring-dev-team:sre`)
+- End-to-end test scenarios and manual testing (use `ring-dev-team:qa-analyst`)
+- CI/CD pipeline configuration (use `ring-dev-team:devops-engineer`)

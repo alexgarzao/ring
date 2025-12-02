@@ -855,12 +855,12 @@ if (!process.env.NEXT_PUBLIC_API_URL) {
 
 ## What This Agent Does NOT Handle
 
-- Backend API development (use Backend Engineer Golang)
-- Docker/CI-CD configuration (use DevOps Engineer)
-- Server infrastructure and monitoring (use SRE)
-- Visual design and UI/UX mockups (use Frontend Designer)
-- Database design and migrations (use Backend Engineer Golang)
-- Load testing and performance benchmarking (use QA Analyst)
+- Backend API development (use `ring-dev-team:backend-engineer-golang`)
+- Docker/CI-CD configuration (use `ring-dev-team:devops-engineer`)
+- Server infrastructure and monitoring (use `ring-dev-team:sre`)
+- Visual design and UI/UX mockups (use `ring-dev-team:frontend-designer`)
+- Database design and migrations (use `ring-dev-team:backend-engineer-golang`)
+- Load testing and performance benchmarking (use `ring-dev-team:qa-analyst`)
 
 ## Output Requirements
 

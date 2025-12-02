@@ -322,7 +322,7 @@ Ring leverages four primary Claude Code tools:
    - Skill content becomes part of Claude's working context
 
 2. **Task Tool**
-   - Dispatches agents to subagent instances: `Task(agent="ring-default:code-reviewer", model="opus")`
+   - Dispatches agents to subagent instances: `Task(subagent_type="ring-default:code-reviewer", model="opus")`
    - Enables parallel execution (multiple Tasks in one message)
    - Returns structured reports from independent analysis
 
@@ -363,10 +363,10 @@ User Request → using-ring check → Relevant skill?
 ### Pattern 2: Parallel Review Execution
 
 ```
-Review Request → full-reviewer → Dispatch 3 Tasks (parallel)
-    ├─ code-reviewer      ─┐
-    ├─ business-reviewer  ─┼─→ Aggregate findings → Handle by severity
-    └─ security-reviewer  ─┘
+Review Request → /ring-default:codereview → Dispatch 3 Tasks (parallel)
+    ├─ ring-default:code-reviewer           ─┐
+    ├─ ring-default:business-logic-reviewer ─┼─→ Aggregate findings → Handle by severity
+    └─ ring-default:security-reviewer       ─┘
 ```
 
 **Implementation:** Single message with 3 Task tool calls ensures parallel execution. All reviewers work independently and return simultaneously.
@@ -422,7 +422,7 @@ Complex Skill → TodoWrite tracking
 **Example Mappings:**
 - `/ring-default:brainstorm` → `brainstorming` skill
 - `/ring-default:write-plan` → `writing-plans` skill
-- `/ring-default:codereview` → `full-reviewer` agent → 3 parallel review agents
+- `/ring-default:codereview` → dispatches 3 parallel review agents (`ring-default:code-reviewer`, `ring-default:business-logic-reviewer`, `ring-default:security-reviewer`)
 
 ### Skills ↔ Shared Patterns
 

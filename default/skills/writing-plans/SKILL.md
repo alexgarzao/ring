@@ -42,9 +42,9 @@ Use the Task tool to launch the specialized planning agent:
 Task(
   subagent_type: "general-purpose",
   description: "Write implementation plan",
-  prompt: "Use the write-plan agent to create a comprehensive implementation plan.
+  prompt: "Use the ring-default:write-plan agent to create a comprehensive implementation plan.
 
-  Load agents/write-plan.md and follow all instructions to:
+  Load the ring-default:write-plan agent definition and follow all instructions to:
   - Understand the feature scope
   - Read relevant codebase files
   - Create bite-sized tasks (2-5 min each)
@@ -134,10 +134,10 @@ Plans should specify which specialized agents to use for each task type. During 
 ## Recommended Agents
 - Backend tasks: `ring-dev-team:backend-engineer-golang` (or language variant: `-python`, `-typescript`)
 - Frontend tasks: `ring-dev-team:frontend-engineer-typescript` (or generic `frontend-engineer`)
-- Fallback: `general-purpose` if specialized agent unavailable
+- Fallback: `general-purpose` (built-in Claude agent, no ring- prefix needed)
 ```
 
-**Agent availability check:** If `ring-dev-team` plugin is not installed, execution falls back to `general-purpose` Task agents automatically.
+**Agent availability check:** If `ring-dev-team` plugin is not installed, execution falls back to Claude's built-in `general-purpose` agent automatically.
 
 ## Execution Options Reference
 

@@ -42,49 +42,49 @@ This skill helps you identify and dispatch the most appropriate developer agent 
 ```
 Backend work?
 ├── Go/Golang code?
-│   └── Yes → backend-engineer-golang
+│   └── Yes → ring-dev-team:backend-engineer-golang
 ├── TypeScript/Node.js backend?
-│   └── Yes → backend-engineer-typescript
+│   └── Yes → ring-dev-team:backend-engineer-typescript
 ├── Python backend (FastAPI/Django)?
-│   └── Yes → backend-engineer-python
+│   └── Yes → ring-dev-team:backend-engineer-python
 ├── Unknown/multiple languages?
-│   └── Yes → backend-engineer (language-agnostic)
+│   └── Yes → ring-dev-team:backend-engineer (language-agnostic)
 └── Frontend work?
     ├── React/Next.js?
     │   ├── TypeScript-heavy with complex state?
-    │   │   └── Yes → frontend-engineer-typescript
+    │   │   └── Yes → ring-dev-team:frontend-engineer-typescript
     │   ├── Visual design/UI aesthetics focus?
-    │   │   └── Yes → frontend-designer
+    │   │   └── Yes → ring-dev-team:frontend-designer
     │   └── Component logic/functionality focus?
-    │       └── Yes → frontend-engineer
+    │       └── Yes → ring-dev-team:frontend-engineer
     ├── Infrastructure/CI-CD/Docker?
-    │   └── Yes → devops-engineer
+    │   └── Yes → ring-dev-team:devops-engineer
     ├── Testing/QA/Automation?
-    │   └── Yes → qa-analyst
+    │   └── Yes → ring-dev-team:qa-analyst
     └── Monitoring/Reliability/Performance?
-        └── Yes → sre
+        └── Yes → ring-dev-team:sre
 ```
 
 ### By Task Type
 
 | Task | Primary Agent | Supporting Agent |
 |------|---------------|------------------|
-| Build REST API (Go) | backend-engineer-golang | qa-analyst (tests) |
-| Build REST API (TypeScript) | backend-engineer-typescript | qa-analyst (tests) |
-| Build REST API (Python) | backend-engineer-python | qa-analyst (tests) |
-| Build REST API (unknown language) | backend-engineer | qa-analyst (tests) |
-| Create UI component | frontend-engineer | qa-analyst (E2E) |
-| Create type-safe UI component | frontend-engineer-typescript | qa-analyst (E2E) |
-| Design landing page | frontend-designer | frontend-engineer (implementation) |
-| Full-stack TypeScript feature | backend-engineer-typescript | frontend-engineer-typescript |
-| Set up CI/CD | devops-engineer | sre (monitoring) |
-| Write test suite | qa-analyst | - |
-| Add monitoring | sre | devops-engineer (infra) |
-| Database schema (Go) | backend-engineer-golang | - |
-| Database schema (TypeScript) | backend-engineer-typescript | - |
-| Database schema (Python) | backend-engineer-python | - |
-| Deploy to K8s | devops-engineer | sre (observability) |
-| Performance optimization | sre | backend-engineer-* |
+| Build REST API (Go) | `ring-dev-team:backend-engineer-golang` | `ring-dev-team:qa-analyst` (tests) |
+| Build REST API (TypeScript) | `ring-dev-team:backend-engineer-typescript` | `ring-dev-team:qa-analyst` (tests) |
+| Build REST API (Python) | `ring-dev-team:backend-engineer-python` | `ring-dev-team:qa-analyst` (tests) |
+| Build REST API (unknown language) | `ring-dev-team:backend-engineer` | `ring-dev-team:qa-analyst` (tests) |
+| Create UI component | `ring-dev-team:frontend-engineer` | `ring-dev-team:qa-analyst` (E2E) |
+| Create type-safe UI component | `ring-dev-team:frontend-engineer-typescript` | `ring-dev-team:qa-analyst` (E2E) |
+| Design landing page | `ring-dev-team:frontend-designer` | `ring-dev-team:frontend-engineer` (implementation) |
+| Full-stack TypeScript feature | `ring-dev-team:backend-engineer-typescript` | `ring-dev-team:frontend-engineer-typescript` |
+| Set up CI/CD | `ring-dev-team:devops-engineer` | `ring-dev-team:sre` (monitoring) |
+| Write test suite | `ring-dev-team:qa-analyst` | - |
+| Add monitoring | `ring-dev-team:sre` | `ring-dev-team:devops-engineer` (infra) |
+| Database schema (Go) | `ring-dev-team:backend-engineer-golang` | - |
+| Database schema (TypeScript) | `ring-dev-team:backend-engineer-typescript` | - |
+| Database schema (Python) | `ring-dev-team:backend-engineer-python` | - |
+| Deploy to K8s | `ring-dev-team:devops-engineer` | `ring-dev-team:sre` (observability) |
+| Performance optimization | `ring-dev-team:sre` | `ring-dev-team:backend-engineer-*` |
 
 ## Agent Dispatch Pattern
 
@@ -367,9 +367,9 @@ Step 5: Observability
 ### With TDD (test-driven-development)
 
 ```
-1. Use qa-analyst to design test cases
+1. Use `ring-dev-team:qa-analyst` to design test cases
 2. Use appropriate developer agent to implement
-3. Use qa-analyst to verify test coverage
+3. Use `ring-dev-team:qa-analyst` to verify test coverage
 ```
 
 ### With Code Review (requesting-code-review)

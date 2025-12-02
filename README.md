@@ -355,7 +355,7 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
 ```
 User: "Review my authentication implementation"
 Claude: Dispatching all 3 reviewers in parallel...
-        [Launches code-reviewer, business-logic-reviewer, security-reviewer simultaneously]
+        [Launches ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).

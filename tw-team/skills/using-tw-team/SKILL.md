@@ -174,7 +174,7 @@ Remember:
 - **Combine with other plugins** – API writers + backend engineers for accuracy
 
 ### Good Example (ORCHESTRATOR):
-> "I need documentation for the new feature. Let me dispatch functional-writer to create the guide."
+> "I need documentation for the new feature. Let me dispatch ring-tw-team:functional-writer to create the guide."
 
 ### Bad Example (OPERATOR):
 > "I'll manually write all the documentation myself."
@@ -184,9 +184,9 @@ Remember:
 ## Available in This Plugin
 
 **Agents:**
-- functional-writer
-- api-writer
-- docs-reviewer
+- ring-tw-team:functional-writer
+- ring-tw-team:api-writer
+- ring-tw-team:docs-reviewer
 
 **Skills:**
 - using-tw-team: Plugin introduction and agent selection

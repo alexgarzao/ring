@@ -97,7 +97,7 @@ Every endpoint must include:
 
 ## 5. Dispatch Agent
 
-For complex API documentation, dispatch the api-writer agent:
+For complex API documentation, dispatch the ring-tw-team:api-writer agent:
 
 ```
 Task tool:
@@ -113,7 +113,7 @@ Task tool:
 
 ## 6. Review Before Publishing
 
-After writing, use the docs-reviewer agent:
+After writing, use the ring-tw-team:docs-reviewer agent:
 
 ```
 Task tool:

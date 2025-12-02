@@ -38,7 +38,7 @@ sequence:
 **Template generation is the final quality gate before production deployment.**
 
 Gate 3 transforms validated specifications into production artifacts:
-- **Agent-based generation**: finops-automation applies validated mappings consistently - manual creation introduces human error
+- **Agent-based generation**: ring-finops-team:finops-automation applies validated mappings consistently - manual creation introduces human error
 - **Two-file separation**: Clean .tpl (production code) + .tpl.docs (documentation) - inline comments bloat production artifacts
 - **All mandatory fields**: 100% inclusion required - 95% = 5% of regulatory data missing in BACEN submission
 - **Correct transformations**: Django filters applied per Gates 1-2 validation - errors here multiply in every submission
@@ -78,7 +78,7 @@ Gate 3 transforms validated specifications into production artifacts:
 ### Generation Requirements (Non-Negotiable)
 
 **Agent-Based Generation:**
-- ✅ REQUIRED: Use finops-automation agent for all template generation
+- ✅ REQUIRED: Use ring-finops-team:finops-automation agent for all template generation
 - ❌ FORBIDDEN: Manual .tpl creation, editing agent output
 - Why: Agent applies Gates 1-2 validations consistently, prevents fatigue errors
 
@@ -132,10 +132,10 @@ Gate 3 is where 5+ hours of Gates 1-2 work becomes a production artifact. Shortc
 
 ### Agent Dispatch
 
-**Use the Task tool to dispatch the finops-automation agent for template generation:**
+**Use the Task tool to dispatch the ring-finops-team:finops-automation agent for template generation:**
 
 1. **Invoke the Task tool with these parameters:**
-   - `subagent_type`: "finops-automation"
+   - `subagent_type`: "ring-finops-team:finops-automation"
    - `model`: "sonnet"
    - `description`: "Gate 3: Generate template file"
    - `prompt`: Use the prompt template below with accumulated context from Gates 1-2
@@ -237,7 +237,7 @@ COMPLETION STATUS must be COMPLETE or INCOMPLETE.
 3. **Example Task tool invocation:**
 ```
 When executing Gate 3, call the Task tool with:
-- subagent_type: "finops-automation"
+- subagent_type: "ring-finops-team:finops-automation"
 - model: "sonnet"
 - description: "Gate 3: Generate template file"
 - prompt: [The full prompt above with context from Gates 1-2 substituted]
@@ -248,7 +248,7 @@ When executing Gate 3, call the Task tool with:
 
 ## Agent Execution
 
-The agent `finops-automation` will handle all technical aspects:
+The agent `ring-finops-team:finops-automation` will handle all technical aspects:
 
 - Analyze template requirements based on authority type
 - Generate appropriate template structure (XML, JSON, etc.)

@@ -1,7 +1,7 @@
 ---
 name: business-logic-reviewer
 version: 4.1.0
-description: "Correctness Review: reviews domain correctness, business rules, edge cases, and requirements. Uses mental execution to trace code paths and analyzes full file context, not just changes. Runs in parallel with code-reviewer and security-reviewer for fast feedback."
+description: "Correctness Review: reviews domain correctness, business rules, edge cases, and requirements. Uses mental execution to trace code paths and analyzes full file context, not just changes. Runs in parallel with ring-default:code-reviewer and ring-default:security-reviewer for fast feedback."
 type: reviewer
 model: opus
 last_updated: 2025-11-23
@@ -56,7 +56,7 @@ Missing ANY required section will cause your entire review to be rejected. Alway
 
 ## Your Role
 
-**Position:** Parallel reviewer (runs simultaneously with code-reviewer and security-reviewer)
+**Position:** Parallel reviewer (runs simultaneously with ring-default:code-reviewer and ring-default:security-reviewer)
 **Purpose:** Validate business correctness, requirements, and edge cases
 **Independence:** Review independently - do not assume other reviewers will catch issues outside your domain
 
@@ -531,7 +531,7 @@ test('scenario that fails', () => {
 
 **If PASS:**
 - ✅ Business logic review complete
-- ✅ Findings will be aggregated with code-reviewer and security-reviewer results
+- ✅ Findings will be aggregated with ring-default:code-reviewer and ring-default:security-reviewer results
 
 **If FAIL:**
 - ❌ Critical/High/Medium issues must be fixed

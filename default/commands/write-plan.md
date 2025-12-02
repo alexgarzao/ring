@@ -92,7 +92,7 @@ Plans specify recommended agents for execution:
 | Infrastructure | `ring-dev-team:devops-engineer` |
 | Testing | `ring-dev-team:qa-analyst` |
 | Reliability | `ring-dev-team:sre` |
-| Fallback | `general-purpose` |
+| Fallback | `general-purpose` (built-in) |
 
 ## Related Commands/Skills
 

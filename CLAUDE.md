@@ -283,13 +283,13 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - `using-dev-team` → 10 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
-- Agents: backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python, devops-engineer, frontend-engineer, frontend-engineer-typescript, frontend-designer, qa-analyst, sre
+- Agents (invoke as `ring-dev-team:{agent-name}`): backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python, devops-engineer, frontend-engineer, frontend-engineer-typescript, frontend-designer, qa-analyst, sre
 
 **Ring FinOps Team Plugin:**
 - `using-finops-team` → 2 FinOps agents for Brazilian compliance
 - Auto-loads when ring-finops-team plugin is enabled
 - Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents: finops-analyzer (compliance analysis), finops-automation (template generation)
+- Agents (invoke as `ring-finops-team:{agent-name}`): finops-analyzer (compliance analysis), finops-automation (template generation)
 
 **Ring PM Team Plugin:**
 - `using-pm-team` → Pre-dev workflow skills (8 gates)
@@ -307,7 +307,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - `using-tw-team` → 3 technical writing agents for documentation
 - Auto-loads when ring-tw-team plugin is enabled
 - Located: `tw-team/skills/using-tw-team/SKILL.md`
-- Agents: functional-writer (guides), api-writer (API reference), docs-reviewer (quality review)
+- Agents (invoke as `ring-tw-team:{agent-name}`): functional-writer (guides), api-writer (API reference), docs-reviewer (quality review)
 - Commands: write-guide, write-api, review-docs
 
 **Hook Configuration:**
@@ -405,7 +405,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** All backend engineers (backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python), all frontend engineers except designer (frontend-engineer, frontend-engineer-typescript), devops-engineer, qa-analyst, sre, finops-automation
+**Used by:** All backend engineers (`ring-dev-team:backend-engineer`, `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:backend-engineer-python`), all frontend engineers except designer (`ring-dev-team:frontend-engineer`, `ring-dev-team:frontend-engineer-typescript`), `ring-dev-team:devops-engineer`, `ring-dev-team:qa-analyst`, `ring-dev-team:sre`, `ring-finops-team:finops-automation`
 
 **Analysis Schema** (for agents that analyze and recommend):
 ```yaml
@@ -426,7 +426,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** frontend-designer, finops-analyzer
+**Used by:** `ring-dev-team:frontend-designer`, `ring-finops-team:finops-analyzer`
 
 **Reviewer Schema** (for code review agents):
 ```yaml
@@ -453,11 +453,11 @@ output_schema:
       required: true
 ```
 
-**Used by:** code-reviewer, business-logic-reviewer, security-reviewer
+**Used by:** `ring-default:code-reviewer`, `ring-default:business-logic-reviewer`, `ring-default:security-reviewer`
 
-**Note:** business-logic-reviewer and security-reviewer extend the base Reviewer Schema with additional domain-specific required sections:
-- business-logic-reviewer adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
-- security-reviewer adds: "OWASP Top 10 Coverage", "Compliance Status"
+**Note:** `ring-default:business-logic-reviewer` and `ring-default:security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
+- `ring-default:business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
+- `ring-default:security-reviewer` adds: "OWASP Top 10 Coverage", "Compliance Status"
 
 **Exploration Schema** (for deep codebase analysis):
 ```yaml
@@ -481,7 +481,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** codebase-explorer
+**Used by:** `ring-default:codebase-explorer`
 
 **Planning Schema** (for implementation planning):
 ```yaml
@@ -505,7 +505,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** write-plan
+**Used by:** `ring-default:write-plan`
 
 ### Anti-Patterns to Avoid
 1. **Never skip using-ring** - It's mandatory, not optional

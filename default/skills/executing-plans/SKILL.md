@@ -108,6 +108,8 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 | Testing | `ring-dev-team:qa-analyst` | `general-purpose` |
 | Reliability | `ring-dev-team:sre` | `general-purpose` |
 
+> **Note:** `general-purpose` is Claude's built-in agent for general tasks. It does NOT require the `ring-` prefix as it's not a Ring plugin agent.
+
 **Note:** If plan specifies a recommended agent in its header, use that. If `ring-dev-team` plugin is unavailable, fall back to `general-purpose`.
 
 For each task:

@@ -768,7 +768,7 @@ Valid: ✓ TRUE (confidence +20)
 
 ### Agent Dispatch
 
-**Use the Task tool to dispatch the finops-analyzer agent for Gate 1 analysis:**
+**Use the Task tool to dispatch the ring-finops-team:finops-analyzer agent for Gate 1 analysis:**
 
 1. **BEFORE dispatching the agent, check for existing data dictionary:**
    ```javascript
@@ -796,7 +796,7 @@ Valid: ✓ TRUE (confidence +20)
    ```
 
 2. **Invoke the Task tool with these parameters:**
-   - `subagent_type`: "finops-analyzer"
+   - `subagent_type`: "ring-finops-team:finops-analyzer"
    - `model`: "opus" (for comprehensive analysis)
    - `description`: "Gate 1: Regulatory compliance analysis with dynamic field discovery"
    - `prompt`: Use the comprehensive prompt below, INCLUDING dictionary content if it exists
@@ -1087,7 +1087,7 @@ const fullPrompt = buildGate1Prompt(context, dictionaryExists, dictionaryContent
 
 // Call the Task tool with the built prompt
 Task({
-  subagent_type: "finops-analyzer",
+  subagent_type: "ring-finops-team:finops-analyzer",
   model: "opus",
   description: "Gate 1: Regulatory compliance analysis",
   prompt: fullPrompt

@@ -353,4 +353,4 @@ Done!
 **Alternative workflow:**
 - **executing-plans** - Use for parallel session instead of same-session execution
 
-See reviewer agent definitions: agents/code-reviewer.md, agents/security-reviewer.md, agents/business-logic-reviewer.md
+See reviewer agent definitions: ring-default:code-reviewer (agents/code-reviewer.md), ring-default:security-reviewer (agents/security-reviewer.md), ring-default:business-logic-reviewer (agents/business-logic-reviewer.md)
