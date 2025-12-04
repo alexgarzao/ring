@@ -138,11 +138,11 @@ Rating: Good
 
 ### Root Cause Investigation
 
-#### Why did Gate 3 require 3 iterations?
-- Iteration 1: Initial implementation incomplete
-- Iteration 2: Edge case handling missing
-- Iteration 3: Performance optimization needed
-- **Root cause:** Requirements unclear on edge cases
+#### Why did Gate 3 (Testing) require 3 iterations?
+- Iteration 1: Coverage below 80% threshold (67% actual)
+- Iteration 2: Edge case tests missing for null inputs
+- Iteration 3: Integration test failures due to missing fixtures
+- **Root cause:** TDD RED phase skipped, tests written after implementation
 
 #### Why did review FAIL?
 - Critical finding: SQL injection vulnerability
@@ -153,14 +153,14 @@ Rating: Good
 - **Root cause:** N+1 query not detected during implementation
 
 ### Corrective Actions
-1. Add edge case checklist to Gate 0 (implementation)
-2. Add security checklist to Gate 0 (implementation)
-3. Add performance test to Gate 2 before validation
+1. Enforce TDD RED phase verification at Gate 0 (Implementation)
+2. Add security checklist to Gate 0 (Implementation)
+3. Add performance test to Gate 3 (Testing) before Gate 4 (Review)
 
 ### Prevention Measures
-1. Update implementation skill with security reminders
-2. Add performance gate before review
-3. Clarify requirements process
+1. Update dev-implementation skill with TDD compliance check
+2. Update dev-testing skill to require coverage proof before exit
+3. Add security self-review before Gate 4 (Review)
 ```
 
 ### Gate Iterations > 3
