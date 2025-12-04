@@ -158,9 +158,9 @@ Rating: Good
 3. Add performance test to Gate 3 (Testing) before Gate 4 (Review)
 
 ### Prevention Measures
-1. Update dev-implementation skill with TDD compliance check
-2. Update dev-testing skill to require coverage proof before exit
-3. Add security self-review before Gate 4 (Review)
+1. Update ring-dev-team:dev-implementation skill with TDD compliance check
+2. Update ring-dev-team:dev-testing skill to require coverage proof before exit
+3. Add security self-review before gate exit
 ```
 
 ### Gate Iterations > 3
