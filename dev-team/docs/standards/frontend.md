@@ -586,7 +586,7 @@ const handleClick = useCallback((id: string) => {
 
 ## Directory Structure
 
-```
+```text
 /src
   /app                 # Next.js App Router
     /api               # API routes
