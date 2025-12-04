@@ -110,8 +110,17 @@ ring/                                  # Monorepo root
 │   │   └── claude-md-reminder.sh  # CLAUDE.md reminder on prompt submit
 │   └── docs/                      # Documentation
 ├── dev-team/                      # Developer Agents plugin (ring-dev-team)
-│   ├── skills/                    # 1 developer skill
-│   │   └── using-dev-team/        # Plugin introduction
+│   ├── skills/                    # 10 developer skills
+│   │   ├── using-dev-team/        # Plugin introduction
+│   │   ├── dev-analysis/          # Codebase analysis against standards
+│   │   ├── dev-cycle/             # 6-gate development workflow orchestrator
+│   │   ├── dev-devops/            # Gate 1: DevOps setup (Docker, compose)
+│   │   ├── dev-feedback-loop/     # Assertiveness scoring and metrics
+│   │   ├── dev-implementation/    # Gate 0: TDD implementation
+│   │   ├── dev-review/            # Gate 4: Parallel code review
+│   │   ├── dev-sre/               # Gate 2: Observability setup
+│   │   ├── dev-testing/           # Gate 3: Test coverage
+│   │   └── dev-validation/        # Gate 5: User approval
 │   └── agents/                    # 9 specialized developer agents
 │       ├── backend-engineer.md             # Backend specialist (language agnostic)
 │       ├── backend-engineer-golang.md      # Go backend specialist
