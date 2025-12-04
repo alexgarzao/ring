@@ -622,41 +622,27 @@ const ApiErrorSchema = z.discriminatedUnion('type', [
 
 ## Handling Ambiguous Requirements
 
-When requirements are unclear:
+### Step 1: Check Project Standards (ALWAYS FIRST)
 
-1. **Type-First Design**: Design types before implementation
-2. **Validate Assumptions**: Use discriminated unions to model all possible states
-3. **Runtime Validation**: Always validate external data with Zod
-4. **Type Narrowing**: Use type guards and discriminated unions to narrow types
-5. **Ask for Clarification**: If domain model is unclear, ask before assuming
+**IMPORTANT:** Before asking questions, check:
+1. `docs/STANDARDS.md` - Common project standards
+2. `docs/standards/frontend.md` - Frontend-specific standards
+3. `docs/standards/typescript.md` - TypeScript-specific standards
 
-**Example approach:**
+**→ Follow existing standards. Only proceed to Step 2 if they don't cover your scenario.**
 
-```typescript
-// ✅ Model uncertainty in types
-type UserStatus =
-  | { type: 'active'; lastSeen: Date }
-  | { type: 'inactive'; reason: string }
-  | { type: 'suspended'; until: Date; reason: string }
-  | { type: 'pending-verification'; email: string };
+### Step 2: Ask Only When Standards Don't Answer
 
-// ✅ Force exhaustive handling
-function getUserStatusMessage(status: UserStatus): string {
-  switch (status.type) {
-    case 'active':
-      return `Active (last seen ${status.lastSeen.toISOString()})`;
-    case 'inactive':
-      return `Inactive: ${status.reason}`;
-    case 'suspended':
-      return `Suspended until ${status.until.toISOString()}: ${status.reason}`;
-    case 'pending-verification':
-      return `Pending verification for ${status.email}`;
-    default:
-      const _exhaustive: never = status;
-      return _exhaustive;
-  }
-}
-```
+**Ask when standards don't cover:**
+- Visual design for new features (no mockups provided)
+- User flow for complex interactions
+- API contract when backend is undefined
+
+**Don't ask (follow standards or best practices):**
+- Type strictness → Always use strict mode per typescript.md
+- Validation → Use Zod per typescript.md
+- State management → TanStack Query + Zustand per frontend.md
+- Component patterns → Check existing components first
 
 ## Security Best Practices
 
@@ -852,6 +838,266 @@ if (!process.env.NEXT_PUBLIC_API_URL) {
   throw new Error('NEXT_PUBLIC_API_URL is required');
 }
 ```
+
+## Language & Domain Standards
+
+The following TypeScript and Frontend standards MUST be followed when implementing code:
+
+### TypeScript Standards
+
+#### Version & Configuration
+
+- TypeScript 5.0+
+- Strict mode REQUIRED
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
+#### Type Safety Rules
+
+```typescript
+// FORBIDDEN - Never use `any`
+const data: any = await fetchData(); // FORBIDDEN
+
+// REQUIRED - Use `unknown` and narrow
+const data: unknown = await fetchData();
+if (isUser(data)) {
+  console.log(data.name); // Now safe
+}
+
+// REQUIRED - Branded types for IDs
+type UserId = string & { readonly __brand: 'UserId' };
+type ProductId = string & { readonly __brand: 'ProductId' };
+
+// REQUIRED - Discriminated unions for state
+type FetchState<T> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: Error };
+
+// REQUIRED - Exhaustive checks
+function assertNever(x: never): never {
+  throw new Error(`Unexpected value: ${x}`);
+}
+```
+
+#### Zod for Runtime Validation
+
+```typescript
+import { z } from 'zod';
+
+// Schema generates types
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  role: z.enum(['admin', 'user']),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+// Validate external data
+function parseUser(data: unknown): User {
+  return UserSchema.parse(data);
+}
+```
+
+### Frontend Standards
+
+#### Stack
+
+- **Framework**: React 18+ / Next.js 14+
+- **Language**: TypeScript (strict mode)
+- **Styling**: TailwindCSS
+- **State**: TanStack Query (server) + Zustand (client)
+- **Forms**: React Hook Form + Zod
+- **Testing**: Vitest + Testing Library + Playwright
+
+#### Component Patterns
+
+```typescript
+// Type-safe component props
+interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
+  variant: 'primary' | 'secondary';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ variant, size = 'md', className, ...props }, ref) => {
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          'font-medium rounded-md',
+          variant === 'primary' && 'bg-blue-600 text-white',
+          variant === 'secondary' && 'bg-gray-200 text-gray-900',
+          size === 'sm' && 'px-2 py-1 text-sm',
+          size === 'md' && 'px-4 py-2',
+          size === 'lg' && 'px-6 py-3 text-lg',
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = 'Button';
+```
+
+#### Type-Safe Hooks
+
+```typescript
+// Generic hook with proper constraints
+interface UseFetchOptions<T> {
+  url: string;
+  schema: z.ZodType<T>;
+  enabled?: boolean;
+}
+
+function useFetch<T>({ url, schema, enabled = true }: UseFetchOptions<T>) {
+  return useQuery({
+    queryKey: [url],
+    queryFn: async () => {
+      const response = await fetch(url);
+      const data: unknown = await response.json();
+      return schema.parse(data);
+    },
+    enabled,
+  });
+}
+```
+
+#### Type-Safe Forms
+
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const LoginSchema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Min 8 characters'),
+});
+
+type LoginFormData = z.infer<typeof LoginSchema>;
+
+function LoginForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(LoginSchema),
+  });
+
+  const onSubmit = (data: LoginFormData) => {
+    // data is fully typed
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email')} />
+      {errors.email && <span>{errors.email.message}</span>}
+    </form>
+  );
+}
+```
+
+#### Type-Safe Context
+
+```typescript
+interface AuthContextValue {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = React.createContext<AuthContextValue | null>(null);
+
+function useAuth(): AuthContextValue {
+  const context = React.useContext(AuthContext);
+  if (context === null) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+```
+
+#### Type-Safe React Query
+
+```typescript
+// Query key factory
+const userKeys = {
+  all: ['users'] as const,
+  lists: () => [...userKeys.all, 'list'] as const,
+  list: (filters: string) => [...userKeys.lists(), { filters }] as const,
+  details: () => [...userKeys.all, 'detail'] as const,
+  detail: (id: UserId) => [...userKeys.details(), id] as const,
+};
+
+// Type-safe query hook
+function useUser(userId: UserId) {
+  return useQuery({
+    queryKey: userKeys.detail(userId),
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${userId}`);
+      const data: unknown = await response.json();
+      return UserSchema.parse(data);
+    },
+  });
+}
+```
+
+#### Testing Patterns
+
+```typescript
+import { render, screen, userEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
+describe('Button', () => {
+  it('should call onClick when clicked', async () => {
+    const onClick = vi.fn();
+    render(<Button variant="primary" onClick={onClick}>Click me</Button>);
+
+    await userEvent.click(screen.getByRole('button'));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('should apply variant classes', () => {
+    render(<Button variant="secondary">Secondary</Button>);
+
+    expect(screen.getByRole('button')).toHaveClass('bg-gray-200');
+  });
+});
+```
+
+### Checklist
+
+Before submitting TypeScript frontend code, verify:
+
+- [ ] `strict: true` in tsconfig.json
+- [ ] No `any` types (use `unknown` and narrow)
+- [ ] Zod schemas for external data
+- [ ] Branded types for domain IDs
+- [ ] Components have proper prop types
+- [ ] Forms use React Hook Form + Zod
+- [ ] Context has null check in custom hook
+- [ ] Tests cover component behavior
+- [ ] No `@ts-ignore` or `@ts-expect-error`
+- [ ] ESLint passes with no warnings
 
 ## What This Agent Does NOT Handle
 

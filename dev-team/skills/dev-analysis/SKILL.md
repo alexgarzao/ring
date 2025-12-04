@@ -1,472 +1,544 @@
 ---
 name: dev-analysis
 description: |
-  Gate 1 of the development cycle - analyzes codebase context for each task,
-  identifies affected files, recommends the appropriate dev-team agent,
-  estimates complexity, and documents risks.
+  Analyzes existing codebase against standards to identify gaps in architecture, code quality,
+  testing, and DevOps. Auto-detects project language and uses appropriate agent standards
+  (Go, TypeScript, Frontend, DevOps, SRE). Generates refactoring tasks.md compatible with dev-cycle.
 
 trigger: |
-  - Starting Gate 1 of development-cycle
-  - Need to analyze codebase before implementation
-  - Determining which developer agent should handle a task
+  - User wants to refactor existing project to follow standards
+  - User runs /ring-dev-team:dev-refactor command
+  - Legacy codebase needs modernization
+  - Project audit requested
 
 skip_when: |
-  - Analysis already completed for this task -> proceed to Gate 2
-  - Task is documentation-only -> skip to appropriate gate
-  - Simple config change with known scope -> proceed directly
+  - Greenfield project → Use /ring-pm-team:pre-dev-* instead
+  - Single file fix → Use ring-dev-team:dev-cycle directly
+  - Unknown language (no go.mod, package.json, etc.) → Specify language manually
 
 sequence:
-  after: [dev-import-tasks]
-  before: [dev-design]
+  before: [ring-dev-team:dev-cycle]
 
 related:
-  complementary: [development-cycle, dev-import-tasks, dev-design, ring-default:codebase-explorer]
+  similar: [ring-pm-team:pre-dev-research]
+  complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-implementation]
 ---
 
-# Dev Analysis (Gate 1)
+# Dev Analysis Skill
 
-## Overview
+This skill analyzes an existing codebase to identify gaps between current implementation and project standards, then generates a structured refactoring plan compatible with the dev-cycle workflow.
 
-This skill analyzes the codebase to understand the context for each task. It uses `ring-default:codebase-explorer` for deep analysis, identifies files that will be affected, recommends the most appropriate developer agent, estimates complexity, and documents risks.
+## What This Skill Does
 
-**Announce at start:** "I'm using the dev-analysis skill to analyze the codebase context for this task."
+1. **Detects project language** (Go, TypeScript, Python) from manifest files
+2. **Loads appropriate standards** from agent definitions (golang.md, typescript.md, etc.)
+3. **Scans codebase** against standards in 4 dimensions: Architecture, Code, Testing, DevOps
+4. **Identifies gaps** and prioritizes findings by impact and effort
+5. **Generates tasks.md** in the same format as PM Team output
+6. **User approves** the plan before execution via dev-cycle
 
-## Inputs
+## Prerequisites
 
-From Gate 0 (dev-import-tasks):
+Before starting analysis:
 
-```json
-{
-  "id": "TASK-001",
-  "title": "Task title",
-  "functional_requirements": [...],
-  "technical_requirements": [...],
-  "acceptance_criteria": [...],
-  "references": {...}
-}
+1. **Project root identified**: Know where the codebase lives
+2. **Language detectable**: Project has go.mod, package.json, or similar manifest
+3. **Scope defined**: Full project or specific directories
+
+**Note:** Standards are auto-loaded from agent definitions based on detected language. Project-specific `docs/STANDARDS.md` overrides defaults if present.
+
+## Analysis Dimensions
+
+### 1. Architecture Analysis
+
+```text
+Checks:
+├── DDD Patterns (if enabled in STANDARDS.md)
+│   ├── Entities have identity comparison
+│   ├── Value Objects are immutable
+│   ├── Aggregates enforce invariants
+│   ├── Repositories are interface-based
+│   └── Domain events for state changes
+│
+├── Clean Architecture / Hexagonal
+│   ├── Dependency direction (inward only)
+│   ├── Domain has no external dependencies
+│   ├── Ports defined as interfaces
+│   └── Adapters implement ports
+│
+└── Directory Structure
+    ├── Matches STANDARDS.md layout
+    ├── Separation of concerns
+    └── No circular dependencies
 ```
 
-## Step 1: Load Project Configuration
+### 2. Code Quality Analysis
 
-Check for project standards file:
-
-```
-1. Look for: docs/STANDARDS.md
-2. If exists, extract:
-   - Coding standards
-   - Architecture patterns
-   - Naming conventions
-   - Testing requirements
-   - Technology stack
-   - Preferred patterns
-3. If not exists:
-   - Infer from existing code patterns
-   - Log: "No STANDARDS.md found - inferring from codebase"
-```
-
-**Alternative config locations (check in order):**
-- `docs/STANDARDS.md`
-- `STANDARDS.md`
-- `docs/ARCHITECTURE.md`
-- `CONTRIBUTING.md` (coding standards section)
-- `.github/CONTRIBUTING.md`
-
-### Standards Structure
-
-```json
-{
-  "project_config": {
-    "source": "docs/STANDARDS.md|inferred",
-    "language": "go|typescript|python|etc",
-    "framework": "fiber|express|fastapi|etc",
-    "architecture": "hexagonal|layered|mvc|etc",
-    "testing": {
-      "framework": "go test|jest|pytest|etc",
-      "coverage_minimum": 80,
-      "required_types": ["unit", "integration"]
-    },
-    "conventions": {
-      "naming": "camelCase|snake_case|PascalCase",
-      "file_structure": "feature-based|layer-based",
-      "error_handling": "pattern description"
-    }
-  }
-}
+```text
+Checks:
+├── Naming Conventions
+│   ├── Files match pattern (snake_case, kebab-case, etc.)
+│   ├── Functions/methods follow convention
+│   └── Constants are UPPER_SNAKE
+│
+├── Error Handling
+│   ├── No ignored errors (_, err := ...)
+│   ├── Errors wrapped with context
+│   ├── No panic() for business logic
+│   └── Custom error types for domain
+│
+├── Forbidden Practices
+│   ├── No global mutable state
+│   ├── No magic numbers/strings
+│   ├── No commented-out code
+│   ├── No TODO without issue reference
+│   └── No `any` type (TypeScript)
+│
+└── Security
+    ├── Input validation at boundaries
+    ├── Parameterized queries (no SQL injection)
+    ├── Sensitive data not logged
+    └── Secrets not hardcoded
 ```
 
-## Step 2: Dispatch Codebase Explorer
+### 3. Testing Analysis
 
-**REQUIRED:** Use ring-default:codebase-explorer for deep analysis
-
+```text
+Checks:
+├── Test Coverage
+│   ├── Current coverage percentage
+│   ├── Gap to minimum (80%)
+│   └── Critical paths covered
+│
+├── Test Patterns
+│   ├── Table-driven tests (Go)
+│   ├── Arrange-Act-Assert structure
+│   ├── Mocks for external dependencies
+│   └── No test pollution (global state)
+│
+├── Test Naming
+│   ├── Follows Test{Unit}_{Scenario}_{Expected}
+│   └── Descriptive test names
+│
+└── Test Types
+    ├── Unit tests exist
+    ├── Integration tests exist
+    └── Test fixtures/factories
 ```
+
+### 4. DevOps Analysis
+
+```text
+Checks:
+├── Containerization
+│   ├── Dockerfile exists
+│   ├── Multi-stage build
+│   ├── Non-root user
+│   └── Health check defined
+│
+├── Local Development
+│   ├── docker-compose.yml exists
+│   ├── All services defined
+│   └── Volumes for hot reload
+│
+├── Environment
+│   ├── .env.example exists
+│   ├── All env vars documented
+│   └── No secrets in repo
+│
+└── CI/CD
+    ├── Pipeline exists
+    ├── Tests run in CI
+    └── Linting enforced
+```
+
+## Step 1: Detect Project Language
+
+First, identify the primary language(s) of the project:
+
+```text
+Language Detection:
+├── go.mod exists → Go project
+│   └── Standards: backend-engineer-golang.md
+│
+├── package.json exists
+│   ├── Has "react" or "next" dependency → Frontend TypeScript
+│   │   └── Standards: frontend-engineer-typescript.md
+│   ├── Has backend deps (express, fastify, nestjs) → Backend TypeScript
+│   │   └── Standards: backend-engineer-typescript.md
+│   └── Otherwise → Generic TypeScript
+│       └── Standards: Check for frontend/backend patterns
+│
+├── Dockerfile exists → Check for DevOps standards
+│   └── Standards: devops-engineer.md
+│
+└── Multiple languages detected → Use all applicable standards
+
+Output:
+- Primary language: {Go/TypeScript/Python/etc.}
+- Project type: {Backend API/Frontend/Full-stack/CLI}
+- Agent standards to use: {list of agent files}
+```
+
+## Step 2: Load Standards
+
+Load standards from multiple sources based on detected language:
+
+```text
+Standards Loading Order:
+1. Project-specific standards (if exist):
+   - docs/STANDARDS.md → Project conventions
+   - docs/standards/{language}.md → Language overrides
+
+2. Ring agent standards (embedded in agents):
+   ┌─────────────────────────────────────────────────────────────┐
+   │ Language/Domain    │ Agent with Standards                   │
+   ├────────────────────┼────────────────────────────────────────┤
+   │ Go                 │ dev-team/agents/backend-engineer-golang.md     │
+   │ TypeScript Backend │ dev-team/agents/backend-engineer-typescript.md │
+   │ Frontend JS/TS     │ dev-team/agents/frontend-engineer.md           │
+   │ Frontend TS        │ dev-team/agents/frontend-engineer-typescript.md│
+   │ DevOps/Infra       │ dev-team/agents/devops-engineer.md             │
+   │ SRE/Observability  │ dev-team/agents/sre.md                         │
+   │ Testing/QA         │ dev-team/agents/qa-analyst.md                  │
+   └────────────────────┴────────────────────────────────────────┘
+
+3. Merge strategy:
+   - Project standards override agent defaults
+   - Agent standards provide comprehensive baseline
+   - Report which standards are being used
+
+If no project standards AND language unknown:
+→ Ask user: "Detected languages: {list}. Which standards should I use?"
+→ Options: [Go, TypeScript Backend, TypeScript Frontend, DevOps, All]
+```
+
+## Step 3: Scan Codebase
+
+Two-phase analysis using specialized agents:
+
+### Phase 1: Architecture Analysis
+
+**Dispatch:** `ring-default:codebase-explorer` (Opus)
+
+```yaml
 Task tool:
   subagent_type: "ring-default:codebase-explorer"
   model: "opus"
   prompt: |
-    Analyze the codebase for implementing this task:
+    Analyze this {language} codebase against these standards: {standards_file}
 
-    Task: [id] - [title]
-
-    Functional Requirements:
-    [functional_requirements as bullet list]
-
-    Technical Requirements:
-    [technical_requirements as bullet list]
-
-    Acceptance Criteria:
-    [acceptance_criteria as bullet list]
-
-    References (if available):
-    [references]
-
-    I need you to:
-    1. Identify all files that will likely be affected by this implementation
-    2. Understand the existing architecture patterns
-    3. Find similar implementations to use as reference
-    4. Identify any potential conflicts or dependencies
-    5. Note any technical debt or patterns to avoid
-
-    Use MEDIUM exploration depth (15-25 minutes).
-
-    Report:
-    - Affected files (with paths and reasons)
-    - Architecture patterns to follow
-    - Reference implementations
-    - Dependencies and conflicts
-    - Recommended approach
+    Focus on:
+    - Directory structure compliance
+    - DDD patterns (Entities, Value Objects, Aggregates, Repositories)
+    - Clean/Hexagonal Architecture (dependency direction)
+    - Anti-patterns and technical debt
+    - Naming conventions
 ```
 
-## Step 3: Analyze Explorer Results
+**Output:** Architectural insights, patterns found, anti-patterns detected.
 
-Process the codebase-explorer output:
+### Phase 2: Specialized Dimension Analysis (Parallel)
 
-### 3.1 Extract Affected Files
+Dispatch 3 agents in parallel (single message, 3 Task tool calls) to analyze specific dimensions:
 
-```json
-{
-  "affected_files": [
-    {
-      "path": "internal/handlers/auth.go",
-      "reason": "Will add new login endpoint handler",
-      "change_type": "modify",
-      "risk": "medium"
-    },
-    {
-      "path": "internal/services/auth_service.go",
-      "reason": "Will add authentication logic",
-      "change_type": "create",
-      "risk": "low"
-    },
-    {
-      "path": "internal/repositories/user_repository.go",
-      "reason": "Will add user lookup methods",
-      "change_type": "modify",
-      "risk": "low"
-    }
-  ]
-}
+```yaml
+# Task 1: Testing Analysis
+Task tool:
+  subagent_type: "ring-dev-team:qa-analyst"
+  model: "opus"
+  prompt: |
+    Analyze test coverage and patterns:
+    - Test coverage percentage
+    - Test patterns (table-driven, AAA)
+    - TDD compliance
+    - Missing test cases
+
+# Task 2: DevOps Analysis
+Task tool:
+  subagent_type: "ring-dev-team:devops-engineer"
+  model: "opus"
+  prompt: |
+    Analyze infrastructure setup:
+    - Dockerfile exists and follows best practices
+    - docker-compose.yml configuration
+    - CI/CD pipeline presence
+    - Environment management (.env.example)
+
+# Task 3: SRE Analysis
+Task tool:
+  subagent_type: "ring-dev-team:sre"
+  model: "opus"
+  prompt: |
+    Analyze observability setup:
+    - Metrics endpoint (/metrics)
+    - Health check endpoints (/health, /ready)
+    - Structured logging
+    - Tracing setup
 ```
 
-### 3.2 Identify Architecture Patterns
+**Output:** Dimension-specific findings to merge with exploration_results.
 
-```json
-{
-  "patterns": {
-    "architecture": "hexagonal",
-    "layer_structure": [
-      "handlers (ports/in)",
-      "services (application)",
-      "repositories (ports/out)",
-      "entities (domain)"
-    ],
-    "dependency_injection": "wire or manual",
-    "error_handling": "custom error types with wrapping",
-    "logging": "structured logging with zap/zerolog"
-  }
-}
+## Step 4: Compile Findings
+
+Merge results from all agents into a structured report:
+
+```markdown
+# Analysis Report: {project-name}
+
+**Generated:** {date}
+**Standards:** {path to STANDARDS.md used}
+**Scope:** {directories analyzed}
+
+## Summary
+
+| Dimension    | Issues | Critical | High | Medium | Low |
+|--------------|--------|----------|------|--------|-----|
+| Architecture | 12     | 2        | 4    | 4      | 2   |
+| Code Quality | 23     | 1        | 8    | 10     | 4   |
+| Testing      | 8      | 3        | 3    | 2      | 0   |
+| DevOps       | 5      | 0        | 2    | 2      | 1   |
+| **Total**    | **48** | **6**    | **17**| **18**| **7**|
+
+## Critical Issues (Fix Immediately)
+
+### ARCH-001: Domain depends on infrastructure
+**Location:** `src/domain/user.go:15`
+**Issue:** Domain entity imports database package
+**Standard:** Domain layer must have zero external dependencies
+**Fix:** Extract repository interface, inject via constructor
+
+### CODE-001: SQL injection vulnerability
+**Location:** `src/handler/search.go:42`
+**Issue:** User input concatenated into SQL query
+**Standard:** Always use parameterized queries
+**Fix:** Use query builder or prepared statements
+
+...
+
+## High Priority Issues
+...
+
+## Medium Priority Issues
+...
+
+## Low Priority Issues
+...
 ```
 
-### 3.3 Find Reference Implementations
+## Step 5: Prioritize and Group
 
-```json
-{
-  "references": [
-    {
-      "file": "internal/handlers/user.go",
-      "relevance": "Similar CRUD handler pattern",
-      "key_lines": "L15-45"
-    },
-    {
-      "file": "internal/services/user_service.go",
-      "relevance": "Service layer structure to follow",
-      "key_lines": "L10-80"
-    }
-  ]
-}
+Group related issues into logical refactoring tasks:
+
+```text
+Grouping Strategy:
+1. By bounded context / module
+2. By dependency order (fix dependencies first)
+3. By risk (critical security first)
+
+Example grouping:
+├── REFACTOR-001: Fix domain layer isolation
+│   ├── ARCH-001: Remove infra imports from domain
+│   ├── ARCH-003: Extract repository interfaces
+│   └── ARCH-005: Move domain events to domain layer
+│
+├── REFACTOR-002: Implement proper error handling
+│   ├── CODE-002: Wrap errors with context (15 locations)
+│   ├── CODE-007: Replace panic with error returns
+│   └── CODE-012: Add custom domain error types
+│
+├── REFACTOR-003: Add missing test coverage
+│   ├── TEST-001: User service unit tests
+│   ├── TEST-002: Order handler tests
+│   └── TEST-003: Repository integration tests
+│
+└── REFACTOR-004: Containerization improvements
+    ├── DEVOPS-001: Add multi-stage Dockerfile
+    └── DEVOPS-002: Create docker-compose.yml
 ```
 
-## Step 4: Recommend Developer Agent
+## Step 6: Generate tasks.md
 
-Based on analysis, determine the best agent:
+Create refactoring tasks in the same format as PM Team output:
 
-### Decision Matrix
+```markdown
+# Refactoring Tasks: {project-name}
 
-```
-1. Detect primary language:
-   - .go files dominant → Go agent
-   - .ts/.tsx files dominant → TypeScript agent
-   - .py files dominant → Python agent
-   - Mixed or unknown → Generic backend agent
+**Source:** Analysis Report {date}
+**Total Tasks:** {count}
+**Estimated Effort:** {total hours}
 
-2. Detect domain:
-   - API/backend work → backend-engineer-*
-   - UI/frontend work → frontend-engineer-*
-   - Infrastructure → devops-engineer
-   - Testing-only → qa-analyst
+---
 
-3. Match to agent:
-```
+## REFACTOR-001: Fix domain layer isolation
 
-| Language | Domain | Recommended Agent |
-|----------|--------|-------------------|
-| Go | Backend/API | ring-dev-team:backend-engineer-golang |
-| TypeScript | Backend | ring-dev-team:backend-engineer-typescript |
-| TypeScript | Frontend | ring-dev-team:frontend-engineer-typescript |
-| Python | Backend | ring-dev-team:backend-engineer-python |
-| Unknown | Backend | ring-dev-team:backend-engineer |
-| Any | Frontend (generic) | ring-dev-team:frontend-engineer |
-| Any | Frontend (visual) | ring-dev-team:frontend-designer |
-| Any | Infrastructure | ring-dev-team:devops-engineer |
-| Any | Testing | ring-dev-team:qa-analyst |
-| Any | Reliability | ring-dev-team:sre |
+**Type:** backend
+**Effort:** 4h
+**Priority:** Critical
+**Dependencies:** none
 
-### Agent Recommendation Output
+### Description
+Remove infrastructure dependencies from domain layer and establish proper
+port/adapter boundaries following hexagonal architecture.
 
-```json
-{
-  "recommended_agent": "ring-dev-team:backend-engineer-golang",
-  "reasoning": [
-    "Project is Go-based (detected go.mod, .go files)",
-    "Task involves API endpoint implementation",
-    "Existing patterns match Go hexagonal architecture"
-  ],
-  "alternative_agents": [
-    {
-      "agent": "ring-dev-team:backend-engineer",
-      "when": "If task spans multiple languages"
-    }
-  ]
-}
-```
+### Acceptance Criteria
+- [ ] AC-1: Domain package has zero imports from infrastructure
+- [ ] AC-2: Repository interfaces defined in domain layer
+- [ ] AC-3: All domain entities use dependency injection
+- [ ] AC-4: Existing tests still pass
 
-## Step 5: Estimate Complexity
+### Technical Notes
+- Files to modify: src/domain/*.go
+- Pattern: See STANDARDS.md → Hexagonal Architecture section
+- Related issues: ARCH-001, ARCH-003, ARCH-005
 
-### Complexity Factors
+### Issues Addressed
+| ID | Description | Location |
+|----|-------------|----------|
+| ARCH-001 | Domain imports database | src/domain/user.go:15 |
+| ARCH-003 | No repository interface | src/domain/ |
+| ARCH-005 | Events in wrong layer | src/infrastructure/events.go |
 
-| Factor | S (Small) | M (Medium) | L (Large) | XL (Extra Large) |
-|--------|-----------|------------|-----------|------------------|
-| Files affected | 1-3 | 4-7 | 8-15 | 16+ |
-| New vs modify | All modify | Mix | Mostly new | New system |
-| Dependencies | None | Few internal | Cross-service | External APIs |
-| Testing scope | Unit only | Unit + integration | + E2E | + Performance |
-| Risk level | Low | Medium | High | Critical |
+---
 
-### Complexity Calculation
+## REFACTOR-002: Implement proper error handling
 
-```
-1. Count affected files
-2. Assess change types (create vs modify)
-3. Check dependency graph
-4. Consider testing requirements
-5. Evaluate risk factors
+**Type:** backend
+**Effort:** 3h
+**Priority:** High
+**Dependencies:** REFACTOR-001
 
-Final complexity = weighted average of factors
-```
+### Description
+Standardize error handling across the codebase following Go idioms
+and project standards.
 
-### Complexity Output
+### Acceptance Criteria
+- [ ] AC-1: All errors wrapped with context using fmt.Errorf
+- [ ] AC-2: No panic() outside of main.go
+- [ ] AC-3: Custom error types for domain errors
+- [ ] AC-4: Error handling tests added
 
-```json
-{
-  "complexity": "M",
-  "factors": {
-    "files_affected": 5,
-    "new_files": 2,
-    "modified_files": 3,
-    "dependencies": ["user_service", "token_service"],
-    "testing_scope": ["unit", "integration"],
-    "risk_areas": ["authentication flow", "token security"]
-  },
-  "estimated_time": "2-4 hours",
-  "confidence": "high"
-}
+### Technical Notes
+- Use errors.Is/As for error checking
+- See STANDARDS.md → Error Handling section
+
+### Issues Addressed
+| ID | Description | Location |
+|----|-------------|----------|
+| CODE-002 | Unwrapped errors | 15 locations |
+| CODE-007 | panic in business logic | src/service/order.go:78 |
+| CODE-012 | No domain error types | src/domain/ |
+
+---
+
+## REFACTOR-003: Add missing test coverage
+...
+
+---
+
+## REFACTOR-004: Containerization improvements
+...
 ```
 
-## Step 6: Document Risks
+## Step 7: User Approval
 
-### Risk Categories
+Present the generated plan and ask for approval using AskUserQuestion tool:
 
-| Category | Examples |
-|----------|----------|
-| Technical | Breaking changes, API incompatibility, performance impact |
-| Security | Auth bypass, injection vulnerabilities, data exposure |
-| Integration | Third-party dependencies, service coupling, data sync |
-| Testing | Low coverage areas, flaky tests, missing E2E |
-| Operational | Deployment complexity, rollback difficulty, monitoring gaps |
-
-### Risk Assessment Output
-
-```json
-{
-  "risks": [
-    {
-      "id": "RISK-001",
-      "category": "security",
-      "description": "JWT secret must be properly configured",
-      "severity": "high",
-      "mitigation": "Use environment variable, rotate regularly",
-      "gate_impact": "Review gate will check for hardcoded secrets"
-    },
-    {
-      "id": "RISK-002",
-      "category": "integration",
-      "description": "Token validation depends on user service",
-      "severity": "medium",
-      "mitigation": "Ensure user service is available, add timeout handling",
-      "gate_impact": "Testing gate will need integration test with user service"
-    }
-  ]
-}
+```yaml
+AskUserQuestion:
+  questions:
+    - question: "Review the refactoring plan. How do you want to proceed?"
+      header: "Approval"
+      multiSelect: false
+      options:
+        - label: "Approve all"
+          description: "Save tasks.md, proceed to dev-cycle execution"
+        - label: "Approve with changes"
+          description: "Let user edit tasks.md first, then proceed"
+        - label: "Critical only"
+          description: "Filter to only Critical/High priority tasks"
+        - label: "Cancel"
+          description: "Abort execution, keep analysis report only"
 ```
 
-## Step 7: Build Analysis Output
+## Step 8: Save Artifacts
 
-Complete output for orchestrator:
+Save analysis report and tasks to project:
 
-```json
-{
-  "task_id": "TASK-001",
-  "analysis_completed_at": "ISO timestamp",
-  "project_config": {
-    "source": "docs/STANDARDS.md",
-    "language": "go",
-    "framework": "fiber",
-    "architecture": "hexagonal"
-  },
-  "affected_files": [
-    {
-      "path": "internal/handlers/auth.go",
-      "reason": "Add login endpoint handler",
-      "change_type": "modify",
-      "risk": "medium"
-    }
-  ],
-  "recommended_agent": "ring-dev-team:backend-engineer-golang",
-  "agent_reasoning": [
-    "Go project",
-    "Backend API task",
-    "Hexagonal architecture"
-  ],
-  "complexity": {
-    "rating": "M",
-    "estimated_time": "2-4 hours",
-    "factors": {
-      "files_affected": 5,
-      "new_files": 2,
-      "dependencies": ["user_service"]
-    }
-  },
-  "risks": [
-    {
-      "id": "RISK-001",
-      "category": "security",
-      "description": "JWT secret configuration",
-      "severity": "high",
-      "mitigation": "Use environment variable"
-    }
-  ],
-  "reference_implementations": [
-    {
-      "file": "internal/handlers/user.go",
-      "relevance": "Similar handler pattern"
-    }
-  ],
-  "patterns_to_follow": [
-    "Hexagonal architecture",
-    "Repository pattern",
-    "Custom error types"
-  ],
-  "technical_requirements_inferred": [
-    "Use fiber framework for HTTP handling",
-    "Follow existing error handling pattern",
-    "Use structured logging"
-  ]
-}
+```text
+docs/refactor/{timestamp}/
+├── analysis-report.md    # Full analysis with all findings
+├── tasks.md              # Approved refactoring tasks
+└── original-standards.md # Snapshot of standards used
 ```
 
-## Error Handling
+## Step 9: Handoff to dev-cycle
 
-### Explorer Failure
+If approved, the workflow continues:
 
-```
-If codebase-explorer fails:
-
-1. Log failure reason
-2. Attempt fallback analysis:
-   - Use Glob to find relevant files
-   - Use Grep to search for patterns
-   - Make best-effort recommendations
-3. Mark analysis as "partial"
-4. Proceed with warnings
+```bash
+# Automatic handoff
+/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md
 ```
 
-### No Standards Found
+This executes each refactoring task through the standard 6-gate process:
+- Gate 0: Implementation (TDD)
+- Gate 1: DevOps Setup
+- Gate 2: SRE (Observability)
+- Gate 3: Testing
+- Gate 4: Review (3 parallel reviewers)
+- Gate 5: Validation (user approval)
 
+## Output Schema
+
+```yaml
+output_schema:
+  format: "markdown"
+  artifacts:
+    - name: "analysis-report.md"
+      location: "docs/refactor/{timestamp}/"
+      required: true
+    - name: "tasks.md"
+      location: "docs/refactor/{timestamp}/"
+      required: true
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Critical Issues"
+      pattern: "^## Critical Issues"
+      required: true
+    - name: "Tasks Generated"
+      pattern: "^## REFACTOR-"
+      required: true
 ```
-If no STANDARDS.md and cannot infer:
 
-1. Log warning
-2. Set project_config.source = "unknown"
-3. Recommend generic agent (ring-dev-team:backend-engineer)
-4. Add risk: "No project standards - may not follow conventions"
+## Example Usage
+
+```bash
+# Full project analysis
+/ring-dev-team:dev-refactor
+
+# Analyze specific directory
+/ring-dev-team:dev-refactor src/domain
+
+# Analyze with custom standards
+/ring-dev-team:dev-refactor --standards path/to/STANDARDS.md
+
+# Analysis only (no execution)
+/ring-dev-team:dev-refactor --analyze-only
 ```
 
-### Unknown Language
+## Related Skills
 
-```
-If cannot determine language:
+| Skill | Purpose |
+|-------|---------|
+| `ring-dev-team:dev-cycle` | Executes refactoring tasks through 6 gates (after approval) |
 
-1. Check file extensions in project
-2. Look for package managers (go.mod, package.json, etc)
-3. If still unknown:
-   - Recommend ring-dev-team:backend-engineer (generic)
-   - Add warning: "Language unknown - using generic agent"
-```
+## Key Principles
 
-## Execution Report
-
-| Metric | Value |
-|--------|-------|
-| Duration | Xm Ys |
-| Iterations | 1 |
-| Result | PASS/PARTIAL/FAIL |
-
-### Details
-- task_id: [id]
-- recommended_agent: [agent]
-- complexity: [S/M/L/XL]
-- files_affected: [count]
-- risks_identified: [count]
-- config_source: [path or "inferred"]
-
-### Issues Encountered
-- [List of warnings or errors during analysis]
-- Or "None"
-
-### Handoff to Next Gate
-- Gate 2 (Design) receives:
-  - Recommended agent: [agent]
-  - Affected files: [list]
-  - Patterns to follow: [list]
-  - Risks to address: [list]
-- Ready to proceed: [yes/no]
-- Blocking issues: [list or "none"]
+1. **Same workflow**: Refactoring uses the same dev-cycle as new features
+2. **Standards-driven**: All analysis is based on project STANDARDS.md
+3. **Traceable**: Every task links back to specific issues found
+4. **Incremental**: Can approve subset of tasks (critical only, etc.)
+5. **Reversible**: Original analysis preserved for reference

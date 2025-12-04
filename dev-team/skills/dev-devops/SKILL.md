@@ -1,29 +1,29 @@
 ---
-name: dev-devops-setup
+name: dev-devops
 description: |
-  Gate 4 of the development cycle. Creates/updates Docker configuration,
+  Gate 1 of the development cycle. Creates/updates Docker configuration,
   docker-compose setup, and environment variables for local development
   and deployment readiness.
 
 trigger: |
-  - Gate 4 of development cycle
-  - Implementation complete from Gate 3
+  - Gate 1 of development cycle
+  - Implementation complete from Gate 0
   - Need containerization or environment setup
 
 skip_when: |
-  - No code implementation exists (need Gate 3 first)
+  - No code implementation exists (need Gate 0 first)
   - Project has no Docker requirements
   - Only documentation changes
 
 sequence:
-  after: [dev-implementation]
-  before: [dev-testing]
+  after: [ring-dev-team:dev-implementation]
+  before: [ring-dev-team:dev-sre]
 
 related:
-  complementary: [dev-implementation, dev-testing]
+  complementary: [ring-dev-team:dev-implementation, ring-dev-team:dev-testing]
 ---
 
-# DevOps Setup (Gate 4)
+# DevOps Setup (Gate 1)
 
 ## Overview
 
@@ -35,10 +35,10 @@ This skill configures the development and deployment infrastructure:
 
 ## Prerequisites
 
-Before starting Gate 4:
+Before starting Gate 1:
 
-1. **Gate 3 Complete**: Code implementation is done
-2. **Environment Requirements**: List from Gate 3 handoff:
+1. **Gate 0 Complete**: Code implementation is done
+2. **Environment Requirements**: List from Gate 0 handoff:
    - New dependencies
    - New environment variables
    - New services needed
@@ -46,10 +46,10 @@ Before starting Gate 4:
 
 ## Step 1: Analyze DevOps Requirements
 
-Review Gate 3 handoff and existing configuration:
+Review Gate 0 handoff and existing configuration:
 
 ```
-From Gate 3 Handoff:
+From Gate 0 Handoff:
 - New dependencies: {list}
 - New environment variables: {list}
 - New services needed: {list}
@@ -80,7 +80,7 @@ Task tool:
     Set up Docker configuration for the implemented feature.
 
     ## Implementation Summary
-    {paste Gate 3 handoff}
+    {paste Gate 0 handoff}
 
     ## Existing Configuration
     {paste existing Dockerfile, docker-compose.yml, .env.example if they exist}
@@ -524,12 +524,12 @@ docker-compose logs app | grep -i error
 - [ ] Application can connect to database
 - [ ] Application can connect to Redis (if used)
 
-## Step 8: Prepare Handoff to Gate 5
+## Step 8: Prepare Handoff to Gate 2
 
-Package the following for Gate 5 (Testing):
+Package the following for Gate 2 (Testing):
 
 ```markdown
-## Gate 4 Handoff
+## Gate 1 Handoff
 
 **DevOps Status:** COMPLETE/PARTIAL
 

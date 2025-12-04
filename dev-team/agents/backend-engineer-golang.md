@@ -234,84 +234,451 @@ In the development cycle, focus on **unit tests**:
 
 ## Handling Ambiguous Requirements
 
-When requirements lack critical context, follow this protocol:
+### Step 1: Check Project Standards (ALWAYS FIRST)
 
-### 1. Identify Ambiguity
+**IMPORTANT:** Before asking questions, check:
+1. `docs/STANDARDS.md` - Common project standards
+2. `docs/standards/golang.md` - Go-specific standards
 
-Common ambiguous scenarios:
-- **Storage choice**: Multiple valid database options (PostgreSQL vs MongoDB vs Redis)
-- **Authentication method**: Various auth strategies (OAuth2 vs JWT vs WorkOS vs API keys)
-- **Multi-tenancy approach**: Different isolation strategies (schema-per-tenant vs row-level vs database-per-tenant)
-- **Architecture pattern**: Event sourcing vs CRUD vs CQRS
-- **Message queue**: Different messaging systems (Kafka vs RabbitMQ vs NATS vs SQS)
-- **Caching strategy**: Cache-aside vs write-through vs write-behind
-- **Minimal context**: Request like "implement a user service" without requirements
+**→ Follow existing standards. Only proceed to Step 2 if they don't cover your scenario.**
 
-### 2. Ask Clarifying Questions
+### Step 2: Ask Only When Standards Don't Answer
 
-When ambiguity exists, present options with trade-offs:
+**Ask when standards don't cover:**
+- Database selection (PostgreSQL vs MongoDB)
+- Authentication provider (WorkOS vs Auth0 vs custom)
+- Multi-tenancy approach (schema vs row-level vs database-per-tenant)
+- Message queue selection (RabbitMQ vs Kafka vs NATS)
 
-```markdown
-I can implement this in several ways. Please clarify:
+**Don't ask (follow standards or best practices):**
+- Framework choice → Check STANDARDS.md or match existing code
+- Error handling → Always wrap with context (`fmt.Errorf`)
+- Testing patterns → Use table-driven tests per golang.md
+- Logging → Use slog or zerolog per golang.md
 
-**Option A: [Approach Name]**
-- Pros: [Benefits]
-- Cons: [Drawbacks]
-- Best for: [Use case]
+## Language Standards
 
-**Option B: [Approach Name]**
-- Pros: [Benefits]
-- Cons: [Drawbacks]
-- Best for: [Use case]
+The following Go standards MUST be followed when implementing code:
 
-Which approach best fits your needs? Or provide more context about:
-- [Critical decision factor 1]
-- [Critical decision factor 2]
+### Version
+
+- Go 1.21+ (preferably 1.22+)
+
+### Frameworks & Libraries
+
+#### HTTP
+
+| Library | Use Case |
+|---------|----------|
+| Fiber | High-performance APIs |
+| Gin | General purpose, popular |
+| Echo | Minimalist, fast |
+| Chi | Composable router |
+| gRPC-Go | Service-to-service |
+
+#### Database
+
+| Library | Use Case |
+|---------|----------|
+| pgx/v5 | PostgreSQL (recommended) |
+| sqlc | Type-safe SQL queries |
+| GORM | ORM (when needed) |
+| go-redis/v9 | Redis client |
+| mongo-go-driver | MongoDB |
+
+#### Testing
+
+| Library | Use Case |
+|---------|----------|
+| testify | Assertions, mocks |
+| GoMock | Interface mocking |
+| SQLMock | Database mocking |
+| testcontainers-go | Integration tests |
+
+#### Observability
+
+| Library | Use Case |
+|---------|----------|
+| log/slog | Structured logging (stdlib) |
+| zerolog | High-performance logging |
+| zap | Uber's logging |
+| OpenTelemetry | Tracing & metrics |
+
+### Error Handling
+
+#### Rules
+
+```go
+// ALWAYS check errors
+if err != nil {
+    return fmt.Errorf("context: %w", err)
+}
+
+// ALWAYS wrap errors with context
+if err != nil {
+    return fmt.Errorf("failed to create user %s: %w", userID, err)
+}
+
+// Use custom error types for domain errors
+var ErrUserNotFound = errors.New("user not found")
+
+// Check specific errors with errors.Is
+if errors.Is(err, ErrUserNotFound) {
+    return nil, status.Error(codes.NotFound, "user not found")
+}
 ```
 
-### 3. When to Choose vs Ask
+#### Forbidden
 
-**Ask questions when:**
-- Multiple fundamentally different approaches exist
-- Choice significantly impacts architecture
-- User context is minimal ("implement a user service")
-- Trade-offs are non-obvious
+```go
+// NEVER use panic for business logic
+panic(err) // FORBIDDEN
 
-**Make a justified choice when:**
-- One approach is clearly best practice for financial systems
-- Requirements strongly imply a specific solution
-- Time-sensitive and safe default exists
+// NEVER ignore errors
+result, _ := doSomething() // FORBIDDEN
 
-**If choosing without asking:**
-1. State your assumption explicitly
-2. Explain why this choice fits financial systems
-3. Note what could change the decision
-
-### Example: Minimal Context
-
-```markdown
-Request: "Implement a user service"
-
-Response:
-"I need clarification to design the user service properly:
-
-**What should this service handle?**
-- User CRUD operations only?
-- Authentication (login/logout)?
-- Authorization (roles/permissions)?
-- Profile management?
-
-**What are the key requirements?**
-- Expected user volume (1K, 100K, 1M+)?
-- Multi-tenancy needed?
-- Integration with existing auth (WorkOS, OAuth2)?
-
-Please specify, or I can implement a standard CRUD service with:
-- PostgreSQL repository
-- REST API (Fiber framework)
-- UUID-based IDs
-- Basic validation
+// NEVER return nil error without checking
+return nil, nil // SUSPICIOUS - check if error is possible
 ```
+
+### Testing Patterns
+
+#### Table-Driven Tests (MANDATORY)
+
+```go
+func TestCreateUser(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   CreateUserInput
+        want    *User
+        wantErr error
+    }{
+        {
+            name:  "valid user",
+            input: CreateUserInput{Name: "John", Email: "john@example.com"},
+            want:  &User{Name: "John", Email: "john@example.com"},
+        },
+        {
+            name:    "invalid email",
+            input:   CreateUserInput{Name: "John", Email: "invalid"},
+            wantErr: ErrInvalidEmail,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := CreateUser(tt.input)
+
+            if tt.wantErr != nil {
+                require.ErrorIs(t, err, tt.wantErr)
+                return
+            }
+
+            require.NoError(t, err)
+            assert.Equal(t, tt.want.Name, got.Name)
+        })
+    }
+}
+```
+
+#### Test Naming Convention
+
+```
+Test{Unit}_{Scenario}_{ExpectedResult}
+
+Examples:
+- TestOrderService_CreateOrder_WithValidItems_ReturnsOrder
+- TestOrderService_CreateOrder_WithEmptyItems_ReturnsError
+- TestMoney_Add_SameCurrency_ReturnsSum
+```
+
+#### Mock Generation
+
+```go
+// Using mockery
+//go:generate mockery --name=OrderRepository --output=mocks --outpkg=mocks
+
+// Using GoMock
+//go:generate mockgen -source=repository.go -destination=mocks/mock_repository.go -package=mocks
+```
+
+### Logging Standards
+
+#### Structured Logging with slog
+
+```go
+import "log/slog"
+
+// Create logger with context
+logger := slog.With(
+    "request_id", requestID,
+    "user_id", userID,
+)
+
+// Log levels
+logger.Debug("processing request", "payload_size", len(payload))
+logger.Info("user created", "user_id", user.ID)
+logger.Warn("rate limit approaching", "current", current, "limit", limit)
+logger.Error("failed to save user", "error", err)
+```
+
+#### What NOT to Log
+
+```go
+// FORBIDDEN - sensitive data
+logger.Info("user login", "password", password)  // NEVER
+logger.Info("payment", "card_number", card)      // NEVER
+logger.Info("auth", "token", token)              // NEVER
+logger.Info("user", "cpf", cpf)                  // NEVER (PII)
+```
+
+### Linting
+
+#### golangci-lint Configuration
+
+```yaml
+# .golangci.yml
+linters:
+  enable:
+    - errcheck      # Check error handling
+    - govet         # Go vet
+    - staticcheck   # Static analysis
+    - gosimple      # Simplify code
+    - ineffassign   # Unused assignments
+    - unused        # Unused code
+    - gofmt         # Formatting
+    - goimports     # Import ordering
+    - misspell      # Spelling
+    - goconst       # Repeated strings
+    - gosec         # Security issues
+    - nilerr        # Return nil with non-nil error
+```
+
+#### Format Commands
+
+```bash
+# Format code
+gofmt -w .
+goimports -w .
+
+# Run linter
+golangci-lint run ./...
+```
+
+### Architecture Patterns
+
+#### Hexagonal Architecture (Ports & Adapters)
+
+```
+/internal
+  /domain          # Business entities (no dependencies)
+    user.go
+    errors.go
+  /service         # Application/Business logic
+    user_service.go
+  /repository      # Data access interfaces (ports)
+    user_repository.go
+  /adapter         # Implementations (adapters)
+    /postgres
+      user_repository.go
+    /redis
+      cache_repository.go
+  /handler         # HTTP handlers
+    user_handler.go
+```
+
+#### Interface-Based Abstractions
+
+```go
+// Define interface in the package that USES it (not implements)
+// /internal/service/user_service.go
+
+type UserRepository interface {
+    FindByID(ctx context.Context, id UserID) (*User, error)
+    Save(ctx context.Context, user *User) error
+}
+
+type UserService struct {
+    repo UserRepository  // Depend on interface
+}
+```
+
+#### Repository Pattern
+
+```go
+// Interface (port)
+type OrderRepository interface {
+    FindByID(ctx context.Context, id OrderID) (*Order, error)
+    FindByCustomer(ctx context.Context, customerID CustomerID) ([]*Order, error)
+    Save(ctx context.Context, order *Order) error
+    Delete(ctx context.Context, id OrderID) error
+}
+
+// Implementation (adapter)
+type PostgresOrderRepository struct {
+    db *pgxpool.Pool
+}
+
+func (r *PostgresOrderRepository) Save(ctx context.Context, order *Order) error {
+    tx, err := r.db.Begin(ctx)
+    if err != nil {
+        return fmt.Errorf("begin transaction: %w", err)
+    }
+    defer tx.Rollback(ctx)
+
+    // ... save logic ...
+
+    return tx.Commit(ctx)
+}
+```
+
+### Concurrency Patterns
+
+#### Goroutines with Context
+
+```go
+func processItems(ctx context.Context, items []Item) error {
+    g, ctx := errgroup.WithContext(ctx)
+
+    for _, item := range items {
+        item := item // capture variable
+        g.Go(func() error {
+            select {
+            case <-ctx.Done():
+                return ctx.Err()
+            default:
+                return processItem(ctx, item)
+            }
+        })
+    }
+
+    return g.Wait()
+}
+```
+
+#### Channel Patterns
+
+```go
+// Worker pool
+func workerPool(ctx context.Context, jobs <-chan Job, results chan<- Result) {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case job, ok := <-jobs:
+            if !ok {
+                return
+            }
+            results <- process(job)
+        }
+    }
+}
+```
+
+### DDD Patterns (Go Implementation)
+
+#### Entity
+
+```go
+type User struct {
+    ID        UserID    // Value object for identity
+    Email     Email     // Value object
+    Name      string
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+
+func (u User) Equals(other User) bool {
+    return u.ID == other.ID
+}
+```
+
+#### Value Object
+
+```go
+type Money struct {
+    amount   int64  // cents to avoid float issues
+    currency string
+}
+
+func NewMoney(amount int64, currency string) (Money, error) {
+    if currency == "" {
+        return Money{}, errors.New("currency is required")
+    }
+    return Money{amount: amount, currency: currency}, nil
+}
+
+func (m Money) Add(other Money) (Money, error) {
+    if m.currency != other.currency {
+        return Money{}, ErrCurrencyMismatch
+    }
+    return Money{amount: m.amount + other.amount, currency: m.currency}, nil
+}
+```
+
+#### Aggregate Root
+
+```go
+type Order struct {
+    ID         OrderID
+    CustomerID CustomerID
+    Items      []OrderItem
+    Status     OrderStatus
+    events     []DomainEvent
+}
+
+func (o *Order) AddItem(product Product, quantity int) error {
+    if o.Status != OrderStatusDraft {
+        return ErrOrderNotModifiable
+    }
+
+    o.Items = append(o.Items, OrderItem{...})
+    o.events = append(o.events, OrderItemAdded{...})
+    return nil
+}
+
+func (o *Order) PullEvents() []DomainEvent {
+    events := o.events
+    o.events = nil
+    return events
+}
+```
+
+### Directory Structure
+
+```
+/cmd
+  /api                 # Main application entry
+    main.go
+/internal
+  /domain              # Business entities
+  /service             # Business logic
+  /repository          # Data access interfaces + implementations
+    postgres/
+    redis/
+  /handler             # HTTP handlers
+  /middleware          # HTTP middleware
+/pkg
+  /errors              # Custom error types (exported)
+  /validator           # Custom validators (exported)
+/migrations            # Database migrations
+/config
+  config.go
+  config.yaml
+```
+
+### Checklist
+
+Before submitting Go code, verify:
+
+- [ ] All errors are checked and wrapped with context
+- [ ] No `panic()` outside of `main.go`
+- [ ] Tests use table-driven pattern
+- [ ] Interfaces defined where they're used
+- [ ] No global mutable state
+- [ ] Context propagated through all calls
+- [ ] Sensitive data not logged
+- [ ] golangci-lint passes
 
 ## What This Agent Does NOT Handle
 

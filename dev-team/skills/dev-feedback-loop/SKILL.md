@@ -16,10 +16,10 @@ skip_when: |
   - Exploratory/spike work (no metrics tracked)
 
 sequence:
-  after: [dev-validation, dev-completion]
+  after: [ring-dev-team:dev-validation]
 
 related:
-  complementary: [ring-default:root-cause-tracing, ring-default:codify-solution]
+  complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-validation]
 ---
 
 # Dev Feedback Loop
@@ -46,7 +46,7 @@ Base score of 100 points, with deductions for inefficiencies:
 
 ### Score Calculation Formula
 
-```
+```text
 assertiveness_score = 100
                     - min(30, (extra_iterations * 10))
                     - (review_fail * 20)
@@ -78,13 +78,12 @@ After task completion, gather all gate data:
 ### Gate Transitions
 | Gate | Iterations | Duration | Outcome |
 |------|------------|----------|---------|
-| Gate 1: Planning | 1 | 15m | PASS |
-| Gate 2: Design | 2 | 45m | PASS (1 revision) |
-| Gate 3: Implementation | 1 | 2h 30m | PASS |
-| Gate 4: Refinement | 1 | 30m | PASS |
-| Gate 5: Testing | 2 | 1h 15m | PASS (coverage gap) |
-| Gate 6: Review | 1 | 20m | PASS |
-| Gate 7: Validation | 1 | 10m | APPROVED |
+| Gate 0: Implementation | 1 | 2h 30m | PASS |
+| Gate 1: DevOps | 1 | 30m | PASS |
+| Gate 2: SRE | 1 | 25m | PASS |
+| Gate 3: Testing | 2 | 1h 15m | PASS (coverage gap) |
+| Gate 4: Review | 1 | 20m | PASS |
+| Gate 5: Validation | 1 | 10m | APPROVED |
 
 ### Review Findings
 - Code reviewer: PASS (2 Low issues)
@@ -108,15 +107,15 @@ Apply formula with collected metrics:
 Base Score: 100
 
 Deductions:
-- Extra iterations: 2 (Gate 2 + Gate 5) = -20
+- Extra iterations: 1 (Gate 3) = -10
 - Review FAIL: 0 = -0
 - NEEDS_DISCUSSION: 0 = -0
 - Unmet criteria: 0 = -0
 - User REJECTED: No = -0
 
-**Final Score: 80 / 100**
+**Final Score: 90 / 100**
 
-Rating: Good
+Rating: Excellent
 ```
 
 ## Step 3: Threshold Alerts
@@ -139,11 +138,11 @@ Rating: Good
 
 ### Root Cause Investigation
 
-#### Why did Gate 3 require 3 iterations?
-- Iteration 1: Initial implementation incomplete
-- Iteration 2: Edge case handling missing
-- Iteration 3: Performance optimization needed
-- **Root cause:** Requirements unclear on edge cases
+#### Why did Gate 3 (Testing) require 3 iterations?
+- Iteration 1: Coverage below 80% threshold (67% actual)
+- Iteration 2: Edge case tests missing for null inputs
+- Iteration 3: Integration test failures due to missing fixtures
+- **Root cause:** TDD RED phase skipped, tests written after implementation
 
 #### Why did review FAIL?
 - Critical finding: SQL injection vulnerability
@@ -154,14 +153,14 @@ Rating: Good
 - **Root cause:** N+1 query not detected during implementation
 
 ### Corrective Actions
-1. Add edge case checklist to Gate 1 (planning)
-2. Add security checklist to Gate 3 (implementation)
-3. Add performance test to Gate 5 before validation
+1. Enforce TDD RED phase verification at Gate 0 (Implementation)
+2. Add security checklist to Gate 0 (Implementation)
+3. Add performance test to Gate 3 (Testing) before Gate 4 (Review)
 
 ### Prevention Measures
-1. Update implementation skill with security reminders
-2. Add performance gate before review
-3. Clarify requirements process
+1. Update ring-dev-team:dev-implementation skill with TDD compliance check
+2. Update ring-dev-team:dev-testing skill to require coverage proof before exit
+3. Add security self-review before gate exit
 ```
 
 ### Gate Iterations > 3
@@ -174,7 +173,7 @@ Rating: Good
 ## GATE BLOCKED - Human Intervention Required
 
 **Task:** [TASK-ID]
-**Gate:** Gate 6 (Review)
+**Gate:** Gate 4 (Review)
 **Iterations:** 4 (exceeds limit of 3)
 
 ### Iteration History
@@ -259,15 +258,10 @@ Human decision on how to proceed:
 
 Save report to standardized location:
 
-```bash
-# Create feedback directory if needed
-mkdir -p docs/feedback
+**Directory:** `.ring/dev-team/feedback/`
+**Filename:** `cycle-YYYY-MM-DD.md`
 
-# Write report
-cat > docs/feedback/cycle-YYYY-MM-DD.md << 'EOF'
-[Report content]
-EOF
-```
+Create the feedback directory if it doesn't exist, then write the report content to the file.
 
 Report format:
 
@@ -291,12 +285,12 @@ Report format:
 ### By Gate
 | Gate | Avg Iterations | Avg Duration | Pass Rate |
 |------|----------------|--------------|-----------|
-| Planning | 1.1 | 20m | 100% |
-| Design | 1.3 | 35m | 100% |
-| Implementation | 1.2 | 2h | 100% |
-| Testing | 1.5 | 1h | 95% |
-| Review | 1.4 | 25m | 85% |
-| Validation | 1.1 | 15m | 90% |
+| Gate 0: Implementation | 1.2 | 2h | 100% |
+| Gate 1: DevOps | 1.1 | 30m | 100% |
+| Gate 2: SRE | 1.1 | 25m | 100% |
+| Gate 3: Testing | 1.5 | 1h | 95% |
+| Gate 4: Review | 1.4 | 25m | 85% |
+| Gate 5: Validation | 1.1 | 15m | 90% |
 
 ### By Penalty Type
 | Penalty | Occurrences | Total Points Lost |
@@ -310,7 +304,7 @@ Report format:
 ## Patterns Identified
 
 ### Positive Patterns
-1. Planning gate consistently single-iteration
+1. DevOps gate (Gate 1) consistently single-iteration
 2. Implementation quality improving (fewer review issues)
 
 ### Negative Patterns
@@ -362,12 +356,12 @@ Based on patterns, generate specific improvements:
 ```markdown
 ## Skill Improvement Suggestions
 
-### dev-testing
+### ring-dev-team:dev-testing
 - Issue: TDD RED phase often skipped
 - Suggestion: Add mandatory failure output capture
 - Specific change: Require paste of test failure before GREEN phase
 
-### dev-review
+### ring-dev-team:dev-review
 - Issue: Same security issues recurring
 - Suggestion: Add pre-review security checklist
 - Specific change: Gate entry requires security self-check
@@ -398,7 +392,7 @@ Based on patterns, generate specific improvements:
 | Threshold Alerts | X |
 | Root Cause Analyses | Y |
 | Improvement Suggestions | Z |
-| Report Location | docs/feedback/cycle-YYYY-MM-DD.md |
+| Report Location | .ring/dev-team/feedback/cycle-YYYY-MM-DD.md |
 
 ## Anti-Patterns
 

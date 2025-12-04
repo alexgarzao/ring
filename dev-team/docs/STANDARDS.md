@@ -1,8 +1,8 @@
 # Project Standards Template
 
-Este template define os padrões técnicos do projeto. Copie para `docs/STANDARDS.md` no seu projeto e customize.
+This template defines the technical standards for your project. Copy to `docs/STANDARDS.md` in your project and customize.
 
-O ciclo de desenvolvimento (`/ring-dev-team:dev-cycle`) lê este arquivo no Gate 1 (analysis) para garantir que o código gerado siga os padrões do projeto.
+The development cycle (`/ring-dev-team:dev-cycle`) reads this file at Gate 0 (implementation) to ensure generated code follows project standards.
 
 ---
 

@@ -1,11 +1,11 @@
 ---
 name: using-dev-team
 description: |
-  10 specialist developer agents for backend (Go/TypeScript/Python), DevOps, frontend,
+  9 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
   design, QA, and SRE. Dispatch when you need deep technology expertise.
 
 trigger: |
-  - Need deep expertise for specific technology (Go, TypeScript, Python)
+  - Need deep expertise for specific technology (Go, TypeScript)
   - Building infrastructure/CI-CD → devops-engineer
   - Frontend with design focus → frontend-designer
   - Test strategy needed → qa-analyst
@@ -17,18 +17,18 @@ skip_when: |
   - Debugging → use systematic-debugging
 
 related:
-  similar: [using-ring]
+  similar: [ring-default:using-ring]
 ---
 
 # Using Ring Developer Specialists
 
-The ring-dev-team plugin provides 10 specialized developer agents. Use them via `Task tool with subagent_type:`.
+The ring-dev-team plugin provides 9 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
-## 10 Developer Specialists
+## 9 Developer Specialists
 
 ### 1. Backend Engineer (Language-Agnostic)
 **`ring-dev-team:backend-engineer`**
@@ -115,36 +115,7 @@ Task tool:
 
 ---
 
-### 4. Backend Engineer (Python)
-**`ring-dev-team:backend-engineer-python`**
-
-**Specializations:**
-- Python backend services (FastAPI, Django, Flask)
-- SQLAlchemy & Django ORM
-- Async Python (asyncio, aiohttp)
-- Data processing & API integration
-- Python type hints & validation (Pydantic)
-- Celery for background tasks
-- Testing with pytest
-
-**Use When:**
-- Building Python backend services
-- FastAPI or Django projects
-- Data-heavy backend services
-- Machine learning API integration
-- Python-specific optimization
-
-**Example dispatch:**
-```
-Task tool:
-  subagent_type: "ring-dev-team:backend-engineer-python"
-  model: "opus"
-  prompt: "Design a FastAPI service with SQLAlchemy for e-commerce orders"
-```
-
----
-
-### 5. DevOps Engineer
+### 4. DevOps Engineer
 **`ring-dev-team:devops-engineer`**
 
 **Specializations:**
@@ -171,7 +142,7 @@ Task tool:
 
 ---
 
-### 6. Frontend Engineer
+### 5. Frontend Engineer
 **`ring-dev-team:frontend-engineer`**
 
 **Specializations:**
@@ -199,7 +170,7 @@ Task tool:
 
 ---
 
-### 7. Frontend Engineer (TypeScript)
+### 6. Frontend Engineer (TypeScript)
 **`ring-dev-team:frontend-engineer-typescript`**
 
 **Specializations:**
@@ -228,7 +199,7 @@ Task tool:
 
 ---
 
-### 8. Frontend Designer
+### 7. Frontend Designer
 **`ring-dev-team:frontend-designer`**
 
 **Specializations:**
@@ -258,7 +229,7 @@ Task tool:
 
 ---
 
-### 9. QA Analyst
+### 8. QA Analyst
 **`ring-dev-team:qa-analyst`**
 
 **Specializations:**
@@ -286,7 +257,7 @@ Task tool:
 
 ---
 
-### 10. Site Reliability Engineer (SRE)
+### 9. Site Reliability Engineer (SRE)
 **`ring-dev-team:sre`**
 
 **Specializations:**
@@ -321,7 +292,6 @@ Task tool:
 | Backend (language-agnostic, multi-language) | Backend Engineer | Architecture without language commitment |
 | Go API, database, concurrency | Backend Engineer (Go) | Go-specific service architecture |
 | TypeScript/Node.js backend, NestJS, Express | Backend Engineer (TypeScript) | TypeScript backend services |
-| Python backend, FastAPI, Django, data | Backend Engineer (Python) | Python-specific backend services |
 | CI/CD, Docker, Kubernetes, IaC | DevOps Engineer | Deployment pipelines, infrastructure |
 | React, TypeScript, components, state | Frontend Engineer | General UI development, performance |
 | Advanced TypeScript, type-safe frontend, tRPC | Frontend Engineer (TypeScript) | Type-safe React/Next.js projects |
@@ -350,7 +320,6 @@ Task tool:
 **Example decision:**
 - "Should I use Go or TypeScript?" → **`ring-dev-team:backend-engineer`** (agnostic)
 - "How do I optimize this Go service?" → **`ring-dev-team:backend-engineer-golang`**
-- "Design a FastAPI endpoint" → **`ring-dev-team:backend-engineer-python`**
 
 ### Frontend Engineers
 
@@ -431,7 +400,6 @@ Remember:
 - backend-engineer (language-agnostic)
 - backend-engineer-golang
 - backend-engineer-typescript
-- backend-engineer-python
 - devops-engineer
 - frontend-engineer
 - frontend-engineer-typescript
@@ -440,10 +408,115 @@ Remember:
 - sre
 
 **Skills:**
-- using-dev-team: Plugin introduction and agent selection guide
-- writing-code: Developer agent selection and invocation patterns
+- ring-dev-team:using-dev-team: Plugin introduction and agent selection guide
+- ring-dev-team:dev-cycle: 6-gate development workflow (Implementation → DevOps → SRE → Testing → Review → Validation)
+- ring-dev-team:dev-analysis: Analyze codebase against STANDARDS.md, generate refactoring tasks
+
+**Commands:**
+- `/ring-dev-team:dev-cycle` – Execute development cycle for tasks
+- `/ring-dev-team:dev-refactor` – Analyze and refactor existing codebase
 
 **Note:** If a skill documents a developer agent but you can't find it, you may not have ring-dev-team enabled. Check `.claude-plugin/marketplace.json` or install ring-dev-team plugin.
+
+---
+
+## Development Workflows
+
+The dev-team plugin provides three unified workflows that all use the same 6-gate development cycle:
+
+### 1. New Project / Feature (via PM Team)
+
+```text
+/ring-pm-team:pre-dev-feature "Add user authentication"
+                    │
+                    ▼
+         docs/pre-dev/auth/tasks.md
+                    │
+                    ▼
+/ring-dev-team:dev-cycle docs/pre-dev/auth/tasks.md
+                    │
+                    ▼
+         6-Gate Development Cycle
+```
+
+### 2. Direct Task Execution
+
+```text
+/ring-dev-team:dev-cycle docs/tasks/sprint-001.md
+                    │
+                    ▼
+         6-Gate Development Cycle
+```
+
+### 3. Refactoring Existing Code
+
+```text
+/ring-dev-team:dev-refactor
+        │
+        ▼
+┌─────────────────────────────┐
+│      dev-analysis           │
+│                             │
+│  • Scan codebase            │
+│  • Compare vs STANDARDS.md  │
+│  • Identify gaps            │
+│  • Generate tasks.md        │
+│  • User approval            │
+└─────────────────────────────┘
+        │
+        ▼
+docs/refactor/{timestamp}/tasks.md
+        │
+        ▼
+/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md
+        │
+        ▼
+         6-Gate Development Cycle
+```
+
+### The 6-Gate Development Cycle
+
+All workflows converge to the same execution process:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                   6-GATE DEVELOPMENT CYCLE                  │
+├─────────────────────────────────────────────────────────────┤
+│ Gate 0: Implementation                                      │
+│         • TDD: RED → GREEN → REFACTOR                       │
+│         • Agents: backend-engineer-*, frontend-engineer-*   │
+├─────────────────────────────────────────────────────────────┤
+│ Gate 1: DevOps Setup                                        │
+│         • Dockerfile, docker-compose.yml, .env.example      │
+│         • Agent: devops-engineer                            │
+├─────────────────────────────────────────────────────────────┤
+│ Gate 2: SRE Validation                                      │
+│         • Metrics, health checks, structured logging        │
+│         • Agent: sre                                        │
+├─────────────────────────────────────────────────────────────┤
+│ Gate 3: Testing                                             │
+│         • Unit tests, coverage ≥ 80%                        │
+│         • Agent: qa-analyst                                 │
+├─────────────────────────────────────────────────────────────┤
+│ Gate 4: Review                                              │
+│         • 3 reviewers IN PARALLEL                           │
+│         • code-reviewer, business-logic, security           │
+├─────────────────────────────────────────────────────────────┤
+│ Gate 5: Validation                                          │
+│         • User approval: APPROVED / REJECTED                │
+│         • Evidence for each acceptance criterion            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Workflow Summary
+
+| Scenario | Command | Input | Process |
+|----------|---------|-------|---------|
+| New feature | `/ring-pm-team:pre-dev-*` → `/ring-dev-team:dev-cycle` | User request | PM creates tasks → Dev executes |
+| Direct tasks | `/ring-dev-team:dev-cycle` | tasks.md | Execute 6 gates |
+| Refactoring | `/ring-dev-team:dev-refactor` | Existing codebase | Analyze → Generate tasks → Execute 6 gates |
+
+**Key Principle:** All development follows the same standardized 6-gate process, whether it's a new feature, a bug fix, or a refactoring effort.
 
 ---
 
