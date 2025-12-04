@@ -273,7 +273,6 @@ For current task without subtasks:
 2. Determine appropriate agent based on task content:
    - Go files/go.mod → ring-dev-team:backend-engineer-golang
    - TypeScript backend → ring-dev-team:backend-engineer-typescript
-   - Python → ring-dev-team:backend-engineer-python
    - React/Frontend → ring-dev-team:frontend-engineer-typescript
    - Infrastructure → ring-dev-team:devops-engineer
    - Generic → ring-dev-team:backend-engineer

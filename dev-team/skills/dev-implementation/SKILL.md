@@ -41,7 +41,6 @@ Before starting Gate 1:
 2. **Agent Selection**: Automatically determined based on task content:
    - `ring-dev-team:backend-engineer-golang`
    - `ring-dev-team:backend-engineer-typescript`
-   - `ring-dev-team:backend-engineer-python`
    - `ring-dev-team:backend-engineer`
    - `ring-dev-team:frontend-engineer-typescript`
    - `ring-dev-team:frontend-engineer`
@@ -245,7 +244,6 @@ Use the agent selected in Gate 1 based on technology:
 |-------|-------|
 | Go backend | `ring-dev-team:backend-engineer-golang` |
 | TypeScript backend | `ring-dev-team:backend-engineer-typescript` |
-| Python backend | `ring-dev-team:backend-engineer-python` |
 | Unknown backend | `ring-dev-team:backend-engineer` |
 | React/Next.js | `ring-dev-team:frontend-engineer` |
 | TypeScript-heavy frontend | `ring-dev-team:frontend-engineer-typescript` |

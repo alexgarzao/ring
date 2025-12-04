@@ -1,11 +1,11 @@
 ---
 name: using-dev-team
 description: |
-  10 specialist developer agents for backend (Go/TypeScript/Python), DevOps, frontend,
+  9 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
   design, QA, and SRE. Dispatch when you need deep technology expertise.
 
 trigger: |
-  - Need deep expertise for specific technology (Go, TypeScript, Python)
+  - Need deep expertise for specific technology (Go, TypeScript)
   - Building infrastructure/CI-CD → devops-engineer
   - Frontend with design focus → frontend-designer
   - Test strategy needed → qa-analyst
@@ -22,13 +22,13 @@ related:
 
 # Using Ring Developer Specialists
 
-The ring-dev-team plugin provides 10 specialized developer agents. Use them via `Task tool with subagent_type:`.
+The ring-dev-team plugin provides 9 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
-## 10 Developer Specialists
+## 9 Developer Specialists
 
 ### 1. Backend Engineer (Language-Agnostic)
 **`ring-dev-team:backend-engineer`**
@@ -115,36 +115,7 @@ Task tool:
 
 ---
 
-### 4. Backend Engineer (Python)
-**`ring-dev-team:backend-engineer-python`**
-
-**Specializations:**
-- Python backend services (FastAPI, Django, Flask)
-- SQLAlchemy & Django ORM
-- Async Python (asyncio, aiohttp)
-- Data processing & API integration
-- Python type hints & validation (Pydantic)
-- Celery for background tasks
-- Testing with pytest
-
-**Use When:**
-- Building Python backend services
-- FastAPI or Django projects
-- Data-heavy backend services
-- Machine learning API integration
-- Python-specific optimization
-
-**Example dispatch:**
-```
-Task tool:
-  subagent_type: "ring-dev-team:backend-engineer-python"
-  model: "opus"
-  prompt: "Design a FastAPI service with SQLAlchemy for e-commerce orders"
-```
-
----
-
-### 5. DevOps Engineer
+### 4. DevOps Engineer
 **`ring-dev-team:devops-engineer`**
 
 **Specializations:**
@@ -171,7 +142,7 @@ Task tool:
 
 ---
 
-### 6. Frontend Engineer
+### 5. Frontend Engineer
 **`ring-dev-team:frontend-engineer`**
 
 **Specializations:**
@@ -199,7 +170,7 @@ Task tool:
 
 ---
 
-### 7. Frontend Engineer (TypeScript)
+### 6. Frontend Engineer (TypeScript)
 **`ring-dev-team:frontend-engineer-typescript`**
 
 **Specializations:**
@@ -228,7 +199,7 @@ Task tool:
 
 ---
 
-### 8. Frontend Designer
+### 7. Frontend Designer
 **`ring-dev-team:frontend-designer`**
 
 **Specializations:**
@@ -258,7 +229,7 @@ Task tool:
 
 ---
 
-### 9. QA Analyst
+### 8. QA Analyst
 **`ring-dev-team:qa-analyst`**
 
 **Specializations:**
@@ -286,7 +257,7 @@ Task tool:
 
 ---
 
-### 10. Site Reliability Engineer (SRE)
+### 9. Site Reliability Engineer (SRE)
 **`ring-dev-team:sre`**
 
 **Specializations:**
@@ -321,7 +292,6 @@ Task tool:
 | Backend (language-agnostic, multi-language) | Backend Engineer | Architecture without language commitment |
 | Go API, database, concurrency | Backend Engineer (Go) | Go-specific service architecture |
 | TypeScript/Node.js backend, NestJS, Express | Backend Engineer (TypeScript) | TypeScript backend services |
-| Python backend, FastAPI, Django, data | Backend Engineer (Python) | Python-specific backend services |
 | CI/CD, Docker, Kubernetes, IaC | DevOps Engineer | Deployment pipelines, infrastructure |
 | React, TypeScript, components, state | Frontend Engineer | General UI development, performance |
 | Advanced TypeScript, type-safe frontend, tRPC | Frontend Engineer (TypeScript) | Type-safe React/Next.js projects |
@@ -350,7 +320,6 @@ Task tool:
 **Example decision:**
 - "Should I use Go or TypeScript?" → **`ring-dev-team:backend-engineer`** (agnostic)
 - "How do I optimize this Go service?" → **`ring-dev-team:backend-engineer-golang`**
-- "Design a FastAPI endpoint" → **`ring-dev-team:backend-engineer-python`**
 
 ### Frontend Engineers
 
@@ -431,7 +400,6 @@ Remember:
 - backend-engineer (language-agnostic)
 - backend-engineer-golang
 - backend-engineer-typescript
-- backend-engineer-python
 - devops-engineer
 - frontend-engineer
 - frontend-engineer-typescript
@@ -441,7 +409,6 @@ Remember:
 
 **Skills:**
 - using-dev-team: Plugin introduction and agent selection guide
-- dev-writing-code: Developer agent selection and invocation patterns
 - dev-cycle: 6-gate development workflow (Implementation → DevOps → SRE → Testing → Review → Validation)
 - dev-analysis: Analyze codebase against STANDARDS.md, generate refactoring tasks
 

@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 7 plugins with 48 skills, 23 agents, and 15 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 7 plugins with 48 skills, 22 agents, and 15 slash commands for enforcing proven software engineering practices.
 
 ---
 
@@ -15,7 +15,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  │  ring-default   │  │ ring-dev-team   │  │ ring-finops-    │              │
 │  │    (plugin)     │  │    (plugin)     │  │    team         │              │
 │  │ Skills(21)      │  │ Skills(2)       │  │ Skills(6)       │              │
-│  │ Agents(5)       │  │ Agents(10)      │  │ Agents(2)       │              │
+│  │ Agents(5)       │  │ Agents(9)       │  │ Agents(2)       │              │
 │  │ Cmds(7)         │  │                 │  │                 │              │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
@@ -199,7 +199,6 @@ Use when you need expert depth in specific domains:
 | `ring-dev-team:backend-engineer` | Language-agnostic backend design | API architecture, system design, microservices patterns |
 | `ring-dev-team:backend-engineer-golang` | Go microservices & APIs | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2 |
 | `ring-dev-team:backend-engineer-typescript` | TypeScript/Node.js backend | Express, NestJS, Prisma, TypeORM, GraphQL |
-| `ring-dev-team:backend-engineer-python` | Python backend & data services | FastAPI, Django, SQLAlchemy, Celery, data pipelines |
 | `ring-dev-team:devops-engineer` | Infrastructure & CI/CD | Docker, Kubernetes, Terraform, GitHub Actions |
 | `ring-dev-team:frontend-engineer` | React/Next.js dashboards | React, TypeScript, Tailwind, state management |
 | `ring-dev-team:frontend-engineer-typescript` | TypeScript frontend specialist | React, Next.js, Vue, type-safe state management |
@@ -296,7 +295,6 @@ These enforce quality standards:
 | Language-agnostic backend design | `ring-dev-team:backend-engineer` |
 | Go backend expertise | `ring-dev-team:backend-engineer-golang` |
 | TypeScript/Node.js backend | `ring-dev-team:backend-engineer-typescript` |
-| Python backend & data services | `ring-dev-team:backend-engineer-python` |
 | Infrastructure/DevOps | `ring-dev-team:devops-engineer` |
 | React/Next.js frontend | `ring-dev-team:frontend-engineer` |
 | TypeScript frontend specialist | `ring-dev-team:frontend-engineer-typescript` |
