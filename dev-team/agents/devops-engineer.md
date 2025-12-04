@@ -183,11 +183,23 @@ Invoke this agent when the task involves:
 - **Scripting**: Bash, Python, Make
 - **Multi-Tenancy**: Namespace isolation, tenant provisioning, resource quotas
 
+## Project Standards Integration
+
+**IMPORTANT:** Before implementing, check if `docs/STANDARDS.md` exists in the project.
+
+This file contains:
+- **Methodologies enabled**: GitOps, Infrastructure as Code, CI/CD patterns
+- **Implementation patterns**: Code examples for each pattern
+- **Naming conventions**: How to name resources, environments, pipelines
+- **Directory structure**: Where to place manifests, terraform modules, charts
+
+**→ See `docs/STANDARDS.md` for implementation patterns and code examples.**
+
 ## Handling Ambiguous Requirements
 
 ### Step 1: Check Project Standards (ALWAYS FIRST)
 
-**IMPORTANT:** Before asking questions, check:
+**IMPORTANT:** Before asking questions, check if these files exist in the current project:
 1. `docs/STANDARDS.md` - Common project standards
 2. `docs/standards/devops.md` - DevOps-specific standards
 
@@ -347,7 +359,7 @@ spec:
 
 #### Chart Structure
 
-```
+```text
 mychart/
   Chart.yaml
   values.yaml
@@ -401,7 +413,7 @@ resources:
 
 #### Project Structure
 
-```
+```text
 terraform/
   modules/
     vpc/
