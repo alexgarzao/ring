@@ -35,10 +35,10 @@ This skill configures the development and deployment infrastructure:
 
 ## Prerequisites
 
-Before starting Gate 4:
+Before starting Gate 1:
 
-1. **Gate 3 Complete**: Code implementation is done
-2. **Environment Requirements**: List from Gate 3 handoff:
+1. **Gate 0 Complete**: Code implementation is done
+2. **Environment Requirements**: List from Gate 0 handoff:
    - New dependencies
    - New environment variables
    - New services needed
@@ -46,10 +46,10 @@ Before starting Gate 4:
 
 ## Step 1: Analyze DevOps Requirements
 
-Review Gate 3 handoff and existing configuration:
+Review Gate 0 handoff and existing configuration:
 
 ```
-From Gate 3 Handoff:
+From Gate 0 Handoff:
 - New dependencies: {list}
 - New environment variables: {list}
 - New services needed: {list}
@@ -80,7 +80,7 @@ Task tool:
     Set up Docker configuration for the implemented feature.
 
     ## Implementation Summary
-    {paste Gate 3 handoff}
+    {paste Gate 0 handoff}
 
     ## Existing Configuration
     {paste existing Dockerfile, docker-compose.yml, .env.example if they exist}

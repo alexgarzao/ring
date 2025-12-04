@@ -1,8 +1,8 @@
 # Go Standards
 
-Este arquivo define os padrões específicos para desenvolvimento em Go.
+This file defines the specific standards for Go development.
 
-> **Referência**: Sempre consulte também `docs/STANDARDS.md` para padrões comuns do projeto.
+> **Reference**: Always consult `docs/STANDARDS.md` for common project standards.
 
 ---
 

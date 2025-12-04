@@ -1,8 +1,8 @@
 # TypeScript Standards
 
-Este arquivo define os padrões específicos para desenvolvimento em TypeScript (backend).
+This file defines the specific standards for TypeScript (backend) development.
 
-> **Referência**: Sempre consulte também `docs/STANDARDS.md` para padrões comuns do projeto.
+> **Reference**: Always consult `docs/STANDARDS.md` for common project standards.
 
 ---
 
@@ -462,12 +462,12 @@ export class UnauthorizedError extends AppError {
 
 ## DDD Patterns (TypeScript Implementation)
 
-Se DDD estiver habilitado no projeto, use estes padrões.
+If DDD is enabled in the project, use these patterns.
 
 ### Entity
 
 ```typescript
-// Entity - objeto com identidade que persiste ao longo do tempo
+// Entity - object with identity that persists over time
 import { z } from 'zod';
 
 // Branded type for ID
@@ -502,7 +502,7 @@ class User {
 ### Value Object
 
 ```typescript
-// Value Object - imutável, definido por atributos, sem identidade
+// Value Object - immutable, defined by attributes, no identity
 class Money {
     private constructor(
         private readonly amount: number, // cents to avoid float issues
@@ -551,7 +551,7 @@ function createEmail(value: string): Result<Email, ValidationError> {
 ### Aggregate Root
 
 ```typescript
-// Aggregate Root - ponto de entrada para cluster de entidades
+// Aggregate Root - entry point for cluster of entities
 class Order {
     private readonly events: DomainEvent[] = [];
 
@@ -615,7 +615,7 @@ class Order {
 ### Domain Event
 
 ```typescript
-// Domain Event - registro de algo que aconteceu (passado)
+// Domain Event - record of something that happened (past tense)
 interface DomainEvent {
     readonly eventName: string;
     readonly occurredAt: Date;
@@ -694,7 +694,7 @@ class PrismaOrderRepository implements OrderRepository {
 ### Domain Service
 
 ```typescript
-// Domain Service - lógica de negócio que não pertence a entidades
+// Domain Service - business logic that doesn't belong to entities
 class PricingService {
     constructor(
         private readonly discountRepo: DiscountRepository,

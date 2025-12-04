@@ -1,8 +1,8 @@
 # Frontend Standards
 
-Este arquivo define os padrões específicos para desenvolvimento frontend.
+This file defines the specific standards for frontend development.
 
-> **Referência**: Sempre consulte também `docs/STANDARDS.md` para padrões comuns do projeto.
+> **Reference**: Always consult `docs/STANDARDS.md` for common project standards.
 
 ---
 

@@ -1,8 +1,8 @@
 # Python Standards
 
-Este arquivo define os padrões específicos para desenvolvimento em Python.
+This file defines the specific standards for Python development.
 
-> **Referência**: Sempre consulte também `docs/STANDARDS.md` para padrões comuns do projeto.
+> **Reference**: Always consult `docs/STANDARDS.md` for common project standards.
 
 ---
 
@@ -593,7 +593,7 @@ mypy src/
 
 ## DDD Patterns (Python Implementation)
 
-Se DDD estiver habilitado no projeto, use estes padrões.
+If DDD is enabled in the project, use these patterns.
 
 ### Entity
 
@@ -612,7 +612,7 @@ def create_user_id() -> UserId:
 
 @dataclass
 class User:
-    """Entity - objeto com identidade que persiste ao longo do tempo."""
+    """Entity - object with identity that persists over time."""
 
     id: UserId
     email: str
@@ -646,7 +646,7 @@ from typing import Self
 
 @dataclass(frozen=True)  # frozen=True makes it immutable
 class Money:
-    """Value Object - imutável, definido por atributos, sem identidade."""
+    """Value Object - immutable, defined by attributes, no identity."""
 
     amount: Decimal
     currency: str
@@ -718,7 +718,7 @@ class OrderItem:
 
 @dataclass
 class Order:
-    """Aggregate Root - ponto de entrada para cluster de entidades."""
+    """Aggregate Root - entry point for cluster of entities."""
 
     id: OrderId
     customer_id: str
@@ -783,7 +783,7 @@ from datetime import datetime
 from typing import Protocol
 
 class DomainEvent(Protocol):
-    """Domain Event - registro de algo que aconteceu (passado)."""
+    """Domain Event - record of something that happened (past tense)."""
 
     @property
     def event_name(self) -> str: ...
@@ -828,7 +828,7 @@ from typing import Protocol
 
 # Repository interface (port) - collection-like API
 class OrderRepository(Protocol):
-    """Repository interface defined in domain layer."""
+    """Repository interface (port) - collection-like API."""
 
     async def find_by_id(self, order_id: OrderId) -> Order | None: ...
     async def find_by_customer(self, customer_id: str) -> list[Order]: ...
@@ -886,7 +886,7 @@ class SQLAlchemyOrderRepository:
 
 ```python
 class PricingService:
-    """Domain Service - lógica de negócio que não pertence a entidades."""
+    """Domain Service - business logic that doesn't belong to entities."""
 
     def __init__(
         self,
@@ -994,7 +994,7 @@ class InvalidOrderStateError(DomainError):
 
 ## Directory Structure (Simple)
 
-Para projetos sem DDD:
+For projects without DDD:
 
 ```
 /src

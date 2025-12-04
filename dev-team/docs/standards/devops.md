@@ -1,8 +1,8 @@
 # DevOps Standards
 
-Este arquivo define os padrões específicos para DevOps, SRE e infraestrutura.
+This file defines the specific standards for DevOps, SRE, and infrastructure.
 
-> **Referência**: Sempre consulte também `docs/STANDARDS.md` para padrões comuns do projeto.
+> **Reference**: Always consult `docs/STANDARDS.md` for common project standards.
 
 ---
 
