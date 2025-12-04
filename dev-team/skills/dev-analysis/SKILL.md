@@ -13,15 +13,15 @@ trigger: |
 
 skip_when: |
   - Greenfield project → Use /ring-pm-team:pre-dev-* instead
-  - Single file fix → Use dev-cycle directly
+  - Single file fix → Use ring-dev-team:dev-cycle directly
   - Unknown language (no go.mod, package.json, etc.) → Specify language manually
 
 sequence:
-  before: [dev-cycle]
+  before: [ring-dev-team:dev-cycle]
 
 related:
   similar: [ring-pm-team:pre-dev-research]
-  complementary: [dev-cycle, dev-implementation]
+  complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-implementation]
 ---
 
 # Dev Analysis Skill
