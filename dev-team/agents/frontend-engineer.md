@@ -151,7 +151,7 @@ The following frontend standards MUST be followed when implementing code:
 
 #### File Structure
 
-```
+```text
 /src
   /components
     /ui           # Primitives (Button, Input, Card)
