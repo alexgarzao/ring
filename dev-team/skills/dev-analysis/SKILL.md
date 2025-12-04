@@ -513,7 +513,7 @@ output_schema:
 
 | Skill | Purpose |
 |-------|---------|
-| `dev-cycle` | Executes refactoring tasks through 6 gates (after approval) |
+| `ring-dev-team:dev-cycle` | Executes refactoring tasks through 6 gates (after approval) |
 
 ## Key Principles
 

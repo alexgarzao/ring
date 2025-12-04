@@ -278,7 +278,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Located: `default/skills/using-ring/SKILL.md`
 
 **Ring Dev Team Plugin:**
-- `using-dev-team` → 9 specialist developer agents
+- `ring-dev-team:using-dev-team` → 9 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
 - Agents (invoke as `ring-dev-team:{agent-name}`): backend-engineer, backend-engineer-golang, backend-engineer-typescript, devops-engineer, frontend-engineer, frontend-engineer-typescript, frontend-designer, qa-analyst, sre

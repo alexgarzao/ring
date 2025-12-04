@@ -52,16 +52,16 @@ Execute the development cycle for tasks in a markdown file.
 
 | Gate | Skill | Description |
 |------|-------|-------------|
-| 0 | `dev-implementation` | Implement code (TDD) |
-| 1 | `dev-devops` | Create Docker/compose |
-| 2 | `dev-sre` | Observability (metrics, health, logging) |
-| 3 | `dev-testing` | Write and run tests |
-| 4 | `dev-review` | Code review (3 reviewers) |
-| 5 | `dev-validation` | Final validation |
+| 0 | `ring-dev-team:dev-implementation` | Implement code (TDD) |
+| 1 | `ring-dev-team:dev-devops` | Create Docker/compose |
+| 2 | `ring-dev-team:dev-sre` | Observability (metrics, health, logging) |
+| 3 | `ring-dev-team:dev-testing` | Write and run tests |
+| 4 | `ring-dev-team:dev-review` | Code review (3 reviewers) |
+| 5 | `ring-dev-team:dev-validation` | Final validation |
 
 **Note:** Tasks are loaded at initialization, not as a separate gate.
 
-After all tasks: `dev-feedback-loop` generates metrics report.
+After all tasks: `ring-dev-team:dev-feedback-loop` generates metrics report.
 
 ## Output
 
@@ -78,7 +78,7 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 
 ---
 
-Now loading the `dev-cycle` skill to execute...
+Now loading the `ring-dev-team:dev-cycle` skill to execute...
 
 Use skill: `ring-dev-team:dev-cycle`
 

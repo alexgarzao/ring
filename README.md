@@ -243,7 +243,7 @@ No "should work" → Only "does work" with proof
 ### Developer Skills (ring-dev-team plugin - 1 skill)
 
 **Code Development:**
-- `using-dev-team` - Introduction to developer specialist agents
+- `ring-dev-team:using-dev-team` - Introduction to developer specialist agents
 
 ### Product Planning Skills (ring-pm-team plugin - 10 skills)
 

@@ -408,9 +408,9 @@ Remember:
 - sre
 
 **Skills:**
-- using-dev-team: Plugin introduction and agent selection guide
-- dev-cycle: 6-gate development workflow (Implementation → DevOps → SRE → Testing → Review → Validation)
-- dev-analysis: Analyze codebase against STANDARDS.md, generate refactoring tasks
+- ring-dev-team:using-dev-team: Plugin introduction and agent selection guide
+- ring-dev-team:dev-cycle: 6-gate development workflow (Implementation → DevOps → SRE → Testing → Review → Validation)
+- ring-dev-team:dev-analysis: Analyze codebase against STANDARDS.md, generate refactoring tasks
 
 **Commands:**
 - `/ring-dev-team:dev-cycle` – Execute development cycle for tasks

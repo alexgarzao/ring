@@ -140,6 +140,6 @@ Analyze existing codebase against standards and execute refactoring through dev-
 
 ---
 
-Now loading the `dev-analysis` skill to analyze your codebase...
+Now loading the `ring-dev-team:dev-analysis` skill to analyze your codebase...
 
 Use skill: `ring-dev-team:dev-analysis`
