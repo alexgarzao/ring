@@ -93,7 +93,18 @@ For each task in order (T-001 → T-002 → T-003):
   Gate 3: Testing
   Gate 4: Review (3 parallel)
   Gate 5: Validation
+  ──────────────────────────────────
+  🔒 CHECKPOINT: Subtask Approval (Step 7.1)   [if manual_per_subtask]
+     - Present completion summary
+     - Wait for: Continue / Test First / Stop
+  ──────────────────────────────────
+  🔒 CHECKPOINT: Task Approval (Step 7.2)      [if manual_per_subtask OR manual_per_task]
+     - Present task summary
+     - Wait for: Continue / Integration Test / Stop
+  ──────────────────────────────────
   → Next task
+
+  [automatic mode: no checkpoints, continuous execution]
 ```
 
 ### Tasks with Subtasks
@@ -110,38 +121,50 @@ T-001 (has 3 subtasks):
   │    Gate 3: Testing
   │    Gate 4: Review (3 parallel)
   │    Gate 5: Validation
+  │    ──────────────────────────────────
+  │    🔒 CHECKPOINT: Subtask Approval    [if manual_per_subtask]
+  │    ──────────────────────────────────
   │    ✓ Subtask complete
   │
   ├─ ST-001-02:
-  │    Gate 0: Implementation
-  │    Gate 1: DevOps (if needed)
-  │    Gate 2: SRE (if needed)
-  │    Gate 3: Testing
-  │    Gate 4: Review (3 parallel)
-  │    Gate 5: Validation
+  │    Gate 0 → Gate 5 (same as above)
+  │    ──────────────────────────────────
+  │    🔒 CHECKPOINT: Subtask Approval    [if manual_per_subtask]
+  │    ──────────────────────────────────
   │    ✓ Subtask complete
   │
   └─ ST-001-03:
-       Gate 0: Implementation
-       Gate 1: DevOps (if needed)
-       Gate 2: SRE (if needed)
-       Gate 3: Testing
-       Gate 4: Review (3 parallel)
-       Gate 5: Validation
+       Gate 0 → Gate 5 (same as above)
+       ──────────────────────────────────
+       🔒 CHECKPOINT: Subtask Approval    [if manual_per_subtask]
+       ──────────────────────────────────
        ✓ Subtask complete
 
-  ✓ T-001 complete (all subtasks done)
+  ══════════════════════════════════════
+  🔒 CHECKPOINT: Task Approval (Step 7.2) [if manual_per_subtask OR manual_per_task]
+     - Present full task summary
+     - Wait for: Continue / Integration Test / Stop
+  ══════════════════════════════════════
+  ✓ T-001 complete
 
 T-002 (no subtasks → task is execution unit):
-  Gate 0: Implementation
-  Gate 1: DevOps
-  Gate 2: SRE
-  Gate 3: Testing
-  Gate 4: Review
-  Gate 5: Validation
+  Gate 0 → Gate 5
+  ──────────────────────────────────
+  🔒 CHECKPOINT: Subtask Approval         [if manual_per_subtask]
+  🔒 CHECKPOINT: Task Approval            [if manual_per_subtask OR manual_per_task]
+  ──────────────────────────────────
   ✓ T-002 complete
 
 → Next task...
+
+EXECUTION MODES SUMMARY:
+┌────────────────────┬─────────────────────┬───────────────────┐
+│ Mode               │ Step 7.1 (subtask)  │ Step 7.2 (task)   │
+├────────────────────┼─────────────────────┼───────────────────┤
+│ manual_per_subtask │ ✓ Every subtask     │ ✓ Every task      │
+│ manual_per_task    │ ✗ Skip              │ ✓ Every task      │
+│ automatic          │ ✗ Skip              │ ✗ Skip            │
+└────────────────────┴─────────────────────┴───────────────────┘
 ```
 
 ### Execution Unit Definition
@@ -162,7 +185,8 @@ State is persisted to `.ring/dev-team/current-cycle.json`:
   "started_at": "ISO timestamp",
   "updated_at": "ISO timestamp",
   "source_file": "path/to/tasks.md",
-  "status": "in_progress|completed|failed|paused",
+  "execution_mode": "manual_per_subtask|manual_per_task|automatic",
+  "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_testing|paused_for_task_approval|paused_for_integration_testing",
   "current_task_index": 0,
   "current_gate": 0,
   "current_subtask_index": 0,
@@ -226,11 +250,25 @@ Input: path/to/tasks.md OR path/to/pre-dev/{feature}/
    "Loaded X tasks with Y total subtasks:
    - T-001: 3 subtasks
    - T-002: 1 subtask
-   - T-003: 2 subtasks (TDD autonomous)
+   - T-003: 2 subtasks (TDD autonomous)"
 
-   Starting execution..."
+5. **ASK EXECUTION MODE using AskUserQuestion tool:**
 
-5. Proceed to Gate 0 for first task
+   Question: "How would you like to control the development cycle?"
+   Options:
+     a) "Manual (per subtask)" - Approve after each subtask before continuing
+     b) "Manual (per task)" - Approve only after complete tasks (not individual subtasks)
+     c) "Automatic" - Run all tasks without interruptions
+
+   Store selection in state as `execution_mode`:
+     - "manual_per_subtask" → Checkpoint after every subtask (Step 7.1) + after every task (Step 7.2)
+     - "manual_per_task" → Checkpoint only after tasks complete (Step 7.2 only)
+     - "automatic" → No checkpoints, continuous execution
+
+6. Confirm and start:
+   - Display selected mode
+   - Output: "Starting development cycle in [mode] mode..."
+   - Proceed to Gate 0 for first task
 ```
 
 ### Resume Cycle (with --resume flag)
@@ -246,8 +284,40 @@ Input: --resume
    - Current task: [id] - [title]
    - Current subtask: [id] (if applicable)
    - Current gate: [gate_name]
-4. Ask user to confirm resume
-5. Continue from current position
+   - Paused reason: [status explanation]
+
+4. Handle paused states:
+
+   If status = "paused_for_approval":
+     - Display: "Paused waiting for subtask approval after [subtask_id]"
+     - Re-present Step 7.1 checkpoint (subtask summary + approval question)
+
+   If status = "paused_for_testing":
+     - Display: "Paused for manual testing of subtask [subtask_id]"
+     - Ask: "Have you finished testing? Ready to continue?"
+     - If yes: Proceed to next subtask (or Step 7.2 if last subtask)
+     - If no: Keep paused
+
+   If status = "paused_for_task_approval":
+     - Display: "Paused waiting for task approval after [task_id]"
+     - Re-present Step 7.2 checkpoint (task summary + approval question)
+
+   If status = "paused_for_integration_testing":
+     - Display: "Paused for integration testing of task [task_id]"
+     - Ask: "Have you finished integration testing? Ready to continue?"
+     - If yes: Proceed to next task
+     - If no: Keep paused
+
+   If status = "paused" (generic):
+     - Display: "Cycle manually paused"
+     - Ask user to confirm resume
+     - Continue from current position
+
+   If status = "in_progress":
+     - Display: "Cycle was interrupted mid-execution"
+     - Resume from current gate of current execution unit
+
+5. Continue from appropriate position based on status
 ```
 
 ## Input Validation
@@ -485,18 +555,175 @@ For current execution unit:
    - No Critical/High/Medium review issues?
    - All acceptance criteria met?
 
-4. If validation passes:
-   - Set unit status = "completed"
-   - Move to next execution unit
-   - Reset current_gate = 0
-
-5. If validation fails:
+4. If validation fails:
    - Log failure reasons
    - Determine which gate to revisit
    - Loop back to appropriate gate
 
-6. Record gate end timestamp
+5. If validation passes:
+   - Set unit status = "completed"
+   - Record gate end timestamp
+   - Proceed to Step 7.1 (Subtask Approval Checkpoint)
 ```
+
+## Step 7.1: Subtask Approval Checkpoint (Conditional)
+
+**This checkpoint depends on `execution_mode`:**
+- `manual_per_subtask` → Execute this checkpoint (approve each subtask)
+- `manual_per_task` → Skip (proceed directly to next subtask, or Step 7.2 if last subtask)
+- `automatic` → Skip entirely
+
+```text
+After Gate 5 validation passes:
+
+0. Check execution_mode from state:
+   - If "automatic": Skip to next execution unit (no checkpoint)
+   - If "manual_per_task": Skip to next subtask (or Step 7.2 if last subtask)
+   - If "manual_per_subtask": Continue with checkpoint below
+
+1. Set status = "paused_for_approval"
+2. Save state immediately (allow resume if session interrupted)
+
+3. Present completion summary to user:
+   ┌─────────────────────────────────────────────────┐
+   │ ✓ SUBTASK COMPLETED                             │
+   ├─────────────────────────────────────────────────┤
+   │ Subtask: [subtask_id] - [title]                 │
+   │ Parent Task: [task_id] - [task_title]           │
+   │                                                  │
+   │ Gates Passed:                                    │
+   │   ✓ Gate 0: Implementation                      │
+   │   ✓ Gate 1: DevOps                              │
+   │   ✓ Gate 2: SRE                                 │
+   │   ✓ Gate 3: Testing                             │
+   │   ✓ Gate 4: Review                              │
+   │   ✓ Gate 5: Validation                          │
+   │                                                  │
+   │ Acceptance Criteria: X/X passed                 │
+   │ Review Iterations: N                            │
+   │ Duration: Xm Ys                                 │
+   │                                                  │
+   │ Files Changed:                                  │
+   │   - file1.go                                    │
+   │   - file2_test.go                               │
+   │   - ...                                         │
+   │                                                  │
+   │ Next: [next_subtask_id] - [next_title]           │
+   │       OR "Last subtask - proceed to task approval" │
+   └─────────────────────────────────────────────────┘
+
+4. **ASK FOR EXPLICIT APPROVAL using AskUserQuestion tool:**
+
+   Question: "Ready to proceed to the next subtask?"
+   Options:
+     a) "Continue" - Proceed to next subtask
+     b) "Test First" - Manually test this subtask before continuing
+     c) "Stop Here" - Pause cycle (can resume later with --resume)
+
+5. Handle user response:
+
+   If "Continue":
+     - Set status = "in_progress"
+     - Check if more subtasks in current task
+     - If yes: Move to next subtask, reset to Gate 0
+     - If no: Proceed to Step 7.2 (Task Approval Checkpoint)
+
+   If "Test First":
+     - Set status = "paused_for_testing"
+     - Save state
+     - Output: "Cycle paused. Test subtask [subtask_id] and run:
+                /ring-dev-team:dev-cycle --resume
+                when ready to continue."
+     - STOP execution (do not proceed)
+
+   If "Stop Here":
+     - Set status = "paused"
+     - Save state
+     - Output: "Cycle paused at subtask [subtask_id]. Resume with:
+                /ring-dev-team:dev-cycle --resume"
+     - STOP execution (do not proceed)
+```
+
+## Step 7.2: Task Approval Checkpoint (Conditional)
+
+**This checkpoint depends on `execution_mode`:**
+- `manual_per_subtask` → Execute this checkpoint
+- `manual_per_task` → Execute this checkpoint
+- `automatic` → Skip entirely (proceed to next task)
+
+**When all subtasks of a task are completed**, require human approval before moving to the next task (unless automatic mode).
+
+```text
+After completing all subtasks of a task:
+
+0. Check execution_mode from state:
+   - If "automatic": Skip to next task (no checkpoint)
+   - If "manual_per_subtask" OR "manual_per_task": Continue with checkpoint below
+
+1. Set task status = "completed"
+2. Set cycle status = "paused_for_task_approval"
+3. Save state
+
+4. Present task completion summary:
+   ┌─────────────────────────────────────────────────┐
+   │ ✓ TASK COMPLETED                                │
+   ├─────────────────────────────────────────────────┤
+   │ Task: [task_id] - [task_title]                  │
+   │                                                  │
+   │ Subtasks Completed: X/X                         │
+   │   ✓ ST-001-01: [title]                          │
+   │   ✓ ST-001-02: [title]                          │
+   │   ✓ ST-001-03: [title]                          │
+   │                                                  │
+   │ Total Duration: Xh Xm                           │
+   │ Total Review Iterations: N                      │
+   │                                                  │
+   │ All Files Changed This Task:                    │
+   │   - file1.go                                    │
+   │   - file2.go                                    │
+   │   - ...                                         │
+   │                                                  │
+   │ Next Task: [next_task_id] - [next_task_title]   │
+   │            Subtasks: N (or "TDD autonomous")    │
+   │            OR "No more tasks - cycle complete"  │
+   └─────────────────────────────────────────────────┘
+
+5. **ASK FOR EXPLICIT APPROVAL using AskUserQuestion tool:**
+
+   Question: "Task [task_id] complete. Ready to start the next task?"
+   Options:
+     a) "Continue" - Proceed to next task
+     b) "Integration Test" - User wants to test the full task integration
+     c) "Stop Here" - Pause cycle
+
+6. Handle user response:
+
+   If "Continue":
+     - Set status = "in_progress"
+     - Move to next task
+     - Set current_task_index += 1
+     - Set current_subtask_index = 0
+     - Reset to Gate 0
+     - Continue execution
+
+   If "Integration Test":
+     - Set status = "paused_for_integration_testing"
+     - Save state
+     - Output: "Cycle paused for integration testing.
+                Test task [task_id] integration and run:
+                /ring-dev-team:dev-cycle --resume
+                when ready to continue."
+     - STOP execution
+
+   If "Stop Here":
+     - Set status = "paused"
+     - Save state
+     - Output: "Cycle paused after task [task_id]. Resume with:
+                /ring-dev-team:dev-cycle --resume"
+     - STOP execution
+```
+
+**Note:** For tasks without subtasks, both Step 7.1 and Step 7.2 are executed in sequence (unit approval, then task approval).
 
 ## Step 8: Cycle Completion
 
