@@ -1,5 +1,5 @@
 ---
-name: dev-analysis
+name: dev-refactor
 description: |
   Analyzes existing codebase against standards to identify gaps in architecture, code quality,
   testing, and DevOps. Auto-detects project language and uses appropriate agent standards
@@ -24,7 +24,7 @@ related:
   complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-implementation]
 ---
 
-# Dev Analysis Skill
+# Dev Refactor Skill
 
 This skill analyzes an existing codebase to identify gaps between current implementation and project standards, then generates a structured refactoring plan compatible with the dev-cycle workflow.
 

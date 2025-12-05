@@ -349,7 +349,7 @@ Remember:
 **Skills:**
 - ring-dev-team:using-dev-team: Plugin introduction and agent selection guide
 - ring-dev-team:dev-cycle: 6-gate development workflow (Implementation → DevOps → SRE → Testing → Review → Validation)
-- ring-dev-team:dev-analysis: Analyze codebase against PROJECT_RULES.md, generate refactoring tasks
+- ring-dev-team:dev-refactor: Analyze codebase against PROJECT_RULES.md, generate refactoring tasks
 
 **Commands:**
 - `/ring-dev-team:dev-cycle` – Execute development cycle for tasks
@@ -394,7 +394,7 @@ The dev-team plugin provides three unified workflows that all use the same 6-gat
         │
         ▼
 ┌─────────────────────────────┐
-│      dev-analysis           │
+│      dev-refactor           │
 │                             │
 │  • Scan codebase            │
 │  • Compare vs PROJECT_RULES.md  │

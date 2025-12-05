@@ -112,7 +112,7 @@ ring/                                  # Monorepo root
 ├── dev-team/                      # Developer Agents plugin (ring-dev-team)
 │   ├── skills/                    # 10 developer skills
 │   │   ├── using-dev-team/        # Plugin introduction
-│   │   ├── dev-analysis/          # Codebase analysis against standards
+│   │   ├── dev-refactor/          # Codebase analysis against standards
 │   │   ├── dev-cycle/             # 6-gate development workflow orchestrator
 │   │   ├── dev-devops/            # Gate 1: DevOps setup (Docker, compose)
 │   │   ├── dev-feedback-loop/     # Assertiveness scoring and metrics
@@ -410,7 +410,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** All backend engineers (`ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`), all frontend engineers except designer (`ring-dev-team:frontend-engineer-typescript`), `ring-dev-team:devops-engineer`, `ring-dev-team:qa-analyst`, `ring-dev-team:sre`, `ring-finops-team:finops-automation`
+**Used by:** `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:frontend-engineer-typescript`, `ring-dev-team:devops-engineer`, `ring-dev-team:qa-analyst`, `ring-dev-team:sre`, `ring-finops-team:finops-automation`
 
 **Analysis Schema** (for agents that analyze and recommend):
 ```yaml
