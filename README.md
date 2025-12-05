@@ -242,7 +242,7 @@ No "should work" → Only "does work" with proof
 
 **Code Development:**
 - `ring-dev-team:using-dev-team` - Introduction to developer specialist agents
-- `ring-dev-team:dev-analysis` - Codebase analysis against standards
+- `ring-dev-team:dev-refactor` - Codebase analysis against standards
 - `ring-dev-team:dev-cycle` - 6-gate development workflow orchestrator
 
 **6-Gate Workflow Skills:**
