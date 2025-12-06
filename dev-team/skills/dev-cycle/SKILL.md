@@ -112,7 +112,7 @@ If you catch yourself thinking ANY of these, STOP immediately:
 | 1 | dev-devops | Infrastructure and deployment | ring-dev-team:devops-engineer |
 | 2 | dev-sre | Observability (metrics, health, logging) | ring-dev-team:sre |
 | 3 | dev-testing | Unit tests for acceptance criteria | ring-dev-team:qa-analyst |
-| 4 | dev-review | Parallel code review | ring-default:*-reviewer (3x parallel) |
+| 4 | dev-review | Parallel code review | ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer (3x parallel) |
 | 5 | dev-validation | Final acceptance validation | N/A (verification) |
 
 ## Integrated PM → Dev Workflow
