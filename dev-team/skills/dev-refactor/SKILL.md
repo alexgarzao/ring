@@ -31,9 +31,9 @@ This skill analyzes an existing codebase to identify gaps between current implem
 ## What This Skill Does
 
 1. **Detects project language** (Go, TypeScript, Python) from manifest files
-2. **Loads appropriate standards** from agent definitions (golang.md, typescript.md, etc.)
-3. **Scans codebase** against standards in 4 dimensions: Architecture, Code, Testing, DevOps
-4. **Identifies gaps** and prioritizes findings by impact and effort
+2. **Reads PROJECT_RULES.md** (project-specific standards - MANDATORY)
+3. **Dispatches specialized agents** that load their own Ring standards via WebFetch
+4. **Compiles agent findings** into structured analysis report
 5. **Generates tasks.md** in the same format as PM Team output
 6. **User approves** the plan before execution via dev-cycle
 
@@ -157,7 +157,7 @@ Why is this mandatory?
 | "It's a small project" | Small projects need standards too. Start right. |
 | "Just use best practices" | "Best" varies by context. YOUR rules define YOUR best. |
 
-**Note:** After PROJECT_RULES.md check passes, Ring standards are loaded via WebFetch based on detected language. Both project-specific rules AND Ring standards are required - no override, both are necessary and complementary.
+**Note:** After PROJECT_RULES.md check passes, specialized agents are dispatched. Each agent loads its own Ring standards via WebFetch (e.g., devops-engineer loads devops.md, sre loads sre.md). The dev-refactor skill only reads PROJECT_RULES.md locally - it does NOT do WebFetch itself.
 
 ## Analysis Dimensions
 
@@ -334,54 +334,38 @@ Output:
 - Agent standards to use: {list of agent files}
 ```
 
-## Step 2: Load Standards
+## Step 2: Read PROJECT_RULES.md
 
-Load standards from multiple sources based on detected language:
+**Read the project-specific standards file:**
 
 ```text
-Standards Loading Order:
-1. Project-specific standards (REQUIRED):
-   - docs/PROJECT_RULES.md → Project conventions (MANDATORY)
+Action: Use Read tool to load docs/PROJECT_RULES.md
 
-2. Ring standards files via WebFetch (based on detected language):
-   Use WebFetch tool to load from GitHub raw URLs
-
-3. Merge strategy:
-   - PROJECT_RULES.md is REQUIRED (verified in Step 0)
-   - Ring standards via WebFetch are REQUIRED (this step)
-   - Both are necessary and complementary - no override
-   - Report which standards are being used
-
-Note: "If no project standards" scenario is BLOCKED in Step 0.
-      This step only executes after PROJECT_RULES.md is verified.
+This file contains:
+- Project-specific conventions
+- Technology stack decisions
+- Architecture patterns chosen for THIS project
+- Team-specific coding standards
 ```
 
-### Ring Standards Loading via WebFetch (MANDATORY)
+**What dev-refactor does NOT do:**
+- Does NOT call WebFetch for Ring standards
+- Does NOT load golang.md, typescript.md, devops.md, sre.md directly
 
-**Why dev-refactor needs WebFetch (different from agents):**
-- dev-refactor passes standards context to agent prompts (`{standards_file}`)
-- dev-refactor compiles multi-agent findings into coherent report (Step 4)
-- dev-refactor generates prioritized tasks.md referencing specific violations (Steps 5-6)
+**Why?** Each specialized agent (devops-engineer, sre, qa-analyst, backend-engineer-*) has its own WebFetch instructions in its agent definition. They load their own standards when dispatched. This avoids duplication and keeps responsibilities clear:
 
-Note: Dispatched agents (qa-analyst, devops-engineer, sre) also load their specific standards via their own WebFetch calls. This is intentional - dev-refactor needs ALL standards for holistic view, agents need THEIR standards for specialized analysis.
+| Component | Responsibility |
+|-----------|---------------|
+| **dev-refactor** | Reads PROJECT_RULES.md (local), dispatches agents, compiles findings |
+| **Agents** | Load Ring standards via WebFetch, analyze their dimension, return findings |
 
-**Use WebFetch tool based on detected language from Step 1:**
-
-| Detected Language | WebFetch URL |
-|-------------------|--------------|
-| Go | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` |
-| TypeScript Backend | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
-| Frontend (React/Next.js) | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
-| DevOps/Infra | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
-| SRE/Observability | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
-
-**Multiple languages:** If project has multiple languages (e.g., Go backend + React frontend), fetch ALL applicable standards.
-
-**If WebFetch fails:** STOP and report blocker. Cannot compile findings without standards context.
+**Output of this step:**
+- PROJECT_RULES.md content loaded and understood
+- Ready to dispatch agents with project context
 
 ## Step 3: Scan Codebase
 
-Two-phase analysis using specialized agents:
+Two-phase analysis using specialized agents. Each agent loads its own Ring standards via WebFetch.
 
 ### Phase 1: Architecture Analysis
 
@@ -392,7 +376,10 @@ Task tool:
   subagent_type: "ring-default:codebase-explorer"
   model: "opus"
   prompt: |
-    Analyze this {language} codebase against these standards: {standards_file}
+    Analyze this {language} codebase for refactoring opportunities.
+
+    **Project Standards (from PROJECT_RULES.md):**
+    {project_rules_content}
 
     Focus on:
     - Directory structure compliance
@@ -400,13 +387,18 @@ Task tool:
     - Clean/Hexagonal Architecture (dependency direction)
     - Anti-patterns and technical debt
     - Naming conventions
+
+    Return findings with severity (Critical/High/Medium/Low) and specific file locations.
 ```
 
 **Output:** Architectural insights, patterns found, anti-patterns detected.
 
 ### Phase 2: Specialized Dimension Analysis (Parallel)
 
-Dispatch 3 agents in parallel (single message, 3 Task tool calls) to analyze specific dimensions:
+Dispatch 3 agents in parallel (single message, 3 Task tool calls). Each agent will:
+1. Load its Ring standards via WebFetch (as defined in agent definition)
+2. Apply both Ring standards AND PROJECT_RULES.md
+3. Return dimension-specific findings
 
 ```yaml
 # Task 1: Testing Analysis
@@ -414,40 +406,72 @@ Task tool:
   subagent_type: "ring-dev-team:qa-analyst"
   model: "opus"
   prompt: |
-    Analyze test coverage and patterns:
+    Analyze test coverage and patterns for refactoring.
+
+    **Project Standards (from PROJECT_RULES.md):**
+    {project_rules_content}
+
+    Check:
     - Test coverage percentage
     - Test patterns (table-driven, AAA)
     - TDD compliance
     - Missing test cases
+
+    Return findings with severity and specific file locations.
 
 # Task 2: DevOps Analysis
 Task tool:
   subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   prompt: |
-    Analyze infrastructure setup:
+    Analyze infrastructure setup for refactoring.
+
+    **Project Standards (from PROJECT_RULES.md):**
+    {project_rules_content}
+
+    Check:
     - Dockerfile exists and follows best practices
     - docker-compose.yml configuration
     - CI/CD pipeline presence
     - Environment management (.env.example)
+
+    Note: Load Ring DevOps standards via WebFetch as per your agent definition.
+    Return findings with severity and specific file locations.
 
 # Task 3: SRE Analysis
 Task tool:
   subagent_type: "ring-dev-team:sre"
   model: "opus"
   prompt: |
-    Analyze observability setup:
+    Analyze observability setup for refactoring.
+
+    **Project Standards (from PROJECT_RULES.md):**
+    {project_rules_content}
+
+    Check:
     - Metrics endpoint (/metrics)
     - Health check endpoints (/health, /ready)
     - Structured logging
     - Tracing setup
+
+    Note: Load Ring SRE standards via WebFetch as per your agent definition.
+    Return findings with severity and specific file locations.
 ```
 
-**Output:** Dimension-specific findings to merge with exploration_results.
+**Output:** Dimension-specific findings with severities to compile in Step 4.
 
 ## Step 4: Compile Findings
 
-Merge results from all agents into a structured report:
+**Collect outputs from all dispatched agents and merge into structured report.**
+
+Each agent returns findings in their output. The dev-refactor skill must:
+1. **Collect** all agent outputs (codebase-explorer, qa-analyst, devops-engineer, sre)
+2. **Parse** findings from each output (severity, location, issue, recommendation)
+3. **Deduplicate** overlapping findings
+4. **Categorize** by dimension (Architecture, Code Quality, Testing, DevOps)
+5. **Sort** by severity (Critical → High → Medium → Low)
+
+**Merge results into structured report:**
 
 ```markdown
 # Analysis Report: {project-name}
@@ -635,8 +659,10 @@ Save analysis report and tasks to project:
 docs/refactor/{timestamp}/
 ├── analysis-report.md    # Full analysis with all findings
 ├── tasks.md              # Approved refactoring tasks
-└── original-standards.md # Snapshot of standards used
+└── project-rules-used.md # Copy of PROJECT_RULES.md at time of analysis
 ```
+
+**Note:** Ring standards are not saved as they are loaded dynamically by agents via WebFetch. Only the project-specific rules are preserved for reference.
 
 ## Step 9: Handoff to dev-cycle
 
@@ -704,7 +730,8 @@ output_schema:
 ## Key Principles
 
 1. **Same workflow**: Refactoring uses the same dev-cycle as new features
-2. **Standards-driven**: All analysis is based on project PROJECT_RULES.md
-3. **Traceable**: Every task links back to specific issues found
-4. **Incremental**: Can approve subset of tasks (critical only, etc.)
-5. **Reversible**: Original analysis preserved for reference
+2. **Separation of concerns**: dev-refactor reads PROJECT_RULES.md locally; agents load Ring standards via WebFetch
+3. **Standards-driven**: Analysis combines project-specific rules (PROJECT_RULES.md) + Ring standards (loaded by agents)
+4. **Traceable**: Every task links back to specific issues found
+5. **Incremental**: Can approve subset of tasks (critical only, etc.)
+6. **Reversible**: Original analysis preserved for reference
