@@ -298,7 +298,9 @@ API Patterns:
 
 **Implementation Reference:**
 
-After TRD approval, developers should reference the project's Go standards document for implementation patterns (e.g., `docs/standards/golang.md` - Pagination Patterns section).
+After TRD approval, developers should reference:
+1. `docs/PROJECT_RULES.md` (local project) - project-specific standards
+2. Ring Standards via WebFetch - base technical patterns (e.g., `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` for Go)
 
 ---
 
