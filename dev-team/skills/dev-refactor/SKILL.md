@@ -340,11 +340,13 @@ Load standards from multiple sources based on detected language:
 
 ```text
 Standards Loading Order:
-1. Project-specific standards (if exist):
-   - docs/PROJECT_RULES.md → Project conventions
-   - docs/standards/{language}.md → Language overrides
+1. Project-specific standards (REQUIRED):
+   - docs/PROJECT_RULES.md → Project conventions (MANDATORY)
 
-2. Ring agent standards (embedded in agents):
+2. Ring standards files (dev-team/docs/standards/):
+   - golang.md, typescript.md, frontend.md, devops.md, sre.md
+
+3. Ring agent standards (embedded in agents):
    ┌─────────────────────────────────────────────────────────────┐
    │ Language/Domain    │ Agent with Standards                   │
    ├────────────────────┼────────────────────────────────────────┤
@@ -356,10 +358,10 @@ Standards Loading Order:
    │ Testing/QA         │ dev-team/agents/qa-analyst.md                  │
    └────────────────────┴────────────────────────────────────────┘
 
-3. Merge strategy:
+4. Merge strategy:
    - PROJECT_RULES.md is REQUIRED (verified in Step 0)
-   - Project standards override agent defaults
-   - Agent standards provide comprehensive baseline
+   - Project standards override Ring standards
+   - Ring standards override agent defaults
    - Report which standards are being used
 
 Note: "If no project standards" scenario is BLOCKED in Step 0.
