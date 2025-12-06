@@ -60,7 +60,7 @@ You will be asked to choose between:
 - Dispatches to specialized agents when available:
   - Backend Go: `ring-dev-team:backend-engineer-golang`
   - Backend Python: `ring-dev-team:backend-engineer-python`
-  - Frontend React/TypeScript: `ring-dev-team:frontend-engineer-typescript`
+  - Frontend BFF/API Routes: `ring-dev-team:frontend-bff-engineer-typescript`
   - Infrastructure: `ring-dev-team:devops-engineer`
   - Testing: `ring-dev-team:qa-analyst`
   - Reliability: `ring-dev-team:sre`

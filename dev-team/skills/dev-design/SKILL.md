@@ -48,7 +48,7 @@ Before starting Gate 2:
 
 1. **Gate 0 Complete**: Task definition exists with clear scope
 2. **Gate 1 Complete**: Analysis report with:
-   - Selected agent type (backend-engineer-golang, frontend-engineer-typescript, etc.)
+   - Selected agent type (backend-engineer-golang, frontend-bff-engineer-typescript, etc.)
    - Identified patterns and conventions
    - Files to create/modify
 3. **Optional**: PRD/TRD from `docs/pre-dev/{feature}/`

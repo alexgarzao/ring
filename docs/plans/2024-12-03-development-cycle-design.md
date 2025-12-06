@@ -159,7 +159,7 @@ dev-team/
 - `ring-dev-team:backend-engineer-typescript`
 - `ring-dev-team:backend-engineer-python`
 - `ring-dev-team:backend-engineer`
-- `ring-dev-team:frontend-engineer-typescript`
+- `ring-dev-team:frontend-bff-engineer-typescript`
 - `ring-dev-team:frontend-engineer`
 - `ring-dev-team:frontend-designer`
 

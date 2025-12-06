@@ -44,7 +44,7 @@ Before starting Gate 3:
    - `ring-dev-team:backend-engineer-typescript`
    - `ring-dev-team:backend-engineer-python`
    - `ring-dev-team:backend-engineer`
-   - `ring-dev-team:frontend-engineer-typescript`
+   - `ring-dev-team:frontend-bff-engineer-typescript`
    - `ring-dev-team:frontend-engineer`
    - `ring-dev-team:frontend-designer`
 3. **Standards Available**: Project standards at `docs/STANDARDS.md` (or conventions from analysis)
@@ -249,7 +249,7 @@ Use the agent selected in Gate 1 based on technology:
 | Python backend | `ring-dev-team:backend-engineer-python` |
 | Unknown backend | `ring-dev-team:backend-engineer` |
 | React/Next.js | `ring-dev-team:frontend-engineer` |
-| TypeScript-heavy frontend | `ring-dev-team:frontend-engineer-typescript` |
+| BFF layer (Next.js API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` |
 | Visual design focus | `ring-dev-team:frontend-designer` |
 
 ## TDD Compliance

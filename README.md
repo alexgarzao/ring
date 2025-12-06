@@ -37,7 +37,7 @@ Ring solves this by:
 - `ring-dev-team:backend-engineer-python` - Python backend specialist (FastAPI, Django, Flask)
 - `ring-dev-team:devops-engineer` - DevOps infrastructure specialist
 - `ring-dev-team:frontend-engineer` - React/Next.js specialist (JavaScript-first)
-- `ring-dev-team:frontend-engineer-typescript` - TypeScript-first React/Next.js specialist
+- `ring-dev-team:frontend-bff-engineer-typescript` - BFF (Backend for Frontend) with Clean Architecture
 - `ring-dev-team:frontend-designer` - Visual design specialist
 - `ring-dev-team:qa-analyst` - Quality assurance specialist
 - `ring-dev-team:sre` - Site reliability engineer
@@ -412,7 +412,7 @@ ring/                                  # Monorepo root
 │       ├── backend-engineer-python.md  # Python backend specialist
 │       ├── devops-engineer.md          # DevOps infrastructure
 │       ├── frontend-engineer.md        # React/Next.js specialist (JavaScript-first)
-│       ├── frontend-engineer-typescript.md # TypeScript-first React/Next.js specialist
+│       ├── frontend-bff-engineer-typescript.md # BFF (Backend for Frontend) specialist
 │       ├── frontend-designer.md        # Visual design specialist
 │       ├── qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer

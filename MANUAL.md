@@ -202,7 +202,7 @@ Use when you need expert depth in specific domains:
 | `ring-dev-team:backend-engineer-python` | Python backend & data services | FastAPI, Django, SQLAlchemy, Celery, data pipelines |
 | `ring-dev-team:devops-engineer` | Infrastructure & CI/CD | Docker, Kubernetes, Terraform, GitHub Actions |
 | `ring-dev-team:frontend-engineer` | React/Next.js dashboards | React, TypeScript, Tailwind, state management |
-| `ring-dev-team:frontend-engineer-typescript` | TypeScript frontend specialist | React, Next.js, Vue, type-safe state management |
+| `ring-dev-team:frontend-bff-engineer-typescript` | BFF (Backend for Frontend) specialist | Next.js API Routes, Clean Architecture, DDD, Hexagonal |
 | `ring-dev-team:frontend-designer` | Visual design & aesthetics | Typography, motion, CSS, distinctive UI |
 | `ring-dev-team:qa-analyst` | Quality assurance | Test strategy, automation, coverage |
 | `ring-dev-team:sre` | Site reliability & ops | Monitoring, alerting, incident response, SLOs |
@@ -299,7 +299,7 @@ These enforce quality standards:
 | Python backend & data services | `ring-dev-team:backend-engineer-python` |
 | Infrastructure/DevOps | `ring-dev-team:devops-engineer` |
 | React/Next.js frontend | `ring-dev-team:frontend-engineer` |
-| TypeScript frontend specialist | `ring-dev-team:frontend-engineer-typescript` |
+| BFF API layer (Next.js API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` |
 | Visual design & aesthetics | `ring-dev-team:frontend-designer` |
 | Deep codebase analysis | `ring-default:codebase-explorer` |
 | Regulatory compliance | `ring-finops-team:finops-analyzer` |

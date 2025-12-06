@@ -125,7 +125,7 @@ dev-team/agents/
 ├── backend-engineer-python.md     # Python backend specialist
 ├── devops-engineer.md             # DevOps infrastructure specialist
 ├── frontend-engineer.md           # Language-agnostic frontend specialist
-├── frontend-engineer-typescript.md # TypeScript/React/Next.js frontend specialist
+├── frontend-bff-engineer-typescript.md # BFF (Backend for Frontend) specialist
 ├── frontend-designer.md           # Visual design specialist
 ├── qa-analyst.md                  # Quality assurance specialist
 └── sre.md                         # Site reliability engineer

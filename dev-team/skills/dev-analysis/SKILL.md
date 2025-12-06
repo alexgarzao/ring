@@ -231,7 +231,7 @@ Based on analysis, determine the best agent:
 |----------|--------|-------------------|
 | Go | Backend/API | ring-dev-team:backend-engineer-golang |
 | TypeScript | Backend | ring-dev-team:backend-engineer-typescript |
-| TypeScript | Frontend | ring-dev-team:frontend-engineer-typescript |
+| TypeScript | BFF Layer | ring-dev-team:frontend-bff-engineer-typescript |
 | Python | Backend | ring-dev-team:backend-engineer-python |
 | Unknown | Backend | ring-dev-team:backend-engineer |
 | Any | Frontend (generic) | ring-dev-team:frontend-engineer |

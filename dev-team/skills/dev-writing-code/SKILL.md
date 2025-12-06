@@ -29,7 +29,7 @@ This skill helps you identify and dispatch the most appropriate developer agent 
 | `ring-dev-team:backend-engineer-typescript` | TypeScript/Node.js, Express, Fastify, Prisma | Node.js backend, TypeScript APIs, full-stack TypeScript projects |
 | `ring-dev-team:backend-engineer-python` | Python, FastAPI, Django, SQLAlchemy, Celery | Python backend, ML services, data pipelines, FastAPI/Django APIs |
 | `ring-dev-team:frontend-engineer` | React, Next.js, TypeScript, state management | UI components, dashboards, forms, client-side logic |
-| `ring-dev-team:frontend-engineer-typescript` | TypeScript-first React/Next.js, type-safe state | Type-heavy frontends, complex state, full-stack TypeScript |
+| `ring-dev-team:frontend-bff-engineer-typescript` | BFF layer, Clean Architecture, DDD | Next.js API Routes, server-side data aggregation |
 | `ring-dev-team:frontend-designer` | Visual design, typography, UI aesthetics | Landing pages, marketing sites, design systems, distinctive interfaces |
 | `ring-dev-team:devops-engineer` | CI/CD, Docker, Kubernetes, Terraform, IaC | Pipelines, containerization, infrastructure, deployment |
 | `ring-dev-team:qa-analyst` | Test strategy, E2E, performance testing | Test plans, automation frameworks, quality gates |
@@ -51,8 +51,8 @@ Backend work?
 │   └── Yes → ring-dev-team:backend-engineer (language-agnostic)
 └── Frontend work?
     ├── React/Next.js?
-    │   ├── TypeScript-heavy with complex state?
-    │   │   └── Yes → ring-dev-team:frontend-engineer-typescript
+    │   ├── BFF/API layer (not UI)?
+    │   │   └── Yes → ring-dev-team:frontend-bff-engineer-typescript
     │   ├── Visual design/UI aesthetics focus?
     │   │   └── Yes → ring-dev-team:frontend-designer
     │   └── Component logic/functionality focus?
@@ -74,9 +74,9 @@ Backend work?
 | Build REST API (Python) | `ring-dev-team:backend-engineer-python` | `ring-dev-team:qa-analyst` (tests) |
 | Build REST API (unknown language) | `ring-dev-team:backend-engineer` | `ring-dev-team:qa-analyst` (tests) |
 | Create UI component | `ring-dev-team:frontend-engineer` | `ring-dev-team:qa-analyst` (E2E) |
-| Create type-safe UI component | `ring-dev-team:frontend-engineer-typescript` | `ring-dev-team:qa-analyst` (E2E) |
+| Build BFF endpoint | `ring-dev-team:frontend-bff-engineer-typescript` | `ring-dev-team:qa-analyst` (E2E) |
 | Design landing page | `ring-dev-team:frontend-designer` | `ring-dev-team:frontend-engineer` (implementation) |
-| Full-stack TypeScript feature | `ring-dev-team:backend-engineer-typescript` | `ring-dev-team:frontend-engineer-typescript` |
+| Full-stack TypeScript feature | `ring-dev-team:backend-engineer-typescript` | `ring-dev-team:frontend-bff-engineer-typescript` |
 | Set up CI/CD | `ring-dev-team:devops-engineer` | `ring-dev-team:sre` (monitoring) |
 | Write test suite | `ring-dev-team:qa-analyst` | - |
 | Add monitoring | `ring-dev-team:sre` | `ring-dev-team:devops-engineer` (infra) |
@@ -85,6 +85,130 @@ Backend work?
 | Database schema (Python) | `ring-dev-team:backend-engineer-python` | - |
 | Deploy to K8s | `ring-dev-team:devops-engineer` | `ring-dev-team:sre` (observability) |
 | Performance optimization | `ring-dev-team:sre` | `ring-dev-team:backend-engineer-*` |
+
+## BFF vs Direct API Consumption Decision
+
+**When to use `ring-dev-team:frontend-bff-engineer-typescript` vs direct API calls in `ring-dev-team:frontend-engineer`:**
+
+### Use BFF (frontend-bff-engineer-typescript) When:
+
+| Scenario | Why BFF |
+|----------|---------|
+| **Multiple backend APIs** | Aggregate data from 3+ services into single response |
+| **Data transformation needed** | Backend returns raw data, frontend needs computed/formatted values |
+| **Authentication orchestration** | Token refresh, session management, auth header injection |
+| **Sensitive keys/tokens** | API keys, secrets must not reach browser |
+| **Rate limiting/caching** | Server-side cache prevents client hammer |
+| **Complex business logic** | Calculations that shouldn't duplicate in frontend |
+| **Third-party API integration** | External APIs with different auth, formats |
+| **Backend API not frontend-friendly** | API designed for internal use, needs facade |
+
+### Use Direct API (frontend-engineer) When:
+
+| Scenario | Why Direct |
+|----------|------------|
+| **Simple CRUD** | Single API, no transformation, just display |
+| **Real-time data** | WebSocket/SSE, BFF adds latency |
+| **Pagination only** | Client handles pagination state |
+| **Auth already solved** | Backend handles auth, cookies work |
+| **Same domain** | CORS not an issue, single backend |
+| **Performance critical** | Extra hop through BFF adds latency |
+
+### Decision Flowchart
+
+```
+Need to call backend API from frontend?
+│
+├── Multiple APIs to aggregate?
+│   └── Yes → BFF
+│
+├── Need to hide API keys/secrets?
+│   └── Yes → BFF
+│
+├── Complex data transformation?
+│   └── Yes → BFF
+│
+├── Third-party API with different auth?
+│   └── Yes → BFF
+│
+├── Server-side caching beneficial?
+│   └── Yes → BFF
+│
+└── Simple CRUD, single API?
+    └── Yes → Direct API (frontend-engineer)
+```
+
+### Example Scenarios
+
+| Feature | Decision | Rationale |
+|---------|----------|-----------|
+| Financial dashboard with data from 5 microservices | BFF | Aggregation, caching, auth orchestration |
+| User profile page (single API) | Direct | Simple CRUD, no transformation |
+| Payment integration with Stripe | BFF | Hide API keys, validate server-side |
+| Chat with WebSocket | Direct | Real-time, BFF adds latency |
+| Report generation with calculations | BFF | Complex business logic |
+| List products (paginated) | Direct | Simple pagination, no secrets |
+| OAuth social login flow | BFF | Token exchange must be server-side |
+
+### Architecture Recommendation
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ FRONTEND (frontend-engineer)                              │
+│ ┌─────────────────┐  ┌─────────────────┐                 │
+│ │ React Components│  │ State Management│                 │
+│ │ (UI Logic Only) │  │ (TanStack Query)│                 │
+│ └────────┬────────┘  └────────┬────────┘                 │
+│          │                     │                          │
+│          │  Simple CRUD ───────┼──────────────────────┐  │
+│          │                     │                       │  │
+└──────────┼─────────────────────┼───────────────────────┼──┘
+           │                     │                       │
+           │ Complex/Secure      │                       │
+           ▼                     ▼                       ▼
+┌──────────────────────────────────────┐        ┌───────────────┐
+│ BFF (frontend-bff-engineer-typescript)│        │ Backend API   │
+│ ┌─────────────────┐                   │        │ (Direct Call) │
+│ │ Next.js API     │                   │        └───────────────┘
+│ │ Routes          │                   │
+│ │ - Aggregation   │                   │
+│ │ - Auth          │                   │
+│ │ - Secrets       │                   │
+│ └────────┬────────┘                   │
+│          │                            │
+└──────────┼────────────────────────────┘
+           │
+           ▼
+┌──────────────────────────────────────┐
+│ Backend Services                      │
+│ (backend-engineer-*)                  │
+│ ┌────────┐ ┌────────┐ ┌────────┐     │
+│ │Service │ │Service │ │Service │     │
+│ │   A    │ │   B    │ │   C    │     │
+│ └────────┘ └────────┘ └────────┘     │
+└──────────────────────────────────────┘
+```
+
+### Collaboration Pattern
+
+When a feature needs both BFF and UI:
+
+```
+Step 1: BFF Layer
+  Task tool → ring-dev-team:frontend-bff-engineer-typescript
+  "Create API route /api/dashboard/metrics that aggregates data
+   from user-service, transaction-service, and analytics-service"
+
+Step 2: UI Layer
+  Task tool → ring-dev-team:frontend-engineer
+  "Create Dashboard page that consumes /api/dashboard/metrics
+   with loading states, error handling, and real-time refresh"
+
+Step 3: Integration Test
+  Task tool → ring-dev-team:qa-analyst
+  "Create E2E tests for the dashboard flow including
+   BFF response validation and UI state management"
+```
 
 ## Agent Dispatch Pattern
 
@@ -246,27 +370,26 @@ Step 5: Observability
 - Type safety
 - Error boundaries
 
-### frontend-engineer-typescript
+### frontend-bff-engineer-typescript
 
 **Technologies:**
 - TypeScript (strict mode)
-- React 18+, Next.js 14+
-- Zod, io-ts (runtime validation)
-- tRPC (end-to-end type safety)
-- TanStack Query (React Query)
-- Zustand, Jotai (type-safe state)
-- Vitest, Jest with type coverage
+- Next.js 14+ API Routes (App Router)
+- Inversify (dependency injection)
+- Zod (schema validation)
+- Clean Architecture layers
+- Repository pattern implementations
 
 **Patterns:**
-- Type-driven development
-- Generic components with type constraints
-- Discriminated unions for state
-- Type-safe API clients
-- Schema-driven forms
+- Domain-Driven Design (DDD)
+- Clean Architecture (Domain/Application/Infrastructure)
+- Hexagonal Architecture (Ports & Adapters)
+- Use Case orchestration
+- DTO/Mapper pattern for layer separation
 
 **Best practices:**
 - No `any` types (strict mode)
-- Type guards and narrowing
+- Abstract repository interfaces in Domain
 - Exhaustive switch statements
 - Runtime validation at boundaries
 - Type-safe routing

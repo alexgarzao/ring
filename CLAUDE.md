@@ -120,7 +120,7 @@ ring/                                  # Monorepo root
 │       ├── backend-engineer-python.md      # Python backend specialist
 │       ├── devops-engineer.md              # DevOps infrastructure specialist
 │       ├── frontend-engineer.md            # Frontend specialist (language agnostic)
-│       ├── frontend-engineer-typescript.md # TypeScript/React/Next.js specialist
+│       ├── frontend-bff-engineer-typescript.md # BFF (Backend for Frontend) specialist
 │       ├── frontend-designer.md            # Visual design specialist
 │       ├── qa-analyst.md                   # Quality assurance specialist
 │       └── sre.md                          # Site reliability engineer
@@ -283,7 +283,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - `using-dev-team` → 10 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
-- Agents (invoke as `ring-dev-team:{agent-name}`): backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python, devops-engineer, frontend-engineer, frontend-engineer-typescript, frontend-designer, qa-analyst, sre
+- Agents (invoke as `ring-dev-team:{agent-name}`): backend-engineer, backend-engineer-golang, backend-engineer-typescript, backend-engineer-python, devops-engineer, frontend-engineer, frontend-bff-engineer-typescript, frontend-designer, qa-analyst, sre
 
 **Ring FinOps Team Plugin:**
 - `using-finops-team` → 2 FinOps agents for Brazilian compliance
@@ -405,7 +405,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** All backend engineers (`ring-dev-team:backend-engineer`, `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:backend-engineer-python`), all frontend engineers except designer (`ring-dev-team:frontend-engineer`, `ring-dev-team:frontend-engineer-typescript`), `ring-dev-team:devops-engineer`, `ring-dev-team:qa-analyst`, `ring-dev-team:sre`, `ring-finops-team:finops-automation`
+**Used by:** All backend engineers (`ring-dev-team:backend-engineer`, `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:backend-engineer-python`), `ring-dev-team:frontend-engineer`, `ring-dev-team:frontend-bff-engineer-typescript`, `ring-dev-team:devops-engineer`, `ring-dev-team:qa-analyst`, `ring-dev-team:sre`, `ring-finops-team:finops-automation`
 
 **Analysis Schema** (for agents that analyze and recommend):
 ```yaml

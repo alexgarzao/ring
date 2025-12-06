@@ -102,7 +102,7 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 | Backend (Python) | `ring-dev-team:backend-engineer-python` | `general-purpose` |
 | Backend (TypeScript) | `ring-dev-team:backend-engineer-typescript` | `general-purpose` |
 | Backend (other) | `ring-dev-team:backend-engineer` | `general-purpose` |
-| Frontend (TypeScript/React) | `ring-dev-team:frontend-engineer-typescript` | `general-purpose` |
+| Frontend (BFF/API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` | `general-purpose` |
 | Frontend (other) | `ring-dev-team:frontend-engineer` | `general-purpose` |
 | Infrastructure | `ring-dev-team:devops-engineer` | `general-purpose` |
 | Testing | `ring-dev-team:qa-analyst` | `general-purpose` |
