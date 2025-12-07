@@ -337,16 +337,20 @@ Apply these patterns when appropriate. Implementation details should follow proj
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**MANDATORY - Before writing ANY code:**
+**MANDATORY - Load BOTH sources before ANY work:**
 
-1. `docs/PROJECT_RULES.md` (local project) - If exists, follow it EXACTLY
-2. Ring Standards via WebFetch (Step 2 above) - ALWAYS REQUIRED
-3. Check existing codebase patterns (grep for existing ORM, framework usage)
-4. Both are necessary and complementary - no override
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | WebFetch (see Standards Loading above) |
 
-**Both Required:** PROJECT_RULES.md (local project) + Ring Standards (via WebFetch)
+**Both are equally important and complementary. Neither has priority over the other.**
+
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
 
 **If project uses Prisma and you prefer Drizzle:**
 - Use Prisma
@@ -865,6 +869,52 @@ Before submitting TypeScript code, verify:
 - [ ] Tests follow describe/it structure
 - [ ] Sensitive data not logged
 - [ ] ESLint passes with no warnings
+
+## Example Output
+
+```markdown
+## Summary
+
+Implemented user service with Prisma repository and Zod validation following clean architecture.
+
+## Implementation
+
+- Created `src/domain/entities/user.ts` with branded UserId type
+- Added `src/application/services/user-service.ts` with Result type error handling
+- Implemented `src/infrastructure/repositories/prisma-user-repository.ts`
+- Added Zod schemas for input validation
+
+## Files Changed
+
+| File | Action | Lines |
+|------|--------|-------|
+| src/domain/entities/user.ts | Created | +45 |
+| src/application/services/user-service.ts | Created | +82 |
+| src/infrastructure/repositories/prisma-user-repository.ts | Created | +56 |
+| src/application/services/user-service.test.ts | Created | +95 |
+
+## Testing
+
+```bash
+$ npm test
+ PASS  src/application/services/user-service.test.ts
+  UserService
+    createUser
+      ✓ should create user with valid input (12ms)
+      ✓ should return error for invalid email (5ms)
+      ✓ should return error for duplicate email (8ms)
+
+Test Suites: 1 passed, 1 total
+Tests: 3 passed, 3 total
+Coverage: 89.2%
+```
+
+## Next Steps
+
+- Add password hashing integration
+- Implement email verification flow
+- Add rate limiting to registration endpoint
+```
 
 ## What This Agent Does NOT Handle
 

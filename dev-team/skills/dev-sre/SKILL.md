@@ -151,6 +151,19 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 **Observability is definition of done, not enhancement.**
 
+## Verification Checklist (MANDATORY)
+
+**Before marking Gate 2 complete, verify ALL:**
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| Health endpoint | `curl -sf http://localhost:8080/health` | 200 OK |
+| Metrics endpoint | `curl -sf http://localhost:8080/metrics` | Contains `http_requests_total` |
+| Ready endpoint | `curl -sf http://localhost:8080/ready` | 200 OK |
+| Structured logs | `docker-compose logs app \| head -1 \| jq .level` | Returns log level |
+
+**All 4 checks MUST pass. Partial = Gate 2 FAIL.**
+
 ## Mandatory Requirements
 
 **Gate 2 is NOT OPTIONAL.** Services cannot proceed to production without:
