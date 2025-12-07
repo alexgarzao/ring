@@ -288,16 +288,15 @@ class TestGetFileHash:
 
         assert get_file_hash(file1) != get_file_hash(file2)
 
-    def test_supports_md5_algorithm(self, tmp_path):
-        """get_file_hash() should support MD5 algorithm."""
+    def test_rejects_md5_algorithm(self, tmp_path):
+        """get_file_hash() should reject weak algorithms like MD5."""
         from ring_installer.utils.fs import get_file_hash
 
         file_path = tmp_path / "test.txt"
         file_path.write_text("test")
 
-        hash_value = get_file_hash(file_path, algorithm="md5")
-
-        assert len(hash_value) == 32  # MD5 produces 32 hex chars
+        with pytest.raises(ValueError):
+            get_file_hash(file_path, algorithm="md5")
 
     def test_raises_if_file_missing(self, tmp_path):
         """get_file_hash() should raise FileNotFoundError if file missing."""
@@ -307,41 +306,66 @@ class TestGetFileHash:
             get_file_hash(tmp_path / "nonexistent.txt")
 
 
-class TestFilesAreIdentical:
-    """Tests for files_are_identical() function."""
+class TestAreFilesIdentical:
+    """Tests for are_files_identical() function."""
 
     def test_identical_files_returns_true(self, tmp_path):
-        """files_are_identical() should return True for identical files."""
-        from ring_installer.utils.fs import files_are_identical
+        from ring_installer.utils.fs import are_files_identical
 
         file1 = tmp_path / "file1.txt"
         file2 = tmp_path / "file2.txt"
         file1.write_text("same content")
         file2.write_text("same content")
 
-        assert files_are_identical(file1, file2) is True
+        assert are_files_identical(file1, file2) is True
 
     def test_different_files_returns_false(self, tmp_path):
-        """files_are_identical() should return False for different files."""
-        from ring_installer.utils.fs import files_are_identical
+        from ring_installer.utils.fs import are_files_identical
 
         file1 = tmp_path / "file1.txt"
         file2 = tmp_path / "file2.txt"
         file1.write_text("content A")
         file2.write_text("content B")
 
-        assert files_are_identical(file1, file2) is False
+        assert are_files_identical(file1, file2) is False
 
     def test_missing_file_returns_false(self, tmp_path):
-        """files_are_identical() should return False if either file missing."""
-        from ring_installer.utils.fs import files_are_identical
+        from ring_installer.utils.fs import are_files_identical
 
         file1 = tmp_path / "exists.txt"
         file1.write_text("content")
         file2 = tmp_path / "nonexistent.txt"
 
-        assert files_are_identical(file1, file2) is False
-        assert files_are_identical(file2, file1) is False
+        assert are_files_identical(file1, file2) is False
+        assert are_files_identical(file2, file1) is False
+
+
+class TestSymlinkGuards:
+    """Symlink safety tests for file operations."""
+
+    def test_copy_with_transform_rejects_symlink(self, tmp_path):
+        from ring_installer.utils.fs import copy_with_transform
+
+        source = tmp_path / "source.txt"
+        source.write_text("content")
+        real_target = tmp_path / "real.txt"
+        real_target.write_text("original")
+        link = tmp_path / "link.txt"
+        link.symlink_to(real_target)
+
+        with pytest.raises(ValueError, match="symlink"):
+            copy_with_transform(source, link)
+
+    def test_atomic_write_rejects_symlink(self, tmp_path):
+        from ring_installer.utils.fs import atomic_write
+
+        real_target = tmp_path / "real.txt"
+        real_target.write_text("original")
+        link = tmp_path / "link.txt"
+        link.symlink_to(real_target)
+
+        with pytest.raises(ValueError, match="symlink"):
+            atomic_write(link, "new content")
 
 
 class TestListFilesRecursive:

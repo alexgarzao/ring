@@ -8,6 +8,7 @@ from ring_installer.utils.fs import (
     ensure_directory,
     safe_remove,
     get_file_hash,
+    are_files_identical,
 )
 from ring_installer.utils.platform_detect import (
     detect_installed_platforms,
@@ -32,6 +33,7 @@ __all__ = [
     "ensure_directory",
     "safe_remove",
     "get_file_hash",
+    "are_files_identical",
     # Platform detection
     "detect_installed_platforms",
     "get_platform_version",

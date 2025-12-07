@@ -113,12 +113,18 @@ def copy_with_transform(
         ValueError: If target is a symlink
     """
     source = Path(source).expanduser().resolve()
-    target = Path(target).expanduser().resolve()
+    target_raw = Path(target).expanduser()
+
+    # Reject symlink targets before resolving (so we don't follow them)
+    if target_raw.is_symlink():
+        raise ValueError(f"Refusing to write to symlink: {target_raw}")
+
+    target = target_raw.resolve()
 
     if not source.exists():
         raise FileNotFoundError(f"Source file not found: {source}")
 
-    # Check if target exists and is a symlink
+    # Check if target exists and is a symlink (post-resolve guard for race safety)
     if target.exists() and target.is_symlink():
         raise ValueError(f"Refusing to write to symlink: {target}")
 
@@ -205,13 +211,11 @@ def get_file_hash(path: Path, algorithm: str = "sha256") -> str:
     if not path.exists():
         raise FileNotFoundError(f"File not found: {path}")
 
-    # Warn about weak hash algorithms
+    # Reject weak hash algorithms
     if algorithm.lower() in _WEAK_HASH_ALGORITHMS:
-        warnings.warn(
+        raise ValueError(
             f"Hash algorithm '{algorithm}' is cryptographically weak. "
-            "Use 'sha256' or 'sha512' for better security.",
-            DeprecationWarning,
-            stacklevel=2  # Points to immediate caller; use 3 if this function is wrapped
+            "Use 'sha256' or 'sha512' instead."
         )
 
     hash_func = hashlib.new(algorithm)
@@ -224,51 +228,17 @@ def get_file_hash(path: Path, algorithm: str = "sha256") -> str:
 
 
 def are_files_identical(path1: Path, path2: Path) -> bool:
-    """
-    Check if two files have identical content.
-
-    Args:
-        path1: First file path
-        path2: Second file path
-
-    Returns:
-        True if files are identical, False otherwise
-    """
+    """Check if two files have identical content."""
     path1 = Path(path1).expanduser()
     path2 = Path(path2).expanduser()
 
     if not path1.exists() or not path2.exists():
         return False
 
-    # Quick check: different sizes mean different content
     if path1.stat().st_size != path2.stat().st_size:
         return False
 
-    # Compare hashes
     return get_file_hash(path1) == get_file_hash(path2)
-
-
-def files_are_identical(path1: Path, path2: Path) -> bool:
-    """
-    Check if two files have identical content.
-
-    .. deprecated:: 0.2.0
-       Use :func:`are_files_identical` instead. This function will be
-       removed in version 1.0.0.
-
-    Args:
-        path1: First file path
-        path2: Second file path
-
-    Returns:
-        True if files are identical, False otherwise
-    """
-    warnings.warn(
-        "files_are_identical() is deprecated, use are_files_identical() instead",
-        DeprecationWarning,
-        stacklevel=2
-    )
-    return are_files_identical(path1, path2)
 
 
 def get_directory_size(path: Path) -> int:
@@ -357,9 +327,15 @@ def atomic_write(path: Path, content: Union[str, bytes], encoding: str = "utf-8"
     """
     import tempfile
 
-    path = Path(path).expanduser().resolve()
+    raw_path = Path(path).expanduser()
 
-    # Check if target exists and is a symlink
+    # Reject symlink targets before resolving (avoid following the link)
+    if raw_path.is_symlink():
+        raise ValueError(f"Refusing to write to symlink: {raw_path}")
+
+    path = raw_path.resolve()
+
+    # Check if target exists and is a symlink (post-resolve guard for race safety)
     if path.exists() and path.is_symlink():
         raise ValueError(f"Refusing to write to symlink: {path}")
 
