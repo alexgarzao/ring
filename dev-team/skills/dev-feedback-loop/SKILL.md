@@ -58,6 +58,9 @@ Continuous improvement system that tracks development cycle effectiveness throug
 | "Same as last time" | Patterns only visible with data. Each task adds to baseline. |
 | "Feedback is subjective" | Metrics are objective. Assertiveness score has formula. |
 | "No time for retrospective" | Retrospective prevents future time waste. Investment, not cost. |
+| "Reporting my own failures reflects badly" | Unreported failures compound. Self-reporting is professional. |
+| "Low score makes me look bad" | Low score identifies improvement. Hiding score perpetuates problems. |
+| "Round up to passing threshold" | Rounding is falsification. Report exact score. |
 
 ## Red Flags - STOP
 
@@ -71,8 +74,31 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Same pattern as before, skip analysis"
 - "Feedback is subjective anyway"
 - "No time for retrospective"
+- "This score reflects badly on me"
+- "Round up to 70 (from 68)"
+- "Skip reporting this failure"
 
 **All of these indicate feedback loop violation. Collect metrics for EVERY task.**
+
+## Self-Preservation Bias Prevention
+
+**Agents must report accurately, even when scores are low:**
+
+| Bias Pattern | Why It's Wrong | Correct Behavior |
+|-------------|----------------|------------------|
+| "Round up score" | Falsifies data, masks trends | Report exact: 68, not 70 |
+| "Skip failed task" | Selection bias, incomplete picture | Report ALL tasks |
+| "Blame external factors" | Avoids actionable insights | Document factors + still log score |
+| "Report only successes" | Survivorship bias | Success AND failure needed |
+
+**Reporting protocol:**
+1. Calculate score using exact formula (no rounding)
+2. Report score regardless of value
+3. If score < 70, mandatory root cause analysis
+4. Document honestly - "I made this mistake" not "mistake was made"
+5. Patterns in low scores = improvement opportunities, not blame
+
+**Self-interest check:** If you're tempted to adjust a score, ask: "Would I report this score if someone else achieved it?" If yes, report as-is.
 
 ## Mandatory Feedback Collection
 

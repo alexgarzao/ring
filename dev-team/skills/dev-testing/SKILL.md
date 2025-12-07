@@ -93,6 +93,9 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | "Edge cases are obscure/unlikely" | Edge cases cause production incidents. Test them. |
 | "Time spent on edge cases not worth it" | Time spent debugging production incidents is worse. Test now. |
 | "76% with AC tested is defensible" | Defensible ≠ passing. Threshold is 80%. Period. |
+| "PROJECT_RULES.md says 70% is OK" | Ring minimum is 80%. PROJECT_RULES.md can raise, not lower. |
+| "Team decided lower threshold" | Team decisions don't override Ring gates. 80% is non-negotiable. |
+| "This module is simple, 60% enough" | Module complexity doesn't lower threshold. 80% everywhere. |
 
 ## Red Flags - STOP
 
@@ -109,8 +112,27 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Edge cases are unlikely"
 - "Time spent not worth it for 4%"
 - "76% is defensible"
+- "PROJECT_RULES.md allows lower"
+- "Team agreed to 70%"
 
 **All of these indicate Gate 3 violation. Write unit tests until threshold met.**
+
+## Coverage Threshold Governance
+
+**Ring establishes MINIMUM thresholds. PROJECT_RULES.md can only ADD constraints:**
+
+| Source | Can Raise? | Can Lower? |
+|--------|-----------|-----------|
+| Ring Standard (80%) | N/A (baseline) | N/A (baseline) |
+| PROJECT_RULES.md | ✅ YES (e.g., 90%) | ❌ NO |
+| Team Decision | ✅ YES (e.g., 95%) | ❌ NO |
+| Manager Override | ❌ NO | ❌ NO |
+
+**If PROJECT_RULES.md specifies < 80%:**
+1. That specification is INVALID
+2. Ring minimum (80%) still applies
+3. Report as blocker: "PROJECT_RULES.md coverage threshold (X%) below Ring minimum (80%)"
+4. Do NOT proceed with lower threshold
 
 ## Unit Test vs Integration Test
 

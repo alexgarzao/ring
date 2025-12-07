@@ -87,6 +87,9 @@ Final validation gate requiring explicit user approval. Present evidence that ea
 | "Continue other tasks while waiting" | Other tasks may conflict. Validation blocks ALL related work. |
 | "Cost of waiting is too high" | Cost of wrong approval is higher. Wait is investment. |
 | "Send message and continue" | Message sent ≠ waiting for response. STOP until APPROVED. |
+| "Looks good" = approval | "Looks good" is ambiguous. Require explicit APPROVED. |
+| "User said 'sure'" | "Sure" is ambiguous. Require explicit APPROVED. |
+| "No objections raised" | Lack of objection ≠ approval. Require explicit response. |
 
 ## Red Flags - STOP
 
@@ -102,8 +105,36 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Async over sync - don't block"
 - "Send message and continue"
 - "Cost of waiting is too high"
+- "'Looks good' means approved"
+- "User said 'sure'"
+- "No objections = approved"
 
 **All of these indicate Gate 5 violation. Wait for explicit "APPROVED" or "REJECTED".**
+
+## Ambiguous Response Handling
+
+**User responses that are NOT valid approvals:**
+
+| Response | Status | Action Required |
+|----------|--------|-----------------|
+| "Looks good" | ❌ AMBIGUOUS | "To confirm, please respond with APPROVED or REJECTED: [reason]" |
+| "Sure" / "Ok" / "Fine" | ❌ AMBIGUOUS | Ask for explicit APPROVED |
+| "👍" / "✅" | ❌ AMBIGUOUS | Emojis are not formal approval. Ask for APPROVED. |
+| "Go ahead" | ❌ AMBIGUOUS | Ask for explicit APPROVED |
+| "Ship it" | ❌ AMBIGUOUS | Ask for explicit APPROVED |
+| "APPROVED" | ✅ VALID | Proceed to next gate |
+| "REJECTED: [reason]" | ✅ VALID | Document reason, return to Gate 0 |
+
+**When user gives ambiguous response:**
+```
+"Thank you for the feedback. For formal validation, please confirm with:
+- APPROVED - to proceed with completion
+- REJECTED: [reason] - to return for fixes
+
+Which is your decision?"
+```
+
+**Never interpret intent. Require explicit keyword.**
 
 ## Awaiting Approval - STOP ALL WORK
 

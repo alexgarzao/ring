@@ -28,6 +28,23 @@ The ring-dev-team plugin provides 7 specialized developer agents. Use them via `
 
 ---
 
+## Common Misconceptions - REJECTED
+
+| Misconception | Reality |
+|--------------|---------|
+| "I can handle this myself" | ORCHESTRATOR principle: dispatch specialists, don't implement directly. |
+| "Overhead of dispatching not worth it" | Specialist quality > self-implementation. Dispatch is investment, not cost. |
+| "Simple task, no specialist needed" | Simplicity is not your judgment. Follow dispatch guidelines. |
+| "I know Go/TypeScript well enough" | Specialists have standards loading. You don't. Dispatch. |
+| "Faster if I do it myself" | Faster ≠ better. Specialist output follows Ring standards. |
+
+**Self-sufficiency bias check:** If you're tempted to implement directly, ask:
+1. Is there a specialist for this? (Check the 7 specialists below)
+2. Would a specialist follow standards I might miss?
+3. Am I avoiding dispatch because it feels like "overhead"?
+
+**If any answer is yes → DISPATCH the specialist.**
+
 ## 7 Developer Specialists
 
 ### 1. Backend Engineer (Go)

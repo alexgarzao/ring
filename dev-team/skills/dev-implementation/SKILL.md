@@ -121,11 +121,14 @@ This skill executes the implementation phase of the development cycle. It:
 |--------|---------|
 | "Code already works" | Working ≠ tested. Delete it. Write test first. |
 | "I'll add tests after" | Tests-after is not TDD. You're testing your assumptions, not the requirements. |
-| "Keep code as reference" | Reference = adapting = testing-after. Delete means DELETE. |
+| "Keep code as reference" | Reference = adapting = testing-after. Delete means DELETE. No "reference", no "backup", no "just in case". |
 | "TDD not configured in PROJECT_RULES.md" | TDD is ALWAYS required in Ring. PROJECT_RULES.md adds constraints, not permissions. |
 | "Simple CRUD doesn't need TDD" | CRUD still has edge cases. TDD catches them before production. |
 | "Manual testing proves it works" | Manual tests are not repeatable. Write automated tests. |
 | "I'm following the spirit of TDD" | Spirit without letter is rationalization. Follow the process exactly. |
+| "Adapt existing code while writing tests" | Adapting IS writing code first. Delete the code. Start fresh. |
+| "Look at old code for guidance" | Looking leads to adapting. Delete means don't look either. |
+| "Save to branch, delete locally" | Saving anywhere = keeping. Delete from everywhere. |
 
 ## Red Flags - STOP
 
@@ -138,8 +141,29 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "I'm being pragmatic, not dogmatic"
 - "TDD isn't explicitly required here"
 - "I can adapt the existing code"
+- "I'll save it as reference in another branch"
+- "Let me just look at what I had"
 
 **All of these indicate TDD violation. DELETE any existing code. Start with failing test.**
+
+## What "DELETE" Means - No Ambiguity
+
+**DELETE means:**
+- `git checkout -- file.go` (discard changes)
+- `rm file.go` (remove file)
+- NOT `git stash` (that's keeping)
+- NOT `mv file.go file.go.bak` (that's keeping)
+- NOT "move to another branch" (that's keeping)
+- NOT "I'll just remember" (you'll reference)
+
+**DELETE verification:**
+```bash
+# After deletion, this should show nothing:
+git diff HEAD -- <file>
+ls <file>  # Should return "No such file"
+```
+
+**If you can retrieve the code, you didn't delete it.**
 
 ## Prerequisites
 

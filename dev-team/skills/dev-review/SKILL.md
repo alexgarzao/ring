@@ -90,6 +90,9 @@ Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Agg
 | "One reviewer said PASS" | PASS requires ALL 3 reviewers. One PASS + one FAIL = overall FAIL. |
 | "Business logic is tested" | Tests check behavior. Review checks intent, edge cases, requirements alignment. |
 | "Security scan passed" | Security scanners miss logic flaws. Human reviewer required. |
+| "Only MEDIUM issues, can proceed" | MEDIUM issues must be fixed OR documented with FIXME. No silent ignoring. |
+| "Document MEDIUM and ship" | Documentation ≠ resolution. Fix now, or add FIXME with timeline. |
+| "Risk-accept MEDIUM issues" | Risk acceptance requires explicit user approval, not agent decision. |
 
 ## Red Flags - STOP
 
@@ -103,8 +106,29 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Sequential reviews are fine this time"
 - "Security scanner covers security review"
 - "Business tests cover business review"
+- "Only MEDIUM issues, not blocking"
+- "Risk-accept these findings"
 
 **All of these indicate Gate 4 violation. Run ALL 3 reviewers in parallel.**
+
+## MEDIUM Severity Handling - Explicit Protocol
+
+**MEDIUM issues are NOT automatically waived:**
+
+| MEDIUM Issue Response | Allowed? | Action Required |
+|----------------------|----------|-----------------|
+| Fix immediately | ✅ YES | Fix, re-run reviewers |
+| Add FIXME with issue link | ✅ YES | `// FIXME(review): [description] - Issue #123` |
+| Ignore silently | ❌ NO | This is a violation |
+| "Risk accept" without user | ❌ NO | User must explicitly approve |
+| Document in commit msg only | ❌ NO | Must be in code as FIXME |
+
+**If agent wants to proceed without fixing MEDIUM:**
+1. STOP
+2. Present MEDIUM issues to user
+3. Ask: "Fix now or add FIXME with tracking?"
+4. User must explicitly choose
+5. Document choice in review summary
 
 ## Parallel Execution - MANDATORY
 

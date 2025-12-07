@@ -103,6 +103,9 @@ This skill validates and implements observability requirements for the implement
 | "Single server, no Kubernetes" | /health is for ANY environment. Load balancers, systemd, monitoring all need it. |
 | "Just /health is enough for now" | /health + /ready + /metrics is the MINIMUM. Partial observability = partial blindness. |
 | "45 min overhead not worth it" | 45 min now prevents 4+ hours debugging blind production issues. |
+| "Feature complete, observability later" | Feature without observability is NOT complete. Redefine "complete". |
+| "Core functionality works" | Core functionality + observability = complete. Core alone = partial. |
+| "Observability is enhancement, not feature" | Observability is REQUIREMENT, not enhancement. It's part of definition of done. |
 
 ## Red Flags - STOP
 
@@ -123,8 +126,30 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Single server doesn't need /ready"
 - "Just /health endpoint is enough"
 - "45 min not worth it"
+- "Feature complete, add observability later"
+- "Core functionality done"
+- "Observability is enhancement"
 
 **All of these indicate Gate 2 violation. Implement observability now.**
+
+## "Feature Complete" Redefinition Prevention
+
+**A feature is NOT complete without observability:**
+
+| What "Complete" Means | Includes Observability? |
+|----------------------|------------------------|
+| "Code works" | ❌ NO - Only partial |
+| "Tests pass" | ❌ NO - Only partial |
+| "Ready for review" | ❌ NO - Gate 2 before Gate 4 |
+| "Gate 2 passed" | ✅ YES - This is complete |
+
+**If someone says "feature is complete, just needs observability":**
+- That statement is a contradiction
+- Feature is NOT complete
+- Gate 2 is PART of completion, not addition to it
+- Correct response: "Feature is at Gate 1. Gate 2 (observability) required for completion."
+
+**Observability is definition of done, not enhancement.**
 
 ## Mandatory Requirements
 
