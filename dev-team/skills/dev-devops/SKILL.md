@@ -88,6 +88,9 @@ This skill configures the development and deployment infrastructure:
 | "Just need docker run" | docker-compose is reproducible. docker run is not documented. |
 | "CI/CD will handle Docker" | CI/CD uses your Dockerfile. No Dockerfile = no CI/CD. |
 | "It's just a script/tool" | Scripts need reproducible environments too. Containerize. |
+| "Demo tomorrow, Docker later" | Demo with environment issues = failed demo. Docker BEFORE demo. |
+| "Works on demo machine" | Demo machine ≠ production. Docker ensures consistency. |
+| "Quick demo setup, proper later" | Quick setup becomes permanent. Proper setup now or never. |
 
 ## Red Flags - STOP
 
@@ -99,8 +102,28 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "docker run is good enough"
 - "It's just an internal tool"
 - "The developer can set up their own environment"
+- "Demo tomorrow, Docker later"
+- "Works on demo machine"
+- "Quick setup for demo, proper later"
 
 **All of these indicate Gate 1 violation. Proceed with containerization.**
+
+## Demo Pressure Handling
+
+**Demos do NOT justify skipping containerization:**
+
+| Demo Scenario | Correct Response |
+|--------------|------------------|
+| "Demo tomorrow, no time for Docker" | Docker takes 30 min. 30 min now > environment crash during demo. |
+| "Demo machine already configured" | Demo machine config will be lost. Docker is documentation. |
+| "Just need to show it works" | Showing it works requires it to work. Docker ensures that. |
+| "Will containerize after demo" | After demo = never. Containerize now. |
+
+**Demo-specific guidance:**
+1. Use docker-compose for demo (consistent environment)
+2. Include `.env.demo` with demo-safe values
+3. Document demo-specific overrides
+4. Demo = test of deployment, not bypass of deployment
 
 ## Gate 1 Requirements
 

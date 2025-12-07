@@ -93,6 +93,10 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 | "Backlog the Medium issue, it's documented" | Documented risk ≠ mitigated risk. Medium in Gate 4 = fix NOW, not later. |
 | "Risk-based prioritization allows deferral" | Gates ARE the risk-based system. Reviewers define severity, not you. |
 | "Business context justifies exception" | Business context informed gate design. Gates already account for it. |
+| "Demo tomorrow, we'll fix after" | Demo with untested code = demo that crashes. Gates BEFORE demo. |
+| "Just this one gate, then catch up" | One skipped gate = precedent. Next gate also "just one". No incremental compromise. |
+| "90% done, finish without remaining gates" | 90% done with 0% gates = 0% verified. Gates verify the 90%. |
+| "Ship now, gates as fast-follow" | Fast-follow = never-follow. Gates now or not at all. |
 
 ## Red Flags - STOP
 
@@ -110,8 +114,29 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Medium severity can wait"
 - "Business context is different here"
 - "Risk-based approach says defer"
+- "Demo tomorrow, fix after"
+- "Just this one gate"
+- "90% done, almost there"
+- "Ship now, gates as fast-follow"
 
 **All of these indicate you're about to violate mandatory workflow. Return to gate execution.**
+
+## Incremental Compromise Prevention
+
+**The "just this once" pattern leads to complete gate erosion:**
+
+```text
+Day 1: "Skip review just this once" → Approved (precedent set)
+Day 2: "Skip testing, we did it last time" → Approved (precedent extended)
+Day 3: "Skip implementation checks, pattern established" → Approved (gates meaningless)
+Day 4: Production incident from Day 1 code
+```
+
+**Prevention rules:**
+1. **No incremental exceptions** - Each exception becomes the new baseline
+2. **Document every pressure** - Log who requested, why, outcome
+3. **Escalate patterns** - If same pressure repeats, escalate to team lead
+4. **Gates are binary** - Complete or incomplete. No "mostly done".
 
 ## The 6 Gates
 

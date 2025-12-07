@@ -82,6 +82,8 @@ When user requests refactoring or improvement:
 | "Analysis is overkill" | Analysis is the MINIMUM. Refactoring without analysis is guessing. |
 | "Code smells ≠ problems" | Code smells ARE problems. They slow development and cause bugs. |
 | "No specific problem motivating" | Technical debt IS the problem. Analysis quantifies it. |
+| "Analysis complete, user can decide" | Analysis without action guidance is incomplete. Provide tasks.md. |
+| "Findings documented, my job done" | Findings → Tasks → Execution. Documentation alone changes nothing. |
 
 ## Red Flags - STOP
 
@@ -99,8 +101,34 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Analysis is overkill"
 - "Code smells aren't real problems"
 - "No specific problem to solve"
+- "Analysis is done, user decides next"
+- "Documented findings, job complete"
 
 **All of these indicate analysis violation. Complete full 4-dimension analysis.**
+
+## Analysis-to-Action Pipeline - MANDATORY
+
+**Analysis without action guidance is incomplete:**
+
+| Deliverable | Required? | Purpose |
+|-------------|----------|---------|
+| analysis-report.md | ✅ YES | Document findings |
+| tasks.md | ✅ YES | Convert findings to actionable tasks |
+| User approval prompt | ✅ YES | Get explicit decision on execution |
+
+**Analysis completion checklist:**
+- [ ] All 4 dimensions analyzed
+- [ ] Findings categorized by severity
+- [ ] Findings converted to REFACTOR-XXX tasks
+- [ ] tasks.md generated in PM Team format
+- [ ] User presented with approval options
+
+**"Analysis complete" means tasks.md exists and user has been asked to approve.**
+
+**If analysis ends without tasks.md:**
+1. Analysis is NOT complete
+2. Step 6 (Generate tasks.md) was skipped
+3. Return to Step 6 before declaring completion
 
 ## Analysis Dimensions - ALL REQUIRED
 
