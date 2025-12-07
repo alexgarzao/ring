@@ -4,5 +4,9 @@
 examples/
 .references/
 
+# Python cache
+__pycache__/
+*.pyc
+
 # Ring infrastructure runtime files
 .ring/
