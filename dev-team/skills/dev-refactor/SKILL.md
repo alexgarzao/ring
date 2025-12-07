@@ -76,6 +76,12 @@ When user requests refactoring or improvement:
 | "Only critical matters" | Today's medium = tomorrow's critical. Document all. |
 | "Legacy gets a pass" | Legacy sets precedent. Analysis shows what to improve. |
 | "Team has their own way" | Document "their way" as standards. Analyze against it. |
+| "ROI of refactoring is low" | ROI calculation requires analysis. You can't calculate without data. |
+| "Partial analysis is enough" | Partial analysis = partial picture. Hidden debt in skipped areas. |
+| "3 years without bugs = stable" | No bugs ≠ no debt. Time doesn't validate architecture. |
+| "Analysis is overkill" | Analysis is the MINIMUM. Refactoring without analysis is guessing. |
+| "Code smells ≠ problems" | Code smells ARE problems. They slow development and cause bugs. |
+| "No specific problem motivating" | Technical debt IS the problem. Analysis quantifies it. |
 
 ## Red Flags - STOP
 
@@ -87,6 +93,12 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Only critical issues matter"
 - "Legacy code is exempt"
 - "That's just how we do it here"
+- "ROI doesn't justify full analysis"
+- "Partial analysis is sufficient"
+- "3+ years stable = no debt"
+- "Analysis is overkill"
+- "Code smells aren't real problems"
+- "No specific problem to solve"
 
 **All of these indicate analysis violation. Complete full 4-dimension analysis.**
 

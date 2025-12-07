@@ -89,6 +89,10 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 | "Tests pass, skip review" | Tests verify code works. Review verifies code is correct, secure, maintainable. |
 | "Automatic mode means faster" | Automatic mode skips CHECKPOINTS, not GATES. Same quality, less interruption. |
 | "We'll fix issues post-merge" | Post-merge fixes are 10x more expensive. Gates exist to prevent this. |
+| "Defense in depth exists (frontend validates)" | Frontend can be bypassed. Backend is the last line. Fix at source. |
+| "Backlog the Medium issue, it's documented" | Documented risk ≠ mitigated risk. Medium in Gate 4 = fix NOW, not later. |
+| "Risk-based prioritization allows deferral" | Gates ARE the risk-based system. Reviewers define severity, not you. |
+| "Business context justifies exception" | Business context informed gate design. Gates already account for it. |
 
 ## Red Flags - STOP
 
@@ -101,6 +105,11 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "We can fix issues later"
 - "Automatic mode will handle it"
 - "Just this once won't hurt"
+- "Frontend already validates this"
+- "I'll document it in backlog/TODO"
+- "Medium severity can wait"
+- "Business context is different here"
+- "Risk-based approach says defer"
 
 **All of these indicate you're about to violate mandatory workflow. Return to gate execution.**
 
