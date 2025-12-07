@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 7 plugins with 48 skills, 22 agents, and 15 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 55 skills, 20 agents, and 20 slash commands for enforcing proven software engineering practices.
 
 ---
 
@@ -14,9 +14,9 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
 │  │  ring-default   │  │ ring-dev-team   │  │ ring-finops-    │              │
 │  │    (plugin)     │  │    (plugin)     │  │    team         │              │
-│  │ Skills(21)      │  │ Skills(2)       │  │ Skills(6)       │              │
-│  │ Agents(5)       │  │ Agents(9)       │  │ Agents(2)       │              │
-│  │ Cmds(7)         │  │                 │  │                 │              │
+│  │ Skills(21)      │  │ Skills(10)      │  │ Skills(6)       │              │
+│  │ Agents(5)       │  │ Agents(7)       │  │ Agents(2)       │              │
+│  │ Cmds(7)         │  │ Cmds(5)         │  │                 │              │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
 │  │ ring-pm-team    │  │ ralph-wiggum    │  │ ring-tw-team    │              │
@@ -99,6 +99,16 @@ Other plugins require full prefix: `/ring-dev-team:`, `/ring-finops-team:`, `/ri
 | `/ring-default:codereview [files-or-paths]` | Dispatch 3 parallel code reviewers | `/ring-default:codereview src/auth/` |
 | `/ring-default:commit [message]` | Create git commit with AI trailers | `/ring-default:commit "fix(auth): improve token validation"` |
 
+### Development Cycle (ring-dev-team)
+
+| Command | Use Case | Example |
+|---------|----------|---------|
+| `/ring-dev-team:dev-cycle [task]` | Start 6-gate development workflow | `/ring-dev-team:dev-cycle "implement user auth"` |
+| `/ring-dev-team:dev-refactor [path]` | Analyze codebase against standards | `/ring-dev-team:dev-refactor src/` |
+| `/ring-dev-team:dev-status` | Show current gate progress | `/ring-dev-team:dev-status` |
+| `/ring-dev-team:dev-report` | Generate development cycle report | `/ring-dev-team:dev-report` |
+| `/ring-dev-team:dev-cancel` | Cancel active development cycle | `/ring-dev-team:dev-cancel` |
+
 ### Iterative AI Development (ralph-wiggum)
 
 | Command | Use Case | Example |
@@ -143,7 +153,7 @@ Other plugins require full prefix: `/ring-dev-team:`, `/ring-finops-team:`, `/ri
 
 ## 💡 About Skills
 
-Skills (48) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (55) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
 

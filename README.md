@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **7 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
 
 ## ✨ Why Ring?
 
@@ -208,7 +208,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 48 Skills (Across 7 Plugins)
+## 📚 All 55 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 21 skills)
 
@@ -296,7 +296,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 15 slash commands across 4 plugins for common workflows.
+Ring provides 20 slash commands across 5 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -312,6 +312,14 @@ Ring provides 15 slash commands across 4 plugins for common workflows.
 
 - `/ring-pm-team:pre-dev-feature [feature-name]` - Lightweight 4-gate pre-dev workflow for small features (<2 days)
 - `/ring-pm-team:pre-dev-full [feature-name]` - Complete 9-gate pre-dev workflow for large features (>=2 days)
+
+### Development Cycle (ring-dev-team)
+
+- `/ring-dev-team:dev-cycle [task]` - Start 6-gate development workflow (implementation→devops→SRE→testing→review→validation)
+- `/ring-dev-team:dev-refactor [path]` - Analyze codebase against standards
+- `/ring-dev-team:dev-status` - Show current gate progress
+- `/ring-dev-team:dev-report` - Generate development cycle report
+- `/ring-dev-team:dev-cancel` - Cancel active development cycle
 
 ### Ralph Wiggum (Iterative AI Loops)
 
