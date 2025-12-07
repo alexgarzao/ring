@@ -10,6 +10,8 @@ import logging
 import shutil
 import traceback
 import warnings
+import os
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -17,6 +19,22 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 
 from ring_installer.adapters import get_adapter, SUPPORTED_PLATFORMS, PlatformAdapter
+from ring_installer.utils.version import (
+    check_for_updates as _check_for_updates,
+    get_installed_version as _get_installed_version,
+    get_ring_version as _get_ring_version,
+    get_manifest_path as _get_manifest_path,
+    InstallManifest as _InstallManifest,
+)
+from ring_installer.utils.fs import safe_remove as _safe_remove
+
+# Re-export for compatibility with tests/patching
+check_for_updates = _check_for_updates
+get_installed_version = _get_installed_version
+InstallManifest = _InstallManifest
+get_ring_version = _get_ring_version
+get_manifest_path = _get_manifest_path
+safe_remove = _safe_remove
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +80,14 @@ class InstallTarget:
                 self.path.relative_to(home)
             except ValueError:
                 # Path not under home - check if it's a reasonable location
-                allowed = [Path("/opt"), Path("/usr/local")]
+                allowed = [Path("/opt"), Path("/usr/local"), Path(tempfile.gettempdir()).resolve()]
                 if not any(
                     self.path.is_relative_to(p) for p in allowed if p.exists()
                 ):
-                    raise ValueError(
-                        f"Install path must be under home directory or /opt, /usr/local: {self.path}"
+                    warnings.warn(
+                        f"Install path is outside recommended locations: {self.path}",
+                        RuntimeWarning,
+                        stacklevel=2,
                     )
 
 
@@ -83,6 +103,7 @@ class InstallOptions:
         verbose: If True, output detailed progress information
         plugin_names: List of plugin names to install (None = all)
         exclude_plugins: List of plugin names to exclude
+        rollback_on_failure: If True, remove files written in a failed install pass
     """
     dry_run: bool = False
     force: bool = False
@@ -90,6 +111,7 @@ class InstallOptions:
     verbose: bool = False
     plugin_names: Optional[List[str]] = None
     exclude_plugins: Optional[List[str]] = None
+    rollback_on_failure: bool = True
 
 
 @dataclass(slots=True)
@@ -319,6 +341,42 @@ def load_manifest(manifest_path: Optional[Path] = None) -> Dict[str, Any]:
         return json.load(f)
 
 
+def _verify_marketplace_integrity(ring_path: Path) -> None:
+    """Optionally verify marketplace.json integrity when checksum is provided.
+
+    Priority: (1) .claude-plugin/marketplace.sha256 file if present, (2) env
+    variable MARKETPLACE_JSON_SHA256. If provided and mismatch occurs, raise
+    ValueError. If neither present, emit a warning (no verification).
+    """
+    expected_hash = None
+    checksum_file = ring_path / ".claude-plugin" / "marketplace.sha256"
+    if checksum_file.exists():
+        try:
+            expected_hash = checksum_file.read_text(encoding="utf-8").strip().split()[0]
+        except Exception:
+            warnings.warn("Failed to read marketplace.sha256; skipping integrity check")
+
+    if expected_hash is None:
+        expected_hash = os.environ.get("MARKETPLACE_JSON_SHA256")
+
+    marketplace_path = ring_path / ".claude-plugin" / "marketplace.json"
+    if not marketplace_path.exists():
+        warnings.warn("marketplace.json not found for integrity check")
+        return
+
+    if not expected_hash:
+        warnings.warn("No marketplace checksum provided; integrity not verified")
+        return
+
+    from ring_installer.utils.fs import get_file_hash
+
+    actual_hash = get_file_hash(marketplace_path, algorithm="sha256")
+    if actual_hash != expected_hash:
+        raise ValueError(
+            f"marketplace.json integrity check failed. Expected {expected_hash}, got {actual_hash}"
+        )
+
+
 def discover_ring_components(ring_path: Path, plugin_names: Optional[List[str]] = None,
                              exclude_plugins: Optional[List[str]] = None) -> Dict[str, Dict[str, List[Path]]]:
     """
@@ -449,10 +507,13 @@ def install(
     Returns:
         InstallResult with details about what was installed
     """
-    from ring_installer.utils.fs import copy_with_transform, backup_existing, ensure_directory
+    from ring_installer.utils.fs import copy_with_transform, backup_existing, ensure_directory, safe_remove
 
     options = options or InstallOptions()
     result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
+
+    # Optional integrity check for marketplace metadata
+    _verify_marketplace_integrity(source_path)
 
     # Load manifest
     manifest = load_manifest()
@@ -474,6 +535,8 @@ def install(
 
     # Process each target platform
     for target in targets:
+        target_failures_before = result.components_failed
+        installed_paths: List[Path] = []
         adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
         install_path = target.path or adapter.get_install_path()
         component_mapping = adapter.get_component_mapping()
@@ -592,8 +655,21 @@ def install(
                                 transform_func=lambda _: transformed
                             )
                             result.add_success(source_file, target_file, backup_path)
+                            installed_paths.append(target_file)
                         except Exception as e:
                             result.add_failure(source_file, target_file, f"Write error: {e}", exc_info=e)
+
+        # Roll back partial target installs when failures occur
+        if not options.dry_run and options.rollback_on_failure:
+            if result.components_failed > target_failures_before and installed_paths:
+                for path in installed_paths:
+                    try:
+                        safe_remove(path, missing_ok=True)
+                    except Exception as e:
+                        logger.warning("Rollback failed for %s: %s", path, e)
+                result.warnings.append(
+                    f"Rolled back partial install for {target.platform} after failures"
+                )
 
     result.finalize()
     return result
@@ -670,7 +746,8 @@ def uninstall(
 
                 # Remove directory
                 shutil.rmtree(target_dir)
-                result.components_installed += 1  # Using installed count for removed
+                result.add_removal(target_dir)
+                result.components_installed += 1
             except Exception as e:
                 result.errors.append(f"Failed to remove {target_dir}: {e}")
                 result.components_failed += 1
@@ -755,11 +832,6 @@ def check_updates(
     Returns:
         Dictionary mapping platform names to UpdateCheckResult
     """
-    from ring_installer.utils.version import (
-        check_for_updates,
-        get_ring_version,
-    )
-
     results: Dict[str, UpdateCheckResult] = {}
     manifest = load_manifest()
 
@@ -893,6 +965,17 @@ def update_with_diff(
                     # Check if update needed by comparing source hash with manifest
                     relative_path = str(target_file.relative_to(install_path))
                     target_exists = target_file.exists()
+                    target_hash: Optional[str] = None
+                    user_modified = False
+                    if target_exists:
+                        try:
+                            target_hash = get_file_hash(target_file)
+                            stored_hash = existing_files.get(relative_path, "")
+                            if target_hash not in {stored_hash, source_hash} and stored_hash:
+                                user_modified = True
+                        except Exception as e:
+                            result.add_failure(source_file, target_file, f"Target hash error: {e}")
+                            continue
 
                     # Get stored source hash from manifest (backward compatible)
                     stored_source_hash = existing_files.get(relative_path, "")
@@ -952,6 +1035,11 @@ def update_with_diff(
                             backup_path = None
                             if target_exists and options.backup:
                                 backup_path = backup_existing(target_file)
+
+                            if user_modified:
+                                result.warnings.append(
+                                    f"User modifications detected in {target_file}; overwriting with backup"
+                                )
 
                             copy_with_transform(
                                 source_file,
@@ -1019,11 +1107,6 @@ def sync_platforms(
     Returns:
         SyncResult with details about the sync operation
     """
-    from ring_installer.utils.version import (
-        get_installed_version,
-        get_ring_version,
-    )
-
     options = options or InstallOptions()
     sync_result = SyncResult()
 
@@ -1093,9 +1176,7 @@ def uninstall_with_manifest(
     Returns:
         InstallResult with details about what was removed
     """
-    from ring_installer.utils.fs import safe_remove
-    from ring_installer.utils.version import get_manifest_path, InstallManifest
-
+    from ring_installer.utils.fs import safe_remove, backup_existing
     options = options or InstallOptions()
     result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
 
@@ -1121,13 +1202,14 @@ def uninstall_with_manifest(
                     if options.dry_run:
                         if options.verbose:
                             result.warnings.append(f"[DRY RUN] Would remove {target_dir}")
+                        result.add_removal(target_dir, "Would remove")
                     else:
                         try:
                             if options.backup:
                                 from ring_installer.utils.fs import backup_existing
                                 backup_existing(target_dir)
                             shutil.rmtree(target_dir)
-                            result.components_installed += 1
+                            result.add_removal(target_dir)
                         except Exception as e:
                             result.errors.append(f"Failed to remove {target_dir}: {e}")
                             result.components_failed += 1
@@ -1160,6 +1242,7 @@ def uninstall_with_manifest(
                     backup_existing(full_path)
 
                 safe_remove(full_path)
+                result.add_removal(full_path)
                 result.components_installed += 1
             except Exception as e:
                 result.errors.append(f"Failed to remove {full_path}: {e}")
@@ -1168,6 +1251,8 @@ def uninstall_with_manifest(
         # Remove install manifest
         if not options.dry_run:
             manifest_path = get_manifest_path(install_path)
+            if options.backup:
+                backup_existing(manifest_path)
             safe_remove(manifest_path, missing_ok=True)
 
     result.finalize()
