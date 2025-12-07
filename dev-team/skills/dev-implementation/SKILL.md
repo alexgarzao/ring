@@ -38,7 +38,7 @@ agent_selection:
       agent: "ring-dev-team:backend-engineer-typescript"
     - pattern: "*.tsx"
       keywords: ["react", "next", "frontend", "component", "page"]
-      agent: "ring-dev-team:frontend-engineer-typescript"
+      agent: "ring-dev-team:frontend-bff-engineer-typescript"
     - pattern: "*.css|*.scss"
       keywords: ["design", "visual", "aesthetic", "styling", "ui"]
       agent: "ring-dev-team:frontend-designer"
@@ -55,7 +55,7 @@ agent_selection:
     Options:
       - "Go Backend" → ring-dev-team:backend-engineer-golang
       - "TypeScript Backend" → ring-dev-team:backend-engineer-typescript
-      - "TypeScript Frontend" → ring-dev-team:frontend-engineer-typescript
+      - "TypeScript Frontend" → ring-dev-team:frontend-bff-engineer-typescript
       - "Frontend Design" → ring-dev-team:frontend-designer
     NEVER assume Go. Wrong agent = wrong patterns = rework.
 
@@ -85,7 +85,7 @@ examples:
   - name: "TypeScript frontend component"
     context: "Task: Create dashboard widget"
     expected_flow: |
-      1. Detect package.json with react -> Select frontend-engineer-typescript
+      1. Detect package.json with react -> Select frontend-bff-engineer-typescript
       2. Load frontend.md standards
       3. Write component test (RED)
       4. Implement Dashboard component (GREEN)
@@ -159,7 +159,6 @@ Before starting Gate 0:
 3. **Agent Selection**: Automatically determined based on task content:
    - `ring-dev-team:backend-engineer-golang`
    - `ring-dev-team:backend-engineer-typescript`
-   - `ring-dev-team:frontend-engineer`
    - `ring-dev-team:frontend-bff-engineer-typescript`
    - `ring-dev-team:frontend-designer`
 
@@ -367,9 +366,8 @@ Use the agent selected in Gate 1 based on technology:
 |-------|-------|
 | Go backend | `ring-dev-team:backend-engineer-golang` |
 | TypeScript backend | `ring-dev-team:backend-engineer-typescript` |
-| React/Next.js frontend | `ring-dev-team:frontend-engineer` |
+| React/Next.js frontend | `ring-dev-team:frontend-bff-engineer-typescript` |
 | BFF layer (Next.js API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` |
-| Visual design focus | `ring-dev-team:frontend-designer` |
 
 ## TDD Compliance
 

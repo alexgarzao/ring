@@ -29,10 +29,10 @@ related:
 
 verification:
   automated:
-    - command: "test -f .ring/dev-team/state/cycle-state.json"
+    - command: "test -f .ring/dev-team/current-cycle.json"
       description: "State file exists"
       success_pattern: "exit 0"
-    - command: "cat .ring/dev-team/state/cycle-state.json | jq '.current_gate'"
+    - command: "cat .ring/dev-team/current-cycle.json | jq '.current_gate'"
       description: "Current gate is valid"
       success_pattern: "[0-5]"
   manual:
@@ -49,7 +49,7 @@ examples:
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
     invocation: "/ring-dev-team:dev-cycle --resume"
-    expected_state: "Continues from last saved gate in cycle-state.json"
+    expected_state: "Continues from last saved gate in current-cycle.json"
   - name: "Execute with per-gate checkpoints"
     invocation: "/ring-dev-team:dev-cycle tasks.md --checkpoint per-gate"
     expected_flow: |

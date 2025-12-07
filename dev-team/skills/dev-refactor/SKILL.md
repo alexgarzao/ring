@@ -317,7 +317,7 @@ Language Detection:
 │
 ├── package.json exists
 │   ├── Has "react" or "next" dependency → Frontend TypeScript
-│   │   └── Standards: frontend-engineer-typescript.md
+│   │   └── Standards: frontend-bff-engineer-typescript.md
 │   ├── Has backend deps (express, fastify, nestjs) → Backend TypeScript
 │   │   └── Standards: backend-engineer-typescript.md
 │   └── Otherwise → Generic TypeScript

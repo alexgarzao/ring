@@ -76,7 +76,6 @@ EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-dev-team-system>\n**Developer Specialists Available**\n\nUse via Task tool with `subagent_type`:\n\n**Backend Engineers:**\n| Agent | Expertise |\n|-------|----------|\n| `ring-dev-team:backend-engineer-golang` | Go specialist for high-demand financial systems |\n| `ring-dev-team:backend-engineer-typescript` | TypeScript/Node.js specialist |\n\n**Frontend Engineers:**\n| Agent | Expertise |\n|-------|----------|\n| `ring-dev-team:frontend-engineer` | React/Next.js specialist |\n| `ring-dev-team:frontend-bff-engineer-typescript` | BFF with Clean Architecture |\n| `ring-dev-team:frontend-designer` | Visual design specialist |\n\n**Infrastructure & Quality:**\n| Agent | Expertise |\n|-------|----------|\n| `ring-dev-team:devops-engineer` | CI/CD, infrastructure |\n| `ring-dev-team:qa-analyst` | Testing, automation |\n| `ring-dev-team:sre` | Monitoring, reliability |\n\nFor full details: Skill tool with \"ring-dev-team:using-dev-team\"\n</ring-dev-team-system>"
   }
 }
 EOF

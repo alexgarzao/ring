@@ -709,7 +709,7 @@ When ambiguity exists, present options with trade-offs:
 ## Handoff to Frontend Engineers (Knowledge)
 
 **After completing design specifications, hand off to:**
-- `ring-dev-team:frontend-engineer` - For UI implementation
+- `ring-dev-team:frontend-bff-engineer-typescript` - For BFF layer and API orchestration
 - `ring-dev-team:frontend-bff-engineer-typescript` - For BFF layer
 
 ### Required Handoff Sections
@@ -1187,7 +1187,7 @@ Before submitting design implementations:
 ## What This Agent Does NOT Handle
 
 **This agent does NOT write code.** For implementation, hand off specifications to:
-- `ring-dev-team:frontend-engineer` - General frontend implementation
+- `ring-dev-team:frontend-bff-engineer-typescript` - BFF layer for frontend
 - `ring-dev-team:frontend-bff-engineer-typescript` - BFF layer implementation (API Routes)
 - `ring-dev-team:backend-engineer-golang` - Backend API development (Go)
 - `ring-dev-team:backend-engineer-typescript` - Backend API development (TypeScript)
