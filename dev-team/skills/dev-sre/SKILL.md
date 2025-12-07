@@ -97,6 +97,12 @@ This skill validates and implements observability requirements for the implement
 | "Task says observability not needed" | AI cannot self-exempt. Tasks don't override gates. |
 | "Pure frontend, no backend calls" | If it calls ANY API, backend needs observability. Frontend-only = static HTML. |
 | "It's just MVP" | MVP without metrics = blind MVP. You won't know if it's working. |
+| "YAGNI - we don't need it yet" | YAGNI doesn't apply to observability. You need it BEFORE problems occur. |
+| "Only N users, no need for metrics" | User count is irrelevant. 1 user with silent failure = bad experience. |
+| "Basic fmt.Println logs are enough" | fmt.Println is not structured, not searchable, not alertable. JSON logs required. |
+| "Single server, no Kubernetes" | /health is for ANY environment. Load balancers, systemd, monitoring all need it. |
+| "Just /health is enough for now" | /health + /ready + /metrics is the MINIMUM. Partial observability = partial blindness. |
+| "45 min overhead not worth it" | 45 min now prevents 4+ hours debugging blind production issues. |
 
 ## Red Flags - STOP
 
@@ -111,6 +117,12 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "Task says observability not required"
 - "Pure frontend, no backend impact"
 - "It's just MVP, we'll add metrics later"
+- "YAGNI - don't need it yet"
+- "Only N users, doesn't justify"
+- "fmt.Println is fine for now"
+- "Single server doesn't need /ready"
+- "Just /health endpoint is enough"
+- "45 min not worth it"
 
 **All of these indicate Gate 2 violation. Implement observability now.**
 

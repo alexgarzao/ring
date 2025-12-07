@@ -88,6 +88,11 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | "We can add tests later in CI/CD" | Gate 3 exit criteria require tests NOW. Later = never. |
 | "These mocks make it a unit test" | If you hit DB/API/filesystem, it's integration. Mock the interface. |
 | "All criteria tested, coverage low" | Write edge case tests until threshold met. |
+| "Coverage % is vanity metric" | Coverage is GATE metric. Vanity or not, below threshold = FAIL. |
+| "Integration tests compensate low coverage" | Different scope. Integration tests are NOT unit test substitute. |
+| "Edge cases are obscure/unlikely" | Edge cases cause production incidents. Test them. |
+| "Time spent on edge cases not worth it" | Time spent debugging production incidents is worse. Test now. |
+| "76% with AC tested is defensible" | Defensible ≠ passing. Threshold is 80%. Period. |
 
 ## Red Flags - STOP
 
@@ -99,6 +104,11 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "We can add tests after review"
 - "All criteria covered, percentage doesn't matter"
 - "Tests slow down development"
+- "Coverage % is vanity metric"
+- "Integration tests compensate"
+- "Edge cases are unlikely"
+- "Time spent not worth it for 4%"
+- "76% is defensible"
 
 **All of these indicate Gate 3 violation. Write unit tests until threshold met.**
 

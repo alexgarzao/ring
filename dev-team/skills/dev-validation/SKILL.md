@@ -83,6 +83,10 @@ Final validation gate requiring explicit user approval. Present evidence that ea
 | "User seemed happy" | Seeming ≠ approval. Require explicit response. |
 | "Implicit approval after demo" | Demo ≠ approval. Ask for explicit decision. |
 | "User approved similar before" | Past ≠ present. Each validation requires fresh approval. |
+| "Async over sync - work in parallel" | Validation is a GATE, not async task. STOP means STOP. |
+| "Continue other tasks while waiting" | Other tasks may conflict. Validation blocks ALL related work. |
+| "Cost of waiting is too high" | Cost of wrong approval is higher. Wait is investment. |
+| "Send message and continue" | Message sent ≠ waiting for response. STOP until APPROVED. |
 
 ## Red Flags - STOP
 
@@ -94,6 +98,10 @@ If you catch yourself thinking ANY of these, STOP immediately:
 - "User didn't say no, so it's approved"
 - "User seemed satisfied with the demo"
 - "Previous similar work was approved"
+- "I'll work on other tasks while waiting"
+- "Async over sync - don't block"
+- "Send message and continue"
+- "Cost of waiting is too high"
 
 **All of these indicate Gate 5 violation. Wait for explicit "APPROVED" or "REJECTED".**
 
