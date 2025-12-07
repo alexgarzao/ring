@@ -253,14 +253,22 @@ If WebFetch fails → STOP and report blocker. Cannot proceed without Ring stand
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**IMPORTANT:** Before asking questions:
-1. `docs/PROJECT_RULES.md` (local project) - If exists, follow it EXACTLY
-2. Ring Standards via WebFetch (Step 2 above) - ALWAYS REQUIRED
-3. Both are necessary and complementary - no override
+**MANDATORY - Load BOTH sources before ANY work:**
 
-**Both Required:** PROJECT_RULES.md (local project) + Ring Standards (via WebFetch)
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | WebFetch (see Standards Loading above) |
+
+**Both are equally important and complementary. Neither has priority over the other.**
+
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
+
+**→ Always load both: PROJECT_RULES.md AND Ring Standards.**
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -657,19 +665,77 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
 ```
 
-### DevOps Checklist
+### DevOps Checklist - HARD GATE
 
-Before deploying infrastructure:
+**Before marking infrastructure complete, ALL must pass:**
 
+| Check | Command | Expected | Gate |
+|-------|---------|----------|------|
+| Container builds | `docker build -t test .` | Exit 0 | HARD |
+| Health check responds | `curl -sf http://localhost:8080/health` | 200 OK | HARD |
+| Compose up/down works | `docker-compose up -d && docker-compose down` | Exit 0 | HARD |
+| No secrets in code | `gitleaks detect` | No leaks | HARD |
+
+**Additional checks (recommended but not blocking):**
 - [ ] Docker images use multi-stage builds
 - [ ] No `latest` tags in Kubernetes manifests
 - [ ] Resource limits set on all containers
-- [ ] Health probes configured
-- [ ] Secrets stored in secret manager
 - [ ] Terraform state is remote with locking
 - [ ] CI/CD uses caching
 - [ ] Actions pinned to specific versions
-- [ ] No secrets in code or logs
+
+**HARD GATE checks MUST pass. Failure = Gate 1 FAIL.**
+
+## Example Output
+
+```markdown
+## Summary
+
+Configured Docker multi-stage build and docker-compose for local development with PostgreSQL and Redis.
+
+## Implementation
+
+- Created optimized Dockerfile with multi-stage build (builder + runtime)
+- Added docker-compose.yml with app, postgres, and redis services
+- Configured health checks for all services
+- Added .dockerignore to exclude unnecessary files
+
+## Files Changed
+
+| File | Action | Lines |
+|------|--------|-------|
+| Dockerfile | Created | +32 |
+| docker-compose.yml | Created | +45 |
+| .dockerignore | Created | +15 |
+
+## Testing
+
+```bash
+$ docker build -t test .
+[+] Building 12.3s (12/12) FINISHED
+ => exporting to image                                    0.1s
+
+$ docker-compose up -d
+Creating network "app_default" with the default driver
+Creating app_postgres_1 ... done
+Creating app_redis_1    ... done
+Creating app_api_1      ... done
+
+$ curl -sf http://localhost:8080/health
+{"status":"healthy"}
+
+$ docker-compose down
+Stopping app_api_1      ... done
+Stopping app_redis_1    ... done
+Stopping app_postgres_1 ... done
+```
+
+## Next Steps
+
+- Add CI/CD pipeline for automated builds
+- Configure production Kubernetes manifests
+- Set up container registry push
+```
 
 ## What This Agent Does NOT Handle
 

@@ -372,24 +372,22 @@ In the development cycle, focus on **unit tests**:
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**MANDATORY - Before writing ANY code:**
+**MANDATORY - Load BOTH sources before ANY work:**
 
-1. `docs/PROJECT_RULES.md` (local project) - If exists, follow it EXACTLY
-2. Ring Standards via WebFetch (Step 2 above) - ALWAYS REQUIRED
-3. Both are necessary and complementary - no override
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | WebFetch (see Standards Loading above) |
 
-**Both Required:** PROJECT_RULES.md (local project) + Ring Standards (via WebFetch)
+**Both are equally important and complementary. Neither has priority over the other.**
 
-**If PROJECT_RULES.md specifies something Ring Standards don't cover:**
-- Follow PROJECT_RULES.md for that specific case
-- Ring Standards provide base patterns
-- Both are applied together, not one over the other
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
 
-**You are NOT allowed to skip either standard source.**
-
-**→ Always load both: PROJECT_RULES.md AND Ring Standards via WebFetch.**
+**→ Always load both: PROJECT_RULES.md AND Ring Standards.**
 
 ### What If No PROJECT_RULES.md Exists AND Existing Code is Non-Compliant?
 
@@ -560,6 +558,51 @@ Every BFF endpoint MUST document:
 | Exceptions | `{Type}ApiException` | `NotFoundApiException` |
 | Services | `{Source}HttpService` | `ExternalApiHttpService` |
 | Modules | `{Entity}Module` | `AccountUseCaseModule` |
+
+## Example Output
+
+```markdown
+## Summary
+
+Implemented BFF API Route for user accounts with aggregation from backend services.
+
+## Implementation
+
+- Created API Route handler at `/api/accounts/[id]`
+- Implemented use case with dependency injection
+- Added Zod validation for request/response schemas
+- Aggregated data from user and balance services
+
+## Files Changed
+
+| File | Action | Lines |
+|------|--------|-------|
+| app/api/accounts/[id]/route.ts | Created | +45 |
+| src/usecases/GetAccountUseCase.ts | Created | +62 |
+| src/repositories/HttpAccountRepository.ts | Created | +38 |
+| src/usecases/GetAccountUseCase.test.ts | Created | +85 |
+
+## Testing
+
+```bash
+$ npm test
+PASS src/usecases/GetAccountUseCase.test.ts
+  GetAccountUseCase
+    ✓ should return account with balance (15ms)
+    ✓ should throw NotFoundApiException when account missing (8ms)
+    ✓ should validate response schema (5ms)
+
+Test Suites: 1 passed, 1 total
+Tests: 3 passed, 3 total
+Coverage: 88.5%
+```
+
+## Next Steps
+
+- Add caching layer for balance queries
+- Implement error handling middleware
+- Add request rate limiting
+```
 
 ## What This Agent Does NOT Handle
 

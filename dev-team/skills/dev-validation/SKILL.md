@@ -73,6 +73,18 @@ Final validation gate requiring explicit user approval. Present evidence that ea
 
 **Non-negotiable principle:** User MUST respond with "APPROVED" or "REJECTED: [reason]". No other responses accepted.
 
+## Self-Approval Prohibition
+
+**HARD GATE:** The agent that implemented code CANNOT approve validation for that same code.
+
+| Scenario | Allowed? | Action |
+|----------|----------|--------|
+| Different agent/human approves | YES | Proceed with approval |
+| Same agent self-approves | NO | STOP - requires external approval |
+| User explicitly approves | YES | User approval always valid |
+
+**If you implemented the code, you CANNOT approve it. Wait for user or different reviewer.**
+
 ## Common Rationalizations - REJECTED
 
 | Excuse | Reality |
@@ -124,6 +136,9 @@ If you catch yourself thinking ANY of these, STOP immediately:
 | "Ship it" | ❌ AMBIGUOUS | Ask for explicit APPROVED |
 | "APPROVED" | ✅ VALID | Proceed to next gate |
 | "REJECTED: [reason]" | ✅ VALID | Document reason, return to Gate 0 |
+| "APPROVED if X" | ❌ CONDITIONAL | Not approved until X is verified. Status = PENDING. |
+| "APPROVED with caveats" | ❌ CONDITIONAL | Not approved. List caveats, verify each, then re-ask. |
+| "APPROVED but fix Y later" | ❌ CONDITIONAL | Not approved. Y must be addressed first. |
 
 **When user gives ambiguous response:**
 ```

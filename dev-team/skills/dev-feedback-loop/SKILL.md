@@ -114,6 +114,30 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 **Consequence:** Skipping feedback breaks continuous improvement loop and masks systemic issues.
 
+## Repeated Feedback Detection
+
+**When the same feedback appears multiple times:**
+
+| Repetition | Classification | Action |
+|------------|----------------|--------|
+| 2nd occurrence | RECURRING | Flag as recurring issue. Add to patterns. |
+| 3rd occurrence | UNRESOLVED | Escalate. Stop current work. Report blocker. |
+
+**Recurring feedback indicates systemic issue not being addressed.**
+
+**Escalation format:**
+```markdown
+## RECURRING ISSUE - Escalation Required
+
+**Issue:** [Description]
+**Occurrences:** [Count] times across [N] tasks
+**Pattern:** [What triggers this issue]
+**Previous Responses:** [What was tried]
+
+**Recommendation:** [Systemic fix needed]
+**Awaiting:** User decision on root cause resolution
+```
+
 ## Threshold Alerts - MANDATORY RESPONSE
 
 **When thresholds are breached, response is REQUIRED:**

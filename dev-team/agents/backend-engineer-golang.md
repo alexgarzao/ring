@@ -288,24 +288,22 @@ In the development cycle, focus on **unit tests**:
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**MANDATORY - Before writing ANY code:**
+**MANDATORY - Load BOTH sources before ANY work:**
 
-1. `docs/PROJECT_RULES.md` (local project) - If exists, follow it EXACTLY
-2. Ring Standards via WebFetch (Step 2 above) - ALWAYS REQUIRED
-3. Both are necessary and complementary - no override
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | WebFetch (see Standards Loading above) |
 
-**Both Required:** PROJECT_RULES.md (local project) + Ring Standards (via WebFetch)
+**Both are equally important and complementary. Neither has priority over the other.**
 
-**If PROJECT_RULES.md specifies something Ring Standards don't cover:**
-- Follow PROJECT_RULES.md for that specific case
-- Ring Standards provide base patterns
-- Both are applied together, not one over the other
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
 
-**You are NOT allowed to skip either standard source.**
-
-**→ Always load both: PROJECT_RULES.md AND Ring Standards via WebFetch.**
+**→ Always load both: PROJECT_RULES.md AND Ring Standards.**
 
 ### What If No PROJECT_RULES.md Exists AND Existing Code is Non-Compliant?
 
@@ -850,6 +848,48 @@ Before submitting Go code, verify:
 - [ ] Context propagated through all calls
 - [ ] Sensitive data not logged
 - [ ] golangci-lint passes
+
+## Example Output
+
+```markdown
+## Summary
+
+Implemented user authentication service with JWT token generation and validation following hexagonal architecture.
+
+## Implementation
+
+- Created `internal/service/auth_service.go` with Login and ValidateToken methods
+- Added `internal/repository/user_repository.go` interface and PostgreSQL adapter
+- Implemented JWT token generation with configurable expiration
+- Added password hashing with bcrypt
+
+## Files Changed
+
+| File | Action | Lines |
+|------|--------|-------|
+| internal/service/auth_service.go | Created | +145 |
+| internal/repository/user_repository.go | Created | +52 |
+| internal/adapter/postgres/user_repo.go | Created | +78 |
+| internal/service/auth_service_test.go | Created | +120 |
+
+## Testing
+
+```bash
+$ go test ./internal/service/... -cover
+=== RUN   TestAuthService_Login_ValidCredentials
+--- PASS: TestAuthService_Login_ValidCredentials (0.02s)
+=== RUN   TestAuthService_Login_InvalidPassword
+--- PASS: TestAuthService_Login_InvalidPassword (0.01s)
+PASS
+coverage: 87.3% of statements
+```
+
+## Next Steps
+
+- Integrate with API handler layer
+- Add refresh token mechanism
+- Configure token expiration in environment
+```
 
 ## What This Agent Does NOT Handle
 

@@ -171,14 +171,13 @@ Before starting Gate 0:
 
 1. **PROJECT_RULES.md EXISTS** (MANDATORY - HARD GATE):
    ```text
-   Check sequence:
-   1. Check: docs/PROJECT_RULES.md
-   2. Check: docs/STANDARDS.md (legacy name)
+   Read: docs/PROJECT_RULES.md (local file, NOT WebFetch)
 
-   If NOT found → STOP with blocker:
-   "Cannot implement without project standards.
+   If NOT found → STOP. Do NOT proceed.
+   Report blocker: "Cannot implement without project standards.
    REQUIRED: docs/PROJECT_RULES.md"
    ```
+   **Load locally with Read tool. Do NOT use WebFetch for PROJECT_RULES.md. If file does not exist, STOP. No fallback.**
 2. **Tasks imported and validated**: From dev-cycle initialization
 3. **Agent Selection**: Automatically determined based on task content:
    - `ring-dev-team:backend-engineer-golang`
@@ -453,7 +452,8 @@ Follow `docs/PROJECT_RULES.md` for:
 - **Documentation**: Comments, API docs, README
 - **Git**: Commit message format, branch naming
 
-If no PROJECT_RULES.md exists, derive conventions from Gate 1 analysis.
+If no PROJECT_RULES.md exists, STOP. Report blocker:
+"Cannot implement without project standards. REQUIRED: docs/PROJECT_RULES.md"
 
 ## Prepare Handoff to Gate 1
 

@@ -181,14 +181,22 @@ If WebFetch fails → STOP and report blocker. Cannot proceed without Ring stand
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**IMPORTANT:** Before asking questions:
-1. `docs/PROJECT_RULES.md` (local project) - If exists, follow it EXACTLY
-2. Ring Standards via WebFetch (Step 2 above) - ALWAYS REQUIRED
-3. Both are necessary and complementary - no override
+**MANDATORY - Load BOTH sources before ANY work:**
 
-**Both Required:** PROJECT_RULES.md (local project) + Ring Standards (via WebFetch)
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | WebFetch (see Standards Loading above) |
+
+**Both are equally important and complementary. Neither has priority over the other.**
+
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
+
+**→ Always load both: PROJECT_RULES.md AND Ring Standards.**
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -606,6 +614,52 @@ Before deploying to production:
 - [ ] Structured logging enabled
 - [ ] Runbooks documented
 - [ ] On-call rotation configured
+
+## Example Output
+
+```markdown
+## Summary
+
+Implemented observability stack for API service with metrics, logging, and health checks.
+
+## Implementation
+
+- Added Prometheus metrics endpoint with HTTP request counters and latency histograms
+- Configured structured JSON logging with request correlation IDs
+- Created health and readiness endpoints
+- Added Grafana dashboard for service monitoring
+
+## Files Changed
+
+| File | Action | Lines |
+|------|--------|-------|
+| internal/middleware/metrics.go | Created | +65 |
+| internal/handler/health.go | Created | +42 |
+| docker-compose.yml | Modified | +25 |
+| grafana/dashboards/api.json | Created | +180 |
+
+## Testing
+
+```bash
+$ curl -sf http://localhost:8080/health
+{"status":"healthy","version":"1.0.0"}
+
+$ curl -sf http://localhost:8080/ready
+{"status":"ready","db":"connected","cache":"connected"}
+
+$ curl -sf http://localhost:8080/metrics | head -5
+# HELP http_requests_total Total HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",path="/health",status="200"} 15
+http_requests_total{method="POST",path="/users",status="201"} 3
+```
+
+## Next Steps
+
+- Configure alerting rules in Prometheus
+- Add distributed tracing with OpenTelemetry
+- Create runbook for common incidents
+```
 
 ## What This Agent Does NOT Handle
 

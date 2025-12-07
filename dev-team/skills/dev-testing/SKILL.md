@@ -72,7 +72,7 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | Pressure Type | Request | Agent Response |
 |---------------|---------|----------------|
 | **Manual Testing** | "I manually tested everything" | "Manual tests are not executable, not repeatable. Write unit tests." |
-| **Close Enough** | "78% coverage, close to 80%" | "80% is MINIMUM, not target. 78% = FAIL. Write more tests." |
+| **Close Enough** | "83% coverage, close to 85%" | "85% is MINIMUM, not target. 83% = FAIL. Write more tests." |
 | **Integration** | "My integration tests cover this" | "Gate 3 = unit tests only. Integration tests are separate scope." |
 | **Time** | "Tests will slow us down" | "Tests prevent rework. No tests = more time debugging later." |
 
@@ -83,7 +83,7 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | Excuse | Reality |
 |--------|---------|
 | "Manual testing validates all criteria" | Manual tests are not executable, not repeatable, not automatable. Gate 3 requires unit tests. |
-| "Coverage is 78%, close enough to 80%" | Threshold is mandatory minimum. 78% = FAIL. No exceptions. |
+| "Coverage is 83%, close enough to 85%" | Threshold is mandatory minimum. 83% = FAIL. No exceptions. |
 | "Integration tests are better verification" | Gate 3 scope is unit tests only. Integration tests are different gate. |
 | "We can add tests later in CI/CD" | Gate 3 exit criteria require tests NOW. Later = never. |
 | "These mocks make it a unit test" | If you hit DB/API/filesystem, it's integration. Mock the interface. |
@@ -92,10 +92,10 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | "Integration tests compensate low coverage" | Different scope. Integration tests are NOT unit test substitute. |
 | "Edge cases are obscure/unlikely" | Edge cases cause production incidents. Test them. |
 | "Time spent on edge cases not worth it" | Time spent debugging production incidents is worse. Test now. |
-| "76% with AC tested is defensible" | Defensible ≠ passing. Threshold is 80%. Period. |
-| "PROJECT_RULES.md says 70% is OK" | Ring minimum is 80%. PROJECT_RULES.md can raise, not lower. |
-| "Team decided lower threshold" | Team decisions don't override Ring gates. 80% is non-negotiable. |
-| "This module is simple, 60% enough" | Module complexity doesn't lower threshold. 80% everywhere. |
+| "84% with AC tested is defensible" | Defensible ≠ passing. Threshold is 85%. Period. |
+| "PROJECT_RULES.md says 70% is OK" | Ring minimum is 85%. PROJECT_RULES.md can raise, not lower. |
+| "Team decided lower threshold" | Team decisions don't override Ring gates. 85% is non-negotiable. |
+| "This module is simple, 60% enough" | Module complexity doesn't lower threshold. 85% everywhere. |
 
 ## Red Flags - STOP
 
@@ -123,15 +123,15 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 | Source | Can Raise? | Can Lower? |
 |--------|-----------|-----------|
-| Ring Standard (80%) | N/A (baseline) | N/A (baseline) |
+| Ring Standard (85%) | N/A (baseline) | N/A (baseline) |
 | PROJECT_RULES.md | ✅ YES (e.g., 90%) | ❌ NO |
 | Team Decision | ✅ YES (e.g., 95%) | ❌ NO |
 | Manager Override | ❌ NO | ❌ NO |
 
-**If PROJECT_RULES.md specifies < 80%:**
+**If PROJECT_RULES.md specifies < 85%:**
 1. That specification is INVALID
-2. Ring minimum (80%) still applies
-3. Report as blocker: "PROJECT_RULES.md coverage threshold (X%) below Ring minimum (80%)"
+2. Ring minimum (85% branch coverage) still applies
+3. Report as blocker: "PROJECT_RULES.md coverage threshold (X%) below Ring minimum (85%)"
 4. Do NOT proceed with lower threshold
 
 ## Unit Test vs Integration Test
@@ -313,7 +313,7 @@ Before proceeding to Gate 4 (Review):
 - [ ] Every acceptance criterion has at least one unit test
 - [ ] All tests follow TDD cycle (RED verified before GREEN)
 - [ ] Full test suite passes (0 failures)
-- [ ] **Coverage MUST meet 80% minimum** (or project-defined threshold in PROJECT_RULES.md). This is MANDATORY, not aspirational.
+- [ ] **Coverage MUST meet 85% branch coverage minimum** (or project-defined threshold in PROJECT_RULES.md). This is MANDATORY, not aspirational.
   - Below threshold = FAIL
   - No exceptions for "close enough"
   - All acceptance criteria MUST have executable tests

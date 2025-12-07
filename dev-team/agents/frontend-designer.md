@@ -853,14 +853,22 @@ If WebFetch fails → STOP and report blocker. Cannot proceed without Ring stand
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**IMPORTANT:** Before asking questions:
-1. `docs/PROJECT_RULES.md` (local project) - If exists, follow it EXACTLY
-2. Ring Standards via WebFetch (Step 2 above) - ALWAYS REQUIRED
-3. Both are necessary and complementary - no override
+**MANDATORY - Load BOTH sources before ANY work:**
 
-**Both Required:** PROJECT_RULES.md (local project) + Ring Standards (via WebFetch)
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | WebFetch (see Standards Loading above) |
+
+**Both are equally important and complementary. Neither has priority over the other.**
+
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
+
+**→ Always load both: PROJECT_RULES.md AND Ring Standards.**
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -1242,6 +1250,59 @@ Before submitting design implementations:
 - [ ] Reduced motion is respected
 - [ ] Layout is responsive
 - [ ] Visual hierarchy guides the eye
+
+## Example Output
+
+```markdown
+## Design Context
+
+**Task:** Design user registration form
+**Platform:** Web (responsive)
+**Design System:** Existing Tailwind + shadcn/ui
+
+## Analysis
+
+- Reviewed existing auth flows in the application
+- Analyzed competitor registration forms (Stripe, Linear)
+- Identified accessibility requirements (WCAG AA)
+
+## Findings
+
+1. Current form lacks visual hierarchy
+2. Error states not clearly communicated
+3. Mobile layout needs optimization
+4. Password requirements not visible upfront
+
+## Recommendations
+
+1. **Visual Hierarchy:** Group related fields, add section headers
+2. **Error Handling:** Inline validation with clear error messages
+3. **Mobile:** Stack fields vertically, increase touch targets
+4. **Password:** Show requirements checklist during input
+
+## Specifications
+
+### Form Layout
+- Max width: 400px, centered
+- Padding: 24px (desktop), 16px (mobile)
+- Field spacing: 16px vertical gap
+- Button: Full width, 48px height
+
+### Color Tokens
+- Error: `destructive` (#ef4444)
+- Success: `success` (#22c55e)
+- Focus ring: `ring` (2px offset)
+
+### Typography
+- Labels: `text-sm font-medium`
+- Inputs: `text-base`
+- Errors: `text-sm text-destructive`
+
+## Next Steps
+
+- Handoff to `ring-dev-team:frontend-bff-engineer-typescript` for implementation
+- Create Figma prototype for stakeholder review
+```
 
 ## What This Agent Does NOT Handle
 

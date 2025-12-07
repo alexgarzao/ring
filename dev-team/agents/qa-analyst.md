@@ -16,7 +16,7 @@ output_schema:
     - name: "Implementation"
       pattern: "^## Implementation"
       required: true
-      description: "Test strategy, cases, and methodology implemented"
+      description: "Unit tests actually written and executed, with test output showing RED then GREEN"
     - name: "Files Changed"
       pattern: "^## Files Changed"
       required: true
@@ -25,6 +25,10 @@ output_schema:
       pattern: "^## Testing"
       required: true
       description: "Test results and coverage metrics"
+    - name: "Test Execution Results"
+      pattern: "^### Test Execution"
+      required: true
+      description: "Actual test run output showing pass/fail for each test"
     - name: "Next Steps"
       pattern: "^## Next Steps"
       required: true
@@ -185,12 +189,22 @@ Invoke this agent when the task involves:
 
 ## Handling Ambiguous Requirements
 
-### Step 1: Check Project Standards (ALWAYS FIRST)
+### Check Project Standards (ALWAYS FIRST)
 
-**IMPORTANT:** Before asking questions, check:
-1. `docs/PROJECT_RULES.md` - Common project standards (TDD, coverage requirements)
+**MANDATORY - Load BOTH sources before ANY work:**
 
-**→ Follow existing standards. Only proceed to Step 2 if they don't cover your scenario.**
+| Source | Location |
+|--------|----------|
+| PROJECT_RULES.md | `docs/PROJECT_RULES.md` (local) |
+| Ring Standards | Embedded in this agent (Testing Standards section) |
+
+**Both are equally important and complementary. Neither has priority over the other.**
+
+- One does NOT override the other
+- Apply both together
+- You are NOT allowed to skip either
+
+**→ Always load both: PROJECT_RULES.md AND Ring Standards.**
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -265,6 +279,35 @@ If tests are ALREADY adequate:
 - Tests are deterministic (not flaky)
 
 **If adequate → say "tests are sufficient" and move on.**
+
+## Test Execution Requirement
+
+**QA Analyst MUST execute tests, not just describe them.**
+
+| Output Type | Required? | Example |
+|-------------|-----------|---------|
+| Test strategy description | YES | "Using AAA pattern with mocks" |
+| Test code written | YES | Actual test file content |
+| Test execution output | YES | `PASS: TestUserService_Create (0.02s)` |
+| Coverage report | YES | `Coverage: 87.3%` |
+
+**"Tests designed" without execution = INCOMPLETE.**
+
+**Required in Testing section:**
+```markdown
+### Test Execution
+```bash
+$ npm test
+PASS src/services/user.test.ts
+  UserService
+    ✓ should create user with valid input (15ms)
+    ✓ should return error for invalid email (8ms)
+
+Test Suites: 1 passed, 1 total
+Tests: 2 passed, 2 total
+Coverage: 87.3%
+```
+```
 
 ## Blocker Criteria - STOP and Report
 
@@ -510,6 +553,59 @@ Before marking tests complete:
 - [ ] Coverage meets minimum threshold
 - [ ] No flaky tests
 - [ ] Tests run in CI pipeline
+
+## Example Output
+
+```markdown
+## Summary
+
+Created unit tests for UserService covering all acceptance criteria with TDD methodology.
+
+## Implementation
+
+- Wrote tests for user creation, validation, and error handling
+- Used mocks for repository dependencies
+- Followed AAA pattern (Arrange-Act-Assert)
+- Achieved 92% branch coverage
+
+## Files Changed
+
+| File | Action | Lines |
+|------|--------|-------|
+| src/services/user-service.test.ts | Created | +145 |
+
+## Testing
+
+### Test Execution
+```bash
+$ npm test
+PASS src/services/user-service.test.ts
+  UserService
+    createUser
+      ✓ should create user with valid input (12ms)
+      ✓ should return error for invalid email (5ms)
+      ✓ should return error for duplicate email (8ms)
+    findById
+      ✓ should return user when exists (4ms)
+      ✓ should return null when not found (3ms)
+
+Test Suites: 1 passed, 1 total
+Tests: 5 passed, 5 total
+Coverage: 92.3%
+```
+
+| Metric | Value |
+|--------|-------|
+| Tests Written | 5 |
+| Coverage Before | 65% |
+| Coverage After | 92% |
+| Criteria Covered | 5/5 |
+
+## Next Steps
+
+- Add edge case tests for password validation
+- Create integration tests with test database
+```
 
 ## What This Agent Does NOT Handle
 

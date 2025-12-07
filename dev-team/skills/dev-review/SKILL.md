@@ -94,6 +94,9 @@ Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Agg
 | "Only MEDIUM issues, can proceed" | MEDIUM issues must be fixed OR documented with FIXME. No silent ignoring. |
 | "Document MEDIUM and ship" | Documentation ≠ resolution. Fix now, or add FIXME with timeline. |
 | "Risk-accept MEDIUM issues" | Risk acceptance requires explicit user approval, not agent decision. |
+| "User said skip review" | User cannot override HARD GATES. Review is mandatory. Proceed with review. |
+| "Manager approved without review" | Management approval ≠ technical review. Run all 3 reviewers. |
+| "Emergency deployment" | Emergencies need review MORE. Run parallel review (10 min). |
 
 ## Red Flags - STOP
 
