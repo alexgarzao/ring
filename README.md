@@ -34,8 +34,7 @@ Ring solves this by:
 - `ring-dev-team:backend-engineer-golang` - Go backend specialist for financial systems
 - `ring-dev-team:backend-engineer-typescript` - TypeScript/Node.js backend specialist (Express, NestJS, Fastify)
 - `ring-dev-team:devops-engineer` - DevOps infrastructure specialist
-- `ring-dev-team:frontend-engineer` - React/Next.js frontend specialist
-- `ring-dev-team:frontend-bff-engineer-typescript` - BFF (Backend for Frontend) with Clean Architecture
+- `ring-dev-team:frontend-bff-engineer-typescript` - BFF & React/Next.js frontend with Clean Architecture
 - `ring-dev-team:frontend-designer` - Visual design specialist
 - `ring-dev-team:qa-analyst` - Quality assurance specialist
 - `ring-dev-team:sre` - Site reliability engineer
@@ -421,12 +420,11 @@ ring/                                  # Monorepo root
 │   ├── lib/                        # Infrastructure utilities (9 scripts)
 │   └── docs/                       # Documentation
 ├── dev-team/                      # Developer Agents plugin (ring-dev-team)
-│   └── agents/                      # 8 specialized developer agents
+│   └── agents/                      # 7 specialized developer agents
 │       ├── backend-engineer-golang.md  # Go backend specialist
 │       ├── backend-engineer-typescript.md # TypeScript/Node.js backend specialist
 │       ├── devops-engineer.md          # DevOps infrastructure
-│       ├── frontend-engineer.md        # React/Next.js frontend specialist
-│       ├── frontend-bff-engineer-typescript.md # BFF (Backend for Frontend) specialist
+│       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js frontend specialist
 │       ├── frontend-designer.md        # Visual design specialist
 │       ├── qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer

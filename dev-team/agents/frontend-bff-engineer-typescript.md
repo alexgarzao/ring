@@ -446,7 +446,7 @@ When reporting issues in existing code:
 
 ## Integration with Frontend Engineer
 
-**This agent provides API endpoints that `ring-dev-team:frontend-engineer` consumes.**
+**This agent provides API endpoints that frontend consumes.**
 
 ### Contract Requirements
 
@@ -495,7 +495,6 @@ Every BFF endpoint MUST document:
 
 ## What This Agent Does NOT Handle
 
-- Frontend UI components (use `ring-dev-team:frontend-engineer`)
 - Visual design specifications (use `ring-dev-team:frontend-designer`)
 - Docker/CI-CD configuration (use `ring-dev-team:devops-engineer`)
 - Server infrastructure and monitoring (use `ring-dev-team:sre`)
