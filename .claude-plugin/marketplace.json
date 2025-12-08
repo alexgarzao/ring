@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "ring-default",
-      "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety), systematic debugging, workflow orchestration, and knowledge capture via /codify. 21 essential skills for software engineering excellence.",
+      "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety), systematic debugging, and workflow orchestration. 21 essential skills for software engineering excellence.",
       "version": "0.16.3",
       "source": "./default",
       "homepage": "https://github.com/lerianstudio/ring/tree/default",
@@ -93,26 +93,6 @@
         "reporting",
         "templates",
         "automation"
-      ]
-    },
-    {
-      "name": "ralph-wiggum",
-      "description": "Ralph Wiggum iterative AI development loops - autonomous task refinement using Stop hooks. Enables hands-off iteration where Claude continuously works on a task until completion, with progress tracked via state files and completion signaled through XML promise tags.",
-      "version": "0.6.0",
-      "source": "./ralph-wiggum",
-      "homepage": "https://github.com/lerianstudio/ring/tree/ralph-wiggum",
-      "repository": "https://github.com/lerianstudio/ring/tree/ralph-wiggum",
-      "license": "MIT",
-      "keywords": [
-        "ralph",
-        "loops",
-        "iteration",
-        "autonomous",
-        "self-referential",
-        "workflow",
-        "automation",
-        "development",
-        "stop-hook"
       ]
     },
     {

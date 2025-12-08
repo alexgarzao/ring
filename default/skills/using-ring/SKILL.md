@@ -376,8 +376,7 @@ When dispatching code reviewers, **single message with 3 Task calls:**
 
 ## Announcing Skill Usage
 
-- **Always announce meta-skills:** brainstorming, writing-plans, systematic-debugging, codify-solution (methodology change)
-- **Post-completion:** After non-trivial fixes, suggest `/ring-default:codify` to document the solution
+- **Always announce meta-skills:** brainstorming, writing-plans, systematic-debugging (methodology change)
 - **Skip when obvious:** User says "write tests first" → no need to announce TDD
 
 ## Required Patterns
