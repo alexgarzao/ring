@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 54 skills, 20 agents, and 17 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 55 skills, 20 agents, and 18 slash commands for enforcing proven software engineering practices.
 
 ---
 
@@ -98,6 +98,7 @@ Other plugins require full prefix: `/ring-dev-team:`, `/ring-finops-team:`, `/ri
 |---------|----------|---------|
 | `/ring-default:codereview [files-or-paths]` | Dispatch 3 parallel code reviewers | `/ring-default:codereview src/auth/` |
 | `/ring-default:commit [message]` | Create git commit with AI trailers | `/ring-default:commit "fix(auth): improve token validation"` |
+| `/ring-default:lint [path]` | Run lint and dispatch agents to fix all issues | `/ring-default:lint src/` |
 
 ### Development Cycle (ring-dev-team)
 
@@ -121,7 +122,7 @@ Other plugins require full prefix: `/ring-dev-team:`, `/ring-finops-team:`, `/ri
 
 ## 💡 About Skills
 
-Skills (54) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (55) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
 

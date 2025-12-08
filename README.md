@@ -15,7 +15,7 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 54 specialized skills** - From brainstorming to production deployment (21 core + 10 dev-team + 10 product planning + 6 FinOps + 7 technical writing)
+- **Providing 55 specialized skills** - From brainstorming to production deployment (22 core + 10 dev-team + 10 product planning + 6 FinOps + 7 technical writing)
 - **20 specialized agents** - 5 review/planning agents + 7 developer agents + 3 research agents + 2 FinOps agents + 3 technical writing agents
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -208,17 +208,18 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 54 Skills (Across 5 Plugins)
+## 📚 All 55 Skills (Across 5 Plugins)
 
-### Core Skills (ring-default plugin - 21 skills)
+### Core Skills (ring-default plugin - 22 skills)
 
-**Testing & Debugging (6):**
+**Testing & Debugging (7):**
 - `test-driven-development` - Write test first, watch fail, minimal code
 - `systematic-debugging` - 4-phase root cause investigation
 - `verification-before-completion` - Evidence before claims
 - `testing-anti-patterns` - Common test pitfalls to avoid
 - `condition-based-waiting` - Replace timeouts with conditions
 - `defense-in-depth` - Multi-layer validation
+- `linting-codebase` - Parallel lint fixing with agent dispatch
 
 **Collaboration & Planning (10):**
 - `brainstorming` - Structured design refinement
@@ -291,7 +292,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 17 slash commands across 4 plugins for common workflows.
+Ring provides 18 slash commands across 4 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -301,6 +302,7 @@ Ring provides 17 slash commands across 4 plugins for common workflows.
 - `/ring-default:brainstorm [topic]` - Interactive design refinement using Socratic method
 - `/ring-default:write-plan [feature]` - Create detailed implementation plan with bite-sized tasks
 - `/ring-default:execute-plan [path]` - Execute plan in batches with review checkpoints
+- `/ring-default:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
 
 ### Product Planning (ring-pm-team)
 

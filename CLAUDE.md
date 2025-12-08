@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **5 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
-- **ring-default**: 21 core skills, 6 slash commands, 5 specialized agents
+- **ring-default**: 22 core skills, 7 slash commands, 5 specialized agents
 - **ring-dev-team**: 10 development skills, 5 slash commands, 7 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
 - **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
 - **ring-pm-team**: 10 product planning skills, 3 research agents, 2 slash commands
@@ -15,7 +15,7 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 54 skills (21 + 10 + 6 + 10 + 7) across 5 plugins**
+**Total: 55 skills (22 + 10 + 6 + 10 + 7) across 5 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -86,7 +86,7 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 21 core skills
+│   ├── skills/                       # 22 core skills
 │   │   ├── brainstorming/            # Socratic design refinement
 │   │   ├── test-driven-development/  # RED-GREEN-REFACTOR cycle enforcement
 │   │   ├── systematic-debugging/     # 4-phase root cause analysis
@@ -98,9 +98,10 @@ ring/                                  # Monorepo root
 │   │   ├── security-reviewer.md     # Safety (OWASP, auth, validation)
 │   │   ├── write-plan.md            # Implementation planning
 │   │   └── codebase-explorer.md     # Deep architecture analysis (Opus)
-│   ├── commands/                    # 6 slash commands
+│   ├── commands/                    # 7 slash commands
 │   │   ├── codereview.md           # /ring-default:codereview - dispatch 3 parallel reviewers
-│   │   └── brainstorm.md           # /ring-default:brainstorm - interactive design
+│   │   ├── brainstorm.md           # /ring-default:brainstorm - interactive design
+│   │   └── lint.md                 # /ring-default:lint - parallel lint fixing
 │   ├── hooks/                      # Session lifecycle
 │   │   ├── hooks.json             # SessionStart, UserPromptSubmit config
 │   │   ├── session-start.sh       # Load skills quick reference
@@ -537,7 +538,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Repository: Monorepo marketplace with multiple plugin collections
 - Active plugins: 5 (`ring-default`, `ring-dev-team`, `ring-finops-team`, `ring-pm-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
-- Core plugin: `default/` (21 skills, 5 agents, 6 commands)
+- Core plugin: `default/` (22 skills, 5 agents, 7 commands)
 - Developer agents plugin: `dev-team/` (10 skills, 9 agents, 5 commands)
 - FinOps plugin: `finops-team/` (6 skills, 2 agents)
 - Product planning plugin: `pm-team/` (10 skills, 3 research agents, 2 commands)
