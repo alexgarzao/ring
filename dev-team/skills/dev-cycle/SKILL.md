@@ -707,7 +707,11 @@ For current execution unit:
 
    FAIL → Return to Gate 0 (Implementation) to add tests
           QA provides: what lines/branches need coverage
-          Max 3 iterations, then STOP and ask user
+
+4. Track iteration count (state.testing.iteration)
+   - Max 3 iterations allowed
+   - After 3rd failure: STOP and escalate to user
+   - Do NOT attempt 4th iteration automatically
 ```
 
 ### State Tracking

@@ -338,6 +338,27 @@ FAIL (coverage < threshold) → Return to Gate 0 (Implementation)
 4. Gate 3 re-runs
 5. **Max 3 attempts**, then escalate to user
 
+### Iteration Tracking
+
+The dev-cycle orchestrator tracks iteration count in state:
+
+```json
+{
+  "testing": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "coverage_actual": 72.5,
+    "coverage_threshold": 85
+  }
+}
+```
+
+**Enforcement rules:**
+- Increment `iteration` on each Gate 3 entry
+- After 3rd FAIL: STOP, do NOT return to Gate 0
+- Present gap analysis to user for manual resolution
+- User must decide: fix manually, adjust threshold (if allowed), or abort task
+
 ## Handling Test Failures
 
 If tests fail during execution:
