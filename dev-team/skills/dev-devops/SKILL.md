@@ -175,7 +175,7 @@ Before starting Gate 1:
 |-----------|-------------|
 | **Dockerfile** | Multi-stage build, non-root USER, specific versions (no :latest), health check, layer caching |
 | **docker-compose.yml** | App service, DB/cache services, volumes, networks, depends_on with health checks |
-| **.env.example** | All vars with placeholders, comments, grouped by service, optional vs required marked |
+| **.env.example** | All vars with placeholders, comments, grouped by service, marked required vs optional |
 | **docs/LOCAL_SETUP.md** | Prerequisites, setup steps, run commands, troubleshooting |
 
 **Agent returns:** Complete files + verification commands

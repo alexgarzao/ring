@@ -327,7 +327,7 @@ If you catch yourself thinking ANY of these, STOP. You're about to violate the I
 
 ## Example: Testing a New Reviewer Agent
 
-**Step 1: Create Test Suite**
+### Step 1: Create Test Suite
 
 | Test | Input | Expected |
 |------|-------|----------|

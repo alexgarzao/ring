@@ -293,15 +293,15 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 | **2** | Search CRM first | holder.document, holder.name, holder.type, holder.addresses.*, holder.contact.*, holder.naturalPerson.*, holder.legalPerson.*, alias.bankingDetails.*, alias.metadata.* |
 | **3** | Search Core one second | account.name, account.alias, account.metadata.*, account.status, transaction.metadata.*, balance.amount, organization.legalDocument |
 | **4** | Check metadata | crm.holder/alias.metadata.*, midaz.account/transaction.metadata.* |
-| **5** | Mark as uncertain | If not found → document searched locations + suggest closest matches + indicate confidence
+| **5** | Mark as uncertain | If not found → document searched locations + suggest closest matches + indicate confidence |
 
 ### Confidence Scoring System
 
 | Level | Score | Criteria |
 |-------|-------|----------|
 | **HIGH** (90-100%) | Base(30) + Name(25) + System(25) + Type(20) + Validation(20) | Exact name match, type matches, primary system, validation passes, simple/no transform |
-| **MEDIUM** (60-89%) | Partial name or pattern match, compatible type needs transform, secondary system, some uncertainty |
-| **LOW** (30-59%) | Synonym/fuzzy match, significant transform, metadata only, cannot validate |
+| **MEDIUM** (60-89%) | Base(30) + partial matches | Partial name or pattern match, compatible type needs transform, secondary system, some uncertainty |
+| **LOW** (30-59%) | Base(30) only | Synonym/fuzzy match, significant transform, metadata only, cannot validate |
 
 **Formula:** `Score = Base(30) + NameMatch(0-25) + SystemMatch(0-25) + TypeMatch(0-20) + ValidationMatch(0-20)`
 

@@ -244,6 +244,6 @@ Return: `gate3_passed`, `template_file` (filename, path, size_bytes, fields_incl
 | Collection loop | `{% for item in collection %}{{ item.field }}{% endfor %}` |
 | Conditional | `{% if condition %}<field>{{ value }}</field>{% endif %}` |
 | Nested | `{{ parent.child.grandchild }}` |
-| Filter chain | `{{ value|slice:':8'|upper }}` |
+| Filter chain | `{{ value\|slice:':8'\|upper }}` |
 
 **Remember:** Use exact Gate 1 paths, snake_case only, apply Gate 2 transformations, follow regulatory format exactly.

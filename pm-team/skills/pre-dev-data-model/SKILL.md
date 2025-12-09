@@ -97,7 +97,7 @@ If you catch yourself writing any of these in Data Model, **STOP**:
 |----------|--------------|
 | **Entity Completeness** | All entities from PRD/Feature Map modeled; clear consistent names; defined purpose; boundaries align with TRD components |
 | **Attribute Specification** | All types specified; required vs optional explicit; constraints documented; defaults where relevant; computed fields identified |
-| **Relationship Modeling** | All relationships documented; cardinality specified (1:1, 1:N, M:N); optional vs required clear; referential integrity needs documented; circular deps resolved |
+| **Relationship Modeling** | All relationships documented; cardinality specified (1:1, 1:N, M:N); optional vs required clear; referential integrity to be documented; circular deps resolved |
 | **Data Ownership** | Each entity owned by exactly one component; read/write permissions documented; cross-component access via APIs only; no shared database anti-pattern |
 | **Data Quality** | Validation rules specified; normalization level appropriate; denormalization justified; consistency strategy defined |
 | **Lifecycle Management** | Creation rules; update patterns; deletion strategy (hard/soft); archival/retention policies; audit trail needs |

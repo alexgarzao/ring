@@ -69,7 +69,7 @@ Use `---` between major sections for visual separation.
 | Pattern | Usage |
 |---------|-------|
 | Breadcrumb | Show hierarchy: `Guides > Core Entities > Accounts` |
-| Prev/Next | Connect sequential content: `[Previous: Assets] | [Next: Portfolios]` |
+| Prev/Next | Connect sequential content: `[Previous: Assets] \| [Next: Portfolios]` |
 | On-this-page | For long pages, show section links at top |
 
 ---

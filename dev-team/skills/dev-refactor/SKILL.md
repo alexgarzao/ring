@@ -231,7 +231,7 @@ Before starting analysis:
 
 | Task | Agent | Focus Areas |
 |------|-------|-------------|
-| **Code** | Based on language: `backend-engineer-golang` / `backend-engineer-typescript` / `frontend-bff-engineer-typescript` | Structure, Architecture (DDD/Clean), Error handling, Naming, Security |
+| **Code** | Based on language: `ring-dev-team:backend-engineer-golang` / `ring-dev-team:backend-engineer-typescript` / `ring-dev-team:frontend-bff-engineer-typescript` | Structure, Architecture (DDD/Clean), Error handling, Naming, Security |
 | **Testing** | `ring-dev-team:qa-analyst` | Coverage ≥80%, Test patterns, TDD compliance, Mock usage |
 | **DevOps** | `ring-dev-team:devops-engineer` | Dockerfile (multi-stage, non-root, health), docker-compose, .env.example |
 | **SRE** | `ring-dev-team:sre` | Health endpoints, Structured JSON logging, Tracing |
