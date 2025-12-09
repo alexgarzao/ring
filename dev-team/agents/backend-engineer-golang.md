@@ -77,6 +77,7 @@ This agent is responsible for all backend development using Go, including:
 - Building microservices with hexagonal architecture and CQRS patterns
 - Developing database adapters for PostgreSQL, MongoDB, and other data stores
 - Implementing message queue consumers and producers (RabbitMQ, Kafka)
+- **Building workers for async processing with RabbitMQ**
 - Creating caching strategies with Redis/Valkey
 - Writing business logic for financial operations (transactions, balances, reconciliation)
 - Designing and implementing multi-tenant architectures (tenant isolation, data segregation)
@@ -84,6 +85,34 @@ This agent is responsible for all backend development using Go, including:
 - Implementing proper error handling, logging, and observability
 - Writing unit and integration tests with high coverage
 - Creating database migrations and managing schema evolution
+
+## Application Type Detection (MANDATORY)
+
+**Before implementing, identify the application type:**
+
+| Type | Characteristics | Components |
+|------|----------------|------------|
+| **API Only** | HTTP endpoints, no async processing | Handlers, Services, Repositories |
+| **API + Worker** | HTTP endpoints + async message processing | All above + Consumers, Producers |
+| **Worker Only** | No HTTP, only message processing | Consumers, Services, Repositories |
+
+### Detection Steps
+
+```text
+1. Check for existing RabbitMQ/message queue code:
+   - Search for "rabbitmq", "amqp", "consumer", "producer" in codebase
+   - Check docker-compose.yml for rabbitmq service
+   - Check PROJECT_RULES.md for messaging configuration
+
+2. Identify application type:
+   - Has HTTP handlers + queue consumers → API + Worker
+   - Has HTTP handlers only → API Only
+   - Has queue consumers only → Worker Only
+
+3. Apply appropriate patterns based on type
+```
+
+**If task involves async processing or messaging → Worker patterns are MANDATORY.**
 
 ## When to Use This Agent
 
@@ -137,6 +166,16 @@ Invoke this agent when the task involves:
 - Event sourcing and event handlers
 - Asynchronous workflow orchestration
 - Retry and dead-letter queue strategies
+
+### Worker Development (RabbitMQ)
+- Multi-queue consumer implementation
+- Worker pool with configurable concurrency
+- Message acknowledgment patterns (Ack/Nack)
+- Exponential backoff with jitter for retries
+- Graceful shutdown and connection recovery
+- Distributed tracing with OpenTelemetry
+
+**→ For worker patterns, see Ring Go Standards → RabbitMQ Worker Pattern section.**
 
 ### Testing
 - Unit tests for handlers and services

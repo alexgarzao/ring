@@ -80,6 +80,7 @@ This agent is responsible for all TypeScript backend development, including:
 - Implementing tRPC endpoints for end-to-end type safety
 - Creating validation schemas with Zod and runtime type checking
 - Integrating message queues and event-driven architectures
+- **Building workers for async processing with RabbitMQ**
 - Implementing caching strategies with Redis and in-memory solutions
 - Writing business logic with comprehensive type coverage
 - Designing multi-tenant architectures with type-safe tenant isolation
@@ -87,6 +88,36 @@ This agent is responsible for all TypeScript backend development, including:
 - Implementing observability with typed logging and metrics
 - Writing comprehensive unit and integration tests
 - Managing database migrations and schema evolution
+
+## Application Type Detection (MANDATORY)
+
+**Before implementing, identify the application type:**
+
+| Type | Characteristics | Components |
+|------|----------------|------------|
+| **API Only** | HTTP endpoints, no async processing | Handlers, Services, Repositories |
+| **API + Worker** | HTTP endpoints + async message processing | All above + Consumers, Producers |
+| **Worker Only** | No HTTP, only message processing | Consumers, Services, Repositories |
+
+### Detection Steps
+
+```text
+1. Check for existing RabbitMQ/message queue code:
+   - Search for "rabbitmq", "amqp", "consumer", "producer" in codebase
+   - Check docker-compose.yml for rabbitmq service
+   - Check PROJECT_RULES.md for messaging configuration
+
+2. Identify application type:
+   - Has HTTP handlers + queue consumers → API + Worker
+   - Has HTTP handlers only → API Only
+   - Has queue consumers only → Worker Only
+
+3. Apply appropriate patterns based on type
+```
+
+**If task involves async processing or messaging → Worker patterns are MANDATORY.**
+
+**→ For worker patterns, see Ring TypeScript Standards → RabbitMQ Worker Pattern section.**
 
 ## When to Use This Agent
 
@@ -154,6 +185,17 @@ Invoke this agent when the task involves:
 - Event sourcing with typed event streams
 - Saga pattern implementation
 - Retry strategies with exponential backoff
+
+### Worker Development (RabbitMQ)
+- Multi-queue consumer implementation
+- Worker pool with configurable concurrency
+- Message acknowledgment patterns (Ack/Nack)
+- Exponential backoff with jitter for retries
+- Graceful shutdown and connection recovery
+- Distributed tracing with OpenTelemetry
+- Type-safe message validation with Zod
+
+**→ For worker patterns, see Ring TypeScript Standards → RabbitMQ Worker Pattern section.**
 
 ### Testing
 - Vitest/Jest unit tests with TypeScript
