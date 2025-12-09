@@ -28,6 +28,166 @@ related:
 
 This skill analyzes an existing codebase to identify gaps between current implementation and project standards, then generates a structured refactoring plan compatible with the dev-cycle workflow.
 
+---
+
+## ⛔ HARD GATES - READ BEFORE EXECUTING
+
+**This skill has TWO mandatory hard gates. Violation of either gate is a SKILL FAILURE.**
+
+### Gate 1: PROJECT_RULES.md (Prerequisite)
+
+| Check | Action |
+|-------|--------|
+| `docs/PROJECT_RULES.md` exists | Proceed |
+| `docs/STANDARDS.md` exists (legacy) | Proceed |
+| Neither exists | **STOP** - Cannot analyze without project standards |
+
+### Gate 2: Agent Dispatch (Execution)
+
+**⛔ FORBIDDEN:** Using generic agents (`Explore`, `general-purpose`, `ring-default:codebase-explorer`) for codebase analysis.
+
+**⛔ MANDATORY:** Use ONLY `ring-dev-team:*` specialized agents.
+
+#### Agent Selection by Language
+
+| Manifest Found | Language | REQUIRED Agent |
+|----------------|----------|----------------|
+| `go.mod` | Go | `ring-dev-team:backend-engineer-golang` |
+| `package.json` + react/next/vue | Frontend TS | `ring-dev-team:frontend-bff-engineer-typescript` |
+| `package.json` + express/fastify/nestjs | Backend TS | `ring-dev-team:backend-engineer-typescript` |
+| `Dockerfile` only | DevOps | `ring-dev-team:devops-engineer` |
+| Multiple manifests | Mixed | Dispatch ALL applicable language agents |
+
+#### 4-Agent Parallel Dispatch (Step 3)
+
+**All 4 agents MUST be dispatched in a SINGLE message (parallel execution):**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  SINGLE Task tool message with 4 parallel agent calls:      │
+│                                                             │
+│  1. ring-dev-team:{language-agent}  → Code/Architecture     │
+│  2. ring-dev-team:qa-analyst        → Testing               │
+│  3. ring-dev-team:devops-engineer   → DevOps                │
+│  4. ring-dev-team:sre               → SRE/Observability     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Violations - STOP IMMEDIATELY
+
+| Violation | Why It's Wrong | Required Action |
+|-----------|----------------|-----------------|
+| Using `Explore` agent | Generic, lacks language-specific standards | Re-dispatch with correct agent |
+| Using `general-purpose` agent | No specialized Go/TS knowledge | Re-dispatch with correct agent |
+| Using `ring-default:codebase-explorer` | Architecture-only, missing code quality | Re-dispatch with correct agent |
+| Dispatching agents sequentially | Wastes time, should be parallel | Re-send as single message |
+| Dispatching < 4 agents | Incomplete analysis | Add missing agents |
+| Reading >3 files directly | Violates 3-file rule | Use agents instead |
+
+**If you already violated a gate:** STOP current approach. Re-execute with correct agents.
+
+### Pressure Resistance - DO NOT RATIONALIZE
+
+**If you catch yourself thinking ANY of these, STOP immediately:**
+
+#### Agent & Execution Rationalizations
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Explore agent is faster" | Generic agent lacks language-specific standards | Use `ring-dev-team:*` agent |
+| "I'll just read the files directly" | Violates 3-file rule, incomplete analysis | Dispatch specialized agents |
+| "One agent is enough" | 4 dimensions require 4 specialized agents | Dispatch all 4 in parallel |
+| "Sequential dispatch is fine" | Wastes time, skill requires parallel | Single message, 4 agents |
+| "PROJECT_RULES.md not needed" | Cannot analyze without project standards | STOP, require file first |
+
+#### Analysis Scope Rationalizations
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Code works fine" | Working ≠ maintainable. Analysis finds hidden debt. | Complete full analysis |
+| "Code works, skip analysis" | Working ≠ maintainable. Technical debt hidden. | Complete all 4 dimensions |
+| "Too time-consuming" | Cost of analysis < cost of compounding debt | Complete full analysis |
+| "No time for full analysis" | Partial analysis = partial picture | All 4 dimensions required |
+| "Standards don't fit us" | Document YOUR standards. Analysis still reveals gaps. | Analyze against project rules |
+| "Only critical matters" | Today's medium = tomorrow's critical | Document all severities |
+| "Only critical issues matter" | Medium issues become critical over time | Document all, prioritize later |
+| "Legacy gets a pass" | Legacy sets precedent. Analysis shows what to improve. | Document all gaps |
+| "Standards don't apply to legacy" | Legacy needs analysis MOST | Full analysis required |
+| "Team has their own way" | Document "their way" as standards. Analyze against it. | Use PROJECT_RULES.md |
+| "That's just how we do it here" | Undocumented patterns = inconsistent patterns | Document in PROJECT_RULES.md |
+
+#### ROI & Justification Rationalizations
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "ROI of refactoring is low" | ROI calculation requires analysis. Can't calculate without data. | Complete analysis first |
+| "ROI doesn't justify full analysis" | You can't know ROI without the analysis data | Complete analysis, then evaluate |
+| "Partial analysis is enough" | Partial analysis = partial picture. Hidden debt in skipped areas. | All 4 dimensions required |
+| "Partial analysis is sufficient" | Missing dimensions = missing problems | Complete all dimensions |
+| "3 years without bugs = stable" | No bugs ≠ no debt. Time doesn't validate architecture. | Full architecture analysis |
+| "3+ years stable = no debt" | Stability ≠ maintainability. Debt compounds silently. | Complete analysis |
+| "Analysis is overkill" | Analysis is the MINIMUM. Refactoring without analysis is guessing. | Complete all steps |
+| "Code smells ≠ problems" | Code smells ARE problems. They slow development and cause bugs. | Document all findings |
+| "Code smells aren't real problems" | Smells indicate deeper issues. They compound over time. | Document all severities |
+| "No specific problem motivating" | Technical debt IS the problem. Analysis quantifies it. | Complete analysis |
+| "No specific problem to solve" | Unknown problems are still problems. Analysis reveals them. | Full 4-dimension scan |
+
+#### Completion Rationalizations
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Analysis complete, user can decide" | Analysis without action guidance is incomplete. | Generate tasks.md |
+| "Analysis is done, user decides next" | Skill requires tasks.md generation | Generate tasks.md before completing |
+| "Findings documented, my job done" | Findings → Tasks → Execution. Documentation alone changes nothing. | Generate tasks.md |
+| "Documented findings, job complete" | Tasks.md is mandatory output | Complete Step 6 (tasks.md) |
+
+**Non-negotiable:** These gates exist because specialized agents load Ring standards via WebFetch and have domain expertise. Generic agents do NOT have this capability.
+
+### Execution Checklist - MUST COMPLETE IN ORDER
+
+```
+Step 0: [ ] PROJECT_RULES.md exists? → If NO, STOP
+Step 1: [ ] Language detected? → go.mod / package.json found
+Step 2: [ ] PROJECT_RULES.md read?
+Step 3: [ ] 4 agents dispatched in SINGLE message? → If NO, re-dispatch
+Step 4: [ ] Agent outputs compiled into analysis-report.md?
+Step 5: [ ] Findings grouped into REFACTOR-XXX tasks?
+Step 6: [ ] tasks.md generated? → If NO, skill is INCOMPLETE
+Step 7: [ ] User approval requested via AskUserQuestion?
+Step 8: [ ] Artifacts saved to docs/refactor/{timestamp}/?
+Step 9: [ ] Handoff to dev-cycle (if approved)?
+```
+
+**SKIP PREVENTION:** You CANNOT proceed to Step N+1 without completing Step N. No exceptions.
+
+#### Prompt Prefix (REQUIRED)
+
+All agent prompts MUST start with:
+```
+**MODE: ANALYSIS ONLY** - Analyze codebase for refactoring.
+Return findings with: severity (Critical/High/Medium/Low), location (file:line), issue, recommendation.
+```
+
+#### Example: Go Project Dispatch
+
+```
+Task tool calls (SINGLE message, 4 parallel):
+
+1. subagent_type: "ring-dev-team:backend-engineer-golang"
+   prompt: "**MODE: ANALYSIS ONLY** - Analyze Go codebase for architecture, code quality, error handling, naming conventions, security..."
+
+2. subagent_type: "ring-dev-team:qa-analyst"
+   prompt: "**MODE: ANALYSIS ONLY** - Analyze test coverage (≥80%), test patterns, TDD compliance..."
+
+3. subagent_type: "ring-dev-team:devops-engineer"
+   prompt: "**MODE: ANALYSIS ONLY** - Analyze Dockerfile, docker-compose, .env.example..."
+
+4. subagent_type: "ring-dev-team:sre"
+   prompt: "**MODE: ANALYSIS ONLY** - Analyze health endpoints, structured logging, tracing..."
+```
+
+---
+
 ## What This Skill Does
 
 1. **Detects project language** (Go, TypeScript, Python) from manifest files
@@ -52,59 +212,6 @@ When user requests refactoring or improvement:
 - Cost of compounding debt: Unknown, unbounded
 
 **Analysis now saves 10x effort later.**
-
-## Pressure Resistance
-
-**Codebase analysis is MANDATORY when requested. Pressure scenarios and required responses:**
-
-| Pressure Type | Request | Agent Response |
-|---------------|---------|----------------|
-| **Works Fine** | "Code works, skip analysis" | "Working ≠ maintainable. Analysis reveals hidden technical debt." |
-| **Time** | "No time for full analysis" | "Partial analysis = partial picture. Technical debt compounds daily." |
-| **Legacy** | "Standards don't apply to legacy" | "Legacy code needs analysis MOST. Document gaps for improvement." |
-| **Critical Only** | "Only fix critical issues" | "Medium issues become critical. Document all, prioritize later." |
-
-**Non-negotiable principle:** If user requests refactoring analysis, complete ALL 4 dimensions (Architecture, Code, Testing, DevOps).
-
-## Common Rationalizations - REJECTED
-
-| Excuse | Reality |
-|--------|---------|
-| "Code works fine" | Working ≠ maintainable. Analysis finds hidden debt. |
-| "Too time-consuming" | Cost of analysis < cost of compounding debt. |
-| "Standards don't fit us" | Then document YOUR standards. Analysis still reveals gaps. |
-| "Only critical matters" | Today's medium = tomorrow's critical. Document all. |
-| "Legacy gets a pass" | Legacy sets precedent. Analysis shows what to improve. |
-| "Team has their own way" | Document "their way" as standards. Analyze against it. |
-| "ROI of refactoring is low" | ROI calculation requires analysis. You can't calculate without data. |
-| "Partial analysis is enough" | Partial analysis = partial picture. Hidden debt in skipped areas. |
-| "3 years without bugs = stable" | No bugs ≠ no debt. Time doesn't validate architecture. |
-| "Analysis is overkill" | Analysis is the MINIMUM. Refactoring without analysis is guessing. |
-| "Code smells ≠ problems" | Code smells ARE problems. They slow development and cause bugs. |
-| "No specific problem motivating" | Technical debt IS the problem. Analysis quantifies it. |
-| "Analysis complete, user can decide" | Analysis without action guidance is incomplete. Provide tasks.md. |
-| "Findings documented, my job done" | Findings → Tasks → Execution. Documentation alone changes nothing. |
-
-## Red Flags - STOP
-
-If you catch yourself thinking ANY of these, STOP immediately:
-
-- "Code works, no need to analyze"
-- "This is too time-consuming"
-- "Standards don't apply here"
-- "Only critical issues matter"
-- "Legacy code is exempt"
-- "That's just how we do it here"
-- "ROI doesn't justify full analysis"
-- "Partial analysis is sufficient"
-- "3+ years stable = no debt"
-- "Analysis is overkill"
-- "Code smells aren't real problems"
-- "No specific problem to solve"
-- "Analysis is done, user decides next"
-- "Documented findings, job complete"
-
-**All of these indicate analysis violation. Complete full 4-dimension analysis.**
 
 ## Analysis-to-Action Pipeline - MANDATORY
 
@@ -161,149 +268,436 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 ## Prerequisites
 
-Before starting analysis:
+**⛔ See "HARD GATES" section above for mandatory checks.**
 
+Before starting analysis:
 1. **Project root identified**: Know where the codebase lives
 2. **Language detectable**: Project has go.mod, package.json, or similar manifest
 3. **Scope defined**: Full project or specific directories
-4. **PROJECT_RULES.md exists**: MANDATORY - analysis cannot proceed without it
-
-### PROJECT_RULES.md is MANDATORY
-
-**HARD GATE. Do NOT proceed without PROJECT_RULES.md.**
-
-**Check:** (1) docs/PROJECT_RULES.md (2) docs/STANDARDS.md (legacy) → Found: Proceed | NOT Found: STOP with blocker
-
-**Rationalizations REJECTED:** "Defaults are fine" → Generic, not YOUR conventions | "Add later" → Wrong standards = rework | "Small project" → Standards still needed | "Best practices" → "Best" varies, YOUR rules define YOUR best
-
-**Note:** After check passes, agents load their own Ring standards via WebFetch. dev-refactor only reads PROJECT_RULES.md locally.
+4. **PROJECT_RULES.md exists**: Gate 1 in HARD GATES section
 
 ## Analysis Dimensions
 
-| Dimension | Category | Checks |
-|-----------|----------|--------|
-| **Architecture** | DDD | Entities (identity), Value Objects (immutable), Aggregates (invariants), Repositories (interfaces), Domain events |
-| | Clean/Hexagonal | Dependency direction (inward), Domain isolation, Ports as interfaces, Adapters implement ports |
-| | Structure | Matches PROJECT_RULES.md, Separation of concerns, No circular deps |
-| **Code Quality** | Naming | Files (snake/kebab), Functions (convention), Constants (UPPER_SNAKE) |
-| | Errors | No ignored errors, Wrapped with context, No panic() in business, Custom domain errors |
-| | Forbidden | No global state, No magic numbers, No commented code, No TODO without issue, No `any` (TS) |
-| | Security | Input validation, Parameterized queries, No sensitive logging, No hardcoded secrets |
-| **Testing** | Coverage | Current %, Gap to 80% minimum, Critical paths |
-| | Patterns | Table-driven (Go), AAA structure, Proper mocks, No test pollution |
-| | Types | Unit tests, Integration tests, Fixtures/factories |
-| **DevOps** | Container | Dockerfile exists, Multi-stage, Non-root user, Health check |
-| | Local Dev | docker-compose.yml, All services, Hot reload volumes |
-| | Environment | .env.example, All vars documented, No secrets in repo |
-| | CI/CD | Pipeline exists, Tests in CI, Linting enforced |
+### 1. Architecture Analysis
 
-## Step 0: Verify PROJECT_RULES.md Exists (HARD GATE)
+```text
+Checks:
+├── DDD Patterns (if enabled in PROJECT_RULES.md)
+│   ├── Entities have identity comparison
+│   ├── Value Objects are immutable
+│   ├── Aggregates enforce invariants
+│   ├── Repositories are interface-based
+│   └── Domain events for state changes
+│
+├── Clean Architecture / Hexagonal
+│   ├── Dependency direction (inward only)
+│   ├── Domain has no external dependencies
+│   ├── Ports defined as interfaces
+│   └── Adapters implement ports
+│
+└── Directory Structure
+    ├── Matches PROJECT_RULES.md layout
+    ├── Separation of concerns
+    └── No circular dependencies
+```
 
-**NON-NEGOTIABLE. Analysis CANNOT proceed without project standards.**
+### 2. Code Quality Analysis
 
-**Check:** (1) docs/PROJECT_RULES.md (2) docs/STANDARDS.md (legacy) (3) --standards arg → Found: Proceed | NOT Found: STOP with blocker `missing_prerequisite`
+```text
+Checks:
+├── Naming Conventions
+│   ├── Files match pattern (snake_case, kebab-case, etc.)
+│   ├── Functions/methods follow convention
+│   └── Constants are UPPER_SNAKE
+│
+├── Error Handling
+│   ├── No ignored errors (_, err := ...)
+│   ├── Errors wrapped with context
+│   ├── No panic() for business logic
+│   └── Custom error types for domain
+│
+├── Forbidden Practices
+│   ├── No global mutable state
+│   ├── No magic numbers/strings
+│   ├── No commented-out code
+│   ├── No TODO without issue reference
+│   └── No `any` type (TypeScript)
+│
+└── Security
+    ├── Input validation at boundaries
+    ├── Parameterized queries (no SQL injection)
+    ├── Sensitive data not logged
+    └── Secrets not hardcoded
+```
 
-**Pressure Resistance:** "Use defaults" → Generic, YOUR project needs YOUR rules | "We don't have standards" → Perfect time to define them | "Skip, analyze anyway" → Analysis without target = meaningless findings
+### 3. Testing Analysis
+
+```text
+Checks:
+├── Test Coverage
+│   ├── Current coverage percentage
+│   ├── Gap to minimum (80%)
+│   └── Critical paths covered
+│
+├── Test Patterns
+│   ├── Table-driven tests (Go)
+│   ├── Arrange-Act-Assert structure
+│   ├── Mocks for external dependencies
+│   └── No test pollution (global state)
+│
+├── Test Naming
+│   ├── Follows Test{Unit}_{Scenario}_{Expected}
+│   └── Descriptive test names
+│
+└── Test Types
+    ├── Unit tests exist
+    ├── Integration tests exist
+    └── Test fixtures/factories
+```
+
+### 4. DevOps Analysis
+
+```text
+Checks:
+├── Containerization
+│   ├── Dockerfile exists
+│   ├── Multi-stage build
+│   ├── Non-root user
+│   └── Health check defined
+│
+├── Local Development
+│   ├── docker-compose.yml exists
+│   ├── All services defined
+│   └── Volumes for hot reload
+│
+├── Environment
+│   ├── .env.example exists
+│   ├── All env vars documented
+│   └── No secrets in repo
+│
+└── CI/CD
+    ├── Pipeline exists
+    ├── Tests run in CI
+    └── Linting enforced
+```
+
+## Step 0: Verify PROJECT_RULES.md Exists
+
+**⛔ See "HARD GATES" section above - Gate 1**
+
+Check for `docs/PROJECT_RULES.md` or `docs/STANDARDS.md`. If neither exists, STOP.
 
 ---
 
 ## Step 1: Detect Project Language
 
-| Manifest | Project Type | Agent |
-|----------|--------------|-------|
-| `go.mod` | Go | `backend-engineer-golang` |
-| `package.json` + react/next | Frontend TS | `frontend-bff-engineer-typescript` |
-| `package.json` + express/fastify/nestjs | Backend TS | `backend-engineer-typescript` |
-| `Dockerfile` | DevOps | `devops-engineer` |
-| Multiple | Mixed | Dispatch all applicable agents |
+**⛔ See "HARD GATES" section above - Gate 2 → Agent Selection by Language**
 
-**Output:** Primary language, Project type, Agent standards list
+Detect manifest files (`go.mod`, `package.json`) to determine which `ring-dev-team:*` agent to use.
 
 ## Step 2: Read PROJECT_RULES.md
 
-**Action:** Read tool to load `docs/PROJECT_RULES.md` (project-specific conventions, stack decisions, architecture patterns)
+**Read the project-specific standards file:**
 
-**Responsibilities:** dev-refactor reads PROJECT_RULES.md locally, dispatches agents | Agents load Ring standards via WebFetch, analyze, return findings
+```text
+Action: Use Read tool to load docs/PROJECT_RULES.md
+
+This file contains:
+- Project-specific conventions
+- Technology stack decisions
+- Architecture patterns chosen for THIS project
+- Team-specific coding standards
+```
+
+**What dev-refactor does NOT do:**
+- Does NOT call WebFetch for Ring standards
+- Does NOT load golang.md, typescript.md, devops.md, sre.md directly
+
+**Why?** Each specialized agent (devops-engineer, sre, qa-analyst, backend-engineer-*) has its own WebFetch instructions in its agent definition. They load their own standards when dispatched. This avoids duplication and keeps responsibilities clear:
+
+| Component | Responsibility |
+|-----------|---------------|
+| **dev-refactor** | Reads PROJECT_RULES.md (local), dispatches agents, compiles findings |
+| **Agents** | Load Ring standards via WebFetch, analyze their dimension, return findings |
+
+**Output of this step:**
+- PROJECT_RULES.md content loaded and understood
+- Ready to dispatch agents with project context
 
 ## Step 3: Scan Codebase
 
-**IMPORTANT:** Dispatch 4 agents in SINGLE message (parallel). All prompts start with `**MODE: ANALYSIS ONLY**`.
+**⛔ See "HARD GATES" section above - Gate 2 → 4-Agent Parallel Dispatch**
 
-| Task | Agent | Focus Areas |
-|------|-------|-------------|
-| **Code** | Based on language: `ring-dev-team:backend-engineer-golang` / `ring-dev-team:backend-engineer-typescript` / `ring-dev-team:frontend-bff-engineer-typescript` | Structure, Architecture (DDD/Clean), Error handling, Naming, Security |
-| **Testing** | `ring-dev-team:qa-analyst` | Coverage ≥80%, Test patterns, TDD compliance, Mock usage |
-| **DevOps** | `ring-dev-team:devops-engineer` | Dockerfile (multi-stage, non-root, health), docker-compose, .env.example |
-| **SRE** | `ring-dev-team:sre` | Health endpoints, Structured JSON logging, Tracing |
+Dispatch ALL 4 agents in a SINGLE message:
+1. `ring-dev-team:{language-agent}` - Code/Architecture
+2. `ring-dev-team:qa-analyst` - Testing
+3. `ring-dev-team:devops-engineer` - DevOps
+4. `ring-dev-team:sre` - SRE/Observability
 
-**Prompt template:** `**MODE: ANALYSIS ONLY** - Analyze for refactoring. Return findings with: severity, location (file:line), issue, recommendation.`
+All prompts MUST start with `**MODE: ANALYSIS ONLY**`.
 
-**Output:** Dimension-specific findings with severities for Step 4.
+**Output:** Dimension-specific findings with severities to compile in Step 4.
 
 ## Step 4: Compile Findings
 
-**Process:** (1) Collect agent outputs (2) Parse findings (severity, location, issue, recommendation) (3) Deduplicate (4) Categorize by dimension (5) Sort by severity (Critical → High → Medium → Low)
+**Collect outputs from all dispatched agents and merge into structured report.**
 
-**Output:** `analysis-report.md` with Summary table (Dimension | Issues | Critical | High | Medium | Low) + sections for each severity level with format: `### {ID}: {title}` + Location, Issue, Standard, Fix
+Each agent returns findings in their output. The dev-refactor skill must:
+1. **Collect** all agent outputs (backend-engineer-*, qa-analyst, devops-engineer, sre)
+2. **Parse** findings from each output (severity, location, issue, recommendation)
+3. **Deduplicate** overlapping findings
+4. **Categorize** by dimension (Architecture, Code Quality, Testing, DevOps)
+5. **Sort** by severity (Critical → High → Medium → Low)
+
+**Merge results into structured report:**
+
+```markdown
+# Analysis Report: {project-name}
+
+**Generated:** {date}
+**Standards:** {path to PROJECT_RULES.md used}
+**Scope:** {directories analyzed}
+
+## Summary
+
+| Dimension    | Issues | Critical | High | Medium | Low |
+|--------------|--------|----------|------|--------|-----|
+| Architecture | 12     | 2        | 4    | 4      | 2   |
+| Code Quality | 23     | 1        | 8    | 10     | 4   |
+| Testing      | 8      | 3        | 3    | 2      | 0   |
+| DevOps       | 5      | 0        | 2    | 2      | 1   |
+| **Total**    | **48** | **6**    | **17**| **18**| **7**|
+
+## Critical Issues (Fix Immediately)
+
+### ARCH-001: Domain depends on infrastructure
+**Location:** `src/domain/user.go:15`
+**Issue:** Domain entity imports database package
+**Standard:** Domain layer must have zero external dependencies
+**Fix:** Extract repository interface, inject via constructor
+
+### CODE-001: SQL injection vulnerability
+**Location:** `src/handler/search.go:42`
+**Issue:** User input concatenated into SQL query
+**Standard:** Always use parameterized queries
+**Fix:** Use query builder or prepared statements
+
+...
+
+## High Priority Issues
+...
+
+## Medium Priority Issues
+...
+
+## Low Priority Issues
+...
+```
 
 ## Step 5: Prioritize and Group
 
-**Strategy:** (1) By bounded context/module (2) By dependency order (fix deps first) (3) By risk (critical security first)
+Group related issues into logical refactoring tasks:
 
-**Output:** Grouped tasks: `REFACTOR-001: Fix domain layer isolation` (ARCH-001, 003, 005) → `REFACTOR-002: Error handling` (CODE-002, 007, 012) → `REFACTOR-003: Test coverage` (TEST-001-003) → `REFACTOR-004: Containerization` (DEVOPS-001-002)
+```text
+Grouping Strategy:
+1. By bounded context / module
+2. By dependency order (fix dependencies first)
+3. By risk (critical security first)
+
+Example grouping:
+├── REFACTOR-001: Fix domain layer isolation
+│   ├── ARCH-001: Remove infra imports from domain
+│   ├── ARCH-003: Extract repository interfaces
+│   └── ARCH-005: Move domain events to domain layer
+│
+├── REFACTOR-002: Implement proper error handling
+│   ├── CODE-002: Wrap errors with context (15 locations)
+│   ├── CODE-007: Replace panic with error returns
+│   └── CODE-012: Add custom domain error types
+│
+├── REFACTOR-003: Add missing test coverage
+│   ├── TEST-001: User service unit tests
+│   ├── TEST-002: Order handler tests
+│   └── TEST-003: Repository integration tests
+│
+└── REFACTOR-004: Containerization improvements
+    ├── DEVOPS-001: Add multi-stage Dockerfile
+    └── DEVOPS-002: Create docker-compose.yml
+```
 
 ## Step 6: Generate tasks.md
 
-**Format:** Same as PM Team output. Each task has:
+Create refactoring tasks in the same format as PM Team output:
 
-| Section | Content |
-|---------|---------|
-| **Header** | `## REFACTOR-XXX: {title}` |
-| **Metadata** | Type, Effort, Priority, Dependencies |
-| **Description** | What to fix and why |
-| **Acceptance Criteria** | `- [ ] AC-X:` checklist items |
-| **Technical Notes** | Files to modify, Patterns, Related issues |
-| **Issues Addressed** | Table: ID \| Description \| Location |
+```markdown
+# Refactoring Tasks: {project-name}
 
-**File:** `docs/refactor/{timestamp}/tasks.md`
+**Source:** Analysis Report {date}
+**Total Tasks:** {count}
+**Estimated Effort:** {total hours}
+
+---
+
+## REFACTOR-001: Fix domain layer isolation
+
+**Type:** backend
+**Effort:** 4h
+**Priority:** Critical
+**Dependencies:** none
+
+### Description
+Remove infrastructure dependencies from domain layer and establish proper
+port/adapter boundaries following hexagonal architecture.
+
+### Acceptance Criteria
+- [ ] AC-1: Domain package has zero imports from infrastructure
+- [ ] AC-2: Repository interfaces defined in domain layer
+- [ ] AC-3: All domain entities use dependency injection
+- [ ] AC-4: Existing tests still pass
+
+### Technical Notes
+- Files to modify: src/domain/*.go
+- Pattern: See PROJECT_RULES.md → Hexagonal Architecture section
+- Related issues: ARCH-001, ARCH-003, ARCH-005
+
+### Issues Addressed
+| ID | Description | Location |
+|----|-------------|----------|
+| ARCH-001 | Domain imports database | src/domain/user.go:15 |
+| ARCH-003 | No repository interface | src/domain/ |
+| ARCH-005 | Events in wrong layer | src/infrastructure/events.go |
+
+---
+
+## REFACTOR-002: Implement proper error handling
+
+**Type:** backend
+**Effort:** 3h
+**Priority:** High
+**Dependencies:** REFACTOR-001
+
+### Description
+Standardize error handling across the codebase following Go idioms
+and project standards.
+
+### Acceptance Criteria
+- [ ] AC-1: All errors wrapped with context using fmt.Errorf
+- [ ] AC-2: No panic() outside of main.go
+- [ ] AC-3: Custom error types for domain errors
+- [ ] AC-4: Error handling tests added
+
+### Technical Notes
+- Use errors.Is/As for error checking
+- See PROJECT_RULES.md → Error Handling section
+
+### Issues Addressed
+| ID | Description | Location |
+|----|-------------|----------|
+| CODE-002 | Unwrapped errors | 15 locations |
+| CODE-007 | panic in business logic | src/service/order.go:78 |
+| CODE-012 | No domain error types | src/domain/ |
+
+---
+
+## REFACTOR-003: Add missing test coverage
+...
+
+---
+
+## REFACTOR-004: Containerization improvements
+...
+```
 
 ## Step 7: User Approval
 
-**AskUserQuestion:** "Review the refactoring plan. How do you want to proceed?"
+Present the generated plan and ask for approval using AskUserQuestion tool:
 
-| Option | Action |
-|--------|--------|
-| **Approve all** | Save tasks.md, proceed to dev-cycle execution |
-| **Approve with changes** | Let user edit tasks.md first, then proceed |
-| **Critical only** | Filter to only Critical/High priority tasks |
-| **Cancel** | Abort execution, keep analysis report only |
+```yaml
+AskUserQuestion:
+  questions:
+    - question: "Review the refactoring plan. How do you want to proceed?"
+      header: "Approval"
+      multiSelect: false
+      options:
+        - label: "Approve all"
+          description: "Save tasks.md, proceed to dev-cycle execution"
+        - label: "Approve with changes"
+          description: "Let user edit tasks.md first, then proceed"
+        - label: "Critical only"
+          description: "Filter to only Critical/High priority tasks"
+        - label: "Cancel"
+          description: "Abort execution, keep analysis report only"
+```
 
 ## Step 8: Save Artifacts
 
-**Location:** `docs/refactor/{timestamp}/` → `analysis-report.md` (findings) + `tasks.md` (approved tasks) + `project-rules-used.md` (snapshot of PROJECT_RULES.md)
+Save analysis report and tasks to project:
 
-**Note:** Ring standards are not saved (loaded dynamically by agents via WebFetch). Only project-specific rules preserved.
+```text
+docs/refactor/{timestamp}/
+├── analysis-report.md    # Full analysis with all findings
+├── tasks.md              # Approved refactoring tasks
+└── project-rules-used.md # Copy of PROJECT_RULES.md at time of analysis
+```
+
+**Note:** Ring standards are not saved as they are loaded dynamically by agents via WebFetch. Only the project-specific rules are preserved for reference.
 
 ## Step 9: Handoff to dev-cycle
 
-**If approved:** `/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md`
+If approved, the workflow continues:
 
-Executes each task through 6 gates: Implementation (TDD) → DevOps → SRE → Testing → Review (3 parallel) → Validation
+```bash
+# Automatic handoff
+/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md
+```
+
+This executes each refactoring task through the standard 6-gate process:
+- Gate 0: Implementation (TDD)
+- Gate 1: DevOps Setup
+- Gate 2: SRE (Observability)
+- Gate 3: Testing
+- Gate 4: Review (3 parallel reviewers)
+- Gate 5: Validation (user approval)
 
 ## Output Schema
 
-**Format:** markdown | **Artifacts:** `analysis-report.md`, `tasks.md` (both in `docs/refactor/{timestamp}/`)
-
-**Required sections:** `## Summary`, `## Critical Issues`, `## REFACTOR-XXX` (task entries)
+```yaml
+output_schema:
+  format: "markdown"
+  artifacts:
+    - name: "analysis-report.md"
+      location: "docs/refactor/{timestamp}/"
+      required: true
+    - name: "tasks.md"
+      location: "docs/refactor/{timestamp}/"
+      required: true
+  required_sections:
+    - name: "Summary"
+      pattern: "^## Summary"
+      required: true
+    - name: "Critical Issues"
+      pattern: "^## Critical Issues"
+      required: true
+    - name: "Tasks Generated"
+      pattern: "^## REFACTOR-"
+      required: true
+```
 
 ## Example Usage
 
-| Command | Purpose |
-|---------|---------|
-| `/ring-dev-team:dev-refactor` | Full project analysis |
-| `/ring-dev-team:dev-refactor src/domain` | Analyze specific directory |
-| `/ring-dev-team:dev-refactor --standards path/to/PROJECT_RULES.md` | Custom standards file |
-| `/ring-dev-team:dev-refactor --analyze-only` | Analysis only (no execution) |
+```bash
+# Full project analysis
+/ring-dev-team:dev-refactor
+
+# Analyze specific directory
+/ring-dev-team:dev-refactor src/domain
+
+# Analyze with custom standards
+/ring-dev-team:dev-refactor --standards path/to/PROJECT_RULES.md
+
+# Analysis only (no execution)
+/ring-dev-team:dev-refactor --analyze-only
+```
 
 ## Related Skills
 
