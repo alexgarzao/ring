@@ -224,8 +224,6 @@ When agents run in parallel (like 3 reviewers), test combined workflow:
 **REFACTOR Phase:** Test edge cases → Test stress scenarios → Add explicit handling → Verify consistency (3+ runs) → Test parallel integration (if applicable) → Re-run ALL tests after each change
 
 **Metrics (reviewer agents):** True positive >95%, False positive <10%, False negative <5%, Severity accuracy >90%, Schema compliance 100%, Consistency >95%
-- [ ] Schema compliance: 100%
-- [ ] Consistency: >95%
 
 ## Prohibited Testing Shortcuts
 
