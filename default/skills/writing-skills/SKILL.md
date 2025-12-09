@@ -187,7 +187,7 @@ Use skill name only, with explicit requirement markers:
 
 ## Flowchart Usage
 
-**Only for:** Non-obvious decisions, process loops, "A vs B" choices. **Never for:** Reference (→tables), code (→blocks), linear steps (→lists). See @graphviz-conventions.dot.
+**Only for:** Non-obvious decisions, process loops, "A vs B" choices. **Never for:** Reference (→tables), code (→blocks), linear steps (→lists). See graphviz-conventions.dot for conventions.
 
 ## Code Examples
 
