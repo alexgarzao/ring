@@ -225,6 +225,10 @@ State is persisted to `.ring/dev-team/current-cycle.json`:
         "testing": {
           "agent": "ring-dev-team:qa-analyst",
           "output": "## Summary\n...",
+          "verdict": "PASS",
+          "coverage_actual": 87.5,
+          "coverage_threshold": 85,
+          "iteration": 1,
           "timestamp": "ISO timestamp",
           "duration_ms": 0
         },
@@ -243,7 +247,8 @@ State is persisted to `.ring/dev-team/current-cycle.json`:
   "metrics": {
     "total_duration_ms": 0,
     "gate_durations": {},
-    "review_iterations": 0
+    "review_iterations": 0,
+    "testing_iterations": 0
   }
 }
 ```
@@ -469,45 +474,54 @@ For current execution unit:
 
 **REQUIRED SUB-SKILL:** Use ring-dev-team:dev-testing
 
+### Simple Flow
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  QA runs tests → checks coverage against threshold      │
+│                                                         │
+│  PASS (coverage ≥ threshold) → Proceed to Gate 4       │
+│  FAIL (coverage < threshold) → Return to Gate 0        │
+│                                                         │
+│  Max 3 attempts, then escalate to user                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Threshold
+
+- Default: **85%** (Ring minimum)
+- Can be higher if defined in `docs/PROJECT_RULES.md`
+- Cannot be lower than 85%
+
+### Execution
+
 ```text
-For current execution unit:
+1. Dispatch QA analyst with acceptance criteria and threshold
+2. QA writes tests, runs them, checks coverage
+3. QA returns VERDICT: PASS or FAIL
 
-1. Record gate start timestamp
-2. Dispatch QA analyst:
-   Task tool:
-     subagent_type: "ring-dev-team:qa-analyst"
-     prompt: |
-       Create and run tests for: [unit_id] - [title]
+   PASS → Proceed to Gate 4 (Review)
 
-       Acceptance Criteria:
-       [acceptance_criteria]
+   FAIL → Return to Gate 0 (Implementation) to add tests
+          QA provides: what lines/branches need coverage
 
-       Implementation:
-       [implementation_artifacts]
+4. Track iteration count (state.testing.iteration)
+   - Max 3 iterations allowed
+   - After 3rd failure: STOP and escalate to user
+   - Do NOT attempt 4th iteration automatically
+```
 
-       Write:
-       - Unit tests (coverage ≥ 80%)
-       - Integration tests
-       - E2E tests (if applicable)
+### State Tracking
 
-       Run all tests.
-       Report: test coverage, test results, any failures.
-
-3. Receive: Test report
-4. Store agent output:
-   - agent_outputs.testing = {
-       agent: "ring-dev-team:qa-analyst",
-       output: "[full agent output for feedback analysis]",
-       timestamp: "[ISO timestamp]",
-       duration_ms: [execution time]
-     }
-5. If tests fail:
-   - Log failure
-   - Loop back to Gate 0 (Implementation) with failure details
-   - Increment metrics.review_iterations
-6. If tests pass:
-   - Update state
-   - Proceed to Gate 4
+```json
+{
+  "testing": {
+    "verdict": "PASS|FAIL",
+    "coverage_actual": 87.5,
+    "coverage_threshold": 85,
+    "iteration": 1
+  }
+}
 ```
 
 ## Step 6: Gate 4 - Review (Per Execution Unit)
