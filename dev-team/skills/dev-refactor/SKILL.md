@@ -33,21 +33,11 @@ related:
 ║  THIS SKILL HAS 2 HARD GATES THAT WILL FAIL YOUR EXECUTION:                   ║
 ║                                                                               ║
 ║  GATE 0: PROJECT_RULES.md must exist → Or TERMINATE immediately               ║
-║  GATE 2: ONLY ring-dev-team:* agents allowed → Explore/general-purpose = FAIL ║
+║  GATE 2: ONLY ring-dev-team:* agents allowed                                  ║
 ║                                                                               ║
-║  FORBIDDEN AGENTS (using ANY = SKILL FAILURE):                                ║
-║  ❌ Explore                                                                   ║
-║  ❌ general-purpose                                                           ║
-║  ❌ ring-default:codebase-explorer                                            ║
-║  ❌ ANY agent without "ring-dev-team:" prefix                                 ║
-║                                                                               ║
-║  REQUIRED AGENTS (use ONLY these):                                            ║
-║  ✅ ring-dev-team:backend-engineer-golang                                     ║
-║  ✅ ring-dev-team:backend-engineer-typescript                                 ║
-║  ✅ ring-dev-team:frontend-bff-engineer-typescript                            ║
-║  ✅ ring-dev-team:qa-analyst                                                  ║
-║  ✅ ring-dev-team:devops-engineer                                             ║
-║  ✅ ring-dev-team:sre                                                         ║
+║  AGENT RULE (MANDATORY):                                                      ║
+║  ✅ ALL agents MUST have "ring-dev-team:" prefix                              ║
+║  ❌ ANY agent WITHOUT "ring-dev-team:" prefix = SKILL FAILURE                 ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -132,111 +122,49 @@ After outputting the blocker above:
 
 **THIS VALIDATION IS MANDATORY. Execute BEFORE calling ANY Task tool.**
 
-### Pre-Dispatch Self-Check
-
-**Before EVERY Task tool call, you MUST ask yourself:**
+### The One Rule
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  ⛔ MANDATORY SELF-CHECK BEFORE DISPATCH                            │
+│  ⛔ BEFORE EVERY Task tool call, CHECK:                             │
 │                                                                     │
-│  Am I about to dispatch ANY of these FORBIDDEN agents?              │
+│  Does subagent_type start with "ring-dev-team:" ?                   │
 │                                                                     │
-│  ❌ "Explore"                    → FORBIDDEN                        │
-│  ❌ "general-purpose"            → FORBIDDEN                        │
-│  ❌ "ring-default:codebase-explorer" → FORBIDDEN                    │
-│  ❌ subagent_type WITHOUT "ring-dev-team:" prefix → FORBIDDEN       │
-│                                                                     │
-│  If YES to ANY → DO NOT DISPATCH. Use correct agent below.          │
+│  ✅ YES → Dispatch allowed                                          │
+│  ❌ NO  → FORBIDDEN - Use a ring-dev-team:* agent instead           │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Forbidden Agents - ABSOLUTE PROHIBITION
+**This is the ONLY rule. If the agent doesn't have `ring-dev-team:` prefix, don't use it.**
 
-**These agents are FORBIDDEN for dev-refactor analysis. Using them is a SKILL FAILURE:**
+### Why This Rule Exists
 
-| FORBIDDEN Agent | Why It's Wrong | Correct Replacement |
-|-----------------|----------------|---------------------|
-| `Explore` | Generic, no standards knowledge | `ring-dev-team:backend-engineer-*` |
-| `general-purpose` | No specialized domain knowledge | `ring-dev-team:*` agent |
-| `ring-default:codebase-explorer` | Architecture-only, incomplete | `ring-dev-team:backend-engineer-*` |
-| Any agent without `ring-dev-team:` prefix | Not a dev-team specialist | Use `ring-dev-team:*` |
+**ring-dev-team:* agents have capabilities that other agents lack:**
 
-### If You Catch Yourself Typing FORBIDDEN Agent
+| Capability | ring-dev-team:* | Other agents |
+|------------|-----------------|--------------|
+| WebFetch for Ring standards | ✅ YES | ❌ NO |
+| Domain expertise (Go, TS, DevOps, SRE) | ✅ YES | ❌ NO |
+| Standards-based compliance output | ✅ YES | ❌ NO |
 
-**STOP. Do NOT press enter. Replace with correct agent:**
-
-```
-WRONG: subagent_type: "Explore"
-RIGHT: subagent_type: "ring-dev-team:backend-engineer-golang"
-
-WRONG: subagent_type: "general-purpose"
-RIGHT: subagent_type: "ring-dev-team:qa-analyst"
-
-WRONG: subagent_type: "ring-default:codebase-explorer"
-RIGHT: subagent_type: "ring-dev-team:devops-engineer"
-```
+**Result:** Other agents produce generic observations. ring-dev-team:* agents produce compliance checks against standards.
 
 ### Violation Recovery
 
-**If you ALREADY dispatched a forbidden agent:**
+**If you ALREADY dispatched an agent without `ring-dev-team:` prefix:**
 
 1. **STOP** - Do not use its output
 2. **DISCARD** - The output is invalid (lacks standards)
-3. **RE-DISPATCH** - Use correct `ring-dev-team:*` agent
+3. **RE-DISPATCH** - Use appropriate `ring-dev-team:*` agent
 4. **DOCUMENT** - Note: "Recovered from incorrect agent dispatch"
-
-**Output from forbidden agents is INVALID and MUST NOT be used in analysis.**
-
-### WHY ring-dev-team:* Agents Are REQUIRED (Technical Reason)
-
-**The difference is NOT just naming. It's CAPABILITY:**
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  FORBIDDEN AGENTS (Explore, general-purpose, codebase-explorer)             │
-│                                                                             │
-│  ❌ Do NOT have WebFetch instructions for Ring standards                    │
-│  ❌ Do NOT know Go/TypeScript/DevOps/SRE specific patterns                  │
-│  ❌ Do NOT have domain expertise prompts                                    │
-│  ❌ Output is GENERIC - "looks okay" instead of "violates standard X"       │
-│                                                                             │
-│  Result: Analysis against NOTHING. Just observations, not compliance check. │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  REQUIRED AGENTS (ring-dev-team:*)                                          │
-│                                                                             │
-│  ✅ HAVE WebFetch instructions to load Ring standards (golang.md, etc.)     │
-│  ✅ HAVE language-specific expertise built into agent definition            │
-│  ✅ HAVE domain knowledge (error handling, testing patterns, etc.)          │
-│  ✅ Output is SPECIFIC - "violates golang.md section 3.2: error wrapping"   │
-│                                                                             │
-│  Result: Analysis against STANDARDS. Compliance check, not just observation.│
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Same input, DIFFERENT output:**
-
-| Input | Explore Agent Output | ring-dev-team:backend-engineer-golang Output |
-|-------|---------------------|---------------------------------------------|
-| `if err != nil { return err }` | "Error is returned" | "VIOLATION: Error not wrapped with context. See golang.md §4.1" |
-| Missing test file | "No test file found" | "VIOLATION: Missing test violates 80% coverage requirement. See qa-standards.md" |
-| No Dockerfile | "Dockerfile not present" | "VIOLATION: Missing multi-stage Dockerfile. See devops.md §2.1" |
-
-**This is why using forbidden agents = INVALID analysis.**
 
 ### Agent Dispatch Rationalizations - DO NOT THINK THESE
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Explore is faster for initial scan" | Speed ≠ correctness. Wrong agent = wrong analysis. | Use `ring-dev-team:*` |
-| "I'll use Explore first, then specialists" | Two-pass is waste. Specialists do it right first time. | Use `ring-dev-team:*` only |
-| "Explore can understand architecture" | Understanding ≠ analyzing against standards. | Use `ring-dev-team:*` |
-| "general-purpose is flexible" | Flexibility ≠ domain expertise. | Use `ring-dev-team:*` |
-| "codebase-explorer is for codebases" | Name doesn't matter. It lacks standards loading. | Use `ring-dev-team:*` |
+| "This other agent is faster" | Speed ≠ correctness. Wrong agent = wrong analysis. | Use `ring-dev-team:*` |
+| "I'll explore first, then use specialists" | Two-pass is waste. Specialists do it right first time. | Use `ring-dev-team:*` only |
 | "I need to understand code first" | Specialists understand AND analyze. One step. | Use `ring-dev-team:*` |
-| "Quick exploration before real analysis" | No exploration phase exists. Analysis IS the skill. | Use `ring-dev-team:*` |
 | "These agents are similar enough" | Similar ≠ equivalent. Standards loading is critical. | Use `ring-dev-team:*` |
 
 ---
@@ -251,45 +179,21 @@ RIGHT: subagent_type: "ring-dev-team:devops-engineer"
 
 ### Gate 2: Agent Dispatch (Execution)
 
-**⛔ FORBIDDEN:** Using generic agents (`Explore`, `general-purpose`, `ring-default:codebase-explorer`) for codebase analysis.
+**⛔ MANDATORY:** ALL agents MUST have `ring-dev-team:` prefix.
 
-**⛔ MANDATORY:** Use ONLY `ring-dev-team:*` specialized agents.
-
-**⛔ See "STEP 1.5: AGENT DISPATCH VALIDATION" above for complete forbidden list and self-check.**
-
-#### Agent Selection by Language
-
-| Manifest Found | Language | REQUIRED Agent |
-|----------------|----------|----------------|
-| `go.mod` | Go | `ring-dev-team:backend-engineer-golang` |
-| `package.json` + react/next/vue | Frontend TS | `ring-dev-team:frontend-bff-engineer-typescript` |
-| `package.json` + express/fastify/nestjs | Backend TS | `ring-dev-team:backend-engineer-typescript` |
-| `Dockerfile` only | DevOps | `ring-dev-team:devops-engineer` |
-| Multiple manifests | Mixed | Dispatch ALL applicable language agents |
+**⛔ See "STEP 1.5: AGENT DISPATCH VALIDATION" above for the rule and self-check.**
 
 #### Parallel Dispatch (Step 3)
 
-**ALL applicable ring-dev-team:* agents MUST be dispatched in a SINGLE message (parallel execution):**
+**ALL applicable ring-dev-team:* agents MUST be dispatched in a SINGLE message (parallel execution).**
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  SINGLE Task tool message with ALL applicable agents:       │
-│                                                             │
-│  • ring-dev-team:{language-agent}  → Code/Architecture      │
-│  • ring-dev-team:qa-analyst        → Testing                │
-│  • ring-dev-team:devops-engineer   → DevOps                 │
-│  • ring-dev-team:sre               → SRE/Observability      │
-│  • (+ any other ring-dev-team:* agents relevant to task)    │
-└─────────────────────────────────────────────────────────────┘
-```
+Select agents based on the analysis dimensions needed for the task. Dispatch ALL that apply.
 
 #### Violations - STOP IMMEDIATELY
 
 | Violation | Why It's Wrong | Required Action |
 |-----------|----------------|-----------------|
-| Using `Explore` agent | Generic, lacks language-specific standards | Re-dispatch with correct agent |
-| Using `general-purpose` agent | No specialized Go/TS knowledge | Re-dispatch with correct agent |
-| Using `ring-default:codebase-explorer` | Architecture-only, missing code quality | Re-dispatch with correct agent |
+| Using agent without `ring-dev-team:` prefix | Lacks standards knowledge | Re-dispatch with `ring-dev-team:*` agent |
 | Dispatching agents sequentially | Wastes time, should be parallel | Re-send as single message |
 | Dispatching fewer agents than needed | Incomplete analysis | Add ALL applicable agents |
 | Reading >3 files directly | Violates 3-file rule | Use agents instead |
@@ -304,8 +208,8 @@ RIGHT: subagent_type: "ring-dev-team:devops-engineer"
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Explore agent is faster" | Generic agent lacks language-specific standards | Use `ring-dev-team:*` agent |
-| "I'll just read the files directly" | Violates 3-file rule, incomplete analysis | Dispatch specialized agents |
+| "This other agent is faster" | Speed ≠ correctness. Wrong agent = wrong analysis. | Use `ring-dev-team:*` agent |
+| "I'll just read the files directly" | Violates 3-file rule, incomplete analysis | Dispatch `ring-dev-team:*` agents |
 | "One agent is enough" | Multiple dimensions require multiple specialized agents | Dispatch ALL applicable in parallel |
 | "Sequential dispatch is fine" | Wastes time, skill requires parallel | Single message, ALL agents |
 
@@ -363,14 +267,11 @@ Step 0:   [ ] PROJECT_RULES.md exists? → If NO, output blocker and TERMINATE
 Step 1:   [ ] Language detected? → go.mod / package.json found
 
 Step 1.5: [ ] Agent dispatch validated? → BEFORE typing Task tool:
-           ⚠️ See "STEP 1.5: AGENT DISPATCH VALIDATION"
-           ⚠️ Self-check: Am I dispatching Explore/general-purpose? → FORBIDDEN
-           ⚠️ Self-check: Does subagent_type start with "ring-dev-team:"? → REQUIRED
+           ⚠️ Does subagent_type start with "ring-dev-team:"? → REQUIRED
 
 Step 2:   [ ] PROJECT_RULES.md read?
 
 Step 3:   [ ] ALL applicable ring-dev-team:* agents dispatched in SINGLE message?
-           ⚠️ FORBIDDEN: Explore, general-purpose, ring-default:codebase-explorer
            ⚠️ If wrong agent used → DISCARD output, re-dispatch correct agent
 
 Step 4:   [ ] Agent outputs compiled into analysis-report.md?
@@ -385,7 +286,7 @@ Step 9:   [ ] Handoff to dev-cycle (if approved)?
 
 **Step 0 is NON-NEGOTIABLE:** If PROJECT_RULES.md doesn't exist, you MUST output the blocker template from the top of this skill and terminate. No rationalizations allowed.
 
-**Step 1.5 is NON-NEGOTIABLE:** If you are about to dispatch Explore, general-purpose, or any agent without `ring-dev-team:` prefix, STOP and use the correct agent. No rationalizations allowed.
+**Step 1.5 is NON-NEGOTIABLE:** If subagent_type doesn't start with `ring-dev-team:`, STOP and use the correct agent. No rationalizations allowed.
 
 #### Prompt Prefix (REQUIRED)
 
@@ -395,54 +296,34 @@ All agent prompts MUST start with:
 Return findings with: severity (Critical/High/Medium/Low), location (file:line), issue, recommendation.
 ```
 
-#### WRONG vs RIGHT: Agent Dispatch Examples
+#### WRONG vs RIGHT: Agent Dispatch
 
-**❌ WRONG - These dispatches are SKILL FAILURES:**
+**❌ WRONG:**
 
 ```yaml
-# WRONG: Using Explore agent
-- subagent_type: "Explore"  # ❌ FORBIDDEN - generic agent
+# ANY agent without "ring-dev-team:" prefix
+- subagent_type: "Explore"           # ❌ WRONG
+- subagent_type: "general-purpose"   # ❌ WRONG
+- subagent_type: "ring-default:..."  # ❌ WRONG
 
-# WRONG: Using general-purpose
-- subagent_type: "general-purpose"  # ❌ FORBIDDEN - no domain expertise
-
-# WRONG: Using codebase-explorer
-- subagent_type: "ring-default:codebase-explorer"  # ❌ FORBIDDEN - no standards
-
-# WRONG: Sequential dispatch (multiple separate messages)
-# ❌ WRONG - Must be SINGLE message with ALL applicable agents in parallel
+# Sequential dispatch (multiple separate messages)
+# ❌ WRONG - Must be SINGLE message with ALL agents in parallel
 ```
 
-**✅ RIGHT - Correct dispatch pattern:**
+**✅ RIGHT:**
 
 ```yaml
-# SINGLE message with ALL applicable ring-dev-team:* agents in parallel:
-# Dispatch EVERY agent that is relevant to the analysis dimensions needed.
+# ALL agents have "ring-dev-team:" prefix
+- subagent_type: "ring-dev-team:..."  # ✅ CORRECT
 
-# For language/code analysis (pick based on detected language):
-- subagent_type: "ring-dev-team:backend-engineer-golang"      # Go projects
-- subagent_type: "ring-dev-team:backend-engineer-typescript"  # TS backend
-- subagent_type: "ring-dev-team:frontend-bff-engineer-typescript"  # TS frontend
-
-# For testing analysis:
-- subagent_type: "ring-dev-team:qa-analyst"
-
-# For DevOps analysis:
-- subagent_type: "ring-dev-team:devops-engineer"
-
-# For SRE/Observability analysis:
-- subagent_type: "ring-dev-team:sre"
-
-# All prompts MUST start with:
-prompt: |
-  **MODE: ANALYSIS ONLY** - Analyze against PROJECT_RULES.md.
-  Return: severity (Critical/High/Medium/Low), location (file:line), issue, recommendation.
+# All dispatched in SINGLE message (parallel)
+# All prompts start with **MODE: ANALYSIS ONLY**
+# All prompts reference PROJECT_RULES.md
 ```
 
 **Key rules:**
 - ✅ ALL agents MUST have `ring-dev-team:` prefix
 - ✅ Dispatch ALL applicable agents in SINGLE message (parallel)
-- ✅ Select language agent based on detected manifest (go.mod, package.json)
 - ✅ ALL prompts start with `**MODE: ANALYSIS ONLY**`
 - ✅ ALL prompts reference PROJECT_RULES.md
 
@@ -688,11 +569,7 @@ This file contains:
 
 **⛔ See "HARD GATES" section above - Gate 2 → Parallel Dispatch**
 
-Dispatch ALL applicable ring-dev-team:* agents in a SINGLE message:
-1. `ring-dev-team:{language-agent}` - Code/Architecture
-2. `ring-dev-team:qa-analyst` - Testing
-3. `ring-dev-team:devops-engineer` - DevOps
-4. `ring-dev-team:sre` - SRE/Observability
+Dispatch ALL applicable `ring-dev-team:*` agents in a SINGLE message.
 
 All prompts MUST start with `**MODE: ANALYSIS ONLY**`.
 
@@ -703,7 +580,7 @@ All prompts MUST start with `**MODE: ANALYSIS ONLY**`.
 **Collect outputs from all dispatched agents and merge into structured report.**
 
 Each agent returns findings in their output. The dev-refactor skill must:
-1. **Collect** all agent outputs (backend-engineer-*, qa-analyst, devops-engineer, sre)
+1. **Collect** all agent outputs
 2. **Parse** findings from each output (severity, location, issue, recommendation)
 3. **Deduplicate** overlapping findings
 4. **Categorize** by dimension (Architecture, Code Quality, Testing, DevOps)
