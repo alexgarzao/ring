@@ -26,7 +26,7 @@ related:
 
 # Dev Refactor Skill
 
-```
+```text
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║  ⛔⛔⛔ CRITICAL: READ BEFORE DOING ANYTHING ⛔⛔⛔                            ║
 ║                                                                               ║
@@ -138,7 +138,7 @@ After outputting the blocker above:
 
 **⛔ You MUST NOT dispatch the agent. This is a HARD GATE.**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │  ⛔ HARD GATE: AGENT PREFIX VALIDATION                              │
 │                                                                     │
@@ -300,7 +300,7 @@ Select agents based on the analysis dimensions needed for the task. Dispatch ALL
 
 ### Execution Checklist - MUST COMPLETE IN ORDER
 
-```
+```text
 Step 0:   [ ] PROJECT_RULES.md exists? → If NO, output blocker and TERMINATE
            ⚠️ See "STEP 0: PROJECT_RULES.md VALIDATION" at top of skill
 
@@ -331,7 +331,7 @@ Step 9:   [ ] Handoff to dev-cycle (if approved)?
 #### Prompt Prefix (REQUIRED)
 
 All agent prompts MUST start with:
-```
+```text
 **MODE: ANALYSIS ONLY** - Analyze codebase for refactoring.
 Return findings with: severity (Critical/High/Medium/Low), location (file:line), issue, recommendation.
 ```
