@@ -693,7 +693,7 @@ This file contains:
 - PROJECT_RULES.md content loaded and understood
 - Ready to dispatch agents with project context
 
-## Step 3: Scan Codebase
+## Step 3: Dispatch ring-dev-team Agents
 
 **⛔ HARD GATE 1 APPLIES HERE - READ BEFORE DISPATCHING ANY AGENT**
 

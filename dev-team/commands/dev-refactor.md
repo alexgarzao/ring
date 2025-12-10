@@ -95,13 +95,13 @@ Then re-run `/ring-dev-team:dev-refactor`.
         ┌──────────────────┴──────────────────┐
         ▼                                     ▼
 ┌───────────────────┐                ┌───────────────────┐
-│ Load Standards    │                │ Scan Codebase     │
-│                   │                │ (4 dimensions)    │
+│ Load Standards    │                │ Dispatch Agents   │
+│                   │                │ (ring-dev-team:*) │
 │ PROJECT_RULES.md  │                │                   │
-│ (MANDATORY)       │                │ • Architecture    │
-│                   │                │ • Code Quality    │
-└───────────────────┘                │ • Testing         │
-                                     │ • DevOps          │
+│ (MANDATORY)       │                │ • backend-engineer│
+│                   │                │ • qa-analyst      │
+└───────────────────┘                │ • devops-engineer │
+                                     │ • sre             │
                                      └───────────────────┘
                            │
                            ▼
