@@ -165,6 +165,47 @@ ls <file>  # Should return "No such file"
 
 **If you can retrieve the code, you didn't delete it.**
 
+## Mental Reference Prevention (HARD GATE)
+
+**Mental reference is a subtle form of "keeping" that violates TDD:**
+
+| Type | Example | Why It's Wrong | Required Action |
+|------|---------|----------------|-----------------|
+| **Memory** | "I remember the approach I used" | You'll unconsciously reproduce patterns | **Start fresh with new design** |
+| **Similar code** | "Let me check how auth works elsewhere" | Looking at YOUR prior work = adapting | **Read external examples only** |
+| **Mental model** | "I know the structure already" | Structure should emerge from tests | **Let tests drive the design** |
+| **Clipboard** | "I copied the method signature" | Clipboard content = keeping | **Type from scratch** |
+
+**Anti-Rationalization for Mental Reference:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I deleted the code but remember it" | Memory = reference. You'll reproduce flaws. | **Design fresh from requirements** |
+| "Looking at similar code for patterns" | If it's YOUR code, that's adapting. | **Only external examples allowed** |
+| "I already know the approach" | Knowing = bias. Let tests discover approach. | **Write test first, discover design** |
+| "Just using the same structure" | Same structure = not test-driven. | **Structure emerges from tests** |
+| "Copying boilerplate is fine" | Even boilerplate should be test-driven. | **Generate boilerplate via tests** |
+
+**Valid external references:**
+- ✅ Official documentation (Go docs, TypeScript handbook)
+- ✅ Open source libraries you're using
+- ✅ Team patterns documented in PROJECT_RULES.md
+- ❌ Your own prior implementation of THIS feature
+- ❌ Similar code YOU wrote in another service
+
+## Generated Code Handling
+
+**Generated code (protobuf, OpenAPI, ORM) has special rules:**
+
+| Type | TDD Required? | Rationale |
+|------|---------------|-----------|
+| **protobuf .pb.go** | NO | Generated from .proto - test the .proto |
+| **swagger/openapi client** | NO | Generated from spec - test the spec |
+| **ORM models** | NO | Generated from schema - test business logic using them |
+| **Your code using generated code** | YES | Your logic needs TDD |
+
+**Rule:** Test what you write. Don't test what's generated. But test your usage of generated code.
+
 ## Prerequisites
 
 **HARD GATE:** `docs/PROJECT_RULES.md` must exist (Read tool, NOT WebFetch). Not found → STOP with blocker.

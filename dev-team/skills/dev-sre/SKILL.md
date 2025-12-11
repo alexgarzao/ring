@@ -141,6 +141,58 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 **All of these indicate Gate 2 violation. Return to developers to implement observability.**
 
+## Component Type Decision Tree
+
+**Not all code is a service. Use this tree to determine observability requirements:**
+
+```plaintext
+Is it runnable code?
+├── NO (library/package) → No observability required
+│   └── Libraries are consumed by services that have observability
+│
+└── YES → Does it expose HTTP/gRPC/TCP endpoints?
+    ├── YES (API Service) → FULL OBSERVABILITY REQUIRED
+    │   └── /health + /ready + /metrics + structured logs + tracing
+    │
+    └── NO → Does it run continuously?
+        ├── YES (Background Worker) → WORKER OBSERVABILITY
+        │   └── /health + structured logs + tracing
+        │
+        └── NO (Script/Job) → SCRIPT OBSERVABILITY
+            └── Structured logs + exit codes + optional /health
+```
+
+### Component Type Requirements
+
+| Type | /health | /ready | /metrics | JSON Logs | Tracing | Exit Codes |
+|------|---------|--------|----------|-----------|---------|------------|
+| **API Service** | REQUIRED | REQUIRED | REQUIRED | REQUIRED | Recommended | N/A |
+| **Background Worker** | REQUIRED | Optional | Recommended | REQUIRED | Optional | N/A |
+| **CLI Tool** | Optional | N/A | N/A | REQUIRED | N/A | REQUIRED |
+| **One-time Script** | N/A | N/A | N/A | REQUIRED | N/A | REQUIRED |
+| **Library** | N/A | N/A | N/A | N/A | N/A | N/A |
+
+### Migration Scripts and One-Time Jobs
+
+**Migration scripts still need observability, but different kind:**
+
+| Requirement | Why | Example |
+|-------------|-----|---------|
+| **Structured logs** | Track progress, debug failures | `{"level":"info","step":"migrate_users","count":1500}` |
+| **Exit codes** | Orchestration needs success/failure signal | `exit 0` success, `exit 1` failure |
+| **Idempotency logging** | Know if re-run is safe | `{"already_migrated":true,"skipping":true}` |
+| **/health (optional)** | Only if long-running (>5min) | For orchestrator health checks |
+
+**Anti-Rationalization for Component Types:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's just a script, runs once" | Scripts fail. Logs tell you why. | **Add structured logging** |
+| "Library doesn't need observability" | Correct! Libraries are exempt. | **Verify it's truly a library** |
+| "Worker is simple, no /health" | Simple workers crash silently. | **Add /health endpoint** |
+| "Exit code 0 is enough" | Exit code + logs = complete picture. | **Add structured logs** |
+| "Migration runs in CI only" | CI failures need debugging too. | **Structured logs required** |
+
 ## "Feature Complete" Redefinition Prevention
 
 **A feature is NOT complete without observability:**
