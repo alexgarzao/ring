@@ -145,7 +145,7 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 **Not all code is a service. Use this tree to determine observability requirements:**
 
-```
+```plaintext
 Is it runnable code?
 ├── NO (library/package) → No observability required
 │   └── Libraries are consumed by services that have observability
