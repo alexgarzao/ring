@@ -673,6 +673,8 @@ grep -r "@pytest.mark.skip\|@unittest.skip" tests/
 ```bash
 # JavaScript/TypeScript (Jest)
 jest --coverage --testPathIgnorePatterns="\.skip\." --testPathIgnorePatterns="\.todo\."
+# Guard against focused tests (.only) masking coverage
+grep -rn '(it|describe|test)\.only(' tests/ || true
 
 # Go
 go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out | grep -v "_test.go"
