@@ -63,6 +63,7 @@ Before adding ANY content to prompts, skills, agents, or documentation:
 | Section | Content |
 |---------|---------|
 | [CRITICAL RULES](#-critical-rules-read-first) | Non-negotiable requirements |
+| [Content Duplication Prevention](#5-content-duplication-prevention-always-check) | Canonical sources + reference pattern |
 | [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents) | Prevent AI from assuming/skipping |
 | [Assertive Language Reference](#assertive-language-reference) | Quick reference + [full docs](docs/PROMPT_ENGINEERING.md) |
 | [Agent Modification Verification](#agent-modification-verification-mandatory) | Checklist for agent changes |
