@@ -488,12 +488,12 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 | Category | Ring Standard | lib-commons-js Package |
 |----------|--------------|------------------------|
-| **Logging** | Structured JSON logging | `@lerian/lib-commons-js/log` |
-| **Error Handling** | Standardized error types | `@lerian/lib-commons-js/errors` |
-| **HTTP Client** | Instrumented HTTP client | `@lerian/lib-commons-js/http` |
-| **Graceful Shutdown** | Clean shutdown handling | `@lerian/lib-commons-js/shutdown` |
-| **Caching** | Standardized cache patterns | `@lerian/lib-commons-js/cache` |
-| **Transactions** | Transaction validation | `@lerian/lib-commons-js/transactions` |
+| **Logging** | Structured JSON logging | `@lerianstudio/lib-commons-js/log` |
+| **Error Handling** | Standardized error types | `@lerianstudio/lib-commons-js/errors` |
+| **HTTP Client** | Instrumented HTTP client | `@lerianstudio/lib-commons-js/http` |
+| **Graceful Shutdown** | Clean shutdown handling | `@lerianstudio/lib-commons-js/shutdown` |
+| **Caching** | Standardized cache patterns | `@lerianstudio/lib-commons-js/cache` |
+| **Transactions** | Transaction validation | `@lerianstudio/lib-commons-js/transactions` |
 | **Type Safety** | No `any` types | Use `unknown` with type guards |
 | **Validation** | Runtime type checking | Zod schemas at boundaries |
 
@@ -516,8 +516,8 @@ No migration actions required.
 
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
-| Logging | Uses `console.log` | `@lerian/lib-commons-js/log` | ⚠️ Non-Compliant | `src/services/*.ts` |
-| Error Handling | Custom error classes | `@lerian/lib-commons-js/errors` | ⚠️ Non-Compliant | `src/errors/*.ts` |
+| Logging | Uses `console.log` | `@lerianstudio/lib-commons-js/log` | ⚠️ Non-Compliant | `src/services/*.ts` |
+| Error Handling | Custom error classes | `@lerianstudio/lib-commons-js/errors` | ⚠️ Non-Compliant | `src/errors/*.ts` |
 | ... | ... | ... | ✅ Compliant | - |
 
 ### Required Changes for Compliance
@@ -525,7 +525,7 @@ No migration actions required.
 1. **[Category] Migration**
    - Replace: `[current code pattern]`
    - With: `[lib-commons-js pattern]`
-   - Import: `import { ... } from '@lerian/lib-commons-js/[module]'`
+   - Import: `import { ... } from '@lerianstudio/lib-commons-js/[module]'`
    - Files affected: [list]
 ```
 
@@ -1073,8 +1073,8 @@ Coverage: 89.2%
 
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
-| Logging | Uses `console.log` | `@lerian/lib-commons-js/log` | ⚠️ Non-Compliant | `src/services/*.ts` |
-| Error Handling | Custom Result type | `@lerian/lib-commons-js/errors` | ⚠️ Non-Compliant | `src/domain/errors.ts` |
+| Logging | Uses `console.log` | `@lerianstudio/lib-commons-js/log` | ⚠️ Non-Compliant | `src/services/*.ts` |
+| Error Handling | Custom Result type | `@lerianstudio/lib-commons-js/errors` | ⚠️ Non-Compliant | `src/domain/errors.ts` |
 | Type Safety | Uses `unknown` with guards | Ring TypeScript Standards | ✅ Compliant | - |
 | Validation | Zod schemas at boundaries | Ring TypeScript Standards | ✅ Compliant | - |
 
@@ -1082,12 +1082,12 @@ Coverage: 89.2%
 
 1. **Logging Migration**
    - Replace: `console.log()` and custom logging
-   - With: `import { Logger } from '@lerian/lib-commons-js/log'`
+   - With: `import { Logger } from '@lerianstudio/lib-commons-js/log'`
    - Files affected: `src/services/user-service.ts`, `src/infrastructure/repositories/*.ts`
 
 2. **Error Handling Migration**
    - Replace: Custom Result type implementation
-   - With: `import { AppError } from '@lerian/lib-commons-js/errors'`
+   - With: `import { AppError } from '@lerianstudio/lib-commons-js/errors'`
    - Files affected: `src/domain/errors.ts`
 ```
 

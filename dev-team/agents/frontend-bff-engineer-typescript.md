@@ -437,10 +437,10 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 | Category | Ring Standard | lib-commons-js Package |
 |----------|--------------|------------------------|
-| **Logging** | Structured JSON logging | `@lerian/lib-commons-js/log` |
-| **Error Handling** | Standardized error types | `@lerian/lib-commons-js/errors` |
-| **HTTP Client** | Instrumented HTTP client | `@lerian/lib-commons-js/http` |
-| **Graceful Shutdown** | Clean shutdown handling | `@lerian/lib-commons-js/shutdown` |
+| **Logging** | Structured JSON logging | `@lerianstudio/lib-commons-js/log` |
+| **Error Handling** | Standardized error types | `@lerianstudio/lib-commons-js/errors` |
+| **HTTP Client** | Instrumented HTTP client | `@lerianstudio/lib-commons-js/http` |
+| **Graceful Shutdown** | Clean shutdown handling | `@lerianstudio/lib-commons-js/shutdown` |
 | **Type Safety** | No `any` types | Use `unknown` with type guards |
 | **Validation** | Runtime type checking | Zod schemas at boundaries |
 | **Architecture** | Clean Architecture | Ports/Adapters, DI containers |
@@ -464,7 +464,7 @@ No migration actions required.
 
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
-| Logging | Uses `console.log` | `@lerian/lib-commons-js/log` | ⚠️ Non-Compliant | `src/app/api/**/*.ts` |
+| Logging | Uses `console.log` | `@lerianstudio/lib-commons-js/log` | ⚠️ Non-Compliant | `src/app/api/**/*.ts` |
 | ... | ... | ... | ✅ Compliant | - |
 
 ### Required Changes for Compliance
@@ -472,7 +472,7 @@ No migration actions required.
 1. **[Category] Migration**
    - Replace: `[current code pattern]`
    - With: `[lib-commons-js pattern]`
-   - Import: `import { ... } from '@lerian/lib-commons-js/[module]'`
+   - Import: `import { ... } from '@lerianstudio/lib-commons-js/[module]'`
    - Files affected: [list]
 ```
 
