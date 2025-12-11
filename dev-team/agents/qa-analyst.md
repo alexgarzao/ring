@@ -365,7 +365,7 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 | Category | Ring Standard | Expected Pattern |
 |----------|--------------|------------------|
 | **Test Isolation** | Independent tests | No shared state, no execution order dependency |
-| **Coverage** | ≥80% threshold | Critical paths covered |
+| **Coverage** | ≥85% threshold | Critical paths covered |
 | **Naming** | Descriptive names | `describe/it` or `Test{Unit}_{Scenario}` |
 | **TDD** | RED-GREEN-REFACTOR | Test fails first, then passes |
 | **Mocking** | Minimal mocking | Test behavior, not mocks |
@@ -411,7 +411,7 @@ No migration actions required.
 - Priority of test types when time-constrained
 
 **Don't ask (follow standards or best practices):**
-- Coverage thresholds → Check PROJECT_RULES.md or use 80%
+- Coverage thresholds → Check PROJECT_RULES.md or use 85% (Ring minimum)
 - Test framework → Check PROJECT_RULES.md or match existing tests
 - Naming conventions → Check PROJECT_RULES.md or follow codebase patterns
 - API testing → Use Postman/Newman per existing patterns
@@ -969,7 +969,7 @@ Tests: 3 passed | Coverage: 72%
 
 2. **Coverage Improvement**
    - Current: 65% statement coverage
-   - Target: ≥80% statement coverage
+   - Target: ≥85% statement coverage (Ring minimum; PROJECT_RULES.md may set higher)
    - Priority files: `src/services/payment.ts` (0%), `src/utils/validation.ts` (45%)
 
 3. **TDD Compliance**
