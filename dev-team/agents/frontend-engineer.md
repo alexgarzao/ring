@@ -3,10 +3,11 @@
 name: frontend-engineer
 description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, and modern React patterns.
 model: opus
-version: 3.2.0
+version: 3.2.1
 last_updated: 2025-12-11
 type: specialist
 changelog:
+  - 3.2.1: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 3.2.0: Added Blocker Criteria, Severity Calibration, Cannot Be Overridden, Pressure Resistance sections for consistency with other agents
   - 3.1.0: Added Standards Loading section with WebFetch references to Ring Frontend standards
   - 3.0.0: Refactored to specification-only format, removed code examples
@@ -33,7 +34,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
