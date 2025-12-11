@@ -2,10 +2,11 @@
 name: backend-engineer-typescript
 description: Senior Backend Engineer specialized in TypeScript/Node.js for scalable systems. Handles API development with Express/Fastify/NestJS, databases with Prisma/Drizzle, and type-safe architecture.
 model: opus
-version: 1.3.2
+version: 1.3.3
 last_updated: 2025-12-11
 type: specialist
 changelog:
+  - 1.3.3: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 1.3.2: Enhanced Standards Compliance conditional requirement documentation across all docs (invoked_from_dev_refactor, MODE ANALYSIS ONLY detection)
   - 1.3.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.3.0: Removed duplicated standards content, now references docs/standards/typescript.md
@@ -33,7 +34,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false

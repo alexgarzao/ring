@@ -2,10 +2,11 @@
 name: frontend-bff-engineer-typescript
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption.
 model: opus
-version: 2.1.1
+version: 2.1.2
 last_updated: 2025-12-11
 type: specialist
 changelog:
+  - 2.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 2.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 2.1.0: Added Standards Loading, Blocker Criteria, Severity Calibration per Go agent standards
   - 2.0.0: Refactored to specification-only format, removed code examples
@@ -31,7 +32,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false

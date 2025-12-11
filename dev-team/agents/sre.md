@@ -2,10 +2,11 @@
 name: sre
 description: Senior Site Reliability Engineer specialized in VALIDATING observability implementations for high-availability financial systems. Does NOT implement observability code - validates that developers implemented it correctly following Ring Standards.
 model: opus
-version: 1.2.1
+version: 1.2.2
 last_updated: 2025-12-11
 type: specialist
 changelog:
+  - 1.2.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 1.2.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.2.0: Refactored to reference Ring SRE standards via WebFetch, removed duplicated domain standards
   - 1.1.0: Clarified role as VALIDATOR, not IMPLEMENTER. Developers implement observability.
@@ -31,7 +32,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false

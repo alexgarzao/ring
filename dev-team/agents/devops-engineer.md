@@ -2,10 +2,11 @@
 name: devops-engineer
 description: Senior DevOps Engineer specialized in cloud infrastructure for financial services. Handles CI/CD pipelines, containerization, Kubernetes, IaC, and deployment automation.
 model: opus
-version: 1.2.0
+version: 1.2.1
 last_updated: 2025-12-11
 type: specialist
 changelog:
+  - 1.2.1: Added required_when condition for Standards Compliance (mandatory when invoked from dev-refactor)
   - 1.2.0: Added Pressure Resistance section for consistency with other agents
   - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.1.0: Refactored to reference Ring DevOps standards via WebFetch, removed duplicated domain standards
@@ -31,7 +32,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false

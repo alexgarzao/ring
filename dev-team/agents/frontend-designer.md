@@ -2,10 +2,11 @@
 name: frontend-designer
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code.
 model: opus
-version: 1.1.1
+version: 1.1.2
 type: specialist
 last_updated: 2025-12-11
 changelog:
+  - 1.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.1.0: Removed duplicated Domain Standards section, references Ring Frontend standards via WebFetch
   - 1.0.0: Refactored to specification-only format, removed format examples
@@ -38,7 +39,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false

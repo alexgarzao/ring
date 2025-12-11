@@ -2,10 +2,11 @@
 name: qa-analyst
 description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation.
 model: opus
-version: 1.1.1
+version: 1.1.2
 last_updated: 2025-12-11
 type: specialist
 changelog:
+  - 1.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.1.0: Added Standards Loading section with WebFetch references to language-specific standards
   - 1.0.0: Initial release
@@ -45,7 +46,10 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill (enforced via prose instructions). Optional otherwise."
+      required_when:
+        invocation_context: "dev-refactor"
+        prompt_contains: "**MODE: ANALYSIS ONLY**"
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
