@@ -780,60 +780,116 @@ output_schema:
 
 ## Standards Compliance (Conditional Output Section)
 
-The `ring-dev-team` agents include a **Standards Compliance** output section that is conditionally required based on invocation context:
+The `ring-dev-team` agents include a **Standards Compliance** output section that is conditionally required based on invocation context.
 
-**Schema Definition:**
+### Schema Definition
+
+All ring-dev-team agents include this in their `output_schema`:
+
 ```yaml
 - name: "Standards Compliance"
   pattern: "^## Standards Compliance"
   required: false  # In schema, but MANDATORY when invoked from dev-refactor
-  description: "Comparison of codebase against Lerian/Ring standards"
+  description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill."
 ```
 
-**When Required:**
-- **MANDATORY** when agent is invoked from `ring-dev-team:dev-refactor` skill
-- **Optional** for direct agent invocations or other workflows
+### Conditional Requirement: `invoked_from_dev_refactor`
 
-**Enforcement Mechanism:**
-- Enforced via prose instructions in agent prompts, not programmatically
-- The `dev-refactor` skill dispatches agents with `MODE: ANALYSIS ONLY` prompts that explicitly require Standards Compliance output
-- Agents use WebFetch to load standards at runtime from GitHub
+| Context | Standards Compliance Required | Enforcement |
+|---------|------------------------------|-------------|
+| Direct agent invocation | Optional | Agent may include if relevant |
+| Via `ring-dev-team:dev-cycle` | Optional | Agent may include if relevant |
+| Via `ring-dev-team:dev-refactor` | **MANDATORY** | Prompt includes `MODE: ANALYSIS ONLY` |
 
-**Agents with Standards Compliance:**
-- `ring-dev-team:backend-engineer-golang`
-- `ring-dev-team:backend-engineer-typescript`
-- `ring-dev-team:devops-engineer`
-- `ring-dev-team:frontend-bff-engineer-typescript`
-- `ring-dev-team:frontend-designer`
-- `ring-dev-team:qa-analyst`
-- `ring-dev-team:sre`
+**How It's Triggered:**
+1. User invokes `/ring-dev-team:dev-refactor` command
+2. The skill dispatches agents with prompts starting with `**MODE: ANALYSIS ONLY**`
+3. This prompt pattern signals to agents that Standards Compliance output is MANDATORY
+4. Agents load Ring standards via WebFetch and produce comparison tables
 
-**Example Output Format:**
+**Detection in Agent Prompts:**
+```text
+If prompt contains "**MODE: ANALYSIS ONLY**":
+  → Standards Compliance section is MANDATORY
+  → Agent MUST load Ring standards via WebFetch
+  → Agent MUST produce comparison tables
+
+If prompt does NOT contain "**MODE: ANALYSIS ONLY**":
+  → Standards Compliance section is optional
+  → Agent focuses on implementation/other tasks
+```
+
+### Affected Agents
+
+All ring-dev-team agents support Standards Compliance:
+
+| Agent | Standards Source | Categories Checked |
+|-------|------------------|-------------------|
+| `ring-dev-team:backend-engineer-golang` | `golang.md` | lib-commons, Error Handling, Logging, Config |
+| `ring-dev-team:backend-engineer-typescript` | `typescript.md` | Type Safety, Error Handling, Validation |
+| `ring-dev-team:devops-engineer` | `devops.md` | Dockerfile, docker-compose, CI/CD |
+| `ring-dev-team:frontend-bff-engineer-typescript` | `frontend.md` | Component patterns, State management |
+| `ring-dev-team:frontend-designer` | `frontend.md` | Accessibility, Design patterns |
+| `ring-dev-team:qa-analyst` | `qa.md` | Test coverage, Test patterns |
+| `ring-dev-team:sre` | `sre.md` | Health endpoints, Logging, Tracing |
+
+### Output Format Examples
+
+**When ALL categories are compliant:**
 ```markdown
 ## Standards Compliance
 
-### Violations Found
-| Category | Severity | Location | Issue | Standard Reference |
-|----------|----------|----------|-------|-------------------|
-| Error Handling | High | pkg/api/handler.go:45 | Using panic() instead of error returns | golang.md#error-handling |
-| Logging | Medium | internal/service/user.go:78 | Missing structured logging fields | golang.md#logging |
+✅ **Fully Compliant** - Codebase follows all Lerian/Ring Standards.
 
-### Compliance Summary
-- **Total Violations:** 2
-- **Critical:** 0
-- **High:** 1
-- **Medium:** 1
-- **Low:** 0
-
-### Recommendations
-1. Replace panic() with proper error returns per golang.md standards
-2. Add structured logging fields (request_id, user_id) to service layer
+No migration actions required.
 ```
 
-**Cross-References:**
-- Skill: `dev-team/skills/dev-refactor/SKILL.md` (defines HARD GATES requiring Standards Compliance)
-- Standards: `dev-team/docs/standards/*.md` (source of truth for compliance checks)
-- Agents: `dev-team/agents/*.md` (output_schema includes Standards Compliance)
+**When ANY category is non-compliant:**
+```markdown
+## Standards Compliance
+
+### Lerian/Ring Standards Comparison
+
+| Category | Current Pattern | Expected Pattern | Status | File/Location |
+|----------|----------------|------------------|--------|---------------|
+| Error Handling | Using panic() | Return error | ⚠️ Non-Compliant | handler.go:45 |
+| Logging | Uses fmt.Println | lib-commons/zap | ⚠️ Non-Compliant | service/*.go |
+| Config | os.Getenv direct | SetConfigFromEnvVars() | ⚠️ Non-Compliant | config.go:15 |
+
+### Compliance Summary
+- **Total Violations:** 3
+- **Critical:** 0
+- **High:** 1
+- **Medium:** 2
+- **Low:** 0
+
+### Required Changes for Compliance
+
+1. **Error Handling Migration**
+   - Replace: `panic("error message")`
+   - With: `return fmt.Errorf("context: %w", err)`
+   - Files affected: handler.go, service.go
+
+2. **Logging Migration**
+   - Replace: `fmt.Println("debug info")`
+   - With: `logger.Info("debug info", zap.String("key", "value"))`
+   - Import: `import "github.com/LerianStudio/lib-commons/zap"`
+   - Files affected: internal/service/*.go
+```
+
+### Cross-References
+
+| Document | Location | What It Contains |
+|----------|----------|-----------------|
+| **Skill Definition** | `dev-team/skills/dev-refactor/SKILL.md` | HARD GATES requiring Standards Compliance |
+| **Standards Source** | `dev-team/docs/standards/*.md` | Source of truth for compliance checks |
+| **Agent Definitions** | `dev-team/agents/*.md` | output_schema includes Standards Compliance |
+| **Session Hook** | `dev-team/hooks/session-start.sh` | Injects Standards Compliance guidance |
+
+### Changelog
+
+- **2025-12-11**: Added `invoked_from_dev_refactor` conditional requirement documentation
+- **2025-12-10**: Initial Standards Compliance section added
 
 ---
 
