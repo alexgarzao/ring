@@ -193,14 +193,16 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Parallel Code Review
 
-**Instead of sequential (60 min):**
+### Instead of sequential (60 min)
+
 ```python
 review1 = Task("ring-default:code-reviewer")           # 20 min
 review2 = Task("ring-default:business-logic-reviewer") # 20 min
 review3 = Task("ring-default:security-reviewer")       # 20 min
 ```
 
-**Run parallel (20 min total):**
+### Run parallel (20 min total)
+
 ```python
 Task.parallel([
     ("ring-default:code-reviewer", prompt),
@@ -209,7 +211,9 @@ Task.parallel([
 ])  # Single message, 3 tool calls
 ```
 
-**Key rule:** Always dispatch all 3 reviewers in a single message with multiple Task tool calls.
+### Key rule
+
+Always dispatch all 3 reviewers in a single message with multiple Task tool calls.
 
 ---
 
