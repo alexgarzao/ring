@@ -465,32 +465,66 @@ The Standards Compliance section exists to:
 
 #### Bootstrap & Initialization (CRITICAL - VERIFY ALL)
 
-| Category | Ring Standard | lib-commons Pattern |
-|----------|--------------|---------------------|
+**Required Imports (lib-commons v2 with standard aliases):**
+```go
+import (
+    libCommons "github.com/LerianStudio/lib-commons/v2/commons"
+    libZap "github.com/LerianStudio/lib-commons/v2/commons/zap"
+    libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"
+    libServer "github.com/LerianStudio/lib-commons/v2/commons/server"
+    libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"
+    libPostgres "github.com/LerianStudio/lib-commons/v2/commons/postgres"
+    libMongo "github.com/LerianStudio/lib-commons/v2/commons/mongo"
+    libRedis "github.com/LerianStudio/lib-commons/v2/commons/redis"
+)
+```
+
+| Category | Ring Standard | lib-commons v2 Pattern |
+|----------|--------------|------------------------|
 | **Config Struct** | Single struct with `env` tags | `type Config struct { Field string \`env:"ENV_VAR"\` }` |
 | **Config Loading** | Centralized in bootstrap | `libCommons.SetConfigFromEnvVars(cfg)` |
-| **Logger Init** | First initialization | `libZap.InitializeLogger()` |
-| **Telemetry Init** | After logger, before server | `libOpentelemetry.InitializeTelemetry(&config)` |
-| **Telemetry Middleware** | First middleware in router | `tlMid.WithTelemetry(tl)` |
-| **Telemetry EndSpans** | Last middleware in router | `tlMid.EndTracingSpans` |
-| **Server Lifecycle** | Graceful shutdown | `libServer.NewServerManager().StartWithGracefulShutdown()` |
+| **Logger Init** | First initialization | `logger := libZap.InitializeLogger()` → returns `log.Logger` interface |
+| **Telemetry Init** | After logger, before server | `telemetry := libOpentelemetry.InitializeTelemetry(&libOpentelemetry.TelemetryConfig{...})` |
+| **Telemetry Middleware** | First middleware in router | `tlMid.WithTelemetry(tl)` (from `libHTTP`) |
+| **Telemetry EndSpans** | Last middleware in router | `telemetry.EndTracingSpans(ctx)` |
+| **Server Lifecycle** | Graceful shutdown | `libServer.NewServerManager(nil, &telemetry, logger).WithHTTPServer(app, addr).StartWithGracefulShutdown()` |
 | **Bootstrap Directory** | `/internal/bootstrap/` | `config.go`, `fiber.server.go`, `service.go` |
 
 #### Context & Tracking (VERIFY ALL)
 
-| Category | Ring Standard | lib-commons Pattern |
-|----------|--------------|---------------------|
-| **Logger/Core three Recovery** | From context in any layer | `libCommons.NewTrackingFromContext(ctx)` |
-| **Span Creation** | Child spans per operation | `ctx, span := tracer.Start(ctx, "operation")` |
+**Required Imports (with standard aliases):**
+```go
+import (
+    libCommons "github.com/LerianStudio/lib-commons/v2/commons"
+    libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"
+)
+```
+
+| Category | Ring Standard | lib-commons v2 Pattern |
+|----------|--------------|------------------------|
+| **Logger/Core three Recovery** | From context in any layer | `logger, tracer, headerID, metricsFactory := libCommons.NewTrackingFromContext(ctx)` |
+| **Span Creation** | Child spans per operation | `ctx, span := tracer.Start(ctx, "operation")` + `defer span.End()` |
 | **Error in Span** | Technical errors | `libOpentelemetry.HandleSpanError(&span, msg, err)` |
 | **Business Error in Span** | Validation errors | `libOpentelemetry.HandleSpanBusinessErrorEvent(&span, msg, err)` |
 
 #### Infrastructure (VERIFY ALL)
 
-| Category | Ring Standard | lib-commons Package |
-|----------|--------------|---------------------|
-| **Logging** | Structured JSON logging | `libZap` / `libLog` |
-| **HTTP Utilities** | Health, version, pagination | `libHTTP.Ping`, `libHTTP.Version` |
+**Required Imports (with standard aliases):**
+```go
+import (
+    "github.com/LerianStudio/lib-commons/v2/commons/log"                    // Logger interface (log.Logger)
+    libZap "github.com/LerianStudio/lib-commons/v2/commons/zap"             // Logger implementation
+    libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"       // HTTP utilities
+    libPostgres "github.com/LerianStudio/lib-commons/v2/commons/postgres"   // PostgreSQL
+    libMongo "github.com/LerianStudio/lib-commons/v2/commons/mongo"         // MongoDB
+    libRedis "github.com/LerianStudio/lib-commons/v2/commons/redis"         // Redis
+)
+```
+
+| Category | Ring Standard | lib-commons v2 Import & Usage |
+|----------|--------------|-------------------------------|
+| **Logging** | Structured JSON logging | `libZap.InitializeLogger()` → returns `log.Logger` interface (Zap is internal impl) |
+| **HTTP Utilities** | Health, version, pagination | `libHTTP.Ping`, `libHTTP.Version`, `libHTTP.HealthWithDependencies(...)` |
 | **PostgreSQL** | Connection pooling, tracing | `libPostgres.PostgresConnection` |
 | **MongoDB** | Connection pooling, tracing | `libMongo.MongoConnection` |
 | **Redis** | Connection pooling, tracing | `libRedis.RedisConnection` |
@@ -518,9 +552,9 @@ The Standards Compliance section exists to:
 | Category | Current Pattern | Expected Pattern | Status | Evidence |
 |----------|----------------|------------------|--------|----------|
 | Config Struct | `Config` struct with `env` tags | Single struct with `env` tags | ✅ Compliant | `internal/bootstrap/config.go:15` |
-| Config Loading | `libCommons.SetConfigFromEnvVars(cfg)` | `libCommons.SetConfigFromEnvVars(cfg)` | ✅ Compliant | `internal/bootstrap/config.go:42` |
-| Logger Init | `libZap.InitializeLogger()` | `libZap.InitializeLogger()` | ✅ Compliant | `internal/bootstrap/config.go:45` |
-| Telemetry Init | `libOpentelemetry.InitializeTelemetry()` | `libOpentelemetry.InitializeTelemetry()` | ✅ Compliant | `internal/bootstrap/config.go:48` |
+| Config Loading | `commons.SetConfigFromEnvVars(&cfg)` | `commons.SetConfigFromEnvVars(&cfg)` | ✅ Compliant | `internal/bootstrap/config.go:42` |
+| Logger Init | `zap.InitializeLogger()` | `zap.InitializeLogger()` | ✅ Compliant | `internal/bootstrap/config.go:45` |
+| Telemetry Init | `opentelemetry.InitializeTelemetry()` | `opentelemetry.InitializeTelemetry()` | ✅ Compliant | `internal/bootstrap/config.go:48` |
 | ... | ... | ... | ✅ Compliant | ... |
 
 #### Context & Tracking
@@ -1115,13 +1149,13 @@ coverage: 87.3% of statements
 |----------|----------------|------------------|--------|---------------|
 | Logger Recovery | Global logger | `libCommons.NewTrackingFromContext(ctx)` | ⚠️ Non-Compliant | `internal/service/*.go` |
 | Span Creation | No tracing | `tracer.Start(ctx, "operation")` | ⚠️ Non-Compliant | `internal/service/*.go` |
-| Error in Span | Not recording errors | `HandleSpanError(&span, msg, err)` | ⚠️ Non-Compliant | `internal/service/*.go` |
-| Business Error in Span | Not recording | `HandleSpanBusinessErrorEvent(&span, msg, err)` | ⚠️ Non-Compliant | `internal/service/*.go` |
+| Error in Span | Not recording errors | `libOpentelemetry.HandleSpanError(&span, msg, err)` | ⚠️ Non-Compliant | `internal/service/*.go` |
+| Business Error in Span | Not recording | `libOpentelemetry.HandleSpanBusinessErrorEvent(&span, msg, err)` | ⚠️ Non-Compliant | `internal/service/*.go` |
 
 #### Infrastructure
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
-| Logging | Custom logger | `libZap` / `libLog` | ⚠️ Non-Compliant | `pkg/logger/` |
+| Logging | Custom logger | `libZap.InitializeLogger()` → `log.Logger` | ⚠️ Non-Compliant | `pkg/logger/` |
 | HTTP Utilities | Custom health endpoint | `libHTTP.Ping`, `libHTTP.Version` | ⚠️ Non-Compliant | `routes.go` |
 | PostgreSQL | `database/sql` direct | `libPostgres.PostgresConnection` | ⚠️ Non-Compliant | `internal/adapters/postgres/` |
 
