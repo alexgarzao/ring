@@ -1309,7 +1309,7 @@ Task 1:
 
     Include a "## Standards Compliance" section comparing TypeScript patterns against Ring standards.
     Use the format from your agent definition (backend-engineer-typescript.md → Standards Compliance Report section).
-    Reference @lerianstudio/lib-commons-js packages for applicable categories.
+    Reference barrel exports from @lerianstudio/lib-commons-js (e.g., createLogger, AppError, isAppError).
 ```
 
 ---

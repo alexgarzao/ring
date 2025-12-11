@@ -485,14 +485,14 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 ### Comparison Categories for TypeScript
 
-| Category | Ring Standard | lib-commons-js Package |
-|----------|--------------|------------------------|
-| **Logging** | Structured JSON logging | `@lerianstudio/lib-commons-js/log` |
-| **Error Handling** | Standardized error types | `@lerianstudio/lib-commons-js/errors` |
-| **HTTP Client** | Instrumented HTTP client | `@lerianstudio/lib-commons-js/http` |
-| **Graceful Shutdown** | Clean shutdown handling | `@lerianstudio/lib-commons-js/shutdown` |
-| **Caching** | Standardized cache patterns | `@lerianstudio/lib-commons-js/cache` |
-| **Transactions** | Transaction validation | `@lerianstudio/lib-commons-js/transactions` |
+| Category | Ring Standard | lib-commons-js Symbol |
+|----------|--------------|----------------------|
+| **Logging** | Structured JSON logging | `createLogger` from `@lerianstudio/lib-commons-js` |
+| **Error Handling** | Standardized error types | `AppError`, `isAppError` from `@lerianstudio/lib-commons-js` |
+| **HTTP Client** | Instrumented HTTP client | `createHttpClient` from `@lerianstudio/lib-commons-js` |
+| **Graceful Shutdown** | Clean shutdown handling | `startServerWithGracefulShutdown` from `@lerianstudio/lib-commons-js` |
+| **Caching** | Standardized cache patterns | `createCache` from `@lerianstudio/lib-commons-js` |
+| **Transactions** | Transaction validation | `validateTransaction` from `@lerianstudio/lib-commons-js` |
 | **Type Safety** | No `any` types | Use `unknown` with type guards |
 | **Validation** | Runtime type checking | Zod schemas at boundaries |
 
@@ -515,16 +515,28 @@ No migration actions required.
 
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
-| Logging | Uses `console.log` | `@lerianstudio/lib-commons-js/log` | ⚠️ Non-Compliant | `src/services/*.ts` |
-| Error Handling | Custom error classes | `@lerianstudio/lib-commons-js/errors` | ⚠️ Non-Compliant | `src/errors/*.ts` |
+| Logging | Uses `console.log` | `createLogger` from lib-commons-js | ⚠️ Non-Compliant | `src/services/*.ts` |
+| Error Handling | Custom error classes | `AppError` from lib-commons-js | ⚠️ Non-Compliant | `src/errors/*.ts` |
 | ... | ... | ... | ✅ Compliant | - |
 
 ### Required Changes for Compliance
 
-1. **[Category] Migration**
-   - Replace: `[current code pattern]`
-   - With: `[lib-commons-js pattern]`
-   - Import: `import { ... } from '@lerianstudio/lib-commons-js/[module]'`
+1. **Logging Migration**
+   - Replace: `console.log()` / `console.error()`
+   - With: `const logger = createLogger({ service: 'my-service' })`
+   - Import: `import { createLogger } from '@lerianstudio/lib-commons-js'`
+   - Files affected: [list]
+
+2. **Error Handling Migration**
+   - Replace: Custom error classes or plain `Error`
+   - With: `throw new AppError('message', { code: 'ERR_CODE', statusCode: 400 })`
+   - Import: `import { AppError, isAppError } from '@lerianstudio/lib-commons-js'`
+   - Files affected: [list]
+
+3. **Graceful Shutdown Migration**
+   - Replace: `app.listen(port)`
+   - With: `startServerWithGracefulShutdown(app, { port })`
+   - Import: `import { startServerWithGracefulShutdown } from '@lerianstudio/lib-commons-js'`
    - Files affected: [list]
 ```
 
@@ -1072,8 +1084,8 @@ Coverage: 89.2%
 
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
-| Logging | Uses `console.log` | `@lerianstudio/lib-commons-js/log` | ⚠️ Non-Compliant | `src/services/*.ts` |
-| Error Handling | Custom Result type | `@lerianstudio/lib-commons-js/errors` | ⚠️ Non-Compliant | `src/domain/errors.ts` |
+| Logging | Uses `console.log` | `createLogger` from lib-commons-js | ⚠️ Non-Compliant | `src/services/*.ts` |
+| Error Handling | Custom Result type | `AppError` from lib-commons-js | ⚠️ Non-Compliant | `src/domain/errors.ts` |
 | Type Safety | Uses `unknown` with guards | Ring TypeScript Standards | ✅ Compliant | - |
 | Validation | Zod schemas at boundaries | Ring TypeScript Standards | ✅ Compliant | - |
 
@@ -1081,12 +1093,14 @@ Coverage: 89.2%
 
 1. **Logging Migration**
    - Replace: `console.log()` and custom logging
-   - With: `import { Logger } from '@lerianstudio/lib-commons-js/log'`
+   - With: `const logger = createLogger({ service: 'user-service' })`
+   - Import: `import { createLogger } from '@lerianstudio/lib-commons-js'`
    - Files affected: `src/services/user-service.ts`, `src/infrastructure/repositories/*.ts`
 
 2. **Error Handling Migration**
    - Replace: Custom Result type implementation
-   - With: `import { AppError } from '@lerianstudio/lib-commons-js/errors'`
+   - With: `throw new AppError('message', { code: 'ERR_CODE' })`
+   - Import: `import { AppError, isAppError } from '@lerianstudio/lib-commons-js'`
    - Files affected: `src/domain/errors.ts`
 ```
 
