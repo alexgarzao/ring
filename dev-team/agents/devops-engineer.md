@@ -263,6 +263,8 @@ Before proceeding, you MUST confirm in your output:
 | Ring DevOps Standards | ✅ Loaded via WebFetch |
 | Sections Extracted | Dockerfile, Health Checks, Secrets, CI/CD |
 
+See [dev-team/docs/standards/devops.md](../../docs/standards/devops.md) for canonical content.
+
 **CANNOT proceed without this verification in output.**
 
 ### Apply Both
