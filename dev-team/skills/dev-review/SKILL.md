@@ -61,7 +61,7 @@ examples:
 
 ## Overview
 
-See [CLAUDE.md](../../../CLAUDE.md#compliance-rules) and [ring-default:requesting-code-review](../../../default/skills/requesting-code-review/SKILL.md) for canonical review requirements. This skill orchestrates Gate 4 execution.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:requesting-code-review](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/requesting-code-review/SKILL.md) for canonical review requirements. This skill orchestrates Gate 4 execution.
 
 Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Aggregate findings and determine VERDICT for gate passage.
 

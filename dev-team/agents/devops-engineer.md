@@ -263,7 +263,7 @@ Before proceeding, you MUST confirm in your output:
 | Ring DevOps Standards | ✅ Loaded via WebFetch |
 | Sections Extracted | Dockerfile, Health Checks, Secrets, CI/CD |
 
-See [dev-team/docs/standards/devops.md](../../docs/standards/devops.md) for canonical content.
+See [dev-team/docs/standards/devops.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/standards/devops.md) for canonical content.
 
 **CANNOT proceed without this verification in output.**
 
@@ -367,7 +367,7 @@ None. This agent cannot proceed until `docs/PROJECT_RULES.md` is created by the 
 
 ## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
 
-See [docs/AGENT_DESIGN.md](../../../docs/AGENT_DESIGN.md) for canonical output schema requirements.
+See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
 When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the infrastructure against Lerian/Ring DevOps Standards.
 

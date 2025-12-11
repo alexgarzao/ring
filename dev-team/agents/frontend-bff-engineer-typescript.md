@@ -436,7 +436,7 @@ If code is ALREADY compliant with all standards:
 
 ## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
 
-See [docs/AGENT_DESIGN.md](../../../docs/AGENT_DESIGN.md) for canonical output schema requirements.
+See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
 When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
 
@@ -444,7 +444,7 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **Every category MUST be checked and reported. No exceptions.**
 
-Canonical policy: see [CLAUDE.md](../../../CLAUDE.md#agent-modification-verification-mandatory) for the definitive standards compliance requirements.
+Canonical policy: see [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for the definitive standards compliance requirements.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|------------------|

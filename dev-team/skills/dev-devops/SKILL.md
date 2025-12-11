@@ -59,7 +59,7 @@ examples:
 
 ## Overview
 
-See [CLAUDE.md](../../../CLAUDE.md#compliance-rules) and [dev-team/docs/standards/devops.md](../../docs/standards/devops.md) for canonical DevOps requirements. This skill orchestrates Gate 1 execution.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [dev-team/docs/standards/devops.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/standards/devops.md) for canonical DevOps requirements. This skill orchestrates Gate 1 execution.
 
 This skill configures the development and deployment infrastructure:
 - Creates or updates Dockerfile for the application

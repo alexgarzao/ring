@@ -57,7 +57,7 @@ examples:
 
 # Dev Testing (Gate 3)
 
-See [CLAUDE.md](../../../CLAUDE.md#compliance-rules) for canonical testing requirements.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for canonical testing requirements.
 
 ## Overview
 

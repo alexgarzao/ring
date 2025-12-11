@@ -94,7 +94,7 @@ examples:
 
 # Code Implementation (Gate 0)
 
-See [CLAUDE.md](../../../CLAUDE.md#compliance-rules) for canonical gate requirements.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for canonical gate requirements.
 
 ## Overview
 

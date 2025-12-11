@@ -114,7 +114,7 @@ This skill analyzes an existing codebase to identify gaps between current implem
 
 **NON-NEGOTIABLE:** Every invocation of dev-refactor MUST execute Steps 0 → 1 → 2 → 2.5 → 3 → 4 → 5 → 6 → 7 → 8 → 9 in that exact order.
 
-See [CLAUDE.md](../../../CLAUDE.md#agent-modification-verification-mandatory) and [docs/AGENT_DESIGN.md](../../../docs/AGENT_DESIGN.md) for canonical gate requirements and anti-rationalization patterns. This skill enforces those rules verbatim; only dev-refactor-specific procedures are documented below.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical gate requirements and anti-rationalization patterns. This skill enforces those rules verbatim; only dev-refactor-specific procedures are documented below.
 
 ---
 

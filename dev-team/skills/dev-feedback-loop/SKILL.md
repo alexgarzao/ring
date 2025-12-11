@@ -30,7 +30,7 @@ related:
 
 ## Overview
 
-See [CLAUDE.md](../../../CLAUDE.md#compliance-rules) for canonical validation and gate requirements. This skill collects metrics and generates improvement reports.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for canonical validation and gate requirements. This skill collects metrics and generates improvement reports.
 
 Continuous improvement system that tracks development cycle effectiveness through assertiveness scores, identifies recurring failure patterns, and generates actionable improvement suggestions.
 
