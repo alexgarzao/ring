@@ -140,6 +140,43 @@ Day 4: Production incident from Day 1 code
 3. **Escalate patterns** - If same pressure repeats, escalate to team lead
 4. **Gates are binary** - Complete or incomplete. No "mostly done".
 
+## Gate Completion Definition (HARD GATE)
+
+**A gate is COMPLETE only when ALL components finish successfully:**
+
+| Gate | Components Required | Partial = FAIL |
+|------|---------------------|----------------|
+| 0 | Implementation agent completes + TDD RED verified | 1 file done ≠ gate done |
+| 1 | Dockerfile + docker-compose + .env.example | Missing any = FAIL |
+| 2 | /health + /ready + /metrics + structured logs | 3/4 endpoints = FAIL |
+| 3 | Coverage ≥ 85% + all AC tested | 84% = FAIL |
+| 4 | **ALL 3 reviewers PASS** | 2/3 reviewers = FAIL |
+| 5 | Explicit "APPROVED" from user | "Looks good" = NOT approved |
+
+**CRITICAL for Gate 4:** Running 2 of 3 reviewers is NOT a partial pass - it's a FAIL. Re-run ALL 3 reviewers.
+
+**Anti-Rationalization for Partial Gates:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "2 of 3 reviewers passed" | Gate 4 requires ALL 3. 2/3 = 0/3. | **Re-run ALL 3 reviewers** |
+| "Gate mostly complete" | Mostly ≠ complete. Binary: done or not done. | **Complete ALL components** |
+| "Can finish remaining in next cycle" | Gates don't carry over. Complete NOW. | **Finish current gate** |
+| "Core components done, optional can wait" | No component is optional within a gate. | **Complete ALL components** |
+
+## Gate Order Enforcement (HARD GATE)
+
+**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5. No exceptions.**
+
+| Violation | Why It's WRONG | Consequence |
+|-----------|----------------|-------------|
+| Skip Gate 1 (DevOps) | "No infra changes" | Code without container = works on my machine only |
+| Skip Gate 2 (SRE) | "Observability later" | Blind production = debugging nightmare |
+| Reorder Gates | "Review before test" | Reviewing untested code wastes reviewer time |
+| Parallel Gates | "Run 2 and 3 together" | Dependencies exist. Order is intentional. |
+
+**Gates are NOT parallelizable across different gates. Sequential execution is MANDATORY.**
+
 ## The 6 Gates
 
 | Gate | Skill | Purpose | Agent |

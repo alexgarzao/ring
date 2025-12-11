@@ -128,6 +128,55 @@ If you catch yourself thinking ANY of these, STOP immediately:
 | Team Decision | ✅ YES (e.g., 95%) | ❌ NO |
 | Manager Override | ❌ NO | ❌ NO |
 
+## Coverage Measurement Rules (HARD GATE)
+
+**Coverage tool output is the SOURCE OF TRUTH. No adjustments allowed:**
+
+### Dead Code Handling
+
+| Scenario | Allowed? | Required Action |
+|----------|----------|-----------------|
+| Exclude dead code from measurement | ❌ NO | **Delete the dead code** |
+| Use `// coverage:ignore` annotations | ⚠️ ONLY with justification | Must document WHY in PR |
+| "Mental math" adjustments | ❌ NO | Use actual tool output |
+| Different tools show different % | Use lowest | Conservative approach |
+
+**Valid exclusion annotations (must be documented):**
+- Generated code (protobuf, swagger) - excluded by default
+- Unreachable panic handlers (already tested by unit tests)
+- Platform-specific code not running in CI
+
+**INVALID exclusion reasons:**
+- ❌ "It's boilerplate"
+- ❌ "Trivial getters/setters"
+- ❌ "Will never be called in production"
+- ❌ "Too hard to test"
+
+### Tool Dispute Resolution
+
+**If you believe the coverage tool is wrong:**
+
+| Step | Action | Why |
+|------|--------|-----|
+| 1 | Document the discrepancy | "Tool shows 83%, I expect 90%" |
+| 2 | Investigate root cause | Missing test? Tool bug? Config issue? |
+| 3 | Fix the issue | Add test OR fix tool config |
+| 4 | Re-run coverage | Get new measurement |
+| 5 | Use NEW measurement | No mental math on old number |
+
+**You CANNOT proceed with "the tool is wrong, real coverage is higher."**
+
+### Anti-Rationalization for Coverage
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Tool shows 83% but real is 90%" | Tool output IS real. Your belief is not. | **Fix issue, re-measure** |
+| "Excluding dead code gets us to 85%" | Delete dead code, don't exclude it. | **Delete dead code** |
+| "Test files lower the average" | Test files should be excluded by tool config. | **Fix tool configuration** |
+| "Generated code tanks coverage" | Generated code should be excluded by pattern. | **Add exclusion pattern** |
+| "84.5% rounds to 85%" | Rounding is not allowed. 84.5% < 85%. | **Write more tests** |
+| "Close enough with all AC tested" | "Close enough" is not a passing grade. | **Meet exact threshold** |
+
 **If PROJECT_RULES.md specifies < 85%:**
 1. That specification is INVALID
 2. Ring minimum (85% branch coverage) still applies

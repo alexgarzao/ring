@@ -307,8 +307,8 @@ This is not about preference. Other agents are **technically incapable** of perf
 **⛔ FORBIDDEN AGENTS (from banner):**
 - `Explore` → SKILL FAILURE
 - `general-purpose` → SKILL FAILURE
-- `ring-default:*` → SKILL FAILURE
-- ANY agent without `ring-dev-team:` prefix → SKILL FAILURE
+- `ring-default:*` → SKILL FAILURE (EXCEPTION: `ring-default:codebase-explorer` allowed in Step 2.5 ONLY)
+- ANY agent without `ring-dev-team:` prefix → SKILL FAILURE (after Step 2.5)
 
 #### Parallel Dispatch (Step 3)
 
@@ -472,7 +472,11 @@ All specialist agent prompts MUST:
 | `general-purpose` | Generic agent, no domain expertise | SKILL FAILURE |
 | `Plan` | Planning agent, not for analysis | SKILL FAILURE |
 | `ring-default:code-reviewer` | Wrong plugin, for review not analysis | SKILL FAILURE |
-| `ring-default:codebase-explorer` | Wrong plugin, generic exploration | SKILL FAILURE |
+
+**✅ EXCEPTION for Step 2.5 ONLY:**
+| `ring-default:codebase-explorer` | Explores codebase structure | **ALLOWED IN STEP 2.5 ONLY** - generates codebase-report.md for specialists |
+
+**After Step 2.5, ring-default:codebase-explorer is FORBIDDEN. Specialists compare the report with Ring standards.**
 
 **❌ WRONG - Sequential dispatch (multiple separate messages):**
 - Message 1: Task with agent A → Wait → Response
