@@ -263,7 +263,7 @@ Before proceeding, you MUST confirm in your output:
 | Ring DevOps Standards | ✅ Loaded via WebFetch |
 | Sections Extracted | Dockerfile, Health Checks, Secrets, CI/CD |
 
-See [dev-team/docs/standards/devops.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/standards/devops.md) for canonical content.
+See [dev-team/docs/standards/devops.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md) for canonical content.
 
 **CANNOT proceed without this verification in output.**
 
@@ -344,7 +344,7 @@ None. This agent cannot proceed until `docs/PROJECT_RULES.md` is created by the 
 - IaC structure → Check PROJECT_RULES.md or follow existing modules
 - Kubernetes manifests → Follow Ring DevOps Standards
 
-## When Infrastructure Changes Are Not Needed
+## When Implementation is Not Needed
 
 **HARD GATE:** If infrastructure is ALREADY compliant with ALL standards:
 

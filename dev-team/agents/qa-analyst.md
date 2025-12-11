@@ -356,11 +356,11 @@ None. This agent cannot proceed until `docs/PROJECT_RULES.md` is created by the 
 
 **You CANNOT extend tests that match non-compliant patterns. This is non-negotiable.**
 
-## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-team:dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
 
 ### Comparison Categories for QA/Testing
 
@@ -674,15 +674,21 @@ grep -r "@pytest.mark.skip\|@unittest.skip" tests/
 
 ```bash
 # JavaScript/TypeScript (Jest)
-jest --coverage --testPathIgnorePatterns="\.skip\." --testPathIgnorePatterns="\.todo\."
-# Guard against focused tests (.only) masking coverage
+# Jest: If skipped tests exist, either (1) delete/commit fixes before coverage run, or
+# (2) manually exclude those test files from coverage:
+jest --coverage --collectCoverageFrom="!tests/**/*.skip.test.ts"
+
+# Check for focused tests that artificially inflate coverage
 grep -rn '(it|describe|test)\.only(' tests/ || true
 
 # Go
 go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out | grep -v "_test.go"
 
 # Python (pytest)
-pytest --cov --ignore-glob="**/test_*_skip.py"
+# Pytest: Skipped tests do not affect coverage automatically.
+# Run coverage and manually review skipped test count:
+pytest --cov --cov-report=term-missing
+# Then verify skip count matches grep results
 ```
 
 **MANDATORY:** After detecting skipped tests, you MUST recalculate coverage using these commands and report the adjusted percentage.

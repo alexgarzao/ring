@@ -146,11 +146,12 @@ Before analyzing ANY agent, you MUST load the current Ring standards:
 
 **CLAUDE.md Requirements (WebFetch):**
 \`\`\`
-URL: https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
+URL: [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md)
 Extract: "Agent Modification Verification" and "Anti-Rationalization Tables" sections
 \`\`\`
 
 **Required Agent Sections (from CLAUDE.md):**
+
 | Section | Pattern to Check | If Missing |
 |---------|------------------|------------|
 | Standards Loading | \`## Standards Loading\` | Flag as GAP |
