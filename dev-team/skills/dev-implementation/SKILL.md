@@ -94,6 +94,8 @@ examples:
 
 # Code Implementation (Gate 0)
 
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for canonical gate requirements.
+
 ## Overview
 
 This skill executes the implementation phase of the development cycle. It:

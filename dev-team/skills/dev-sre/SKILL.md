@@ -54,6 +54,34 @@ examples:
       - Structured JSON logging
 ---
 
+## Standards Loading (MANDATORY)
+
+**Before ANY SRE validation, you MUST load Ring SRE standards:**
+
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [dev-team/docs/standards/sre.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/standards/sre.md) for canonical requirements. This section summarizes the loading process.
+
+**MANDATORY ACTION:** You MUST use the WebFetch tool NOW:
+
+| Parameter | Value |
+|-----------|-------|
+| url | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
+| prompt | "Extract all SRE standards, observability requirements, metric patterns, and health check specifications" |
+
+**Execute this WebFetch before proceeding.** Do NOT continue until standards are loaded and understood.
+
+If WebFetch fails → STOP and report blocker. Cannot proceed without Ring SRE standards.
+
+### Standards Loading Verification
+
+**After WebFetch, confirm in your analysis:**
+```markdown
+| Ring SRE Standards | ✅ Loaded |
+| Sections Extracted | Health Endpoints, Metrics, Logging, Tracing |
+```
+
+**CANNOT proceed without successful standards loading.**
+
+
 # SRE Validation (Gate 2)
 
 ## Overview

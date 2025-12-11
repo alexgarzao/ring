@@ -24,6 +24,8 @@ related:
 
 The ring-dev-team plugin provides 7 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
+
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
@@ -256,7 +258,7 @@ All workflows converge to the 6-gate development cycle:
 | **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `frontend-bff-engineer-typescript` |
 | **1: DevOps** | Dockerfile, docker-compose, .env | `devops-engineer` |
 | **2: SRE** | Health checks, logging, metrics | `sre` |
-| **3: Testing** | Unit tests, coverage ≥80% | `qa-analyst` |
+| **3: Testing** | Unit tests, coverage ≥85% | `qa-analyst` |
 | **4: Review** | 3 reviewers IN PARALLEL | `code-reviewer`, `business-logic`, `security` |
 | **5: Validation** | User approval: APPROVED/REJECTED | User decision |
 
