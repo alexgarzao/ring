@@ -604,11 +604,28 @@ No migration actions required. All categories verified against Lerian/Ring Go St
    - Replace: Direct `os.Getenv()` calls scattered across files
    - With: Single `Config` struct with `env` tags in `/internal/bootstrap/config.go`
    - Import: `libCommons "github.com/LerianStudio/lib-commons/v2/commons"`
+   - Usage: `libCommons.SetConfigFromEnvVars(&cfg)`
    - Files affected: `cmd/api/main.go`, `internal/service/user.go`
 
-2. **[Next Category] Migration**
+2. **Logger Migration**
+   - Replace: Custom logger or `log.Println()`
+   - With: lib-commons structured logger
+   - Import: `libZap "github.com/LerianStudio/lib-commons/v2/commons/zap"`
+   - Usage: `logger := libZap.InitializeLogger()`
+   - Files affected: [list files]
+
+3. **Telemetry Migration**
+   - Replace: No tracing or custom tracing
+   - With: OpenTelemetry integration
+   - Import: `libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"`
+   - Usage: `telemetry := libOpentelemetry.InitializeTelemetry(&libOpentelemetry.TelemetryConfig{...})`
+   - Files affected: [list files]
+
+4. **[Next Category] Migration**
    - Replace: ...
    - With: ...
+   - Import: ...
+   - Usage: ...
 ```
 
 **CRITICAL:** The comparison table is NOT optional. It serves as:
@@ -1181,18 +1198,27 @@ coverage: 87.3% of statements
    - With: Config struct + `libCommons.SetConfigFromEnvVars(&cfg)`
    - Import: `libCommons "github.com/LerianStudio/lib-commons/v2/commons"`
 
-3. **Telemetry Setup**
-   - Add: `logger := libZap.InitializeLogger()`
-   - Add: `telemetry := libOpentelemetry.InitializeTelemetry(&config)`
-   - Add: Middleware `tlMid.WithTelemetry(tl)` (first) and `tlMid.EndTracingSpans` (last)
+3. **Logger Setup**
+   - Replace: Custom logger or `log.Println()`
+   - With: `logger := libZap.InitializeLogger()`
+   - Import: `libZap "github.com/LerianStudio/lib-commons/v2/commons/zap"`
 
-4. **Context Tracking**
+4. **Telemetry Setup**
+   - Replace: No tracing
+   - With: `telemetry := libOpentelemetry.InitializeTelemetry(&libOpentelemetry.TelemetryConfig{...})`
+   - Import: `libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"`
+   - Middleware: `tlMid.WithTelemetry(tl)` (first) and `telemetry.EndTracingSpans(ctx)` (last)
+   - Import: `libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"`
+
+5. **Context Tracking**
    - Replace: Global logger usage
-   - With: `logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)`
+   - With: `logger, tracer, headerID, metricsFactory := libCommons.NewTrackingFromContext(ctx)`
+   - Import: `libCommons "github.com/LerianStudio/lib-commons/v2/commons"`
 
-5. **Server Lifecycle**
+6. **Server Lifecycle**
    - Replace: `http.ListenAndServe()`
    - With: `libServer.NewServerManager(nil, &telemetry, logger).WithHTTPServer(app, addr).StartWithGracefulShutdown()`
+   - Import: `libServer "github.com/LerianStudio/lib-commons/v2/commons/server"`
 ```
 
 ## What This Agent Does NOT Handle
