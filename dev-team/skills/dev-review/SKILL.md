@@ -104,8 +104,8 @@ Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Agg
 | "Business logic is tested" | Tests check behavior. Review checks intent, edge cases, requirements alignment. |
 | "Security scan passed" | Security scanners miss logic flaws. Human reviewer required. |
 | "CSS can't have security issues" | CSS can have XSS (user-controlled classes), clickjacking (z-index manipulation), data exfiltration (CSS injection). ALL code needs security review. |
-| "Only MEDIUM issues, can proceed" | MEDIUM issues must be fixed OR documented with FIXME. No silent ignoring. |
-| "Document MEDIUM and ship" | Documentation ≠ resolution. Fix now, or add FIXME with timeline. |
+| "Only MEDIUM issues, can proceed" | MEDIUM issues MUST be fixed. No FIXME, no deferral, no silent ignoring. |
+| "Document MEDIUM and ship" | Documentation ≠ resolution. MEDIUM means FIX NOW and re-run all 3 reviewers. |
 | "Risk-accept MEDIUM issues" | Risk acceptance requires explicit user approval, not agent decision. |
 | "User said skip review" | User cannot override HARD GATES. Review is mandatory. Proceed with review. |
 | "Manager approved without review" | Management approval ≠ technical review. Run all 3 reviewers. |
@@ -136,26 +136,33 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 **All of these indicate Gate 4 violation. Run ALL 3 reviewers in parallel.**
 
-## MEDIUM Issue Protocol (MANDATORY - NOT CONDITIONAL)
+## MEDIUM Issue Protocol (MANDATORY - ABSOLUTE REQUIREMENT)
 
-**You CANNOT return PASS verdict with unfixed MEDIUM issues without this protocol:**
+**Gate 4 requires ALL issues CRITICAL/HIGH/MEDIUM to be FIXED before PASS verdict.**
+
+**Severity mapping is absolute (matches dev-cycle Gate 4 policy):**
+- **CRITICAL** → Fix NOW, re-run all 3 reviewers
+- **HIGH** → Fix NOW, re-run all 3 reviewers
+- **MEDIUM** → Fix NOW, re-run all 3 reviewers
+- **LOW** → Add TODO(review): comment with description
+- **Cosmetic** → Add FIXME(nitpick): comment (optional)
+
+**MEDIUM Issue Response Protocol:**
 
 1. **STOP immediately** when MEDIUM issues found
-2. **Present MEDIUM issues to user** with clear descriptions
-3. **Ask explicitly:** "Fix now or add FIXME with tracking?"
-4. **User MUST explicitly choose** - no implicit decisions
-5. **Document choice** in review summary
+2. **Present MEDIUM issues to user**
+3. **REQUIRED ACTION:** Fix the issues and re-run all 3 reviewers
+4. **CANNOT PASS** with unfixed MEDIUM issues
+5. **No FIXME option** for MEDIUM - MEDIUM means mandatory fix
 
-**If you return PASS with MEDIUM issues without user approval → Gate 4 violation**
+**Anti-Rationalization:** "Only 3 MEDIUM findings, can track with FIXME" → WRONG. MEDIUM = Fix NOW. No deferral, no tracking, no exceptions.
 
-**Anti-Rationalization:** "Only 3 MEDIUM findings, aggregate should be PASS" → WRONG. MEDIUM requires explicit handling, not silent acceptance.
-
-**MEDIUM issues are NOT automatically waived:**
+**MEDIUM issues handling:**
 
 | MEDIUM Issue Response | Allowed? | Action Required |
 |----------------------|----------|-----------------|
-| Fix immediately | ✅ YES | Fix, re-run reviewers |
-| Add FIXME with issue link | ✅ YES | `// FIXME(review): [description] - Issue #123` |
+| Fix immediately | ✅ REQUIRED | Fix, re-run all 3 reviewers |
+| Add FIXME with issue link | ❌ NO | MEDIUM must be FIXED |
 | Ignore silently | ❌ NO | This is a violation |
 | "Risk accept" without user | ❌ NO | User must explicitly approve |
 | Document in commit msg only | ❌ NO | Must be in code as FIXME |
