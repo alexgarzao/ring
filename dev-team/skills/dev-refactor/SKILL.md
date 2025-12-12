@@ -489,21 +489,25 @@ Step 3:   [ ] ALL applicable ring-dev-team:* agents dispatched in SINGLE message
            ⛔ MANDATORY - Agents compare codebase with Ring standards
            ❌ FORBIDDEN: Any agent without ring-dev-team: prefix
 
-Step 4:   [ ] Agent outputs compiled into analysis-report.md?
-           ⛔ MANDATORY - Merge all comparison tables
+Step 4:   [ ] Agent outputs compiled into findings.md?
+           ⛔ MANDATORY - Generate findings.md with CTC for each finding
+           ⛔ MANDATORY - Each finding has Before/After/Standard References
 
 Step 5:   [ ] Findings grouped into REFACTOR-XXX tasks?
            ⛔ MANDATORY - Group by dependency order
 
-Step 6:   [ ] tasks.md generated?
-           ⛔ MANDATORY - Skill is INCOMPLETE without this
+Step 6:   [ ] tasks.md generated with finding references?
+           ⛔ MANDATORY - Each task MUST reference FINDING-XXX
+           ⛔ MANDATORY - Each task MUST include Execution Context from findings
            ❌ If NO → SKILL FAILURE
 
 Step 7:   [ ] User approval requested via AskUserQuestion?
            ⛔ MANDATORY - User must approve before execution
 
 Step 8:   [ ] Artifacts saved to docs/refactor/{timestamp}/?
-           ⛔ MANDATORY - All artifacts must be persisted
+           ⛔ MANDATORY - codebase-report.md saved
+           ⛔ MANDATORY - findings.md saved
+           ⛔ MANDATORY - tasks.md saved
 
 Step 9:   [ ] Handoff to dev-cycle (if approved)?
            ⛔ MANDATORY (if user approved) - Execute via dev-cycle
@@ -1478,61 +1482,166 @@ Task 5:
 
 **Output:** Dimension-specific findings with severities to compile in Step 4.
 
-## Step 4: Compile Findings
+## Step 4: Generate findings.md (MANDATORY)
 
-**Orchestrator action: Collect agent outputs and merge into analysis-report.md**
+**⛔ HARD GATE: findings.md MUST be generated. This is NOT optional.**
 
-Each specialist agent returns:
-- Comparison tables (Standard Pattern | Codebase Has | Status | Location | Fix)
-- Code snippets (Current vs Expected from their Ring standards)
-- Severity classifications
+The orchestrator MUST collect all agent outputs and compile into `findings.md` - a dynamic document that maps each Lerian/Ring standard requirement to the codebase reality.
 
-The dev-refactor orchestrator must:
-1. **Collect** all agent outputs
-2. **Merge** comparison tables by category
-3. **Deduplicate** overlapping findings
-4. **Count** compliance status (✅ Compliant, ❌ Non-Compliant, ⚠️ Partial)
-5. **Sort** by severity (Critical → High → Medium → Low)
+### Why findings.md Is MANDATORY
 
-**Output structure (template only - agents fill the content):**
+| Without findings.md | With findings.md |
+|---------------------|------------------|
+| Tasks lack context | Tasks have full execution context |
+| No traceability to standards | Each task traces to specific standard |
+| Generic "fix this" instructions | Exact before/after code transformations |
+| Executor guesses what to do | Executor knows EXACTLY what to change |
+
+### Orchestrator Actions (MUST Execute in Order)
+
+1. **COLLECT** all agent outputs
+2. **EXTRACT** each non-compliant finding with CTC block
+3. **GENERATE** findings.md with full context
+4. **VERIFY** each finding has Code Transformation Context
+5. **SORT** by severity (Critical → High → Medium → Low)
+
+### findings.md Structure (Dynamic - Generated Per Project)
 
 ```markdown
-# Analysis Report: {project-name}
+# Findings: {project-name}
 
-**Generated:** {date}
+**Generated:** {timestamp}
 **Codebase Report:** docs/refactor/{timestamp}/codebase-report.md
-**Standards Used:** [list Ring standards loaded by agents]
+**Standards Consulted:** [list Ring standards loaded by agents]
+**Total Findings:** {count}
+**Compliance Summary:** {X}% compliant ({Y} of {Z} patterns)
+
+---
 
 ## Executive Summary
 
-| Category | Total | ✅ | ❌ | ⚠️ |
-|----------|-------|-----|-----|-----|
-| [From backend-engineer agent] | | | | |
-| [From qa-analyst agent] | | | | |
-| [From devops-engineer agent] | | | | |
-| [From sre agent] | | | | |
-| **Total** | | | | |
+| Category | Agent | Total | ✅ | ❌ | ⚠️ |
+|----------|-------|-------|-----|-----|-----|
+| Go Backend | ring-dev-team:backend-engineer-golang | | | | |
+| Testing | ring-dev-team:qa-analyst | | | | |
+| DevOps | ring-dev-team:devops-engineer | | | | |
+| Observability | ring-dev-team:sre | | | | |
+| **Total** | | | | | |
 
-## Pattern Compliance Details
+---
 
-[Merged tables from all agents - each agent provides their category]
+## FINDING-001: {Pattern Name}
 
-## Issues by Severity
+**ID:** FINDING-001
+**Category:** {lib-commons/config | architecture | testing | devops | observability}
+**Severity:** {Critical | High | Medium | Low}
+**Agent Source:** {ring-dev-team:agent-name}
+**Standard Reference:** {standards-file}.md:{section} (lines {start}-{end})
 
-### Critical
-[Issues from agents with severity=Critical, includes code snippets]
+### What the Lerian Standard REQUIRES
 
-### High
-[Issues from agents with severity=High]
+> **Standard:** {Quote from Ring standards file}
+>
+> Source: `{standards-file}.md` → Section: {Section Title} → Lines: {derive_at_runtime}
 
-### Medium
-[Issues from agents with severity=Medium]
-
-### Low
-[Issues from agents with severity=Low]
+```{language}
+// Ring/Lerian Standard Pattern
+{expected code pattern from standards}
 ```
 
-**Key point:** The orchestrator does NOT add code examples. The agents provide all code comparisons based on their Ring standards knowledge.
+### What the Codebase HAS
+
+```{language}
+// file: {path}:{start_line}-{end_line}
+{actual code from project}
+```
+
+### What NEEDS to Be Refactored
+
+**Required Transformation:**
+
+```{language}
+// file: {path}:{start_line}-{new_end_line}
+// ✅ Ring Standard: {Pattern Name} ({standards_file}:{section})
+{transformed code using lib-commons/Lerian patterns}
+```
+
+**Specific Actions:**
+1. {Action 1 - e.g., "Import `github.com/LerianStudio/lib-commons/commons`"}
+2. {Action 2 - e.g., "Replace os.Getenv with SetConfigFromEnvVars"}
+3. {Action 3 - e.g., "Add Config struct with `env:` tags"}
+
+### Standard References
+
+| Pattern Applied | Source | Section | Line Range |
+|-----------------|--------|---------|------------|
+| {pattern} | `{file}.md` | {Section Title} | :{derive_at_runtime} |
+
+### Why This Transformation Matters
+
+- **Problem:** {current issue in codebase}
+- **Ring Standard:** {which standard is violated}
+- **Impact:** {business/technical impact of non-compliance}
+
+### Files Affected
+
+| File | Lines | Change Type |
+|------|-------|-------------|
+| {path/to/file.go} | {15-25} | Modify |
+| {path/to/another.go} | {10-15} | Modify |
+
+---
+
+## FINDING-002: {Next Pattern}
+...
+
+---
+
+## Findings Index
+
+| ID | Pattern | Severity | Category | Files |
+|----|---------|----------|----------|-------|
+| FINDING-001 | {Pattern Name} | Critical | lib-commons | config.go |
+| FINDING-002 | {Pattern Name} | High | architecture | domain/*.go |
+| ... | ... | ... | ... | ... |
+```
+
+### CTC Format Compliance (MANDATORY)
+
+**⛔ HARD GATE:** Each finding MUST include a Code Transformation Context block.
+
+See [docs/PROMPT_ENGINEERING.md](../../../docs/PROMPT_ENGINEERING.md#code-transformation-context-ctc-format) for the canonical CTC template.
+
+**Required Elements Checklist (Per Finding):**
+
+| Element | Required? | Purpose |
+|---------|-----------|---------|
+| **Before (Current Code)** | ✅ YES | Actual code with `file:line` reference |
+| **After (Ring Standards)** | ✅ YES | Transformed code using lib-commons |
+| **Standard References table** | ✅ YES | Pattern, Source, Section, Line Range |
+| **Why This Transformation Matters** | ✅ YES | Problem, Standard, Impact |
+| **Files Affected table** | ✅ YES | All files that need changes |
+
+### Line Range Derivation (MANDATORY)
+
+**⛔ DO NOT hardcode line numbers.** Standards files change over time.
+
+**REQUIRED:** Derive exact `:{line_range}` values at runtime:
+1. Agent reads the current standards file (e.g., `golang.md`, `typescript.md`)
+2. Agent searches for the relevant section header
+3. Agent cites the actual line numbers from the live file
+
+### Anti-Rationalization - findings.md Generation
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Analysis report is enough" | Report = summary. findings.md = execution context. Different purposes. | **Generate findings.md** |
+| "I'll describe the changes in tasks.md" | Tasks reference findings. Context lives in findings.md. | **Generate findings.md FIRST** |
+| "Code comparison tables are sufficient" | Tables = WHAT. CTC = HOW. Both REQUIRED. | **Add full CTC per finding** |
+| "Only critical findings need CTC" | ALL findings need context. Severity is irrelevant. | **CTC for EVERY finding** |
+| "Agents already provided the context" | Agents provide raw data. Orchestrator compiles into findings.md. | **Compile into findings.md** |
+
+**If findings.md is NOT generated → Step 4 is INCOMPLETE → SKILL FAILURE**
 
 ## Step 5: Prioritize and Group
 
@@ -1565,15 +1674,37 @@ Example grouping:
     └── DEVOPS-002: Create docker-compose.yml
 ```
 
-## Step 6: Generate tasks.md
+## Step 6: Generate tasks.md (From findings.md)
 
-Create refactoring tasks in the same format as PM Team output:
+**⛔ HARD GATE: tasks.md MUST reference findings.md. Tasks without finding references are INVALID.**
+
+Create refactoring tasks that trace back to specific findings. Each task MUST include:
+- **Finding References:** Link to specific FINDING-XXX entries
+- **Execution Context:** From the finding's CTC block
+- **Acceptance Criteria:** Based on the Lerian standard requirements
+
+### Traceability Chain (MANDATORY)
+
+```text
+Ring Standard (golang.md:99)
+       ↓
+FINDING-001 (findings.md)
+       ↓
+REFACTOR-001 (tasks.md)
+       ↓
+Implementation (dev-cycle)
+```
+
+**If task does NOT reference a finding → Task is INCOMPLETE → Cannot execute**
+
+### tasks.md Structure
 
 ```markdown
 # Refactoring Tasks: {project-name}
 
-**Source:** Analysis Report {date}
+**Source:** findings.md ({timestamp})
 **Total Tasks:** {count}
+**Total Findings Addressed:** {findings_count}
 **Estimated Effort:** {total hours}
 
 ---
@@ -1585,27 +1716,51 @@ Create refactoring tasks in the same format as PM Team output:
 **Priority:** Critical
 **Dependencies:** none
 
+### Findings Addressed
+
+| Finding ID | Pattern | Severity | Standard Reference |
+|------------|---------|----------|-------------------|
+| [FINDING-001](findings.md#finding-001) | Domain Isolation | Critical | golang.md:Architecture |
+| [FINDING-003](findings.md#finding-003) | Port/Adapter Pattern | High | golang.md:Hexagonal |
+
 ### Description
 Remove infrastructure dependencies from domain layer and establish proper
 port/adapter boundaries following hexagonal architecture.
 
+### Execution Context (From Findings)
+
+**From FINDING-001:**
+```go
+// BEFORE (current - domain/user.go:15)
+import "database/sql"
+
+// AFTER (Ring Standard)
+// Domain MUST have zero infrastructure imports
+// Move SQL to adapters/postgres/user_repo.go
+```
+
+**From FINDING-003:**
+```go
+// BEFORE (current - domain/repository.go)
+// File does not exist - interfaces in adapters/
+
+// AFTER (Ring Standard)
+// file: domain/repository.go
+type UserRepository interface {
+    FindByID(ctx context.Context, id string) (*User, error)
+}
+```
+
 ### Acceptance Criteria
-- [ ] AC-1: Domain package has zero imports from infrastructure
-- [ ] AC-2: Repository interfaces defined in domain layer
+- [ ] AC-1: Domain package has zero imports from infrastructure (FINDING-001)
+- [ ] AC-2: Repository interfaces defined in domain layer (FINDING-003)
 - [ ] AC-3: All domain entities use dependency injection
 - [ ] AC-4: Existing tests still pass
 
 ### Technical Notes
 - Files to modify: src/domain/*.go
 - Pattern: See PROJECT_RULES.md → Hexagonal Architecture section
-- Related issues: ARCH-001, ARCH-003, ARCH-005
-
-### Issues Addressed
-| ID | Description | Location |
-|----|-------------|----------|
-| ARCH-001 | Domain imports database | src/domain/user.go:15 |
-| ARCH-003 | No repository interface | src/domain/ |
-| ARCH-005 | Events in wrong layer | src/infrastructure/events.go |
+- Full transformation context: See findings.md#finding-001, findings.md#finding-003
 
 ---
 
@@ -1616,26 +1771,46 @@ port/adapter boundaries following hexagonal architecture.
 **Priority:** High
 **Dependencies:** REFACTOR-001
 
+### Findings Addressed
+
+| Finding ID | Pattern | Severity | Standard Reference |
+|------------|---------|----------|-------------------|
+| [FINDING-005](findings.md#finding-005) | Error Wrapping | High | golang.md:Error Handling |
+| [FINDING-006](findings.md#finding-006) | No Panic | Critical | golang.md:Error Handling |
+
 ### Description
 Standardize error handling across the codebase following Go idioms
-and project standards.
+and Lerian standards.
+
+### Execution Context (From Findings)
+
+**From FINDING-005:**
+```go
+// BEFORE (current - service/user.go:42)
+return err
+
+// AFTER (Ring Standard - golang.md:Error Handling)
+return fmt.Errorf("failed to fetch user %s: %w", id, err)
+```
+
+**From FINDING-006:**
+```go
+// BEFORE (current - handler/order.go:78)
+panic("invalid order state")
+
+// AFTER (Ring Standard)
+return nil, fmt.Errorf("invalid order state: %s", state)
+```
 
 ### Acceptance Criteria
-- [ ] AC-1: All errors wrapped with context using fmt.Errorf
-- [ ] AC-2: No panic() outside of main.go
+- [ ] AC-1: All errors wrapped with context using fmt.Errorf (FINDING-005)
+- [ ] AC-2: No panic() outside of main.go (FINDING-006)
 - [ ] AC-3: Custom error types for domain errors
 - [ ] AC-4: Error handling tests added
 
 ### Technical Notes
 - Use errors.Is/As for error checking
-- See PROJECT_RULES.md → Error Handling section
-
-### Issues Addressed
-| ID | Description | Location |
-|----|-------------|----------|
-| CODE-002 | Unwrapped errors | 15 locations |
-| CODE-007 | panic in business logic | src/service/order.go:78 |
-| CODE-012 | No domain error types | src/domain/ |
+- Full transformation context: See findings.md#finding-005, findings.md#finding-006
 
 ---
 
@@ -1647,6 +1822,15 @@ and project standards.
 ## REFACTOR-004: Containerization improvements
 ...
 ```
+
+### Anti-Rationalization - tasks.md Generation
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Task description is enough" | Description = WHAT. Finding context = HOW. | **Reference findings.md** |
+| "Developer can figure it out" | Developer should NOT guess. Context is provided. | **Include Execution Context** |
+| "All findings are in findings.md" | Tasks MUST be self-contained for execution. | **Copy relevant CTC to task** |
+| "I'll link to standards directly" | Standards = general. Findings = project-specific. | **Reference FINDING-XXX** |
 
 ## Step 7: User Approval
 
@@ -1671,16 +1855,36 @@ AskUserQuestion:
 
 ## Step 8: Save Artifacts
 
-Save analysis report and tasks to project:
+**⛔ HARD GATE: ALL artifacts MUST be saved. Missing artifacts = INCOMPLETE analysis.**
+
+Save all artifacts to project:
 
 ```text
 docs/refactor/{timestamp}/
-├── analysis-report.md    # Full analysis with all findings
-├── tasks.md              # Approved refactoring tasks
-└── project-rules-used.md # Copy of PROJECT_RULES.md at time of analysis
+├── codebase-report.md    # From Step 2.5 - codebase-explorer output
+├── findings.md           # From Step 4 - Lerian standards comparison (MANDATORY)
+└── tasks.md              # From Step 6 - Refactoring tasks with finding references
 ```
 
-**Note:** Ring standards are not saved as they are loaded dynamically by agents via WebFetch. Only the project-specific rules are preserved for reference.
+### Artifact Dependencies (Traceability Chain)
+
+```text
+codebase-report.md (what EXISTS)
+        ↓
+findings.md (comparison with Lerian standards)
+        ↓
+tasks.md (actionable refactoring tasks)
+```
+
+### Required Artifacts Checklist
+
+| Artifact | Generated In | Required? | Contains |
+|----------|--------------|-----------|----------|
+| `codebase-report.md` | Step 2.5 | ✅ YES | Codebase architecture map |
+| `findings.md` | Step 4 | ✅ YES | Standards comparison with CTC |
+| `tasks.md` | Step 6 | ✅ YES | Refactoring tasks with finding refs |
+
+**Note:** Ring standards are loaded dynamically by agents via WebFetch. PROJECT_RULES.md remains in its original location (`docs/PROJECT_RULES.md`).
 
 ## Step 9: Handoff to dev-cycle
 
@@ -1705,22 +1909,44 @@ This executes each refactoring task through the standard 6-gate process:
 output_schema:
   format: "markdown"
   artifacts:
-    - name: "analysis-report.md"
+    - name: "codebase-report.md"
       location: "docs/refactor/{timestamp}/"
       required: true
+      generated_by: "Step 2.5 - ring-default:codebase-explorer"
+    - name: "findings.md"
+      location: "docs/refactor/{timestamp}/"
+      required: true
+      generated_by: "Step 4 - Orchestrator compiles agent outputs"
     - name: "tasks.md"
       location: "docs/refactor/{timestamp}/"
       required: true
+      generated_by: "Step 6 - From findings.md"
   required_sections:
-    - name: "Summary"
-      pattern: "^## Summary"
-      required: true
-    - name: "Critical Issues"
-      pattern: "^## Critical Issues"
-      required: true
-    - name: "Tasks Generated"
-      pattern: "^## REFACTOR-"
-      required: true
+    findings_md:
+      - name: "Executive Summary"
+        pattern: "^## Executive Summary"
+        required: true
+      - name: "Finding Entry"
+        pattern: "^## FINDING-"
+        required: true
+        min_count: 1
+      - name: "Findings Index"
+        pattern: "^## Findings Index"
+        required: true
+    tasks_md:
+      - name: "Task Entry"
+        pattern: "^## REFACTOR-"
+        required: true
+        min_count: 1
+      - name: "Findings Addressed"
+        pattern: "^### Findings Addressed"
+        required: true
+      - name: "Execution Context"
+        pattern: "^### Execution Context"
+        required: true
+  traceability:
+    chain: "Ring Standard → FINDING-XXX → REFACTOR-XXX → Implementation"
+    required: true
 ```
 
 ## Example Usage
