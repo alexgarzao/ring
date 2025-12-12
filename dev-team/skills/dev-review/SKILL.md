@@ -110,6 +110,13 @@ Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Agg
 | "User said skip review" | User cannot override HARD GATES. Review is mandatory. Proceed with review. |
 | "Manager approved without review" | Management approval ≠ technical review. Run all 3 reviewers. |
 | "Emergency deployment" | Emergencies need review MORE. Run parallel review (10 min). |
+| "Deploy while reviews run" | CANNOT deploy until ALL 3 reviewers complete. Gate 4 BEFORE deployment, not during. |
+| "Run one reviewer first, evaluate" | Staged execution = sequential execution = violation. ALL 3 in SINGLE message. |
+| "Architect reviewed, counts as code review" | Informal reviews ≠ formal reviewers. The 3 specified agents MUST run. No substitutions. |
+| "Similar pattern already reviewed" | Code similarity ≠ review completion. Each change requires fresh review by ALL 3 reviewers. |
+| "Fix some MEDIUMs, FIXME others" | ALL MEDIUMs require same treatment. Cannot mix approaches without explicit user approval for EACH. |
+| "Only frontend changes" | Frontend code requires ALL 3 reviewers. JavaScript has logic (business), CSS has security risks, architecture matters. |
+| "Create draft PR, defer review" | Gate 4 completes BEFORE proceeding. Draft/deferral = gate violation. Complete ALL reviews now. |
 
 ## Red Flags - STOP
 

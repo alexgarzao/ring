@@ -309,8 +309,29 @@ Read docs/PROJECT_RULES.md
 
 If WebFetch fails → STOP and report blocker. Cannot proceed without Ring standards.
 
+### Step 3: Verify Standards Were Loaded (HARD GATE)
+
+After WebFetch completes, you MUST verify you now have knowledge of:
+
+- [ ] **Type Safety Standards**: No `any` types, branded types for domain IDs, `unknown` with type guards
+- [ ] **Validation Standards**: Zod schemas at all external boundaries (API inputs, message queues, file uploads)
+- [ ] **Error Handling Standards**: Result type pattern, AppError from lib-commons-js for all errors
+- [ ] **Logging Standards**: createLogger from lib-commons-js, structured JSON logging, NO console.log
+- [ ] **HTTP Client Standards**: createHttpClient from lib-commons-js for all external HTTP calls
+- [ ] **Graceful Shutdown Standards**: startServerWithGracefulShutdown from lib-commons-js for HTTP servers
+- [ ] **Worker Patterns** (if applicable): RabbitMQ consumer patterns, message acknowledgment, retry strategies
+
+**Verification test**: Can you reference specific patterns from Ring TypeScript Standards?
+- Example: "Ring Standards require branded types like `type UserId = string & { readonly __brand: 'UserId' }`"
+- Example: "Ring Standards require Zod validation at boundaries: `const result = schema.safeParse(input)`"
+- Example: "Ring Standards require lib-commons AppError: `throw new AppError('msg', { code, statusCode })`"
+
+**If you CANNOT provide specific pattern examples → WebFetch FAILED or was skipped → STOP and report blocker.**
+
+You CANNOT proceed with "I'll follow best practices" without demonstrating loaded standards knowledge.
+
 ### Apply Both
-- Ring Standards = Base technical patterns (error handling, testing, architecture)
+- Ring Standards = Base technical patterns (error handling, testing, architecture, lib-commons usage)
 - PROJECT_RULES.md = Project tech stack and specific patterns
 - **Both are complementary. Neither excludes the other. Both must be followed.**
 
