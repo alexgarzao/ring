@@ -255,25 +255,24 @@ Extract per reviewer: VERDICT + Critical/High/Medium/Low issue lists.
 
 ## Step 4: Aggregate Findings
 
-Combine all findings by severity with source attribution: Critical (block release), High (must fix), Medium (should fix), Low (track as TODO).
+Combine all findings by severity with source attribution: Critical (MUST fix), High (MUST fix), Medium (MUST fix), Low (track as TODO).
 
 ## Step 5: Determine VERDICT
 
 | Condition | VERDICT | Action |
 |-----------|---------|--------|
-| All 3 reviewers PASS, no Critical/High | **PASS** | Proceed to Gate 5 |
+| All 3 reviewers PASS, no Critical/High/Medium | **PASS** | Proceed to Gate 5 |
 | Any Critical finding | **FAIL** | Return to Gate 0 |
-| 2+ High findings | **FAIL** | Return to Gate 0 |
-| 1 High finding | **NEEDS_DISCUSSION** | Evaluate with stakeholder |
-| Only Medium/Low findings | **PASS** | Track issues, proceed |
+| Any High finding | **FAIL** | Return to Gate 0 |
+| Any Medium finding | **FAIL** | Return to Gate 0 |
+| Only Low findings | **PASS** | Track issues, proceed |
 
 ## Step 6: Handle VERDICT
 
 | VERDICT | Actions |
 |---------|---------|
-| **PASS** | Document → Add `// TODO(review):` for Low, `// FIXME(review):` for Medium → Proceed to Gate 5 |
-| **FAIL** | Document Critical/High → Create fix tasks → Return to Gate 0 → Re-run ALL 3 reviewers after fixes |
-| **NEEDS_DISCUSSION** | Present High finding to stakeholder with options: Fix now / Accept risk / Partial fix → Wait for decision |
+| **PASS** | Document → Add `// TODO(review):` for Low → Proceed to Gate 5 |
+| **FAIL** | Document Critical/High/Medium → Create fix tasks → Return to Gate 0 → Re-run ALL 3 reviewers after fixes |
 
 ## Step 7: Document Review Outcome
 
@@ -302,8 +301,8 @@ Combine all findings by severity with source attribution: Critical (block releas
 **Always:**
 - Launch all 3 reviewers in single message
 - Wait for all to complete before aggregating
-- Fix Critical/High immediately
-- Track Medium/Low with comments
+- Fix Critical/High/Medium immediately
+- Track Low with TODO comments
 - Re-run full review after fixes
 - Document reviewer disagreements
 
