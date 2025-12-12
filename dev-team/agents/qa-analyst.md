@@ -648,23 +648,59 @@ Coverage < threshold → VERDICT: FAIL → Return to Gate 0
 
 **Rule:** 84.9% ≠ 85%. Thresholds are BINARY. Below threshold = FAIL. No exceptions.
 
-## Skipped Test Detection (MANDATORY)
+### Anti-Rationalization: Rounding
 
-**Before accepting coverage numbers, run these checks:**
+**You CANNOT accept these excuses:**
+
+| Excuse | Reality |
+|--------|---------|
+| "84.9% rounds to 85%" | Thresholds use exact values. 84.9 < 85.0 = FAIL |
+| "Tool shows 85%" | Tool may round display. Use exact value from coverage file |
+| "Close enough" | Binary rule: above or below. No "close enough" |
+| "Just 0.1% away" | 0.1% could be 100 lines of untested code. Add tests |
+
+**If coverage < threshold by ANY amount, verdict = FAIL. No exceptions.**
+
+## Quality Checks (MANDATORY - ALWAYS RUN)
+
+**You MUST run these checks REGARDLESS of coverage percentage:**
+
+**Even if coverage = 100%, you MUST run:**
+- [ ] Skipped test detection (grep commands below)
+- [ ] Assertion-less test scan (manual review of test bodies)
+- [ ] Focused test detection (`grep -rn '(it|describe|test)\.only(' tests/`)
+
+**Rationale**: 100% coverage with skipped tests = false confidence
+
+**If quality issues found:**
+- Report issues with file:line references
+- Recalculate real coverage excluding problematic tests
+- FAIL verdict if real coverage < threshold
+
+**You CANNOT skip quality checks even if coverage appears adequate.**
+
+---
+
+## Skipped Test Detection (MANDATORY EXECUTION)
+
+**Before accepting ANY coverage number, you MUST execute these commands:**
+
+**STEP 1: Run skipped test detection (EXECUTE NOW):**
 
 ```bash
 # JavaScript/TypeScript
-grep -r "\.skip\|\.todo\|describe\.skip\|it\.skip\|test\.skip" tests/
-grep -r "xit\|xdescribe\|xtest" tests/
+grep -rn "\.skip\|\.todo\|describe\.skip\|it\.skip\|test\.skip\|xit\|xdescribe\|xtest" tests/
 
-# Go
-grep -r "t\.Skip" **/*_test.go
+# Go (POSIX-compatible, works in CI)
+grep -R -n "t\.Skip" --include="*_test.go" .
 
 # Python
-grep -r "@pytest.mark.skip\|@unittest.skip" tests/
+grep -rn "@pytest.mark.skip\|@unittest.skip" tests/
 ```
 
-**If skipped tests found:**
+**STEP 2: Count findings**
+
+**STEP 3: If found > 0:**
 1. Count total skipped tests
 2. Report: "Found X skipped tests - coverage may be inflated"
 3. Recalculate coverage excluding skipped test files

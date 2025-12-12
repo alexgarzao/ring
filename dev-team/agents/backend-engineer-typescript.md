@@ -309,8 +309,33 @@ Read docs/PROJECT_RULES.md
 
 If WebFetch fails → STOP and report blocker. Cannot proceed without Ring standards.
 
+### Step 3: Verify Standards Were Loaded (HARD GATE)
+
+After WebFetch completes, you MUST verify you now have knowledge of **Ring TypeScript Standards**.
+
+**Verification test**: Can you reference specific patterns from the standards document?
+
+**Required references (MUST be able to cite):**
+- Type safety patterns (no `any`, branded types, `unknown` with guards)
+- Validation patterns (Zod schemas at boundaries)
+- Error handling patterns (Result type, proper error propagation)
+
+**Example citations:**
+- "Ring Standards require branded types like `type UserId = string & { readonly __brand: 'UserId' }`"
+- "Ring Standards require Zod validation: `const result = schema.safeParse(input)`"
+- "Ring Standards require Result type pattern for error handling"
+
+**If you CANNOT cite specific patterns from the standards → WebFetch FAILED or was skipped → STOP and report blocker.**
+
+**Additional patterns to check (if mentioned in standards OR PROJECT_RULES.md):**
+- lib-commons-js usage (createLogger, AppError, createHttpClient, etc.) - verify if documented
+- Worker patterns (RabbitMQ consumers, message ack) - verify if documented
+- Graceful shutdown patterns - verify if documented
+
+**HARD GATE:** You CANNOT proceed with generic "I'll follow best practices" without demonstrating loaded standards knowledge through specific pattern citations.
+
 ### Apply Both
-- Ring Standards = Base technical patterns (error handling, testing, architecture)
+- Ring Standards = Base technical patterns (error handling, testing, architecture, lib-commons usage)
 - PROJECT_RULES.md = Project tech stack and specific patterns
 - **Both are complementary. Neither excludes the other. Both must be followed.**
 

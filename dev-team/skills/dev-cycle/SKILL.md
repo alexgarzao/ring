@@ -113,6 +113,23 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 
 Report ALL severities. Let user prioritize.
 
+### Reviewer Verdicts Are Final
+
+**MEDIUM issues found in Gate 4 MUST be fixed. No exceptions.**
+
+| Request | Why It's WRONG | Required Action |
+|---------|----------------|-----------------|
+| "Can reviewer clarify if MEDIUM can defer?" | Reviewer already decided. MEDIUM means FIX. | **Fix the issue, re-run reviewers** |
+| "Ask if this specific case is different" | Reviewer verdict accounts for context already. | **Fix the issue, re-run reviewers** |
+| "Request exception for business reasons" | Reviewers know business context. Verdict is final. | **Fix the issue, re-run reviewers** |
+
+**Severity mapping is absolute:**
+- CRITICAL/HIGH/MEDIUM → Fix NOW, re-run all 3 reviewers
+- LOW → Add TODO(review): comment
+- Cosmetic → Add FIXME(nitpick): comment
+
+No negotiation. No exceptions. No "special cases".
+
 **This skill enforces MANDATORY gates. Pressure scenarios and required responses:**
 
 | Pressure Type | Request | Agent Response |

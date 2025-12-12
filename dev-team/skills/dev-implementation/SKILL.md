@@ -114,6 +114,10 @@ This skill executes the implementation phase of the development cycle. It:
 | **Time** | "No time for TDD, just implement" | "TDD is faster long-term. RED-GREEN-REFACTOR prevents rework." |
 | **Simplicity** | "Too simple for TDD" | "Simple code still needs tests. TDD is mandatory for ALL changes." |
 | **Standards Missing** | "PROJECT_RULES.md doesn't require TDD" | "Ring workflows ALWAYS require TDD. PROJECT_RULES.md adds to, not replaces." |
+| **Authority** | "CTO/Senior says skip TDD and ship" | "TDD is non-negotiable in Ring. Escalate to me if authority conflicts with process." |
+| **Economic** | "$X/hour revenue loss, ship now" | "Technical debt costs more than revenue loss. Fix root cause with TDD." |
+| **Social** | "Team waiting on you, don't block them" | "Blocking with quality is better than unblocking with bugs. They'll wait longer if it breaks." |
+| **Exhaustion** | "Too tired, better tests tomorrow" | "Tired code creates more work. STOP now. Resume with TDD tomorrow." |
 
 **Non-negotiable principle:** If code exists before test, DELETE IT. No exceptions. No "adapting". No "reference".
 

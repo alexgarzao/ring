@@ -104,12 +104,19 @@ Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Agg
 | "Business logic is tested" | Tests check behavior. Review checks intent, edge cases, requirements alignment. |
 | "Security scan passed" | Security scanners miss logic flaws. Human reviewer required. |
 | "CSS can't have security issues" | CSS can have XSS (user-controlled classes), clickjacking (z-index manipulation), data exfiltration (CSS injection). ALL code needs security review. |
-| "Only MEDIUM issues, can proceed" | MEDIUM issues must be fixed OR documented with FIXME. No silent ignoring. |
-| "Document MEDIUM and ship" | Documentation ≠ resolution. Fix now, or add FIXME with timeline. |
+| "Only MEDIUM issues, can proceed" | MEDIUM issues MUST be fixed. No FIXME, no deferral, no silent ignoring. |
+| "Document MEDIUM and ship" | Documentation ≠ resolution. MEDIUM means FIX NOW and re-run all 3 reviewers. |
 | "Risk-accept MEDIUM issues" | Risk acceptance requires explicit user approval, not agent decision. |
 | "User said skip review" | User cannot override HARD GATES. Review is mandatory. Proceed with review. |
 | "Manager approved without review" | Management approval ≠ technical review. Run all 3 reviewers. |
 | "Emergency deployment" | Emergencies need review MORE. Run parallel review (10 min). |
+| "Deploy while reviews run" | CANNOT deploy until ALL 3 reviewers complete. Gate 4 BEFORE deployment, not during. |
+| "Run one reviewer first, evaluate" | Staged execution = sequential execution = violation. ALL 3 in SINGLE message. |
+| "Architect reviewed, counts as code review" | Informal reviews ≠ formal reviewers. The 3 specified agents MUST run. No substitutions. |
+| "Similar pattern already reviewed" | Code similarity ≠ review completion. Each change requires fresh review by ALL 3 reviewers. |
+| "Fix some MEDIUMs, FIXME others" | ALL MEDIUMs require same treatment. Cannot mix approaches without explicit user approval for EACH. |
+| "Only frontend changes" | Frontend code requires ALL 3 reviewers. JavaScript has logic (business), CSS has security risks, architecture matters. |
+| "Create draft PR, defer review" | Gate 4 completes BEFORE proceeding. Draft/deferral = gate violation. Complete ALL reviews now. |
 
 ## Red Flags - STOP
 
@@ -129,26 +136,33 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 **All of these indicate Gate 4 violation. Run ALL 3 reviewers in parallel.**
 
-## MEDIUM Issue Protocol (MANDATORY - NOT CONDITIONAL)
+## MEDIUM Issue Protocol (MANDATORY - ABSOLUTE REQUIREMENT)
 
-**You CANNOT return PASS verdict with unfixed MEDIUM issues without this protocol:**
+**Gate 4 requires ALL issues CRITICAL/HIGH/MEDIUM to be FIXED before PASS verdict.**
+
+**Severity mapping is absolute (matches dev-cycle Gate 4 policy):**
+- **CRITICAL** → Fix NOW, re-run all 3 reviewers
+- **HIGH** → Fix NOW, re-run all 3 reviewers
+- **MEDIUM** → Fix NOW, re-run all 3 reviewers
+- **LOW** → Add TODO(review): comment with description
+- **Cosmetic** → Add FIXME(nitpick): comment (optional)
+
+**MEDIUM Issue Response Protocol:**
 
 1. **STOP immediately** when MEDIUM issues found
-2. **Present MEDIUM issues to user** with clear descriptions
-3. **Ask explicitly:** "Fix now or add FIXME with tracking?"
-4. **User MUST explicitly choose** - no implicit decisions
-5. **Document choice** in review summary
+2. **Present MEDIUM issues to user**
+3. **REQUIRED ACTION:** Fix the issues and re-run all 3 reviewers
+4. **CANNOT PASS** with unfixed MEDIUM issues
+5. **No FIXME option** for MEDIUM - MEDIUM means mandatory fix
 
-**If you return PASS with MEDIUM issues without user approval → Gate 4 violation**
+**Anti-Rationalization:** "Only 3 MEDIUM findings, can track with FIXME" → WRONG. MEDIUM = Fix NOW. No deferral, no tracking, no exceptions.
 
-**Anti-Rationalization:** "Only 3 MEDIUM findings, aggregate should be PASS" → WRONG. MEDIUM requires explicit handling, not silent acceptance.
-
-**MEDIUM issues are NOT automatically waived:**
+**MEDIUM issues handling:**
 
 | MEDIUM Issue Response | Allowed? | Action Required |
 |----------------------|----------|-----------------|
-| Fix immediately | ✅ YES | Fix, re-run reviewers |
-| Add FIXME with issue link | ✅ YES | `// FIXME(review): [description] - Issue #123` |
+| Fix immediately | ✅ REQUIRED | Fix, re-run all 3 reviewers |
+| Add FIXME with issue link | ❌ NO | MEDIUM must be FIXED |
 | Ignore silently | ❌ NO | This is a violation |
 | "Risk accept" without user | ❌ NO | User must explicitly approve |
 | Document in commit msg only | ❌ NO | Must be in code as FIXME |
@@ -241,25 +255,24 @@ Extract per reviewer: VERDICT + Critical/High/Medium/Low issue lists.
 
 ## Step 4: Aggregate Findings
 
-Combine all findings by severity with source attribution: Critical (block release), High (must fix), Medium (should fix), Low (track as TODO).
+Combine all findings by severity with source attribution: Critical (MUST fix), High (MUST fix), Medium (MUST fix), Low (track as TODO).
 
 ## Step 5: Determine VERDICT
 
 | Condition | VERDICT | Action |
 |-----------|---------|--------|
-| All 3 reviewers PASS, no Critical/High | **PASS** | Proceed to Gate 5 |
+| All 3 reviewers PASS, no Critical/High/Medium | **PASS** | Proceed to Gate 5 |
 | Any Critical finding | **FAIL** | Return to Gate 0 |
-| 2+ High findings | **FAIL** | Return to Gate 0 |
-| 1 High finding | **NEEDS_DISCUSSION** | Evaluate with stakeholder |
-| Only Medium/Low findings | **PASS** | Track issues, proceed |
+| Any High finding | **FAIL** | Return to Gate 0 |
+| Any Medium finding | **FAIL** | Return to Gate 0 |
+| Only Low findings | **PASS** | Track issues, proceed |
 
 ## Step 6: Handle VERDICT
 
 | VERDICT | Actions |
 |---------|---------|
-| **PASS** | Document → Add `// TODO(review):` for Low, `// FIXME(review):` for Medium → Proceed to Gate 5 |
-| **FAIL** | Document Critical/High → Create fix tasks → Return to Gate 0 → Re-run ALL 3 reviewers after fixes |
-| **NEEDS_DISCUSSION** | Present High finding to stakeholder with options: Fix now / Accept risk / Partial fix → Wait for decision |
+| **PASS** | Document → Add `// TODO(review):` for Low → Proceed to Gate 5 |
+| **FAIL** | Document Critical/High/Medium → Create fix tasks → Return to Gate 0 → Re-run ALL 3 reviewers after fixes |
 
 ## Step 7: Document Review Outcome
 
@@ -288,8 +301,8 @@ Combine all findings by severity with source attribution: Critical (block releas
 **Always:**
 - Launch all 3 reviewers in single message
 - Wait for all to complete before aggregating
-- Fix Critical/High immediately
-- Track Medium/Low with comments
+- Fix Critical/High/Medium immediately
+- Track Low with TODO comments
 - Re-run full review after fixes
 - Document reviewer disagreements
 
