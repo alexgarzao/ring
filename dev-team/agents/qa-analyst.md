@@ -691,8 +691,8 @@ Coverage < threshold → VERDICT: FAIL → Return to Gate 0
 # JavaScript/TypeScript
 grep -rn "\.skip\|\.todo\|describe\.skip\|it\.skip\|test\.skip\|xit\|xdescribe\|xtest" tests/
 
-# Go
-grep -rn "t\.Skip" **/*_test.go
+# Go (POSIX-compatible, works in CI)
+grep -R -n "t\.Skip" --include="*_test.go" .
 
 # Python
 grep -rn "@pytest.mark.skip\|@unittest.skip" tests/
