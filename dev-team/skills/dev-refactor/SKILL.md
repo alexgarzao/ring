@@ -3,14 +3,16 @@ name: dev-refactor
 description: |
   BEFORE dispatching any specialist agents, you MUST first dispatch ring-default:codebase-explorer.
 
-  REQUIRED FIRST AGENT DISPATCH:
-  Task tool → subagent_type: "ring-default:codebase-explorer"
+  REQUIRED FIRST AGENT DISPATCH (use Task tool with these EXACT parameters):
+    subagent_type: "ring-default:codebase-explorer"
+    model: "opus"
+    description: "Codebase exploration for refactoring analysis"
 
   DO NOT use bash commands (find, ls, grep) to explore codebase yourself.
-  DO NOT use built-in Explore agent.
+  DO NOT use built-in Explore agent (subagent_type: "Explore" is WRONG).
   DO NOT skip this step.
 
-  After codebase-explorer completes, THEN dispatch specialist agents.
+  After codebase-explorer completes, THEN dispatch specialist agents with model: "opus".
 
 trigger: |
   - User wants to refactor existing project to follow standards
