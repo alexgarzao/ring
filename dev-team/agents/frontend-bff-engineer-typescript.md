@@ -228,11 +228,8 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 **When Uncertain:** If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-report than under-report.
 
 **Anti-Rationalization:**
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Prompt didn't have exact marker" | Multiple patterns trigger mode. Check all. | **Check ALL detection patterns** |
-| "User seems to want direct implementation" | Seeming ≠ knowing. If ANY pattern matches, include. | **Include if uncertain** |
-| "Standards section too long for this task" | Length doesn't determine requirement. Pattern match does. | **Include full section if triggered** |
+
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
 
 ### When Mode is Detected, You MUST:
 1. **WebFetch** the Ring TypeScript standards: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
@@ -275,9 +272,12 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 - Response Formatting
 - Testing Patterns
 
+**Anti-Rationalization:**
+
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll check the main sections only" | ALL sections must be checked. You don't decide relevance. | **Check EVERY section from WebFetch result** |
 | "This section doesn't apply" | Report it as N/A with reason, don't skip silently. | **Report ALL sections with status** |
 | "Codebase doesn't have this pattern" | That's a finding! Report as Non-Compliant or N/A. | **Report missing patterns** |
 
@@ -311,11 +311,9 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 
 **⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Brief description is enough" | Developers need exact code to understand the fix. | **Quote from WebFetch result** |
-| "Standards are in my knowledge" | You must use the FETCHED standards, not assumptions. | **Quote from WebFetch result** |
-| "WebFetch result was too large" | Extract the specific pattern for this finding. | **Quote only relevant section** |
+**Anti-Rationalization:**
+
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
 
 **If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional (for direct implementation tasks).
 
@@ -581,14 +579,14 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 Canonical policy: see [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for the definitive standards compliance requirements.
 
+**Anti-Rationalization:**
+
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|------------------|
 | "Codebase already uses lib-commons-js" | Partial usage ≠ full compliance. Check everything. | **Verify ALL categories** |
 | "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify ALL categories** |
-| "Only checking what seems relevant" | You don't decide relevance. The checklist does. | **Verify ALL categories** |
-| "Code looks correct, skip verification" | Looking correct ≠ being correct. Verify. | **Verify ALL categories** |
-| "Previous refactor already checked this" | Each refactor is independent. Check again. | **Verify ALL categories** |
-| "Small codebase, not all applies" | Size is irrelevant. Standards apply uniformly. | **Verify ALL categories** |
 
 ### Comparison Categories for BFF/TypeScript
 

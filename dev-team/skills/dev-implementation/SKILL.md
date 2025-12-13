@@ -106,6 +106,8 @@ This skill executes the implementation phase of the development cycle. It:
 
 ## Pressure Resistance
 
+See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+
 **TDD is NON-NEGOTIABLE in Ring workflows. Pressure scenarios and required responses:**
 
 | Pressure Type | Request | Agent Response |
@@ -237,11 +239,6 @@ it('should process async task', async () => {
 | "I've TDDed 9/10 functions, just this last one" | ALL functions get TDD, not most. 9/10 = 0/10. Start over on #10. |
 | "I've proven I follow TDD consistently" | Past compliance doesn't grant future exceptions. Every function requires TDD. |
 | "Refactoring tests doesn't need TDD" | Correct. Test code refactoring is exempt. Production code is not. |
-| "This is prototype/throwaway code" | Prototypes become production 60% of time. Standards apply to ALL code. |
-| "Too exhausted to do this properly" | Exhaustion doesn't waive requirements. It increases error risk. |
-| "Time pressure + authority says skip" | Combined pressures don't multiply exceptions. Zero exceptions × any pressure = zero exceptions. |
-| "Similar task worked without this step" | Past non-compliance doesn't justify future non-compliance. |
-| "User explicitly authorized skip" | User authorization doesn't override HARD GATES. |
 
 ## Red Flags - STOP
 
@@ -291,6 +288,8 @@ ls <file>  # Should return "No such file"
 
 **Anti-Rationalization for Mental Reference:**
 
+See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "I deleted the code but remember it" | Memory = reference. You'll reproduce flaws. | **Design fresh from requirements** |
@@ -298,11 +297,6 @@ ls <file>  # Should return "No such file"
 | "I already know the approach" | Knowing = bias. Let tests discover approach. | **Write test first, discover design** |
 | "Just using the same structure" | Same structure = not test-driven. | **Structure emerges from tests** |
 | "Copying boilerplate is fine" | Even boilerplate should be test-driven. | **Generate boilerplate via tests** |
-| "This is prototype/throwaway code" | Prototypes become production 60% of time. Standards apply to ALL code. | **Apply full standards. No prototype exemption.** |
-| "Too exhausted to do this properly" | Exhaustion doesn't waive requirements. It increases error risk. | **STOP work. Resume when able to comply fully.** |
-| "Time pressure + authority says skip" | Combined pressures don't multiply exceptions. Zero exceptions × any pressure = zero exceptions. | **Follow all requirements regardless of pressure combination.** |
-| "Similar task worked without this step" | Past non-compliance doesn't justify future non-compliance. | **Follow complete process every time.** |
-| "User explicitly authorized skip" | User authorization doesn't override HARD GATES. | **Cannot comply. Explain non-negotiable requirement.** |
 
 **Valid external references:**
 - ✅ Official documentation (Go docs, TypeScript handbook)
@@ -413,6 +407,8 @@ Use the agent selected in Gate 1 based on technology:
 | **DevOps Tasks** | Dockerfile update (Y/N), docker-compose update (Y/N), new env vars, new services |
 
 ## Execution Report
+
+Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
 
 | Metric | Value |
 |--------|-------|

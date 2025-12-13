@@ -129,7 +129,9 @@ This skill VALIDATES that observability was correctly implemented by developers:
 
 ## Pressure Resistance
 
-**Gate 2 (SRE/Observability) is MANDATORY before production. Pressure scenarios and required responses:**
+See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+
+**Gate 2 (SRE/Observability) is MANDATORY before production. Gate-specific pressure scenarios and required responses:**
 
 | Pressure Type | Request | Agent Response |
 |---------------|---------|----------------|
@@ -137,7 +139,7 @@ This skill VALIDATES that observability was correctly implemented by developers:
 | **Logs Only** | "Plain text logs are enough for MVP" | "Plain text logs are not searchable, not alertable. JSON logs required." |
 | **MVP** | "It's just MVP, skip structured logging" | "MVP without structured logging = debugging nightmare. You won't be able to search or alert on logs." |
 
-## Combined Pressure Scenarios
+### Combined Pressure Scenarios
 
 | Pressure Combination | Request | Agent Response |
 |---------------------|---------|----------------|
@@ -229,6 +231,10 @@ Is it runnable code?
 | **Idempotency logging** | Know if re-run is safe | `{"already_migrated":true,"skipping":true}` |
 
 ## Anti-Rationalization Table
+
+See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+
+### Gate-Specific Anti-Rationalizations
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -334,6 +340,8 @@ Review Gate 0/1 handoff: Service type (API/Worker/Batch), Language, External dep
 | **Batch Job** | Structured logging, Exit code handling | — |
 
 ## Execution Report
+
+Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
 
 | Metric | Value |
 |--------|-------|

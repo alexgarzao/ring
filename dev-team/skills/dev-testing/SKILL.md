@@ -69,6 +69,8 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 
 ## Pressure Resistance
 
+See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+
 **Gate 3 (Testing) enforces MANDATORY unit test coverage. Pressure scenarios and required responses:**
 
 | Pressure Type | Request | Agent Response |
@@ -77,13 +79,12 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | **Close Enough** | "83% coverage, close to 85%" | "85% is MINIMUM, not target. 83% = FAIL. Write more tests." |
 | **Integration** | "My integration tests cover this" | "Gate 3 = unit tests only. Integration tests are separate scope." |
 | **Time** | "Tests will slow us down" | "Tests prevent rework. No tests = more time debugging later." |
-| **Exhaustion + Deadline** | "2am, demo at 9am, too tired" | "Exhausted work = buggy work = rework. STOP. Resume fresh or request deadline extension." |
-| **Prototype + Time** | "Just POC, need it fast" | "POC with bugs = wrong validation. Apply standards. Fast AND correct." |
-| **Multiple Authorities** | "CTO + PM + TL all say skip" | "Authority count doesn't change requirements. HARD GATES are non-negotiable." |
 
 **Non-negotiable principle:** Coverage threshold is MANDATORY minimum, not aspirational target. Below threshold = FAIL.
 
 ## Common Rationalizations - REJECTED
+
+See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
 
 | Excuse | Reality |
 |--------|---------|
@@ -101,11 +102,6 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 | "PROJECT_RULES.md says 70% is OK" | Ring minimum is 85%. PROJECT_RULES.md can raise, not lower. |
 | "Team decided lower threshold" | Team decisions don't override Ring gates. 85% is non-negotiable. |
 | "This module is simple, 60% enough" | Module complexity doesn't lower threshold. 85% everywhere. |
-| "This is prototype/throwaway code" | Prototypes become production 60% of time. Standards apply to ALL code. |
-| "Too exhausted to do this properly" | Exhaustion doesn't waive requirements. It increases error risk. |
-| "Time pressure + authority says skip" | Combined pressures don't multiply exceptions. Zero exceptions × any pressure = zero exceptions. |
-| "Similar task worked without this step" | Past non-compliance doesn't justify future non-compliance. |
-| "User explicitly authorized skip" | User authorization doesn't override HARD GATES. |
 
 ## Red Flags - STOP
 
@@ -178,6 +174,8 @@ If you catch yourself thinking ANY of these, STOP immediately:
 
 ### Anti-Rationalization for Coverage
 
+See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Tool shows 83% but real is 90%" | Tool output IS real. Your belief is not. | **Fix issue, re-measure** |
@@ -186,11 +184,6 @@ If you catch yourself thinking ANY of these, STOP immediately:
 | "Generated code tanks coverage" | Generated code should be excluded by pattern. | **Add exclusion pattern** |
 | "84.5% rounds to 85%" | Rounding is not allowed. 84.5% < 85%. | **Write more tests** |
 | "Close enough with all AC tested" | "Close enough" is not a passing grade. | **Meet exact threshold** |
-| "This is prototype/throwaway code" | Prototypes become production 60% of time. Standards apply to ALL code. | **Apply full standards. No prototype exemption.** |
-| "Too exhausted to do this properly" | Exhaustion doesn't waive requirements. It increases error risk. | **STOP work. Resume when able to comply fully.** |
-| "Time pressure + authority says skip" | Combined pressures don't multiply exceptions. Zero exceptions × any pressure = zero exceptions. | **Follow all requirements regardless of pressure combination.** |
-| "Similar task worked without this step" | Past non-compliance doesn't justify future non-compliance. | **Follow complete process every time.** |
-| "User explicitly authorized skip" | User authorization doesn't override HARD GATES. | **Cannot comply. Explain non-negotiable requirement.** |
 
 **If PROJECT_RULES.md specifies < 85%:**
 1. That specification is INVALID
@@ -340,6 +333,8 @@ If tests fail during execution:
 - Clean up test state
 
 ## Execution Report
+
+Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
 
 | Metric | Value |
 |--------|-------|

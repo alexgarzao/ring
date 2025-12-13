@@ -51,10 +51,25 @@ Before adding ANY content to prompts, skills, agents, or documentation:
 | Workflows | docs/WORKFLOWS.md |
 | Plugin overview | README.md |
 | Agent requirements | CLAUDE.md (Agent Modification section) |
+| Shared skill patterns | `{plugin}/skills/shared-patterns/*.md` |
+
+**Shared Patterns Rule (MANDATORY):**
+When content is reused across multiple skills within a plugin:
+1. **Extract to shared-patterns**: Create `{plugin}/skills/shared-patterns/{pattern-name}.md`
+2. **Reference from skills**: Use `See [shared-patterns/{name}.md](../shared-patterns/{name}.md)`
+3. **NEVER duplicate**: If the same table/section appears in 2+ skills → extract to shared-patterns
+
+| Shared Pattern Type | Location |
+|--------------------|----------|
+| Pressure resistance scenarios | `{plugin}/skills/shared-patterns/pressure-resistance.md` |
+| Anti-rationalization tables | `{plugin}/skills/shared-patterns/anti-rationalization.md` |
+| Execution report format | `{plugin}/skills/shared-patterns/execution-report.md` |
 
 **Reference Pattern:**
 - ✅ `See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) for language patterns`
+- ✅ `See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressures`
 - ❌ Copying the language patterns table into another file
+- ❌ Duplicating pressure resistance tables across multiple skills
 
 ---
 

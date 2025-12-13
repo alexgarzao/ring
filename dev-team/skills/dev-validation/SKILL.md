@@ -62,6 +62,8 @@ Final validation gate requiring explicit user approval. Present evidence that ea
 
 ## Pressure Resistance
 
+See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+
 **Gate 5 (Validation) requires EXPLICIT user approval. Pressure scenarios and required responses:**
 
 | Pressure Type | Request | Agent Response |
@@ -314,6 +316,8 @@ If some criteria pass but others fail:
 - Re-verify after any changes
 
 ## Execution Report
+
+Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
 
 | Metric | Value |
 |--------|-------|

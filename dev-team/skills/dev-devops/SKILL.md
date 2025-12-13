@@ -69,6 +69,8 @@ This skill configures the development and deployment infrastructure:
 
 ## Pressure Resistance
 
+See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+
 **Gate 1 (DevOps) is MANDATORY for all containerizable applications. Pressure scenarios and required responses:**
 
 | Pressure Type | Request | Agent Response |
@@ -301,6 +303,8 @@ Create `docs/LOCAL_SETUP.md` with these sections:
 | **Hot Reload** | Override compose | Go: `air -c .air.toml`, Node: `npm run dev` with volume mounts |
 
 ## Execution Report
+
+Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
 
 | Metric | Value |
 |--------|-------|

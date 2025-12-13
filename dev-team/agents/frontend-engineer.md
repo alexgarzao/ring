@@ -164,11 +164,11 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 **When Uncertain:** If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-report than under-report.
 
 **Anti-Rationalization:**
+
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Prompt didn't have exact marker" | Multiple patterns trigger mode. Check all. | **Check ALL detection patterns** |
-| "User seems to want direct implementation" | Seeming ≠ knowing. If ANY pattern matches, include. | **Include if uncertain** |
-| "Standards section too long for this task" | Length doesn't determine requirement. Pattern match does. | **Include full section if triggered** |
 
 ### When Mode is Detected, You MUST:
 1. **WebFetch** the Ring Frontend standards: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md`
@@ -211,11 +211,10 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 - Error Boundaries
 - Data Fetching Patterns
 
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll check the main sections only" | ALL sections must be checked. You don't decide relevance. | **Check EVERY section from WebFetch result** |
-| "This section doesn't apply" | Report it as N/A with reason, don't skip silently. | **Report ALL sections with status** |
-| "Codebase doesn't have this pattern" | That's a finding! Report as Non-Compliant or N/A. | **Report missing patterns** |
 
 ### ⛔ MANDATORY: Quote Standards from WebFetch in Findings
 
@@ -247,11 +246,10 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 
 **⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
 
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Brief description is enough" | Developers need exact code to understand the fix. | **Quote from WebFetch result** |
-| "Standards are in my knowledge" | You must use the FETCHED standards, not assumptions. | **Quote from WebFetch result** |
-| "WebFetch result was too large" | Extract the specific pattern for this finding. | **Quote only relevant section** |
 
 **If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional (for direct implementation tasks).
 
@@ -911,6 +909,8 @@ When reporting issues in existing code:
 ## Anti-Rationalization Table
 
 **If you catch yourself thinking ANY of these, STOP:**
+
+See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
