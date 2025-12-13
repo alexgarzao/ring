@@ -211,9 +211,34 @@ Replace Task 1 with `ring-dev-team:backend-engineer-typescript`.
 
 ---
 
+## Step 4.1: Agent Report → Findings Mapping (HARD GATE)
+
+**⛔ MANDATORY: ALL agent-reported issues MUST become findings.**
+
+| Agent Report | Action |
+|--------------|--------|
+| Any difference between current code and Ring standard | → Create FINDING-XXX |
+| Any missing pattern from Ring standards | → Create FINDING-XXX |
+| Any deprecated pattern usage | → Create FINDING-XXX |
+| Any observability gap | → Create FINDING-XXX |
+
+**FORBIDDEN:**
+- ❌ Ignoring agent-reported issues because they seem "minor"
+- ❌ Filtering out issues based on personal judgment
+- ❌ Summarizing multiple issues into one finding (each issue = one finding)
+
+**REQUIRED:**
+- ✅ Every line item from agent reports becomes a FINDING-XXX entry
+- ✅ Preserve agent's severity assessment
+- ✅ Include exact file:line references from agent report
+
+---
+
 ## Step 5: Generate findings.md
 
 **Use Write tool to create findings.md:**
+
+**⛔ CRITICAL: Every issue reported by agents in Step 4 MUST appear here as a FINDING-XXX entry.**
 
 ```markdown
 # Findings: {project-name}
@@ -234,16 +259,20 @@ Replace Task 1 with `ring-dev-team:backend-engineer-typescript`.
 {actual code}
 ```
 
-### Expected Code (Ring Standard)
-```{lang}
-// Ring Standard: {pattern} ({file}:{section})
-{expected code}
-```
+### Ring Standard Reference
+**Standard:** {standards-file}.md → Section: {section-name}
+**Pattern:** {pattern-name}
+**URL:** https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/{file}.md
+
+### Required Changes
+1. {action item 1 - what to change}
+2. {action item 2 - what to add/remove}
+3. {action item 3 - pattern to follow}
 
 ### Why This Matters
-- Problem: {issue}
-- Standard: {violated}
-- Impact: {business impact}
+- **Problem:** {what is wrong with current code}
+- **Standard Violated:** {specific section from Ring standards}
+- **Impact:** {business/technical impact if not fixed}
 
 ---
 
@@ -254,10 +283,22 @@ Replace Task 1 with `ring-dev-team:backend-engineer-typescript`.
 
 ## Step 6: Group Findings into Tasks
 
+**⛔ HARD GATE: Every FINDING-XXX MUST appear in at least one REFACTOR-XXX task.**
+
 Group related findings by:
-1. Module/bounded context
-2. Dependency order
+1. Module/bounded context (same file/package = same task)
+2. Dependency order (foundational changes first)
 3. Severity (critical first)
+
+**Mapping Verification:**
+```
+Before proceeding to Step 7, verify:
+- Total findings in findings.md: X
+- Total findings referenced in tasks: X (MUST MATCH)
+- Orphan findings (not in any task): 0 (MUST BE ZERO)
+```
+
+**If ANY finding is not mapped to a task → STOP. Add missing findings to tasks.**
 
 ---
 
@@ -278,22 +319,27 @@ Group related findings by:
 **Dependencies:** {other tasks or none}
 
 ### Findings Addressed
-| Finding | Pattern | Severity |
-|---------|---------|----------|
-| FINDING-001 | {name} | Critical |
-| FINDING-003 | {name} | High |
+| Finding | Pattern | Severity | File:Line |
+|---------|---------|----------|-----------|
+| FINDING-001 | {name} | Critical | src/handler.go:45 |
+| FINDING-003 | {name} | High | src/service.go:112 |
 
-### Execution Context
-```{lang}
-// BEFORE (file:line)
-{current code}
+### Ring Standards to Follow
+| Standard File | Section | URL |
+|---------------|---------|-----|
+| golang.md | Error Handling | [Link](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md) |
+| sre.md | Structured Logging | [Link](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md) |
 
-// AFTER (Ring Standard)
-{expected code}
-```
+### Required Actions
+1. [ ] {action from FINDING-001 - specific change to make}
+2. [ ] {action from FINDING-001 - pattern to implement}
+3. [ ] {action from FINDING-003 - specific change to make}
 
 ### Acceptance Criteria
-- [ ] {criteria from finding}
+- [ ] Code follows {standard}.md → {section} pattern
+- [ ] No {anti-pattern} usage remains
+- [ ] Tests pass after refactoring
+- [ ] {additional criteria from findings}
 ```
 
 ---
