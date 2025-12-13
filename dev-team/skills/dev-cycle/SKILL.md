@@ -81,6 +81,34 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 
 **Announce at start:** "I'm using the dev-cycle skill to orchestrate task execution through 6 gates."
 
+## ⛔ CRITICAL: Specialized Agents Perform All Tasks
+
+**YOU ARE THE ORCHESTRATOR. SPECIALIZED AGENTS ARE THE EXECUTORS.**
+
+| Your Role (Orchestrator) | Agent Role (Executor) |
+|--------------------------|----------------------|
+| Load and parse task files | Read source code |
+| Dispatch agents with context | Write implementation code |
+| Track gate progress | Run tests |
+| Manage state file | Add observability (logs, traces, metrics) |
+| Report to user | Make code changes |
+| Coordinate between gates | Validate standards compliance |
+
+**EVERY implementation action MUST be performed by a specialized agent:**
+
+| Gate | Specialized Agent | What Agent Does |
+|------|-------------------|-----------------|
+| 0 | `ring-dev-team:backend-engineer-golang` | Implements code, adds observability, runs TDD |
+| 0 | `ring-dev-team:backend-engineer-typescript` | Implements code, adds observability, runs TDD |
+| 1 | `ring-dev-team:devops-engineer` | Updates Dockerfile, docker-compose, Helm |
+| 2 | `ring-dev-team:sre` | Validates observability implementation |
+| 3 | `ring-dev-team:qa-analyst` | Writes tests, validates coverage |
+| 4 | `ring-default:code-reviewer` | Reviews code quality |
+| 4 | `ring-default:business-logic-reviewer` | Reviews business logic |
+| 4 | `ring-default:security-reviewer` | Reviews security |
+
+**If you find yourself using Read/Write/Edit/Bash on source code → STOP. Dispatch agent instead.**
+
 ## Blocker Criteria - STOP and Report
 
 | Decision Type | Examples | Action |
