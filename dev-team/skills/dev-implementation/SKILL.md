@@ -320,45 +320,9 @@ See [shared-patterns/skills-anti-rationalization.md](../shared-patterns/skills-a
 
 ## ⛔ MANDATORY: Agent Dispatch Required (HARD GATE)
 
-**YOU CANNOT IMPLEMENT CODE DIRECTLY. You MUST dispatch a specialist agent.**
+See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, agent responsibilities (observability), library requirements, and anti-rationalization table.
 
-This is the ORCHESTRATOR principle. You are the orchestrator. Agents are the executors.
-
-### FORBIDDEN Actions (SKILL FAILURE if violated)
-
-```
-❌ Read(file_path="*.go")           → SKILL FAILURE - Agent reads code
-❌ Write(file_path="*.go")          → SKILL FAILURE - Agent writes code
-❌ Edit(file_path="*.go")           → SKILL FAILURE - Agent edits code
-❌ Bash(command="go test ...")      → SKILL FAILURE - Agent runs tests
-❌ Direct implementation of ANY kind → SKILL FAILURE
-```
-
-### REQUIRED Actions
-
-```
-✅ Task(subagent_type="ring-dev-team:backend-engineer-golang", model="opus", prompt="...")
-✅ Task(subagent_type="ring-dev-team:backend-engineer-typescript", model="opus", prompt="...")
-✅ Task(subagent_type="ring-dev-team:frontend-bff-engineer-typescript", model="opus", prompt="...")
-```
-
-### Agent Responsibilities (Built Into Implementation)
-
-**Backend agents MUST implement observability as part of the code, not as a separate step:**
-
-| Responsibility | Description | When Required |
-|----------------|-------------|---------------|
-| **Structured Logging** | JSON logs with level, message, timestamp, service, trace_id | ALL code paths |
-| **Tracing** | OpenTelemetry spans for operations, trace context propagation | External calls, DB queries, HTTP handlers |
-| **Metrics** | Counters, histograms, gauges for business and technical metrics | Performance-critical paths, business events |
-
-**Implementation Requirements:**
-
-| Component | Go | TypeScript |
-|-----------|-----|------------|
-| **Logging** | `zerolog` or `zap` with JSON output | `pino` or `winston` with JSON output |
-| **Tracing** | `go.opentelemetry.io/otel` | `@opentelemetry/sdk-node` |
-| **Metrics** | `prometheus/client_golang` | `prom-client` |
+**Summary:** You orchestrate. Agents execute. Agents implement observability (logs, traces, metrics). If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
 **Include in EVERY dispatch prompt:**
 ```
@@ -370,27 +334,6 @@ OBSERVABILITY REQUIREMENTS:
 ```
 
 **Gate 2 (SRE) validates this was done correctly. Gate 0 implements it.**
-
-### Anti-Rationalization Table for Agent Dispatch
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "This is a simple change, I can do it myself" | Simple ≠ exempt. Agents have standards loaded. You don't. | **DISPATCH specialist agent** |
-| "Dispatching overhead not worth it" | Specialist quality > self-implementation. Dispatch is investment. | **DISPATCH specialist agent** |
-| "I already know Go/TypeScript" | Knowing language ≠ knowing Ring standards. Agent has standards. | **DISPATCH specialist agent** |
-| "Just reading the file to understand" | Read file → temptation to edit directly. Agent reads for you. | **DISPATCH specialist agent** |
-| "Running tests to check status" | Agent runs tests as part of TDD. You orchestrate, not operate. | **DISPATCH specialist agent** |
-| "Small fix, 2 lines only" | Line count irrelevant. ALL code changes require specialist. | **DISPATCH specialist agent** |
-| "Agent will do same thing I would" | Agent has Ring standards loaded. You're guessing without them. | **DISPATCH specialist agent** |
-
-### If You Violated This Rule
-
-1. **STOP** current execution immediately
-2. **DISCARD** any direct changes you made (git checkout)
-3. **DISPATCH** the correct specialist agent
-4. **Agent implements** from scratch following TDD
-
-**Sunk cost of direct work is IRRELEVANT. Specialist dispatch is MANDATORY.**
 
 ## Prerequisites
 

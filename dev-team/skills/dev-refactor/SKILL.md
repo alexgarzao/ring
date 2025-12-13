@@ -17,28 +17,9 @@ Analyzes existing codebase against Ring/Lerian standards and generates refactori
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
-**YOU ARE THE ORCHESTRATOR. SPECIALIZED AGENTS ARE THE EXECUTORS.**
+See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, step-to-agent mapping, and anti-rationalization table.
 
-| Your Role (Orchestrator) | Agent Role (Executor) |
-|--------------------------|----------------------|
-| Validate prerequisites | Analyze codebase architecture |
-| Dispatch agents with context | Compare code against standards |
-| Aggregate findings | Identify compliance gaps |
-| Generate tasks.md | Provide code snippets and file:line references |
-| Coordinate workflow | Load and apply Ring standards |
-
-**EVERY analysis action MUST be performed by a specialized agent:**
-
-| Step | Specialized Agent | What Agent Does |
-|------|-------------------|-----------------|
-| 3 | `ring-default:codebase-explorer` | Deep architecture analysis, pattern discovery |
-| 4 | `ring-dev-team:backend-engineer-golang` | Go standards compliance analysis |
-| 4 | `ring-dev-team:backend-engineer-typescript` | TypeScript standards compliance analysis |
-| 4 | `ring-dev-team:qa-analyst` | Test coverage and pattern analysis |
-| 4 | `ring-dev-team:devops-engineer` | DevOps setup analysis |
-| 4 | `ring-dev-team:sre` | Observability analysis |
-
-**If you find yourself using Bash/Grep/Read to analyze code → STOP. Dispatch agent instead.**
+**Summary:** You orchestrate. Agents execute. If using Bash/Grep/Read to analyze code → STOP. Dispatch agent.
 
 ---
 
