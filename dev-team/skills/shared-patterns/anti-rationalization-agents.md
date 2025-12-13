@@ -39,7 +39,7 @@ Agents should reference this file:
 ```markdown
 ## Anti-Rationalization
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### Agent-Specific Anti-Rationalizations
 

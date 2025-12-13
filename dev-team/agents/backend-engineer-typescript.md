@@ -331,7 +331,7 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -410,7 +410,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 - Type Safety Requirements
 - RabbitMQ Workers (if applicable)
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### ⛔ MANDATORY: Quote Standards from WebFetch in Findings
 
@@ -442,7 +442,7 @@ See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/ag
 
 **⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|

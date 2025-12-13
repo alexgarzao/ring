@@ -316,7 +316,7 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### When Mode is Detected, You MUST:
 1. **WebFetch** the Ring Testing standards (language-specific):
@@ -393,7 +393,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 - TDD RED-GREEN-REFACTOR Evidence
 - Integration vs Unit Test Separation
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### ⛔ MANDATORY: Quote Standards from WebFetch in Findings
 
@@ -425,7 +425,7 @@ See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/ag
 
 **⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 **If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional (for direct implementation tasks).
 

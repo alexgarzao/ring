@@ -229,7 +229,7 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### When Mode is Detected, You MUST:
 1. **WebFetch** the Ring TypeScript standards: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
@@ -307,7 +307,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -346,7 +346,7 @@ See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/ag
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 **If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional (for direct implementation tasks).
 
@@ -614,7 +614,7 @@ Canonical policy: see [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|------------------|

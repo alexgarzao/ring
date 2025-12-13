@@ -80,8 +80,8 @@ When content is reused across multiple skills within a plugin:
 | Shared Pattern Type | Location |
 |--------------------|----------|
 | Pressure resistance scenarios | `{plugin}/skills/shared-patterns/pressure-resistance.md` |
-| Anti-rationalization tables (skills) | `{plugin}/skills/shared-patterns/skills-anti-rationalization.md` |
-| Anti-rationalization tables (agents) | `{plugin}/skills/shared-patterns/agent-anti-rationalization.md` |
+| Anti-rationalization tables (skills) | `{plugin}/skills/shared-patterns/anti-rationalization-skills.md` |
+| Anti-rationalization tables (agents) | `{plugin}/skills/shared-patterns/anti-rationalization-agents.md` |
 | Execution report format | `{plugin}/skills/shared-patterns/execution-report.md` |
 | Standards coverage table | `{plugin}/skills/shared-patterns/standards-coverage-table.md` |
 

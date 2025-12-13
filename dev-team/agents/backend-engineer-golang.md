@@ -245,7 +245,7 @@ def should_include_standards_compliance(prompt: str, context: dict) -> bool:
 
 **Anti-Rationalization:**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### When Mode is Detected, You MUST:
 1. **WebFetch** the Ring Go standards: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md`
@@ -322,7 +322,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 - Testing Patterns
 - RabbitMQ Workers (if applicable)
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 ### ⛔ MANDATORY: Quote Standards from WebFetch in Findings
 
@@ -354,7 +354,7 @@ See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/ag
 
 **⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
 
-See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/agent-anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
 
 **If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional (for direct implementation tasks).
 
