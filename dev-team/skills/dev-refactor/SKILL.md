@@ -963,135 +963,160 @@ Without understanding the ACTUAL codebase structure, specialists analyze blindly
 | **codebase-explorer** | Maps what EXISTS in the project | Compare with standards |
 | **Specialist agents** | Load Ring standards + Compare with report | Explore codebase |
 
-### Execution Template - COPY EXACTLY
+### Explicit Tool Invocation (MANDATORY)
 
-```
-Task:
-  subagent_type: "ring-default:codebase-explorer"
-  model: "opus"
-  description: "Generate codebase architecture report"
-  prompt: |
-    **EXPLORATION TYPE: THOROUGH (30-45 minutes)**
+**⛔ You MUST use the Task tool to dispatch codebase-explorer. This is NOT implicit.**
 
-    Generate a comprehensive codebase report describing WHAT EXISTS in this project.
+```text
+Action: Use Task tool with EXACTLY these parameters:
 
-    **IMPORTANT:** You are NOT comparing with standards. You are DOCUMENTING what you find.
-    The specialist agents will receive your report and compare it with their standards.
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  Task tool parameters:                                                          │
+│                                                                                 │
+│  subagent_type: "ring-default:codebase-explorer"                                │
+│  model: "opus"                                                                  │
+│  description: "Generate codebase architecture report"                           │
+│  prompt: [See prompt template below]                                            │
+│                                                                                 │
+│  ⛔ If Task tool NOT used → codebase-report.md does NOT exist → SKILL FAILURE   │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-    ## SECTIONS TO INCLUDE
-
-    ### 1. Project Structure
-    - Directory layout (internal/, pkg/, cmd/, adapters/, domain/, etc.)
-    - Module organization pattern (feature-based vs layer-based)
-    - Entry points (main.go, index.ts, etc.)
-    - Test organization (co-located vs separate)
-
-    ### 2. Architecture Pattern
-    - What architecture is used? (hexagonal, clean, MVC, etc.)
-    - Layer boundaries identified
-    - Dependency direction observed
-
-    ### 3. Technology Stack
-    From go.mod / package.json / pyproject.toml:
-    - Language and version
-    - Main frameworks (Fiber, Express, FastAPI, etc.)
-    - Database libraries
-    - Observability libraries
-    - Testing libraries
-
-    ### 4. Code Patterns Found
-
-    Document HOW things are currently implemented:
-
-    #### Configuration
-    - Where is config loaded? (file:line)
-    - How? (env vars, config files, etc.)
-    - Show code snippet
-
-    #### Database Access
-    - Where are repositories? (directory)
-    - What pattern? (raw SQL, ORM, etc.)
-    - Do models transform to domain? (yes/no, example file)
-
-    #### HTTP Handlers
-    - Where are handlers? (directory)
-    - How is routing set up? (file:line)
-    - Middleware chain found
-
-    #### Error Handling
-    - Pattern observed (wrapped errors, custom types, etc.)
-    - Example locations
-
-    #### Telemetry/Observability
-    - Is there logging setup? (where)
-    - Is there tracing setup? (where)
-    - Is there metrics setup? (where)
-    - Health endpoints found? (paths)
-
-    #### Testing
-    - Test file pattern (xxx_test.go, xxx.spec.ts)
-    - Test patterns observed (table-driven, AAA, etc.)
-    - Mocking approach
-
-    ### 5. Key Files Inventory
-
-    | Category | File | Purpose | Lines |
-    |----------|------|---------|-------|
-    | Entry Point | cmd/app/main.go | Application start | 50 |
-    | Config | internal/bootstrap/config.go | Config loading | 150 |
-    | Router | internal/adapters/http/routes.go | Route definitions | 120 |
-    | Handler | internal/adapters/http/user_handler.go | User endpoints | 200 |
-    | Service | internal/services/user_service.go | Business logic | 180 |
-    | Repository | internal/adapters/postgres/user_repo.go | DB access | 150 |
-    | Domain | internal/domain/user.go | Entity definition | 60 |
-    | Test | internal/services/user_service_test.go | Unit tests | 250 |
-    | Dockerfile | Dockerfile | Container build | 35 |
-    | Docker Compose | docker-compose.yml | Local dev setup | 80 |
-
-    ### 6. Code Snippets (IMPORTANT)
-
-    For EACH major pattern, include a code snippet showing CURRENT implementation:
-
-    ```go
-    // Configuration loading (internal/bootstrap/config.go:15-25)
-    [actual code snippet here]
-    ```
-
-    ```go
-    // Handler pattern (internal/adapters/http/user_handler.go:30-50)
-    [actual code snippet here]
-    ```
-
-    ```go
-    // Repository pattern (internal/adapters/postgres/user_repo.go:20-45)
-    [actual code snippet here]
-    ```
-
-    ## OUTPUT FORMAT
-
-    Use standard codebase-explorer schema:
-    - EXPLORATION SUMMARY
-    - KEY FINDINGS (with file:line references)
-    - ARCHITECTURE INSIGHTS
-    - RELEVANT FILES (the inventory table)
-    - RECOMMENDATIONS (areas that look incomplete, NOT standards comparison)
+VERIFICATION: After Task completes, confirm agent returned output before proceeding
 ```
 
-### Save the Report
+**If you do NOT use Task tool → Agent is NOT dispatched → No report → SKILL FAILURE**
 
-After receiving the codebase-explorer output:
+### Prompt Template for codebase-explorer
+
+Use this EXACT prompt when invoking the Task tool:
+
+```text
+**EXPLORATION TYPE: THOROUGH (30-45 minutes)**
+
+Generate a comprehensive codebase report describing WHAT EXISTS in this project.
+
+**IMPORTANT:** You are NOT comparing with standards. You are DOCUMENTING what you find.
+The specialist agents will receive your report and compare it with their standards.
+
+## SECTIONS TO INCLUDE
+
+### 1. Project Structure
+- Directory layout (internal/, pkg/, cmd/, adapters/, domain/, etc.)
+- Module organization pattern (feature-based vs layer-based)
+- Entry points (main.go, index.ts, etc.)
+- Test organization (co-located vs separate)
+
+### 2. Architecture Pattern
+- What architecture is used? (hexagonal, clean, MVC, etc.)
+- Layer boundaries identified
+- Dependency direction observed
+
+### 3. Technology Stack
+From go.mod / package.json / pyproject.toml:
+- Language and version
+- Main frameworks (Fiber, Express, FastAPI, etc.)
+- Database libraries
+- Observability libraries
+- Testing libraries
+
+### 4. Code Patterns Found
+
+Document HOW things are currently implemented:
+
+#### Configuration
+- Where is config loaded? (file:line)
+- How? (env vars, config files, etc.)
+- Show code snippet
+
+#### Database Access
+- Where are repositories? (directory)
+- What pattern? (raw SQL, ORM, etc.)
+- Do models transform to domain? (yes/no, example file)
+
+#### HTTP Handlers
+- Where are handlers? (directory)
+- How is routing set up? (file:line)
+- Middleware chain found
+
+#### Error Handling
+- Pattern observed (wrapped errors, custom types, etc.)
+- Example locations
+
+#### Telemetry/Observability
+- Is there logging setup? (where)
+- Is there tracing setup? (where)
+- Is there metrics setup? (where)
+- Health endpoints found? (paths)
+
+#### Testing
+- Test file pattern (xxx_test.go, xxx.spec.ts)
+- Test patterns observed (table-driven, AAA, etc.)
+- Mocking approach
+
+### 5. Key Files Inventory
+
+| Category | File | Purpose | Lines |
+|----------|------|---------|-------|
+| Entry Point | cmd/app/main.go | Application start | 50 |
+| Config | internal/bootstrap/config.go | Config loading | 150 |
+| Router | internal/adapters/http/routes.go | Route definitions | 120 |
+| Handler | internal/adapters/http/user_handler.go | User endpoints | 200 |
+| Service | internal/services/user_service.go | Business logic | 180 |
+| Repository | internal/adapters/postgres/user_repo.go | DB access | 150 |
+| Domain | internal/domain/user.go | Entity definition | 60 |
+| Test | internal/services/user_service_test.go | Unit tests | 250 |
+| Dockerfile | Dockerfile | Container build | 35 |
+| Docker Compose | docker-compose.yml | Local dev setup | 80 |
+
+### 6. Code Snippets (IMPORTANT)
+
+For EACH major pattern, include a code snippet showing CURRENT implementation:
+
+```go
+// Configuration loading (internal/bootstrap/config.go:15-25)
+[actual code snippet here]
+```
+
+```go
+// Handler pattern (internal/adapters/http/user_handler.go:30-50)
+[actual code snippet here]
+```
+
+```go
+// Repository pattern (internal/adapters/postgres/user_repo.go:20-45)
+[actual code snippet here]
+```
+
+## OUTPUT FORMAT
+
+Use standard codebase-explorer schema:
+- EXPLORATION SUMMARY
+- KEY FINDINGS (with file:line references)
+- ARCHITECTURE INSIGHTS
+- RELEVANT FILES (the inventory table)
+- RECOMMENDATIONS (areas that look incomplete, NOT standards comparison)
+```
+
+### Save the Report (MANDATORY)
+
+**⛔ After Task tool returns output, you MUST save to file using Write tool.**
 
 ```text
 Action: Use Write tool to save to docs/refactor/{timestamp}/codebase-report.md
 
-Content: Full output from codebase-explorer
+Content: Full output from codebase-explorer Task
+
+VERIFICATION: After Write completes, confirm file exists before proceeding to Step 3
 ```
 
-**Output of this step:**
-- `codebase-report.md` saved with complete architecture map
-- Code snippets showing current implementations
-- Key files inventory for specialists to reference
-- Ready to dispatch specialists who will COMPARE with their standards
+**If Write tool NOT used → codebase-report.md does NOT exist → SKILL FAILURE**
+
+### Output of This Step
+
+- ✅ Task tool dispatched `ring-default:codebase-explorer`
+- ✅ Agent output received
+- ✅ Write tool saved output to `codebase-report.md`
+- ✅ Ready to dispatch specialists who will COMPARE with their standards
 
 ---
 
