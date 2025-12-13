@@ -1,21 +1,19 @@
 ---
 name: dev-refactor
 description: |
-  MANDATORY EXECUTION SEQUENCE (follow EXACTLY):
+  MANDATORY EXECUTION SEQUENCE:
 
-  1. Validate docs/PROJECT_RULES.md exists
-  2. Detect project language (go.mod = Go, package.json = TypeScript)
-  3. DISPATCH ring-default:codebase-explorer FIRST (generates codebase-report.md)
-     - This step is MANDATORY and CANNOT be skipped
-     - Must complete BEFORE step 4
-  4. THEN dispatch ring-dev-team specialist agents (backend-engineer-golang, qa-analyst, etc.)
-  5. Generate findings.md from agent outputs
-  6. Generate tasks.md for dev-cycle
+  Step 1: Validate docs/PROJECT_RULES.md exists
+  Step 2: Detect project language
+  Step 3: Use Task tool with subagent_type="ring-default:codebase-explorer"
+          DO NOT use built-in Explore agent - it is FORBIDDEN
+          DO NOT use subagent_type="Explore" - WRONG AGENT
+  Step 4: Use Task tool with subagent_type="ring-dev-team:backend-engineer-golang" etc.
+  Step 5: Generate findings.md
+  Step 6: Generate tasks.md
 
-  WARNING: If you skip step 3 (codebase-explorer) → SKILL FAILURE
-  WARNING: codebase-explorer and specialist agents are SEPARATE steps
-
-  Purpose: Analyzes existing codebase against standards to identify gaps.
+  CRITICAL: Step 3 uses Task tool with "ring-default:codebase-explorer" (NOT Explore)
+  FORBIDDEN: Explore, general-purpose, Plan agents
 
 trigger: |
   - User wants to refactor existing project to follow standards
