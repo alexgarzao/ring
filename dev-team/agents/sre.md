@@ -170,112 +170,19 @@ When validation fails, report issues to developers:
 
 ## Standards Compliance (AUTO-TRIGGERED)
 
-### Standards Compliance Mode Detection (ROBUST)
-
-**Trigger Conditions (ANY of these activates Standards Compliance output):**
-
-| Detection Pattern | Examples |
-|------------------|----------|
-| Exact match | `**MODE: ANALYSIS ONLY**` |
-| Case variations | `MODE: Analysis Only`, `mode: analysis only`, `**mode: ANALYSIS ONLY**` |
-| Partial markers | `ANALYSIS MODE`, `analysis-only`, `analyze only`, `MODE ANALYSIS` |
-| Context clues | Invoked from `dev-refactor` skill |
-| Explicit request | "compare against standards", "audit compliance", "check against Ring standards" |
-
-**Detection Logic:**
-```python
-def should_include_standards_compliance(prompt: str, context: dict) -> bool:
-    # Exact and case-insensitive matches
-    patterns = [
-        "mode: analysis only",
-        "analysis mode",
-        "analysis-only",
-        "analyze only",
-        "compare against standards",
-        "audit compliance",
-        "check against ring"
-    ]
-    prompt_lower = prompt.lower()
-
-    # Check patterns
-    if any(p in prompt_lower for p in patterns):
-        return True
-
-    # Check invocation context
-    if context.get("invocation_source") == "dev-refactor":
-        return True
-
-    return False
-```
-
-**When Uncertain:** If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-report than under-report.
-
-**Anti-Rationalization:**
-
-See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
-
-### When Mode is Detected, You MUST:
-1. **WebFetch** the Ring SRE standards: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md`
-2. **Read** `docs/PROJECT_RULES.md` if it exists in the target codebase
-3. **Include** a `## Standards Compliance` section in your output with comparison table
-4. **CANNOT skip** - this is a HARD GATE, not optional
-
-**MANDATORY Output Table Format:**
-```markdown
-| Category | Current Pattern | Ring Standard | Status | File/Location |
-|----------|----------------|---------------|--------|---------------|
-| [category] | [what codebase does] | [what standard requires] | ✅/⚠️/❌ | [file:line] |
-```
-
-**Status Legend:**
-- ✅ Compliant - Matches Ring standard
-- ⚠️ Partial - Some compliance, needs improvement
-- ❌ Non-Compliant - Does not follow standard
-
-### ⛔ MANDATORY: Standards Coverage Table (dev-refactor context)
-
-**Detection:** This section applies when your prompt contains `**MODE: ANALYSIS ONLY**`
-
-**How dev-refactor invokes you:**
-```yaml
-Task:
-  subagent_type: "ring-dev-team:sre"
-  prompt: |
-    **MODE: ANALYSIS ONLY**
-
-    Compare codebase with Ring standards.
-
-    Input:
-    - Ring Standards: Load via WebFetch (sre.md)
-    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
-    - Project Rules: docs/PROJECT_RULES.md
-```
-
-**Your inputs (provided by dev-refactor):**
-| Input | Source | Contains |
-|-------|--------|----------|
-| Ring Standards | WebFetch | Sections to check (## headers) |
-| codebase-report.md | Provided path | Current architecture, patterns, code snippets |
-| PROJECT_RULES.md | Provided path | Project-specific conventions |
-
-**Your outputs (expected by dev-refactor):**
-1. Standards Coverage Table (every section enumerated)
-2. Detailed findings in FINDING-XXX format for ⚠️/❌ items
-
-**HARD GATE:** When invoked from dev-refactor skill, before outputting detailed findings, you MUST output a Standards Coverage Table.
-
-See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:
-- Standards Coverage Table format (MANDATORY output)
-- Status legend (✅/⚠️/❌/N/A)
-- Completeness verification checklist
+See [shared-patterns/standards-compliance-detection.md](../skills/shared-patterns/standards-compliance-detection.md) for:
+- Detection logic and trigger conditions
+- MANDATORY output table format
+- Standards Coverage Table requirements
+- Finding output format with quotes
 - Anti-rationalization rules
 
-**Process:**
-1. **Parse the WebFetch result** - Extract ALL `## Section` headers from sre.md
-2. **Count total sections found** - Record the number
-3. **For EACH section** - Determine status (✅ Compliant, ⚠️ Partial, ❌ Non-Compliant, or N/A with reason)
-4. **Output table** - MUST have one row per section
-5. **Verify completeness** - Table rows MUST equal sections found
+**SRE-Specific Configuration:**
+
+| Setting | Value |
+|---------|-------|
+| **WebFetch URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
+| **Standards File** | sre.md |
 
 **Example sections from sre.md to check:**
 - Logging (structured JSON, log levels)
@@ -283,45 +190,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 - Health Check Endpoints
 - Graceful Shutdown
 
-See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Codebase doesn't have this pattern" | That's a finding! Report as Non-Compliant or N/A. | **Report missing patterns** |
-
-### ⛔ MANDATORY: Quote Standards from WebFetch in Findings
-
-**For EVERY ⚠️ Partial or ❌ Non-Compliant finding, you MUST:**
-
-1. **Quote the codebase pattern** from codebase-report.md (what exists)
-2. **Quote the Ring standard** from WebFetch result (what's expected)
-3. **Explain the gap** (what needs improvement)
-
-**Output Format for Non-Compliant Findings:**
-```markdown
-### FINDING: [Category Name]
-
-**Status:** ⚠️ Partial / ❌ Non-Compliant
-**Location:** [file:line from codebase-report.md]
-**Severity:** CRITICAL / HIGH / MEDIUM / LOW
-
-**Current (from codebase-report.md):**
-[Quote the actual code/pattern from codebase-report.md]
-
-**Expected (from Ring Standard - sre.md):**
-[Quote the relevant code/pattern from WebFetch result]
-
-**Gap Analysis:**
-- What is different
-- What needs to be improved
-- Standard reference: sre.md → [Section Name]
-```
-
-**⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
-
-See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
-
-**If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional (for direct implementation tasks).
+**If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional.
 
 ## Standards Loading (MANDATORY)
 
