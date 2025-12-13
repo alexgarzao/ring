@@ -246,17 +246,50 @@ See [shared-patterns/agent-anti-rationalization.md](../skills/shared-patterns/ag
 - ⚠️ Partial - Some compliance, needs improvement
 - ❌ Non-Compliant - Does not follow standard
 
-### ⛔ MANDATORY: Compare EVERY Section from Standards File
+### ⛔ MANDATORY: Standards Coverage Table (dev-refactor context)
 
-**You MUST systematically compare EVERY section from the WebFetch result (sre.md) with the codebase-report.md.**
+**Detection:** This section applies when your prompt contains `**MODE: ANALYSIS ONLY**`
+
+**How dev-refactor invokes you:**
+```yaml
+Task:
+  subagent_type: "ring-dev-team:sre"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+
+    Compare codebase with Ring standards.
+
+    Input:
+    - Ring Standards: Load via WebFetch (sre.md)
+    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Project Rules: docs/PROJECT_RULES.md
+```
+
+**Your inputs (provided by dev-refactor):**
+| Input | Source | Contains |
+|-------|--------|----------|
+| Ring Standards | WebFetch | Sections to check (## headers) |
+| codebase-report.md | Provided path | Current architecture, patterns, code snippets |
+| PROJECT_RULES.md | Provided path | Project-specific conventions |
+
+**Your outputs (expected by dev-refactor):**
+1. Standards Coverage Table (every section enumerated)
+2. Detailed findings in FINDING-XXX format for ⚠️/❌ items
+
+**HARD GATE:** When invoked from dev-refactor skill, before outputting detailed findings, you MUST output a Standards Coverage Table.
+
+See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:
+- Standards Coverage Table format (MANDATORY output)
+- Status legend (✅/⚠️/❌/N/A)
+- Completeness verification checklist
+- Anti-rationalization rules
 
 **Process:**
-1. **Parse the WebFetch result** - Identify ALL sections in sre.md
-2. **For EACH section in the standards file:**
-   - Find the corresponding pattern in codebase-report.md
-   - Compare: Does the codebase follow this standard?
-   - Report: ✅ Compliant, ⚠️ Partial, or ❌ Non-Compliant
-3. **Do NOT skip sections** - If a standard section exists, you MUST check it
+1. **Parse the WebFetch result** - Extract ALL `## Section` headers from sre.md
+2. **Count total sections found** - Record the number
+3. **For EACH section** - Determine status (✅ Compliant, ⚠️ Partial, ❌ Non-Compliant, or N/A with reason)
+4. **Output table** - MUST have one row per section
+5. **Verify completeness** - Table rows MUST equal sections found
 
 **Example sections from sre.md to check:**
 - Logging (structured JSON, log levels)

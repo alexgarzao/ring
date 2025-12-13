@@ -326,28 +326,126 @@ See [shared-patterns/skills-anti-rationalization.md](../shared-patterns/skills-a
 
 **Note:** PROJECT_RULES.md validated by dev-cycle Step 0, but Gate 0 re-checks (defense-in-depth).
 
+## TDD Sub-Phases (Gate 0.1 and 0.2)
+
+**Gate 0 is split into two explicit sub-phases with a HARD GATE between them:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  GATE 0.1: TDD-RED                                              │
+│  Write failing test → Run test → Capture FAILURE output         │
+│                                                                 │
+│  ═══════════════════ HARD GATE ═══════════════════════════════  │
+│  CANNOT proceed to 0.2 until failure_output is captured         │
+│  ════════════════════════════════════════════════════════════   │
+│                                                                 │
+│  GATE 0.2: TDD-GREEN                                            │
+│  Implement minimal code → Run test → Verify PASS                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**State tracking:**
+```json
+{
+  "tdd_red": {
+    "status": "completed",
+    "test_file": "path/to/test.go",
+    "failure_output": "FAIL: TestFoo - expected X got nil"
+  },
+  "tdd_green": {
+    "status": "pending"
+  }
+}
+```
+
 ## Step 1: Prepare Implementation Context
 
 **Required:** Technical design (`docs/plans/YYYY-MM-DD-{feature}.md`), selected agent, PROJECT_RULES.md | **Optional:** PRD/TRD, existing patterns
 
 **Verify:** Plan complete ✓ | Agent matches stack ✓ | Environment ready ✓ | Git branch clean ✓
 
-## Step 2: Choose Execution Approach
+## Step 2: Gate 0.1 - TDD-RED (Write Failing Test)
+
+**Purpose:** Write a test that captures expected behavior and FAILS.
+
+**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")`
+
+**MANDATORY in prompt:**
+```
+**TDD-RED PHASE ONLY**
+
+INSTRUCTIONS:
+1. Write a failing test for the acceptance criteria
+2. Run the test
+3. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
+
+**STOP AFTER RED PHASE.** Do NOT write implementation code.
+
+REQUIRED OUTPUT:
+- Test file path
+- Test function name
+- **FAILURE OUTPUT** (copy/paste actual test failure)
+```
+
+**Agent returns:** Test file + Failure output
+
+**HARD GATE VERIFICATION:**
+```
+IF failure_output is empty OR contains "PASS":
+  → STOP. Cannot proceed. "TDD-RED incomplete"
+```
+
+**On success:** Store `tdd_red.failure_output` → Proceed to Gate 0.2
+
+## Step 3: Gate 0.2 - TDD-GREEN (Implementation)
+
+**PREREQUISITE:** `tdd_red.status == "completed"` with valid `failure_output`
+
+**Purpose:** Write minimal code to make the failing test pass.
+
+**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")`
+
+**MANDATORY in prompt:**
+```
+**TDD-GREEN PHASE**
+
+CONTEXT FROM TDD-RED:
+- Test file: [tdd_red.test_file]
+- Failure output: [tdd_red.failure_output]
+
+INSTRUCTIONS:
+1. Write MINIMAL code to make the test pass
+2. Run the test
+3. **CAPTURE THE PASS OUTPUT** - this is MANDATORY
+4. Refactor if needed (keeping tests green)
+5. Commit
+
+REQUIRED OUTPUT:
+- Implementation file path
+- **PASS OUTPUT** (copy/paste actual test pass)
+- Files changed
+- Commit SHA
+```
+
+**Agent returns:** Implementation + Pass output + Commit SHA
+
+**HARD GATE VERIFICATION:**
+```
+IF pass_output is empty OR contains "FAIL":
+  → Return to Step 3 (retry, max 3 times)
+  → After 3 failures: STOP and report blocker
+```
+
+**On success:** Store `tdd_green.test_pass_output` → Gate 0 complete
+
+## Step 4: Choose Execution Approach
 
 | Approach | When to Use | Process |
 |----------|-------------|---------|
 | **Subagent-Driven** (recommended) | Real-time feedback needed, human intervention | Dispatch agent → Review → Code review at checkpoints → Repeat |
 | **Parallel Session** | Well-defined plans, batch execution | New terminal in worktree → `ring-default:executing-plans` with plan path |
 
-## Step 3: Execute Implementation Tasks
-
-**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")` with task, PROJECT_RULES.md, context
-
-**MANDATORY in prompt:** "TDD RED PHASE EVIDENCE REQUIRED - show failing test output before GREEN"
-
-**Agent returns:** Summary + Files + Tests + Next Steps
-
-## Step 4: Code Review Checkpoints
+## Step 5: Code Review Checkpoints
 
 **Every 3-5 tasks:** Use `ring-default:requesting-code-review` → dispatch 3 reviewers in parallel (code, business-logic, security)
 
@@ -355,11 +453,11 @@ See [shared-patterns/skills-anti-rationalization.md](../shared-patterns/skills-a
 
 **Proceed only when:** Zero Critical/High/Medium + all Low/Cosmetic have comments
 
-## Step 5: Track Implementation Progress
+## Step 6: Track Implementation Progress
 
 Track: Tasks (completed/in-progress), Files (created/modified), Code Review Status (checkpoint N: PASS/PENDING), Decisions, Issues+Resolutions.
 
-## Step 6: Document Implementation Decisions
+## Step 7: Document Implementation Decisions
 
 Record for each significant decision: Task, Context (why it came up), Chosen Approach, Alternatives, Rationale, Impact. Focus on: deviations from design, performance optimizations, error handling, API changes, test coverage.
 

@@ -36,7 +36,25 @@ When creating or modifying ANY agent in `*/agents/*.md`:
 - ❌ `ring:code-reviewer` (WRONG)
 - ❌ `backend-engineer-golang` (WRONG)
 
-### 5. Content Duplication Prevention (ALWAYS CHECK)
+### 5. Standards-Agent Synchronization (ALWAYS CHECK)
+When modifying standards files (`dev-team/docs/standards/*.md`):
+
+**⛔ TWO-FILE UPDATE RULE:**
+1. Edit `dev-team/docs/standards/{file}.md` - Add your `## Section Name`
+2. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
+3. **Both files in same commit** - Never update one without the other
+
+| Standards File | Agents That Use It |
+|----------------|-------------------|
+| `golang.md` | `backend-engineer-golang`, `qa-analyst` |
+| `typescript.md` | `backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `qa-analyst` |
+| `frontend.md` | `frontend-engineer`, `frontend-designer` |
+| `devops.md` | `devops-engineer` |
+| `sre.md` | `sre` |
+
+**Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
+
+### 6. Content Duplication Prevention (ALWAYS CHECK)
 Before adding ANY content to prompts, skills, agents, or documentation:
 1. **SEARCH FIRST**: `grep -r "keyword" --include="*.md"` - Check if content already exists
 2. **If content exists** → **REFERENCE it**, do NOT duplicate. Use: `See [file](path) for details`
@@ -65,6 +83,7 @@ When content is reused across multiple skills within a plugin:
 | Anti-rationalization tables (skills) | `{plugin}/skills/shared-patterns/skills-anti-rationalization.md` |
 | Anti-rationalization tables (agents) | `{plugin}/skills/shared-patterns/agent-anti-rationalization.md` |
 | Execution report format | `{plugin}/skills/shared-patterns/execution-report.md` |
+| Standards coverage table | `{plugin}/skills/shared-patterns/standards-coverage-table.md` |
 
 **Reference Pattern:**
 - ✅ `See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) for language patterns`
@@ -79,7 +98,7 @@ When content is reused across multiple skills within a plugin:
 | Section | Content |
 |---------|---------|
 | [CRITICAL RULES](#-critical-rules-read-first) | Non-negotiable requirements |
-| [Content Duplication Prevention](#5-content-duplication-prevention-always-check) | Canonical sources + reference pattern |
+| [Content Duplication Prevention](#6-content-duplication-prevention-always-check) | Canonical sources + reference pattern |
 | [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents) | Prevent AI from assuming/skipping |
 | [Assertive Language Reference](#assertive-language-reference) | Quick reference + [full docs](docs/PROMPT_ENGINEERING.md) |
 | [Agent Modification Verification](#agent-modification-verification-mandatory) | Checklist for agent changes |
@@ -88,6 +107,7 @@ When content is reused across multiple skills within a plugin:
 | [Key Workflows](#key-workflows) | Quick reference + [full docs](docs/WORKFLOWS.md) |
 | [Agent Output Schemas](#agent-output-schema-archetypes) | Schema summary + [full docs](docs/AGENT_DESIGN.md) |
 | [Compliance Rules](#compliance-rules) | TDD, Review, Commit rules |
+| [Standards-Agent Synchronization](#standards-agent-synchronization) | Standards ↔ Agent mapping |
 | [Documentation Sync](#documentation-sync-checklist) | Files to update |
 
 ---
