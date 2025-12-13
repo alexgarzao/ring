@@ -979,25 +979,37 @@ Without understanding the ACTUAL codebase structure, specialists analyze blindly
 
 **⛔ You MUST use the Task tool to dispatch ring-default:codebase-explorer. This is NOT implicit.**
 
-**Agent Reference:** `ring-default:codebase-explorer` - See agent specification for output schema and exploration methodology.
-
 ```text
-Action: Use Task tool with EXACTLY these parameters:
+╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+║  ⛔⛔⛔ CRITICAL: USE TASK TOOL WITH THESE EXACT PARAMETERS ⛔⛔⛔                          ║
+║                                                                                           ║
+║  ❌ DO NOT use: Explore agent (built-in)     → SKILL FAILURE                              ║
+║  ❌ DO NOT use: general-purpose agent        → SKILL FAILURE                              ║
+║  ❌ DO NOT use: Any other exploration method → SKILL FAILURE                              ║
+║                                                                                           ║
+║  ✅ MUST use: Task tool with subagent_type = "ring-default:codebase-explorer"             ║
+║                                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════════════════════╝
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  Task tool parameters:                                                          │
-│                                                                                 │
-│  subagent_type: "ring-default:codebase-explorer"                                │
-│  model: "opus"                                                                  │
-│  description: "Generate codebase architecture report"                           │
-│  prompt: [See prompt template below]                                            │
-│                                                                                 │
-│  Agent specification: default/agents/codebase-explorer.md                       │
-│                                                                                 │
-│  ⛔ If Task tool NOT used → codebase-report.md does NOT exist → SKILL FAILURE   │
-└─────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  COPY THESE EXACT PARAMETERS INTO TASK TOOL:                                                │
+│                                                                                             │
+│  subagent_type: "ring-default:codebase-explorer"   ← MUST be exactly this string            │
+│  model: "opus"                                     ← Uses Opus for deep analysis            │
+│  description: "Generate codebase architecture report"                                       │
+│  prompt: [See prompt template below]                                                        │
+│                                                                                             │
+│  ⛔ subagent_type MUST be "ring-default:codebase-explorer"                                  │
+│  ⛔ subagent_type MUST NOT be "Explore"                                                     │
+│  ⛔ subagent_type MUST NOT be "general-purpose"                                             │
+│                                                                                             │
+│  If you use ANY other agent → codebase-report.md does NOT exist → SKILL FAILURE             │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
 
-VERIFICATION: After Task completes, confirm agent returned output before proceeding
+VERIFICATION: After Task completes, confirm:
+1. Agent used was "ring-default:codebase-explorer" (NOT "Explore")
+2. Output contains EXPLORATION SUMMARY, KEY FINDINGS, ARCHITECTURE INSIGHTS sections
+3. Ready to save with Write tool
 ```
 
 ### If Task Tool NOT Used → SKILL FAILURE
