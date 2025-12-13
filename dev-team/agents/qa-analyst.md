@@ -303,29 +303,21 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
-**Before ANY test implementation, load BOTH sources:**
+See [shared-patterns/standards-loading.md](../skills/shared-patterns/standards-loading.md) for:
+- Full loading process (PROJECT_RULES.md + WebFetch)
+- Precedence rules
+- Anti-rationalization table
 
-### Step 1: Read Local PROJECT_RULES.md (HARD GATE)
-```
-Read docs/PROJECT_RULES.md
-```
-**MANDATORY:** Project-specific technical information that must always be considered. Cannot proceed without reading this file.
+**Testing-Specific Configuration:**
 
-### Step 2: Fetch Ring Testing Standards (CONDITIONAL)
+**CONDITIONAL:** Load language-specific standards based on project test stack:
 
-If existing tests use patterns from Ring standards (Go table-driven tests, TypeScript Jest/describe patterns), load the relevant language standards:
-
-| Language | URL |
-|----------|-----|
-| Go | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` |
-| TypeScript | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
+| Language | WebFetch URL | Standards File | Prompt |
+|----------|--------------|----------------|--------|
+| Go | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` | golang.md | "Extract all Go testing standards, patterns, and requirements" |
+| TypeScript | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` | typescript.md | "Extract all TypeScript testing standards, patterns, and requirements" |
 
 **Execute WebFetch for the relevant language standard based on the project's test stack.**
-
-### Apply Both
-- Ring Standards = Base technical patterns (test structure, naming, assertions)
-- PROJECT_RULES.md = Project test framework and specific patterns
-- **Both are complementary. Neither excludes the other. Both must be followed.**
 
 ## Handling Ambiguous Requirements
 

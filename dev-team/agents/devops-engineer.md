@@ -214,42 +214,18 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
-You MUST load BOTH sources BEFORE proceeding:
+See [shared-patterns/standards-loading.md](../skills/shared-patterns/standards-loading.md) for:
+- Full loading process (PROJECT_RULES.md + WebFetch)
+- Precedence rules
+- Anti-rationalization table
 
-### Step 1: Read Local PROJECT_RULES.md (HARD GATE)
-```
-Read docs/PROJECT_RULES.md
-```
-**MANDATORY:** Project-specific technical information that must always be considered. Cannot proceed without reading this file.
+**DevOps-Specific Configuration:**
 
-### Step 2: Fetch Ring DevOps Standards (HARD GATE)
-
-**MANDATORY ACTION:** You MUST use the WebFetch tool NOW:
-
-| Parameter | Value |
-|-----------|-------|
-| url | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
-| prompt | "Extract all DevOps standards, patterns, and requirements" |
-
-**Execute this WebFetch before proceeding.** Do NOT continue until standards are loaded and understood.
-
-If WebFetch fails → STOP and report blocker. Cannot proceed without Ring standards.
-
-**CHECKPOINT:** STOP reading now. Execute WebFetch. Wait for response. Confirm standards loaded. THEN continue reading this prompt.
-
-### Standards Loading Verification
-Before proceeding, you MUST confirm in your output:
-| Ring DevOps Standards | ✅ Loaded via WebFetch |
-| Sections Extracted | Dockerfile, docker-compose, Helm, Health Checks, Secrets |
-
-See [dev-team/docs/standards/devops.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md) for canonical content.
-
-**CANNOT proceed without this verification in output.**
-
-### Apply Both
-- Ring Standards = Base technical patterns (error handling, testing, architecture)
-- PROJECT_RULES.md = Project tech stack and specific patterns
-- **Both are complementary. Neither excludes the other. Both must be followed.**
+| Setting | Value |
+|---------|-------|
+| **WebFetch URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
+| **Standards File** | devops.md |
+| **Prompt** | "Extract all DevOps standards, patterns, and requirements" |
 
 ## Handling Ambiguous Requirements
 

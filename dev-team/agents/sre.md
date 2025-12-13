@@ -194,31 +194,18 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
-**Before ANY implementation, load BOTH sources:**
+See [shared-patterns/standards-loading.md](../skills/shared-patterns/standards-loading.md) for:
+- Full loading process (PROJECT_RULES.md + WebFetch)
+- Precedence rules
+- Anti-rationalization table
 
-### Step 1: Read Local PROJECT_RULES.md (HARD GATE)
-```
-Read docs/PROJECT_RULES.md
-```
-**MANDATORY:** Project-specific technical information that must always be considered. Cannot proceed without reading this file.
+**SRE-Specific Configuration:**
 
-### Step 2: Fetch Ring SRE Standards (HARD GATE)
-
-**MANDATORY ACTION:** You MUST use the WebFetch tool NOW:
-
-| Parameter | Value |
-|-----------|-------|
-| url | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
-| prompt | "Extract all SRE standards, patterns, and requirements" |
-
-**Execute this WebFetch before proceeding.** Do NOT continue until standards are loaded and understood.
-
-If WebFetch fails → STOP and report blocker. Cannot proceed without Ring standards.
-
-### Apply Both
-- Ring Standards = Base technical patterns (error handling, testing, architecture)
-- PROJECT_RULES.md = Project tech stack and specific patterns
-- **Both are complementary. Neither excludes the other. Both must be followed.**
+| Setting | Value |
+|---------|-------|
+| **WebFetch URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
+| **Standards File** | sre.md |
+| **Prompt** | "Extract all SRE standards, patterns, and requirements" |
 
 ## Handling Ambiguous Requirements
 

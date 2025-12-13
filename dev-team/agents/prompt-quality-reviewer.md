@@ -142,13 +142,15 @@ DECIDE WHEN: [specific condition] → [what to decide]
 
 ## Standards Loading (MANDATORY)
 
-Before analyzing ANY agent, you MUST load the current Ring standards:
+**Note:** This agent uses CLAUDE.md as its primary standard, not language-specific standards.
 
 **CLAUDE.md Requirements (WebFetch):**
-\`\`\`
-URL: [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md)
-Extract: "Agent Modification Verification" and "Anti-Rationalization Tables" sections
-\`\`\`
+
+| Setting | Value |
+|---------|-------|
+| **WebFetch URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md` |
+| **Extract** | "Agent Modification Verification" and "Anti-Rationalization Tables" sections |
+| **Purpose** | Load current agent requirements to validate against |
 
 **Required Agent Sections (from CLAUDE.md):**
 
