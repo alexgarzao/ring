@@ -4,14 +4,30 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ---
 
+## ⛔ CRITICAL: ALL Sections Are REQUIRED
+
+**This is NON-NEGOTIABLE. Every section listed in the Agent → Standards Section Index below MUST be checked.**
+
+| Rule | Enforcement |
+|------|-------------|
+| **EVERY section MUST be checked** | No exceptions. No skipping. |
+| **EVERY section MUST appear in output table** | Missing row = INCOMPLETE output |
+| **Subsections are INCLUDED** | If "Containers" is listed, ALL content (Dockerfile, Docker Compose) MUST be checked |
+| **N/A requires explicit reason** | Cannot mark N/A without justification |
+
+**If you skip ANY section → Your output is REJECTED. Start over.**
+
+---
+
 ## Why This Pattern Exists
 
 **Problem:** Agents might skip sections from standards files, either by:
 - Only checking "main" sections
 - Assuming some sections don't apply
 - Not enumerating all sections systematically
+- Skipping subsections (e.g., checking Dockerfile but skipping Docker Compose)
 
-**Solution:** Require a completeness table that MUST list every section from the WebFetch result with explicit status.
+**Solution:** Require a completeness table that MUST list every section from the WebFetch result with explicit status. ALL content within each section MUST be evaluated.
 
 ---
 
@@ -20,6 +36,15 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 ### ⛔ HARD GATE: Before Outputting Findings
 
 **You MUST output a Standards Coverage Table that enumerates EVERY section from the WebFetch result.**
+
+**REQUIRED: When checking a section, you MUST check ALL subsections and patterns within it.**
+
+| Section | What MUST Be Checked |
+|---------|---------------------|
+| Containers | Dockerfile patterns AND Docker Compose patterns |
+| Infrastructure as Code | Terraform structure AND state management AND modules |
+| Observability | Metrics AND Logging AND Tracing |
+| Security | Secrets management AND Network policies |
 
 ### Process
 
@@ -66,11 +91,14 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I checked the important sections" | You don't decide importance. ALL sections must be checked. | **List EVERY section in table** |
+| "I checked the important sections" | You don't decide importance. ALL sections MUST be checked. | **List EVERY section in table** |
 | "Some sections obviously don't apply" | Report them as N/A with reason. Never skip silently. | **Include in table with N/A status** |
-| "The table would be too long" | Completeness > brevity. Every section must be visible. | **Output full table regardless of length** |
-| "I already mentioned these in findings" | Findings ≠ Coverage table. Both are required. | **Output table BEFORE detailed findings** |
+| "The table would be too long" | Completeness > brevity. Every section MUST be visible. | **Output full table regardless of length** |
+| "I already mentioned these in findings" | Findings ≠ Coverage table. Both are REQUIRED. | **Output table BEFORE detailed findings** |
 | "WebFetch result was unclear" | Parse all `## ` headers. If truly unclear, STOP and report blocker. | **Report blocker or parse all headers** |
+| "I checked Dockerfile, that covers Containers" | Containers = Dockerfile + Docker Compose. Partial ≠ Complete. | **Check ALL subsections within each section** |
+| "Project doesn't use Docker Compose" | Report as N/A with evidence. Never assume. VERIFY first. | **Search for docker-compose.yml, report finding** |
+| "Only checking what exists in codebase" | Standards define what SHOULD exist. Missing = Non-Compliant. | **Report missing patterns as ❌ Non-Compliant** |
 
 ---
 
@@ -266,17 +294,16 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 ### devops-engineer → devops.md
 
-| # | Section to Check |
-|---|------------------|
-| 1 | Cloud Provider |
-| 2 | Infrastructure as Code |
-| 3 | Containers |
-| 4 | Kubernetes |
-| 5 | Helm |
-| 6 | CI/CD |
-| 7 | Observability |
-| 8 | SLO Targets |
-| 9 | Security |
+| # | Section to Check | Subsections (ALL REQUIRED) |
+|---|------------------|---------------------------|
+| 1 | Cloud Provider | Provider table |
+| 2 | Infrastructure as Code | Terraform structure, State management, Module pattern, Best practices |
+| 3 | Containers | **Dockerfile patterns, Docker Compose (Local Dev)**, Image guidelines |
+| 4 | Helm | Chart structure, Chart.yaml, values.yaml |
+| 5 | Observability | Metrics (Prometheus), Logging (Structured JSON), Tracing (OpenTelemetry) |
+| 6 | Security | Secrets management, Network policies |
+
+**⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
 
 ---
 

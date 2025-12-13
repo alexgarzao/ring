@@ -294,9 +294,6 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 **Example sections from sre.md to check:**
 - Logging (structured JSON, log levels)
 - Tracing (OpenTelemetry, span context)
-- Metrics (Prometheus, custom metrics)
-- Alerting Rules
-- SLO/SLI Definitions
 - Health Check Endpoints
 - Graceful Shutdown
 
