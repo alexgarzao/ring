@@ -187,6 +187,143 @@ Then re-run `/ring-dev-team:dev-refactor`.
 
 ---
 
-Now loading the `ring-dev-team:dev-refactor` skill to analyze your codebase...
+## Step 0: Validate PROJECT_RULES.md
 
-Use skill: `ring-dev-team:dev-refactor`
+Check: Does `docs/PROJECT_RULES.md` exist?
+
+- **YES** → Continue to Step 1
+- **NO** → Output blocker (see PRE-EXECUTION CHECK above) and TERMINATE
+
+## Step 1: Detect Project Language
+
+Check for manifest files:
+
+| File | Language | Agent |
+|------|----------|-------|
+| `go.mod` | Go | ring-dev-team:backend-engineer-golang |
+| `package.json` | TypeScript | ring-dev-team:backend-engineer-typescript |
+
+If multiple languages detected, dispatch agents for ALL.
+
+## Step 2: Generate Codebase Report
+
+**Skill:** ring-default:codebase-explorer
+
+Dispatch codebase explorer to generate architecture report:
+
+```yaml
+Task:
+  subagent_type: "ring-default:codebase-explorer"
+  model: "opus"
+  description: "Generate codebase architecture report"
+  prompt: |
+    Generate a comprehensive codebase report describing WHAT EXISTS.
+    Include: structure, architecture pattern, tech stack, code patterns,
+    key files inventory with file:line references.
+```
+
+Save output to: `docs/refactor/{timestamp}/codebase-report.md`
+
+## Step 3: Dispatch Specialist Agents
+
+**⛔ HARD GATE:** Verify `codebase-report.md` exists before proceeding.
+
+Dispatch ALL applicable agents in ONE message (parallel):
+
+```yaml
+Task 1 (ring-dev-team:backend-engineer-golang or backend-engineer-typescript):
+  model: "opus"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+    Compare codebase with Ring standards.
+    Input: codebase-report.md, PROJECT_RULES.md
+    Output: ISSUE-XXX with severity, location (file:line), current vs expected code
+
+Task 2 (ring-dev-team:qa-analyst):
+  model: "opus"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+    Compare test patterns with Ring standards.
+    Output: Coverage gaps, pattern violations with file:line
+
+Task 3 (ring-dev-team:devops-engineer):
+  model: "opus"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+    Compare DevOps setup with Ring standards.
+    Output: Dockerfile, docker-compose, CI/CD gaps
+
+Task 4 (ring-dev-team:sre):
+  model: "opus"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+    Compare observability with Ring standards.
+    Output: Logging, tracing, metrics gaps
+```
+
+## Step 4: Generate Findings
+
+Aggregate all agent outputs into `docs/refactor/{timestamp}/findings.md`:
+
+```markdown
+# Findings: {project-name}
+
+## FINDING-001: {Pattern Name}
+**Severity:** Critical | High | Medium | Low
+**Agent:** {ring-dev-team:agent-name}
+**Location:** {file}:{line}
+
+### Current Code
+{actual code snippet}
+
+### Expected Code (Ring Standard)
+{expected code snippet}
+```
+
+## Step 5: Generate Tasks
+
+Group related findings into `docs/refactor/{timestamp}/tasks.md`:
+
+```markdown
+# Refactoring Tasks
+
+## REFACTOR-001: {Task Name}
+**Priority:** Critical | High | Medium
+**Dependencies:** {other tasks or none}
+
+### Findings Addressed
+| Finding | Pattern | Severity |
+|---------|---------|----------|
+| FINDING-001 | {name} | Critical |
+
+### Acceptance Criteria
+- [ ] {criteria from finding}
+```
+
+## Step 6: User Approval
+
+```yaml
+AskUserQuestion:
+  questions:
+    - question: "Review refactoring plan. How to proceed?"
+      header: "Approval"
+      options:
+        - label: "Approve all"
+          description: "Proceed to dev-cycle execution"
+        - label: "Critical only"
+          description: "Execute only Critical/High tasks"
+        - label: "Cancel"
+          description: "Keep analysis, skip execution"
+```
+
+## Step 7: Handoff to dev-cycle (if approved)
+
+Execute: `/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md`
+
+## Remember
+
+- **All agents dispatch in parallel** - Single message, multiple Task calls
+- **Specify model: "opus"** - All agents need opus for comprehensive analysis
+- **MODE: ANALYSIS ONLY** - Agents analyze, they do NOT implement
+- **Save artifacts** to `docs/refactor/{timestamp}/`
+- **Get user approval** before executing dev-cycle

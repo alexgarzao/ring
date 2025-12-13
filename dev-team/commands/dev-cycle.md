@@ -78,8 +78,136 @@ After all tasks: `ring-dev-team:dev-feedback-loop` generates metrics report.
 
 ---
 
-Now loading the `ring-dev-team:dev-cycle` skill to execute...
+## Step 0: Verify Prerequisites
 
-Use skill: `ring-dev-team:dev-cycle`
+Check: Does `docs/PROJECT_RULES.md` exist?
 
-Provide the task file path or use `--resume` to continue an interrupted cycle.
+- **YES** → Continue to Step 1
+- **NO** → STOP with blocker message
+
+## Step 1: Initialize or Resume
+
+### New Cycle (with task file path)
+
+1. Load tasks from provided file (e.g., `docs/pre-dev/{feature}/tasks.md`)
+2. Detect subtasks if present in `subtasks/{task-id}/` directory
+3. Initialize state file: `.ring/dev-team/current-cycle.json`
+4. **ASK EXECUTION MODE (MANDATORY):**
+
+```yaml
+AskUserQuestion:
+  questions:
+    - question: "Select execution mode for this cycle"
+      header: "Mode"
+      options:
+        - label: "Manual per subtask"
+          description: "Checkpoint after each subtask"
+        - label: "Manual per task"
+          description: "Checkpoint after each task"
+        - label: "Automatic"
+          description: "No checkpoints, run all gates"
+```
+
+### Resume (--resume flag)
+
+1. Load `.ring/dev-team/current-cycle.json`
+2. Resume from saved gate position
+
+## Step 2: Gate 0 - Implementation
+
+**Skill:** ring-dev-team:dev-implementation
+
+Dispatch appropriate agent based on task content:
+
+| Content | Agent |
+|---------|-------|
+| Go code | ring-dev-team:backend-engineer-golang |
+| TypeScript backend | ring-dev-team:backend-engineer-typescript |
+| React/Frontend | ring-dev-team:frontend-engineer |
+
+Agent implements using TDD (RED → GREEN → REFACTOR).
+
+## Step 3: Gate 1 - DevOps
+
+**Skill:** ring-dev-team:dev-devops
+
+Dispatch `ring-dev-team:devops-engineer` to verify/create:
+- Dockerfile updates
+- docker-compose configuration
+- Environment variables (.env.example)
+
+Skip if no infrastructure changes needed.
+
+## Step 4: Gate 2 - SRE
+
+**Skill:** ring-dev-team:dev-sre
+
+Dispatch `ring-dev-team:sre` to verify:
+- Structured JSON logging with trace correlation
+- OpenTelemetry tracing (if external calls)
+
+Skip if no observability changes needed.
+
+## Step 5: Gate 3 - Testing
+
+**Skill:** ring-dev-team:dev-testing
+
+Dispatch `ring-dev-team:qa-analyst`:
+- Run tests against acceptance criteria
+- Verify coverage ≥ 85%
+- **PASS** → Proceed to Gate 4
+- **FAIL** → Return to Gate 0 (max 3 iterations)
+
+## Step 6: Gate 4 - Review
+
+**Skill:** ring-default:requesting-code-review
+
+Dispatch ALL 3 reviewers in ONE message (parallel):
+
+```yaml
+Task 1 (ring-default:code-reviewer):
+  model: "opus"
+  prompt: "Review code quality for [unit_id]..."
+
+Task 2 (ring-default:business-logic-reviewer):
+  model: "opus"
+  prompt: "Review business logic for [unit_id]..."
+
+Task 3 (ring-default:security-reviewer):
+  model: "opus"
+  prompt: "Review security for [unit_id]..."
+```
+
+**Handle findings:**
+- Critical/High/Medium → Fix and re-run ALL 3 reviewers
+- Low → Add `TODO(review):` comment
+- Cosmetic → Add `FIXME(nitpick):` comment
+
+## Step 7: Gate 5 - Validation
+
+Verify:
+- All acceptance criteria met
+- All tests pass
+- No Critical/High/Medium issues remaining
+
+## Step 8: Checkpoints (Based on Mode)
+
+| Mode | After Each Subtask | After Each Task |
+|------|-------------------|-----------------|
+| Manual per subtask | ✓ Pause | ✓ Pause |
+| Manual per task | ✗ Skip | ✓ Pause |
+| Automatic | ✗ Skip | ✗ Skip |
+
+## Step 9: Cycle Completion
+
+1. Run `ring-dev-team:dev-feedback-loop` for metrics
+2. Generate report with task summary, duration, review iterations
+3. Save feedback to `docs/feedbacks/cycle-{date}/`
+
+## Remember
+
+- **ALL 6 gates execute** - Checkpoints affect pauses, not gates
+- **Gates execute in order** - 0 → 1 → 2 → 3 → 4 → 5
+- **Gate 4 requires ALL 3 reviewers** - 2/3 = FAIL
+- **Coverage threshold** - 85% minimum, no exceptions
+- **State persisted** - Can resume with `--resume` after any interruption
