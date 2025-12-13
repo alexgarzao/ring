@@ -123,7 +123,7 @@ If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-
 
 ## Anti-Rationalization
 
-See [anti-rationalization-agents.md](anti-rationalization-agents.md) for universal agent anti-rationalizations.
+See [anti-rationalization.md](anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|

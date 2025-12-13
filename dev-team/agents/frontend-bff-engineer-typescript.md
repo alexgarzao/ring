@@ -216,9 +216,10 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
-See [shared-patterns/standards-loading.md](../skills/shared-patterns/standards-loading.md) for:
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
+- Missing/non-compliant handling
 - Anti-rationalization table
 
 **TypeScript-Specific Configuration:**
@@ -357,7 +358,7 @@ In the development cycle, focus on **unit tests**:
 
 ## Handling Ambiguous Requirements
 
-See [shared-patterns/project-rules-handling.md](../skills/shared-patterns/project-rules-handling.md) for:
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Missing PROJECT_RULES.md handling (HARD BLOCK)
 - Non-compliant existing code handling
 - When to ask vs follow standards
@@ -405,7 +406,7 @@ Canonical policy: see [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio
 
 **Anti-Rationalization:**
 
-See [shared-patterns/anti-rationalization-agents.md](../skills/shared-patterns/anti-rationalization-agents.md) for universal agent anti-rationalizations.
+See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|------------------|

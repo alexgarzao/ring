@@ -318,9 +318,10 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
-See [shared-patterns/standards-loading.md](../skills/shared-patterns/standards-loading.md) for:
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
+- Missing/non-compliant handling
 - Anti-rationalization table
 
 **TypeScript-Specific Configuration:**
@@ -386,7 +387,7 @@ You have deep expertise in TDD. Apply when enabled in project PROJECT_RULES.md.
 
 ## Handling Ambiguous Requirements
 
-See [shared-patterns/project-rules-handling.md](../skills/shared-patterns/project-rules-handling.md) for:
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Missing PROJECT_RULES.md handling (HARD BLOCK)
 - Non-compliant existing code handling
 - When to ask vs follow standards

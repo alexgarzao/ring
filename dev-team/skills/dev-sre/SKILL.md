@@ -230,7 +230,7 @@ Is it runnable code?
 
 ## Anti-Rationalization Table
 
-See [shared-patterns/anti-rationalization-skills.md](../shared-patterns/anti-rationalization-skills.md) for universal anti-rationalizations.
+See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
 
 ### Gate-Specific Anti-Rationalizations
 
