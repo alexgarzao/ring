@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches to common development tasks.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **9 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 55 specialized skills** - From brainstorming to production deployment (22 core + 10 dev-team + 10 product planning + 6 FinOps + 7 technical writing)
-- **20 specialized agents** - 5 review/planning agents + 7 developer agents + 3 research agents + 2 FinOps agents + 3 technical writing agents
+- **Providing 87 specialized skills** - Complete coverage from finance to operations (22 core + 10 dev-team + 10 product planning + 6 FinOps regulatory + 8 finance ops + 8 production ops + 8 product marketing + 8 PMO + 7 technical writing)
+- **42 specialized agents** - 5 review/planning + 7 developer + 3 product research + 2 FinOps regulatory + 6 finance + 5 operations + 6 product marketing + 5 PMO + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -58,6 +58,36 @@ Ring solves this by:
 - `ring-tw-team:functional-writer` - Functional documentation (guides, tutorials, conceptual docs)
 - `ring-tw-team:api-writer` - API reference documentation (endpoints, schemas, examples)
 - `ring-tw-team:docs-reviewer` - Documentation quality review (voice, tone, structure, completeness)
+
+**Financial Operations Agents (ring-finance-team plugin):**
+- `ring-finance-team:financial-analyst` - Financial statement analysis, ratio analysis, trend analysis
+- `ring-finance-team:budget-planner` - Annual budgets, rolling forecasts, variance analysis
+- `ring-finance-team:financial-modeler` - DCF valuation, LBO models, M&A models, scenario analysis
+- `ring-finance-team:treasury-specialist` - Cash flow forecasting, liquidity management, working capital
+- `ring-finance-team:accounting-specialist` - Journal entries, reconciliations, month-end close
+- `ring-finance-team:metrics-analyst` - KPI definition, dashboard design, anomaly detection
+
+**Production Operations Agents (ring-ops-team plugin):**
+- `ring-ops-team:platform-engineer` - Service mesh, API gateways, developer platforms
+- `ring-ops-team:incident-responder` - Production incidents, RCA, post-mortems
+- `ring-ops-team:cloud-cost-optimizer` - Cost analysis, reserved instances, FinOps practices
+- `ring-ops-team:infrastructure-architect` - Multi-region architecture, DR, capacity planning
+- `ring-ops-team:security-operations` - Security audits, compliance, vulnerability management
+
+**Product Marketing Agents (ring-pmm-team plugin):**
+- `ring-pmm-team:market-researcher` - TAM/SAM/SOM analysis, market segmentation, trend analysis
+- `ring-pmm-team:positioning-strategist` - Differentiation strategy, category design, positioning
+- `ring-pmm-team:messaging-specialist` - Value propositions, messaging frameworks, proof points
+- `ring-pmm-team:gtm-planner` - Go-to-market strategy, channel selection, campaign planning
+- `ring-pmm-team:launch-coordinator` - Launch checklists, stakeholder coordination, day-of execution
+- `ring-pmm-team:pricing-analyst` - Pricing models, competitive pricing, value-based pricing
+
+**Portfolio Management Agents (ring-pmo-team plugin):**
+- `ring-pmo-team:portfolio-manager` - Multi-project coordination, strategic alignment, portfolio optimization
+- `ring-pmo-team:resource-planner` - Capacity planning, allocation optimization, conflict resolution
+- `ring-pmo-team:governance-specialist` - Gate reviews, process compliance, audit readiness
+- `ring-pmo-team:risk-analyst` - Risk identification, RAID logs, mitigation planning
+- `ring-pmo-team:executive-reporter` - Executive dashboards, board packages, stakeholder communication
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
 

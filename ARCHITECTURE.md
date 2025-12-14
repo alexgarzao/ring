@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **5 active plugins**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **9 active plugins**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the entire software delivery value chain: Finance → PMO → Product Marketing → Product Planning → Development → Operations.
 
 ### Architecture Philosophy
 
@@ -72,10 +72,14 @@ ring/                                  # Monorepo root
 
 | Plugin | Description | Components |
 |--------|-------------|------------|
-| **ring-default** | Core skills library | 21 skills, 5 agents, 7 commands |
+| **ring-default** | Core skills library | 22 skills, 5 agents, 7 commands |
 | **ring-dev-team** | Developer agents | 10 skills, 7 agents, 5 commands |
-| **ring-finops-team** | FinOps & regulatory compliance | 6 skills, 2 agents |
 | **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
+| **ring-finops-team** | FinOps regulatory compliance | 6 skills, 2 agents |
+| **ring-finance-team** | Financial operations & analysis | 8 skills, 6 agents, 3 commands |
+| **ring-ops-team** | Production operations & platform | 8 skills, 5 agents, 4 commands |
+| **ring-pmm-team** | Product marketing & GTM | 8 skills, 6 agents, 3 commands |
+| **ring-pmo-team** | Portfolio management & governance | 8 skills, 5 agents, 3 commands |
 | **ring-tw-team** | Technical writing specialists | 7 skills, 3 agents, 3 commands |
 
 ## Component Hierarchy

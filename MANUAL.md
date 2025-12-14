@@ -1,31 +1,35 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 55 skills, 22 agents, and 17 slash commands for enforcing proven software engineering practices.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 9 plugins with 87 skills, 42 agents, and 30 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
 ## 🏗️ Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              MARKETPLACE                                     │
-│                     (monorepo: .claude-plugin/marketplace.json)              │
-│                                                                              │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│  │  ring-default   │  │ ring-dev-team   │  │ ring-finops-    │              │
-│  │    (plugin)     │  │    (plugin)     │  │    team         │              │
-│  │ Skills(22)      │  │ Skills(10)      │  │ Skills(6)       │              │
-│  │ Agents(5)       │  │ Agents(9)       │  │ Agents(2)       │              │
-│  │ Cmds(7)         │  │ Cmds(5)         │  │                 │              │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
-│  ┌─────────────────┐  ┌─────────────────┐                                    │
-│  │ ring-pm-team    │  │ ring-tw-team    │                                    │
-│  │    (plugin)     │  │    (plugin)     │                                    │
-│  │ Skills(10)      │  │ Skills(7)       │                                    │
-│  │ Agents(3)       │  │ Agents(3)       │                                    │
-│  │ Cmds(2)         │  │ Cmds(3)         │                                    │
-│  └─────────────────┘  └─────────────────┘                                    │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────┐
+│                              MARKETPLACE (9 PLUGINS)                               │
+│                     (monorepo: .claude-plugin/marketplace.json)                    │
+│                                                                                    │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
+│  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ ring-finops-  │      │
+│  │  Skills(22)   │  │  Skills(10)   │  │  Skills(10)   │  │  team(6)      │      │
+│  │  Agents(5)    │  │  Agents(7)    │  │  Agents(3)    │  │  Agents(2)    │      │
+│  │  Cmds(7)      │  │  Cmds(5)      │  │  Cmds(2)      │  │               │      │
+│  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
+│  │ ring-finance- │  │ ring-ops-team │  │ ring-pmm-team │  │ ring-pmo-team │      │
+│  │  team(8)      │  │  Skills(8)    │  │  Skills(8)    │  │  Skills(8)    │      │
+│  │  Skills(8)    │  │  Agents(5)    │  │  Agents(6)    │  │  Agents(5)    │      │
+│  │  Agents(6)    │  │  Cmds(4)      │  │  Cmds(3)      │  │  Cmds(3)      │      │
+│  │  Cmds(3)      │  └───────────────┘  └───────────────┘  └───────────────┘      │
+│  └───────────────┘  ┌───────────────┐                                             │
+│                     │ ring-tw-team  │                                             │
+│                     │  Skills(7)    │                                             │
+│                     │  Agents(3)    │                                             │
+│                     │  Cmds(3)      │                                             │
+│                     └───────────────┘                                             │
+└────────────────────────────────────────────────────────────────────────────────────┘
 
                               HOW IT WORKS
                               ────────────
@@ -79,7 +83,7 @@ Ring is auto-loaded at session start. Three ways to invoke Ring capabilities:
 ## 📋 Slash Commands
 
 All commands prefixed with `/ring-default:` for default plugin commands.
-Other plugins require full prefix: `/ring-dev-team:`, `/ring-finops-team:`, `/ring-pm-team:`, `/ring-tw-team:`.
+Other plugins require full prefix: `/ring-dev-team:`, `/ring-pm-team:`, `/ring-finops-team:`, `/ring-finance-team:`, `/ring-ops-team:`, `/ring-pmm-team:`, `/ring-pmo-team:`, `/ring-tw-team:`.
 
 ### Project & Feature Workflows
 
@@ -229,6 +233,77 @@ For documentation creation and review:
 | `ring-tw-team:api-writer` | API reference documentation | Endpoints, schemas, examples |
 | `ring-tw-team:docs-reviewer` | Documentation quality review | Voice, tone, structure, completeness |
 
+### Financial Operations (ring-finance-team)
+
+For financial analysis, budgeting, modeling, and treasury operations:
+
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `ring-finance-team:financial-analyst` | Financial analysis & ratios | Statement analysis, trend analysis, benchmarking |
+| `ring-finance-team:budget-planner` | Budgets & forecasts | Annual budgets, rolling forecasts, variance analysis |
+| `ring-finance-team:financial-modeler` | Financial models | DCF valuation, LBO models, M&A models, scenarios |
+| `ring-finance-team:treasury-specialist` | Cash & liquidity | Cash forecasting, working capital, FX exposure |
+| `ring-finance-team:accounting-specialist` | Accounting operations | Journal entries, reconciliations, month-end close |
+| `ring-finance-team:metrics-analyst` | KPIs & dashboards | Metric definition, dashboard design, anomaly detection |
+
+**Commands:**
+- `/ring-finance-team:analyze-financials` - Run comprehensive financial analysis
+- `/ring-finance-team:create-budget` - Create budgets or forecasts
+- `/ring-finance-team:build-model` - Build financial models (DCF, LBO, etc.)
+
+### Production Operations (ring-ops-team)
+
+For production infrastructure, incidents, and platform engineering:
+
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `ring-ops-team:platform-engineer` | Platform engineering | Service mesh, API gateways, developer platforms |
+| `ring-ops-team:incident-responder` | Incident management | Production incidents, RCA, post-mortems |
+| `ring-ops-team:cloud-cost-optimizer` | Cost optimization | Cost analysis, RI planning, FinOps practices |
+| `ring-ops-team:infrastructure-architect` | Infrastructure design | Multi-region architecture, DR, capacity planning |
+| `ring-ops-team:security-operations` | Security & compliance | Security audits, vulnerability management |
+
+**Commands:**
+- `/ring-ops-team:incident` - Start production incident response
+- `/ring-ops-team:capacity-review` - Infrastructure capacity review
+- `/ring-ops-team:cost-analysis` - Cloud cost optimization
+- `/ring-ops-team:security-audit` - Security audit workflow
+
+### Product Marketing (ring-pmm-team)
+
+For go-to-market strategy, positioning, and launch coordination:
+
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `ring-pmm-team:market-researcher` | Market intelligence | TAM/SAM/SOM, segmentation, trend analysis |
+| `ring-pmm-team:positioning-strategist` | Strategic positioning | Differentiation, category design, positioning statements |
+| `ring-pmm-team:messaging-specialist` | Messaging & copy | Value props, messaging frameworks, proof points |
+| `ring-pmm-team:gtm-planner` | GTM strategy | Channel strategy, campaign planning, launch tactics |
+| `ring-pmm-team:launch-coordinator` | Launch execution | Checklists, stakeholder coordination, day-of execution |
+| `ring-pmm-team:pricing-analyst` | Pricing strategy | Pricing models, competitive pricing, value-based pricing |
+
+**Commands:**
+- `/ring-pmm-team:market-analysis` - Comprehensive market analysis
+- `/ring-pmm-team:gtm-plan` - Full GTM planning (7 gates)
+- `/ring-pmm-team:competitive-intel` - Competitive intelligence & battlecards
+
+### Portfolio Management (ring-pmo-team)
+
+For portfolio governance, resource planning, and executive reporting:
+
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `ring-pmo-team:portfolio-manager` | Portfolio coordination | Multi-project coordination, strategic alignment |
+| `ring-pmo-team:resource-planner` | Resource planning | Capacity planning, allocation optimization |
+| `ring-pmo-team:governance-specialist` | Governance & compliance | Gate reviews, process compliance, audits |
+| `ring-pmo-team:risk-analyst` | Risk management | Risk identification, RAID logs, mitigation |
+| `ring-pmo-team:executive-reporter` | Executive communication | Dashboards, board packages, status summaries |
+
+**Commands:**
+- `/ring-pmo-team:portfolio-review` - Full portfolio health review
+- `/ring-pmo-team:executive-summary` - Generate executive report
+- `/ring-pmo-team:dependency-analysis` - Cross-project dependencies
+
 ---
 
 ## 📖 Common Workflows
@@ -315,6 +390,28 @@ These enforce quality standards:
 | Functional documentation (guides) | `ring-tw-team:functional-writer` |
 | API reference documentation | `ring-tw-team:api-writer` |
 | Documentation quality review | `ring-tw-team:docs-reviewer` |
+| Financial statement analysis | `ring-finance-team:financial-analyst` |
+| Budget & forecast creation | `ring-finance-team:budget-planner` |
+| Financial model building (DCF, LBO) | `ring-finance-team:financial-modeler` |
+| Treasury & cash management | `ring-finance-team:treasury-specialist` |
+| Accounting operations & close | `ring-finance-team:accounting-specialist` |
+| KPI definition & dashboards | `ring-finance-team:metrics-analyst` |
+| Platform engineering & service mesh | `ring-ops-team:platform-engineer` |
+| Production incident response | `ring-ops-team:incident-responder` |
+| Cloud cost optimization | `ring-ops-team:cloud-cost-optimizer` |
+| Infrastructure architecture & DR | `ring-ops-team:infrastructure-architect` |
+| Security audits & compliance | `ring-ops-team:security-operations` |
+| Market research & TAM/SAM/SOM | `ring-pmm-team:market-researcher` |
+| Product positioning strategy | `ring-pmm-team:positioning-strategist` |
+| Messaging & value propositions | `ring-pmm-team:messaging-specialist` |
+| Go-to-market planning | `ring-pmm-team:gtm-planner` |
+| Launch coordination & execution | `ring-pmm-team:launch-coordinator` |
+| Pricing strategy & analysis | `ring-pmm-team:pricing-analyst` |
+| Portfolio management & health | `ring-pmo-team:portfolio-manager` |
+| Resource capacity & allocation | `ring-pmo-team:resource-planner` |
+| Project governance & gates | `ring-pmo-team:governance-specialist` |
+| Portfolio risk management | `ring-pmo-team:risk-analyst` |
+| Executive dashboards & reporting | `ring-pmo-team:executive-reporter` |
 
 ---
 
@@ -323,7 +420,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 55 skills are auto-discovered and available
+2. All 87 skills are auto-discovered and available
 3. `using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
