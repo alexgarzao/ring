@@ -197,7 +197,7 @@ Invoke this agent when the task involves:
 - **APIs**: REST, gRPC
 - **Auth**: OAuth2, JWT, WorkOS (SSO, Directory Sync, Admin Portal), SAML, OIDC
 - **Testing**: Go test, Testify, GoMock, SQLMock
-- **Observability**: OpenTelemetry, Zap, Prometheus metrics
+- **Observability**: OpenTelemetry, Zap
 - **Patterns**: Hexagonal Architecture, CQRS, Repository, DDD, Multi-Tenancy
 - **Serverless**: AWS Lambda, API Gateway, Step Functions, SAM
 

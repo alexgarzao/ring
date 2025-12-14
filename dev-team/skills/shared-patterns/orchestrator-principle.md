@@ -11,7 +11,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | Load and parse task files | Read source code |
 | Dispatch agents with context | Write implementation code |
 | Track gate/step progress | Run tests |
-| Manage state files | Add observability (logs, traces, metrics) |
+| Manage state files | Add observability (logs, traces) |
 | Report to user | Make code changes |
 | Coordinate workflow | Validate standards compliance |
 | Aggregate findings | Analyze codebase patterns |
@@ -29,13 +29,51 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 ## REQUIRED Actions (Orchestrator)
 
+### ring-dev-team Agents (Implementation)
+
 ```
 ✅ Task(subagent_type="ring-dev-team:backend-engineer-golang", ...)
 ✅ Task(subagent_type="ring-dev-team:backend-engineer-typescript", ...)
+✅ Task(subagent_type="ring-dev-team:frontend-engineer", ...)
+✅ Task(subagent_type="ring-dev-team:frontend-designer", ...)
+✅ Task(subagent_type="ring-dev-team:frontend-bff-engineer-typescript", ...)
 ✅ Task(subagent_type="ring-dev-team:devops-engineer", ...)
 ✅ Task(subagent_type="ring-dev-team:sre", ...)
 ✅ Task(subagent_type="ring-dev-team:qa-analyst", ...)
+✅ Task(subagent_type="ring-dev-team:prompt-quality-reviewer", ...)
+```
+
+### ring-default Agents (Core)
+
+```
 ✅ Task(subagent_type="ring-default:codebase-explorer", ...)
+✅ Task(subagent_type="ring-default:code-reviewer", ...)
+✅ Task(subagent_type="ring-default:business-logic-reviewer", ...)
+✅ Task(subagent_type="ring-default:security-reviewer", ...)
+✅ Task(subagent_type="ring-default:write-plan", ...)
+```
+
+### ring-pm-team Agents (Research)
+
+```
+✅ Task(subagent_type="ring-pm-team:framework-docs-researcher", ...)
+✅ Task(subagent_type="ring-pm-team:best-practices-researcher", ...)
+✅ Task(subagent_type="ring-pm-team:repo-research-analyst", ...)
+```
+
+### ring-finops-team Agents (Financial Operations)
+
+```
+✅ Task(subagent_type="ring-finops-team:finops-analyzer", ...)
+✅ Task(subagent_type="ring-finops-team:finops-automation", ...)
+```
+
+### ring-tw-team Agents (Technical Writing)
+
+```
+✅ Task(subagent_type="ring-tw-team:functional-writer", ...)
+✅ Task(subagent_type="ring-tw-team:api-writer", ...)
+✅ Task(subagent_type="ring-tw-team:docs-reviewer", ...)
 ```
 
 ## Gate/Step → Agent Mapping
@@ -44,8 +82,11 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | Gate | Specialized Agent | What Agent Does |
 |------|-------------------|-----------------|
-| 0 | `ring-dev-team:backend-engineer-golang` | Implements code, adds observability, runs TDD |
-| 0 | `ring-dev-team:backend-engineer-typescript` | Implements code, adds observability, runs TDD |
+| 0 | `ring-dev-team:backend-engineer-golang` | Implements Go code, adds observability, runs TDD |
+| 0 | `ring-dev-team:backend-engineer-typescript` | Implements TS backend code, adds observability, runs TDD |
+| 0 | `ring-dev-team:frontend-engineer` | Implements React/Next.js components, runs TDD |
+| 0 | `ring-dev-team:frontend-bff-engineer-typescript` | Implements BFF layer, API aggregation |
+| 0 | `ring-dev-team:frontend-designer` | Reviews UI/UX, accessibility, design system compliance |
 | 1 | `ring-dev-team:devops-engineer` | Updates Dockerfile, docker-compose, Helm |
 | 2 | `ring-dev-team:sre` | Validates observability implementation |
 | 3 | `ring-dev-team:qa-analyst` | Writes tests, validates coverage |
@@ -60,9 +101,66 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | 3 | `ring-default:codebase-explorer` | Deep architecture analysis, pattern discovery |
 | 4 | `ring-dev-team:backend-engineer-golang` | Go standards compliance analysis |
 | 4 | `ring-dev-team:backend-engineer-typescript` | TypeScript standards compliance analysis |
+| 4 | `ring-dev-team:frontend-engineer` | Frontend standards compliance analysis |
 | 4 | `ring-dev-team:qa-analyst` | Test coverage and pattern analysis |
 | 4 | `ring-dev-team:devops-engineer` | DevOps setup analysis |
 | 4 | `ring-dev-team:sre` | Observability analysis |
+
+## Agent Selection Guide
+
+**Use this table to select the correct agent based on task type:**
+
+### Code Implementation
+
+| File Type / Task | Agent to Dispatch |
+|------------------|-------------------|
+| `*.go` files | `ring-dev-team:backend-engineer-golang` |
+| `*.ts` backend (Express, Fastify, NestJS) | `ring-dev-team:backend-engineer-typescript` |
+| `*.tsx` / `*.jsx` React components | `ring-dev-team:frontend-engineer` |
+| BFF / API Gateway layer | `ring-dev-team:frontend-bff-engineer-typescript` |
+| UI/UX review, design system | `ring-dev-team:frontend-designer` |
+| `Dockerfile`, `docker-compose.yml`, Helm | `ring-dev-team:devops-engineer` |
+| Logging, tracing | `ring-dev-team:sre` |
+| Test files (`*_test.go`, `*.spec.ts`) | `ring-dev-team:qa-analyst` |
+
+### Code Review (Always Parallel)
+
+| Review Type | Agent to Dispatch |
+|-------------|-------------------|
+| Code quality, patterns, maintainability | `ring-default:code-reviewer` |
+| Business logic, domain correctness | `ring-default:business-logic-reviewer` |
+| Security vulnerabilities, auth, input validation | `ring-default:security-reviewer` |
+
+### Research & Analysis
+
+| Task Type | Agent to Dispatch |
+|-----------|-------------------|
+| Codebase architecture understanding | `ring-default:codebase-explorer` |
+| Framework/library documentation | `ring-pm-team:framework-docs-researcher` |
+| Industry best practices | `ring-pm-team:best-practices-researcher` |
+| Repository/codebase analysis | `ring-pm-team:repo-research-analyst` |
+
+### Documentation
+
+| Doc Type | Agent to Dispatch |
+|----------|-------------------|
+| Functional documentation, user guides | `ring-tw-team:functional-writer` |
+| API documentation, OpenAPI specs | `ring-tw-team:api-writer` |
+| Documentation review | `ring-tw-team:docs-reviewer` |
+
+### Financial Operations
+
+| Task Type | Agent to Dispatch |
+|-----------|-------------------|
+| Cost analysis, FinOps metrics | `ring-finops-team:finops-analyzer` |
+| FinOps automation, alerts | `ring-finops-team:finops-automation` |
+
+### Planning & Quality
+
+| Task Type | Agent to Dispatch |
+|-----------|-------------------|
+| Implementation planning | `ring-default:write-plan` |
+| Prompt/agent quality analysis | `ring-dev-team:prompt-quality-reviewer` |
 
 ## Agent Responsibilities (Implementation)
 
@@ -72,7 +170,6 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 |----------------|-------------|---------------|
 | **Structured Logging** | JSON logs with level, message, timestamp, service, trace_id | ALL code paths |
 | **Tracing** | OpenTelemetry spans for operations, trace context propagation | External calls, DB queries, HTTP handlers |
-| **Metrics** | Counters, histograms, gauges for business and technical metrics | Performance-critical paths, business events |
 
 ### Library Requirements
 
@@ -80,7 +177,6 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 |-----------|-----|------------|
 | **Logging** | `zerolog` or `zap` with JSON output | `pino` or `winston` with JSON output |
 | **Tracing** | `go.opentelemetry.io/otel` | `@opentelemetry/sdk-node` |
-| **Metrics** | `prometheus/client_golang` | `prom-client` |
 
 ## Anti-Rationalization Table
 
@@ -93,6 +189,23 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | "Running tests to check status" | Agent runs tests as part of TDD. You orchestrate, not operate. | **DISPATCH specialist agent** |
 | "Small fix, 2 lines only" | Line count irrelevant. ALL code changes require specialist. | **DISPATCH specialist agent** |
 | "Agent will do same thing I would" | Agent has Ring standards loaded. You're guessing without them. | **DISPATCH specialist agent** |
+
+## Red Flags - STOP Immediately
+
+**If you catch yourself doing ANY of these, STOP:**
+
+| Red Flag | What You're Thinking | Why It's Wrong |
+|----------|---------------------|----------------|
+| Opening `*.go` or `*.ts` with Read | "Let me understand this file..." | Agent understands for you |
+| About to use Edit on source | "Just a quick fix..." | No fix is "quick" without standards |
+| About to use Write on source | "I'll create this file..." | Agent creates with observability |
+| Running `go test` or `npm test` | "Checking if tests pass..." | Agent runs tests in TDD cycle |
+| Analyzing code patterns | "Looking for the pattern..." | codebase-explorer analyzes |
+| "This is faster than dispatching" | Speed over quality | Agent quality > your speed |
+| "The agent would do the same" | Assuming equivalence | Agent has standards, you don't |
+| "It's just one line" | Minimizing scope | Scope is irrelevant |
+
+**All of these = ORCHESTRATOR VIOLATION. Dispatch agent instead.**
 
 ## If You Violated This Principle
 

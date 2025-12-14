@@ -51,14 +51,13 @@ Example failure output:
 **OBSERVABILITY REQUIREMENTS (implement as part of the code):**
 - Add structured JSON logging for all operations (info for success, error for failures)
 - Add OpenTelemetry tracing spans for external calls and key operations
-- Add metrics where applicable (request counts, latencies, business events)
 - Ensure trace_id propagation in all log entries
 
 **REQUIRED OUTPUT:**
 - Implementation file path
 - **PASS OUTPUT** (copy/paste the actual test pass)
 - Files changed
-- Observability added (logging: Y/N, tracing: Y/N, metrics: Y/N)
+- Observability added (logging: Y/N, tracing: Y/N)
 - Commit SHA
 
 Example pass output:
@@ -94,7 +93,6 @@ Backend agents MUST implement observability as part of the code:
 |-----------|--------------|---------------------|
 | **Logging** | `zerolog` or `zap` | `pino` or `winston` |
 | **Tracing** | `go.opentelemetry.io/otel` | `@opentelemetry/sdk-node` |
-| **Metrics** | `prometheus/client_golang` | `prom-client` |
 
 **Gate 0 implements observability. Gate 2 (SRE) validates it.**
 

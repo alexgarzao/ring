@@ -43,7 +43,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 |---------|---------------------|
 | Containers | Dockerfile patterns AND Docker Compose patterns |
 | Infrastructure as Code | Terraform structure AND state management AND modules |
-| Observability | Logging AND Tracing |
+| Observability | Logging AND Tracing (structured JSON logs, OpenTelemetry spans) |
 | Security | Secrets management AND Network policies |
 
 ### Process
@@ -300,7 +300,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 | 2 | Infrastructure as Code | Terraform structure, State management, Module pattern, Best practices |
 | 3 | Containers | **Dockerfile patterns, Docker Compose (Local Dev)**, Image guidelines |
 | 4 | Helm | Chart structure, Chart.yaml, values.yaml |
-| 5 | Observability | Metrics (Prometheus), Logging (Structured JSON), Tracing (OpenTelemetry) |
+| 5 | Observability | Logging (Structured JSON), Tracing (OpenTelemetry) |
 | 6 | Security | Secrets management, Network policies |
 
 **⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.

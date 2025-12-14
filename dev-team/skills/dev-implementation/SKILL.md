@@ -322,7 +322,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, agent responsibilities (observability), library requirements, and anti-rationalization table.
 
-**Summary:** You orchestrate. Agents execute. Agents implement observability (logs, traces, metrics). If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
+**Summary:** You orchestrate. Agents execute. Agents implement observability (logs, traces). If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
 See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for observability requirements to include in dispatch prompts.
 

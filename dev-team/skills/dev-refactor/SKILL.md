@@ -46,16 +46,24 @@ Re-run after file exists.
 
 ---
 
-## Step 1: Detect Project Language
+## Step 1: Detect Project Stack
 
-Check for manifest files:
+Check for manifest files and frontend indicators:
 
-| File | Language | Agent |
-|------|----------|-------|
-| `go.mod` | Go | ring-dev-team:backend-engineer-golang |
-| `package.json` | TypeScript | ring-dev-team:backend-engineer-typescript |
+| File/Pattern | Stack | Agent |
+|--------------|-------|-------|
+| `go.mod` | Go Backend | ring-dev-team:backend-engineer-golang |
+| `package.json` + `src/` (no React) | TypeScript Backend | ring-dev-team:backend-engineer-typescript |
+| `package.json` + React/Next.js | Frontend | ring-dev-team:frontend-engineer |
+| `package.json` + BFF pattern | TypeScript BFF | ring-dev-team:frontend-bff-engineer-typescript |
 
-If multiple languages detected, dispatch agents for ALL.
+**Detection Logic:**
+- `go.mod` exists → Add Go backend agent
+- `package.json` exists + `next.config.*` or React in dependencies → Add frontend agent
+- `package.json` exists + `/api/` routes or Express/Fastify → Add TypeScript backend agent
+- `package.json` exists + BFF indicators (`/bff/`, gateway patterns) → Add BFF agent
+
+If multiple stacks detected, dispatch agents for ALL.
 
 ---
 
@@ -151,6 +159,18 @@ Check 2: Was codebase-report.md created by ring-default:codebase-explorer?
 
 **Dispatch ALL applicable agents in ONE message (parallel):**
 
+### ⛔ MANDATORY: Reference Standards Coverage Table
+
+**All agents MUST follow [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md) which defines:**
+- ALL sections to check per agent (including DDD)
+- Required output format (Standards Coverage Table)
+- Anti-rationalization rules
+- Completeness verification
+
+**Section indexes are pre-defined in shared-patterns. Agents MUST check ALL sections listed.**
+
+---
+
 ### For Go projects:
 
 ```yaml
@@ -161,18 +181,18 @@ Task 1:
   prompt: |
     **MODE: ANALYSIS ONLY**
 
-    Compare codebase with Ring Go standards.
+    ⛔ MANDATORY: Check ALL 17 sections in golang.md per shared-patterns/standards-coverage-table.md
+    This includes section 16: DDD Patterns (Go Implementation)
 
     Input:
     - Ring Standards: Load via WebFetch (golang.md)
+    - Section Index: See shared-patterns/standards-coverage-table.md → "backend-engineer-golang"
     - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
-    Output for each non-compliant pattern:
-    - ISSUE-XXX: Pattern name, Severity, Location (file:line)
-    - Current Code (snippet)
-    - Expected Code (Ring standard)
-    - Standard Reference (file:section:lines)
+    Output:
+    1. Standards Coverage Table (per shared-patterns format)
+    2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 
 Task 2:
   subagent_type: "ring-dev-team:qa-analyst"
@@ -180,9 +200,9 @@ Task 2:
   description: "Test coverage analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
-    Compare test patterns with Ring standards.
+    Check ALL testing sections per shared-patterns/standards-coverage-table.md → "qa-analyst"
     Input: codebase-report.md, PROJECT_RULES.md
-    Output: Coverage gaps, pattern violations with file:line
+    Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task 3:
   subagent_type: "ring-dev-team:devops-engineer"
@@ -190,9 +210,10 @@ Task 3:
   description: "DevOps analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
-    Compare DevOps setup with Ring standards.
+    Check ALL 6 sections per shared-patterns/standards-coverage-table.md → "devops-engineer"
+    ⛔ "Containers" means BOTH Dockerfile AND Docker Compose
     Input: codebase-report.md, PROJECT_RULES.md
-    Output: Dockerfile, docker-compose, CI/CD gaps
+    Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task 4:
   subagent_type: "ring-dev-team:sre"
@@ -200,14 +221,92 @@ Task 4:
   description: "Observability analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
-    Compare observability with Ring standards.
+    Check ALL 6 sections per shared-patterns/standards-coverage-table.md → "sre"
     Input: codebase-report.md, PROJECT_RULES.md
-    Output: Logging, tracing, health check gaps
+    Output: Standards Coverage Table + ISSUE-XXX for gaps
 ```
 
-### For TypeScript projects:
+### For TypeScript Backend projects:
 
-Replace Task 1 with `ring-dev-team:backend-engineer-typescript`.
+```yaml
+Task 1:
+  subagent_type: "ring-dev-team:backend-engineer-typescript"
+  model: "opus"
+  description: "TypeScript backend standards analysis"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+
+    ⛔ MANDATORY: Check ALL 12 sections in typescript.md per shared-patterns/standards-coverage-table.md
+    This includes section 9: DDD Patterns (TypeScript Implementation)
+
+    Input:
+    - Ring Standards: Load via WebFetch (typescript.md)
+    - Section Index: See shared-patterns/standards-coverage-table.md → "backend-engineer-typescript"
+    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Project Rules: docs/PROJECT_RULES.md
+
+    Output:
+    1. Standards Coverage Table (per shared-patterns format)
+    2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
+```
+
+### For Frontend projects (React/Next.js):
+
+```yaml
+Task 5:
+  subagent_type: "ring-dev-team:frontend-engineer"
+  model: "opus"
+  description: "Frontend standards analysis"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+
+    ⛔ MANDATORY: Check ALL 13 sections in frontend.md per shared-patterns/standards-coverage-table.md
+
+    Input:
+    - Ring Standards: Load via WebFetch (frontend.md)
+    - Section Index: See shared-patterns/standards-coverage-table.md → "frontend-engineer"
+    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Project Rules: docs/PROJECT_RULES.md
+
+    Output:
+    1. Standards Coverage Table (per shared-patterns format)
+    2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
+```
+
+### For BFF (Backend-for-Frontend) projects:
+
+```yaml
+Task 6:
+  subagent_type: "ring-dev-team:frontend-bff-engineer-typescript"
+  model: "opus"
+  description: "BFF TypeScript standards analysis"
+  prompt: |
+    **MODE: ANALYSIS ONLY**
+
+    ⛔ MANDATORY: Check ALL 12 sections in typescript.md per shared-patterns/standards-coverage-table.md
+    This includes section 9: DDD Patterns (TypeScript Implementation)
+
+    Input:
+    - Ring Standards: Load via WebFetch (typescript.md)
+    - Section Index: See shared-patterns/standards-coverage-table.md → "frontend-bff-engineer-typescript"
+    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Project Rules: docs/PROJECT_RULES.md
+
+    Output:
+    1. Standards Coverage Table (per shared-patterns format)
+    2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
+```
+
+### Agent Dispatch Summary
+
+| Stack Detected | Agents to Dispatch |
+|----------------|-------------------|
+| Go only | Task 1 (Go) + Task 2-4 |
+| TypeScript Backend only | Task 1 (TS Backend) + Task 2-4 |
+| Frontend only | Task 5 (Frontend) + Task 2-4 |
+| Go + Frontend | Task 1 (Go) + Task 5 (Frontend) + Task 2-4 |
+| TypeScript Backend + Frontend | Task 1 (TS Backend) + Task 5 (Frontend) + Task 2-4 |
+| BFF detected | Add Task 6 (BFF) to above |
 
 ---
 

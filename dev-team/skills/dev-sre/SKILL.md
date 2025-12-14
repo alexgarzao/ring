@@ -16,7 +16,7 @@ skip_when: |
 NOT_skip_when: |
   - "Task says observability not required" → AI cannot self-exempt. ALL services need observability.
   - "Pure frontend" → If it calls ANY API, backend needs observability. Frontend-only = static HTML.
-  - "MVP doesn't need metrics" → MVP without metrics = blind MVP. No exceptions.
+  - "MVP doesn't need observability" → MVP without observability = blind MVP. No exceptions.
 
 sequence:
   after: [ring-dev-team:dev-devops]
@@ -143,7 +143,7 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 |---------------------|---------|----------------|
 | **Time + Authority + Sunk Cost** | "Tech lead says ship Friday, 8 hours invested, add observability Monday" | "Gate 2 is NON-NEGOTIABLE. Authority cannot waive gates. Reduce FEATURE scope, not observability scope." |
 | **Pragmatic + Exhaustion + Time** | "MVP launch in 2 hours, PM says observability optional, just launch" | "MVP without observability = blind MVP. Cannot detect failures, cannot debug efficiently. Gate 2 REQUIRED." |
-| **All Pressures** | "CEO watching demo in 1 hour, just show feature working, skip gates" | "Gates prevent production blindness. CEO will want metrics when issues occur. Cannot skip Gate 2." |
+| **All Pressures** | "CEO watching demo in 1 hour, just show feature working, skip gates" | "Gates prevent production blindness. CEO will want observability when issues occur. Cannot skip Gate 2." |
 
 **Non-negotiable principle:** Minimum viable observability = structured logs. No exceptions.
 
@@ -198,7 +198,7 @@ Is it runnable code?
 │
 └── YES → Does it expose HTTP/gRPC/TCP endpoints?
     ├── YES (API Service) → FULL OBSERVABILITY REQUIRED
-    │   └── /health + /ready + /metrics + structured logs + tracing
+    │   └── /health + /ready + structured logs + tracing
     │
     └── NO → Does it run continuously?
         ├── YES (Background Worker) → WORKER OBSERVABILITY

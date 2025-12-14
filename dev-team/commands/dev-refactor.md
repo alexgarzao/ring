@@ -187,120 +187,36 @@ Then re-run `/ring-dev-team:dev-refactor`.
 
 ---
 
-## Step 0: Validate PROJECT_RULES.md
+## ⛔ MANDATORY: Load Full Skill
 
-Check: Does `docs/PROJECT_RULES.md` exist?
+**After PROJECT_RULES.md check passes, load the skill:**
 
-- **YES** → Continue to Step 1
-- **NO** → Output blocker (see PRE-EXECUTION CHECK above) and TERMINATE
-
-## Step 1: Detect Project Language
-
-Check for manifest files:
-
-| File | Language | Agent |
-|------|----------|-------|
-| `go.mod` | Go | ring-dev-team:backend-engineer-golang |
-| `package.json` | TypeScript | ring-dev-team:backend-engineer-typescript |
-
-If multiple languages detected, dispatch agents for ALL.
-
-## Step 2: Generate Codebase Report
-
-**Skill:** ring-default:codebase-explorer
-
-Dispatch codebase explorer to generate architecture report:
-
-```yaml
-Task:
-  subagent_type: "ring-default:codebase-explorer"
-  model: "opus"
-  description: "Generate codebase architecture report"
-  prompt: |
-    Generate a comprehensive codebase report describing WHAT EXISTS.
-    Include: structure, architecture pattern, tech stack, code patterns,
-    key files inventory with file:line references.
+```
+Use Skill tool: ring-dev-team:dev-refactor
 ```
 
-Save output to: `docs/refactor/{timestamp}/codebase-report.md`
+The skill contains the complete analysis workflow with:
+- Anti-rationalization tables for codebase exploration
+- Mandatory use of `ring-default:codebase-explorer` (NOT Bash/Explore)
+- Standards coverage table requirements
+- Finding → Task mapping gates
+- Full agent dispatch prompts with `**MODE: ANALYSIS ONLY**`
 
-## Step 3: Dispatch Specialist Agents
+## Execution Context
 
-**⛔ HARD GATE:** Verify `codebase-report.md` exists before proceeding.
+Pass the following context to the skill:
 
-Dispatch ALL applicable agents in ONE message (parallel):
+| Parameter | Value |
+|-----------|-------|
+| `path` | `$1` (first argument, default: project root) |
+| `--standards` | If provided, custom standards file path |
+| `--analyze-only` | If provided, skip dev-cycle execution |
+| `--critical-only` | If provided, filter to Critical/High only |
+| `--dry-run` | If provided, show what would be analyzed |
 
-```yaml
-Task 1 (ring-dev-team:backend-engineer-golang or backend-engineer-typescript):
-  model: "opus"
-  prompt: |
-    **MODE: ANALYSIS ONLY**
-    Compare codebase with Ring standards.
-    Input: codebase-report.md, PROJECT_RULES.md
-    Output: ISSUE-XXX with severity, location (file:line), current vs expected code
+## User Approval (MANDATORY)
 
-Task 2 (ring-dev-team:qa-analyst):
-  model: "opus"
-  prompt: |
-    **MODE: ANALYSIS ONLY**
-    Compare test patterns with Ring standards.
-    Output: Coverage gaps, pattern violations with file:line
-
-Task 3 (ring-dev-team:devops-engineer):
-  model: "opus"
-  prompt: |
-    **MODE: ANALYSIS ONLY**
-    Compare DevOps setup with Ring standards.
-    Output: Dockerfile, docker-compose, Helm chart gaps
-
-Task 4 (ring-dev-team:sre):
-  model: "opus"
-  prompt: |
-    **MODE: ANALYSIS ONLY**
-    Compare observability with Ring standards.
-    Output: Logging, tracing, health check gaps
-```
-
-## Step 4: Generate Findings
-
-Aggregate all agent outputs into `docs/refactor/{timestamp}/findings.md`:
-
-```markdown
-# Findings: {project-name}
-
-## FINDING-001: {Pattern Name}
-**Severity:** Critical | High | Medium | Low
-**Agent:** {ring-dev-team:agent-name}
-**Location:** {file}:{line}
-
-### Current Code
-{actual code snippet}
-
-### Expected Code (Ring Standard)
-{expected code snippet}
-```
-
-## Step 5: Generate Tasks
-
-Group related findings into `docs/refactor/{timestamp}/tasks.md`:
-
-```markdown
-# Refactoring Tasks
-
-## REFACTOR-001: {Task Name}
-**Priority:** Critical | High | Medium
-**Dependencies:** {other tasks or none}
-
-### Findings Addressed
-| Finding | Pattern | Severity |
-|---------|---------|----------|
-| FINDING-001 | {name} | Critical |
-
-### Acceptance Criteria
-- [ ] {criteria from finding}
-```
-
-## Step 6: User Approval
+**Before executing dev-cycle, you MUST ask:**
 
 ```yaml
 AskUserQuestion:
@@ -316,14 +232,13 @@ AskUserQuestion:
           description: "Keep analysis, skip execution"
 ```
 
-## Step 7: Handoff to dev-cycle (if approved)
+## Quick Reference
 
-Execute: `/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md`
-
-## Remember
+See skill `ring-dev-team:dev-refactor` for full details. Key rules:
 
 - **All agents dispatch in parallel** - Single message, multiple Task calls
 - **Specify model: "opus"** - All agents need opus for comprehensive analysis
 - **MODE: ANALYSIS ONLY** - Agents analyze, they do NOT implement
 - **Save artifacts** to `docs/refactor/{timestamp}/`
 - **Get user approval** before executing dev-cycle
+- **Handoff**: `/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md`

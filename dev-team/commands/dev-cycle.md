@@ -54,7 +54,7 @@ Execute the development cycle for tasks in a markdown file.
 |------|-------|-------------|
 | 0 | `ring-dev-team:dev-implementation` | Implement code (TDD) |
 | 1 | `ring-dev-team:dev-devops` | Create Docker/compose |
-| 2 | `ring-dev-team:dev-sre` | Observability (metrics, health, logging) |
+| 2 | `ring-dev-team:dev-sre` | Observability (health checks, logging, tracing) |
 | 3 | `ring-dev-team:dev-testing` | Write and run tests |
 | 4 | `ring-dev-team:dev-review` | Code review (3 reviewers) |
 | 5 | `ring-dev-team:dev-validation` | Final validation |
@@ -78,21 +78,37 @@ After all tasks: `ring-dev-team:dev-feedback-loop` generates metrics report.
 
 ---
 
-## Step 0: Verify Prerequisites
+## ⛔ MANDATORY: Load Full Skill
 
-Check: Does `docs/PROJECT_RULES.md` exist?
+**This command MUST load the skill for complete workflow execution.**
 
-- **YES** → Continue to Step 1
-- **NO** → STOP with blocker message
+```
+Use Skill tool: ring-dev-team:dev-cycle
+```
 
-## Step 1: Initialize or Resume
+The skill contains the complete 6-gate workflow with:
+- Anti-rationalization tables
+- Pressure resistance scenarios
+- TDD sub-phases (Gate 0.1 RED → Gate 0.2 GREEN)
+- Gate completion definitions
+- Incremental compromise prevention
+- State management schema
 
-### New Cycle (with task file path)
+## Execution Context
 
-1. Load tasks from provided file (e.g., `docs/pre-dev/{feature}/tasks.md`)
-2. Detect subtasks if present in `subtasks/{task-id}/` directory
-3. Initialize state file: `.ring/dev-team/current-cycle.json`
-4. **ASK EXECUTION MODE (MANDATORY):**
+Pass the following context to the skill:
+
+| Parameter | Value |
+|-----------|-------|
+| `tasks-file` | `$1` (first argument, e.g., `docs/tasks/sprint-001.md`) |
+| `--task` | If provided, filter to specific task ID |
+| `--skip-gates` | If provided, list of gates to skip |
+| `--dry-run` | If provided, validate only |
+| `--resume` | If provided, resume from `.ring/dev-team/current-cycle.json` |
+
+## Step 1: ASK EXECUTION MODE (MANDATORY)
+
+**After loading skill and before executing gates, you MUST ask:**
 
 ```yaml
 AskUserQuestion:
@@ -108,103 +124,11 @@ AskUserQuestion:
           description: "No checkpoints, run all gates"
 ```
 
-### Resume (--resume flag)
+**Do NOT skip this.** User hints ≠ mode selection. Only explicit selection is valid.
 
-1. Load `.ring/dev-team/current-cycle.json`
-2. Resume from saved gate position
+## Quick Reference
 
-## Step 2: Gate 0 - Implementation
-
-**Skill:** ring-dev-team:dev-implementation
-
-Dispatch appropriate agent based on task content:
-
-| Content | Agent |
-|---------|-------|
-| Go code | ring-dev-team:backend-engineer-golang |
-| TypeScript backend | ring-dev-team:backend-engineer-typescript |
-| React/Frontend | ring-dev-team:frontend-engineer |
-
-Agent implements using TDD (RED → GREEN → REFACTOR).
-
-## Step 3: Gate 1 - DevOps
-
-**Skill:** ring-dev-team:dev-devops
-
-Dispatch `ring-dev-team:devops-engineer` to verify/create:
-- Dockerfile updates
-- docker-compose configuration
-- Environment variables (.env.example)
-
-Skip if no infrastructure changes needed.
-
-## Step 4: Gate 2 - SRE
-
-**Skill:** ring-dev-team:dev-sre
-
-Dispatch `ring-dev-team:sre` to verify:
-- Structured JSON logging with trace correlation
-- OpenTelemetry tracing (if external calls)
-
-Skip if no observability changes needed.
-
-## Step 5: Gate 3 - Testing
-
-**Skill:** ring-dev-team:dev-testing
-
-Dispatch `ring-dev-team:qa-analyst`:
-- Run tests against acceptance criteria
-- Verify coverage ≥ 85%
-- **PASS** → Proceed to Gate 4
-- **FAIL** → Return to Gate 0 (max 3 iterations)
-
-## Step 6: Gate 4 - Review
-
-**Skill:** ring-default:requesting-code-review
-
-Dispatch ALL 3 reviewers in ONE message (parallel):
-
-```yaml
-Task 1 (ring-default:code-reviewer):
-  model: "opus"
-  prompt: "Review code quality for [unit_id]..."
-
-Task 2 (ring-default:business-logic-reviewer):
-  model: "opus"
-  prompt: "Review business logic for [unit_id]..."
-
-Task 3 (ring-default:security-reviewer):
-  model: "opus"
-  prompt: "Review security for [unit_id]..."
-```
-
-**Handle findings:**
-- Critical/High/Medium → Fix and re-run ALL 3 reviewers
-- Low → Add `TODO(review):` comment
-- Cosmetic → Add `FIXME(nitpick):` comment
-
-## Step 7: Gate 5 - Validation
-
-Verify:
-- All acceptance criteria met
-- All tests pass
-- No Critical/High/Medium issues remaining
-
-## Step 8: Checkpoints (Based on Mode)
-
-| Mode | After Each Subtask | After Each Task |
-|------|-------------------|-----------------|
-| Manual per subtask | ✓ Pause | ✓ Pause |
-| Manual per task | ✗ Skip | ✓ Pause |
-| Automatic | ✗ Skip | ✗ Skip |
-
-## Step 9: Cycle Completion
-
-1. Run `ring-dev-team:dev-feedback-loop` for metrics
-2. Generate report with task summary, duration, review iterations
-3. Save feedback to `docs/feedbacks/cycle-{date}/`
-
-## Remember
+See skill `ring-dev-team:dev-cycle` for full details. Key rules:
 
 - **ALL 6 gates execute** - Checkpoints affect pauses, not gates
 - **Gates execute in order** - 0 → 1 → 2 → 3 → 4 → 5

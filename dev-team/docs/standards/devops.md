@@ -321,37 +321,6 @@ postgresql:
 
 ## Observability
 
-### Metrics (Prometheus)
-
-```yaml
-# prometheus-rules.yaml
-groups:
-  - name: api
-    rules:
-      - alert: HighErrorRate
-        expr: |
-          sum(rate(http_requests_total{status=~"5.."}[5m]))
-          /
-          sum(rate(http_requests_total[5m])) > 0.01
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: High error rate detected
-          description: Error rate is {{ $value | humanizePercentage }}
-
-      - alert: HighLatency
-        expr: |
-          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
-          > 0.5
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: High latency detected
-          description: P99 latency is {{ $value }}s
-```
-
 ### Logging (Structured JSON)
 
 ```json
