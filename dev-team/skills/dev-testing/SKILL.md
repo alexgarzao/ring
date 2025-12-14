@@ -3,7 +3,7 @@ name: dev-testing
 description: |
   Development cycle testing gate (Gate 3) - ensures unit test coverage for all
   acceptance criteria using TDD methodology (RED-GREEN-REFACTOR).
-  Focus: Unit tests only. Integration/E2E tests handled separately in CI/CD.
+  Focus: Unit tests only.
 
 trigger: |
   - After implementation and SRE complete (Gate 0/1/2)
@@ -65,7 +65,7 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 
 **Core principle:** Untested acceptance criteria are unverified claims. Each criterion MUST map to at least one executable unit test.
 
-**Scope:** This gate focuses on unit tests. Integration and E2E tests are handled separately (CI/CD pipeline, QA phase).
+**Scope:** This gate focuses on unit tests.
 
 ## Pressure Resistance
 
@@ -91,7 +91,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 | "Manual testing validates all criteria" | Manual tests are not executable, not repeatable, not automatable. Gate 3 requires unit tests. |
 | "Coverage is 83%, close enough to 85%" | Threshold is mandatory minimum. 83% = FAIL. No exceptions. |
 | "Integration tests are better verification" | Gate 3 scope is unit tests only. Integration tests are different gate. |
-| "We can add tests later in CI/CD" | Gate 3 exit criteria require tests NOW. Later = never. |
+| "We can add tests later" | Gate 3 exit criteria require tests NOW. Later = never. |
 | "These mocks make it a unit test" | If you hit DB/API/filesystem, it's integration. Mock the interface. |
 | "All criteria tested, coverage low" | Write edge case tests until threshold met. |
 | "Coverage % is vanity metric" | Coverage is GATE metric. Vanity or not, below threshold = FAIL. |

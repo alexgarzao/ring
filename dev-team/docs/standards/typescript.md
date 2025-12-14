@@ -462,7 +462,7 @@ export class UnauthorizedError extends AppError {
 
 ## DDD Patterns (TypeScript Implementation)
 
-If DDD is enabled in the project, use these patterns.
+DDD patterns are MANDATORY for all TypeScript services.
 
 ### Entity
 

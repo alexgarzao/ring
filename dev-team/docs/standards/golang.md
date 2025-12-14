@@ -1173,6 +1173,8 @@ func workerPool(ctx context.Context, jobs <-chan Job, results chan<- Result) {
 
 ## DDD Patterns (Go Implementation)
 
+DDD patterns are MANDATORY for all Go services.
+
 ### Entity
 
 ```go

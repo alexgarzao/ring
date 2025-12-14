@@ -588,7 +588,7 @@ You have deep expertise in accessibility. Apply WCAG 2.1 AA standards.
 | Tool | When to Use |
 |------|-------------|
 | jest-axe | Unit test assertions |
-| Lighthouse | CI/CD pipeline |
+| Lighthouse | Performance audits |
 | Manual | Screen reader testing |
 
 **→ For test implementation patterns, see `docs/STANDARDS.md` → Testing section.**

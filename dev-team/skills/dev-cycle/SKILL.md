@@ -571,7 +571,6 @@ For current execution unit:
 2. Check if unit requires DevOps work:
    - Infrastructure changes?
    - New service deployment?
-   - CI/CD updates?
 
 3. If DevOps needed:
    Task tool:

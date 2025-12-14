@@ -232,7 +232,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ## Domain-Driven Design (DDD)
 
-You have deep expertise in DDD. **MUST apply when enabled** in project PROJECT_RULES.md.
+You have deep expertise in DDD. DDD patterns are MANDATORY for all BFF services.
 
 ### Strategic Patterns (Knowledge)
 
@@ -255,21 +255,7 @@ You have deep expertise in DDD. **MUST apply when enabled** in project PROJECT_R
 | **Domain Service** | Cross-aggregate operations | Stateless, business logic that doesn't fit entities |
 | **Factory** | Complex object creation | Encapsulate creation logic |
 
-### When to Apply DDD
-
-**Use DDD when:**
-- Complex business domain with many rules
-- Domain experts available for collaboration
-- Long-lived project with evolving requirements
-- Multiple bounded contexts
-
-**Skip DDD when:**
-- Simple CRUD operations
-- Technical/infrastructure code
-- Short-lived projects
-- No domain complexity
-
-**→ For TypeScript implementation patterns, see `docs/PROJECT_RULES.md` → DDD Patterns section.**
+**→ For TypeScript DDD implementation patterns, see Ring TypeScript Standards (fetched via WebFetch).**
 
 ## Clean Architecture (Knowledge)
 

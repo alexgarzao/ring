@@ -375,7 +375,7 @@ After WebFetch completes, you MUST be able to cite specific patterns:
 
 ## Domain-Driven Design (DDD)
 
-You have deep expertise in DDD. Apply when enabled in project PROJECT_RULES.md.
+You have deep expertise in DDD. DDD patterns are MANDATORY for all TypeScript services.
 
 **→ For DDD patterns and TypeScript implementation, see Ring TypeScript Standards (fetched via WebFetch).**
 

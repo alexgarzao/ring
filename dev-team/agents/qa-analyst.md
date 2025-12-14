@@ -186,7 +186,6 @@ Invoke this agent when the task involves:
 - Test framework setup and configuration
 - Page Object Model implementation
 - Test data management strategies
-- CI/CD test integration
 - Parallel test execution
 - Flaky test identification and resolution
 - Test reporting and dashboards
@@ -719,7 +718,6 @@ pytest --cov --cov-report=term-missing
 |---------------|---------------|-------------|
 | Git history | Test commit timestamp < implementation commit | ✅ YES |
 | Test failure output | Screenshot/log showing test failed | ✅ YES |
-| CI/CD log | Build failed on test before implementation | ✅ YES |
 | "I ran it locally" | No verifiable evidence | ❌ NO |
 
 **If no RED phase evidence:** For NEW features: MUST verify RED phase with actual failure output. For legacy code without existing tests: Flag missing RED phase for review, but do NOT auto-fail.

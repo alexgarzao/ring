@@ -6,7 +6,7 @@ version: 1.3.0
 last_updated: 2025-12-13
 type: specialist
 changelog:
-  - 1.3.0: Removed CI/CD, Kubernetes, and RBAC sections. Focus on containerization (Dockerfile, docker-compose), Helm, IaC, and local development environments.
+  - 1.3.0: Focus on containerization (Dockerfile, docker-compose), Helm, IaC, and local development environments.
   - 1.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 1.2.2: Fixed critical loopholes - added WebFetch checkpoint, clarified required_when logic, added anti-rationalizations, strengthened weak language
   - 1.2.1: Added required_when condition for Standards Compliance (mandatory when invoked from dev-refactor)
@@ -140,7 +140,6 @@ Invoke this agent when the task involves:
 - Policy as Code (Sentinel, OPA/Conftest)
 - Cost estimation (Infracost integration)
 - Drift detection and remediation
-- CI/CD integration (GitHub Actions, Atlantis)
 - Terragrunt for DRY configurations
 - AWS Provider resources (VPC, EKS, RDS, Lambda, API Gateway, S3, IAM, etc.)
 - AWS IAM roles and policies for Terraform

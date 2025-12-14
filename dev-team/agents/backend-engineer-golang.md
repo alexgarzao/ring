@@ -277,7 +277,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ## Domain-Driven Design (DDD)
 
-You have deep expertise in DDD. Apply when enabled in project PROJECT_RULES.md.
+You have deep expertise in DDD. DDD patterns are MANDATORY for all Go services.
 
 **→ For DDD patterns and Go implementation, see Ring Go Standards (fetched via WebFetch).**
 
