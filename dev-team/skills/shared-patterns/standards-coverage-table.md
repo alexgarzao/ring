@@ -192,66 +192,66 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 ### backend-engineer-golang → golang.md
 
-| # | Section to Check |
-|---|------------------|
-| 1 | Core Dependency: lib-commons (MANDATORY) |
-| 2 | Frameworks & Libraries (MANDATORY) |
-| 3 | Configuration Loading (MANDATORY) |
-| 4 | Telemetry & Observability (MANDATORY) |
-| 5 | Bootstrap Pattern (MANDATORY) |
-| 6 | Data Transformation: ToEntity/FromEntity (MANDATORY) |
-| 7 | Error Codes Convention (MANDATORY) |
-| 8 | Error Handling (MANDATORY) |
-| 9 | Function Design (MANDATORY) |
-| 10 | Pagination Patterns (MANDATORY) |
-| 11 | Testing Patterns (MANDATORY) |
-| 12 | Logging Standards (MANDATORY) |
-| 13 | Linting (MANDATORY) |
-| 14 | Architecture Patterns (MANDATORY) |
-| 15 | Directory Structure (MANDATORY) |
-| 16 | Concurrency Patterns (MANDATORY) |
-| 17 | DDD Patterns (MANDATORY) |
-| 18 | RabbitMQ Worker Pattern (MANDATORY) |
+| # | Section to Check | Key Subsections |
+|---|------------------|-----------------|
+| 1 | Core Dependency: lib-commons (MANDATORY) | |
+| 2 | Frameworks & Libraries (MANDATORY) | |
+| 3 | Configuration Loading (MANDATORY) | |
+| 4 | Telemetry & Observability (MANDATORY) | |
+| 5 | Bootstrap Pattern (MANDATORY) | |
+| 6 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
+| 7 | Error Codes Convention (MANDATORY) | |
+| 8 | Error Handling (MANDATORY) | |
+| 9 | Function Design (MANDATORY) | |
+| 10 | Pagination Patterns (MANDATORY) | |
+| 11 | Testing Patterns (MANDATORY) | |
+| 12 | Logging Standards (MANDATORY) | |
+| 13 | Linting (MANDATORY) | |
+| 14 | Architecture Patterns (MANDATORY) | |
+| 15 | Directory Structure (MANDATORY) | |
+| 16 | Concurrency Patterns (MANDATORY) | |
+| 17 | DDD Patterns (MANDATORY) | |
+| 18 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
 ### backend-engineer-typescript → typescript.md
 
-| # | Section to Check |
-|---|------------------|
-| 1 | Strict Configuration (MANDATORY) |
-| 2 | Frameworks & Libraries (MANDATORY) |
-| 3 | Type Safety Rules (MANDATORY) |
-| 4 | Zod Validation Patterns (MANDATORY) |
-| 5 | Dependency Injection (MANDATORY) |
-| 6 | AsyncLocalStorage for Context (MANDATORY) |
-| 7 | Testing Patterns (MANDATORY) |
-| 8 | Error Handling (MANDATORY) |
-| 9 | Function Design (MANDATORY) |
-| 10 | DDD Patterns (MANDATORY) |
-| 11 | Naming Conventions (MANDATORY) |
-| 12 | Directory Structure (MANDATORY) |
-| 13 | RabbitMQ Worker Pattern (MANDATORY) |
+| # | Section to Check | Key Subsections |
+|---|------------------|-----------------|
+| 1 | Strict Configuration (MANDATORY) | |
+| 2 | Frameworks & Libraries (MANDATORY) | |
+| 3 | Type Safety Rules (MANDATORY) | |
+| 4 | Zod Validation Patterns (MANDATORY) | |
+| 5 | Dependency Injection (MANDATORY) | |
+| 6 | AsyncLocalStorage for Context (MANDATORY) | |
+| 7 | Testing Patterns (MANDATORY) | |
+| 8 | Error Handling (MANDATORY) | |
+| 9 | Function Design (MANDATORY) | |
+| 10 | DDD Patterns (MANDATORY) | |
+| 11 | Naming Conventions (MANDATORY) | |
+| 12 | Directory Structure (MANDATORY) | |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
 ### frontend-bff-engineer-typescript → typescript.md
 
-| # | Section to Check |
-|---|------------------|
-| 1 | Strict Configuration (MANDATORY) |
-| 2 | Frameworks & Libraries (MANDATORY) |
-| 3 | Type Safety Rules (MANDATORY) |
-| 4 | Zod Validation Patterns (MANDATORY) |
-| 5 | Dependency Injection (MANDATORY) |
-| 6 | AsyncLocalStorage for Context (MANDATORY) |
-| 7 | Testing Patterns (MANDATORY) |
-| 8 | Error Handling (MANDATORY) |
-| 9 | Function Design (MANDATORY) |
-| 10 | DDD Patterns (MANDATORY) |
-| 11 | Naming Conventions (MANDATORY) |
-| 12 | Directory Structure (MANDATORY) |
-| 13 | RabbitMQ Worker Pattern (MANDATORY) |
+| # | Section to Check | Key Subsections |
+|---|------------------|-----------------|
+| 1 | Strict Configuration (MANDATORY) | |
+| 2 | Frameworks & Libraries (MANDATORY) | |
+| 3 | Type Safety Rules (MANDATORY) | |
+| 4 | Zod Validation Patterns (MANDATORY) | |
+| 5 | Dependency Injection (MANDATORY) | |
+| 6 | AsyncLocalStorage for Context (MANDATORY) | |
+| 7 | Testing Patterns (MANDATORY) | |
+| 8 | Error Handling (MANDATORY) | |
+| 9 | Function Design (MANDATORY) | |
+| 10 | DDD Patterns (MANDATORY) | |
+| 11 | Naming Conventions (MANDATORY) | |
+| 12 | Directory Structure (MANDATORY) | |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
