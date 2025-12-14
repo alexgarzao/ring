@@ -195,22 +195,23 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 | # | Section to Check |
 |---|------------------|
 | 1 | Core Dependency: lib-commons (MANDATORY) |
-| 2 | Frameworks & Libraries |
+| 2 | Frameworks & Libraries (MANDATORY) |
 | 3 | Configuration Loading (MANDATORY) |
 | 4 | Telemetry & Observability (MANDATORY) |
 | 5 | Bootstrap Pattern (MANDATORY) |
 | 6 | Data Transformation: ToEntity/FromEntity (MANDATORY) |
 | 7 | Error Codes Convention (MANDATORY) |
-| 8 | Error Handling |
-| 9 | Pagination Patterns |
-| 10 | Testing Patterns |
-| 11 | Logging Standards |
-| 12 | Linting |
-| 13 | Architecture Patterns |
-| 14 | Directory Structure |
-| 15 | Concurrency Patterns |
-| 16 | DDD Patterns (Go Implementation) |
-| 17 | RabbitMQ Worker Pattern |
+| 8 | Error Handling (MANDATORY) |
+| 9 | Function Design (MANDATORY) |
+| 10 | Pagination Patterns (MANDATORY) |
+| 11 | Testing Patterns (MANDATORY) |
+| 12 | Logging Standards (MANDATORY) |
+| 13 | Linting (MANDATORY) |
+| 14 | Architecture Patterns (MANDATORY) |
+| 15 | Directory Structure (MANDATORY) |
+| 16 | Concurrency Patterns (MANDATORY) |
+| 17 | DDD Patterns (MANDATORY) |
+| 18 | RabbitMQ Worker Pattern (MANDATORY) |
 
 ---
 
@@ -219,17 +220,18 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 | # | Section to Check |
 |---|------------------|
 | 1 | Strict Configuration (MANDATORY) |
-| 2 | Frameworks & Libraries |
-| 3 | Type Safety Rules |
-| 4 | Zod Validation Patterns |
-| 5 | Dependency Injection |
-| 6 | AsyncLocalStorage for Context |
-| 7 | Testing Patterns |
-| 8 | Error Handling |
-| 9 | DDD Patterns (TypeScript Implementation) |
-| 10 | Naming Conventions |
-| 11 | Directory Structure (Backend) |
-| 12 | RabbitMQ Worker Pattern |
+| 2 | Frameworks & Libraries (MANDATORY) |
+| 3 | Type Safety Rules (MANDATORY) |
+| 4 | Zod Validation Patterns (MANDATORY) |
+| 5 | Dependency Injection (MANDATORY) |
+| 6 | AsyncLocalStorage for Context (MANDATORY) |
+| 7 | Testing Patterns (MANDATORY) |
+| 8 | Error Handling (MANDATORY) |
+| 9 | Function Design (MANDATORY) |
+| 10 | DDD Patterns (MANDATORY) |
+| 11 | Naming Conventions (MANDATORY) |
+| 12 | Directory Structure (MANDATORY) |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) |
 
 ---
 
@@ -238,17 +240,18 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 | # | Section to Check |
 |---|------------------|
 | 1 | Strict Configuration (MANDATORY) |
-| 2 | Frameworks & Libraries |
-| 3 | Type Safety Rules |
-| 4 | Zod Validation Patterns |
-| 5 | Dependency Injection |
-| 6 | AsyncLocalStorage for Context |
-| 7 | Testing Patterns |
-| 8 | Error Handling |
-| 9 | DDD Patterns (TypeScript Implementation) |
-| 10 | Naming Conventions |
-| 11 | Directory Structure (Backend) |
-| 12 | RabbitMQ Worker Pattern |
+| 2 | Frameworks & Libraries (MANDATORY) |
+| 3 | Type Safety Rules (MANDATORY) |
+| 4 | Zod Validation Patterns (MANDATORY) |
+| 5 | Dependency Injection (MANDATORY) |
+| 6 | AsyncLocalStorage for Context (MANDATORY) |
+| 7 | Testing Patterns (MANDATORY) |
+| 8 | Error Handling (MANDATORY) |
+| 9 | Function Design (MANDATORY) |
+| 10 | DDD Patterns (MANDATORY) |
+| 11 | Naming Conventions (MANDATORY) |
+| 12 | Directory Structure (MANDATORY) |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) |
 
 ---
 
@@ -256,19 +259,19 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 | # | Section to Check |
 |---|------------------|
-| 1 | Framework |
-| 2 | Libraries & Tools |
-| 3 | State Management Patterns |
-| 4 | Form Patterns |
-| 5 | Styling Standards |
-| 6 | Typography Standards |
-| 7 | Animation Standards |
-| 8 | Component Patterns |
-| 9 | Accessibility (a11y) |
-| 10 | Performance |
-| 11 | Directory Structure |
-| 12 | FORBIDDEN Patterns |
-| 13 | Standards Compliance Categories |
+| 1 | Framework (MANDATORY) |
+| 2 | Libraries & Tools (MANDATORY) |
+| 3 | State Management Patterns (MANDATORY) |
+| 4 | Form Patterns (MANDATORY) |
+| 5 | Styling Standards (MANDATORY) |
+| 6 | Typography Standards (MANDATORY) |
+| 7 | Animation Standards (MANDATORY) |
+| 8 | Component Patterns (MANDATORY) |
+| 9 | Accessibility (a11y) (MANDATORY) |
+| 10 | Performance (MANDATORY) |
+| 11 | Directory Structure (MANDATORY) |
+| 12 | FORBIDDEN Patterns (MANDATORY) |
+| 13 | Standards Compliance Categories (MANDATORY) |
 
 ---
 
@@ -276,19 +279,19 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 | # | Section to Check |
 |---|------------------|
-| 1 | Framework |
-| 2 | Libraries & Tools |
-| 3 | State Management Patterns |
-| 4 | Form Patterns |
-| 5 | Styling Standards |
-| 6 | Typography Standards |
-| 7 | Animation Standards |
-| 8 | Component Patterns |
-| 9 | Accessibility (a11y) |
-| 10 | Performance |
-| 11 | Directory Structure |
-| 12 | FORBIDDEN Patterns |
-| 13 | Standards Compliance Categories |
+| 1 | Framework (MANDATORY) |
+| 2 | Libraries & Tools (MANDATORY) |
+| 3 | State Management Patterns (MANDATORY) |
+| 4 | Form Patterns (MANDATORY) |
+| 5 | Styling Standards (MANDATORY) |
+| 6 | Typography Standards (MANDATORY) |
+| 7 | Animation Standards (MANDATORY) |
+| 8 | Component Patterns (MANDATORY) |
+| 9 | Accessibility (a11y) (MANDATORY) |
+| 10 | Performance (MANDATORY) |
+| 11 | Directory Structure (MANDATORY) |
+| 12 | FORBIDDEN Patterns (MANDATORY) |
+| 13 | Standards Compliance Categories (MANDATORY) |
 
 ---
 
@@ -296,12 +299,12 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 | # | Section to Check | Subsections (ALL REQUIRED) |
 |---|------------------|---------------------------|
-| 1 | Cloud Provider | Provider table |
-| 2 | Infrastructure as Code | Terraform structure, State management, Module pattern, Best practices |
-| 3 | Containers | **Dockerfile patterns, Docker Compose (Local Dev)**, Image guidelines |
-| 4 | Helm | Chart structure, Chart.yaml, values.yaml |
-| 5 | Observability | Logging (Structured JSON), Tracing (OpenTelemetry) |
-| 6 | Security | Secrets management, Network policies |
+| 1 | Cloud Provider (MANDATORY) | Provider table |
+| 2 | Infrastructure as Code (MANDATORY) | Terraform structure, State management, Module pattern, Best practices |
+| 3 | Containers (MANDATORY) | **Dockerfile patterns, Docker Compose (Local Dev)**, Image guidelines |
+| 4 | Helm (MANDATORY) | Chart structure, Chart.yaml, values.yaml |
+| 5 | Observability (MANDATORY) | Logging (Structured JSON), Tracing (OpenTelemetry) |
+| 6 | Security (MANDATORY) | Secrets management, Network policies |
 
 **⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
 
@@ -311,12 +314,12 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 | # | Section to Check |
 |---|------------------|
-| 1 | Observability Stack |
-| 2 | Logging Standards |
-| 3 | Tracing Standards |
-| 4 | OpenTelemetry with lib-commons (MANDATORY for Go) |
-| 5 | Structured Logging with lib-common-js (MANDATORY for TypeScript) |
-| 6 | Health Checks |
+| 1 | Observability Stack (MANDATORY) |
+| 2 | Logging Standards (MANDATORY) |
+| 3 | Tracing Standards (MANDATORY) |
+| 4 | OpenTelemetry with lib-commons (MANDATORY) |
+| 5 | Structured Logging with lib-common-js (MANDATORY) |
+| 6 | Health Checks (MANDATORY) |
 
 ---
 
@@ -327,14 +330,14 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 **For Go projects:**
 | # | Section to Check |
 |---|------------------|
-| 1 | Testing Patterns |
-| 2 | Linting |
+| 1 | Testing Patterns (MANDATORY) |
+| 2 | Linting (MANDATORY) |
 
 **For TypeScript projects:**
 | # | Section to Check |
 |---|------------------|
-| 1 | Testing Patterns |
-| 2 | Type Safety Rules |
+| 1 | Testing Patterns (MANDATORY) |
+| 2 | Type Safety Rules (MANDATORY) |
 
 ---
 
