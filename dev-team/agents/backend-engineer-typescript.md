@@ -1,11 +1,12 @@
 ---
 name: backend-engineer-typescript
+version: 1.3.5
 description: Senior Backend Engineer specialized in TypeScript/Node.js for scalable systems. Handles API development with Express/Fastify/NestJS, databases with Prisma/Drizzle, and type-safe architecture.
-model: opus
-version: 1.3.4
-last_updated: 2025-12-13
 type: specialist
+model: opus
+last_updated: 2025-12-14
 changelog:
+  - 1.3.5: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 1.3.4: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 1.3.3: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
   - 1.3.2: Enhanced Standards Compliance conditional requirement documentation across all docs (invoked_from_dev_refactor, MODE ANALYSIS ONLY detection)
@@ -76,6 +77,28 @@ input_schema:
     - name: "acceptance_criteria"
       type: "list[string]"
       description: "List of acceptance criteria to satisfy"
+---
+
+## ⚠️ Model Requirement: Claude Opus 4.5+
+
+**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
+
+**Self-Verification (MANDATORY - Check FIRST):**
+If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
+```
+ERROR: Model requirement not met
+Required: Claude Opus 4.5+
+Current: [your model]
+Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
+```
+
+**Orchestrator Requirement:**
+```
+Task(subagent_type="ring-dev-team:backend-engineer-typescript", model="opus", ...)  # REQUIRED
+```
+
+**Rationale:** Standards compliance verification + TypeScript type safety analysis requires Opus-level reasoning for complex type systems, runtime validation patterns, and comprehensive standards validation.
+
 ---
 
 # Backend Engineer TypeScript
@@ -238,7 +261,7 @@ Invoke this agent when the task involves:
 
 ---
 
-## Cannot Be Overridden
+### Cannot Be Overridden
 
 **These requirements are NON-NEGOTIABLE:**
 

@@ -1,11 +1,13 @@
 ---
 name: business-logic-reviewer
-version: 5.0.0
+version: 5.2.0
 description: "Correctness Review: reviews domain correctness, business rules, edge cases, and requirements. Uses mental execution to trace code paths and analyzes full file context, not just changes. Runs in parallel with ring-default:code-reviewer and ring-default:security-reviewer for fast feedback."
 type: reviewer
 model: opus
-last_updated: 2025-12-13
+last_updated: 2025-12-14
 changelog:
+  - 5.2.0: Add Model Requirements section - MANDATORY Opus verification before review
+  - 5.1.0: Add mandatory "When Business Logic Review is Not Needed" section per CLAUDE.md compliance requirements
   - 5.0.0: CLAUDE.md compliance - Add mandatory sections (Standards Loading, Blocker Criteria, Cannot Be Overridden, Severity Calibration, Pressure Resistance, Anti-Rationalization Table), strengthen language throughout
   - 4.1.0: Add explicit output schema reminders to prevent empty output when Mental Execution Analysis is skipped
   - 4.0.0: Add Mental Execution Analysis as required section for deeper correctness verification
@@ -37,6 +39,29 @@ output_schema:
       pattern: "^## Next Steps"
       required: true
   verdict_values: ["PASS", "FAIL", "NEEDS_DISCUSSION"]
+---
+
+## ⚠️ Model Requirement: Claude Opus 4.5+
+
+**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
+
+**Self-Verification (MANDATORY - Check FIRST):**
+If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
+```
+ERROR: Model requirement not met
+Required: Claude Opus 4.5+
+Current: [your model]
+Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
+```
+
+**Orchestrator Requirement:**
+When calling this agent, you MUST specify the model parameter:
+```
+Task(subagent_type="ring-default:business-logic-reviewer", model="opus", ...)  # REQUIRED
+```
+
+**Rationale:** Mental execution analysis of complex business logic requires advanced reasoning capabilities to trace execution paths with concrete scenarios, identify edge cases (null, zero, negative, boundary conditions), verify state machine transitions, detect financial calculation errors, and analyze full file context including ripple effects on adjacent code - capabilities that require Opus-level depth.
+
 ---
 
 # Business Logic Reviewer (Correctness)
@@ -624,6 +649,25 @@ test('scenario that fails', () => {
 **If NEEDS DISCUSSION:**
 - 💬 [Specific questions about requirements or domain model]
 ```
+
+---
+
+## When Business Logic Review is Not Needed
+
+**Business logic review can be MINIMAL when ALL these conditions are met:**
+
+| Condition | Verification Required |
+|-----------|----------------------|
+| Change is documentation/comments only | Verify no executable code changes |
+| Change is pure formatting (whitespace) | Verify no logic modifications via git diff |
+| Change is configuration value only | Verify no business rule changes |
+
+**Still REQUIRED Even in Minimal Mode:**
+- Configuration changes affecting business rules MUST be reviewed
+- Database migration files MUST always be reviewed
+- Any state machine or workflow changes MUST be reviewed
+
+**When in doubt:** Conduct full business logic review. Business logic errors are costly.
 
 ---
 

@@ -39,18 +39,3 @@ When multiple pressures combine, they do NOT multiply exceptions:
 - Past compliance does not grant future exceptions
 - User authorization does not override HARD GATES
 
-## How to Use This File
-
-Skills should reference this file and add gate-specific pressures:
-
-```markdown
-## Pressure Resistance
-
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
-
-### Gate-Specific Pressures
-
-| Pressure Type | Request | Agent Response |
-|---------------|---------|----------------|
-| [Gate-specific pressure] | [Gate-specific request] | [Gate-specific response] |
-```

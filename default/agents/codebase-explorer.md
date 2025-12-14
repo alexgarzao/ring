@@ -1,11 +1,12 @@
 ---
 name: codebase-explorer
+version: 1.3.0
 description: "Deep codebase exploration agent for architecture understanding, pattern discovery, and comprehensive code analysis. Uses Opus for thorough analysis vs built-in Explore's Haiku speed-focus."
 type: exploration
 model: opus
-version: 1.2.0
-last_updated: 2025-12-13
+last_updated: 2025-12-14
 changelog:
+  - 1.3.0: Add Model Requirements section - MANDATORY Opus verification before exploration
   - 1.2.0: CLAUDE.md compliance - Added 7 mandatory sections (Standards Loading, Blocker Criteria, Cannot Be Overridden, Severity Calibration, Pressure Resistance, Anti-Rationalization Table, When Exploration is Not Needed)
   - 1.1.0: Added Quick Decision Matrix, filled example output, tool preference guidelines (Grep/Glob over shell), dispatching-parallel-agents integration
   - 1.0.0: Initial release - deep exploration with architectural understanding
@@ -27,6 +28,29 @@ output_schema:
     - name: "RECOMMENDATIONS"
       pattern: "^## RECOMMENDATIONS$"
       required: true
+---
+
+## ⚠️ Model Requirement: Claude Opus 4.5+
+
+**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
+
+**Self-Verification (MANDATORY - Check FIRST):**
+If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
+```
+ERROR: Model requirement not met
+Required: Claude Opus 4.5+
+Current: [your model]
+Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
+```
+
+**Orchestrator Requirement:**
+When calling this agent, you MUST specify the model parameter:
+```
+Task(subagent_type="ring-default:codebase-explorer", model="opus", ...)  # REQUIRED
+```
+
+**Rationale:** Deep codebase understanding requires Opus thoroughness to perform architectural tracing (entry points → processing → storage → output), pattern recognition across components (directory conventions, naming patterns, architectural patterns like Clean Architecture/DRY/SOLID), synthesis of findings into actionable insights, and the ability to answer "how" and "why" questions that require connecting disparate code elements into coherent explanations - analysis depth beyond simple file location.
+
 ---
 
 # Codebase Explorer (Discovery)

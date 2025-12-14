@@ -96,14 +96,12 @@ This skill VALIDATES that observability was correctly implemented by developers:
 
 ## Blocker Criteria - STOP and Report
 
-| Decision Type | Scenario | Action | Can User Override? |
-|---------------|----------|--------|-------------------|
-| **HARD BLOCK** | Service lacks JSON structured logs | STOP. Return to Gate 0. Cannot proceed to Gate 3. | ❌ NO |
-| **HARD BLOCK** | Verification commands not run (no evidence) | STOP. Cannot mark Gate 2 complete without automated verification. | ❌ NO |
-| **HARD BLOCK** | User says "feature complete, add observability later" | STOP. Observability is part of completion. Gate 2 required. | ❌ NO |
-| **CRITICAL** | Logs are fmt.Println/echo, not JSON structured | Report CRITICAL severity. Return to Gate 0. Must fix. | ❌ NO |
+| Decision Type | Examples | Action |
+|---------------|----------|--------|
+| **HARD BLOCK** | Service lacks JSON structured logs, verification commands not run (no evidence), user says "feature complete, add observability later" | **STOP immediately** - Return to Gate 0. Cannot proceed. User CANNOT override. |
+| **CRITICAL** | Logs are fmt.Println/echo, not JSON structured | **Report CRITICAL severity** - Return to Gate 0. Must fix. User CANNOT override. |
 
-## Cannot Be Overridden
+### Cannot Be Overridden
 
 **These requirements are NON-NEGOTIABLE and cannot be waived by:**
 

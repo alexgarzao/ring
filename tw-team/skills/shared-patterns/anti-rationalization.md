@@ -47,32 +47,3 @@ These rationalizations are ALWAYS wrong, regardless of context:
 | "Small change, skip review" | Small changes can have big impact | **Review ALL changes** |
 | "Already reviewed similar doc" | Each document is unique | **Review THIS document** |
 
----
-
-## How to Reference This File
-
-**For Agents:**
-```markdown
-## Anti-Rationalization
-
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal and documentation-specific anti-rationalizations.
-
-### Domain-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| [Domain-specific rationalization] | [Domain-specific reason] | **[Domain-specific action]** |
-```
-
-**For Skills:**
-```markdown
-## Anti-Rationalization Table
-
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
-
-### Gate-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| [Gate-specific rationalization] | [Gate-specific reason] | **[Gate-specific action]** |
-```

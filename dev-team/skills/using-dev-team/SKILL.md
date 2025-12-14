@@ -86,7 +86,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 ---
 
-## Cannot Be Overridden
+### Cannot Be Overridden
 
 **These requirements are NON-NEGOTIABLE:**
 

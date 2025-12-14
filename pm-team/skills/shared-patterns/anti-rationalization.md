@@ -38,32 +38,3 @@ These rationalizations are ALWAYS wrong, regardless of context:
 | "Team knows the codebase" | Assumptions are dangerous | **Document file paths explicitly** |
 | "Previous project used this approach" | Each project is unique | **Analyze THIS project's needs** |
 
----
-
-## How to Reference This File
-
-**For Agents:**
-```markdown
-## Anti-Rationalization
-
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal and research-specific anti-rationalizations.
-
-### Domain-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| [Domain-specific rationalization] | [Domain-specific reason] | **[Domain-specific action]** |
-```
-
-**For Skills:**
-```markdown
-## Anti-Rationalization Table
-
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
-
-### Gate-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| [Gate-specific rationalization] | [Gate-specific reason] | **[Gate-specific action]** |
-```

@@ -54,7 +54,25 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
 
-### 6. Content Duplication Prevention (ALWAYS CHECK)
+### 6. Agent Model Requirements (ALWAYS RESPECT)
+When invoking agents via Task tool:
+- **MUST** check agent's `model:` field in YAML frontmatter
+- **MUST** pass matching `model` parameter to Task tool
+- Agents with `model: opus` → **MUST** call with `model="opus"`
+- Agents with `model: sonnet` → **MUST** call with `model="sonnet"`
+- **NEVER** omit model parameter for specialized agents
+- **NEVER** let system auto-select model for agents with model requirements
+
+**Examples:**
+- ✅ `Task(subagent_type="ring-default:code-reviewer", model="opus", ...)`
+- ✅ `Task(subagent_type="ring-dev-team:backend-engineer-golang", model="opus", ...)`
+- ❌ `Task(subagent_type="ring-default:code-reviewer", ...)` - Missing model parameter
+- ❌ `Task(subagent_type="ring-default:code-reviewer", model="sonnet", ...)` - Wrong model
+
+**Agent Self-Verification:**
+All agents with `model:` field in frontmatter MUST include "Model Requirements" section that verifies they are running on the correct model and STOPS if not.
+
+### 7. Content Duplication Prevention (ALWAYS CHECK)
 Before adding ANY content to prompts, skills, agents, or documentation:
 1. **SEARCH FIRST**: `grep -r "keyword" --include="*.md"` - Check if content already exists
 2. **If content exists** → **REFERENCE it**, do NOT duplicate. Use: `See [file](path) for details`
@@ -225,9 +243,11 @@ CHECKLIST (ALL must be YES):
 [ ] Does agent have Severity Calibration table?
 [ ] Does agent have Pressure Resistance table?
 [ ] Does agent have Anti-Rationalization table?
+[ ] Does agent have When Not Needed section?
 [ ] Does agent use STRONG language (MUST, REQUIRED, CANNOT)?
 [ ] Does agent define when to STOP and report?
 [ ] Does agent define non-negotiable requirements?
+[ ] If agent has model: field in frontmatter, does it have Model Requirements section?
 
 If ANY checkbox is NO → Agent is INCOMPLETE. Add missing sections.
 ```
