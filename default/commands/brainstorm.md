@@ -9,7 +9,7 @@ Transform rough ideas into fully-formed designs through structured questioning a
 ## Usage
 
 ```
-/brainstorm [topic]
+/ring-default:brainstorm [topic]
 ```
 
 ## Arguments
@@ -22,19 +22,19 @@ Transform rough ideas into fully-formed designs through structured questioning a
 
 ### Starting a Feature Design
 ```
-/brainstorm OAuth2 integration
+/ring-default:brainstorm OAuth2 integration
 ```
 Initiates a design session for adding OAuth2 authentication to your application.
 
 ### Architectural Decision
 ```
-/brainstorm microservices migration strategy
+/ring-default:brainstorm microservices migration strategy
 ```
 Explores approaches for migrating from monolith to microservices architecture.
 
 ### New Product Concept
 ```
-/brainstorm real-time collaboration feature
+/ring-default:brainstorm real-time collaboration feature
 ```
 Refines requirements and design for a collaborative editing feature.
 
