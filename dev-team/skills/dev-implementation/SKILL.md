@@ -369,7 +369,7 @@ See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-pr
 | Approach | When to Use | Process |
 |----------|-------------|---------|
 | **Subagent-Driven** (recommended) | Real-time feedback needed, human intervention | Dispatch agent → Review → Code review at checkpoints → Repeat |
-| **Parallel Session** | Well-defined plans, batch execution | New terminal in worktree → `executing-plans` with plan path |
+| **Parallel Session** | Well-defined plans, batch execution | New terminal in worktree → `ring-default:executing-plans` with plan path |
 
 ## Step 5: Code Review Checkpoints
 

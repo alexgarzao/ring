@@ -60,10 +60,10 @@ Execute the development cycle for tasks in a markdown file.
 |------|-------|-------------|
 | 0 | `ring-dev-team:dev-implementation` | Implement code (TDD) |
 | 1 | `ring-dev-team:dev-devops` | Create Docker/compose |
-| 2 | `dev-sre` | Observability (health checks, logging, tracing) |
-| 3 | `dev-testing` | Write and run tests |
-| 4 | `dev-review` | Code review (3 reviewers) |
-| 5 | `dev-validation` | Final validation |
+| 2 | `ring-dev-team:dev-sre` | Observability (health checks, logging, tracing) |
+| 3 | `ring-dev-team:dev-testing` | Write and run tests |
+| 4 | `ring-dev-team:dev-review` | Code review (3 reviewers) |
+| 5 | `ring-dev-team:dev-validation` | Final validation |
 
 **Note:** Tasks are loaded at initialization, not as a separate gate.
 

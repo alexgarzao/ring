@@ -26,7 +26,7 @@ The ring-dev-team plugin provides 7 specialized developer agents. Use them via `
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -119,10 +119,10 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 |-------|-----------------|----------|
 | **`ring-dev-team:backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
 | **`ring-dev-team:backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
-| **`devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
-| **`frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
-| **`frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
-| **`qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
+| **`ring-dev-team:devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
+| **`ring-dev-team:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
+| **`ring-dev-team:frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
+| **`ring-dev-team:qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
 | **`sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
 
 **Dispatch template:**
@@ -133,7 +133,7 @@ Task tool:
   prompt: "{Your specific request with context}"
 ```
 
-**Note:** `frontend-designer` = visual aesthetics. `frontend-bff-engineer-typescript` = business logic/architecture.
+**Note:** `ring-dev-team:frontend-designer` = visual aesthetics. `ring-dev-team:frontend-bff-engineer-typescript` = business logic/architecture.
 
 ---
 
@@ -215,11 +215,11 @@ All workflows converge to the 6-gate development cycle:
 
 | Gate | Focus | Agent(s) |
 |------|-------|----------|
-| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `frontend-bff-engineer-typescript` |
-| **1: DevOps** | Dockerfile, docker-compose, .env | `devops-engineer` |
+| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `ring-dev-team:frontend-bff-engineer-typescript` |
+| **1: DevOps** | Dockerfile, docker-compose, .env | `ring-dev-team:devops-engineer` |
 | **2: SRE** | Health checks, logging, tracing | `sre` |
-| **3: Testing** | Unit tests, coverage ≥85% | `qa-analyst` |
-| **4: Review** | 3 reviewers IN PARALLEL | `code-reviewer`, `business-logic`, `security` |
+| **3: Testing** | Unit tests, coverage ≥85% | `ring-dev-team:qa-analyst` |
+| **4: Review** | 3 reviewers IN PARALLEL | `ring-default:code-reviewer`, `business-logic`, `security` |
 | **5: Validation** | User approval: APPROVED/REJECTED | User decision |
 
 **Key Principle:** All development follows the same 6-gate process.

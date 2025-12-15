@@ -66,7 +66,7 @@ Read docs/PROJECT_RULES.md
 | `frontend-designer` | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
 | `devops-engineer` | devops.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
 | `sre` | sre.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
-| `qa-analyst` | golang.md or typescript.md | Based on project language (check PROJECT_RULES.md first) |
+| `ring-dev-team:qa-analyst` | golang.md or typescript.md | Based on project language (check PROJECT_RULES.md first) |
 | `ring-dev-team:prompt-quality-reviewer` | N/A | Domain-independent (no standards WebFetch required) |
 
 ---

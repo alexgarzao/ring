@@ -235,14 +235,14 @@ If you catch yourself planning sequential execution → STOP → Re-plan as para
 **REQUIRED Format:** `{reviewer-name}`
 
 **Valid Reviewers:**
-- ✅ `code-reviewer`
+- ✅ `ring-default:code-reviewer`
 - ✅ `ring-default:business-logic-reviewer`
-- ✅ `security-reviewer`
+- ✅ `ring-default:security-reviewer`
 
 **FORBIDDEN (Wrong Prefix/Name):**
-- ❌ `code-reviewer` (missing prefix)
+- ❌ `ring-default:code-reviewer` (missing prefix)
 - ❌ `ring:code-reviewer` (wrong prefix)
-- ❌ `code-reviewer` (wrong plugin)
+- ❌ `ring-default:code-reviewer` (wrong plugin)
 - ❌ `general-purpose` (generic agent, not specialized reviewer)
 - ❌ `Explore` (not a reviewer)
 
@@ -310,9 +310,9 @@ Before starting this gate:
 
 | Reviewer | Focus Area | Catches |
 |----------|------------|---------|
-| `code-reviewer` | Architecture, patterns, maintainability | Design flaws, code smells, DRY violations |
+| `ring-default:code-reviewer` | Architecture, patterns, maintainability | Design flaws, code smells, DRY violations |
 | `ring-default:business-logic-reviewer` | Correctness, requirements, edge cases | Logic errors, missing cases, requirement gaps |
-| `security-reviewer` | OWASP, auth, input validation | Vulnerabilities, injection risks, auth bypasses |
+| `ring-default:security-reviewer` | OWASP, auth, input validation | Vulnerabilities, injection risks, auth bypasses |
 
 ## Step 1: Prepare Review Context
 
@@ -326,9 +326,9 @@ Gather: `BASE_SHA=$(git merge-base HEAD main)`, `HEAD_SHA=$(git rev-parse HEAD)`
 
 | Task | Agent | Prompt |
 |------|-------|--------|
-| #1 | `code-reviewer` | Review context (WHAT_WAS_IMPLEMENTED, PLAN, ACs, SHAs) |
+| #1 | `ring-default:code-reviewer` | Review context (WHAT_WAS_IMPLEMENTED, PLAN, ACs, SHAs) |
 | #2 | `ring-default:business-logic-reviewer` | Same context |
-| #3 | `security-reviewer` | Same context |
+| #3 | `ring-default:security-reviewer` | Same context |
 
 **Wait for ALL three to complete before proceeding.**
 

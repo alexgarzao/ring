@@ -875,7 +875,7 @@ Step 5 (specialist agents) → ONLY runs if gate passes
 | `Bash find/ls` | Lists file paths | No architectural analysis, no pattern detection |
 | `Task(Explore)` | Fast codebase search | Different agent, lacks Ring standards context |
 | `Task(general-purpose)` | Generic tasks | No specialized codebase analysis output format |
-| `codebase-explorer` | Deep architecture analysis | ✅ Correct - provides structured report for Step 5 |
+| `ring-default:codebase-explorer` | Deep architecture analysis | ✅ Correct - provides structured report for Step 5 |
 
 ### If You Violated These Rules
 
