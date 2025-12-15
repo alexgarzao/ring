@@ -349,8 +349,8 @@ Brief description of what this endpoint does.
 
 ## What This Agent Does NOT Handle
 
-- Conceptual documentation (use `functional-writer`)
-- Documentation review (use `docs-reviewer`)
+- Conceptual documentation (use `ring-tw-team:functional-writer`)
+- Documentation review (use `ring-tw-team:docs-reviewer`)
 - API implementation (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
 - API design decisions (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
 

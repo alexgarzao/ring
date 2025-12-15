@@ -65,9 +65,9 @@ Voice/tone consistency analysis and technical accuracy verification requires Opu
 ## Related Skills
 
 This agent applies review criteria from these skills:
-- `documentation-review` - Review checklist and quality criteria
+- `ring-tw-team:documentation-review` - Review checklist and quality criteria
 - `ring-tw-team:voice-and-tone` - Voice and tone compliance standards
-- `documentation-structure` - Structure and hierarchy standards
+- `ring-tw-team:documentation-structure` - Structure and hierarchy standards
 
 ## Standards Loading
 
@@ -82,7 +82,7 @@ This agent applies review criteria from these skills:
 2. **Loading Method:**
    - Search for `docs/standards/`, `CONTRIBUTING.md`, or style guides in repository
    - Check `ring-tw-team:voice-and-tone` skill for voice standards
-   - Check `documentation-structure` skill for structure standards
+   - Check `ring-tw-team:documentation-structure` skill for structure standards
    - Reference industry documentation best practices (e.g., Google Developer Documentation Style Guide)
 
 3. **Verification:**
@@ -351,9 +351,9 @@ When reviewing documentation:
 
 ## What This Agent Does NOT Handle
 
-- Writing new documentation (use `functional-writer` or `api-writer`)
+- Writing new documentation (use `ring-tw-team:functional-writer` or `ring-tw-team:api-writer`)
 - Technical implementation (use `*` agents)
-- Code review (use `code-reviewer`)
+- Code review (use `ring-default:code-reviewer`)
 
 ## Output Expectations
 

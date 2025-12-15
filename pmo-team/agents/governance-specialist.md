@@ -321,7 +321,7 @@ Conducted Gate 2 (Planning Complete) review for Project Phoenix. Recommendation:
 ## What This Agent Does NOT Handle
 
 - Project planning (use `ring-pm-team:pre-dev-feature`)
-- Portfolio prioritization (use `portfolio-manager`)
+- Portfolio prioritization (use `ring-pmo-team:portfolio-manager`)
 - Resource allocation (use `resource-planner`)
 - Risk analysis detail (use `risk-analyst`)
 - Executive communication (use `executive-reporter`)

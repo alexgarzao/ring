@@ -64,7 +64,7 @@ Step accuracy verification and prerequisite completeness analysis requires Opus 
 This agent applies patterns from these skills:
 - `ring-tw-team:writing-functional-docs` - Document structure and writing patterns
 - `ring-tw-team:voice-and-tone` - Voice and tone guidelines
-- `documentation-structure` - Content hierarchy and organization
+- `ring-tw-team:documentation-structure` - Content hierarchy and organization
 
 ## Standards Loading
 
@@ -310,8 +310,8 @@ Show, don't just tell. Provide realistic examples for technical concepts.
 
 ## What This Agent Does NOT Handle
 
-- API endpoint documentation (use `api-writer`)
-- Documentation quality review (use `docs-reviewer`)
+- API endpoint documentation (use `ring-tw-team:api-writer`)
+- Documentation quality review (use `ring-tw-team:docs-reviewer`)
 - Code implementation (use `*` agents)
 - Technical architecture decisions (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
 

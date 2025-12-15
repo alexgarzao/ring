@@ -40,8 +40,8 @@ Ring solves this by:
 - `ring-dev-team:sre` - Site reliability engineer
 
 > **Standards Compliance:** All dev-team agents include a `## Standards Compliance` output section with conditional requirement:
-> - **Optional** when invoked directly or via `dev-cycle`
-> - **MANDATORY** when invoked from `dev-refactor` (triggered by `**MODE: ANALYSIS ONLY**` in prompt)
+> - **Optional** when invoked directly or via `ring-dev-team:dev-cycle`
+> - **MANDATORY** when invoked from `ring-dev-team:dev-refactor` (triggered by `**MODE: ANALYSIS ONLY**` in prompt)
 >
 > When mandatory, agents load Ring standards via WebFetch and produce comparison tables with:
 > - Current Pattern vs Expected Pattern
@@ -255,17 +255,17 @@ No "should work" → Only "does work" with proof
 
 **Testing & Debugging (7):**
 - `ring-default:test-driven-development` - Write test first, watch fail, minimal code
-- `systematic-debugging` - 4-phase root cause investigation
+- `ring-default:systematic-debugging` - 4-phase root cause investigation
 - `ring-default:verification-before-completion` - Evidence before claims
 - `ring-default:testing-anti-patterns` - Common test pitfalls to avoid
 - `condition-based-waiting` - Replace timeouts with conditions
 - `ring-default:defense-in-depth` - Multi-layer validation
-- `linting-codebase` - Parallel lint fixing with agent dispatch
+- `ring-default:linting-codebase` - Parallel lint fixing with agent dispatch
 
 **Collaboration & Planning (10):**
 - `brainstorming` - Structured design refinement
-- `writing-plans` - Zero-context implementation plans
-- `executing-plans` - Batch execution with checkpoints
+- `ring-default:writing-plans` - Zero-context implementation plans
+- `ring-default:executing-plans` - Batch execution with checkpoints
 - `ring-default:requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
 - `ring-default:receiving-code-review` - Responding to feedback
 - `ring-default:dispatching-parallel-agents` - Concurrent workflows
@@ -275,8 +275,8 @@ No "should work" → Only "does work" with proof
 - `root-cause-tracing` - Backward bug tracking
 
 **Meta Skills (4):**
-- `using-ring` - Mandatory skill discovery
-- `writing-skills` - TDD for documentation
+- `ring-default:using-ring` - Mandatory skill discovery
+- `ring-default:writing-skills` - TDD for documentation
 - `testing-skills-with-subagents` - Skill validation
 - `testing-agents-with-subagents` - Subagent-specific testing
 
@@ -284,16 +284,16 @@ No "should work" → Only "does work" with proof
 
 **Code Development:**
 - `ring-dev-team:using-dev-team` - Introduction to developer specialist agents
-- `dev-refactor` - Codebase analysis against standards
-- `dev-cycle` - 6-gate development workflow orchestrator
+- `ring-dev-team:dev-refactor` - Codebase analysis against standards
+- `ring-dev-team:dev-cycle` - 6-gate development workflow orchestrator
 
 **6-Gate Workflow Skills:**
-- `dev-implementation` - Gate 0: TDD implementation
-- `dev-devops` - Gate 1: DevOps setup (Docker, compose)
-- `dev-sre` - Gate 2: Observability setup
-- `dev-testing` - Gate 3: Test coverage
-- `dev-review` - Gate 4: Parallel code review
-- `dev-validation` - Gate 5: User approval
+- `ring-dev-team:dev-implementation` - Gate 0: TDD implementation
+- `ring-dev-team:dev-devops` - Gate 1: DevOps setup (Docker, compose)
+- `ring-dev-team:dev-sre` - Gate 2: Observability setup
+- `ring-dev-team:dev-testing` - Gate 3: Test coverage
+- `ring-dev-team:dev-review` - Gate 4: Parallel code review
+- `ring-dev-team:dev-validation` - Gate 5: User approval
 - `ring-dev-team:dev-feedback-loop` - Assertiveness scoring and metrics
 
 ### Product Planning Skills (ring-pm-team plugin - 10 skills)
@@ -314,7 +314,7 @@ No "should work" → Only "does work" with proof
 
 **Regulatory Templates (6):**
 - `ring-finops-team:using-finops-team` - Introduction to FinOps team workflow
-- `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
+- `ring-finops-team:regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
 - `ring-finops-team:regulatory-templates-setup` - Template selection initialization
 - `regulatory-templates-gate1` - Compliance analysis and field mapping
 - `regulatory-templates-gate2` - Field mapping validation
@@ -326,9 +326,9 @@ No "should work" → Only "does work" with proof
 - `ring-tw-team:using-tw-team` - Introduction to technical writing specialists
 - `ring-tw-team:writing-functional-docs` - Patterns for guides, tutorials, conceptual docs
 - `ring-tw-team:writing-api-docs` - API reference documentation patterns
-- `documentation-structure` - Document hierarchy and organization
+- `ring-tw-team:documentation-structure` - Document hierarchy and organization
 - `ring-tw-team:voice-and-tone` - Voice and tone guidelines (assertive, encouraging, human)
-- `documentation-review` - Quality checklist and review process
+- `ring-tw-team:documentation-review` - Quality checklist and review process
 - `ring-tw-team:api-field-descriptions` - Field description patterns by type
 
 ## 🎮 Interactive Commands
