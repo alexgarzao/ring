@@ -66,7 +66,7 @@ Target: "account creation"
 
 ## Process Details
 
-This command invokes the `exploring-codebase` skill which handles:
+This command invokes the `ring-default:exploring-codebase` skill which handles:
 
 ### Phase 1: Discovery Pass (3-4 parallel agents)
 
@@ -258,7 +258,7 @@ Recommendations based on your goal (implementation, debugging, or learning)
 | `/ring-default:brainstorm` | Use explore-codebase in Phase 1 for context |
 | `/ring-default:write-plan` | Use explore-codebase before planning implementation |
 | `/ring-default:execute-plan` | Use if plan execution reveals gaps in understanding |
-| `exploring-codebase` | Underlying skill with full logic and prompts |
+| `ring-default:exploring-codebase` | Underlying skill with full logic and prompts |
 | `ring-default:dispatching-parallel-agents` | Pattern used twice (discovery + deep dive) |
 | `ring-default:systematic-debugging` | Use explore-codebase before debugging |
 
@@ -354,22 +354,22 @@ The command suggests appropriate follow-up:
 
 **If you're implementing something:**
 ```
-Ready to create implementation plan? Use /write-plan
+Ready to create implementation plan? Use /ring-default:write-plan
 ```
 
 **If you're setting up workspace:**
 ```
-Ready for isolated workspace? Use /worktree
+Ready for isolated workspace? Use /ring-default:worktree
 ```
 
 **If you're debugging:**
 ```
-Ready to investigate? Use systematic-debugging skill
+Ready to investigate? Use ring-default:systematic-debugging skill
 ```
 
 **If you're designing:**
 ```
-Ready to refine design? Use /brainstorm
+Ready to refine design? Use /ring-default:brainstorm
 ```
 
 ## Real-World Workflow
@@ -384,7 +384,7 @@ Ready to refine design? Use /brainstorm
 /ring-default:write-plan add-refund-support
 
 # 4. Set up isolated workspace
-/worktree feature/add-refund-support
+/ring-default:worktree feature/add-refund-support
 
 # 5. Execute the plan
 /ring-default:execute-plan <plan-file>
