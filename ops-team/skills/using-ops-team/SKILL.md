@@ -27,7 +27,7 @@ The ring-ops-team plugin provides 5 specialized operations agents. Use them via 
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -42,11 +42,11 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 | Scenario | Use |
 |----------|-----|
-| "Set up Dockerfile and docker-compose" | `devops-engineer` |
-| "Configure service mesh for production" | `platform-engineer` |
-| "Create Terraform modules" | `devops-engineer` |
-| "Design multi-region architecture" | `infrastructure-architect` |
-| "Handle production outage" | `incident-responder` |
+| "Set up Dockerfile and docker-compose" | `ring-dev-team:devops-engineer` |
+| "Configure service mesh for production" | `ring-ops-team:platform-engineer` |
+| "Create Terraform modules" | `ring-dev-team:devops-engineer` |
+| "Design multi-region architecture" | `ring-ops-team:infrastructure-architect` |
+| "Handle production outage" | `ring-ops-team:incident-responder` |
 | "Optimize cloud costs" | `ring-ops-team:cloud-cost-optimizer` |
 
 ---
@@ -139,10 +139,10 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
-| **`platform-engineer`** | Service mesh, API gateways, developer platforms, self-service infrastructure | Service mesh config, API gateway setup, platform abstractions, developer portals |
-| **`incident-responder`** | Incident management, RCA, post-mortems, blameless culture | Production incidents, outages, incident coordination, root cause analysis |
+| **`ring-ops-team:platform-engineer`** | Service mesh, API gateways, developer platforms, self-service infrastructure | Service mesh config, API gateway setup, platform abstractions, developer portals |
+| **`ring-ops-team:incident-responder`** | Incident management, RCA, post-mortems, blameless culture | Production incidents, outages, incident coordination, root cause analysis |
 | **`ring-ops-team:cloud-cost-optimizer`** | Cost analysis, RI management, FinOps, tagging | Cost reviews, optimization recommendations, reserved instance planning |
-| **`infrastructure-architect`** | Multi-region, DR, capacity planning, migrations | Architecture design, DR strategy, capacity planning, infrastructure lifecycle |
+| **`ring-ops-team:infrastructure-architect`** | Multi-region, DR, capacity planning, migrations | Architecture design, DR strategy, capacity planning, infrastructure lifecycle |
 | **`security-operations`** | Security audits, compliance, vulnerability management | Security assessments, compliance validation, vulnerability remediation |
 
 **Dispatch template:**

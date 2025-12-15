@@ -315,8 +315,8 @@ Payment processing service experienced intermittent failures affecting 23% of tr
 
 ## What This Agent Does NOT Handle
 
-- Platform engineering changes (use `platform-engineer`)
-- Infrastructure provisioning (use `infrastructure-architect`)
+- Platform engineering changes (use `ring-ops-team:platform-engineer`)
+- Infrastructure provisioning (use `ring-ops-team:infrastructure-architect`)
 - Cost analysis during incidents (use `ring-ops-team:cloud-cost-optimizer`)
-- Security vulnerability remediation (use `security-operations`)
+- Security vulnerability remediation (use `ring-ops-team:security-operations`)
 - Application code fixes (use `backend-engineer-*`)

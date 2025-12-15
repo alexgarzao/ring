@@ -250,7 +250,7 @@ Additional output:
 ## Related Skills
 
 - `ring-ops-team:ops-security-audit` - Full security audit workflow
-- `security-reviewer` - Application security review
+- `ring-default:security-reviewer` - Application security review
 
 ## Anti-Rationalization
 

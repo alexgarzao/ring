@@ -71,8 +71,8 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 | `ring-dev-team:backend-engineer-golang` | golang.md | See coverage table |
 | `ring-dev-team:backend-engineer-typescript` | typescript.md | See coverage table |
 | `ring-dev-team:frontend-bff-engineer-typescript` | typescript.md | See coverage table |
-| `frontend-engineer` | frontend.md | See coverage table |
-| `frontend-designer` | frontend.md | See coverage table |
+| `ring-dev-team:frontend-engineer` | frontend.md | See coverage table |
+| `ring-dev-team:frontend-designer` | frontend.md | See coverage table |
 | `ring-dev-team:devops-engineer` | devops.md | See coverage table |
 | `sre` | sre.md | See coverage table |
 | `ring-dev-team:qa-analyst` | golang.md OR typescript.md | See coverage table |

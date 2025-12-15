@@ -121,7 +121,7 @@ Expected: [timestamp]
 ## Related Skills
 
 - `ring-ops-team:ops-incident-response` - Full incident response workflow
-- `incident-responder` - Specialist agent for incident management
+- `ring-ops-team:incident-responder` - Specialist agent for incident management
 
 ## Anti-Rationalization
 
