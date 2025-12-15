@@ -9,7 +9,7 @@ Run linting tools, analyze results, and dispatch parallel AI agents to fix all i
 ## Usage
 
 ```
-/lint [path]
+/ring-default:lint [path]
 ```
 
 ## Arguments
@@ -59,13 +59,13 @@ This command invokes the `ring-default:linting-codebase` skill which handles:
 
 ### Lint Entire Codebase
 ```
-/lint
+/ring-default:lint
 ```
 Runs full lint, dispatches agents to fix everything.
 
 ### Lint Specific Path
 ```
-/lint src/services/
+/ring-default:lint src/services/
 ```
 Lints only the services directory.
 
