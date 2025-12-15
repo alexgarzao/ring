@@ -19,11 +19,11 @@ NOT_skip_when: |
   - "MVP doesn't need observability" → MVP without observability = blind MVP. No exceptions.
 
 sequence:
-  after: [ring-dev-team:dev-devops]
-  before: [ring-dev-team:dev-testing]
+  after: [dev-devops]
+  before: [dev-testing]
 
 related:
-  complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-devops, ring-dev-team:dev-testing]
+  complementary: [dev-cycle, dev-devops, dev-testing]
 
 verification:
   automated:
@@ -125,13 +125,13 @@ This skill VALIDATES that observability was correctly implemented by developers:
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios).
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios).
 
 **Gate 2-specific note:** Minimum viable observability = structured JSON logs. No exceptions.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 **Gate 2-specific rationalizations:**
 
@@ -145,7 +145,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags (including Observability section).
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Observability section).
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Return to developers to implement observability.
 
@@ -192,7 +192,7 @@ Is it runnable code?
 
 ## Anti-Rationalization Table
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 ### Gate-Specific Anti-Rationalizations
 
@@ -266,7 +266,7 @@ Review Gate 0/1 handoff: Service type (API/Worker/Batch), Language, External dep
 
 ## Step 2: Dispatch SRE Agent for Validation
 
-**Dispatch:** `Task(subagent_type: "ring-dev-team:sre")` - VALIDATE observability (not implement). Include service info (type, language, deps) and Gate 0/1 handoff. Agent validates: JSON logging, Tracing. Returns: PASS/FAIL per component, issues by severity.
+**Dispatch:** `Task(subagent_type: "sre")` - VALIDATE observability (not implement). Include service info (type, language, deps) and Gate 0/1 handoff. Agent validates: JSON logging, Tracing. Returns: PASS/FAIL per component, issues by severity.
 
 ## Steps 3-5: Validate Health, Logging, Tracing
 
@@ -297,7 +297,7 @@ Review Gate 0/1 handoff: Service type (API/Worker/Batch), Language, External dep
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md):
 
 | Metric | Value |
 |--------|-------|

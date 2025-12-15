@@ -100,7 +100,7 @@ Agent definitions become workflow guidance prompts:
 | `backend-engineer-golang` | `prompts/workflows/go-backend.md` |
 | `security-reviewer` | `prompts/workflows/security-review.md` |
 
-> **Note:** Agent names shown without prefix. When invoking in Claude Code, use fully qualified names: `ring-default:code-reviewer`, `ring-dev-team:backend-engineer-golang`, etc.
+> **Note:** Agent names shown without prefix. When invoking in Claude Code, use fully qualified names: `code-reviewer`, `backend-engineer-golang`, etc.
 
 **Example workflow prompt:**
 ```markdown

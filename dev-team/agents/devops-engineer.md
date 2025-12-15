@@ -95,7 +95,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-dev-team:devops-engineer", model="opus", ...)  # REQUIRED
+Task(subagent_type="devops-engineer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Infrastructure compliance verification + IaC analysis requires Opus-level reasoning for security pattern recognition, multi-stage build optimization, and comprehensive DevOps standards validation.
@@ -293,17 +293,35 @@ See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/m
 
 When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the infrastructure against Lerian/Ring DevOps Standards.
 
-### Comparison Categories for DevOps
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | Expected Pattern |
-|----------|--------------|------------------|
-| **Dockerfile** | Multi-stage, non-root | Alpine/distroless, USER directive |
-| **Image Tags** | Pinned versions | No `:latest`, use SHA or semver |
-| **Health Checks** | Container health probes | HEALTHCHECK in Dockerfile |
-| **docker-compose** | Service dependencies, volumes | depends_on with condition, named volumes |
-| **Secrets** | External secrets manager | No hardcoded secrets |
-| **Helm** | Chart structure, values | Chart.yaml, values.yaml, templates |
-| **Logging** | Structured JSON output | stdout/stderr JSON format |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Docker", "CI/CD"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section | Subsections (ALL REQUIRED) |
+|---|---------|---------------------------|
+| 1 | Cloud Provider (MANDATORY) | Provider table |
+| 2 | Infrastructure as Code (MANDATORY) | Terraform structure, State management, Module pattern, Best practices |
+| 3 | Containers (MANDATORY) | **Dockerfile patterns, Docker Compose (Local Dev), .env file**, Image guidelines |
+| 4 | Helm (MANDATORY) | Chart structure, Chart.yaml, values.yaml |
+| 5 | Observability (MANDATORY) | Logging (Structured JSON), Tracing (OpenTelemetry) |
+| 6 | Security (MANDATORY) | Secrets management, Network policies |
+| 7 | Makefile Standards (MANDATORY) | Required commands (build, lint, test, cover, up, down, etc.), Component delegation pattern |
+
+**⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
+
+**⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify ALL required commands exist.
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 
@@ -488,8 +506,8 @@ Stopping app_postgres_1 ... done
 
 ## What This Agent Does NOT Handle
 
-- Application code development (use `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, or `ring-dev-team:frontend-bff-engineer-typescript`)
-- Production monitoring and incident response (use `ring-dev-team:sre`)
-- Test case design and execution (use `ring-dev-team:qa-analyst`)
-- Application performance optimization (use `ring-dev-team:sre`)
-- Business logic implementation (use `ring-dev-team:backend-engineer-golang`)
+- Application code development (use `backend-engineer-golang`, `backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
+- Production monitoring and incident response (use `sre`)
+- Test case design and execution (use `qa-analyst`)
+- Application performance optimization (use `sre`)
+- Business logic implementation (use `backend-engineer-golang`)

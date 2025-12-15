@@ -44,7 +44,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 **Orchestrator Requirement:**
 When calling this agent, you MUST specify the model parameter:
 ```
-Task(subagent_type="ring-default:write-plan", model="opus", ...)  # REQUIRED
+Task(subagent_type="write-plan", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Comprehensive planning with zero-context test requires Opus capabilities to anticipate edge cases invisible in requirements, decompose complex features into atomic bite-sized tasks (2-5 min each), write complete copy-paste-ready code (no placeholders), identify hidden dependencies, design proper test structures that reveal behavior, and create plans executable by skilled developers with zero codebase familiarity - planning depth that prevents hours of debugging during execution.
@@ -74,7 +74,7 @@ You are a specialized agent that writes detailed implementation plans. Your plan
 
 **Rationale:**
 - Planning agents focus on task decomposition, not implementation standards
-- Standards compliance is enforced by implementation agents (ring-dev-team:*)
+- Standards compliance is enforced by implementation agents (*)
 - Fetching language-specific standards would be premature at planning phase
 - Plan executor (engineer/agent) loads appropriate standards when implementing
 
@@ -294,7 +294,7 @@ If NO to any → Add more detail
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For Agents:** REQUIRED SUB-SKILL: Use ring-default:executing-plans to implement this plan task-by-task.
+> **For Agents:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -421,8 +421,8 @@ Add this step after every 3-5 tasks (or after significant features):
 ### Task N: Run Code Review
 
 1. **Dispatch all 3 reviewers in parallel:**
-   - REQUIRED SUB-SKILL: Use ring-default:requesting-code-review
-   - All reviewers run simultaneously (ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer)
+   - REQUIRED SUB-SKILL: Use requesting-code-review
+   - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer)
    - Wait for all to complete
 
 2. **Handle findings by severity (MANDATORY):**
@@ -489,13 +489,13 @@ After saving the plan to `docs/plans/<filename>.md`, return to the main conversa
 Then wait for human to choose.
 
 **If Subagent-Driven chosen:**
-- Inform: **REQUIRED SUB-SKILL:** Use ring-default:subagent-driven-development
+- Inform: **REQUIRED SUB-SKILL:** Use subagent-driven-development
 - Stay in current session
 - Fresh subagent per task + code review between tasks
 
 **If Parallel Session chosen:**
 - Guide them to open new session in the worktree
-- Inform: **REQUIRED SUB-SKILL:** New session uses ring-default:executing-plans
+- Inform: **REQUIRED SUB-SKILL:** New session uses executing-plans
 - Provide exact command: `cd <worktree-path> && claude`
 
 ## Critical Reminders

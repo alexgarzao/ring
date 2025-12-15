@@ -187,7 +187,7 @@ You don't read files, run grep chains, or manually explore – you **dispatch ag
 
 **Exceptions to default agents:**
 1. User explicitly provides a file path AND explicitly requests you read it (e.g., "read src/foo.ts")
-2. **A skill has its own specialized agents** - Some skills (e.g., `ring-dev-team:dev-refactor`) define their own agents that MUST be used instead of Explore/Plan/general-purpose. When a skill specifies "OVERRIDE" or "FORBIDDEN agents", follow the skill's agent requirements, not the defaults above.
+2. **A skill has its own specialized agents** - Some skills (e.g., `dev-refactor`) define their own agents that MUST be used instead of Explore/Plan/general-purpose. When a skill specifies "OVERRIDE" or "FORBIDDEN agents", follow the skill's agent requirements, not the defaults above.
 
 **All these are STILL orchestration tasks:**
 - ❌ "I need to understand the codebase structure first" → Explore agent
@@ -207,7 +207,7 @@ You are breaking ORCHESTRATOR. Use an agent instead.
 
 **Built-in (Opus):** `Explore` (navigation), `Plan` (implementation), `general-purpose` (research), `claude-code-guide` (docs).
 
-**Ring:** `ring-default:code-reviewer`, `ring-default:business-logic-reviewer`, `ring-default:security-reviewer`, `ring-default:write-plan`.
+**Ring:** `code-reviewer`, `business-logic-reviewer`, `security-reviewer`, `write-plan`.
 
 ### Decision: Which Agent?
 
@@ -217,7 +217,7 @@ You are breaking ORCHESTRATOR. Use an agent instead.
 | Plan implementation, break down features | **Plan** |
 | Multi-step research, complex investigation | **general-purpose** |
 | Code review | ALL THREE in parallel (code, business-logic, security reviewers) |
-| Implementation plan document | ring-default:write-plan |
+| Implementation plan document | write-plan |
 | Claude Code questions | claude-code-guide |
 | User explicitly said "read [file]" | Direct (ONLY exception) |
 

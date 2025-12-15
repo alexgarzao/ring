@@ -3,7 +3,7 @@ Create budget or forecast with documented assumptions and approval workflow.
 ## Usage
 
 ```
-/ring-finance-team:create-budget [type] [options]
+/create-budget [type] [options]
 ```
 
 ## Arguments
@@ -26,19 +26,19 @@ Create budget or forecast with documented assumptions and approval workflow.
 
 ```bash
 # Annual operating budget
-/ring-finance-team:create-budget annual --period FY2025
+/create-budget annual --period FY2025
 
 # Departmental budget
-/ring-finance-team:create-budget departmental --department "Sales" --period FY2025
+/create-budget departmental --department "Sales" --period FY2025
 
 # Zero-based budget
-/ring-finance-team:create-budget annual --methodology zero-based --period FY2025
+/create-budget annual --methodology zero-based --period FY2025
 
 # Rolling forecast update
-/ring-finance-team:create-budget forecast --period "Q2-Q4 2025"
+/create-budget forecast --period "Q2-Q4 2025"
 
 # Using prior year reference
-/ring-finance-team:create-budget annual --period FY2025 --prior docs/budget-2024.xlsx
+/create-budget annual --period FY2025 --prior docs/budget-2024.xlsx
 ```
 
 ## Prerequisites
@@ -83,8 +83,8 @@ The command produces a comprehensive budget including:
 
 | Command | Description |
 |---------|-------------|
-| `/ring-finance-team:analyze-financials` | Financial analysis |
-| `/ring-finance-team:build-model` | Build financial model |
+| `/analyze-financials` | Financial analysis |
+| `/build-model` | Build financial model |
 
 ---
 
@@ -93,7 +93,7 @@ The command produces a comprehensive budget including:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: ring-finance-team:budget-creation
+Use Skill tool: budget-creation
 ```
 
 The skill contains the complete 6-phase workflow with:
@@ -146,7 +146,7 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `ring-finance-team:budget-creation` for full details. Key rules:
+See skill `budget-creation` for full details. Key rules:
 
 - **All assumptions documented** - With rationale and owner
 - **All line items have owners** - Accountability required

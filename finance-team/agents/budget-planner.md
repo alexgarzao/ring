@@ -82,7 +82,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-finance-team:budget-planner", model="opus", ...)  # REQUIRED
+Task(subagent_type="budget-planner", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Budget planning requires Opus-level reasoning for complex interdependencies between line items, appropriate assumption validation, and coherent multi-period projections.
@@ -354,9 +354,9 @@ Comparison to preliminary targets:
 
 ## What This Agent Does NOT Handle
 
-- Financial statement analysis (use `ring-finance-team:financial-analyst`)
-- Financial model building (use `ring-finance-team:financial-modeler`)
-- Treasury and cash management (use `ring-finance-team:treasury-specialist`)
-- Accounting entries and close (use `ring-finance-team:accounting-specialist`)
-- KPI dashboard design (use `ring-finance-team:metrics-analyst`)
-- Brazilian regulatory compliance (use `ring-finops-team:finops-analyzer`)
+- Financial statement analysis (use `financial-analyst`)
+- Financial model building (use `financial-modeler`)
+- Treasury and cash management (use `treasury-specialist`)
+- Accounting entries and close (use `accounting-specialist`)
+- KPI dashboard design (use `metrics-analyst`)
+- Brazilian regulatory compliance (use `finops-analyzer`)

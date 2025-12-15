@@ -82,7 +82,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-finance-team:treasury-specialist", model="opus", ...)  # REQUIRED
+Task(subagent_type="treasury-specialist", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Treasury management requires Opus-level reasoning for multi-currency cash flow timing, liquidity risk assessment, covenant compliance monitoring, and optimal cash deployment strategies.
@@ -414,9 +414,9 @@ If treasury analysis is ALREADY complete and current:
 
 ## What This Agent Does NOT Handle
 
-- Financial statement analysis (use `ring-finance-team:financial-analyst`)
-- Budget creation and forecasting (use `ring-finance-team:budget-planner`)
-- Financial model building (use `ring-finance-team:financial-modeler`)
-- Accounting entries and close (use `ring-finance-team:accounting-specialist`)
-- KPI dashboard design (use `ring-finance-team:metrics-analyst`)
-- Brazilian regulatory compliance (use `ring-finops-team:finops-analyzer`)
+- Financial statement analysis (use `financial-analyst`)
+- Budget creation and forecasting (use `budget-planner`)
+- Financial model building (use `financial-modeler`)
+- Accounting entries and close (use `accounting-specialist`)
+- KPI dashboard design (use `metrics-analyst`)
+- Brazilian regulatory compliance (use `finops-analyzer`)

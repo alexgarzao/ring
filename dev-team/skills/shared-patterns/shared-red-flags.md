@@ -121,7 +121,7 @@ Skills should include:
 ```markdown
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags.
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
 If you catch yourself thinking ANY of those patterns, STOP immediately and return to proper process.
 ```

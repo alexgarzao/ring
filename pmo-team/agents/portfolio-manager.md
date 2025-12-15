@@ -70,7 +70,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmo-team:portfolio-manager", model="opus", ...)  # REQUIRED
+Task(subagent_type="portfolio-manager", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Portfolio management requires complex multi-project analysis, strategic alignment assessment, and nuanced decision support that demands Opus-level reasoning capabilities.
@@ -280,8 +280,8 @@ Analyzed 12 active projects across 3 strategic objectives. Overall portfolio hea
 
 ## What This Agent Does NOT Handle
 
-- Single project detailed planning (use `ring-pm-team:pre-dev-feature`)
-- Resource individual assignments (use `ring-pmo-team:resource-planner`)
-- Detailed risk analysis (use `ring-pmo-team:risk-analyst`)
-- Executive report formatting (use `ring-pmo-team:executive-reporter`)
-- Project governance gates (use `ring-pmo-team:governance-specialist`)
+- Single project detailed planning (use `pre-dev-feature`)
+- Resource individual assignments (use `resource-planner`)
+- Detailed risk analysis (use `risk-analyst`)
+- Executive report formatting (use `executive-reporter`)
+- Project governance gates (use `governance-specialist`)

@@ -66,7 +66,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmm-team:positioning-strategist", model="opus", ...)  # REQUIRED
+Task(subagent_type="positioning-strategist", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Positioning strategy requires Opus-level reasoning for evaluating competitive dynamics, identifying defensible differentiators, and creating compelling positioning that stands up to market scrutiny.
@@ -293,8 +293,8 @@ UNLIKE [competitive alternative]
 
 ## What This Agent Does NOT Handle
 
-- Market sizing and research (use `ring-pmm-team:market-researcher`)
-- Messaging and copywriting (use `ring-pmm-team:messaging-specialist`)
-- GTM channel strategy (use `ring-pmm-team:gtm-planner`)
-- Launch coordination (use `ring-pmm-team:launch-coordinator`)
-- Pricing strategy (use `ring-pmm-team:pricing-analyst`)
+- Market sizing and research (use `market-researcher`)
+- Messaging and copywriting (use `messaging-specialist`)
+- GTM channel strategy (use `gtm-planner`)
+- Launch coordination (use `launch-coordinator`)
+- Pricing strategy (use `pricing-analyst`)

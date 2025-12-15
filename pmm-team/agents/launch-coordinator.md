@@ -66,7 +66,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmm-team:launch-coordinator", model="opus", ...)  # REQUIRED
+Task(subagent_type="launch-coordinator", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Launch coordination requires Opus-level reasoning for managing complex dependencies, anticipating issues, and ensuring nothing falls through the cracks during high-stakes execution.
@@ -333,8 +333,8 @@ If launch is already well-coordinated:
 
 ## What This Agent Does NOT Handle
 
-- Market analysis (use `ring-pmm-team:market-researcher`)
-- Positioning strategy (use `ring-pmm-team:positioning-strategist`)
-- Messaging development (use `ring-pmm-team:messaging-specialist`)
-- GTM planning (use `ring-pmm-team:gtm-planner`)
-- Pricing strategy (use `ring-pmm-team:pricing-analyst`)
+- Market analysis (use `market-researcher`)
+- Positioning strategy (use `positioning-strategist`)
+- Messaging development (use `messaging-specialist`)
+- GTM planning (use `gtm-planner`)
+- Pricing strategy (use `pricing-analyst`)

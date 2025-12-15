@@ -13,21 +13,21 @@ trigger: |
   - Security audits and compliance -> security-operations
 
 skip_when: |
-  - Development infrastructure (IaC, Docker) -> use ring-dev-team:devops-engineer
+  - Development infrastructure (IaC, Docker) -> use devops-engineer
   - Application development -> use ring-dev-team specialists
   - Code review -> use ring-default reviewers
 
 related:
-  similar: [ring-default:using-ring, ring-dev-team:using-dev-team]
+  similar: [using-ring, using-dev-team]
 ---
 
 # Using Ring Operations Specialists
 
 The ring-ops-team plugin provides 5 specialized operations agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -42,12 +42,12 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 | Scenario | Use |
 |----------|-----|
-| "Set up Dockerfile and docker-compose" | `ring-dev-team:devops-engineer` |
-| "Configure service mesh for production" | `ring-ops-team:platform-engineer` |
-| "Create Terraform modules" | `ring-dev-team:devops-engineer` |
-| "Design multi-region architecture" | `ring-ops-team:infrastructure-architect` |
-| "Handle production outage" | `ring-ops-team:incident-responder` |
-| "Optimize cloud costs" | `ring-ops-team:cloud-cost-optimizer` |
+| "Set up Dockerfile and docker-compose" | `devops-engineer` |
+| "Configure service mesh for production" | `platform-engineer` |
+| "Create Terraform modules" | `devops-engineer` |
+| "Design multi-region architecture" | `infrastructure-architect` |
+| "Handle production outage" | `incident-responder` |
+| "Optimize cloud costs" | `cloud-cost-optimizer` |
 
 ---
 
@@ -139,16 +139,16 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
-| **`ring-ops-team:platform-engineer`** | Service mesh, API gateways, developer platforms, self-service infrastructure | Service mesh config, API gateway setup, platform abstractions, developer portals |
-| **`ring-ops-team:incident-responder`** | Incident management, RCA, post-mortems, blameless culture | Production incidents, outages, incident coordination, root cause analysis |
-| **`ring-ops-team:cloud-cost-optimizer`** | Cost analysis, RI management, FinOps, tagging | Cost reviews, optimization recommendations, reserved instance planning |
-| **`ring-ops-team:infrastructure-architect`** | Multi-region, DR, capacity planning, migrations | Architecture design, DR strategy, capacity planning, infrastructure lifecycle |
-| **`ring-ops-team:security-operations`** | Security audits, compliance, vulnerability management | Security assessments, compliance validation, vulnerability remediation |
+| **`platform-engineer`** | Service mesh, API gateways, developer platforms, self-service infrastructure | Service mesh config, API gateway setup, platform abstractions, developer portals |
+| **`incident-responder`** | Incident management, RCA, post-mortems, blameless culture | Production incidents, outages, incident coordination, root cause analysis |
+| **`cloud-cost-optimizer`** | Cost analysis, RI management, FinOps, tagging | Cost reviews, optimization recommendations, reserved instance planning |
+| **`infrastructure-architect`** | Multi-region, DR, capacity planning, migrations | Architecture design, DR strategy, capacity planning, infrastructure lifecycle |
+| **`security-operations`** | Security audits, compliance, vulnerability management | Security assessments, compliance validation, vulnerability remediation |
 
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "ring-ops-team:{agent-name}"
+  subagent_type: "{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
@@ -188,14 +188,14 @@ If you need multiple specialists (e.g., incident + security), dispatch in **para
 
 ```
 CORRECT:
-Task #1: ring-ops-team:incident-responder
-Task #2: ring-ops-team:security-operations
+Task #1: incident-responder
+Task #2: security-operations
 (Both run in parallel)
 
 WRONG:
-Task #1: ring-ops-team:incident-responder
+Task #1: incident-responder
 (Wait for response)
-Task #2: ring-ops-team:security-operations
+Task #2: security-operations
 (Sequential = 2x slower)
 ```
 
@@ -214,7 +214,7 @@ Task #2: ring-ops-team:security-operations
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "ring-ops-team:incident-responder"
+  subagent_type: "incident-responder"
   model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
@@ -236,10 +236,10 @@ Task tool:
 - `ops-migration-planning` - Migration planning process
 
 **Commands:**
-- `/ring-ops-team:incident` - Production incident management
-- `/ring-ops-team:capacity-review` - Infrastructure capacity review
-- `/ring-ops-team:cost-analysis` - Cloud cost analysis
-- `/ring-ops-team:security-audit` - Security audit workflow
+- `/incident` - Production incident management
+- `/capacity-review` - Infrastructure capacity review
+- `/cost-analysis` - Cloud cost analysis
+- `/security-audit` - Security audit workflow
 
 ---
 
@@ -252,6 +252,6 @@ Task tool:
 
 Dispatch based on your need:
 - Production operations -> ring-ops-team agents
-- Development infrastructure -> ring-dev-team:devops-engineer
+- Development infrastructure -> devops-engineer
 - Application code -> ring-dev-team specialists
 - Code review -> ring-default reviewers

@@ -90,6 +90,53 @@ If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-
 4. **Output table** - MUST have one row per section
 5. **Verify completeness** - Table rows MUST equal sections found
 
+---
+
+## ⛔ CRITICAL: Section Names MUST Match Coverage Table EXACTLY
+
+**You MUST use section names from `standards-coverage-table.md`. You CANNOT invent your own.**
+
+### FORBIDDEN Actions
+
+```
+❌ Inventing section names ("Security", "Go Version", "Code Quality")
+❌ Merging sections ("Error Handling & Logging" instead of separate rows)
+❌ Renaming sections ("Config" instead of "Configuration Loading")
+❌ Skipping sections not found in codebase
+❌ Adding sections not in coverage table
+```
+
+### REQUIRED Actions
+
+```
+✅ Use EXACT section names from standards-coverage-table.md
+✅ Output ALL sections listed in coverage table for your agent type
+✅ Mark missing/not-applicable sections as "N/A" with reason
+✅ One row per section - no merging
+```
+
+### Section Name Validation
+
+**For golang.md, section names MUST be:**
+- Version, Core Dependency: lib-commons, Frameworks & Libraries, Configuration Loading, Telemetry & Observability, Bootstrap Pattern, Data Transformation: ToEntity/FromEntity, Error Codes Convention, Error Handling, Function Design, Pagination Patterns, Testing Patterns, Logging Standards, Linting, Architecture Patterns, Directory Structure, Concurrency Patterns, DDD Patterns, RabbitMQ Worker Pattern
+
+**NOT:**
+- ❌ "Error Handling" (missing "Error Codes Convention" as separate row)
+- ❌ "Logging" (should be "Logging Standards")
+- ❌ "Configuration" (should be "Configuration Loading")
+- ❌ "Security" (not a section in golang.md)
+- ❌ "DDD" (should be "DDD Patterns")
+
+### Anti-Rationalization for Section Names
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "My section name is clearer" | Consistency > clarity. Coverage table is the contract. | **Use EXACT names from coverage table** |
+| "I combined related sections" | Each section = one row. Merging loses traceability. | **One row per section, no merging** |
+| "This section doesn't apply" | Report as N/A with reason. Never skip silently. | **Include row with N/A status** |
+| "I added a useful section" | You don't decide sections. Coverage table does. | **Only sections from coverage table** |
+| "The codebase uses different terminology" | Standards use Ring terminology. Map codebase terms to standard terms. | **Use standard section names** |
+
 ## MANDATORY: Quote Standards from WebFetch in Findings
 
 **For EVERY ⚠️ Partial or ❌ Non-Compliant finding, you MUST:**
@@ -123,7 +170,7 @@ If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-
 
 ## Anti-Rationalization
 
-See [anti-rationalization.md](anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-anti-rationalization.md](shared-anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|

@@ -3,7 +3,7 @@ Analyze cross-project dependencies across the portfolio.
 ## Usage
 
 ```
-/ring-pmo-team:dependency-analysis [scope] [options]
+/dependency-analysis [scope] [options]
 ```
 
 ## Arguments
@@ -25,19 +25,19 @@ Analyze cross-project dependencies across the portfolio.
 
 ```bash
 # Full dependency analysis
-/ring-pmo-team:dependency-analysis
+/dependency-analysis
 
 # Analyze specific projects
-/ring-pmo-team:dependency-analysis "Alpha, Beta, Gamma"
+/dependency-analysis "Alpha, Beta, Gamma"
 
 # Focus on critical path
-/ring-pmo-team:dependency-analysis --focus critical-path
+/dependency-analysis --focus critical-path
 
 # Include external dependencies
-/ring-pmo-team:dependency-analysis --depth external
+/dependency-analysis --depth external
 
 # Visual dependency map
-/ring-pmo-team:dependency-analysis --format visual
+/dependency-analysis --format visual
 ```
 
 ## Analysis Types
@@ -59,8 +59,8 @@ Analyze cross-project dependencies across the portfolio.
 
 | Command | Description |
 |---------|-------------|
-| `/ring-pmo-team:portfolio-review` | Include as part of full review |
-| `/ring-pmo-team:executive-summary` | Summarize for executives |
+| `/portfolio-review` | Include as part of full review |
+| `/executive-summary` | Summarize for executives |
 
 ---
 
@@ -69,7 +69,7 @@ Analyze cross-project dependencies across the portfolio.
 **This command MUST load the dependency-mapping skill for complete workflow execution.**
 
 ```
-Use Skill tool: ring-pmo-team:dependency-mapping
+Use Skill tool: dependency-mapping
 ```
 
 The skill contains the complete dependency mapping gates with:
@@ -89,7 +89,7 @@ Collect schedule and deliverable information from projects in scope.
 
 ```
 Task tool:
-  subagent_type: "ring-pmo-team:portfolio-manager"
+  subagent_type: "portfolio-manager"
   model: "opus"
   prompt: "Identify cross-project dependencies for: [scope]"
 ```
@@ -98,7 +98,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "ring-pmo-team:risk-analyst"
+  subagent_type: "risk-analyst"
   model: "opus"
   prompt: "Analyze risks associated with identified dependencies"
 ```

@@ -11,12 +11,12 @@ trigger: |
   - Rebalancing portfolio priorities
 
 skip_when: |
-  - Single project planning → use ring-pm-team:pre-dev-feature
+  - Single project planning → use pre-dev-feature
   - Immediate status report → use executive-reporting
   - Resource-only analysis → use resource-allocation
 
 related:
-  similar: [ring-pm-team:pre-dev-feature]
+  similar: [pre-dev-feature]
   complementary: [resource-allocation, risk-management, executive-reporting]
 ---
 
@@ -104,7 +104,7 @@ Before starting portfolio planning, ensure:
 3. Identify over/under allocation
 4. Document skill gaps
 
-**Dispatch:** `ring-pmo-team:resource-planner` for detailed analysis
+**Dispatch:** `resource-planner` for detailed analysis
 
 **Output:** `docs/pmo/{date}/capacity-assessment.md`
 
@@ -120,7 +120,7 @@ Before starting portfolio planning, ensure:
 3. Assess portfolio risk exposure
 4. Plan portfolio-level mitigations
 
-**Dispatch:** `ring-pmo-team:risk-analyst` for detailed analysis
+**Dispatch:** `risk-analyst` for detailed analysis
 
 **Output:** `docs/pmo/{date}/portfolio-risks.md`
 

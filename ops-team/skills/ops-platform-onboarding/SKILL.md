@@ -16,8 +16,8 @@ skip_when: |
   - Non-platform infrastructure -> use ops-infrastructure-architect
 
 related:
-  similar: [ring-dev-team:dev-cycle]
-  uses: [ring-ops-team:platform-engineer]
+  similar: [dev-cycle]
+  uses: [platform-engineer]
 ---
 
 # Platform Onboarding Workflow
@@ -458,7 +458,7 @@ For platform onboarding tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring-ops-team:platform-engineer"
+  subagent_type: "platform-engineer"
   model: "opus"
   prompt: |
     SERVICE ONBOARDING REQUEST

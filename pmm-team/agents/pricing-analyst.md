@@ -69,7 +69,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmm-team:pricing-analyst", model="opus", ...)  # REQUIRED
+Task(subagent_type="pricing-analyst", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Pricing analysis requires Opus-level reasoning for evaluating complex trade-offs, synthesizing competitive intelligence, and providing reliable recommendations that directly impact revenue.
@@ -330,8 +330,8 @@ If pricing already exists and is performing:
 
 ## What This Agent Does NOT Handle
 
-- Market analysis (use `ring-pmm-team:market-researcher`)
-- Positioning strategy (use `ring-pmm-team:positioning-strategist`)
-- Messaging development (use `ring-pmm-team:messaging-specialist`)
-- GTM planning (use `ring-pmm-team:gtm-planner`)
-- Launch coordination (use `ring-pmm-team:launch-coordinator`)
+- Market analysis (use `market-researcher`)
+- Positioning strategy (use `positioning-strategist`)
+- Messaging development (use `messaging-specialist`)
+- GTM planning (use `gtm-planner`)
+- Launch coordination (use `launch-coordinator`)

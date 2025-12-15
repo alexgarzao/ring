@@ -66,7 +66,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmm-team:market-researcher", model="opus", ...)  # REQUIRED
+Task(subagent_type="market-researcher", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Market analysis requires Opus-level reasoning for synthesizing disparate data sources, identifying non-obvious patterns, and providing reliable strategic recommendations.
@@ -302,8 +302,8 @@ If market analysis already exists and is adequate:
 
 ## What This Agent Does NOT Handle
 
-- Positioning strategy (use `ring-pmm-team:positioning-strategist`)
-- Messaging development (use `ring-pmm-team:messaging-specialist`)
+- Positioning strategy (use `positioning-strategist`)
+- Messaging development (use `messaging-specialist`)
 - Competitive battlecards (use competitive-intelligence skill, then positioning-strategist)
-- GTM planning (use `ring-pmm-team:gtm-planner`)
-- Pricing strategy (use `ring-pmm-team:pricing-analyst`)
+- GTM planning (use `gtm-planner`)
+- Pricing strategy (use `pricing-analyst`)

@@ -16,13 +16,13 @@ skip_when: |
   - Cash flow forecasting → use cash-flow-analysis
 
 related:
-  similar: [ring-finance-team:financial-reporting, ring-finance-team:financial-analysis]
-  uses: [ring-finance-team:accounting-specialist]
+  similar: [financial-reporting, financial-analysis]
+  uses: [accounting-specialist]
 ---
 
 # Financial Close Workflow
 
-This skill provides a structured workflow for month-end and year-end close using the `ring-finance-team:accounting-specialist` agent.
+This skill provides a structured workflow for month-end and year-end close using the `accounting-specialist` agent.
 
 ## Workflow Overview
 
@@ -105,7 +105,7 @@ The financial close workflow follows 6 phases:
 
 ```
 Task tool:
-  subagent_type: "ring-finance-team:accounting-specialist"
+  subagent_type: "accounting-specialist"
   model: "opus"
   prompt: |
     Perform period-end reconciliations:

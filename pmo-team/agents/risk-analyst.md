@@ -70,7 +70,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmo-team:risk-analyst", model="opus", ...)  # REQUIRED
+Task(subagent_type="risk-analyst", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Risk analysis requires nuanced probability assessment, impact analysis, correlation identification, and strategic judgment that demands Opus-level reasoning capabilities.
@@ -310,8 +310,8 @@ Analyzed 18 risks across portfolio. Portfolio risk exposure: MEDIUM-HIGH. 2 crit
 
 ## What This Agent Does NOT Handle
 
-- Portfolio prioritization (use `ring-pmo-team:portfolio-manager`)
-- Resource allocation (use `ring-pmo-team:resource-planner`)
-- Governance process (use `ring-pmo-team:governance-specialist`)
-- Executive reporting format (use `ring-pmo-team:executive-reporter`)
-- Financial risk deep dive (use `ring-finops-team:finops-analyzer`)
+- Portfolio prioritization (use `portfolio-manager`)
+- Resource allocation (use `resource-planner`)
+- Governance process (use `governance-specialist`)
+- Executive reporting format (use `executive-reporter`)
+- Financial risk deep dive (use `finops-analyzer`)

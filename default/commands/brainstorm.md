@@ -9,7 +9,7 @@ Transform rough ideas into fully-formed designs through structured questioning a
 ## Usage
 
 ```
-/ring-default:brainstorm [topic]
+/brainstorm [topic]
 ```
 
 ## Arguments
@@ -22,19 +22,19 @@ Transform rough ideas into fully-formed designs through structured questioning a
 
 ### Starting a Feature Design
 ```
-/ring-default:brainstorm OAuth2 integration
+/brainstorm OAuth2 integration
 ```
 Initiates a design session for adding OAuth2 authentication to your application.
 
 ### Architectural Decision
 ```
-/ring-default:brainstorm microservices migration strategy
+/brainstorm microservices migration strategy
 ```
 Explores approaches for migrating from monolith to microservices architecture.
 
 ### New Product Concept
 ```
-/ring-default:brainstorm real-time collaboration feature
+/brainstorm real-time collaboration feature
 ```
 Refines requirements and design for a collaborative editing feature.
 
@@ -80,9 +80,9 @@ The brainstorming session follows these phases:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/ring-default:write-plan` | Use after brainstorming when design is complete |
-| `/ring-default:execute-plan` | Use after planning to implement the design |
-| `ring-default:writing-plans` | Underlying skill for creating implementation plans |
+| `/write-plan` | Use after brainstorming when design is complete |
+| `/execute-plan` | Use after planning to implement the design |
+| `writing-plans` | Underlying skill for creating implementation plans |
 
 ## Troubleshooting
 
@@ -96,6 +96,6 @@ Each phase has a maximum of 3 questions. If you're being asked more, it indicate
 The process is phase-locked. You cannot skip ahead until the current phase is complete. If you need to go faster, provide explicit approval at each checkpoint.
 
 ### When NOT to use this command
-- Design is already complete and validated - use `/ring-default:write-plan`
-- Have a detailed plan ready to execute - use `/ring-default:execute-plan`
-- Just need task breakdown from existing design - use `/ring-default:write-plan`
+- Design is already complete and validated - use `/write-plan`
+- Have a detailed plan ready to execute - use `/execute-plan`
+- Just need task breakdown from existing design - use `/write-plan`

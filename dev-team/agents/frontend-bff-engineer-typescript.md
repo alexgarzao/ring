@@ -93,7 +93,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-dev-team:frontend-bff-engineer-typescript", model="opus", ...)  # REQUIRED
+Task(subagent_type="frontend-bff-engineer-typescript", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Clean Architecture + DDD pattern implementation requires Opus-level reasoning for architectural boundary enforcement, dependency injection patterns, and comprehensive standards validation.
@@ -415,24 +415,45 @@ Canonical policy: see [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio
 
 **Anti-Rationalization:**
 
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/shared-anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|------------------|
 | "Codebase already uses lib-commons-js" | Partial usage ≠ full compliance. Check everything. | **Verify ALL categories** |
 | "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify ALL categories** |
 
-### Comparison Categories for BFF/TypeScript
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | lib-commons-js Symbol |
-|----------|--------------|----------------------|
-| **Logging** | Structured JSON logging | `createLogger` from `@lerianstudio/lib-commons-js` |
-| **Error Handling** | Standardized error types | `AppError`, `isAppError` from `@lerianstudio/lib-commons-js` |
-| **HTTP Middleware** | Instrumented middleware | `createExpressMiddleware` from `@lerianstudio/lib-commons-js` |
-| **Graceful Shutdown** | Clean shutdown handling | `startServerWithGracefulShutdown` from `@lerianstudio/lib-commons-js` |
-| **Type Safety** | No `any` types | Use `unknown` with type guards |
-| **Validation** | Runtime type checking | Zod schemas at boundaries |
-| **Architecture** | Clean Architecture | Ports/Adapters, DI containers |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Security", "Code Quality", "Config"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section | Key Subsections |
+|---|---------|-----------------|
+| 1 | Version (MANDATORY) | |
+| 2 | Strict Configuration (MANDATORY) | |
+| 3 | Frameworks & Libraries (MANDATORY) | |
+| 4 | Type Safety Rules (MANDATORY) | |
+| 5 | Zod Validation Patterns (MANDATORY) | |
+| 6 | Dependency Injection (MANDATORY) | |
+| 7 | AsyncLocalStorage for Context (MANDATORY) | |
+| 8 | Testing Patterns (MANDATORY) | |
+| 9 | Error Handling (MANDATORY) | |
+| 10 | Function Design (MANDATORY) | |
+| 11 | DDD Patterns (MANDATORY) | |
+| 12 | Naming Conventions (MANDATORY) | |
+| 13 | Directory Structure (MANDATORY) | |
+| 14 | RabbitMQ Worker Pattern (MANDATORY) | |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 
@@ -622,8 +643,8 @@ Coverage: 88.5%
 
 ## What This Agent Does NOT Handle
 
-- Visual design specifications (use `ring-dev-team:frontend-designer`)
-- Docker/CI-CD configuration (use `ring-dev-team:devops-engineer`)
-- Server infrastructure and monitoring (use `ring-dev-team:sre`)
-- Backend microservices (use `ring-dev-team:backend-engineer-typescript`)
-- Database schema design (use `ring-dev-team:backend-engineer`)
+- Visual design specifications (use `frontend-designer`)
+- Docker/CI-CD configuration (use `devops-engineer`)
+- Server infrastructure and monitoring (use `sre`)
+- Backend microservices (use `backend-engineer-typescript`)
+- Database schema design (use `backend-engineer`)

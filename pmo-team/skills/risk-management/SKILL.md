@@ -13,7 +13,7 @@ trigger: |
 skip_when: |
   - Single project risk → handle in project scope
   - Financial risk only → use ring-finops-team
-  - Technical risk in code → use ring-dev-team:qa-analyst
+  - Technical risk in code → use qa-analyst
 
 related:
   complementary: [portfolio-planning, project-health-check]

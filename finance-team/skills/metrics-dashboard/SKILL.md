@@ -16,13 +16,13 @@ skip_when: |
   - Preparing reports → use financial-reporting
 
 related:
-  similar: [ring-finance-team:financial-reporting, ring-finance-team:financial-analysis]
-  uses: [ring-finance-team:metrics-analyst]
+  similar: [financial-reporting, financial-analysis]
+  uses: [metrics-analyst]
 ---
 
 # Metrics Dashboard Workflow
 
-This skill provides a structured workflow for designing KPI dashboards using the `ring-finance-team:metrics-analyst` agent.
+This skill provides a structured workflow for designing KPI dashboards using the `metrics-analyst` agent.
 
 ## Workflow Overview
 
@@ -141,7 +141,7 @@ The metrics dashboard workflow follows 5 phases:
 
 ```
 Task tool:
-  subagent_type: "ring-finance-team:metrics-analyst"
+  subagent_type: "metrics-analyst"
   model: "opus"
   prompt: |
     Design metrics dashboard per these specifications:

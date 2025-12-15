@@ -11,13 +11,13 @@ trigger: |
   - New service security assessment
 
 skip_when: |
-  - Application code security -> use ring-default:security-reviewer
+  - Application code security -> use security-reviewer
   - Active security incident -> use ops-incident-response
   - Penetration testing -> external security team
 
 related:
-  similar: [ring-default:security-reviewer]
-  uses: [ring-ops-team:security-operations]
+  similar: [security-reviewer]
+  uses: [security-operations]
 ---
 
 # Security Audit Workflow
@@ -379,7 +379,7 @@ For security audit tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring-ops-team:security-operations"
+  subagent_type: "security-operations"
   model: "opus"
   prompt: |
     SECURITY AUDIT REQUEST

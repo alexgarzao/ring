@@ -44,7 +44,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-tw-team:api-writer", model="opus", ...)  # REQUIRED
+Task(subagent_type="api-writer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:**
@@ -62,8 +62,8 @@ API accuracy verification and comprehensive field documentation requires Opus at
 ## Related Skills
 
 This agent applies patterns from these skills:
-- `ring-tw-team:writing-api-docs` - Endpoint documentation structure and patterns
-- `ring-tw-team:api-field-descriptions` - Field description patterns by data type
+- `writing-api-docs` - Endpoint documentation structure and patterns
+- `api-field-descriptions` - Field description patterns by data type
 
 ## Standards Loading
 
@@ -349,10 +349,10 @@ Brief description of what this endpoint does.
 
 ## What This Agent Does NOT Handle
 
-- Conceptual documentation (use `ring-tw-team:functional-writer`)
-- Documentation review (use `ring-tw-team:docs-reviewer`)
-- API implementation (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
-- API design decisions (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
+- Conceptual documentation (use `functional-writer`)
+- Documentation review (use `docs-reviewer`)
+- API implementation (use `backend-engineer-golang` or `backend-engineer-typescript`)
+- API design decisions (use `backend-engineer-golang` or `backend-engineer-typescript`)
 
 ## Output Expectations
 

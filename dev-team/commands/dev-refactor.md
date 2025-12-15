@@ -6,7 +6,7 @@ Analyze existing codebase against standards and execute refactoring through dev-
 
 ```
 Does docs/PROJECT_RULES.md exist in the target project?
-├── YES → Load skill: ring-dev-team:dev-refactor
+├── YES → Load skill: dev-refactor
 └── NO  → Output blocker below and STOP
 ```
 
@@ -24,7 +24,7 @@ Create `docs/PROJECT_RULES.md` with your project's:
 - Testing requirements
 - DevOps standards
 
-Then re-run `/ring-dev-team:dev-refactor`.
+Then re-run `/dev-refactor`.
 ```
 
 **DO NOT:**
@@ -38,7 +38,7 @@ Then re-run `/ring-dev-team:dev-refactor`.
 ## Usage
 
 ```
-/ring-dev-team:dev-refactor [path] [options]
+/dev-refactor [path] [options]
 ```
 
 ## Arguments
@@ -60,84 +60,26 @@ Then re-run `/ring-dev-team:dev-refactor`.
 
 ```bash
 # Analyze entire project and refactor
-/ring-dev-team:dev-refactor
+/dev-refactor
 
 # Analyze specific directory
-/ring-dev-team:dev-refactor src/domain
+/dev-refactor src/domain
 
 # Analysis only (no execution)
-/ring-dev-team:dev-refactor --analyze-only
+/dev-refactor --analyze-only
 
 # Only fix critical issues
-/ring-dev-team:dev-refactor --critical-only
+/dev-refactor --critical-only
 
 # Use custom standards
-/ring-dev-team:dev-refactor --standards docs/team-standards.md
+/dev-refactor --standards docs/team-standards.md
 ```
 
 ## Workflow
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 /ring-dev-team:dev-refactor                     │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  ⛔ HARD GATE: Check PROJECT_RULES.md                       │
-│                                                             │
-│  Does docs/PROJECT_RULES.md exist?                          │
-│  └── YES → Continue                                         │
-│  └── NO  → OUTPUT BLOCKER AND TERMINATE                     │
-└─────────────────────────────────────────────────────────────┘
-                           │
-        ┌──────────────────┴──────────────────┐
-        ▼                                     ▼
-┌───────────────────┐                ┌───────────────────┐
-│ Load Standards    │                │ Dispatch Agents   │
-│                   │                │ (ring-dev-team:*) │
-│ PROJECT_RULES.md  │                │                   │
-│ (MANDATORY)       │                │ • backend-engineer│
-│                   │                │ • qa-analyst      │
-└───────────────────┘                │ • devops-engineer │
-                                     │ • sre             │
-                                     └───────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Generate Report                           │
-│                                                             │
-│  docs/refactor/{timestamp}/                                 │
-│  ├── analysis-report.md   (all findings)                    │
-│  └── tasks.md             (grouped refactoring tasks)       │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   User Approval                             │
-│                                                             │
-│  Options:                                                   │
-│  • Approve all → Execute all tasks                          │
-│  • Approve with changes → Edit tasks.md first               │
-│  • Critical only → Filter to Critical/High                  │
-│  • Cancel → Keep report, no execution                       │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼ (if approved)
-┌─────────────────────────────────────────────────────────────┐
-│              /ring-dev-team:dev-cycle                       │
-│              docs/refactor/{timestamp}/tasks.md             │
-│                                                             │
-│  Standard 6-gate process for each task:                     │
-│  • Gate 0: Implementation (TDD)                             │
-│  • Gate 1: DevOps Setup                                     │
-│  • Gate 2: SRE (Observability)                              │
-│  • Gate 3: Testing                                          │
-│  • Gate 4: Review (3 parallel reviewers)                    │
-│  • Gate 5: Validation                                       │
-└─────────────────────────────────────────────────────────────┘
-```
+**See skill `dev-refactor` for the complete 13-step workflow with TodoWrite template.**
+
+The skill defines all steps including: stack detection, codebase-explorer dispatch, individual agent reports, finding mapping, and artifact generation.
 
 ## Analysis Dimensions
 
@@ -181,9 +123,9 @@ Then re-run `/ring-dev-team:dev-refactor`.
 
 | Command | Description |
 |---------|-------------|
-| `/ring-dev-team:dev-cycle` | Execute development cycle (used after analysis) |
-| `/ring-pm-team:pre-dev-feature` | Plan new features (use instead for greenfield) |
-| `/ring-default:codereview` | Manual code review (dev-cycle includes this) |
+| `/dev-cycle` | Execute development cycle (used after analysis) |
+| `/pre-dev-feature` | Plan new features (use instead for greenfield) |
+| `/codereview` | Manual code review (dev-cycle includes this) |
 
 ---
 
@@ -192,12 +134,12 @@ Then re-run `/ring-dev-team:dev-refactor`.
 **After PROJECT_RULES.md check passes, load the skill:**
 
 ```
-Use Skill tool: ring-dev-team:dev-refactor
+Use Skill tool: dev-refactor
 ```
 
 The skill contains the complete analysis workflow with:
 - Anti-rationalization tables for codebase exploration
-- Mandatory use of `ring-default:codebase-explorer` (NOT Bash/Explore)
+- Mandatory use of `codebase-explorer` (NOT Bash/Explore)
 - Standards coverage table requirements
 - Finding → Task mapping gates
 - Full agent dispatch prompts with `**MODE: ANALYSIS ONLY**`
@@ -234,11 +176,11 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `ring-dev-team:dev-refactor` for full details. Key rules:
+See skill `dev-refactor` for full details. Key rules:
 
 - **All agents dispatch in parallel** - Single message, multiple Task calls
 - **Specify model: "opus"** - All agents need opus for comprehensive analysis
 - **MODE: ANALYSIS ONLY** - Agents analyze, they do NOT implement
 - **Save artifacts** to `docs/refactor/{timestamp}/`
 - **Get user approval** before executing dev-cycle
-- **Handoff**: `/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md`
+- **Handoff**: `/dev-cycle docs/refactor/{timestamp}/tasks.md`

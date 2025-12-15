@@ -655,7 +655,7 @@ Based on autonomous exploration:
 - `file1.ext:line` - [why important]
 - `file2.ext:line` - [why important]
 
-Ready to create implementation plan? (Use /ring-default:write-plan)
+Ready to create implementation plan? (Use /write-plan)
 ```
 
 **If user's goal is debugging:**
@@ -672,7 +672,7 @@ Based on autonomous exploration:
 **Common failure modes:**
 - [Pattern from cross-cutting analysis]
 
-Ready to investigate systematically? (Use ring-default:systematic-debugging)
+Ready to investigate systematically? (Use systematic-debugging)
 ```
 
 **If user's goal is learning:**

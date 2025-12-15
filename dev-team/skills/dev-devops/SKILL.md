@@ -16,11 +16,11 @@ skip_when: |
   - Only documentation changes
 
 sequence:
-  after: [ring-dev-team:dev-implementation]
-  before: [ring-dev-team:dev-sre]
+  after: [dev-implementation]
+  before: [dev-sre]
 
 related:
-  complementary: [ring-dev-team:dev-implementation, ring-dev-team:dev-testing]
+  complementary: [dev-implementation, dev-testing]
 
 verification:
   automated:
@@ -69,13 +69,13 @@ This skill configures the development and deployment infrastructure:
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Gate 1-specific note:** If the application can run in a container, it MUST be containerized. docker-compose ensures reproducibility.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 **Gate 1-specific rationalizations:**
 
@@ -90,7 +90,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags.
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Proceed with containerization.
 
@@ -205,7 +205,7 @@ Before starting Gate 1:
 
 ## Step 2: Dispatch DevOps Agent
 
-**MANDATORY:** `Task(subagent_type: "ring-dev-team:devops-engineer", model: "opus")`
+**MANDATORY:** `Task(subagent_type: "devops-engineer", model: "opus")`
 
 **Prompt includes:** Gate 0 handoff summary, existing config files, requirements for Dockerfile/compose/.env/docs
 
@@ -286,7 +286,7 @@ Create `docs/LOCAL_SETUP.md` with these sections:
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|

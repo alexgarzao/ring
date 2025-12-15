@@ -64,7 +64,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-dev-team:frontend-engineer", model="opus", ...)  # REQUIRED
+Task(subagent_type="frontend-engineer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Standards compliance + React Server Components expertise requires Opus-level reasoning for complex component patterns, accessibility validation, and comprehensive frontend standards verification.
@@ -532,7 +532,7 @@ You have deep expertise in accessibility. Apply WCAG 2.1 AA standards.
 
 ## Receiving Handoff from Frontend Designer
 
-**When receiving a Handoff Contract from `ring-dev-team:frontend-designer`, follow this process:**
+**When receiving a Handoff Contract from `frontend-designer`, follow this process:**
 
 ### Step 1: Validate Handoff Contract
 
@@ -734,7 +734,7 @@ When reporting issues in existing code:
 
 **If you catch yourself thinking ANY of these, STOP:**
 
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/shared-anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -766,7 +766,7 @@ See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rat
 
 ## Integration with BFF Engineer
 
-**This agent consumes API endpoints provided by `ring-dev-team:frontend-bff-engineer-typescript`.**
+**This agent consumes API endpoints provided by `frontend-bff-engineer-typescript`.**
 
 ### Receiving BFF API Contract
 
@@ -804,16 +804,37 @@ See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/m
 
 When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
 
-### Comparison Categories for Frontend
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | Expected Pattern |
-|----------|--------------|------------------|
-| **Accessibility** | WCAG 2.1 AA | Semantic HTML, ARIA, keyboard nav |
-| **TypeScript** | Strict mode | No `any`, branded types |
-| **Performance** | Core Web Vitals | LCP ≤2.5s, FID ≤100ms, CLS ≤0.1 |
-| **State Management** | Server state vs client | TanStack Query for server, Zustand for client |
-| **Testing** | Component + integration | RTL, MSW for API mocks |
-| **Error Handling** | Error boundaries | Feature-level + app-level |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Security", "Code Quality"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section |
+|---|---------|
+| 1 | Framework (MANDATORY) |
+| 2 | Libraries & Tools (MANDATORY) |
+| 3 | State Management Patterns (MANDATORY) |
+| 4 | Form Patterns (MANDATORY) |
+| 5 | Styling Standards (MANDATORY) |
+| 6 | Typography Standards (MANDATORY) |
+| 7 | Animation Standards (MANDATORY) |
+| 8 | Component Patterns (MANDATORY) |
+| 9 | Accessibility (a11y) (MANDATORY) |
+| 10 | Performance (MANDATORY) |
+| 11 | Directory Structure (MANDATORY) |
+| 12 | FORBIDDEN Patterns (MANDATORY) |
+| 13 | Standards Compliance Categories (MANDATORY) |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 
@@ -850,10 +871,10 @@ No migration actions required.
 
 ## What This Agent Does NOT Handle
 
-- **BFF/API Routes development** → use `ring-dev-team:frontend-bff-engineer-typescript`
-- **Backend API development** → use `ring-dev-team:backend-engineer-*`
-- **Docker/CI-CD configuration** → use `ring-dev-team:devops-engineer`
-- **Server infrastructure and monitoring** → use `ring-dev-team:sre`
-- **API contract testing and load testing** → use `ring-dev-team:qa-analyst`
-- **Database design and migrations** → use `ring-dev-team:backend-engineer-*`
-- **Design specifications and visual design** → use `ring-dev-team:frontend-designer`
+- **BFF/API Routes development** → use `frontend-bff-engineer-typescript`
+- **Backend API development** → use `backend-engineer-*`
+- **Docker/CI-CD configuration** → use `devops-engineer`
+- **Server infrastructure and monitoring** → use `sre`
+- **API contract testing and load testing** → use `qa-analyst`
+- **Database design and migrations** → use `backend-engineer-*`
+- **Design specifications and visual design** → use `frontend-designer`

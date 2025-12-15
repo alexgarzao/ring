@@ -15,8 +15,8 @@ skip_when: |
   - Already have a plan → use executing-plans
 
 sequence:
-  after: [ring-default:brainstorming, ring-pm-team:pre-dev-trd-creation]
-  before: [ring-default:executing-plans, ring-default:subagent-driven-development]
+  after: [brainstorming, pre-dev-trd-creation]
+  before: [executing-plans, subagent-driven-development]
 
 related:
   similar: [brainstorming]
@@ -34,9 +34,9 @@ This skill dispatches a specialized agent to write comprehensive implementation 
 
 ## The Process
 
-**Step 1:** Dispatch write-plan agent via `Task(subagent_type: "general-purpose", model: "opus")` with instructions to load `ring-default:write-plan` agent, create bite-sized tasks (2-5 min each), include exact file paths/complete code/verification steps, and save to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
+**Step 1:** Dispatch write-plan agent via `Task(subagent_type: "general-purpose", model: "opus")` with instructions to load `write-plan` agent, create bite-sized tasks (2-5 min each), include exact file paths/complete code/verification steps, and save to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
 
-**Step 2:** Ask user via `AskUserQuestion`: "Execute now?" Options: (1) Execute now → `ring-default:subagent-driven-development` (2) Parallel session → user opens new session with `ring-default:executing-plans` (3) Save for later → report location and end
+**Step 2:** Ask user via `AskUserQuestion`: "Execute now?" Options: (1) Execute now → `subagent-driven-development` (2) Parallel session → user opens new session with `executing-plans` (3) Save for later → report location and end
 
 ## Why Use an Agent?
 
@@ -54,19 +54,19 @@ Every plan: Header (goal, architecture, tech stack) | Verification commands with
 
 | Task Type | Agent |
 |-----------|-------|
-| Backend API/services | `ring-dev-team:backend-engineer-{golang,typescript}` |
-| Frontend/BFF | `ring-dev-team:frontend-bff-engineer-typescript` |
-| Infra/CI/CD | `ring-dev-team:devops-engineer` |
-| Testing | `ring-dev-team:qa-analyst` |
-| Reliability | `ring-dev-team:sre` |
+| Backend API/services | `backend-engineer-{golang,typescript}` |
+| Frontend/BFF | `frontend-bff-engineer-typescript` |
+| Infra/CI/CD | `devops-engineer` |
+| Testing | `qa-analyst` |
+| Reliability | `sre` |
 | Fallback | `general-purpose` (built-in, no prefix) |
 
 ## Execution Options Reference
 
 | Option | Description |
 |--------|-------------|
-| **Execute now** | Fresh subagent per task, code review between tasks → `ring-default:subagent-driven-development` |
-| **Parallel session** | User opens new session, batch execution with human review → `ring-default:executing-plans` |
+| **Execute now** | Fresh subagent per task, code review between tasks → `subagent-driven-development` |
+| **Parallel session** | User opens new session, batch execution with human review → `executing-plans` |
 | **Save for later** | Plan at `docs/plans/YYYY-MM-DD-<feature>.md`, manual review before execution |
 
 ## Required Patterns

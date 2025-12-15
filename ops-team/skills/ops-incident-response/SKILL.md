@@ -16,8 +16,8 @@ skip_when: |
   - Planned maintenance -> change management
 
 related:
-  similar: [ring-default:systematic-debugging]
-  uses: [ring-ops-team:incident-responder]
+  similar: [systematic-debugging]
+  uses: [incident-responder]
 ---
 
 # Incident Response Workflow
@@ -332,7 +332,7 @@ For complex incidents, dispatch the incident-responder agent:
 
 ```
 Task tool:
-  subagent_type: "ring-ops-team:incident-responder"
+  subagent_type: "incident-responder"
   model: "opus"
   prompt: |
     INCIDENT: [description]

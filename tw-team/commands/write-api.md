@@ -97,11 +97,11 @@ Every endpoint must include:
 
 ## 5. Dispatch Agent
 
-For complex API documentation, dispatch the ring-tw-team:api-writer agent:
+For complex API documentation, dispatch the api-writer agent:
 
 ```
 Task tool:
-  subagent_type: "ring-tw-team:api-writer"
+  subagent_type: "api-writer"
   model: "opus"
   prompt: "Document the [endpoint] endpoint. Include:
           - All path/query parameters
@@ -113,11 +113,11 @@ Task tool:
 
 ## 6. Review Before Publishing
 
-After writing, use the ring-tw-team:docs-reviewer agent:
+After writing, use the docs-reviewer agent:
 
 ```
 Task tool:
-  subagent_type: "ring-tw-team:docs-reviewer"
+  subagent_type: "docs-reviewer"
   model: "opus"
   prompt: "Review this API documentation for completeness and accuracy:
           [paste documentation]"

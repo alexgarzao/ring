@@ -64,8 +64,8 @@ mkdir -p docs/pmm/<product-name>
 
 ## Gate 0: Market Analysis (if needed)
 
-**Skill:** ring-pmm-team:market-analysis
-**Agent:** ring-pmm-team:market-researcher (model: opus)
+**Skill:** market-analysis
+**Agent:** market-researcher (model: opus)
 
 Skip if: Recent market analysis exists (<6 months old)
 
@@ -80,7 +80,7 @@ Skip if: Recent market analysis exists (<6 months old)
 
 ## Gate 1: Competitive Intelligence
 
-**Skill:** ring-pmm-team:competitive-intelligence
+**Skill:** competitive-intelligence
 
 Skip if: Recent competitive intel exists (<3 months old)
 
@@ -97,8 +97,8 @@ Skip if: Recent competitive intel exists (<3 months old)
 
 ## Gate 2: Positioning Development
 
-**Skill:** ring-pmm-team:positioning-development
-**Agent:** ring-pmm-team:positioning-strategist (model: opus)
+**Skill:** positioning-development
+**Agent:** positioning-strategist (model: opus)
 
 1. Define category strategy
 2. Identify differentiation
@@ -115,8 +115,8 @@ Skip if: Recent competitive intel exists (<3 months old)
 
 ## Gate 3: Messaging Creation
 
-**Skill:** ring-pmm-team:messaging-creation
-**Agent:** ring-pmm-team:messaging-specialist (model: opus)
+**Skill:** messaging-creation
+**Agent:** messaging-specialist (model: opus)
 
 1. Create value propositions
 2. Develop proof points
@@ -133,8 +133,8 @@ Skip if: Recent competitive intel exists (<3 months old)
 
 ## Gate 4: Pricing Strategy (if applicable)
 
-**Skill:** ring-pmm-team:pricing-strategy
-**Agent:** ring-pmm-team:pricing-analyst (model: opus)
+**Skill:** pricing-strategy
+**Agent:** pricing-analyst (model: opus)
 
 Skip if: Pricing already determined or not applicable
 
@@ -151,8 +151,8 @@ Skip if: Pricing already determined or not applicable
 
 ## Gate 5: GTM Planning
 
-**Skill:** ring-pmm-team:gtm-planning
-**Agent:** ring-pmm-team:gtm-planner (model: opus)
+**Skill:** gtm-planning
+**Agent:** gtm-planner (model: opus)
 
 1. Define GTM strategy
 2. Select and prioritize channels
@@ -171,8 +171,8 @@ Skip if: Pricing already determined or not applicable
 
 ## Gate 6: Launch Coordination
 
-**Skill:** ring-pmm-team:launch-execution
-**Agent:** ring-pmm-team:launch-coordinator (model: opus)
+**Skill:** launch-execution
+**Agent:** launch-coordinator (model: opus)
 
 1. Assess launch readiness
 2. Create pre-launch checklist

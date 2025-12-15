@@ -46,7 +46,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 **Orchestrator Requirement:**
 When calling this agent, you MUST specify the model parameter:
 ```
-Task(subagent_type="ring-default:codebase-explorer", model="opus", ...)  # REQUIRED
+Task(subagent_type="codebase-explorer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Deep codebase understanding requires Opus thoroughness to perform architectural tracing (entry points → processing → storage → output), pattern recognition across components (directory conventions, naming patterns, architectural patterns like Clean Architecture/DRY/SOLID), synthesis of findings into actionable insights, and the ability to answer "how" and "why" questions that require connecting disparate code elements into coherent explanations - analysis depth beyond simple file location.
@@ -199,7 +199,7 @@ Use this matrix to quickly determine the appropriate exploration depth:
 | "What's the architecture of X?" | Thorough | 30-45 min | "What's the architecture of the payment system?" |
 | "What patterns does X use?" | Thorough | 30-45 min | "What patterns does this monorepo use?" |
 
-**Multi-Area Exploration:** For questions spanning multiple domains (e.g., "How do auth, payments, and notifications integrate?"), use `ring-default:dispatching-parallel-agents` skill to launch parallel exploration agents, one per domain.
+**Multi-Area Exploration:** For questions spanning multiple domains (e.g., "How do auth, payments, and notifications integrate?"), use `dispatching-parallel-agents` skill to launch parallel exploration agents, one per domain.
 
 ## Blocker Criteria - STOP and Report
 

@@ -60,7 +60,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-ops-team:platform-engineer", model="opus", ...)  # REQUIRED
+Task(subagent_type="platform-engineer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Platform engineering requires comprehensive understanding of service mesh configurations, API gateway patterns, and complex platform abstractions that require Opus-level reasoning.
@@ -275,8 +275,8 @@ $ curl -k https://api.example.com/health
 
 ## What This Agent Does NOT Handle
 
-- Application code development (use `ring-dev-team:backend-engineer-*`)
-- Infrastructure provisioning (use `ring-ops-team:infrastructure-architect`)
-- Incident response (use `ring-ops-team:incident-responder`)
-- Cost optimization (use `ring-ops-team:cloud-cost-optimizer`)
-- Security audits (use `ring-ops-team:security-operations`)
+- Application code development (use `backend-engineer-*`)
+- Infrastructure provisioning (use `infrastructure-architect`)
+- Incident response (use `incident-responder`)
+- Cost optimization (use `cloud-cost-optimizer`)
+- Security audits (use `security-operations`)

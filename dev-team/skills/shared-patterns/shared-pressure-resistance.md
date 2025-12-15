@@ -74,7 +74,7 @@ Skills should reference this file. Gate-specific pressures are ONLY needed if tr
 ```markdown
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 [OPTIONAL: Add gate-specific pressures ONLY if not covered above]
 ```

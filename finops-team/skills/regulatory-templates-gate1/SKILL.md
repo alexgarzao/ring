@@ -13,8 +13,8 @@ skip_when: |
   - Gate 1 already passed → proceed to Gate 2
 
 sequence:
-  after: [ring-finops-team:regulatory-templates-setup]
-  before: [ring-finops-team:regulatory-templates-gate2]
+  after: [regulatory-templates-setup]
+  before: [regulatory-templates-gate2]
 ---
 
 # Regulatory Templates - Gate 1: Placeholder Mapping (Post Gate 0)
@@ -330,7 +330,7 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 
 ### Agent Dispatch
 
-**Dispatch:** `Task(subagent_type: "ring-finops-team:finops-analyzer", model: "opus")`
+**Dispatch:** `Task(subagent_type: "finops-analyzer", model: "opus")`
 
 **Pre-dispatch:** Check dictionary at `~/.claude/docs/regulatory/dictionaries/{category}-{code}.yaml`
 

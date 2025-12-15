@@ -22,26 +22,26 @@ skip_when: |
     - "PROJECT_RULES.md doesn't require" → Ring ALWAYS requires TDD.
 
 sequence:
-  before: [ring-dev-team:dev-devops]
+  before: [dev-devops]
 
 related:
-  complementary: [ring-dev-team:dev-cycle, ring-default:test-driven-development, ring-default:requesting-code-review]
-  similar: [ring-default:subagent-driven-development, ring-default:executing-plans]
+  complementary: [dev-cycle, test-driven-development, requesting-code-review]
+  similar: [subagent-driven-development, executing-plans]
 
 agent_selection:
   criteria:
     - pattern: "*.go"
       keywords: ["go.mod", "golang", "Go"]
-      agent: "ring-dev-team:backend-engineer-golang"
+      agent: "backend-engineer-golang"
     - pattern: "*.ts"
       keywords: ["express", "fastify", "nestjs", "backend", "api", "server"]
-      agent: "ring-dev-team:backend-engineer-typescript"
+      agent: "backend-engineer-typescript"
     - pattern: "*.tsx"
       keywords: ["react", "next", "frontend", "component", "page"]
-      agent: "ring-dev-team:frontend-bff-engineer-typescript"
+      agent: "frontend-bff-engineer-typescript"
     - pattern: "*.css|*.scss"
       keywords: ["design", "visual", "aesthetic", "styling", "ui"]
-      agent: "ring-dev-team:frontend-designer"
+      agent: "frontend-designer"
   fallback: "ASK_USER"  # Do NOT assume language - ask user
   detection_order:
     - "Check task.type field in tasks.md"
@@ -53,10 +53,10 @@ agent_selection:
     If language cannot be detected, use AskUserQuestion:
     Question: "Could not detect project language. Which agent should implement this task?"
     Options:
-      - "Go Backend" → ring-dev-team:backend-engineer-golang
-      - "TypeScript Backend" → ring-dev-team:backend-engineer-typescript
-      - "TypeScript Frontend" → ring-dev-team:frontend-bff-engineer-typescript
-      - "Frontend Design" → ring-dev-team:frontend-designer
+      - "Go Backend" → backend-engineer-golang
+      - "TypeScript Backend" → backend-engineer-typescript
+      - "TypeScript Frontend" → frontend-bff-engineer-typescript
+      - "Frontend Design" → frontend-designer
     NEVER assume Go. Wrong agent = wrong patterns = rework.
 
 verification:
@@ -106,7 +106,7 @@ This skill executes the implementation phase of the development cycle. It:
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **TDD-specific note:** If code exists before test, DELETE IT. No exceptions. No "adapting". No "reference". ALL code gets TDD, not just most of it.
 
@@ -206,7 +206,7 @@ it('should process async task', async () => {
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations (including TDD section).
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including TDD section).
 
 **Implementation-specific rationalizations:**
 
@@ -218,7 +218,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags (including TDD section).
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including TDD section).
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. DELETE any existing code. Start with failing test.
 
@@ -254,7 +254,7 @@ ls <file>  # Should return "No such file"
 
 **Anti-Rationalization for Mental Reference:**
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -286,11 +286,11 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## ⛔ MANDATORY: Agent Dispatch Required (HARD GATE)
 
-See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, agent responsibilities (observability), library requirements, and anti-rationalization table.
+See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared-orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, agent responsibilities (observability), library requirements, and anti-rationalization table.
 
 **Summary:** You orchestrate. Agents execute. Agents implement observability (logs, traces). If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for observability requirements to include in dispatch prompts.
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for observability requirements to include in dispatch prompts.
 
 ## Prerequisites
 
@@ -342,9 +342,9 @@ See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-temp
 
 **Purpose:** Write a test that captures expected behavior and FAILS.
 
-**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")`
+**Dispatch:** `Task(subagent_type: "{agent}", model: "opus")`
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for the TDD-RED prompt template.
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-RED prompt template.
 
 **Agent returns:** Test file + Failure output
 
@@ -356,9 +356,9 @@ See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-temp
 
 **Purpose:** Write minimal code to make the failing test pass.
 
-**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")`
+**Dispatch:** `Task(subagent_type: "{agent}", model: "opus")`
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for the TDD-GREEN prompt template (includes observability requirements).
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-GREEN prompt template (includes observability requirements).
 
 **Agent returns:** Implementation + Pass output + Commit SHA
 
@@ -369,11 +369,11 @@ See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-temp
 | Approach | When to Use | Process |
 |----------|-------------|---------|
 | **Subagent-Driven** (recommended) | Real-time feedback needed, human intervention | Dispatch agent → Review → Code review at checkpoints → Repeat |
-| **Parallel Session** | Well-defined plans, batch execution | New terminal in worktree → `ring-default:executing-plans` with plan path |
+| **Parallel Session** | Well-defined plans, batch execution | New terminal in worktree → `executing-plans` with plan path |
 
 ## Step 5: Code Review Checkpoints
 
-**Every 3-5 tasks:** Use `ring-default:requesting-code-review` → dispatch 3 reviewers in parallel (code, business-logic, security)
+**Every 3-5 tasks:** Use `requesting-code-review` → dispatch 3 reviewers in parallel (code, business-logic, security)
 
 **Severity handling:** Critical/High/Medium → Fix immediately, re-run all | Low → `TODO(review):` | Cosmetic → `FIXME(nitpick):`
 
@@ -393,10 +393,10 @@ Use the agent selected in Gate 1 based on technology:
 
 | Stack | Agent |
 |-------|-------|
-| Go backend | `ring-dev-team:backend-engineer-golang` |
-| TypeScript backend | `ring-dev-team:backend-engineer-typescript` |
-| React/Next.js frontend | `ring-dev-team:frontend-bff-engineer-typescript` |
-| BFF layer (Next.js API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` |
+| Go backend | `backend-engineer-golang` |
+| TypeScript backend | `backend-engineer-typescript` |
+| React/Next.js frontend | `frontend-bff-engineer-typescript` |
+| BFF layer (Next.js API Routes) | `frontend-bff-engineer-typescript` |
 
 ## TDD Compliance
 
@@ -432,7 +432,7 @@ Use the agent selected in Gate 1 based on technology:
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|
@@ -447,7 +447,7 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 - tests_added: N
 - tests_passing: N/N
 - review_checkpoints_passed: N/N
-- agent_used: ring-dev-team:{agent}
+- agent_used: {agent}
 
 ### Issues Encountered
 - List any issues or "None"

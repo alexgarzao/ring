@@ -121,7 +121,7 @@ These rationalizations are ALWAYS wrong, regardless of context:
 ```markdown
 ## Anti-Rationalization
 
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 [OPTIONAL: Add domain-specific rationalizations ONLY if not covered above]
 ```
@@ -130,7 +130,7 @@ See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rat
 ```markdown
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 [OPTIONAL: Add gate-specific rationalizations ONLY if not covered above]
 ```

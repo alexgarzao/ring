@@ -11,9 +11,9 @@ This command initiates structured security audit following the ops-security-audi
 ## Usage
 
 ```
-/ring-ops-team:security-audit full soc2,pci
-/ring-ops-team:security-audit iam soc2
-/ring-ops-team:security-audit network
+/security-audit full soc2,pci
+/security-audit iam soc2
+/security-audit network
 ```
 
 ## Workflow
@@ -44,7 +44,7 @@ Parse scope and compliance frameworks from arguments.
 
 ```
 Task tool:
-  subagent_type: "ring-ops-team:security-operations"
+  subagent_type: "security-operations"
   model: "opus"
   prompt: |
     SECURITY AUDIT REQUEST
@@ -87,7 +87,7 @@ Format findings into comprehensive security audit report.
 **Scope:** [scope]
 **Frameworks:** [frameworks]
 **Audit Date:** YYYY-MM-DD
-**Auditor:** ring-ops-team:security-operations
+**Auditor:** security-operations
 
 ## Executive Summary
 
@@ -249,8 +249,8 @@ Additional output:
 
 ## Related Skills
 
-- `ring-ops-team:ops-security-audit` - Full security audit workflow
-- `ring-default:security-reviewer` - Application security review
+- `ops-security-audit` - Full security audit workflow
+- `security-reviewer` - Application security review
 
 ## Anti-Rationalization
 

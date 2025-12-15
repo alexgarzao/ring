@@ -15,7 +15,7 @@ skip_when: |
   - Plan needs revision → use brainstorming first
 
 sequence:
-  after: [ring-default:writing-plans, ring-pm-team:pre-dev-task-breakdown]
+  after: [writing-plans, pre-dev-task-breakdown]
 
 related:
   similar: [executing-plans]
@@ -61,9 +61,9 @@ Read plan file, create TodoWrite with all tasks.
 
 | Reviewer | Model | Context |
 |----------|-------|---------|
-| `ring-default:code-reviewer` | opus | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
-| `ring-default:business-logic-reviewer` | opus | Same context |
-| `ring-default:security-reviewer` | opus | Same context |
+| `code-reviewer` | opus | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
+| `business-logic-reviewer` | opus | Same context |
+| `security-reviewer` | opus | Same context |
 
 **Each returns:** Strengths, Issues (Critical/High/Medium/Low/Cosmetic), Assessment (PASS/FAIL)
 
@@ -95,7 +95,7 @@ After all Critical/High/Medium issues resolved for current task:
 
 After final review passes:
 - Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use ring-default:finishing-a-development-branch
+- **REQUIRED SUB-SKILL:** Use finishing-a-development-branch
 - Follow that skill to verify tests, present options, execute choice
 
 ## Example Workflow
@@ -152,4 +152,4 @@ After final review passes:
 **Alternative workflow:**
 - **executing-plans** - Use for parallel session instead of same-session execution
 
-See reviewer agent definitions: ring-default:code-reviewer (agents/code-reviewer.md), ring-default:security-reviewer (agents/security-reviewer.md), ring-default:business-logic-reviewer (agents/business-logic-reviewer.md)
+See reviewer agent definitions: code-reviewer (agents/code-reviewer.md), security-reviewer (agents/security-reviewer.md), business-logic-reviewer (agents/business-logic-reviewer.md)

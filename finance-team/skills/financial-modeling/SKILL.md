@@ -16,13 +16,13 @@ skip_when: |
   - Cash flow forecasting → use cash-flow-analysis
 
 related:
-  similar: [ring-finance-team:financial-analysis, ring-finance-team:budget-creation]
-  uses: [ring-finance-team:financial-modeler]
+  similar: [financial-analysis, budget-creation]
+  uses: [financial-modeler]
 ---
 
 # Financial Modeling Workflow
 
-This skill provides a structured workflow for building financial models using the `ring-finance-team:financial-modeler` agent.
+This skill provides a structured workflow for building financial models using the `financial-modeler` agent.
 
 ## Workflow Overview
 
@@ -142,7 +142,7 @@ The financial modeling workflow follows 6 phases:
 
 ```
 Task tool:
-  subagent_type: "ring-finance-team:financial-modeler"
+  subagent_type: "financial-modeler"
   model: "opus"
   prompt: |
     Build financial model per these specifications:

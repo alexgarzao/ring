@@ -15,7 +15,7 @@ skip_when: |
   - Plan needs revision → use brainstorming first
 
 sequence:
-  after: [ring-default:writing-plans, ring-pm-team:pre-dev-task-breakdown]
+  after: [writing-plans, pre-dev-task-breakdown]
 
 related:
   similar: [subagent-driven-development]
@@ -78,12 +78,12 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 ### Step 3: Execute Batch
 **Default: First 3 tasks**
 
-**Agent Selection:** Backend Go → `ring-dev-team:backend-engineer-golang` | Backend TS → `ring-dev-team:backend-engineer-typescript` | Frontend → `ring-dev-team:frontend-bff-engineer-typescript` | Infra → `ring-dev-team:devops-engineer` | Testing → `ring-dev-team:qa-analyst` | Reliability → `ring-dev-team:sre` | Fallback → `general-purpose`
+**Agent Selection:** Backend Go → `backend-engineer-golang` | Backend TS → `backend-engineer-typescript` | Frontend → `frontend-bff-engineer-typescript` | Infra → `devops-engineer` | Testing → `qa-analyst` | Reliability → `sre` | Fallback → `general-purpose`
 
 For each task: Mark in_progress → Dispatch to agent → Follow plan steps exactly → Run verifications → Mark completed
 
 ### Step 4: Run Code Review
-**After each batch, REQUIRED:** Use ring-default:requesting-code-review (all 3 reviewers in parallel)
+**After each batch, REQUIRED:** Use requesting-code-review (all 3 reviewers in parallel)
 
 **Handle by severity:**
 - **Critical/High/Medium:** Fix immediately (no TODO) → re-run all 3 reviewers → repeat until resolved
@@ -99,7 +99,7 @@ For each task: Mark in_progress → Dispatch to agent → Follow plan steps exac
 
 ### Step 6: Complete Development
 
-Use ring-default:finishing-a-development-branch to verify tests, present options, execute choice.
+Use finishing-a-development-branch to verify tests, present options, execute choice.
 
 ## When to Stop
 
@@ -108,7 +108,7 @@ Use ring-default:finishing-a-development-branch to verify tests, present options
 ## Remember
 
 - **MANDATORY:** `AskUserQuestion` for execution mode - NO exceptions
-- Use `ring-dev-team:*` agents over `general-purpose` when available
+- Use `*` agents over `general-purpose` when available
 - Run code review after each batch (all 3 parallel)
 - Fix Critical/High/Medium immediately (no TODO)
 - Low → TODO, Cosmetic → FIXME

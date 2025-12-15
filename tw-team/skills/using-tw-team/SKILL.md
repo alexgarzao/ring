@@ -30,9 +30,9 @@ The ring-tw-team plugin provides specialized agents for technical documentation.
 
 | Agent | Specialization | Use When |
 |-------|---------------|----------|
-| `ring-tw-team:functional-writer` | Conceptual docs, guides, tutorials, best practices, workflows | Writing product guides, tutorials, "how to" content |
-| `ring-tw-team:api-writer` | REST API reference, endpoints, schemas, errors, field descriptions | Documenting API endpoints, request/response examples |
-| `ring-tw-team:docs-reviewer` | Voice/tone, structure, completeness, clarity, accuracy | Reviewing drafts, pre-publication quality check |
+| `functional-writer` | Conceptual docs, guides, tutorials, best practices, workflows | Writing product guides, tutorials, "how to" content |
+| `api-writer` | REST API reference, endpoints, schemas, errors, field descriptions | Documenting API endpoints, request/response examples |
+| `docs-reviewer` | Voice/tone, structure, completeness, clarity, accuracy | Reviewing drafts, pre-publication quality check |
 
 ---
 
@@ -65,12 +65,12 @@ The ring-tw-team plugin provides specialized agents for technical documentation.
 **Parallel dispatch** for comprehensive documentation (single message, multiple Tasks):
 
 ```
-Task #1: ring-tw-team:functional-writer (write the guide)
-Task #2: ring-tw-team:api-writer (write API reference)
+Task #1: functional-writer (write the guide)
+Task #2: api-writer (write API reference)
 (Both run in parallel)
 
 Then:
-Task #3: ring-tw-team:docs-reviewer (review both)
+Task #3: docs-reviewer (review both)
 ```
 
 ---
@@ -89,9 +89,9 @@ Task #3: ring-tw-team:docs-reviewer (review both)
 - api-field-descriptions: Field description patterns
 
 **Commands:**
-- /ring-tw-team:write-guide: Start functional guide
-- /ring-tw-team:write-api: Start API documentation
-- /ring-tw-team:review-docs: Review existing docs
+- /write-guide: Start functional guide
+- /write-api: Start API documentation
+- /review-docs: Review existing docs
 
 ---
 
@@ -111,6 +111,6 @@ Task #3: ring-tw-team:docs-reviewer (review both)
 - **Let specialists apply standards** – They know voice, tone, structure
 - **Combine with other plugins** – API writers + backend engineers for accuracy
 
-> ✅ "I need documentation for the new feature. Let me dispatch ring-tw-team:functional-writer."
+> ✅ "I need documentation for the new feature. Let me dispatch functional-writer."
 >
 > ❌ "I'll manually write all the documentation myself."

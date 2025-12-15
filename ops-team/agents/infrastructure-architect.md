@@ -66,7 +66,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-ops-team:infrastructure-architect", model="opus", ...)  # REQUIRED
+Task(subagent_type="infrastructure-architect", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Infrastructure architecture decisions have long-term implications requiring comprehensive analysis of tradeoffs, compliance requirements, and scalability patterns - all requiring Opus-level reasoning.
@@ -371,8 +371,8 @@ Designed multi-region active-passive architecture for payment processing platfor
 
 ## What This Agent Does NOT Handle
 
-- Day-to-day platform operations (use `ring-ops-team:platform-engineer`)
-- Incident response (use `ring-ops-team:incident-responder`)
-- Cost optimization analysis (use `ring-ops-team:cloud-cost-optimizer`)
-- Security operations (use `ring-ops-team:security-operations`)
-- Application development (use `ring-dev-team:backend-engineer-*`)
+- Day-to-day platform operations (use `platform-engineer`)
+- Incident response (use `incident-responder`)
+- Cost optimization analysis (use `cloud-cost-optimizer`)
+- Security operations (use `security-operations`)
+- Application development (use `backend-engineer-*`)

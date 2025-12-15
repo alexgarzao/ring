@@ -7,8 +7,8 @@ trigger: |
   - Project audit requested
 
 skip_when: |
-  - Greenfield project → Use /ring-pm-team:pre-dev-* instead
-  - Single file fix → Use ring-dev-team:dev-cycle directly
+  - Greenfield project → Use /pre-dev-* instead
+  - Single file fix → Use dev-cycle directly
 ---
 
 # Dev Refactor Skill
@@ -71,7 +71,7 @@ TodoWrite:
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
-See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, step-to-agent mapping, and anti-rationalization table.
+See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared-orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, step-to-agent mapping, and anti-rationalization table.
 
 **Summary:** You orchestrate. Agents execute. If using Bash/Grep/Read to analyze code → STOP. Dispatch agent.
 
@@ -110,10 +110,10 @@ Check for manifest files and frontend indicators:
 
 | File/Pattern | Stack | Agent |
 |--------------|-------|-------|
-| `go.mod` | Go Backend | ring-dev-team:backend-engineer-golang |
-| `package.json` + `src/` (no React) | TypeScript Backend | ring-dev-team:backend-engineer-typescript |
-| `package.json` + React/Next.js | Frontend | ring-dev-team:frontend-engineer |
-| `package.json` + BFF pattern | TypeScript BFF | ring-dev-team:frontend-bff-engineer-typescript |
+| `go.mod` | Go Backend | backend-engineer-golang |
+| `package.json` + `src/` (no React) | TypeScript Backend | backend-engineer-typescript |
+| `package.json` + React/Next.js | Frontend | frontend-engineer |
+| `package.json` + BFF pattern | TypeScript BFF | frontend-bff-engineer-typescript |
 
 **Detection Logic:**
 - `go.mod` exists → Add Go backend agent
@@ -145,13 +145,13 @@ Extract project-specific conventions for agent context.
 
 **TodoWrite:** Mark "Generate codebase report via codebase-explorer" as `in_progress`
 
-### ⛔ MANDATORY: Use Task Tool with ring-default:codebase-explorer
+### ⛔ MANDATORY: Use Task Tool with codebase-explorer
 
 **YOU MUST USE THIS EXACT TOOL CALL:**
 
 ```yaml
-Task:
-  subagent_type: "ring-default:codebase-explorer"  # ← EXACT STRING, NOT "Explore"
+Task tool:
+  subagent_type: "codebase-explorer"  # ← EXACT STRING, NOT "Explore"
   model: "opus"
   description: "Generate codebase architecture report"
   prompt: |
@@ -172,11 +172,11 @@ Task:
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll use Bash find/ls to quickly explore" | Bash cannot analyze patterns, just lists files. codebase-explorer provides architectural analysis. | **Use Task with subagent_type="ring-default:codebase-explorer"** |
-| "The Explore agent is faster" | "Explore" subagent_type ≠ "ring-default:codebase-explorer". Different agents. | **Use exact string: "ring-default:codebase-explorer"** |
-| "I already know the structure from find output" | Knowing file paths ≠ understanding architecture. Agent provides analysis. | **Use Task with subagent_type="ring-default:codebase-explorer"** |
-| "This is a small codebase, Bash is enough" | Size is irrelevant. The agent provides standardized output format required by Step 4. | **Use Task with subagent_type="ring-default:codebase-explorer"** |
-| "I'll explore manually then dispatch agents" | Manual exploration skips the codebase-report.md artifact required for Step 4 gate. | **Use Task with subagent_type="ring-default:codebase-explorer"** |
+| "I'll use Bash find/ls to quickly explore" | Bash cannot analyze patterns, just lists files. codebase-explorer provides architectural analysis. | **Use Task with subagent_type="codebase-explorer"** |
+| "The Explore agent is faster" | "Explore" subagent_type ≠ "codebase-explorer". Different agents. | **Use exact string: "codebase-explorer"** |
+| "I already know the structure from find output" | Knowing file paths ≠ understanding architecture. Agent provides analysis. | **Use Task with subagent_type="codebase-explorer"** |
+| "This is a small codebase, Bash is enough" | Size is irrelevant. The agent provides standardized output format required by Step 4. | **Use Task with subagent_type="codebase-explorer"** |
+| "I'll explore manually then dispatch agents" | Manual exploration skips the codebase-report.md artifact required for Step 4 gate. | **Use Task with subagent_type="codebase-explorer"** |
 
 ### FORBIDDEN Actions for Step 3
 
@@ -192,7 +192,7 @@ Task:
 ### REQUIRED Action for Step 3
 
 ```
-✅ Task(subagent_type="ring-default:codebase-explorer", model="opus", ...)
+✅ Task(subagent_type="codebase-explorer", model="opus", ...)
 ```
 
 **After Task completes, save with Write tool:**
@@ -220,7 +220,7 @@ Check 1: Does docs/refactor/{timestamp}/codebase-report.md exist?
   - YES → Continue to dispatch agents
   - NO  → STOP. Go back to Step 3.
 
-Check 2: Was codebase-report.md created by ring-default:codebase-explorer?
+Check 2: Was codebase-report.md created by codebase-explorer?
   - YES → Continue
   - NO (created by Bash output) → DELETE IT. Go back to Step 3. Use correct agent.
 ```
@@ -244,15 +244,23 @@ Check 2: Was codebase-report.md created by ring-default:codebase-explorer?
 ### For Go projects:
 
 ```yaml
-Task 1:
-  subagent_type: "ring-dev-team:backend-engineer-golang"
+Task tool 1:
+  subagent_type: "backend-engineer-golang"
   model: "opus"
   description: "Go standards analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
 
-    ⛔ MANDATORY: Check ALL 17 sections in golang.md per shared-patterns/standards-coverage-table.md
-    This includes section 16: DDD Patterns (Go Implementation)
+    ⛔ MANDATORY: Check ALL sections in golang.md per shared-patterns/standards-coverage-table.md
+
+    ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
+    1. Read go.mod to extract ALL dependencies used in codebase
+    2. Load golang.md standards via WebFetch → extract ALL listed frameworks/libraries
+    3. For EACH category in standards (HTTP, Database, Validation, Testing, etc.):
+       - Compare codebase dependency vs standards requirement
+       - If codebase uses DIFFERENT library than standards → ISSUE-XXX
+       - If codebase is MISSING required library → ISSUE-XXX
+    4. ANY library not in standards that serves same purpose = ISSUE-XXX
 
     Input:
     - Ring Standards: Load via WebFetch (golang.md)
@@ -264,8 +272,8 @@ Task 1:
     1. Standards Coverage Table (per shared-patterns format)
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 
-Task 2:
-  subagent_type: "ring-dev-team:qa-analyst"
+Task tool 2:
+  subagent_type: "qa-analyst"
   model: "opus"
   description: "Test coverage analysis"
   prompt: |
@@ -274,19 +282,20 @@ Task 2:
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
-Task 3:
-  subagent_type: "ring-dev-team:devops-engineer"
+Task tool 3:
+  subagent_type: "devops-engineer"
   model: "opus"
   description: "DevOps analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
-    Check ALL 6 sections per shared-patterns/standards-coverage-table.md → "devops-engineer"
+    Check ALL 7 sections per shared-patterns/standards-coverage-table.md → "devops-engineer"
     ⛔ "Containers" means BOTH Dockerfile AND Docker Compose
+    ⛔ "Makefile Standards" means ALL required commands: build, lint, test, cover, up, down, etc.
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
-Task 4:
-  subagent_type: "ring-dev-team:sre"
+Task tool 4:
+  subagent_type: "sre"
   model: "opus"
   description: "Observability analysis"
   prompt: |
@@ -299,15 +308,23 @@ Task 4:
 ### For TypeScript Backend projects:
 
 ```yaml
-Task 1:
-  subagent_type: "ring-dev-team:backend-engineer-typescript"
+Task tool 1:
+  subagent_type: "backend-engineer-typescript"
   model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
 
-    ⛔ MANDATORY: Check ALL 12 sections in typescript.md per shared-patterns/standards-coverage-table.md
-    This includes section 9: DDD Patterns (TypeScript Implementation)
+    ⛔ MANDATORY: Check ALL sections in typescript.md per shared-patterns/standards-coverage-table.md
+
+    ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
+    1. Read package.json to extract ALL dependencies used in codebase
+    2. Load typescript.md standards via WebFetch → extract ALL listed frameworks/libraries
+    3. For EACH category in standards (Backend Framework, ORM, Validation, Testing, etc.):
+       - Compare codebase dependency vs standards requirement
+       - If codebase uses DIFFERENT library than standards → ISSUE-XXX
+       - If codebase is MISSING required library → ISSUE-XXX
+    4. ANY library not in standards that serves same purpose = ISSUE-XXX
 
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
@@ -323,8 +340,8 @@ Task 1:
 ### For Frontend projects (React/Next.js):
 
 ```yaml
-Task 5:
-  subagent_type: "ring-dev-team:frontend-engineer"
+Task tool 5:
+  subagent_type: "frontend-engineer"
   model: "opus"
   description: "Frontend standards analysis"
   prompt: |
@@ -346,15 +363,23 @@ Task 5:
 ### For BFF (Backend-for-Frontend) projects:
 
 ```yaml
-Task 6:
-  subagent_type: "ring-dev-team:frontend-bff-engineer-typescript"
+Task tool 6:
+  subagent_type: "frontend-bff-engineer-typescript"
   model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |
     **MODE: ANALYSIS ONLY**
 
-    ⛔ MANDATORY: Check ALL 12 sections in typescript.md per shared-patterns/standards-coverage-table.md
-    This includes section 9: DDD Patterns (TypeScript Implementation)
+    ⛔ MANDATORY: Check ALL sections in typescript.md per shared-patterns/standards-coverage-table.md
+
+    ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
+    1. Read package.json to extract ALL dependencies used in codebase
+    2. Load typescript.md standards via WebFetch → extract ALL listed frameworks/libraries
+    3. For EACH category in standards (Backend Framework, ORM, Validation, Testing, etc.):
+       - Compare codebase dependency vs standards requirement
+       - If codebase uses DIFFERENT library than standards → ISSUE-XXX
+       - If codebase is MISSING required library → ISSUE-XXX
+    4. ANY library not in standards that serves same purpose = ISSUE-XXX
 
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
@@ -409,7 +434,7 @@ docs/refactor/{timestamp}/reports/
 # {Agent Name} Analysis Report
 
 **Generated:** {timestamp}
-**Agent:** ring-dev-team:{agent-name}
+**Agent:** {agent-name}
 **Mode:** ANALYSIS ONLY
 
 ## Standards Coverage Table
@@ -429,20 +454,20 @@ docs/refactor/{timestamp}/reports/
 - **Low:** {count}
 
 ---
-*Report generated by ring-dev-team:dev-refactor skill*
+*Report generated by dev-refactor skill*
 ```
 
 ### Agent Report Mapping
 
 | Agent Dispatched | Report File Name |
 |------------------|------------------|
-| ring-dev-team:backend-engineer-golang | `backend-engineer-golang-report.md` |
-| ring-dev-team:backend-engineer-typescript | `backend-engineer-typescript-report.md` |
-| ring-dev-team:frontend-engineer | `frontend-engineer-report.md` |
-| ring-dev-team:frontend-bff-engineer-typescript | `frontend-bff-engineer-report.md` |
-| ring-dev-team:qa-analyst | `qa-analyst-report.md` |
-| ring-dev-team:devops-engineer | `devops-engineer-report.md` |
-| ring-dev-team:sre | `sre-report.md` |
+| backend-engineer-golang | `backend-engineer-golang-report.md` |
+| backend-engineer-typescript | `backend-engineer-typescript-report.md` |
+| frontend-engineer | `frontend-engineer-report.md` |
+| frontend-bff-engineer-typescript | `frontend-bff-engineer-report.md` |
+| qa-analyst | `qa-analyst-report.md` |
+| devops-engineer | `devops-engineer-report.md` |
+| sre | `sre-report.md` |
 
 ### Anti-Rationalization Table for Step 4.5
 
@@ -623,7 +648,7 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 
 **Severity:** Critical | High | Medium | Low
 **Category:** {lib-commons | architecture | testing | devops}
-**Agent:** {ring-dev-team:agent-name}
+**Agent:** {agent-name}
 **Standard:** {file}.md:{section}
 
 ### Current Code
@@ -777,7 +802,7 @@ docs/refactor/{timestamp}/
 
 ```yaml
 SlashCommand:
-  command: "/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md"
+  command: "/dev-cycle docs/refactor/{timestamp}/tasks.md"
 ```
 
 Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
@@ -808,7 +833,7 @@ traceability:
 ### Rule 1: Codebase Exploration MUST Use Specific Agent
 
 ```
-✅ CORRECT: Task(subagent_type="ring-default:codebase-explorer", model="opus")
+✅ CORRECT: Task(subagent_type="codebase-explorer", model="opus")
 ❌ WRONG:   Bash(find/ls/tree)
 ❌ WRONG:   Task(subagent_type="Explore")
 ❌ WRONG:   Task(subagent_type="general-purpose")
@@ -850,13 +875,13 @@ Step 5 (specialist agents) → ONLY runs if gate passes
 | `Bash find/ls` | Lists file paths | No architectural analysis, no pattern detection |
 | `Task(Explore)` | Fast codebase search | Different agent, lacks Ring standards context |
 | `Task(general-purpose)` | Generic tasks | No specialized codebase analysis output format |
-| `ring-default:codebase-explorer` | Deep architecture analysis | ✅ Correct - provides structured report for Step 5 |
+| `codebase-explorer` | Deep architecture analysis | ✅ Correct - provides structured report for Step 5 |
 
 ### If You Violated These Rules
 
 1. STOP current execution
 2. DELETE any codebase-report.md created by wrong method
 3. Go back to Step 3
-4. Use correct Task tool call with `subagent_type="ring-default:codebase-explorer"`
+4. Use correct Task tool call with `subagent_type="codebase-explorer"`
 5. Save output as codebase-report.md
 6. Continue from Step 4

@@ -27,22 +27,32 @@ When creating or modifying ANY agent in `*/agents/*.md`:
 3. **NEVER skip TDD's RED phase** - Test must fail before implementation
 4. **NEVER ignore skill when applicable** - "Simple task" is not an excuse
 5. **NEVER use panic() in Go** - Error handling required
-6. **NEVER commit manually** - Always use `/ring-default:commit` command
+6. **NEVER commit manually** - Always use `/commit` command
 7. **NEVER assume compliance** - VERIFY with evidence
 
 ### 4. Fully Qualified Names (ALWAYS)
-- ✅ `ring-default:code-reviewer`
-- ✅ `ring-dev-team:backend-engineer-golang`
+- ✅ `code-reviewer`
+- ✅ `backend-engineer-golang`
 - ❌ `ring:code-reviewer` (WRONG)
 - ❌ `backend-engineer-golang` (WRONG)
 
 ### 5. Standards-Agent Synchronization (ALWAYS CHECK)
 When modifying standards files (`dev-team/docs/standards/*.md`):
 
-**⛔ TWO-FILE UPDATE RULE:**
+**⛔ THREE-FILE UPDATE RULE:**
 1. Edit `dev-team/docs/standards/{file}.md` - Add your `## Section Name`
 2. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
-3. **Both files in same commit** - Never update one without the other
+3. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (NOT inline categories)
+4. **All three files in same commit** - Never update one without the others
+
+**⛔ AGENT INLINE CATEGORIES ARE FORBIDDEN:**
+- ✅ Agent has "Sections to Check" referencing `standards-coverage-table.md`
+- ❌ Agent has inline "Comparison Categories" table (FORBIDDEN - causes drift)
+
+**Meta-sections (excluded from agent checks):**
+- `## Checklist` - Self-verification section in standards files
+- `## Standards Compliance` - Output format examples
+- `## Standards Compliance Output Format` - Output templates
 
 | Standards File | Agents That Use It |
 |----------------|-------------------|
@@ -54,6 +64,21 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
 
+**Quick Reference - Section Counts (MUST match standards-coverage-table.md):**
+
+| Agent | Standards File | Section Count |
+|-------|----------------|---------------|
+| `backend-engineer-golang` | golang.md | See coverage table |
+| `backend-engineer-typescript` | typescript.md | See coverage table |
+| `frontend-bff-engineer-typescript` | typescript.md | See coverage table |
+| `frontend-engineer` | frontend.md | See coverage table |
+| `frontend-designer` | frontend.md | See coverage table |
+| `devops-engineer` | devops.md | See coverage table |
+| `sre` | sre.md | See coverage table |
+| `qa-analyst` | golang.md OR typescript.md | See coverage table |
+
+**⛔ If section counts in skills don't match this table → Update the skill.**
+
 ### 6. Agent Model Requirements (ALWAYS RESPECT)
 When invoking agents via Task tool:
 - **MUST** check agent's `model:` field in YAML frontmatter
@@ -64,10 +89,10 @@ When invoking agents via Task tool:
 - **NEVER** let system auto-select model for agents with model requirements
 
 **Examples:**
-- ✅ `Task(subagent_type="ring-default:code-reviewer", model="opus", ...)`
-- ✅ `Task(subagent_type="ring-dev-team:backend-engineer-golang", model="opus", ...)`
-- ❌ `Task(subagent_type="ring-default:code-reviewer", ...)` - Missing model parameter
-- ❌ `Task(subagent_type="ring-default:code-reviewer", model="sonnet", ...)` - Wrong model
+- ✅ `Task(subagent_type="code-reviewer", model="opus", ...)`
+- ✅ `Task(subagent_type="backend-engineer-golang", model="opus", ...)`
+- ❌ `Task(subagent_type="code-reviewer", ...)` - Missing model parameter
+- ❌ `Task(subagent_type="code-reviewer", model="sonnet", ...)` - Wrong model
 
 **Agent Self-Verification:**
 All agents with `model:` field in frontmatter MUST include "Model Requirements" section that verifies they are running on the correct model and STOPS if not.
@@ -338,17 +363,17 @@ git log --oneline -20              # Recent commits show hook development
 git worktree list                  # Check isolated development branches
 
 # Skill invocation (via Claude Code)
-Skill tool: "ring-default:test-driven-development"  # Enforce TDD workflow
-Skill tool: "ring-default:systematic-debugging"     # Debug with 4-phase analysis
-Skill tool: "ring-default:using-ring"              # Load mandatory workflows
+Skill tool: "test-driven-development"  # Enforce TDD workflow
+Skill tool: "systematic-debugging"     # Debug with 4-phase analysis
+Skill tool: "using-ring"              # Load mandatory workflows
 
 # Slash commands
-/ring-default:codereview          # Dispatch 3 parallel reviewers
-/ring-default:brainstorm          # Socratic design refinement
-/ring-pm-team:pre-dev-feature     # <2 day features (4 gates)
-/ring-pm-team:pre-dev-full        # ≥2 day features (9 gates)
-/ring-default:execute-plan        # Batch execution with checkpoints
-/ring-default:worktree            # Create isolated development branch
+/codereview          # Dispatch 3 parallel reviewers
+/brainstorm          # Socratic design refinement
+/pre-dev-feature     # <2 day features (4 gates)
+/pre-dev-full        # ≥2 day features (9 gates)
+/execute-plan        # Batch execution with checkpoints
+/worktree            # Create isolated development branch
 
 # Hook validation (from default plugin)
 bash default/hooks/session-start.sh      # Test skill loading
@@ -364,9 +389,9 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter |
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
-| Code review | `/ring-default:codereview` dispatches 3 parallel reviewers |
-| Pre-dev (small) | `/ring-pm-team:pre-dev-feature` → 4-gate workflow |
-| Pre-dev (large) | `/ring-pm-team:pre-dev-full` → 9-gate workflow |
+| Code review | `/codereview` dispatches 3 parallel reviewers |
+| Pre-dev (small) | `/pre-dev-feature` → 4-gate workflow |
+| Pre-dev (large) | `/pre-dev-full` → 9-gate workflow |
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
@@ -385,14 +410,14 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 ### Naming Conventions
 - Skills: `kebab-case` matching directory name
 - Agents: `{domain}-reviewer.md` format
-- Commands: `/ring-{plugin}:{action}` format (e.g., `/ring-default:brainstorm`, `/ring-pm-team:pre-dev-feature`)
+- Commands: `/ring-{plugin}:{action}` format (e.g., `/brainstorm`, `/pre-dev-feature`)
 - Hooks: `{event}-{purpose}.sh` format
 
 #### Agent/Skill/Command Invocation
 - **ALWAYS use fully qualified names**: `ring-{plugin}:{component}`
 - **Examples:**
-  - ✅ Correct: `ring-default:code-reviewer`
-  - ✅ Correct: `ring-dev-team:backend-engineer-golang`
+  - ✅ Correct: `code-reviewer`
+  - ✅ Correct: `backend-engineer-golang`
   - ❌ Wrong: `ring:code-reviewer` (ambiguous shorthand)
   - ❌ Wrong: `backend-engineer-golang` (missing plugin prefix)
 - **Rationale:** Prevents ambiguity in multi-plugin environments
@@ -403,9 +428,9 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
 | Schema Type | Used By | Key Sections |
 |-------------|---------|--------------|
-| Implementation | ring-dev-team:* engineers | Summary, Implementation, Files Changed, Testing |
+| Implementation | * engineers | Summary, Implementation, Files Changed, Testing |
 | Analysis | frontend-designer, finops-analyzer | Analysis, Findings, Recommendations |
-| Reviewer | ring-default:*-reviewer | VERDICT, Issues Found, What Was Done Well |
+| Reviewer | *-reviewer | VERDICT, Issues Found, What Was Done Well |
 | Exploration | codebase-explorer | Exploration Summary, Key Findings, Architecture |
 | Planning | write-plan | Goal, Architecture, Tech Stack, Tasks |
 
@@ -432,7 +457,7 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 - Announce non-obvious skill usage
 
 # Commit compliance (default/commands/commit.md)
-- ALWAYS use /ring-default:commit for all commits
+- ALWAYS use /commit for all commits
 - Never write git commit commands manually
 - Command enforces: conventional commits, trailers, no emoji signatures
 - MUST use --trailer parameter for AI identification (NOT in message body)
@@ -522,4 +547,4 @@ Using-* Skills (plugin introductions):
 - [ ] No `ring:` shorthand used (except in historical examples with context)
 - [ ] No bare agent/skill names in invocation contexts
 
-**Always use fully qualified names:** `ring-{plugin}:{component}` (e.g., `ring-default:code-reviewer`)
+**Always use fully qualified names:** `ring-{plugin}:{component}` (e.g., `code-reviewer`)

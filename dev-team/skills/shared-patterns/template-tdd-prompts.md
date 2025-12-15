@@ -103,7 +103,7 @@ Skills should reference this file:
 ```markdown
 ## TDD Prompt Templates
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for:
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for:
 - TDD-RED phase prompt template
 - TDD-GREEN phase prompt template
 - HARD GATE verifications

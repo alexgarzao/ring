@@ -216,7 +216,7 @@ Test positioning viability:
 [Phase 5 output]
 
 ## Next Steps
-1. **Messaging Development:** Use ring-pmm-team:messaging-creation
+1. **Messaging Development:** Use messaging-creation
 2. **Validation Activities:** [Recommended validation]
 3. **Stakeholder Alignment:** [Who needs to approve]
 

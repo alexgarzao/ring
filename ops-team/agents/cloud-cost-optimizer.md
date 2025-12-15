@@ -69,7 +69,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-ops-team:cloud-cost-optimizer", model="opus", ...)  # REQUIRED
+Task(subagent_type="cloud-cost-optimizer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Cloud cost optimization requires analysis of complex billing data, understanding of pricing models across providers, and strategic financial recommendations - all requiring Opus-level analytical capabilities.
@@ -329,8 +329,8 @@ When reporting cost issues:
 
 ## What This Agent Does NOT Handle
 
-- Infrastructure provisioning (use `ring-ops-team:infrastructure-architect`)
-- Incident response (use `ring-ops-team:incident-responder`)
-- Platform engineering (use `ring-ops-team:platform-engineer`)
-- Security operations (use `ring-ops-team:security-operations`)
-- Application optimization (use `ring-dev-team:backend-engineer-*`)
+- Infrastructure provisioning (use `infrastructure-architect`)
+- Incident response (use `incident-responder`)
+- Platform engineering (use `platform-engineer`)
+- Security operations (use `security-operations`)
+- Application optimization (use `backend-engineer-*`)

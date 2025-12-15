@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ops-cost-optimization]
-  uses: [ring-ops-team:infrastructure-architect, ring-ops-team:cloud-cost-optimizer]
+  uses: [infrastructure-architect, cloud-cost-optimizer]
 ---
 
 # Capacity Planning Workflow
@@ -296,7 +296,7 @@ For capacity planning tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring-ops-team:infrastructure-architect"
+  subagent_type: "infrastructure-architect"
   model: "opus"
   prompt: |
     CAPACITY PLANNING: [scope]
@@ -309,7 +309,7 @@ For cost analysis of capacity options:
 
 ```
 Task tool:
-  subagent_type: "ring-ops-team:cloud-cost-optimizer"
+  subagent_type: "cloud-cost-optimizer"
   model: "opus"
   prompt: |
     CAPACITY OPTIONS: [options to evaluate]

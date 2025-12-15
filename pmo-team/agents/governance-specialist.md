@@ -70,7 +70,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmo-team:governance-specialist", model="opus", ...)  # REQUIRED
+Task(subagent_type="governance-specialist", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Governance assessment requires detailed analysis of process compliance, risk evaluation, and nuanced judgment about gate passage that demands Opus-level reasoning capabilities.
@@ -320,8 +320,8 @@ Conducted Gate 2 (Planning Complete) review for Project Phoenix. Recommendation:
 
 ## What This Agent Does NOT Handle
 
-- Project planning (use `ring-pm-team:pre-dev-feature`)
-- Portfolio prioritization (use `ring-pmo-team:portfolio-manager`)
-- Resource allocation (use `ring-pmo-team:resource-planner`)
-- Risk analysis detail (use `ring-pmo-team:risk-analyst`)
-- Executive communication (use `ring-pmo-team:executive-reporter`)
+- Project planning (use `pre-dev-feature`)
+- Portfolio prioritization (use `portfolio-manager`)
+- Resource allocation (use `resource-planner`)
+- Risk analysis detail (use `risk-analyst`)
+- Executive communication (use `executive-reporter`)

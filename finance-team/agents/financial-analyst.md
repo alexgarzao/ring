@@ -85,7 +85,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-finance-team:financial-analyst", model="opus", ...)  # REQUIRED
+Task(subagent_type="financial-analyst", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Financial analysis requires Opus-level reasoning for accurate ratio interpretation, trend identification, and nuanced recommendations that consider multiple factors simultaneously.
@@ -343,9 +343,9 @@ Analysis of XYZ Corp FY2024 financial statements reveals strong profitability (R
 
 ## What This Agent Does NOT Handle
 
-- Financial model building (use `ring-finance-team:financial-modeler`)
-- Budget creation and forecasting (use `ring-finance-team:budget-planner`)
-- Treasury and cash management (use `ring-finance-team:treasury-specialist`)
-- Accounting entries and close (use `ring-finance-team:accounting-specialist`)
-- KPI dashboard design (use `ring-finance-team:metrics-analyst`)
-- Brazilian regulatory compliance (use `ring-finops-team:finops-analyzer`)
+- Financial model building (use `financial-modeler`)
+- Budget creation and forecasting (use `budget-planner`)
+- Treasury and cash management (use `treasury-specialist`)
+- Accounting entries and close (use `accounting-specialist`)
+- KPI dashboard design (use `metrics-analyst`)
+- Brazilian regulatory compliance (use `finops-analyzer`)

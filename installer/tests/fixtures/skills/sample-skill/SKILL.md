@@ -1,6 +1,6 @@
 <!--
 NOTE: This fixture intentionally uses ambiguous ring: shorthand to test the adapter
-transformation logic. DO NOT change to ring-default: format.
+transformation logic. DO NOT change to  format.
 See installer/ring_installer/adapters/factory.py for transformation tests.
 -->
 ---

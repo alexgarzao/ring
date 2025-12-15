@@ -40,7 +40,7 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 3. Test with:
    ```
-   Skill tool: "ring-default:testing-skills-with-subagents"
+   Skill tool: "testing-skills-with-subagents"
    ```
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
@@ -98,10 +98,10 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Located: `default/skills/using-ring/SKILL.md`
 
 ### Ring Dev Team Plugin
-- `ring-dev-team:using-dev-team` → 7 specialist developer agents
+- `using-dev-team` → 7 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
-- Agents (invoke as `ring-dev-team:{agent-name}`):
+- Agents (invoke as `{agent-name}`):
   - backend-engineer-golang
   - backend-engineer-typescript
   - devops-engineer
@@ -114,7 +114,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - `using-finops-team` → 2 FinOps agents for Brazilian compliance
 - Auto-loads when ring-finops-team plugin is enabled
 - Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents (invoke as `ring-finops-team:{agent-name}`):
+- Agents (invoke as `{agent-name}`):
   - finops-analyzer (compliance analysis)
   - finops-automation (template generation)
 
@@ -128,7 +128,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - `using-tw-team` → 3 technical writing agents for documentation
 - Auto-loads when ring-tw-team plugin is enabled
 - Located: `tw-team/skills/using-tw-team/SKILL.md`
-- Agents (invoke as `ring-tw-team:{agent-name}`):
+- Agents (invoke as `{agent-name}`):
   - functional-writer (guides)
   - api-writer (API reference)
   - docs-reviewer (quality review)
@@ -149,7 +149,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 3. Dispatch via Task tool:
    ```
-   subagent_type="ring-default:your-reviewer"
+   subagent_type="your-reviewer"
    ```
 
 4. **MUST run in parallel** with other reviewers (single message, multiple Tasks)
@@ -158,7 +158,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Pre-Dev Workflow
 
-### Simple Features (<2 days): `/ring-pm-team:pre-dev-feature`
+### Simple Features (<2 days): `/pre-dev-feature`
 
 ```
 ├── Gate 0: pm-team/skills/pre-dev-research
@@ -171,7 +171,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
     └── Output: docs/pre-dev/feature/tasks.md
 ```
 
-### Complex Features (≥2 days): `/ring-pm-team:pre-dev-full`
+### Complex Features (≥2 days): `/pre-dev-full`
 
 ```
 ├── Gate 0: Research Phase
@@ -196,18 +196,18 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 ### Instead of sequential (60 min)
 
 ```python
-review1 = Task("ring-default:code-reviewer")           # 20 min
-review2 = Task("ring-default:business-logic-reviewer") # 20 min
-review3 = Task("ring-default:security-reviewer")       # 20 min
+review1 = Task("code-reviewer")           # 20 min
+review2 = Task("business-logic-reviewer") # 20 min
+review3 = Task("security-reviewer")       # 20 min
 ```
 
 ### Run parallel (20 min total)
 
 ```python
 Task.parallel([
-    ("ring-default:code-reviewer", prompt),
-    ("ring-default:business-logic-reviewer", prompt),
-    ("ring-default:security-reviewer", prompt)
+    ("code-reviewer", prompt),
+    ("business-logic-reviewer", prompt),
+    ("security-reviewer", prompt)
 ])  # Single message, 3 tool calls
 ```
 

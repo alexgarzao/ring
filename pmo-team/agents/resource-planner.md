@@ -70,7 +70,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-pmo-team:resource-planner", model="opus", ...)  # REQUIRED
+Task(subagent_type="resource-planner", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Resource planning requires complex capacity modeling, conflict resolution, and optimization across multiple projects that demands Opus-level reasoning capabilities.
@@ -301,8 +301,8 @@ Analyzed 24 resources across 4 teams for Q1 2025 allocation. Current aggregate u
 
 ## What This Agent Does NOT Handle
 
-- Portfolio-level prioritization (use `ring-pmo-team:portfolio-manager`)
-- Individual project planning (use `ring-pm-team:pre-dev-feature`)
+- Portfolio-level prioritization (use `portfolio-manager`)
+- Individual project planning (use `pre-dev-feature`)
 - HR policies and compensation (organizational HR)
 - Team performance management (people managers)
 - Project scheduling (project managers)

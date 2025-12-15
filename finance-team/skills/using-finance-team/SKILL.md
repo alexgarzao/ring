@@ -18,16 +18,16 @@ skip_when: |
   - Planning/design → use brainstorming
 
 related:
-  similar: [ring-default:using-ring, ring-finops-team:using-finops-team]
+  similar: [using-ring, using-finops-team]
 ---
 
 # Using Ring Finance Specialists
 
 The ring-finance-team plugin provides 6 specialized financial agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces finance-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces finance-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 **Domain Distinction:**
 - **ring-finops-team**: Brazilian regulatory compliance (BACEN, RFB, Open Banking)
@@ -126,17 +126,17 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
-| **`ring-finance-team:financial-analyst`** | Ratio analysis, trend analysis, benchmarking, variance analysis, financial statement analysis | Financial health assessment, performance analysis, investment evaluation |
-| **`ring-finance-team:budget-planner`** | Budget creation, forecasting, variance analysis, rolling forecasts, zero-based budgeting | Annual budgets, departmental budgets, budget-to-actual analysis |
-| **`ring-finance-team:financial-modeler`** | DCF models, LBO models, merger models, scenario analysis, sensitivity analysis | Valuation, investment analysis, strategic planning, M&A |
-| **`ring-finance-team:treasury-specialist`** | Cash flow forecasting, liquidity management, working capital, FX exposure, debt management | Cash position, liquidity planning, treasury operations |
-| **`ring-finance-team:accounting-specialist`** | Journal entries, reconciliations, close procedures, GAAP/IFRS compliance, audit support | Month-end close, year-end close, accounting entries, compliance |
-| **`ring-finance-team:metrics-analyst`** | KPI definition, dashboard design, performance metrics, data visualization, anomaly detection | Executive dashboards, KPI tracking, performance monitoring |
+| **`financial-analyst`** | Ratio analysis, trend analysis, benchmarking, variance analysis, financial statement analysis | Financial health assessment, performance analysis, investment evaluation |
+| **`budget-planner`** | Budget creation, forecasting, variance analysis, rolling forecasts, zero-based budgeting | Annual budgets, departmental budgets, budget-to-actual analysis |
+| **`financial-modeler`** | DCF models, LBO models, merger models, scenario analysis, sensitivity analysis | Valuation, investment analysis, strategic planning, M&A |
+| **`treasury-specialist`** | Cash flow forecasting, liquidity management, working capital, FX exposure, debt management | Cash position, liquidity planning, treasury operations |
+| **`accounting-specialist`** | Journal entries, reconciliations, close procedures, GAAP/IFRS compliance, audit support | Month-end close, year-end close, accounting entries, compliance |
+| **`metrics-analyst`** | KPI definition, dashboard design, performance metrics, data visualization, anomaly detection | Executive dashboards, KPI tracking, performance monitoring |
 
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "ring-finance-team:{agent-name}"
+  subagent_type: "{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
@@ -169,14 +169,14 @@ If you need multiple specialists (e.g., financial-analyst + budget-planner), dis
 
 ```
 CORRECT:
-Task #1: ring-finance-team:financial-analyst
-Task #2: ring-finance-team:budget-planner
+Task #1: financial-analyst
+Task #2: budget-planner
 (Both run in parallel)
 
 WRONG:
-Task #1: ring-finance-team:financial-analyst
+Task #1: financial-analyst
 (Wait for response)
-Task #2: ring-finance-team:budget-planner
+Task #2: budget-planner
 (Sequential = 2x slower)
 ```
 
@@ -190,7 +190,7 @@ Remember:
 - **Combine with using-ring principle** - Skills + Specialists = complete workflow
 
 ### Good Example (ORCHESTRATOR):
-> "I need a DCF valuation. Let me dispatch `ring-finance-team:financial-modeler` to build it."
+> "I need a DCF valuation. Let me dispatch `financial-modeler` to build it."
 
 ### Bad Example (OPERATOR):
 > "I'll calculate the DCF myself and just note my assumptions."
@@ -212,9 +212,9 @@ Remember:
 - `financial-close` - Month/year-end close workflow
 
 **Commands:**
-- `/ring-finance-team:analyze-financials` - Run financial analysis
-- `/ring-finance-team:create-budget` - Create budget or forecast
-- `/ring-finance-team:build-model` - Build financial model
+- `/analyze-financials` - Run financial analysis
+- `/create-budget` - Create budget or forecast
+- `/build-model` - Build financial model
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-finance-team plugin.
 
@@ -224,9 +224,9 @@ Remember:
 
 | Workflow | Entry Point | Output |
 |----------|-------------|--------|
-| **Financial Analysis** | `/ring-finance-team:analyze-financials` | Analysis report with findings |
-| **Budget Creation** | `/ring-finance-team:create-budget` | Budget document with assumptions |
-| **Financial Model** | `/ring-finance-team:build-model` | Model with scenarios and sensitivity |
+| **Financial Analysis** | `/analyze-financials` | Analysis report with findings |
+| **Budget Creation** | `/create-budget` | Budget document with assumptions |
+| **Financial Model** | `/build-model` | Model with scenarios and sensitivity |
 
 **Key Principle:** All financial work follows documentation and verification standards.
 

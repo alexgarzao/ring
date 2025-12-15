@@ -15,7 +15,7 @@ skip_when: |
   - Already merged → proceed to next task
 
 sequence:
-  after: [ring-default:verification-before-completion, ring-default:requesting-code-review]
+  after: [verification-before-completion, requesting-code-review]
 ---
 
 # Finishing a Development Branch

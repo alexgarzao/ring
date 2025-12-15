@@ -5,7 +5,7 @@ description: |
   streams, and dispatches AI agents to fix all issues until the codebase is clean.
 
 trigger: |
-  - User runs /ring-default:lint command
+  - User runs /lint command
   - Codebase has lint issues that need fixing
   - Multiple lint errors across different files/components
 
@@ -124,8 +124,8 @@ After all agents complete, run `<lint_command> 2>&1`.
 | Issue Type | Agent Type |
 |------------|------------|
 | TypeScript/JavaScript | `general-purpose` |
-| Go | `general-purpose` or `ring-dev-team:backend-engineer-golang` |
-| Security lints | `ring-default:security-reviewer` for analysis first |
+| Go | `general-purpose` or `backend-engineer-golang` |
+| Security lints | `security-reviewer` for analysis first |
 | Style/formatting | `general-purpose` |
 
 ## Output Format
@@ -152,4 +152,4 @@ After all agents complete, run `<lint_command> 2>&1`.
 
 ## Example Session
 
-`/ring-default:lint` → Run lint → 16 issues in 3 areas → Analyze streams (API: 5, Services: 8, Utils: 3) → Dispatch 3 parallel agents → All complete → Re-run lint → ✅ All pass.
+`/lint` → Run lint → 16 issues in 3 areas → Analyze streams (API: 5, Services: 8, Utils: 3) → Dispatch 3 parallel agents → All complete → Re-run lint → ✅ All pass.

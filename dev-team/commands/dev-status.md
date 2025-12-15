@@ -3,7 +3,7 @@ Check the status of the current development cycle.
 ## Usage
 
 ```
-/ring-dev-team:dev-status
+/dev-status
 ```
 
 ## Output
@@ -47,19 +47,19 @@ State file: docs/refactor/current-cycle.json
 ℹ️ No development cycle in progress.
 
 Start a new cycle with:
-  /ring-dev-team:dev-cycle docs/tasks/your-tasks.md
+  /dev-cycle docs/tasks/your-tasks.md
 
 Or resume an interrupted cycle:
-  /ring-dev-team:dev-cycle --resume
+  /dev-cycle --resume
 ```
 
 ## Related Commands
 
 | Command | Description |
 |---------|-------------|
-| `/ring-dev-team:dev-cycle` | Start or resume cycle |
-| `/ring-dev-team:dev-cancel` | Cancel running cycle |
-| `/ring-dev-team:dev-report` | View feedback report |
+| `/dev-cycle` | Start or resume cycle |
+| `/dev-cancel` | Cancel running cycle |
+| `/dev-report` | View feedback report |
 
 ---
 

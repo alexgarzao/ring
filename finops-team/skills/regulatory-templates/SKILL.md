@@ -11,11 +11,11 @@ trigger: |
 
 skip_when: |
   - Non-Brazilian regulations → not applicable
-  - Analysis-only without template → use ring-finops-team:finops-analyzer directly
+  - Analysis-only without template → use finops-analyzer directly
   - Template already exists, just needs updates → modify directly
 
 sequence:
-  before: [ring-finops-team:regulatory-templates-setup]
+  before: [regulatory-templates-setup]
 ---
 
 # Regulatory Templates - Orchestrator
@@ -41,8 +41,8 @@ sequence:
 - **DIMP:** v10 (Movimentação Patrimonial)
 
 **REQUIRED AGENTS:** The sub-skills dispatch specialized agents:
-- `ring-finops-team:finops-analyzer` - For Gates 1-2 and Discussion (regulatory analysis and validation)
-- `ring-finops-team:finops-automation` - For Gate 3 (template file generation)
+- `finops-analyzer` - For Gates 1-2 and Discussion (regulatory analysis and validation)
+- `finops-automation` - For Gate 3 (template file generation)
 
 ---
 
@@ -161,9 +161,9 @@ The workflow exists specifically to prevent these exact thoughts from leading to
 | Phase | Sub-skill | Purpose | Agent |
 |-------|-----------|---------|-------|
 | Setup | `regulatory-templates-setup` | Template selection, context init | — |
-| Gate 1 | `regulatory-templates-gate1` | Regulatory analysis, field mapping | `ring-finops-team:finops-analyzer` (opus) |
-| Gate 2 | `regulatory-templates-gate2` | Validate mappings, test transformations | `ring-finops-team:finops-analyzer` (opus) |
-| Gate 3 | `regulatory-templates-gate3` | Generate .tpl template file | `ring-finops-team:finops-automation` (sonnet) |
+| Gate 1 | `regulatory-templates-gate1` | Regulatory analysis, field mapping | `finops-analyzer` (opus) |
+| Gate 2 | `regulatory-templates-gate2` | Validate mappings, test transformations | `finops-analyzer` (opus) |
+| Gate 3 | `regulatory-templates-gate3` | Generate .tpl template file | `finops-automation` (sonnet) |
 
 ---
 

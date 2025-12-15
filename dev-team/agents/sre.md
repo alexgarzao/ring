@@ -75,7 +75,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring-dev-team:sre", model="opus", ...)  # REQUIRED
+Task(subagent_type="sre", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Observability validation + OpenTelemetry expertise requires Opus-level reasoning for structured logging validation, distributed tracing analysis, and comprehensive SRE standards verification.
@@ -289,12 +289,30 @@ See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/m
 
 When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the observability implementation against Lerian/Ring SRE Standards.
 
-### Comparison Categories for SRE/Observability
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | Expected Pattern |
-|----------|--------------|------------------|
-| **Logging** | Structured JSON | trace_id, request_id correlation |
-| **Tracing** | OpenTelemetry | Distributed tracing with span context |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "sre → sre.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Monitoring", "Alerts"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section |
+|---|---------|
+| 1 | Observability Stack (MANDATORY) |
+| 2 | Logging Standards (MANDATORY) |
+| 3 | Tracing Standards (MANDATORY) |
+| 4 | OpenTelemetry with lib-commons (MANDATORY) |
+| 5 | Structured Logging with lib-common-js (MANDATORY) |
+| 6 | Health Checks (MANDATORY) |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 
@@ -464,11 +482,11 @@ $ docker-compose logs app | head -5 | jq .
 
 | Task | Who Handles It |
 |------|---------------|
-| **Implementing health endpoints** | `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript` |
-| **Implementing structured logging** | `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript` |
-| **Implementing tracing** | `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript` |
-| **Application feature development** | `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, or `ring-dev-team:frontend-bff-engineer-typescript` |
-| **Test case writing** | `ring-dev-team:qa-analyst` |
-| **Docker/docker-compose setup** | `ring-dev-team:devops-engineer` |
+| **Implementing health endpoints** | `backend-engineer-golang` or `backend-engineer-typescript` |
+| **Implementing structured logging** | `backend-engineer-golang` or `backend-engineer-typescript` |
+| **Implementing tracing** | `backend-engineer-golang` or `backend-engineer-typescript` |
+| **Application feature development** | `backend-engineer-golang`, `backend-engineer-typescript`, or `frontend-bff-engineer-typescript` |
+| **Test case writing** | `qa-analyst` |
+| **Docker/docker-compose setup** | `devops-engineer` |
 
 **SRE validates. Developers implement.**

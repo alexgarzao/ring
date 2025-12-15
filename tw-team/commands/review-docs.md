@@ -10,7 +10,7 @@ arguments:
 
 # Review Documentation Command
 
-You're reviewing documentation quality. This command dispatches the ring-tw-team:docs-reviewer agent.
+You're reviewing documentation quality. This command dispatches the docs-reviewer agent.
 
 ## Review Process
 
@@ -51,7 +51,7 @@ The review covers five dimensions:
 
 ```
 Task tool:
-  subagent_type: "ring-tw-team:docs-reviewer"
+  subagent_type: "docs-reviewer"
   model: "opus"
   prompt: "Review this documentation for quality. Check:
           1. Voice and tone (second person, active voice, present tense)
