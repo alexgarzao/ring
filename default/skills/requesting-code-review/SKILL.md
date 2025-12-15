@@ -30,17 +30,17 @@ Dispatch all three reviewer subagents in parallel for fast, comprehensive feedba
 
 Three specialized reviewers run in **parallel** for maximum speed:
 
-**1. code-reviewer** (Foundation)
+**1. ring-default:code-reviewer** (Foundation)
 - **Focus:** Architecture, design patterns, code quality, maintainability
 - **Model:** Opus (required for comprehensive analysis)
 - **Reports:** Code quality issues, architectural concerns
 
-**2. business-logic-reviewer** (Correctness)
+**2. ring-default:business-logic-reviewer** (Correctness)
 - **Focus:** Domain correctness, business rules, edge cases, requirements
 - **Model:** Opus (required for deep domain understanding)
 - **Reports:** Business logic issues, requirement gaps
 
-**3. security-reviewer** (Safety)
+**3. ring-default:security-reviewer** (Safety)
 - **Focus:** Vulnerabilities, authentication, input validation, OWASP risks
 - **Model:** Opus (required for thorough security analysis)
 - **Reports:** Security vulnerabilities, OWASP risks
