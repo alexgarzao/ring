@@ -53,10 +53,10 @@ State file: docs/refactor/current-cycle.json
 ℹ️ No development cycle in progress.
 
 Start a new cycle with:
-  /dev-cycle docs/tasks/your-tasks.md
+  /ring-dev-team:dev-cycle docs/tasks/your-tasks.md
 
 Or resume an interrupted cycle:
-  /dev-cycle --resume
+  /ring-dev-team:dev-cycle --resume
 ```
 
 ## Related Commands
