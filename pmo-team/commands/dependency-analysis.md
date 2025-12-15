@@ -65,8 +65,8 @@ Analyze cross-project dependencies across the portfolio.
 
 | Command | Description |
 |---------|-------------|
-| `/portfolio-review` | Include as part of full review |
-| `/executive-summary` | Summarize for executives |
+| `/ring-pmo-team:portfolio-review` | Include as part of full review |
+| `/ring-pmo-team:executive-summary` | Summarize for executives |
 
 ---
 

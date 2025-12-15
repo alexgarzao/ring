@@ -212,9 +212,9 @@ Remember:
 - `financial-close` - Month/year-end close workflow
 
 **Commands:**
-- `/analyze-financials` - Run financial analysis
-- `/create-budget` - Create budget or forecast
-- `/build-model` - Build financial model
+- `/ring-finance-team:analyze-financials` - Run financial analysis
+- `/ring-finance-team:create-budget` - Create budget or forecast
+- `/ring-finance-team:build-model` - Build financial model
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-finance-team plugin.
 
@@ -224,9 +224,9 @@ Remember:
 
 | Workflow | Entry Point | Output |
 |----------|-------------|--------|
-| **Financial Analysis** | `/analyze-financials` | Analysis report with findings |
-| **Budget Creation** | `/create-budget` | Budget document with assumptions |
-| **Financial Model** | `/build-model` | Model with scenarios and sensitivity |
+| **Financial Analysis** | `/ring-finance-team:analyze-financials` | Analysis report with findings |
+| **Budget Creation** | `/ring-finance-team:create-budget` | Budget document with assumptions |
+| **Financial Model** | `/ring-finance-team:build-model` | Model with scenarios and sensitivity |
 
 **Key Principle:** All financial work follows documentation and verification standards.
 

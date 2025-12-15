@@ -63,8 +63,8 @@ Conduct a comprehensive portfolio review across multiple projects.
 
 | Command | Description |
 |---------|-------------|
-| `/executive-summary` | Generate executive summary from review |
-| `/dependency-analysis` | Deep dive on dependencies |
+| `/ring-pmo-team:executive-summary` | Generate executive summary from review |
+| `/ring-pmo-team:dependency-analysis` | Deep dive on dependencies |
 
 ---
 

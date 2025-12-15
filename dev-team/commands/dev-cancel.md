@@ -71,8 +71,8 @@ Check status with:
 | Command | Description |
 |---------|-------------|
 | `/ring-dev-team:dev-cycle` | Start or resume cycle |
-| `/dev-status` | Check current status |
-| `/dev-report` | View feedback report |
+| `/ring-dev-team:dev-status` | Check current status |
+| `/ring-dev-team:dev-report` | View feedback report |
 
 ---
 

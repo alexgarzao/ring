@@ -76,8 +76,8 @@ The command produces a comprehensive analysis report including:
 
 | Command | Description |
 |---------|-------------|
-| `/create-budget` | Create budget or forecast |
-| `/build-model` | Build financial model |
+| `/ring-finance-team:create-budget` | Create budget or forecast |
+| `/ring-finance-team:build-model` | Build financial model |
 
 ---
 

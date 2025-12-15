@@ -62,8 +62,8 @@ Generate an executive summary of portfolio status for leadership.
 
 | Command | Description |
 |---------|-------------|
-| `/portfolio-review` | Conduct full review first |
-| `/dependency-analysis` | Add dependency details |
+| `/ring-pmo-team:portfolio-review` | Conduct full review first |
+| `/ring-pmo-team:dependency-analysis` | Add dependency details |
 
 ---
 

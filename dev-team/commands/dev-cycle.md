@@ -78,9 +78,9 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 
 | Command | Description |
 |---------|-------------|
-| `/dev-status` | Check current cycle status |
-| `/dev-cancel` | Cancel running cycle |
-| `/dev-report` | View feedback report |
+| `/ring-dev-team:dev-status` | Check current cycle status |
+| `/ring-dev-team:dev-cancel` | Cancel running cycle |
+| `/ring-dev-team:dev-report` | View feedback report |
 
 ---
 

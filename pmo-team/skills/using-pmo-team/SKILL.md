@@ -261,9 +261,9 @@ Remember:
 - `pmo-retrospective` - Portfolio retrospectives and lessons learned
 
 **Commands:**
-- `/portfolio-review` - Conduct portfolio review
-- `/executive-summary` - Generate executive summary
-- `/dependency-analysis` - Analyze cross-project dependencies
+- `/ring-pmo-team:portfolio-review` - Conduct portfolio review
+- `/ring-pmo-team:executive-summary` - Generate executive summary
+- `/ring-pmo-team:dependency-analysis` - Analyze cross-project dependencies
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-pmo-team plugin.
 
@@ -273,9 +273,9 @@ Remember:
 
 | Workflow | Entry Point | Output |
 |----------|-------------|--------|
-| **Portfolio Review** | `/portfolio-review` | `docs/pmo/{date}/portfolio-status.md` |
-| **Executive Report** | `/executive-summary` | `docs/pmo/{date}/executive-summary.md` |
-| **Dependency Analysis** | `/dependency-analysis` | `docs/pmo/{date}/dependency-map.md` |
+| **Portfolio Review** | `/ring-pmo-team:portfolio-review` | `docs/pmo/{date}/portfolio-status.md` |
+| **Executive Report** | `/ring-pmo-team:executive-summary` | `docs/pmo/{date}/executive-summary.md` |
+| **Dependency Analysis** | `/ring-pmo-team:dependency-analysis` | `docs/pmo/{date}/dependency-map.md` |
 
 ---
 

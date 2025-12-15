@@ -64,8 +64,8 @@ Or resume an interrupted cycle:
 | Command | Description |
 |---------|-------------|
 | `/ring-dev-team:dev-cycle` | Start or resume cycle |
-| `/dev-cancel` | Cancel running cycle |
-| `/dev-report` | View feedback report |
+| `/ring-dev-team:dev-cancel` | Cancel running cycle |
+| `/ring-dev-team:dev-report` | View feedback report |
 
 ---
 

@@ -80,8 +80,8 @@ The command produces a complete financial model including:
 
 | Command | Description |
 |---------|-------------|
-| `/analyze-financials` | Financial analysis |
-| `/create-budget` | Create budget |
+| `/ring-finance-team:analyze-financials` | Financial analysis |
+| `/ring-finance-team:create-budget` | Create budget |
 
 ---
 

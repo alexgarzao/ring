@@ -89,8 +89,8 @@ The command produces a comprehensive budget including:
 
 | Command | Description |
 |---------|-------------|
-| `/analyze-financials` | Financial analysis |
-| `/build-model` | Build financial model |
+| `/ring-finance-team:analyze-financials` | Financial analysis |
+| `/ring-finance-team:build-model` | Build financial model |
 
 ---
 

@@ -100,8 +100,8 @@ ls .ring/dev-team/feedback/
 | Command | Description |
 |---------|-------------|
 | `/ring-dev-team:dev-cycle` | Start new cycle |
-| `/dev-status` | Check current status |
-| `/dev-cancel` | Cancel running cycle |
+| `/ring-dev-team:dev-status` | Check current status |
+| `/ring-dev-team:dev-cancel` | Cancel running cycle |
 
 ---
 

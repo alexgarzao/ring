@@ -236,10 +236,10 @@ Task tool:
 - `ops-migration-planning` - Migration planning process
 
 **Commands:**
-- `/incident` - Production incident management
-- `/capacity-review` - Infrastructure capacity review
-- `/cost-analysis` - Cloud cost analysis
-- `/security-audit` - Security audit workflow
+- `/ring-ops-team:incident` - Production incident management
+- `/ring-ops-team:capacity-review` - Infrastructure capacity review
+- `/ring-ops-team:cost-analysis` - Cloud cost analysis
+- `/ring-ops-team:security-audit` - Security audit workflow
 
 ---
 
