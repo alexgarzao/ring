@@ -46,11 +46,11 @@ Conduct a comprehensive portfolio review across multiple projects.
 
 | Dimension | Agent | Skill |
 |-----------|-------|-------|
-| Portfolio Health | `portfolio-manager` | `portfolio-planning` |
-| Resource Capacity | `resource-planner` | `resource-allocation` |
-| Risk Posture | `risk-analyst` | `risk-management` |
-| Governance Status | `governance-specialist` | Gate compliance |
-| Dependencies | Orchestrator | `dependency-mapping` |
+| Portfolio Health | `ring-pmo-team:portfolio-manager` | `ring-pmo-team:portfolio-planning` |
+| Resource Capacity | `ring-pmo-team:resource-planner` | `ring-pmo-team:resource-allocation` |
+| Risk Posture | `ring-pmo-team:risk-analyst` | `ring-pmo-team:risk-management` |
+| Governance Status | `ring-pmo-team:governance-specialist` | Gate compliance |
+| Dependencies | Orchestrator | `ring-pmo-team:dependency-mapping` |
 
 ## Output
 

@@ -338,8 +338,8 @@ Portfolio status: **YELLOW** - On track overall with two areas requiring attenti
 
 ## What This Agent Does NOT Handle
 
-- Portfolio analysis detail (use `portfolio-manager`)
-- Resource planning (use `resource-planner`)
-- Risk analysis depth (use `risk-analyst`)
-- Governance process (use `governance-specialist`)
-- Technical documentation (use `functional-writer`)
+- Portfolio analysis detail (use `ring-pmo-team:portfolio-manager`)
+- Resource planning (use `ring-pmo-team:resource-planner`)
+- Risk analysis depth (use `ring-pmo-team:risk-analyst`)
+- Governance process (use `ring-pmo-team:governance-specialist`)
+- Technical documentation (use `ring-tw-team:functional-writer`)

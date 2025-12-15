@@ -104,7 +104,7 @@ Before starting portfolio planning, ensure:
 3. Identify over/under allocation
 4. Document skill gaps
 
-**Dispatch:** `resource-planner` for detailed analysis
+**Dispatch:** `ring-pmo-team:resource-planner` for detailed analysis
 
 **Output:** `docs/pmo/{date}/capacity-assessment.md`
 
@@ -120,7 +120,7 @@ Before starting portfolio planning, ensure:
 3. Assess portfolio risk exposure
 4. Plan portfolio-level mitigations
 
-**Dispatch:** `risk-analyst` for detailed analysis
+**Dispatch:** `ring-pmo-team:risk-analyst` for detailed analysis
 
 **Output:** `docs/pmo/{date}/portfolio-risks.md`
 

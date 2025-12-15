@@ -27,7 +27,7 @@ The ring-pmo-team plugin provides 5 specialized PMO agents for portfolio-level m
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces pmo-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -171,11 +171,11 @@ Task tool:
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
-| **`portfolio-manager`** | Multi-project coordination, strategic alignment, portfolio health, prioritization | Portfolio reviews, project prioritization, capacity assessment |
-| **`resource-planner`** | Capacity planning, skills matrix, allocation optimization, conflict resolution | Resource allocation, capacity planning, team assignments |
-| **`governance-specialist`** | Gate reviews, compliance, process adherence, audit readiness | Gate approvals, process compliance, governance audits |
-| **`risk-analyst`** | RAID logs, risk aggregation, mitigation planning, portfolio risk | Risk assessments, RAID management, mitigation strategies |
-| **`executive-reporter`** | Dashboards, status summaries, escalation reports, board packages | Executive updates, board reports, stakeholder communication |
+| **`ring-pmo-team:portfolio-manager`** | Multi-project coordination, strategic alignment, portfolio health, prioritization | Portfolio reviews, project prioritization, capacity assessment |
+| **`ring-pmo-team:resource-planner`** | Capacity planning, skills matrix, allocation optimization, conflict resolution | Resource allocation, capacity planning, team assignments |
+| **`ring-pmo-team:governance-specialist`** | Gate reviews, compliance, process adherence, audit readiness | Gate approvals, process compliance, governance audits |
+| **`ring-pmo-team:risk-analyst`** | RAID logs, risk aggregation, mitigation planning, portfolio risk | Risk assessments, RAID management, mitigation strategies |
+| **`ring-pmo-team:executive-reporter`** | Dashboards, status summaries, escalation reports, board packages | Executive updates, board reports, stakeholder communication |
 
 **Dispatch template:**
 ```
@@ -239,7 +239,7 @@ Remember:
 - **Combine with other plugins** - PMO + PM + Dev = complete delivery lifecycle
 
 ### Good Example (ORCHESTRATOR):
-> "I need portfolio status. Let me dispatch `portfolio-manager` to analyze."
+> "I need portfolio status. Let me dispatch `ring-pmo-team:portfolio-manager` to analyze."
 
 ### Bad Example (OPERATOR):
 > "I'll manually review each project and create a summary myself."

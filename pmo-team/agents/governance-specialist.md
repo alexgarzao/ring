@@ -322,6 +322,6 @@ Conducted Gate 2 (Planning Complete) review for Project Phoenix. Recommendation:
 
 - Project planning (use `ring-pm-team:pre-dev-feature`)
 - Portfolio prioritization (use `ring-pmo-team:portfolio-manager`)
-- Resource allocation (use `resource-planner`)
-- Risk analysis detail (use `risk-analyst`)
-- Executive communication (use `executive-reporter`)
+- Resource allocation (use `ring-pmo-team:resource-planner`)
+- Risk analysis detail (use `ring-pmo-team:risk-analyst`)
+- Executive communication (use `ring-pmo-team:executive-reporter`)

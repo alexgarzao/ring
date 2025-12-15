@@ -281,7 +281,7 @@ Analyzed 12 active projects across 3 strategic objectives. Overall portfolio hea
 ## What This Agent Does NOT Handle
 
 - Single project detailed planning (use `ring-pm-team:pre-dev-feature`)
-- Resource individual assignments (use `resource-planner`)
-- Detailed risk analysis (use `risk-analyst`)
-- Executive report formatting (use `executive-reporter`)
-- Project governance gates (use `governance-specialist`)
+- Resource individual assignments (use `ring-pmo-team:resource-planner`)
+- Detailed risk analysis (use `ring-pmo-team:risk-analyst`)
+- Executive report formatting (use `ring-pmo-team:executive-reporter`)
+- Project governance gates (use `ring-pmo-team:governance-specialist`)
