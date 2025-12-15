@@ -19,11 +19,11 @@ NOT_skip_when: |
   - "MVP doesn't need observability" → MVP without observability = blind MVP. No exceptions.
 
 sequence:
-  after: [dev-devops]
-  before: [dev-testing]
+  after: [ring-dev-team:dev-devops]
+  before: [ring-dev-team:dev-testing]
 
 related:
-  complementary: [dev-cycle, dev-devops, dev-testing]
+  complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-devops, ring-dev-team:dev-testing]
 
 verification:
   automated:
