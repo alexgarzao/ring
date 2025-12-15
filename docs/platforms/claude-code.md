@@ -74,11 +74,11 @@ Task tool with subagent_type="ring-dev-team:backend-engineer-golang"
 ```
 
 **Categories** (invoke as `ring-{plugin}:{agent-name}`):
-- **Review agents** (``): code-reviewer, business-logic-reviewer, security-reviewer
-- **Planning agents** (``): write-plan, codebase-explorer
-- **Developer agents** (``): 9 language/role specialists
-- **FinOps agents** (``): finops-analyzer, finops-automation
-- **TW agents** (``): functional-writer, api-writer, docs-reviewer
+- **Review agents**: ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer
+- **Planning agents**: ring-default:write-plan, ring-default:codebase-explorer
+- **Developer agents**: 9 language/role specialists (ring-dev-team:*)
+- **FinOps agents**: ring-finops-team:finops-analyzer, ring-finops-team:finops-automation
+- **TW agents**: ring-tw-team:functional-writer, ring-tw-team:api-writer, ring-tw-team:docs-reviewer
 
 ### Commands (14 total)
 
@@ -152,7 +152,7 @@ To install specific plugins only:
 
 ### Agent not found
 1. Ensure plugin is installed that contains the agent
-2. Use fully qualified name: `backend-engineer-golang`
+2. Use fully qualified name: `ring-dev-team:backend-engineer-golang`
 
 ### Commands not available
 1. Commands require their parent plugin
