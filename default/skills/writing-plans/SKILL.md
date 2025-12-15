@@ -10,13 +10,13 @@ trigger: |
   - Creating work for other engineers or AI agents
 
 skip_when: |
-  - Design not validated → use brainstorming first
-  - Requirements still unclear → use pre-dev-prd-creation first
-  - Already have a plan → use executing-plans
+  - Design not validated → use ring-default:brainstorming first
+  - Requirements still unclear → use ring-pm-team:pre-dev-prd-creation first
+  - Already have a plan → use ring-default:executing-plans
 
 sequence:
-  after: [brainstorming, pre-dev-trd-creation]
-  before: [executing-plans, subagent-driven-development]
+  after: [ring-default:brainstorming, ring-pm-team:pre-dev-trd-creation]
+  before: [ring-default:executing-plans, ring-default:subagent-driven-development]
 
 related:
   similar: [ring-default:brainstorming]
@@ -34,7 +34,7 @@ This skill dispatches a specialized agent to write comprehensive implementation 
 
 ## The Process
 
-**Step 1:** Dispatch write-plan agent via `Task(subagent_type: "general-purpose", model: "opus")` with instructions to load `write-plan` agent, create bite-sized tasks (2-5 min each), include exact file paths/complete code/verification steps, and save to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
+**Step 1:** Dispatch write-plan agent via `Task(subagent_type: "general-purpose", model: "opus")` with instructions to load `ring-default:write-plan` agent, create bite-sized tasks (2-5 min each), include exact file paths/complete code/verification steps, and save to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
 
 **Step 2:** Ask user via `AskUserQuestion`: "Execute now?" Options: (1) Execute now → `ring-default:subagent-driven-development` (2) Parallel session → user opens new session with `ring-default:executing-plans` (3) Save for later → report location and end
 
@@ -54,11 +54,11 @@ Every plan: Header (goal, architecture, tech stack) | Verification commands with
 
 | Task Type | Agent |
 |-----------|-------|
-| Backend API/services | `backend-engineer-{golang,typescript}` |
-| Frontend/BFF | `frontend-bff-engineer-typescript` |
+| Backend API/services | `ring-dev-team:backend-engineer-{golang,typescript}` |
+| Frontend/BFF | `ring-dev-team:frontend-bff-engineer-typescript` |
 | Infra/CI/CD | `ring-dev-team:devops-engineer` |
 | Testing | `ring-dev-team:qa-analyst` |
-| Reliability | `sre` |
+| Reliability | `ring-dev-team:sre` |
 | Fallback | `general-purpose` (built-in, no prefix) |
 
 ## Execution Options Reference
