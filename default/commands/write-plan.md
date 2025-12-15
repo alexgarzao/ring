@@ -9,7 +9,7 @@ Create a comprehensive implementation plan for a feature, with exact file paths,
 ## Usage
 
 ```
-/write-plan [feature-name]
+/ring-default:write-plan [feature-name]
 ```
 
 ## Arguments
@@ -22,19 +22,19 @@ Create a comprehensive implementation plan for a feature, with exact file paths,
 
 ### Create a Feature Plan
 ```
-/write-plan oauth2-integration
+/ring-default:write-plan oauth2-integration
 ```
 Creates a detailed plan for implementing OAuth2 authentication.
 
 ### Create an API Plan
 ```
-/write-plan rest-api-versioning
+/ring-default:write-plan rest-api-versioning
 ```
 Plans the implementation of API versioning with migration path.
 
 ### Create a Refactoring Plan
 ```
-/write-plan database-connection-pooling
+/ring-default:write-plan database-connection-pooling
 ```
 Creates a step-by-step plan for implementing connection pooling.
 
@@ -85,11 +85,11 @@ Plans specify recommended agents for execution:
 
 | Task Type | Recommended Agent |
 |-----------|-------------------|
-| Backend (Go) | `backend-engineer-golang` |
-| Backend (TypeScript) | `backend-engineer-typescript` |
+| Backend (Go) | `ring-dev-team:backend-engineer-golang` |
+| Backend (TypeScript) | `ring-dev-team:backend-engineer-typescript` |
 | Frontend (BFF/API Routes) | `frontend-bff-engineer-typescript` |
-| Infrastructure | `devops-engineer` |
-| Testing | `qa-analyst` |
+| Infrastructure | `ring-dev-team:devops-engineer` |
+| Testing | `ring-dev-team:qa-analyst` |
 | Reliability | `sre` |
 | Fallback | `general-purpose` (built-in) |
 
@@ -100,8 +100,8 @@ Plans specify recommended agents for execution:
 | `/ring-default:brainstorm` | Use first if design is not yet validated |
 | `/ring-default:execute-plan` | Use after to execute the created plan |
 | `brainstorming` | Design validation before planning |
-| `executing-plans` | Batch execution with review checkpoints |
-| `subagent-driven-development` | Alternative execution for current session |
+| `ring-default:executing-plans` | Batch execution with review checkpoints |
+| `ring-default:subagent-driven-development` | Alternative execution for current session |
 
 ## Troubleshooting
 

@@ -16,7 +16,7 @@ skip_when: |
   - Building valuation models → use financial-modeling
 
 related:
-  similar: [financial-analysis, budget-creation]
+  similar: [ring-finance-team:financial-analysis, ring-finance-team:budget-creation]
   uses: [treasury-specialist]
 ---
 

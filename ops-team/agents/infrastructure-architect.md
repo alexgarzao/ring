@@ -373,6 +373,6 @@ Designed multi-region active-passive architecture for payment processing platfor
 
 - Day-to-day platform operations (use `platform-engineer`)
 - Incident response (use `incident-responder`)
-- Cost optimization analysis (use `cloud-cost-optimizer`)
+- Cost optimization analysis (use `ring-ops-team:cloud-cost-optimizer`)
 - Security operations (use `security-operations`)
 - Application development (use `backend-engineer-*`)

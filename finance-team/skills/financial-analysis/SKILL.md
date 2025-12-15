@@ -16,7 +16,7 @@ skip_when: |
   - Cash flow specific analysis → use cash-flow-analysis
 
 related:
-  similar: [budget-creation, financial-reporting]
+  similar: [ring-finance-team:budget-creation, ring-finance-team:financial-reporting]
   uses: [financial-analyst]
 ---
 

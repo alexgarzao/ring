@@ -16,7 +16,7 @@ skip_when: |
   - One-time resource adjustment -> standard change management
 
 related:
-  similar: [ops-cost-optimization]
+  similar: [ring-ops-team:ops-cost-optimization]
   uses: [infrastructure-architect, cloud-cost-optimizer]
 ---
 

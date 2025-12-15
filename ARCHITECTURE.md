@@ -155,8 +155,8 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 | Invocation Context | Standards Compliance | Detection Mechanism |
 |--------------------|---------------------|---------------------|
 | Direct agent call | Optional | N/A |
-| Via `dev-cycle` skill | Optional | N/A |
-| Via `dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
+| Via `ring-dev-team:dev-cycle` skill | Optional | N/A |
+| Via `ring-dev-team:dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
 
 **How Enforcement Works:**
 

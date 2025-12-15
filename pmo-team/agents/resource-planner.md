@@ -302,7 +302,7 @@ Analyzed 24 resources across 4 teams for Q1 2025 allocation. Current aggregate u
 ## What This Agent Does NOT Handle
 
 - Portfolio-level prioritization (use `portfolio-manager`)
-- Individual project planning (use `pre-dev-feature`)
+- Individual project planning (use `ring-pm-team:pre-dev-feature`)
 - HR policies and compensation (organizational HR)
 - Team performance management (people managers)
 - Project scheduling (project managers)

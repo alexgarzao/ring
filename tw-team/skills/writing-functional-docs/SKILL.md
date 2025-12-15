@@ -19,7 +19,7 @@ sequence:
   before: [documentation-review]
 
 related:
-  similar: [writing-api-docs]
+  similar: [ring-tw-team:writing-api-docs]
   complementary: [voice-and-tone, documentation-structure]
 ---
 

@@ -9,7 +9,7 @@ Analyze cross-project dependencies across the portfolio.
 ## Usage
 
 ```
-/dependency-analysis [scope] [options]
+/ring-pmo-team:dependency-analysis [scope] [options]
 ```
 
 ## Arguments
@@ -31,19 +31,19 @@ Analyze cross-project dependencies across the portfolio.
 
 ```bash
 # Full dependency analysis
-/dependency-analysis
+/ring-pmo-team:dependency-analysis
 
 # Analyze specific projects
-/dependency-analysis "Alpha, Beta, Gamma"
+/ring-pmo-team:dependency-analysis "Alpha, Beta, Gamma"
 
 # Focus on critical path
-/dependency-analysis --focus critical-path
+/ring-pmo-team:dependency-analysis --focus critical-path
 
 # Include external dependencies
-/dependency-analysis --depth external
+/ring-pmo-team:dependency-analysis --depth external
 
 # Visual dependency map
-/dependency-analysis --format visual
+/ring-pmo-team:dependency-analysis --format visual
 ```
 
 ## Analysis Types
@@ -75,7 +75,7 @@ Analyze cross-project dependencies across the portfolio.
 **This command MUST load the dependency-mapping skill for complete workflow execution.**
 
 ```
-Use Skill tool: dependency-mapping
+Use Skill tool: ring-pmo-team:dependency-mapping
 ```
 
 The skill contains the complete dependency mapping gates with:

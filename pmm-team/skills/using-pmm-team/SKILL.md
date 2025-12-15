@@ -107,9 +107,9 @@ PMM workflow ensures:
 ### Via Slash Commands
 
 ```
-/market-analysis fintech-b2b    # Full market analysis
-/gtm-plan new-feature           # GTM planning
-/competitive-intel competitor-x  # Competitive analysis
+/ring-pmm-team:market-analysis fintech-b2b    # Full market analysis
+/ring-pmm-team:gtm-plan new-feature           # GTM planning
+/ring-pmm-team:competitive-intel competitor-x  # Competitive analysis
 ```
 
 ### Via Skills (Manual)

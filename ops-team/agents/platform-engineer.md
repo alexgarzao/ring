@@ -278,5 +278,5 @@ $ curl -k https://api.example.com/health
 - Application code development (use `backend-engineer-*`)
 - Infrastructure provisioning (use `infrastructure-architect`)
 - Incident response (use `incident-responder`)
-- Cost optimization (use `cloud-cost-optimizer`)
+- Cost optimization (use `ring-ops-team:cloud-cost-optimizer`)
 - Security audits (use `security-operations`)

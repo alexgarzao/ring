@@ -23,7 +23,7 @@ sequence:
 
 **This sub-skill executes Gate 2 of the regulatory template workflow: validating uncertain mappings from Gate 1 and confirming all field specifications through testing.**
 
-**Parent skill:** `regulatory-templates`
+**Parent skill:** `ring-finops-team:regulatory-templates`
 
 **Prerequisites:**
 - Gate 1 PASSED
@@ -56,7 +56,7 @@ Gate 2 is the quality gate between analysis (Gate 1) and implementation (Gate 3)
 
 ## When to Use
 
-**Called by:** `regulatory-templates` skill after Gate 1 passes
+**Called by:** `ring-finops-team:regulatory-templates` skill after Gate 1 passes
 
 **Purpose:** Resolve uncertainties, validate field mappings, test transformations, define validation rules
 

@@ -11,9 +11,9 @@ This command initiates structured cloud cost analysis following the ops-cost-opt
 ## Usage
 
 ```
-/cost-analysis full general
-/cost-analysis service:payment-api rightsizing
-/cost-analysis account:production ri
+/ring-ops-team:cost-analysis full general
+/ring-ops-team:cost-analysis service:payment-api rightsizing
+/ring-ops-team:cost-analysis account:production ri
 ```
 
 ## Workflow
@@ -204,8 +204,8 @@ Additional output:
 
 ## Related Skills
 
-- `ops-cost-optimization` - Full cost optimization workflow
-- `ops-capacity-planning` - Capacity planning (cost component)
+- `ring-ops-team:ops-cost-optimization` - Full cost optimization workflow
+- `ring-ops-team:ops-capacity-planning` - Capacity planning (cost component)
 
 ## Anti-Rationalization
 

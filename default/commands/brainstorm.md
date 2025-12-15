@@ -73,7 +73,7 @@ The brainstorming session follows these phases:
 - Prepares clean workspace for implementation
 
 ### 7. Planning Handoff (Phase 6, if implementing)
-- Creates detailed implementation plan using `writing-plans` skill
+- Creates detailed implementation plan using `ring-default:writing-plans` skill
 - Breaks design into bite-sized executable tasks
 
 ## Related Commands/Skills
@@ -82,7 +82,7 @@ The brainstorming session follows these phases:
 |---------------|--------------|
 | `/ring-default:write-plan` | Use after brainstorming when design is complete |
 | `/ring-default:execute-plan` | Use after planning to implement the design |
-| `writing-plans` | Underlying skill for creating implementation plans |
+| `ring-default:writing-plans` | Underlying skill for creating implementation plans |
 
 ## Troubleshooting
 

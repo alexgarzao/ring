@@ -18,7 +18,7 @@ sequence:
   after: [writing-plans, pre-dev-task-breakdown]
 
 related:
-  similar: [subagent-driven-development]
+  similar: [ring-default:subagent-driven-development]
 ---
 
 # Executing Plans
@@ -78,7 +78,7 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 ### Step 3: Execute Batch
 **Default: First 3 tasks**
 
-**Agent Selection:** Backend Go → `backend-engineer-golang` | Backend TS → `backend-engineer-typescript` | Frontend → `frontend-bff-engineer-typescript` | Infra → `devops-engineer` | Testing → `qa-analyst` | Reliability → `sre` | Fallback → `general-purpose`
+**Agent Selection:** Backend Go → `ring-dev-team:backend-engineer-golang` | Backend TS → `ring-dev-team:backend-engineer-typescript` | Frontend → `ring-dev-team:frontend-bff-engineer-typescript` | Infra → `ring-dev-team:devops-engineer` | Testing → `ring-dev-team:qa-analyst` | Reliability → `ring-dev-team:sre` | Fallback → `general-purpose`
 
 For each task: Mark in_progress → Dispatch to agent → Follow plan steps exactly → Run verifications → Mark completed
 

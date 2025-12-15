@@ -431,7 +431,7 @@ When reporting issues in existing code:
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
 
 ### ⛔ HARD GATE: ALWAYS Compare ALL Categories
 
@@ -553,6 +553,6 @@ coverage: 87.3% of statements
 ## What This Agent Does NOT Handle
 
 - Frontend/UI development (use `frontend-bff-engineer-typescript`)
-- Docker/docker-compose configuration (use `devops-engineer`)
+- Docker/docker-compose configuration (use `ring-dev-team:devops-engineer`)
 - Observability validation (use `sre`)
-- End-to-end test scenarios and manual testing (use `qa-analyst`)
+- End-to-end test scenarios and manual testing (use `ring-dev-team:qa-analyst`)

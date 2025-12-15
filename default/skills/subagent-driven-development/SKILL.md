@@ -18,7 +18,7 @@ sequence:
   after: [writing-plans, pre-dev-task-breakdown]
 
 related:
-  similar: [executing-plans]
+  similar: [ring-default:executing-plans]
 ---
 
 # Subagent-Driven Development
@@ -61,9 +61,9 @@ Read plan file, create TodoWrite with all tasks.
 
 | Reviewer | Model | Context |
 |----------|-------|---------|
-| `code-reviewer` | opus | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
-| `business-logic-reviewer` | opus | Same context |
-| `security-reviewer` | opus | Same context |
+| `ring-default:code-reviewer` | opus | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
+| `ring-default:business-logic-reviewer` | opus | Same context |
+| `ring-default:security-reviewer` | opus | Same context |
 
 **Each returns:** Strengths, Issues (Critical/High/Medium/Low/Cosmetic), Assessment (PASS/FAIL)
 

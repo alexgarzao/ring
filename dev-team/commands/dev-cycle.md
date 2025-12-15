@@ -9,7 +9,7 @@ Execute the development cycle for tasks in a markdown file.
 ## Usage
 
 ```
-/dev-cycle [tasks-file] [options]
+/ring-dev-team:dev-cycle [tasks-file] [options]
 ```
 
 ## Arguments
@@ -33,19 +33,19 @@ Execute the development cycle for tasks in a markdown file.
 
 ```bash
 # Execute all tasks from a file
-/dev-cycle docs/tasks/sprint-001.md
+/ring-dev-team:dev-cycle docs/tasks/sprint-001.md
 
 # Execute single task
-/dev-cycle docs/tasks/sprint-001.md --task AUTH-001
+/ring-dev-team:dev-cycle docs/tasks/sprint-001.md --task AUTH-001
 
 # Skip DevOps setup (infrastructure already exists)
-/dev-cycle docs/tasks/sprint-001.md --skip-gates devops
+/ring-dev-team:dev-cycle docs/tasks/sprint-001.md --skip-gates devops
 
 # Validate tasks without executing
-/dev-cycle docs/tasks/sprint-001.md --dry-run
+/ring-dev-team:dev-cycle docs/tasks/sprint-001.md --dry-run
 
 # Resume interrupted cycle
-/dev-cycle --resume
+/ring-dev-team:dev-cycle --resume
 ```
 
 ## Prerequisites
@@ -58,8 +58,8 @@ Execute the development cycle for tasks in a markdown file.
 
 | Gate | Skill | Description |
 |------|-------|-------------|
-| 0 | `dev-implementation` | Implement code (TDD) |
-| 1 | `dev-devops` | Create Docker/compose |
+| 0 | `ring-dev-team:dev-implementation` | Implement code (TDD) |
+| 1 | `ring-dev-team:dev-devops` | Create Docker/compose |
 | 2 | `dev-sre` | Observability (health checks, logging, tracing) |
 | 3 | `dev-testing` | Write and run tests |
 | 4 | `dev-review` | Code review (3 reviewers) |
@@ -67,7 +67,7 @@ Execute the development cycle for tasks in a markdown file.
 
 **Note:** Tasks are loaded at initialization, not as a separate gate.
 
-After all tasks: `dev-feedback-loop` generates metrics report.
+After all tasks: `ring-dev-team:dev-feedback-loop` generates metrics report.
 
 ## Output
 
@@ -89,7 +89,7 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: dev-cycle
+Use Skill tool: ring-dev-team:dev-cycle
 ```
 
 The skill contains the complete 6-gate workflow with:
@@ -134,7 +134,7 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `dev-cycle` for full details. Key rules:
+See skill `ring-dev-team:dev-cycle` for full details. Key rules:
 
 - **ALL 6 gates execute** - Checkpoints affect pauses, not gates
 - **Gates execute in order** - 0 → 1 → 2 → 3 → 4 → 5

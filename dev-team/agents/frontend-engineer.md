@@ -532,7 +532,7 @@ You have deep expertise in accessibility. Apply WCAG 2.1 AA standards.
 
 ## Receiving Handoff from Frontend Designer
 
-**When receiving a Handoff Contract from `frontend-designer`, follow this process:**
+**When receiving a Handoff Contract from `ring-dev-team:frontend-designer`, follow this process:**
 
 ### Step 1: Validate Handoff Contract
 
@@ -802,7 +802,7 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
 
 ### Sections to Check (MANDATORY)
 
@@ -873,8 +873,8 @@ No migration actions required.
 
 - **BFF/API Routes development** → use `frontend-bff-engineer-typescript`
 - **Backend API development** → use `backend-engineer-*`
-- **Docker/CI-CD configuration** → use `devops-engineer`
+- **Docker/CI-CD configuration** → use `ring-dev-team:devops-engineer`
 - **Server infrastructure and monitoring** → use `sre`
-- **API contract testing and load testing** → use `qa-analyst`
+- **API contract testing and load testing** → use `ring-dev-team:qa-analyst`
 - **Database design and migrations** → use `backend-engineer-*`
-- **Design specifications and visual design** → use `frontend-designer`
+- **Design specifications and visual design** → use `ring-dev-team:frontend-designer`

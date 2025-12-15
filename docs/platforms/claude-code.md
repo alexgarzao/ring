@@ -88,7 +88,7 @@ Slash commands provide quick access to common workflows.
 ```
 /codereview          # Parallel 3-reviewer dispatch
 /brainstorm          # Socratic design refinement
-/pre-dev-full        # 8-gate planning workflow
+/ring-pm-team:pre-dev-full        # 8-gate planning workflow
 ```
 
 ### Hooks

@@ -124,8 +124,8 @@ After all agents complete, run `<lint_command> 2>&1`.
 | Issue Type | Agent Type |
 |------------|------------|
 | TypeScript/JavaScript | `general-purpose` |
-| Go | `general-purpose` or `backend-engineer-golang` |
-| Security lints | `security-reviewer` for analysis first |
+| Go | `general-purpose` or `ring-dev-team:backend-engineer-golang` |
+| Security lints | `ring-default:security-reviewer` for analysis first |
 | Style/formatting | `general-purpose` |
 
 ## Output Format
@@ -146,9 +146,9 @@ After all agents complete, run `<lint_command> 2>&1`.
 
 | Skill | When to use |
 |-------|-------------|
-| `dispatching-parallel-agents` | Pattern basis for this skill |
-| `systematic-debugging` | If lint errors indicate deeper issues |
-| `requesting-code-review` | After lint passes, before merge |
+| `ring-default:dispatching-parallel-agents` | Pattern basis for this skill |
+| `ring-default:systematic-debugging` | If lint errors indicate deeper issues |
+| `ring-default:requesting-code-review` | After lint passes, before merge |
 
 ## Example Session
 

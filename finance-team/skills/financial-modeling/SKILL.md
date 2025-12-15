@@ -16,7 +16,7 @@ skip_when: |
   - Cash flow forecasting → use cash-flow-analysis
 
 related:
-  similar: [financial-analysis, budget-creation]
+  similar: [ring-finance-team:financial-analysis, ring-finance-team:budget-creation]
   uses: [financial-modeler]
 ---
 

@@ -26,7 +26,7 @@ sequence:
 
 related:
   complementary: [dev-cycle, test-driven-development, requesting-code-review]
-  similar: [subagent-driven-development, executing-plans]
+  similar: [ring-default:subagent-driven-development, ring-default:executing-plans]
 
 agent_selection:
   criteria:
@@ -373,7 +373,7 @@ See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-pr
 
 ## Step 5: Code Review Checkpoints
 
-**Every 3-5 tasks:** Use `requesting-code-review` → dispatch 3 reviewers in parallel (code, business-logic, security)
+**Every 3-5 tasks:** Use `ring-default:requesting-code-review` → dispatch 3 reviewers in parallel (code, business-logic, security)
 
 **Severity handling:** Critical/High/Medium → Fix immediately, re-run all | Low → `TODO(review):` | Cosmetic → `FIXME(nitpick):`
 
@@ -393,8 +393,8 @@ Use the agent selected in Gate 1 based on technology:
 
 | Stack | Agent |
 |-------|-------|
-| Go backend | `backend-engineer-golang` |
-| TypeScript backend | `backend-engineer-typescript` |
+| Go backend | `ring-dev-team:backend-engineer-golang` |
+| TypeScript backend | `ring-dev-team:backend-engineer-typescript` |
 | React/Next.js frontend | `frontend-bff-engineer-typescript` |
 | BFF layer (Next.js API Routes) | `frontend-bff-engineer-typescript` |
 

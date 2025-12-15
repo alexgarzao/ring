@@ -62,8 +62,8 @@ API accuracy verification and comprehensive field documentation requires Opus at
 ## Related Skills
 
 This agent applies patterns from these skills:
-- `writing-api-docs` - Endpoint documentation structure and patterns
-- `api-field-descriptions` - Field description patterns by data type
+- `ring-tw-team:writing-api-docs` - Endpoint documentation structure and patterns
+- `ring-tw-team:api-field-descriptions` - Field description patterns by data type
 
 ## Standards Loading
 
@@ -351,8 +351,8 @@ Brief description of what this endpoint does.
 
 - Conceptual documentation (use `functional-writer`)
 - Documentation review (use `docs-reviewer`)
-- API implementation (use `backend-engineer-golang` or `backend-engineer-typescript`)
-- API design decisions (use `backend-engineer-golang` or `backend-engineer-typescript`)
+- API implementation (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
+- API design decisions (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
 
 ## Output Expectations
 

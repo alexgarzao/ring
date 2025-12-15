@@ -16,7 +16,7 @@ skip_when: |
   - Preparing reports → use financial-reporting
 
 related:
-  similar: [financial-reporting, financial-analysis]
+  similar: [ring-finance-team:financial-reporting, ring-finance-team:financial-analysis]
   uses: [metrics-analyst]
 ---
 

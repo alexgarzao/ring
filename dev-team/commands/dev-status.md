@@ -9,7 +9,7 @@ Check the status of the current development cycle.
 ## Usage
 
 ```
-/dev-status
+/ring-dev-team:dev-status
 ```
 
 ## Output

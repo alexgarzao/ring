@@ -280,7 +280,7 @@ Analyzed 12 active projects across 3 strategic objectives. Overall portfolio hea
 
 ## What This Agent Does NOT Handle
 
-- Single project detailed planning (use `pre-dev-feature`)
+- Single project detailed planning (use `ring-pm-team:pre-dev-feature`)
 - Resource individual assignments (use `resource-planner`)
 - Detailed risk analysis (use `risk-analyst`)
 - Executive report formatting (use `executive-reporter`)

@@ -22,7 +22,7 @@ sequence:
 
 **This sub-skill executes Gate 3 of the regulatory template workflow: generating the complete .tpl template file with all validated mappings and transformations from Gates 1-2.**
 
-**Parent skill:** `regulatory-templates`
+**Parent skill:** `ring-finops-team:regulatory-templates`
 
 **Prerequisites:**
 - Gate 1 PASSED (field mappings complete)
@@ -56,7 +56,7 @@ Gate 3 transforms validated specifications into production artifacts:
 
 ## When to Use
 
-**Called by:** `regulatory-templates` skill after Gate 2 passes
+**Called by:** `ring-finops-team:regulatory-templates` skill after Gate 2 passes
 
 **Purpose:** Create the final Django/Jinja2 template file with all field mappings, transformations, and validation logic
 

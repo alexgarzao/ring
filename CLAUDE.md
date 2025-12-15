@@ -56,8 +56,8 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 | Standards File | Agents That Use It |
 |----------------|-------------------|
-| `golang.md` | `backend-engineer-golang`, `qa-analyst` |
-| `typescript.md` | `backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `qa-analyst` |
+| `golang.md` | `ring-dev-team:backend-engineer-golang`, `ring-dev-team:qa-analyst` |
+| `typescript.md` | `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:frontend-bff-engineer-typescript`, `ring-dev-team:qa-analyst` |
 | `frontend.md` | `frontend-engineer`, `frontend-designer` |
 | `devops.md` | `devops-engineer` |
 | `sre.md` | `sre` |
@@ -68,14 +68,14 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 | Agent | Standards File | Section Count |
 |-------|----------------|---------------|
-| `backend-engineer-golang` | golang.md | See coverage table |
-| `backend-engineer-typescript` | typescript.md | See coverage table |
-| `frontend-bff-engineer-typescript` | typescript.md | See coverage table |
+| `ring-dev-team:backend-engineer-golang` | golang.md | See coverage table |
+| `ring-dev-team:backend-engineer-typescript` | typescript.md | See coverage table |
+| `ring-dev-team:frontend-bff-engineer-typescript` | typescript.md | See coverage table |
 | `frontend-engineer` | frontend.md | See coverage table |
 | `frontend-designer` | frontend.md | See coverage table |
 | `devops-engineer` | devops.md | See coverage table |
 | `sre` | sre.md | See coverage table |
-| `qa-analyst` | golang.md OR typescript.md | See coverage table |
+| `ring-dev-team:qa-analyst` | golang.md OR typescript.md | See coverage table |
 
 **⛔ If section counts in skills don't match this table → Update the skill.**
 

@@ -82,8 +82,8 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | Gate | Specialized Agent | What Agent Does |
 |------|-------------------|-----------------|
-| 0 | `backend-engineer-golang` | Implements Go code, adds observability, runs TDD |
-| 0 | `backend-engineer-typescript` | Implements TS backend code, adds observability, runs TDD |
+| 0 | `ring-dev-team:backend-engineer-golang` | Implements Go code, adds observability, runs TDD |
+| 0 | `ring-dev-team:backend-engineer-typescript` | Implements TS backend code, adds observability, runs TDD |
 | 0 | `frontend-engineer` | Implements React/Next.js components, runs TDD |
 | 0 | `frontend-bff-engineer-typescript` | Implements BFF layer, API aggregation |
 | 0 | `frontend-designer` | Reviews UI/UX, accessibility, design system compliance |
@@ -91,7 +91,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | 2 | `sre` | Validates observability implementation |
 | 3 | `qa-analyst` | Writes tests, validates coverage |
 | 4 | `code-reviewer` | Reviews code quality |
-| 4 | `business-logic-reviewer` | Reviews business logic |
+| 4 | `ring-default:business-logic-reviewer` | Reviews business logic |
 | 4 | `security-reviewer` | Reviews security |
 
 ### dev-refactor Steps
@@ -99,8 +99,8 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | Step | Specialized Agent | What Agent Does |
 |------|-------------------|-----------------|
 | 3 | `codebase-explorer` | Deep architecture analysis, pattern discovery |
-| 4 | `backend-engineer-golang` | Go standards compliance analysis |
-| 4 | `backend-engineer-typescript` | TypeScript standards compliance analysis |
+| 4 | `ring-dev-team:backend-engineer-golang` | Go standards compliance analysis |
+| 4 | `ring-dev-team:backend-engineer-typescript` | TypeScript standards compliance analysis |
 | 4 | `frontend-engineer` | Frontend standards compliance analysis |
 | 4 | `qa-analyst` | Test coverage and pattern analysis |
 | 4 | `devops-engineer` | DevOps setup analysis |
@@ -114,8 +114,8 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | File Type / Task | Agent to Dispatch |
 |------------------|-------------------|
-| `*.go` files | `backend-engineer-golang` |
-| `*.ts` backend (Express, Fastify, NestJS) | `backend-engineer-typescript` |
+| `*.go` files | `ring-dev-team:backend-engineer-golang` |
+| `*.ts` backend (Express, Fastify, NestJS) | `ring-dev-team:backend-engineer-typescript` |
 | `*.tsx` / `*.jsx` React components | `frontend-engineer` |
 | BFF / API Gateway layer | `frontend-bff-engineer-typescript` |
 | UI/UX review, design system | `frontend-designer` |
@@ -128,7 +128,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | Review Type | Agent to Dispatch |
 |-------------|-------------------|
 | Code quality, patterns, maintainability | `code-reviewer` |
-| Business logic, domain correctness | `business-logic-reviewer` |
+| Business logic, domain correctness | `ring-default:business-logic-reviewer` |
 | Security vulnerabilities, auth, input validation | `security-reviewer` |
 
 ### Research & Analysis
@@ -136,9 +136,9 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | Task Type | Agent to Dispatch |
 |-----------|-------------------|
 | Codebase architecture understanding | `codebase-explorer` |
-| Framework/library documentation | `framework-docs-researcher` |
-| Industry best practices | `best-practices-researcher` |
-| Repository/codebase analysis | `repo-research-analyst` |
+| Framework/library documentation | `ring-pm-team:framework-docs-researcher` |
+| Industry best practices | `ring-pm-team:best-practices-researcher` |
+| Repository/codebase analysis | `ring-pm-team:repo-research-analyst` |
 
 ### Documentation
 
@@ -160,7 +160,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | Task Type | Agent to Dispatch |
 |-----------|-------------------|
 | Implementation planning | `write-plan` |
-| Prompt/agent quality analysis | `prompt-quality-reviewer` |
+| Prompt/agent quality analysis | `ring-dev-team:prompt-quality-reviewer` |
 
 ## Agent Responsibilities (Implementation)
 

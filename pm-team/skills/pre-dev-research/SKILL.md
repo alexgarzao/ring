@@ -74,9 +74,9 @@ Research prevents: Reinventing existing patterns, ignoring conventions, missing 
 
 | Agent | Prompt Focus |
 |-------|--------------|
-| `repo-research-analyst` | Codebase patterns for [feature]. Search docs/solutions/ knowledge base. Return file:line references. If modification mode: PRIMARY focus. |
-| `best-practices-researcher` | External best practices for [feature]. Use Context7 + WebSearch. Return URLs. If greenfield mode: PRIMARY focus. |
-| `framework-docs-researcher` | Tech stack docs for [feature]. Detect versions from manifests. Use Context7. Return version constraints. If integration mode: focus on SDK/API docs. |
+| `ring-pm-team:repo-research-analyst` | Codebase patterns for [feature]. Search docs/solutions/ knowledge base. Return file:line references. If modification mode: PRIMARY focus. |
+| `ring-pm-team:best-practices-researcher` | External best practices for [feature]. Use Context7 + WebSearch. Return URLs. If greenfield mode: PRIMARY focus. |
+| `ring-pm-team:framework-docs-researcher` | Tech stack docs for [feature]. Detect versions from manifests. Use Context7. Return version constraints. If integration mode: focus on SDK/API docs. |
 
 ## Step 3: Aggregate Research Findings
 

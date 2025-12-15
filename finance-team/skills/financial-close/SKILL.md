@@ -16,7 +16,7 @@ skip_when: |
   - Cash flow forecasting → use cash-flow-analysis
 
 related:
-  similar: [financial-reporting, financial-analysis]
+  similar: [ring-finance-team:financial-reporting, ring-finance-team:financial-analysis]
   uses: [accounting-specialist]
 ---
 

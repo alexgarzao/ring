@@ -9,7 +9,7 @@ Perform comprehensive financial analysis on provided financial data.
 ## Usage
 
 ```
-/analyze-financials [data-source] [options]
+/ring-finance-team:analyze-financials [data-source] [options]
 ```
 
 ## Arguments
@@ -32,16 +32,16 @@ Perform comprehensive financial analysis on provided financial data.
 
 ```bash
 # Analyze financial statements
-/analyze-financials docs/financials/statements-2024.xlsx
+/ring-finance-team:analyze-financials docs/financials/statements-2024.xlsx
 
 # Year-over-year analysis
-/analyze-financials docs/financials/Q4-2024.xlsx --comparison prior-year
+/ring-finance-team:analyze-financials docs/financials/Q4-2024.xlsx --comparison prior-year
 
 # Specific analysis types
-/analyze-financials docs/financials/annual-report.pdf --type "ratio,trend,benchmark"
+/ring-finance-team:analyze-financials docs/financials/annual-report.pdf --type "ratio,trend,benchmark"
 
 # With industry comparison
-/analyze-financials docs/financials/income-statement.csv --benchmark industry
+/ring-finance-team:analyze-financials docs/financials/income-statement.csv --benchmark industry
 ```
 
 ## Prerequisites
@@ -86,7 +86,7 @@ The command produces a comprehensive analysis report including:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: financial-analysis
+Use Skill tool: ring-finance-team:financial-analysis
 ```
 
 The skill contains the complete 5-phase workflow with:
@@ -137,7 +137,7 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `financial-analysis` for full details. Key rules:
+See skill `ring-finance-team:financial-analysis` for full details. Key rules:
 
 - **All data sources cited** - No uncited figures
 - **All calculations shown** - Audit-ready documentation

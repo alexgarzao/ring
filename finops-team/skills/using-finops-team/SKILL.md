@@ -19,14 +19,14 @@ skip_when: |
 
 The ring-finops-team plugin provides 2 specialized FinOps agents for Brazilian financial compliance. Use them via `Task tool with subagent_type:`.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle regulatory complexity; don't implement compliance manually.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle regulatory complexity; don't implement compliance manually.
 
 ---
 
 ## 2 FinOps Specialists
 
 ### 1. FinOps Analyzer (Compliance Analysis)
-**`finops-analyzer`**
+**`ring-finops-team:finops-analyzer`**
 
 **Specializations:**
 - Brazilian regulatory compliance analysis
@@ -59,7 +59,7 @@ Task tool:
 ---
 
 ### 2. FinOps Automation (Template Generation)
-**`finops-automation`**
+**`ring-finops-team:finops-automation`**
 
 **Specializations:**
 - Template generation from specifications

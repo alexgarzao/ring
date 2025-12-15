@@ -16,7 +16,7 @@ skip_when: |
   - Application performance -> use ring-dev-team specialists
 
 related:
-  similar: [ops-capacity-planning]
+  similar: [ring-ops-team:ops-capacity-planning]
   uses: [cloud-cost-optimizer]
 ---
 

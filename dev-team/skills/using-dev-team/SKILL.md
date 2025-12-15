@@ -17,7 +17,7 @@ skip_when: |
   - Debugging → use systematic-debugging
 
 related:
-  similar: [using-ring]
+  similar: [ring-default:using-ring]
 ---
 
 # Using Ring Developer Specialists
@@ -117,8 +117,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
-| **`backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
-| **`backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
+| **`ring-dev-team:backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
+| **`ring-dev-team:backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
 | **`devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
 | **`frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
 | **`frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
@@ -182,7 +182,7 @@ Remember:
 - **Combine with using-ring principle** – Skills + Specialists = complete workflow
 
 ### Good Example (ORCHESTRATOR):
-> "I need a Go service. Let me dispatch `backend-engineer-golang` to design it."
+> "I need a Go service. Let me dispatch `ring-dev-team:backend-engineer-golang` to design it."
 
 ### Bad Example (OPERATOR):
 > "I'll manually read Go best practices and design the service myself."
@@ -193,7 +193,7 @@ Remember:
 
 **Agents:** See "7 Developer Specialists" table above.
 
-**Skills:** `using-dev-team` (this), `dev-cycle` (6-gate workflow), `dev-refactor` (codebase analysis)
+**Skills:** `ring-dev-team:using-dev-team` (this), `ring-dev-team:dev-cycle` (6-gate workflow), `ring-dev-team:dev-refactor` (codebase analysis)
 
 **Commands:** `/ring-dev-team:dev-cycle` (execute tasks), `/ring-dev-team:dev-refactor` (analyze codebase)
 

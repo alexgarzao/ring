@@ -17,7 +17,7 @@ skip_when: |
   - General code review → use default plugin reviewers
 
 related:
-  similar: [using-ring, using-dev-team]
+  similar: [ring-default:using-ring, ring-dev-team:using-dev-team]
 ---
 
 # Using Ring Technical Writing Specialists

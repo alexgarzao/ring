@@ -317,6 +317,6 @@ Payment processing service experienced intermittent failures affecting 23% of tr
 
 - Platform engineering changes (use `platform-engineer`)
 - Infrastructure provisioning (use `infrastructure-architect`)
-- Cost analysis during incidents (use `cloud-cost-optimizer`)
+- Cost analysis during incidents (use `ring-ops-team:cloud-cost-optimizer`)
 - Security vulnerability remediation (use `security-operations`)
 - Application code fixes (use `backend-engineer-*`)

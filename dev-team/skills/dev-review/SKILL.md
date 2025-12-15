@@ -236,7 +236,7 @@ If you catch yourself planning sequential execution → STOP → Re-plan as para
 
 **Valid Reviewers:**
 - ✅ `code-reviewer`
-- ✅ `business-logic-reviewer`
+- ✅ `ring-default:business-logic-reviewer`
 - ✅ `security-reviewer`
 
 **FORBIDDEN (Wrong Prefix/Name):**
@@ -311,7 +311,7 @@ Before starting this gate:
 | Reviewer | Focus Area | Catches |
 |----------|------------|---------|
 | `code-reviewer` | Architecture, patterns, maintainability | Design flaws, code smells, DRY violations |
-| `business-logic-reviewer` | Correctness, requirements, edge cases | Logic errors, missing cases, requirement gaps |
+| `ring-default:business-logic-reviewer` | Correctness, requirements, edge cases | Logic errors, missing cases, requirement gaps |
 | `security-reviewer` | OWASP, auth, input validation | Vulnerabilities, injection risks, auth bypasses |
 
 ## Step 1: Prepare Review Context
@@ -327,7 +327,7 @@ Gather: `BASE_SHA=$(git merge-base HEAD main)`, `HEAD_SHA=$(git rev-parse HEAD)`
 | Task | Agent | Prompt |
 |------|-------|--------|
 | #1 | `code-reviewer` | Review context (WHAT_WAS_IMPLEMENTED, PLAN, ACs, SHAs) |
-| #2 | `business-logic-reviewer` | Same context |
+| #2 | `ring-default:business-logic-reviewer` | Same context |
 | #3 | `security-reviewer` | Same context |
 
 **Wait for ALL three to complete before proceeding.**

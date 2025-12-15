@@ -16,7 +16,7 @@ skip_when: |
   - Simple resource moves -> standard change management
 
 related:
-  similar: [ops-disaster-recovery]
+  similar: [ring-ops-team:ops-disaster-recovery]
   uses: [infrastructure-architect, platform-engineer]
 ---
 

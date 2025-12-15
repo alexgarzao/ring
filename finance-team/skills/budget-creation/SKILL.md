@@ -16,7 +16,7 @@ skip_when: |
   - Cash flow specific work → use cash-flow-analysis
 
 related:
-  similar: [financial-analysis, financial-modeling]
+  similar: [ring-finance-team:financial-analysis, ring-finance-team:financial-modeling]
   uses: [budget-planner]
 ---
 

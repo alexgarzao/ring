@@ -9,7 +9,7 @@ View the feedback report from the last development cycle.
 ## Usage
 
 ```
-/dev-report [cycle-date]
+/ring-dev-team:dev-report [cycle-date]
 ```
 
 ## Arguments
@@ -22,10 +22,10 @@ View the feedback report from the last development cycle.
 
 ```bash
 # View most recent report
-/dev-report
+/ring-dev-team:dev-report
 
 # View specific date
-/dev-report 2024-01-15
+/ring-dev-team:dev-report 2024-01-15
 ```
 
 ## Report Contents

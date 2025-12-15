@@ -138,8 +138,8 @@ If you catch yourself writing any of these in a subtask, **STOP and rewrite**:
 After creating subtasks, offer execution choice:
 
 **"Subtasks complete. Two execution options:**
-1. **Subagent-Driven** - Fresh subagent per subtask, review between, fast iteration → Use `subagent-driven-development`
-2. **Parallel Session** - New session with executing-plans, batch with checkpoints → Use `executing-plans`
+1. **Subagent-Driven** - Fresh subagent per subtask, review between, fast iteration → Use `ring-default:subagent-driven-development`
+2. **Parallel Session** - New session with executing-plans, batch with checkpoints → Use `ring-default:executing-plans`
 
 **Which approach?"**
 

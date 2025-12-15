@@ -18,7 +18,7 @@ skip_when: |
   - Planning/design → use brainstorming
 
 related:
-  similar: [using-ring, using-finops-team]
+  similar: [ring-default:using-ring, ring-finops-team:using-finops-team]
 ---
 
 # Using Ring Finance Specialists
@@ -202,11 +202,11 @@ Remember:
 **Agents:** See "6 Financial Specialists" table above.
 
 **Skills:**
-- `using-finance-team` (this) - Plugin introduction
+- `ring-finance-team:using-finance-team` (this) - Plugin introduction
 - `financial-analysis` - Comprehensive financial analysis workflow
 - `budget-creation` - Budget planning and forecasting workflow
 - `financial-modeling` - Financial model building workflow
-- `cash-flow-analysis` - Cash flow and liquidity workflow
+- `ring-finance-team:cash-flow-analysis` - Cash flow and liquidity workflow
 - `financial-reporting` - Financial report preparation workflow
 - `metrics-dashboard` - KPI and metrics workflow
 - `financial-close` - Month/year-end close workflow

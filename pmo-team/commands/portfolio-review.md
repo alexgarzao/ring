@@ -9,7 +9,7 @@ Conduct a comprehensive portfolio review across multiple projects.
 ## Usage
 
 ```
-/portfolio-review [scope] [options]
+/ring-pmo-team:portfolio-review [scope] [options]
 ```
 
 ## Arguments
@@ -30,16 +30,16 @@ Conduct a comprehensive portfolio review across multiple projects.
 
 ```bash
 # Full portfolio review
-/portfolio-review
+/ring-pmo-team:portfolio-review
 
 # Review specific program
-/portfolio-review "Digital Transformation Program"
+/ring-pmo-team:portfolio-review "Digital Transformation Program"
 
 # Focus on resource utilization
-/portfolio-review --focus resources
+/ring-pmo-team:portfolio-review --focus resources
 
 # Generate executive format
-/portfolio-review --format executive
+/ring-pmo-team:portfolio-review --format executive
 ```
 
 ## What Gets Reviewed
@@ -73,7 +73,7 @@ Conduct a comprehensive portfolio review across multiple projects.
 **This command MUST load the portfolio-planning skill for complete workflow execution.**
 
 ```
-Use Skill tool: portfolio-planning
+Use Skill tool: ring-pmo-team:portfolio-planning
 ```
 
 The skill contains the complete portfolio review gates with:

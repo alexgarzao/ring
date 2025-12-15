@@ -254,23 +254,23 @@ No "should work" → Only "does work" with proof
 ### Core Skills (ring-default plugin - 22 skills)
 
 **Testing & Debugging (7):**
-- `test-driven-development` - Write test first, watch fail, minimal code
+- `ring-default:test-driven-development` - Write test first, watch fail, minimal code
 - `systematic-debugging` - 4-phase root cause investigation
-- `verification-before-completion` - Evidence before claims
-- `testing-anti-patterns` - Common test pitfalls to avoid
+- `ring-default:verification-before-completion` - Evidence before claims
+- `ring-default:testing-anti-patterns` - Common test pitfalls to avoid
 - `condition-based-waiting` - Replace timeouts with conditions
-- `defense-in-depth` - Multi-layer validation
+- `ring-default:defense-in-depth` - Multi-layer validation
 - `linting-codebase` - Parallel lint fixing with agent dispatch
 
 **Collaboration & Planning (10):**
 - `brainstorming` - Structured design refinement
 - `writing-plans` - Zero-context implementation plans
 - `executing-plans` - Batch execution with checkpoints
-- `requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
-- `receiving-code-review` - Responding to feedback
-- `dispatching-parallel-agents` - Concurrent workflows
-- `subagent-driven-development` - Fast iteration with **parallel reviews**
-- `using-git-worktrees` - Isolated development
+- `ring-default:requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
+- `ring-default:receiving-code-review` - Responding to feedback
+- `ring-default:dispatching-parallel-agents` - Concurrent workflows
+- `ring-default:subagent-driven-development` - Fast iteration with **parallel reviews**
+- `ring-default:using-git-worktrees` - Isolated development
 - `finishing-a-development-branch` - Merge/PR decisions
 - `root-cause-tracing` - Backward bug tracking
 
@@ -283,7 +283,7 @@ No "should work" → Only "does work" with proof
 ### Developer Skills (ring-dev-team plugin - 10 skills)
 
 **Code Development:**
-- `using-dev-team` - Introduction to developer specialist agents
+- `ring-dev-team:using-dev-team` - Introduction to developer specialist agents
 - `dev-refactor` - Codebase analysis against standards
 - `dev-cycle` - 6-gate development workflow orchestrator
 
@@ -294,13 +294,13 @@ No "should work" → Only "does work" with proof
 - `dev-testing` - Gate 3: Test coverage
 - `dev-review` - Gate 4: Parallel code review
 - `dev-validation` - Gate 5: User approval
-- `dev-feedback-loop` - Assertiveness scoring and metrics
+- `ring-dev-team:dev-feedback-loop` - Assertiveness scoring and metrics
 
 ### Product Planning Skills (ring-pm-team plugin - 10 skills)
 
 **Pre-Development Workflow (includes using-pm-team + 9 gates):**
-- `using-pm-team` - Introduction to product planning workflow
-0. `pre-dev-research` - Research phase (parallel agents)
+- `ring-pm-team:using-pm-team` - Introduction to product planning workflow
+0. `ring-pm-team:pre-dev-research` - Research phase (parallel agents)
 1. `pre-dev-prd-creation` - Business requirements (WHAT/WHY)
 2. `pre-dev-feature-map` - Feature relationships
 3. `pre-dev-trd-creation` - Technical architecture (HOW)
@@ -313,9 +313,9 @@ No "should work" → Only "does work" with proof
 ### FinOps & Regulatory Skills (ring-finops-team plugin - 6 skills)
 
 **Regulatory Templates (6):**
-- `using-finops-team` - Introduction to FinOps team workflow
+- `ring-finops-team:using-finops-team` - Introduction to FinOps team workflow
 - `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
-- `regulatory-templates-setup` - Template selection initialization
+- `ring-finops-team:regulatory-templates-setup` - Template selection initialization
 - `regulatory-templates-gate1` - Compliance analysis and field mapping
 - `regulatory-templates-gate2` - Field mapping validation
 - `regulatory-templates-gate3` - Template file generation
@@ -323,13 +323,13 @@ No "should work" → Only "does work" with proof
 ### Technical Writing Skills (ring-tw-team plugin - 7 skills)
 
 **Documentation Creation:**
-- `using-tw-team` - Introduction to technical writing specialists
-- `writing-functional-docs` - Patterns for guides, tutorials, conceptual docs
-- `writing-api-docs` - API reference documentation patterns
+- `ring-tw-team:using-tw-team` - Introduction to technical writing specialists
+- `ring-tw-team:writing-functional-docs` - Patterns for guides, tutorials, conceptual docs
+- `ring-tw-team:writing-api-docs` - API reference documentation patterns
 - `documentation-structure` - Document hierarchy and organization
-- `voice-and-tone` - Voice and tone guidelines (assertive, encouraging, human)
+- `ring-tw-team:voice-and-tone` - Voice and tone guidelines (assertive, encouraging, human)
 - `documentation-review` - Quality checklist and review process
-- `api-field-descriptions` - Field description patterns by type
+- `ring-tw-team:api-field-descriptions` - Field description patterns by type
 
 ## 🎮 Interactive Commands
 

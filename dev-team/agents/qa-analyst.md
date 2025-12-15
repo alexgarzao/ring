@@ -430,7 +430,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
 
 ### Sections to Check (MANDATORY)
 
@@ -1131,8 +1131,8 @@ Tests: 3 passed | Coverage: 72%
 
 ## What This Agent Does NOT Handle
 
-- Application code development (use `backend-engineer-golang`, `backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
-- Docker/docker-compose configuration (use `devops-engineer`)
+- Application code development (use `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, or `ring-dev-team:frontend-bff-engineer-typescript`)
+- Docker/docker-compose configuration (use `ring-dev-team:devops-engineer`)
 - Observability validation (use `sre`)
-- Infrastructure provisioning (use `devops-engineer`)
+- Infrastructure provisioning (use `ring-dev-team:devops-engineer`)
 - Performance optimization implementation (use `sre` or language-specific backend engineer)

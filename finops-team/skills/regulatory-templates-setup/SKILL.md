@@ -23,7 +23,7 @@ sequence:
 
 **This sub-skill handles the initial setup phase for regulatory template creation, including template selection and context initialization.**
 
-**Parent skill:** `regulatory-templates`
+**Parent skill:** `ring-finops-team:regulatory-templates`
 
 **Output:** Complete initial context object with all selections and configurations
 
@@ -51,7 +51,7 @@ Setup is not "just configuration" - it's critical validation:
 
 ## When to Use
 
-**Called by:** `regulatory-templates` skill at the beginning of the workflow
+**Called by:** `ring-finops-team:regulatory-templates` skill at the beginning of the workflow
 
 **Purpose:** Gather all user selections and initialize the context object that will flow through all gates
 

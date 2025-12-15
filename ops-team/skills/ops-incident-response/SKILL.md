@@ -16,7 +16,7 @@ skip_when: |
   - Planned maintenance -> change management
 
 related:
-  similar: [systematic-debugging]
+  similar: [ring-default:systematic-debugging]
   uses: [incident-responder]
 ---
 

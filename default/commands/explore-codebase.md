@@ -9,7 +9,7 @@ Autonomously discover codebase structure, then explore deeply with adaptive agen
 ## Usage
 
 ```
-/explore-codebase [target]
+/ring-default:explore-codebase [target]
 ```
 
 ## Arguments
@@ -126,7 +126,7 @@ The number and focus of agents adapts to Phase 1 findings:
 ### Example 1: Exploring Account Creation
 
 ```bash
-/explore-codebase account creation
+/ring-default:explore-codebase account creation
 ```
 
 **Phase 1 might discover:**
@@ -144,7 +144,7 @@ The number and focus of agents adapts to Phase 1 findings:
 ### Example 2: Exploring Transaction Processing
 
 ```bash
-/explore-codebase transaction processing
+/ring-default:explore-codebase transaction processing
 ```
 
 **Phase 1 might discover:**
@@ -162,7 +162,7 @@ The number and focus of agents adapts to Phase 1 findings:
 ### Example 3: Exploring Authentication
 
 ```bash
-/explore-codebase authentication system
+/ring-default:explore-codebase authentication system
 ```
 
 **Phase 1 might discover:**
@@ -259,8 +259,8 @@ Recommendations based on your goal (implementation, debugging, or learning)
 | `/ring-default:write-plan` | Use explore-codebase before planning implementation |
 | `/ring-default:execute-plan` | Use if plan execution reveals gaps in understanding |
 | `exploring-codebase` | Underlying skill with full logic and prompts |
-| `dispatching-parallel-agents` | Pattern used twice (discovery + deep dive) |
-| `systematic-debugging` | Use explore-codebase before debugging |
+| `ring-default:dispatching-parallel-agents` | Pattern used twice (discovery + deep dive) |
+| `ring-default:systematic-debugging` | Use explore-codebase before debugging |
 
 ## Troubleshooting
 
@@ -289,23 +289,23 @@ Recommendations based on your goal (implementation, debugging, or learning)
 ### Narrow Scope
 Focus discovery on specific area:
 ```bash
-/explore-codebase transaction processing in payment service only
+/ring-default:explore-codebase transaction processing in payment service only
 ```
 
 ### Deep Exploration
 Request comprehensive analysis:
 ```bash
-/explore-codebase authentication (include all integrations and edge cases)
+/ring-default:explore-codebase authentication (include all integrations and edge cases)
 ```
 
 ### Comparative Analysis
 Run twice to understand changes:
 ```bash
 # Before refactoring
-/explore-codebase user management
+/ring-default:explore-codebase user management
 
 # After refactoring
-/explore-codebase user management
+/ring-default:explore-codebase user management
 # Compare the two synthesis documents
 ```
 
@@ -376,18 +376,18 @@ Ready to refine design? Use /brainstorm
 
 ```bash
 # 1. Understand the codebase
-/explore-codebase payment processing
+/ring-default:explore-codebase payment processing
 
 # 2. Review synthesis document (architecture + implementation)
 
 # 3. Based on findings, plan your changes
-/write-plan add-refund-support
+/ring-default:write-plan add-refund-support
 
 # 4. Set up isolated workspace
 /worktree feature/add-refund-support
 
 # 5. Execute the plan
-/execute-plan <plan-file>
+/ring-default:execute-plan <plan-file>
 ```
 
 ## Key Takeaways

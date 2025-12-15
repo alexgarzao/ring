@@ -19,7 +19,7 @@ sequence:
   before: [writing-plans, using-git-worktrees]
 
 related:
-  similar: [writing-plans]
+  similar: [ring-default:writing-plans]
 ---
 
 # Brainstorming Ideas Into Designs

@@ -16,7 +16,7 @@ skip_when: |
   - Resource-only analysis → use resource-allocation
 
 related:
-  similar: [pre-dev-feature]
+  similar: [ring-pm-team:pre-dev-feature]
   complementary: [resource-allocation, risk-management, executive-reporting]
 ---
 

@@ -16,7 +16,7 @@ skip_when: |
   - Accounting entries → use financial-close
 
 related:
-  similar: [financial-analysis, metrics-dashboard]
+  similar: [ring-finance-team:financial-analysis, ring-finance-team:metrics-dashboard]
   uses: [financial-analyst, metrics-analyst]
 ---
 

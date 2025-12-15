@@ -22,7 +22,7 @@ Parse the severity and description from the command arguments.
 
 **If severity not provided:**
 - Ask user to classify: SEV1 (Critical), SEV2 (Major), SEV3 (Minor), SEV4 (Low)
-- Reference severity criteria from `ops-incident-response` skill
+- Reference severity criteria from `ring-ops-team:ops-incident-response` skill
 
 **If description not provided:**
 - Ask for brief incident description
@@ -120,7 +120,7 @@ Expected: [timestamp]
 
 ## Related Skills
 
-- `ops-incident-response` - Full incident response workflow
+- `ring-ops-team:ops-incident-response` - Full incident response workflow
 - `incident-responder` - Specialist agent for incident management
 
 ## Anti-Rationalization

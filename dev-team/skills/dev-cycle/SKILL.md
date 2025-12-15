@@ -41,17 +41,17 @@ verification:
 
 examples:
   - name: "New feature from PM workflow"
-    invocation: "/dev-cycle docs/pre-dev/auth/tasks.md"
+    invocation: "/ring-dev-team:dev-cycle docs/pre-dev/auth/tasks.md"
     expected_flow: |
       1. Load tasks with subtasks from tasks.md
       2. Ask user for checkpoint mode (per-task/per-gate/continuous)
       3. Execute Gate 0-5 for each task sequentially
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
-    invocation: "/dev-cycle --resume"
+    invocation: "/ring-dev-team:dev-cycle --resume"
     expected_state: "Continues from last saved gate in current-cycle.json"
   - name: "Execute with per-gate checkpoints"
-    invocation: "/dev-cycle tasks.md --checkpoint per-gate"
+    invocation: "/ring-dev-team:dev-cycle tasks.md --checkpoint per-gate"
     expected_flow: |
       1. Execute Gate 0, pause for approval
       2. User approves, execute Gate 1, pause
@@ -891,7 +891,7 @@ After completing all subtasks of a task:
 
    ```yaml
    Skill tool:
-     skill: "dev-feedback-loop"
+     skill: "ring-dev-team:dev-feedback-loop"
    ```
 
    **Note:** dev-feedback-loop manages its own TodoWrite tracking internally.
@@ -988,7 +988,7 @@ After completing all subtasks of a task:
      - Save state
      - Output: "Cycle paused for integration testing.
                 Test task [task_id] integration and run:
-                /dev-cycle --resume
+                /ring-dev-team:dev-cycle --resume
                 when ready to continue."
      - STOP execution
 
@@ -996,7 +996,7 @@ After completing all subtasks of a task:
      - Set status = "paused"
      - Save state
      - Output: "Cycle paused after task [task_id]. Resume with:
-                /dev-cycle --resume"
+                /ring-dev-team:dev-cycle --resume"
      - STOP execution
 ```
 
@@ -1012,7 +1012,7 @@ After completing all subtasks of a task:
 
    ```yaml
    Skill tool:
-     skill: "dev-feedback-loop"
+     skill: "ring-dev-team:dev-feedback-loop"
    ```
 
    **Note:** dev-feedback-loop manages its own TodoWrite tracking internally.
@@ -1036,18 +1036,18 @@ After completing all subtasks of a task:
 
 ```bash
 # Full PM workflow then dev execution
-/pre-dev-full my-feature
-/dev-cycle docs/pre-dev/my-feature/
+/ring-pm-team:pre-dev-full my-feature
+/ring-dev-team:dev-cycle docs/pre-dev/my-feature/
 
 # Simple PM workflow then dev execution
-/pre-dev-feature my-feature
-/dev-cycle docs/pre-dev/my-feature/tasks.md
+/ring-pm-team:pre-dev-feature my-feature
+/ring-dev-team:dev-cycle docs/pre-dev/my-feature/tasks.md
 
 # Manual task file
-/dev-cycle docs/tasks/sprint-001.md
+/ring-dev-team:dev-cycle docs/tasks/sprint-001.md
 
 # Resume interrupted cycle
-/dev-cycle --resume
+/ring-dev-team:dev-cycle --resume
 ```
 
 ## Error Recovery

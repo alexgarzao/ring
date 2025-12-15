@@ -18,7 +18,7 @@ skip_when: |
   - Technical writing → use ring-tw-team
 
 related:
-  similar: [using-ring, using-pm-team]
+  similar: [ring-default:using-ring, ring-pm-team:using-pm-team]
 ---
 
 # Using Ring PMO Team
@@ -251,11 +251,11 @@ Remember:
 **Agents:** See "5 PMO Specialists" table above.
 
 **Skills:**
-- `using-pmo-team` (this) - Introduction and dispatch guide
+- `ring-pmo-team:using-pmo-team` (this) - Introduction and dispatch guide
 - `portfolio-planning` - Portfolio strategy and planning
 - `resource-allocation` - Resource and capacity management
 - `risk-management` - Portfolio risk management
-- `project-health-check` - Individual project health assessment
+- `ring-pmo-team:project-health-check` - Individual project health assessment
 - `dependency-mapping` - Cross-project dependency analysis
 - `executive-reporting` - Executive communication and reporting
 - `pmo-retrospective` - Portfolio retrospectives and lessons learned

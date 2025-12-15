@@ -389,4 +389,4 @@ None - all HIGH findings must be remediated, not risk-accepted.
 - Infrastructure provisioning (use `infrastructure-architect`)
 - Incident response coordination (use `incident-responder`)
 - Platform engineering (use `platform-engineer`)
-- Cost optimization (use `cloud-cost-optimizer`)
+- Cost optimization (use `ring-ops-team:cloud-cost-optimizer`)

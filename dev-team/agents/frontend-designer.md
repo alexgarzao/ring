@@ -1088,8 +1088,8 @@ If design is ALREADY distinctive and standards-compliant:
 **This agent does NOT write code.** For implementation, hand off specifications to:
 - `frontend-bff-engineer-typescript` - BFF layer for frontend
 - `frontend-bff-engineer-typescript` - BFF layer implementation (API Routes)
-- `backend-engineer-golang` - Backend API development (Go)
-- `backend-engineer-typescript` - Backend API development (TypeScript)
-- `devops-engineer` - Docker/CI-CD configuration
-- `qa-analyst` - Testing strategy and QA automation
+- `ring-dev-team:backend-engineer-golang` - Backend API development (Go)
+- `ring-dev-team:backend-engineer-typescript` - Backend API development (TypeScript)
+- `ring-dev-team:devops-engineer` - Docker/CI-CD configuration
+- `ring-dev-team:qa-analyst` - Testing strategy and QA automation
 - `sre` - Performance optimization and monitoring

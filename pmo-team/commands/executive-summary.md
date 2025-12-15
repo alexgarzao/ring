@@ -9,7 +9,7 @@ Generate an executive summary of portfolio status for leadership.
 ## Usage
 
 ```
-/executive-summary [type] [options]
+/ring-pmo-team:executive-summary [type] [options]
 ```
 
 ## Arguments
@@ -31,16 +31,16 @@ Generate an executive summary of portfolio status for leadership.
 
 ```bash
 # Weekly dashboard
-/executive-summary dashboard
+/ring-pmo-team:executive-summary dashboard
 
 # Board package
-/executive-summary board --period "Q4 2024"
+/ring-pmo-team:executive-summary board --period "Q4 2024"
 
 # Escalation report
-/executive-summary escalation
+/ring-pmo-team:executive-summary escalation
 
 # Custom audience
-/executive-summary --audience "Steering Committee"
+/ring-pmo-team:executive-summary --audience "Steering Committee"
 ```
 
 ## Report Types
@@ -72,7 +72,7 @@ Generate an executive summary of portfolio status for leadership.
 **This command MUST load the executive-reporting skill for complete workflow execution.**
 
 ```
-Use Skill tool: executive-reporting
+Use Skill tool: ring-pmo-team:executive-reporting
 ```
 
 The skill contains the complete reporting workflow with:

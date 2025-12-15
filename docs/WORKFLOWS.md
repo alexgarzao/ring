@@ -98,7 +98,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Located: `default/skills/using-ring/SKILL.md`
 
 ### Ring Dev Team Plugin
-- `using-dev-team` → 7 specialist developer agents
+- `ring-dev-team:using-dev-team` → 7 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
 - Agents (invoke as `{agent-name}`):
@@ -111,7 +111,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - sre
 
 ### Ring FinOps Team Plugin
-- `using-finops-team` → 2 FinOps agents for Brazilian compliance
+- `ring-finops-team:using-finops-team` → 2 FinOps agents for Brazilian compliance
 - Auto-loads when ring-finops-team plugin is enabled
 - Located: `finops-team/skills/using-finops-team/SKILL.md`
 - Agents (invoke as `{agent-name}`):
@@ -119,13 +119,13 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - finops-automation (template generation)
 
 ### Ring PM Team Plugin
-- `using-pm-team` → Pre-dev workflow skills (8 gates)
+- `ring-pm-team:using-pm-team` → Pre-dev workflow skills (8 gates)
 - Auto-loads when ring-pm-team plugin is enabled
 - Located: `pm-team/skills/using-pm-team/SKILL.md`
 - Skills: 8 pre-dev gates for feature planning
 
 ### Ring TW Team Plugin
-- `using-tw-team` → 3 technical writing agents for documentation
+- `ring-tw-team:using-tw-team` → 3 technical writing agents for documentation
 - Auto-loads when ring-tw-team plugin is enabled
 - Located: `tw-team/skills/using-tw-team/SKILL.md`
 - Agents (invoke as `{agent-name}`):

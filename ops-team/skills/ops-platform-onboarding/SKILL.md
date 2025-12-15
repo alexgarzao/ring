@@ -16,7 +16,7 @@ skip_when: |
   - Non-platform infrastructure -> use ops-infrastructure-architect
 
 related:
-  similar: [dev-cycle]
+  similar: [ring-dev-team:dev-cycle]
   uses: [platform-engineer]
 ---
 

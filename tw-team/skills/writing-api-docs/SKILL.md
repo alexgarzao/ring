@@ -19,7 +19,7 @@ sequence:
   before: [documentation-review]
 
 related:
-  similar: [writing-functional-docs]
+  similar: [ring-tw-team:writing-functional-docs]
   complementary: [api-field-descriptions, documentation-structure]
 ---
 

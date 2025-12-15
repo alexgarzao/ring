@@ -11,9 +11,9 @@ This command initiates structured security audit following the ops-security-audi
 ## Usage
 
 ```
-/security-audit full soc2,pci
-/security-audit iam soc2
-/security-audit network
+/ring-ops-team:security-audit full soc2,pci
+/ring-ops-team:security-audit iam soc2
+/ring-ops-team:security-audit network
 ```
 
 ## Workflow
@@ -249,7 +249,7 @@ Additional output:
 
 ## Related Skills
 
-- `ops-security-audit` - Full security audit workflow
+- `ring-ops-team:ops-security-audit` - Full security audit workflow
 - `security-reviewer` - Application security review
 
 ## Anti-Rationalization

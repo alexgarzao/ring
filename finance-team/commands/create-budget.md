@@ -9,7 +9,7 @@ Create budget or forecast with documented assumptions and approval workflow.
 ## Usage
 
 ```
-/create-budget [type] [options]
+/ring-finance-team:create-budget [type] [options]
 ```
 
 ## Arguments
@@ -32,19 +32,19 @@ Create budget or forecast with documented assumptions and approval workflow.
 
 ```bash
 # Annual operating budget
-/create-budget annual --period FY2025
+/ring-finance-team:create-budget annual --period FY2025
 
 # Departmental budget
-/create-budget departmental --department "Sales" --period FY2025
+/ring-finance-team:create-budget departmental --department "Sales" --period FY2025
 
 # Zero-based budget
-/create-budget annual --methodology zero-based --period FY2025
+/ring-finance-team:create-budget annual --methodology zero-based --period FY2025
 
 # Rolling forecast update
-/create-budget forecast --period "Q2-Q4 2025"
+/ring-finance-team:create-budget forecast --period "Q2-Q4 2025"
 
 # Using prior year reference
-/create-budget annual --period FY2025 --prior docs/budget-2024.xlsx
+/ring-finance-team:create-budget annual --period FY2025 --prior docs/budget-2024.xlsx
 ```
 
 ## Prerequisites
@@ -99,7 +99,7 @@ The command produces a comprehensive budget including:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: budget-creation
+Use Skill tool: ring-finance-team:budget-creation
 ```
 
 The skill contains the complete 6-phase workflow with:
@@ -152,7 +152,7 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `budget-creation` for full details. Key rules:
+See skill `ring-finance-team:budget-creation` for full details. Key rules:
 
 - **All assumptions documented** - With rationale and owner
 - **All line items have owners** - Accountability required

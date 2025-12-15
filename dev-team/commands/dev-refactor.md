@@ -44,7 +44,7 @@ Then re-run `/ring-dev-team:dev-refactor`.
 ## Usage
 
 ```
-/dev-refactor [path] [options]
+/ring-dev-team:dev-refactor [path] [options]
 ```
 
 ## Arguments
@@ -66,24 +66,24 @@ Then re-run `/ring-dev-team:dev-refactor`.
 
 ```bash
 # Analyze entire project and refactor
-/dev-refactor
+/ring-dev-team:dev-refactor
 
 # Analyze specific directory
-/dev-refactor src/domain
+/ring-dev-team:dev-refactor src/domain
 
 # Analysis only (no execution)
-/dev-refactor --analyze-only
+/ring-dev-team:dev-refactor --analyze-only
 
 # Only fix critical issues
-/dev-refactor --critical-only
+/ring-dev-team:dev-refactor --critical-only
 
 # Use custom standards
-/dev-refactor --standards docs/team-standards.md
+/ring-dev-team:dev-refactor --standards docs/team-standards.md
 ```
 
 ## Workflow
 
-**See skill `dev-refactor` for the complete 13-step workflow with TodoWrite template.**
+**See skill `ring-dev-team:dev-refactor` for the complete 13-step workflow with TodoWrite template.**
 
 The skill defines all steps including: stack detection, codebase-explorer dispatch, individual agent reports, finding mapping, and artifact generation.
 
@@ -140,12 +140,12 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 **After PROJECT_RULES.md check passes, load the skill:**
 
 ```
-Use Skill tool: dev-refactor
+Use Skill tool: ring-dev-team:dev-refactor
 ```
 
 The skill contains the complete analysis workflow with:
 - Anti-rationalization tables for codebase exploration
-- Mandatory use of `codebase-explorer` (NOT Bash/Explore)
+- Mandatory use of `ring-default:codebase-explorer` (NOT Bash/Explore)
 - Standards coverage table requirements
 - Finding → Task mapping gates
 - Full agent dispatch prompts with `**MODE: ANALYSIS ONLY**`
@@ -182,7 +182,7 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `dev-refactor` for full details. Key rules:
+See skill `ring-dev-team:dev-refactor` for full details. Key rules:
 
 - **All agents dispatch in parallel** - Single message, multiple Task calls
 - **Specify model: "opus"** - All agents need opus for comprehensive analysis

@@ -19,7 +19,7 @@ skip_when: |
 
 The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "gate-name"` or via slash commands.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
 ## Pre-Dev Philosophy
 
@@ -97,9 +97,9 @@ Pre-dev workflow ensures:
 
 | Agent | Focus |
 |-------|-------|
-| `repo-research-analyst` | Codebase patterns, docs/solutions/ knowledge base |
-| `best-practices-researcher` | Web search, Context7 for best practices |
-| `framework-docs-researcher` | Tech stack versions, official patterns |
+| `ring-pm-team:repo-research-analyst` | Codebase patterns, docs/solutions/ knowledge base |
+| `ring-pm-team:best-practices-researcher` | Web search, Context7 for best practices |
+| `ring-pm-team:framework-docs-researcher` | Tech stack versions, official patterns |
 
 **Research Modes:**
 - **greenfield**: Web research primary (new capability)
@@ -111,8 +111,8 @@ Pre-dev workflow ensures:
 ### Via Slash Commands
 
 ```
-/pre-dev-feature logout-button    # Small track (4 gates)
-/pre-dev-full payment-system      # Large track (9 gates)
+/ring-pm-team:pre-dev-feature logout-button    # Small track (4 gates)
+/ring-pm-team:pre-dev-full payment-system      # Large track (9 gates)
 ```
 
 ### Via Skills (Manual)
@@ -155,10 +155,10 @@ docs/pre-dev/{feature}/
 | using-tw-team | Documentation for features |
 
 **Combined with:**
-- `execute-plan` – Run tasks in batches
-- `write-plan` – Generate plan from scratch
+- `ring-default:execute-plan` – Run tasks in batches
+- `ring-default:write-plan` – Generate plan from scratch
 - `*-engineer` – Specialist review of design
-- `requesting-code-review` – Post-implementation review
+- `ring-default:requesting-code-review` – Post-implementation review
 
 ## ORCHESTRATOR Principle
 

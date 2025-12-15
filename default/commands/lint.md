@@ -27,7 +27,7 @@ Run linting tools, analyze results, and dispatch parallel AI agents to fix all i
 
 ## Process
 
-This command invokes the `linting-codebase` skill which handles:
+This command invokes the `ring-default:linting-codebase` skill which handles:
 
 ### Phase 1: Lint Execution
 - Runs `make lint` (or detects appropriate lint command)
@@ -73,6 +73,6 @@ Lints only the services directory.
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `linting-codebase` | Underlying skill with full logic |
-| `dispatching-parallel-agents` | Pattern used for parallel fixes |
+| `ring-default:linting-codebase` | Underlying skill with full logic |
+| `ring-default:dispatching-parallel-agents` | Pattern used for parallel fixes |
 | `/ring-default:codereview` | Use after lint passes for deeper review |

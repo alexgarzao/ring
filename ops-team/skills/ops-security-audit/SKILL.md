@@ -16,7 +16,7 @@ skip_when: |
   - Penetration testing -> external security team
 
 related:
-  similar: [security-reviewer]
+  similar: [ring-default:security-reviewer]
   uses: [security-operations]
 ---
 

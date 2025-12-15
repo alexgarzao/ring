@@ -105,7 +105,7 @@ When a hook returns a `userMessage` field:
 
 ### Layer 3: Ring Skill (Defensive)
 
-`using-ring` skill includes mandatory userMessage check in first response protocol:
+`ring-default:using-ring` skill includes mandatory userMessage check in first response protocol:
 
 ```markdown
 ## MANDATORY FIRST RESPONSE PROTOCOL
@@ -159,7 +159,7 @@ Now, regarding your question about..."  ← CORRECT
 
 ### Automated Test (using-ring checklist)
 
-The `using-ring` skill enforces userMessage check as first item in mandatory checklist:
+The `ring-default:using-ring` skill enforces userMessage check as first item in mandatory checklist:
 
 ```markdown
 Before responding to ANY user message:

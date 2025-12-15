@@ -16,7 +16,7 @@ skip_when: |
   - Single-instance failure recovery -> standard runbooks
 
 related:
-  similar: [ops-capacity-planning]
+  similar: [ring-ops-team:ops-capacity-planning]
   uses: [infrastructure-architect]
 ---
 

@@ -18,7 +18,7 @@ skip_when: |
   - Code review -> use ring-default reviewers
 
 related:
-  similar: [using-ring, using-dev-team]
+  similar: [ring-default:using-ring, ring-dev-team:using-dev-team]
 ---
 
 # Using Ring Operations Specialists
@@ -47,7 +47,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 | "Create Terraform modules" | `devops-engineer` |
 | "Design multi-region architecture" | `infrastructure-architect` |
 | "Handle production outage" | `incident-responder` |
-| "Optimize cloud costs" | `cloud-cost-optimizer` |
+| "Optimize cloud costs" | `ring-ops-team:cloud-cost-optimizer` |
 
 ---
 
@@ -141,7 +141,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 |-------|-----------------|----------|
 | **`platform-engineer`** | Service mesh, API gateways, developer platforms, self-service infrastructure | Service mesh config, API gateway setup, platform abstractions, developer portals |
 | **`incident-responder`** | Incident management, RCA, post-mortems, blameless culture | Production incidents, outages, incident coordination, root cause analysis |
-| **`cloud-cost-optimizer`** | Cost analysis, RI management, FinOps, tagging | Cost reviews, optimization recommendations, reserved instance planning |
+| **`ring-ops-team:cloud-cost-optimizer`** | Cost analysis, RI management, FinOps, tagging | Cost reviews, optimization recommendations, reserved instance planning |
 | **`infrastructure-architect`** | Multi-region, DR, capacity planning, migrations | Architecture design, DR strategy, capacity planning, infrastructure lifecycle |
 | **`security-operations`** | Security audits, compliance, vulnerability management | Security assessments, compliance validation, vulnerability remediation |
 
@@ -226,14 +226,14 @@ Task tool:
 **Agents:** See "5 Operations Specialists" table above.
 
 **Skills:**
-- `using-ops-team` (this) - Plugin introduction
-- `ops-incident-response` - Incident management workflow
-- `ops-capacity-planning` - Capacity planning process
-- `ops-cost-optimization` - Cost optimization workflow
-- `ops-disaster-recovery` - DR planning and testing
-- `ops-security-audit` - Security audit workflow
-- `ops-platform-onboarding` - Service onboarding to platform
-- `ops-migration-planning` - Migration planning process
+- `ring-ops-team:using-ops-team` (this) - Plugin introduction
+- `ring-ops-team:ops-incident-response` - Incident management workflow
+- `ring-ops-team:ops-capacity-planning` - Capacity planning process
+- `ring-ops-team:ops-cost-optimization` - Cost optimization workflow
+- `ring-ops-team:ops-disaster-recovery` - DR planning and testing
+- `ring-ops-team:ops-security-audit` - Security audit workflow
+- `ring-ops-team:ops-platform-onboarding` - Service onboarding to platform
+- `ring-ops-team:ops-migration-planning` - Migration planning process
 
 **Commands:**
 - `/ring-ops-team:incident` - Production incident management

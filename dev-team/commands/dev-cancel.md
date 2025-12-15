@@ -9,7 +9,7 @@ Cancel the current development cycle.
 ## Usage
 
 ```
-/dev-cancel [--force]
+/ring-dev-team:dev-cancel [--force]
 ```
 
 ## Options

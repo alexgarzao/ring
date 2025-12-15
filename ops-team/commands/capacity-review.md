@@ -11,7 +11,7 @@ This command initiates a structured capacity review following the ops-capacity-p
 ## Usage
 
 ```
-/capacity-review production quarterly
+/ring-ops-team:capacity-review production quarterly
 ```
 
 ## Workflow
@@ -167,8 +167,8 @@ Combine findings from both specialists into comprehensive capacity plan.
 
 ## Related Skills
 
-- `ops-capacity-planning` - Full capacity planning workflow
-- `ops-cost-optimization` - Cost optimization workflow
+- `ring-ops-team:ops-capacity-planning` - Full capacity planning workflow
+- `ring-ops-team:ops-cost-optimization` - Cost optimization workflow
 
 ## Anti-Rationalization
 
