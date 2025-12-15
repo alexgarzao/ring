@@ -7,8 +7,7 @@ the required abstract methods for transforming Ring components.
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import re
+from typing import Any, Dict, List, Optional
 
 
 class PlatformAdapter(ABC):

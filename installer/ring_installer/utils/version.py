@@ -9,7 +9,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # Maximum allowed version string length to prevent DoS attacks
 MAX_VERSION_LENGTH = 100
@@ -229,7 +229,7 @@ class InstallManifest:
         if not path.exists():
             return None
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             return cls.from_dict(data)
         except (json.JSONDecodeError, KeyError):

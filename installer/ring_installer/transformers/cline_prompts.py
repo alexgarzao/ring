@@ -4,7 +4,6 @@ Cline prompts generator.
 Generates companion prompts for Cline from Ring skills and agents.
 """
 
-import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 

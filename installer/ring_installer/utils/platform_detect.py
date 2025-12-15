@@ -14,7 +14,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters import SUPPORTED_PLATFORMS
 

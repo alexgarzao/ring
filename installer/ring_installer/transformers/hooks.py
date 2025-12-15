@@ -5,7 +5,6 @@ Generates and transforms hook configurations for different platforms.
 """
 
 import json
-import re
 from typing import Any, Dict, List, Optional
 
 from ring_installer.transformers.base import (

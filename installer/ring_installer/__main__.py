@@ -36,25 +36,22 @@ from typing import List, Optional
 from ring_installer import __version__
 from ring_installer.adapters import SUPPORTED_PLATFORMS, list_platforms
 from ring_installer.core import (
-    InstallTarget,
     InstallOptions,
     InstallResult,
     InstallStatus,
-    UpdateCheckResult,
-    SyncResult,
-    install,
-    update,
-    uninstall,
-    list_installed,
+    InstallTarget,
     check_updates,
-    update_with_diff,
+    install,
+    list_installed,
     sync_platforms,
+    uninstall,
     uninstall_with_manifest,
+    update,
+    update_with_diff,
 )
 from ring_installer.utils.platform_detect import (
     detect_installed_platforms,
     print_detection_report,
-    get_platform_info,
 )
 
 
@@ -669,7 +666,7 @@ Examples:
     detect_parser.add_argument("--json", action="store_true", help="Output as JSON")
 
     # Platforms command
-    platforms_parser = subparsers.add_parser("platforms", help="List supported platforms")
+    subparsers.add_parser("platforms", help="List supported platforms")
 
     # Parse arguments
     args = parser.parse_args()

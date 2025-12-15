@@ -8,7 +8,6 @@ import hashlib
 import logging
 import os
 import shutil
-import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional, Union
@@ -43,10 +42,10 @@ def ensure_directory(path: Path) -> Path:
     try:
         path.mkdir(parents=True, exist_ok=True)
         return path
-    except PermissionError:
-        raise PermissionError(f"Permission denied creating directory: {path}")
+    except PermissionError as e:
+        raise PermissionError(f"Permission denied creating directory: {path}") from e
     except OSError as e:
-        raise OSError(f"Failed to create directory {path}: {e}")
+        raise OSError(f"Failed to create directory {path}: {e}") from e
 
 
 def backup_existing(path: Path, backup_dir: Optional[Path] = None) -> Optional[Path]:
@@ -85,8 +84,8 @@ def backup_existing(path: Path, backup_dir: Optional[Path] = None) -> Optional[P
         else:
             shutil.copy2(path, backup_path)
         return backup_path
-    except PermissionError:
-        raise PermissionError(f"Permission denied creating backup: {backup_path}")
+    except PermissionError as e:
+        raise PermissionError(f"Permission denied creating backup: {backup_path}") from e
 
 
 def copy_with_transform(
@@ -138,7 +137,7 @@ def copy_with_transform(
 
     # Read, transform, and write
     try:
-        with open(source, "r", encoding=encoding) as f:
+        with open(source, encoding=encoding) as f:
             content = f.read()
     except UnicodeDecodeError:
         # Fall back to binary copy if encoding fails
@@ -185,8 +184,8 @@ def safe_remove(path: Path, missing_ok: bool = True) -> bool:
         else:
             path.unlink()
         return True
-    except PermissionError:
-        raise PermissionError(f"Permission denied removing: {path}")
+    except PermissionError as e:
+        raise PermissionError(f"Permission denied removing: {path}") from e
 
 
 def get_file_hash(path: Path, algorithm: str = "sha256") -> str:

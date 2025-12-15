@@ -5,10 +5,10 @@ Provides the foundation for content transformation across platforms.
 Transformers follow a pipeline pattern for composability.
 """
 
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple
-import re
+from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 # YAML import with error handling at module level
 try:
@@ -433,8 +433,8 @@ class FrontmatterTransformer(BaseTransformer):
                 frontmatter[new_name] = frontmatter.pop(old_name)
 
         # Remove fields
-        for field in self.remove_fields:
-            frontmatter.pop(field, None)
+        for field_name in self.remove_fields:
+            frontmatter.pop(field_name, None)
 
         # Add fields
         frontmatter.update(self.add_fields)

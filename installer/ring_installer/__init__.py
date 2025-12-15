@@ -9,30 +9,30 @@ __version__ = "0.1.0"
 __author__ = "Lerian Studio"
 __license__ = "Apache-2.0"
 
+from ring_installer.adapters import (
+    SUPPORTED_PLATFORMS,
+    ClaudeAdapter,
+    ClineAdapter,
+    CursorAdapter,
+    FactoryAdapter,
+    PlatformAdapter,
+    get_adapter,
+)
 from ring_installer.core import (
-    InstallTarget,
     InstallOptions,
     InstallResult,
-    UpdateCheckResult,
+    InstallTarget,
     SyncResult,
-    install,
-    update,
-    uninstall,
-    load_manifest,
+    UpdateCheckResult,
     check_updates,
-    update_with_diff,
-    sync_platforms,
-    uninstall_with_manifest,
+    install,
     list_installed,
-)
-from ring_installer.adapters import (
-    PlatformAdapter,
-    ClaudeAdapter,
-    FactoryAdapter,
-    CursorAdapter,
-    ClineAdapter,
-    get_adapter,
-    SUPPORTED_PLATFORMS,
+    load_manifest,
+    sync_platforms,
+    uninstall,
+    uninstall_with_manifest,
+    update,
+    update_with_diff,
 )
 
 __all__ = [

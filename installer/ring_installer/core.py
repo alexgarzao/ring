@@ -7,26 +7,34 @@ along with supporting data structures.
 
 import json
 import logging
+import os
 import shutil
+import tempfile
 import traceback
 import warnings
-import os
-import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Callable
+from typing import Any, Callable, Dict, List, Optional
 
-from ring_installer.adapters import get_adapter, SUPPORTED_PLATFORMS, PlatformAdapter
+from ring_installer.adapters import SUPPORTED_PLATFORMS, get_adapter
+from ring_installer.utils.fs import safe_remove as _safe_remove
 from ring_installer.utils.version import (
-    check_for_updates as _check_for_updates,
-    get_installed_version as _get_installed_version,
-    get_ring_version as _get_ring_version,
-    get_manifest_path as _get_manifest_path,
     InstallManifest as _InstallManifest,
 )
-from ring_installer.utils.fs import safe_remove as _safe_remove
+from ring_installer.utils.version import (
+    check_for_updates as _check_for_updates,
+)
+from ring_installer.utils.version import (
+    get_installed_version as _get_installed_version,
+)
+from ring_installer.utils.version import (
+    get_manifest_path as _get_manifest_path,
+)
+from ring_installer.utils.version import (
+    get_ring_version as _get_ring_version,
+)
 
 # Re-export for compatibility with tests/patching
 check_for_updates = _check_for_updates
@@ -287,11 +295,11 @@ def _validate_marketplace_schema(
         try:
             source_resolved = source_path.resolve()
             source_resolved.relative_to(ring_path_resolved)
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 f"Invalid marketplace.json: plugin '{plugin.get('name')}' source path "
                 f"'{source}' escapes ring directory (path traversal detected)"
-            )
+            ) from e
 
 
 def _sanitize_path_for_display(path: Path, base_path: Optional[Path] = None) -> str:
@@ -337,7 +345,7 @@ def load_manifest(manifest_path: Optional[Path] = None) -> Dict[str, Any]:
     if not manifest_path.exists():
         raise FileNotFoundError(f"Platform manifest not found: {manifest_path}")
 
-    with open(manifest_path, "r", encoding="utf-8") as f:
+    with open(manifest_path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -354,18 +362,24 @@ def _verify_marketplace_integrity(ring_path: Path) -> None:
         try:
             expected_hash = checksum_file.read_text(encoding="utf-8").strip().split()[0]
         except Exception:
-            warnings.warn("Failed to read marketplace.sha256; skipping integrity check")
+            warnings.warn(
+                "Failed to read marketplace.sha256; skipping integrity check",
+                stacklevel=2,
+            )
 
     if expected_hash is None:
         expected_hash = os.environ.get("MARKETPLACE_JSON_SHA256")
 
     marketplace_path = ring_path / ".claude-plugin" / "marketplace.json"
     if not marketplace_path.exists():
-        warnings.warn("marketplace.json not found for integrity check")
+        warnings.warn("marketplace.json not found for integrity check", stacklevel=2)
         return
 
     if not expected_hash:
-        warnings.warn("No marketplace checksum provided; integrity not verified")
+        warnings.warn(
+            "No marketplace checksum provided; integrity not verified",
+            stacklevel=2,
+        )
         return
 
     from ring_installer.utils.fs import get_file_hash
@@ -412,7 +426,10 @@ def discover_ring_components(ring_path: Path, plugin_names: Optional[List[str]] 
 
         # Validate marketplace has plugins
         if not marketplace.get("plugins"):
-            warnings.warn(f"marketplace.json contains no plugins at {marketplace_path}")
+            warnings.warn(
+                f"marketplace.json contains no plugins at {marketplace_path}",
+                stacklevel=2,
+            )
             return {}
 
         # Process each plugin in marketplace
@@ -507,7 +524,12 @@ def install(
     Returns:
         InstallResult with details about what was installed
     """
-    from ring_installer.utils.fs import copy_with_transform, backup_existing, ensure_directory, safe_remove
+    from ring_installer.utils.fs import (
+        backup_existing,
+        copy_with_transform,
+        ensure_directory,
+        safe_remove,
+    )
 
     options = options or InstallOptions()
     result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
@@ -580,9 +602,13 @@ def install(
 
                     # Determine target filename
                     if component_type == "skills":
-                        # Skills use their directory name
+                        # Skills use their directory name.
+                        # Factory expects: ~/.factory/skills/<name>/<name>.md
                         skill_name = source_file.parent.name
-                        target_file = target_dir / skill_name / source_file.name
+                        if adapter.platform_id == "factory":
+                            target_file = target_dir / skill_name / f"{skill_name}{target_config['extension']}"
+                        else:
+                            target_file = target_dir / skill_name / source_file.name
                     elif requires_flat and len(components) > 1:
                         # Platform requires flat structure - use prefixed filename
                         target_filename = adapter.get_flat_filename(
@@ -623,7 +649,7 @@ def install(
                             )
                             continue
 
-                        with open(source_file, "r", encoding="utf-8") as f:
+                        with open(source_file, encoding="utf-8") as f:
                             content = f.read()
                     except Exception as e:
                         result.add_failure(source_file, target_file, f"Read error: {e}", exc_info=e)
@@ -631,8 +657,12 @@ def install(
 
                     # Transform content
                     try:
+                        metadata_name = source_file.stem
+                        if component_type == "skills":
+                            metadata_name = source_file.parent.name
+
                         metadata = {
-                            "name": source_file.stem,
+                            "name": metadata_name,
                             "source_path": str(source_file),
                             "plugin": plugin_name
                         }
@@ -663,7 +693,7 @@ def install(
                             copy_with_transform(
                                 source_file,
                                 target_file,
-                                transform_func=lambda _: transformed
+                                transform_func=lambda _, transformed=transformed: transformed,
                             )
                             result.add_success(source_file, target_file, backup_path)
                             installed_paths.append(target_file)
@@ -738,7 +768,7 @@ def uninstall(
         component_mapping = adapter.get_component_mapping()
 
         # Remove each component directory
-        for component_type, config in component_mapping.items():
+        for _component_type, config in component_mapping.items():
             target_dir = install_path / config["target_dir"]
 
             if not target_dir.exists():
@@ -887,15 +917,15 @@ def update_with_diff(
         InstallResult with details about what was updated
     """
     from ring_installer.utils.fs import (
-        copy_with_transform,
         backup_existing,
+        copy_with_transform,
         ensure_directory,
         get_file_hash,
     )
     from ring_installer.utils.version import (
-        get_ring_version,
-        get_manifest_path,
         InstallManifest,
+        get_manifest_path,
+        get_ring_version,
         save_install_manifest,
     )
 
@@ -962,7 +992,10 @@ def update_with_diff(
                     # Determine target path
                     if component_type == "skills":
                         skill_name = source_file.parent.name
-                        target_file = target_dir / skill_name / source_file.name
+                        if adapter.platform_id == "factory":
+                            target_file = target_dir / skill_name / f"{skill_name}{target_config['extension']}"
+                        else:
+                            target_file = target_dir / skill_name / source_file.name
                     elif requires_flat and len(components) > 1:
                         # Platform requires flat structure - use prefixed filename
                         target_filename = adapter.get_flat_filename(
@@ -1017,7 +1050,7 @@ def update_with_diff(
 
                     # File needs update
                     try:
-                        with open(source_file, "r", encoding="utf-8") as f:
+                        with open(source_file, encoding="utf-8") as f:
                             content = f.read()
                     except Exception as e:
                         result.add_failure(source_file, target_file, f"Read error: {e}")
@@ -1025,8 +1058,12 @@ def update_with_diff(
 
                     # Transform content
                     try:
+                        metadata_name = source_file.stem
+                        if component_type == "skills":
+                            metadata_name = source_file.parent.name
+
                         metadata = {
-                            "name": source_file.stem,
+                            "name": metadata_name,
                             "source_path": str(source_file),
                             "plugin": plugin_name
                         }
@@ -1067,7 +1104,7 @@ def update_with_diff(
                             copy_with_transform(
                                 source_file,
                                 target_file,
-                                transform_func=lambda _: transformed
+                                transform_func=lambda _, transformed=transformed: transformed,
                             )
                             result.add_success(source_file, target_file, backup_path)
                         except Exception as e:
@@ -1199,7 +1236,7 @@ def uninstall_with_manifest(
     Returns:
         InstallResult with details about what was removed
     """
-    from ring_installer.utils.fs import safe_remove, backup_existing
+    from ring_installer.utils.fs import backup_existing, safe_remove
     options = options or InstallOptions()
     result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
 
@@ -1219,7 +1256,7 @@ def uninstall_with_manifest(
             )
             # Fall back to regular uninstall
             component_mapping = adapter.get_component_mapping()
-            for component_type, config in component_mapping.items():
+            for _component_type, config in component_mapping.items():
                 target_dir = install_path / config["target_dir"]
                 if target_dir.exists():
                     if options.dry_run:

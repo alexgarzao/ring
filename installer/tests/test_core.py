@@ -6,14 +6,10 @@ supporting data structures and component discovery.
 """
 
 import json
-import shutil
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ==============================================================================
 # InstallStatus Tests
@@ -354,8 +350,9 @@ class TestLoadManifest:
 
     def test_uses_bundled_manifest_when_none(self):
         """load_manifest() should use bundled manifest when path is None."""
-        from ring_installer.core import load_manifest
         import importlib.resources
+
+        from ring_installer.core import load_manifest
 
         # Check if bundled manifest exists before testing
         try:
@@ -461,7 +458,7 @@ class TestInstall:
 
     def test_install_single_platform(self, tmp_ring_root, tmp_install_dir):
         """install() should install components to a single platform."""
-        from ring_installer.core import install, InstallTarget, InstallOptions, InstallStatus
+        from ring_installer.core import InstallOptions, InstallStatus, InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions(force=True)
@@ -473,7 +470,7 @@ class TestInstall:
 
     def test_install_multiple_platforms(self, tmp_ring_root, tmp_path):
         """install() should install to multiple platforms."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         claude_dir = tmp_path / "claude"
         factory_dir = tmp_path / "factory"
@@ -491,9 +488,29 @@ class TestInstall:
         assert "claude" in result.targets
         assert "factory" in result.targets
 
+    def test_install_factory_skill_structure(self, tmp_ring_root, tmp_path):
+        """Factory installs skills as skills/<name>/<name>.md (no plugin subdir)."""
+        from ring_installer.core import InstallOptions, InstallTarget, install
+
+        factory_dir = tmp_path / "factory"
+        factory_dir.mkdir()
+
+        result = install(
+            tmp_ring_root,
+            [InstallTarget(platform="factory", path=factory_dir)],
+            InstallOptions(force=True),
+        )
+        assert result.components_installed > 0 or result.components_skipped > 0
+
+        expected = factory_dir / "skills" / "sample-skill" / "sample-skill.md"
+        assert expected.exists()
+
+        # Legacy nested paths should not be used
+        assert not (factory_dir / "skills" / "default").exists()
+
     def test_install_dry_run(self, tmp_ring_root, tmp_install_dir):
         """install() should not create files in dry run mode."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions(dry_run=True, verbose=True)
@@ -505,7 +522,7 @@ class TestInstall:
 
     def test_install_skips_existing_without_force(self, tmp_ring_root, tmp_install_dir):
         """install() should skip existing files when force=False."""
-        from ring_installer.core import install, InstallTarget, InstallOptions, InstallStatus
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         # First install
         target = InstallTarget(platform="claude", path=tmp_install_dir)
@@ -520,7 +537,7 @@ class TestInstall:
 
     def test_install_creates_backups(self, tmp_ring_root, tmp_install_dir):
         """install() should create backups when overwriting."""
-        from ring_installer.core import install, InstallTarget, InstallOptions, InstallStatus
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions(force=True, backup=True)
@@ -531,13 +548,14 @@ class TestInstall:
         # Second install should create backups
         result = install(tmp_ring_root, [target], options)
 
-        # Check that some components have backup paths
-        backups = [d for d in result.details if d.backup_path is not None]
-        # May or may not have backups depending on whether files were identical
+        # Backups may or may not exist depending on whether files were identical.
+        # Assert the install completed and produced details.
+        assert result.status is not None
+        assert result.details
 
     def test_install_calls_progress_callback(self, tmp_ring_root, tmp_install_dir):
         """install() should call progress callback during installation."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         progress_calls = []
 
@@ -556,7 +574,7 @@ class TestInstall:
 
     def test_install_filters_components(self, tmp_ring_root, tmp_install_dir):
         """install() should respect component filter."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         target = InstallTarget(
             platform="claude",
@@ -574,7 +592,7 @@ class TestInstall:
 
     def test_install_handles_read_error(self, tmp_ring_root, tmp_install_dir):
         """install() should handle file read errors gracefully."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions(force=True)
@@ -596,7 +614,7 @@ class TestUpdate:
 
     def test_update_is_install_with_force(self, tmp_ring_root, tmp_install_dir):
         """update() should be equivalent to install with force=True."""
-        from ring_installer.core import update, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, update
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions()
@@ -608,7 +626,7 @@ class TestUpdate:
 
     def test_update_overwrites_existing(self, tmp_ring_root, tmp_install_dir):
         """update() should overwrite existing files."""
-        from ring_installer.core import install, update, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, update
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -637,7 +655,7 @@ class TestUninstall:
 
     def test_uninstall_removes_component_directories(self, tmp_ring_root, tmp_install_dir):
         """uninstall() should remove component directories."""
-        from ring_installer.core import install, uninstall, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, uninstall
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -652,7 +670,7 @@ class TestUninstall:
 
     def test_uninstall_dry_run(self, tmp_ring_root, tmp_install_dir):
         """uninstall() should not remove files in dry run mode."""
-        from ring_installer.core import install, uninstall, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, uninstall
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -664,7 +682,7 @@ class TestUninstall:
         existed_before = agents_dir.exists()
 
         # Dry run uninstall
-        result = uninstall([target], InstallOptions(dry_run=True, verbose=True))
+        uninstall([target], InstallOptions(dry_run=True, verbose=True))
 
         # Directory should still exist if it existed before
         if existed_before:
@@ -672,7 +690,7 @@ class TestUninstall:
 
     def test_uninstall_creates_backups(self, tmp_ring_root, tmp_install_dir):
         """uninstall() should create backups when requested."""
-        from ring_installer.core import install, uninstall, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, uninstall
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -687,7 +705,7 @@ class TestUninstall:
 
     def test_uninstall_handles_missing_directories(self, tmp_install_dir):
         """uninstall() should handle missing directories gracefully."""
-        from ring_installer.core import uninstall, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, uninstall
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -707,7 +725,7 @@ class TestListInstalled:
 
     def test_list_installed_finds_components(self, tmp_ring_root, tmp_install_dir):
         """list_installed() should find installed components."""
-        from ring_installer.core import install, list_installed, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, list_installed
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -828,7 +846,7 @@ class TestCheckUpdates:
 
     def test_check_updates_returns_results_per_platform(self, tmp_ring_root, tmp_install_dir):
         """check_updates() should return results for each target platform."""
-        from ring_installer.core import check_updates, InstallTarget
+        from ring_installer.core import InstallTarget, check_updates
 
         targets = [
             InstallTarget(platform="claude", path=tmp_install_dir)
@@ -851,7 +869,7 @@ class TestCheckUpdates:
 
     def test_check_updates_detects_no_updates(self, tmp_ring_root, tmp_install_dir):
         """check_updates() should detect when no updates available."""
-        from ring_installer.core import check_updates, InstallTarget
+        from ring_installer.core import InstallTarget, check_updates
 
         targets = [
             InstallTarget(platform="claude", path=tmp_install_dir)
@@ -881,7 +899,7 @@ class TestUpdateWithDiff:
 
     def test_update_with_diff_skips_unchanged(self, tmp_ring_root, tmp_install_dir):
         """update_with_diff() should skip unchanged files."""
-        from ring_installer.core import install, update_with_diff, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, update_with_diff
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -896,7 +914,7 @@ class TestUpdateWithDiff:
 
     def test_update_with_diff_updates_changed(self, tmp_ring_root, tmp_install_dir):
         """update_with_diff() should update changed files."""
-        from ring_installer.core import install, update_with_diff, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, update_with_diff
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -918,7 +936,7 @@ class TestUpdateWithDiff:
 
     def test_update_with_diff_dry_run(self, tmp_ring_root, tmp_install_dir):
         """update_with_diff() should support dry run mode."""
-        from ring_installer.core import install, update_with_diff, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install, update_with_diff
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions(dry_run=True, verbose=True)
@@ -928,17 +946,15 @@ class TestUpdateWithDiff:
 
         # Modify a file
         agents_dir = tmp_install_dir / "agents"
-        original_content = None
         modified_file = None
         if agents_dir.exists():
             for f in agents_dir.glob("*.md"):
-                original_content = f.read_text()
                 f.write_text("Modified content")
                 modified_file = f
                 break
 
         # Dry run update
-        result = update_with_diff(tmp_ring_root, [target], options)
+        update_with_diff(tmp_ring_root, [target], options)
 
         # File should still be modified (not actually updated)
         if modified_file and modified_file.exists():
@@ -974,7 +990,7 @@ class TestSyncPlatforms:
 
     def test_sync_platforms_detects_drift(self, tmp_ring_root, tmp_path):
         """sync_platforms() should detect version drift."""
-        from ring_installer.core import sync_platforms, InstallTarget
+        from ring_installer.core import InstallTarget, sync_platforms
 
         claude_dir = tmp_path / "claude"
         claude_dir.mkdir()
@@ -995,7 +1011,7 @@ class TestSyncPlatforms:
 
     def test_sync_platforms_syncs_all_targets(self, tmp_ring_root, tmp_path):
         """sync_platforms() should sync all target platforms."""
-        from ring_installer.core import sync_platforms, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, sync_platforms
 
         claude_dir = tmp_path / "claude"
         factory_dir = tmp_path / "factory"
@@ -1023,7 +1039,7 @@ class TestUninstallWithManifest:
 
     def test_uninstall_with_manifest_uses_manifest(self, tmp_install_dir):
         """uninstall_with_manifest() should use manifest for precision removal."""
-        from ring_installer.core import uninstall_with_manifest, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, uninstall_with_manifest
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -1034,13 +1050,13 @@ class TestUninstallWithManifest:
             }
         }
 
-        with patch("ring_installer.core.InstallManifest") as MockManifest, \
+        with patch("ring_installer.core.InstallManifest") as mock_manifest_cls, \
              patch("ring_installer.core.get_manifest_path") as mock_path, \
-             patch("ring_installer.core.safe_remove") as mock_remove:
+             patch("ring_installer.core.safe_remove"):
 
             mock_manifest = MagicMock()
             mock_manifest.files = manifest_data["files"]
-            MockManifest.load.return_value = mock_manifest
+            mock_manifest_cls.load.return_value = mock_manifest
             mock_path.return_value = tmp_install_dir / ".ring-manifest.json"
 
             result = uninstall_with_manifest([target], InstallOptions(backup=False))
@@ -1050,14 +1066,14 @@ class TestUninstallWithManifest:
 
     def test_uninstall_with_manifest_falls_back(self, tmp_install_dir):
         """uninstall_with_manifest() should fall back when no manifest."""
-        from ring_installer.core import uninstall_with_manifest, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, uninstall_with_manifest
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
-        with patch("ring_installer.core.InstallManifest") as MockManifest, \
+        with patch("ring_installer.core.InstallManifest") as mock_manifest_cls, \
              patch("ring_installer.core.get_manifest_path"):
 
-            MockManifest.load.return_value = None
+            mock_manifest_cls.load.return_value = None
 
             result = uninstall_with_manifest([target], InstallOptions(backup=False))
 
@@ -1066,7 +1082,7 @@ class TestUninstallWithManifest:
 
     def test_uninstall_with_manifest_dry_run(self, tmp_install_dir):
         """uninstall_with_manifest() should support dry run mode."""
-        from ring_installer.core import uninstall_with_manifest, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, uninstall_with_manifest
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -1076,17 +1092,14 @@ class TestUninstallWithManifest:
         test_file = agents_dir / "test.md"
         test_file.write_text("content")
 
-        with patch("ring_installer.core.InstallManifest") as MockManifest, \
+        with patch("ring_installer.core.InstallManifest") as mock_manifest_cls, \
              patch("ring_installer.core.get_manifest_path"):
 
             mock_manifest = MagicMock()
             mock_manifest.files = {"agents/test.md": "hash123"}
-            MockManifest.load.return_value = mock_manifest
+            mock_manifest_cls.load.return_value = mock_manifest
 
-            result = uninstall_with_manifest(
-                [target],
-                InstallOptions(dry_run=True, verbose=True)
-            )
+            uninstall_with_manifest([target], InstallOptions(dry_run=True, verbose=True))
 
             # File should still exist
             assert test_file.exists()
@@ -1102,8 +1115,12 @@ class TestIntegration:
     def test_full_install_update_uninstall_cycle(self, tmp_ring_root, tmp_install_dir):
         """Test complete install -> update -> uninstall cycle."""
         from ring_installer.core import (
-            install, update, uninstall,
-            InstallTarget, InstallOptions, InstallStatus
+            InstallOptions,
+            InstallStatus,
+            InstallTarget,
+            install,
+            uninstall,
+            update,
         )
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
@@ -1122,7 +1139,7 @@ class TestIntegration:
 
     def test_multi_platform_install(self, tmp_ring_root, tmp_path):
         """Test installing to multiple platforms simultaneously."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         platforms = ["claude", "factory", "cursor", "cline"]
         targets = []
@@ -1140,7 +1157,7 @@ class TestIntegration:
 
     def test_selective_component_install(self, tmp_ring_root, tmp_install_dir):
         """Test installing only specific component types."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         # Install only agents
         target = InstallTarget(
@@ -1158,7 +1175,7 @@ class TestIntegration:
 
     def test_plugin_filtering(self, tmp_ring_root, tmp_install_dir):
         """Test filtering by plugin names."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
         options = InstallOptions(
@@ -1181,7 +1198,7 @@ class TestEdgeCases:
 
     def test_empty_source_directory(self, tmp_path, tmp_install_dir):
         """Should handle empty source directory gracefully."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -1192,7 +1209,7 @@ class TestEdgeCases:
 
     def test_install_with_none_options(self, tmp_ring_root, tmp_install_dir):
         """Should handle None options."""
-        from ring_installer.core import install, InstallTarget
+        from ring_installer.core import InstallTarget, install
 
         target = InstallTarget(platform="claude", path=tmp_install_dir)
 
@@ -1202,7 +1219,7 @@ class TestEdgeCases:
 
     def test_empty_targets_list(self, tmp_ring_root):
         """Should handle empty targets list."""
-        from ring_installer.core import install, InstallOptions
+        from ring_installer.core import InstallOptions, install
 
         result = install(tmp_ring_root, [], InstallOptions())
 
@@ -1211,7 +1228,7 @@ class TestEdgeCases:
 
     def test_unicode_content_handling(self, tmp_path, tmp_install_dir):
         """Should handle unicode content in files."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         # Create source with unicode content
         agents_dir = tmp_path / "agents"
@@ -1239,7 +1256,7 @@ class TestEdgeCases:
 
     def test_special_characters_in_filenames(self, tmp_path, tmp_install_dir):
         """Should handle special characters in filenames."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         # Create source with special filename
         agents_dir = tmp_path / "agents"
@@ -1262,7 +1279,7 @@ class TestProgressCallback:
 
     def test_progress_callback_receives_all_components(self, tmp_ring_root, tmp_install_dir):
         """Progress callback should be called for each component."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         calls = []
 
@@ -1277,7 +1294,7 @@ class TestProgressCallback:
 
     def test_progress_callback_total_is_consistent(self, tmp_ring_root, tmp_install_dir):
         """Progress callback total should be consistent across calls."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         totals = set()
 
@@ -1293,7 +1310,7 @@ class TestProgressCallback:
 
     def test_progress_callback_current_increments(self, tmp_ring_root, tmp_install_dir):
         """Progress callback current should increment."""
-        from ring_installer.core import install, InstallTarget, InstallOptions
+        from ring_installer.core import InstallOptions, InstallTarget, install
 
         currents = []
 

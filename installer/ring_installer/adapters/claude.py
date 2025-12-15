@@ -7,7 +7,7 @@ performs minimal transformation (essentially a passthrough).
 
 import os
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
 

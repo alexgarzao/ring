@@ -8,9 +8,9 @@ Factory AI uses similar concepts to Ring but with different terminology:
 """
 
 import os
-from pathlib import Path
-from typing import Dict, Optional, Any
 import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from ring_installer.adapters.base import PlatformAdapter
 
@@ -25,6 +25,16 @@ class FactoryAdapter(PlatformAdapter):
 
     platform_id = "factory"
     platform_name = "Factory AI"
+
+    _FACTORY_TOOL_NAME_MAP: Dict[str, str] = {
+        # Factory tool names
+        "WebFetch": "FetchUrl",
+        "FetchURL": "FetchUrl",
+        "Bash": "Execute",
+        # Context7 tool names (Factory uses triple-underscore namespace)
+        "mcp__context7__resolve-library-id": "context7___resolve-library-id",
+        "mcp__context7__get-library-docs": "context7___get-library-docs",
+    }
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -56,6 +66,7 @@ class FactoryAdapter(PlatformAdapter):
 
         # Replace agent references with droid references in body
         body = self._replace_agent_references(body)
+        body = self._replace_factory_tool_references(body)
 
         # Rebuild the content
         if frontmatter:
@@ -81,6 +92,7 @@ class FactoryAdapter(PlatformAdapter):
         # Transform frontmatter
         if frontmatter:
             frontmatter = self._transform_agent_frontmatter(frontmatter)
+            frontmatter = self._qualify_droid_name(frontmatter, metadata)
 
         # Transform body content
         body = self._transform_agent_body(body)
@@ -89,6 +101,45 @@ class FactoryAdapter(PlatformAdapter):
         if frontmatter:
             return self.create_frontmatter(frontmatter) + "\n" + body
         return body
+
+    def _qualify_droid_name(
+        self,
+        frontmatter: Dict[str, Any],
+        metadata: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Qualify droid name with plugin namespace.
+
+        Factory installs droids into a single flat directory. To avoid name collisions
+        across plugins and to match Ring's fully-qualified invocation format, droids
+        MUST be addressable as:
+
+            ring-<plugin>:<name>
+
+        Example:
+            plugin=default, name=code-reviewer -> ring-default:code-reviewer
+        """
+        result = dict(frontmatter)
+
+        plugin = (metadata or {}).get("plugin")
+        if not isinstance(plugin, str) or not plugin:
+            return result
+
+        plugin_id = plugin if plugin.startswith("ring-") else f"ring-{plugin}"
+
+        name = result.get("name")
+        if not isinstance(name, str) or not name:
+            fallback_name = (metadata or {}).get("name")
+            if isinstance(fallback_name, str) and fallback_name:
+                name = fallback_name
+            else:
+                return result
+
+        # Already qualified
+        if ":" in name:
+            return result
+
+        result["name"] = f"{plugin_id}:{name}"
+        return result
 
     def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -111,6 +162,7 @@ class FactoryAdapter(PlatformAdapter):
 
         # Replace agent references in body
         body = self._replace_agent_references(body)
+        body = self._replace_factory_tool_references(body)
 
         # Rebuild the content
         if frontmatter:
@@ -207,7 +259,11 @@ class FactoryAdapter(PlatformAdapter):
 
         # Update subagent_type references
         if "subagent_type" in result:
-            result["subdroid_type"] = result.pop("subagent_type")
+            # Prefer `droid_type` for Factory invocation, but keep `subdroid_type`
+            # as a backward-compatible alias.
+            value = result.pop("subagent_type")
+            result["droid_type"] = value
+            result.setdefault("subdroid_type", value)
 
         # Transform any string values containing "agent"
         for key, value in result.items():
@@ -244,6 +300,10 @@ class FactoryAdapter(PlatformAdapter):
             if model.startswith("claude"):
                 result["model"] = model  # Keep as-is, Factory supports Claude models
 
+        # Transform tools list for Factory compatibility
+        if "tools" in result:
+            result["tools"] = self._transform_tools_for_factory(result["tools"])
+
         return result
 
     def _transform_agent_body(self, body: str) -> str:
@@ -258,6 +318,7 @@ class FactoryAdapter(PlatformAdapter):
         """
         # Replace terminology
         body = self._replace_agent_references(body)
+        body = self._replace_factory_tool_references(body)
 
         # Replace section headers
         replacements = [
@@ -270,6 +331,36 @@ class FactoryAdapter(PlatformAdapter):
             body = body.replace(old, new)
 
         return body
+
+    def _transform_tools_for_factory(self, tools: Any) -> Any:
+        """Normalize tool names in frontmatter for Factory.
+
+        Factory validates the `tools:` list strictly; invalid entries cause the
+        droid to be rejected during load.
+        """
+        if not isinstance(tools, list):
+            return tools
+
+        normalized: List[Any] = []
+        for tool in tools:
+            if not isinstance(tool, str):
+                normalized.append(tool)
+                continue
+
+            # Droids cannot spawn other droids.
+            if tool == "Task":
+                continue
+
+            normalized.append(self._FACTORY_TOOL_NAME_MAP.get(tool, tool))
+
+        return normalized
+
+    def _replace_factory_tool_references(self, text: str) -> str:
+        """Replace tool references in content so installed droids' instructions match Factory."""
+        result = text
+        for old, new in self._FACTORY_TOOL_NAME_MAP.items():
+            result = result.replace(old, new)
+        return result
 
     def _replace_agent_references(self, text: str) -> str:
         """
@@ -284,27 +375,41 @@ class FactoryAdapter(PlatformAdapter):
         Returns:
             Text with droid references
         """
-        # First, protect code blocks and URLs from replacement
-        protected_regions = []
+        # Protect code blocks, inline code, and URLs from replacement
+        protected_regions: List[Tuple[int, int]] = []
 
-        # Protect code blocks (fenced)
-        code_block_pattern = r'```[\s\S]*?```'
-        for match in re.finditer(code_block_pattern, text):
-            protected_regions.append((match.start(), match.end()))
+        patterns = [
+            r"```[\s\S]*?```",  # fenced code blocks
+            r"`[^`]+`",  # inline code
+            r"https?://[^\s)]+|www\.[^\s)]+",  # URLs
+        ]
 
-        # Protect inline code
-        inline_code_pattern = r'`[^`]+`'
-        for match in re.finditer(inline_code_pattern, text):
-            protected_regions.append((match.start(), match.end()))
+        for pattern in patterns:
+            for match in re.finditer(pattern, text):
+                protected_regions.append((match.start(), match.end()))
 
-        # Protect URLs
-        url_pattern = r'https?://[^\s)]+|www\.[^\s)]+'
-        for match in re.finditer(url_pattern, text):
-            protected_regions.append((match.start(), match.end()))
+        if protected_regions:
+            protected_regions.sort()
+            merged: List[List[int]] = []
+            for start, end in protected_regions:
+                if not merged or start > merged[-1][1]:
+                    merged.append([start, end])
+                else:
+                    merged[-1][1] = max(merged[-1][1], end)
 
-        def is_protected(pos: int) -> bool:
-            """Check if a position is within a protected region."""
-            return any(start <= pos < end for start, end in protected_regions)
+            placeholders: List[str] = []
+            parts: List[str] = []
+            last = 0
+            for i, (start, end) in enumerate(merged):
+                parts.append(text[last:start])
+                placeholders.append(text[start:end])
+                parts.append(f"\x00RING_PROTECTED_{i}\x00")
+                last = end
+            parts.append(text[last:])
+            masked = "".join(parts)
+        else:
+            placeholders = []
+            masked = text
 
         # Ring-specific context patterns
         ring_contexts = [
@@ -312,20 +417,14 @@ class FactoryAdapter(PlatformAdapter):
             (r'"ring:([^"]*)-agent"', r'"ring:\1-droid"'),
             (r"'ring:([^']*)-agent'", r"'ring:\1-droid'"),
             # Subagent references
-            (r'\bsubagent_type\b', 'subdroid_type'),
+            (r"\bsubagent_type\b", "droid_type"),
             (r'\bsubagent\b', 'subdroid'),
             (r'\bSubagent\b', 'Subdroid'),
         ]
 
-        result = text
+        result = masked
         for pattern, replacement in ring_contexts:
-            # Replace only in non-protected regions
-            matches = list(re.finditer(pattern, result))
-            offset = 0
-            for match in matches:
-                if not is_protected(match.start() + offset):
-                    result = result[:match.start() + offset] + re.sub(pattern, replacement, match.group()) + result[match.end() + offset:]
-                    offset += len(re.sub(pattern, replacement, match.group())) - len(match.group())
+            result = re.sub(pattern, replacement, result)
 
         # General agent terminology (with exclusions)
         general_replacements = [
@@ -339,12 +438,11 @@ class FactoryAdapter(PlatformAdapter):
         ]
 
         for pattern, replacement in general_replacements:
-            matches = list(re.finditer(pattern, result))
-            offset = 0
-            for match in matches:
-                if not is_protected(match.start() + offset):
-                    result = result[:match.start() + offset] + replacement + result[match.end() + offset:]
-                    offset += len(replacement) - len(match.group())
+            result = re.sub(pattern, replacement, result)
+
+        # Restore protected regions
+        for i, original in enumerate(placeholders):
+            result = result.replace(f"\x00RING_PROTECTED_{i}\x00", original)
 
         return result
 
@@ -381,8 +479,8 @@ class FactoryAdapter(PlatformAdapter):
         Returns:
             True for agents (droids) since Factory requires flat structure
         """
-        # Factory only scans top-level files in droids/ directory
-        return component_type == "agents"
+        # Factory scans droids as a flat list and expects skills at skills/<name>/<name>.md.
+        return component_type in {"agents", "skills"}
 
     def get_flat_filename(self, source_filename: str, component_type: str, plugin_name: str) -> str:
         """

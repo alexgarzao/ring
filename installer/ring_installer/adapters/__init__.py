@@ -1,5 +1,4 @@
-"""
-Platform adapters for Ring installer.
+"""Platform adapters for Ring installer.
 
 This module provides adapters for transforming Ring components to various
 AI platform formats.
@@ -11,11 +10,16 @@ Supported Platforms:
 - Cline: All components -> Prompts
 """
 
-from typing import Dict, List, Optional, Type, TypeVar
+from typing import Dict, Optional, Type, TypeVar
 
+from ring_installer.adapters.base import PlatformAdapter
+from ring_installer.adapters.claude import ClaudeAdapter
+from ring_installer.adapters.cline import ClineAdapter
+from ring_installer.adapters.cursor import CursorAdapter
+from ring_installer.adapters.factory import FactoryAdapter
 
 # TypeVar for adapter type hints
-AdapterT = TypeVar("AdapterT", bound="PlatformAdapter")
+AdapterT = TypeVar("AdapterT", bound=PlatformAdapter)
 
 
 class PlatformID:
@@ -42,13 +46,6 @@ class PlatformID:
     def is_valid(cls, platform: str) -> bool:
         """Check if a platform identifier is valid."""
         return platform.lower() in cls.all()
-
-
-from ring_installer.adapters.base import PlatformAdapter
-from ring_installer.adapters.claude import ClaudeAdapter
-from ring_installer.adapters.factory import FactoryAdapter
-from ring_installer.adapters.cursor import CursorAdapter
-from ring_installer.adapters.cline import ClineAdapter
 
 # Registry of supported platforms and their adapters
 ADAPTER_REGISTRY: Dict[str, Type[PlatformAdapter]] = {

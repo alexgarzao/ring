@@ -6,9 +6,9 @@ Cursor uses a different approach to AI assistance:
 - agents/commands -> workflows
 """
 
-from pathlib import Path
-from typing import Dict, Optional, Any, List
 import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
 

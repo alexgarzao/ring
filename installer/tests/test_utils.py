@@ -5,14 +5,11 @@ Tests fs.py (filesystem utilities), platform_detect.py (platform detection),
 and version.py (semver comparison).
 """
 
-import json
-import os
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
-
 
 # ==============================================================================
 # Tests for fs.py (Filesystem Utilities)
@@ -69,13 +66,13 @@ class TestEnsureDirectory:
 
     def test_expands_user_path(self, tmp_path):
         """ensure_directory() should expand ~ in paths."""
+
         from ring_installer.utils.fs import ensure_directory
 
-        # Create a mock expanduser that returns tmp_path
-        with patch.object(Path, 'expanduser', return_value=tmp_path / "expanded"):
-            path = Path("~/test_dir")
-            # The actual behavior depends on implementation
-            # This test verifies expanduser is called
+        # Create a mock expanduser that returns a safe temporary path
+        with patch.object(Path, "expanduser", return_value=tmp_path / "expanded") as mock_expand:
+            ensure_directory(Path("~/test_dir"))
+            assert mock_expand.called
 
 
 class TestBackupExisting:
@@ -172,7 +169,7 @@ class TestCopyWithTransform:
         source.write_text("hello world")
         target = tmp_path / "target.txt"
 
-        result = copy_with_transform(
+        copy_with_transform(
             source,
             target,
             transform_func=lambda c: c.upper()
@@ -939,9 +936,9 @@ class TestCheckForUpdates:
     def test_detects_update_available(self, tmp_ring_root, tmp_install_dir):
         """check_for_updates() should detect when update is available."""
         from ring_installer.utils.version import (
-            check_for_updates,
             InstallManifest,
-            get_manifest_path
+            check_for_updates,
+            get_manifest_path,
         )
 
         # Create old manifest in install dir
@@ -962,9 +959,9 @@ class TestCheckForUpdates:
     def test_no_update_when_same_version(self, tmp_ring_root, tmp_install_dir):
         """check_for_updates() should detect no update when versions match."""
         from ring_installer.utils.version import (
-            check_for_updates,
             InstallManifest,
-            get_manifest_path
+            check_for_updates,
+            get_manifest_path,
         )
 
         # Create manifest with same version
@@ -987,12 +984,12 @@ class TestSaveInstallManifest:
     def test_saves_manifest(self, tmp_path):
         """save_install_manifest() should create manifest file."""
         from ring_installer.utils.version import (
-            save_install_manifest,
+            InstallManifest,
             get_manifest_path,
-            InstallManifest
+            save_install_manifest,
         )
 
-        manifest = save_install_manifest(
+        save_install_manifest(
             install_path=tmp_path,
             source_path=Path("/source"),
             platform="cursor",

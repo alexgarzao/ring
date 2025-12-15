@@ -11,40 +11,20 @@ Supported Platforms:
 - Cline: All components -> Prompts
 """
 
-from typing import Optional, Type, Dict
+from typing import Dict, Optional, Type
 
-from ring_installer.transformers.base import (
-    BaseTransformer,
-    TransformContext,
-    TransformResult,
-    TransformerPipeline,
-    PassthroughTransformer,
-    TerminologyTransformer,
-    FrontmatterTransformer,
-)
-from ring_installer.transformers.skill import (
-    SkillTransformer,
-    SkillTransformerFactory,
-)
 from ring_installer.transformers.agent import (
     AgentTransformer,
     AgentTransformerFactory,
 )
-from ring_installer.transformers.command import (
-    CommandTransformer,
-    CommandTransformerFactory,
-)
-from ring_installer.transformers.hooks import (
-    HookTransformer,
-    HookTransformerFactory,
-    generate_hooks_json,
-    parse_hooks_json,
-)
-from ring_installer.transformers.cursor_rules import (
-    CursorRulesGenerator,
-    CursorRulesTransformer,
-    generate_cursorrules_from_skills,
-    write_cursorrules,
+from ring_installer.transformers.base import (
+    BaseTransformer,
+    FrontmatterTransformer,
+    PassthroughTransformer,
+    TerminologyTransformer,
+    TransformContext,
+    TransformerPipeline,
+    TransformResult,
 )
 from ring_installer.transformers.cline_prompts import (
     ClinePromptsGenerator,
@@ -53,7 +33,26 @@ from ring_installer.transformers.cline_prompts import (
     generate_prompts_index,
     write_cline_prompts,
 )
-
+from ring_installer.transformers.command import (
+    CommandTransformer,
+    CommandTransformerFactory,
+)
+from ring_installer.transformers.cursor_rules import (
+    CursorRulesGenerator,
+    CursorRulesTransformer,
+    generate_cursorrules_from_skills,
+    write_cursorrules,
+)
+from ring_installer.transformers.hooks import (
+    HookTransformer,
+    HookTransformerFactory,
+    generate_hooks_json,
+    parse_hooks_json,
+)
+from ring_installer.transformers.skill import (
+    SkillTransformer,
+    SkillTransformerFactory,
+)
 
 # Component type to transformer factory mapping
 TRANSFORMER_FACTORIES: Dict[str, Dict[str, Type]] = {

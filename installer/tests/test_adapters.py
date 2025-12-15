@@ -5,23 +5,22 @@ Tests ClaudeAdapter, FactoryAdapter, CursorAdapter, ClineAdapter,
 and the get_adapter() factory function.
 """
 
-import pytest
 from pathlib import Path
-from unittest.mock import patch
+
+import pytest
 
 from ring_installer.adapters import (
-    PlatformAdapter,
-    ClaudeAdapter,
-    FactoryAdapter,
-    CursorAdapter,
-    ClineAdapter,
-    get_adapter,
-    register_adapter,
-    list_platforms,
-    SUPPORTED_PLATFORMS,
     ADAPTER_REGISTRY,
+    SUPPORTED_PLATFORMS,
+    ClaudeAdapter,
+    ClineAdapter,
+    CursorAdapter,
+    FactoryAdapter,
+    PlatformAdapter,
+    get_adapter,
+    list_platforms,
+    register_adapter,
 )
-
 
 # ==============================================================================
 # Tests for get_adapter() factory function
@@ -298,8 +297,38 @@ subagent_type: helper
 """
         result = adapter.transform_agent(content)
 
-        # subdroid_type should appear instead of subagent_type
-        assert "subdroid_type" in result or "droid" in result.lower()
+        assert "subagent_type" not in result
+        # Prefer droid_type; subdroid_type is kept as a backward-compatible alias
+        assert "droid_type" in result
+
+    def test_transform_agent_qualifies_name_with_plugin(self, adapter):
+        """FactoryAdapter should namespace droid name as ring-<plugin>:<name>."""
+        content = """---
+name: code-reviewer
+---
+
+Use this agent for review.
+"""
+        result = adapter.transform_agent(content, {"plugin": "default", "name": "code-reviewer"})
+
+        assert "name: ring-default:code-reviewer" in result
+
+    def test_replace_agent_references_respects_protected_regions(self, adapter):
+        """FactoryAdapter should not replace inside code blocks, inline code, or URLs."""
+        content = (
+            "The user agent string is preserved.\n"
+            "Inline `agent = Agent()` stays.\n"
+            "```python\nagent = Agent()\n```\n"
+            "See https://example.com/agent for docs.\n"
+            "Plain agent text should change.\n"
+        )
+        result = adapter.transform_skill(content)
+
+        assert "user agent" in result
+        assert "`agent = Agent()`" in result
+        assert "agent = Agent()" in result
+        assert "https://example.com/agent" in result
+        assert "Plain droid" in result
 
     def test_get_component_mapping_droids(self, adapter):
         """get_component_mapping() should map agents to droids directory."""
@@ -334,10 +363,34 @@ subagent_type: helper
         assert adapter.requires_flat_components("agents") is True
 
     def test_requires_flat_components_for_other_types(self, adapter):
-        """FactoryAdapter does not require flat structure for other component types."""
+        """FactoryAdapter requires flat structure only where Factory expects it."""
         assert adapter.requires_flat_components("commands") is False
-        assert adapter.requires_flat_components("skills") is False
+        assert adapter.requires_flat_components("skills") is True
         assert adapter.requires_flat_components("hooks") is False
+
+    def test_factory_adapter_transforms_tool_names(self, adapter):
+        """FactoryAdapter should normalize invalid tool names in frontmatter and content."""
+        content = """---
+name: tool-test
+tools:
+  - WebSearch
+  - WebFetch
+  - mcp__context7__resolve-library-id
+  - mcp__context7__get-library-docs
+  - Task
+---
+
+Use WebFetch and mcp__context7__resolve-library-id.
+"""
+
+        result = adapter.transform_agent(content, {"plugin": "pm-team", "name": "tool-test"})
+
+        assert "WebFetch" not in result
+        assert "mcp__context7__" not in result
+        assert "- Task" not in result
+        assert "FetchUrl" in result
+        assert "context7___resolve-library-id" in result
+        assert "context7___get-library-docs" in result
 
     def test_get_flat_filename_for_agent(self, adapter):
         """get_flat_filename() should generate prefixed droid filename."""

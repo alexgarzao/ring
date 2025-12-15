@@ -5,9 +5,9 @@ Cline (VS Code extension) uses a prompt-based system where all components
 (skills, agents, commands) become prompt files that can be referenced.
 """
 
-from pathlib import Path
-from typing import Dict, Optional, Any, List
 import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
 
@@ -56,7 +56,7 @@ class ClineAdapter(PlatformAdapter):
 
         # Create prompt header with metadata comment
         prompt_parts.append(f"<!-- Prompt: {name} -->")
-        prompt_parts.append(f"<!-- Type: skill -->")
+        prompt_parts.append("<!-- Type: skill -->")
         if metadata and "source_path" in metadata:
             prompt_parts.append(f"<!-- Source: {metadata['source_path']} -->")
         prompt_parts.append("")
@@ -133,7 +133,7 @@ class ClineAdapter(PlatformAdapter):
 
         # Create prompt header with metadata comment
         prompt_parts.append(f"<!-- Prompt: {name} -->")
-        prompt_parts.append(f"<!-- Type: agent -->")
+        prompt_parts.append("<!-- Type: agent -->")
         if model:
             prompt_parts.append(f"<!-- Recommended Model: {model} -->")
         if metadata and "source_path" in metadata:
@@ -204,7 +204,7 @@ class ClineAdapter(PlatformAdapter):
 
         # Create prompt header with metadata comment
         prompt_parts.append(f"<!-- Prompt: {name} -->")
-        prompt_parts.append(f"<!-- Type: command -->")
+        prompt_parts.append("<!-- Type: command -->")
         if metadata and "source_path" in metadata:
             prompt_parts.append(f"<!-- Source: {metadata['source_path']} -->")
         prompt_parts.append("")

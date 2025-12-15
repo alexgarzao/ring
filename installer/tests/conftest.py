@@ -7,11 +7,10 @@ Provides shared fixtures for testing adapters, transformers, utilities, and core
 import json
 import shutil
 from pathlib import Path
-from typing import Dict, Any, Generator
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ==============================================================================
 # Path Fixtures
