@@ -70,7 +70,7 @@ Check status with:
 
 | Command | Description |
 |---------|-------------|
-| `/dev-cycle` | Start or resume cycle |
+| `/ring-dev-team:dev-cycle` | Start or resume cycle |
 | `/dev-status` | Check current status |
 | `/dev-report` | View feedback report |
 

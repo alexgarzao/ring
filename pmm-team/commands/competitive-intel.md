@@ -235,7 +235,7 @@ Next steps:
 For urgent competitive needs, use the skill directly:
 
 ```
-Skill tool: "competitive-intelligence"
+Skill tool: "ring-pmm-team:competitive-intelligence"
 ```
 
 This provides the analysis framework without the full command workflow.

@@ -80,8 +80,8 @@ The brainstorming session follows these phases:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Use after brainstorming when design is complete |
-| `/execute-plan` | Use after planning to implement the design |
+| `/ring-default:write-plan` | Use after brainstorming when design is complete |
+| `/ring-default:execute-plan` | Use after planning to implement the design |
 | `writing-plans` | Underlying skill for creating implementation plans |
 
 ## Troubleshooting
@@ -96,6 +96,6 @@ Each phase has a maximum of 3 questions. If you're being asked more, it indicate
 The process is phase-locked. You cannot skip ahead until the current phase is complete. If you need to go faster, provide explicit approval at each checkpoint.
 
 ### When NOT to use this command
-- Design is already complete and validated - use `/write-plan`
-- Have a detailed plan ready to execute - use `/execute-plan`
-- Just need task breakdown from existing design - use `/write-plan`
+- Design is already complete and validated - use `/ring-default:write-plan`
+- Have a detailed plan ready to execute - use `/ring-default:execute-plan`
+- Just need task breakdown from existing design - use `/ring-default:write-plan`

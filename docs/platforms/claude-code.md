@@ -43,8 +43,8 @@ Skills are markdown files with YAML frontmatter that define workflows, processes
 
 **Invocation:**
 ```
-Skill tool: "test-driven-development"
-Skill tool: "systematic-debugging"
+Skill tool: "ring-default:test-driven-development"
+Skill tool: "ring-default:systematic-debugging"
 ```
 
 **Structure:**
@@ -69,8 +69,8 @@ Agents are specialized AI personas with defined expertise and output schemas.
 
 **Invocation:**
 ```
-Task tool with subagent_type="code-reviewer"
-Task tool with subagent_type="backend-engineer-golang"
+Task tool with subagent_type="ring-default:code-reviewer"
+Task tool with subagent_type="ring-dev-team:backend-engineer-golang"
 ```
 
 **Categories** (invoke as `ring-{plugin}:{agent-name}`):

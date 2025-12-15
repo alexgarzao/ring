@@ -88,7 +88,7 @@ The skill contains the complete reporting workflow with:
 
 ```
 Task tool:
-  subagent_type: "executive-reporter"
+  subagent_type: "ring-pmo-team:executive-reporter"
   model: "opus"
   prompt: "Create [type] executive report. Audience: [audience]. Period: [period]."
 ```
@@ -97,7 +97,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "portfolio-manager"
+  subagent_type: "ring-pmo-team:portfolio-manager"
   model: "opus"
   prompt: "Provide portfolio status data for executive report."
 ```

@@ -332,7 +332,7 @@ For complex incidents, dispatch the incident-responder agent:
 
 ```
 Task tool:
-  subagent_type: "incident-responder"
+  subagent_type: "ring-ops-team:incident-responder"
   model: "opus"
   prompt: |
     INCIDENT: [description]

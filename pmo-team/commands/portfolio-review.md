@@ -89,7 +89,7 @@ The skill contains the complete portfolio review gates with:
 
 ```
 Task tool:
-  subagent_type: "portfolio-manager"
+  subagent_type: "ring-pmo-team:portfolio-manager"
   model: "opus"
   prompt: "Conduct portfolio health assessment. Scope: [scope]. Focus: [focus]."
 ```
@@ -98,7 +98,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "resource-planner"
+  subagent_type: "ring-pmo-team:resource-planner"
   model: "opus"
   prompt: "Analyze resource utilization across portfolio."
 ```
@@ -107,7 +107,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "risk-analyst"
+  subagent_type: "ring-pmo-team:risk-analyst"
   model: "opus"
   prompt: "Assess portfolio risk posture and correlations."
 ```

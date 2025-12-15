@@ -118,9 +118,9 @@ Pre-dev workflow ensures:
 ### Via Skills (Manual)
 
 ```
-Skill tool: "pre-dev-prd-creation"
+Skill tool: "ring-pm-team:pre-dev-prd-creation"
 (Review output)
-Skill tool: "pre-dev-trd-creation"
+Skill tool: "ring-pm-team:pre-dev-trd-creation"
 (Review output)
 ```
 

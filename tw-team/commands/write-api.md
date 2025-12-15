@@ -101,7 +101,7 @@ For complex API documentation, dispatch the api-writer agent:
 
 ```
 Task tool:
-  subagent_type: "api-writer"
+  subagent_type: "ring-tw-team:api-writer"
   model: "opus"
   prompt: "Document the [endpoint] endpoint. Include:
           - All path/query parameters
@@ -117,7 +117,7 @@ After writing, use the docs-reviewer agent:
 
 ```
 Task tool:
-  subagent_type: "docs-reviewer"
+  subagent_type: "ring-tw-team:docs-reviewer"
   model: "opus"
   prompt: "Review this API documentation for completeness and accuracy:
           [paste documentation]"

@@ -355,7 +355,7 @@ For cost optimization tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "cloud-cost-optimizer"
+  subagent_type: "ring-ops-team:cloud-cost-optimizer"
   model: "opus"
   prompt: |
     COST ANALYSIS REQUEST

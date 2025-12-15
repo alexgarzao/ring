@@ -208,7 +208,7 @@ Create traceability matrix: | ID | Criterion | Test File | Test Function | Statu
 
 ## Step 4: Dispatch QA Analyst for Unit Tests
 
-**Dispatch:** `Task(subagent_type: "qa-analyst")` with TASK_ID, ACCEPTANCE_CRITERIA, IMPLEMENTATION_FILES. Requirements: 1+ test/criterion, edge cases, mock deps, naming: `Test{Unit}_{Method}_{Scenario}`. Unit tests ONLY.
+**Dispatch:** `Task(subagent_type: "ring-dev-team:qa-analyst")` with TASK_ID, ACCEPTANCE_CRITERIA, IMPLEMENTATION_FILES. Requirements: 1+ test/criterion, edge cases, mock deps, naming: `Test{Unit}_{Method}_{Scenario}`. Unit tests ONLY.
 
 ## Step 5: Execute Full Test Suite
 

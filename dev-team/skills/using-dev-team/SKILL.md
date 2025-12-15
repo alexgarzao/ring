@@ -98,7 +98,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "backend-engineer-golang"
+  subagent_type: "ring-dev-team:backend-engineer-golang"
   model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
@@ -195,7 +195,7 @@ Remember:
 
 **Skills:** `using-dev-team` (this), `dev-cycle` (6-gate workflow), `dev-refactor` (codebase analysis)
 
-**Commands:** `/dev-cycle` (execute tasks), `/dev-refactor` (analyze codebase)
+**Commands:** `/ring-dev-team:dev-cycle` (execute tasks), `/ring-dev-team:dev-refactor` (analyze codebase)
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-dev-team plugin.
 
@@ -207,9 +207,9 @@ All workflows converge to the 6-gate development cycle:
 
 | Workflow | Entry Point | Output | Then |
 |----------|-------------|--------|------|
-| **New Feature** | `/pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md` | → `/dev-cycle tasks.md` |
-| **Direct Tasks** | `/dev-cycle tasks.md` | — | Execute 6 gates directly |
-| **Refactoring** | `/dev-refactor` | `docs/refactor/{timestamp}/tasks.md` | → `/dev-cycle tasks.md` |
+| **New Feature** | `/ring-pm-team:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md` | → `/ring-dev-team:dev-cycle tasks.md` |
+| **Direct Tasks** | `/ring-dev-team:dev-cycle tasks.md` | — | Execute 6 gates directly |
+| **Refactoring** | `/ring-dev-team:dev-refactor` | `docs/refactor/{timestamp}/tasks.md` | → `/ring-dev-team:dev-cycle tasks.md` |
 
 **6-Gate Development Cycle:**
 

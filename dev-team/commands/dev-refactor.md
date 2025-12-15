@@ -30,7 +30,7 @@ Create `docs/PROJECT_RULES.md` with your project's:
 - Testing requirements
 - DevOps standards
 
-Then re-run `/dev-refactor`.
+Then re-run `/ring-dev-team:dev-refactor`.
 ```
 
 **DO NOT:**
@@ -129,9 +129,9 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 
 | Command | Description |
 |---------|-------------|
-| `/dev-cycle` | Execute development cycle (used after analysis) |
-| `/pre-dev-feature` | Plan new features (use instead for greenfield) |
-| `/codereview` | Manual code review (dev-cycle includes this) |
+| `/ring-dev-team:dev-cycle` | Execute development cycle (used after analysis) |
+| `/ring-pm-team:pre-dev-feature` | Plan new features (use instead for greenfield) |
+| `/ring-default:codereview` | Manual code review (dev-cycle includes this) |
 
 ---
 
@@ -189,4 +189,4 @@ See skill `dev-refactor` for full details. Key rules:
 - **MODE: ANALYSIS ONLY** - Agents analyze, they do NOT implement
 - **Save artifacts** to `docs/refactor/{timestamp}/`
 - **Get user approval** before executing dev-cycle
-- **Handoff**: `/dev-cycle docs/refactor/{timestamp}/tasks.md`
+- **Handoff**: `/ring-dev-team:dev-cycle docs/refactor/{timestamp}/tasks.md`

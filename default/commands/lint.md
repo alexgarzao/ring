@@ -75,4 +75,4 @@ Lints only the services directory.
 |---------------|--------------|
 | `linting-codebase` | Underlying skill with full logic |
 | `dispatching-parallel-agents` | Pattern used for parallel fixes |
-| `/codereview` | Use after lint passes for deeper review |
+| `/ring-default:codereview` | Use after lint passes for deeper review |

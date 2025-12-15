@@ -427,7 +427,7 @@ These enforce quality standards:
 
 ```
 Task tool:
-  subagent_type: "code-reviewer"
+  subagent_type: "ring-default:code-reviewer"
   model: "opus"
   prompt: [context]
     ↓

@@ -205,7 +205,7 @@ Before starting Gate 1:
 
 ## Step 2: Dispatch DevOps Agent
 
-**MANDATORY:** `Task(subagent_type: "devops-engineer", model: "opus")`
+**MANDATORY:** `Task(subagent_type: "ring-dev-team:devops-engineer", model: "opus")`
 
 **Prompt includes:** Gate 0 handoff summary, existing config files, requirements for Dockerfile/compose/.env/docs
 

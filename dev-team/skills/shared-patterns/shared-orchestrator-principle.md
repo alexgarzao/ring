@@ -32,48 +32,48 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 ### ring-dev-team Agents (Implementation)
 
 ```
-✅ Task(subagent_type="backend-engineer-golang", ...)
-✅ Task(subagent_type="backend-engineer-typescript", ...)
-✅ Task(subagent_type="frontend-engineer", ...)
-✅ Task(subagent_type="frontend-designer", ...)
-✅ Task(subagent_type="frontend-bff-engineer-typescript", ...)
-✅ Task(subagent_type="devops-engineer", ...)
-✅ Task(subagent_type="sre", ...)
-✅ Task(subagent_type="qa-analyst", ...)
-✅ Task(subagent_type="prompt-quality-reviewer", ...)
+✅ Task(subagent_type="ring-dev-team:backend-engineer-golang", ...)
+✅ Task(subagent_type="ring-dev-team:backend-engineer-typescript", ...)
+✅ Task(subagent_type="ring-dev-team:frontend-engineer", ...)
+✅ Task(subagent_type="ring-dev-team:frontend-designer", ...)
+✅ Task(subagent_type="ring-dev-team:frontend-bff-engineer-typescript", ...)
+✅ Task(subagent_type="ring-dev-team:devops-engineer", ...)
+✅ Task(subagent_type="ring-dev-team:sre", ...)
+✅ Task(subagent_type="ring-dev-team:qa-analyst", ...)
+✅ Task(subagent_type="ring-dev-team:prompt-quality-reviewer", ...)
 ```
 
 ### ring-default Agents (Core)
 
 ```
-✅ Task(subagent_type="codebase-explorer", ...)
-✅ Task(subagent_type="code-reviewer", ...)
-✅ Task(subagent_type="business-logic-reviewer", ...)
-✅ Task(subagent_type="security-reviewer", ...)
-✅ Task(subagent_type="write-plan", ...)
+✅ Task(subagent_type="ring-default:codebase-explorer", ...)
+✅ Task(subagent_type="ring-default:code-reviewer", ...)
+✅ Task(subagent_type="ring-default:business-logic-reviewer", ...)
+✅ Task(subagent_type="ring-default:security-reviewer", ...)
+✅ Task(subagent_type="ring-default:write-plan", ...)
 ```
 
 ### ring-pm-team Agents (Research)
 
 ```
-✅ Task(subagent_type="framework-docs-researcher", ...)
-✅ Task(subagent_type="best-practices-researcher", ...)
-✅ Task(subagent_type="repo-research-analyst", ...)
+✅ Task(subagent_type="ring-pm-team:framework-docs-researcher", ...)
+✅ Task(subagent_type="ring-pm-team:best-practices-researcher", ...)
+✅ Task(subagent_type="ring-pm-team:repo-research-analyst", ...)
 ```
 
 ### ring-finops-team Agents (Financial Operations)
 
 ```
-✅ Task(subagent_type="finops-analyzer", ...)
-✅ Task(subagent_type="finops-automation", ...)
+✅ Task(subagent_type="ring-finops-team:finops-analyzer", ...)
+✅ Task(subagent_type="ring-finops-team:finops-automation", ...)
 ```
 
 ### ring-tw-team Agents (Technical Writing)
 
 ```
-✅ Task(subagent_type="functional-writer", ...)
-✅ Task(subagent_type="api-writer", ...)
-✅ Task(subagent_type="docs-reviewer", ...)
+✅ Task(subagent_type="ring-tw-team:functional-writer", ...)
+✅ Task(subagent_type="ring-tw-team:api-writer", ...)
+✅ Task(subagent_type="ring-tw-team:docs-reviewer", ...)
 ```
 
 ## Gate/Step → Agent Mapping

@@ -154,7 +154,7 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "portfolio-manager"
+  subagent_type: "ring-pmo-team:portfolio-manager"
   model: "opus"
   prompt: "URGENT: [context]. [specific request]"
 ```

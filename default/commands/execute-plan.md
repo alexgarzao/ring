@@ -93,8 +93,8 @@ After all tasks complete:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Use first to create the plan file |
-| `/brainstorm` | Use before writing-plans if design unclear |
+| `/ring-default:write-plan` | Use first to create the plan file |
+| `/ring-default:brainstorm` | Use before writing-plans if design unclear |
 | `writing-plans` | Creates the plan files this command executes |
 | `requesting-code-review` | Called automatically after each batch |
 | `finishing-a-development-branch` | Called at completion |
@@ -117,6 +117,6 @@ All Critical, High, and Medium issues must be fixed before proceeding. The revie
 If you're not prompted for execution mode, this is a violation of the skill protocol. The mode selection is mandatory regardless of any "just execute" or "don't wait" instructions.
 
 ### When NOT to use this command
-- No plan exists - use `/write-plan` first
-- Plan needs revision - use `/brainstorm` to refine the design
+- No plan exists - use `/ring-default:write-plan` first
+- Plan needs revision - use `/ring-default:brainstorm` to refine the design
 - Working on independent tasks in current session - use `subagent-driven-development` skill directly

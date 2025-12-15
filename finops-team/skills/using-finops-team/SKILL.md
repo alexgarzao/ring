@@ -51,7 +51,7 @@ The ring-finops-team plugin provides 2 specialized FinOps agents for Brazilian f
 **Example dispatch:**
 ```
 Task tool:
-  subagent_type: "finops-analyzer"
+  subagent_type: "ring-finops-team:finops-analyzer"
   model: "opus"
   prompt: "Analyze BACEN COSIF requirements for corporate account reporting"
 ```
@@ -81,7 +81,7 @@ Task tool:
 **Example dispatch:**
 ```
 Task tool:
-  subagent_type: "finops-automation"
+  subagent_type: "ring-finops-team:finops-automation"
   model: "opus"
   prompt: "Generate BACEN COSIF template from analyzed requirements"
 ```

@@ -38,7 +38,7 @@ Parse the scope and timeframe from arguments.
 
 ```
 Task tool:
-  subagent_type: "infrastructure-architect"
+  subagent_type: "ring-ops-team:infrastructure-architect"
   model: "opus"
   prompt: |
     CAPACITY REVIEW REQUEST
@@ -66,7 +66,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "cloud-cost-optimizer"
+  subagent_type: "ring-ops-team:cloud-cost-optimizer"
   model: "opus"
   prompt: |
     CAPACITY COST ANALYSIS

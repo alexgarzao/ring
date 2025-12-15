@@ -44,7 +44,7 @@ Parse scope and compliance frameworks from arguments.
 
 ```
 Task tool:
-  subagent_type: "security-operations"
+  subagent_type: "ring-ops-team:security-operations"
   model: "opus"
   prompt: |
     SECURITY AUDIT REQUEST

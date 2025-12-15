@@ -132,7 +132,7 @@ Gate 3 is where 5+ hours of Gates 1-2 work becomes a production artifact. Shortc
 
 ### Agent Dispatch
 
-**Dispatch:** `Task(subagent_type: "finops-automation", model: "sonnet")`
+**Dispatch:** `Task(subagent_type: "ring-finops-team:finops-automation", model: "sonnet")`
 
 **Prompt includes:**
 

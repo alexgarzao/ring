@@ -86,8 +86,8 @@ Task tool with droid_type="backend-engineer-golang"
 ### Using Skills
 
 ```
-Skill tool: "test-driven-development"
-Skill tool: "systematic-debugging"
+Skill tool: "ring-default:test-driven-development"
+Skill tool: "ring-default:systematic-debugging"
 ```
 
 ### Running Commands

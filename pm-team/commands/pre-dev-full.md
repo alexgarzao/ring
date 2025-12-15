@@ -14,7 +14,7 @@ I'm running the **Full Track** pre-development workflow (9 gates) for your featu
 - ❌ Use new architecture patterns
 - ❌ Require team collaboration
 
-**If feature is simple (<2 days, existing patterns), use `/pre-dev-feature` instead.**
+**If feature is simple (<2 days, existing patterns), use `/ring-pm-team:pre-dev-feature` instead.**
 
 ## Document Organization
 

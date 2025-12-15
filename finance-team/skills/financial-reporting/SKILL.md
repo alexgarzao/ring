@@ -103,7 +103,7 @@ The financial reporting workflow follows 5 phases:
 
 ```
 Task tool:
-  subagent_type: "financial-analyst"
+  subagent_type: "ring-finance-team:financial-analyst"
   model: "opus"
   prompt: |
     Prepare financial analysis for [report type]:
@@ -130,7 +130,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "metrics-analyst"
+  subagent_type: "ring-finance-team:metrics-analyst"
   model: "opus"
   prompt: |
     Prepare KPI summary for [report type]:

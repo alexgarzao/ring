@@ -33,7 +33,7 @@ Parse the severity and description from the command arguments.
 
 ```
 Task tool:
-  subagent_type: "incident-responder"
+  subagent_type: "ring-ops-team:incident-responder"
   model: "opus"
   prompt: |
     PRODUCTION INCIDENT DECLARED

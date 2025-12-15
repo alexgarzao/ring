@@ -97,8 +97,8 @@ Plans specify recommended agents for execution:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/brainstorm` | Use first if design is not yet validated |
-| `/execute-plan` | Use after to execute the created plan |
+| `/ring-default:brainstorm` | Use first if design is not yet validated |
+| `/ring-default:execute-plan` | Use after to execute the created plan |
 | `brainstorming` | Design validation before planning |
 | `executing-plans` | Batch execution with review checkpoints |
 | `subagent-driven-development` | Alternative execution for current session |
@@ -106,7 +106,7 @@ Plans specify recommended agents for execution:
 ## Troubleshooting
 
 ### "Design not validated"
-Planning requires a validated design. Use `/brainstorm` first to refine your concept before creating the implementation plan.
+Planning requires a validated design. Use `/ring-default:brainstorm` first to refine your concept before creating the implementation plan.
 
 ### "Plan is too vague"
 If the generated plan contains phrases like "implement the logic" or "add appropriate handling", the plan doesn't meet quality standards. Request revision with specific code examples.
@@ -118,6 +118,6 @@ This command is best run in a dedicated worktree created by the brainstorming sk
 If `ring-dev-team` plugin is not installed, execution falls back to `general-purpose` agents automatically. Plans remain valid regardless.
 
 ### When NOT to use this command
-- Design is not validated - use `/brainstorm` first
+- Design is not validated - use `/ring-default:brainstorm` first
 - Requirements still unclear - use pre-dev PRD/TRD workflow first
-- Already have a plan - use `/execute-plan` instead
+- Already have a plan - use `/ring-default:execute-plan` instead

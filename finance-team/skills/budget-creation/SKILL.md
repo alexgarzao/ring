@@ -115,7 +115,7 @@ The budget creation workflow follows 6 phases:
 
 ```
 Task tool:
-  subagent_type: "budget-planner"
+  subagent_type: "ring-finance-team:budget-planner"
   model: "opus"
   prompt: |
     Build budget per these specifications:

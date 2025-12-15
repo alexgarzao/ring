@@ -266,7 +266,7 @@ Review Gate 0/1 handoff: Service type (API/Worker/Batch), Language, External dep
 
 ## Step 2: Dispatch SRE Agent for Validation
 
-**Dispatch:** `Task(subagent_type: "sre")` - VALIDATE observability (not implement). Include service info (type, language, deps) and Gate 0/1 handoff. Agent validates: JSON logging, Tracing. Returns: PASS/FAIL per component, issues by severity.
+**Dispatch:** `Task(subagent_type: "ring-dev-team:sre")` - VALIDATE observability (not implement). Include service info (type, language, deps) and Gate 0/1 handoff. Agent validates: JSON logging, Tracing. Returns: PASS/FAIL per component, issues by severity.
 
 ## Steps 3-5: Validate Health, Logging, Tracing
 
