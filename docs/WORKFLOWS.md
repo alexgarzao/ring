@@ -93,7 +93,7 @@ This document contains detailed workflow instructions for adding skills, agents,
 Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introduce available agents and capabilities:
 
 ### Default Plugin
-- `using-ring` → ORCHESTRATOR principle, mandatory workflow
+- `ring-default:using-ring` → ORCHESTRATOR principle, mandatory workflow
 - Always injected, always mandatory
 - Located: `default/skills/using-ring/SKILL.md`
 

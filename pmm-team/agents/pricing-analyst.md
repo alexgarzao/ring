@@ -330,8 +330,8 @@ If pricing already exists and is performing:
 
 ## What This Agent Does NOT Handle
 
-- Market analysis (use `market-researcher`)
-- Positioning strategy (use `positioning-strategist`)
-- Messaging development (use `messaging-specialist`)
-- GTM planning (use `gtm-planner`)
-- Launch coordination (use `launch-coordinator`)
+- Market analysis (use `ring-pmm-team:market-researcher`)
+- Positioning strategy (use `ring-pmm-team:positioning-strategist`)
+- Messaging development (use `ring-pmm-team:messaging-specialist`)
+- GTM planning (use `ring-pmm-team:gtm-planner`)
+- Launch coordination (use `ring-pmm-team:launch-coordinator`)

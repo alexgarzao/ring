@@ -302,8 +302,8 @@ If market analysis already exists and is adequate:
 
 ## What This Agent Does NOT Handle
 
-- Positioning strategy (use `positioning-strategist`)
-- Messaging development (use `messaging-specialist`)
+- Positioning strategy (use `ring-pmm-team:positioning-strategist`)
+- Messaging development (use `ring-pmm-team:messaging-specialist`)
 - Competitive battlecards (use competitive-intelligence skill, then positioning-strategist)
-- GTM planning (use `gtm-planner`)
-- Pricing strategy (use `pricing-analyst`)
+- GTM planning (use `ring-pmm-team:gtm-planner`)
+- Pricing strategy (use `ring-pmm-team:pricing-analyst`)

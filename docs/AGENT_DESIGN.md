@@ -59,7 +59,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `frontend-designer`, `finops-analyzer`
+**Used by:** `ring-dev-team:frontend-designer`, `ring-finops-team:finops-analyzer`
 
 ---
 
@@ -124,7 +124,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `codebase-explorer`
+**Used by:** `ring-default:codebase-explorer`
 
 ---
 
@@ -153,7 +153,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `write-plan`
+**Used by:** `ring-default:write-plan`
 
 ---
 
@@ -177,8 +177,8 @@ All ring-dev-team agents include this in their `output_schema`:
 | Context | Standards Compliance Required | Enforcement |
 |---------|------------------------------|-------------|
 | Direct agent invocation | Optional | Agent may include if relevant |
-| Via `dev-cycle` | Optional | Agent may include if relevant |
-| Via `dev-refactor` | **MANDATORY** | Prompt includes `MODE: ANALYSIS ONLY` |
+| Via `ring-dev-team:dev-cycle` | Optional | Agent may include if relevant |
+| Via `ring-dev-team:dev-refactor` | **MANDATORY** | Prompt includes `MODE: ANALYSIS ONLY` |
 
 **How It's Triggered:**
 1. User invokes `/dev-refactor` command
@@ -208,7 +208,7 @@ All ring-dev-team agents support Standards Compliance:
 | `ring-dev-team:backend-engineer-typescript` | `typescript.md` | Type Safety, Error Handling, Validation |
 | `ring-dev-team:devops-engineer` | `devops.md` | Dockerfile, docker-compose, CI/CD |
 | `ring-dev-team:frontend-bff-engineer-typescript` | `frontend.md` | Component patterns, State management |
-| `frontend-designer` | `frontend.md` | Accessibility, Design patterns |
+| `ring-dev-team:frontend-designer` | `frontend.md` | Accessibility, Design patterns |
 | `ring-dev-team:qa-analyst` | `qa.md` | Test coverage, Test patterns |
 | `ring-dev-team:sre` | `sre.md` | Health endpoints, Logging, Tracing |
 

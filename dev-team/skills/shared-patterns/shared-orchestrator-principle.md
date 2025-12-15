@@ -92,13 +92,13 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | 3 | `ring-dev-team:qa-analyst` | Writes tests, validates coverage |
 | 4 | `ring-default:code-reviewer` | Reviews code quality |
 | 4 | `ring-default:business-logic-reviewer` | Reviews business logic |
-| 4 | `security-reviewer` | Reviews security |
+| 4 | `ring-default:security-reviewer` | Reviews security |
 
 ### dev-refactor Steps
 
 | Step | Specialized Agent | What Agent Does |
 |------|-------------------|-----------------|
-| 3 | `codebase-explorer` | Deep architecture analysis, pattern discovery |
+| 3 | `ring-default:codebase-explorer` | Deep architecture analysis, pattern discovery |
 | 4 | `ring-dev-team:backend-engineer-golang` | Go standards compliance analysis |
 | 4 | `ring-dev-team:backend-engineer-typescript` | TypeScript standards compliance analysis |
 | 4 | `ring-dev-team:frontend-engineer` | Frontend standards compliance analysis |
@@ -129,13 +129,13 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 |-------------|-------------------|
 | Code quality, patterns, maintainability | `ring-default:code-reviewer` |
 | Business logic, domain correctness | `ring-default:business-logic-reviewer` |
-| Security vulnerabilities, auth, input validation | `security-reviewer` |
+| Security vulnerabilities, auth, input validation | `ring-default:security-reviewer` |
 
 ### Research & Analysis
 
 | Task Type | Agent to Dispatch |
 |-----------|-------------------|
-| Codebase architecture understanding | `codebase-explorer` |
+| Codebase architecture understanding | `ring-default:codebase-explorer` |
 | Framework/library documentation | `ring-pm-team:framework-docs-researcher` |
 | Industry best practices | `ring-pm-team:best-practices-researcher` |
 | Repository/codebase analysis | `ring-pm-team:repo-research-analyst` |
@@ -144,22 +144,22 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | Doc Type | Agent to Dispatch |
 |----------|-------------------|
-| Functional documentation, user guides | `functional-writer` |
-| API documentation, OpenAPI specs | `api-writer` |
-| Documentation review | `docs-reviewer` |
+| Functional documentation, user guides | `ring-tw-team:functional-writer` |
+| API documentation, OpenAPI specs | `ring-tw-team:api-writer` |
+| Documentation review | `ring-tw-team:docs-reviewer` |
 
 ### Financial Operations
 
 | Task Type | Agent to Dispatch |
 |-----------|-------------------|
-| Cost analysis, FinOps metrics | `finops-analyzer` |
-| FinOps automation, alerts | `finops-automation` |
+| Cost analysis, FinOps metrics | `ring-finops-team:finops-analyzer` |
+| FinOps automation, alerts | `ring-finops-team:finops-automation` |
 
 ### Planning & Quality
 
 | Task Type | Agent to Dispatch |
 |-----------|-------------------|
-| Implementation planning | `write-plan` |
+| Implementation planning | `ring-default:write-plan` |
 | Prompt/agent quality analysis | `ring-dev-team:prompt-quality-reviewer` |
 
 ## Agent Responsibilities (Implementation)
