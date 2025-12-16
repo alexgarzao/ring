@@ -32,16 +32,16 @@ agent_selection:
   criteria:
     - pattern: "*.go"
       keywords: ["go.mod", "golang", "Go"]
-      agent: "backend-engineer-golang"
+      agent: "ring-dev-team:backend-engineer-golang"
     - pattern: "*.ts"
       keywords: ["express", "fastify", "nestjs", "backend", "api", "server"]
-      agent: "backend-engineer-typescript"
+      agent: "ring-dev-team:backend-engineer-typescript"
     - pattern: "*.tsx"
       keywords: ["react", "next", "frontend", "component", "page"]
-      agent: "frontend-bff-engineer-typescript"
+      agent: "ring-dev-team:frontend-bff-engineer-typescript"
     - pattern: "*.css|*.scss"
       keywords: ["design", "visual", "aesthetic", "styling", "ui"]
-      agent: "frontend-designer"
+      agent: "ring-dev-team:frontend-designer"
   fallback: "ASK_USER"  # Do NOT assume language - ask user
   detection_order:
     - "Check task.type field in tasks.md"
@@ -53,10 +53,10 @@ agent_selection:
     If language cannot be detected, use AskUserQuestion:
     Question: "Could not detect project language. Which agent should implement this task?"
     Options:
-      - "Go Backend" → backend-engineer-golang
-      - "TypeScript Backend" → backend-engineer-typescript
-      - "TypeScript Frontend" → frontend-bff-engineer-typescript
-      - "Frontend Design" → frontend-designer
+      - "Go Backend" → ring-dev-team:backend-engineer-golang
+      - "TypeScript Backend" → ring-dev-team:backend-engineer-typescript
+      - "TypeScript Frontend" → ring-dev-team:frontend-bff-engineer-typescript
+      - "Frontend Design" → ring-dev-team:frontend-designer
     NEVER assume Go. Wrong agent = wrong patterns = rework.
 
 verification:
@@ -76,7 +76,7 @@ examples:
   - name: "Go backend implementation"
     context: "Task: Add user authentication endpoint"
     expected_flow: |
-      1. Detect go.mod -> Select backend-engineer-golang
+      1. Detect go.mod -> Select ring-dev-team:backend-engineer-golang
       2. Load PROJECT_RULES.md for Go standards
       3. Write failing test (RED)
       4. Implement auth handler (GREEN)
@@ -85,7 +85,7 @@ examples:
   - name: "TypeScript frontend component"
     context: "Task: Create dashboard widget"
     expected_flow: |
-      1. Detect package.json with react -> Select frontend-bff-engineer-typescript
+      1. Detect package.json with react -> Select ring-dev-team:frontend-bff-engineer-typescript
       2. Load frontend.md standards
       3. Write component test (RED)
       4. Implement Dashboard component (GREEN)
@@ -395,8 +395,8 @@ Use the agent selected in Gate 1 based on technology:
 |-------|-------|
 | Go backend | `ring-dev-team:backend-engineer-golang` |
 | TypeScript backend | `ring-dev-team:backend-engineer-typescript` |
-| React/Next.js frontend | `frontend-bff-engineer-typescript` |
-| BFF layer (Next.js API Routes) | `frontend-bff-engineer-typescript` |
+| React/Next.js frontend | `ring-dev-team:frontend-bff-engineer-typescript` |
+| BFF layer (Next.js API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` |
 
 ## TDD Compliance
 
