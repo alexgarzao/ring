@@ -131,7 +131,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Agents (invoke as `{agent-name}`):
   - functional-writer (guides)
   - api-writer (API reference)
-  - docs-reviewer (quality review)
+  - ring-tw-team:docs-reviewer (quality review)
 - Commands: write-guide, write-api, review-docs
 
 ### Hook Configuration

@@ -113,7 +113,7 @@ Task tool:
 
 ## 6. Review Before Publishing
 
-After writing, use the docs-reviewer agent:
+After writing, use the ring-tw-team:docs-reviewer agent:
 
 ```
 Task tool:

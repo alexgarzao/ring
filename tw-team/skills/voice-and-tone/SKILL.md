@@ -11,7 +11,7 @@ trigger: |
 
 skip_when: |
   - Only checking structure → use documentation-structure
-  - Only checking technical accuracy → use docs-reviewer agent
+  - Only checking technical accuracy → use ring-tw-team:docs-reviewer agent
 
 related:
   complementary: [ring-tw-team:writing-functional-docs, ring-tw-team:writing-api-docs, ring-tw-team:documentation-review]
