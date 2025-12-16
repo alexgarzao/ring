@@ -11,18 +11,18 @@ trigger: |
   - Regulatory filings support
 
 skip_when: |
-  - Detailed analysis needed → use financial-analysis
-  - Building models → use financial-modeling
-  - Accounting entries → use financial-close
+  - Detailed analysis needed → use ring-finance-team:financial-analysis
+  - Building models → use ring-finance-team:financial-modeling
+  - Accounting entries → use ring-finance-team:financial-close
 
 related:
   similar: [ring-finance-team:financial-analysis, ring-finance-team:metrics-dashboard]
-  uses: [financial-analyst, metrics-analyst]
+  uses: [ring-finance-team:financial-analyst, ring-finance-team:metrics-analyst]
 ---
 
 # Financial Reporting Workflow
 
-This skill provides a structured workflow for preparing financial reports using the `financial-analyst` and `metrics-analyst` agents.
+This skill provides a structured workflow for preparing financial reports using the `ring-finance-team:financial-analyst` and `ring-finance-team:metrics-analyst` agents.
 
 ## Workflow Overview
 
