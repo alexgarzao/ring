@@ -286,8 +286,8 @@ class TestFactoryAdapter:
         # (except in ring: references which use a different pattern)
         assert "Droid" in result or "droid" in result
 
-    def test_transform_agent_frontmatter(self, adapter, minimal_agent_content):
-        """transform_agent() should update frontmatter terminology."""
+    def test_transform_agent_frontmatter_preserves_subagent_type(self, adapter, minimal_agent_content):
+        """transform_agent() should preserve subagent_type for Factory Task tool."""
         content = """---
 name: test-agent
 subagent_type: helper
@@ -297,12 +297,26 @@ subagent_type: helper
 """
         result = adapter.transform_agent(content)
 
-        assert "subagent_type" not in result
-        # Prefer droid_type; subdroid_type is kept as a backward-compatible alias
-        assert "droid_type" in result
+        # subagent_type MUST be preserved - Factory's Task tool uses it
+        assert "subagent_type" in result
+
+    def test_transform_agent_maps_model_ids(self, adapter):
+        """FactoryAdapter should map model shorthand to Factory model IDs."""
+        content = """---
+name: test-agent
+model: opus
+---
+
+# Test Agent
+"""
+        result = adapter.transform_agent(content)
+
+        # opus should be mapped to full Factory model ID
+        assert "claude-opus-4-5-20251101" in result
+        assert "model: opus" not in result
 
     def test_transform_agent_qualifies_name_with_plugin(self, adapter):
-        """FactoryAdapter should namespace droid name as ring-<plugin>:<name>."""
+        """FactoryAdapter should namespace droid name with hyphens (not colons)."""
         content = """---
 name: code-reviewer
 ---
@@ -311,7 +325,9 @@ Use this agent for review.
 """
         result = adapter.transform_agent(content, {"plugin": "default", "name": "code-reviewer"})
 
-        assert "name: ring-default:code-reviewer" in result
+        # Factory droid names use hyphens, not colons
+        assert "name: ring-default-code-reviewer" in result
+        assert ":" not in result.split("name:")[1].split("\n")[0]  # No colon in name value
 
     def test_replace_agent_references_respects_protected_regions(self, adapter):
         """FactoryAdapter should not replace inside code blocks, inline code, or URLs."""
@@ -337,14 +353,15 @@ Use this agent for review.
         assert mapping["agents"]["target_dir"] == "droids"
         assert mapping["skills"]["target_dir"] == "skills"
         assert mapping["commands"]["target_dir"] == "commands"
+        assert mapping["hooks"]["target_dir"] == "hooks"
 
     def test_get_target_filename_renames_agent(self, adapter):
-        """get_target_filename() should rename *-agent.md to *-droid.md."""
+        """get_target_filename() should strip -agent suffix (Factory uses name field)."""
         result = adapter.get_target_filename("code-agent.md", "agent")
-        assert result == "code-droid.md"
+        assert result == "code.md"
 
         result = adapter.get_target_filename("test_agent.md", "agent")
-        assert result == "test_droid.md"
+        assert result == "test.md"
 
     def test_get_target_filename_non_agent(self, adapter):
         """get_target_filename() should not rename non-agent files."""
@@ -352,21 +369,31 @@ Use this agent for review.
         assert result == "test-skill.md"
 
     def test_replace_ring_references(self, adapter):
-        """FactoryAdapter should replace ring:*-agent references."""
+        """FactoryAdapter should replace ring:*-agent references with hyphenated droid names."""
         content = 'Use "ring:code-agent" for analysis.'
         result = adapter.transform_skill(content)
 
-        assert "ring:code-droid" in result or "droid" in result.lower()
+        # Factory uses hyphens, not colons in droid names
+        assert "ring-code-droid" in result or "droid" in result.lower()
 
     def test_requires_flat_components_for_agents(self, adapter):
         """FactoryAdapter requires flat structure for agents (droids)."""
         assert adapter.requires_flat_components("agents") is True
 
     def test_requires_flat_components_for_other_types(self, adapter):
-        """FactoryAdapter requires flat structure only where Factory expects it."""
-        assert adapter.requires_flat_components("commands") is False
+        """FactoryAdapter requires flat structure where Factory expects it."""
+        # Factory commands must be at top-level (not in subdirectories)
+        assert adapter.requires_flat_components("commands") is True
         assert adapter.requires_flat_components("skills") is True
         assert adapter.requires_flat_components("hooks") is False
+
+    def test_transform_hook_replaces_plugin_variable(self, adapter):
+        """FactoryAdapter should replace CLAUDE_PLUGIN_ROOT with bash ~/.factory paths."""
+        hook_content = '{"command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"}'
+        result = adapter.transform_hook(hook_content)
+        
+        assert "${CLAUDE_PLUGIN_ROOT}" not in result
+        assert "bash ~/.factory/hooks/session-start.sh" in result
 
     def test_factory_adapter_transforms_tool_names(self, adapter):
         """FactoryAdapter should normalize invalid tool names in frontmatter and content."""
@@ -392,20 +419,174 @@ Use WebFetch and mcp__context7__resolve-library-id.
         assert "context7___resolve-library-id" in result
         assert "context7___get-library-docs" in result
 
+    def test_factory_adapter_transforms_additional_tools(self, adapter):
+        """FactoryAdapter should map Write, Bash and other tools correctly."""
+        content = """---
+name: tool-test
+tools:
+  - Write
+  - Bash
+  - MultiEdit
+  - NotebookEdit
+  - BrowseURL
+---
+
+Content here.
+"""
+
+        result = adapter.transform_agent(content, {"plugin": "default", "name": "tool-test"})
+
+        # All these tools should be mapped to Factory equivalents
+        assert "- Write" not in result
+        assert "- Bash" not in result
+        assert "- MultiEdit" not in result
+        assert "- NotebookEdit" not in result
+        assert "- BrowseURL" not in result
+        assert "Create" in result  # Write -> Create
+        assert "Execute" in result  # Bash -> Execute
+        assert "Edit" in result  # MultiEdit -> Edit
+        assert "FetchUrl" in result  # BrowseURL -> FetchUrl
+
+    def test_factory_adapter_preserves_tool_category_strings(self, adapter):
+        """FactoryAdapter should preserve tool category strings like 'read-only'."""
+        content = """---
+name: readonly-test
+tools: read-only
+---
+
+Read-only droid.
+"""
+
+        result = adapter.transform_agent(content, {"plugin": "default", "name": "readonly-test"})
+
+        # Tool category string should be preserved
+        assert "tools: read-only" in result
+
     def test_get_flat_filename_for_agent(self, adapter):
-        """get_flat_filename() should generate prefixed droid filename."""
+        """get_flat_filename() should generate prefixed filename (no -droid suffix)."""
         result = adapter.get_flat_filename("code-reviewer.md", "agent", "default")
-        assert result == "ring-default-code-reviewer-droid.md"
+        assert result == "ring-default-code-reviewer.md"
 
     def test_get_flat_filename_strips_agent_suffix(self, adapter):
-        """get_flat_filename() should strip -agent suffix before adding -droid."""
+        """get_flat_filename() should strip -agent suffix."""
         result = adapter.get_flat_filename("code-agent.md", "agent", "default")
-        assert result == "ring-default-code-droid.md"
+        assert result == "ring-default-code.md"
 
     def test_get_flat_filename_for_command(self, adapter):
         """get_flat_filename() should work for non-agent types too."""
         result = adapter.get_flat_filename("test-command.md", "command", "dev-team")
         assert result == "ring-dev-team-test-command.md"
+
+    def test_requires_hooks_in_settings(self, adapter):
+        """FactoryAdapter requires hooks to be merged into settings.json."""
+        assert adapter.requires_hooks_in_settings() is True
+
+    def test_should_skip_hook_file_for_hooks_json(self, adapter):
+        """FactoryAdapter should skip hooks.json (merged into settings instead)."""
+        assert adapter.should_skip_hook_file("hooks.json") is True
+        assert adapter.should_skip_hook_file("session-start.sh") is False
+        assert adapter.should_skip_hook_file("generate-skills-ref.py") is False
+
+    def test_get_settings_path(self, adapter, tmp_path, monkeypatch):
+        """get_settings_path() should return path to settings.json."""
+        monkeypatch.setenv("HOME", str(tmp_path))
+        adapter._install_path = None  # Reset cached path
+        
+        settings_path = adapter.get_settings_path()
+        assert settings_path.name == "settings.json"
+        assert ".factory" in str(settings_path)
+
+    def test_merge_hooks_to_settings_dry_run(self, adapter, tmp_path, monkeypatch):
+        """merge_hooks_to_settings() should not write in dry_run mode."""
+        monkeypatch.setenv("HOME", str(tmp_path))
+        adapter._install_path = None  # Reset cached path
+        
+        # Create .factory directory
+        factory_dir = tmp_path / ".factory"
+        factory_dir.mkdir()
+        
+        hooks_config = {
+            "hooks": {
+                "SessionStart": [
+                    {"matcher": "startup", "hooks": [{"type": "command", "command": "echo hello"}]}
+                ]
+            }
+        }
+        
+        result = adapter.merge_hooks_to_settings(hooks_config, dry_run=True)
+        assert result is True
+        
+        # settings.json should not exist in dry run
+        settings_path = factory_dir / "settings.json"
+        assert not settings_path.exists()
+
+    def test_merge_hooks_to_settings_creates_new(self, adapter, tmp_path, monkeypatch):
+        """merge_hooks_to_settings() should create settings.json if it doesn't exist."""
+        import json
+        monkeypatch.setenv("HOME", str(tmp_path))
+        adapter._install_path = None  # Reset cached path
+        
+        # Create .factory directory
+        factory_dir = tmp_path / ".factory"
+        factory_dir.mkdir()
+        
+        hooks_config = {
+            "hooks": {
+                "SessionStart": [
+                    {"matcher": "startup", "hooks": [{"type": "command", "command": "echo hello"}]}
+                ]
+            }
+        }
+        
+        result = adapter.merge_hooks_to_settings(hooks_config, dry_run=False)
+        assert result is True
+        
+        # Verify settings.json was created
+        settings_path = factory_dir / "settings.json"
+        assert settings_path.exists()
+        
+        settings = json.loads(settings_path.read_text())
+        assert settings["enableHooks"] is True
+        assert "SessionStart" in settings["hooks"]
+
+    def test_merge_hooks_to_settings_merges_with_existing(self, adapter, tmp_path, monkeypatch):
+        """merge_hooks_to_settings() should merge with existing settings."""
+        import json
+        monkeypatch.setenv("HOME", str(tmp_path))
+        adapter._install_path = None  # Reset cached path
+        
+        # Create .factory directory with existing settings
+        factory_dir = tmp_path / ".factory"
+        factory_dir.mkdir()
+        
+        existing_settings = {
+            "model": "claude-opus",
+            "hooks": {
+                "UserPromptSubmit": [
+                    {"hooks": [{"type": "command", "command": "existing-hook.sh"}]}
+                ]
+            }
+        }
+        settings_path = factory_dir / "settings.json"
+        settings_path.write_text(json.dumps(existing_settings))
+        
+        hooks_config = {
+            "hooks": {
+                "SessionStart": [
+                    {"matcher": "startup", "hooks": [{"type": "command", "command": "new-hook.sh"}]}
+                ]
+            }
+        }
+        
+        result = adapter.merge_hooks_to_settings(hooks_config, dry_run=False)
+        assert result is True
+        
+        # Verify settings were merged
+        settings = json.loads(settings_path.read_text())
+        assert settings["model"] == "claude-opus"  # Original preserved
+        assert settings["enableHooks"] is True
+        assert "SessionStart" in settings["hooks"]  # New hook added
+        assert "UserPromptSubmit" in settings["hooks"]  # Existing preserved
 
 
 # ==============================================================================

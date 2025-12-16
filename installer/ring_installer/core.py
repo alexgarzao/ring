@@ -562,6 +562,9 @@ def install(
         adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
         install_path = target.path or adapter.get_install_path()
         component_mapping = adapter.get_component_mapping()
+        
+        # Collect hooks.json configs for platforms that need hooks merged into settings
+        hooks_configs_to_merge: List[Dict[str, Any]] = []
 
         # Process each plugin
         for plugin_name, plugin_components in components.items():
@@ -581,9 +584,11 @@ def install(
                 # Check if platform requires flat structure for this component type
                 requires_flat = adapter.requires_flat_components(component_type)
 
-                # For multi-plugin installs, add plugin subdirectory UNLESS platform requires flat structure
+                # For multi-plugin installs, add plugin subdirectory UNLESS platform requires flat structure.
+                # Factory expects hooks to live directly under ~/.factory/hooks (no plugin subdir).
                 if len(components) > 1 and not requires_flat:
-                    target_dir = target_dir / plugin_name
+                    if not (adapter.platform_id == "factory" and component_type == "hooks"):
+                        target_dir = target_dir / plugin_name
 
                 # Ensure target directory exists
                 if not options.dry_run:
@@ -609,6 +614,29 @@ def install(
                             target_file = target_dir / skill_name / "SKILL.md"
                         else:
                             target_file = target_dir / skill_name / source_file.name
+                    elif component_type == "hooks":
+                        # Check if platform needs hooks.json merged into settings instead of installed as file
+                        if (hasattr(adapter, "should_skip_hook_file") and 
+                            adapter.should_skip_hook_file(source_file.name)):
+                            # Collect hooks.json content for later merge into settings
+                            try:
+                                import json
+                                hooks_content = source_file.read_text(encoding="utf-8")
+                                # Transform hook paths before merge
+                                if hasattr(adapter, "transform_hook"):
+                                    hooks_content = adapter.transform_hook(hooks_content, {})
+                                hooks_data = json.loads(hooks_content)
+                                hooks_configs_to_merge.append(hooks_data)
+                            except Exception as e:
+                                result.add_failure(
+                                    source_file,
+                                    Path("settings.json"),
+                                    f"Failed to parse hooks.json: {e}",
+                                    exc_info=e
+                                )
+                            continue  # Skip installing hooks.json as a file
+                        # Hooks can have multiple extensions (.json/.sh/.py). Preserve the original filename.
+                        target_file = target_dir / source_file.name
                     elif requires_flat and len(components) > 1:
                         # Platform requires flat structure - use prefixed filename
                         target_filename = adapter.get_flat_filename(
@@ -699,6 +727,39 @@ def install(
                             installed_paths.append(target_file)
                         except Exception as e:
                             result.add_failure(source_file, target_file, f"Write error: {e}", exc_info=e)
+
+        # Merge collected hooks.json configs into settings for platforms that require it
+        if hooks_configs_to_merge and hasattr(adapter, "merge_hooks_to_settings"):
+            merged_config: Dict[str, Any] = {"hooks": {}}
+            for config in hooks_configs_to_merge:
+                hooks_data = config.get("hooks", config) if isinstance(config, dict) else {}
+                if isinstance(hooks_data, dict):
+                    for event, entries in hooks_data.items():
+                        if event not in merged_config["hooks"]:
+                            merged_config["hooks"][event] = []
+                        if isinstance(entries, list):
+                            # Deduplicate hooks based on (command + matcher) combination
+                            existing_hooks = {
+                                (h.get("hooks", [{}])[0].get("command", ""), h.get("matcher", ""))
+                                for h in merged_config["hooks"][event]
+                                if h.get("hooks")
+                            }
+                            for entry in entries:
+                                cmd = entry.get("hooks", [{}])[0].get("command", "") if entry.get("hooks") else ""
+                                matcher = entry.get("matcher", "")
+                                key = (cmd, matcher)
+                                if cmd and key not in existing_hooks:
+                                    merged_config["hooks"][event].append(entry)
+                                    existing_hooks.add(key)
+            
+            if adapter.merge_hooks_to_settings(merged_config, options.dry_run, install_path):
+                settings_path = install_path / "settings.json"
+                if options.dry_run:
+                    result.warnings.append(f"[DRY RUN] Would merge hooks into {settings_path}")
+                else:
+                    result.warnings.append(f"Merged hooks configuration into {settings_path}")
+            else:
+                result.warnings.append("Failed to merge hooks into settings.json")
 
         # Roll back partial target installs when failures occur
         if not options.dry_run and options.rollback_on_failure:
@@ -974,9 +1035,11 @@ def update_with_diff(
                 # Check if platform requires flat structure for this component type
                 requires_flat = adapter.requires_flat_components(component_type)
 
-                # For multi-plugin installs, add plugin subdirectory UNLESS platform requires flat structure
+                # For multi-plugin installs, add plugin subdirectory UNLESS platform requires flat structure.
+                # Factory expects hooks to live directly under ~/.factory/hooks (no plugin subdir).
                 if len(components) > 1 and not requires_flat:
-                    target_dir = target_dir / plugin_name
+                    if not (adapter.platform_id == "factory" and component_type == "hooks"):
+                        target_dir = target_dir / plugin_name
 
                 if not options.dry_run:
                     ensure_directory(target_dir)
@@ -993,9 +1056,12 @@ def update_with_diff(
                     if component_type == "skills":
                         skill_name = source_file.parent.name
                         if adapter.platform_id == "factory":
-                            target_file = target_dir / skill_name / f"{skill_name}{target_config['extension']}"
+                            target_file = target_dir / skill_name / "SKILL.md"
                         else:
                             target_file = target_dir / skill_name / source_file.name
+                    elif component_type == "hooks":
+                        # Hooks can have multiple extensions (.json/.sh/.py). Preserve the original filename.
+                        target_file = target_dir / source_file.name
                     elif requires_flat and len(components) > 1:
                         # Platform requires flat structure - use prefixed filename
                         target_filename = adapter.get_flat_filename(

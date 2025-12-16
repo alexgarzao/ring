@@ -61,6 +61,12 @@
           "target_dir": "skills",
           "file_extension": ".md",
           "transform": "factory_skill"
+        },
+        "hooks": {
+          "source_dir": "hooks",
+          "target_dir": "hooks",
+          "file_extension": [".json", ".sh", ".py"],
+          "transform": "passthrough"
         }
       },
       "config_file": ".factory/config.json",

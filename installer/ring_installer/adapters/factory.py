@@ -21,19 +21,45 @@ class FactoryAdapter(PlatformAdapter):
 
     Factory AI uses "droids" instead of "agents" and has slight differences
     in how components are structured.
+
+    Key Factory/Droid differences from Claude Code:
+    - agents -> droids (terminology)
+    - Droid names: lowercase letters, digits, `-`, `_` only (NO colons)
+    - Tools: Read, LS, Grep, Glob, Create, Edit, Execute, WebSearch, FetchUrl, TodoWrite
+    - Tool categories: read-only, edit, execute, web, mcp
+    - Model: "inherit" or full model ID like "claude-opus-4-1-20250805"
+    - Commands: Use $ARGUMENTS placeholder (not positional $1, $2)
+    - Skills: ~/.factory/skills/<name>/SKILL.md format
+    - Droids: ~/.factory/droids/*.md (flat directory, top-level only)
     """
 
     platform_id = "factory"
     platform_name = "Factory AI"
 
+    # Factory tool name mappings
     _FACTORY_TOOL_NAME_MAP: Dict[str, str] = {
-        # Factory tool names
+        # Claude Code -> Factory tool names
         "WebFetch": "FetchUrl",
         "FetchURL": "FetchUrl",
         "Bash": "Execute",
+        "Write": "Create",  # Factory uses Create for new files
+        "MultiEdit": "Edit",  # Factory uses Edit for modifications
+        "NotebookEdit": "Edit",
+        "BrowseURL": "FetchUrl",
         # Context7 tool names (Factory uses triple-underscore namespace)
         "mcp__context7__resolve-library-id": "context7___resolve-library-id",
         "mcp__context7__get-library-docs": "context7___get-library-docs",
+    }
+
+    # Tools that droids cannot use (droids can't spawn other droids)
+    _FACTORY_INVALID_TOOLS: set = {"Task", "Dispatch", "SubAgent"}
+
+    # Model shorthand to Factory model ID mapping
+    _FACTORY_MODEL_MAP: Dict[str, str] = {
+        "opus": "claude-opus-4-5-20251101",
+        "sonnet": "claude-sonnet-4-5-20250929",
+        "haiku": "claude-haiku-4-5-20250929",
+        "inherit": "inherit",
     }
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
@@ -110,13 +136,15 @@ class FactoryAdapter(PlatformAdapter):
         """Qualify droid name with plugin namespace.
 
         Factory installs droids into a single flat directory. To avoid name collisions
-        across plugins and to match Ring's fully-qualified invocation format, droids
-        MUST be addressable as:
+        across plugins, droids are namespaced as:
 
-            ring-<plugin>:<name>
+            ring-<plugin>-<name>
+
+        NOTE: Factory droid names can only contain lowercase letters, digits, `-`, `_`.
+        Colons are NOT allowed in droid names (they're used for custom: model syntax).
 
         Example:
-            plugin=default, name=code-reviewer -> ring-default:code-reviewer
+            plugin=default, name=code-reviewer -> ring-default-code-reviewer
         """
         result = dict(frontmatter)
 
@@ -134,18 +162,24 @@ class FactoryAdapter(PlatformAdapter):
             else:
                 return result
 
-        # Already qualified
-        if ":" in name:
+        # Already qualified with hyphen (ring-plugin-name format)
+        if name.startswith("ring-"):
             return result
 
-        result["name"] = f"{plugin_id}:{name}"
+        # Convert any colons to hyphens (legacy format cleanup)
+        name = name.replace(":", "-")
+
+        result["name"] = f"{plugin_id}-{name}"
         return result
 
     def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
         Transform a Ring command for Factory AI.
 
-        Updates terminology and adjusts any agent references to droid references.
+        Factory command format:
+        - Optional YAML frontmatter with `description` and `argument-hint`
+        - Body uses `$ARGUMENTS` for all arguments (not positional $1, $2)
+        - Filename becomes command name (lowercase, spaces -> `-`)
 
         Args:
             command_content: The original command content
@@ -156,9 +190,9 @@ class FactoryAdapter(PlatformAdapter):
         """
         frontmatter, body = self.extract_frontmatter(command_content)
 
-        # Update frontmatter terminology
+        # Transform frontmatter for Factory commands
         if frontmatter:
-            frontmatter = self._transform_frontmatter(frontmatter)
+            frontmatter = self._transform_command_frontmatter(frontmatter)
 
         # Replace agent references in body
         body = self._replace_agent_references(body)
@@ -168,6 +202,59 @@ class FactoryAdapter(PlatformAdapter):
         if frontmatter:
             return self.create_frontmatter(frontmatter) + "\n" + body
         return body
+
+    def _transform_command_frontmatter(self, frontmatter: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform command frontmatter for Factory.
+
+        Factory command frontmatter fields:
+        - description: Shown in slash suggestions
+        - argument-hint: Appends inline usage hints (e.g., /command <hint>)
+        - allowed-tools: Reserved for future use
+        """
+        result = dict(frontmatter)
+
+        # Map 'args' or 'arguments' to 'argument-hint'
+        if "args" in result and "argument-hint" not in result:
+            result["argument-hint"] = result.pop("args")
+        elif "arguments" in result and "argument-hint" not in result:
+            result["argument-hint"] = result.pop("arguments")
+
+        # Remove fields Factory doesn't use for commands
+        for field in ["name", "version", "type", "tags"]:
+            result.pop(field, None)
+
+        # Transform any agent terminology in string values
+        for key, value in result.items():
+            if isinstance(value, str):
+                result[key] = self._replace_agent_references(value)
+
+        return result
+
+    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+        """
+        Transform a Ring hook for Factory AI.
+
+        Key transformation: Replace Claude Code plugin paths with Factory paths.
+        Factory hooks are installed directly to ~/.factory/hooks/, not in a plugin.
+        Commands need 'bash' prefix for proper execution.
+
+        Args:
+            hook_content: The original hook content (JSON or script)
+            metadata: Optional metadata about the hook
+
+        Returns:
+            Transformed hook content for Factory AI
+        """
+        # Replace Claude Code's plugin root variable with Factory's hooks directory
+        # Factory hooks are installed to ~/.factory/hooks/, not a plugin directory
+        # Add 'bash' prefix for proper shell execution
+        result = hook_content.replace("${CLAUDE_PLUGIN_ROOT}/hooks/", "bash ~/.factory/hooks/")
+        result = result.replace("$CLAUDE_PLUGIN_ROOT/hooks/", "bash ~/.factory/hooks/")
+        # Also handle any remaining references
+        result = result.replace("${CLAUDE_PLUGIN_ROOT}", "~/.factory")
+        result = result.replace("$CLAUDE_PLUGIN_ROOT", "~/.factory")
+        
+        return result
 
     def get_install_path(self) -> Path:
         """
@@ -212,8 +299,141 @@ class FactoryAdapter(PlatformAdapter):
             "skills": {
                 "target_dir": "skills",
                 "extension": ".md"
+            },
+            "hooks": {
+                "target_dir": "hooks",
+                "extension": ""  # Multiple extensions supported
             }
         }
+
+    def requires_hooks_in_settings(self) -> bool:
+        """
+        Check if this platform requires hooks to be merged into settings.
+
+        Factory AI expects hooks to be defined in settings.json, not as
+        separate hooks.json files. Hook scripts (.sh, .py) are still
+        installed to the hooks directory, but the hooks.json configuration
+        must be merged into settings.json.
+
+        Returns:
+            True - Factory requires hooks in settings.json
+        """
+        return True
+
+    def get_settings_path(self) -> Path:
+        """
+        Get the path to Factory's settings.json file.
+
+        Returns:
+            Path to ~/.factory/settings.json
+        """
+        return self.get_install_path() / "settings.json"
+
+    def merge_hooks_to_settings(
+        self,
+        hooks_config: Dict[str, Any],
+        dry_run: bool = False,
+        install_path: Optional[Path] = None
+    ) -> bool:
+        """
+        Merge hooks configuration into Factory's settings.json.
+
+        Factory expects hooks to be defined in settings.json under the "hooks" key,
+        not in a separate hooks.json file. This method reads the existing settings,
+        merges the hooks configuration, and writes it back.
+
+        Args:
+            hooks_config: The hooks configuration to merge (from hooks.json)
+            dry_run: If True, don't actually write the file
+            install_path: Optional custom install path (uses default if not provided)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        import json
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        base_path = install_path or self.get_install_path()
+        settings_path = base_path / "settings.json"
+
+        # Read existing settings or create empty dict
+        existing_settings: Dict[str, Any] = {}
+        if settings_path.exists():
+            try:
+                content = settings_path.read_text(encoding="utf-8")
+                # Handle JSON with comments (Factory allows // comments)
+                lines = []
+                for line in content.split("\n"):
+                    stripped = line.strip()
+                    if not stripped.startswith("//"):
+                        lines.append(line)
+                clean_content = "\n".join(lines)
+                existing_settings = json.loads(clean_content)
+            except Exception as e:
+                logger.warning(f"Failed to read settings.json: {e}")
+                # Continue with empty settings
+
+        # Extract hooks from the config
+        hooks_to_merge = hooks_config.get("hooks", hooks_config)
+
+        # Merge hooks - combine with existing hooks if any
+        existing_hooks = existing_settings.get("hooks", {})
+        
+        for event_name, event_hooks in hooks_to_merge.items():
+            if event_name not in existing_hooks:
+                existing_hooks[event_name] = []
+            
+            # Add new hooks, avoiding duplicates based on (command + matcher) combination
+            existing_hook_keys = {
+                (h.get("hooks", [{}])[0].get("command", ""), h.get("matcher", ""))
+                for h in existing_hooks[event_name]
+                if h.get("hooks")
+            }
+            
+            for hook_entry in event_hooks:
+                hook_commands = hook_entry.get("hooks", [])
+                if hook_commands:
+                    cmd = hook_commands[0].get("command", "")
+                    matcher = hook_entry.get("matcher", "")
+                    key = (cmd, matcher)
+                    if cmd and key not in existing_hook_keys:
+                        existing_hooks[event_name].append(hook_entry)
+                        existing_hook_keys.add(key)
+
+        existing_settings["hooks"] = existing_hooks
+        existing_settings["enableHooks"] = True
+
+        if dry_run:
+            logger.info(f"[DRY RUN] Would merge hooks into {settings_path}")
+            return True
+
+        try:
+            # Write settings back
+            settings_path.write_text(
+                json.dumps(existing_settings, indent=2),
+                encoding="utf-8"
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Failed to write settings.json: {e}")
+            return False
+
+    def should_skip_hook_file(self, filename: str) -> bool:
+        """
+        Check if a hook file should be skipped during normal installation.
+
+        For Factory, hooks.json should not be installed as a file - its content
+        should be merged into settings.json instead. However, hook scripts
+        (.sh, .py) should still be installed.
+
+        Args:
+            filename: The hook filename
+
+        Returns:
+            True if this file should be skipped (will be handled specially)
+        """
+        return filename == "hooks.json"
 
     def get_terminology(self) -> Dict[str, str]:
         """
@@ -242,6 +462,9 @@ class FactoryAdapter(PlatformAdapter):
         """
         Transform frontmatter for Factory AI compatibility.
 
+        NOTE: subagent_type is intentionally preserved because Factory's Task tool
+        uses it to invoke droids. The Task tool looks for `subagent_type` parameter.
+
         Args:
             frontmatter: Original frontmatter dictionary
 
@@ -250,22 +473,17 @@ class FactoryAdapter(PlatformAdapter):
         """
         result = dict(frontmatter)
 
-        # Rename agent-related fields
+        # Rename agent-related field names (metadata fields, not Task tool params)
         if "agent" in result:
             result["droid"] = result.pop("agent")
 
         if "agents" in result:
             result["droids"] = result.pop("agents")
 
-        # Update subagent_type references
-        if "subagent_type" in result:
-            # Prefer `droid_type` for Factory invocation, but keep `subdroid_type`
-            # as a backward-compatible alias.
-            value = result.pop("subagent_type")
-            result["droid_type"] = value
-            result.setdefault("subdroid_type", value)
+        # NOTE: Do NOT rename subagent_type - Factory's Task tool uses this field name
+        # to identify which droid to invoke. Renaming it would break Task invocations.
 
-        # Transform any string values containing "agent"
+        # Transform any string values containing "agent" terminology
         for key, value in result.items():
             if isinstance(value, str):
                 result[key] = self._replace_agent_references(value)
@@ -281,28 +499,44 @@ class FactoryAdapter(PlatformAdapter):
         """
         Transform agent-specific frontmatter to droid frontmatter.
 
+        Factory droid frontmatter fields:
+        - name: Required. Lowercase letters, digits, `-`, `_` only
+        - description: Optional, ≤500 chars
+        - model: "inherit" or full model ID like "claude-opus-4-1-20250805"
+        - tools: Omit for all, category string, or array of tool IDs
+        - reasoningEffort: Optional (off, none, low, medium, high)
+
+        NOTE: Do NOT rename subagent_type - Factory's Task tool uses it to invoke droids.
+
         Args:
             frontmatter: Original agent frontmatter
 
         Returns:
             Transformed droid frontmatter
         """
-        result = self._transform_frontmatter(frontmatter)
+        result = dict(frontmatter)
 
-        # Add Factory-specific droid configuration
-        if "type" not in result:
-            result["type"] = "droid"
-
-        # Transform model configuration if present
+        # Transform model shorthand to Factory model ID
         if "model" in result:
-            # Factory might use different model naming
             model = result["model"]
-            if model.startswith("claude"):
-                result["model"] = model  # Keep as-is, Factory supports Claude models
+            if model in self._FACTORY_MODEL_MAP:
+                result["model"] = self._FACTORY_MODEL_MAP[model]
+            elif not model.startswith("claude") and model != "inherit":
+                # Unknown model, default to inherit
+                result["model"] = "inherit"
 
         # Transform tools list for Factory compatibility
         if "tools" in result:
             result["tools"] = self._transform_tools_for_factory(result["tools"])
+
+        # Remove fields that Factory doesn't use
+        for field in ["type", "version", "last_updated", "changelog", "output_schema"]:
+            result.pop(field, None)
+
+        # Ensure description is within Factory's 500 char limit
+        if "description" in result and isinstance(result["description"], str):
+            if len(result["description"]) > 500:
+                result["description"] = result["description"][:497] + "..."
 
         return result
 
@@ -337,8 +571,17 @@ class FactoryAdapter(PlatformAdapter):
 
         Factory validates the `tools:` list strictly; invalid entries cause the
         droid to be rejected during load.
+
+        Factory tool categories (can be used as shorthand):
+        - read-only: Read, LS, Grep, Glob
+        - edit: Create, Edit, ApplyPatch
+        - execute: Execute
+        - web: WebSearch, FetchUrl
+
+        NOTE: TodoWrite is automatically included for all droids.
         """
         if not isinstance(tools, list):
+            # Could be a category string like "read-only"
             return tools
 
         normalized: List[Any] = []
@@ -347,13 +590,16 @@ class FactoryAdapter(PlatformAdapter):
                 normalized.append(tool)
                 continue
 
-            # Droids cannot spawn other droids.
-            if tool == "Task":
+            # Skip tools that droids cannot use
+            if tool in self._FACTORY_INVALID_TOOLS:
                 continue
 
-            normalized.append(self._FACTORY_TOOL_NAME_MAP.get(tool, tool))
+            # Map tool names to Factory equivalents
+            mapped = self._FACTORY_TOOL_NAME_MAP.get(tool, tool)
+            if mapped not in normalized:  # Avoid duplicates
+                normalized.append(mapped)
 
-        return normalized
+        return normalized if normalized else None  # Return None to enable all tools
 
     def _replace_factory_tool_references(self, text: str) -> str:
         """Replace tool references in content so installed droids' instructions match Factory."""
@@ -412,14 +658,19 @@ class FactoryAdapter(PlatformAdapter):
             masked = text
 
         # Ring-specific context patterns
+        # NOTE: Factory droid names use hyphens, not colons (colons reserved for custom: prefix)
         ring_contexts = [
-            # Tool references
-            (r'"ring:([^"]*)-agent"', r'"ring:\1-droid"'),
-            (r"'ring:([^']*)-agent'", r"'ring:\1-droid'"),
-            # Subagent references
-            (r"\bsubagent_type\b", "droid_type"),
-            (r'\bsubagent\b', 'subdroid'),
-            (r'\bSubagent\b', 'Subdroid'),
+            # Task tool subagent_type references: ring-plugin:name -> ring-plugin-name
+            (r'subagent_type["\s]*[:=]["\s]*["\']?ring-([^:]+):([^"\'>\s]+)', r'subagent_type="\1-\2'),
+            (r'"ring-([^:]+):([^"]+)"', r'"ring-\1-\2"'),
+            (r"'ring-([^:]+):([^']+)'", r"'ring-\1-\2'"),
+            # Tool references with -agent suffix
+            (r'"ring:([^"]*)-agent"', r'"ring-\1-droid"'),
+            (r"'ring:([^']*)-agent'", r"'ring-\1-droid'"),
+            # Don't rename subagent_type field name - Factory Task tool uses it
+            # Only transform subagent -> subdroid in prose
+            (r'\bsubagent\b(?!_type)', 'subdroid'),
+            (r'\bSubagent\b(?!_type)', 'Subdroid'),
         ]
 
         result = masked
@@ -459,10 +710,10 @@ class FactoryAdapter(PlatformAdapter):
         """
         filename = super().get_target_filename(source_filename, component_type)
 
-        # Rename *-agent.md files to *-droid.md
+        # Remove -agent suffix (Factory uses the name field, not filename suffix)
         if component_type == "agent":
-            filename = re.sub(r'-agent\.md$', '-droid.md', filename)
-            filename = re.sub(r'_agent\.md$', '_droid.md', filename)
+            filename = re.sub(r'-agent\.md$', '.md', filename)
+            filename = re.sub(r'_agent\.md$', '.md', filename)
 
         return filename
 
@@ -470,17 +721,23 @@ class FactoryAdapter(PlatformAdapter):
         """
         Check if Factory requires flat directory structure for a component type.
 
-        Factory/Droid only scans top-level .md files in ~/.factory/droids/
-        and won't discover droids in subdirectories.
+        Factory/Droid only scans top-level .md files in:
+        - ~/.factory/droids/ (agents)
+        - ~/.factory/commands/ (commands)
+        
+        Skills use ~/.factory/skills/<name>/SKILL.md structure.
 
         Args:
             component_type: Type of component (agents, commands, skills, hooks)
 
         Returns:
-            True for agents (droids) since Factory requires flat structure
+            True for agents and commands since Factory requires flat structure
         """
-        # Factory scans droids as a flat list and expects skills at skills/<name>/SKILL.md.
-        return component_type in {"agents", "skills"}
+        # Factory scans droids and commands as flat lists at top-level.
+        # Commands: "Commands must live at the top level of the commands directory.
+        #           Nested folders are ignored today."
+        # Skills: expects skills/<name>/SKILL.md structure.
+        return component_type in {"agents", "commands", "skills"}
 
     def get_flat_filename(self, source_filename: str, component_type: str, plugin_name: str) -> str:
         """
@@ -495,20 +752,20 @@ class FactoryAdapter(PlatformAdapter):
             plugin_name: Name of the plugin this component belongs to
 
         Returns:
-            Filename with plugin prefix and droid suffix
-            (e.g., "code-reviewer.md" from "default" plugin -> "ring-default-code-reviewer-droid.md")
+            Filename with plugin prefix
+            (e.g., "code-reviewer.md" from "default" plugin -> "ring-default-code-reviewer.md")
         """
         from pathlib import Path
 
         source_path = Path(source_filename)
         stem = source_path.stem
 
-        # For agents/droids, apply the agent->droid transformation and add prefix
+        # For agents/droids, remove -agent suffix and add prefix (no -droid suffix needed)
+        # Factory expects filename to match the name field exactly
         if component_type == "agent":
-            # Remove -agent suffix if present before adding -droid
             stem = re.sub(r'-agent$', '', stem)
             stem = re.sub(r'_agent$', '', stem)
-            return f"ring-{plugin_name}-{stem}-droid.md"
+            return f"ring-{plugin_name}-{stem}.md"
 
         # For other component types, just add prefix
         return f"ring-{plugin_name}-{stem}{source_path.suffix}"

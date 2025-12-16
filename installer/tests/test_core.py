@@ -508,6 +508,39 @@ class TestInstall:
         # Legacy nested paths should not be used
         assert not (factory_dir / "skills" / "default").exists()
 
+    def test_install_factory_hooks_installed(self, tmp_ring_root, tmp_path):
+        """Factory installs hooks.json under hooks/ root (no plugin subdir)."""
+        from ring_installer.core import InstallOptions, InstallTarget, install
+
+        factory_dir = tmp_path / "factory"
+        factory_dir.mkdir()
+
+        result = install(
+            tmp_ring_root,
+            [InstallTarget(platform="factory", path=factory_dir)],
+            InstallOptions(force=True),
+        )
+        assert result.components_installed > 0 or result.components_skipped > 0
+
+        # hooks.json should NOT exist - it's merged into settings.json instead
+        hooks_json = factory_dir / "hooks" / "hooks.json"
+        assert not hooks_json.exists(), "hooks.json should be merged into settings.json, not installed as file"
+
+        # Hook scripts should still be installed
+        hooks_dir = factory_dir / "hooks"
+        assert hooks_dir.exists()
+
+        # settings.json should have hooks merged into it
+        settings_path = factory_dir / "settings.json"
+        assert settings_path.exists(), "settings.json should be created with merged hooks"
+        
+        import json
+        settings = json.loads(settings_path.read_text())
+        assert "hooks" in settings
+        assert settings.get("enableHooks") is True
+
+        assert not (factory_dir / "hooks" / "default").exists()
+
     def test_install_dry_run(self, tmp_ring_root, tmp_install_dir):
         """install() should not create files in dry run mode."""
         from ring_installer.core import InstallOptions, InstallTarget, install
