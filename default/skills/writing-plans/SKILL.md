@@ -34,7 +34,7 @@ This skill dispatches a specialized agent to write comprehensive implementation 
 
 ## The Process
 
-**Step 1:** Dispatch write-plan agent via `Task(subagent_type: "general-purpose", model: "opus")` with instructions to load `ring-default:write-plan` agent, create bite-sized tasks (2-5 min each), include exact file paths/complete code/verification steps, and save to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
+**Step 1:** Dispatch write-plan agent via `Task(subagent_type: "ring-default:write-plan", model: "opus")` with instructions to create bite-sized tasks (2-5 min each), include exact file paths/complete code/verification steps, and save to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
 
 **Step 2:** Ask user via `AskUserQuestion`: "Execute now?" Options: (1) Execute now → `ring-default:subagent-driven-development` (2) Parallel session → user opens new session with `ring-default:executing-plans` (3) Save for later → report location and end
 
