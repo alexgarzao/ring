@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-finance-team:budget-creation, ring-finance-team:financial-reporting]
-  uses: [financial-analyst]
+  uses: [ring-finance-team:financial-analyst]
 ---
 
 # Financial Analysis Workflow

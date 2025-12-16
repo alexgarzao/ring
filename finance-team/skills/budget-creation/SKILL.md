@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-finance-team:financial-analysis, ring-finance-team:financial-modeling]
-  uses: [budget-planner]
+  uses: [ring-finance-team:budget-planner]
 ---
 
 # Budget Creation Workflow

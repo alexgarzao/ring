@@ -14,7 +14,7 @@ skip_when: |
   - Only checking technical accuracy → use docs-reviewer agent
 
 related:
-  complementary: [writing-functional-docs, writing-api-docs, documentation-review]
+  complementary: [ring-tw-team:writing-functional-docs, ring-tw-team:writing-api-docs, ring-tw-team:documentation-review]
 ---
 
 # Voice and Tone Guidelines

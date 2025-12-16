@@ -16,7 +16,7 @@ skip_when: |
   - Project status → use project-health-check
 
 related:
-  complementary: [portfolio-planning, risk-management]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:risk-management]
 ---
 
 # Resource Allocation Skill

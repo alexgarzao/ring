@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-ops-team:ops-capacity-planning]
-  uses: [infrastructure-architect]
+  uses: [ring-ops-team:infrastructure-architect]
 ---
 
 # Disaster Recovery Workflow

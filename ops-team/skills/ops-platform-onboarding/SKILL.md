@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-dev-team:dev-cycle]
-  uses: [platform-engineer]
+  uses: [ring-ops-team:platform-engineer]
 ---
 
 # Platform Onboarding Workflow

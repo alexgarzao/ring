@@ -14,7 +14,7 @@ skip_when: |
   - Skill has no compliance costs → no rationalization risk
 
 related:
-  complementary: [testing-skills-with-subagents]
+  complementary: [ring-default:testing-skills-with-subagents]
 ---
 
 # Writing Skills

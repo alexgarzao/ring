@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-pm-team:pre-dev-feature]
-  complementary: [resource-allocation, risk-management, executive-reporting]
+  complementary: [ring-pmo-team:resource-allocation, ring-pmo-team:risk-management, ring-pmo-team:executive-reporting]
 ---
 
 # Portfolio Planning Skill

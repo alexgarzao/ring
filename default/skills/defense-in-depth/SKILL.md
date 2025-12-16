@@ -14,7 +14,7 @@ skip_when: |
   - Simple input validation sufficient → add single check
 
 related:
-  complementary: [root-cause-tracing]
+  complementary: [ring-default:root-cause-tracing]
 ---
 
 # Defense-in-Depth Validation

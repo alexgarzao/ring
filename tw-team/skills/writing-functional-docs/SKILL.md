@@ -16,11 +16,11 @@ skip_when: |
   - Writing code → use dev-team agents
 
 sequence:
-  before: [documentation-review]
+  before: [ring-tw-team:documentation-review]
 
 related:
   similar: [ring-tw-team:writing-api-docs]
-  complementary: [voice-and-tone, documentation-structure]
+  complementary: [ring-tw-team:voice-and-tone, ring-tw-team:documentation-structure]
 ---
 
 # Writing Functional Documentation

@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-ops-team:ops-capacity-planning]
-  uses: [cloud-cost-optimizer]
+  uses: [ring-ops-team:cloud-cost-optimizer]
 ---
 
 # Cost Optimization Workflow

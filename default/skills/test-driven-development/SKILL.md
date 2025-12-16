@@ -15,7 +15,7 @@ skip_when: |
   - Exploratory/spike work → consider brainstorming first
 
 related:
-  complementary: [testing-anti-patterns, verification-before-completion]
+  complementary: [ring-default:testing-anti-patterns, ring-default:verification-before-completion]
 
 compliance_rules:
   - id: "test_file_exists"

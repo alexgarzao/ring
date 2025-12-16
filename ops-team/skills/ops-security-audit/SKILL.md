@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-default:security-reviewer]
-  uses: [security-operations]
+  uses: [ring-ops-team:security-operations]
 ---
 
 # Security Audit Workflow

@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-finance-team:financial-reporting, ring-finance-team:financial-analysis]
-  uses: [accounting-specialist]
+  uses: [ring-finance-team:accounting-specialist]
 ---
 
 # Financial Close Workflow

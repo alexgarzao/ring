@@ -22,10 +22,10 @@ NOT_skip_when: |
   - "Already did N gates" → Sunk cost is irrelevant. Complete all gates.
 
 sequence:
-  before: [dev-feedback-loop]
+  before: [ring-dev-team:dev-feedback-loop]
 
 related:
-  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, dev-review, dev-validation, dev-feedback-loop]
+  complementary: [ring-dev-team:dev-implementation, ring-dev-team:dev-devops, ring-dev-team:dev-sre, ring-dev-team:dev-testing, ring-dev-team:dev-review, ring-dev-team:dev-validation, ring-dev-team:dev-feedback-loop]
 
 verification:
   automated:

@@ -20,10 +20,10 @@ NOT_skip_when: |
   - "Just experimenting" → Experiments need metrics to measure success. No exceptions.
 
 sequence:
-  after: [dev-validation]
+  after: [ring-dev-team:dev-validation]
 
 related:
-  complementary: [dev-cycle, dev-validation]
+  complementary: [ring-dev-team:dev-cycle, ring-dev-team:dev-validation]
 ---
 
 # Dev Feedback Loop

@@ -15,10 +15,10 @@ skip_when: |
   - Only checking voice → use voice-and-tone
 
 sequence:
-  after: [writing-functional-docs, writing-api-docs]
+  after: [ring-tw-team:writing-functional-docs, ring-tw-team:writing-api-docs]
 
 related:
-  complementary: [voice-and-tone, documentation-structure]
+  complementary: [ring-tw-team:voice-and-tone, ring-tw-team:documentation-structure]
 ---
 
 # Documentation Review Process

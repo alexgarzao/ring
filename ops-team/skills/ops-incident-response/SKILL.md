@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-default:systematic-debugging]
-  uses: [incident-responder]
+  uses: [ring-ops-team:incident-responder]
 ---
 
 # Incident Response Workflow

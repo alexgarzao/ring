@@ -15,7 +15,7 @@ skip_when: |
   - Checking voice → use voice-and-tone
 
 related:
-  complementary: [writing-functional-docs, writing-api-docs]
+  complementary: [ring-tw-team:writing-functional-docs, ring-tw-team:writing-api-docs]
 ---
 
 # Documentation Structure

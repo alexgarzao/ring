@@ -22,10 +22,10 @@ skip_when: |
     - "PROJECT_RULES.md doesn't require" → Ring ALWAYS requires TDD.
 
 sequence:
-  before: [dev-devops]
+  before: [ring-dev-team:dev-devops]
 
 related:
-  complementary: [dev-cycle, test-driven-development, requesting-code-review]
+  complementary: [ring-dev-team:dev-cycle, ring-default:test-driven-development, ring-default:requesting-code-review]
   similar: [ring-default:subagent-driven-development, ring-default:executing-plans]
 
 agent_selection:

@@ -24,9 +24,9 @@ skip_when: |
   - "Colleague told me structure" → High-level ≠ implementation details
 
 related:
-  similar: [dispatching-parallel-agents, systematic-debugging]
-  sequence_after: [brainstorming]
-  sequence_before: [writing-plans, executing-plans]
+  similar: [ring-default:dispatching-parallel-agents, ring-default:systematic-debugging]
+  sequence_after: [ring-default:brainstorming]
+  sequence_before: [ring-default:writing-plans, ring-default:executing-plans]
 ---
 
 # Autonomous Two-Phase Codebase Exploration

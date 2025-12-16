@@ -16,7 +16,7 @@ skip_when: |
   - Single incident analysis → handle in project scope
 
 related:
-  complementary: [portfolio-planning, project-health-check]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:project-health-check]
 ---
 
 # PMO Retrospective Skill

@@ -16,7 +16,7 @@ skip_when: |
   - Financial deep dive → use ring-finops-team
 
 related:
-  complementary: [portfolio-planning, project-health-check]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:project-health-check]
 ---
 
 # Executive Reporting Skill

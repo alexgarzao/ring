@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-finance-team:financial-analysis, ring-finance-team:budget-creation]
-  uses: [treasury-specialist]
+  uses: [ring-finance-team:treasury-specialist]
 ---
 
 # Cash Flow Analysis Workflow

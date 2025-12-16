@@ -14,7 +14,7 @@ skip_when: |
   - Agent already tested for this use case
 
 related:
-  complementary: [test-driven-development]
+  complementary: [ring-default:test-driven-development]
 ---
 
 # Testing Agents With Subagents

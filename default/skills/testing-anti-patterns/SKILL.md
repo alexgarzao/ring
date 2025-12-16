@@ -15,7 +15,7 @@ skip_when: |
   - Pure unit tests without mocks → check other quality concerns
 
 related:
-  complementary: [test-driven-development]
+  complementary: [ring-default:test-driven-development]
 ---
 
 # Testing Anti-Patterns

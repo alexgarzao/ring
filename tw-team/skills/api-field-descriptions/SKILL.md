@@ -14,7 +14,7 @@ skip_when: |
   - Full API endpoint docs → use writing-api-docs
 
 related:
-  complementary: [writing-api-docs]
+  complementary: [ring-tw-team:writing-api-docs]
 ---
 
 # API Field Descriptions

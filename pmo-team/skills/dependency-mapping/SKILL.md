@@ -16,7 +16,7 @@ skip_when: |
   - Risk from dependencies → use risk-management
 
 related:
-  complementary: [portfolio-planning, risk-management]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:risk-management]
 ---
 
 # Dependency Mapping Skill

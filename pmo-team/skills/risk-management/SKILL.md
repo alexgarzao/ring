@@ -16,7 +16,7 @@ skip_when: |
   - Technical risk in code → use qa-analyst
 
 related:
-  complementary: [portfolio-planning, project-health-check]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:project-health-check]
 ---
 
 # Risk Management Skill

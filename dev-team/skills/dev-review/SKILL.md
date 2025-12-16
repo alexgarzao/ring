@@ -18,11 +18,11 @@ NOT_skip_when: |
   - "Only N lines" → Line count is irrelevant. AI doesn't negotiate. Review ALL changes.
 
 sequence:
-  after: [dev-testing]
-  before: [dev-validation]
+  after: [ring-dev-team:dev-testing]
+  before: [ring-dev-team:dev-validation]
 
 related:
-  complementary: [requesting-code-review, receiving-code-review]
+  complementary: [ring-default:requesting-code-review, ring-default:receiving-code-review]
 
 verification:
   automated:

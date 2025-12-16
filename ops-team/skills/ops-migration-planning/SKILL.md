@@ -17,7 +17,7 @@ skip_when: |
 
 related:
   similar: [ring-ops-team:ops-disaster-recovery]
-  uses: [infrastructure-architect, platform-engineer]
+  uses: [ring-ops-team:infrastructure-architect, ring-ops-team:platform-engineer]
 ---
 
 # Migration Planning Workflow
