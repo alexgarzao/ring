@@ -27,7 +27,7 @@ When creating or modifying ANY agent in `*/agents/*.md`:
 3. **NEVER skip TDD's RED phase** - Test must fail before implementation
 4. **NEVER ignore skill when applicable** - "Simple task" is not an excuse
 5. **NEVER use panic() in Go** - Error handling required
-6. **NEVER commit manually** - Always use `/ring-default:commit` command
+6. **NEVER commit manually** - Always use `/commit` command
 7. **NEVER assume compliance** - VERIFY with evidence
 
 ### 4. Fully Qualified Names (ALWAYS)
@@ -56,10 +56,10 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 | Standards File | Agents That Use It |
 |----------------|-------------------|
-| `golang.md` | `ring-dev-team:backend-engineer-golang`, `ring-dev-team:qa-analyst` |
-| `typescript.md` | `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:frontend-bff-engineer-typescript`, `ring-dev-team:qa-analyst` |
-| `frontend.md` | `ring-dev-team:frontend-engineer`, `ring-dev-team:frontend-designer` |
-| `devops.md` | `ring-dev-team:devops-engineer` |
+| `golang.md` | `backend-engineer-golang`, `qa-analyst` |
+| `typescript.md` | `backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `qa-analyst` |
+| `frontend.md` | `frontend-engineer`, `frontend-designer` |
+| `devops.md` | `devops-engineer` |
 | `sre.md` | `sre` |
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
@@ -68,14 +68,14 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 | Agent | Standards File | Section Count |
 |-------|----------------|---------------|
-| `ring-dev-team:backend-engineer-golang` | golang.md | See coverage table |
-| `ring-dev-team:backend-engineer-typescript` | typescript.md | See coverage table |
-| `ring-dev-team:frontend-bff-engineer-typescript` | typescript.md | See coverage table |
-| `ring-dev-team:frontend-engineer` | frontend.md | See coverage table |
-| `ring-dev-team:frontend-designer` | frontend.md | See coverage table |
-| `ring-dev-team:devops-engineer` | devops.md | See coverage table |
+| `backend-engineer-golang` | golang.md | See coverage table |
+| `backend-engineer-typescript` | typescript.md | See coverage table |
+| `frontend-bff-engineer-typescript` | typescript.md | See coverage table |
+| `frontend-engineer` | frontend.md | See coverage table |
+| `frontend-designer` | frontend.md | See coverage table |
+| `devops-engineer` | devops.md | See coverage table |
 | `sre` | sre.md | See coverage table |
-| `ring-dev-team:qa-analyst` | golang.md OR typescript.md | See coverage table |
+| `qa-analyst` | golang.md OR typescript.md | See coverage table |
 
 **⛔ If section counts in skills don't match this table → Update the skill.**
 
@@ -363,17 +363,17 @@ git log --oneline -20              # Recent commits show hook development
 git worktree list                  # Check isolated development branches
 
 # Skill invocation (via Claude Code)
-Skill tool: "ring-default:test-driven-development"  # Enforce TDD workflow
-Skill tool: "ring-default:systematic-debugging"     # Debug with 4-phase analysis
-Skill tool: "ring-default:using-ring"               # Load mandatory workflows
+Skill tool: "test-driven-development"  # Enforce TDD workflow
+Skill tool: "systematic-debugging"     # Debug with 4-phase analysis
+Skill tool: "using-ring"               # Load mandatory workflows
 
 # Slash commands
-/ring-default:codereview          # Dispatch 3 parallel reviewers
-/ring-default:brainstorm          # Socratic design refinement
-/ring-pm-team:pre-dev-feature     # <2 day features (4 gates)
-/ring-pm-team:pre-dev-full        # ≥2 day features (9 gates)
-/ring-default:execute-plan        # Batch execution with checkpoints
-/ring-default:worktree            # Create isolated development branch
+/codereview          # Dispatch 3 parallel reviewers
+/brainstorm          # Socratic design refinement
+/pre-dev-feature     # <2 day features (4 gates)
+/pre-dev-full        # ≥2 day features (9 gates)
+/execute-plan        # Batch execution with checkpoints
+/worktree            # Create isolated development branch
 
 # Hook validation (from default plugin)
 bash default/hooks/session-start.sh      # Test skill loading
@@ -389,9 +389,9 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter |
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
-| Code review | `/ring-default:codereview` dispatches 3 parallel reviewers |
-| Pre-dev (small) | `/ring-pm-team:pre-dev-feature` → 4-gate workflow |
-| Pre-dev (large) | `/ring-pm-team:pre-dev-full` → 9-gate workflow |
+| Code review | `/codereview` dispatches 3 parallel reviewers |
+| Pre-dev (small) | `/pre-dev-feature` → 4-gate workflow |
+| Pre-dev (large) | `/pre-dev-full` → 9-gate workflow |
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
@@ -410,7 +410,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 ### Naming Conventions
 - Skills: `kebab-case` matching directory name
 - Agents: `{domain}-reviewer.md` format
-- Commands: `/ring-{plugin}:{action}` format (e.g., `/ring-default:brainstorm`, `/ring-pm-team:pre-dev-feature`)
+- Commands: `/ring-{plugin}:{action}` format (e.g., `/brainstorm`, `/pre-dev-feature`)
 - Hooks: `{event}-{purpose}.sh` format
 
 #### Agent/Skill/Command Invocation
@@ -457,7 +457,7 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 - Announce non-obvious skill usage
 
 # Commit compliance (default/commands/commit.md)
-- ALWAYS use /ring-default:commit for all commits
+- ALWAYS use /commit for all commits
 - Never write git commit commands manually
 - Command enforces: conventional commits, trailers, no emoji signatures
 - MUST use --trailer parameter for AI identification (NOT in message body)
@@ -471,7 +471,7 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 
 The system loads at SessionStart (from `default/` plugin):
 1. `default/hooks/session-start.sh` - Loads skill quick reference via `generate-skills-ref.py`
-2. `ring-default:using-ring` skill - Injected as mandatory workflow
+2. `using-ring` skill - Injected as mandatory workflow
 3. `default/hooks/claude-md-reminder.sh` - Reminds about CLAUDE.md on prompt submit
 
 **Monorepo Context:**
