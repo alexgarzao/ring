@@ -72,13 +72,13 @@ PMM workflow ensures:
 ### Full GTM Planning (New Product/Major Launch)
 
 ```
-1. Market Analysis        → market-analysis
-2. Competitive Intel      → competitive-intelligence
-3. Positioning            → positioning-development
-4. Messaging              → messaging-creation
-5. Pricing                → pricing-strategy
-6. GTM Plan               → gtm-planning
-7. Launch Coordination    → launch-execution
+1. Market Analysis        → ring-pmm-team:market-analysis
+2. Competitive Intel      → ring-pmm-team:competitive-intelligence
+3. Positioning            → ring-pmm-team:positioning-development
+4. Messaging              → ring-pmm-team:messaging-creation
+5. Pricing                → ring-pmm-team:pricing-strategy
+6. GTM Plan               → ring-pmm-team:gtm-planning
+7. Launch Coordination    → ring-pmm-team:launch-execution
 ```
 
 **Planning time:** 4-8 hours depending on market complexity
@@ -86,9 +86,9 @@ PMM workflow ensures:
 ### Quick Positioning (Feature Launch/Minor Update)
 
 ```
-1. Competitive Intel      → competitive-intelligence
-2. Positioning            → positioning-development
-3. Messaging              → messaging-creation
+1. Competitive Intel      → ring-pmm-team:competitive-intelligence
+2. Positioning            → ring-pmm-team:positioning-development
+3. Messaging              → ring-pmm-team:messaging-creation
 ```
 
 **Planning time:** 1-2 hours
@@ -96,8 +96,8 @@ PMM workflow ensures:
 ### Competitive Response (Urgent)
 
 ```
-1. Competitive Intel      → competitive-intelligence
-2. Positioning Update     → positioning-development
+1. Competitive Intel      → ring-pmm-team:competitive-intelligence
+2. Positioning Update     → ring-pmm-team:positioning-development
 ```
 
 **Planning time:** 30-60 minutes
