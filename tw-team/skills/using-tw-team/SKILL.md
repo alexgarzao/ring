@@ -65,19 +65,19 @@ The ring-tw-team plugin provides specialized agents for technical documentation.
 **Parallel dispatch** for comprehensive documentation (single message, multiple Tasks):
 
 ```
-Task #1: functional-writer (write the guide)
-Task #2: api-writer (write API reference)
+Task #1: ring-tw-team:functional-writer (write the guide)
+Task #2: ring-tw-team:api-writer (write API reference)
 (Both run in parallel)
 
 Then:
-Task #3: docs-reviewer (review both)
+Task #3: ring-tw-team:docs-reviewer (review both)
 ```
 
 ---
 
 ## Available in This Plugin
 
-**Agents:** functional-writer, api-writer, docs-reviewer
+**Agents:** ring-tw-team:functional-writer, ring-tw-team:api-writer, ring-tw-team:docs-reviewer
 
 **Skills:**
 - using-tw-team: Plugin introduction
@@ -111,6 +111,6 @@ Task #3: docs-reviewer (review both)
 - **Let specialists apply standards** – They know voice, tone, structure
 - **Combine with other plugins** – API writers + backend engineers for accuracy
 
-> ✅ "I need documentation for the new feature. Let me dispatch functional-writer."
+> ✅ "I need documentation for the new feature. Let me dispatch ring-tw-team:functional-writer."
 >
 > ❌ "I'll manually write all the documentation myself."
