@@ -54,7 +54,7 @@ State saved to: docs/refactor/current-cycle.json
 Partial report: .ring/dev-team/feedback/cycle-2024-01-15-partial.md
 
 To resume later:
-  /dev-cycle --resume
+  /ring-dev-team:dev-cycle --resume
 ```
 
 ## When No Cycle is Running
@@ -63,7 +63,7 @@ To resume later:
 ℹ️ No development cycle to cancel.
 
 Check status with:
-  /dev-status
+  /ring-dev-team:dev-status
 ```
 
 ## Related Commands
