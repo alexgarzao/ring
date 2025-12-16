@@ -1,5 +1,5 @@
 ---
-name: writing-api-docs
+name: ring-tw-team:writing-api-docs
 description: |
   Patterns and structure for writing API reference documentation including
   endpoint descriptions, request/response schemas, and error documentation.
@@ -19,8 +19,8 @@ sequence:
   before: [ring-tw-team:documentation-review]
 
 related:
-  similar: [writing-functional-docs]
-  complementary: [api-field-descriptions, documentation-structure]
+  similar: [ring-tw-team:writing-functional-docs]
+  complementary: [ring-tw-team:api-field-descriptions, ring-tw-team:documentation-structure]
 ---
 
 # Writing API Reference Documentation

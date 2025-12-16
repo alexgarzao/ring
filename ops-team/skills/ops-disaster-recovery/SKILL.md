@@ -1,5 +1,5 @@
 ---
-name: ops-disaster-recovery
+name: ring-ops-team:ops-disaster-recovery
 description: |
   Structured workflow for disaster recovery planning, implementation, and testing
   including RTO/RPO definition, DR strategy selection, and failover procedures.
@@ -16,7 +16,7 @@ skip_when: |
   - Single-instance failure recovery -> standard runbooks
 
 related:
-  similar: [ops-capacity-planning]
+  similar: [ring-ops-team:ops-capacity-planning]
   uses: [ring-ops-team:infrastructure-architect]
 ---
 

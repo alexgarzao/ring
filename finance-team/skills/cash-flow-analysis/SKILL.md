@@ -1,5 +1,5 @@
 ---
-name: cash-flow-analysis
+name: ring-finance-team:cash-flow-analysis
 description: |
   Cash flow analysis and treasury management workflow covering liquidity assessment,
   cash forecasting, working capital optimization, and treasury operations.
@@ -11,9 +11,9 @@ trigger: |
   - Treasury operations review
 
 skip_when: |
-  - Financial statement analysis → use financial-analysis
-  - Creating budgets → use budget-creation
-  - Building valuation models → use financial-modeling
+  - Financial statement analysis → use ring-finance-team:financial-analysis
+  - Creating budgets → use ring-finance-team:budget-creation
+  - Building valuation models → use ring-finance-team:financial-modeling
 
 related:
   similar: [ring-finance-team:financial-analysis, ring-finance-team:budget-creation]

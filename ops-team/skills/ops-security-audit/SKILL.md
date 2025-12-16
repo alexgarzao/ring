@@ -1,5 +1,5 @@
 ---
-name: ops-security-audit
+name: ring-ops-team:ops-security-audit
 description: |
   Structured workflow for infrastructure security audits including compliance
   validation, vulnerability assessment, and security posture review.
@@ -11,7 +11,7 @@ trigger: |
   - New service security assessment
 
 skip_when: |
-  - Application code security -> use ring-default:security-reviewer
+  - Application code security -> use security-reviewer
   - Active security incident -> use ops-incident-response
   - Penetration testing -> external security team
 

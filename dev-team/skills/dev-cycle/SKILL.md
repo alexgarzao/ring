@@ -1,5 +1,5 @@
 ---
-name: dev-cycle
+name: ring-dev-team:dev-cycle
 description: |
   Main orchestrator for the 6-gate development cycle system. Loads tasks/subtasks
   from PM team output and executes through implementation, devops, SRE, testing, review,
@@ -12,7 +12,7 @@ trigger: |
 
 skip_when: |
   - Already in a specific gate skill -> let that gate complete
-  - Need to plan tasks first -> use ring-default:writing-plans or ring-pm-team:pre-dev-full
+  - Need to plan tasks first -> use writing-plans or pre-dev-full
   - Human explicitly requests manual implementation (non-AI workflow)
 
 NOT_skip_when: |
@@ -83,7 +83,7 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
-See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, gate-to-agent mapping, and anti-rationalization table.
+See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared-orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, gate-to-agent mapping, and anti-rationalization table.
 
 **Summary:** You orchestrate. Agents execute. If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
@@ -138,13 +138,13 @@ No negotiation. No exceptions. No "special cases".
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Gate-specific note:** Execution mode selection affects CHECKPOINTS (user approval pauses), not GATES (quality checks). ALL gates execute regardless of mode.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 **Gate-specific rationalizations:**
 
@@ -158,7 +158,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags.
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
 If you catch yourself thinking ANY of those patterns, STOP immediately and return to gate execution.
 
@@ -223,10 +223,10 @@ Day 4: Production incident from Day 1 code
 | Gate | Skill | Purpose | Agent |
 |------|-------|---------|-------|
 | 0 | dev-implementation | Write code following TDD | Based on task language/domain |
-| 1 | dev-devops | Infrastructure and deployment | ring-dev-team:devops-engineer |
-| 2 | dev-sre | Observability (health, logging, tracing) | ring-dev-team:sre |
-| 3 | dev-testing | Unit tests for acceptance criteria | ring-dev-team:qa-analyst |
-| 4 | dev-review | Parallel code review | ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer (3x parallel) |
+| 1 | dev-devops | Infrastructure and deployment | devops-engineer |
+| 2 | dev-sre | Observability (health, logging, tracing) | sre |
+| 3 | dev-testing | Unit tests for acceptance criteria | qa-analyst |
+| 4 | dev-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
 | 5 | dev-validation | Final acceptance validation | N/A (verification) |
 
 ## Integrated PM → Dev Workflow
@@ -305,20 +305,20 @@ State is persisted to `docs/refactor/current-cycle.json`:
       "artifacts": {},
       "agent_outputs": {
         "implementation": {
-          "agent": "ring-dev-team:backend-engineer-golang",
+          "agent": "backend-engineer-golang",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
           "duration_ms": 0
         },
         "devops": null,
         "sre": {
-          "agent": "ring-dev-team:sre",
+          "agent": "sre",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
           "duration_ms": 0
         },
         "testing": {
-          "agent": "ring-dev-team:qa-analyst",
+          "agent": "qa-analyst",
           "output": "## Summary\n...",
           "verdict": "PASS",
           "coverage_actual": 87.5,
@@ -328,9 +328,9 @@ State is persisted to `docs/refactor/current-cycle.json`:
           "duration_ms": 0
         },
         "review": {
-          "code_reviewer": {"agent": "ring-default:code-reviewer", "output": "...", "timestamp": "..."},
-          "business_logic_reviewer": {"agent": "ring-default:business-logic-reviewer", "output": "...", "timestamp": "..."},
-          "security_reviewer": {"agent": "ring-default:security-reviewer", "output": "...", "timestamp": "..."}
+          "code_reviewer": {"agent": "code-reviewer", "output": "...", "timestamp": "..."},
+          "business_logic_reviewer": {"agent": "business-logic-reviewer", "output": "...", "timestamp": "..."},
+          "security_reviewer": {"agent": "security-reviewer", "output": "...", "timestamp": "..."}
         },
         "validation": {
           "result": "approved|rejected",
@@ -451,7 +451,7 @@ After each gate, the state file MUST reflect:
 
 ## Input Validation
 
-Task files are generated by `/ring-pm-team:pre-dev-*` or `/ring-dev-team:dev-refactor`, which handle content validation. The dev-cycle performs basic format checks:
+Task files are generated by `/pre-dev-*` or `/ring-dev-team:dev-refactor`, which handle content validation. The dev-cycle performs basic format checks:
 
 ### Format Checks
 
@@ -464,13 +464,13 @@ Task files are generated by `/ring-pm-team:pre-dev-*` or `/ring-dev-team:dev-ref
 
 ## Step 2: Gate 0 - Implementation (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring-dev-team:dev-implementation
+**REQUIRED SUB-SKILL:** Use dev-implementation
 
 **Execution Unit:** Task (if no subtasks) OR Subtask (if task has subtasks)
 
 ### ⛔ MANDATORY: Agent Dispatch Required
 
-See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full details.
+See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared-orchestrator-principle.md) for full details.
 
 **Gate 0 has TWO explicit sub-phases with a HARD GATE between them:**
 
@@ -496,19 +496,19 @@ See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-
 2. Set `gate_progress.implementation.tdd_red.status = "in_progress"`
 
 3. Determine appropriate agent based on content:
-   - Go files/go.mod → ring-dev-team:backend-engineer-golang
-   - TypeScript backend → ring-dev-team:backend-engineer-typescript
-   - React/Frontend → ring-dev-team:frontend-engineer-typescript
-   - Infrastructure → ring-dev-team:devops-engineer
+   - Go files/go.mod → backend-engineer-golang
+   - TypeScript backend → backend-engineer-typescript
+   - React/Frontend → frontend-engineer-typescript
+   - Infrastructure → devops-engineer
 
 4. Dispatch to selected agent for TDD-RED ONLY:
 
-   See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for the TDD-RED prompt template.
+   See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-RED prompt template.
 
    Include: unit_id, title, requirements, acceptance_criteria in the prompt.
 
 5. Receive TDD-RED report from agent
-6. **VERIFY FAILURE OUTPUT EXISTS (HARD GATE):** See shared-patterns/tdd-prompt-templates.md for verification rules.
+6. **VERIFY FAILURE OUTPUT EXISTS (HARD GATE):** See shared-patterns/template-tdd-prompts.md for verification rules.
 
 7. Update state:
    ```json
@@ -542,12 +542,12 @@ See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-
 
 2. Dispatch to same agent for TDD-GREEN:
 
-   See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for the TDD-GREEN prompt template (includes observability requirements).
+   See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-GREEN prompt template (includes observability requirements).
 
    Include: unit_id, title, tdd_red.test_file, tdd_red.failure_output in the prompt.
 
 3. Receive TDD-GREEN report from agent
-4. **VERIFY PASS OUTPUT EXISTS (HARD GATE):** See shared-patterns/tdd-prompt-templates.md for verification rules.
+4. **VERIFY PASS OUTPUT EXISTS (HARD GATE):** See shared-patterns/template-tdd-prompts.md for verification rules.
 
 5. Update state:
    ```json
@@ -601,7 +601,7 @@ See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-
 
 ## Step 3: Gate 1 - DevOps (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring-dev-team:dev-devops
+**REQUIRED SUB-SKILL:** Use dev-devops
 
 ```text
 For current execution unit:
@@ -634,7 +634,7 @@ For current execution unit:
 
 5. If DevOps executed:
    - agent_outputs.devops = {
-       agent: "ring-dev-team:devops-engineer",
+       agent: "devops-engineer",
        output: "[full agent output for feedback analysis]",
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time]
@@ -650,7 +650,7 @@ For current execution unit:
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring-dev-team:dev-sre
+**REQUIRED SUB-SKILL:** Use dev-sre
 
 ```text
 For current execution unit:
@@ -685,7 +685,7 @@ For current execution unit:
 
 5. If SRE executed:
    - agent_outputs.sre = {
-       agent: "ring-dev-team:sre",
+       agent: "sre",
        output: "[full agent output for feedback analysis]",
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time]
@@ -701,7 +701,7 @@ For current execution unit:
 
 ## Step 5: Gate 3 - Testing (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring-dev-team:dev-testing
+**REQUIRED SUB-SKILL:** Use dev-testing
 
 ### Simple Flow
 
@@ -759,7 +759,7 @@ For current execution unit:
 
 ## Step 6: Gate 4 - Review (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring-default:requesting-code-review
+**REQUIRED SUB-SKILL:** Use requesting-code-review
 
 ```text
 For current execution unit:
@@ -790,17 +790,17 @@ For current execution unit:
 4. Store all reviewer outputs:
    - agent_outputs.review = {
        code_reviewer: {
-         agent: "ring-default:code-reviewer",
+         agent: "code-reviewer",
          output: "[full output for feedback analysis]",
          timestamp: "[ISO timestamp]"
        },
        business_logic_reviewer: {
-         agent: "ring-default:business-logic-reviewer",
+         agent: "business-logic-reviewer",
          output: "[full output for feedback analysis]",
          timestamp: "[ISO timestamp]"
        },
        security_reviewer: {
-         agent: "ring-default:security-reviewer",
+         agent: "security-reviewer",
          output: "[full output for feedback analysis]",
          timestamp: "[ISO timestamp]"
        }
@@ -891,7 +891,7 @@ After completing all subtasks of a task:
 
    ```yaml
    Skill tool:
-     skill_name: "ring-dev-team:dev-feedback-loop"
+     skill: "ring-dev-team:dev-feedback-loop"
    ```
 
    **Note:** dev-feedback-loop manages its own TodoWrite tracking internally.
@@ -1012,7 +1012,7 @@ After completing all subtasks of a task:
 
    ```yaml
    Skill tool:
-     skill_name: "ring-dev-team:dev-feedback-loop"
+     skill: "ring-dev-team:dev-feedback-loop"
    ```
 
    **Note:** dev-feedback-loop manages its own TodoWrite tracking internally.

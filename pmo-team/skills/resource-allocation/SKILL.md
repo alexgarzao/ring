@@ -1,5 +1,5 @@
 ---
-name: resource-allocation
+name: ring-pmo-team:resource-allocation
 description: |
   Resource capacity planning and allocation skill for managing people and skills
   across multiple projects. Identifies conflicts, gaps, and optimization opportunities.
@@ -16,7 +16,7 @@ skip_when: |
   - Project status → use project-health-check
 
 related:
-  complementary: [portfolio-planning, risk-management]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:risk-management]
 ---
 
 # Resource Allocation Skill

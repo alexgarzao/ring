@@ -19,7 +19,7 @@ Skills should reference this format and add gate-specific metrics:
 ```markdown
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md):
 
 | Metric | Value |
 |--------|-------|
@@ -38,7 +38,7 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 - files_created: N
 - files_modified: N
 - tests_added: N
-- agent_used: ring-dev-team:{agent}
+- agent_used: {agent}
 
 ### DevOps Gate (1)
 - dockerfile_action: CREATED/UPDATED/UNCHANGED

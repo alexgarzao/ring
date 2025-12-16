@@ -1,5 +1,8 @@
 # TypeScript Standards
 
+> **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
+> When adding/removing `## ` sections, update the coverage table AND agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+
 This file defines the specific standards for TypeScript (backend) development.
 
 > **Reference**: Always consult `docs/PROJECT_RULES.md` for common project standards.

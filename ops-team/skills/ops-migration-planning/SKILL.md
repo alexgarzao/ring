@@ -1,5 +1,5 @@
 ---
-name: ops-migration-planning
+name: ring-ops-team:ops-migration-planning
 description: |
   Structured workflow for infrastructure migration planning including cloud migrations,
   technology upgrades, and data center transitions.
@@ -16,7 +16,7 @@ skip_when: |
   - Simple resource moves -> standard change management
 
 related:
-  similar: [ops-disaster-recovery]
+  similar: [ring-ops-team:ops-disaster-recovery]
   uses: [ring-ops-team:infrastructure-architect, ring-ops-team:platform-engineer]
 ---
 

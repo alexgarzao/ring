@@ -1,5 +1,5 @@
 ---
-name: using-ops-team
+name: ring-ops-team:using-ops-team
 description: |
   5 specialist operations agents for platform engineering, incident response,
   cloud cost optimization, infrastructure architecture, and security operations.
@@ -13,7 +13,7 @@ trigger: |
   - Security audits and compliance -> security-operations
 
 skip_when: |
-  - Development infrastructure (IaC, Docker) -> use ring-dev-team:devops-engineer
+  - Development infrastructure (IaC, Docker) -> use devops-engineer
   - Application development -> use ring-dev-team specialists
   - Code review -> use ring-default reviewers
 
@@ -25,7 +25,7 @@ related:
 
 The ring-ops-team plugin provides 5 specialized operations agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
@@ -148,7 +148,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "ring-ops-team:{agent-name}"
+  subagent_type: "{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
@@ -188,14 +188,14 @@ If you need multiple specialists (e.g., incident + security), dispatch in **para
 
 ```
 CORRECT:
-Task #1: ring-ops-team:incident-responder
-Task #2: ring-ops-team:security-operations
+Task #1: incident-responder
+Task #2: security-operations
 (Both run in parallel)
 
 WRONG:
-Task #1: ring-ops-team:incident-responder
+Task #1: incident-responder
 (Wait for response)
-Task #2: ring-ops-team:security-operations
+Task #2: security-operations
 (Sequential = 2x slower)
 ```
 
@@ -226,14 +226,14 @@ Task tool:
 **Agents:** See "5 Operations Specialists" table above.
 
 **Skills:**
-- `using-ops-team` (this) - Plugin introduction
-- `ops-incident-response` - Incident management workflow
-- `ops-capacity-planning` - Capacity planning process
-- `ops-cost-optimization` - Cost optimization workflow
-- `ops-disaster-recovery` - DR planning and testing
-- `ops-security-audit` - Security audit workflow
-- `ops-platform-onboarding` - Service onboarding to platform
-- `ops-migration-planning` - Migration planning process
+- `ring-ops-team:using-ops-team` (this) - Plugin introduction
+- `ring-ops-team:ops-incident-response` - Incident management workflow
+- `ring-ops-team:ops-capacity-planning` - Capacity planning process
+- `ring-ops-team:ops-cost-optimization` - Cost optimization workflow
+- `ring-ops-team:ops-disaster-recovery` - DR planning and testing
+- `ring-ops-team:ops-security-audit` - Security audit workflow
+- `ring-ops-team:ops-platform-onboarding` - Service onboarding to platform
+- `ring-ops-team:ops-migration-planning` - Migration planning process
 
 **Commands:**
 - `/ring-ops-team:incident` - Production incident management
@@ -252,6 +252,6 @@ Task tool:
 
 Dispatch based on your need:
 - Production operations -> ring-ops-team agents
-- Development infrastructure -> ring-dev-team:devops-engineer
+- Development infrastructure -> devops-engineer
 - Application code -> ring-dev-team specialists
 - Code review -> ring-default reviewers

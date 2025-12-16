@@ -1,5 +1,5 @@
 ---
-name: systematic-debugging
+name: ring-default:systematic-debugging
 description: |
   Four-phase debugging framework - root cause investigation, pattern analysis,
   hypothesis testing, implementation. Ensures understanding before attempting fixes.
@@ -12,11 +12,11 @@ trigger: |
 
 skip_when: |
   - Root cause already known → just fix it
-  - Error deep in call stack, need to trace backward → use root-cause-tracing
+  - Error deep in call stack, need to trace backward → use ring-default:root-cause-tracing
   - Issue obviously caused by your last change → quick verification first
 
 related:
-  complementary: [root-cause-tracing]
+  complementary: [ring-default:root-cause-tracing]
 ---
 
 # Systematic Debugging

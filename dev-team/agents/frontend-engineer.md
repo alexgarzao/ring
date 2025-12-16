@@ -1,6 +1,6 @@
 
 ---
-name: frontend-engineer
+name: ring-dev-team:frontend-engineer
 version: 3.2.4
 description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, and modern React patterns.
 type: specialist
@@ -734,7 +734,7 @@ When reporting issues in existing code:
 
 **If you catch yourself thinking ANY of these, STOP:**
 
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/shared-anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -802,18 +802,39 @@ See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rat
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
 
-### Comparison Categories for Frontend
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | Expected Pattern |
-|----------|--------------|------------------|
-| **Accessibility** | WCAG 2.1 AA | Semantic HTML, ARIA, keyboard nav |
-| **TypeScript** | Strict mode | No `any`, branded types |
-| **Performance** | Core Web Vitals | LCP ≤2.5s, FID ≤100ms, CLS ≤0.1 |
-| **State Management** | Server state vs client | TanStack Query for server, Zustand for client |
-| **Testing** | Component + integration | RTL, MSW for API mocks |
-| **Error Handling** | Error boundaries | Feature-level + app-level |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Security", "Code Quality"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section |
+|---|---------|
+| 1 | Framework (MANDATORY) |
+| 2 | Libraries & Tools (MANDATORY) |
+| 3 | State Management Patterns (MANDATORY) |
+| 4 | Form Patterns (MANDATORY) |
+| 5 | Styling Standards (MANDATORY) |
+| 6 | Typography Standards (MANDATORY) |
+| 7 | Animation Standards (MANDATORY) |
+| 8 | Component Patterns (MANDATORY) |
+| 9 | Accessibility (a11y) (MANDATORY) |
+| 10 | Performance (MANDATORY) |
+| 11 | Directory Structure (MANDATORY) |
+| 12 | FORBIDDEN Patterns (MANDATORY) |
+| 13 | Standards Compliance Categories (MANDATORY) |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 

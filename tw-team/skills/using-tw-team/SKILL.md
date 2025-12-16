@@ -1,5 +1,5 @@
 ---
-name: using-tw-team
+name: ring-tw-team:using-tw-team
 description: |
   Technical writing specialists for functional and API documentation. Dispatch when
   you need to create guides, conceptual docs, or API references following established
@@ -17,14 +17,14 @@ skip_when: |
   - General code review → use default plugin reviewers
 
 related:
-  similar: [using-ring, using-dev-team]
+  similar: [ring-default:using-ring, ring-dev-team:using-dev-team]
 ---
 
 # Using Ring Technical Writing Specialists
 
 The ring-tw-team plugin provides specialized agents for technical documentation. Use them via `Task tool with subagent_type:`.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle documentation tasks; don't write complex documentation directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle documentation tasks; don't write complex documentation directly.
 
 ## 3 Documentation Specialists
 
@@ -77,7 +77,7 @@ Task #3: ring-tw-team:docs-reviewer (review both)
 
 ## Available in This Plugin
 
-**Agents:** functional-writer, api-writer, docs-reviewer
+**Agents:** ring-tw-team:functional-writer, ring-tw-team:api-writer, ring-tw-team:docs-reviewer
 
 **Skills:**
 - using-tw-team: Plugin introduction
@@ -89,9 +89,9 @@ Task #3: ring-tw-team:docs-reviewer (review both)
 - api-field-descriptions: Field description patterns
 
 **Commands:**
-- /ring-tw-team:write-guide: Start functional guide
-- /ring-tw-team:write-api: Start API documentation
-- /ring-tw-team:review-docs: Review existing docs
+- /write-guide: Start functional guide
+- /write-api: Start API documentation
+- /review-docs: Review existing docs
 
 ---
 

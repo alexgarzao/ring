@@ -1,5 +1,5 @@
 ---
-name: dev-testing
+name: ring-dev-team:dev-testing
 description: |
   Development cycle testing gate (Gate 3) - ensures unit test coverage for all
   acceptance criteria using TDD methodology (RED-GREEN-REFACTOR).
@@ -69,13 +69,13 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Gate 3-specific note:** Coverage threshold (85%) is MANDATORY minimum, not aspirational target. Below threshold = FAIL.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 **Gate 3-specific rationalizations:**
 
@@ -88,7 +88,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags (including Testing section).
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Testing section).
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Write unit tests until threshold met.
 
@@ -143,7 +143,7 @@ If you catch yourself thinking ANY of those patterns, STOP immediately. Write un
 
 ### Anti-Rationalization for Coverage
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -335,7 +335,7 @@ If tests fail during execution:
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|

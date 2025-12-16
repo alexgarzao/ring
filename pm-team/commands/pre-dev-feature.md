@@ -1,5 +1,5 @@
 ---
-name: pre-dev-feature
+name: ring-pm-team:pre-dev-feature
 description: Lightweight 4-gate pre-dev workflow for small features (<2 days)
 argument-hint: "[feature-name]"
 ---
@@ -37,7 +37,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 0: Research Phase (Lightweight)
 
-**Skill:** ring-pm-team:pre-dev-research
+**Skill:** pre-dev-research
 
 Even small features benefit from quick research:
 
@@ -55,7 +55,7 @@ Even small features benefit from quick research:
 
 ## Gate 1: PRD Creation
 
-**Skill:** ring-pm-team:pre-dev-prd-creation
+**Skill:** pre-dev-prd-creation
 
 1. Ask user to describe the feature (what problem does it solve, who are the users, what's the business value)
 2. Create PRD document with:
@@ -76,7 +76,7 @@ Even small features benefit from quick research:
 
 ## Gate 2: TRD Creation (Skipping Feature Map)
 
-**Skill:** ring-pm-team:pre-dev-trd-creation
+**Skill:** pre-dev-trd-creation
 
 1. Load PRD from `docs/pre-dev/<feature-name>/prd.md`
 2. Note: No Feature Map exists (small track) - map PRD features directly to components
@@ -99,7 +99,7 @@ Even small features benefit from quick research:
 
 ## Gate 3: Task Breakdown (Skipping API/Data/Deps)
 
-**Skill:** ring-pm-team:pre-dev-task-breakdown
+**Skill:** pre-dev-task-breakdown
 
 1. Load PRD from `docs/pre-dev/<feature-name>/prd.md`
 2. Load TRD from `docs/pre-dev/<feature-name>/trd.md`
@@ -142,8 +142,8 @@ Skipped from full workflow:
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring-default:worktree to create isolated workspace
-3. Use /ring-default:write-plan to create implementation plan
+2. Use /worktree to create isolated workspace
+3. Use /write-plan to create implementation plan
 4. Execute the plan
 ```
 

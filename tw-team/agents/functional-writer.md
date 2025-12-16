@@ -1,5 +1,5 @@
 ---
-name: functional-writer
+name: ring-tw-team:functional-writer
 version: 0.2.0
 description: Senior Technical Writer specialized in functional documentation including guides, conceptual explanations, tutorials, and best practices.
 type: specialist
@@ -312,7 +312,7 @@ Show, don't just tell. Provide realistic examples for technical concepts.
 
 - API endpoint documentation (use `ring-tw-team:api-writer`)
 - Documentation quality review (use `ring-tw-team:docs-reviewer`)
-- Code implementation (use `ring-dev-team:*` agents)
+- Code implementation (use `*` agents)
 - Technical architecture decisions (use `ring-dev-team:backend-engineer-golang` or `ring-dev-team:backend-engineer-typescript`)
 
 ## Output Expectations

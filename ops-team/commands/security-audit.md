@@ -1,5 +1,5 @@
 ---
-name: security-audit
+name: ring-ops-team:security-audit
 description: Execute infrastructure security audit workflow with compliance validation
 argument-hint: "[scope: full|network|iam|data] [frameworks: soc2,pci,gdpr]"
 ---
@@ -87,7 +87,7 @@ Format findings into comprehensive security audit report.
 **Scope:** [scope]
 **Frameworks:** [frameworks]
 **Audit Date:** YYYY-MM-DD
-**Auditor:** ring-ops-team:security-operations
+**Auditor:** security-operations
 
 ## Executive Summary
 

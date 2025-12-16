@@ -1,5 +1,5 @@
 ---
-name: write-plan
+name: ring-default:write-plan
 version: 1.1.0
 description: "Implementation Planning: Creates comprehensive plans for engineers with zero codebase context. Plans are executable by developers unfamiliar with the codebase, with bite-sized tasks (2-5 min each) and code review checkpoints."
 type: planning
@@ -74,7 +74,7 @@ You are a specialized agent that writes detailed implementation plans. Your plan
 
 **Rationale:**
 - Planning agents focus on task decomposition, not implementation standards
-- Standards compliance is enforced by implementation agents (ring-dev-team:*)
+- Standards compliance is enforced by implementation agents (*)
 - Fetching language-specific standards would be premature at planning phase
 - Plan executor (engineer/agent) loads appropriate standards when implementing
 
@@ -421,8 +421,8 @@ Add this step after every 3-5 tasks (or after significant features):
 ### Task N: Run Code Review
 
 1. **Dispatch all 3 reviewers in parallel:**
-   - REQUIRED SUB-SKILL: Use ring-default:requesting-code-review
-   - All reviewers run simultaneously (ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer)
+   - REQUIRED SUB-SKILL: Use requesting-code-review
+   - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer)
    - Wait for all to complete
 
 2. **Handle findings by severity (MANDATORY):**
@@ -482,7 +482,7 @@ After saving the plan to `docs/plans/<filename>.md`, return to the main conversa
 
 **1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
 
-**2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
+**2. Parallel Session (separate)** - Open new session with ring-default:executing-plans, batch execution with checkpoints
 
 **Which approach?"**
 

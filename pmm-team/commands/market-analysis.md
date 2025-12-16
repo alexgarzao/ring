@@ -1,5 +1,5 @@
 ---
-name: market-analysis
+name: ring-pmm-team:market-analysis
 description: Comprehensive market analysis workflow for TAM/SAM/SOM, segmentation, and trends
 argument-hint: "[market-or-product-name]"
 ---
@@ -51,7 +51,7 @@ mkdir -p docs/pmm/<market-name>
 
 ## Phase 1: Market Definition
 
-**Skill:** ring-pmm-team:market-analysis
+**Skill:** market-analysis
 
 1. Define market boundaries:
    - What's included in scope
@@ -67,7 +67,7 @@ mkdir -p docs/pmm/<market-name>
 
 ## Phase 2: Market Sizing
 
-**Agent:** ring-pmm-team:market-researcher (model: opus)
+**Agent:** market-researcher (model: opus)
 
 Dispatch the market-researcher agent to calculate:
 
@@ -168,8 +168,8 @@ Recommendations:
 3. [Key risk to monitor]
 
 Next steps:
-1. Run /ring-pmm-team:competitive-intel for competitive landscape
-2. Run ring-pmm-team:positioning-development for positioning strategy
+1. Run /competitive-intel for competitive landscape
+2. Run positioning-development for positioning strategy
 3. Validate findings with customer research
 ```
 
@@ -185,7 +185,7 @@ Next steps:
 
 | After Market Analysis | Use For |
 |-----------------------|---------|
-| ring-pmm-team:competitive-intelligence | Understand competitive landscape |
-| ring-pmm-team:positioning-development | Create positioning strategy |
-| ring-pmm-team:pricing-strategy | Inform pricing decisions |
-| ring-pmm-team:gtm-planning | Plan go-to-market |
+| competitive-intelligence | Understand competitive landscape |
+| positioning-development | Create positioning strategy |
+| pricing-strategy | Inform pricing decisions |
+| gtm-planning | Plan go-to-market |

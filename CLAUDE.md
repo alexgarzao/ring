@@ -33,26 +33,51 @@ When creating or modifying ANY agent in `*/agents/*.md`:
 ### 4. Fully Qualified Names (ALWAYS)
 - ✅ `ring-default:code-reviewer`
 - ✅ `ring-dev-team:backend-engineer-golang`
-- ❌ `ring:code-reviewer` (WRONG)
-- ❌ `backend-engineer-golang` (WRONG)
+- ❌ `code-reviewer` (missing plugin prefix)
+- ❌ `ring:code-reviewer` (ambiguous shorthand)
 
 ### 5. Standards-Agent Synchronization (ALWAYS CHECK)
 When modifying standards files (`dev-team/docs/standards/*.md`):
 
-**⛔ TWO-FILE UPDATE RULE:**
+**⛔ THREE-FILE UPDATE RULE:**
 1. Edit `dev-team/docs/standards/{file}.md` - Add your `## Section Name`
 2. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
-3. **Both files in same commit** - Never update one without the other
+3. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (NOT inline categories)
+4. **All three files in same commit** - Never update one without the others
+
+**⛔ AGENT INLINE CATEGORIES ARE FORBIDDEN:**
+- ✅ Agent has "Sections to Check" referencing `standards-coverage-table.md`
+- ❌ Agent has inline "Comparison Categories" table (FORBIDDEN - causes drift)
+
+**Meta-sections (excluded from agent checks):**
+- `## Checklist` - Self-verification section in standards files
+- `## Standards Compliance` - Output format examples
+- `## Standards Compliance Output Format` - Output templates
 
 | Standards File | Agents That Use It |
 |----------------|-------------------|
-| `golang.md` | `backend-engineer-golang`, `qa-analyst` |
-| `typescript.md` | `backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `qa-analyst` |
-| `frontend.md` | `frontend-engineer`, `frontend-designer` |
-| `devops.md` | `devops-engineer` |
+| `golang.md` | `ring-dev-team:backend-engineer-golang`, `ring-dev-team:qa-analyst` |
+| `typescript.md` | `ring-dev-team:backend-engineer-typescript`, `ring-dev-team:frontend-bff-engineer-typescript`, `ring-dev-team:qa-analyst` |
+| `frontend.md` | `ring-dev-team:frontend-engineer`, `ring-dev-team:frontend-designer` |
+| `devops.md` | `ring-dev-team:devops-engineer` |
 | `sre.md` | `sre` |
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
+
+**Quick Reference - Section Counts (MUST match standards-coverage-table.md):**
+
+| Agent | Standards File | Section Count |
+|-------|----------------|---------------|
+| `ring-dev-team:backend-engineer-golang` | golang.md | See coverage table |
+| `ring-dev-team:backend-engineer-typescript` | typescript.md | See coverage table |
+| `ring-dev-team:frontend-bff-engineer-typescript` | typescript.md | See coverage table |
+| `ring-dev-team:frontend-engineer` | frontend.md | See coverage table |
+| `ring-dev-team:frontend-designer` | frontend.md | See coverage table |
+| `ring-dev-team:devops-engineer` | devops.md | See coverage table |
+| `sre` | sre.md | See coverage table |
+| `ring-dev-team:qa-analyst` | golang.md OR typescript.md | See coverage table |
+
+**⛔ If section counts in skills don't match this table → Update the skill.**
 
 ### 6. Agent Model Requirements (ALWAYS RESPECT)
 When invoking agents via Task tool:
@@ -340,7 +365,7 @@ git worktree list                  # Check isolated development branches
 # Skill invocation (via Claude Code)
 Skill tool: "ring-default:test-driven-development"  # Enforce TDD workflow
 Skill tool: "ring-default:systematic-debugging"     # Debug with 4-phase analysis
-Skill tool: "ring-default:using-ring"              # Load mandatory workflows
+Skill tool: "ring-default:using-ring"               # Load mandatory workflows
 
 # Slash commands
 /ring-default:codereview          # Dispatch 3 parallel reviewers
@@ -393,8 +418,8 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 - **Examples:**
   - ✅ Correct: `ring-default:code-reviewer`
   - ✅ Correct: `ring-dev-team:backend-engineer-golang`
+  - ❌ Wrong: `code-reviewer` (missing plugin prefix)
   - ❌ Wrong: `ring:code-reviewer` (ambiguous shorthand)
-  - ❌ Wrong: `backend-engineer-golang` (missing plugin prefix)
 - **Rationale:** Prevents ambiguity in multi-plugin environments
 
 ---
@@ -403,9 +428,9 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
 | Schema Type | Used By | Key Sections |
 |-------------|---------|--------------|
-| Implementation | ring-dev-team:* engineers | Summary, Implementation, Files Changed, Testing |
+| Implementation | * engineers | Summary, Implementation, Files Changed, Testing |
 | Analysis | frontend-designer, finops-analyzer | Analysis, Findings, Recommendations |
-| Reviewer | ring-default:*-reviewer | VERDICT, Issues Found, What Was Done Well |
+| Reviewer | *-reviewer | VERDICT, Issues Found, What Was Done Well |
 | Exploration | codebase-explorer | Exploration Summary, Key Findings, Architecture |
 | Planning | write-plan | Goal, Architecture, Tech Stack, Tasks |
 
@@ -446,7 +471,7 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 
 The system loads at SessionStart (from `default/` plugin):
 1. `default/hooks/session-start.sh` - Loads skill quick reference via `generate-skills-ref.py`
-2. `using-ring` skill - Injected as mandatory workflow
+2. `ring-default:using-ring` skill - Injected as mandatory workflow
 3. `default/hooks/claude-md-reminder.sh` - Reminds about CLAUDE.md on prompt submit
 
 **Monorepo Context:**

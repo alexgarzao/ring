@@ -1,5 +1,5 @@
 ---
-name: brainstorm
+name: ring-default:brainstorm
 description: Interactive design refinement using Socratic method
 argument-hint: "[topic]"
 ---
@@ -73,7 +73,7 @@ The brainstorming session follows these phases:
 - Prepares clean workspace for implementation
 
 ### 7. Planning Handoff (Phase 6, if implementing)
-- Creates detailed implementation plan using `writing-plans` skill
+- Creates detailed implementation plan using `ring-default:writing-plans` skill
 - Breaks design into bite-sized executable tasks
 
 ## Related Commands/Skills

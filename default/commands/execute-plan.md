@@ -1,5 +1,5 @@
 ---
-name: execute-plan
+name: ring-default:execute-plan
 description: Execute plan in batches with review checkpoints
 argument-hint: "[plan-file-path]"
 ---
@@ -97,7 +97,7 @@ After all tasks complete:
 | `/ring-default:brainstorm` | Use before writing-plans if design unclear |
 | `ring-default:writing-plans` | Creates the plan files this command executes |
 | `ring-default:requesting-code-review` | Called automatically after each batch |
-| `ring-default:finishing-a-development-branch` | Called at completion |
+| `finishing-a-development-branch` | Called at completion |
 
 ## Troubleshooting
 

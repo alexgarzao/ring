@@ -1,5 +1,5 @@
 ---
-name: metrics-dashboard
+name: ring-finance-team:metrics-dashboard
 description: |
   KPI and metrics dashboard workflow covering metric definition, data sourcing,
   visualization design, and anomaly detection. Delivers actionable dashboards.
@@ -11,9 +11,9 @@ trigger: |
   - Setting up anomaly detection
 
 skip_when: |
-  - Detailed financial analysis → use financial-analysis
-  - Building models → use financial-modeling
-  - Preparing reports → use financial-reporting
+  - Detailed financial analysis → use ring-finance-team:financial-analysis
+  - Building models → use ring-finance-team:financial-modeling
+  - Preparing reports → use ring-finance-team:financial-reporting
 
 related:
   similar: [ring-finance-team:financial-reporting, ring-finance-team:financial-analysis]

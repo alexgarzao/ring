@@ -1,5 +1,5 @@
 ---
-name: competitive-intel
+name: ring-pmm-team:competitive-intel
 description: Competitive intelligence workflow for landscape analysis and battlecards
 argument-hint: "[market-or-competitor-name]"
 ---
@@ -210,7 +210,7 @@ Next steps:
 1. Review battlecards with sales team
 2. Validate win/loss analysis with recent deals
 3. Address identified product gaps
-4. Use insights for ring-pmm-team:positioning-development
+4. Use insights for positioning-development
 ```
 
 ## Remember

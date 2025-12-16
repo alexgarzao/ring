@@ -1,5 +1,5 @@
 ---
-name: docs-reviewer
+name: ring-tw-team:docs-reviewer
 version: 0.2.0
 description: Documentation Quality Reviewer specialized in checking voice, tone, structure, completeness, and technical accuracy of documentation.
 type: reviewer
@@ -352,7 +352,7 @@ When reviewing documentation:
 ## What This Agent Does NOT Handle
 
 - Writing new documentation (use `ring-tw-team:functional-writer` or `ring-tw-team:api-writer`)
-- Technical implementation (use `ring-dev-team:*` agents)
+- Technical implementation (use `*` agents)
 - Code review (use `ring-default:code-reviewer`)
 
 ## Output Expectations

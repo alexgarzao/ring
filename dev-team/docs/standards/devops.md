@@ -1,5 +1,8 @@
 # DevOps Standards
 
+> **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
+> When adding/removing `## ` sections, update the coverage table AND agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+
 This file defines the specific standards for DevOps, SRE, and infrastructure.
 
 > **Reference**: Always consult `docs/PROJECT_RULES.md` for common project standards.
@@ -189,10 +192,10 @@ ENTRYPOINT ["/server"]
 
 ### Docker Compose (Local Dev)
 
+**MANDATORY:** Use `.env` file for environment variables instead of inline definitions.
+
 ```yaml
 # docker-compose.yml
-version: '3.8'
-
 services:
   api:
     build:
@@ -200,9 +203,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      - DATABASE_URL=postgres://user:pass@db:5432/app
-      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -211,14 +213,12 @@ services:
 
   db:
     image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: app
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d app"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -232,6 +232,38 @@ volumes:
   postgres_data:
   redis_data:
 ```
+
+#### .env File Structure
+
+```bash
+# .env (add to .gitignore)
+
+# Application
+ENV_NAME=local
+LOG_LEVEL=debug
+SERVER_ADDRESS=:8080
+
+# PostgreSQL
+POSTGRES_USER=user
+POSTGRES_PASSWORD=pass
+POSTGRES_DB=app
+DB_HOST=db
+DB_PORT=5432
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Telemetry
+ENABLE_TELEMETRY=false
+```
+
+| Guideline | Reason |
+|-----------|--------|
+| Use `env_file` directive | Centralized configuration |
+| Add `.env` to `.gitignore` | Prevent secrets in version control |
+| Provide `.env.example` | Document required variables |
+| Use consistent naming | Match application config struct |
 
 ---
 
@@ -425,6 +457,224 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+```
+
+---
+
+## Makefile Standards
+
+All projects **MUST** include a Makefile with standardized commands for consistent developer experience.
+
+### Required Commands
+
+| Command | Purpose | Category |
+|---------|---------|----------|
+| `make build` | Build all components | Core |
+| `make lint` | Run linters (golangci-lint) | Code Quality |
+| `make test` | Run all tests | Testing |
+| `make cover` | Generate test coverage report | Testing |
+| `make test-unit` | Run unit tests only | Testing |
+| `make up` | Start all services with Docker Compose | Docker |
+| `make down` | Stop all services | Docker |
+| `make start` | Start existing containers | Docker |
+| `make stop` | Stop running containers | Docker |
+| `make restart` | Restart all containers | Docker |
+| `make rebuild-up` | Rebuild and restart services | Docker |
+| `make set-env` | Copy .env.example to .env | Setup |
+| `make generate-docs` | Generate API documentation (Swagger) | Documentation |
+
+### Component Delegation Pattern (Monorepo)
+
+For monorepo projects with multiple components:
+
+| Command | Purpose |
+|---------|---------|
+| `make infra COMMAND=<cmd>` | Run command in infra component |
+| `make onboarding COMMAND=<cmd>` | Run command in onboarding component |
+| `make all-components COMMAND=<cmd>` | Run command across all components |
+
+### Root Makefile Example
+
+```makefile
+# Project Root Makefile
+
+# Component directories
+INFRA_DIR := ./components/infra
+ONBOARDING_DIR := ./components/onboarding
+TRANSACTION_DIR := ./components/transaction
+
+COMPONENTS := $(INFRA_DIR) $(ONBOARDING_DIR) $(TRANSACTION_DIR)
+
+# Docker command detection
+DOCKER_CMD := $(shell if docker compose version >/dev/null 2>&1; then echo "docker compose"; else echo "docker-compose"; fi)
+
+#-------------------------------------------------------
+# Core Commands
+#-------------------------------------------------------
+
+.PHONY: build
+build:
+	@for dir in $(COMPONENTS); do \
+		echo "Building in $$dir..."; \
+		(cd $$dir && $(MAKE) build) || exit 1; \
+	done
+	@echo "[ok] All components built successfully"
+
+.PHONY: test
+test:
+	@for dir in $(COMPONENTS); do \
+		(cd $$dir && $(MAKE) test) || exit 1; \
+	done
+
+.PHONY: test-unit
+test-unit:
+	@for dir in $(COMPONENTS); do \
+		(cd $$dir && go test -v -short ./...) || exit 1; \
+	done
+
+.PHONY: cover
+cover:
+	@sh ./scripts/coverage.sh
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated at coverage.html"
+
+#-------------------------------------------------------
+# Code Quality Commands
+#-------------------------------------------------------
+
+.PHONY: lint
+lint:
+	@for dir in $(COMPONENTS); do \
+		if find "$$dir" -name "*.go" -type f | grep -q .; then \
+			(cd $$dir && golangci-lint run --fix ./...) || exit 1; \
+		fi; \
+	done
+	@echo "[ok] Linting completed successfully"
+
+#-------------------------------------------------------
+# Docker Commands
+#-------------------------------------------------------
+
+.PHONY: up
+up:
+	@for dir in $(COMPONENTS); do \
+		if [ -f "$$dir/docker-compose.yml" ]; then \
+			(cd $$dir && $(DOCKER_CMD) -f docker-compose.yml up -d) || exit 1; \
+		fi; \
+	done
+	@echo "[ok] All services started successfully"
+
+.PHONY: down
+down:
+	@for dir in $(COMPONENTS); do \
+		if [ -f "$$dir/docker-compose.yml" ]; then \
+			(cd $$dir && $(DOCKER_CMD) -f docker-compose.yml down) || exit 1; \
+		fi; \
+	done
+
+.PHONY: start
+start:
+	@for dir in $(COMPONENTS); do \
+		if [ -f "$$dir/docker-compose.yml" ]; then \
+			(cd $$dir && $(DOCKER_CMD) -f docker-compose.yml start) || exit 1; \
+		fi; \
+	done
+
+.PHONY: stop
+stop:
+	@for dir in $(COMPONENTS); do \
+		if [ -f "$$dir/docker-compose.yml" ]; then \
+			(cd $$dir && $(DOCKER_CMD) -f docker-compose.yml stop) || exit 1; \
+		fi; \
+	done
+
+.PHONY: restart
+restart:
+	@make stop && make start
+
+.PHONY: rebuild-up
+rebuild-up:
+	@for dir in $(COMPONENTS); do \
+		if [ -f "$$dir/docker-compose.yml" ]; then \
+			(cd $$dir && $(DOCKER_CMD) -f docker-compose.yml down && \
+			 $(DOCKER_CMD) -f docker-compose.yml build && \
+			 $(DOCKER_CMD) -f docker-compose.yml up -d) || exit 1; \
+		fi; \
+	done
+
+#-------------------------------------------------------
+# Setup Commands
+#-------------------------------------------------------
+
+.PHONY: set-env
+set-env:
+	@for dir in $(COMPONENTS); do \
+		if [ -f "$$dir/.env.example" ] && [ ! -f "$$dir/.env" ]; then \
+			cp "$$dir/.env.example" "$$dir/.env"; \
+			echo "Created .env in $$dir"; \
+		fi; \
+	done
+
+#-------------------------------------------------------
+# Documentation Commands
+#-------------------------------------------------------
+
+.PHONY: generate-docs
+generate-docs:
+	@./scripts/generate-docs.sh
+
+#-------------------------------------------------------
+# Component Delegation
+#-------------------------------------------------------
+
+.PHONY: infra
+infra:
+	@if [ -z "$(COMMAND)" ]; then \
+		echo "Error: Use COMMAND=<cmd>"; exit 1; \
+	fi
+	@cd $(INFRA_DIR) && $(MAKE) $(COMMAND)
+
+.PHONY: onboarding
+onboarding:
+	@if [ -z "$(COMMAND)" ]; then \
+		echo "Error: Use COMMAND=<cmd>"; exit 1; \
+	fi
+	@cd $(ONBOARDING_DIR) && $(MAKE) $(COMMAND)
+
+.PHONY: all-components
+all-components:
+	@if [ -z "$(COMMAND)" ]; then \
+		echo "Error: Use COMMAND=<cmd>"; exit 1; \
+	fi
+	@for dir in $(COMPONENTS); do \
+		(cd $$dir && $(MAKE) $(COMMAND)) || exit 1; \
+	done
+```
+
+### Component Makefile Example
+
+```makefile
+# Component Makefile (e.g., components/onboarding/Makefile)
+
+SERVICE_NAME := onboarding-service
+ARTIFACTS_DIR := ./artifacts
+
+.PHONY: build test lint up down
+
+build:
+	@go build -o $(ARTIFACTS_DIR)/$(SERVICE_NAME) ./cmd/app
+
+test:
+	@go test -v ./...
+
+lint:
+	@golangci-lint run --fix ./...
+
+up:
+	@docker compose -f docker-compose.yml up -d
+
+down:
+	@docker compose -f docker-compose.yml down
 ```
 
 ---

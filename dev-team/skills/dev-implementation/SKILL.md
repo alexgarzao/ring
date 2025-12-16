@@ -1,5 +1,5 @@
 ---
-name: dev-implementation
+name: ring-dev-team:dev-implementation
 description: |
   Gate 0 of the development cycle. Executes code implementation using the appropriate
   specialized agent based on task content and project language. Handles both tasks
@@ -76,7 +76,7 @@ examples:
   - name: "Go backend implementation"
     context: "Task: Add user authentication endpoint"
     expected_flow: |
-      1. Detect go.mod -> Select backend-engineer-golang
+      1. Detect go.mod -> Select ring-dev-team:backend-engineer-golang
       2. Load PROJECT_RULES.md for Go standards
       3. Write failing test (RED)
       4. Implement auth handler (GREEN)
@@ -85,7 +85,7 @@ examples:
   - name: "TypeScript frontend component"
     context: "Task: Create dashboard widget"
     expected_flow: |
-      1. Detect package.json with react -> Select frontend-bff-engineer-typescript
+      1. Detect package.json with react -> Select ring-dev-team:frontend-bff-engineer-typescript
       2. Load frontend.md standards
       3. Write component test (RED)
       4. Implement Dashboard component (GREEN)
@@ -106,7 +106,7 @@ This skill executes the implementation phase of the development cycle. It:
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **TDD-specific note:** If code exists before test, DELETE IT. No exceptions. No "adapting". No "reference". ALL code gets TDD, not just most of it.
 
@@ -206,7 +206,7 @@ it('should process async task', async () => {
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations (including TDD section).
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including TDD section).
 
 **Implementation-specific rationalizations:**
 
@@ -218,7 +218,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags (including TDD section).
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including TDD section).
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. DELETE any existing code. Start with failing test.
 
@@ -254,7 +254,7 @@ ls <file>  # Should return "No such file"
 
 **Anti-Rationalization for Mental Reference:**
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -286,11 +286,11 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## ⛔ MANDATORY: Agent Dispatch Required (HARD GATE)
 
-See [shared-patterns/orchestrator-principle.md](../shared-patterns/orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, agent responsibilities (observability), library requirements, and anti-rationalization table.
+See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared-orchestrator-principle.md) for full ORCHESTRATOR principle, role separation, forbidden/required actions, agent responsibilities (observability), library requirements, and anti-rationalization table.
 
 **Summary:** You orchestrate. Agents execute. Agents implement observability (logs, traces). If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for observability requirements to include in dispatch prompts.
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for observability requirements to include in dispatch prompts.
 
 ## Prerequisites
 
@@ -342,9 +342,9 @@ See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-temp
 
 **Purpose:** Write a test that captures expected behavior and FAILS.
 
-**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")`
+**Dispatch:** `Task(subagent_type: "{agent}", model: "opus")` <!-- {agent} MUST be fully qualified: ring-{plugin}:{component} -->
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for the TDD-RED prompt template.
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-RED prompt template.
 
 **Agent returns:** Test file + Failure output
 
@@ -356,9 +356,9 @@ See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-temp
 
 **Purpose:** Write minimal code to make the failing test pass.
 
-**Dispatch:** `Task(subagent_type: "ring-dev-team:{agent}", model: "opus")`
+**Dispatch:** `Task(subagent_type: "{agent}", model: "opus")` <!-- {agent} MUST be fully qualified: ring-{plugin}:{component} -->
 
-See [shared-patterns/tdd-prompt-templates.md](../shared-patterns/tdd-prompt-templates.md) for the TDD-GREEN prompt template (includes observability requirements).
+See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-GREEN prompt template (includes observability requirements).
 
 **Agent returns:** Implementation + Pass output + Commit SHA
 
@@ -432,7 +432,7 @@ Use the agent selected in Gate 1 based on technology:
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|
@@ -447,7 +447,7 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 - tests_added: N
 - tests_passing: N/N
 - review_checkpoints_passed: N/N
-- agent_used: ring-dev-team:{agent}
+- agent_used: {agent}
 
 ### Issues Encountered
 - List any issues or "None"

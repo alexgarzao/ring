@@ -1,5 +1,5 @@
 ---
-name: using-dev-team
+name: ring-dev-team:using-dev-team
 description: |
   7 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
   design, QA, and SRE. Dispatch when you need deep technology expertise.
@@ -14,7 +14,7 @@ trigger: |
 skip_when: |
   - General code review → use default plugin reviewers
   - Planning/design → use brainstorming
-  - Debugging → use systematic-debugging
+  - Debugging → use ring-default:systematic-debugging
 
 related:
   similar: [ring-default:using-ring]
@@ -24,7 +24,7 @@ related:
 
 The ring-dev-team plugin provides 7 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
@@ -47,7 +47,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 ## Common Misconceptions - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section).
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section).
 
 **Self-sufficiency bias check:** If you're tempted to implement directly, ask:
 1. Is there a specialist for this? (Check the 7 specialists below)
@@ -60,7 +60,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Anti-Rationalization Table
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section and Universal section).
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section and Universal section).
 
 ---
 
@@ -82,7 +82,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios and Emergency Response).
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios and Emergency Response).
 
 **Critical Reminder:**
 - **Urgency ≠ Permission to bypass** - Emergencies require MORE care, not less
@@ -93,7 +93,7 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 
 ## Emergency Response Protocol
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) → Emergency Response section for the complete protocol.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) → Emergency Response section for the complete protocol.
 
 **Emergency Dispatch Template:**
 ```
@@ -109,7 +109,7 @@ Task tool:
 
 ## Combined Pressure Scenarios
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) → Combined Pressure Scenarios section.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) → Combined Pressure Scenarios section.
 
 ---
 
@@ -123,17 +123,17 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | **`ring-dev-team:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
 | **`ring-dev-team:frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
 | **`ring-dev-team:qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
-| **`ring-dev-team:sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
+| **`sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
 
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "ring-dev-team:{agent-name}"
+  subagent_type: "{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
 
-**Note:** `frontend-designer` = visual aesthetics. `frontend-bff-engineer-typescript` = business logic/architecture.
+**Note:** `ring-dev-team:frontend-designer` = visual aesthetics. `ring-dev-team:frontend-bff-engineer-typescript` = business logic/architecture.
 
 ---
 
@@ -161,14 +161,14 @@ If you need multiple specialists (e.g., backend engineer + DevOps engineer), dis
 
 ```
 ✅ CORRECT:
-Task #1: ring-dev-team:backend-engineer-golang
-Task #2: ring-dev-team:devops-engineer
+Task #1: backend-engineer-golang
+Task #2: devops-engineer
 (Both run in parallel)
 
 ❌ WRONG:
-Task #1: ring-dev-team:backend-engineer-golang
+Task #1: backend-engineer-golang
 (Wait for response)
-Task #2: ring-dev-team:devops-engineer
+Task #2: devops-engineer
 (Sequential = 2x slower)
 ```
 
@@ -193,7 +193,7 @@ Remember:
 
 **Agents:** See "7 Developer Specialists" table above.
 
-**Skills:** `using-dev-team` (this), `dev-cycle` (6-gate workflow), `dev-refactor` (codebase analysis)
+**Skills:** `ring-dev-team:using-dev-team` (this), `ring-dev-team:dev-cycle` (6-gate workflow), `ring-dev-team:dev-refactor` (codebase analysis)
 
 **Commands:** `/ring-dev-team:dev-cycle` (execute tasks), `/ring-dev-team:dev-refactor` (analyze codebase)
 
@@ -215,11 +215,11 @@ All workflows converge to the 6-gate development cycle:
 
 | Gate | Focus | Agent(s) |
 |------|-------|----------|
-| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `frontend-bff-engineer-typescript` |
-| **1: DevOps** | Dockerfile, docker-compose, .env | `devops-engineer` |
+| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `ring-dev-team:frontend-bff-engineer-typescript` |
+| **1: DevOps** | Dockerfile, docker-compose, .env | `ring-dev-team:devops-engineer` |
 | **2: SRE** | Health checks, logging, tracing | `sre` |
-| **3: Testing** | Unit tests, coverage ≥85% | `qa-analyst` |
-| **4: Review** | 3 reviewers IN PARALLEL | `code-reviewer`, `business-logic`, `security` |
+| **3: Testing** | Unit tests, coverage ≥85% | `ring-dev-team:qa-analyst` |
+| **4: Review** | 3 reviewers IN PARALLEL | `ring-default:code-reviewer`, `business-logic`, `security` |
 | **5: Validation** | User approval: APPROVED/REJECTED | User decision |
 
 **Key Principle:** All development follows the same 6-gate process.

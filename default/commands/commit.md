@@ -1,5 +1,5 @@
 ---
-name: commit
+name: ring-default:commit
 description: Create a git commit with internal system tracing via Git trailers (no visible markers in message)
 argument-hint: "[message]"
 ---
@@ -262,7 +262,7 @@ If the user provides a commit message as argument:
 3. Append the trailer via `--trailer` parameter
 
 ```bash
-# User says: /ring-default:commit "fix login bug"
+# User says: /commit "fix login bug"
 git commit \
   -m "fix: fix login bug" \
   --trailer "X-Lerian-Ref: 0x1"

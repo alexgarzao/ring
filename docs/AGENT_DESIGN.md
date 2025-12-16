@@ -181,7 +181,7 @@ All ring-dev-team agents include this in their `output_schema`:
 | Via `ring-dev-team:dev-refactor` | **MANDATORY** | Prompt includes `MODE: ANALYSIS ONLY` |
 
 **How It's Triggered:**
-1. User invokes `/ring-dev-team:dev-refactor` command
+1. User invokes `/dev-refactor` command
 2. The skill dispatches agents with prompts starting with `**MODE: ANALYSIS ONLY**`
 3. This prompt pattern signals to agents that Standards Compliance output is MANDATORY
 4. Agents load Ring standards via WebFetch and produce comparison tables

@@ -17,6 +17,24 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 **If you skip ANY section → Your output is REJECTED. Start over.**
 
+**If you invent section names → Your output is REJECTED. Start over.**
+
+---
+
+## ⛔ CRITICAL: Section Names Are NOT Negotiable
+
+**You MUST use the EXACT section names from this file. You CANNOT:**
+
+| FORBIDDEN | Example | Why Wrong |
+|-----------|---------|-----------|
+| Invent names | "Security", "Code Quality" | Not in coverage table |
+| Rename sections | "Config" instead of "Configuration Loading" | Breaks traceability |
+| Merge sections | "Error Handling & Logging" | Each section = one row |
+| Use abbreviations | "DDD" instead of "DDD Patterns" | Must match exactly |
+| Skip sections | Omitting "RabbitMQ Worker Pattern" | Mark N/A instead |
+
+**Your output table section names MUST match the "Section to Check" column below EXACTLY.**
+
 ---
 
 ## Why This Pattern Exists
@@ -99,6 +117,10 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 | "I checked Dockerfile, that covers Containers" | Containers = Dockerfile + Docker Compose. Partial ≠ Complete. | **Check ALL subsections within each section** |
 | "Project doesn't use Docker Compose" | Report as N/A with evidence. Never assume. VERIFY first. | **Search for docker-compose.yml, report finding** |
 | "Only checking what exists in codebase" | Standards define what SHOULD exist. Missing = Non-Compliant. | **Report missing patterns as ❌ Non-Compliant** |
+| "My section name is clearer" | Consistency > clarity. Coverage table names are the contract. | **Use EXACT names from coverage table** |
+| "I combined related sections for brevity" | Each section = one row. Merging loses traceability. | **One row per section, no merging** |
+| "I added a useful section like 'Security'" | You don't decide sections. Coverage table does. | **Only output sections from coverage table** |
+| "'Logging' is the same as 'Logging Standards'" | Names must match EXACTLY. Variations break automation. | **Use exact string from coverage table** |
 
 ---
 
@@ -135,30 +157,34 @@ The Coverage Table ensures nothing is skipped. The Detailed Findings provide act
 ## Standards Coverage Table
 
 **Standards File:** golang.md (from WebFetch)
-**Total Sections Found:** 15
-**Table Rows:** 15 (MUST match)
+**Total Sections Found:** 19
+**Table Rows:** 19 (MUST match)
 
 | # | Section (from WebFetch) | Status | Evidence |
 |---|-------------------------|--------|----------|
-| 1 | Core Dependency: lib-commons | ✅ | go.mod:5 |
-| 2 | Configuration Loading | ⚠️ | internal/config/config.go:12 |
-| 3 | Telemetry & Observability | ❌ | Not implemented |
-| 4 | Bootstrap Pattern | ✅ | cmd/server/main.go:15 |
-| 5 | Data Transformation | ✅ | internal/adapters/postgres/mapper.go:8 |
-| 6 | Error Codes Convention | ⚠️ | Uses generic codes |
-| 7 | Error Handling | ✅ | Consistent pattern |
-| 8 | Pagination Patterns | N/A | No list endpoints |
-| 9 | Testing Patterns | ❌ | No tests found |
-| 10 | Logging Standards | ⚠️ | Missing structured fields |
-| 11 | Linting | ✅ | .golangci.yml present |
-| 12 | Architecture Patterns | ✅ | Hexagonal structure |
-| 13 | Directory Structure | ✅ | Follows convention |
-| 14 | Concurrency Patterns | N/A | No concurrent code |
-| 15 | RabbitMQ Worker Pattern | N/A | No message queue |
+| 1 | Version | ✅ | go.mod:3 (Go 1.24) |
+| 2 | Core Dependency: lib-commons | ✅ | go.mod:5 |
+| 3 | Frameworks & Libraries | ✅ | Fiber v2, pgx/v5 in go.mod |
+| 4 | Configuration Loading | ⚠️ | internal/config/config.go:12 |
+| 5 | Telemetry & Observability | ❌ | Not implemented |
+| 6 | Bootstrap Pattern | ✅ | cmd/server/main.go:15 |
+| 7 | Data Transformation | ✅ | internal/adapters/postgres/mapper.go:8 |
+| 8 | Error Codes Convention | ⚠️ | Uses generic codes |
+| 9 | Error Handling | ✅ | Consistent pattern |
+| 10 | Function Design | ✅ | Small functions, clear names |
+| 11 | Pagination Patterns | N/A | No list endpoints |
+| 12 | Testing Patterns | ❌ | No tests found |
+| 13 | Logging Standards | ⚠️ | Missing structured fields |
+| 14 | Linting | ✅ | .golangci.yml present |
+| 15 | Architecture Patterns | ✅ | Hexagonal structure |
+| 16 | Directory Structure | ✅ | Follows convention |
+| 17 | Concurrency Patterns | N/A | No concurrent code |
+| 18 | DDD Patterns | ✅ | Entities, Value Objects present |
+| 19 | RabbitMQ Worker Pattern | N/A | No message queue |
 
 **Completeness Verification:**
-- Sections in standards: 15
-- Rows in table: 15
+- Sections in standards: 19
+- Rows in table: 19
 - Status: ✅ Complete
 ```
 
@@ -190,28 +216,37 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 **IMPORTANT:** When updating a standards file, you MUST also update the corresponding section index below.
 
+**Meta-sections (EXCLUDED from agent checks):**
+Standards files may contain these meta-sections that are NOT counted in section indexes:
+- `## Checklist` - Self-verification checklist for developers
+- `## Standards Compliance` - Output format examples for agents
+- `## Standards Compliance Output Format` - Output templates
+
+These sections describe HOW to use the standards, not WHAT the standards are.
+
 ### backend-engineer-golang → golang.md
 
 | # | Section to Check | Key Subsections |
 |---|------------------|-----------------|
-| 1 | Core Dependency: lib-commons (MANDATORY) | |
-| 2 | Frameworks & Libraries (MANDATORY) | |
-| 3 | Configuration Loading (MANDATORY) | |
-| 4 | Telemetry & Observability (MANDATORY) | |
-| 5 | Bootstrap Pattern (MANDATORY) | |
-| 6 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
-| 7 | Error Codes Convention (MANDATORY) | |
-| 8 | Error Handling (MANDATORY) | |
-| 9 | Function Design (MANDATORY) | |
-| 10 | Pagination Patterns (MANDATORY) | |
-| 11 | Testing Patterns (MANDATORY) | |
-| 12 | Logging Standards (MANDATORY) | |
-| 13 | Linting (MANDATORY) | |
-| 14 | Architecture Patterns (MANDATORY) | |
-| 15 | Directory Structure (MANDATORY) | |
-| 16 | Concurrency Patterns (MANDATORY) | |
-| 17 | DDD Patterns (MANDATORY) | |
-| 18 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 1 | Version (MANDATORY) | Go 1.24+ |
+| 2 | Core Dependency: lib-commons (MANDATORY) | |
+| 3 | Frameworks & Libraries (MANDATORY) | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, mockery, mongo-driver, go-redis/v9, validator/v10, gRPC-Go, sqlc, GORM |
+| 4 | Configuration Loading (MANDATORY) | |
+| 5 | Telemetry & Observability (MANDATORY) | |
+| 6 | Bootstrap Pattern (MANDATORY) | |
+| 7 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
+| 8 | Error Codes Convention (MANDATORY) | |
+| 9 | Error Handling (MANDATORY) | |
+| 10 | Function Design (MANDATORY) | |
+| 11 | Pagination Patterns (MANDATORY) | |
+| 12 | Testing Patterns (MANDATORY) | |
+| 13 | Logging Standards (MANDATORY) | |
+| 14 | Linting (MANDATORY) | |
+| 15 | Architecture Patterns (MANDATORY) | |
+| 16 | Directory Structure (MANDATORY) | |
+| 17 | Concurrency Patterns (MANDATORY) | |
+| 18 | DDD Patterns (MANDATORY) | |
+| 19 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
@@ -219,19 +254,20 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 
 | # | Section to Check | Key Subsections |
 |---|------------------|-----------------|
-| 1 | Strict Configuration (MANDATORY) | |
-| 2 | Frameworks & Libraries (MANDATORY) | |
-| 3 | Type Safety Rules (MANDATORY) | |
-| 4 | Zod Validation Patterns (MANDATORY) | |
-| 5 | Dependency Injection (MANDATORY) | |
-| 6 | AsyncLocalStorage for Context (MANDATORY) | |
-| 7 | Testing Patterns (MANDATORY) | |
-| 8 | Error Handling (MANDATORY) | |
-| 9 | Function Design (MANDATORY) | |
-| 10 | DDD Patterns (MANDATORY) | |
-| 11 | Naming Conventions (MANDATORY) | |
-| 12 | Directory Structure (MANDATORY) | |
-| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 1 | Version (MANDATORY) | |
+| 2 | Strict Configuration (MANDATORY) | |
+| 3 | Frameworks & Libraries (MANDATORY) | Express, Fastify, NestJS, Hono, tRPC, Prisma, Drizzle, TypeORM, Kysely, Zod, Yup, joi, class-validator, Vitest, Jest, Supertest, testcontainers |
+| 4 | Type Safety Rules (MANDATORY) | |
+| 5 | Zod Validation Patterns (MANDATORY) | |
+| 6 | Dependency Injection (MANDATORY) | |
+| 7 | AsyncLocalStorage for Context (MANDATORY) | |
+| 8 | Testing Patterns (MANDATORY) | |
+| 9 | Error Handling (MANDATORY) | |
+| 10 | Function Design (MANDATORY) | |
+| 11 | DDD Patterns (MANDATORY) | |
+| 12 | Naming Conventions (MANDATORY) | |
+| 13 | Directory Structure (MANDATORY) | |
+| 14 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
@@ -261,12 +297,15 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 |---|------------------|---------------------------|
 | 1 | Cloud Provider (MANDATORY) | Provider table |
 | 2 | Infrastructure as Code (MANDATORY) | Terraform structure, State management, Module pattern, Best practices |
-| 3 | Containers (MANDATORY) | **Dockerfile patterns, Docker Compose (Local Dev)**, Image guidelines |
+| 3 | Containers (MANDATORY) | **Dockerfile patterns, Docker Compose (Local Dev), .env file**, Image guidelines |
 | 4 | Helm (MANDATORY) | Chart structure, Chart.yaml, values.yaml |
 | 5 | Observability (MANDATORY) | Logging (Structured JSON), Tracing (OpenTelemetry) |
 | 6 | Security (MANDATORY) | Secrets management, Network policies |
+| 7 | Makefile Standards (MANDATORY) | Required commands (build, lint, test, cover, up, down, etc.), Component delegation pattern |
 
 **⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
+
+**⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify ALL required commands exist: `build`, `lint`, `test`, `cover`, `up`, `down`, `start`, `stop`, `restart`, `rebuild-up`, `set-env`, `generate-docs`.
 
 ---
 

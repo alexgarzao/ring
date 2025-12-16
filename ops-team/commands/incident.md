@@ -1,5 +1,5 @@
 ---
-name: incident
+name: ring-ops-team:incident
 description: Initiate production incident response workflow with structured triage, coordination, and documentation
 argument-hint: "[severity] [brief-description]"
 ---
@@ -22,7 +22,7 @@ Parse the severity and description from the command arguments.
 
 **If severity not provided:**
 - Ask user to classify: SEV1 (Critical), SEV2 (Major), SEV3 (Minor), SEV4 (Low)
-- Reference severity criteria from `ops-incident-response` skill
+- Reference severity criteria from `ring-ops-team:ops-incident-response` skill
 
 **If description not provided:**
 - Ask for brief incident description

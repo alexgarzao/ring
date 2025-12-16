@@ -1,3 +1,9 @@
+---
+name: ring-dev-team:dev-refactor
+description: Analyze existing codebase against standards and execute refactoring through dev-cycle
+argument-hint: "[path]"
+---
+
 Analyze existing codebase against standards and execute refactoring through dev-cycle.
 
 ## ⛔ PRE-EXECUTION CHECK (EXECUTE FIRST)
@@ -6,7 +12,7 @@ Analyze existing codebase against standards and execute refactoring through dev-
 
 ```
 Does docs/PROJECT_RULES.md exist in the target project?
-├── YES → Load skill: ring-dev-team:dev-refactor
+├── YES → Load skill: dev-refactor
 └── NO  → Output blocker below and STOP
 ```
 
@@ -77,67 +83,9 @@ Then re-run `/ring-dev-team:dev-refactor`.
 
 ## Workflow
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 /ring-dev-team:dev-refactor                     │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  ⛔ HARD GATE: Check PROJECT_RULES.md                       │
-│                                                             │
-│  Does docs/PROJECT_RULES.md exist?                          │
-│  └── YES → Continue                                         │
-│  └── NO  → OUTPUT BLOCKER AND TERMINATE                     │
-└─────────────────────────────────────────────────────────────┘
-                           │
-        ┌──────────────────┴──────────────────┐
-        ▼                                     ▼
-┌───────────────────┐                ┌───────────────────┐
-│ Load Standards    │                │ Dispatch Agents   │
-│                   │                │ (ring-dev-team:*) │
-│ PROJECT_RULES.md  │                │                   │
-│ (MANDATORY)       │                │ • backend-engineer│
-│                   │                │ • qa-analyst      │
-└───────────────────┘                │ • devops-engineer │
-                                     │ • sre             │
-                                     └───────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Generate Report                           │
-│                                                             │
-│  docs/refactor/{timestamp}/                                 │
-│  ├── analysis-report.md   (all findings)                    │
-│  └── tasks.md             (grouped refactoring tasks)       │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   User Approval                             │
-│                                                             │
-│  Options:                                                   │
-│  • Approve all → Execute all tasks                          │
-│  • Approve with changes → Edit tasks.md first               │
-│  • Critical only → Filter to Critical/High                  │
-│  • Cancel → Keep report, no execution                       │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼ (if approved)
-┌─────────────────────────────────────────────────────────────┐
-│              /ring-dev-team:dev-cycle                       │
-│              docs/refactor/{timestamp}/tasks.md             │
-│                                                             │
-│  Standard 6-gate process for each task:                     │
-│  • Gate 0: Implementation (TDD)                             │
-│  • Gate 1: DevOps Setup                                     │
-│  • Gate 2: SRE (Observability)                              │
-│  • Gate 3: Testing                                          │
-│  • Gate 4: Review (3 parallel reviewers)                    │
-│  • Gate 5: Validation                                       │
-└─────────────────────────────────────────────────────────────┘
-```
+**See skill `ring-dev-team:dev-refactor` for the complete 13-step workflow with TodoWrite template.**
+
+The skill defines all steps including: stack detection, codebase-explorer dispatch, individual agent reports, finding mapping, and artifact generation.
 
 ## Analysis Dimensions
 

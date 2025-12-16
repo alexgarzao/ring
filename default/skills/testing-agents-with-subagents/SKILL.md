@@ -1,5 +1,5 @@
 ---
-name: testing-agents-with-subagents
+name: ring-default:testing-agents-with-subagents
 description: |
   Agent testing methodology - run agents with test inputs, observe outputs,
   iterate until outputs are accurate and well-structured.
@@ -14,7 +14,7 @@ skip_when: |
   - Agent already tested for this use case
 
 related:
-  complementary: [test-driven-development]
+  complementary: [ring-default:test-driven-development]
 ---
 
 # Testing Agents With Subagents

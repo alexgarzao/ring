@@ -1,5 +1,5 @@
 ---
-name: backend-engineer-golang
+name: ring-dev-team:backend-engineer-golang
 version: 1.2.4
 description: Senior Backend Engineer specialized in Go for high-demand financial systems. Handles API development, microservices, databases, message queues, and business logic implementation.
 type: specialist
@@ -431,7 +431,7 @@ When reporting issues in existing code:
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
 
 ### ⛔ HARD GATE: ALWAYS Compare ALL Categories
 
@@ -465,56 +465,50 @@ The Standards Compliance section exists to:
 
 ---
 
-### Comparison Categories for Go
+### Sections to Check (MANDATORY)
 
-**→ Reference: Ring Go Standards (fetched via WebFetch) for expected patterns in each category.**
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md".
 
-#### Bootstrap & Initialization (CRITICAL - VERIFY ALL)
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Security", "Code Quality", "Config"
+- You CANNOT merge sections like "Error Handling & Logging"
+- You CANNOT abbreviate like "DDD" instead of "DDD Patterns"
+- If section doesn't apply → Mark as N/A, do NOT skip
 
-| Category | Ring Standard Pattern |
-|----------|----------------------|
-| Config Struct | Single struct with `env` tags |
-| Config Loading | `commons.SetConfigFromEnvVars(&cfg)` |
-| Logger Init | `zap.InitializeLogger()` → returns `log.Logger` interface (bootstrap only) |
-| Telemetry Init | `opentelemetry.InitializeTelemetry(&config)` |
-| Telemetry Middleware | `http.WithTelemetry(tl)` as first middleware |
-| Telemetry EndSpans | `telemetry.EndTracingSpans(ctx)` |
-| Server Lifecycle | `server.NewServerManager().StartWithGracefulShutdown()` |
-| Bootstrap Directory | `/internal/bootstrap/` |
+| # | Section | Key Subsections |
+|---|---------|-----------------|
+| 1 | Version (MANDATORY) | Go 1.24+ |
+| 2 | Core Dependency: lib-commons (MANDATORY) | |
+| 3 | Frameworks & Libraries (MANDATORY) | Fiber v2, Database (pgx/v5), Testing (testify, mockery) |
+| 4 | Configuration Loading (MANDATORY) | |
+| 5 | Telemetry & Observability (MANDATORY) | |
+| 6 | Bootstrap Pattern (MANDATORY) | |
+| 7 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
+| 8 | Error Codes Convention (MANDATORY) | |
+| 9 | Error Handling (MANDATORY) | |
+| 10 | Function Design (MANDATORY) | |
+| 11 | Pagination Patterns (MANDATORY) | |
+| 12 | Testing Patterns (MANDATORY) | |
+| 13 | Logging Standards (MANDATORY) | |
+| 14 | Linting (MANDATORY) | |
+| 15 | Architecture Patterns (MANDATORY) | |
+| 16 | Directory Structure (MANDATORY) | |
+| 17 | Concurrency Patterns (MANDATORY) | |
+| 18 | DDD Patterns (MANDATORY) | |
+| 19 | RabbitMQ Worker Pattern (MANDATORY) | |
 
-#### Context & Tracking (VERIFY ALL)
-
-| Category | Ring Standard Pattern |
-|----------|----------------------|
-| Logger/Core three Recovery | `commons.NewTrackingFromContext(ctx)` |
-| Span Creation | `tracer.Start(ctx, "operation")` + `defer span.End()` |
-| Error in Span | `opentelemetry.HandleSpanError(&span, msg, err)` |
-| Business Error in Span | `opentelemetry.HandleSpanBusinessErrorEvent(&span, msg, err)` |
-
-#### Infrastructure (VERIFY ALL)
-
-| Category | Ring Standard Pattern |
-|----------|----------------------|
-| Logging | `log.Logger` interface (initialized via `zap.InitializeLogger()` in bootstrap) |
-| HTTP Utilities | `http.Ping`, `http.Version`, `http.HealthWithDependencies(...)` |
-| PostgreSQL | `postgres.PostgresConnection` |
-| MongoDB | `mongo.MongoConnection` |
-| Redis | `redis.RedisConnection` |
-
-#### Domain Patterns (VERIFY ALL)
-
-| Category | Ring Standard Pattern |
-|----------|----------------------|
-| Entity Mapping | `ToEntity()` / `FromEntity()` methods |
-| Error Codes | Service prefix (`PLT-0001`, `MDZ-0001` format) |
-| Error Handling | `fmt.Errorf("context: %w", err)` |
-| No panic() | Only allowed in `main.go` or `InitServers()` |
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 
-**ALWAYS include the full comparison table. The table serves as EVIDENCE of verification.**
+**ALWAYS output Standards Coverage Table per shared-patterns format. The table serves as EVIDENCE of verification.**
 
-**→ See Ring Go Standards for complete output format examples.**
+**→ See Ring Go Standards (golang.md via WebFetch) for expected patterns in each section.**
 
 ## Example Output
 

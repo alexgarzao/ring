@@ -1,5 +1,5 @@
 ---
-name: codereview
+name: ring-default:codereview
 description: Run comprehensive parallel code review with all 3 specialized reviewers
 argument-hint: "[files-or-paths]"
 ---
@@ -22,7 +22,7 @@ Gather the required context first:
 Then dispatch all 3 reviewers:
 
 ```
-Task tool #1 (ring-default:code-reviewer):
+Task tool #1 (code-reviewer):
   model: "opus"
   description: "Review code quality and architecture"
   prompt: |
@@ -32,13 +32,13 @@ Task tool #1 (ring-default:code-reviewer):
     HEAD_SHA: [head commit if applicable]
     DESCRIPTION: [additional context]
 
-Task tool #2 (ring-default:business-logic-reviewer):
+Task tool #2 (business-logic-reviewer):
   model: "opus"
   description: "Review business logic correctness"
   prompt: |
     [Same parameters as above]
 
-Task tool #3 (ring-default:security-reviewer):
+Task tool #3 (security-reviewer):
   model: "opus"
   description: "Review security vulnerabilities"
   prompt: |

@@ -1,5 +1,5 @@
 ---
-name: resource-planner
+name: ring-pmo-team:resource-planner
 version: 1.0.0
 description: Resource Planning Specialist for capacity planning, allocation optimization, skills management, and conflict resolution across portfolio projects.
 type: specialist
@@ -302,7 +302,7 @@ Analyzed 24 resources across 4 teams for Q1 2025 allocation. Current aggregate u
 ## What This Agent Does NOT Handle
 
 - Portfolio-level prioritization (use `ring-pmo-team:portfolio-manager`)
-- Individual project planning (use `ring-pm-team:pre-dev-feature`)
+- Individual project planning (use `ring-pm-team:pre-dev-feature-map`)
 - HR policies and compensation (organizational HR)
 - Team performance management (people managers)
 - Project scheduling (project managers)

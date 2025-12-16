@@ -1,5 +1,5 @@
 ---
-name: write-plan
+name: ring-default:write-plan
 description: Create detailed implementation plan with bite-sized tasks
 argument-hint: "[feature-name]"
 ---
@@ -87,10 +87,10 @@ Plans specify recommended agents for execution:
 |-----------|-------------------|
 | Backend (Go) | `ring-dev-team:backend-engineer-golang` |
 | Backend (TypeScript) | `ring-dev-team:backend-engineer-typescript` |
-| Frontend (BFF/API Routes) | `ring-dev-team:frontend-bff-engineer-typescript` |
+| Frontend (BFF/API Routes) | `frontend-bff-engineer-typescript` |
 | Infrastructure | `ring-dev-team:devops-engineer` |
 | Testing | `ring-dev-team:qa-analyst` |
-| Reliability | `ring-dev-team:sre` |
+| Reliability | `sre` |
 | Fallback | `general-purpose` (built-in) |
 
 ## Related Commands/Skills
@@ -99,7 +99,7 @@ Plans specify recommended agents for execution:
 |---------------|--------------|
 | `/ring-default:brainstorm` | Use first if design is not yet validated |
 | `/ring-default:execute-plan` | Use after to execute the created plan |
-| `ring-default:brainstorming` | Design validation before planning |
+| `brainstorming` | Design validation before planning |
 | `ring-default:executing-plans` | Batch execution with review checkpoints |
 | `ring-default:subagent-driven-development` | Alternative execution for current session |
 

@@ -1,5 +1,5 @@
 ---
-name: using-finops-team
+name: ring-finops-team:using-finops-team
 description: |
   2 FinOps agents for Brazilian financial regulatory compliance (BACEN, RFB,
   Open Banking). Dispatch for compliance analysis or template generation.
@@ -19,7 +19,7 @@ skip_when: |
 
 The ring-finops-team plugin provides 2 specialized FinOps agents for Brazilian financial compliance. Use them via `Task tool with subagent_type:`.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle regulatory complexity; don't implement compliance manually.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle regulatory complexity; don't implement compliance manually.
 
 ---
 

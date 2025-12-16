@@ -1,5 +1,5 @@
 ---
-name: using-pmm-team
+name: ring-pmm-team:using-pmm-team
 description: |
   7 product marketing skills + 6 specialist agents for go-to-market strategy,
   positioning, messaging, competitive intelligence, and launch coordination.
@@ -18,9 +18,9 @@ skip_when: |
 
 # Using Ring PMM-Team: Product Marketing Workflow
 
-The ring-pmm-team plugin provides 7 product marketing skills and 6 specialist agents. Use them via `Skill tool: "ring-pmm-team:skill-name"` or via slash commands.
+The ring-pmm-team plugin provides 7 product marketing skills and 6 specialist agents. Use them via `Skill tool: "skill-name"` or via slash commands.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch PMM specialists to handle marketing strategy; don't attempt marketing analysis without structured process.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch PMM specialists to handle marketing strategy; don't attempt marketing analysis without structured process.
 
 ## PMM Philosophy
 
@@ -144,9 +144,9 @@ docs/pmm/{product-or-feature}/
 | finops-team | PMM pricing → FinOps validates margins |
 
 **Combined with:**
-- `ring-pm-team:pre-dev-prd-creation` – Business requirements inform market analysis
+- `pre-dev-prd-creation` – Business requirements inform market analysis
 - `ring-tw-team:functional-writer` – Turn positioning into documentation
-- `ring-default:brainstorm` – Explore positioning options
+- `brainstorm` – Explore positioning options
 
 ## Blocker Criteria
 
@@ -180,7 +180,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 - **Use agents for specialist work** – Dispatch specialists for complex analysis
 
 ### Good (ORCHESTRATOR):
-> "I need GTM strategy for the new payment feature. Let me run /ring-pmm-team:market-analysis, then dispatch positioning-strategist to define differentiation."
+> "I need GTM strategy for the new payment feature. Let me run /market-analysis, then dispatch positioning-strategist to define differentiation."
 
 ### Bad (OPERATOR):
 > "I'll write the positioning based on what I think the market wants."

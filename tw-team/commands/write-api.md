@@ -1,5 +1,5 @@
 ---
-name: write-api
+name: ring-tw-team:write-api
 description: Start writing API reference documentation for an endpoint
 argument-hint: "[endpoint]"
 arguments:
@@ -97,7 +97,7 @@ Every endpoint must include:
 
 ## 5. Dispatch Agent
 
-For complex API documentation, dispatch the ring-tw-team:api-writer agent:
+For complex API documentation, dispatch the api-writer agent:
 
 ```
 Task tool:

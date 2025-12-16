@@ -1,5 +1,5 @@
 ---
-name: dev-devops
+name: ring-dev-team:dev-devops
 description: |
   Gate 1 of the development cycle. Creates/updates Docker configuration,
   docker-compose setup, and environment variables for local development
@@ -69,13 +69,13 @@ This skill configures the development and deployment infrastructure:
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Gate 1-specific note:** If the application can run in a container, it MUST be containerized. docker-compose ensures reproducibility.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 **Gate 1-specific rationalizations:**
 
@@ -90,7 +90,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags.
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Proceed with containerization.
 
@@ -286,7 +286,7 @@ Create `docs/LOCAL_SETUP.md` with these sections:
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|

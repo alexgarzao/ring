@@ -1,5 +1,5 @@
 ---
-name: documentation-structure
+name: ring-tw-team:documentation-structure
 description: |
   Patterns for organizing and structuring documentation including hierarchy,
   navigation, and information architecture.
@@ -15,7 +15,7 @@ skip_when: |
   - Checking voice → use voice-and-tone
 
 related:
-  complementary: [writing-functional-docs, writing-api-docs]
+  complementary: [ring-tw-team:writing-functional-docs, ring-tw-team:writing-api-docs]
 ---
 
 # Documentation Structure

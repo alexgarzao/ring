@@ -94,8 +94,8 @@ Skill tool: "ring-default:systematic-debugging"
 
 Commands work the same as Claude Code:
 ```
-/ring-default:codereview
-/ring-default:brainstorm
+/codereview
+/brainstorm
 ```
 
 ## Feature Parity

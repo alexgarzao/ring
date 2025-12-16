@@ -1,5 +1,5 @@
 ---
-name: write-guide
+name: ring-tw-team:write-guide
 description: Start writing a functional guide with voice, tone, and structure guidance
 argument-hint: "[topic]"
 arguments:
@@ -62,7 +62,7 @@ For guidance on optimal usage patterns.
 
 ## 4. Dispatch Agent
 
-For complex documentation, dispatch the ring-tw-team:functional-writer agent:
+For complex documentation, dispatch the functional-writer agent:
 
 ```
 Task tool:

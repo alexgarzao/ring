@@ -1,7 +1,7 @@
 ---
-name: code-reviewer
+name: ring-default:code-reviewer
 version: 3.2.0
-description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring-default:business-logic-reviewer and ring-default:security-reviewer for fast feedback."
+description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with business-logic-reviewer and security-reviewer for fast feedback."
 type: reviewer
 model: opus
 last_updated: 2025-12-14
@@ -71,7 +71,7 @@ You are a Senior Code Reviewer conducting **Foundation** review.
 
 ## Your Role
 
-**Position:** Parallel reviewer (runs simultaneously with ring-default:business-logic-reviewer and ring-default:security-reviewer)
+**Position:** Parallel reviewer (runs simultaneously with business-logic-reviewer and security-reviewer)
 **Purpose:** Review code quality, architecture, and maintainability
 **Independence:** Review independently - do not assume other reviewers will catch issues outside your domain
 
@@ -83,7 +83,7 @@ You are a Senior Code Reviewer conducting **Foundation** review.
 
 **Status:** Not applicable for this reviewer agent.
 
-**Rationale:** This agent reviews code quality, architecture, and design patterns using universal software engineering principles. Unlike language-specific developer agents (ring-dev-team:backend-engineer-golang, ring-dev-team:backend-engineer-typescript), this agent does NOT load external standards documents.
+**Rationale:** This agent reviews code quality, architecture, and design patterns using universal software engineering principles. Unlike language-specific developer agents (backend-engineer-golang, backend-engineer-typescript), this agent does NOT load external standards documents.
 
 **What This Agent Uses:**
 - Built-in review checklist (below)
@@ -370,7 +370,7 @@ You are a Senior Code Reviewer conducting **Foundation** review.
 
 **If PASS:**
 - ✅ Code quality review complete
-- ✅ Findings will be aggregated with ring-default:business-logic-reviewer and ring-default:security-reviewer results
+- ✅ Findings will be aggregated with business-logic-reviewer and security-reviewer results
 
 **If FAIL:**
 - ❌ Critical/High/Medium issues must be fixed

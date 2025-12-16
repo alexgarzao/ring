@@ -1,5 +1,5 @@
 ---
-name: sre
+name: ring-dev-team:sre
 version: 1.4.0
 description: Senior Site Reliability Engineer specialized in VALIDATING observability implementations for high-availability financial systems. Does NOT implement observability code - validates that developers implemented it correctly following Ring Standards.
 type: specialist
@@ -287,14 +287,32 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the observability implementation against Lerian/Ring SRE Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the observability implementation against Lerian/Ring SRE Standards.
 
-### Comparison Categories for SRE/Observability
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | Expected Pattern |
-|----------|--------------|------------------|
-| **Logging** | Structured JSON | trace_id, request_id correlation |
-| **Tracing** | OpenTelemetry | Distributed tracing with span context |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "sre → sre.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Monitoring", "Alerts"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section |
+|---|---------|
+| 1 | Observability Stack (MANDATORY) |
+| 2 | Logging Standards (MANDATORY) |
+| 3 | Tracing Standards (MANDATORY) |
+| 4 | OpenTelemetry with lib-commons (MANDATORY) |
+| 5 | Structured Logging with lib-common-js (MANDATORY) |
+| 6 | Health Checks (MANDATORY) |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 

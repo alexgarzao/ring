@@ -1,5 +1,5 @@
 ---
-name: pre-dev-subtask-creation
+name: ring-pm-team:pre-dev-subtask-creation
 description: |
   Gate 8: Zero-context implementation steps - 2-5 minute atomic subtasks with
   complete code, exact commands, TDD pattern. Large Track only.
@@ -53,7 +53,7 @@ Requiring context creates bottlenecks, onboarding friction, and integration fail
 | Field | Content |
 |-------|---------|
 | Title | `# ST-[task-id]-[number]: [Subtask Name]` |
-| Agent Note | `> **For Agents:** REQUIRED SUB-SKILL: Use ring-default:executing-plans` |
+| Agent Note | `> **For Agents:** REQUIRED SUB-SKILL: Use executing-plans` |
 | Goal | One sentence describing what this builds |
 | Prerequisites | Verification commands with expected output |
 | Files | Create: `exact/path`, Modify: `exact/path:lines`, Test: `tests/path` |

@@ -1,11 +1,11 @@
 ---
-name: linting-codebase
+name: ring-default:linting-codebase
 description: |
   Parallel lint fixing pattern - runs lint checks, groups issues into independent
   streams, and dispatches AI agents to fix all issues until the codebase is clean.
 
 trigger: |
-  - User runs /ring-default:lint command
+  - User runs /lint command
   - Codebase has lint issues that need fixing
   - Multiple lint errors across different files/components
 
@@ -146,9 +146,9 @@ After all agents complete, run `<lint_command> 2>&1`.
 
 | Skill | When to use |
 |-------|-------------|
-| `dispatching-parallel-agents` | Pattern basis for this skill |
-| `systematic-debugging` | If lint errors indicate deeper issues |
-| `requesting-code-review` | After lint passes, before merge |
+| `ring-default:dispatching-parallel-agents` | Pattern basis for this skill |
+| `ring-default:systematic-debugging` | If lint errors indicate deeper issues |
+| `ring-default:requesting-code-review` | After lint passes, before merge |
 
 ## Example Session
 

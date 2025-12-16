@@ -1,5 +1,5 @@
 ---
-name: writing-functional-docs
+name: ring-tw-team:writing-functional-docs
 description: |
   Patterns and structure for writing functional documentation including guides,
   conceptual explanations, tutorials, and best practices documentation.
@@ -19,8 +19,8 @@ sequence:
   before: [ring-tw-team:documentation-review]
 
 related:
-  similar: [writing-api-docs]
-  complementary: [voice-and-tone, documentation-structure]
+  similar: [ring-tw-team:writing-api-docs]
+  complementary: [ring-tw-team:voice-and-tone, ring-tw-team:documentation-structure]
 ---
 
 # Writing Functional Documentation

@@ -1,5 +1,5 @@
 ---
-name: pmo-retrospective
+name: ring-pmo-team:pmo-retrospective
 description: |
   Portfolio retrospective skill for capturing lessons learned, process improvements,
   and organizational learning across completed projects.
@@ -16,7 +16,7 @@ skip_when: |
   - Single incident analysis → handle in project scope
 
 related:
-  complementary: [portfolio-planning, project-health-check]
+  complementary: [ring-pmo-team:portfolio-planning, ring-pmo-team:project-health-check]
 ---
 
 # PMO Retrospective Skill

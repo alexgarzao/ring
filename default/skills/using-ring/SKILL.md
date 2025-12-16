@@ -1,5 +1,5 @@
 ---
-name: using-ring
+name: ring-default:using-ring
 description: |
   Mandatory orchestrator protocol - establishes ORCHESTRATOR principle (dispatch agents,
   don't operate directly) and skill discovery workflow for every conversation.
@@ -217,7 +217,7 @@ You are breaking ORCHESTRATOR. Use an agent instead.
 | Plan implementation, break down features | **Plan** |
 | Multi-step research, complex investigation | **general-purpose** |
 | Code review | ALL THREE in parallel (code, business-logic, security reviewers) |
-| Implementation plan document | ring-default:write-plan |
+| Implementation plan document | write-plan |
 | Claude Code questions | claude-code-guide |
 | User explicitly said "read [file]" | Direct (ONLY exception) |
 

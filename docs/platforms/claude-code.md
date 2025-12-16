@@ -74,18 +74,18 @@ Task tool with subagent_type="ring-dev-team:backend-engineer-golang"
 ```
 
 **Categories** (invoke as `ring-{plugin}:{agent-name}`):
-- **Review agents** (`ring-default:`): code-reviewer, business-logic-reviewer, security-reviewer
-- **Planning agents** (`ring-default:`): write-plan, codebase-explorer
-- **Developer agents** (`ring-dev-team:`): 9 language/role specialists
-- **FinOps agents** (`ring-finops-team:`): finops-analyzer, finops-automation
-- **TW agents** (`ring-tw-team:`): functional-writer, api-writer, docs-reviewer
+- **Review agents**: ring-default:code-reviewer, ring-default:business-logic-reviewer, ring-default:security-reviewer
+- **Planning agents**: ring-default:write-plan, ring-default:codebase-explorer
+- **Developer agents**: 9 language/role specialists (ring-dev-team:*)
+- **FinOps agents**: ring-finops-team:finops-analyzer, ring-finops-team:finops-automation
+- **TW agents**: ring-tw-team:functional-writer, ring-tw-team:api-writer, ring-tw-team:docs-reviewer
 
 ### Commands (14 total)
 
 Slash commands provide quick access to common workflows.
 
 **Examples:**
-```
+```bash
 /ring-default:codereview          # Parallel 3-reviewer dispatch
 /ring-default:brainstorm          # Socratic design refinement
 /ring-pm-team:pre-dev-full        # 8-gate planning workflow

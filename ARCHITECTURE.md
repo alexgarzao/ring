@@ -155,8 +155,8 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 | Invocation Context | Standards Compliance | Detection Mechanism |
 |--------------------|---------------------|---------------------|
 | Direct agent call | Optional | N/A |
-| Via `dev-cycle` skill | Optional | N/A |
-| Via `dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
+| Via `ring-dev-team:dev-cycle` skill | Optional | N/A |
+| Via `ring-dev-team:dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
 
 **How Enforcement Works:**
 
@@ -489,8 +489,8 @@ Complex Skill → TodoWrite tracking
 - Some commands (like review) orchestrate multiple components
 
 **Example Mappings:**
-- `/ring-default:brainstorm` → `brainstorming` skill
-- `/ring-default:write-plan` → `writing-plans` skill
+- `/ring-default:brainstorm` → `ring-default:brainstorming` skill
+- `/ring-default:write-plan` → `ring-default:writing-plans` skill
 - `/ring-default:codereview` → dispatches 3 parallel review agents (`ring-default:code-reviewer`, `ring-default:business-logic-reviewer`, `ring-default:security-reviewer`)
 
 ### Skills ↔ Shared Patterns

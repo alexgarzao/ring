@@ -1,5 +1,5 @@
 ---
-name: dev-review
+name: ring-dev-team:dev-review
 description: |
   Development cycle review gate (Gate 4) - executes parallel code review with 3 specialized
   reviewers, aggregates findings, and determines VERDICT for gate passage.
@@ -61,7 +61,7 @@ examples:
 
 ## Overview
 
-See [CLAUDE.md](./CLAUDE.md) and [ring-default:requesting-code-review](./default/skills/requesting-code-review/SKILL.md) for canonical review requirements. This skill orchestrates Gate 4 execution.
+See [CLAUDE.md](./CLAUDE.md) and [requesting-code-review](./default/skills/requesting-code-review/SKILL.md) for canonical review requirements. This skill orchestrates Gate 4 execution.
 
 Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Aggregate findings and determine VERDICT for gate passage.
 
@@ -69,7 +69,7 @@ Execute comprehensive code review using 3 specialized reviewers IN PARALLEL. Agg
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios and Emergency Response).
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios and Emergency Response).
 
 **Gate 4-specific note:** ALL 3 reviewers MUST run in a SINGLE message with 3 Task tool calls. Sequential = violation. Parallel review = 10 min total.
 
@@ -86,7 +86,7 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 **Examples of FORBIDDEN Staged Patterns:**
 ```markdown
 ❌ WRONG: Stage 1 - Code Reviewer First
-1. Dispatch: ring-default:code-reviewer
+1. Dispatch: code-reviewer
 2. Wait for result
 3. If PASS → Dispatch: business-logic-reviewer + security-reviewer
 4. If FAIL → Return to Gate 0
@@ -99,9 +99,9 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 
 ✅ CORRECT: All 3 in ONE Message
 1. Dispatch ALL 3 in single message:
-   - Task(ring-default:code-reviewer)
-   - Task(ring-default:business-logic-reviewer)
-   - Task(ring-default:security-reviewer)
+   - Task(code-reviewer)
+   - Task(business-logic-reviewer)
+   - Task(security-reviewer)
 2. Wait for all results
 3. Aggregate findings
 ```
@@ -167,7 +167,7 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations (including Review section).
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Review section).
 
 **Gate 4-specific rationalizations:**
 
@@ -181,7 +181,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags (including Review section).
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Review section).
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Run ALL 3 reviewers in parallel.
 
@@ -232,7 +232,7 @@ If you catch yourself planning sequential execution → STOP → Re-plan as para
 
 **Before dispatching reviewers, VERIFY agent names:**
 
-**REQUIRED Format:** `ring-default:{reviewer-name}`
+**REQUIRED Format:** `{reviewer-name}`
 
 **Valid Reviewers:**
 - ✅ `ring-default:code-reviewer`
@@ -240,22 +240,22 @@ If you catch yourself planning sequential execution → STOP → Re-plan as para
 - ✅ `ring-default:security-reviewer`
 
 **FORBIDDEN (Wrong Prefix/Name):**
-- ❌ `code-reviewer` (missing prefix)
+- ❌ `ring-default:code-reviewer` (missing prefix)
 - ❌ `ring:code-reviewer` (wrong prefix)
-- ❌ `ring-dev-team:code-reviewer` (wrong plugin)
+- ❌ `ring-default:code-reviewer` (wrong plugin)
 - ❌ `general-purpose` (generic agent, not specialized reviewer)
 - ❌ `Explore` (not a reviewer)
 
 **Validation Rule:**
 ```
-IF agent_name does NOT start with "ring-default:"
+IF agent_name does NOT start with ""
    AND agent_name is NOT in [code-reviewer, business-logic-reviewer, security-reviewer]
 THEN STOP - Invalid agent prefix
 ```
 
 **If validation fails:**
 1. STOP before dispatch
-2. Report error: "Invalid reviewer agent: {name}. Must use ring-default:{reviewer-name}"
+2. Report error: "Invalid reviewer agent: {name}. Must use {reviewer-name}"
 3. Correct the agent name
 4. Re-validate before dispatching
 
@@ -393,7 +393,7 @@ Combine all findings by severity with source attribution: Critical (MUST fix), H
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|

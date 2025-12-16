@@ -1,5 +1,5 @@
 ---
-name: dev-validation
+name: ring-dev-team:dev-validation
 description: |
   Development cycle validation gate (Gate 5) - validates all acceptance criteria are met
   and requires explicit user approval before completion.
@@ -62,7 +62,7 @@ Final validation gate requiring explicit user approval. Present evidence that ea
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Gate 5-specific note:** User MUST respond with "APPROVED" or "REJECTED: [reason]". No other responses accepted. Silence ≠ approval.
 
@@ -122,7 +122,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations (including Validation section).
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Validation section).
 
 **Gate 5-specific rationalizations:**
 
@@ -136,7 +136,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags (including Validation section).
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Validation section).
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Wait for explicit "APPROVED" or "REJECTED".
 
@@ -277,7 +277,7 @@ If some criteria pass but others fail:
 
 ## Execution Report
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md).
+Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
 
 | Metric | Value |
 |--------|-------|

@@ -1,5 +1,5 @@
 ---
-name: using-pm-team
+name: ring-pm-team:using-pm-team
 description: |
   10 pre-dev workflow skills + 3 research agents organized into Small Track (4 gates, <2 days) and
   Large Track (9 gates, 2+ days) for systematic feature planning with research-first approach.
@@ -17,9 +17,9 @@ skip_when: |
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring-pm-team:gate-name"` or via slash commands.
+The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "gate-name"` or via slash commands.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
 ## Pre-Dev Philosophy
 
@@ -157,7 +157,7 @@ docs/pre-dev/{feature}/
 **Combined with:**
 - `ring-default:execute-plan` – Run tasks in batches
 - `ring-default:write-plan` – Generate plan from scratch
-- `ring-dev-team:*-engineer` – Specialist review of design
+- `*-engineer` – Specialist review of design
 - `ring-default:requesting-code-review` – Post-implementation review
 
 ## ORCHESTRATOR Principle
@@ -168,7 +168,7 @@ docs/pre-dev/{feature}/
 - **Use agents for specialist review** – Dispatch engineers to review TRD
 
 ### Good (ORCHESTRATOR):
-> "I need to plan payment system. Let me run /ring-pm-team:pre-dev-full, then dispatch backend-engineer-golang to review the architecture."
+> "I need to plan payment system. Let me run /pre-dev-full, then dispatch backend-engineer-golang to review the architecture."
 
 ### Bad (OPERATOR):
 > "I'll start coding and plan as I go."

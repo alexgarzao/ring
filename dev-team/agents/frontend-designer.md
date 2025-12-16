@@ -1,5 +1,5 @@
 ---
-name: frontend-designer
+name: ring-dev-team:frontend-designer
 version: 1.2.2
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code.
 type: specialist
@@ -825,16 +825,37 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 | **WebFetch URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
 | **Standards File** | frontend.md |
 
-**Example sections from frontend.md to check:**
-- Design System Components
-- Color Palette & Theming
-- Typography Scale
-- Spacing System
-- Responsive Breakpoints
-- Animation Guidelines
-- Accessibility (contrast, focus states)
-- Dark Mode Support
-- Component Variants
+### Sections to Check (MANDATORY)
+
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Security", "Code Quality"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section |
+|---|---------|
+| 1 | Framework (MANDATORY) |
+| 2 | Libraries & Tools (MANDATORY) |
+| 3 | State Management Patterns (MANDATORY) |
+| 4 | Form Patterns (MANDATORY) |
+| 5 | Styling Standards (MANDATORY) |
+| 6 | Typography Standards (MANDATORY) |
+| 7 | Animation Standards (MANDATORY) |
+| 8 | Component Patterns (MANDATORY) |
+| 9 | Accessibility (a11y) (MANDATORY) |
+| 10 | Performance (MANDATORY) |
+| 11 | Directory Structure (MANDATORY) |
+| 12 | FORBIDDEN Patterns (MANDATORY) |
+| 13 | Standards Compliance Categories (MANDATORY) |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 **If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional.
 

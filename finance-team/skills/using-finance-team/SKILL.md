@@ -1,5 +1,5 @@
 ---
-name: using-finance-team
+name: ring-finance-team:using-finance-team
 description: |
   6 specialist financial agents for analysis, budgeting, modeling, treasury,
   accounting, and metrics. Dispatch when you need deep financial expertise.
@@ -25,7 +25,7 @@ related:
 
 The ring-finance-team plugin provides 6 specialized financial agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-default:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces finance-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces finance-team-specific agents.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring-default:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
@@ -127,7 +127,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
 | **`ring-finance-team:financial-analyst`** | Ratio analysis, trend analysis, benchmarking, variance analysis, financial statement analysis | Financial health assessment, performance analysis, investment evaluation |
-| **`ring-finance-team:budget-planner`** | Budget creation, forecasting, variance analysis, rolling forecasts, zero-based budgeting | Annual budgets, departmental budgets, budget-to-actual analysis |
+| **`budget-planner`** | Budget creation, forecasting, variance analysis, rolling forecasts, zero-based budgeting | Annual budgets, departmental budgets, budget-to-actual analysis |
 | **`ring-finance-team:financial-modeler`** | DCF models, LBO models, merger models, scenario analysis, sensitivity analysis | Valuation, investment analysis, strategic planning, M&A |
 | **`ring-finance-team:treasury-specialist`** | Cash flow forecasting, liquidity management, working capital, FX exposure, debt management | Cash position, liquidity planning, treasury operations |
 | **`ring-finance-team:accounting-specialist`** | Journal entries, reconciliations, close procedures, GAAP/IFRS compliance, audit support | Month-end close, year-end close, accounting entries, compliance |
@@ -136,7 +136,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "ring-finance-team:{agent-name}"
+  subagent_type: "{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
@@ -169,14 +169,14 @@ If you need multiple specialists (e.g., financial-analyst + budget-planner), dis
 
 ```
 CORRECT:
-Task #1: ring-finance-team:financial-analyst
-Task #2: ring-finance-team:budget-planner
+Task #1: financial-analyst
+Task #2: budget-planner
 (Both run in parallel)
 
 WRONG:
-Task #1: ring-finance-team:financial-analyst
+Task #1: financial-analyst
 (Wait for response)
-Task #2: ring-finance-team:budget-planner
+Task #2: budget-planner
 (Sequential = 2x slower)
 ```
 
@@ -202,11 +202,11 @@ Remember:
 **Agents:** See "6 Financial Specialists" table above.
 
 **Skills:**
-- `using-finance-team` (this) - Plugin introduction
-- `financial-analysis` - Comprehensive financial analysis workflow
+- `ring-finance-team:using-finance-team` (this) - Plugin introduction
+- `ring-finance-team:financial-analysis` - Comprehensive financial analysis workflow
 - `budget-creation` - Budget planning and forecasting workflow
 - `financial-modeling` - Financial model building workflow
-- `cash-flow-analysis` - Cash flow and liquidity workflow
+- `ring-finance-team:cash-flow-analysis` - Cash flow and liquidity workflow
 - `financial-reporting` - Financial report preparation workflow
 - `metrics-dashboard` - KPI and metrics workflow
 - `financial-close` - Month/year-end close workflow

@@ -1,5 +1,5 @@
 ---
-name: frontend-bff-engineer-typescript
+name: ring-dev-team:frontend-bff-engineer-typescript
 version: 2.1.5
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption.
 type: specialist
@@ -405,7 +405,7 @@ If code is ALREADY compliant with all standards:
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
+When invoked from the `ring-dev-team:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
 
 ### ⛔ HARD GATE: ALWAYS Compare ALL Categories
 
@@ -415,24 +415,45 @@ Canonical policy: see [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio
 
 **Anti-Rationalization:**
 
-See [shared-patterns/anti-rationalization.md](../skills/shared-patterns/anti-rationalization.md) for universal agent anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/shared-anti-rationalization.md) for universal agent anti-rationalizations.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|------------------|
 | "Codebase already uses lib-commons-js" | Partial usage ≠ full compliance. Check everything. | **Verify ALL categories** |
 | "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify ALL categories** |
 
-### Comparison Categories for BFF/TypeScript
+### Sections to Check (MANDATORY)
 
-| Category | Ring Standard | lib-commons-js Symbol |
-|----------|--------------|----------------------|
-| **Logging** | Structured JSON logging | `createLogger` from `@lerianstudio/lib-commons-js` |
-| **Error Handling** | Standardized error types | `AppError`, `isAppError` from `@lerianstudio/lib-commons-js` |
-| **HTTP Middleware** | Instrumented middleware | `createExpressMiddleware` from `@lerianstudio/lib-commons-js` |
-| **Graceful Shutdown** | Clean shutdown handling | `startServerWithGracefulShutdown` from `@lerianstudio/lib-commons-js` |
-| **Type Safety** | No `any` types | Use `unknown` with type guards |
-| **Validation** | Runtime type checking | Zod schemas at boundaries |
-| **Architecture** | Clean Architecture | Ports/Adapters, DI containers |
+**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You MUST use EXACT section names from the table below
+- You CANNOT invent names like "Security", "Code Quality", "Config"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+| # | Section | Key Subsections |
+|---|---------|-----------------|
+| 1 | Version (MANDATORY) | |
+| 2 | Strict Configuration (MANDATORY) | |
+| 3 | Frameworks & Libraries (MANDATORY) | |
+| 4 | Type Safety Rules (MANDATORY) | |
+| 5 | Zod Validation Patterns (MANDATORY) | |
+| 6 | Dependency Injection (MANDATORY) | |
+| 7 | AsyncLocalStorage for Context (MANDATORY) | |
+| 8 | Testing Patterns (MANDATORY) | |
+| 9 | Error Handling (MANDATORY) | |
+| 10 | Function Design (MANDATORY) | |
+| 11 | DDD Patterns (MANDATORY) | |
+| 12 | Naming Conventions (MANDATORY) | |
+| 13 | Directory Structure (MANDATORY) | |
+| 14 | RabbitMQ Worker Pattern (MANDATORY) | |
+
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
 
 ### Output Format
 

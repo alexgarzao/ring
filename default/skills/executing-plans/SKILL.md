@@ -1,5 +1,5 @@
 ---
-name: executing-plans
+name: ring-default:executing-plans
 description: |
   Controlled plan execution with human review checkpoints - loads plan, executes
   in batches, pauses for feedback. Supports one-go (autonomous) or batch modes.
@@ -10,15 +10,15 @@ trigger: |
   - Need structured checkpoints during implementation
 
 skip_when: |
-  - Same session with independent tasks → use subagent-driven-development
-  - No plan exists → use writing-plans first
-  - Plan needs revision → use brainstorming first
+  - Same session with independent tasks → use ring-default:subagent-driven-development
+  - No plan exists → use ring-default:writing-plans first
+  - Plan needs revision → use ring-default:brainstorming first
 
 sequence:
   after: [ring-default:writing-plans, ring-pm-team:pre-dev-task-breakdown]
 
 related:
-  similar: [subagent-driven-development]
+  similar: [ring-default:subagent-driven-development]
 ---
 
 # Executing Plans
@@ -78,7 +78,7 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 ### Step 3: Execute Batch
 **Default: First 3 tasks**
 
-**Agent Selection:** Backend Go → `ring-dev-team:backend-engineer-golang` | Backend TS → `ring-dev-team:backend-engineer-typescript` | Frontend → `ring-dev-team:frontend-bff-engineer-typescript` | Infra → `ring-dev-team:devops-engineer` | Testing → `ring-dev-team:qa-analyst` | Reliability → `ring-dev-team:sre` | Fallback → `general-purpose`
+**Agent Selection:** Backend Go → `ring-dev-team:backend-engineer-golang` | Backend TS → `ring-dev-team:backend-engineer-typescript` | Frontend → `ring-dev-team:frontend-bff-engineer-typescript` | Infra → `ring-dev-team:devops-engineer` | Testing → `ring-dev-team:qa-analyst` | Reliability → `ring-dev-team:sre`
 
 For each task: Mark in_progress → Dispatch to agent → Follow plan steps exactly → Run verifications → Mark completed
 
@@ -108,7 +108,7 @@ Use ring-default:finishing-a-development-branch to verify tests, present options
 ## Remember
 
 - **MANDATORY:** `AskUserQuestion` for execution mode - NO exceptions
-- Use `ring-dev-team:*` agents over `general-purpose` when available
+- Use `*` agents over `general-purpose` when available
 - Run code review after each batch (all 3 parallel)
 - Fix Critical/High/Medium immediately (no TODO)
 - Low → TODO, Cosmetic → FIXME

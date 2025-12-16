@@ -1,5 +1,5 @@
 ---
-name: pre-dev-full
+name: ring-pm-team:pre-dev-full
 description: Complete 9-gate pre-dev workflow for large features (≥2 days)
 argument-hint: "[feature-name]"
 ---
@@ -45,9 +45,9 @@ mkdir -p docs/pre-dev/<feature-name>
    - **integration**: Connecting external systems
 
 2. Dispatch 3 research agents in PARALLEL:
-   - ring-pm-team:repo-research-analyst (codebase patterns, file:line refs)
-   - ring-pm-team:best-practices-researcher (web search, Context7)
-   - ring-pm-team:framework-docs-researcher (tech stack, versions)
+   - repo-research-analyst (codebase patterns, file:line refs)
+   - best-practices-researcher (web search, Context7)
+   - framework-docs-researcher (tech stack, versions)
 
 3. Aggregate findings into research document
 4. Save to: `docs/pre-dev/<feature-name>/research.md`

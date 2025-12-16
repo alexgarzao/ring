@@ -1,5 +1,5 @@
 ---
-name: financial-reporting
+name: ring-finance-team:financial-reporting
 description: |
   Financial reporting workflow covering report preparation, management reporting,
   board presentations, and investor communications. Delivers polished, accurate reports.
@@ -11,9 +11,9 @@ trigger: |
   - Regulatory filings support
 
 skip_when: |
-  - Detailed analysis needed → use financial-analysis
-  - Building models → use financial-modeling
-  - Accounting entries → use financial-close
+  - Detailed analysis needed → use ring-finance-team:financial-analysis
+  - Building models → use ring-finance-team:financial-modeling
+  - Accounting entries → use ring-finance-team:financial-close
 
 related:
   similar: [ring-finance-team:financial-analysis, ring-finance-team:metrics-dashboard]

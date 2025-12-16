@@ -1,5 +1,5 @@
 ---
-name: ops-capacity-planning
+name: ring-ops-team:ops-capacity-planning
 description: |
   Structured workflow for infrastructure capacity planning including growth
   forecasting, scaling strategy, and resource provisioning decisions.
@@ -16,7 +16,7 @@ skip_when: |
   - One-time resource adjustment -> standard change management
 
 related:
-  similar: [ops-cost-optimization]
+  similar: [ring-ops-team:ops-cost-optimization]
   uses: [ring-ops-team:infrastructure-architect, ring-ops-team:cloud-cost-optimizer]
 ---
 

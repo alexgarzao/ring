@@ -74,16 +74,16 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 
 Ring is auto-loaded at session start. Three ways to invoke Ring capabilities:
 
-1. **Slash Commands** – `/ring-default:command-name`
-2. **Skills** – `Skill tool: "ring-default:skill-name"`
-3. **Agents** – `Task tool with subagent_type: "ring-default:agent-name"`
+1. **Slash Commands** – `/ring-{plugin}:command-name`
+2. **Skills** – `Skill tool: "ring-{plugin}:skill-name"`
+3. **Agents** – `Task tool with subagent_type: "ring-{plugin}:agent-name"`
 
 ---
 
 ## 📋 Slash Commands
 
-All commands prefixed with `/ring-default:` for default plugin commands.
-Other plugins require full prefix: `/ring-dev-team:`, `/ring-pm-team:`, `/ring-finops-team:`, `/ring-finance-team:`, `/ring-ops-team:`, `/ring-pmm-team:`, `/ring-pmo-team:`, `/ring-tw-team:`.
+All commands use fully qualified prefix: `/ring-{plugin}:{command}`.
+Plugin prefixes: `ring-default:`, `ring-dev-team:`, `ring-pm-team:`, `ring-finops-team:`, `ring-finance-team:`, `ring-ops-team:`, `ring-pmm-team:`, `ring-pmo-team:`, `ring-tw-team:`.
 
 ### Project & Feature Workflows
 
@@ -194,11 +194,11 @@ Use when you need expert depth in specific domains:
 | Invocation Context | Standards Compliance | Trigger |
 |--------------------|---------------------|---------|
 | Direct agent call | Optional | N/A |
-| Via `dev-cycle` | Optional | N/A |
-| Via `dev-refactor` | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
+| Via `ring-dev-team:dev-cycle` | Optional | N/A |
+| Via `ring-dev-team:dev-refactor` | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
 
 **How it works:**
-1. `dev-refactor` dispatches agents with `**MODE: ANALYSIS ONLY**` in prompt
+1. `ring-dev-team:dev-refactor` dispatches agents with `**MODE: ANALYSIS ONLY**` in prompt
 2. Agents detect this pattern and load Ring standards via WebFetch
 3. Agents produce comparison tables: Current Pattern vs Expected Pattern
 4. Output includes severity, location, and migration recommendations
@@ -311,7 +311,7 @@ For portfolio governance, resource planning, and executive reporting:
 ### New Feature Development
 
 1. **Design** → `/ring-default:brainstorm feature-name`
-2. **Plan** → `/ring-pm-team:pre-dev-feature feature-name` (or `pre-dev-full` if complex)
+2. **Plan** → `/ring-pm-team:pre-dev-feature feature-name` (or `ring-pm-team:pre-dev-full` if complex)
 3. **Isolate** → `/ring-default:worktree feature-branch`
 4. **Implement** → Use `ring-default:test-driven-development` skill
 5. **Review** → `/ring-default:codereview src/` (dispatches 3 reviewers)
@@ -345,7 +345,7 @@ Consolidated report with recommendations
 These enforce quality standards:
 
 1. **TDD is enforced** – Test must fail (RED) before implementation
-2. **Skill check is mandatory** – Use `using-ring` before any task
+2. **Skill check is mandatory** – Use `ring-default:using-ring` before any task
 3. **Reviewers run parallel** – Never sequential review (use `/ring-default:codereview`)
 4. **Verification required** – Don't claim complete without evidence
 5. **No incomplete code** – No "TODO" or placeholder comments
@@ -421,7 +421,7 @@ These enforce quality standards:
 
 1. SessionStart hook runs automatically
 2. All 87 skills are auto-discovered and available
-3. `using-ring` workflow is activated (skill checking is now mandatory)
+3. `ring-default:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
 
@@ -441,9 +441,9 @@ Returns structured output per agent's output_schema
 ```
 Single message with 3 Task calls (not sequential):
 
-Task #1: ring-default:code-reviewer
-Task #2: ring-default:business-logic-reviewer
-Task #3: ring-default:security-reviewer
+Task #1: code-reviewer
+Task #2: business-logic-reviewer
+Task #3: security-reviewer
     ↓
 All run in parallel (saves ~15 minutes vs sequential)
     ↓
@@ -465,5 +465,5 @@ Consolidated report
 ## ❓ Need Help?
 
 - **How to use Claude Code?** → Ask about Claude Code features, MCP servers, slash commands
-- **How to use Ring?** → Check skill names in this manual or in `using-ring` skill
+- **How to use Ring?** → Check skill names in this manual or in `ring-default:using-ring` skill
 - **Feature/bug tracking?** → https://github.com/lerianstudio/ring/issues

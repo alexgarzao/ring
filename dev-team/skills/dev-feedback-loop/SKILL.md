@@ -1,5 +1,5 @@
 ---
-name: dev-feedback-loop
+name: ring-dev-team:dev-feedback-loop
 description: |
   Development cycle feedback system - calculates assertiveness scores, analyzes prompt
   quality for all agents executed, aggregates cycle metrics, performs root cause analysis
@@ -82,13 +82,13 @@ TodoWrite tool:
 
 ## Pressure Resistance
 
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Feedback-specific note:** Feedback MUST be collected for EVERY completed task, regardless of outcome or complexity. "Simple tasks" and "perfect scores" still need tracking.
 
 ## Common Rationalizations - REJECTED
 
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
+See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
 **Feedback-specific rationalizations:**
 
@@ -101,7 +101,7 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 ## Red Flags - STOP
 
-See [shared-patterns/red-flags.md](../shared-patterns/red-flags.md) for universal red flags.
+See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
 If you catch yourself thinking ANY of those patterns, STOP immediately. Collect metrics for EVERY task.
 
