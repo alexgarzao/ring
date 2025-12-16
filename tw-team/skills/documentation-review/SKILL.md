@@ -11,8 +11,8 @@ trigger: |
   - Ensuring style guide compliance
 
 skip_when: |
-  - Writing new documentation → use writing-functional-docs or writing-api-docs
-  - Only checking voice → use voice-and-tone
+  - Writing new documentation → use ring-tw-team:writing-functional-docs or ring-tw-team:writing-api-docs
+  - Only checking voice → use ring-tw-team:voice-and-tone
 
 sequence:
   after: [ring-tw-team:writing-functional-docs, ring-tw-team:writing-api-docs]
