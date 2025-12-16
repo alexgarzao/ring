@@ -82,29 +82,29 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | Gate | Specialized Agent | What Agent Does |
 |------|-------------------|-----------------|
-| 0 | `backend-engineer-golang` | Implements Go code, adds observability, runs TDD |
-| 0 | `backend-engineer-typescript` | Implements TS backend code, adds observability, runs TDD |
-| 0 | `frontend-engineer` | Implements React/Next.js components, runs TDD |
-| 0 | `frontend-bff-engineer-typescript` | Implements BFF layer, API aggregation |
-| 0 | `frontend-designer` | Reviews UI/UX, accessibility, design system compliance |
-| 1 | `devops-engineer` | Updates Dockerfile, docker-compose, Helm |
-| 2 | `sre` | Validates observability implementation |
-| 3 | `qa-analyst` | Writes tests, validates coverage |
-| 4 | `code-reviewer` | Reviews code quality |
-| 4 | `business-logic-reviewer` | Reviews business logic |
-| 4 | `security-reviewer` | Reviews security |
+| 0 | `ring-dev-team:backend-engineer-golang` | Implements Go code, adds observability, runs TDD |
+| 0 | `ring-dev-team:backend-engineer-typescript` | Implements TS backend code, adds observability, runs TDD |
+| 0 | `ring-dev-team:frontend-engineer` | Implements React/Next.js components, runs TDD |
+| 0 | `ring-dev-team:frontend-bff-engineer-typescript` | Implements BFF layer, API aggregation |
+| 0 | `ring-dev-team:frontend-designer` | Reviews UI/UX, accessibility, design system compliance |
+| 1 | `ring-dev-team:devops-engineer` | Updates Dockerfile, docker-compose, Helm |
+| 2 | `ring-dev-team:sre` | Validates observability implementation |
+| 3 | `ring-dev-team:qa-analyst` | Writes tests, validates coverage |
+| 4 | `ring-default:code-reviewer` | Reviews code quality |
+| 4 | `ring-default:business-logic-reviewer` | Reviews business logic |
+| 4 | `ring-default:security-reviewer` | Reviews security |
 
 ### dev-refactor Steps
 
 | Step | Specialized Agent | What Agent Does |
 |------|-------------------|-----------------|
-| 3 | `codebase-explorer` | Deep architecture analysis, pattern discovery |
-| 4 | `backend-engineer-golang` | Go standards compliance analysis |
-| 4 | `backend-engineer-typescript` | TypeScript standards compliance analysis |
-| 4 | `frontend-engineer` | Frontend standards compliance analysis |
-| 4 | `qa-analyst` | Test coverage and pattern analysis |
-| 4 | `devops-engineer` | DevOps setup analysis |
-| 4 | `sre` | Observability analysis |
+| 3 | `ring-default:codebase-explorer` | Deep architecture analysis, pattern discovery |
+| 4 | `ring-dev-team:backend-engineer-golang` | Go standards compliance analysis |
+| 4 | `ring-dev-team:backend-engineer-typescript` | TypeScript standards compliance analysis |
+| 4 | `ring-dev-team:frontend-engineer` | Frontend standards compliance analysis |
+| 4 | `ring-dev-team:qa-analyst` | Test coverage and pattern analysis |
+| 4 | `ring-dev-team:devops-engineer` | DevOps setup analysis |
+| 4 | `ring-dev-team:sre` | Observability analysis |
 
 ## Agent Selection Guide
 
@@ -114,14 +114,14 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | File Type / Task | Agent to Dispatch |
 |------------------|-------------------|
-| `*.go` files | `backend-engineer-golang` |
-| `*.ts` backend (Express, Fastify, NestJS) | `backend-engineer-typescript` |
-| `*.tsx` / `*.jsx` React components | `frontend-engineer` |
-| BFF / API Gateway layer | `frontend-bff-engineer-typescript` |
-| UI/UX review, design system | `frontend-designer` |
-| `Dockerfile`, `docker-compose.yml`, Helm | `devops-engineer` |
-| Logging, tracing | `sre` |
-| Test files (`*_test.go`, `*.spec.ts`) | `qa-analyst` |
+| `*.go` files | `ring-dev-team:backend-engineer-golang` |
+| `*.ts` backend (Express, Fastify, NestJS) | `ring-dev-team:backend-engineer-typescript` |
+| `*.tsx` / `*.jsx` React components | `ring-dev-team:frontend-engineer` |
+| BFF / API Gateway layer | `ring-dev-team:frontend-bff-engineer-typescript` |
+| UI/UX review, design system | `ring-dev-team:frontend-designer` |
+| `Dockerfile`, `docker-compose.yml`, Helm | `ring-dev-team:devops-engineer` |
+| Logging, tracing | `ring-dev-team:sre` |
+| Test files (`*_test.go`, `*.spec.ts`) | `ring-dev-team:qa-analyst` |
 
 ### Code Review (Always Parallel)
 
