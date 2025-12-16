@@ -429,7 +429,7 @@ You have access to critical regulatory documentation and data dictionaries:
 - Confirmed transformation rules
 - Template structure ready for implementation
 - All uncertainties resolved
-- Ready for finops-automation to implement
+- Ready for ring-finops-team:finops-automation to implement
 
 ---
 
