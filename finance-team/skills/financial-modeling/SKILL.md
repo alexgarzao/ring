@@ -22,7 +22,7 @@ related:
 
 # Financial Modeling Workflow
 
-This skill provides a structured workflow for building financial models using the `financial-modeler` agent.
+This skill provides a structured workflow for building financial models using the `ring-finance-team:financial-modeler` agent.
 
 ## Workflow Overview
 

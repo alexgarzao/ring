@@ -319,4 +319,4 @@ Payment processing service experienced intermittent failures affecting 23% of tr
 - Infrastructure provisioning (use `ring-ops-team:infrastructure-architect`)
 - Cost analysis during incidents (use `ring-ops-team:cloud-cost-optimizer`)
 - Security vulnerability remediation (use `ring-ops-team:security-operations`)
-- Application code fixes (use `backend-engineer-*`)
+- Application code fixes (use `ring-dev-team:backend-engineer-*`)

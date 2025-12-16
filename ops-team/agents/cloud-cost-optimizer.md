@@ -333,4 +333,4 @@ When reporting cost issues:
 - Incident response (use `ring-ops-team:incident-responder`)
 - Platform engineering (use `ring-ops-team:platform-engineer`)
 - Security operations (use `ring-ops-team:security-operations`)
-- Application optimization (use `backend-engineer-*`)
+- Application optimization (use `ring-dev-team:backend-engineer-*`)

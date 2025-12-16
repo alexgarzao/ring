@@ -79,8 +79,8 @@ Commands receive terminology updates:
 ### Invoking Droids
 
 ```
-Task tool with droid_type="code-reviewer"
-Task tool with droid_type="backend-engineer-golang"
+Task tool with droid_type="ring-default:code-reviewer"
+Task tool with droid_type="ring-dev-team:backend-engineer-golang"
 ```
 
 ### Using Skills
@@ -131,7 +131,7 @@ Commands work the same as Claude Code:
 ### Droid not found
 1. Verify installation: `./installer/install-ring.sh list`
 2. Check droids directory: `ls ~/.factory/droids/`
-3. Use fully qualified name: `backend-engineer-golang`
+3. Use fully qualified name: `ring-dev-team:backend-engineer-golang`
 
 ### Terminology mismatch
 If you see "agent" where "droid" is expected, re-run the installer:

@@ -1133,6 +1133,6 @@ Tests: 3 passed | Coverage: 72%
 
 - Application code development (use `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, or `ring-dev-team:frontend-bff-engineer-typescript`)
 - Docker/docker-compose configuration (use `ring-dev-team:devops-engineer`)
-- Observability validation (use `sre`)
+- Observability validation (use `ring-dev-team:sre`)
 - Infrastructure provisioning (use `ring-dev-team:devops-engineer`)
-- Performance optimization implementation (use `sre` or language-specific backend engineer)
+- Performance optimization implementation (use `ring-dev-team:sre` or language-specific backend engineer)

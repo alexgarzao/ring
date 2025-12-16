@@ -507,7 +507,7 @@ Stopping app_postgres_1 ... done
 ## What This Agent Does NOT Handle
 
 - Application code development (use `ring-dev-team:backend-engineer-golang`, `ring-dev-team:backend-engineer-typescript`, or `ring-dev-team:frontend-bff-engineer-typescript`)
-- Production monitoring and incident response (use `sre`)
+- Production monitoring and incident response (use `ring-dev-team:sre`)
 - Test case design and execution (use `ring-dev-team:qa-analyst`)
-- Application performance optimization (use `sre`)
+- Application performance optimization (use `ring-dev-team:sre`)
 - Business logic implementation (use `ring-dev-team:backend-engineer-golang`)

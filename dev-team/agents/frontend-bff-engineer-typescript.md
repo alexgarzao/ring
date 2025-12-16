@@ -645,6 +645,6 @@ Coverage: 88.5%
 
 - Visual design specifications (use `ring-dev-team:frontend-designer`)
 - Docker/CI-CD configuration (use `ring-dev-team:devops-engineer`)
-- Server infrastructure and monitoring (use `sre`)
+- Server infrastructure and monitoring (use `ring-dev-team:sre`)
 - Backend microservices (use `ring-dev-team:backend-engineer-typescript`)
 - Database schema design (use `ring-dev-team:backend-engineer`)

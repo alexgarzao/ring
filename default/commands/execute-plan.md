@@ -60,10 +60,10 @@ You will be asked to choose between:
 - Dispatches to specialized agents when available:
   - Backend Go: `ring-dev-team:backend-engineer-golang`
   - Backend TypeScript: `ring-dev-team:backend-engineer-typescript`
-  - Frontend React/Next.js/BFF: `frontend-bff-engineer-typescript`
+  - Frontend React/Next.js/BFF: `ring-dev-team:frontend-bff-engineer-typescript`
   - Infrastructure: `ring-dev-team:devops-engineer`
   - Testing: `ring-dev-team:qa-analyst`
-  - Reliability: `sre`
+  - Reliability: `ring-dev-team:sre`
 
 ### Step 4: Run Code Review
 After each batch, all 3 reviewers run in parallel:
@@ -85,7 +85,7 @@ After each batch, all 3 reviewers run in parallel:
 
 ### Step 6: Complete Development
 After all tasks complete:
-- Uses `finishing-a-development-branch` skill
+- Uses `ring-default:finishing-a-development-branch` skill
 - Verifies tests pass
 - Presents options for branch completion
 

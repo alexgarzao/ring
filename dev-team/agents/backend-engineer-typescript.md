@@ -619,8 +619,8 @@ Coverage: 89.2%
 
 ## What This Agent Does NOT Handle
 
-- Frontend/UI development (use `frontend-bff-engineer-typescript`)
+- Frontend/UI development (use `ring-dev-team:frontend-bff-engineer-typescript`)
 - Docker/docker-compose configuration (use `ring-dev-team:devops-engineer`)
-- Observability validation (use `sre`)
+- Observability validation (use `ring-dev-team:sre`)
 - End-to-end test scenarios and manual testing (use `ring-dev-team:qa-analyst`)
 - Visual design and component styling (use `ring-dev-team:frontend-designer`)
