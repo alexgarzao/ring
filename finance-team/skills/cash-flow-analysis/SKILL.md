@@ -11,9 +11,9 @@ trigger: |
   - Treasury operations review
 
 skip_when: |
-  - Financial statement analysis → use financial-analysis
-  - Creating budgets → use budget-creation
-  - Building valuation models → use financial-modeling
+  - Financial statement analysis → use ring-finance-team:financial-analysis
+  - Creating budgets → use ring-finance-team:budget-creation
+  - Building valuation models → use ring-finance-team:financial-modeling
 
 related:
   similar: [ring-finance-team:financial-analysis, ring-finance-team:budget-creation]
@@ -22,7 +22,7 @@ related:
 
 # Cash Flow Analysis Workflow
 
-This skill provides a structured workflow for cash flow analysis and treasury management using the `treasury-specialist` agent.
+This skill provides a structured workflow for cash flow analysis and treasury management using the `ring-finance-team:treasury-specialist` agent.
 
 ## Workflow Overview
 
