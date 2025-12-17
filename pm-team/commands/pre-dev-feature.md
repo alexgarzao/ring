@@ -29,7 +29,17 @@ Use the AskUserQuestion tool to gather:
 - This will be used for the directory name
 - Use kebab-case (e.g., "user-logout", "email-validation", "rate-limiting")
 
-After getting the feature name, create the directory structure and run the 4-gate workflow:
+**Question 2:** "Does this feature require authentication or authorization?"
+- Header: "Auth Requirements"
+- Options:
+  - "None" - No authentication needed
+  - "User authentication only" - Users must log in but no permission checks
+  - "User + permissions" - Full user auth with role-based access control
+  - "Service-to-service auth" - Machine-to-machine authentication only
+  - "Full (user + service-to-service)" - Both user and service auth
+- **Note:** For Go services requiring auth, reference `golang.md` → Access Manager Integration section during TRD creation (Gate 2)
+
+After getting the feature name and auth requirements, create the directory structure and run the 4-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>

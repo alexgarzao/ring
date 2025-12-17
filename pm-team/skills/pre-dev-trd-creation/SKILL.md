@@ -180,6 +180,26 @@ If feature includes list/browse, decide during TRD:
 
 Document in TRD: `API Patterns → Pagination → Strategy + Rationale`
 
+## Authentication/Authorization Architecture (If Required)
+
+If feature requires authentication or authorization (as determined in Question 2 of pre-dev command):
+
+| Auth Type | TRD Description (Abstract) | Implementation Reference |
+|-----------|---------------------------|-------------------------|
+| User authentication only | "Token-based authentication with stateless validation" | For Go: `golang.md` → Access Manager Integration |
+| User + permissions | "Token-based authentication with role-based access control (RBAC)" | For Go: `golang.md` → Access Manager Integration |
+| Service-to-service | "Machine-to-machine authentication with client credentials" | For Go: `golang.md` → Access Manager Integration (GetApplicationToken) |
+| Full (user + S2S) | "Dual-layer authentication: user tokens for end-users, client credentials for services" | For Go: `golang.md` → Access Manager Integration |
+
+**Document in TRD:** `Security Architecture → Authentication/Authorization → Strategy + Implementation Reference`
+
+**Key Implementation Pattern (for TRD reference):**
+- Every protected endpoint requires middleware authorization
+- Pattern: `auth.Authorize(applicationName, resource, action)` on each route
+- Engineers will implement per-route protection following the referenced standard
+
+**Note for Go Services:** Lerian's Access Manager (plugin-auth + identity + lib-auth) is the standard authentication system. Reference `golang.md` → Access Manager Integration section in the TRD so engineers know where to find implementation patterns including route middleware protection.
+
 ## ADR Template
 
 ```markdown

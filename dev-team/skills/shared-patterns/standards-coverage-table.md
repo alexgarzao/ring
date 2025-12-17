@@ -234,19 +234,20 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 4 | Configuration Loading (MANDATORY) | |
 | 5 | Telemetry & Observability (MANDATORY) | |
 | 6 | Bootstrap Pattern (MANDATORY) | |
-| 7 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
-| 8 | Error Codes Convention (MANDATORY) | |
-| 9 | Error Handling (MANDATORY) | |
-| 10 | Function Design (MANDATORY) | |
-| 11 | Pagination Patterns (MANDATORY) | |
-| 12 | Testing Patterns (MANDATORY) | |
-| 13 | Logging Standards (MANDATORY) | |
-| 14 | Linting (MANDATORY) | |
-| 15 | Architecture Patterns (MANDATORY) | |
-| 16 | Directory Structure (MANDATORY) | |
-| 17 | Concurrency Patterns (MANDATORY) | |
-| 18 | DDD Patterns (MANDATORY) | |
-| 19 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 7 | Access Manager Integration (MANDATORY) | lib-auth, auth middleware, service-to-service auth |
+| 8 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
+| 9 | Error Codes Convention (MANDATORY) | |
+| 10 | Error Handling (MANDATORY) | |
+| 11 | Function Design (MANDATORY) | |
+| 12 | Pagination Patterns (MANDATORY) | |
+| 13 | Testing Patterns (MANDATORY) | |
+| 14 | Logging Standards (MANDATORY) | |
+| 15 | Linting (MANDATORY) | |
+| 16 | Architecture Patterns (MANDATORY) | |
+| 17 | Directory Structure (MANDATORY) | |
+| 18 | Concurrency Patterns (MANDATORY) | |
+| 19 | DDD Patterns (MANDATORY) | |
+| 20 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
