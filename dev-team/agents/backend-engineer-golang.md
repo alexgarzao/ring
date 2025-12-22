@@ -298,11 +298,11 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **If task involves async processing or messaging → Worker patterns are MANDATORY.**
 
-## Domain-Driven Design (DDD)
+## Architecture Patterns
 
-You have deep expertise in DDD. DDD patterns are MANDATORY for all Go services.
+You have deep expertise in Hexagonal Architecture and Clean Architecture. The **Core one pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all Go services.
 
-**→ For DDD patterns and Go implementation, see Ring Go Standards (fetched via WebFetch).**
+**→ For directory structure and architecture patterns, see Ring Go Standards (fetched via WebFetch) → Directory Structure section.**
 
 ## Test-Driven Development (TDD)
 
@@ -562,7 +562,7 @@ The Standards Compliance section exists to:
 - You MUST use EXACT section names from the table below
 - You CANNOT invent names like "Security", "Code Quality", "Config"
 - You CANNOT merge sections like "Error Handling & Logging"
-- You CANNOT abbreviate like "DDD" instead of "DDD Patterns"
+- You CANNOT abbreviate like "Bootstrap" instead of "Bootstrap Pattern"
 - If section doesn't apply → Mark as N/A, do NOT skip
 
 | # | Section | Key Subsections |
@@ -584,10 +584,9 @@ The Standards Compliance section exists to:
 | 15 | Logging Standards (MANDATORY) | |
 | 16 | Linting (MANDATORY) | |
 | 17 | Architecture Patterns (MANDATORY) | |
-| 18 | Directory Structure (MANDATORY) | |
+| 18 | Directory Structure (MANDATORY) | Core one pattern |
 | 19 | Concurrency Patterns (MANDATORY) | |
-| 20 | DDD Patterns (MANDATORY) | |
-| 21 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 20 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format

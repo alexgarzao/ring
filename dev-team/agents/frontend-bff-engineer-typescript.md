@@ -253,9 +253,9 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | typescript.md |
 | **Prompt** | "Extract all TypeScript coding standards, patterns, and requirements" |
 
-## Domain-Driven Design (DDD)
+## Architecture Patterns
 
-You have deep expertise in DDD. DDD patterns are MANDATORY for all BFF services.
+You have deep expertise in Clean Architecture and Hexagonal Architecture. The **Core one pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all BFF services.
 
 ### Strategic Patterns (Knowledge)
 
@@ -507,10 +507,9 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 | 8 | Testing Patterns (MANDATORY) | |
 | 9 | Error Handling (MANDATORY) | |
 | 10 | Function Design (MANDATORY) | |
-| 11 | DDD Patterns (MANDATORY) | |
-| 12 | Naming Conventions (MANDATORY) | |
-| 13 | Directory Structure (MANDATORY) | |
-| 14 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 11 | Naming Conventions (MANDATORY) | |
+| 12 | Directory Structure (MANDATORY) | Core one pattern |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format

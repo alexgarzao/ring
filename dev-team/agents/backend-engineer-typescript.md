@@ -396,11 +396,11 @@ After WebFetch completes, you MUST be able to cite specific patterns:
 
 **If task involves async processing or messaging → Worker patterns are MANDATORY.**
 
-## Domain-Driven Design (DDD)
+## Architecture Patterns
 
-You have deep expertise in DDD. DDD patterns are MANDATORY for all TypeScript services.
+You have deep expertise in Clean Architecture and Hexagonal Architecture. The **Core one pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all TypeScript services.
 
-**→ For DDD patterns and TypeScript implementation, see Ring TypeScript Standards (fetched via WebFetch).**
+**→ For directory structure and architecture patterns, see Ring TypeScript Standards (fetched via WebFetch) → Directory Structure section.**
 
 ## Test-Driven Development (TDD)
 
@@ -617,10 +617,9 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 | 8 | Testing Patterns (MANDATORY) | |
 | 9 | Error Handling (MANDATORY) | |
 | 10 | Function Design (MANDATORY) | |
-| 11 | DDD Patterns (MANDATORY) | |
-| 12 | Naming Conventions (MANDATORY) | |
-| 13 | Directory Structure (MANDATORY) | |
-| 14 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 11 | Naming Conventions (MANDATORY) | |
+| 12 | Directory Structure (MANDATORY) | Core one pattern |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format

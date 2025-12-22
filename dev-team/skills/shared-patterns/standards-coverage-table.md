@@ -30,7 +30,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 | Invent names | "Security", "Code Quality" | Not in coverage table |
 | Rename sections | "Config" instead of "Configuration Loading" | Breaks traceability |
 | Merge sections | "Error Handling & Logging" | Each section = one row |
-| Use abbreviations | "DDD" instead of "DDD Patterns" | Must match exactly |
+| Use abbreviations | "Bootstrap" instead of "Bootstrap Pattern" | Must match exactly |
 | Skip sections | Omitting "RabbitMQ Worker Pattern" | Mark N/A instead |
 
 **Your output table section names MUST match the "Section to Check" column below EXACTLY.**
@@ -179,14 +179,13 @@ The Coverage Table ensures nothing is skipped. The Detailed Findings provide act
 | 15 | Logging Standards | ⚠️ | Missing structured fields |
 | 16 | Linting | ✅ | .golangci.yml present |
 | 17 | Architecture Patterns | ✅ | Hexagonal structure |
-| 18 | Directory Structure | ✅ | Follows convention |
+| 18 | Directory Structure | ✅ | Follows Core one pattern |
 | 19 | Concurrency Patterns | N/A | No concurrent code |
-| 20 | DDD Patterns | ✅ | Entities, Value Objects present |
-| 21 | RabbitMQ Worker Pattern | N/A | No message queue |
+| 20 | RabbitMQ Worker Pattern | N/A | No message queue |
 
 **Completeness Verification:**
-- Sections in standards: 21
-- Rows in table: 21
+- Sections in standards: 20
+- Rows in table: 20
 - Status: ✅ Complete
 ```
 
@@ -247,10 +246,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 15 | Logging Standards (MANDATORY) | |
 | 16 | Linting (MANDATORY) | |
 | 17 | Architecture Patterns (MANDATORY) | |
-| 18 | Directory Structure (MANDATORY) | |
+| 18 | Directory Structure (MANDATORY) | Core one pattern |
 | 19 | Concurrency Patterns (MANDATORY) | |
-| 20 | DDD Patterns (MANDATORY) | |
-| 21 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 20 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
@@ -268,10 +266,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 8 | Testing Patterns (MANDATORY) | |
 | 9 | Error Handling (MANDATORY) | |
 | 10 | Function Design (MANDATORY) | |
-| 11 | DDD Patterns (MANDATORY) | |
-| 12 | Naming Conventions (MANDATORY) | |
-| 13 | Directory Structure (MANDATORY) | |
-| 14 | RabbitMQ Worker Pattern (MANDATORY) | |
+| 11 | Naming Conventions (MANDATORY) | |
+| 12 | Directory Structure (MANDATORY) | Core one pattern |
+| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 ---
 
