@@ -1584,14 +1584,45 @@ For current execution unit:
 
 **REQUIRED SUB-SKILL:** Use `dev-sre`
 
-### Execution
+### Step 4.1: Prepare Input for dev-sre Skill
+
+```text
+Gather from previous gates:
+
+sre_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  
+  // REQUIRED - from Gate 0 context
+  language: state.current_unit.language,  // "go" | "typescript" | "python"
+  service_type: state.current_unit.service_type,  // "api" | "worker" | "batch" | "cli"
+  implementation_agent: agent_outputs.implementation.agent,  // e.g., "backend-engineer-golang"
+  implementation_files: agent_outputs.implementation.files_changed,  // list of files from Gate 0
+  
+  // OPTIONAL - additional context
+  external_dependencies: state.current_unit.external_deps || [],  // HTTP clients, gRPC, queues
+  gate0_handoff: agent_outputs.implementation,  // full Gate 0 output
+  gate1_handoff: agent_outputs.devops  // full Gate 1 output
+}
+```
+
+### Step 4.2: Invoke dev-sre Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke dev-sre skill:
-   Skill("dev-sre")
-   
+2. Invoke dev-sre skill with structured input:
+
+   Skill("dev-sre") with input:
+     unit_id: sre_input.unit_id
+     language: sre_input.language
+     service_type: sre_input.service_type
+     implementation_agent: sre_input.implementation_agent
+     implementation_files: sre_input.implementation_files
+     external_dependencies: sre_input.external_dependencies
+     gate0_handoff: sre_input.gate0_handoff
+     gate1_handoff: sre_input.gate1_handoff
+
    The skill handles:
    - Dispatching SRE agent for validation
    - Structured logging validation
@@ -1603,26 +1634,38 @@ For current execution unit:
 
 3. Parse skill output for validation results:
    
-   IF skill returns PASS:
-     → Gate 2 PASSED. Proceed to Step 4.2.
+   Expected output sections:
+   - "## Validation Result" → status, iterations, coverage
+   - "## Instrumentation Coverage" → table with per-layer coverage
+   - "## Issues Found" → list or "None"
+   - "## Handoff to Next Gate" → ready_for_testing: YES/NO
    
-   IF skill returns FAIL or NEEDS_FIXES:
+   IF skill output contains "Status: PASS" AND "Ready for Gate 3: YES":
+     → Gate 2 PASSED. Proceed to Step 4.3.
+   
+   IF skill output contains "Status: FAIL" OR "Ready for Gate 3: NO":
      → Gate 2 BLOCKED. 
      → Skill already dispatched fixes to implementation agent
      → Skill already re-ran validation
-     → If still failing after 3 iterations: STOP and escalate to user
+     → If "ESCALATION" in output: STOP and report to user
 
 4. **⛔ SAVE STATE TO FILE (MANDATORY):**
    Write tool → "docs/refactor/current-cycle.json"
 ```
 
-### Step 4.2: Gate 2 Complete
+### Step 4.3: Gate 2 Complete
 
 ```text
 5. When dev-sre skill returns PASS:
+   
+   Parse from skill output:
+   - status: extract from "## Validation Result"
+   - instrumentation_coverage: extract percentage from coverage table
+   - iterations: extract from "Iterations:" line
+   
    - agent_outputs.sre = {
-       agent: "sre",
-       output: "[skill output]",
+       skill: "dev-sre",
+       output: "[full skill output]",
        validation_result: "PASS",
        instrumentation_coverage: "[X%]",
        iterations: [count],
