@@ -24,7 +24,7 @@ See [standards-workflow.md](./standards-workflow.md) for the complete loading pr
 
 ## TDD-RED Phase Prompt Template
 
-```
+```markdown
 **TDD-RED PHASE ONLY** for: [unit_id] - [title]
 
 **MANDATORY:** WebFetch Ring Standards for your language FIRST (see standards-workflow.md)
@@ -52,7 +52,7 @@ See [standards-workflow.md](./standards-workflow.md) for the complete loading pr
 - **FAILURE OUTPUT** (copy/paste the actual test failure)
 
 Example failure output:
-```
+```text
 === FAIL: TestUserAuthentication (0.00s)
     auth_test.go:15: expected token to be valid, got nil
 ```
@@ -60,7 +60,7 @@ Example failure output:
 
 ## TDD-GREEN Phase Prompt Template
 
-```
+```markdown
 **TDD-GREEN PHASE** for: [unit_id] - [title]
 
 **MANDATORY:** WebFetch Ring Standards for your language FIRST (see standards-workflow.md)
@@ -109,7 +109,7 @@ Example failure output:
 
 ## Test Results
 **PASS OUTPUT** (copy/paste the actual test pass):
-```
+```text
 [paste actual output here]
 ```
 
@@ -118,7 +118,7 @@ Example failure output:
 **You MUST output a Standards Coverage Table per [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md).**
 
 **Format:**
-```
+```markdown
 | # | Section (from standards-coverage-table.md) | Status | Evidence |
 |---|-------------------------------------------|--------|----------|
 | 1 | [Section Name] | ✅/❌ | [file:line] |
@@ -137,7 +137,7 @@ Example failure output:
 **⛔ IF "ALL STANDARDS MET" = NO → Implementation is INCOMPLETE. Fix before proceeding.**
 
 Example pass output:
-```
+```text
 === PASS: TestUserAuthentication (0.003s)
 PASS
 ok      myapp/auth    0.015s
@@ -148,14 +148,14 @@ ok      myapp/auth    0.015s
 
 ### After TDD-RED
 
-```
+```text
 IF failure_output is empty OR contains "PASS":
   → STOP. Cannot proceed. "TDD-RED incomplete - no failure output captured"
 ```
 
 ### After TDD-GREEN
 
-```
+```text
 IF pass_output is empty OR contains "FAIL":
   → Return to TDD-GREEN (retry implementation)
   → Max 3 retries, then STOP and report blocker
@@ -171,7 +171,7 @@ IF "ALL STANDARDS MET" = NO:
 
 **The orchestrator MUST verify the agent's Standards Coverage Table before proceeding:**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  GATE 0 COMPLETION CHECK                                                    │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -219,6 +219,109 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 - ❌ on ANY section = BLOCKED (dispatch fix to same agent)
 - N/A requires explicit reason
 - Evidence (file:line) REQUIRED for all ✅ items
+
+---
+
+## ⛔ Orchestrator Enforcement (HARD GATE)
+
+**This section defines what the ORCHESTRATOR (dev-cycle, dev-implementation) MUST do after receiving agent output.**
+
+### Verification Process
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ORCHESTRATOR: STANDARDS COMPLIANCE VERIFICATION                            │
+│                                                                             │
+│  After EVERY agent implementation output (TDD-GREEN, DevOps, SRE, etc.):   │
+│                                                                             │
+│  1. SEARCH for "## Standards Coverage Table" in agent output                │
+│     └─ NOT FOUND → Output INCOMPLETE → Re-dispatch agent                    │
+│                                                                             │
+│  2. SEARCH for "ALL STANDARDS MET:" in agent output                         │
+│     └─ NOT FOUND → Output INCOMPLETE → Re-dispatch agent                    │
+│                                                                             │
+│  3. CHECK value of "ALL STANDARDS MET:"                                     │
+│     ├─ "✅ YES" → PASSED → Proceed to next gate                             │
+│     └─ "❌ NO" → BLOCKED → Extract ❌ sections → Re-dispatch agent          │
+│                                                                             │
+│  4. If re-dispatch needed, use this prompt:                                 │
+│                                                                             │
+│     Task tool:                                                              │
+│       subagent_type: "[same agent]"                                         │
+│       model: "opus"                                                         │
+│       prompt: |                                                             │
+│         ⛔ STANDARDS NOT MET - Fix Required (Attempt [N] of 3)              │
+│                                                                             │
+│         Your Standards Coverage Table shows these sections as ❌:           │
+│         [list ❌ sections extracted from table]                              │
+│                                                                             │
+│         WebFetch your standards file:                                       │
+│         [URL for agent's standards file]                                    │
+│                                                                             │
+│         ⚠️ CRITICAL: Use EXACT section names from standards-coverage-table.md │
+│                                                                             │
+│         Section Naming Rules (MANDATORY):                                   │
+│         - CANNOT invent section names not in standards-coverage-table.md    │
+│         - CANNOT merge multiple sections into one                           │
+│         - CANNOT rename sections (e.g., "Error Handling" ≠ "Errors")        │
+│         - CANNOT omit sections - mark as N/A with reason if not applicable  │
+│         - MUST use exact spelling and capitalization from the index         │
+│                                                                             │
+│         For N/A sections, format as:                                        │
+│         | N | [Exact Section Name] | N/A | Reason: [why not applicable] |   │
+│                                                                             │
+│         Implement ALL missing sections.                                     │
+│         Return updated Standards Coverage Table with ALL ✅ or N/A.         │
+│                                                                             │
+│         Previous attempt summary:                                           │
+│         - Total sections: [total_sections]                                  │
+│         - Compliant: [compliant]                                            │
+│         - Not applicable: [not_applicable]                                  │
+│         - Non-compliant: [non_compliant]                                    │
+│                                                                             │
+│  5. Max 3 re-dispatch iterations, then STOP and escalate to user            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Verification Applies To ALL Gates
+
+| Gate | Agent | Orchestrator Verifies |
+|------|-------|----------------------|
+| Gate 0 (Implementation) | backend-engineer-*, frontend-* | Standards Coverage Table from TDD-GREEN |
+| Gate 1 (DevOps) | devops-engineer | Standards Coverage Table from artifacts |
+| Gate 2 (SRE) | sre | Standards Coverage Table from validation |
+| Gate 3 (Testing) | qa-analyst | Standards Coverage Table from test analysis |
+
+### State Update After Verification
+
+```json
+{
+  "gate_progress": {
+    "[gate_name]": {
+      "status": "completed",
+      "standards_verified": true,
+      "standards_coverage": {
+        "total_sections": 20,
+        "compliant": 18,
+        "not_applicable": 2,
+        "non_compliant": 0
+      }
+    }
+  }
+}
+```
+
+### Anti-Rationalization for Orchestrator
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Agent said it's complete" | Agent completion ≠ Standards compliance. Verify table. | **Parse and verify Standards Coverage Table** |
+| "Table wasn't in output" | Missing table = Incomplete output = BLOCKED | **Re-dispatch agent** |
+| "Only 1-2 sections are ❌" | ANY ❌ = BLOCKED. Count is irrelevant. | **Re-dispatch to fix ALL ❌** |
+| "Agent knows the standards" | Knowledge ≠ implementation. Verify evidence. | **Check file:line evidence in table** |
+| "Verification is slow" | Verification prevents rework. 30 seconds now vs hours later. | **Always verify** |
+| "Trust the agent" | Trust but verify. Standards Coverage Table IS the verification. | **Parse the table** |
 
 ## Standards Priority Summary
 
