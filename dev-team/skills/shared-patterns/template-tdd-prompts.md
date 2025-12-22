@@ -24,7 +24,7 @@ See [standards-workflow.md](./standards-workflow.md) for the complete loading pr
 
 ## TDD-RED Phase Prompt Template
 
-```
+```markdown
 **TDD-RED PHASE ONLY** for: [unit_id] - [title]
 
 **MANDATORY:** WebFetch Ring Standards for your language FIRST (see standards-workflow.md)
@@ -52,7 +52,7 @@ See [standards-workflow.md](./standards-workflow.md) for the complete loading pr
 - **FAILURE OUTPUT** (copy/paste the actual test failure)
 
 Example failure output:
-```
+```text
 === FAIL: TestUserAuthentication (0.00s)
     auth_test.go:15: expected token to be valid, got nil
 ```
@@ -60,7 +60,7 @@ Example failure output:
 
 ## TDD-GREEN Phase Prompt Template
 
-```
+```markdown
 **TDD-GREEN PHASE** for: [unit_id] - [title]
 
 **MANDATORY:** WebFetch Ring Standards for your language FIRST (see standards-workflow.md)
@@ -109,7 +109,7 @@ Example failure output:
 
 ## Test Results
 **PASS OUTPUT** (copy/paste the actual test pass):
-```
+```text
 [paste actual output here]
 ```
 
@@ -118,7 +118,7 @@ Example failure output:
 **You MUST output a Standards Coverage Table per [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md).**
 
 **Format:**
-```
+```markdown
 | # | Section (from standards-coverage-table.md) | Status | Evidence |
 |---|-------------------------------------------|--------|----------|
 | 1 | [Section Name] | ✅/❌ | [file:line] |
@@ -137,7 +137,7 @@ Example failure output:
 **⛔ IF "ALL STANDARDS MET" = NO → Implementation is INCOMPLETE. Fix before proceeding.**
 
 Example pass output:
-```
+```text
 === PASS: TestUserAuthentication (0.003s)
 PASS
 ok      myapp/auth    0.015s
@@ -148,14 +148,14 @@ ok      myapp/auth    0.015s
 
 ### After TDD-RED
 
-```
+```text
 IF failure_output is empty OR contains "PASS":
   → STOP. Cannot proceed. "TDD-RED incomplete - no failure output captured"
 ```
 
 ### After TDD-GREEN
 
-```
+```text
 IF pass_output is empty OR contains "FAIL":
   → Return to TDD-GREEN (retry implementation)
   → Max 3 retries, then STOP and report blocker
@@ -171,7 +171,7 @@ IF "ALL STANDARDS MET" = NO:
 
 **The orchestrator MUST verify the agent's Standards Coverage Table before proceeding:**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  GATE 0 COMPLETION CHECK                                                    │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -228,7 +228,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 
 ### Verification Process
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  ORCHESTRATOR: STANDARDS COMPLIANCE VERIFICATION                            │
 │                                                                             │
