@@ -107,7 +107,7 @@ Read docs/PROJECT_RULES.md
 
 ### Creation Flow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  Step 1: WebFetch Ring Standards FIRST                                      │
 │  ├─ Load standards for detected language (Go, TypeScript, etc.)             │
