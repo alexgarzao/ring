@@ -463,7 +463,9 @@ Read tool:
 
 ### Step 0.2: Check if Legacy Project
 
-**ASK the user using AskUserQuestion:**
+#### Ask the User
+
+Use AskUserQuestion:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -481,8 +483,13 @@ Read tool:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Question:** "Is this a legacy project (created without PM team workflow)?"
-**Options:** (a) Yes, this is a legacy project (b) No, this is a new project following Ring workflow
+#### Question
+
+"Is this a legacy project (created without PM team workflow)?"
+
+#### Options
+
+(a) Yes, this is a legacy project (b) No, this is a new project following Ring workflow
 
 #### If YES (legacy)
 
@@ -494,7 +501,9 @@ Go to Step 0.3 (Check for PM Documents)
 
 ### Step 0.2.1: Legacy Project Analysis (Agents + Questions)
 
-**For legacy projects, combine automated analysis with targeted questions:**
+#### Overview
+
+For legacy projects, combine automated analysis with targeted questions:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -515,7 +524,9 @@ Go to Step 0.3 (Check for PM Documents)
 
 **⛔ You MUST use the Task tool to dispatch BOTH agents. This is NOT implicit.**
 
-**Dispatch TWO agents in PARALLEL to analyze the legacy project:**
+#### Dispatch Agents
+
+Dispatch TWO agents in PARALLEL to analyze the legacy project:
 
 ```text
 Action: Use Task tool with EXACTLY these parameters for EACH agent:
@@ -620,7 +631,9 @@ Task tool:
     [Validations, invariants found]
 ```
 
-**VERIFICATION (MANDATORY):** After BOTH agents complete, confirm:
+#### Verification (MANDATORY)
+
+After BOTH agents complete, confirm:
 - [ ] `codebase-explorer` returned "## Technical Analysis (Legacy Project)" section
 - [ ] `business-logic-reviewer` returned "## Business Domain Analysis (Legacy Project)" section
 - [ ] Both outputs contain non-empty content
@@ -629,7 +642,9 @@ Task tool:
 
 #### Step 0.2.1b: Supplementary Questions (Only What Agents Can't Determine)
 
-**After agents complete, ask ONLY what they couldn't determine from code:**
+#### Post-Analysis Questions
+
+After agents complete, ask ONLY what they couldn't determine from code:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -642,7 +657,9 @@ Task tool:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Questions to ask (use AskUserQuestion for each):**
+#### Questions to Ask
+
+Use AskUserQuestion for each:
 
 | # | Question | Why Agents Can't Determine This |
 |---|----------|--------------------------------|
@@ -653,7 +670,7 @@ Task tool:
 
 #### Step 0.2.1c: Generate PROJECT_RULES.md
 
-**Combine agent outputs + user answers:**
+#### Combine Agent Outputs and User Answers
 
 ```yaml
 Create tool:
@@ -734,7 +751,7 @@ Create tool:
     *Last Updated: [ISO timestamp]*
 ```
 
-**Present to user:**
+#### Present to User
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -757,15 +774,21 @@ Create tool:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**ASK for approval using AskUserQuestion:**
+#### Ask for Approval
+
+Use AskUserQuestion:
 - Question: "PROJECT_RULES.md has been generated. Would you like to review it before proceeding?"
 - Options: (a) Proceed (b) Open for editing first
 
-**After approval → Proceed to Step 1**
+#### After Approval
+
+Proceed to Step 1
 
 ### Step 0.3: Check for PM Documents (PRD/TRD/Feature Map)
 
-**For NEW projects (not legacy), ask about PM documents:**
+#### Check for PM Documents
+
+For NEW projects (not legacy), ask about PM documents:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -783,10 +806,15 @@ Create tool:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Question:** "Do you have PRD, TRD, or Feature Map documents for this project?"
-**Options:** (a) Yes, I have PM documents (b) No, I don't have these documents
+#### Question
 
-**If YES → Ask for file paths:**
+"Do you have PRD, TRD, or Feature Map documents for this project?"
+
+#### Options
+
+(a) Yes, I have PM documents (b) No, I don't have these documents
+
+#### If YES - Ask for File Paths
 
 ```text
 "Please provide the file path(s) to your PM documents:
@@ -795,7 +823,9 @@ Create tool:
  - Feature Map path (or 'skip' if none): "
 ```
 
-**Example paths (typical PM team output structure):**
+#### Example Paths
+
+Typical PM team output structure:
 
 ```text
 docs/pre-dev/{feature-name}/
@@ -807,18 +837,23 @@ docs/pre-dev/{feature-name}/
 └── tasks.md
 ```
 
-**Common patterns:**
+#### Common Patterns
+
 - `/pre-dev-full` output: `docs/pre-dev/{feature}/prd.md`, `trd.md`, `feature-map.md`
 - `/pre-dev-feature` output: `docs/pre-dev/{feature}/prd.md`, `feature-map.md`
 - Custom locations: User may have docs in different paths (e.g., `requirements/`, `specs/`)
 
-**Then → Go to Step 0.3.1 (Generate from PM Documents)**
+#### Then
 
-**If NO → HARD BLOCK (Step 0.3.2)**
+Go to Step 0.3.1 (Generate from PM Documents)
+
+#### If NO
+
+HARD BLOCK (Step 0.3.2)
 
 ### Step 0.3.1: Generate from PM Documents (PRD/TRD/Feature Map)
 
-**Read the provided documents:**
+#### Read the Provided Documents
 
 ```yaml
 # Read PRD if provided
@@ -834,7 +869,7 @@ Read tool:
   file_path: "[user-provided Feature Map path]"
 ```
 
-**Extract PROJECT_RULES.md content from PM Documents:**
+#### Extract PROJECT_RULES.md Content from PM Documents
 
 | From PRD | Extract For PROJECT_RULES.md |
 |----------|------------------------------|
@@ -860,7 +895,7 @@ Read tool:
 | Dependencies between features | Integration patterns |
 | Complexity indicators | Architecture decisions |
 
-**Generate PROJECT_RULES.md:**
+#### Generate PROJECT_RULES.md
 
 ```yaml
 Create tool:
@@ -916,7 +951,7 @@ Create tool:
     *Generated: [ISO timestamp]*
 ```
 
-**Check for missing information:**
+#### Check for Missing Information
 
 If any section is empty or incomplete, ask supplementary questions:
 
@@ -927,11 +962,13 @@ If any section is empty or incomplete, ask supplementary questions:
 | Architecture Patterns | "What architecture pattern will you follow?" |
 | External Integrations | "Are there any external systems to integrate with?" |
 
-**After generation → Present to user for review → Proceed to Step 1**
+#### After Generation
+
+Present to user for review, then proceed to Step 1.
 
 ### Step 0.3.2: HARD BLOCK - No PM Documents (New Projects Only)
 
-**When user indicates they have NO PM documents (PRD/TRD/Feature Map):**
+#### When User Has No PM Documents
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -956,7 +993,9 @@ If any section is empty or incomplete, ask supplementary questions:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**STOP EXECUTION. Do NOT proceed to Step 1.**
+#### Action
+
+STOP EXECUTION. Do NOT proceed to Step 1.
 
 ### Step 0 Anti-Rationalization
 
