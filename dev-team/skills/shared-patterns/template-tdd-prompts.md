@@ -250,7 +250,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 │       subagent_type: "[same agent]"                                         │
 │       model: "opus"                                                         │
 │       prompt: |                                                             │
-│         ⛔ STANDARDS NOT MET - Fix Required                                 │
+│         ⛔ STANDARDS NOT MET - Fix Required (Attempt [N] of 3)              │
 │                                                                             │
 │         Your Standards Coverage Table shows these sections as ❌:           │
 │         [list ❌ sections extracted from table]                              │
@@ -258,8 +258,26 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 │         WebFetch your standards file:                                       │
 │         [URL for agent's standards file]                                    │
 │                                                                             │
+│         ⚠️ CRITICAL: Use EXACT section names from standards-coverage-table.md │
+│                                                                             │
+│         Section Naming Rules (MANDATORY):                                   │
+│         - CANNOT invent section names not in standards-coverage-table.md    │
+│         - CANNOT merge multiple sections into one                           │
+│         - CANNOT rename sections (e.g., "Error Handling" ≠ "Errors")        │
+│         - CANNOT omit sections - mark as N/A with reason if not applicable  │
+│         - MUST use exact spelling and capitalization from the index         │
+│                                                                             │
+│         For N/A sections, format as:                                        │
+│         | N | [Exact Section Name] | N/A | Reason: [why not applicable] |   │
+│                                                                             │
 │         Implement ALL missing sections.                                     │
 │         Return updated Standards Coverage Table with ALL ✅ or N/A.         │
+│                                                                             │
+│         Previous attempt summary:                                           │
+│         - Total sections: [total_sections]                                  │
+│         - Compliant: [compliant]                                            │
+│         - Not applicable: [not_applicable]                                  │
+│         - Non-compliant: [non_compliant]                                    │
 │                                                                             │
 │  5. Max 3 re-dispatch iterations, then STOP and escalate to user            │
 │                                                                             │
