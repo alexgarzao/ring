@@ -245,8 +245,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Requirement | Status | Notes |
 |-------------|--------|-------|
 | Structured JSON logs | **REQUIRED** | With trace_id correlation |
-
-**Distributed tracing** is optional for standalone workers (no external calls).
+| Distributed tracing | **REQUIRED** | For all services, workers, APIs |
 
 ## Handling Pushback
 
