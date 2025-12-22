@@ -274,6 +274,97 @@ Review Gate 0/1 handoff: Service type (API/Worker/Batch), Language, External dep
 | **Logging** | `docker-compose logs app \| head -5 \| jq .` | JSON with timestamp/level/message/service |
 | **Tracing** | `docker-compose logs app \| grep trace_id` | trace_id/span_id present |
 
+## Step 5.1: Validate Code Instrumentation Coverage (MANDATORY)
+
+**⛔ CRITICAL: Code instrumentation is MANDATORY. This validation MUST be performed.**
+
+OpenTelemetry instrumentation is NOT just about injecting the library - the code MUST be instrumented with spans in every layer.
+
+### Instrumentation Coverage Requirements
+
+| Layer | Required Coverage | Validation |
+|-------|-------------------|------------|
+| **Handlers** | 100% of HTTP/gRPC handlers | Every handler MUST have child span |
+| **Services** | 100% of service methods | Every method MUST have child span |
+| **Repositories** | 100% of repository methods | Every DB operation MUST have child span |
+| **External Calls** | 100% of outgoing HTTP/gRPC | MUST use `InjectHTTPContext`/`InjectGRPCContext` |
+| **Queue Operations** | 100% of publish/consume | MUST propagate trace context |
+
+**Minimum Total Coverage: 90%+ of functions MUST have instrumentation.**
+
+### Instrumentation Validation Checklist
+
+**For each layer, verify these patterns exist:**
+
+#### Go Services (using lib-commons)
+```go
+// REQUIRED in EVERY function that does meaningful work:
+logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+ctx, span := tracer.Start(ctx, "layer.operation_name")
+defer span.End()
+```
+
+#### TypeScript Services
+```typescript
+// REQUIRED in EVERY function that does meaningful work:
+const span = tracer.startSpan('layer.operation_name');
+try {
+  // ... work
+} finally {
+  span.end();
+}
+```
+
+### Validation Commands
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| **Span creation in handlers** | `grep -r "tracer.Start" --include="*handler*.go" \| wc -l` | Count ≥ number of handlers |
+| **Span creation in services** | `grep -r "tracer.Start" --include="*service*.go" \| wc -l` | Count ≥ number of service methods |
+| **Span creation in repositories** | `grep -r "tracer.Start" --include="*repo*.go" \| wc -l` | Count ≥ number of repo methods |
+| **Context propagation (HTTP)** | `grep -r "InjectHTTPContext" --include="*.go" \| wc -l` | Count ≥ number of HTTP clients |
+| **Context propagation (gRPC)** | `grep -r "InjectGRPCContext" --include="*.go" \| wc -l` | Count ≥ number of gRPC clients |
+| **defer span.End()** | `grep -r "defer span.End()" --include="*.go" \| wc -l` | Should match span creation count |
+
+### Coverage Calculation
+
+```
+Instrumentation Coverage = (Functions with spans / Total functions) × 100
+
+Where "functions" = handlers + service methods + repository methods
+```
+
+**Example validation output:**
+```
+Handlers:     15/15 instrumented (100%)
+Services:     28/30 instrumented (93%)
+Repositories: 12/12 instrumented (100%)
+HTTP Clients:  5/5  with context injection (100%)
+gRPC Clients:  2/2  with context injection (100%)
+---
+TOTAL: 62/64 = 96.8% coverage ✅ PASS
+```
+
+### Instrumentation Severity Levels
+
+| Severity | Scenario | Gate 2 Status | Action |
+|----------|----------|---------------|--------|
+| **CRITICAL** | No spans in any layer (0% coverage) | FAIL | ❌ Return to Gate 0 |
+| **CRITICAL** | Coverage < 50% | FAIL | ❌ Return to Gate 0 |
+| **HIGH** | Coverage 50-89% | NEEDS_FIXES | ⚠️ Developer must instrument remaining |
+| **PASS** | Coverage ≥ 90% | PASS | ✅ Can proceed |
+
+### Anti-Rationalization for Instrumentation
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "OpenTelemetry library is installed" | Installation ≠ Instrumentation. Library alone does nothing. | **Verify spans exist in code** |
+| "Middleware handles tracing" | Middleware creates root span only. Child spans are REQUIRED. | **Verify spans in ALL layers** |
+| "Small function doesn't need span" | Size is irrelevant. ALL functions need spans for trace completeness. | **Add span to function** |
+| "Will instrument later" | Later = never. Instrumentation is part of implementation. | **Instrument NOW** |
+| "Only external calls need tracing" | Internal operations need tracing for debugging and performance analysis. | **Instrument ALL layers** |
+| "Context propagation is optional" | Without context propagation, distributed traces break. | **MUST use Inject*Context** |
+
 ## Step 6: Prepare Handoff to Gate 3
 
 **Gate 2 Handoff contents:**
@@ -308,11 +399,24 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 - logging_structured: YES/NO
 - tracing_enabled: YES/NO/N/A
 
+### Instrumentation Coverage (MANDATORY)
+| Layer | Instrumented | Total | Coverage |
+|-------|--------------|-------|----------|
+| Handlers | X | Y | Z% |
+| Services | X | Y | Z% |
+| Repositories | X | Y | Z% |
+| HTTP Clients (InjectHTTPContext) | X | Y | Z% |
+| gRPC Clients (InjectGRPCContext) | X | Y | Z% |
+| **TOTAL** | X | Y | **Z%** |
+
+**Coverage Status:** PASS (≥90%) / NEEDS_FIXES (50-89%) / FAIL (<50%)
+
 ### Issues Found
 - List issues by severity (CRITICAL/HIGH/MEDIUM/LOW) or "None"
 
 ### Handoff to Next Gate
 - SRE validation status (complete/needs_fixes)
 - Observability endpoints validated
+- Instrumentation coverage: X% (PASS/NEEDS_FIXES/FAIL)
 - Issues for developers to fix (if any)
 - Ready for testing: YES/NO
