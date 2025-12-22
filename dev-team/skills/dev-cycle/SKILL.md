@@ -1582,144 +1582,49 @@ For current execution unit:
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use dev-sre
+**REQUIRED SUB-SKILL:** Use `dev-sre`
 
-### ⛔ HARD GATE: Observability MUST Be Validated
-
-**Gate 2 is a BLOCKING gate.** SRE agent VALIDATES that observability was correctly implemented in Gate 0. If ANY observability requirement is missing:
-- You CANNOT proceed to Gate 3
-- You MUST dispatch fix to the IMPLEMENTATION agent (backend-engineer-golang, etc.) - NOT SRE
-- You MUST re-run SRE validation after fixes
-- You MUST repeat until ALL observability requirements pass
-
-**SRE validates. Implementation agents fix. SRE does NOT implement.**
-
-### Required Observability (from sre.md)
-
-**See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "sre → sre.md" for ALL required sections.**
-
-### Step 4.1: Dispatch SRE Agent for Validation
+### Execution
 
 ```text
-For current execution unit:
-
 1. Record gate start timestamp
-2. Dispatch SRE agent (ALWAYS - validation is not optional):
 
-   Task tool:
-     subagent_type: "sre"
-     model: "opus"
-     description: "Validate observability for [unit_id]"
-     prompt: |
-       ⛔ VALIDATE Observability Implementation for: [unit_id]
-
-       ## Service Information:
-       - Language: [Go/TypeScript]
-       - Service type: [API/Worker/Batch]
-       - Implementation agent: [agent that did Gate 0]
-       - Files from Gate 0: [list of implementation files]
-
-       ## Standards Reference:
-       WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md
-       
-       You MUST validate ALL sections from sre.md. See standards-coverage-table.md
-       for the complete list: sre → sre.md
-
-       ## Your Role:
-       - VALIDATE that observability is implemented correctly
-       - Do NOT implement - only verify and report
-       - If issues found → Report them with severity and file:line
-
-       ## Required Output:
-
-       ### Standards Coverage Table (Validation Results)
-       | # | Section (from sre.md) | Status | Evidence |
-       |---|----------------------|--------|----------|
-       | 1 | Logging Standards | ✅/❌ | [file:line or "NOT FOUND"] |
-       | 2 | Tracing Standards | ✅/❌ | [file:line or "NOT FOUND"] |
-       | 3 | OpenTelemetry with lib-commons | ✅/❌ | [file:line or "NOT FOUND"] |
-       | 4 | Health Checks | ✅/❌ | [file:line or "NOT FOUND"] |
-       | ... | ... | ... | ... |
-
-       ### Issues Found (if any ❌)
-       For each ❌ section:
-       - **Section:** [name]
-       - **Severity:** CRITICAL/HIGH/MEDIUM
-       - **What's Missing:** [specific requirement not met]
-       - **Expected:** [what should exist per sre.md]
-       - **Fix Required By:** [implementation agent name]
-
-       ### Compliance Summary
-       - **ALL OBSERVABILITY VALIDATED:** ✅ YES / ❌ NO
-       - **If NO, sections failing:** [list]
-
-3. Parse agent output and check validation results
-```
-
-### Step 4.2: Handle Validation Results (HARD GATE)
-
-```text
-4. Parse SRE agent output for Standards Coverage Table:
-
-   IF "ALL OBSERVABILITY VALIDATED: ✅ YES" AND all sections have ✅ or N/A:
-     → Gate 2 PASSED. Proceed to Step 4.4.
-
-   IF ANY section has ❌:
-     → Gate 2 BLOCKED. Observability not implemented correctly.
-     → Extract ❌ sections and issues from SRE report
-     → Dispatch fix to IMPLEMENTATION agent (NOT SRE):
-```
-
-### Step 4.3: Dispatch Fix to Implementation Agent
-
-```text
-   ⛔ IMPORTANT: SRE validates. Implementation agents fix.
+2. Invoke dev-sre skill:
+   Skill("dev-sre")
    
-   Determine which agent implemented Gate 0:
-   - Go code → backend-engineer-golang
-   - TypeScript backend → backend-engineer-typescript
-   - React/Frontend → frontend-engineer
+   The skill handles:
+   - Dispatching SRE agent for validation
+   - Structured logging validation
+   - Distributed tracing validation
+   - Code instrumentation coverage (90%+ required)
+   - Context propagation validation (InjectHTTPContext/InjectGRPCContext)
+   - Dispatching fixes to implementation agent if needed
+   - Re-validation loop (max 3 iterations)
 
-   Task tool:
-     subagent_type: "[implementation agent from Gate 0]"
-     model: "opus"
-     description: "Fix observability issues for [unit_id]"
-     prompt: |
-       ⛔ FIX REQUIRED - Observability Not Implemented
+3. Parse skill output for validation results:
+   
+   IF skill returns PASS:
+     → Gate 2 PASSED. Proceed to Step 4.2.
+   
+   IF skill returns FAIL or NEEDS_FIXES:
+     → Gate 2 BLOCKED. 
+     → Skill already dispatched fixes to implementation agent
+     → Skill already re-ran validation
+     → If still failing after 3 iterations: STOP and escalate to user
 
-       SRE validation found these observability issues:
-
-       ## Issues to Fix (from SRE report):
-       [paste ❌ sections and issues from SRE output]
-
-       ## Standards Reference:
-       For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-       For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-       
-       Focus on:
-       - Telemetry & Observability section
-       - Logging Standards section
-       - Bootstrap Pattern (telemetry initialization)
-
-       ## Requirements:
-       1. Implement ALL missing observability per standards
-       2. For Go: lib-commons v2 telemetry, NewTrackingFromContext, spans
-       3. For TS: lib-common-js logging, structured JSON
-       4. Return Standards Coverage Table showing ALL observability ✅
-
-   → After fix: Re-dispatch SRE agent to validate again
-   → Increment metrics.sre_iterations
-   → Max 3 iterations, then STOP and escalate to user
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → "docs/refactor/current-cycle.json"
 ```
 
-### Step 4.4: Gate 2 Complete
+### Step 4.2: Gate 2 Complete
 
 ```text
-5. When all observability validated:
+5. When dev-sre skill returns PASS:
    - agent_outputs.sre = {
        agent: "sre",
-       output: "[full agent output]",
+       output: "[skill output]",
        validation_result: "PASS",
+       instrumentation_coverage: "[X%]",
        iterations: [count],
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time]
@@ -1728,31 +1633,25 @@ For current execution unit:
 6. Update state:
    - gate_progress.sre.status = "completed"
    - gate_progress.sre.observability_validated = true
+   - gate_progress.sre.instrumentation_coverage = "[X%]"
 
-7. **⛔ SAVE STATE TO FILE (MANDATORY):**
-   Write tool → "docs/refactor/current-cycle.json"
-
-8. Proceed to Gate 3
+7. Proceed to Gate 3
 ```
 
 ### Gate 2 Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Observability can be added later" | Observability is v1 requirement. Debugging blind code is impossible. | **Fix NOW before Gate 3** |
-| "SRE should implement the fix" | SRE validates. Implementation agents implement. Role separation. | **Dispatch to implementation agent** |
-| "Only logging is missing, tracing optional" | ALL observability sections are MANDATORY per sre.md. | **Implement ALL sections** |
-| "Simple service doesn't need full observability" | Complexity is irrelevant. Standards apply uniformly. | **Implement ALL sections** |
-| "Tests pass, skip observability" | Tests ≠ observability. Different concerns. | **Validate observability separately** |
-| "lib-commons already handles it" | lib-commons provides tools. You must USE them correctly. | **Verify correct usage** |
+See [dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalization tables covering:
+- Observability deferral rationalizations
+- Instrumentation coverage rationalizations
+- Context propagation rationalizations
 
 ### Gate 2 Pressure Resistance
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Without it, you cannot debug production issues. I'm dispatching SRE to validate now." |
-| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. I MUST dispatch fixes to [implementation agent] before proceeding. SRE validates, implementation fixes." |
-| "Just mark observability as N/A" | "Observability is ALWAYS applicable for services. N/A requires explicit technical reason. I'm dispatching validation now." |
+| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking dev-sre skill now." |
+| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. dev-sre skill handles fix dispatch and re-validation." |
+| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. dev-sre skill will not pass until met." |
 
 ## Step 5: Gate 3 - Testing (Per Execution Unit)
 
