@@ -507,9 +507,19 @@ Read tool:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-#### Step 0.2.1a: Automated Codebase Analysis
+#### Step 0.2.1a: Automated Codebase Analysis (MANDATORY)
+
+**⛔ You MUST use the Task tool to dispatch BOTH agents. This is NOT implicit.**
 
 **Dispatch TWO agents in PARALLEL to analyze the legacy project:**
+
+```text
+Action: Use Task tool with EXACTLY these parameters for EACH agent:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  ⛔ If Task tool NOT used → Analysis does NOT happen → PROJECT_RULES.md INVALID │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ```yaml
 # Agent 1: Codebase Explorer - Technical Analysis
@@ -605,6 +615,13 @@ Task tool:
     ### Business Constraints
     [Validations, invariants found]
 ```
+
+**VERIFICATION (MANDATORY):** After BOTH agents complete, confirm:
+- [ ] `codebase-explorer` returned "## Technical Analysis (Legacy Project)" section
+- [ ] `business-logic-reviewer` returned "## Business Domain Analysis (Legacy Project)" section
+- [ ] Both outputs contain non-empty content
+
+**If either agent failed or returned empty output → Re-dispatch that agent. Cannot proceed without both analyses.**
 
 #### Step 0.2.1b: Supplementary Questions (Only What Agents Can't Determine)
 
@@ -946,7 +963,7 @@ If any section is empty or incomplete, ask supplementary questions:
 | "I know what I want to build" | Your knowledge ≠ documented knowledge agents can use. | **Document in PRD/TRD/Feature Map** |
 | "PM workflow takes too long" | PM workflow takes 30-60 min. Rework from unclear requirements takes days. | **Invest time upfront** |
 | "Just let me start coding" | Coding without requirements = building the wrong thing. | **Requirements first, code second** |
-| "It's legacy but I don't want to answer questions" | Legacy questionnaire takes 5 min. Without it, agents have zero context. | **Answer the 5 questions** |
+| "It's legacy but I don't want to answer questions" | Legacy analysis takes ~5 min. Without it, agents have zero context. | **Answer the 4 questions** |
 | "Legacy project is too complex to explain" | Start with high-level answers. PROJECT_RULES.md can be refined later. | **Provide what you know NOW** |
 
 ### Pressure Resistance
@@ -957,7 +974,7 @@ If any section is empty or incomplete, ask supplementary questions:
 | "I don't need formal documents" | "PM documents are the source of truth for PROJECT_RULES.md. Development cannot start without documented requirements." |
 | "This is just a quick prototype" | "Even prototypes need clear requirements. `/pre-dev-feature` takes ~30 minutes and prevents hours of rework." |
 | "I already explained what I want verbally" | "Verbal explanations cannot be used by agents. Requirements MUST be documented in PRD/TRD/Feature Map files." |
-| "It's a legacy project but skip the questions" | "The legacy questionnaire is the only way I can understand your project. It takes ~5 minutes and enables me to help you effectively." |
+| "It's a legacy project but skip the questions" | "The legacy analysis (agents + 4 questions) is the only way I can understand your project. It takes ~5 minutes and enables me to help you effectively." |
 | "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with at least: Project Overview, Technical Stack, and Business Domain. Then run `/dev-cycle` again." |
 
 ---
