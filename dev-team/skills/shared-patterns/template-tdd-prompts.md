@@ -133,10 +133,8 @@ IF pass_output is empty OR contains "FAIL":
 
 | What | Source | Defines |
 |------|--------|---------|
-| **Tech stack choices** | PROJECT_RULES.md | Which DB, which framework, which cache |
+| **Tech stack choices** | PROJECT_RULES.md | Only if not in Ring Standards (e.g., specific DB, cache) |
 | **Internal libraries** | PROJECT_RULES.md | lib-commons, shared packages |
-| **Project-specific conventions** | PROJECT_RULES.md | Naming patterns if different from Ring Standards |
-| **Domain terminology** | PROJECT_RULES.md | Business terms, entity names |
 
 **Priority:** Ring Standards > PROJECT_RULES.md (project can add, not remove standards)
 
