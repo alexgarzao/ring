@@ -87,6 +87,135 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 **Summary:** You orchestrate. Agents execute. If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
+## ⛔ ORCHESTRATOR BOUNDARIES (HARD GATE)
+
+**This section defines exactly what the orchestrator CAN and CANNOT do.**
+
+### What Orchestrator CAN Do (PERMITTED)
+
+| Action | Tool | Purpose |
+|--------|------|---------|
+| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` |
+| Read state files | `Read` | Load/verify `docs/refactor/current-cycle.json` |
+| Read PROJECT_RULES.md | `Read` | Load project-specific rules |
+| Write state files | `Write` | Persist cycle state to JSON |
+| Track progress | `TodoWrite` | Maintain task list |
+| Dispatch agents | `Task` | Send work to specialist agents |
+| Ask user questions | `AskUserQuestion` | Get execution mode, approvals |
+| WebFetch standards | `WebFetch` | Load Ring standards |
+
+### What Orchestrator CANNOT Do (FORBIDDEN)
+
+| Action | Tool | Why FORBIDDEN |
+|--------|------|---------------|
+| Read source code | `Read` on `*.go`, `*.ts`, `*.tsx` | Agent reads code, not orchestrator |
+| Write source code | `Write`/`Create` on `*.go`, `*.ts` | Agent writes code, not orchestrator |
+| Edit source code | `Edit` on `*.go`, `*.ts`, `*.tsx` | Agent edits code, not orchestrator |
+| Run tests | `Execute` with `go test`, `npm test` | Agent runs tests in TDD cycle |
+| Analyze code | Direct pattern analysis | `codebase-explorer` analyzes |
+| Make architectural decisions | Choosing patterns/libraries | User decides, agent implements |
+
+### The 3-FILE RULE
+
+**If a task requires editing MORE than 3 files → MUST dispatch specialist agent.**
+
+This is NOT negotiable:
+- 1-3 files of non-source content (markdown, json, yaml) → Orchestrator MAY edit directly
+- 1+ source code files (`*.go`, `*.ts`, `*.tsx`) → MUST dispatch agent
+- 4+ files of ANY type → MUST dispatch agent
+
+### Orchestrator Workflow Order (MANDATORY)
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  CORRECT WORKFLOW ORDER                                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. Load task file (Read docs/pre-dev/*/tasks.md)              │
+│  2. Ask execution mode (AskUserQuestion)                        │
+│  3. Check/Load state (Read docs/refactor/current-cycle.json)   │
+│  4. WebFetch Ring Standards                                     │
+│  5. ⛔ DISPATCH SPECIALIST AGENT ← Immediate after standards   │
+│  6. Wait for agent completion                                   │
+│  7. Verify agent output (Standards Coverage Table)              │
+│  8. Update state (Write to JSON)                               │
+│  9. Proceed to next gate                                        │
+│                                                                 │
+│  ════════════════════════════════════════════════════════════   │
+│  ❌ WRONG: Load → Mode → Standards → [START CODING DIRECTLY]   │
+│  ✅ RIGHT: Load → Mode → Standards → DISPATCH AGENT → Wait     │
+│  ════════════════════════════════════════════════════════════   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Agent Dispatch is IMMEDIATE (HARD GATE)
+
+**The moment you identify the task language/type, dispatch the agent. No intermediate steps.**
+
+| Task Type | Immediate Action |
+|-----------|------------------|
+| Go implementation | `Task(subagent_type="backend-engineer-golang", ...)` |
+| TypeScript backend | `Task(subagent_type="backend-engineer-typescript", ...)` |
+| React/Frontend | `Task(subagent_type="frontend-engineer", ...)` |
+| BFF layer | `Task(subagent_type="frontend-bff-engineer-typescript", ...)` |
+| Infrastructure | `Task(subagent_type="devops-engineer", ...)` |
+| Observability validation | `Task(subagent_type="sre", ...)` |
+| Testing | `Task(subagent_type="qa-analyst", ...)` |
+| Code review | 3 parallel: `code-reviewer`, `business-logic-reviewer`, `security-reviewer` |
+
+**Between "WebFetch standards" and "Dispatch agent" there should be ZERO other actions.**
+
+### Anti-Rationalization for Direct Coding
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's just one small file" | File count doesn't determine agent need. Language does. | **DISPATCH specialist agent** |
+| "I already loaded the standards" | Loading standards ≠ permission to implement. Standards are for AGENTS. | **DISPATCH specialist agent** |
+| "Agent dispatch adds overhead" | Overhead ensures compliance. Skip = skip verification. | **DISPATCH specialist agent** |
+| "I can write Go/TypeScript" | Knowing language ≠ having Ring standards loaded. Agent has them. | **DISPATCH specialist agent** |
+| "Just a quick fix" | "Quick" is irrelevant. ALL source changes require specialist. | **DISPATCH specialist agent** |
+| "I'll read the file first to understand" | Reading source → temptation to edit. Agent reads for you. | **DISPATCH specialist agent** |
+| "Let me check if tests pass first" | Agent runs tests in TDD cycle. You don't run tests. | **DISPATCH specialist agent** |
+
+### Red Flags - Orchestrator Violation in Progress
+
+**If you catch yourself doing ANY of these, STOP IMMEDIATELY:**
+
+```text
+🚨 RED FLAG: About to Read *.go or *.ts file
+   → STOP. Dispatch agent instead.
+
+🚨 RED FLAG: About to Write/Create source code
+   → STOP. Dispatch agent instead.
+
+🚨 RED FLAG: About to Edit source code
+   → STOP. Dispatch agent instead.
+
+🚨 RED FLAG: About to run "go test" or "npm test"
+   → STOP. Agent runs tests, not you.
+
+🚨 RED FLAG: Thinking "I'll just..."
+   → STOP. "Just" is the warning word. Dispatch agent.
+
+🚨 RED FLAG: Thinking "This is simple enough..."
+   → STOP. Simplicity is irrelevant. Dispatch agent.
+
+🚨 RED FLAG: Standards loaded, but next action is NOT Task tool
+   → STOP. After standards, IMMEDIATELY dispatch agent.
+```
+
+### Recovery from Orchestrator Violation
+
+If you violated orchestrator boundaries:
+
+1. **STOP** current execution immediately
+2. **DISCARD** any direct changes (`git checkout -- .`)
+3. **DISPATCH** the correct specialist agent
+4. **Agent implements** from scratch following TDD
+5. **Document** the violation for feedback loop
+
+**Sunk cost of direct work is IRRELEVANT. Agent dispatch is MANDATORY.**
+
 ## Blocker Criteria - STOP and Report
 
 | Decision Type | Examples | Action |
