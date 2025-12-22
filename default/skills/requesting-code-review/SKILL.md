@@ -23,30 +23,30 @@ related:
   complementary: [dev-cycle, dev-implementation, dev-testing]
 
 input_schema:
-  required:
+  required: []  # All inputs optional for standalone usage
+  optional:
     - name: unit_id
       type: string
-      description: "Task or subtask identifier"
+      description: "Task or subtask identifier (auto-generated if not provided)"
     - name: base_sha
       type: string
-      description: "Git SHA before implementation (for diff)"
+      description: "Git SHA before implementation (auto-detected via git merge-base HEAD main)"
     - name: head_sha
       type: string
-      description: "Git SHA after implementation (current)"
+      description: "Git SHA after implementation (auto-detected via git rev-parse HEAD)"
     - name: implementation_summary
       type: string
-      description: "Summary of what was implemented"
+      description: "Summary of what was implemented (auto-generated from git log if not provided)"
     - name: requirements
       type: string
-      description: "Requirements or acceptance criteria"
-  optional:
+      description: "Requirements or acceptance criteria (reviewers will infer from code if not provided)"
     - name: implementation_files
       type: array
       items: string
-      description: "List of files changed"
+      description: "List of files changed (auto-detected via git diff if not provided)"
     - name: gate0_handoff
       type: object
-      description: "Full handoff from Gate 0"
+      description: "Full handoff from Gate 0 (only when called from dev-cycle)"
     - name: skip_reviewers
       type: array
       items: string
@@ -142,24 +142,54 @@ Dispatch all three reviewer subagents in **parallel** for fast, comprehensive fe
 
 ---
 
-## Step 1: Validate Input
+## Step 1: Gather Context (Auto-Detect if Not Provided)
 
 ```text
-REQUIRED INPUT (from dev-cycle orchestrator):
-- unit_id: [task/subtask being reviewed]
-- base_sha: [git SHA before implementation]
-- head_sha: [git SHA after implementation]
-- implementation_summary: [what was implemented]
-- requirements: [acceptance criteria]
+This skill supports TWO modes:
+1. WITH INPUTS: Called by any skill/user that provides structured inputs (unit_id, base_sha, etc.)
+2. STANDALONE: Called directly without inputs - auto-detects everything from git
 
-OPTIONAL INPUT:
-- implementation_files: [list of changed files]
-- gate0_handoff: [full Gate 0 output]
-- skip_reviewers: [reviewers to skip - use sparingly]
+FOR EACH INPUT, check if provided OR auto-detect:
 
-IF any REQUIRED input is missing:
-  → STOP and report: "Missing required input: [field]"
-  → Return to orchestrator with error
+1. unit_id:
+   IF provided → use it
+   ELSE → generate: "review-" + timestamp (e.g., "review-20241222-143052")
+
+2. base_sha:
+   IF provided → use it
+   ELSE → Execute: git merge-base HEAD main
+   IF git fails → Execute: git rev-parse HEAD~10 (fallback to last 10 commits)
+
+3. head_sha:
+   IF provided → use it
+   ELSE → Execute: git rev-parse HEAD
+
+4. implementation_files:
+   IF provided → use it
+   ELSE → Execute: git diff --name-only [base_sha] [head_sha]
+
+5. implementation_summary:
+   IF provided → use it
+   ELSE → Execute: git log --oneline [base_sha]..[head_sha]
+   Format as: "Changes: [list of commit messages]"
+
+6. requirements:
+   IF provided → use it
+   ELSE → Set to: "Infer requirements from code changes and commit messages"
+   (Reviewers will analyze code to understand intent)
+
+AFTER AUTO-DETECTION, display context:
+┌─────────────────────────────────────────────────────────────────┐
+│ 📋 CODE REVIEW CONTEXT                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ Unit ID: [unit_id]                                              │
+│ Base SHA: [base_sha]                                            │
+│ Head SHA: [head_sha]                                            │
+│ Files Changed: [count] files                                    │
+│ Commits: [count] commits                                        │
+│                                                                 │
+│ Dispatching 3 reviewers in parallel...                          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Step 2: Initialize Review State

@@ -16,7 +16,7 @@ NOT_skip_when: |
 
 sequence:
   after: [dev-implementation, dev-devops, dev-sre]
-  before: [dev-review]
+  before: [requesting-code-review]
 
 related:
   complementary: [test-driven-development, qa-analyst]

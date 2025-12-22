@@ -25,7 +25,7 @@ sequence:
   before: [dev-feedback-loop]
 
 related:
-  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, dev-review, dev-validation, dev-feedback-loop]
+  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, requesting-code-review, dev-validation, dev-feedback-loop]
 
 verification:
   automated:
@@ -355,7 +355,7 @@ Day 4: Production incident from Day 1 code
 | 1 | dev-devops | Infrastructure and deployment | devops-engineer |
 | 2 | dev-sre | Observability (health, logging, tracing) | sre |
 | 3 | dev-testing | Unit tests for acceptance criteria | qa-analyst |
-| 4 | dev-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
+| 4 | requesting-code-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
 | 5 | dev-validation | Final acceptance validation | N/A (verification) |
 
 ## Integrated PM → Dev Workflow

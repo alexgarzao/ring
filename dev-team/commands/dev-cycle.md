@@ -62,7 +62,7 @@ Execute the development cycle for tasks in a markdown file.
 | 1 | `dev-devops` | Create Docker/compose |
 | 2 | `dev-sre` | Observability (health checks, logging, tracing) |
 | 3 | `dev-testing` | Write and run tests |
-| 4 | `dev-review` | Code review (3 reviewers) |
+| 4 | `requesting-code-review` | Code review (3 reviewers in parallel) |
 | 5 | `dev-validation` | Final validation |
 
 **Note:** Tasks are loaded at initialization, not as a separate gate.

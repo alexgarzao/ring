@@ -294,7 +294,7 @@ No "should work" → Only "does work" with proof
 - `dev-devops` - Gate 1: DevOps setup (Docker, compose)
 - `dev-sre` - Gate 2: Observability setup
 - `dev-testing` - Gate 3: Test coverage
-- `dev-review` - Gate 4: Parallel code review
+- `requesting-code-review` - Gate 4: Parallel code review (3 reviewers)
 - `dev-validation` - Gate 5: User approval
 - `dev-feedback-loop` - Assertiveness scoring and metrics
 
