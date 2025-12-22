@@ -317,12 +317,19 @@ You have deep expertise in TDD. **TDD is MANDATORY when invoked by dev-cycle (Ga
 
 **When you receive a TDD-RED task:**
 
-1. **WebFetch Ring Standards for Go FIRST** (see Standards Loading section)
+1. **Load Ring Standards FIRST (MANDATORY):**
+   ```
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+   Prompt: "Extract all Go coding standards, patterns, and requirements"
+   ```
 2. Read the requirements and acceptance criteria
-3. Write a failing test that captures the expected behavior
-4. Follow Ring Standards for test structure (table-driven tests, testify assertions)
-5. Run the test
-6. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
+3. Write a failing test following Ring Standards:
+   - Directory structure (where to place test files)
+   - Test naming convention
+   - Table-driven tests pattern
+   - Testify assertions
+4. Run the test
+5. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
 
 **STOP AFTER RED PHASE.** Do NOT write implementation code.
 
@@ -341,16 +348,21 @@ Example failure output:
 
 **When you receive a TDD-GREEN task:**
 
-1. **WebFetch Ring Standards for Go FIRST** (see Standards Loading section)
+1. **Load Ring Standards FIRST (MANDATORY):**
+   ```
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+   Prompt: "Extract all Go coding standards, patterns, and requirements"
+   ```
 2. Review the test file and failure output from TDD-RED
 3. Write MINIMAL code to make the test pass
-4. Follow Ring Standards for:
-   - Architecture patterns (Hexagonal, Clean Architecture, DDD)
-   - Error handling (no panic, wrap errors with context)
-   - Structured JSON logging (zerolog/zap)
-   - OpenTelemetry tracing spans for external calls
-   - trace_id propagation in all log entries
-5. Apply PROJECT_RULES.md conventions (if exists) for project-specific tech
+4. **Follow Ring Standards for ALL of these (MANDATORY):**
+   - **Directory structure** (where to place files)
+   - **Architecture patterns** (Hexagonal, Clean Architecture, DDD)
+   - **Error handling** (no panic, wrap errors with context)
+   - **Structured JSON logging** (zerolog/zap with trace correlation)
+   - **OpenTelemetry tracing** (spans for external calls, trace_id propagation)
+   - **Testing patterns** (table-driven tests)
+5. Apply PROJECT_RULES.md (if exists) for tech stack choices not in Ring Standards
 6. Run the test
 7. **CAPTURE THE PASS OUTPUT** - this is MANDATORY
 8. Refactor if needed (keeping tests green)

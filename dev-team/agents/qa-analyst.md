@@ -683,12 +683,23 @@ The following testing standards MUST be followed when designing and implementing
 
 **When you receive a TDD-RED task:**
 
-1. **WebFetch Ring Standards for the project language FIRST** (see Standards Loading section)
+1. **Load Ring Standards FIRST (MANDATORY):**
+   ```
+   # For Go projects:
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+   Prompt: "Extract all Go coding standards, patterns, and requirements"
+   
+   # For TypeScript projects:
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+   Prompt: "Extract all TypeScript coding standards, patterns, and requirements"
+   ```
 2. Read the requirements and acceptance criteria
-3. Write a failing test that captures the expected behavior
-4. Follow Ring Standards for test structure
-5. Run the test
-6. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
+3. Write a failing test following Ring Standards:
+   - Directory structure (where to place test files)
+   - Test naming convention
+   - Test patterns (table-driven for Go, describe/it for TypeScript)
+4. Run the test
+5. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
 
 **STOP AFTER RED PHASE.** Do NOT write implementation code.
 
@@ -701,11 +712,26 @@ The following testing standards MUST be followed when designing and implementing
 
 **When you receive a TDD-GREEN task:**
 
-1. **WebFetch Ring Standards for the project language FIRST** (see Standards Loading section)
+1. **Load Ring Standards FIRST (MANDATORY):**
+   ```
+   # For Go projects:
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+   Prompt: "Extract all Go coding standards, patterns, and requirements"
+   
+   # For TypeScript projects:
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+   Prompt: "Extract all TypeScript coding standards, patterns, and requirements"
+   ```
 2. Review the test file and failure output from TDD-RED
 3. Write MINIMAL code to make the test pass
-4. Follow Ring Standards for architecture, error handling, logging, and tracing
-5. Apply PROJECT_RULES.md conventions (if exists) for project-specific tech
+4. **Follow Ring Standards for ALL of these (MANDATORY):**
+   - **Directory structure** (where to place files)
+   - **Architecture patterns** (Hexagonal/Clean Architecture, DDD)
+   - **Error handling** (no panic for Go, Result type for TypeScript)
+   - **Structured JSON logging** (with trace correlation)
+   - **OpenTelemetry tracing** (spans for external calls, trace_id propagation)
+   - **Testing patterns** (table-driven for Go, describe/it for TypeScript)
+5. Apply PROJECT_RULES.md (if exists) for tech stack choices not in Ring Standards
 6. Run the test
 7. **CAPTURE THE PASS OUTPUT** - this is MANDATORY
 8. Refactor if needed (keeping tests green)

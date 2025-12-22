@@ -415,12 +415,19 @@ You have deep expertise in TDD. **TDD is MANDATORY when invoked by dev-cycle (Ga
 
 **When you receive a TDD-RED task:**
 
-1. **WebFetch Ring Standards for TypeScript FIRST** (see Standards Loading section)
+1. **Load Ring Standards FIRST (MANDATORY):**
+   ```
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+   Prompt: "Extract all TypeScript coding standards, patterns, and requirements"
+   ```
 2. Read the requirements and acceptance criteria
-3. Write a failing test that captures the expected behavior
-4. Follow Ring Standards for test structure (Vitest/Jest, describe/it blocks)
-5. Run the test
-6. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
+3. Write a failing test following Ring Standards:
+   - Directory structure (where to place test files)
+   - Test naming convention
+   - Vitest/Jest describe/it blocks
+   - Type-safe assertions
+4. Run the test
+5. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
 
 **STOP AFTER RED PHASE.** Do NOT write implementation code.
 
@@ -442,17 +449,22 @@ FAIL  src/auth/auth.service.test.ts
 
 **When you receive a TDD-GREEN task:**
 
-1. **WebFetch Ring Standards for TypeScript FIRST** (see Standards Loading section)
+1. **Load Ring Standards FIRST (MANDATORY):**
+   ```
+   WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+   Prompt: "Extract all TypeScript coding standards, patterns, and requirements"
+   ```
 2. Review the test file and failure output from TDD-RED
 3. Write MINIMAL code to make the test pass
-4. Follow Ring Standards for:
-   - Architecture patterns (Clean Architecture, DDD)
-   - Error handling (Result type, AppError, no throw in business logic)
-   - Structured JSON logging (pino/winston with createLogger)
-   - OpenTelemetry tracing spans for external calls
-   - trace_id propagation in all log entries
-   - Type safety (no `any`, branded types, Zod validation)
-5. Apply PROJECT_RULES.md conventions (if exists) for project-specific tech
+4. **Follow Ring Standards for ALL of these (MANDATORY):**
+   - **Directory structure** (where to place files)
+   - **Architecture patterns** (Clean Architecture, DDD)
+   - **Error handling** (Result type, AppError, no throw in business logic)
+   - **Structured JSON logging** (pino/winston with trace correlation)
+   - **OpenTelemetry tracing** (spans for external calls, trace_id propagation)
+   - **Type safety** (no `any`, branded types, Zod validation)
+   - **Testing patterns** (describe/it blocks, mocking)
+5. Apply PROJECT_RULES.md (if exists) for tech stack choices not in Ring Standards
 6. Run the test
 7. **CAPTURE THE PASS OUTPUT** - this is MANDATORY
 8. Refactor if needed (keeping tests green)
