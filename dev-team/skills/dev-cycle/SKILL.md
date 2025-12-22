@@ -413,9 +413,552 @@ After each gate, the state file MUST reflect:
 
 **NON-NEGOTIABLE. Cycle CANNOT proceed without project standards.**
 
-**Check:** (1) docs/PROJECT_RULES.md (2) docs/STANDARDS.md (legacy) (3) --resume state file → Found: Proceed | NOT Found: STOP with blocker `missing_prerequisite`
+### Step 0 Flow
 
-**Pressure Resistance:** "Standards slow us down" → No target = guessing = rework | "Use defaults" → Defaults are generic, YOUR project has specific conventions | "Create later" → Later = refactoring
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Check: Does docs/PROJECT_RULES.md exist?                                   │
+│                                                                             │
+│  ├── YES → Proceed to Step 1 (Initialize or Resume)                        │
+│  │                                                                          │
+│  └── NO → ASK: "Is this a LEGACY project (created without PM workflow)?"   │
+│       │                                                                     │
+│       ├── YES (legacy project) → LEGACY PROJECT ANALYSIS:                   │
+│       │   Step 1: Dispatch agents IN PARALLEL:                              │
+│       │     • codebase-explorer (technical: stack, patterns, features)      │
+│       │     • business-logic-reviewer (domain: entities, rules, workflows)  │
+│       │   Step 2: Ask 4 questions (what agents can't determine):            │
+│       │     1. What do you need help with?                                  │
+│       │     2. Why was this project created?                                │
+│       │     3. Any business rules NOT visible in code?                      │
+│       │     4. Any specific technology not in dev-team standards?           │
+│       │   Step 3: Combine outputs → Generate PROJECT_RULES.md               │
+│       │   → Proceed to Step 1                                               │
+│       │                                                                     │
+│       └── NO (new project) → ASK: "Do you have PRD, TRD, or Feature Map?"  │
+│           │                                                                 │
+│           ├── YES (has PM docs) → "Please provide the file path(s)"        │
+│           │   → Read PRD/TRD/Feature Map → Extract info                    │
+│           │   → Generate PROJECT_RULES.md                                  │
+│           │   → Ask supplementary questions if info is incomplete          │
+│           │   → Save and proceed to Step 1                                 │
+│           │                                                                 │
+│           └── NO (no PM docs) → ⛔ HARD BLOCK:                              │
+│               "PM documents are REQUIRED for new projects.                  │
+│                Run /pre-dev-full or /pre-dev-feature first."               │
+│               → STOP (cycle cannot proceed)                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Step 0.1: Check for PROJECT_RULES.md
+
+```yaml
+# Check if file exists
+Read tool:
+  file_path: "docs/PROJECT_RULES.md"
+
+# If file exists and has content → Proceed to Step 1
+# If file does not exist OR is empty → Continue to Step 0.2
+```
+
+### Step 0.2: Check if Legacy Project
+
+**ASK the user using AskUserQuestion:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 📋 PROJECT_RULES.md NOT FOUND                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ I need to create docs/PROJECT_RULES.md to understand your       │
+│ project's specific conventions and domain.                      │
+│                                                                 │
+│ First, I need to know: Is this a LEGACY project?                │
+│                                                                 │
+│ A legacy project is one that was created WITHOUT using the      │
+│ PM team workflow (no PRD, TRD, or Feature Map documents).       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Question:** "Is this a legacy project (created without PM team workflow)?"
+**Options:** (a) Yes, this is a legacy project (b) No, this is a new project following Ring workflow
+
+**If YES (legacy) → Go to Step 0.2.1 (Legacy Questionnaire)**
+
+**If NO (new project) → Go to Step 0.3 (Check for PM Documents)**
+
+### Step 0.2.1: Legacy Project Analysis (Agents + Questions)
+
+**For legacy projects, combine automated analysis with targeted questions:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 📋 LEGACY PROJECT ANALYSIS                                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Since this is a legacy project, I'll analyze the codebase       │
+│ first, then ask a few questions about business context.         │
+│                                                                 │
+│ Step 1: Automated analysis (codebase-explorer + business-logic) │
+│ Step 2: Ask what only you know (business context, goals)        │
+│ Step 3: Generate PROJECT_RULES.md                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 0.2.1a: Automated Codebase Analysis
+
+**Dispatch TWO agents in PARALLEL to analyze the legacy project:**
+
+```yaml
+# Agent 1: Codebase Explorer - Technical Analysis
+Task tool:
+  subagent_type: "codebase-explorer"
+  model: "opus"
+  description: "Analyze legacy project for PROJECT_RULES.md"
+  prompt: |
+    Analyze this LEGACY codebase to extract technical information for PROJECT_RULES.md.
+    
+    This is an existing project created without PM documentation.
+    Your job is to understand what exists in the code.
+    
+    **Extract:**
+    1. **Project Structure:** Directory layout, module organization
+    2. **Technical Stack:** Languages, frameworks, databases, external services
+    3. **Architecture Patterns:** Clean Architecture, MVC, microservices, etc.
+    4. **Existing Features:** Main modules, endpoints, capabilities
+    5. **Internal Libraries:** Shared packages, utilities
+    6. **Configuration:** Environment variables, config patterns
+    7. **Database:** Schema patterns, migrations, ORM usage
+    8. **External Integrations:** APIs consumed, message queues
+    
+    **Output format:**
+    ## Technical Analysis (Legacy Project)
+    
+    ### Project Overview
+    [What this project appears to do based on code analysis]
+    
+    ### Technical Stack
+    - Language: [detected]
+    - Framework: [detected]
+    - Database: [detected]
+    - External Services: [detected]
+    
+    ### Architecture Patterns
+    [Detected patterns]
+    
+    ### Existing Features
+    [List of features/modules found]
+    
+    ### Project Structure
+    [Directory layout explanation]
+    
+    ### Configuration
+    [Env vars, config files found]
+    
+    ### External Integrations
+    [APIs, services detected]
+
+# Agent 2: Business Logic Reviewer - Domain Analysis
+Task tool:
+  subagent_type: "business-logic-reviewer"
+  model: "opus"
+  description: "Analyze legacy project domain for PROJECT_RULES.md"
+  prompt: |
+    Analyze this LEGACY codebase to extract business domain information for PROJECT_RULES.md.
+    
+    This is an existing project created without PM documentation.
+    Your job is to understand the business logic from the code.
+    
+    **IMPORTANT:** This is NOT a code review. Do NOT provide VERDICT or issues.
+    Focus on understanding what the business logic does.
+    
+    **Extract:**
+    1. **Business Domain:** What business problem does this appear to solve?
+    2. **Domain Terminology:** Key terms, entities, concepts used
+    3. **Business Rules:** Validation rules, calculations, constraints in code
+    4. **Domain Entities:** Main entities/models and relationships
+    5. **Business Workflows:** Key processes/flows implemented
+    6. **Constraints:** Business invariants, validation rules
+    
+    **Output format:**
+    ## Business Domain Analysis (Legacy Project)
+    
+    ### Inferred Business Domain
+    [What business this project serves based on code]
+    
+    ### Domain Terminology
+    | Term | Definition (inferred from code) |
+    |------|--------------------------------|
+    | [term] | [definition] |
+    
+    ### Business Rules Found
+    [List of explicit rules in code]
+    
+    ### Domain Entities
+    [Main entities and relationships]
+    
+    ### Business Workflows
+    [Key processes found in code]
+    
+    ### Business Constraints
+    [Validations, invariants found]
+```
+
+#### Step 0.2.1b: Supplementary Questions (Only What Agents Can't Determine)
+
+**After agents complete, ask ONLY what they couldn't determine from code:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ✓ Codebase Analysis Complete                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ I've analyzed your codebase. Now I need a few details that      │
+│ only you can provide (not visible in the code).                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Questions to ask (use AskUserQuestion for each):**
+
+| # | Question | Why Agents Can't Determine This |
+|---|----------|--------------------------------|
+| 1 | **What do you need help with?** (Current task/feature/fix) | Future intent, not in code |
+| 2 | **Why was this project created?** (Business context, original problem) | Historical context, not in code |
+| 3 | **Any business rules NOT visible in code?** (Implicit rules, external constraints) | Undocumented requirements |
+| 4 | **Any specific technology not in dev-team standards?** (Custom libs, internal tools, proprietary tech) | Project-specific tech not in Ring standards |
+
+#### Step 0.2.1c: Generate PROJECT_RULES.md
+
+**Combine agent outputs + user answers:**
+
+```yaml
+Create tool:
+  file_path: "docs/PROJECT_RULES.md"
+  content: |
+    # Project Rules
+    
+    > Generated from legacy project analysis.
+    > Technical details extracted by codebase-explorer and business-logic-reviewer.
+    > Business context provided by developer.
+    > Update this file as the project evolves.
+    
+    ## Project Overview
+    
+    [From codebase-explorer: Project Overview]
+    
+    ## Business Domain
+    
+    [From business-logic-reviewer: Inferred Business Domain]
+    [From User Question 2: Why was this project created?]
+    
+    ## Current Development Goal
+    
+    [From User Question 1: What do you need help with?]
+    
+    ## Technical Stack
+    
+    [From codebase-explorer: Technical Stack - full details]
+    
+    ## Architecture Patterns
+    
+    [From codebase-explorer: Architecture Patterns]
+    
+    ## Existing Features
+    
+    [From codebase-explorer: Existing Features]
+    
+    ## Project Structure
+    
+    [From codebase-explorer: Project Structure]
+    
+    ## Domain Terminology
+    
+    [From business-logic-reviewer: Domain Terminology table]
+    
+    ## Business Rules
+    
+    ### From Code Analysis
+    [From business-logic-reviewer: Business Rules Found]
+    
+    ### Additional Rules (from developer)
+    [From User Question 3: Any business rules NOT visible in code?]
+    
+    ## Project-Specific Technology
+    
+    [From User Question 4: Any specific technology not in dev-team standards?]
+    
+    ## Domain Entities
+    
+    [From business-logic-reviewer: Domain Entities]
+    
+    ## Business Workflows
+    
+    [From business-logic-reviewer: Business Workflows]
+    
+    ## External Integrations
+    
+    [From codebase-explorer: External Integrations]
+    
+    ## Configuration
+    
+    [From codebase-explorer: Configuration]
+    
+    ---
+    
+    *Generated: [ISO timestamp]*
+    *Source: Legacy project analysis (codebase-explorer + business-logic-reviewer + developer input)*
+    *Last Updated: [ISO timestamp]*
+```
+
+**Present to user:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ✓ PROJECT_RULES.md Generated for Legacy Project                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ I analyzed your codebase using:                                 │
+│   • codebase-explorer (technical patterns, stack, structure)    │
+│   • business-logic-reviewer (domain, entities, rules)           │
+│                                                                 │
+│ Combined with your input on:                                    │
+│   • Current development goal                                    │
+│   • Business context                                            │
+│   • Additional business rules                                   │
+│                                                                 │
+│ Generated: docs/PROJECT_RULES.md                                │
+│                                                                 │
+│ Please review the file and make any corrections needed.         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**ASK for approval using AskUserQuestion:**
+- Question: "PROJECT_RULES.md has been generated. Would you like to review it before proceeding?"
+- Options: (a) Proceed (b) Open for editing first
+
+**After approval → Proceed to Step 1**
+
+### Step 0.3: Check for PM Documents (PRD/TRD/Feature Map)
+
+**For NEW projects (not legacy), ask about PM documents:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 📋 NEW PROJECT - PM DOCUMENTS CHECK                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Since this is a new project following Ring workflow, you        │
+│ should have PM documents from the pre-dev workflow.             │
+│                                                                 │
+│ Do you have any of these PM documents?                          │
+│   • PRD (Product Requirements Document)                         │
+│   • TRD (Technical Requirements Document)                       │
+│   • Feature Map (from pre-dev-feature-map skill)                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Question:** "Do you have PRD, TRD, or Feature Map documents for this project?"
+**Options:** (a) Yes, I have PM documents (b) No, I don't have these documents
+
+**If YES → Ask for file paths:**
+
+```
+"Please provide the file path(s) to your PM documents:
+ - PRD path (or 'skip' if none): 
+ - TRD path (or 'skip' if none): 
+ - Feature Map path (or 'skip' if none): "
+```
+
+**Example paths (typical PM team output structure):**
+
+```
+docs/pre-dev/{feature-name}/
+├── prd.md              → PRD path: docs/pre-dev/auth-system/prd.md
+├── trd.md              → TRD path: docs/pre-dev/auth-system/trd.md
+├── feature-map.md      → Feature Map path: docs/pre-dev/auth-system/feature-map.md
+├── api-design.md
+├── data-model.md
+└── tasks.md
+```
+
+**Common patterns:**
+- `/pre-dev-full` output: `docs/pre-dev/{feature}/prd.md`, `trd.md`, `feature-map.md`
+- `/pre-dev-feature` output: `docs/pre-dev/{feature}/prd.md`, `feature-map.md`
+- Custom locations: User may have docs in different paths (e.g., `requirements/`, `specs/`)
+
+**Then → Go to Step 0.3.1 (Generate from PM Documents)**
+
+**If NO → HARD BLOCK (Step 0.3.2)**
+
+### Step 0.3.1: Generate from PM Documents (PRD/TRD/Feature Map)
+
+**Read the provided documents:**
+
+```yaml
+# Read PRD if provided
+Read tool:
+  file_path: "[user-provided PRD path]"
+
+# Read TRD if provided  
+Read tool:
+  file_path: "[user-provided TRD path]"
+
+# Read Feature Map if provided
+Read tool:
+  file_path: "[user-provided Feature Map path]"
+```
+
+**Extract PROJECT_RULES.md content from PM Documents:**
+
+| From PRD | Extract For PROJECT_RULES.md |
+|----------|------------------------------|
+| Problem statement | Project Overview |
+| User stories / Features | Business Domain context |
+| Domain terms, entities | Domain Terminology (Glossary) |
+| Business rules, constraints | Business Rules |
+| Acceptance criteria patterns | Validation rules |
+
+| From TRD | Extract For PROJECT_RULES.md |
+|----------|------------------------------|
+| Architecture decisions | Architecture Patterns |
+| Tech stack | Technical Stack |
+| Database design | Database Patterns |
+| API contracts | External Integrations |
+| Component structure | Project Structure |
+
+| From Feature Map | Extract For PROJECT_RULES.md |
+|------------------|------------------------------|
+| Technology choices | Technical Stack (primary source) |
+| Feature groupings | Project Structure / Module organization |
+| Feature relationships | Domain Entities relationships |
+| Dependencies between features | Integration patterns |
+| Complexity indicators | Architecture decisions |
+
+**Generate PROJECT_RULES.md:**
+
+```yaml
+Create tool:
+  file_path: "docs/PROJECT_RULES.md"
+  content: |
+    # Project Rules
+    
+    > Auto-generated from PM documents (PRD/TRD/Feature Map).
+    > Review and update as needed.
+    
+    ## Project Overview
+    
+    [From PRD: Problem statement, product vision]
+    
+    ## Domain Terminology
+    
+    | Term | Definition |
+    |------|------------|
+    [From PRD: Domain entities, concepts mentioned]
+    [From Feature Map: Feature names and their relationships]
+    
+    ## Business Rules
+    
+    [From PRD: Explicit business rules, constraints, validations]
+    
+    ## Technical Stack
+    
+    [From Feature Map: Technology choices - PRIMARY SOURCE]
+    [From TRD: Languages, frameworks, databases - supplementary]
+    
+    ## Architecture Patterns
+    
+    [From TRD: Architecture decisions, patterns chosen]
+    [From Feature Map: Complexity indicators, feature dependencies]
+    
+    ## Project Structure
+    
+    [From Feature Map: Feature groupings - PRIMARY SOURCE]
+    [From TRD: Component/module organization]
+    
+    ## Database Patterns
+    
+    [From TRD: Database design, schema patterns]
+    
+    ## External Integrations
+    
+    [From TRD: APIs, external services, message queues]
+    [From Feature Map: Feature dependencies on external systems]
+    
+    ---
+    
+    *Generated from: [PRD path], [TRD path], [Feature Map path]*
+    *Generated: [ISO timestamp]*
+```
+
+**Check for missing information:**
+
+If any section is empty or incomplete, ask supplementary questions:
+
+| Missing Section | Supplementary Question |
+|-----------------|------------------------|
+| Domain Terminology | "What are the main entities/concepts in your domain?" |
+| Business Rules | "What are the key business rules or constraints?" |
+| Architecture Patterns | "What architecture pattern will you follow?" |
+| External Integrations | "Are there any external systems to integrate with?" |
+
+**After generation → Present to user for review → Proceed to Step 1**
+
+### Step 0.3.2: HARD BLOCK - No PM Documents (New Projects Only)
+
+**When user indicates they have NO PM documents (PRD/TRD/Feature Map):**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ⛔ CANNOT PROCEED - PM DOCUMENTS REQUIRED                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Development cannot start without PM documents.                  │
+│                                                                 │
+│ You MUST create PRD, TRD, and/or Feature Map documents first    │
+│ using PM team skills:                                           │
+│                                                                 │
+│   /pre-dev-full     → For features ≥2 days (9 gates)           │
+│   /pre-dev-feature  → For features <2 days (4 gates)           │
+│                                                                 │
+│ These commands will guide you through creating:                 │
+│   • PRD (Product Requirements Document)                         │
+│   • TRD (Technical Requirements Document)                       │
+│   • Feature Map (technology choices, feature relationships)     │
+│                                                                 │
+│ After completing pre-dev workflow, run /dev-cycle again.        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**STOP EXECUTION. Do NOT proceed to Step 1.**
+
+### Step 0 Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Skip PM docs, I'll add them later" | Later = never. No PM docs = no project context = agents guessing. | **Run /pre-dev-full or /pre-dev-feature NOW** |
+| "Project is simple, doesn't need PM docs" | Simple projects still need domain context defined upfront. | **Create PM documents first** |
+| "I know what I want to build" | Your knowledge ≠ documented knowledge agents can use. | **Document in PRD/TRD/Feature Map** |
+| "PM workflow takes too long" | PM workflow takes 30-60 min. Rework from unclear requirements takes days. | **Invest time upfront** |
+| "Just let me start coding" | Coding without requirements = building the wrong thing. | **Requirements first, code second** |
+| "It's legacy but I don't want to answer questions" | Legacy questionnaire takes 5 min. Without it, agents have zero context. | **Answer the 5 questions** |
+| "Legacy project is too complex to explain" | Start with high-level answers. PROJECT_RULES.md can be refined later. | **Provide what you know NOW** |
+
+### Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just skip this, I'll create PM docs later" | "PM documents are REQUIRED for new projects. Without them, agents cannot understand your project's domain, business rules, or technical requirements. Run `/pre-dev-full` or `/pre-dev-feature` first." |
+| "I don't need formal documents" | "PM documents are the source of truth for PROJECT_RULES.md. Development cannot start without documented requirements." |
+| "This is just a quick prototype" | "Even prototypes need clear requirements. `/pre-dev-feature` takes ~30 minutes and prevents hours of rework." |
+| "I already explained what I want verbally" | "Verbal explanations cannot be used by agents. Requirements MUST be documented in PRD/TRD/Feature Map files." |
+| "It's a legacy project but skip the questions" | "The legacy questionnaire is the only way I can understand your project. It takes ~5 minutes and enables me to help you effectively." |
+| "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with at least: Project Overview, Technical Stack, and Business Domain. Then run `/dev-cycle` again." |
 
 ---
 
