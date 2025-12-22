@@ -6,7 +6,7 @@ Canonical source for the complete standards loading and handling workflow used b
 
 All dev-team agents MUST follow this workflow before any work:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Step 1: Read PROJECT_RULES.md                              │
 │  ├─ Exists? → Continue to Step 2                            │
