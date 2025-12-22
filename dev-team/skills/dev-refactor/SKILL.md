@@ -53,9 +53,9 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 
 **Not all architecture patterns apply to all services.** Before flagging gaps, verify the pattern is applicable.
 
-| Service Type | Hexagonal/Clean Architecture | DDD Patterns |
-|--------------|------------------------------|--------------|
-| CRUD API (with domains, entities) | ✅ APPLY | ✅ APPLY |
+| Service Type | Hexagonal/Clean Architecture | Directory Structure |
+|--------------|------------------------------|---------------------|
+| CRUD API (with services, adapters) | ✅ APPLY | ✅ APPLY (Core one pattern) |
 | Complex business logic | ✅ APPLY | ✅ APPLY |
 | Multiple bounded contexts | ✅ APPLY | ✅ APPLY |
 | Event-driven systems | ✅ APPLY | ✅ APPLY |
@@ -66,19 +66,19 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 
 ### Detection Criteria
 
-**CRUD API (Hexagonal/DDD APPLICABLE):**
+**CRUD API (Hexagonal/Core one Pattern APPLICABLE):**
 - Service exposes API endpoints (REST, gRPC, GraphQL)
-- Contains domain entities and models
+- Contains business logic and models
 - Has CRUD operations (Create, Read, Update, Delete)
 - Uses repositories for data access
-- → **MUST follow Hexagonal Architecture and DDD patterns**
+- → **MUST follow Hexagonal Architecture and Core one directory pattern**
 
-**Simple Service (Hexagonal/DDD NOT applicable):**
+**Simple Service (Hexagonal/Core one NOT applicable):**
 - CLI tools and scripts
 - Workers and background jobs
 - Simple utility functions
 - Lambda functions with single responsibility
-- No domain model or entities
+- No business logic layer
 
 ### Agent Instruction
 
@@ -86,10 +86,10 @@ When dispatching specialist agents, include:
 
 ```
 ⛔ ARCHITECTURE APPLICABILITY CHECK:
-1. If service is an API with CRUD operations and domains → APPLY Hexagonal/DDD standards
-2. If service is CLI tool, script, or simple utility → Do NOT flag Hexagonal/DDD gaps
+1. If service is an API with CRUD operations → APPLY Hexagonal/Core one standards
+2. If service is CLI tool, script, or simple utility → Do NOT flag Hexagonal/Core one gaps
 
-CRUD APIs with domain entities MUST follow Hexagonal Architecture (ports/adapters) and DDD patterns.
+CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Core one directory pattern.
 ```
 
 ---

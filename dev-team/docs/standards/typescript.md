@@ -23,10 +23,9 @@ This file defines the specific standards for TypeScript (backend) development.
 | 8 | [Testing Patterns](#testing-patterns) | Type-safe mocks, fixtures |
 | 9 | [Error Handling](#error-handling) | Custom error classes |
 | 10 | [Function Design](#function-design-mandatory) | Single responsibility principle |
-| 11 | [DDD Patterns](#ddd-patterns-typescript-implementation) | Entity, Value Object, Aggregate |
-| 12 | [Naming Conventions](#naming-conventions) | Files, interfaces, types |
-| 13 | [Directory Structure](#directory-structure-backend) | Project layout |
-| 14 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
+| 11 | [Naming Conventions](#naming-conventions) | Files, interfaces, types |
+| 12 | [Directory Structure](#directory-structure-backend) | Project layout (Core one pattern) |
+| 13 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
 
 **Meta-sections (not checked by agents):**
 - [Checklist](#checklist) - Self-verification before submitting code
@@ -621,311 +620,6 @@ function applyDiscount(total: number, couponCode?: string): number {
 
 ---
 
-## DDD Patterns (TypeScript Implementation)
-
-DDD patterns are MANDATORY for all TypeScript services.
-
-### Entity
-
-```typescript
-// Entity - object with identity that persists over time
-import { z } from 'zod';
-
-// Branded type for ID
-type UserId = Brand<string, 'UserId'>;
-
-// Entity class
-class User {
-    constructor(
-        public readonly id: UserId,
-        public email: Email,
-        public name: string,
-        public readonly createdAt: Date,
-        public updatedAt: Date,
-    ) {}
-
-    // Identity comparison - entities are equal if IDs match
-    equals(other: User): boolean {
-        return this.id === other.id;
-    }
-
-    // Domain behavior
-    changeName(newName: string): void {
-        if (newName.length < 1) {
-            throw new DomainError('Name cannot be empty');
-        }
-        this.name = newName;
-        this.updatedAt = new Date();
-    }
-}
-```
-
-### Value Object
-
-```typescript
-// Value Object - immutable, defined by attributes, no identity
-class Money {
-    private constructor(
-        private readonly amount: number, // cents to avoid float issues
-        private readonly currency: string,
-    ) {}
-
-    // Factory with validation
-    static create(amount: number, currency: string): Result<Money, ValidationError> {
-        if (!currency || currency.length !== 3) {
-            return { success: false, error: new ValidationError('Invalid currency') };
-        }
-        return { success: true, data: new Money(amount, currency) };
-    }
-
-    // Operations return new instances (immutable)
-    add(other: Money): Result<Money, DomainError> {
-        if (this.currency !== other.currency) {
-            return { success: false, error: new DomainError('Currency mismatch') };
-        }
-        return { success: true, data: new Money(this.amount + other.amount, this.currency) };
-    }
-
-    // Value comparison - equal if all attributes match
-    equals(other: Money): boolean {
-        return this.amount === other.amount && this.currency === other.currency;
-    }
-
-    // Getters
-    getAmount(): number { return this.amount; }
-    getCurrency(): string { return this.currency; }
-}
-
-// Value Object with Zod validation
-const emailSchema = z.string().email();
-type Email = z.infer<typeof emailSchema> & { __brand: 'Email' };
-
-function createEmail(value: string): Result<Email, ValidationError> {
-    const result = emailSchema.safeParse(value);
-    if (!result.success) {
-        return { success: false, error: new ValidationError(result.error) };
-    }
-    return { success: true, data: value as Email };
-}
-```
-
-### Aggregate Root
-
-```typescript
-// Aggregate Root - entry point for cluster of entities
-class Order {
-    private readonly events: DomainEvent[] = [];
-
-    constructor(
-        public readonly id: OrderId,
-        public readonly customerId: CustomerId,
-        private items: OrderItem[],
-        private status: OrderStatus,
-        private total: Money,
-    ) {}
-
-    // All modifications through Aggregate Root
-    addItem(product: Product, quantity: number): Result<void, DomainError> {
-        // Enforce invariants
-        if (this.status !== 'draft') {
-            return { success: false, error: new DomainError('Order is not modifiable') };
-        }
-
-        const item = OrderItem.create(product, quantity);
-        this.items.push(item);
-        this.recalculateTotal();
-
-        // Emit domain event
-        this.events.push(new OrderItemAdded({
-            orderId: this.id,
-            productId: product.id,
-            quantity,
-        }));
-
-        return { success: true, data: undefined };
-    }
-
-    // Invariant enforcement
-    submit(): Result<void, DomainError> {
-        if (this.items.length === 0) {
-            return { success: false, error: new DomainError('Order cannot be empty') };
-        }
-        if (this.status !== 'draft') {
-            return { success: false, error: new DomainError('Order already submitted') };
-        }
-
-        this.status = 'submitted';
-        this.events.push(new OrderSubmitted({ orderId: this.id }));
-
-        return { success: true, data: undefined };
-    }
-
-    // Get pending events for publishing
-    pullEvents(): DomainEvent[] {
-        const events = [...this.events];
-        this.events.length = 0;
-        return events;
-    }
-
-    private recalculateTotal(): void {
-        // ... recalculate total from items
-    }
-}
-```
-
-### Domain Event
-
-```typescript
-// Domain Event - record of something that happened (past tense)
-interface DomainEvent {
-    readonly eventName: string;
-    readonly occurredAt: Date;
-    readonly payload: Record<string, unknown>;
-}
-
-class OrderSubmitted implements DomainEvent {
-    readonly eventName = 'order.submitted';
-    readonly occurredAt = new Date();
-
-    constructor(
-        readonly payload: {
-            orderId: OrderId;
-            customerId?: CustomerId;
-            total?: Money;
-        }
-    ) {}
-}
-
-// Event Publisher interface
-interface EventPublisher {
-    publish(events: DomainEvent[]): Promise<void>;
-}
-```
-
-### Repository Pattern
-
-```typescript
-// Repository interface (port) - collection-like API
-interface OrderRepository {
-    findById(id: OrderId): Promise<Order | null>;
-    findByCustomer(customerId: CustomerId): Promise<Order[]>;
-    save(order: Order): Promise<void>;
-    delete(id: OrderId): Promise<void>;
-}
-
-// Prisma implementation (adapter)
-class PrismaOrderRepository implements OrderRepository {
-    constructor(
-        private readonly prisma: PrismaClient,
-        private readonly eventPublisher: EventPublisher,
-    ) {}
-
-    async findById(id: OrderId): Promise<Order | null> {
-        const data = await this.prisma.order.findUnique({
-            where: { id },
-            include: { items: true },
-        });
-        return data ? this.toDomain(data) : null;
-    }
-
-    async save(order: Order): Promise<void> {
-        await this.prisma.$transaction(async (tx) => {
-            await tx.order.upsert({
-                where: { id: order.id },
-                create: this.toData(order),
-                update: this.toData(order),
-            });
-
-            // Publish domain events
-            const events = order.pullEvents();
-            await this.eventPublisher.publish(events);
-        });
-    }
-
-    private toDomain(data: OrderData): Order {
-        // Map database model to domain entity
-    }
-
-    private toData(order: Order): OrderData {
-        // Map domain entity to database model
-    }
-}
-```
-
-### Domain Service
-
-```typescript
-// Domain Service - business logic that doesn't belong to entities
-class PricingService {
-    constructor(
-        private readonly discountRepo: DiscountRepository,
-        private readonly taxService: TaxService,
-    ) {}
-
-    // Cross-aggregate operation
-    async calculateOrderTotal(
-        items: OrderItem[],
-        customerId: CustomerId,
-    ): Promise<Result<Money, DomainError>> {
-        const subtotal = this.calculateSubtotal(items);
-
-        const discount = await this.discountRepo.findForCustomer(customerId);
-        const withDiscountResult = discount
-            ? subtotal.subtract(discount.amount)
-            : { success: true as const, data: subtotal };
-
-        if (!withDiscountResult.success) {
-            return withDiscountResult;
-        }
-
-        const taxResult = await this.taxService.calculate(withDiscountResult.data);
-        if (!taxResult.success) {
-            return taxResult;
-        }
-
-        return withDiscountResult.data.add(taxResult.data);
-    }
-
-    private calculateSubtotal(items: OrderItem[]): Money {
-        return items.reduce(
-            (sum, item) => sum.add(item.total).data!,
-            Money.create(0, 'USD').data!,
-        );
-    }
-}
-```
-
-### DDD Directory Structure
-
-```
-/src
-  /domain                    # Core domain (no external dependencies)
-    /order
-      order.ts               # Aggregate root
-      order-item.ts          # Child entity
-      order-status.ts        # Value object / enum
-      order-events.ts        # Domain events
-      order-repository.ts    # Repository interface (port)
-    /shared
-      money.ts               # Shared value object
-      domain-error.ts        # Domain errors
-      domain-event.ts        # Event interface
-  /application               # Use cases / Application services
-    /order
-      create-order.ts        # Command handler
-      get-order.ts           # Query handler
-  /infrastructure            # Adapters
-    /persistence
-      prisma-order-repository.ts
-    /messaging
-      rabbitmq-event-publisher.ts
-  /api                       # HTTP handlers
-    /order
-      order-controller.ts
-```
-
----
-
 ## Naming Conventions
 
 | Element | Convention | Example |
@@ -941,31 +635,38 @@ class PricingService {
 
 ## Directory Structure (Backend)
 
+The directory structure follows the **Core one pattern** - a simplified hexagonal architecture without explicit DDD folders.
+
 ```
 /src
-  /domain              # Business entities
-    user.ts
-    errors.ts
+  /bootstrap           # Application initialization
+    config.ts
+    server.ts
+    service.ts
   /services            # Business logic
-    user-service.ts
-  /repositories        # Data access
-    user-repository.ts
-    /implementations
-      postgres-user-repository.ts
-  /handlers            # HTTP handlers
-    user-handler.ts
-  /middleware          # Express/Fastify middleware
-    auth.ts
-    error-handler.ts
+    /command           # Write operations (use cases)
+    /query             # Read operations (use cases)
+  /adapters            # Infrastructure implementations
+    /http/in           # HTTP handlers + routes
+    /grpc/in           # gRPC handlers (if needed)
+    /postgres          # PostgreSQL repositories
+    /mongodb           # MongoDB repositories
+    /redis             # Redis repositories
+    /rabbitmq          # RabbitMQ producers/consumers
   /lib                 # Utilities
     db.ts
     logger.ts
-  /types               # Shared types
+  /types               # Shared types and models
     index.ts
 /tests
   /unit
   /integration
 ```
+
+**Key differences from traditional DDD:**
+- **No `/src/domain` folder** - Business entities live in `/src/types` or within service files
+- **Services are the core** - `/src/services` contains all business logic (command/query pattern)
+- **Adapters are flat** - Database repositories are organized by technology, not by domain
 
 ---
 

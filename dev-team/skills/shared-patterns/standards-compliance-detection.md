@@ -118,14 +118,14 @@ If detection is ambiguous, INCLUDE Standards Compliance section. Better to over-
 ### Section Name Validation
 
 **For golang.md, section names MUST be:**
-- Version, Core Dependency: lib-commons, Frameworks & Libraries, Configuration Loading, Telemetry & Observability, Bootstrap Pattern, Data Transformation: ToEntity/FromEntity, Error Codes Convention, Error Handling, Function Design, Pagination Patterns, Testing Patterns, Logging Standards, Linting, Architecture Patterns, Directory Structure, Concurrency Patterns, DDD Patterns, RabbitMQ Worker Pattern
+- Version, Core Dependency: lib-commons, Frameworks & Libraries, Configuration Loading, Telemetry & Observability, Bootstrap Pattern, Data Transformation: ToEntity/FromEntity, Error Codes Convention, Error Handling, Function Design, Pagination Patterns, Testing Patterns, Logging Standards, Linting, Architecture Patterns, Directory Structure, Concurrency Patterns, RabbitMQ Worker Pattern
 
 **NOT:**
 - ❌ "Error Handling" (missing "Error Codes Convention" as separate row)
 - ❌ "Logging" (should be "Logging Standards")
 - ❌ "Configuration" (should be "Configuration Loading")
 - ❌ "Security" (not a section in golang.md)
-- ❌ "DDD" (should be "DDD Patterns")
+- ❌ "Bootstrap" (should be "Bootstrap Pattern")
 
 ### Anti-Rationalization for Section Names
 

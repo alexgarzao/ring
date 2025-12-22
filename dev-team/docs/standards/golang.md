@@ -30,10 +30,9 @@ This file defines the specific standards for Go development at Lerian Studio.
 | 15 | [Logging Standards](#logging-standards) | Structured logging with lib-commons |
 | 16 | [Linting](#linting) | golangci-lint configuration |
 | 17 | [Architecture Patterns](#architecture-patterns) | Hexagonal architecture |
-| 18 | [Directory Structure](#directory-structure) | Project layout |
+| 18 | [Directory Structure](#directory-structure) | Project layout (Core one pattern) |
 | 19 | [Concurrency Patterns](#concurrency-patterns) | Goroutines, channels, errgroup |
-| 20 | [DDD Patterns](#ddd-patterns-go-implementation) | Entity, Value Object, Aggregate |
-| 21 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
+| 20 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
 
 **Meta-sections (not checked by agents):**
 - [Standards Compliance Output Format](#standards-compliance-output-format) - Report format for dev-refactor
@@ -2352,6 +2351,8 @@ type UseCase struct {
 
 ## Directory Structure
 
+The directory structure follows the **Core one pattern** - a simplified hexagonal architecture without explicit DDD folders.
+
 ```text
 /cmd
   /app                   # Main application entry
@@ -2360,8 +2361,9 @@ type UseCase struct {
   /bootstrap             # Initialization (config, servers)
     config.go
     fiber.server.go
+    grpc.server.go       # (if service uses gRPC)
+    rabbitmq.server.go   # (if service uses RabbitMQ)
     service.go
-  /domain                # Business entities
   /services              # Business logic
     /command             # Write operations (use cases)
     /query               # Read operations (use cases)
@@ -2372,6 +2374,7 @@ type UseCase struct {
     /postgres            # PostgreSQL repositories
     /mongodb             # MongoDB repositories
     /redis               # Redis repositories
+    /rabbitmq            # RabbitMQ producers/consumers
 /pkg
   /constant              # Constants and error codes
   /mmodel                # Shared models
@@ -2379,6 +2382,11 @@ type UseCase struct {
 /api                     # OpenAPI/Swagger specs
 /migrations              # Database migrations
 ```
+
+**Key differences from traditional DDD:**
+- **No `/internal/domain` folder** - Business entities live in `/pkg/mmodel` or within service files
+- **Services are the core** - `/internal/services` contains all business logic (command/query pattern)
+- **Adapters are flat** - Database repositories are organized by technology, not by domain
 
 ---
 
@@ -2422,79 +2430,6 @@ func workerPool(ctx context.Context, jobs <-chan Job, results chan<- Result) {
             results <- process(job)
         }
     }
-}
-```
-
----
-
-## DDD Patterns (Go Implementation)
-
-DDD patterns are MANDATORY for all Go services.
-
-### Entity
-
-```go
-type User struct {
-    ID        UserID    // Value object for identity
-    Email     Email     // Value object
-    Name      string
-    CreatedAt time.Time
-    UpdatedAt time.Time
-}
-
-func (u User) Equals(other User) bool {
-    return u.ID == other.ID
-}
-```
-
-### Value Object
-
-```go
-type Money struct {
-    amount   int64  // cents to avoid float issues
-    currency string
-}
-
-func NewMoney(amount int64, currency string) (Money, error) {
-    if currency == "" {
-        return Money{}, errors.New("currency is required")
-    }
-    return Money{amount: amount, currency: currency}, nil
-}
-
-func (m Money) Add(other Money) (Money, error) {
-    if m.currency != other.currency {
-        return Money{}, ErrCurrencyMismatch
-    }
-    return Money{amount: m.amount + other.amount, currency: m.currency}, nil
-}
-```
-
-### Aggregate Root
-
-```go
-type Order struct {
-    ID         OrderID
-    CustomerID CustomerID
-    Items      []OrderItem
-    Status     OrderStatus
-    events     []DomainEvent
-}
-
-func (o *Order) AddItem(product Product, quantity int) error {
-    if o.Status != OrderStatusDraft {
-        return ErrOrderNotModifiable
-    }
-
-    o.Items = append(o.Items, OrderItem{...})
-    o.events = append(o.events, OrderItemAdded{...})
-    return nil
-}
-
-func (o *Order) PullEvents() []DomainEvent {
-    events := o.events
-    o.events = nil
-    return events
 }
 ```
 
