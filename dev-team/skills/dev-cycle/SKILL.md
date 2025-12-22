@@ -1184,7 +1184,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 **Gate 0 has TWO explicit sub-phases with a HARD GATE between them:**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │  GATE 0.1: TDD-RED                                              │
 │  ─────────────────                                              │
@@ -1231,7 +1231,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
    ```
 
 8. **Display to user:**
-   ```
+   ```text
    ┌─────────────────────────────────────────────────┐
    │ ✓ TDD-RED COMPLETE                              │
    ├─────────────────────────────────────────────────┤
@@ -1278,7 +1278,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
    ```
 
 6. **Display to user:**
-   ```
+   ```text
    ┌─────────────────────────────────────────────────┐
    │ ✓ GATE 0 COMPLETE (TDD-RED → TDD-GREEN)        │
    ├─────────────────────────────────────────────────┤
@@ -1302,7 +1302,7 @@ See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-pr
 **Process:**
 
 1. **Parse TDD-GREEN agent output for "## Standards Coverage Table"**
-   ```
+   ```text
    IF "## Standards Coverage Table" NOT FOUND in agent output:
      → Output INCOMPLETE
      → Re-dispatch to SAME agent with prompt:
@@ -1311,14 +1311,14 @@ See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-pr
    ```
 
 2. **Parse "ALL STANDARDS MET:" value from "## Compliance Summary"**
-   ```
+   ```text
    IF "ALL STANDARDS MET:" NOT FOUND:
      → Output INCOMPLETE
      → Re-dispatch agent (same as above)
    ```
 
 3. **Verify compliance:**
-   ```
+   ```text
    IF "ALL STANDARDS MET: ✅ YES" AND all sections ✅ or N/A:
      → Gate 0 PASSED
      → Continue to step 4
