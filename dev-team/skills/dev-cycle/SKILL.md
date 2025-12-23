@@ -135,35 +135,52 @@ This is NOT negotiable:
 │  2. Ask execution mode (AskUserQuestion)                        │
 │  3. Determine state path + Check/Load state (see State Path Selection) │
 │  4. WebFetch Ring Standards                                     │
-│  5. ⛔ DISPATCH SPECIALIST AGENT ← Immediate after standards   │
-│  6. Wait for agent completion                                   │
-│  7. Verify agent output (Standards Coverage Table)              │
-│  8. Update state (Write to JSON)                               │
-│  9. Proceed to next gate                                        │
+│  5. ⛔ LOAD SUB-SKILL for current gate (Skill tool)            │
+│  6. Execute sub-skill instructions (dispatch agent via Task)    │
+│  7. Wait for agent completion                                   │
+│  8. Verify agent output (Standards Coverage Table)              │
+│  9. Update state (Write to JSON)                               │
+│  10. Proceed to next gate                                       │
 │                                                                 │
 │  ════════════════════════════════════════════════════════════   │
-│  ❌ WRONG: Load → Mode → Standards → [START CODING DIRECTLY]   │
-│  ✅ RIGHT: Load → Mode → Standards → DISPATCH AGENT → Wait     │
+│  ❌ WRONG: Load → Mode → Standards → Task(agent) directly       │
+│  ✅ RIGHT: Load → Mode → Standards → Skill(sub) → Task(agent)   │
 │  ════════════════════════════════════════════════════════════   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Agent Dispatch is IMMEDIATE (HARD GATE)
+### ⛔ SUB-SKILL LOADING IS MANDATORY (HARD GATE)
 
-**The moment you identify the task language/type, dispatch the agent. No intermediate steps.**
+**Before dispatching ANY agent, you MUST load the corresponding sub-skill first.**
 
-| Task Type | Immediate Action |
-|-----------|------------------|
-| Go implementation | `Task(subagent_type="backend-engineer-golang", ...)` |
-| TypeScript backend | `Task(subagent_type="backend-engineer-typescript", ...)` |
-| React/Frontend | `Task(subagent_type="frontend-engineer", ...)` |
-| BFF layer | `Task(subagent_type="frontend-bff-engineer-typescript", ...)` |
-| Infrastructure | `Task(subagent_type="devops-engineer", ...)` |
-| Observability validation | `Task(subagent_type="sre", ...)` |
-| Testing | `Task(subagent_type="qa-analyst", ...)` |
-| Code review | 3 parallel: `code-reviewer`, `business-logic-reviewer`, `security-reviewer` |
+| Gate | Sub-Skill to Load | Then Dispatch Agent |
+|------|-------------------|---------------------|
+| Gate 0 | `Skill("dev-implementation")` | `Task(subagent_type="backend-engineer-*", ...)` |
+| Gate 1 | `Skill("dev-devops")` | `Task(subagent_type="devops-engineer", ...)` |
+| Gate 2 | `Skill("dev-sre")` | `Task(subagent_type="sre", ...)` |
+| Gate 3 | `Skill("dev-testing")` | `Task(subagent_type="qa-analyst", ...)` |
+| Gate 4 | `Skill("requesting-code-review")` | 3x `Task(...)` in parallel |
+| Gate 5 | `Skill("dev-validation")` | N/A (verification only) |
 
-**Between "WebFetch standards" and "Dispatch agent" there should be ZERO other actions.**
+**The workflow for EACH gate is:**
+```text
+1. Skill("[sub-skill-name]")     ← Load sub-skill instructions
+2. Follow sub-skill instructions  ← Sub-skill tells you HOW to dispatch
+3. Task(subagent_type=...)       ← Dispatch agent as sub-skill instructs
+4. Validate agent output          ← Per sub-skill validation rules
+5. Update state                   ← Record results
+```
+
+### Anti-Rationalization for Skipping Sub-Skills
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know what the sub-skill does" | Knowledge ≠ execution. Sub-skill has iteration logic. | **Load Skill() first** |
+| "Task() directly is faster" | Faster ≠ correct. Sub-skill has validation rules. | **Load Skill() first** |
+| "Sub-skill just wraps Task()" | Sub-skills have retry logic, fix dispatch, validation. | **Load Skill() first** |
+| "I'll follow the pattern manually" | Manual = error-prone. Sub-skill is the pattern. | **Load Skill() first** |
+
+**Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".**
 
 ### Anti-Rationalization for Direct Coding
 
@@ -378,6 +395,40 @@ Day 4: Production incident from Day 1 code
 | Task without subtasks | Task itself | 6 gates |
 | Task with subtasks | Each subtask | 6 gates per subtask |
 
+## Commit Timing
+
+**User selects when commits happen (Step 7 of initialization).**
+
+| Option | When Commit Happens | Use Case |
+|--------|---------------------|----------|
+| **(a) Per subtask** | After each subtask passes Gate 5 | Fine-grained history, easy rollback per subtask |
+| **(b) Per task** | After all subtasks of a task complete | Logical grouping, one commit per feature chunk |
+| **(c) At the end** | After entire cycle completes | Single commit with all changes, clean history |
+
+### Commit Message Format
+
+| Timing | Message Format | Example |
+|--------|----------------|---------|
+| Per subtask | `feat({subtask_id}): {subtask_title}` | `feat(ST-001-02): implement user authentication handler` |
+| Per task | `feat({task_id}): {task_title}` | `feat(T-001): implement user authentication` |
+| At the end | `feat({cycle_id}): complete dev cycle for {feature}` | `feat(cycle-abc123): complete dev cycle for auth-system` |
+
+### Commit Timing vs Execution Mode
+
+| Execution Mode | Commit Timing | Behavior |
+|----------------|---------------|----------|
+| Manual per subtask | Per subtask | Commit + checkpoint after each subtask |
+| Manual per subtask | Per task | Checkpoint after subtask, commit after task |
+| Manual per subtask | At end | Checkpoint after subtask, commit at cycle end |
+| Manual per task | Per subtask | Commit after subtask, checkpoint after task |
+| Manual per task | Per task | Commit + checkpoint after task |
+| Manual per task | At end | Checkpoint after task, commit at cycle end |
+| Automatic | Per subtask | Commit after each subtask, no checkpoints |
+| Automatic | Per task | Commit after task, no checkpoints |
+| Automatic | At end | Single commit at cycle end, no checkpoints |
+
+**Note:** Checkpoints (user approval pauses) are controlled by `execution_mode`. Commits are controlled by `commit_timing`. They are independent settings.
+
 ## State Management
 
 ### State Path Selection (MANDATORY)
@@ -414,6 +465,7 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
   "state_path": "docs/dev-cycle/current-cycle.json | docs/dev-refactor/current-cycle.json",
   "cycle_type": "feature | refactor",
   "execution_mode": "manual_per_subtask|manual_per_task|automatic",
+  "commit_timing": "per_subtask|per_task|at_end",
   "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_testing|paused_for_task_approval|paused_for_integration_testing",
   "feedback_loop_completed": false,
   "current_task_index": 0,
@@ -461,14 +513,47 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
           "agent": "backend-engineer-golang",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
-          "duration_ms": 0
+          "duration_ms": 0,
+          "iterations": 1,
+          "standards_compliance": {
+            "total_sections": 15,
+            "compliant": 14,
+            "not_applicable": 1,
+            "non_compliant": 0,
+            "gaps": []
+          }
         },
-        "devops": null,
+        "devops": {
+          "agent": "devops-engineer",
+          "output": "## Summary\n...",
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "iterations": 1,
+          "artifacts_created": ["Dockerfile", "docker-compose.yml", ".env.example"],
+          "verification_errors": [],
+          "standards_compliance": {
+            "total_sections": 8,
+            "compliant": 8,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
         "sre": {
           "agent": "sre",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
-          "duration_ms": 0
+          "duration_ms": 0,
+          "iterations": 1,
+          "instrumentation_coverage": "92%",
+          "validation_errors": [],
+          "standards_compliance": {
+            "total_sections": 10,
+            "compliant": 10,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
         },
         "testing": {
           "agent": "qa-analyst",
@@ -476,14 +561,65 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
           "verdict": "PASS",
           "coverage_actual": 87.5,
           "coverage_threshold": 85,
-          "iteration": 1,
+          "iterations": 1,
           "timestamp": "ISO timestamp",
-          "duration_ms": 0
+          "duration_ms": 0,
+          "failures": [],
+          "uncovered_criteria": [],
+          "standards_compliance": {
+            "total_sections": 6,
+            "compliant": 6,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
         },
         "review": {
-          "code_reviewer": {"agent": "code-reviewer", "output": "...", "timestamp": "..."},
-          "business_logic_reviewer": {"agent": "business-logic-reviewer", "output": "...", "timestamp": "..."},
-          "security_reviewer": {"agent": "security-reviewer", "output": "...", "timestamp": "..."}
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "code_reviewer": {
+            "agent": "code-reviewer",
+            "output": "...",
+            "verdict": "PASS",
+            "timestamp": "...",
+            "issues": [],
+            "standards_compliance": {
+              "total_sections": 12,
+              "compliant": 12,
+              "not_applicable": 0,
+              "non_compliant": 0,
+              "gaps": []
+            }
+          },
+          "business_logic_reviewer": {
+            "agent": "business-logic-reviewer",
+            "output": "...",
+            "verdict": "PASS",
+            "timestamp": "...",
+            "issues": [],
+            "standards_compliance": {
+              "total_sections": 8,
+              "compliant": 8,
+              "not_applicable": 0,
+              "non_compliant": 0,
+              "gaps": []
+            }
+          },
+          "security_reviewer": {
+            "agent": "security-reviewer",
+            "output": "...",
+            "verdict": "PASS",
+            "timestamp": "...",
+            "issues": [],
+            "standards_compliance": {
+              "total_sections": 10,
+              "compliant": 10,
+              "not_applicable": 0,
+              "non_compliant": 0,
+              "gaps": []
+            }
+          }
         },
         "validation": {
           "result": "approved|rejected",
@@ -500,6 +636,97 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
   }
 }
 ```
+
+### Structured Error/Issue Schemas
+
+**These schemas enable `dev-feedback-loop` to analyze issues without parsing raw output.**
+
+#### Standards Compliance Gap Schema
+
+```json
+{
+  "section": "Error Handling (MANDATORY)",
+  "status": "❌",
+  "reason": "Missing error wrapping with context",
+  "file": "internal/handler/user.go",
+  "line": 45,
+  "evidence": "return err // should wrap with additional context"
+}
+```
+
+#### Test Failure Schema
+
+```json
+{
+  "test_name": "TestUserCreate_InvalidEmail",
+  "test_file": "internal/handler/user_test.go",
+  "error_type": "assertion",
+  "expected": "ErrInvalidEmail",
+  "actual": "nil",
+  "message": "Expected validation error for invalid email format",
+  "stack_trace": "user_test.go:42 → user.go:28"
+}
+```
+
+#### Review Issue Schema
+
+```json
+{
+  "severity": "MEDIUM",
+  "category": "error-handling",
+  "description": "Error not wrapped with context before returning",
+  "file": "internal/handler/user.go",
+  "line": 45,
+  "suggestion": "Use fmt.Errorf(\"failed to create user: %w\", err)",
+  "fixed": false,
+  "fixed_in_iteration": null
+}
+```
+
+#### DevOps Verification Error Schema
+
+```json
+{
+  "check": "docker_build",
+  "status": "FAIL",
+  "error": "COPY failed: file not found in build context: go.sum",
+  "suggestion": "Ensure go.sum exists and is not in .dockerignore"
+}
+```
+
+#### SRE Validation Error Schema
+
+```json
+{
+  "check": "structured_logging",
+  "status": "FAIL",
+  "file": "internal/handler/user.go",
+  "line": 32,
+  "error": "Using fmt.Printf instead of structured logger",
+  "suggestion": "Use logger.Info().Str(\"user_id\", id).Msg(\"user created\")"
+}
+```
+
+### Populating Structured Data
+
+**Each gate MUST populate its structured fields when saving to state:**
+
+| Gate | Fields to Populate |
+|------|-------------------|
+| Gate 0 (Implementation) | `standards_compliance` (total, compliant, gaps[]) |
+| Gate 1 (DevOps) | `standards_compliance` + `verification_errors[]` |
+| Gate 2 (SRE) | `standards_compliance` + `validation_errors[]` |
+| Gate 3 (Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
+| Gate 4 (Review) | `standards_compliance` per reviewer + `issues[]` per reviewer |
+
+**All gates track `standards_compliance`:**
+- `total_sections`: Count from agent's standards file (via standards-coverage-table.md)
+- `compliant`: Sections marked ✅ in Standards Coverage Table
+- `not_applicable`: Sections marked N/A
+- `non_compliant`: Sections marked ❌ (MUST be 0 to pass gate)
+- `gaps[]`: Detailed info for each ❌ section (even if later fixed)
+
+**Empty arrays `[]` indicate no issues found - this is valid data for feedback-loop.**
 
 ## ⛔ State Persistence Rule (MANDATORY)
 
@@ -1169,7 +1396,10 @@ STOP EXECUTION. Do NOT proceed to Step 1.
 6. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
    - Options: (a) Manual per subtask (b) Manual per task (c) Automatic
    - **Do NOT skip:** User hints ≠ mode selection. Only explicit a/b/c is valid.
-7. **Start:** Display mode, proceed to Gate 0
+7. **ASK COMMIT TIMING (MANDATORY - AskUserQuestion):**
+   - Options: (a) Per subtask (b) Per task (c) At the end
+   - Store in `commit_timing` field in state
+8. **Start:** Display mode + commit timing, proceed to Gate 0
 
 ### Resume Cycle (--resume flag)
 
@@ -1304,8 +1534,31 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
      agent: "[selected_agent]",
      output: "[full agent output for feedback analysis]",
      timestamp: "[ISO timestamp]",
-     duration_ms: [execution time]
+     duration_ms: [execution time],
+     iterations: [standards_compliance_iterations from Step 2.3],
+     standards_compliance: {
+       total_sections: [N from final verification],
+       compliant: [N sections with ✅],
+       not_applicable: [N sections with N/A],
+       non_compliant: 0,
+       gaps: []  // Empty when gate passes; populated during iterations
+     }
    }
+   ```
+   
+   **If iterations > 1, populate `gaps[]` with issues found in previous iterations:**
+   ```json
+   gaps: [
+     {
+       "section": "[section name from ❌ row]",
+       "status": "❌",
+       "reason": "[why it failed]",
+       "file": "[file path if available]",
+       "line": [line number if available],
+       "evidence": "[code snippet or description]",
+       "fixed_in_iteration": [iteration number when fixed]
+     }
+   ]
    ```
 
 6. **Display to user:**
@@ -1813,8 +2066,37 @@ testing_input = {
        criteria_covered: "[X/Y]",
        iterations: [count],
        timestamp: "[ISO timestamp]",
-       duration_ms: [execution time]
+       duration_ms: [execution time],
+       failures: [],  // Empty when PASS; see schema below for FAIL
+       uncovered_criteria: []  // Empty when all ACs covered
      }
+   
+   **If iterations > 1 (tests failed before passing), populate `failures[]`:**
+   ```json
+   failures: [
+     {
+       "test_name": "TestUserCreate_InvalidEmail",
+       "test_file": "internal/handler/user_test.go",
+       "error_type": "assertion|panic|timeout|compilation",
+       "expected": "[expected value]",
+       "actual": "[actual value]",
+       "message": "[error message from test output]",
+       "stack_trace": "[relevant stack trace]",
+       "fixed_in_iteration": [iteration number when fixed]
+     }
+   ]
+   ```
+   
+   **If coverage < 100% of acceptance criteria, populate `uncovered_criteria[]`:**
+   ```json
+   uncovered_criteria: [
+     {
+       "criterion_id": "AC-001",
+       "description": "User should receive email confirmation",
+       "reason": "No test found for email sending functionality"
+     }
+   ]
+   ```
 
 6. Update state:
    - gate_progress.testing.status = "completed"
@@ -1920,14 +2202,49 @@ review_input = {
    - agent_outputs.review = {
        skill: "requesting-code-review",
        output: "[full skill output]",
-       code_reviewer: { verdict: "PASS", issues_count: N },
-       business_logic_reviewer: { verdict: "PASS", issues_count: N },
-       security_reviewer: { verdict: "PASS", issues_count: N },
-       reviewers_passed: "3/3",
        iterations: [count],
        timestamp: "[ISO timestamp]",
-       duration_ms: [execution time]
+       duration_ms: [execution time],
+       reviewers_passed: "3/3",
+       code_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []  // Structured issues - see schema below
+       },
+       business_logic_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       security_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       }
      }
+   
+   **Populate `issues[]` for each reviewer with ALL issues found (even if fixed):**
+   ```json
+   issues: [
+     {
+       "severity": "CRITICAL|HIGH|MEDIUM|LOW|COSMETIC",
+       "category": "error-handling|security|performance|maintainability|business-logic|...",
+       "description": "[detailed description of the issue]",
+       "file": "internal/handler/user.go",
+       "line": 45,
+       "code_snippet": "return err",
+       "suggestion": "Use fmt.Errorf(\"failed to create user: %w\", err)",
+       "fixed": true|false,
+       "fixed_in_iteration": [iteration number when fixed, null if not fixed]
+     }
+   ]
+   ```
+   
+   **Issue tracking rules:**
+   - ALL issues found across ALL iterations MUST be recorded
+   - `fixed: true` + `fixed_in_iteration: N` for issues resolved during review
+   - `fixed: false` + `fixed_in_iteration: null` for LOW/COSMETIC (TODO/FIXME added)
+   - This enables feedback-loop to analyze recurring issue patterns
 
 6. Update state:
    - gate_progress.review.status = "completed"
@@ -1996,8 +2313,14 @@ For current execution unit:
 
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` → Execute | `manual_per_task` / `automatic` → Skip
 
+0. **COMMIT CHECK (before checkpoint):**
+   - IF `commit_timing == "per_subtask"`:
+     - Execute `/commit` command with message: `feat({unit_id}): {unit_title}`
+     - Include all changed files from this subtask
+   - ELSE: Skip commit (will happen at task or cycle end)
+
 1. Set `status = "paused_for_approval"`, save state
-2. Present summary: Unit ID, Parent Task, Gates 0-5 status, Criteria X/X, Duration, Files Changed
+2. Present summary: Unit ID, Parent Task, Gates 0-5 status, Criteria X/X, Duration, Files Changed, Commit Status
 3. **AskUserQuestion:** "Ready to proceed?" Options: (a) Continue (b) Test First (c) Stop Here
 4. **Handle response:**
 
@@ -2011,8 +2334,15 @@ For current execution unit:
 
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` / `manual_per_task` → Execute | `automatic` → Skip
 
+0. **COMMIT CHECK (before task checkpoint):**
+   - IF `commit_timing == "per_task"`:
+     - Execute `/commit` command with message: `feat({task_id}): {task_title}`
+     - Include all changed files from this task (all subtasks combined)
+   - ELSE IF `commit_timing == "per_subtask"`: Already committed per subtask
+   - ELSE: Skip commit (will happen at cycle end)
+
 1. Set task `status = "completed"`, cycle `status = "paused_for_task_approval"`, save state
-2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed
+2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed, Commit Status
 3. **AskUserQuestion:** "Task complete. Ready for next?" Options: (a) Continue (b) Integration Test (c) Stop Here
 4. **Handle response:**
 
@@ -2056,8 +2386,6 @@ After completing all subtasks of a task:
    | "Time pressure, skip metrics" | Metrics take <2 min, prevent future issues | **Execute Skill tool** |
 
    **⛔ HARD GATE: You CANNOT proceed to step 3 without executing the Skill tool above.**
-   
-   **Hook Enforcement:** A UserPromptSubmit hook (`feedback-loop-enforcer.sh`) monitors state and will inject reminders if feedback-loop is not executed.
 
 3. Set cycle status = "paused_for_task_approval"
 4. Save state
@@ -2142,9 +2470,15 @@ After completing all subtasks of a task:
 
 ## Step 8: Cycle Completion
 
+0. **FINAL COMMIT CHECK (before completion):**
+   - IF `commit_timing == "at_end"`:
+     - Execute `/commit` command with message: `feat({cycle_id}): complete dev cycle for {feature_name}`
+     - Include all changed files from the entire cycle
+   - ELSE: Already committed per subtask or per task
+
 1. **Calculate metrics:** total_duration_ms, average gate durations, review iterations, pass/fail ratio
 2. **Update state:** `status = "completed"`, `completed_at = timestamp`
-3. **Generate report:** Task | Subtasks | Duration | Review Iterations | Status
+3. **Generate report:** Task | Subtasks | Duration | Review Iterations | Status | Commit Status
 
 4. **⛔ MANDATORY: Run dev-feedback-loop skill for cycle metrics**
 
@@ -2159,8 +2493,6 @@ After completing all subtasks of a task:
    - Set `feedback_loop_completed = true` at cycle level in state file
 
    **⛔ HARD GATE: Cycle is NOT complete until feedback-loop executes.**
-   
-   **Hook Enforcement:** A UserPromptSubmit hook (`feedback-loop-enforcer.sh`) monitors state and will inject reminders if feedback-loop is not executed.
 
    | Rationalization | Why It's WRONG | Required Action |
    |-----------------|----------------|-----------------|
