@@ -170,7 +170,39 @@ IF any REQUIRED input is missing:
   → Return to orchestrator with error
 ```
 
-## Step 2: Initialize Validation State
+## Step 2: Pre-Validation Check (FORBIDDEN Patterns)
+
+**HARD GATE:** Before dispatching SRE agent, run automated detection for FORBIDDEN logging patterns.
+
+```bash
+# For Go projects - MUST return zero matches
+grep -rn "fmt.Println\|fmt.Printf\|log.Println\|log.Printf\|log.Fatal" --include="*.go" ./internal ./cmd 2>/dev/null || true
+
+# For TypeScript projects - MUST return zero matches  
+grep -rn "console.log\|console.error\|console.warn" --include="*.ts" --include="*.tsx" ./src 2>/dev/null || true
+```
+
+**If ANY matches found:**
+1. **DO NOT** proceed to SRE validation
+2. **IMMEDIATELY** return to Gate 0 with CRITICAL issue
+3. Dispatch implementation agent to replace forbidden patterns with lib-commons logger
+
+```text
+forbidden_patterns_check = Execute(grep_command)
+
+IF forbidden_patterns_check has matches:
+  STOP and return:
+  {
+    status: "BLOCKED",
+    reason: "FORBIDDEN logging patterns detected",
+    patterns_found: [list of file:line matches],
+    required_action: "Replace with lib-commons structured logger",
+    return_to: "Gate 0",
+    dispatch_agent: implementation_agent
+  }
+```
+
+## Step 2.1: Initialize Validation State
 
 ```text
 validation_state = {
@@ -178,7 +210,8 @@ validation_state = {
   max_iterations: 3,
   sre_result: null,
   issues: [],
-  instrumentation_coverage: null
+  instrumentation_coverage: null,
+  forbidden_patterns_check: "PASSED"  // Only if Step 2 passed
 }
 ```
 
