@@ -360,7 +360,7 @@ Example failure output:
    - **Architecture patterns** (Hexagonal, Clean Architecture, DDD)
    - **Error handling** (no panic, wrap errors with context)
    - **Structured JSON logging** (zerolog/zap with trace correlation)
-   - **OpenTelemetry tracing** (spans for external calls, trace_id propagation)
+   - **OpenTelemetry instrumentation** (see "Code Instrumentation" section below)
    - **Testing patterns** (table-driven tests)
 5. Apply PROJECT_RULES.md (if exists) for tech stack choices not in Ring Standards
 6. Run the test
@@ -389,6 +389,28 @@ ok      myapp/auth    0.015s
 |-------|--------------|-----------|
 | TDD-RED | failure_output exists and contains "FAIL" | STOP. Cannot proceed. |
 | TDD-GREEN | pass_output exists and contains "PASS" | Retry implementation (max 3 attempts) |
+
+## Code Instrumentation (MANDATORY - 90%+ Coverage)
+
+**⛔ CRITICAL: Code instrumentation is NOT optional. Every function you write MUST be instrumented.**
+
+**⛔ MANDATORY: You MUST WebFetch golang.md standards and follow the exact patterns defined there.**
+
+| Action | Requirement |
+|--------|-------------|
+| **WebFetch** | `golang.md` → "Telemetry & Observability (MANDATORY)" section |
+| **Read** | Complete patterns for spans, logging, error handling |
+| **Implement** | EXACTLY as defined in standards - NO deviations |
+| **Verify** | Output Standards Coverage Table with evidence |
+
+**NON-NEGOTIABLE requirements from standards:**
+- 90%+ function coverage with spans - REQUIRED
+- Every handler/service/repository MUST have child span - NO EXCEPTIONS
+- MUST use `libCommons.NewTrackingFromContext(ctx)` - FORBIDDEN to create new tracers
+- MUST use `HandleSpanError` / `HandleSpanBusinessErrorEvent` - FORBIDDEN to ignore span errors
+- MUST propagate trace context to external calls - FORBIDDEN to break trace chain
+
+**⛔ HARD GATE: If ANY instrumentation is missing → Implementation is REJECTED. You CANNOT proceed.**
 
 ### TDD Anti-Rationalization
 

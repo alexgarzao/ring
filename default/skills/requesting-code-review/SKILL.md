@@ -1,131 +1,554 @@
 ---
 name: requesting-code-review
 description: |
-  Parallel code review dispatch - sends to 3 specialized reviewers (code, business-logic,
-  security) simultaneously for comprehensive feedback.
+  Gate 4 of development cycle - dispatches 3 specialized reviewers (code, business-logic,
+  security) in parallel for comprehensive code review feedback.
 
 trigger: |
+  - Gate 4 of development cycle
   - After completing major feature implementation
-  - After completing task in subagent-driven-development
   - Before merge to main branch
   - After fixing complex bug
 
-skip_when: |
-  - Trivial change (<20 lines, no logic change) → verify manually
-  - Still in development → finish implementation first
-  - Already reviewed and no changes since → proceed
+NOT_skip_when: |
+  - "Code is simple" → Simple code can have security issues. Review required.
+  - "Just refactoring" → Refactoring may expose vulnerabilities. Review required.
+  - "Already reviewed similar code" → Each change needs fresh review.
 
 sequence:
-  after: [verification-before-completion]
-  before: [finishing-a-development-branch]
+  after: [dev-testing]
+  before: [dev-validation]
+
+related:
+  complementary: [dev-cycle, dev-implementation, dev-testing]
+
+input_schema:
+  required: []  # All inputs optional for standalone usage
+  optional:
+    - name: unit_id
+      type: string
+      description: "Task or subtask identifier (auto-generated if not provided)"
+    - name: base_sha
+      type: string
+      description: "Git SHA before implementation (auto-detected via git merge-base HEAD main)"
+    - name: head_sha
+      type: string
+      description: "Git SHA after implementation (auto-detected via git rev-parse HEAD)"
+    - name: implementation_summary
+      type: string
+      description: "Summary of what was implemented (auto-generated from git log if not provided)"
+    - name: requirements
+      type: string
+      description: "Requirements or acceptance criteria (reviewers will infer from code if not provided)"
+    - name: implementation_files
+      type: array
+      items: string
+      description: "List of files changed (auto-detected via git diff if not provided)"
+    - name: gate0_handoff
+      type: object
+      description: "Full handoff from Gate 0 (only when called from dev-cycle)"
+    - name: skip_reviewers
+      type: array
+      items: string
+      enum: [code-reviewer, business-logic-reviewer, security-reviewer]
+      description: "Reviewers to skip (use sparingly)"
+
+output_schema:
+  format: markdown
+  required_sections:
+    - name: "Review Summary"
+      pattern: "^## Review Summary"
+      required: true
+    - name: "Issues by Severity"
+      pattern: "^## Issues by Severity"
+      required: true
+    - name: "Reviewer Verdicts"
+      pattern: "^## Reviewer Verdicts"
+      required: true
+    - name: "Handoff to Next Gate"
+      pattern: "^## Handoff to Next Gate"
+      required: true
+  metrics:
+    - name: result
+      type: enum
+      values: [PASS, FAIL, NEEDS_FIXES]
+    - name: reviewers_passed
+      type: string
+      description: "X/3 format"
+    - name: issues_critical
+      type: integer
+    - name: issues_high
+      type: integer
+    - name: issues_medium
+      type: integer
+    - name: issues_low
+      type: integer
+    - name: iterations
+      type: integer
+
+examples:
+  - name: "Feature review"
+    input:
+      unit_id: "task-001"
+      base_sha: "abc123"
+      head_sha: "def456"
+      implementation_summary: "Added user authentication with JWT"
+      requirements: "AC-1: User can login, AC-2: Invalid password returns error"
+    expected_output: |
+      ## Review Summary
+      **Status:** PASS
+      **Reviewers:** 3/3 PASS
+      
+      ## Issues by Severity
+      | Severity | Count |
+      |----------|-------|
+      | Critical | 0 |
+      | High | 0 |
+      | Medium | 0 |
+      | Low | 2 |
+      
+      ## Reviewer Verdicts
+      | Reviewer | Verdict |
+      |----------|---------|
+      | code-reviewer | ✅ PASS |
+      | business-logic-reviewer | ✅ PASS |
+      | security-reviewer | ✅ PASS |
+      
+      ## Handoff to Next Gate
+      - Ready for Gate 5: YES
 ---
 
-# Requesting Code Review
+# Code Review (Gate 4)
 
-Dispatch all three reviewer subagents in parallel for fast, comprehensive feedback.
+## Overview
 
-**Core principle:** Review early, review often. Parallel execution provides 3x faster feedback with comprehensive coverage.
+Dispatch all three reviewer subagents in **parallel** for fast, comprehensive feedback:
 
-## Review Order (Parallel Execution)
+1. **code-reviewer** - Architecture, design patterns, code quality
+2. **business-logic-reviewer** - Domain correctness, business rules, edge cases
+3. **security-reviewer** - Vulnerabilities, authentication, OWASP risks
 
-Three specialized reviewers run in **parallel** for maximum speed:
+**Core principle:** All 3 reviewers run simultaneously in a single message with 3 Task tool calls.
 
-**1. code-reviewer** (Foundation)
-- **Focus:** Architecture, design patterns, code quality, maintainability
-- **Model:** Opus (required for comprehensive analysis)
-- **Reports:** Code quality issues, architectural concerns
+## CRITICAL: Role Clarification
 
-**2. business-logic-reviewer** (Correctness)
-- **Focus:** Domain correctness, business rules, edge cases, requirements
-- **Model:** Opus (required for deep domain understanding)
-- **Reports:** Business logic issues, requirement gaps
+**This skill ORCHESTRATES. Reviewer Agents REVIEW.**
 
-**3. security-reviewer** (Safety)
-- **Focus:** Vulnerabilities, authentication, input validation, OWASP risks
-- **Model:** Opus (required for thorough security analysis)
-- **Reports:** Security vulnerabilities, OWASP risks
+| Who | Responsibility |
+|-----|----------------|
+| **This Skill** | Dispatch reviewers, aggregate findings, track iterations |
+| **Reviewer Agents** | Analyze code, report issues with severity |
+| **Implementation Agent** | Fix issues found by reviewers |
 
-**Critical:** All three reviewers run simultaneously in a single message with 3 Task tool calls. Each reviewer works independently and returns its report. After all complete, aggregate findings and handle by severity.
+---
 
-## When to Request Review
+## Step 1: Gather Context (Auto-Detect if Not Provided)
 
-**Mandatory:**
-- After each task in subagent-driven development
-- After completing major feature
+```text
+This skill supports TWO modes:
+1. WITH INPUTS: Called by any skill/user that provides structured inputs (unit_id, base_sha, etc.)
+2. STANDALONE: Called directly without inputs - auto-detects everything from git
 
-**Optional but valuable:**
-- When stuck (fresh perspective)
-- Before refactoring (baseline check)
-- After fixing complex bug
+FOR EACH INPUT, check if provided OR auto-detect:
 
-## Which Reviewers to Use
+1. unit_id:
+   IF provided → use it
+   ELSE → generate: "review-" + timestamp (e.g., "review-20241222-143052")
 
-**Use all three reviewers (parallel) when:**
-- Implementing new features (comprehensive check)
-- Before merge to main (final validation)
-- After completing major milestone
+2. base_sha:
+   IF provided → use it
+   ELSE → Execute: git merge-base HEAD main
+   IF git fails → Execute: git rev-parse HEAD~10 (fallback to last 10 commits)
 
-**Use subset when domain doesn't apply:**
-- **Code-reviewer only:** Documentation changes, config updates
-- **Code + Business (skip security):** Internal scripts with no external input
-- **Code + Security (skip business):** Infrastructure/DevOps changes
+3. head_sha:
+   IF provided → use it
+   ELSE → Execute: git rev-parse HEAD
 
-**Default: Use all three in parallel.** Only skip reviewers when you're certain their domain doesn't apply.
+4. implementation_files:
+   IF provided → use it
+   ELSE → Execute: git diff --name-only [base_sha] [head_sha]
 
-**Two ways to run parallel reviews:**
-1. **Direct parallel dispatch:** Launch 3 Task calls in single message (explicit control)
-2. **/codereview command:** Command that provides workflow instructions for parallel review (convenience)
+5. implementation_summary:
+   IF provided → use it
+   ELSE → Execute: git log --oneline [base_sha]..[head_sha]
+   Format as: "Changes: [list of commit messages]"
 
-## How to Request
+6. requirements:
+   IF provided → use it
+   ELSE → Set to: "Infer requirements from code changes and commit messages"
+   (Reviewers will analyze code to understand intent)
 
-**1. Get SHAs:** `BASE_SHA=$(git rev-parse HEAD~1)` and `HEAD_SHA=$(git rev-parse HEAD)`
+AFTER AUTO-DETECTION, display context:
+┌─────────────────────────────────────────────────────────────────┐
+│ 📋 CODE REVIEW CONTEXT                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ Unit ID: [unit_id]                                              │
+│ Base SHA: [base_sha]                                            │
+│ Head SHA: [head_sha]                                            │
+│ Files Changed: [count] files                                    │
+│ Commits: [count] commits                                        │
+│                                                                 │
+│ Dispatching 3 reviewers in parallel...                          │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-**2. Dispatch all three in parallel (CRITICAL: single message, 3 Task calls):**
+## Step 2: Initialize Review State
 
-Each reviewer needs: `WHAT_WAS_IMPLEMENTED`, `PLAN_OR_REQUIREMENTS`, `BASE_SHA`, `HEAD_SHA`, `DESCRIPTION` - all with `model: "opus"`
+```text
+review_state = {
+  unit_id: [from input],
+  base_sha: [from input],
+  head_sha: [from input],
+  reviewers: {
+    code_reviewer: {verdict: null, issues: []},
+    business_logic_reviewer: {verdict: null, issues: []},
+    security_reviewer: {verdict: null, issues: []}
+  },
+  aggregated_issues: {
+    critical: [],
+    high: [],
+    medium: [],
+    low: [],
+    cosmetic: []
+  },
+  iterations: 0,
+  max_iterations: 3
+}
+```
 
-**3. Aggregate by severity:** Critical | High | Medium | Low | Cosmetic/Nitpick (from all 3 reviewers)
+## Step 3: Dispatch All 3 Reviewers in Parallel
 
-**4. Handle by severity:**
-- **Critical/High/Medium:** Fix immediately → re-run all 3 reviewers → repeat until resolved
-- **Low:** Add `// TODO(review): [Issue] - [reviewer] on [date]`
-- **Cosmetic:** Add `// FIXME(nitpick): [Issue] - [reviewer] on [date]`
-- **Push back:** If wrong, provide reasoning/evidence. Security requires extra scrutiny.
+**⛔ CRITICAL: All 3 reviewers MUST be dispatched in a SINGLE message with 3 Task calls.**
 
-## Integration with Workflows
+```yaml
+# Task 1: Code Reviewer
+Task:
+  subagent_type: "code-reviewer"
+  model: "opus"
+  description: "Code review for [unit_id]"
+  prompt: |
+    ## Code Review Request
+    
+    **Unit ID:** [unit_id]
+    **Base SHA:** [base_sha]
+    **Head SHA:** [head_sha]
+    
+    ## What Was Implemented
+    [implementation_summary]
+    
+    ## Requirements
+    [requirements]
+    
+    ## Files Changed
+    [implementation_files or "Use git diff"]
+    
+    ## Your Focus
+    - Architecture and design patterns
+    - Code quality and maintainability
+    - Naming conventions
+    - Error handling patterns
+    - Performance concerns
+    
+    ## Required Output
+    ### VERDICT: PASS / FAIL
+    
+    ### Issues Found
+    | Severity | Description | File:Line | Recommendation |
+    |----------|-------------|-----------|----------------|
+    | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
+    
+    ### What Was Done Well
+    [positive observations]
 
-| Workflow | When to Review | Notes |
-|----------|----------------|-------|
-| **Subagent-Driven Development** | After EACH task (all 3 parallel) | Fix Critical/High/Medium before next task |
-| **Executing Plans** | After each batch (3 tasks) | Handle severity fixes before next batch |
-| **Ad-Hoc Development** | Before merge (all 3 parallel) | Single reviewer OK if domain-specific |
+# Task 2: Business Logic Reviewer
+Task:
+  subagent_type: "business-logic-reviewer"
+  model: "opus"
+  description: "Business logic review for [unit_id]"
+  prompt: |
+    ## Business Logic Review Request
+    
+    **Unit ID:** [unit_id]
+    **Base SHA:** [base_sha]
+    **Head SHA:** [head_sha]
+    
+    ## What Was Implemented
+    [implementation_summary]
+    
+    ## Requirements
+    [requirements]
+    
+    ## Your Focus
+    - Domain correctness
+    - Business rules implementation
+    - Edge cases handling
+    - Requirements coverage
+    - Data validation
+    
+    ## Required Output
+    ### VERDICT: PASS / FAIL
+    
+    ### Issues Found
+    | Severity | Description | File:Line | Recommendation |
+    |----------|-------------|-----------|----------------|
+    | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
+    
+    ### Requirements Traceability
+    | Requirement | Status | Evidence |
+    |-------------|--------|----------|
+    | [req] | ✅/❌ | [file:line] |
 
-## Red Flags
+# Task 3: Security Reviewer
+Task:
+  subagent_type: "security-reviewer"
+  model: "opus"
+  description: "Security review for [unit_id]"
+  prompt: |
+    ## Security Review Request
+    
+    **Unit ID:** [unit_id]
+    **Base SHA:** [base_sha]
+    **Head SHA:** [head_sha]
+    
+    ## What Was Implemented
+    [implementation_summary]
+    
+    ## Requirements
+    [requirements]
+    
+    ## Your Focus
+    - Authentication and authorization
+    - Input validation
+    - SQL injection, XSS, CSRF
+    - Sensitive data handling
+    - OWASP Top 10 risks
+    
+    ## Required Output
+    ### VERDICT: PASS / FAIL
+    
+    ### Issues Found
+    | Severity | Description | File:Line | OWASP Category | Recommendation |
+    |----------|-------------|-----------|----------------|----------------|
+    | [CRITICAL/HIGH/MEDIUM/LOW] | [issue] | [location] | [A01-A10] | [fix] |
+    
+    ### Security Checklist
+    | Check | Status |
+    |-------|--------|
+    | Input validation | ✅/❌ |
+    | Auth checks | ✅/❌ |
+    | No hardcoded secrets | ✅/❌ |
+```
 
-**Never:**
-- Dispatch reviewers sequentially (wastes time - use parallel!)
-- Proceed to next task with unfixed Critical/High/Medium issues
-- Skip security review for "just refactoring" (may expose vulnerabilities)
-- Skip code review because "code is simple"
-- Forget to add TODO/FIXME comments for Low/Cosmetic issues
-- Argue with valid technical/security feedback without evidence
+## Step 4: Wait for All Reviewers and Parse Output
 
-**Always:**
-- Launch all 3 reviewers in a single message (3 Task calls)
-- Specify `model: "opus"` for each reviewer
-- Wait for all reviewers to complete before aggregating
-- Fix Critical/High/Medium immediately
-- Add TODO comments for Low issues
-- Add FIXME comments for Cosmetic/Nitpick issues
-- Re-run all 3 reviewers after fixing Critical/High/Medium issues
+```text
+Wait for all 3 Task calls to complete.
 
-**If reviewer wrong:**
-- Push back with technical reasoning
-- Show code/tests that prove it works
-- Request clarification
-- Security concerns require extra scrutiny before dismissing
+For each reviewer:
+1. Extract VERDICT (PASS/FAIL)
+2. Extract Issues Found table
+3. Categorize issues by severity
 
-## Re-running Reviews After Fixes
+review_state.reviewers.code_reviewer = {
+  verdict: [PASS/FAIL],
+  issues: [parsed issues]
+}
+// ... same for other reviewers
 
-**After fixing Critical/High/Medium:** Re-run all 3 in parallel (~3-5 min total). Don't cherry-pick reviewers.
-**After adding TODO/FIXME:** Commit noting review completion. No re-run needed.
+Aggregate all issues by severity:
+review_state.aggregated_issues.critical = [all critical from all reviewers]
+review_state.aggregated_issues.high = [all high from all reviewers]
+// ... etc
+```
+
+## Step 5: Handle Results by Severity
+
+```text
+Count blocking issues:
+blocking_count = critical.length + high.length + medium.length
+
+IF blocking_count == 0:
+  → All reviewers PASS
+  → Proceed to Step 8 (Success)
+
+IF blocking_count > 0:
+  → review_state.iterations += 1
+  → IF iterations >= max_iterations: Go to Step 9 (Escalate)
+  → Go to Step 6 (Dispatch Fixes)
+```
+
+## Step 6: Dispatch Fixes to Implementation Agent
+
+```yaml
+Task:
+  subagent_type: "[implementation_agent from Gate 0]"
+  model: "opus"
+  description: "Fix review issues for [unit_id]"
+  prompt: |
+    ⛔ FIX REQUIRED - Code Review Issues Found
+
+    ## Context
+    - **Unit ID:** [unit_id]
+    - **Iteration:** [iterations] of [max_iterations]
+
+    ## Critical Issues (MUST FIX)
+    [list critical issues with file:line and recommendation]
+
+    ## High Issues (MUST FIX)
+    [list high issues]
+
+    ## Medium Issues (MUST FIX)
+    [list medium issues]
+
+    ## Requirements
+    1. Fix ALL Critical, High, and Medium issues
+    2. Commit fixes
+    3. Return list of fixed issues with evidence
+
+    ## For Low/Cosmetic Issues
+    Add TODO/FIXME comments:
+    - Low: `// TODO(review): [Issue] - [reviewer] on [date]`
+    - Cosmetic: `// FIXME(nitpick): [Issue] - [reviewer] on [date]`
+```
+
+## Step 7: Re-Run All Reviewers After Fixes
+
+```text
+After fixes committed:
+1. Get new HEAD_SHA
+2. Go back to Step 3 (dispatch all 3 reviewers again)
+
+⛔ CRITICAL: Always re-run ALL 3 reviewers after fixes.
+Do NOT cherry-pick reviewers.
+```
+
+## Step 8: Prepare Success Output
+
+```text
+Generate skill output:
+
+## Review Summary
+**Status:** PASS
+**Unit ID:** [unit_id]
+**Iterations:** [review_state.iterations]
+
+## Issues by Severity
+| Severity | Count |
+|----------|-------|
+| Critical | 0 |
+| High | 0 |
+| Medium | 0 |
+| Low | [count] |
+| Cosmetic | [count] |
+
+## Reviewer Verdicts
+| Reviewer | Verdict | Issues |
+|----------|---------|--------|
+| code-reviewer | ✅ PASS | [count] |
+| business-logic-reviewer | ✅ PASS | [count] |
+| security-reviewer | ✅ PASS | [count] |
+
+## Low/Cosmetic Issues (TODO/FIXME added)
+[list with file locations]
+
+## Handoff to Next Gate
+- Review status: COMPLETE
+- All blocking issues: RESOLVED
+- Reviewers passed: 3/3
+- Ready for Gate 5 (Validation): YES
+```
+
+## Step 9: Escalate - Max Iterations Reached
+
+```text
+Generate skill output:
+
+## Review Summary
+**Status:** FAIL
+**Unit ID:** [unit_id]
+**Iterations:** [max_iterations] (MAX REACHED)
+
+## Issues by Severity
+| Severity | Count |
+|----------|-------|
+| Critical | [count] |
+| High | [count] |
+| Medium | [count] |
+
+## Unresolved Issues
+[list all Critical/High/Medium still open]
+
+## Reviewer Verdicts
+| Reviewer | Verdict |
+|----------|---------|
+| code-reviewer | [PASS/FAIL] |
+| business-logic-reviewer | [PASS/FAIL] |
+| security-reviewer | [PASS/FAIL] |
+
+## Handoff to Next Gate
+- Review status: FAILED
+- Unresolved blocking issues: [count]
+- Ready for Gate 5: NO
+- **Action Required:** User must manually resolve issues
+
+⛔ ESCALATION: Max iterations (3) reached. Blocking issues remain.
+```
+
+---
+
+## Pressure Resistance
+
+See [dev-team/skills/shared-patterns/shared-pressure-resistance.md](../../dev-team/skills/shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Skip review, code is simple" | "Simple code can have security issues. Dispatching all 3 reviewers." |
+| "Just run code-reviewer" | "All 3 reviewers run in parallel. No time saved by skipping." |
+| "Fix later, merge now" | "Blocking issues (Critical/High/Medium) MUST be fixed before Gate 5." |
+
+## Anti-Rationalization Table
+
+See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-team/skills/shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
+
+### Gate 4-Specific Anti-Rationalizations
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Run reviewers one at a time" | Sequential = slow. Parallel = 3x faster. | **Dispatch all 3 in single message** |
+| "Skip security for internal code" | Internal code can have vulnerabilities. | **Include security-reviewer** |
+| "Critical issue is false positive" | Prove it with evidence, don't assume. | **Fix or provide evidence** |
+| "Low issues don't need TODO" | TODOs ensure issues aren't forgotten. | **Add TODO comments** |
+| "2 of 3 reviewers passed" | Gate 4 requires ALL 3. 2/3 = 0/3. | **Re-run ALL 3 reviewers** |
+| "MEDIUM is not blocking" | MEDIUM = MUST FIX. Same as CRITICAL/HIGH. | **Fix MEDIUM issues NOW** |
+
+---
+
+## Execution Report Format
+
+```markdown
+## Review Summary
+**Status:** [PASS|FAIL|NEEDS_FIXES]
+**Unit ID:** [unit_id]
+**Duration:** [Xm Ys]
+**Iterations:** [N]
+
+## Issues by Severity
+| Severity | Count |
+|----------|-------|
+| Critical | [N] |
+| High | [N] |
+| Medium | [N] |
+| Low | [N] |
+
+## Reviewer Verdicts
+| Reviewer | Verdict |
+|----------|---------|
+| code-reviewer | ✅/❌ |
+| business-logic-reviewer | ✅/❌ |
+| security-reviewer | ✅/❌ |
+
+## Handoff to Next Gate
+- Review status: [COMPLETE|FAILED]
+- Blocking issues: [resolved|N remaining]
+- Ready for Gate 5: [YES|NO]
+```

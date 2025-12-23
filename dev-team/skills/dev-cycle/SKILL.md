@@ -10,10 +10,10 @@ trigger: |
   - Resuming an interrupted development cycle (--resume flag)
   - Need structured, gate-based task execution with quality checkpoints
 
-skip_when: |
-  - Already in a specific gate skill -> let that gate complete
-  - Need to plan tasks first -> use writing-plans or pre-dev-full
-  - Human explicitly requests manual implementation (non-AI workflow)
+prerequisite: |
+  - Tasks file exists with structured subtasks
+  - Not already in a specific gate skill execution
+  - Human has not explicitly requested manual workflow
 
 NOT_skip_when: |
   - "Task is simple" → Simple ≠ risk-free. Execute gates.
@@ -25,14 +25,14 @@ sequence:
   before: [dev-feedback-loop]
 
 related:
-  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, dev-review, dev-validation, dev-feedback-loop]
+  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, requesting-code-review, dev-validation, dev-feedback-loop]
 
 verification:
   automated:
-    - command: "test -f docs/refactor/current-cycle.json"
-      description: "State file exists"
+    - command: "test -f docs/dev-cycle/current-cycle.json || test -f docs/dev-refactor/current-cycle.json"
+      description: "State file exists (dev-cycle or dev-refactor)"
       success_pattern: "exit 0"
-    - command: "cat docs/refactor/current-cycle.json | jq '.current_gate'"
+    - command: "cat docs/dev-cycle/current-cycle.json 2>/dev/null || cat docs/dev-refactor/current-cycle.json | jq '.current_gate'"
       description: "Current gate is valid"
       success_pattern: "[0-5]"
   manual:
@@ -95,8 +95,8 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 | Action | Tool | Purpose |
 |--------|------|---------|
-| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` |
-| Read state files | `Read` | Load/verify `docs/refactor/current-cycle.json` |
+| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` or `docs/refactor/*/tasks.md` |
+| Read state files | `Read` | Load/verify `docs/dev-cycle/current-cycle.json` or `docs/dev-refactor/current-cycle.json` |
 | Read PROJECT_RULES.md | `Read` | Load project-specific rules |
 | Write state files | `Write` | Persist cycle state to JSON |
 | Track progress | `TodoWrite` | Maintain task list |
@@ -131,39 +131,56 @@ This is NOT negotiable:
 │  CORRECT WORKFLOW ORDER                                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. Load task file (Read docs/pre-dev/*/tasks.md)              │
+│  1. Load task file (Read docs/pre-dev/*/tasks.md or docs/refactor/*/tasks.md) │
 │  2. Ask execution mode (AskUserQuestion)                        │
-│  3. Check/Load state (Read docs/refactor/current-cycle.json)   │
+│  3. Determine state path + Check/Load state (see State Path Selection) │
 │  4. WebFetch Ring Standards                                     │
-│  5. ⛔ DISPATCH SPECIALIST AGENT ← Immediate after standards   │
-│  6. Wait for agent completion                                   │
-│  7. Verify agent output (Standards Coverage Table)              │
-│  8. Update state (Write to JSON)                               │
-│  9. Proceed to next gate                                        │
+│  5. ⛔ LOAD SUB-SKILL for current gate (Skill tool)            │
+│  6. Execute sub-skill instructions (dispatch agent via Task)    │
+│  7. Wait for agent completion                                   │
+│  8. Verify agent output (Standards Coverage Table)              │
+│  9. Update state (Write to JSON)                               │
+│  10. Proceed to next gate                                       │
 │                                                                 │
 │  ════════════════════════════════════════════════════════════   │
-│  ❌ WRONG: Load → Mode → Standards → [START CODING DIRECTLY]   │
-│  ✅ RIGHT: Load → Mode → Standards → DISPATCH AGENT → Wait     │
+│  ❌ WRONG: Load → Mode → Standards → Task(agent) directly       │
+│  ✅ RIGHT: Load → Mode → Standards → Skill(sub) → Task(agent)   │
 │  ════════════════════════════════════════════════════════════   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Agent Dispatch is IMMEDIATE (HARD GATE)
+### ⛔ SUB-SKILL LOADING IS MANDATORY (HARD GATE)
 
-**The moment you identify the task language/type, dispatch the agent. No intermediate steps.**
+**Before dispatching ANY agent, you MUST load the corresponding sub-skill first.**
 
-| Task Type | Immediate Action |
-|-----------|------------------|
-| Go implementation | `Task(subagent_type="backend-engineer-golang", ...)` |
-| TypeScript backend | `Task(subagent_type="backend-engineer-typescript", ...)` |
-| React/Frontend | `Task(subagent_type="frontend-engineer", ...)` |
-| BFF layer | `Task(subagent_type="frontend-bff-engineer-typescript", ...)` |
-| Infrastructure | `Task(subagent_type="devops-engineer", ...)` |
-| Observability validation | `Task(subagent_type="sre", ...)` |
-| Testing | `Task(subagent_type="qa-analyst", ...)` |
-| Code review | 3 parallel: `code-reviewer`, `business-logic-reviewer`, `security-reviewer` |
+| Gate | Sub-Skill to Load | Then Dispatch Agent |
+|------|-------------------|---------------------|
+| Gate 0 | `Skill("dev-implementation")` | `Task(subagent_type="backend-engineer-*", ...)` |
+| Gate 1 | `Skill("dev-devops")` | `Task(subagent_type="devops-engineer", ...)` |
+| Gate 2 | `Skill("dev-sre")` | `Task(subagent_type="sre", ...)` |
+| Gate 3 | `Skill("dev-testing")` | `Task(subagent_type="qa-analyst", ...)` |
+| Gate 4 | `Skill("requesting-code-review")` | 3x `Task(...)` in parallel |
+| Gate 5 | `Skill("dev-validation")` | N/A (verification only) |
 
-**Between "WebFetch standards" and "Dispatch agent" there should be ZERO other actions.**
+**The workflow for EACH gate is:**
+```text
+1. Skill("[sub-skill-name]")     ← Load sub-skill instructions
+2. Follow sub-skill instructions  ← Sub-skill tells you HOW to dispatch
+3. Task(subagent_type=...)       ← Dispatch agent as sub-skill instructs
+4. Validate agent output          ← Per sub-skill validation rules
+5. Update state                   ← Record results
+```
+
+### Anti-Rationalization for Skipping Sub-Skills
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know what the sub-skill does" | Knowledge ≠ execution. Sub-skill has iteration logic. | **Load Skill() first** |
+| "Task() directly is faster" | Faster ≠ correct. Sub-skill has validation rules. | **Load Skill() first** |
+| "Sub-skill just wraps Task()" | Sub-skills have retry logic, fix dispatch, validation. | **Load Skill() first** |
+| "I'll follow the pattern manually" | Manual = error-prone. Sub-skill is the pattern. | **Load Skill() first** |
+
+**Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".**
 
 ### Anti-Rationalization for Direct Coding
 
@@ -355,7 +372,7 @@ Day 4: Production incident from Day 1 code
 | 1 | dev-devops | Infrastructure and deployment | devops-engineer |
 | 2 | dev-sre | Observability (health, logging, tracing) | sre |
 | 3 | dev-testing | Unit tests for acceptance criteria | qa-analyst |
-| 4 | dev-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
+| 4 | requesting-code-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
 | 5 | dev-validation | Final acceptance validation | N/A (verification) |
 
 ## Integrated PM → Dev Workflow
@@ -378,9 +395,65 @@ Day 4: Production incident from Day 1 code
 | Task without subtasks | Task itself | 6 gates |
 | Task with subtasks | Each subtask | 6 gates per subtask |
 
+## Commit Timing
+
+**User selects when commits happen (Step 7 of initialization).**
+
+| Option | When Commit Happens | Use Case |
+|--------|---------------------|----------|
+| **(a) Per subtask** | After each subtask passes Gate 5 | Fine-grained history, easy rollback per subtask |
+| **(b) Per task** | After all subtasks of a task complete | Logical grouping, one commit per feature chunk |
+| **(c) At the end** | After entire cycle completes | Single commit with all changes, clean history |
+
+### Commit Message Format
+
+| Timing | Message Format | Example |
+|--------|----------------|---------|
+| Per subtask | `feat({subtask_id}): {subtask_title}` | `feat(ST-001-02): implement user authentication handler` |
+| Per task | `feat({task_id}): {task_title}` | `feat(T-001): implement user authentication` |
+| At the end | `feat({cycle_id}): complete dev cycle for {feature}` | `feat(cycle-abc123): complete dev cycle for auth-system` |
+
+### Commit Timing vs Execution Mode
+
+| Execution Mode | Commit Timing | Behavior |
+|----------------|---------------|----------|
+| Manual per subtask | Per subtask | Commit + checkpoint after each subtask |
+| Manual per subtask | Per task | Checkpoint after subtask, commit after task |
+| Manual per subtask | At end | Checkpoint after subtask, commit at cycle end |
+| Manual per task | Per subtask | Commit after subtask, checkpoint after task |
+| Manual per task | Per task | Commit + checkpoint after task |
+| Manual per task | At end | Checkpoint after task, commit at cycle end |
+| Automatic | Per subtask | Commit after each subtask, no checkpoints |
+| Automatic | Per task | Commit after task, no checkpoints |
+| Automatic | At end | Single commit at cycle end, no checkpoints |
+
+**Note:** Checkpoints (user approval pauses) are controlled by `execution_mode`. Commits are controlled by `commit_timing`. They are independent settings.
+
 ## State Management
 
-State is persisted to `docs/refactor/current-cycle.json`:
+### State Path Selection (MANDATORY)
+
+The state file path depends on the **source of tasks**:
+
+| Task Source | State Path | Use Case |
+|-------------|------------|----------|
+| `docs/refactor/*/tasks.md` | `docs/dev-refactor/current-cycle.json` | Refactoring existing code |
+| `docs/pre-dev/*/tasks.md` | `docs/dev-cycle/current-cycle.json` | New feature development |
+| Any other path | `docs/dev-cycle/current-cycle.json` | Default for manual tasks |
+
+**Detection Logic:**
+```text
+IF source_file contains "docs/refactor/" THEN
+  state_path = "docs/dev-refactor/current-cycle.json"
+ELSE
+  state_path = "docs/dev-cycle/current-cycle.json"
+```
+
+**Store state_path in the state object itself** so resume knows where to look.
+
+### State File Structure
+
+State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json` or `docs/dev-refactor/current-cycle.json`):
 
 ```json
 {
@@ -389,7 +462,10 @@ State is persisted to `docs/refactor/current-cycle.json`:
   "started_at": "ISO timestamp",
   "updated_at": "ISO timestamp",
   "source_file": "path/to/tasks.md",
+  "state_path": "docs/dev-cycle/current-cycle.json | docs/dev-refactor/current-cycle.json",
+  "cycle_type": "feature | refactor",
   "execution_mode": "manual_per_subtask|manual_per_task|automatic",
+  "commit_timing": "per_subtask|per_task|at_end",
   "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_testing|paused_for_task_approval|paused_for_integration_testing",
   "feedback_loop_completed": false,
   "current_task_index": 0,
@@ -437,14 +513,47 @@ State is persisted to `docs/refactor/current-cycle.json`:
           "agent": "backend-engineer-golang",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
-          "duration_ms": 0
+          "duration_ms": 0,
+          "iterations": 1,
+          "standards_compliance": {
+            "total_sections": 15,
+            "compliant": 14,
+            "not_applicable": 1,
+            "non_compliant": 0,
+            "gaps": []
+          }
         },
-        "devops": null,
+        "devops": {
+          "agent": "devops-engineer",
+          "output": "## Summary\n...",
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "iterations": 1,
+          "artifacts_created": ["Dockerfile", "docker-compose.yml", ".env.example"],
+          "verification_errors": [],
+          "standards_compliance": {
+            "total_sections": 8,
+            "compliant": 8,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
         "sre": {
           "agent": "sre",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
-          "duration_ms": 0
+          "duration_ms": 0,
+          "iterations": 1,
+          "instrumentation_coverage": "92%",
+          "validation_errors": [],
+          "standards_compliance": {
+            "total_sections": 10,
+            "compliant": 10,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
         },
         "testing": {
           "agent": "qa-analyst",
@@ -452,14 +561,65 @@ State is persisted to `docs/refactor/current-cycle.json`:
           "verdict": "PASS",
           "coverage_actual": 87.5,
           "coverage_threshold": 85,
-          "iteration": 1,
+          "iterations": 1,
           "timestamp": "ISO timestamp",
-          "duration_ms": 0
+          "duration_ms": 0,
+          "failures": [],
+          "uncovered_criteria": [],
+          "standards_compliance": {
+            "total_sections": 6,
+            "compliant": 6,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
         },
         "review": {
-          "code_reviewer": {"agent": "code-reviewer", "output": "...", "timestamp": "..."},
-          "business_logic_reviewer": {"agent": "business-logic-reviewer", "output": "...", "timestamp": "..."},
-          "security_reviewer": {"agent": "security-reviewer", "output": "...", "timestamp": "..."}
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "code_reviewer": {
+            "agent": "code-reviewer",
+            "output": "...",
+            "verdict": "PASS",
+            "timestamp": "...",
+            "issues": [],
+            "standards_compliance": {
+              "total_sections": 12,
+              "compliant": 12,
+              "not_applicable": 0,
+              "non_compliant": 0,
+              "gaps": []
+            }
+          },
+          "business_logic_reviewer": {
+            "agent": "business-logic-reviewer",
+            "output": "...",
+            "verdict": "PASS",
+            "timestamp": "...",
+            "issues": [],
+            "standards_compliance": {
+              "total_sections": 8,
+              "compliant": 8,
+              "not_applicable": 0,
+              "non_compliant": 0,
+              "gaps": []
+            }
+          },
+          "security_reviewer": {
+            "agent": "security-reviewer",
+            "output": "...",
+            "verdict": "PASS",
+            "timestamp": "...",
+            "issues": [],
+            "standards_compliance": {
+              "total_sections": 10,
+              "compliant": 10,
+              "not_applicable": 0,
+              "non_compliant": 0,
+              "gaps": []
+            }
+          }
         },
         "validation": {
           "result": "approved|rejected",
@@ -476,6 +636,97 @@ State is persisted to `docs/refactor/current-cycle.json`:
   }
 }
 ```
+
+### Structured Error/Issue Schemas
+
+**These schemas enable `dev-feedback-loop` to analyze issues without parsing raw output.**
+
+#### Standards Compliance Gap Schema
+
+```json
+{
+  "section": "Error Handling (MANDATORY)",
+  "status": "❌",
+  "reason": "Missing error wrapping with context",
+  "file": "internal/handler/user.go",
+  "line": 45,
+  "evidence": "return err // should wrap with additional context"
+}
+```
+
+#### Test Failure Schema
+
+```json
+{
+  "test_name": "TestUserCreate_InvalidEmail",
+  "test_file": "internal/handler/user_test.go",
+  "error_type": "assertion",
+  "expected": "ErrInvalidEmail",
+  "actual": "nil",
+  "message": "Expected validation error for invalid email format",
+  "stack_trace": "user_test.go:42 → user.go:28"
+}
+```
+
+#### Review Issue Schema
+
+```json
+{
+  "severity": "MEDIUM",
+  "category": "error-handling",
+  "description": "Error not wrapped with context before returning",
+  "file": "internal/handler/user.go",
+  "line": 45,
+  "suggestion": "Use fmt.Errorf(\"failed to create user: %w\", err)",
+  "fixed": false,
+  "fixed_in_iteration": null
+}
+```
+
+#### DevOps Verification Error Schema
+
+```json
+{
+  "check": "docker_build",
+  "status": "FAIL",
+  "error": "COPY failed: file not found in build context: go.sum",
+  "suggestion": "Ensure go.sum exists and is not in .dockerignore"
+}
+```
+
+#### SRE Validation Error Schema
+
+```json
+{
+  "check": "structured_logging",
+  "status": "FAIL",
+  "file": "internal/handler/user.go",
+  "line": 32,
+  "error": "Using fmt.Printf instead of structured logger",
+  "suggestion": "Use logger.Info().Str(\"user_id\", id).Msg(\"user created\")"
+}
+```
+
+### Populating Structured Data
+
+**Each gate MUST populate its structured fields when saving to state:**
+
+| Gate | Fields to Populate |
+|------|-------------------|
+| Gate 0 (Implementation) | `standards_compliance` (total, compliant, gaps[]) |
+| Gate 1 (DevOps) | `standards_compliance` + `verification_errors[]` |
+| Gate 2 (SRE) | `standards_compliance` + `validation_errors[]` |
+| Gate 3 (Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
+| Gate 4 (Review) | `standards_compliance` per reviewer + `issues[]` per reviewer |
+
+**All gates track `standards_compliance`:**
+- `total_sections`: Count from agent's standards file (via standards-coverage-table.md)
+- `compliant`: Sections marked ✅ in Standards Coverage Table
+- `not_applicable`: Sections marked N/A
+- `non_compliant`: Sections marked ❌ (MUST be 0 to pass gate)
+- `gaps[]`: Detailed info for each ❌ section (even if later fixed)
+
+**Empty arrays `[]` indicate no issues found - this is valid data for feedback-loop.**
 
 ## ⛔ State Persistence Rule (MANDATORY)
 
@@ -494,12 +745,12 @@ state.updated_at = "[ISO timestamp]"
 
 # Step 2: Write to file (MANDATORY - use Write tool)
 Write tool:
-  file_path: "docs/refactor/current-cycle.json"
+  file_path: [state.state_path]  # Use state_path from state object
   content: [full JSON state]
 
 # Step 3: Verify persistence (MANDATORY - use Read tool)
 Read tool:
-  file_path: "docs/refactor/current-cycle.json"
+  file_path: [state.state_path]  # Use state_path from state object
 # Confirm current_gate and gate_progress match expected values
 ```
 
@@ -1137,18 +1388,28 @@ STOP EXECUTION. Do NOT proceed to Step 1.
 
 1. **Detect input:** File → Load directly | Directory → Load tasks.md + discover subtasks/
 2. **Build order:** Read tasks, check for subtasks (ST-XXX-01, 02...) or TDD autonomous mode
-3. **Initialize state:** Generate cycle_id, create `docs/refactor/current-cycle.json`, set indices to 0
-4. **Display plan:** "Loaded X tasks with Y subtasks"
-5. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
+3. **Determine state path:**
+   - IF source_file contains `docs/refactor/` → `state_path = "docs/dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
+   - ELSE → `state_path = "docs/dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
+4. **Initialize state:** Generate cycle_id, create state file at `{state_path}`, set indices to 0
+5. **Display plan:** "Loaded X tasks with Y subtasks"
+6. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
    - Options: (a) Manual per subtask (b) Manual per task (c) Automatic
    - **Do NOT skip:** User hints ≠ mode selection. Only explicit a/b/c is valid.
-6. **Start:** Display mode, proceed to Gate 0
+7. **ASK COMMIT TIMING (MANDATORY - AskUserQuestion):**
+   - Options: (a) Per subtask (b) Per task (c) At the end
+   - Store in `commit_timing` field in state
+8. **Start:** Display mode + commit timing, proceed to Gate 0
 
 ### Resume Cycle (--resume flag)
 
-1. Load `docs/refactor/current-cycle.json`, validate
-2. Display: cycle started, tasks completed/total, current task/subtask/gate, paused reason
-3. **Handle paused states:**
+1. **Find existing state file:**
+   - Check `docs/dev-cycle/current-cycle.json` first
+   - If not found, check `docs/dev-refactor/current-cycle.json`
+   - If neither exists → Error: "No cycle to resume"
+2. Load found state file, validate (state_path is stored in the state object)
+3. Display: cycle started, tasks completed/total, current task/subtask/gate, paused reason
+4. **Handle paused states:**
 
 | Status | Action |
 |--------|--------|
@@ -1273,8 +1534,31 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
      agent: "[selected_agent]",
      output: "[full agent output for feedback analysis]",
      timestamp: "[ISO timestamp]",
-     duration_ms: [execution time]
+     duration_ms: [execution time],
+     iterations: [standards_compliance_iterations from Step 2.3],
+     standards_compliance: {
+       total_sections: [N from final verification],
+       compliant: [N sections with ✅],
+       not_applicable: [N sections with N/A],
+       non_compliant: 0,
+       gaps: []  // Empty when gate passes; populated during iterations
+     }
    }
+   ```
+   
+   **If iterations > 1, populate `gaps[]` with issues found in previous iterations:**
+   ```json
+   gaps: [
+     {
+       "section": "[section name from ❌ row]",
+       "status": "❌",
+       "reason": "[why it failed]",
+       "file": "[file path if available]",
+       "line": [line number if available],
+       "evidence": "[code snippet or description]",
+       "fixed_in_iteration": [iteration number when fixed]
+     }
+   ]
    ```
 
 6. **Display to user:**
@@ -1420,7 +1704,7 @@ gate_progress.implementation = {
 6. **⛔ SAVE STATE TO FILE (MANDATORY):**
    ```yaml
    Write tool:
-     file_path: "docs/refactor/current-cycle.json"
+     file_path: [state.state_path]  # "docs/dev-cycle/current-cycle.json" or "docs/dev-refactor/current-cycle.json"
      content: [full updated state JSON]
    ```
    See "State Persistence Rule" section. State MUST be written to file after Gate 0.
@@ -1469,105 +1753,103 @@ gate_progress.implementation = {
 - Infrastructure as Code (if applicable)
 - Helm charts (if K8s deployment)
 
-### Step 3.1: Dispatch DevOps Agent
+### Step 3.1: Prepare Input for dev-devops Skill
 
 ```text
-For current execution unit:
+Gather from previous gates:
 
-1. Record gate start timestamp
-2. Dispatch DevOps agent (ALWAYS - not optional):
-
-   Task tool:
-     subagent_type: "devops-engineer"
-     model: "opus"
-     description: "Create/update DevOps artifacts for [unit_id]"
-     prompt: |
-       ⛔ MANDATORY: Create ALL DevOps Artifacts for: [unit_id]
-
-       ## Implementation Summary from Gate 0:
-       [implementation_artifacts]
-
-       ## Standards Reference:
-       WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
-       
-       You MUST implement ALL sections from devops.md. See standards-coverage-table.md
-       for the complete list: devops-engineer → devops.md
-
-       ## Required Output:
-
-       ### Standards Coverage Table
-       | # | Section (from devops.md) | Status | Evidence |
-       |---|--------------------------|--------|----------|
-       | 1 | Containers | ✅/❌ | Dockerfile:[line], docker-compose.yml:[line] |
-       | 2 | Makefile Standards | ✅/❌ | Makefile:[line] |
-       | ... | ... | ... | ... |
-
-       ### Compliance Summary
-       - **ALL STANDARDS MET:** ✅ YES / ❌ NO
-       - **If NO, what's missing:** [list sections]
-
-       ### Verification Commands Executed:
-       - `docker build -t [service] .` → [result]
-       - `docker-compose config` → [result]
-       - `make` → [result]
-
-3. Parse agent output and verify Standards Coverage Table
+devops_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  
+  // REQUIRED - from Gate 0 context
+  language: state.current_unit.language,  // "go" | "typescript" | "python"
+  service_type: state.current_unit.service_type,  // "api" | "worker" | "batch" | "cli"
+  implementation_files: agent_outputs.implementation.files_changed,  // list of files from Gate 0
+  
+  // OPTIONAL - additional context
+  gate0_handoff: agent_outputs.implementation,  // full Gate 0 output
+  new_dependencies: state.current_unit.new_deps || [],  // new deps added in Gate 0
+  new_env_vars: state.current_unit.env_vars || [],  // env vars needed
+  new_services: state.current_unit.services || [],  // postgres, redis, etc.
+  existing_dockerfile: [check if Dockerfile exists],
+  existing_compose: [check if docker-compose.yml exists]
+}
 ```
 
-### Step 3.2: Verify Standards Coverage Table (HARD GATE)
+### Step 3.2: Invoke dev-devops Skill
 
 ```text
-4. Parse agent output for Standards Coverage Table:
+1. Record gate start timestamp
 
-   IF "ALL STANDARDS MET: ✅ YES" AND all sections have ✅ or N/A:
-     → Verify files actually exist (Read tool for each artifact)
-     → If all files exist → Gate 1 PASSED. Proceed to Step 3.3.
+2. Invoke dev-devops skill with structured input:
 
-   IF ANY section has ❌:
-     → Gate 1 BLOCKED. Standards not met.
-     → Extract ❌ sections from Standards Coverage Table
-     → Re-dispatch to devops-engineer:
+   Skill("dev-devops") with input:
+     unit_id: devops_input.unit_id
+     language: devops_input.language
+     service_type: devops_input.service_type
+     implementation_files: devops_input.implementation_files
+     gate0_handoff: devops_input.gate0_handoff
+     new_dependencies: devops_input.new_dependencies
+     new_env_vars: devops_input.new_env_vars
+     new_services: devops_input.new_services
+     existing_dockerfile: devops_input.existing_dockerfile
+     existing_compose: devops_input.existing_compose
 
-     Task tool:
-       subagent_type: "devops-engineer"
-       model: "opus"
-       description: "Fix missing DevOps standards for [unit_id]"
-       prompt: |
-         ⛔ FIX REQUIRED - DevOps Standards Not Met
+   The skill handles:
+   - Dispatching devops-engineer agent
+   - Dockerfile creation/update
+   - docker-compose.yml configuration
+   - .env.example documentation
+   - Verification commands execution
+   - Fix iteration loop (max 3 attempts)
 
-         Your Standards Coverage Table shows these sections as ❌:
-         [list ❌ sections from table]
+3. Parse skill output for results:
+   
+   Expected output sections:
+   - "## DevOps Summary" → status, iterations
+   - "## Files Changed" → Dockerfile, docker-compose, .env.example actions
+   - "## Verification Results" → build, startup, health checks
+   - "## Handoff to Next Gate" → ready_for_sre: YES/NO
+   
+   IF skill output contains "Status: PASS" AND "Ready for Gate 2: YES":
+     → Gate 1 PASSED. Proceed to Step 3.3.
+   
+   IF skill output contains "Status: FAIL" OR "Ready for Gate 2: NO":
+     → Gate 1 BLOCKED.
+     → Skill already dispatched fixes to devops-engineer
+     → Skill already re-ran verification
+     → If "ESCALATION" in output: STOP and report to user
 
-         WebFetch the standards again:
-         https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
-
-         Implement ALL missing sections.
-         Return updated Standards Coverage Table with ALL ✅ or N/A.
-
-     → After fix: Re-verify Standards Coverage Table
-     → Max 3 iterations, then STOP and escalate to user
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
 ```
 
 ### Step 3.3: Gate 1 Complete
 
 ```text
-5. When all artifacts verified:
+5. When dev-devops skill returns PASS:
+   
+   Parse from skill output:
+   - status: extract from "## DevOps Summary"
+   - dockerfile_action: extract from "## Files Changed" table
+   - compose_action: extract from "## Files Changed" table
+   - verification_passed: extract from "## Verification Results"
+   
    - agent_outputs.devops = {
-       agent: "devops-engineer",
-       output: "[full agent output]",
-       artifacts_created: ["Dockerfile", "docker-compose.yml", ".env.example", "Makefile"],
+       skill: "dev-devops",
+       output: "[full skill output]",
+       artifacts_created: ["Dockerfile", "docker-compose.yml", ".env.example"],
+       verification_passed: true,
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time]
      }
 
 6. Update state:
    - gate_progress.devops.status = "completed"
-   - gate_progress.devops.artifacts = [list of created files]
+   - gate_progress.devops.artifacts = [list from skill output]
 
-7. **⛔ SAVE STATE TO FILE (MANDATORY):**
-   Write tool → "docs/refactor/current-cycle.json"
-
-8. Proceed to Gate 2
+7. Proceed to Gate 2
 ```
 
 ### Gate 1 Anti-Rationalization Table
@@ -1582,144 +1864,92 @@ For current execution unit:
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use dev-sre
+**REQUIRED SUB-SKILL:** Use `dev-sre`
 
-### ⛔ HARD GATE: Observability MUST Be Validated
-
-**Gate 2 is a BLOCKING gate.** SRE agent VALIDATES that observability was correctly implemented in Gate 0. If ANY observability requirement is missing:
-- You CANNOT proceed to Gate 3
-- You MUST dispatch fix to the IMPLEMENTATION agent (backend-engineer-golang, etc.) - NOT SRE
-- You MUST re-run SRE validation after fixes
-- You MUST repeat until ALL observability requirements pass
-
-**SRE validates. Implementation agents fix. SRE does NOT implement.**
-
-### Required Observability (from sre.md)
-
-**See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "sre → sre.md" for ALL required sections.**
-
-### Step 4.1: Dispatch SRE Agent for Validation
+### Step 4.1: Prepare Input for dev-sre Skill
 
 ```text
-For current execution unit:
+Gather from previous gates:
 
+sre_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  
+  // REQUIRED - from Gate 0 context
+  language: state.current_unit.language,  // "go" | "typescript" | "python"
+  service_type: state.current_unit.service_type,  // "api" | "worker" | "batch" | "cli"
+  implementation_agent: agent_outputs.implementation.agent,  // e.g., "backend-engineer-golang"
+  implementation_files: agent_outputs.implementation.files_changed,  // list of files from Gate 0
+  
+  // OPTIONAL - additional context
+  external_dependencies: state.current_unit.external_deps || [],  // HTTP clients, gRPC, queues
+  gate0_handoff: agent_outputs.implementation,  // full Gate 0 output
+  gate1_handoff: agent_outputs.devops  // full Gate 1 output
+}
+```
+
+### Step 4.2: Invoke dev-sre Skill
+
+```text
 1. Record gate start timestamp
-2. Dispatch SRE agent (ALWAYS - validation is not optional):
 
-   Task tool:
-     subagent_type: "sre"
-     model: "opus"
-     description: "Validate observability for [unit_id]"
-     prompt: |
-       ⛔ VALIDATE Observability Implementation for: [unit_id]
+2. Invoke dev-sre skill with structured input:
 
-       ## Service Information:
-       - Language: [Go/TypeScript]
-       - Service type: [API/Worker/Batch]
-       - Implementation agent: [agent that did Gate 0]
-       - Files from Gate 0: [list of implementation files]
+   Skill("dev-sre") with input:
+     unit_id: sre_input.unit_id
+     language: sre_input.language
+     service_type: sre_input.service_type
+     implementation_agent: sre_input.implementation_agent
+     implementation_files: sre_input.implementation_files
+     external_dependencies: sre_input.external_dependencies
+     gate0_handoff: sre_input.gate0_handoff
+     gate1_handoff: sre_input.gate1_handoff
 
-       ## Standards Reference:
-       WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md
-       
-       You MUST validate ALL sections from sre.md. See standards-coverage-table.md
-       for the complete list: sre → sre.md
+   The skill handles:
+   - Dispatching SRE agent for validation
+   - Structured logging validation
+   - Distributed tracing validation
+   - Code instrumentation coverage (90%+ required)
+   - Context propagation validation (InjectHTTPContext/InjectGRPCContext)
+   - Dispatching fixes to implementation agent if needed
+   - Re-validation loop (max 3 iterations)
 
-       ## Your Role:
-       - VALIDATE that observability is implemented correctly
-       - Do NOT implement - only verify and report
-       - If issues found → Report them with severity and file:line
-
-       ## Required Output:
-
-       ### Standards Coverage Table (Validation Results)
-       | # | Section (from sre.md) | Status | Evidence |
-       |---|----------------------|--------|----------|
-       | 1 | Logging Standards | ✅/❌ | [file:line or "NOT FOUND"] |
-       | 2 | Tracing Standards | ✅/❌ | [file:line or "NOT FOUND"] |
-       | 3 | OpenTelemetry with lib-commons | ✅/❌ | [file:line or "NOT FOUND"] |
-       | 4 | Health Checks | ✅/❌ | [file:line or "NOT FOUND"] |
-       | ... | ... | ... | ... |
-
-       ### Issues Found (if any ❌)
-       For each ❌ section:
-       - **Section:** [name]
-       - **Severity:** CRITICAL/HIGH/MEDIUM
-       - **What's Missing:** [specific requirement not met]
-       - **Expected:** [what should exist per sre.md]
-       - **Fix Required By:** [implementation agent name]
-
-       ### Compliance Summary
-       - **ALL OBSERVABILITY VALIDATED:** ✅ YES / ❌ NO
-       - **If NO, sections failing:** [list]
-
-3. Parse agent output and check validation results
-```
-
-### Step 4.2: Handle Validation Results (HARD GATE)
-
-```text
-4. Parse SRE agent output for Standards Coverage Table:
-
-   IF "ALL OBSERVABILITY VALIDATED: ✅ YES" AND all sections have ✅ or N/A:
-     → Gate 2 PASSED. Proceed to Step 4.4.
-
-   IF ANY section has ❌:
-     → Gate 2 BLOCKED. Observability not implemented correctly.
-     → Extract ❌ sections and issues from SRE report
-     → Dispatch fix to IMPLEMENTATION agent (NOT SRE):
-```
-
-### Step 4.3: Dispatch Fix to Implementation Agent
-
-```text
-   ⛔ IMPORTANT: SRE validates. Implementation agents fix.
+3. Parse skill output for validation results:
    
-   Determine which agent implemented Gate 0:
-   - Go code → backend-engineer-golang
-   - TypeScript backend → backend-engineer-typescript
-   - React/Frontend → frontend-engineer
+   Expected output sections:
+   - "## Validation Result" → status, iterations, coverage
+   - "## Instrumentation Coverage" → table with per-layer coverage
+   - "## Issues Found" → list or "None"
+   - "## Handoff to Next Gate" → ready_for_testing: YES/NO
+   
+   IF skill output contains "Status: PASS" AND "Ready for Gate 3: YES":
+     → Gate 2 PASSED. Proceed to Step 4.3.
+   
+   IF skill output contains "Status: FAIL" OR "Ready for Gate 3: NO":
+     → Gate 2 BLOCKED. 
+     → Skill already dispatched fixes to implementation agent
+     → Skill already re-ran validation
+     → If "ESCALATION" in output: STOP and report to user
 
-   Task tool:
-     subagent_type: "[implementation agent from Gate 0]"
-     model: "opus"
-     description: "Fix observability issues for [unit_id]"
-     prompt: |
-       ⛔ FIX REQUIRED - Observability Not Implemented
-
-       SRE validation found these observability issues:
-
-       ## Issues to Fix (from SRE report):
-       [paste ❌ sections and issues from SRE output]
-
-       ## Standards Reference:
-       For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-       For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-       
-       Focus on:
-       - Telemetry & Observability section
-       - Logging Standards section
-       - Bootstrap Pattern (telemetry initialization)
-
-       ## Requirements:
-       1. Implement ALL missing observability per standards
-       2. For Go: lib-commons v2 telemetry, NewTrackingFromContext, spans
-       3. For TS: lib-common-js logging, structured JSON
-       4. Return Standards Coverage Table showing ALL observability ✅
-
-   → After fix: Re-dispatch SRE agent to validate again
-   → Increment metrics.sre_iterations
-   → Max 3 iterations, then STOP and escalate to user
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
 ```
 
-### Step 4.4: Gate 2 Complete
+### Step 4.3: Gate 2 Complete
 
 ```text
-5. When all observability validated:
+5. When dev-sre skill returns PASS:
+   
+   Parse from skill output:
+   - status: extract from "## Validation Result"
+   - instrumentation_coverage: extract percentage from coverage table
+   - iterations: extract from "Iterations:" line
+   
    - agent_outputs.sre = {
-       agent: "sre",
-       output: "[full agent output]",
+       skill: "dev-sre",
+       output: "[full skill output]",
        validation_result: "PASS",
+       instrumentation_coverage: "[X%]",
        iterations: [count],
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time]
@@ -1728,370 +1958,299 @@ For current execution unit:
 6. Update state:
    - gate_progress.sre.status = "completed"
    - gate_progress.sre.observability_validated = true
+   - gate_progress.sre.instrumentation_coverage = "[X%]"
 
-7. **⛔ SAVE STATE TO FILE (MANDATORY):**
-   Write tool → "docs/refactor/current-cycle.json"
-
-8. Proceed to Gate 3
+7. Proceed to Gate 3
 ```
 
 ### Gate 2 Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Observability can be added later" | Observability is v1 requirement. Debugging blind code is impossible. | **Fix NOW before Gate 3** |
-| "SRE should implement the fix" | SRE validates. Implementation agents implement. Role separation. | **Dispatch to implementation agent** |
-| "Only logging is missing, tracing optional" | ALL observability sections are MANDATORY per sre.md. | **Implement ALL sections** |
-| "Simple service doesn't need full observability" | Complexity is irrelevant. Standards apply uniformly. | **Implement ALL sections** |
-| "Tests pass, skip observability" | Tests ≠ observability. Different concerns. | **Validate observability separately** |
-| "lib-commons already handles it" | lib-commons provides tools. You must USE them correctly. | **Verify correct usage** |
+See [dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalization tables covering:
+- Observability deferral rationalizations
+- Instrumentation coverage rationalizations
+- Context propagation rationalizations
 
 ### Gate 2 Pressure Resistance
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Without it, you cannot debug production issues. I'm dispatching SRE to validate now." |
-| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. I MUST dispatch fixes to [implementation agent] before proceeding. SRE validates, implementation fixes." |
-| "Just mark observability as N/A" | "Observability is ALWAYS applicable for services. N/A requires explicit technical reason. I'm dispatching validation now." |
+| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking dev-sre skill now." |
+| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. dev-sre skill handles fix dispatch and re-validation." |
+| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. dev-sre skill will not pass until met." |
 
 ## Step 5: Gate 3 - Testing (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use dev-testing
+**REQUIRED SUB-SKILL:** Use `dev-testing`
 
-### Simple Flow
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  QA runs tests → checks coverage against threshold      │
-│                                                         │
-│  PASS (coverage ≥ threshold) → Proceed to Gate 4       │
-│  FAIL (coverage < threshold) → Return to Gate 0        │
-│                                                         │
-│  Max 3 attempts, then escalate to user                 │
-└─────────────────────────────────────────────────────────┘
-```
-
-### Threshold
-
-- Default: **85%** (Ring minimum)
-- Can be higher if defined in `docs/PROJECT_RULES.md`
-- Cannot be lower than 85%
-
-### Execution
+### Step 5.1: Prepare Input for dev-testing Skill
 
 ```text
-1. Dispatch QA analyst with acceptance criteria and threshold
-2. QA writes tests, runs them, checks coverage
-3. QA returns VERDICT: PASS or FAIL
+Gather from previous gates:
 
-   PASS → Proceed to Gate 4 (Review)
-
-   FAIL → Return to Gate 0 (Implementation) to add tests
-          QA provides: what lines/branches need coverage
-
-4. Track iteration count (state.testing.iteration)
-   - Max 3 iterations allowed
-   - After 3rd failure: STOP and escalate to user
-   - Do NOT attempt 4th iteration automatically
-
-5. **⛔ SAVE STATE TO FILE (MANDATORY):**
-   Write tool → "docs/refactor/current-cycle.json"
-   See "State Persistence Rule" section.
-```
-
-### State Tracking
-
-```json
-{
-  "testing": {
-    "verdict": "PASS|FAIL",
-    "coverage_actual": 87.5,
-    "coverage_threshold": 85,
-    "iteration": 1
-  }
+testing_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  acceptance_criteria: state.current_unit.acceptance_criteria,  // list of ACs to test
+  implementation_files: agent_outputs.implementation.files_changed,
+  language: state.current_unit.language,  // "go" | "typescript" | "python"
+  
+  // OPTIONAL - additional context
+  coverage_threshold: 85,  // Ring minimum, PROJECT_RULES.md can raise
+  gate0_handoff: agent_outputs.implementation,  // full Gate 0 output
+  existing_tests: [check for existing test files]
 }
 ```
 
+### Step 5.2: Invoke dev-testing Skill
+
+```text
+1. Record gate start timestamp
+
+2. Invoke dev-testing skill with structured input:
+
+   Skill("dev-testing") with input:
+     unit_id: testing_input.unit_id
+     acceptance_criteria: testing_input.acceptance_criteria
+     implementation_files: testing_input.implementation_files
+     language: testing_input.language
+     coverage_threshold: testing_input.coverage_threshold
+     gate0_handoff: testing_input.gate0_handoff
+     existing_tests: testing_input.existing_tests
+
+   The skill handles:
+   - Dispatching qa-analyst agent
+   - Test creation following TDD methodology
+   - Coverage measurement and validation (85%+ required)
+   - Traceability matrix (AC → Test mapping)
+   - Dispatching fixes to implementation agent if coverage < threshold
+   - Re-validation loop (max 3 iterations)
+
+3. Parse skill output for results:
+   
+   Expected output sections:
+   - "## Testing Summary" → status, iterations
+   - "## Coverage Report" → threshold vs actual
+   - "## Traceability Matrix" → AC-to-test mapping
+   - "## Handoff to Next Gate" → ready_for_review: YES/NO
+   
+   IF skill output contains "Status: PASS" AND "Ready for Gate 4: YES":
+     → Gate 3 PASSED. Proceed to Step 5.3.
+   
+   IF skill output contains "Status: FAIL" OR "Ready for Gate 4: NO":
+     → Gate 3 BLOCKED.
+     → Skill already dispatched fixes to implementation agent
+     → Skill already re-ran coverage check
+     → If "ESCALATION" in output: STOP and report to user
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 5.3: Gate 3 Complete
+
+```text
+5. When dev-testing skill returns PASS:
+   
+   Parse from skill output:
+   - coverage_actual: extract percentage from "## Coverage Report"
+   - coverage_threshold: extract from "## Coverage Report"
+   - criteria_covered: extract from "## Traceability Matrix"
+   - iterations: extract from "Iterations:" line
+   
+   - agent_outputs.testing = {
+       skill: "dev-testing",
+       output: "[full skill output]",
+       verdict: "PASS",
+       coverage_actual: [X%],
+       coverage_threshold: [85%],
+       criteria_covered: "[X/Y]",
+       iterations: [count],
+       timestamp: "[ISO timestamp]",
+       duration_ms: [execution time],
+       failures: [],  // Empty when PASS; see schema below for FAIL
+       uncovered_criteria: []  // Empty when all ACs covered
+     }
+   
+   **If iterations > 1 (tests failed before passing), populate `failures[]`:**
+   ```json
+   failures: [
+     {
+       "test_name": "TestUserCreate_InvalidEmail",
+       "test_file": "internal/handler/user_test.go",
+       "error_type": "assertion|panic|timeout|compilation",
+       "expected": "[expected value]",
+       "actual": "[actual value]",
+       "message": "[error message from test output]",
+       "stack_trace": "[relevant stack trace]",
+       "fixed_in_iteration": [iteration number when fixed]
+     }
+   ]
+   ```
+   
+   **If coverage < 100% of acceptance criteria, populate `uncovered_criteria[]`:**
+   ```json
+   uncovered_criteria: [
+     {
+       "criterion_id": "AC-001",
+       "description": "User should receive email confirmation",
+       "reason": "No test found for email sending functionality"
+     }
+   ]
+   ```
+
+6. Update state:
+   - gate_progress.testing.status = "completed"
+   - gate_progress.testing.coverage = [coverage_actual]
+
+7. Proceed to Gate 4
+```
+
+### Gate 3 Thresholds
+
+- **Minimum:** 85% (Ring standard - CANNOT be lowered)
+- **Project-specific:** Can be higher if defined in `docs/PROJECT_RULES.md`
+- **Validation:** Threshold < 85% → Use 85%
+
+### Gate 3 Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "84% is close enough" | "85% is Ring minimum. dev-testing skill enforces this." |
+| "Skip testing, deadline" | "Testing is MANDATORY. dev-testing skill handles iterations." |
+| "Manual testing covers it" | "Gate 3 requires executable unit tests. Invoking dev-testing now." |
+
 ## Step 6: Gate 4 - Review (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use requesting-code-review
+**REQUIRED SUB-SKILL:** Use `requesting-code-review`
 
-### ⛔ HARD GATE: Issues MUST Be Fixed Before Proceeding
-
-**Gate 4 is a BLOCKING gate.** If reviewers find CRITICAL, HIGH, or MEDIUM severity issues:
-- You CANNOT proceed to Gate 5
-- You MUST dispatch fixes to the appropriate agent
-- You MUST re-run ALL 3 reviewers after fixes
-- You MUST repeat until ALL issues are resolved or max iterations reached
-
-### Step 6.1: Initial Review Dispatch
+### Step 6.1: Prepare Input for requesting-code-review Skill
 
 ```text
-For current execution unit:
+Gather from previous gates:
 
+review_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  base_sha: state.current_unit.base_sha,  // SHA before implementation
+  head_sha: [current HEAD],  // SHA after all gates
+  implementation_summary: state.current_unit.title + requirements,
+  requirements: state.current_unit.acceptance_criteria,
+  
+  // OPTIONAL - additional context
+  implementation_files: agent_outputs.implementation.files_changed,
+  gate0_handoff: agent_outputs.implementation  // full Gate 0 output
+}
+```
+
+### Step 6.2: Invoke requesting-code-review Skill
+
+```text
 1. Record gate start timestamp
-2. Dispatch all 3 reviewers in parallel (single message, 3 Task calls):
 
-   Task tool #1:
-     subagent_type: "code-reviewer"
-     model: "opus"
-     prompt: |
-       Review implementation for: [unit_id]
-       BASE_SHA: [pre-implementation commit]
-       HEAD_SHA: [current commit]
-       REQUIREMENTS: [unit requirements]
+2. Invoke requesting-code-review skill with structured input:
 
-   Task tool #2:
-     subagent_type: "business-logic-reviewer"
-     model: "opus"
-     prompt: [same structure]
+   Skill("requesting-code-review") with input:
+     unit_id: review_input.unit_id
+     base_sha: review_input.base_sha
+     head_sha: review_input.head_sha
+     implementation_summary: review_input.implementation_summary
+     requirements: review_input.requirements
+     implementation_files: review_input.implementation_files
+     gate0_handoff: review_input.gate0_handoff
 
-   Task tool #3:
-     subagent_type: "security-reviewer"
-     model: "opus"
-     prompt: [same structure]
+   The skill handles:
+   - Dispatching all 3 reviewers in PARALLEL (single message with 3 Task calls)
+   - Aggregating issues by severity (CRITICAL/HIGH/MEDIUM/LOW/COSMETIC)
+   - Dispatching fixes to implementation agent for blocking issues
+   - Re-running ALL 3 reviewers after fixes
+   - Iteration tracking (max 3 attempts)
+   - Adding TODO/FIXME comments for non-blocking issues
 
-3. Wait for all reviewers to complete
-4. Store all reviewer outputs:
+3. Parse skill output for results:
+   
+   Expected output sections:
+   - "## Review Summary" → status, iterations
+   - "## Issues by Severity" → counts per severity level
+   - "## Reviewer Verdicts" → code-reviewer, business-logic-reviewer, security-reviewer
+   - "## Handoff to Next Gate" → ready_for_validation: YES/NO
+   
+   IF skill output contains "Status: PASS" AND "Ready for Gate 5: YES":
+     → Gate 4 PASSED. Proceed to Step 6.3.
+   
+   IF skill output contains "Status: FAIL" OR "Ready for Gate 5: NO":
+     → Gate 4 BLOCKED.
+     → Skill already dispatched fixes to implementation agent
+     → Skill already re-ran all 3 reviewers
+     → If "ESCALATION" in output: STOP and report to user
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 6.3: Gate 4 Complete
+
+```text
+5. When requesting-code-review skill returns PASS:
+   
+   Parse from skill output:
+   - reviewers_passed: extract from "## Reviewer Verdicts" (should be "3/3")
+   - issues_critical: extract count from "## Issues by Severity"
+   - issues_high: extract count from "## Issues by Severity"
+   - issues_medium: extract count from "## Issues by Severity"
+   - iterations: extract from "Iterations:" line
+   
    - agent_outputs.review = {
+       skill: "requesting-code-review",
+       output: "[full skill output]",
+       iterations: [count],
+       timestamp: "[ISO timestamp]",
+       duration_ms: [execution time],
+       reviewers_passed: "3/3",
        code_reviewer: {
-         agent: "code-reviewer",
-         output: "[full output for feedback analysis]",
-         verdict: "PASS|FAIL",
-         issues: [{severity, description, file, line}],
-         timestamp: "[ISO timestamp]"
+         verdict: "PASS",
+         issues_count: N,
+         issues: []  // Structured issues - see schema below
        },
        business_logic_reviewer: {
-         agent: "business-logic-reviewer",
-         output: "[full output for feedback analysis]",
-         verdict: "PASS|FAIL",
-         issues: [{severity, description, file, line}],
-         timestamp: "[ISO timestamp]"
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
        },
        security_reviewer: {
-         agent: "security-reviewer",
-         output: "[full output for feedback analysis]",
-         verdict: "PASS|FAIL",
-         issues: [{severity, description, file, line}],
-         timestamp: "[ISO timestamp]"
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
        }
      }
-```
+   
+   **Populate `issues[]` for each reviewer with ALL issues found (even if fixed):**
+   ```json
+   issues: [
+     {
+       "severity": "CRITICAL|HIGH|MEDIUM|LOW|COSMETIC",
+       "category": "error-handling|security|performance|maintainability|business-logic|...",
+       "description": "[detailed description of the issue]",
+       "file": "internal/handler/user.go",
+       "line": 45,
+       "code_snippet": "return err",
+       "suggestion": "Use fmt.Errorf(\"failed to create user: %w\", err)",
+       "fixed": true|false,
+       "fixed_in_iteration": [iteration number when fixed, null if not fixed]
+     }
+   ]
+   ```
+   
+   **Issue tracking rules:**
+   - ALL issues found across ALL iterations MUST be recorded
+   - `fixed: true` + `fixed_in_iteration: N` for issues resolved during review
+   - `fixed: false` + `fixed_in_iteration: null` for LOW/COSMETIC (TODO/FIXME added)
+   - This enables feedback-loop to analyze recurring issue patterns
 
-### Step 6.2: Aggregate and Classify Issues
+6. Update state:
+   - gate_progress.review.status = "completed"
+   - gate_progress.review.reviewers_passed = "3/3"
 
-```text
-5. Parse all reviewer outputs and aggregate issues by severity:
-
-   ┌─────────────────────────────────────────────────────────────────┐
-   │ SEVERITY CLASSIFICATION                                         │
-   ├─────────────────────────────────────────────────────────────────┤
-   │ CRITICAL: Security vulnerabilities, data loss, crashes          │
-   │           → MUST FIX. Cannot proceed. Auto-dispatch to agent.   │
-   │                                                                 │
-   │ HIGH:     Major bugs, incorrect business logic, performance     │
-   │           → MUST FIX. Cannot proceed. Auto-dispatch to agent.   │
-   │                                                                 │
-   │ MEDIUM:   Code quality, standards violations, edge cases        │
-   │           → MUST FIX. Cannot proceed. Auto-dispatch to agent.   │
-   │                                                                 │
-   │ LOW:      Best practices, minor improvements                    │
-   │           → Add TODO(review): comment. Can proceed.             │
-   │                                                                 │
-   │ COSMETIC: Style, formatting, naming nitpicks                    │
-   │           → Add FIXME(nitpick): comment. Can proceed.           │
-   └─────────────────────────────────────────────────────────────────┘
-
-6. Create aggregated issue list:
-   aggregated_issues = {
-     blocking: [  // CRITICAL + HIGH + MEDIUM
-       {severity, reviewer, description, file, line, suggested_fix}
-     ],
-     non_blocking: [  // LOW + COSMETIC
-       {severity, reviewer, description, file, line}
-     ]
-   }
-```
-
-### Step 6.3: Handle Non-Blocking Issues (LOW/COSMETIC)
-
-```text
-7. For each non-blocking issue, add inline comments:
-
-   LOW severity → Add TODO comment:
-   // TODO(review): [description] - [reviewer] on [date]
-
-   COSMETIC severity → Add FIXME comment:
-   // FIXME(nitpick): [description] - [reviewer] on [date]
-
-   These comments are added but DO NOT block progression.
-```
-
-### Step 6.4: Handle Blocking Issues (CRITICAL/HIGH/MEDIUM) - HARD GATE
-
-```text
-8. IF aggregated_issues.blocking is NOT empty:
-
-   ┌─────────────────────────────────────────────────────────────────┐
-   │ ⛔ GATE 4 BLOCKED - ISSUES MUST BE FIXED                        │
-   ├─────────────────────────────────────────────────────────────────┤
-   │                                                                 │
-   │ Found N blocking issues:                                        │
-   │   • CRITICAL: X issues                                          │
-   │   • HIGH: Y issues                                               │
-   │   • MEDIUM: Z issues                                            │
-   │                                                                 │
-   │ Dispatching fixes to appropriate agents...                      │
-   │                                                                 │
-   └─────────────────────────────────────────────────────────────────┘
-
-   a) Group issues by responsible agent (based on issue type):
-
-   ┌─────────────────────────────────────────────────────────────────┐
-   │ ISSUE-TO-AGENT ROUTING                                         │
-   ├─────────────────────────────────────────────────────────────────┤
-   │ Issue Type                    │ Agent                          │
-   │───────────────────────────────┼────────────────────────────────│
-   │ Go code issues                │ backend-engineer-golang        │
-   │ TypeScript backend issues     │ backend-engineer-typescript    │
-   │ React/Frontend issues         │ frontend-engineer              │
-   │ BFF issues                    │ frontend-bff-engineer-typescript│
-   │ Security vulnerabilities      │ Same as code type + sre        │
-   │ Business logic errors         │ Same as code type              │
-   │ Architecture issues           │ Same as code type              │
-   │ DevOps/Infra issues           │ devops-engineer                │
-   │ Observability issues          │ sre                            │
-   │ Test coverage issues          │ qa-analyst                     │
-   └─────────────────────────────────────────────────────────────────┘
-
-   b) Dispatch fix request to each responsible agent:
-
-   Task tool:
-     subagent_type: "[agent from routing table]"
-     model: "opus"
-     description: "Fix review issues for [unit_id]"
-     prompt: |
-       ⛔ FIX REQUIRED - Review Issues Found
-
-       You MUST fix the following issues identified by code reviewers.
-       Do NOT skip any issue. Do NOT defer any issue.
-
-       ## Context
-       - Unit ID: [unit_id]
-       - Unit Title: [title]
-       - Files Changed: [list of files from implementation]
-
-       ## Issues to Fix (BLOCKING - ALL MUST BE RESOLVED)
-
-       [For each issue assigned to this agent:]
-       ### Issue N: [severity] - [reviewer]
-       - **Description:** [description]
-       - **File:** [file]:[line]
-       - **Suggested Fix:** [suggested_fix if provided]
-
-       ## Requirements
-       1. Fix ALL issues listed above
-       2. Run tests after fixes to ensure no regressions
-       3. Report what was fixed and how
-
-       ## Output Format
-       For each issue:
-       - Issue: [description]
-       - Fix Applied: [what you did]
-       - File Changed: [file]:[lines]
-       - Test Verification: [test results]
-
-   c) Wait for all fix agents to complete
-
-   d) Store fix results in state:
-      agent_outputs.review.fix_iteration_N = {
-        issues_fixed: N,
-        agents_dispatched: [list],
-        timestamp: "[ISO timestamp]"
-      }
-```
-
-### Step 6.5: Re-Run ALL Reviewers After Fixes
-
-```text
-9. After ALL fixes are applied:
-
-   ⛔ MANDATORY: Re-run ALL 3 reviewers in parallel
-   (You CANNOT cherry-pick reviewers. ALL 3 must re-run.)
-
-   Increment: metrics.review_iterations += 1
-
-   Dispatch all 3 reviewers again (same as Step 6.1)
-   with updated HEAD_SHA reflecting the fixes.
-
-10. Parse results and check for remaining blocking issues:
-
-    IF aggregated_issues.blocking is empty:
-      → Gate 4 PASSED. Proceed to Step 6.6.
-
-    IF aggregated_issues.blocking is NOT empty:
-      → Check iteration count
-
-11. Iteration limit check:
-
-    IF metrics.review_iterations >= 3:
-      ┌─────────────────────────────────────────────────────────────────┐
-      │ ⛔ MAXIMUM REVIEW ITERATIONS REACHED                            │
-      ├─────────────────────────────────────────────────────────────────┤
-      │                                                                 │
-      │ After 3 fix attempts, blocking issues remain:                   │
-      │                                                                 │
-      │ [List remaining issues]                                         │
-      │                                                                 │
-      │ ACTION REQUIRED: Human intervention needed.                     │
-      │                                                                 │
-      │ Options:                                                        │
-      │   a) Review issues manually and provide guidance                │
-      │   b) Escalate to senior engineer                                │
-      │   c) Abort this unit and mark as blocked                        │
-      │                                                                 │
-      └─────────────────────────────────────────────────────────────────┘
-
-      Set status = "blocked"
-      Set gate_progress.review.status = "failed"
-      Set gate_progress.review.blocked_reason = "max_iterations"
-      Save state
-      STOP execution - require user decision
-
-    IF metrics.review_iterations < 3:
-      → Loop back to Step 6.4 (dispatch fixes again)
-```
-
-### Step 6.6: Gate 4 Complete
-
-```text
-12. When all blocking issues are resolved (aggregated_issues.blocking is empty):
-
-    Update state:
-    - gate_progress.review.status = "completed"
-    - gate_progress.review.completed_at = "[ISO timestamp]"
-    - gate_progress.review.total_iterations = metrics.review_iterations
-    - gate_progress.review.issues_fixed = [count]
-
-    Display:
-    ┌─────────────────────────────────────────────────────────────────┐
-    │ ✓ GATE 4 COMPLETE (Review)                                      │
-    ├─────────────────────────────────────────────────────────────────┤
-    │                                                                 │
-    │ All 3 reviewers: PASS                                           │
-    │ Review iterations: N                                            │
-    │ Issues fixed: X                                                 │
-    │ TODO comments added: Y (LOW severity)                           │
-    │ FIXME comments added: Z (COSMETIC)                              │
-    │                                                                 │
-    │ Proceeding to Gate 5 (Validation)...                            │
-    └─────────────────────────────────────────────────────────────────┘
-
-13. **⛔ SAVE STATE TO FILE (MANDATORY):**
-    Write tool → "docs/refactor/current-cycle.json"
-    See "State Persistence Rule" section.
-
-14. Proceed to Gate 5
+7. Proceed to Gate 5
 ```
 
 ### Gate 4 Anti-Rationalization Table
@@ -2154,8 +2313,14 @@ For current execution unit:
 
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` → Execute | `manual_per_task` / `automatic` → Skip
 
+0. **COMMIT CHECK (before checkpoint):**
+   - IF `commit_timing == "per_subtask"`:
+     - Execute `/commit` command with message: `feat({unit_id}): {unit_title}`
+     - Include all changed files from this subtask
+   - ELSE: Skip commit (will happen at task or cycle end)
+
 1. Set `status = "paused_for_approval"`, save state
-2. Present summary: Unit ID, Parent Task, Gates 0-5 status, Criteria X/X, Duration, Files Changed
+2. Present summary: Unit ID, Parent Task, Gates 0-5 status, Criteria X/X, Duration, Files Changed, Commit Status
 3. **AskUserQuestion:** "Ready to proceed?" Options: (a) Continue (b) Test First (c) Stop Here
 4. **Handle response:**
 
@@ -2169,8 +2334,15 @@ For current execution unit:
 
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` / `manual_per_task` → Execute | `automatic` → Skip
 
+0. **COMMIT CHECK (before task checkpoint):**
+   - IF `commit_timing == "per_task"`:
+     - Execute `/commit` command with message: `feat({task_id}): {task_title}`
+     - Include all changed files from this task (all subtasks combined)
+   - ELSE IF `commit_timing == "per_subtask"`: Already committed per subtask
+   - ELSE: Skip commit (will happen at cycle end)
+
 1. Set task `status = "completed"`, cycle `status = "paused_for_task_approval"`, save state
-2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed
+2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed, Commit Status
 3. **AskUserQuestion:** "Task complete. Ready for next?" Options: (a) Continue (b) Integration Test (c) Stop Here
 4. **Handle response:**
 
@@ -2214,8 +2386,6 @@ After completing all subtasks of a task:
    | "Time pressure, skip metrics" | Metrics take <2 min, prevent future issues | **Execute Skill tool** |
 
    **⛔ HARD GATE: You CANNOT proceed to step 3 without executing the Skill tool above.**
-   
-   **Hook Enforcement:** A UserPromptSubmit hook (`feedback-loop-enforcer.sh`) monitors state and will inject reminders if feedback-loop is not executed.
 
 3. Set cycle status = "paused_for_task_approval"
 4. Save state
@@ -2300,9 +2470,15 @@ After completing all subtasks of a task:
 
 ## Step 8: Cycle Completion
 
+0. **FINAL COMMIT CHECK (before completion):**
+   - IF `commit_timing == "at_end"`:
+     - Execute `/commit` command with message: `feat({cycle_id}): complete dev cycle for {feature_name}`
+     - Include all changed files from the entire cycle
+   - ELSE: Already committed per subtask or per task
+
 1. **Calculate metrics:** total_duration_ms, average gate durations, review iterations, pass/fail ratio
 2. **Update state:** `status = "completed"`, `completed_at = timestamp`
-3. **Generate report:** Task | Subtasks | Duration | Review Iterations | Status
+3. **Generate report:** Task | Subtasks | Duration | Review Iterations | Status | Commit Status
 
 4. **⛔ MANDATORY: Run dev-feedback-loop skill for cycle metrics**
 
@@ -2317,8 +2493,6 @@ After completing all subtasks of a task:
    - Set `feedback_loop_completed = true` at cycle level in state file
 
    **⛔ HARD GATE: Cycle is NOT complete until feedback-loop executes.**
-   
-   **Hook Enforcement:** A UserPromptSubmit hook (`feedback-loop-enforcer.sh`) monitors state and will inject reminders if feedback-loop is not executed.
 
    | Rationalization | Why It's WRONG | Required Action |
    |-----------------|----------------|-----------------|
@@ -2382,4 +2556,4 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 | Validation | - | pending |
 
 ### State File Location
-`docs/refactor/current-cycle.json`
+`docs/dev-cycle/current-cycle.json` (feature) or `docs/dev-refactor/current-cycle.json` (refactor)

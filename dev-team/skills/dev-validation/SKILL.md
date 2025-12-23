@@ -9,13 +9,12 @@ trigger: |
   - Implementation and tests complete
   - Need user sign-off on acceptance criteria
 
-skip_when: |
-  - Review not passed -> complete Gate 4 first
-  - Already validated and approved -> proceed to completion
-  - No acceptance criteria defined -> request criteria first
+NOT_skip_when: |
+  - "Already validated" → Each iteration needs fresh validation.
+  - "User will validate manually" → Gate 5 IS user validation. Cannot skip.
 
 sequence:
-  after: [dev-review]
+  after: [requesting-code-review]
 
 related:
   complementary: [verification-before-completion]
@@ -25,7 +24,7 @@ verification:
     - command: "go test ./... 2>&1 | grep -c PASS"
       description: "All tests pass"
       success_pattern: "[1-9][0-9]*"
-    - command: "cat docs/refactor/current-cycle.json | jq '.gates[4].verdict'"
+    - command: "cat docs/dev-cycle/current-cycle.json 2>/dev/null || cat docs/dev-refactor/current-cycle.json | jq '.gates[4].verdict'"
       description: "Review gate passed"
       success_pattern: "PASS"
   manual:

@@ -1,355 +1,472 @@
 ---
 name: dev-testing
 description: |
-  Development cycle testing gate (Gate 3) - ensures unit test coverage for all
-  acceptance criteria using TDD methodology (RED-GREEN-REFACTOR).
-  Focus: Unit tests only.
+  Gate 3 of development cycle - ensures unit test coverage meets threshold (85%+)
+  for all acceptance criteria using TDD methodology.
 
 trigger: |
   - After implementation and SRE complete (Gate 0/1/2)
   - Task has acceptance criteria requiring test coverage
   - Need to verify implementation meets requirements
 
-skip_when: |
-  - No acceptance criteria defined -> request criteria first
-  - Implementation not started -> complete Gate 0 first
-  - Already has full test coverage verified -> proceed to review
+NOT_skip_when: |
+  - "Manual testing validates all criteria" → Manual tests are not executable. Gate 3 requires unit tests.
+  - "Integration tests are better" → Gate 3 scope is unit tests only.
+  - "Coverage is close to 85%" → Close enough is not passing. Meet exact threshold.
 
 sequence:
   after: [dev-implementation, dev-devops, dev-sre]
-  before: [dev-review]
+  before: [requesting-code-review]
 
 related:
   complementary: [test-driven-development, qa-analyst]
 
+input_schema:
+  required:
+    - name: unit_id
+      type: string
+      description: "Task or subtask identifier"
+    - name: acceptance_criteria
+      type: array
+      items: string
+      description: "List of acceptance criteria to test"
+    - name: implementation_files
+      type: array
+      items: string
+      description: "Files from Gate 0 implementation"
+    - name: language
+      type: string
+      enum: [go, typescript, python]
+      description: "Programming language"
+  optional:
+    - name: coverage_threshold
+      type: float
+      default: 85.0
+      description: "Minimum coverage percentage (cannot be below 85)"
+    - name: gate0_handoff
+      type: object
+      description: "Full handoff from Gate 0"
+    - name: existing_tests
+      type: array
+      items: string
+      description: "Existing test files"
+
+output_schema:
+  format: markdown
+  required_sections:
+    - name: "Testing Summary"
+      pattern: "^## Testing Summary"
+      required: true
+    - name: "Coverage Report"
+      pattern: "^## Coverage Report"
+      required: true
+    - name: "Traceability Matrix"
+      pattern: "^## Traceability Matrix"
+      required: true
+    - name: "Handoff to Next Gate"
+      pattern: "^## Handoff to Next Gate"
+      required: true
+  metrics:
+    - name: result
+      type: enum
+      values: [PASS, FAIL]
+    - name: coverage_actual
+      type: float
+    - name: coverage_threshold
+      type: float
+    - name: tests_written
+      type: integer
+    - name: criteria_covered
+      type: string
+      description: "X/Y format"
+    - name: iterations
+      type: integer
+
 verification:
   automated:
-    - command: "go test ./... -covermode=atomic -coverprofile=coverage.out 2>&1 && go tool cover -func=coverage.out | grep -E 'total:|PASS|FAIL'"
-      description: "Go tests pass with branch coverage (atomic mode)"
-      success_pattern: "PASS.*total:.*[8-9][0-9]|100"
-      failure_pattern: "FAIL|total:.*[0-7][0-9]"
-    - command: "npm test -- --coverage 2>&1 | grep -E 'Tests:|Coverage'"
+    - command: "go test ./... -covermode=atomic -coverprofile=coverage.out && go tool cover -func=coverage.out | grep total"
+      description: "Go tests pass with coverage"
+      success_pattern: "total:.*[8-9][0-9]|100"
+    - command: "npm test -- --coverage | grep -E 'All files|Statements'"
       description: "TypeScript tests pass with coverage"
-      success_pattern: "Tests:.*passed|Coverage.*[8-9][0-9]|100"
-      failure_pattern: "failed|Coverage.*[0-7][0-9]"
+      success_pattern: "[8-9][0-9]|100"
   manual:
-    - "Every acceptance criterion has at least one test in traceability matrix"
-    - "RED phase failure output was captured before GREEN phase"
-    - "No skipped or pending tests for this task"
+    - "Every acceptance criterion has at least one test"
+    - "No skipped or pending tests"
 
 examples:
   - name: "TDD for auth service"
-    context: "AC-1: User can login with valid credentials"
-    expected_flow: |
-      1. Write TestAuthService_Login_WithValidCredentials
-      2. Run test - FAIL (no implementation)
-      3. Implement Login method
-      4. Run test - PASS
-      5. Update traceability matrix: AC-1 -> auth_test.go:15
-  - name: "Coverage gap fix"
-    context: "Coverage at 72%, need 80%"
-    expected_flow: |
-      1. Identify uncovered lines
-      2. Write tests for edge cases
-      3. Re-run coverage report
-      4. Verify 80%+ achieved
+    input:
+      unit_id: "task-001"
+      acceptance_criteria: ["User can login with valid credentials", "Invalid password returns error"]
+      implementation_files: ["internal/service/auth.go"]
+      language: "go"
+    expected_output: |
+      ## Testing Summary
+      **Status:** PASS
+      **Coverage:** 89.5%
+      
+      ## Coverage Report
+      | Package | Coverage |
+      |---------|----------|
+      | internal/service | 89.5% |
+      
+      ## Traceability Matrix
+      | AC | Test | Status |
+      |----|------|--------|
+      | AC-1 | TestAuthService_Login_ValidCredentials | ✅ |
+      | AC-2 | TestAuthService_Login_InvalidPassword | ✅ |
+      
+      ## Handoff to Next Gate
+      - Ready for Gate 4: YES
 ---
 
 # Dev Testing (Gate 3)
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for canonical testing requirements.
-
 ## Overview
 
-Ensure every acceptance criterion has at least one **unit test** proving it works. Follow TDD methodology: RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (clean up).
+Ensure every acceptance criterion has at least one **unit test** proving it works. Follow TDD methodology: RED (failing test) -> GREEN (implementation) -> REFACTOR.
 
 **Core principle:** Untested acceptance criteria are unverified claims. Each criterion MUST map to at least one executable unit test.
 
-**Scope:** This gate focuses on unit tests.
+**Coverage threshold:** 85% minimum (Ring standard). PROJECT_RULES.md can raise, not lower.
+
+## CRITICAL: Role Clarification
+
+**This skill ORCHESTRATES. QA Analyst Agent EXECUTES.**
+
+| Who | Responsibility |
+|-----|----------------|
+| **This Skill** | Gather requirements, dispatch agent, track iterations |
+| **QA Analyst Agent** | Write tests, run coverage, report results |
+
+---
+
+## Step 1: Validate Input
+
+```text
+REQUIRED INPUT (from dev-cycle orchestrator):
+- unit_id: [task/subtask being tested]
+- acceptance_criteria: [list of ACs to test]
+- implementation_files: [files from Gate 0]
+- language: [go|typescript|python]
+
+OPTIONAL INPUT:
+- coverage_threshold: [default 85.0, cannot be lower]
+- gate0_handoff: [full Gate 0 output]
+- existing_tests: [existing test files]
+
+IF any REQUIRED input is missing:
+  → STOP and report: "Missing required input: [field]"
+  → Return to orchestrator with error
+
+IF coverage_threshold < 85:
+  → STOP and report: "Coverage threshold cannot be below Ring minimum (85%)"
+  → Use 85% as threshold
+```
+
+## Step 2: Initialize Testing State
+
+```text
+testing_state = {
+  unit_id: [from input],
+  coverage_threshold: max(85, [from input]),
+  coverage_actual: null,
+  verdict: null,
+  iterations: 0,
+  max_iterations: 3,
+  traceability_matrix: [],
+  tests_written: 0
+}
+```
+
+## Step 3: Dispatch QA Analyst Agent
+
+```yaml
+Task:
+  subagent_type: "qa-analyst"
+  model: "opus"
+  description: "Write unit tests for [unit_id]"
+  prompt: |
+    ⛔ WRITE UNIT TESTS for All Acceptance Criteria
+
+    ## Input Context
+    - **Unit ID:** [unit_id]
+    - **Language:** [language]
+    - **Coverage Threshold:** [coverage_threshold]%
+
+    ## Acceptance Criteria to Test
+    [list acceptance_criteria with AC-1, AC-2, etc.]
+
+    ## Implementation Files to Test
+    [list implementation_files]
+
+    ## Standards Reference
+    For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+    For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+
+    Focus on: Testing Patterns section
+
+    ## Requirements
+
+    ### Test Coverage
+    - Minimum: [coverage_threshold]% branch coverage
+    - Every AC MUST have at least one test
+    - Edge cases REQUIRED (null, empty, boundary, error conditions)
+
+    ### Test Naming
+    - Go: `Test{Unit}_{Method}_{Scenario}`
+    - TS: `describe('{Unit}', () => { it('should {scenario}', ...) })`
+
+    ### Test Structure
+    - One behavior per test
+    - Arrange-Act-Assert pattern
+    - Mock all external dependencies
+    - NO database/API calls (unit tests only)
+
+    ### Edge Cases Required per AC Type
+    | AC Type | Required Edge Cases | Minimum |
+    |---------|---------------------|---------|
+    | Input validation | null, empty, boundary, invalid format | 3+ |
+    | CRUD operations | not found, duplicate, concurrent | 3+ |
+    | Business logic | zero, negative, overflow, boundary | 3+ |
+    | Error handling | timeout, connection failure, retry | 2+ |
+
+    ## Required Output Format
+
+    ### Test Files Created
+    | File | Tests | Lines |
+    |------|-------|-------|
+    | [path] | [count] | +N |
+
+    ### Coverage Report
+    **Command:** [coverage command]
+    **Result:**
+    ```
+    [paste actual coverage output]
+    ```
+
+    | Package/File | Coverage |
+    |--------------|----------|
+    | [name] | [X%] |
+    | **TOTAL** | **[X%]** |
+
+    ### Traceability Matrix
+    | AC ID | Criterion | Test File | Test Function | Status |
+    |-------|-----------|-----------|---------------|--------|
+    | AC-1 | [criterion text] | [file] | [function] | ✅/❌ |
+    | AC-2 | [criterion text] | [file] | [function] | ✅/❌ |
+
+    ### Quality Checks
+    | Check | Status |
+    |-------|--------|
+    | No skipped tests | ✅/❌ |
+    | No assertion-less tests | ✅/❌ |
+    | Edge cases per AC | ✅/❌ |
+    | Test isolation | ✅/❌ |
+
+    ### VERDICT
+    **Coverage:** [X%] vs Threshold [Y%]
+    **VERDICT:** PASS / FAIL
+    
+    If FAIL:
+    - **Gap Analysis:** [what needs more tests]
+    - **Files needing coverage:** [list with line numbers]
+```
+
+## Step 4: Parse QA Analyst Output
+
+```text
+Parse agent output:
+
+1. Extract coverage percentage from Coverage Report
+2. Extract traceability matrix
+3. Extract verdict
+
+testing_state.coverage_actual = [extracted coverage]
+testing_state.traceability_matrix = [extracted matrix]
+testing_state.tests_written = [count from Test Files Created]
+
+IF verdict == "PASS" AND coverage_actual >= coverage_threshold:
+  → testing_state.verdict = "PASS"
+  → Proceed to Step 6
+
+IF verdict == "FAIL" OR coverage_actual < coverage_threshold:
+  → testing_state.verdict = "FAIL"
+  → testing_state.iterations += 1
+  → IF iterations >= max_iterations: Go to Step 7 (Escalate)
+  → Go to Step 5 (Dispatch Fix)
+```
+
+## Step 5: Dispatch Fix to Implementation Agent
+
+**Coverage below threshold → Return to Gate 0 for more tests**
+
+```yaml
+Task:
+  subagent_type: "[implementation_agent from Gate 0]"  # e.g., "backend-engineer-golang"
+  model: "opus"
+  description: "Add tests to meet coverage threshold for [unit_id]"
+  prompt: |
+    ⛔ COVERAGE BELOW THRESHOLD - Add More Tests
+
+    ## Current Status
+    - **Coverage Actual:** [coverage_actual]%
+    - **Coverage Threshold:** [coverage_threshold]%
+    - **Gap:** [threshold - actual]%
+    - **Iteration:** [iterations] of [max_iterations]
+
+    ## Gap Analysis (from QA)
+    [paste gap analysis from QA output]
+
+    ## Files Needing Coverage
+    [paste files list from QA output]
+
+    ## Requirements
+    1. Add tests to cover the identified gaps
+    2. Focus on edge cases and error paths
+    3. Run coverage after each addition
+    4. Stop when coverage >= [threshold]%
+
+    ## Required Output
+    - Tests added: [list]
+    - New coverage: [X%]
+    - Coverage command output
+```
+
+After fix → Go back to Step 3 (Re-dispatch QA Analyst)
+
+## Step 6: Prepare Success Output
+
+```text
+Generate skill output:
+
+## Testing Summary
+**Status:** PASS
+**Unit ID:** [unit_id]
+**Iterations:** [testing_state.iterations]
+
+## Coverage Report
+**Threshold:** [coverage_threshold]%
+**Actual:** [coverage_actual]%
+**Status:** ✅ PASS
+
+| Package/File | Coverage |
+|--------------|----------|
+[from QA output]
+| **TOTAL** | **[coverage_actual]%** |
+
+## Traceability Matrix
+| AC ID | Criterion | Test | Status |
+|-------|-----------|------|--------|
+[from testing_state.traceability_matrix]
+
+**Criteria Covered:** [X]/[Y] (100%)
+
+## Quality Checks
+| Check | Status |
+|-------|--------|
+| Coverage ≥ threshold | ✅ |
+| All ACs tested | ✅ |
+| No skipped tests | ✅ |
+| Edge cases present | ✅ |
+
+## Handoff to Next Gate
+- Testing status: COMPLETE
+- Coverage: [coverage_actual]% (threshold: [coverage_threshold]%)
+- All criteria tested: ✅
+- Ready for Gate 4 (Review): YES
+```
+
+## Step 7: Escalate - Max Iterations Reached
+
+```text
+Generate skill output:
+
+## Testing Summary
+**Status:** FAIL
+**Unit ID:** [unit_id]
+**Iterations:** [max_iterations] (MAX REACHED)
+
+## Coverage Report
+**Threshold:** [coverage_threshold]%
+**Actual:** [coverage_actual]%
+**Gap:** [threshold - actual]%
+**Status:** ❌ FAIL
+
+## Gap Analysis
+[from last QA output]
+
+## Files Still Needing Coverage
+[from last QA output]
+
+## Handoff to Next Gate
+- Testing status: FAILED
+- Ready for Gate 4: NO
+- **Action Required:** User must manually add tests or adjust scope
+
+⛔ ESCALATION: Max iterations (3) reached. Coverage still below threshold.
+User intervention required.
+```
+
+---
 
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
-**Gate 3-specific note:** Coverage threshold (85%) is MANDATORY minimum, not aspirational target. Below threshold = FAIL.
+| User Says | Your Response |
+|-----------|---------------|
+| "84% is close enough" | "85% is minimum threshold. 84% = FAIL. Adding more tests." |
+| "Manual testing covers it" | "Gate 3 requires executable unit tests. Dispatching QA analyst." |
+| "Skip testing, deadline" | "Testing is MANDATORY. Untested code = unverified claims." |
 
-## Common Rationalizations - REJECTED
-
-See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
-
-**Gate 3-specific rationalizations:**
-
-| Excuse | Reality |
-|--------|---------|
-| "Manual testing validates all criteria" | Manual tests are not executable, not repeatable. Gate 3 requires unit tests. |
-| "Integration tests are better verification" | Gate 3 scope is unit tests only. Integration tests are different scope. |
-| "These mocks make it a unit test" | If you hit DB/API/filesystem, it's integration. Mock the interface. |
-| "PROJECT_RULES.md says 70% is OK" | Ring minimum is 85%. PROJECT_RULES.md can raise, not lower. |
-
-## Red Flags - STOP
-
-See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Testing section).
-
-If you catch yourself thinking ANY of those patterns, STOP immediately. Write unit tests until threshold met.
-
-## Coverage Threshold Governance
-
-**Ring establishes MINIMUM thresholds. PROJECT_RULES.md can only ADD constraints:**
-
-| Source | Can Raise? | Can Lower? |
-|--------|-----------|-----------|
-| Ring Standard (85%) | N/A (baseline) | N/A (baseline) |
-| PROJECT_RULES.md | ✅ YES (e.g., 90%) | ❌ NO |
-| Team Decision | ✅ YES (e.g., 95%) | ❌ NO |
-| Manager Override | ❌ NO | ❌ NO |
-
-## Coverage Measurement Rules (HARD GATE)
-
-**Coverage tool output is the SOURCE OF TRUTH. No adjustments allowed:**
-
-### Dead Code Handling
-
-| Scenario | Allowed? | Required Action |
-|----------|----------|-----------------|
-| Exclude dead code from measurement | ❌ NO | **Delete the dead code** |
-| Use `// coverage:ignore` annotations | ⚠️ ONLY with justification | Must document WHY in PR |
-| "Mental math" adjustments | ❌ NO | Use actual tool output |
-| Different tools show different % | Use lowest | Conservative approach |
-
-**Valid exclusion annotations (must be documented):**
-- Generated code (protobuf, swagger) - excluded by default
-- Unreachable panic handlers (already tested by unit tests)
-- Platform-specific code not running in CI
-
-**INVALID exclusion reasons:**
-- ❌ "It's boilerplate"
-- ❌ "Trivial getters/setters"
-- ❌ "Will never be called in production"
-- ❌ "Too hard to test"
-
-### Tool Dispute Resolution
-
-**If you believe the coverage tool is wrong:**
-
-| Step | Action | Why |
-|------|--------|-----|
-| 1 | Document the discrepancy | "Tool shows 83%, I expect 90%" |
-| 2 | Investigate root cause | Missing test? Tool bug? Config issue? |
-| 3 | Fix the issue | Add test OR fix tool config |
-| 4 | Re-run coverage | Get new measurement |
-| 5 | Use NEW measurement | No mental math on old number |
-
-**You CANNOT proceed with "the tool is wrong, real coverage is higher."**
-
-### Anti-Rationalization for Coverage
+## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
+
+### Gate 3-Specific Anti-Rationalizations
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Tool shows 83% but real is 90%" | Tool output IS real. Your belief is not. | **Fix issue, re-measure** |
 | "Excluding dead code gets us to 85%" | Delete dead code, don't exclude it. | **Delete dead code** |
-| "Test files lower the average" | Test files should be excluded by tool config. | **Fix tool configuration** |
-| "Generated code tanks coverage" | Generated code should be excluded by pattern. | **Add exclusion pattern** |
 | "84.5% rounds to 85%" | Rounding is not allowed. 84.5% < 85%. | **Write more tests** |
-| "Close enough with all AC tested" | "Close enough" is not a passing grade. | **Meet exact threshold** |
-
-**If PROJECT_RULES.md specifies < 85%:**
-1. That specification is INVALID
-2. Ring minimum (85% branch coverage) still applies
-3. Report as blocker: "PROJECT_RULES.md coverage threshold (X%) below Ring minimum (85%)"
-4. Do NOT proceed with lower threshold
+| "Close enough with all AC tested" | "Close enough" is not passing. | **Meet exact threshold** |
+| "Integration tests cover this" | Gate 3 = unit tests only. Different scope. | **Write unit tests** |
 
 ## Unit Test vs Integration Test
 
-**Gate 3 requires UNIT tests. Know the difference:**
-
 | Type | Characteristics | Gate 3? |
 |------|----------------|---------|
-| **Unit** ✅ | Mocks all external dependencies, tests single function | YES |
-| **Integration** ❌ | Hits real database/API/filesystem | NO - separate scope |
+| **Unit** ✅ | Mocks all external deps, tests single function | YES |
+| **Integration** ❌ | Hits real database/API/filesystem | NO |
 
-**If you're thinking "but my test needs the database":**
-- That's an integration test
-- Mock the repository interface
-- Test the business logic, not the database
+---
 
-**"Mocking the database driver" is still integration. Mock the INTERFACE.**
+## Execution Report Format
 
-## Prerequisites
+```markdown
+## Testing Summary
+**Status:** [PASS|FAIL]
+**Unit ID:** [unit_id]
+**Duration:** [Xm Ys]
+**Iterations:** [N]
 
-Before starting this gate:
-- Implementation code exists (Gate 0 complete)
-- Acceptance criteria are clearly defined
-- Test framework is configured and working
+## Coverage Report
+**Threshold:** [X%]
+**Actual:** [Y%]
+**Status:** [✅ PASS | ❌ FAIL]
 
-## Step 1: Map Acceptance Criteria to Unit Tests
+## Traceability Matrix
+| AC ID | Criterion | Test | Status |
+|-------|-----------|------|--------|
+| AC-1 | [text] | [test] | ✅/❌ |
 
-Create traceability matrix: | ID | Criterion | Test File | Test Function | Status (Pending/PASS) |
+**Criteria Covered:** [X/Y]
 
-**Rule:** Every criterion MUST have at least one unit test. No criterion left untested.
-
-## Step 2: Identify Testable Units
-
-| Criterion Type | Testable Unit | Mock Dependencies |
-|----------------|---------------|-------------------|
-| Business logic | Service methods | Repository, external APIs |
-| Validation | Validators, DTOs | None (pure functions) |
-| Domain rules | Entity methods | None |
-| Error handling | Service methods | Force error conditions |
-
-## Step 3: Execute TDD Cycle
-
-| Phase | Action | Verify |
-|-------|--------|--------|
-| **RED** | Write test describing expected behavior | Test runs + fails for right reason (feature missing, not typo) + paste failure output |
-| **GREEN** | Write minimal code to pass | Test passes |
-| **REFACTOR** | Remove duplication, improve naming, extract helpers | Tests still pass |
-
-## Step 4: Dispatch QA Analyst for Unit Tests
-
-**Dispatch:** `Task(subagent_type: "qa-analyst")` with TASK_ID, ACCEPTANCE_CRITERIA, IMPLEMENTATION_FILES. Requirements: 1+ test/criterion, edge cases, mock deps, naming: `Test{Unit}_{Method}_{Scenario}`. Unit tests ONLY.
-
-## Step 5: Execute Full Test Suite
-
-Run: `go test ./... -covermode=atomic -coverprofile=coverage.out && go tool cover -func=coverage.out` (or `npm test -- --coverage`, `pytest --cov=src`). Verify coverage ≥85%.
-
-## Step 6: Update Traceability Matrix
-
-Update matrix with line numbers and PASS status for each criterion.
-
-## Gate Exit Criteria
-
-Before proceeding to Gate 4 (Review):
-
-### Coverage Gate (Existing)
-
-- [ ] **Coverage MUST meet 85% branch coverage minimum** (or project-defined threshold in PROJECT_RULES.md). This is MANDATORY, not aspirational.
-  - Below threshold = FAIL
-  - No exceptions for "close enough"
-  - All acceptance criteria MUST have executable tests
-
-### Quality Gate (NEW - Prevents dev-refactor Duplicates)
-
-**⛔ HARD GATE: ALL quality checks must PASS, not just coverage %**
-
-| Check | Verification | PASS Criteria |
-|-------|--------------|---------------|
-| [ ] Skipped tests | `grep -rn "\.skip\|\.todo\|xit\|xdescribe"` | 0 found |
-| [ ] Assertion-less tests | Review test bodies for `expect`/`assert` | 0 found |
-| [ ] Shared state | Check `beforeAll`/`afterAll` usage | No shared mutable state |
-| [ ] Naming convention | Pattern: `Test{Unit}_{Scenario}` | 100% compliant |
-| [ ] Edge cases | Count per AC | ≥2 edge cases per AC |
-| [ ] TDD evidence | Captured RED phase output | All new tests |
-| [ ] Test isolation | No execution order dependency | Tests pass in any order |
-
-**Why this matters:** Issues caught here won't escape to dev-refactor. If dev-refactor finds test-related issues, Gate 3 failed.
-
-### Completeness Gate (Existing)
-
-- [ ] Every acceptance criterion has at least one unit test
-- [ ] All tests follow TDD cycle (RED verified before GREEN)
-- [ ] Full test suite passes (0 failures)
-- [ ] Traceability matrix complete and updated
-- [ ] No skipped or pending tests for this task
-- [ ] **QA Analyst VERDICT = PASS** (mandatory for gate progression)
-
-### Edge Case Requirements
-
-| AC Type | Required Edge Cases | Minimum |
-|---------|---------------------|---------|
-| Input validation | null, empty, boundary, invalid format | 3+ |
-| CRUD operations | not found, duplicate, concurrent access | 3+ |
-| Business logic | zero, negative, overflow, boundary | 3+ |
-| Error handling | timeout, connection failure, retry exhausted | 2+ |
-
-**Rule:** Happy path only = incomplete testing. Each AC needs edge cases.
-
-## QA Verdict Handling
-
-QA Analyst returns **VERDICT: PASS** or **VERDICT: FAIL**.
-
+## Handoff to Next Gate
+- Testing status: [COMPLETE|FAILED]
+- Coverage: [X%]
+- Ready for Gate 4: [YES|NO]
 ```
-PASS (coverage ≥ threshold) → Proceed to Gate 4 (Review)
-FAIL (coverage < threshold) → Return to Gate 0 (Implementation)
-```
-
-### On FAIL
-
-1. QA provides gap analysis (what needs tests)
-2. Dev-cycle returns to Gate 0 with this analysis
-3. Implementation agent adds the missing tests
-4. Gate 3 re-runs
-5. **Max 3 attempts**, then escalate to user
-
-### Iteration Tracking
-
-The dev-cycle orchestrator tracks iteration count in state:
-
-```json
-{
-  "testing": {
-    "iteration": 1,
-    "verdict": "FAIL",
-    "coverage_actual": 72.5,
-    "coverage_threshold": 85
-  }
-}
-```
-
-**Enforcement rules:**
-- Increment `iteration` on each Gate 3 entry
-- After 3rd FAIL: STOP, do NOT return to Gate 0
-- Present gap analysis to user for manual resolution
-- User must decide: fix manually, adjust threshold (if allowed), or abort task
-
-## Handling Test Failures
-
-If tests fail during execution:
-
-1. **Do NOT proceed** to Gate 3
-2. Identify root cause:
-   - Implementation bug -> Return to Gate 0
-   - Test bug -> Fix test, re-run TDD cycle
-   - Missing requirement -> Document gap, consult stakeholder
-3. Fix and re-run full suite
-4. Update matrix with resolution
-
-## Anti-Patterns
-
-**Never:**
-- Write tests after implementation without RED phase
-- Mark tests as skipped to pass gate
-- Assume passing tests mean criteria met (verify mapping)
-- Copy-paste tests without understanding
-- Mock the unit under test (only mock dependencies)
-- Test implementation details instead of behavior
-
-**Always:**
-- Watch test fail before implementing (RED phase)
-- Run full suite, not just new tests
-- Verify test actually tests the criterion
-- Use descriptive test names
-- Test one behavior per test
-- Clean up test state
-
-## Execution Report
-
-Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
-
-| Metric | Value |
-|--------|-------|
-| Duration | Xm Ys |
-| Iterations | N |
-| Unit Tests Written | X |
-| Coverage | XX.X% |
-| Criteria Covered | X/Y (100%) |
-| Result | PASS/FAIL |
-
-## Recovery Procedures
-
-| Issue | Recovery Steps |
-|-------|---------------|
-| **Tests without RED phase** | Delete impl → Run test (must fail) → Restore impl (must pass) → If passes without impl: test is wrong, rewrite |
-| **Coverage below threshold** | Identify uncovered lines → Write unit tests for gaps → Re-run coverage → Repeat until ≥85% |
-| **Criterion has no test** | STOP → Write unit test → Full TDD cycle → Update matrix |

@@ -62,7 +62,7 @@ Execute the development cycle for tasks in a markdown file.
 | 1 | `dev-devops` | Create Docker/compose |
 | 2 | `dev-sre` | Observability (health checks, logging, tracing) |
 | 3 | `dev-testing` | Write and run tests |
-| 4 | `dev-review` | Code review (3 reviewers) |
+| 4 | `requesting-code-review` | Code review (3 reviewers in parallel) |
 | 5 | `dev-validation` | Final validation |
 
 **Note:** Tasks are loaded at initialization, not as a separate gate.
@@ -71,7 +71,7 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 
 ## Output
 
-- **State file**: `docs/refactor/current-cycle.json`
+- **State file**: `docs/dev-cycle/current-cycle.json` (feature) or `docs/dev-refactor/current-cycle.json` (refactor)
 - **Feedback report**: `.ring/dev-team/feedback/cycle-YYYY-MM-DD.md`
 
 ## Related Commands
@@ -110,7 +110,7 @@ Pass the following context to the skill:
 | `--task` | If provided, filter to specific task ID |
 | `--skip-gates` | If provided, list of gates to skip |
 | `--dry-run` | If provided, validate only |
-| `--resume` | If provided, resume from `docs/refactor/current-cycle.json` |
+| `--resume` | If provided, resume from existing state file (dev-cycle or dev-refactor) |
 
 ## Step 1: ASK EXECUTION MODE (MANDATORY)
 

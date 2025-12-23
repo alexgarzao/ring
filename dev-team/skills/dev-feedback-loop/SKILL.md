@@ -232,7 +232,67 @@ Base score of 100 points, with deductions for inefficiencies:
 **Anti-exemption check:**
 If you're thinking "perfect outcome, skip metrics" → STOP. This is Red Flag at line 75 ("Perfect outcome, skip the metrics").
 
-**After task completion, gather:** Gate transitions (gate, iterations, duration, outcome for each Gate 0-5), Review findings (per reviewer verdict + issues), Validation outcome (criteria verified, decision, notes)
+**After task completion, gather from `agent_outputs` in state file:**
+
+### Structured Data Fields (NEW)
+
+The state file now contains structured error/issue data for direct analysis:
+
+| Gate | Structured Fields | Use For |
+|------|-------------------|---------|
+| Gate 0 | `implementation.standards_compliance`, `implementation.iterations` | Implementation standards patterns |
+| Gate 1 | `devops.standards_compliance`, `devops.verification_errors[]` | DevOps standards + build/deploy failures |
+| Gate 2 | `sre.standards_compliance`, `sre.validation_errors[]` | SRE standards + observability gaps |
+| Gate 3 | `testing.standards_compliance`, `testing.failures[]`, `testing.uncovered_criteria[]` | Testing standards + test failures + coverage |
+| Gate 4 | `review.{reviewer}.standards_compliance`, `review.{reviewer}.issues[]` | Review standards + issues by category/severity |
+
+**All gates have `standards_compliance` with:**
+- `total_sections`, `compliant`, `not_applicable`, `non_compliant`
+- `gaps[]` - array of non-compliant sections with details
+
+### Reading Structured Data
+
+```yaml
+# From state file, extract standards compliance from ALL gates:
+all_standards_gaps = [
+  ...agent_outputs.implementation.standards_compliance.gaps,
+  ...agent_outputs.devops.standards_compliance.gaps,
+  ...agent_outputs.sre.standards_compliance.gaps,
+  ...agent_outputs.testing.standards_compliance.gaps,
+  ...agent_outputs.review.code_reviewer.standards_compliance.gaps,
+  ...agent_outputs.review.business_logic_reviewer.standards_compliance.gaps,
+  ...agent_outputs.review.security_reviewer.standards_compliance.gaps
+]
+
+# Gate-specific errors/issues:
+devops_errors = agent_outputs.devops.verification_errors
+sre_errors = agent_outputs.sre.validation_errors
+test_failures = agent_outputs.testing.failures
+uncovered_acs = agent_outputs.testing.uncovered_criteria
+review_issues = [
+  ...agent_outputs.review.code_reviewer.issues,
+  ...agent_outputs.review.business_logic_reviewer.issues,
+  ...agent_outputs.review.security_reviewer.issues
+]
+
+# Aggregate standards compliance metrics:
+total_standards_sections = sum(all_gates.standards_compliance.total_sections)
+total_compliant = sum(all_gates.standards_compliance.compliant)
+overall_compliance_rate = total_compliant / total_standards_sections * 100
+```
+
+### Iteration Penalty Calculation
+
+```yaml
+# Total extra iterations across all gates:
+extra_iterations = (
+  max(0, implementation.iterations - 1) +
+  max(0, devops.iterations - 1) +
+  max(0, sre.iterations - 1) +
+  max(0, testing.iterations - 1) +
+  max(0, review.iterations - 1)
+)
+```
 
 ## Step 2: Calculate Assertiveness Score
 
@@ -244,7 +304,7 @@ After calculating assertiveness, analyze prompt quality for all **agents** that 
 
 ### 3.1 Load Agent Outputs
 
-Read `agent_outputs` from `docs/refactor/current-cycle.json`:
+Read `agent_outputs` from state file (`docs/dev-cycle/current-cycle.json` or `docs/dev-refactor/current-cycle.json`):
 
 ```text
 Agents to analyze (if executed, not null):
@@ -347,6 +407,79 @@ If file already exists (from previous task in same cycle), **append** the new ta
 - Average Score
 - Consolidated Improvements (re-analyze patterns)
 
+## Step 3.5: Pattern Analysis from Structured Data (NEW)
+
+**Analyze structured error/issue data to identify recurring patterns:**
+
+### 3.5.1 Standards Compliance Patterns
+
+```yaml
+# Group gaps by section name
+standards_gaps_by_section = group(all_implementation_gaps, by: "section")
+
+# Identify recurring gaps (same section fails across tasks)
+recurring_standards_gaps = filter(standards_gaps_by_section, count >= 2)
+
+# Output pattern
+For each recurring gap:
+  - Section: [section name]
+  - Occurrences: [N] tasks
+  - Common reason: [most frequent reason]
+  - Recommendation: [agent prompt improvement]
+```
+
+### 3.5.2 Review Issue Patterns
+
+```yaml
+# Group review issues by category
+issues_by_category = group(all_review_issues, by: "category")
+
+# Group by severity for prioritization
+issues_by_severity = group(all_review_issues, by: "severity")
+
+# Identify top recurring categories
+top_categories = sort(issues_by_category, by: count, descending).take(5)
+
+# Output pattern
+For each top category:
+  - Category: [category name]
+  - Occurrences: [N] issues across [M] tasks
+  - Severity breakdown: [CRITICAL: X, HIGH: Y, MEDIUM: Z]
+  - Most common: [most frequent description pattern]
+  - Fix rate: [fixed_count / total_count]%
+```
+
+### 3.5.3 Test Failure Patterns
+
+```yaml
+# Group failures by error_type
+failures_by_type = group(all_test_failures, by: "error_type")
+
+# Identify flaky tests (same test fails multiple times)
+flaky_tests = filter(all_test_failures, count_by_test_name >= 2)
+
+# Output pattern
+For each error type:
+  - Type: [assertion|panic|timeout|compilation]
+  - Occurrences: [N] failures
+  - Fix iterations: avg [X] iterations to fix
+```
+
+### 3.5.4 Cross-Gate Pattern Correlation
+
+```yaml
+# Correlate: Do standards gaps predict review issues?
+correlation_standards_review = correlate(
+  implementation.standards_compliance.gaps[].section,
+  review.*.issues[].category
+)
+
+# Output insight
+If correlation > 0.5:
+  "Standards gap in [section] correlates with review issues in [category]"
+  → Recommendation: Strengthen agent prompt for [section]
+```
+
 ## Step 4: Threshold Alerts
 
 | Alert | Trigger | Action | Report Contents |
@@ -354,6 +487,7 @@ If file already exists (from previous task in same cycle), **append** the new ta
 | **Score < 70** | Individual task assertiveness < 70 | Mandatory root cause analysis | Failure events, "5 Whys" per event, Corrective actions, Prevention measures |
 | **Iterations > 3** | Any gate exceeds 3 iterations | STOP + human intervention | Iteration history, Recurring issue, Options: [Continue/Reassign/Descope/Cancel] |
 | **Avg < 80** | Cycle average below 80 | Deep analysis report | Score distribution, Failure patterns (freq/cause/fix), Improvement plan |
+| **Recurring Pattern** | Same issue category in 3+ tasks | Pattern alert | Category, frequency, suggested prompt fix |
 
 **Report formats:** RCA = Score → Failure Events → 5 Whys → Root cause → Corrective action | Gate Blocked = History → Issue → BLOCKED UNTIL human decision | Deep Analysis = Distribution → Patterns → Improvement Plan
 
