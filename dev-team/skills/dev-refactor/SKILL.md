@@ -55,7 +55,7 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 
 | Service Type | Hexagonal/Clean Architecture | Directory Structure |
 |--------------|------------------------------|---------------------|
-| CRUD API (with services, adapters) | ✅ APPLY | ✅ APPLY (Core one pattern) |
+| CRUD API (with services, adapters) | ✅ APPLY | ✅ APPLY (Lerian pattern) |
 | Complex business logic | ✅ APPLY | ✅ APPLY |
 | Multiple bounded contexts | ✅ APPLY | ✅ APPLY |
 | Event-driven systems | ✅ APPLY | ✅ APPLY |
@@ -66,14 +66,14 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 
 ### Detection Criteria
 
-**CRUD API (Hexagonal/Core one Pattern APPLICABLE):**
+**CRUD API (Hexagonal/Lerian Pattern APPLICABLE):**
 - Service exposes API endpoints (REST, gRPC, GraphQL)
 - Contains business logic and models
 - Has CRUD operations (Create, Read, Update, Delete)
 - Uses repositories for data access
-- → **MUST follow Hexagonal Architecture and Core one directory pattern**
+- → **MUST follow Hexagonal Architecture and Lerian directory pattern**
 
-**Simple Service (Hexagonal/Core one NOT applicable):**
+**Simple Service (Hexagonal/Lerian NOT applicable):**
 - CLI tools and scripts
 - Workers and background jobs
 - Simple utility functions
@@ -86,10 +86,10 @@ When dispatching specialist agents, include:
 
 ```
 ⛔ ARCHITECTURE APPLICABILITY CHECK:
-1. If service is an API with CRUD operations → APPLY Hexagonal/Core one standards
-2. If service is CLI tool, script, or simple utility → Do NOT flag Hexagonal/Core one gaps
+1. If service is an API with CRUD operations → APPLY Hexagonal/Lerian standards
+2. If service is CLI tool, script, or simple utility → Do NOT flag Hexagonal/Lerian gaps
 
-CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Core one directory pattern.
+CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Lerian directory pattern.
 ```
 
 ---

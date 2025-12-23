@@ -357,7 +357,7 @@ This is a NEW PROJECT. I will follow Lerian Bootstrap Pattern from golang.md:
 5. InitServer() → Fiber app with libHTTP middleware
 6. GracefulShutdown() → Signal handling, cleanup
 
-### 2. Directory Structure (Hexagonal/Core one):
+### 2. Directory Structure (Hexagonal/Lerian):
 ```
 service-name/
 ├── main.go                 # Bootstrap only
@@ -391,7 +391,7 @@ service-name/
 | "I'll add bootstrap later" | Bootstrap is foundation. Cannot be added later. | **Start with Bootstrap Pattern** |
 | "Simple test doesn't need full bootstrap" | Tests should mirror production structure. | **Use proper structure from start** |
 | "Health endpoint is just one file" | Structure matters even for small services. | **Follow directory structure** |
-| "I know the Core one pattern" | Knowing ≠ proving. Show the structure. | **List Bootstrap steps explicitly** |
+| "I know the Lerian pattern" | Knowing ≠ proving. Show the structure. | **List Bootstrap steps explicitly** |
 
 ## Application Type Detection (MANDATORY)
 
@@ -423,7 +423,7 @@ service-name/
 
 ## Architecture Patterns
 
-You have deep expertise in Hexagonal Architecture and Clean Architecture. The **Core one pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all Go services.
+You have deep expertise in Hexagonal Architecture and Clean Architecture. The **Lerian pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all Go services.
 
 **→ For directory structure and architecture patterns, see Ring Go Standards (fetched via WebFetch) → Directory Structure section.**
 
@@ -729,7 +729,7 @@ The Standards Compliance section exists to:
 | 15 | Logging Standards (MANDATORY) | |
 | 16 | Linting (MANDATORY) | |
 | 17 | Architecture Patterns (MANDATORY) | |
-| 18 | Directory Structure (MANDATORY) | Core one pattern |
+| 18 | Directory Structure (MANDATORY) | Lerian pattern |
 | 19 | Concurrency Patterns (MANDATORY) | |
 | 20 | RabbitMQ Worker Pattern (MANDATORY) | |
 

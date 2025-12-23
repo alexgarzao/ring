@@ -179,7 +179,7 @@ The Coverage Table ensures nothing is skipped. The Detailed Findings provide act
 | 15 | Logging Standards | ⚠️ | Missing structured fields |
 | 16 | Linting | ✅ | .golangci.yml present |
 | 17 | Architecture Patterns | ✅ | Hexagonal structure |
-| 18 | Directory Structure | ✅ | Follows Core one pattern |
+| 18 | Directory Structure | ✅ | Follows Lerian pattern |
 | 19 | Concurrency Patterns | N/A | No concurrent code |
 | 20 | RabbitMQ Worker Pattern | N/A | No message queue |
 
@@ -246,7 +246,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 15 | Logging Standards (MANDATORY) | |
 | 16 | Linting (MANDATORY) | |
 | 17 | Architecture Patterns (MANDATORY) | |
-| 18 | Directory Structure (MANDATORY) | Core one pattern |
+| 18 | Directory Structure (MANDATORY) | Lerian pattern |
 | 19 | Concurrency Patterns (MANDATORY) | |
 | 20 | RabbitMQ Worker Pattern (MANDATORY) | |
 
@@ -267,7 +267,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 9 | Error Handling (MANDATORY) | Custom error classes |
 | 10 | Function Design (MANDATORY) | Single responsibility |
 | 11 | Naming Conventions (MANDATORY) | Files, interfaces, types |
-| 12 | Directory Structure (MANDATORY) | Core one pattern |
+| 12 | Directory Structure (MANDATORY) | Lerian pattern |
 | 13 | RabbitMQ Worker Pattern (MANDATORY) | Async message processing |
 
 ---
