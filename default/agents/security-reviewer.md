@@ -94,6 +94,7 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 **After you report:** Orchestrator dispatches appropriate implementation agent to fix vulnerabilities
 
 **Anti-Rationalization:**
+
 | Temptation | Response |
 |------------|----------|
 | "This SQL injection is critical, I'll patch it now" | **NO.** Report as CRITICAL. Orchestrator fast-tracks fix. |
@@ -939,3 +940,24 @@ async function uploadFile(
 8. **Parallel execution** - You run simultaneously with code and business logic reviewers
 
 Your review protects users, data, and the organization from security threats. Your findings will be consolidated with code quality and business logic findings to provide comprehensive feedback. Be thorough.
+
+---
+
+## Standards Compliance Report
+
+**Required output fields for this reviewer:**
+
+- **VERDICT:** PASS, FAIL, or CONDITIONAL (with conditions)
+- **Vulnerabilities Found:** List with severity, CWE ID, OWASP category, file:line, description
+- **OWASP Top 10 Coverage:** Which categories were checked and findings per category
+- **Attack Vector Analysis:** Exploitability assessment with concrete attack scenarios
+- **What Was Done Well:** Secure patterns correctly implemented
+- **Remediation Guidance:** Secure code examples for implementation agent to apply
+
+**Security reference mappings:**
+
+| Field | Format | Example |
+|-------|--------|---------|
+| CWE Reference | `CWE-XXX` | CWE-89 (SQL Injection) |
+| OWASP Category | `A0X:YYYY` | A03:2021 Injection |
+| Severity | CRITICAL/HIGH/MEDIUM/LOW | Based on exploitability + impact |
