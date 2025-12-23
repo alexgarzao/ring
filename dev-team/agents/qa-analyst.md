@@ -408,6 +408,47 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **Execute WebFetch for the relevant language standard based on the project's test stack.**
 
+## FORBIDDEN Test Patterns Check (MANDATORY - BEFORE ANY TEST)
+
+**⛔ HARD GATE: You MUST execute this check BEFORE writing any test.**
+
+1. WebFetch language-specific standards (Go or TypeScript)
+2. Find section "FORBIDDEN Test Patterns" in the fetched content
+3. **LIST the patterns you found** (proves you read them)
+4. If you cannot list them → STOP, WebFetch failed or section not found
+
+**Required Output BEFORE writing tests:**
+
+```
+## FORBIDDEN Test Patterns Acknowledged
+
+I have loaded [golang.md|typescript.md] standards. FORBIDDEN test patterns:
+- Tests without assertions ❌
+- Skipped tests (.skip, .todo) in coverage ❌
+- Shared mutable state between tests ❌
+- Tests depending on execution order ❌
+- Mocking implementation details ❌
+- Missing edge case coverage ❌
+
+I will use instead:
+- Every test has explicit assertions ✅
+- No skipped tests or exclude from coverage ✅
+- Independent test fixtures ✅
+- Isolated test execution ✅
+- Mock interfaces, not implementations ✅
+- Edge cases for every AC ✅
+```
+
+**If this acknowledgment is missing from your output → Tests are INVALID.**
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
+| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
+| "I'll just add assertions" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+
 ## Handling Ambiguous Requirements
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
@@ -535,15 +576,9 @@ No migration actions required.
    - Build coverage over time, not all at once
 
 **Characterization Test Template:**
-```typescript
-describe('LegacyModule', () => {
-  it('captures current behavior (may not be correct)', () => {
-    // This test documents ACTUAL behavior, not INTENDED behavior
-    const result = legacyFunction(input);
-    expect(result).toBe(currentOutput); // Snapshot of current state
-  });
-});
-```
+- **→ See standards (WebFetch) for characterization test patterns per language**
+- Pattern: Capture current behavior with `expect(result).toBe(currentOutput)`
+- Comment: "This test documents ACTUAL behavior, not INTENDED behavior"
 
 **Legacy code testing goal: Safe modification, not perfect coverage.**
 
@@ -913,19 +948,13 @@ pytest --cov --cov-report=term-missing
 
 ## Assertion-less Test Detection (Anti-Pattern)
 
-**Tests without assertions always pass (false coverage):**
+**Tests without assertions always pass (false coverage).**
 
-```javascript
-// RED FLAG - No assertions
-it('should process data', () => {
-  processData(input);  // No expect/assert
-});
-
-// RED FLAG - Commented assertions
-it('should validate', () => {
-  // expect(result).toBe(true);
-});
-```
+| Red Flag | Description |
+|----------|-------------|
+| No assertions | `it()` block calls function but has no `expect`/`assert` |
+| Commented assertions | Assertions exist but are commented out |
+| Empty test body | `it('should work', () => {})` |
 
 **Detection:** If test file has `it()` or `test()` blocks without `expect`, `assert`, `should` → Report as "assertion-less tests detected"
 
@@ -963,125 +992,39 @@ TestUserRepository_FindByEmail_NonExistent_ReturnsNull
 
 ### Test Structure (AAA Pattern)
 
-```python
-# Python example
-def test_create_user_with_valid_data_returns_user():
-    # Arrange
-    input_data = {"email": "test@example.com", "name": "Test"}
-    mock_repo = Mock(spec=UserRepository)
-    mock_repo.save.return_value = User(id="1", **input_data)
-    service = UserService(repository=mock_repo)
+**→ See standards (WebFetch) for AAA pattern examples per language:**
+- **Go:** `golang.md` § "Testing Patterns" → table-driven tests with testify
+- **TypeScript:** `typescript.md` § "Testing Patterns" → describe/it with Jest
 
-    # Act
-    result = service.create_user(input_data)
-
-    # Assert
-    assert result.id == "1"
-    assert result.email == "test@example.com"
-    mock_repo.save.assert_called_once()
-```
-
-```typescript
-// TypeScript example
-describe('UserService', () => {
-  it('should create user with valid data', async () => {
-    // Arrange
-    const input = { email: 'test@example.com', name: 'Test' };
-    const mockRepo = mock<UserRepository>();
-    mockRepo.save.mockResolvedValue({ id: '1', ...input });
-    const service = new UserService(mockRepo);
-
-    // Act
-    const result = await service.createUser(input);
-
-    // Assert
-    expect(result.id).toBe('1');
-    expect(result.email).toBe(input.email);
-  });
-});
-```
-
-```go
-// Go example (table-driven)
-func TestCreateUser(t *testing.T) {
-    tests := []struct {
-        name    string
-        input   CreateUserInput
-        want    *User
-        wantErr error
-    }{
-        {
-            name:  "valid user",
-            input: CreateUserInput{Name: "John", Email: "john@example.com"},
-            want:  &User{Name: "John", Email: "john@example.com"},
-        },
-        {
-            name:    "invalid email",
-            input:   CreateUserInput{Name: "John", Email: "invalid"},
-            wantErr: ErrInvalidEmail,
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            got, err := CreateUser(tt.input)
-            if tt.wantErr != nil {
-                require.ErrorIs(t, err, tt.wantErr)
-                return
-            }
-            require.NoError(t, err)
-            assert.Equal(t, tt.want.Name, got.Name)
-        })
-    }
-}
-```
+| Phase | Purpose | Example |
+|-------|---------|---------|
+| **Arrange** | Setup test data, mocks, dependencies | Create input, configure mock returns |
+| **Act** | Execute the function under test | Call service method |
+| **Assert** | Verify expected outcomes | Check result values, verify mock calls |
 
 ### API Testing Best Practices
 
 #### Postman/Newman Standards
 
-```json
-{
-  "name": "Create User",
-  "request": {
-    "method": "POST",
-    "url": "{{baseUrl}}/api/users",
-    "body": {
-      "mode": "raw",
-      "raw": "{\"email\": \"test@example.com\", \"name\": \"Test\"}"
-    }
-  },
-  "test": [
-    "pm.test('Status code is 201', () => pm.response.to.have.status(201))",
-    "pm.test('Response has user id', () => pm.expect(pm.response.json().id).to.exist)"
-  ]
-}
-```
+**→ See PROJECT_RULES.md or existing Postman collections for API test patterns.**
+
+| Element | Requirement |
+|---------|-------------|
+| **Request** | Use `{{baseUrl}}` variable, proper HTTP method |
+| **Tests** | Status code assertion + response body validation |
+| **Naming** | Descriptive name matching endpoint purpose |
 
 ### E2E Testing Best Practices
 
 #### Playwright Standards
 
-```typescript
-test.describe('User Registration', () => {
-  test('should register new user successfully', async ({ page }) => {
-    // Navigate
-    await page.goto('/register');
+**→ See `frontend.md` (WebFetch) § "E2E Testing" for Playwright patterns.**
 
-    // Fill form
-    await page.fill('[data-testid="email"]', 'test@example.com');
-    await page.fill('[data-testid="password"]', 'Password123!');
-    await page.fill('[data-testid="confirm-password"]', 'Password123!');
-
-    // Submit
-    await page.click('[data-testid="submit"]');
-
-    // Assert
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.getByText('Welcome')).toBeVisible();
-  });
-});
-```
+| Step | Pattern |
+|------|---------|
+| **Navigate** | `await page.goto('/path')` |
+| **Interact** | Use `data-testid` selectors: `page.fill('[data-testid="email"]', value)` |
+| **Assert** | URL check + element visibility: `expect(page).toHaveURL()`, `expect(element).toBeVisible()` |
 
 ### Test Data Management
 

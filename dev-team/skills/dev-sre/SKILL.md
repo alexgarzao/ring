@@ -212,10 +212,33 @@ Task:
 
     ## Validation Checklist
 
-    ### 1. Structured Logging
+    ### 0. FORBIDDEN Logging Patterns (CRITICAL - Check FIRST)
+    
+    **MUST search for and report ALL occurrences of FORBIDDEN patterns:**
+    
+    | Language | FORBIDDEN Pattern | Search For |
+    |----------|-------------------|------------|
+    | Go | `fmt.Println()` | `fmt.Println` in *.go files |
+    | Go | `fmt.Printf()` | `fmt.Printf` in *.go files |
+    | Go | `log.Println()` | `log.Println` in *.go files |
+    | Go | `log.Printf()` | `log.Printf` in *.go files |
+    | Go | `log.Fatal()` | `log.Fatal` in *.go files |
+    | Go | `println()` | `println(` in *.go files |
+    | TypeScript | `console.log()` | `console.log` in *.ts files |
+    | TypeScript | `console.error()` | `console.error` in *.ts files |
+    | TypeScript | `console.warn()` | `console.warn` in *.ts files |
+    
+    **If ANY FORBIDDEN pattern found:**
+    - Severity: **CRITICAL**
+    - Verdict: **FAIL** (automatic, no exceptions)
+    - Each occurrence MUST be listed with file:line
+    
+    ### 1. Structured Logging (lib-commons)
+    - [ ] Uses `libCommons.NewTrackingFromContext(ctx)` for logger (Go)
+    - [ ] Uses `initializeLogger()` from lib-common-js (TypeScript)
     - [ ] JSON format with timestamp, level, message, service
     - [ ] trace_id correlation in logs
-    - [ ] No fmt.Println/console.log in production code
+    - [ ] **NO FORBIDDEN patterns** (see check 0 above)
 
     ### 2. Instrumentation Coverage (90%+ required)
     For [language], check these patterns:

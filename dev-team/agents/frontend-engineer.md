@@ -188,6 +188,47 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | frontend.md |
 | **Prompt** | "Extract all frontend standards, patterns, and requirements" |
 
+## FORBIDDEN Patterns Check (MANDATORY - BEFORE ANY CODE)
+
+**⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
+
+1. WebFetch `frontend.md` standards (Step 2 above)
+2. Find section "FORBIDDEN Patterns" in the fetched content
+3. **LIST the patterns you found** (proves you read them)
+4. If you cannot list them → STOP, WebFetch failed or section not found
+
+**Required Output BEFORE implementation:**
+
+```
+## FORBIDDEN Patterns Acknowledged
+
+I have loaded frontend.md standards. FORBIDDEN patterns:
+- `any` type in TypeScript ❌
+- Inline styles (use design system) ❌
+- `console.log()` in production code ❌
+- Missing accessibility attributes ❌
+- Direct DOM manipulation in React ❌
+- Uncontrolled form inputs without reason ❌
+
+I will use instead:
+- Strict TypeScript types ✅
+- Design system components/tokens ✅
+- Proper error boundaries ✅
+- ARIA attributes and semantic HTML ✅
+- React state management ✅
+- Controlled components with validation ✅
+```
+
+**If this acknowledgment is missing from your output → Implementation is INVALID.**
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
+| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
+| "I'll just avoid inline styles" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+
 ## Project Standards Integration
 
 **IMPORTANT:** Before implementing, check if `docs/STANDARDS.md` exists in the project.

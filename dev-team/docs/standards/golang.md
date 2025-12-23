@@ -2264,19 +2264,73 @@ func TestUserService_CreateUser(t *testing.T) {
 
 ## Logging Standards
 
-### Using lib-commons Logger
+**HARD GATE:** All Go services MUST use lib-commons structured logging. Unstructured logging is FORBIDDEN.
+
+### FORBIDDEN Logging Patterns (CRITICAL - Automatic FAIL)
+
+| Pattern | Why FORBIDDEN | Detection Command |
+|---------|---------------|-------------------|
+| `fmt.Println()` | No structure, no trace correlation, unsearchable | `grep -rn "fmt.Println" --include="*.go"` |
+| `fmt.Printf()` | No structure, no trace correlation, unsearchable | `grep -rn "fmt.Printf" --include="*.go"` |
+| `log.Println()` | Standard library logger lacks trace correlation | `grep -rn "log.Println" --include="*.go"` |
+| `log.Printf()` | Standard library logger lacks trace correlation | `grep -rn "log.Printf" --include="*.go"` |
+| `log.Fatal()` | Exits without graceful shutdown, breaks telemetry flush | `grep -rn "log.Fatal" --include="*.go"` |
+| `println()` | Built-in, no structure, debugging only | `grep -rn "println(" --include="*.go"` |
+
+**If ANY of these patterns are found in production code → REVIEW FAILS. NO EXCEPTIONS.**
+
+### Pre-Commit Check (MANDATORY)
+
+Add to `.golangci.yml` or run manually before commit:
+
+```bash
+# MUST pass with zero matches before commit
+grep -rn "fmt.Println\|fmt.Printf\|log.Println\|log.Printf\|log.Fatal\|println(" --include="*.go" ./internal ./cmd
+# Expected output: (nothing - no matches)
+```
+
+### Using lib-commons Logger (REQUIRED Pattern)
 
 ```go
-// Recover logger from context (PREFERRED)
+// CORRECT: Recover logger from context
 logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
-// Log with context correlation
+// CORRECT: Log with context correlation
 logger.Infof("Processing entity: %s", entityID)
 logger.Warnf("Rate limit approaching: %d/%d", current, limit)
 logger.Errorf("Failed to save entity: %v", err)
 ```
 
-### What NOT to Log
+### Migration Examples
+
+```go
+// ❌ FORBIDDEN: fmt.Println
+fmt.Println("Starting server...")
+
+// ✅ REQUIRED: lib-commons logger
+logger.Info("Starting server")
+
+// ❌ FORBIDDEN: fmt.Printf  
+fmt.Printf("Processing user: %s\n", userID)
+
+// ✅ REQUIRED: lib-commons logger
+logger.Infof("Processing user: %s", userID)
+
+// ❌ FORBIDDEN: log.Printf
+log.Printf("[ERROR] Failed to connect: %v", err)
+
+// ✅ REQUIRED: lib-commons logger with span error
+logger.Errorf("Failed to connect: %v", err)
+libOpentelemetry.HandleSpanError(&span, "Connection failed", err)
+
+// ❌ FORBIDDEN: log.Fatal (breaks graceful shutdown)
+log.Fatal("Cannot start without config")
+
+// ✅ REQUIRED: panic in bootstrap ONLY (caught by recovery middleware)
+panic(fmt.Errorf("cannot start without config: %w", err))
+```
+
+### What NOT to Log (Sensitive Data)
 
 ```go
 // FORBIDDEN - sensitive data
@@ -2284,6 +2338,28 @@ logger.Info("user login", "password", password)  // NEVER
 logger.Info("payment", "card_number", card)      // NEVER
 logger.Info("auth", "token", token)              // NEVER
 logger.Info("user", "cpf", cpf)                  // NEVER (PII)
+```
+
+### golangci-lint Custom Rule (RECOMMENDED)
+
+Add to `.golangci.yml` to automatically fail CI on forbidden patterns:
+
+```yaml
+linters-settings:
+  forbidigo:
+    forbid:
+      - p: ^fmt\.Print.*$
+        msg: "FORBIDDEN: Use lib-commons logger instead of fmt.Print*"
+      - p: ^log\.(Print|Fatal|Panic).*$
+        msg: "FORBIDDEN: Use lib-commons logger instead of standard log package"
+      - p: ^print$
+        msg: "FORBIDDEN: Use lib-commons logger instead of print builtin"
+      - p: ^println$
+        msg: "FORBIDDEN: Use lib-commons logger instead of println builtin"
+
+linters:
+  enable:
+    - forbidigo
 ```
 
 ---

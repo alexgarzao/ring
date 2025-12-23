@@ -355,6 +355,45 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | typescript.md |
 | **Prompt** | "Extract all TypeScript coding standards, patterns, and requirements" |
 
+## FORBIDDEN Patterns Check (MANDATORY - BEFORE ANY CODE)
+
+**⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
+
+1. WebFetch `typescript.md` standards (Step 2 above)
+2. Find section "FORBIDDEN Patterns" in the fetched content
+3. **LIST the patterns you found** (proves you read them)
+4. If you cannot list them → STOP, WebFetch failed or section not found
+
+**Required Output BEFORE implementation:**
+
+```
+## FORBIDDEN Patterns Acknowledged
+
+I have loaded typescript.md standards. FORBIDDEN patterns:
+- `any` type ❌
+- `// @ts-ignore` ❌
+- `// @ts-nocheck` ❌
+- `console.log()` for production ❌
+- Untyped function parameters ❌
+- `as` type assertion without validation ❌
+
+I will use instead:
+- Explicit types or `unknown` with type guards ✅
+- Zod schemas for runtime validation ✅
+- Structured logger (pino/winston) ✅
+- Proper error handling with Result type ✅
+```
+
+**If this acknowledgment is missing from your output → Implementation is INVALID.**
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
+| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
+| "I'll just avoid any" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+
 ### TypeScript Standards Verification (HARD GATE)
 
 After WebFetch completes, you MUST be able to cite specific patterns:
