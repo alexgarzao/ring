@@ -947,7 +947,7 @@ Your review protects users, data, and the organization from security threats. Yo
 
 **Required output fields for this reviewer:**
 
-- **VERDICT:** PASS, FAIL, or CONDITIONAL (with conditions)
+- **VERDICT:** PASS, FAIL, or NEEDS_DISCUSSION
 - **Vulnerabilities Found:** List with severity, CWE ID, OWASP category, file:line, description
 - **OWASP Top 10 Coverage:** Which categories were checked and findings per category
 - **Attack Vector Analysis:** Exploitability assessment with concrete attack scenarios
