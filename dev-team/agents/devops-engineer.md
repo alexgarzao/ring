@@ -250,6 +250,47 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | devops.md |
 | **Prompt** | "Extract all DevOps standards, patterns, and requirements" |
 
+## FORBIDDEN Patterns Check (MANDATORY - BEFORE ANY CODE)
+
+**⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
+
+1. WebFetch `devops.md` standards (Step 2 above)
+2. Find section "FORBIDDEN Patterns" in the fetched content
+3. **LIST the patterns you found** (proves you read them)
+4. If you cannot list them → STOP, WebFetch failed or section not found
+
+**Required Output BEFORE implementation:**
+
+```
+## FORBIDDEN Patterns Acknowledged
+
+I have loaded devops.md standards. FORBIDDEN patterns:
+- Hardcoded secrets in code/config ❌
+- `:latest` tag for Docker images ❌
+- Running containers as root ❌
+- Missing health checks ❌
+- No resource limits defined ❌
+- Secrets in environment variables ❌
+
+I will use instead:
+- Secrets manager (Vault, AWS Secrets) ✅
+- Pinned image versions ✅
+- Non-root USER in Dockerfile ✅
+- Liveness/readiness probes ✅
+- CPU/memory limits ✅
+- Mounted secrets from secure store ✅
+```
+
+**If this acknowledgment is missing from your output → Implementation is INVALID.**
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
+| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
+| "I'll just avoid hardcoded secrets" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+
 ## Handling Ambiguous Requirements
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:

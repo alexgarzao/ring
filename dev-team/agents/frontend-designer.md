@@ -875,6 +875,47 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | frontend.md |
 | **Prompt** | "Extract all frontend design standards, patterns, and requirements" |
 
+## FORBIDDEN Patterns Check (MANDATORY - BEFORE ANY SPECIFICATION)
+
+**⛔ HARD GATE: You MUST execute this check BEFORE writing any specification.**
+
+1. WebFetch `frontend.md` standards (Step 2 above)
+2. Find section "FORBIDDEN Design Patterns" in the fetched content
+3. **LIST the patterns you found** (proves you read them)
+4. If you cannot list them → STOP, WebFetch failed or section not found
+
+**Required Output BEFORE specification:**
+
+```
+## FORBIDDEN Patterns Acknowledged
+
+I have loaded frontend.md standards. FORBIDDEN design patterns:
+- Generic fonts (Inter, Roboto, System UI) ❌
+- Missing dark mode when specified ❌
+- Missing accessibility (WCAG AA) ❌
+- Inline styles instead of design tokens ❌
+- Non-responsive layouts ❌
+- Missing loading/error states ❌
+
+I will specify instead:
+- Distinctive brand fonts ✅
+- Dark/light mode with proper tokens ✅
+- WCAG AA compliant specifications ✅
+- Design system tokens only ✅
+- Mobile-first responsive design ✅
+- Complete interaction states ✅
+```
+
+**If this acknowledgment is missing from your output → Specification is INVALID.**
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
+| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
+| "I'll just avoid generic fonts" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+
 ## Anti-Patterns (NEVER Do These)
 
 | Anti-Pattern | Correct Behavior |

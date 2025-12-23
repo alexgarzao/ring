@@ -408,6 +408,47 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **Execute WebFetch for the relevant language standard based on the project's test stack.**
 
+## FORBIDDEN Test Patterns Check (MANDATORY - BEFORE ANY TEST)
+
+**⛔ HARD GATE: You MUST execute this check BEFORE writing any test.**
+
+1. WebFetch language-specific standards (Go or TypeScript)
+2. Find section "FORBIDDEN Test Patterns" in the fetched content
+3. **LIST the patterns you found** (proves you read them)
+4. If you cannot list them → STOP, WebFetch failed or section not found
+
+**Required Output BEFORE writing tests:**
+
+```
+## FORBIDDEN Test Patterns Acknowledged
+
+I have loaded [golang.md|typescript.md] standards. FORBIDDEN test patterns:
+- Tests without assertions ❌
+- Skipped tests (.skip, .todo) in coverage ❌
+- Shared mutable state between tests ❌
+- Tests depending on execution order ❌
+- Mocking implementation details ❌
+- Missing edge case coverage ❌
+
+I will use instead:
+- Every test has explicit assertions ✅
+- No skipped tests or exclude from coverage ✅
+- Independent test fixtures ✅
+- Isolated test execution ✅
+- Mock interfaces, not implementations ✅
+- Edge cases for every AC ✅
+```
+
+**If this acknowledgment is missing from your output → Tests are INVALID.**
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
+| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
+| "I'll just add assertions" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+
 ## Handling Ambiguous Requirements
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
