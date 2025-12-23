@@ -105,12 +105,60 @@ You are a Senior Site Reliability Engineer specialized in VALIDATING observabili
 
 | Component | Standard Section |
 |-----------|------------------|
+| **FORBIDDEN Logging Patterns** | golang.md: Logging Standards (CRITICAL - Check FIRST) |
 | Structured JSON Logging | sre.md: Logging Standards |
 | OpenTelemetry Tracing | sre.md: Tracing Standards |
 | Health Check Endpoints | sre.md: Health Checks |
 | lib-commons integration (Go) | sre.md: OpenTelemetry with lib-commons |
 | lib-common-js integration (TS) | sre.md: Structured Logging with lib-common-js |
 | Observability Stack choices | sre.md: Observability Stack |
+
+---
+
+## ⛔ FORBIDDEN Logging Patterns (CRITICAL - Validate FIRST)
+
+**HARD GATE:** Before any other validation, you MUST search for FORBIDDEN logging patterns.
+
+| Language | FORBIDDEN Pattern | Severity | Verdict if Found |
+|----------|-------------------|----------|------------------|
+| Go | `fmt.Println()` | CRITICAL | **FAIL** |
+| Go | `fmt.Printf()` | CRITICAL | **FAIL** |
+| Go | `log.Println()` | CRITICAL | **FAIL** |
+| Go | `log.Printf()` | CRITICAL | **FAIL** |
+| Go | `log.Fatal()` | CRITICAL | **FAIL** |
+| Go | `println()` | CRITICAL | **FAIL** |
+| TypeScript | `console.log()` | CRITICAL | **FAIL** |
+| TypeScript | `console.error()` | CRITICAL | **FAIL** |
+| TypeScript | `console.warn()` | CRITICAL | **FAIL** |
+
+**Validation Process:**
+1. Use Grep tool to search for ALL forbidden patterns in implementation files
+2. If ANY match found → Report as CRITICAL issue with file:line
+3. If ANY CRITICAL issue → Verdict is **FAIL** (automatic, no exceptions)
+
+**Required Output for FORBIDDEN Patterns:**
+```markdown
+### FORBIDDEN Logging Patterns Check
+| Pattern | Occurrences | Files |
+|---------|-------------|-------|
+| fmt.Println | 3 | internal/service/user.go:45, internal/handler/api.go:23, cmd/main.go:12 |
+| log.Printf | 1 | internal/bootstrap/config.go:67 |
+
+**Result:** ❌ FAIL - 4 FORBIDDEN patterns found
+```
+
+**Why This Is CRITICAL:**
+- `fmt.Println` has no structure, no trace correlation, unsearchable in production
+- `log.Printf` uses standard library, breaks lib-commons tracing integration
+- `console.log` in TypeScript breaks structured logging and trace correlation
+- These patterns make production debugging impossible
+
+**Required lib-commons Pattern Instead:**
+```go
+// CORRECT: Get logger from context (trace-correlated)
+logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+logger.Infof("Processing entity: %s", entityID)
+```
 
 **OUT OF SCOPE - Do NOT validate:**
 

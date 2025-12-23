@@ -170,39 +170,7 @@ IF any REQUIRED input is missing:
   → Return to orchestrator with error
 ```
 
-## Step 2: Pre-Validation Check (FORBIDDEN Patterns)
-
-**HARD GATE:** Before dispatching SRE agent, run automated detection for FORBIDDEN logging patterns.
-
-```bash
-# For Go projects - MUST return zero matches
-grep -rn "fmt.Println\|fmt.Printf\|log.Println\|log.Printf\|log.Fatal" --include="*.go" ./internal ./cmd 2>/dev/null || true
-
-# For TypeScript projects - MUST return zero matches  
-grep -rn "console.log\|console.error\|console.warn" --include="*.ts" --include="*.tsx" ./src 2>/dev/null || true
-```
-
-**If ANY matches found:**
-1. **DO NOT** proceed to SRE validation
-2. **IMMEDIATELY** return to Gate 0 with CRITICAL issue
-3. Dispatch implementation agent to replace forbidden patterns with lib-commons logger
-
-```text
-forbidden_patterns_check = Execute(grep_command)
-
-IF forbidden_patterns_check has matches:
-  STOP and return:
-  {
-    status: "BLOCKED",
-    reason: "FORBIDDEN logging patterns detected",
-    patterns_found: [list of file:line matches],
-    required_action: "Replace with lib-commons structured logger",
-    return_to: "Gate 0",
-    dispatch_agent: implementation_agent
-  }
-```
-
-## Step 2.1: Initialize Validation State
+## Step 2: Initialize Validation State
 
 ```text
 validation_state = {
@@ -210,8 +178,7 @@ validation_state = {
   max_iterations: 3,
   sre_result: null,
   issues: [],
-  instrumentation_coverage: null,
-  forbidden_patterns_check: "PASSED"  // Only if Step 2 passed
+  instrumentation_coverage: null
 }
 ```
 
@@ -245,10 +212,33 @@ Task:
 
     ## Validation Checklist
 
-    ### 1. Structured Logging
+    ### 0. FORBIDDEN Logging Patterns (CRITICAL - Check FIRST)
+    
+    **MUST search for and report ALL occurrences of FORBIDDEN patterns:**
+    
+    | Language | FORBIDDEN Pattern | Search For |
+    |----------|-------------------|------------|
+    | Go | `fmt.Println()` | `fmt.Println` in *.go files |
+    | Go | `fmt.Printf()` | `fmt.Printf` in *.go files |
+    | Go | `log.Println()` | `log.Println` in *.go files |
+    | Go | `log.Printf()` | `log.Printf` in *.go files |
+    | Go | `log.Fatal()` | `log.Fatal` in *.go files |
+    | Go | `println()` | `println(` in *.go files |
+    | TypeScript | `console.log()` | `console.log` in *.ts files |
+    | TypeScript | `console.error()` | `console.error` in *.ts files |
+    | TypeScript | `console.warn()` | `console.warn` in *.ts files |
+    
+    **If ANY FORBIDDEN pattern found:**
+    - Severity: **CRITICAL**
+    - Verdict: **FAIL** (automatic, no exceptions)
+    - Each occurrence MUST be listed with file:line
+    
+    ### 1. Structured Logging (lib-commons)
+    - [ ] Uses `libCommons.NewTrackingFromContext(ctx)` for logger (Go)
+    - [ ] Uses `initializeLogger()` from lib-common-js (TypeScript)
     - [ ] JSON format with timestamp, level, message, service
     - [ ] trace_id correlation in logs
-    - [ ] No fmt.Println/console.log in production code
+    - [ ] **NO FORBIDDEN patterns** (see check 0 above)
 
     ### 2. Instrumentation Coverage (90%+ required)
     For [language], check these patterns:
