@@ -266,7 +266,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **Required Output BEFORE implementation:**
 
-```
+```markdown
 ## FORBIDDEN Patterns Acknowledged
 
 I have loaded typescript.md standards. FORBIDDEN patterns:
@@ -281,7 +281,7 @@ I have loaded typescript.md standards. FORBIDDEN patterns:
 I will use instead:
 - Explicit types or `unknown` with type guards ✅
 - Zod schemas for runtime validation ✅
-- Structured logger via lib-common-js ✅
+- Structured logger via @lerianstudio/lib-commons-js ✅
 - Inversify DI for dependencies ✅
 - Result type for error handling ✅
 ```
