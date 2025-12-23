@@ -2352,8 +2352,10 @@ linters-settings:
         msg: "FORBIDDEN: Use lib-commons logger instead of fmt.Print*"
       - p: ^log\.(Print|Fatal|Panic).*$
         msg: "FORBIDDEN: Use lib-commons logger instead of standard log package"
-      - p: ^println\($
-        msg: "FORBIDDEN: Use lib-commons logger instead of println"
+      - p: ^print$
+        msg: "FORBIDDEN: Use lib-commons logger instead of print builtin"
+      - p: ^println$
+        msg: "FORBIDDEN: Use lib-commons logger instead of println builtin"
 
 linters:
   enable:
