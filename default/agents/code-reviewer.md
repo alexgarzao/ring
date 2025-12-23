@@ -856,7 +856,7 @@ Your review helps maintain high code quality. Your findings will be consolidated
 
 **Required output fields for this reviewer:**
 
-- **VERDICT:** PASS, FAIL, or CONDITIONAL (with conditions)
+- **VERDICT:** PASS, FAIL, or NEEDS_DISCUSSION
 - **Issues Found:** List with severity (CRITICAL/HIGH/MEDIUM/LOW), file:line, description
 - **What Was Done Well:** Positive findings to acknowledge correct implementations
 - **Recommendations:** Suggested fixes with example code (for implementation agent to apply)

@@ -1,11 +1,12 @@
 ---
 name: frontend-bff-engineer-typescript
-version: 2.1.5
+version: 2.1.6
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption.
 type: specialist
 model: opus
-last_updated: 2025-12-14
+last_updated: 2025-12-23
 changelog:
+  - 2.1.6: Renamed Core one → Lerian pattern
   - 2.1.5: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 2.1.4: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 2.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
@@ -266,7 +267,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **Required Output BEFORE implementation:**
 
-```
+```markdown
 ## FORBIDDEN Patterns Acknowledged
 
 I have loaded typescript.md standards. FORBIDDEN patterns:
@@ -281,7 +282,7 @@ I have loaded typescript.md standards. FORBIDDEN patterns:
 I will use instead:
 - Explicit types or `unknown` with type guards ✅
 - Zod schemas for runtime validation ✅
-- Structured logger via lib-common-js ✅
+- Structured logger via @lerianstudio/lib-commons-js ✅
 - Inversify DI for dependencies ✅
 - Result type for error handling ✅
 ```
@@ -298,7 +299,7 @@ I will use instead:
 
 ## Architecture Patterns
 
-You have deep expertise in Clean Architecture and Hexagonal Architecture. The **Core one pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all BFF services.
+You have deep expertise in Clean Architecture and Hexagonal Architecture. The **Lerian pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all BFF services.
 
 ### Strategic Patterns (Knowledge)
 
@@ -551,7 +552,7 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 | 9 | Error Handling (MANDATORY) | |
 | 10 | Function Design (MANDATORY) | |
 | 11 | Naming Conventions (MANDATORY) | |
-| 12 | Directory Structure (MANDATORY) | Core one pattern |
+| 12 | Directory Structure (MANDATORY) | Lerian pattern |
 | 13 | RabbitMQ Worker Pattern (MANDATORY) | |
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**

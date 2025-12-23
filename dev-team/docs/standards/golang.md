@@ -30,7 +30,7 @@ This file defines the specific standards for Go development at Lerian Studio.
 | 15 | [Logging Standards](#logging-standards) | Structured logging with lib-commons |
 | 16 | [Linting](#linting) | golangci-lint configuration |
 | 17 | [Architecture Patterns](#architecture-patterns) | Hexagonal architecture |
-| 18 | [Directory Structure](#directory-structure) | Project layout (Core one pattern) |
+| 18 | [Directory Structure](#directory-structure) | Project layout (Lerian pattern) |
 | 19 | [Concurrency Patterns](#concurrency-patterns) | Goroutines, channels, errgroup |
 | 20 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
 
@@ -1689,7 +1689,7 @@ Each service **MUST** define error codes with a service-specific prefix.
 
 | Service | Prefix | Example |
 |---------|--------|---------|
-| Core one | MDZ | MDZ-0001 |
+| Lerian | LRN | LRN-0001 |
 | Plugin-Fees | FEE | FEE-0001 |
 | Plugin-Auth | AUT | AUT-0001 |
 | Platform | PLT | PLT-0001 |
@@ -2442,7 +2442,7 @@ type UseCase struct {
 
 ## Directory Structure
 
-The directory structure follows the **Core one pattern** - a simplified hexagonal architecture without explicit DDD folders.
+The directory structure follows the **Lerian pattern** - a simplified hexagonal architecture without explicit DDD folders.
 
 ```text
 /cmd

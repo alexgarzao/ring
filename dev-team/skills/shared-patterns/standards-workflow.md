@@ -185,7 +185,7 @@ The following are defined in Ring Standards and MUST NOT be duplicated in this f
 - Architecture patterns (Hexagonal, Clean Architecture)
 - Observability (OpenTelemetry via lib-commons)
 - lib-commons / lib-common-js usage and patterns
-- API directory structure (Core one pattern)
+- API directory structure (Lerian pattern)
 - Database connections (PostgreSQL, MongoDB, Redis via lib-commons)
 - Bootstrap pattern (config.go, service.go, server.go)
 

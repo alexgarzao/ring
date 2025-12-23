@@ -923,7 +923,7 @@ Your review ensures the code correctly implements business requirements and hand
 
 **Required output fields for this reviewer:**
 
-- **VERDICT:** PASS, FAIL, or CONDITIONAL (with conditions)
+- **VERDICT:** PASS, FAIL, or NEEDS_DISCUSSION
 - **Issues Found:** List with severity (CRITICAL/HIGH/MEDIUM/LOW), file:line, description
 - **Mental Execution Analysis:** Concrete scenarios traced through code with inputs/outputs
 - **What Was Done Well:** Positive findings to acknowledge correct implementations
