@@ -278,59 +278,127 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
-1. WebFetch `golang.md` standards (Step 2 above)
-2. Find sections "FORBIDDEN Logging Patterns" AND "Anti-Patterns" (HTTP/Telemetry) in the fetched content
-3. **LIST the patterns you found** (proves you read them)
-4. If you cannot list them → STOP, WebFetch failed or section not found
+**Standards Reference (MANDATORY WebFetch):**
 
-**Required Output BEFORE implementation:**
+| Standards File | Sections to Load | Anchor |
+|----------------|------------------|--------|
+| golang.md | Logging | #logging |
+| golang.md | Observability | #observability |
+
+**Process:**
+1. WebFetch `golang.md` (URL in Standards Loading section above)
+2. Find "Logging" section → Extract FORBIDDEN patterns table
+3. Find "Observability" section → Extract Anti-Patterns table
+4. **LIST ALL patterns you found** (proves you read the standards)
+5. If you cannot list them → STOP, WebFetch failed
+
+**MANDATORY Output Template:**
 
 ```markdown
 ## FORBIDDEN Patterns Acknowledged
 
-I have loaded golang.md standards.
+I have loaded golang.md standards via WebFetch.
 
-### FORBIDDEN Logging Patterns:
-- fmt.Println() ❌
-- fmt.Printf() ❌
-- log.Println() ❌
-- log.Printf() ❌
-- log.Fatal() ❌
-- println() ❌
+### From "Logging" section:
+[LIST all FORBIDDEN logging patterns found in the standards file]
 
-✅ Use instead: logger.Infof(), logger.Errorf(), logger.Warnf() (from lib-commons)
+### From "Observability" section:
+[LIST all Anti-Patterns found in the standards file]
 
-### FORBIDDEN HTTP Response Patterns:
-- c.JSON(status, data) ❌
-- c.Status(code).JSON(err) ❌
-- c.SendString() ❌
-- c.Send() ❌
-
-✅ Use instead: libHTTP.OK(c, data), libHTTP.Created(c, data), libHTTP.WithError(c, err), libHTTP.NoContent(c)
-
-### FORBIDDEN Telemetry Patterns:
-- Direct import of go.opentelemetry.io/otel/* ❌
-- otel.Core three("name") ❌
-- trace.SpanFromContext(ctx) ❌
-
-✅ Use instead: libCommons.NewTrackingFromContext(ctx), libOpentelemetry wrappers
+### Correct Alternatives (from standards):
+[LIST the correct lib-commons alternatives found in the standards file]
 ```
 
-**If this acknowledgment is missing from your output → Implementation is INVALID.**
+**⛔ CRITICAL: Do NOT hardcode patterns. Extract them from WebFetch result.**
 
-**Anti-Rationalization:**
+**If this acknowledgment is missing → Implementation is INVALID.**
+
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for complete loading process.
+
+## MANDATORY Instrumentation (NON-NEGOTIABLE)
+
+**⛔ HARD GATE: Every service method, handler, and repository method you create or modify MUST have OpenTelemetry instrumentation. This is NOT optional. This is NOT "nice to have". This is REQUIRED.**
+
+**Standards Reference (MANDATORY WebFetch):**
+
+| Standards File | Section to Load | Anchor |
+|----------------|-----------------|--------|
+| golang.md | Observability | #observability |
+
+### What You MUST Implement
+
+| Component | Instrumentation Requirement |
+|-----------|----------------------------|
+| **Service methods** | MUST have span + structured logging |
+| **Handler methods** | MUST have span for complex handlers |
+| **Repository methods** | MUST have span for complex queries |
+| **External calls (HTTP/gRPC)** | MUST inject trace context |
+| **Queue publishers** | MUST inject trace context in headers |
+
+### MANDATORY Steps for EVERY Service Method
+
+```go
+func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, error) {
+    // 1. MANDATORY: Extract tracking from context
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    // 2. MANDATORY: Create child span
+    ctx, span := tracer.Start(ctx, "service.my_service.do_something")
+    defer span.End()  // 3. MANDATORY: Defer span end
+
+    // 4. MANDATORY: Use structured logger (NOT fmt.Println)
+    logger.Infof("Processing request: id=%s", req.ID)
+
+    // 5. MANDATORY: Handle errors with span attribution
+    if err != nil {
+        // Business error (validation, not found) → stays OK
+        libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "msg", err)
+        // Technical error (DB, network) → ERROR status
+        libOpentelemetry.HandleSpanError(&span, "msg", err)
+    }
+
+    // 6. MANDATORY: Pass ctx to all downstream calls
+    result, err := s.repo.Create(ctx, entity)
+
+    return result, nil
+}
+```
+
+### Instrumentation Checklist (ALL REQUIRED)
+
+| # | Check | If Missing |
+|---|-------|------------|
+| 1 | `libCommons.NewTrackingFromContext(ctx)` | **REJECTED** |
+| 2 | `tracer.Start(ctx, "layer.domain.operation")` | **REJECTED** |
+| 3 | `defer span.End()` | **REJECTED** |
+| 4 | `logger.Infof/Errorf` (NOT fmt/log) | **REJECTED** |
+| 5 | Error handling with `HandleSpanError` or `HandleSpanBusinessErrorEvent` | **REJECTED** |
+| 6 | `ctx` passed to all downstream calls | **REJECTED** |
+| 7 | Trace context injected for outgoing HTTP/gRPC | **REJECTED** (if applicable) |
+
+### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
-| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
-| "I'll just avoid fmt" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
-| "HTTP patterns aren't logging" | FORBIDDEN means FORBIDDEN. All categories apply. | **List ALL categories** |
-| "I use libHTTP from training" | Training ≠ verification. Prove you read standards. | **List libHTTP patterns explicitly** |
+| "It's a simple method, doesn't need tracing" | ALL methods need tracing. Simple ≠ exempt. | **ADD instrumentation** |
+| "I'll add tracing later" | Later = never. Tracing is part of implementation. | **ADD instrumentation NOW** |
+| "The middleware handles it" | Middleware creates root span. You create child spans. | **ADD child span** |
+| "This is just a helper function" | If it does I/O or business logic, it needs a span. | **ADD instrumentation** |
+| "Previous code doesn't have spans" | Previous code is non-compliant. New code MUST comply. | **ADD instrumentation** |
+| "Performance overhead" | lib-commons is optimized. This is not negotiable. | **ADD instrumentation** |
+
+**⛔ If ANY service method is missing instrumentation → Implementation is INCOMPLETE and REJECTED.**
 
 ## REQUIRED Bootstrap Pattern Check (MANDATORY FOR NEW PROJECTS)
 
 **⛔ HARD GATE: When creating a NEW Go service or initial setup, Bootstrap Pattern is MANDATORY. Not optional. Not "nice to have". REQUIRED.**
+
+**Standards Reference (MANDATORY WebFetch):**
+
+| Standards File | Section to Load | Anchor |
+|----------------|-----------------|--------|
+| golang.md | Bootstrap | #bootstrap |
+| golang.md | Directory Structure | #directory-structure |
 
 ### Detection: Is This a New Project/Initial Setup?
 
@@ -348,85 +416,62 @@ I have loaded golang.md standards.
 ```markdown
 ## Bootstrap Pattern Acknowledged (MANDATORY)
 
-This is a NEW PROJECT. Bootstrap Pattern is MANDATORY. I will follow Lerian Bootstrap Pattern from golang.md:
+This is a NEW PROJECT. Bootstrap Pattern is MANDATORY.
 
-### 1. main.go Initialization Order:
-1. LoadConfig() → Environment variables, feature flags
-2. InitLogger() → libLog.NewLoggerFromConfig()
-3. InitTelemetry() → libOpentelemetry.NewCore threeProviderFromConfig()
-4. InitDatabase() → libPostgres/libMongo connection
-5. InitServer() → Fiber app with libHTTP middleware
-6. GracefulShutdown() → Signal handling, cleanup
+I have loaded golang.md standards via WebFetch.
 
-### 2. Directory Structure (Hexagonal/Lerian):
-```
-service-name/
-├── main.go                 # Bootstrap only
-├── config/
-│   └── config.go           # LoadConfig()
-├── adapters/
-│   └── http/
-│       └── in/
-│           ├── routes.go   # Fiber setup with libHTTP
-│           └── handler.go  # Request handlers
-├── internal/
-│   ├── services/           # Business logic
-│   └── ports/              # Interfaces
-└── infrastructure/
-    └── repository/         # Database adapters
+### From "Bootstrap Pattern (MANDATORY)" section:
+[LIST the initialization order from the standards file]
+
+### From "Directory Structure" section:
+[LIST the directory structure from the standards file]
+
+### From "Core Dependency: lib-commons" section:
+[LIST the required lib-commons imports from the standards file]
 ```
 
-### 3. MANDATORY lib-commons Imports:
-- libLog for logging (REQUIRED)
-- libHTTP for HTTP responses (REQUIRED)
-- libOpentelemetry for tracing (REQUIRED)
-- libServer for lifecycle (REQUIRED)
-```
+**⛔ CRITICAL: Do NOT hardcode patterns. Extract them from WebFetch result.**
 
 **⛔ If this acknowledgment is missing for new projects → Implementation is INVALID and REJECTED.**
 
-### Anti-Rationalization (New Projects):
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "I'll add bootstrap later" | Bootstrap is foundation. Cannot be added later. | **Start with Bootstrap Pattern** |
-| "Simple test doesn't need full bootstrap" | Tests should mirror production structure. | **Use proper structure from start** |
-| "Health endpoint is just one file" | Structure matters even for small services. | **Follow directory structure** |
-| "I know the Lerian pattern" | Knowing ≠ proving. Show the structure. | **List Bootstrap steps explicitly** |
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for complete loading process.
 
 ## Application Type Detection (MANDATORY)
 
-**Before implementing, identify the application type:**
+**Standards Reference (MANDATORY WebFetch):**
 
-| Type | Characteristics | Components |
-|------|----------------|------------|
-| **API Only** | HTTP endpoints, no async processing | Handlers, Services, Repositories |
-| **API + Worker** | HTTP endpoints + async message processing | All above + Consumers, Producers |
-| **Worker Only** | No HTTP, only message processing | Consumers, Services, Repositories |
+| Standards File | Section to Load | Anchor |
+|----------------|-----------------|--------|
+| golang.md | RabbitMQ Worker Pattern | #rabbitmq-worker-pattern |
 
-### Detection Steps
+**Before implementing, detect application type from codebase:**
 
 ```text
-1. Check for existing RabbitMQ/message queue code:
-   - Search for "rabbitmq", "amqp", "consumer", "producer" in codebase
-   - Check docker-compose.yml for rabbitmq service
-   - Check PROJECT_RULES.md for messaging configuration
-
-2. Identify application type:
-   - Has HTTP handlers + queue consumers → API + Worker
-   - Has HTTP handlers only → API Only
-   - Has queue consumers only → Worker Only
-
-3. Apply appropriate patterns based on type
+1. Search codebase for: "rabbitmq", "amqp", "consumer", "producer"
+2. Check docker-compose.yml for rabbitmq service
+3. Check PROJECT_RULES.md for messaging configuration
 ```
 
-**If task involves async processing or messaging → Worker patterns are MANDATORY.**
+| Type | Detection | Standards Sections to Apply |
+|------|-----------|----------------------------|
+| **API Only** | No queue code found | Bootstrap, Directory Structure |
+| **API + Worker** | HTTP + queue code | Bootstrap, Directory Structure, RabbitMQ Worker Pattern |
+| **Worker Only** | Only queue code | Bootstrap, RabbitMQ Worker Pattern |
 
-## Architecture Patterns
+**If task involves async processing → WebFetch "RabbitMQ Worker Pattern" section is MANDATORY.**
 
-You have deep expertise in Hexagonal Architecture and Clean Architecture. The **Lerian pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all Go services.
+## Architecture Patterns (MANDATORY)
 
-**→ For directory structure and architecture patterns, see Ring Go Standards (fetched via WebFetch) → Directory Structure section.**
+**Standards Reference (MANDATORY WebFetch):**
+
+| Standards File | Section to Load | Anchor |
+|----------------|-----------------|--------|
+| golang.md | Architecture Patterns | #architecture-patterns |
+| golang.md | Directory Structure | #directory-structure |
+
+The **Lerian pattern** (simplified hexagonal without explicit DDD folders) is MANDATORY for all Go services.
+
+**MANDATORY:** WebFetch golang.md and extract patterns from "Architecture Patterns" and "Directory Structure" sections.
 
 ## Test-Driven Development (TDD)
 

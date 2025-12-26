@@ -192,42 +192,42 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
-1. WebFetch `frontend.md` standards (Step 2 above)
-2. Find section "FORBIDDEN Patterns" in the fetched content
-3. **LIST the patterns you found** (proves you read them)
-4. If you cannot list them → STOP, WebFetch failed or section not found
+**Standards Reference (MANDATORY WebFetch):**
 
-**Required Output BEFORE implementation:**
+| Standards File | Sections to Load | Anchor |
+|----------------|------------------|--------|
+| frontend.md | Forbidden Patterns | #forbidden-patterns |
+| frontend.md | Accessibility | #accessibility |
 
-```
+**Process:**
+1. WebFetch `frontend.md` (URL in Standards Loading section above)
+2. Find "Forbidden Patterns" section → Extract all forbidden patterns
+3. Find "Accessibility" section → Extract a11y requirements
+4. **LIST ALL patterns you found** (proves you read the standards)
+5. If you cannot list them → STOP, WebFetch failed
+
+**Output Format (MANDATORY):**
+
+```markdown
 ## FORBIDDEN Patterns Acknowledged
 
-I have loaded frontend.md standards. FORBIDDEN patterns:
-- `any` type in TypeScript ❌
-- Inline styles (use design system) ❌
-- `console.log()` in production code ❌
-- Missing accessibility attributes ❌
-- Direct DOM manipulation in React ❌
-- Uncontrolled form inputs without reason ❌
+I have loaded frontend.md standards via WebFetch.
 
-I will use instead:
-- Strict TypeScript types ✅
-- Design system components/tokens ✅
-- Proper error boundaries ✅
-- ARIA attributes and semantic HTML ✅
-- React state management ✅
-- Controlled components with validation ✅
+### From "Forbidden Patterns" section:
+[LIST all FORBIDDEN patterns found in the standards file]
+
+### From "Accessibility" section:
+[LIST the a11y requirements from the standards file]
+
+### Correct Alternatives (from standards):
+[LIST the correct alternatives found in the standards file]
 ```
 
-**If this acknowledgment is missing from your output → Implementation is INVALID.**
+**⛔ CRITICAL: Do NOT hardcode patterns. Extract them from WebFetch result.**
 
-**Anti-Rationalization:**
+**If this acknowledgment is missing → Implementation is INVALID.**
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "I know the FORBIDDEN patterns" | Knowing ≠ proving. List them. | **List patterns from WebFetch** |
-| "Acknowledgment is bureaucracy" | Acknowledgment proves compliance. | **Include acknowledgment** |
-| "I'll just avoid inline styles" | Implicit ≠ explicit verification. | **List ALL FORBIDDEN patterns** |
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for complete loading process.
 
 ## Project Standards Integration
 
@@ -864,10 +864,10 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 | 6 | Typography Standards (MANDATORY) |
 | 7 | Animation Standards (MANDATORY) |
 | 8 | Component Patterns (MANDATORY) |
-| 9 | Accessibility (a11y) (MANDATORY) |
+| 9 | Accessibility (MANDATORY) |
 | 10 | Performance (MANDATORY) |
 | 11 | Directory Structure (MANDATORY) |
-| 12 | FORBIDDEN Patterns (MANDATORY) |
+| 12 | Forbidden Patterns (MANDATORY) |
 | 13 | Standards Compliance Categories (MANDATORY) |
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
