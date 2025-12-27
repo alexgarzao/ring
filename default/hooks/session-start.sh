@@ -91,6 +91,94 @@ State assumption → Explain why → Note what would change it
 **Full pattern:** See shared-patterns/doubt-triggered-questions.md
 '
 
+# Find active ledger (most recently modified) - SAFE implementation
+# Fixes: GNU/Linux data leak, symlink following, command injection
+find_active_ledger() {
+    local ledger_dir="$1"
+
+    [[ ! -d "$ledger_dir" ]] && echo "" && return 0
+
+    local newest=""
+    local newest_time=0
+
+    # Safe iteration with null-terminated paths
+    while IFS= read -r -d '' file; do
+        # Security: Reject symlinks explicitly
+        if [[ -L "$file" ]]; then
+            echo "Warning: Skipping symlink: $file" >&2
+            continue
+        fi
+
+        # Get modification time (portable across macOS/Linux)
+        local mtime
+        if [[ "$(uname)" == "Darwin" ]]; then
+            mtime=$(stat -f %m "$file" 2>/dev/null || echo 0)
+        else
+            mtime=$(stat -c %Y "$file" 2>/dev/null || echo 0)
+        fi
+
+        if (( mtime > newest_time )); then
+            newest_time=$mtime
+            newest="$file"
+        fi
+    done < <(find "$ledger_dir" -maxdepth 1 -name "CONTINUITY-*.md" -type f -print0 2>/dev/null)
+
+    echo "$newest"
+}
+
+# Detect and load active continuity ledger
+detect_active_ledger() {
+    local project_root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+    local ledger_dir="${project_root}/.ring/ledgers"
+    local active_ledger=""
+    local ledger_content=""
+
+    # Check if ledger directory exists
+    if [[ ! -d "$ledger_dir" ]]; then
+        echo ""
+        return 0
+    fi
+
+    # Find most recently modified ledger (safe implementation)
+    active_ledger=$(find_active_ledger "$ledger_dir")
+
+    if [[ -z "$active_ledger" ]]; then
+        echo ""
+        return 0
+    fi
+
+    # Read ledger content
+    ledger_content=$(cat "$active_ledger" 2>/dev/null || echo "")
+
+    if [[ -z "$ledger_content" ]]; then
+        echo ""
+        return 0
+    fi
+
+    # Extract current phase (line with [->] marker)
+    local current_phase=""
+    current_phase=$(grep -E '\[->' "$active_ledger" 2>/dev/null | head -1 | sed 's/^[[:space:]]*//' || echo "")
+
+    # Format output
+    local ledger_name
+    ledger_name=$(basename "$active_ledger" .md)
+
+    cat <<LEDGER_EOF
+## Active Continuity Ledger: ${ledger_name}
+
+**Current Phase:** ${current_phase:-"No active phase marked"}
+
+<continuity-ledger-content>
+${ledger_content}
+</continuity-ledger-content>
+
+**Instructions:**
+1. Review the State section - find [->] for current work
+2. Check Open Questions for UNCONFIRMED items
+3. Continue from where you left off
+LEDGER_EOF
+}
+
 # Generate skills overview with cascading fallback
 # Priority: Python+PyYAML > Python regex > Bash fallback > Error message
 generate_skills_overview() {
@@ -130,6 +218,9 @@ generate_skills_overview() {
 
 skills_overview=$(generate_skills_overview || echo "Error generating skills quick reference")
 
+# Detect active ledger (if any)
+ledger_context=$(detect_active_ledger)
+
 # Source shared JSON escaping utility
 SHARED_LIB="${PLUGIN_ROOT}/../shared/lib"
 if [[ -f "${SHARED_LIB}/json-escape.sh" ]]; then
@@ -158,13 +249,22 @@ fi
 overview_escaped=$(json_escape "$skills_overview")
 critical_rules_escaped=$(json_escape "$CRITICAL_RULES")
 doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
+ledger_context_escaped=$(json_escape "$ledger_context")
+
+# Build additionalContext with optional ledger section
+additional_context="<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
+
+# Append ledger context if present
+if [[ -n "$ledger_context" ]]; then
+    additional_context="${additional_context}\n\n<ring-continuity-ledger>\n${ledger_context_escaped}\n</ring-continuity-ledger>"
+fi
 
 # Build JSON output
 cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
+    "additionalContext": "${additional_context}"
   }
 }
 EOF
