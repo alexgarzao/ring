@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS plans (
 CREATE TABLE IF NOT EXISTS continuity (
     id TEXT PRIMARY KEY,
     session_name TEXT NOT NULL,
+    file_path TEXT,
 
     -- State
     goal TEXT,
