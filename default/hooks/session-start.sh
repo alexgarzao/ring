@@ -19,55 +19,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 MONOREPO_ROOT="$(cd "${PLUGIN_ROOT}/.." && pwd)"
 
-# Auto-update Ring marketplace and plugins (using safe git pull, not destructive CLI)
-marketplace_updated="false"
-if command -v git &> /dev/null; then
-    # Detect marketplace path (common locations)
-    marketplace_path=""
-    for path in ~/.claude/plugins/marketplaces/ring ~/.config/claude/plugins/marketplaces/ring ~/Library/Application\ Support/Claude/plugins/marketplaces/ring; do
-        if [ -d "$path/.git" ]; then
-            marketplace_path="$path"
-            break
-        fi
-    done
-
-    if [ -n "$marketplace_path" ]; then
-        # Safe update using git pull (non-destructive)
-        # Get current commit hash before update
-        before_hash=$(git -C "$marketplace_path" rev-parse HEAD 2>/dev/null || echo "none")
-
-        # Use git pull directly - NEVER use 'claude plugin marketplace update' as it deletes before cloning
-        # Try to fetch and pull (fast-forward only to avoid merge conflicts)
-        if git -C "$marketplace_path" fetch --quiet 2>/dev/null; then
-            # Only pull if we're on a branch (not detached HEAD)
-            current_branch=$(git -C "$marketplace_path" symbolic-ref --short HEAD 2>/dev/null || echo "")
-            if [ -n "$current_branch" ]; then
-                git -C "$marketplace_path" pull --ff-only --quiet 2>/dev/null || true
-            fi
-        fi
-
-        # Get commit hash after update
-        after_hash=$(git -C "$marketplace_path" rev-parse HEAD 2>/dev/null || echo "none")
-
-        # If hashes differ, marketplace was actually updated
-        if [ "$before_hash" != "$after_hash" ] && [ "$after_hash" != "none" ]; then
-            marketplace_updated="true"
-            # Reinstall all plugins to get new versions (only if claude CLI available)
-            if command -v claude &> /dev/null; then
-                claude plugin install ring-default &> /dev/null || true
-                claude plugin install ring-dev-team &> /dev/null || true
-                claude plugin install ring-finops-team &> /dev/null || true
-                claude plugin install ring-pm-team &> /dev/null || true
-                claude plugin install ring-tw-team &> /dev/null || true
-            fi
-        fi
-    fi
-    # NOTE: If marketplace not found, do NOT try to install it automatically.
-    # The destructive 'claude plugin marketplace update' command can fail and leave
-    # the user with no marketplace at all. User should manually run:
-    #   claude plugin marketplace add lerianstudio/ring
-fi
-
 # Auto-install PyYAML if Python is available but PyYAML is not
 if command -v python3 &> /dev/null; then
     if ! python3 -c "import yaml" &> /dev/null 2>&1; then
@@ -208,18 +159,8 @@ overview_escaped=$(json_escape "$skills_overview")
 critical_rules_escaped=$(json_escape "$CRITICAL_RULES")
 doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
 
-# Build JSON output - include update notification if marketplace was updated
-if [ "$marketplace_updated" = "true" ]; then
-  cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "<ring-marketplace-updated>\nThe Ring marketplace was just updated to a new version. New skills and agents have been installed but won't be available until the session is restarted. Inform the user they should restart their session (type 'clear' or restart Claude Code) to load the new capabilities.\n</ring-marketplace-updated>\n\n<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
-  }
-}
-EOF
-else
-  cat <<EOF
+# Build JSON output
+cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
@@ -227,6 +168,5 @@ else
   }
 }
 EOF
-fi
 
 exit 0
