@@ -108,9 +108,37 @@ Updated: <ISO timestamp>
 
 **Why checkboxes in files:** TodoWrite survives compaction, but the *understanding* around those todos degrades each time context is compressed. File-based checkboxes are never compressed - full fidelity preserved.
 
-### 4. Update Guidelines
+### 4. Real-Time Update Rule (MANDATORY)
+
+**⛔ HARD GATE: Update ledger IMMEDIATELY after completing ANY phase.**
+
+You (the AI) are the one doing the work. You know exactly when:
+- A phase is complete
+- A decision is made
+- An open question is resolved
+
+**There is NO excuse to wait for the user to ask.** This is the same discipline as `TodoWrite` - update in real-time.
+
+| After This Event | MUST Do This | Before |
+|------------------|--------------|--------|
+| Complete a phase | Mark `[x]`, move `[->]` to next | Proceeding to next phase |
+| All phases done | Add `Status: COMPLETED` | Telling user "done" |
+| Make key decision | Add to Key Decisions section | Moving on |
+| Resolve open question | Change UNCONFIRMED → CONFIRMED | Proceeding |
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I'll update after I finish" | You'll forget. State drifts. User asks why ledger is stale. | **Update NOW** |
+| "It's just one phase" | One phase becomes three. Ledger shows Phase 2 when you're on Phase 5. | **Update NOW** |
+| "User will ask me to update" | User shouldn't have to. You're the AI doing the work. You know. | **Update NOW** |
+| "I'm in the flow, don't want to stop" | 10 seconds to update vs. explaining why ledger is wrong later. | **Update NOW** |
+
+### 5. Update Guidelines
 
 **When to update the ledger:**
+- **IMMEDIATELY after completing a phase** (MANDATORY - see above)
 - Session start: Read and refresh
 - After major decisions
 - Before `/clear`
@@ -122,8 +150,9 @@ Updated: <ISO timestamp>
 - Update "Now" with current focus
 - Add new decisions as they're made
 - Mark items as UNCONFIRMED if uncertain
+- Add `Status: COMPLETED` when all phases done
 
-### 5. After Clear Recovery
+### 6. After Clear Recovery
 
 When resuming after `/clear`:
 
