@@ -161,7 +161,7 @@ User must explicitly say:
 
 #### For Rules:
 
-Create file at `default/rules/<slug>.md` with:
+Create file at `.ring/generated/rules/<slug>.md` with:
 - Rule name and context
 - Pattern description
 - DO / DON'T sections
@@ -169,7 +169,7 @@ Create file at `default/rules/<slug>.md` with:
 
 #### For Skills:
 
-Create directory `default/skills/<slug>/` with `SKILL.md` containing:
+Create directory `.ring/generated/skills/<slug>/` with `SKILL.md` containing:
 - YAML frontmatter (name, description)
 - Overview (what it does)
 - When to Use (triggers)
@@ -177,10 +177,16 @@ Create directory `default/skills/<slug>/` with `SKILL.md` containing:
 - Step-by-step process
 - Source sessions
 
+**Note:** Generated skills are project-local. To make them discoverable, add to your project's `CLAUDE.md`:
+```markdown
+## Project-Specific Skills
+See `.ring/generated/skills/` for learnings-based skills.
+```
+
 #### For Hooks:
 
-Create shell wrapper + Python handler following Ring's hook patterns.
-Register in `default/hooks/hooks.json`.
+Create in `.ring/generated/hooks/<name>.sh` following Ring's hook patterns.
+Register in project's `.claude/hooks.json` (not plugin's hooks.json).
 
 ### Step 8: Archive Processed Learnings
 
@@ -237,9 +243,15 @@ Before creating any artifact:
 
 ## Files Reference
 
+**Project-local data (per-project):**
 - Learnings input: `.ring/cache/learnings/*.md`
 - Proposals: `.ring/cache/proposals/pending.json`
 - History: `.ring/cache/proposals/history.json`
-- Rules output: `default/rules/<name>.md`
-- Skills output: `default/skills/<name>/SKILL.md`
-- Hooks output: `default/hooks/<name>.sh`
+- Generated rules: `.ring/generated/rules/<name>.md`
+- Generated skills: `.ring/generated/skills/<name>/SKILL.md`
+- Generated hooks: `.ring/generated/hooks/<name>.sh`
+
+**Plugin code (shared, read-only):**
+- Library: `default/lib/compound_learnings/`
+- Skill: `default/skills/compound-learnings/SKILL.md`
+- Command: `default/commands/compound-learnings.md`

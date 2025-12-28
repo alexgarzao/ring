@@ -126,7 +126,7 @@ No `.ring/cache/learnings/*.md` files exist. Complete some sessions with outcome
 Fewer than 3 learning files. Continue working - patterns emerge after multiple sessions.
 
 ### "Pattern already exists"
-Check `default/rules/` and `default/skills/` - a similar rule or skill may already exist.
+Check `.ring/generated/rules/` and `.ring/generated/skills/` in your project, or `default/rules/` and `default/skills/` in the plugin - a similar rule or skill may already exist.
 
 ### "Proposal not found"
 The proposal ID doesn't exist in pending.json. Run `/compound-learnings --list` to see current proposals.
