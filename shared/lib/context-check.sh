@@ -119,7 +119,7 @@ EOF
 <context-warning severity="warning">
 $icon $message
 
-Suggested: /continuity-ledger to save state before clearing.
+Suggested: /create-handoff to save state before clearing.
 </context-warning>
 EOF
     else
