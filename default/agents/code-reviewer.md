@@ -1,11 +1,12 @@
 ---
 name: code-reviewer
-version: 3.2.0
+version: 3.3.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with business-logic-reviewer and security-reviewer for fast feedback."
 type: reviewer
 model: opus
-last_updated: 2025-12-14
+last_updated: 2025-12-28
 changelog:
+  - 3.3.0: Add AI Slop Detection section - dependency verification, evidence-of-reading, overengineering detection, scope boundary checks, hallucination indicators
   - 3.2.0: Add Model Requirements section - MANDATORY Opus verification before review
   - 3.1.0: Add mandatory "When Code Review is Not Needed" section per CLAUDE.md compliance requirements
   - 3.0.0: Initial versioned release with parallel execution support and structured output schema
@@ -279,6 +280,56 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 - [ ] Logging is appropriate (not too verbose, not too sparse)
 - [ ] Configuration is externalized (not hardcoded)
 
+### 8. AI Slop Detection ⭐ MANDATORY
+
+**Reference:** See [shared-patterns/ai-slop-detection.md](../skills/shared-patterns/ai-slop-detection.md) for complete detection patterns.
+
+**MANDATORY checks for AI-generated code quality:**
+
+#### Dependency Verification
+- [ ] ALL new imports/dependencies verified to exist in registry
+- [ ] No morpheme-spliced package names (`graphit-orm`, `wave-socket`)
+- [ ] No cross-ecosystem borrowing (npm package in Python)
+- [ ] No typo-adjacent names (`lodahs`, `requets`)
+- [ ] Package age and download counts reasonable for functionality
+
+#### Evidence-of-Reading Verification
+- [ ] New code matches existing patterns in codebase
+- [ ] Import paths consistent with similar files
+- [ ] Error handling style matches project conventions
+- [ ] Naming conventions match surrounding code
+- [ ] Type usage consistent with codebase (no `any` in strict codebase)
+- [ ] Test patterns match project's testing style
+- [ ] Logging patterns match adjacent functions
+
+#### Overengineering Detection
+- [ ] No single-implementation interfaces (unless justified)
+- [ ] No factories for simple object creation
+- [ ] No strategy pattern with single strategy
+- [ ] No generic<T> used for only one type
+- [ ] No event system for single subscriber
+- [ ] No premature configuration externalization
+- [ ] Abstractions have clear, current justification (not "future use")
+
+#### Scope Boundary Check
+- [ ] All changed files were mentioned in requirements
+- [ ] No "while I was here" refactoring without justification
+- [ ] No new utility files created without explicit request
+- [ ] Deleted code was explicitly requested to be removed
+
+#### Hallucination Indicators
+- [ ] No "likely", "probably", "should work" in comments
+- [ ] No placeholder implementations (`// TODO: implement properly`)
+- [ ] No generic error messages (`throw new Error('Something went wrong')`)
+- [ ] No APIs/methods called that don't exist in library version
+
+**Severity for AI Slop Issues:**
+- **Phantom dependency (doesn't exist):** CRITICAL - automatic FAIL
+- **3+ overengineering patterns:** HIGH
+- **Scope creep (new files not requested):** HIGH
+- **Missing evidence of reading existing code:** MEDIUM
+- **Hallucination language in comments:** MEDIUM
+
 ---
 
 ## Severity Calibration
@@ -486,6 +537,13 @@ I've provided detailed remediation steps in the issues section above."
 | "Previous review approved similar code" | Past approval ≠ current correctness. Standards evolve. Each review is independent. | **Review ALL checklist categories** |
 | "Code has been in production for weeks" | Production duration ≠ correctness. You're reviewing changes, not past decisions. | **Review current changes thoroughly** |
 | "It's just refactoring, no behavior change" | Refactoring can introduce bugs. Logic errors, missing error handling, broken flows are possible. | **Review ALL checklist categories** |
+| "This package is standard/common" | AI hallucinates plausible package names. "Common" doesn't mean "exists". | **Verify package exists in registry before approving** |
+| "Code follows best practices" | AI applies patterns mechanically. Pattern application ≠ appropriate application. | **Verify patterns are warranted, not over-engineered** |
+| "Interface added for testability" | Single-implementation interfaces are often AI slop. DI doesn't require interfaces. | **Question if abstraction is actually needed** |
+| "Added for future extensibility" | YAGNI. AI adds abstractions for hypothetical futures. | **Remove unless in explicit requirements** |
+| "Needed to complete the implementation" | Out-of-scope additions should be in requirements first. | **Flag scope creep, require justification** |
+| "Standard library for this use case" | AI may have hallucinated the package. | **Verify dependency exists in registry** |
+| "Matches patterns I've seen in similar projects" | AI uses training data patterns, may not match THIS codebase. | **Compare against actual codebase patterns** |
 
 **Remember:**
 - Assumption ≠ Verification

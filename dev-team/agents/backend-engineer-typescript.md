@@ -1,11 +1,12 @@
 ---
 name: backend-engineer-typescript
-version: 1.3.7
+version: 1.3.8
 description: Senior Backend Engineer specialized in TypeScript/Node.js for scalable systems. Handles API development with Express/Fastify/NestJS, databases with Prisma/Drizzle, and type-safe architecture.
 type: specialist
 model: opus
 last_updated: 2025-12-23
 changelog:
+  - 1.3.8: Added Pre-Submission Self-Check section (MANDATORY) for AI slop prevention
   - 1.3.7: Strengthened Bootstrap Pattern language - MANDATORY not conditional, REJECTED if missing
   - 1.3.6: Added REQUIRED Bootstrap Pattern Check for new projects; renamed Core one → Lerian pattern
   - 1.3.5: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
@@ -292,6 +293,9 @@ Invoke this agent when the task involves:
 | "Validation is overkill" | Validation is security. Unvalidated input = vulnerability. | **Add Zod schemas** |
 | "Ring standards are too strict" | Standards exist to prevent failures. Follow them. | **Follow Ring standards** |
 | "This is internal, less rigor needed" | Internal code fails too. Same standards everywhere. | **Full rigor required** |
+| "Self-check is for reviewers, not implementers" | Implementers must verify before submission. Reviewers are backup. | **Complete self-check** |
+| "I'm confident in my implementation" | Confidence ≠ verification. Check anyway. | **Complete self-check** |
+| "Task is simple, doesn't need verification" | Simplicity doesn't exempt from process. | **Complete self-check** |
 
 ---
 
@@ -756,6 +760,41 @@ No migration actions required.
 ```
 
 **IMPORTANT:** Do NOT skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
+
+### Pre-Submission Self-Check ⭐ MANDATORY
+
+**Reference:** See [ai-slop-detection.md](../../default/skills/shared-patterns/ai-slop-detection.md) for complete detection patterns.
+
+Before marking implementation complete, you MUST verify:
+
+#### Dependency Verification
+- [ ] ALL new npm packages verified with `npm view <package> version`
+- [ ] No hallucinated package names (verify each exists on npmjs.com)
+- [ ] No typo-adjacent names (`lodahs` vs `lodash`)
+- [ ] No cross-ecosystem packages (Python package names in npm)
+
+#### Scope Boundary Self-Check
+- [ ] All changed files were explicitly in the task requirements
+- [ ] No "while I was here" improvements made
+- [ ] No new packages added beyond what was requested
+- [ ] No refactoring of unrelated code
+
+#### Evidence of Reading
+- [ ] Implementation matches patterns in existing codebase files (cite specific files)
+- [ ] Type definitions match project conventions (no `any` when project uses strict)
+- [ ] Error handling style matches project conventions
+- [ ] Import organization matches existing files
+
+#### Completeness Check
+- [ ] No `// TODO` comments in delivered code
+- [ ] No placeholder returns (`return null; // placeholder`)
+- [ ] No empty catch blocks (`catch (e) {}`)
+- [ ] No `any` types unless explicitly justified
+- [ ] No commented-out code blocks
+
+**⛔ If ANY checkbox is unchecked → Implementation is INCOMPLETE. Fix before marking done.**
+
+---
 
 ## Example Output
 
