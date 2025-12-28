@@ -19,6 +19,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 MONOREPO_ROOT="$(cd "${PLUGIN_ROOT}/.." && pwd)"
 
+# Reset context usage state on session start
+# This ensures fresh estimates after /clear or compact
+reset_context_state() {
+    local session_id="${CLAUDE_SESSION_ID:-$PPID}"
+    local project_dir="${CLAUDE_PROJECT_DIR:-.}"
+
+    # REQUIRED: Validate session ID - alphanumeric, hyphens, underscores only
+    if [[ ! "$session_id" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+        # Invalid session ID, skip cleanup (don't risk path traversal)
+        return 0
+    fi
+
+    # Clear state files for this session
+    rm -f "${project_dir}/.ring/state/context-usage-${session_id}.json" 2>/dev/null || true
+    rm -f "/tmp/context-usage-${session_id}.json" 2>/dev/null || true
+}
+
+# Always reset context state on SessionStart
+# (whether startup, resume, clear, or compact)
+reset_context_state
+
 # Auto-install PyYAML if Python is available but PyYAML is not
 if command -v python3 &> /dev/null; then
     if ! python3 -c "import yaml" &> /dev/null 2>&1; then
