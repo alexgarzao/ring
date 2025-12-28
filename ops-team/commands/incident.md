@@ -130,3 +130,20 @@ Expected: [timestamp]
 | "It's a small incident, skip formal process" | **All incidents follow same structure** |
 | "Document later" | **Document in real-time** |
 | "Skip stakeholder communication" | **Communication is mandatory** |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: ops-incident-response
+```
+
+The skill contains the complete workflow with:
+- Severity classification (SEV1-SEV4)
+- Incident timeline tracking
+- Stakeholder communication templates
+- Post-incident review framework
+- Escalation procedures

@@ -177,3 +177,20 @@ Combine findings from both specialists into comprehensive capacity plan.
 | "Current capacity is fine" | **Verify with data, not assumptions** |
 | "We can scale when needed" | **Proactive > reactive** |
 | "Too expensive to over-provision" | **Outage cost > over-provision cost** |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: ops-capacity-planning
+```
+
+The skill contains the complete workflow with:
+- Capacity baseline assessment
+- Utilization trend analysis
+- Growth forecasting methodology
+- Gap analysis framework
+- Scaling recommendations

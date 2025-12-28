@@ -189,3 +189,20 @@ Next steps:
 | positioning-development | Create positioning strategy |
 | pricing-strategy | Inform pricing decisions |
 | gtm-planning | Plan go-to-market |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: market-analysis
+```
+
+The skill contains the complete workflow with:
+- Market sizing methodology (TAM/SAM/SOM)
+- Segment analysis framework
+- Competitor landscape mapping
+- ICP definition process
+- Data source integration

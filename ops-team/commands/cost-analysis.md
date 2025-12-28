@@ -214,3 +214,20 @@ Additional output:
 | "Small savings not worth it" | **All savings compound over time** |
 | "Can optimize later" | **Later = never. Optimize now.** |
 | "Too risky to change" | **Data-driven changes are low risk** |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: ops-cost-optimization
+```
+
+The skill contains the complete workflow with:
+- Cost breakdown analysis
+- Rightsizing recommendations
+- Reserved instance optimization
+- Cost anomaly detection
+- ROI calculation framework

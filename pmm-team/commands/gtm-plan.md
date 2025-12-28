@@ -239,3 +239,20 @@ Next steps:
 | 4 | pricing-strategy | pricing-analyst | pricing-strategy.md |
 | 5 | gtm-planning | gtm-planner | gtm-plan.md |
 | 6 | launch-execution | launch-coordinator | launch-plan.md |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: gtm-planning
+```
+
+The skill contains the complete workflow with:
+- GTM strategy framework
+- Channel selection and prioritization
+- Budget allocation methodology
+- Timeline and milestone planning
+- Launch tier definitions

@@ -239,3 +239,20 @@ Skill tool: "competitive-intelligence"
 ```
 
 This provides the analysis framework without the full command workflow.
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: competitive-intelligence
+```
+
+The skill contains the complete workflow with:
+- Competitor categorization (direct/indirect/potential)
+- Feature matrix creation
+- Battlecard generation
+- Win/loss analysis framework
+- Competitive tracking plan
