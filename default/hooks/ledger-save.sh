@@ -87,12 +87,9 @@ main() {
 
     if [[ -z "$active_ledger" ]]; then
         # No active ledger - nothing to save
-        cat <<EOF
+        cat <<'EOF'
 {
-  "hookSpecificOutput": {
-    "hookEventName": "LedgerSave",
-    "message": "No active ledger found. Nothing to save."
-  }
+  "result": "continue"
 }
 EOF
         exit 0
@@ -119,10 +116,8 @@ EOF
 
     cat <<EOF
 {
-  "hookSpecificOutput": {
-    "hookEventName": "LedgerSave",
-    "additionalContext": "${message_escaped}"
-  }
+  "result": "continue",
+  "message": "${message_escaped}"
 }
 EOF
 }
