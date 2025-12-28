@@ -139,7 +139,7 @@ Present each proposal in this format:
 **Draft Content:**
 [Preview of what would be created]
 
-**Target Location:** `default/rules/[name].md` or `default/skills/[name]/SKILL.md`
+**Target Location:** `.ring/generated/rules/[name].md` or `.ring/generated/skills/[name]/SKILL.md`
 
 **Your Action:** [APPROVE] / [REJECT] / [MODIFY]
 
@@ -158,6 +158,14 @@ User must explicitly say:
 **NEVER assume approval. NEVER create without explicit consent.**
 
 ### Step 7: Create Approved Artifacts
+
+#### Before Creating Any Artifact:
+Ensure the target directories exist:
+```bash
+mkdir -p $PROJECT_ROOT/.ring/generated/rules
+mkdir -p $PROJECT_ROOT/.ring/generated/skills
+mkdir -p $PROJECT_ROOT/.ring/generated/hooks
+```
 
 #### For Rules:
 
@@ -228,7 +236,7 @@ Before creating any artifact:
 
 1. **Is it general enough?** Would it apply in other projects?
 2. **Is it specific enough?** Does it give concrete guidance?
-3. **Does it already exist?** Check `default/rules/` and `default/skills/` first
+3. **Does it already exist?** Check `.ring/generated/rules/` and `.ring/generated/skills/` first
 4. **Is it the right type?** Sequences → skills, heuristics → rules
 
 ## Common Mistakes
