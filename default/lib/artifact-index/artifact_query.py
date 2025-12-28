@@ -117,22 +117,18 @@ def query_for_planning(conn: sqlite3.Connection, topic: str, limit: int = 5) -> 
         results["query_time_ms"] = int((time.time() - start_time) * 1000)
         return results
 
-    # Query all handoffs matching topic
-    # TODO(review): Consider separate queries for success/failure categories to ensure
-    # failed handoffs aren't missed when successes dominate top results.
-    # Current approach is acceptable for performance. (business-logic-reviewer, Medium)
-    all_handoffs = search_handoffs(conn, topic, outcome=None, limit=limit * 3)
+    # Query success and failure categories separately to ensure representation
+    # This prevents successful handoffs from crowding out failures in results
 
-    # Filter by outcome
-    results["successful_handoffs"] = [
-        h for h in all_handoffs
-        if h.get("outcome") in ("SUCCEEDED", "PARTIAL_PLUS")
-    ][:limit]
+    # Get successful handoffs (SUCCEEDED and PARTIAL_PLUS)
+    succeeded = search_handoffs(conn, topic, outcome="SUCCEEDED", limit=limit)
+    partial_plus = search_handoffs(conn, topic, outcome="PARTIAL_PLUS", limit=limit)
+    results["successful_handoffs"] = (succeeded + partial_plus)[:limit]
 
-    results["failed_handoffs"] = [
-        h for h in all_handoffs
-        if h.get("outcome") in ("FAILED", "PARTIAL_MINUS")
-    ][:limit]
+    # Get failed handoffs (FAILED and PARTIAL_MINUS)
+    failed = search_handoffs(conn, topic, outcome="FAILED", limit=limit)
+    partial_minus = search_handoffs(conn, topic, outcome="PARTIAL_MINUS", limit=limit)
+    results["failed_handoffs"] = (failed + partial_minus)[:limit]
 
     # Query relevant plans (capped at 3 for context size, limit controls handoffs only)
     results["relevant_plans"] = search_plans(conn, topic, limit=min(limit, 3))
