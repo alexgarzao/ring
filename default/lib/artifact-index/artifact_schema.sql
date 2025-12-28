@@ -259,6 +259,15 @@ CREATE TRIGGER IF NOT EXISTS learnings_au AFTER UPDATE ON learnings BEGIN
     VALUES (NEW.rowid, NEW.description, NEW.context, NEW.recommendation);
 END;
 
+-- Auto-update updated_at timestamp on learnings modification
+CREATE TRIGGER IF NOT EXISTS learnings_update_timestamp
+AFTER UPDATE ON learnings
+FOR EACH ROW
+WHEN NEW.updated_at = OLD.updated_at
+BEGIN
+    UPDATE learnings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
 -- ============================================================================
 -- INDEXES (Performance optimization)
 -- ============================================================================
@@ -272,6 +281,8 @@ CREATE INDEX IF NOT EXISTS idx_plans_created ON plans(created_at);
 
 CREATE INDEX IF NOT EXISTS idx_continuity_session ON continuity(session_name);
 CREATE INDEX IF NOT EXISTS idx_continuity_reason ON continuity(snapshot_reason);
+
+CREATE INDEX IF NOT EXISTS idx_queries_created ON queries(created_at);
 
 CREATE INDEX IF NOT EXISTS idx_learnings_type ON learnings(pattern_type);
 CREATE INDEX IF NOT EXISTS idx_learnings_promoted ON learnings(promoted_to);
@@ -295,26 +306,30 @@ LIMIT 100;
 -- Success patterns (for compound learning)
 CREATE VIEW IF NOT EXISTS success_patterns AS
 SELECT
-    h.task_summary,
-    h.what_worked,
-    h.key_decisions,
+    what_worked,
+    GROUP_CONCAT(DISTINCT task_summary, ' | ') as task_summaries,
+    GROUP_CONCAT(DISTINCT key_decisions, ' | ') as key_decisions_list,
     COUNT(*) as occurrence_count
-FROM handoffs h
-WHERE h.outcome IN ('SUCCEEDED', 'PARTIAL_PLUS')
-GROUP BY h.what_worked
+FROM handoffs
+WHERE outcome IN ('SUCCEEDED', 'PARTIAL_PLUS')
+  AND what_worked IS NOT NULL
+  AND what_worked != ''
+GROUP BY what_worked
 HAVING COUNT(*) >= 2
 ORDER BY occurrence_count DESC;
 
 -- Failure patterns (for compound learning)
 CREATE VIEW IF NOT EXISTS failure_patterns AS
 SELECT
-    h.task_summary,
-    h.what_failed,
-    h.outcome_notes,
+    what_failed,
+    GROUP_CONCAT(DISTINCT task_summary, ' | ') as task_summaries,
+    GROUP_CONCAT(DISTINCT outcome_notes, ' | ') as outcome_notes_list,
     COUNT(*) as occurrence_count
-FROM handoffs h
-WHERE h.outcome IN ('FAILED', 'PARTIAL_MINUS')
-GROUP BY h.what_failed
+FROM handoffs
+WHERE outcome IN ('FAILED', 'PARTIAL_MINUS')
+  AND what_failed IS NOT NULL
+  AND what_failed != ''
+GROUP BY what_failed
 HAVING COUNT(*) >= 2
 ORDER BY occurrence_count DESC;
 
