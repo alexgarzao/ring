@@ -104,36 +104,42 @@ EOF
     mv "$temp_file" "$usage_file"
 }
 
-# Increment turn count in session state (with atomic write)
+# Increment turn count in session state (with atomic write and file locking)
 increment_turn_count() {
     local state_dir
     state_dir=$(get_ring_state_dir)
     local session_file="${state_dir}/current-session.json"
-    local temp_file="${session_file}.tmp.$$"
+    local lock_file="${session_file}.lock"
 
-    local turn_count=0
-    if [[ -f "$session_file" ]]; then
-        turn_count=$(get_json_field "$(cat "$session_file")" "turn_count" 2>/dev/null || echo "0")
-        if ! [[ "$turn_count" =~ ^[0-9]+$ ]]; then
-            turn_count=0
+    # Use flock for atomic read-modify-write
+    (
+        flock -x 200 || return 1
+
+        local temp_file="${session_file}.tmp.$$"
+        local turn_count=0
+        if [[ -f "$session_file" ]]; then
+            turn_count=$(get_json_field "$(cat "$session_file")" "turn_count" 2>/dev/null || echo "0")
+            if ! [[ "$turn_count" =~ ^[0-9]+$ ]]; then
+                turn_count=0
+            fi
         fi
-    fi
 
-    turn_count=$((turn_count + 1))
+        turn_count=$((turn_count + 1))
 
-    local timestamp
-    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        local timestamp
+        timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-    # Atomic write: write to temp file then rename
-    cat > "$temp_file" <<EOF
+        # Atomic write: write to temp file then rename
+        cat > "$temp_file" <<EOF
 {
   "turn_count": ${turn_count},
   "updated_at": "${timestamp}"
 }
 EOF
-    mv "$temp_file" "$session_file"
+        mv "$temp_file" "$session_file"
 
-    printf '%s' "$turn_count"
+        printf '%s' "$turn_count"
+    ) 200>"$lock_file"
 }
 
 # Reset turn count (call on session start, with atomic write)
