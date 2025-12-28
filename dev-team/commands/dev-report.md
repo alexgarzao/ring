@@ -108,3 +108,20 @@ ls .ring/dev-team/feedback/
 Now loading the most recent feedback report...
 
 Search for reports in: `.ring/dev-team/feedback/cycle-*.md`
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: dev-feedback-loop
+```
+
+The skill contains the complete workflow with:
+- Metrics collection from dev-cycle
+- Pattern analysis
+- Improvement recommendations
+- Report generation format
+- Historical comparison

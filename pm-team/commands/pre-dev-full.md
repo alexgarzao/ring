@@ -290,3 +290,39 @@ Next steps:
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate before proceeding
 - Planning investment (2-4 hours) pays off during implementation
+
+---
+
+## MANDATORY: Skills Orchestration
+
+**This command orchestrates multiple skills in a 9-gate workflow.**
+
+### Gate Sequence
+
+| Gate | Skill | Purpose |
+|------|-------|---------|
+| 0 | `pre-dev-research` | Domain/technical research |
+| 1 | `pre-dev-prd-creation` | Product requirements |
+| 2 | `pre-dev-feature-map` | Feature scope |
+| 3 | `pre-dev-trd-creation` | Technical requirements |
+| 4 | `pre-dev-api-design` | API contracts |
+| 5 | `pre-dev-data-model` | Data architecture |
+| 6 | `pre-dev-dependency-map` | Technology selection |
+| 7 | `pre-dev-task-breakdown` | Task decomposition |
+| 8 | `pre-dev-subtask-creation` | Implementation steps |
+
+### Execution Pattern
+
+```
+For each gate:
+  Use Skill tool: [gate-skill]
+  Wait for human approval
+  Proceed to next gate
+```
+
+Each skill contains its own:
+- Anti-rationalization tables
+- Gate pass criteria
+- Output format requirements
+
+**Do NOT skip gates.** Each gate builds on the previous gate's output.

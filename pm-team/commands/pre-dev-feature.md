@@ -180,3 +180,34 @@ Next steps:
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate
 - Technology decisions happen later in Dependency Map (not in this track)
+
+---
+
+## MANDATORY: Skills Orchestration
+
+**This command orchestrates multiple skills in a 4-gate workflow.**
+
+### Gate Sequence
+
+| Gate | Skill | Purpose |
+|------|-------|---------|
+| 0 | `pre-dev-research` | Domain and technical research |
+| 1 | `pre-dev-prd-creation` | Product requirements |
+| 2 | `pre-dev-trd-creation` | Technical requirements |
+| 3 | `pre-dev-task-breakdown` | Task decomposition |
+
+### Execution Pattern
+
+```
+For each gate:
+  Use Skill tool: [gate-skill]
+  Wait for human approval
+  Proceed to next gate
+```
+
+Each skill contains its own:
+- Anti-rationalization tables
+- Gate pass criteria
+- Output format requirements
+
+**Do NOT skip gates.** Each gate builds on the previous gate's output.

@@ -142,3 +142,20 @@ Queries should complete in < 100ms. If slow:
 
 1. Check database size: `ls -la .ring/cache/artifact-index/`
 2. Rebuild indexes: `python3 default/lib/artifact-index/artifact_index.py --all`
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: artifact-query
+```
+
+The skill contains the complete workflow with:
+- Query formulation guidance
+- Mode selection (search, planning)
+- Result interpretation
+- Learnings application
+- Index initialization

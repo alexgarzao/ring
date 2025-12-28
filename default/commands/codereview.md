@@ -234,3 +234,22 @@ Signs that a reviewer produced incomplete output:
 6. **Provide clear action guidance** - Tell user exactly what to fix vs. document
 7. **Overall FAIL if any reviewer fails** - One failure means work needs fixes
 8. **Retry failed reviewers once** - Don't give up on first failure
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: requesting-code-review
+```
+
+The skill contains the complete workflow with:
+- Auto-detection of git context (base_sha, head_sha, files)
+- Parallel dispatch of all 3 reviewers in single message
+- Issue aggregation by severity
+- Iteration loop with fix dispatching
+- Escalation handling at max iterations
+- Anti-rationalization tables
+- Pressure resistance scenarios
