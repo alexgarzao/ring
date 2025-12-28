@@ -9,8 +9,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 LEDGER_DIR="${PROJECT_ROOT}/.ring/ledgers"
 
-# Source shared JSON escaping utility
+# Source shared utilities
 SHARED_LIB="${SCRIPT_DIR}/../../shared/lib"
+
+# Source JSON escaping utility
 if [[ -f "${SHARED_LIB}/json-escape.sh" ]]; then
     # shellcheck source=/dev/null
     source "${SHARED_LIB}/json-escape.sh"
@@ -31,40 +33,29 @@ else
     }
 fi
 
-# Find active ledger (most recently modified) - SAFE implementation
-# Fixes: GNU/Linux data leak, symlink following, command injection
-find_active_ledger() {
-    local ledger_dir="$LEDGER_DIR"
-
-    [[ ! -d "$ledger_dir" ]] && echo "" && return 0
-
-    local newest=""
-    local newest_time=0
-
-    # Safe iteration with null-terminated paths
-    while IFS= read -r -d '' file; do
-        # Security: Reject symlinks explicitly
-        if [[ -L "$file" ]]; then
-            echo "Warning: Skipping symlink: $file" >&2
-            continue
-        fi
-
-        # Get modification time (portable across macOS/Linux)
-        local mtime
-        if [[ "$(uname)" == "Darwin" ]]; then
-            mtime=$(stat -f %m "$file" 2>/dev/null || echo 0)
-        else
-            mtime=$(stat -c %Y "$file" 2>/dev/null || echo 0)
-        fi
-
-        if (( mtime > newest_time )); then
-            newest_time=$mtime
-            newest="$file"
-        fi
-    done < <(find "$ledger_dir" -maxdepth 1 -name "CONTINUITY-*.md" -type f -print0 2>/dev/null)
-
-    echo "$newest"
-}
+# Source ledger utilities
+if [[ -f "${SHARED_LIB}/ledger-utils.sh" ]]; then
+    # shellcheck source=/dev/null
+    source "${SHARED_LIB}/ledger-utils.sh"
+else
+    # Fallback: define find_active_ledger locally if shared lib not found
+    find_active_ledger() {
+        local ledger_dir="$1"
+        [[ ! -d "$ledger_dir" ]] && echo "" && return 0
+        local newest="" newest_time=0
+        while IFS= read -r -d '' file; do
+            [[ -L "$file" ]] && continue
+            local mtime
+            if [[ "$(uname)" == "Darwin" ]]; then
+                mtime=$(stat -f %m "$file" 2>/dev/null || echo 0)
+            else
+                mtime=$(stat -c %Y "$file" 2>/dev/null || echo 0)
+            fi
+            (( mtime > newest_time )) && newest_time=$mtime && newest="$file"
+        done < <(find "$ledger_dir" -maxdepth 1 -name "CONTINUITY-*.md" -type f -print0 2>/dev/null)
+        echo "$newest"
+    }
+fi
 
 # Update ledger timestamp - SAFE implementation
 # Fixes: Silent failure when Updated: line missing
@@ -92,7 +83,7 @@ update_ledger_timestamp() {
 # Main logic
 main() {
     local active_ledger
-    active_ledger=$(find_active_ledger)
+    active_ledger=$(find_active_ledger "$LEDGER_DIR")
 
     if [[ -z "$active_ledger" ]]; then
         # No active ledger - nothing to save

@@ -112,40 +112,30 @@ State assumption → Explain why → Note what would change it
 **Full pattern:** See shared-patterns/doubt-triggered-questions.md
 '
 
-# Find active ledger (most recently modified) - SAFE implementation
-# Fixes: GNU/Linux data leak, symlink following, command injection
-find_active_ledger() {
-    local ledger_dir="$1"
-
-    [[ ! -d "$ledger_dir" ]] && echo "" && return 0
-
-    local newest=""
-    local newest_time=0
-
-    # Safe iteration with null-terminated paths
-    while IFS= read -r -d '' file; do
-        # Security: Reject symlinks explicitly
-        if [[ -L "$file" ]]; then
-            echo "Warning: Skipping symlink: $file" >&2
-            continue
-        fi
-
-        # Get modification time (portable across macOS/Linux)
-        local mtime
-        if [[ "$(uname)" == "Darwin" ]]; then
-            mtime=$(stat -f %m "$file" 2>/dev/null || echo 0)
-        else
-            mtime=$(stat -c %Y "$file" 2>/dev/null || echo 0)
-        fi
-
-        if (( mtime > newest_time )); then
-            newest_time=$mtime
-            newest="$file"
-        fi
-    done < <(find "$ledger_dir" -maxdepth 1 -name "CONTINUITY-*.md" -type f -print0 2>/dev/null)
-
-    echo "$newest"
-}
+# Source shared ledger utilities
+SHARED_LIB_LEDGER="${MONOREPO_ROOT}/shared/lib"
+if [[ -f "${SHARED_LIB_LEDGER}/ledger-utils.sh" ]]; then
+    # shellcheck source=/dev/null
+    source "${SHARED_LIB_LEDGER}/ledger-utils.sh"
+else
+    # Fallback: define find_active_ledger locally if shared lib not found
+    find_active_ledger() {
+        local ledger_dir="$1"
+        [[ ! -d "$ledger_dir" ]] && echo "" && return 0
+        local newest="" newest_time=0
+        while IFS= read -r -d '' file; do
+            [[ -L "$file" ]] && continue
+            local mtime
+            if [[ "$(uname)" == "Darwin" ]]; then
+                mtime=$(stat -f %m "$file" 2>/dev/null || echo 0)
+            else
+                mtime=$(stat -c %Y "$file" 2>/dev/null || echo 0)
+            fi
+            (( mtime > newest_time )) && newest_time=$mtime && newest="$file"
+        done < <(find "$ledger_dir" -maxdepth 1 -name "CONTINUITY-*.md" -type f -print0 2>/dev/null)
+        echo "$newest"
+    }
+fi
 
 # Detect and load active continuity ledger
 detect_active_ledger() {
