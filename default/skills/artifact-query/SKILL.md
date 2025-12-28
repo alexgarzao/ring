@@ -63,11 +63,36 @@ python3 default/lib/artifact-index/artifact_query.py "<keywords>" [options]
 ```
 
 **Options:**
+- `--mode search|planning` - Query mode (planning for structured precedent)
 - `--type handoffs|plans|continuity|all` - Filter by artifact type
 - `--outcome SUCCEEDED|FAILED|...` - Filter handoffs by outcome
 - `--limit N` - Maximum results (1-100, default: 5)
 - `--json` - Output as JSON for programmatic use
 - `--stats` - Show index statistics
+
+### Planning Mode (Recommended for write-plan)
+
+For structured precedent when creating implementation plans:
+
+```bash
+python3 default/lib/artifact-index/artifact_query.py --mode planning "feature topic" --json
+```
+
+Returns:
+- **successful_handoffs**: Past implementations that worked (reference these)
+- **failed_handoffs**: Past implementations that failed (avoid these patterns)
+- **relevant_plans**: Similar past plans for reference
+- **query_time_ms**: Performance metric (target <200ms)
+- **is_empty_index**: True if no historical data available
+
+Empty index returns:
+```json
+{
+  "is_empty_index": true,
+  "message": "No artifact index found. This is normal for new projects."
+}
+```
+This is NOT an error - proceed with standard planning.
 
 ### Step 3: Interpret Results
 

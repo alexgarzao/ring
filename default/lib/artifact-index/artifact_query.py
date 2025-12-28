@@ -26,6 +26,7 @@ import hashlib
 import json
 import sqlite3
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -103,6 +104,155 @@ def search_handoffs(
     except sqlite3.OperationalError:
         # FTS table may be empty
         return []
+
+
+def query_for_planning(conn: sqlite3.Connection, topic: str, limit: int = 5) -> Dict[str, Any]:
+    """Query artifact index for planning context.
+
+    Returns structured data optimized for plan generation:
+    - Successful implementations (what worked)
+    - Failed implementations (what to avoid)
+    - Relevant past plans
+
+    Performance target: <200ms total query time.
+    """
+    start_time = time.time()
+
+    results: Dict[str, Any] = {
+        "topic": topic,
+        "successful_handoffs": [],
+        "failed_handoffs": [],
+        "relevant_plans": [],
+        "query_time_ms": 0,
+        "is_empty_index": False
+    }
+
+    # Check if index has any data
+    try:
+        cursor = conn.execute("SELECT COUNT(*) FROM handoffs")
+        total_handoffs = cursor.fetchone()[0]
+    except sqlite3.OperationalError:
+        # Treat as empty index if schema is corrupted or table doesn't exist
+        results["is_empty_index"] = True
+        results["query_time_ms"] = int((time.time() - start_time) * 1000)
+        return results
+
+    if total_handoffs == 0:
+        results["is_empty_index"] = True
+        results["query_time_ms"] = int((time.time() - start_time) * 1000)
+        return results
+
+    # Query all handoffs matching topic
+    # TODO(review): Consider separate queries for success/failure categories to ensure
+    # failed handoffs aren't missed when successes dominate top results.
+    # Current approach is acceptable for performance. (business-logic-reviewer, Medium)
+    all_handoffs = search_handoffs(conn, topic, outcome=None, limit=limit * 3)
+
+    # Filter by outcome
+    results["successful_handoffs"] = [
+        h for h in all_handoffs
+        if h.get("outcome") in ("SUCCEEDED", "PARTIAL_PLUS")
+    ][:limit]
+
+    results["failed_handoffs"] = [
+        h for h in all_handoffs
+        if h.get("outcome") in ("FAILED", "PARTIAL_MINUS")
+    ][:limit]
+
+    # Query relevant plans (capped at 3 for context size, limit controls handoffs only)
+    results["relevant_plans"] = search_plans(conn, topic, limit=min(limit, 3))
+
+    results["query_time_ms"] = int((time.time() - start_time) * 1000)
+
+    return results
+
+
+def format_planning_results(results: Dict[str, Any]) -> str:
+    """Format planning query results for agent consumption."""
+    output: List[str] = []
+
+    output.append("## Historical Precedent")
+    output.append("")
+
+    if results.get("is_empty_index"):
+        output.append("**Note:** No historical data available (new project or empty index).")
+        output.append("Proceed with standard planning approach.")
+        output.append("")
+        return "\n".join(output)
+
+    # Successful implementations
+    successful = results.get("successful_handoffs", [])
+    if successful:
+        output.append("### Successful Implementations (Reference These)")
+        output.append("")
+        for h in successful:
+            session = h.get('session_name', 'unknown')
+            task = h.get('task_number', '?')
+            outcome = h.get('outcome', 'UNKNOWN')
+            output.append(f"**[{session}/task-{task}]** ({outcome})")
+
+            summary = h.get('task_summary', '')
+            if summary:
+                output.append(f"- Summary: {summary[:200]}")
+
+            what_worked = h.get('what_worked', '')
+            if what_worked:
+                output.append(f"- What worked: {what_worked[:300]}")
+
+            output.append(f"- File: `{h.get('file_path', 'unknown')}`")
+            output.append("")
+    else:
+        output.append("### Successful Implementations")
+        output.append("No relevant successful implementations found.")
+        output.append("")
+
+    # Failed implementations
+    failed = results.get("failed_handoffs", [])
+    if failed:
+        output.append("### Failed Implementations (AVOID These Patterns)")
+        output.append("")
+        for h in failed:
+            session = h.get('session_name', 'unknown')
+            task = h.get('task_number', '?')
+            outcome = h.get('outcome', 'UNKNOWN')
+            output.append(f"**[{session}/task-{task}]** ({outcome})")
+
+            summary = h.get('task_summary', '')
+            if summary:
+                output.append(f"- Summary: {summary[:200]}")
+
+            what_failed = h.get('what_failed', '')
+            if what_failed:
+                output.append(f"- What failed: {what_failed[:300]}")
+
+            output.append(f"- File: `{h.get('file_path', 'unknown')}`")
+            output.append("")
+    else:
+        output.append("### Failed Implementations")
+        output.append("No relevant failures found (good sign!).")
+        output.append("")
+
+    # Relevant plans
+    plans = results.get("relevant_plans", [])
+    if plans:
+        output.append("### Relevant Past Plans")
+        output.append("")
+        for p in plans:
+            title = p.get('title', 'Untitled')
+            output.append(f"**{title}**")
+
+            overview = p.get('overview', '')
+            if overview:
+                output.append(f"- Overview: {overview[:200]}")
+
+            output.append(f"- File: `{p.get('file_path', 'unknown')}`")
+            output.append("")
+
+    query_time = results.get("query_time_ms", 0)
+    output.append("---")
+    output.append(f"*Query completed in {query_time}ms*")
+
+    return "\n".join(output)
 
 
 def search_plans(
@@ -292,6 +442,12 @@ def main() -> int:
     )
     parser.add_argument("query", nargs="*", help="Search query")
     parser.add_argument(
+        "--mode", "-m",
+        choices=["search", "planning"],
+        default="search",
+        help="Query mode: 'search' for general queries, 'planning' for structured planning context"
+    )
+    parser.add_argument(
         "--type", "-t",
         choices=["handoffs", "plans", "continuity", "all"],
         default="all",
@@ -340,10 +496,29 @@ def main() -> int:
 
     db_path = get_db_path(args.db)
 
+    # Graceful handling for missing database in planning mode
     if not db_path.exists():
-        print(f"Database not found: {db_path}", file=sys.stderr)
-        print("Run: python3 artifact_index.py --all", file=sys.stderr)
-        return 1
+        if args.mode == "planning":
+            # Planning mode: return empty index result (normal for new projects)
+            query = " ".join(args.query) if args.query else ""
+            results = {
+                "topic": query,
+                "successful_handoffs": [],
+                "failed_handoffs": [],
+                "relevant_plans": [],
+                "query_time_ms": 0,
+                "is_empty_index": True,
+                "message": "No artifact index found. This is normal for new projects."
+            }
+            if args.json:
+                print(json.dumps(results, indent=2, default=str))
+            else:
+                print(format_planning_results(results))
+            return 0
+        else:
+            print(f"Database not found: {db_path}", file=sys.stderr)
+            print("Run: python3 artifact_index.py --all", file=sys.stderr)
+            return 1
 
     conn = sqlite3.connect(str(db_path), timeout=30.0)
 
@@ -380,6 +555,24 @@ def main() -> int:
             print(f"Handoff not found: {args.id}", file=sys.stderr)
         conn.close()
         return 0 if handoff else 1
+
+    # Planning mode - structured output for plan generation
+    if args.mode == "planning":
+        if not args.query:
+            print("Error: Query required for planning mode", file=sys.stderr)
+            print("Usage: python3 artifact_query.py --mode planning 'topic keywords'", file=sys.stderr)
+            conn.close()
+            return 1
+
+        query = " ".join(args.query)
+        results = query_for_planning(conn, query, args.limit)
+        conn.close()
+
+        if args.json:
+            print(json.dumps(results, indent=2, default=str))
+        else:
+            print(format_planning_results(results))
+        return 0
 
     # Regular search mode
     if not args.query:

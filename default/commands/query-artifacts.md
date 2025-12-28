@@ -17,6 +17,7 @@ Search the Artifact Index for relevant handoffs, plans, and continuity ledgers u
 | Argument | Required | Description |
 |----------|----------|-------------|
 | `search-terms` | Yes | Keywords to search for (e.g., "authentication OAuth", "error handling") |
+| `--mode` | No | Query mode: `search` (default) or `planning` (structured precedent) |
 | `--type` | No | Filter by type: `handoffs`, `plans`, `continuity`, `all` (default: all) |
 | `--outcome` | No | Filter handoffs: `SUCCEEDED`, `PARTIAL_PLUS`, `PARTIAL_MINUS`, `FAILED` |
 | `--limit` | No | Maximum results per category (1-100, default: 5) |
@@ -54,6 +55,19 @@ Returns only matching plan documents.
 ```
 
 Returns at most 3 results per category.
+
+### Planning Mode (Structured Precedent)
+
+```
+/query-artifacts api rate limiting --mode planning
+```
+
+Returns structured precedent for creating implementation plans:
+- **Successful Implementations** - What worked (reference these)
+- **Failed Implementations** - What failed (AVOID these patterns)
+- **Relevant Past Plans** - Similar approaches
+
+This mode is used automatically by `/write-plan` to inform new plans with historical context.
 
 ## Output
 
