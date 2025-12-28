@@ -88,3 +88,20 @@ Handoff created: docs/handoffs/context-management/2025-12-27_15-45-00_artifact-i
 Resume in a new session with:
 /resume-handoff docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
 ```
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: handoff-tracking
+```
+
+The skill contains the complete workflow with:
+- Handoff document template
+- Metadata gathering process
+- Automatic indexing integration
+- Outcome tracking
+- Session trace correlation

@@ -99,3 +99,20 @@ The process is phase-locked. You cannot skip ahead until the current phase is co
 - Design is already complete and validated - use `/write-plan`
 - Have a detailed plan ready to execute - use `/execute-plan`
 - Just need task breakdown from existing design - use `/write-plan`
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: brainstorming
+```
+
+The skill contains the complete workflow with:
+- Socratic questioning framework
+- Design refinement phases
+- Challenge identification
+- Solution exploration
+- Decision documentation

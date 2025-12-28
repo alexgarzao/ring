@@ -129,3 +129,20 @@ Definition paragraph
 ## Proceed
 
 **Topic to document:** $ARGUMENTS.topic
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: writing-functional-docs
+```
+
+The skill contains the complete workflow with:
+- Document type selection (conceptual, getting-started, how-to, best-practices)
+- Voice and tone guidelines
+- Structure templates
+- Review integration
+- Quality checklist

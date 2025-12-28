@@ -260,3 +260,20 @@ Additional output:
 | "Internal only, security optional" | **Internal = majority of breaches** |
 | "Too many findings" | **Prioritize by severity, address systematically** |
 | "Compliance is checkbox" | **Compliance reflects real security needs** |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: ops-security-audit
+```
+
+The skill contains the complete workflow with:
+- Automated security scanning integration
+- Compliance framework mapping (SOC2, PCI, GDPR, HIPAA)
+- Vulnerability prioritization
+- Remediation planning
+- Risk assessment methodology

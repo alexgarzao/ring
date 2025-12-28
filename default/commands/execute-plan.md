@@ -120,3 +120,20 @@ If you're not prompted for execution mode, this is a violation of the skill prot
 - No plan exists - use `/write-plan` first
 - Plan needs revision - use `/brainstorm` to refine the design
 - Working on independent tasks in current session - use `subagent-driven-development` skill directly
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: executing-plans
+```
+
+The skill contains the complete workflow with:
+- Batch execution with review checkpoints
+- Task state management
+- Failure recovery procedures
+- Progress tracking
+- Code review integration

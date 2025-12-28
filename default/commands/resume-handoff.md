@@ -99,3 +99,20 @@ Start with first approved task, referencing learnings from handoff.
 | Some changes missing | Reconcile differences first |
 | Tasks in_progress | Complete unfinished work first |
 | Stale handoff | Re-evaluate strategy with user |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: handoff-tracking
+```
+
+The skill contains the complete workflow with:
+- Handoff location and reading process
+- State verification procedures
+- Action plan creation
+- Learnings application
+- Interactive resumption guidelines

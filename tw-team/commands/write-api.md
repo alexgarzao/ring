@@ -145,3 +145,20 @@ Task tool:
 ## Proceed
 
 **Endpoint to document:** $ARGUMENTS.endpoint
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: writing-api-docs
+```
+
+The skill contains the complete workflow with:
+- Required sections (method, parameters, request/response, errors)
+- Field description patterns
+- Example quality requirements
+- Data types reference
+- HTTP status codes mapping

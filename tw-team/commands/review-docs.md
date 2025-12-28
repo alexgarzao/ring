@@ -110,3 +110,20 @@ Task tool:
 **Documentation to review:** $ARGUMENTS.file
 
 If no file path was provided, paste the documentation content or specify a file path now.
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: documentation-review
+```
+
+The skill contains the complete workflow with:
+- Five-dimension review (voice, structure, completeness, clarity, accuracy)
+- Verdict criteria (PASS, NEEDS_REVISION, MAJOR_ISSUES)
+- Common issues reference
+- Quick checklist
+- docs-reviewer agent dispatch
