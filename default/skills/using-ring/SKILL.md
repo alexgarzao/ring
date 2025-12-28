@@ -282,6 +282,18 @@ Your human partner's specific instructions describe WHAT to do, not HOW.
 
 **Why:** Specific instructions mean clear requirements, which is when workflows matter MOST. Skipping process on "simple" tasks is how simple tasks become complex problems.
 
+## Context Management & Self-Improvement
+
+Ring includes skills for managing context and enabling self-improvement:
+
+| Skill | Use When |
+|-------|----------|
+| `artifact-query` | Search past handoffs, plans, or outcomes by keywords |
+| `handoff-tracking` | Mark task completion with what_worked/what_failed/key_decisions |
+| `compound-learnings` | Analyze learnings from multiple sessions, detect patterns (3+ occurrences), propose new rules/skills |
+
+**Compound Learnings workflow:** Session ends → Hook extracts learnings → After 3+ sessions, patterns emerge → User approves → Permanent rules/skills created.
+
 ## Summary
 
 **Starting any task:**
