@@ -1331,11 +1331,11 @@ These commands orchestrate multiple skills and require special handling.
 
 **Step 1: Understand orchestration pattern**
 
-The `/pre-dev-feature` command orchestrates 4 pre-dev-* skills:
-1. `pre-dev-research`
-2. `pre-dev-feature-map`
-3. `pre-dev-dependency-map`
-4. `pre-dev-task-breakdown`
+The `/pre-dev-feature` command orchestrates 4 pre-dev-* skills (Small Track - skips feature-map, API, data model, dependencies):
+1. `pre-dev-research` (Gate 0)
+2. `pre-dev-prd-creation` (Gate 1)
+3. `pre-dev-trd-creation` (Gate 2)
+4. `pre-dev-task-breakdown` (Gate 3)
 
 **Decision:** This is an orchestration command. It should NOT delegate to a single skill but should reference all skills it orchestrates.
 
@@ -1361,10 +1361,10 @@ Append the following section at the end of the file:
 
 | Gate | Skill | Purpose |
 |------|-------|---------|
-| 1 | `pre-dev-research` | Domain and technical research |
-| 2 | `pre-dev-feature-map` | Feature scope definition |
-| 3 | `pre-dev-dependency-map` | Dependency identification |
-| 4 | `pre-dev-task-breakdown` | Task decomposition |
+| 0 | `pre-dev-research` | Domain and technical research |
+| 1 | `pre-dev-prd-creation` | Product requirements |
+| 2 | `pre-dev-trd-creation` | Technical requirements |
+| 3 | `pre-dev-task-breakdown` | Task decomposition |
 
 ### Execution Pattern
 

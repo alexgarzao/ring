@@ -230,18 +230,6 @@ Next steps:
 | pricing-strategy | Price positioning |
 | gtm-planning | Channel decisions |
 
-## Quick Competitive Intel (Alternative)
-
-For urgent competitive needs, use the skill directly:
-
-```
-Skill tool: "competitive-intelligence"
-```
-
-This provides the analysis framework without the full command workflow.
-
----
-
 ## MANDATORY: Load Full Skill
 
 **This command MUST load the skill for complete workflow execution.**
