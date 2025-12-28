@@ -9,7 +9,7 @@
     {
       "name": "ring-default",
       "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety), systematic debugging, and workflow orchestration. 21 essential skills for software engineering excellence.",
-      "version": "0.25.0",
+      "version": "0.25.1",
       "source": "./default",
       "homepage": "https://github.com/lerianstudio/ring/tree/default",
       "repository": "https://github.com/lerianstudio/ring/tree/default",
@@ -30,7 +30,7 @@
     {
       "name": "ring-dev-team",
       "description": "7 specialized developer agents + 10 development skills + 5 slash commands: 6-gate development cycle (implementation->devops->SRE->testing->review->validation), integrated with PM team output. Go/TypeScript Backend specialists, DevOps Engineer, Frontend TypeScript specialist, Frontend Designer, QA Analyst, and SRE. Complete development team coverage with TDD, observability, and security best practices.",
-      "version": "0.43.0",
+      "version": "0.43.1",
       "source": "./dev-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/dev-team",
       "repository": "https://github.com/lerianstudio/ring/tree/dev-team",
@@ -54,7 +54,7 @@
     {
       "name": "ring-pm-team",
       "description": "Product team pre-development workflow: 10 skills + 3 research agents. 9-gate planning system with research-first approach (Gate 0) before PRD creation. Includes parallel research agents (repo-research-analyst, best-practices-researcher, framework-docs-researcher) and full planning gates (PRD, feature map, TRD, API, data model, dependencies, tasks, subtasks).",
-      "version": "0.9.0",
+      "version": "0.9.1",
       "source": "./pm-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pm-team",
       "repository": "https://github.com/lerianstudio/ring/tree/pm-team",
@@ -98,7 +98,7 @@
     {
       "name": "ring-tw-team",
       "description": "Technical writing specialists for functional and API documentation. 3 specialized agents (functional-writer, api-writer, docs-reviewer) and 7 documentation skills covering voice/tone, structure, API field descriptions, and quality review. Enforces clear, consistent documentation standards.",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "source": "./tw-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/tw-team",
       "repository": "https://github.com/lerianstudio/ring/tree/tw-team",
@@ -143,7 +143,7 @@
     {
       "name": "ring-ops-team",
       "description": "Production operations and platform engineering specialists. 5 operations agents (platform-engineer, incident-responder, cloud-cost-optimizer, infrastructure-architect, security-operations) + 8 skills + 4 commands. Complete production operations covering incident response, capacity planning, cost optimization, disaster recovery, security audits, platform onboarding, and infrastructure migrations.",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "source": "./ops-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/ops-team",
       "repository": "https://github.com/lerianstudio/ring/tree/ops-team",
@@ -168,7 +168,7 @@
     {
       "name": "ring-pmm-team",
       "description": "Product marketing specialists for go-to-market strategy. 7 PMM skills + 6 specialist agents (market-researcher, positioning-strategist, messaging-specialist, gtm-planner, launch-coordinator, pricing-analyst). Complete GTM workflow from market analysis through launch coordination with positioning, messaging, and pricing strategy.",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "source": "./pmm-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pmm-team",
       "repository": "https://github.com/lerianstudio/ring/tree/pmm-team",
@@ -210,5 +210,5 @@
       ]
     }
   ],
-  "version": "0.162.0"
+  "version": "0.163.0"
 }
