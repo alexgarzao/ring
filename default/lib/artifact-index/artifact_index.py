@@ -32,30 +32,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-
-def get_project_root(custom_path: Optional[str] = None) -> Path:
-    """Get project root, defaulting to current directory or custom path."""
-    if custom_path:
-        return Path(custom_path).resolve()
-
-    # Try to find project root by looking for .ring or .git
-    current = Path.cwd()
-    for parent in [current] + list(current.parents):
-        if (parent / ".ring").exists() or (parent / ".git").exists():
-            return parent
-    return current
-
-
-def get_db_path(custom_path: Optional[str] = None, project_root: Optional[Path] = None) -> Path:
-    """Get database path, creating directory if needed."""
-    if custom_path:
-        path = Path(custom_path)
-    else:
-        root = project_root or get_project_root()
-        path = root / ".ring" / "cache" / "artifact-index" / "context.db"
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    return path
+from utils import get_project_root, get_db_path
 
 
 def get_schema_path() -> Path:

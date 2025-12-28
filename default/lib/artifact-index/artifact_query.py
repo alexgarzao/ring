@@ -31,32 +31,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-
-def validate_limit(value: str) -> int:
-    """Validate limit is a positive integer within bounds (1-100)."""
-    try:
-        ivalue = int(value)
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"Invalid integer value: {value}")
-    if ivalue < 1 or ivalue > 100:
-        raise argparse.ArgumentTypeError(f"Limit must be between 1 and 100, got: {ivalue}")
-    return ivalue
-
-
-def get_project_root() -> Path:
-    """Get project root by looking for .ring or .git."""
-    current = Path.cwd()
-    for parent in [current] + list(current.parents):
-        if (parent / ".ring").exists() or (parent / ".git").exists():
-            return parent
-    return current
-
-
-def get_db_path(custom_path: Optional[str] = None) -> Path:
-    """Get database path."""
-    if custom_path:
-        return Path(custom_path)
-    return get_project_root() / ".ring" / "cache" / "artifact-index" / "context.db"
+from utils import get_project_root, get_db_path, validate_limit
 
 
 def escape_fts5_query(query: str) -> str:
