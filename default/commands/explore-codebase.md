@@ -398,3 +398,21 @@ Ready to refine design? Use /brainstorm
 ✅ **Thorough** - Structural context + implementation details
 ✅ **Actionable** - Synthesis provides implementation guidance
 ✅ **Universal** - Works with any codebase architecture
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: exploring-codebase
+```
+
+The skill contains the complete workflow with:
+- Two-phase autonomous exploration (Discovery + Deep Dive)
+- Red flag detection table
+- Violation consequences documentation
+- Discovery agent prompt templates
+- Deep dive adaptive prompts
+- Synthesis document format

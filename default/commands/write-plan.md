@@ -121,3 +121,20 @@ If `ring-dev-team` plugin is not installed, execution falls back to `general-pur
 - Design is not validated - use `/brainstorm` first
 - Requirements still unclear - use pre-dev PRD/TRD workflow first
 - Already have a plan - use `/execute-plan` instead
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: writing-plans
+```
+
+The skill contains the complete workflow with:
+- Plan document structure
+- Task granularity requirements (2-5 min per task)
+- Zero-context test criteria
+- Historical precedent integration
+- Code review checkpoint requirements

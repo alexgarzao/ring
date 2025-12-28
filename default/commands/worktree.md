@@ -71,3 +71,19 @@ After getting the feature name, follow the complete using-git-worktrees skill pr
    ```
 
 Follow the complete process defined in `skills/using-git-worktrees/SKILL.md`.
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: using-git-worktrees
+```
+
+The skill contains the complete workflow with:
+- Worktree naming conventions
+- Branch isolation patterns
+- Cleanup procedures
+- Integration with Ring workflows

@@ -76,3 +76,20 @@ Lints only the services directory.
 | `linting-codebase` | Underlying skill with full logic |
 | `dispatching-parallel-agents` | Pattern used for parallel fixes |
 | `/codereview` | Use after lint passes for deeper review |
+
+---
+
+## MANDATORY: Load Full Skill
+
+**This command MUST load the skill for complete workflow execution.**
+
+```
+Use Skill tool: linting-codebase
+```
+
+The skill contains the complete workflow with:
+- Parallel lint fixing pattern
+- Stream analysis for independent fix groups
+- Agent dispatch rules
+- Verification loop with max iterations
+- Critical constraints (no scripts, direct fixes only)
