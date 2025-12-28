@@ -1,7 +1,35 @@
 #!/usr/bin/env bash
+# =============================================================================
+# STATELESS Context Check Utilities
+# =============================================================================
+# PURPOSE: Pure functions for context estimation without file I/O
+#
+# USE THIS WHEN:
+#   - You need quick context percentage calculations
+#   - You need warning tier lookups without state
+#   - You're building UI/display components
+#
+# DO NOT USE FOR:
+#   - Tracking turn counts (use default/lib/shell/context-check.sh)
+#   - Persisting state across invocations
+#
+# KEY FUNCTIONS:
+#   - estimate_context_pct()    - Calculate % from turn count (pure function)
+#   - get_warning_tier()        - Get tier name from percentage (pure function)
+#   - format_context_warning()  - Format user-facing warning message
+#
+# FORMULA:
+#   estimated_tokens = 45000 + (turn_count * 2500)
+#   percentage = estimated_tokens * 100 / context_size
+#
+# TIERS:
+#   - safe:     0-49%
+#   - caution:  50-69%
+#   - warning:  70-84%
+#   - critical: 85-94%
+#   - danger:   95%+
+# =============================================================================
 # shellcheck disable=SC2034  # Unused variables OK for exported config
-# Shared context estimation utilities for Ring hooks
-# Usage: source this file, then call estimate_context_pct
 
 # Constants for estimation
 # These are conservative estimates based on typical usage patterns

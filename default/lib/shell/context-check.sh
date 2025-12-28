@@ -1,16 +1,34 @@
 #!/usr/bin/env bash
+# =============================================================================
+# STATEFUL Context Check Utilities
+# =============================================================================
+# PURPOSE: State management for context tracking with file persistence
+#
+# USE THIS WHEN:
+#   - You need to track turn counts across hook invocations
+#   - You need to increment/reset context state
+#   - You're in a hook that modifies session state
+#
+# DO NOT USE FOR:
+#   - Simple percentage calculations (use shared/lib/context-check.sh)
+#   - Stateless warning tier lookups
+#
+# KEY FUNCTIONS:
+#   - increment_turn_count()  - Atomically increment with flock
+#   - reset_turn_count()      - Reset to 0 with flock
+#   - update_context_usage()  - Persist usage state to file
+#   - estimate_context_usage() - Calculate usage from turn count
+#   - get_context_warning()   - Get warning message if threshold crossed
+#
+# DEPENDENCIES:
+#   - hook-utils.sh (for get_ring_state_dir)
+#   - flock command (for file locking)
+#
+# STATE FILES:
+#   - .ring/state/current-session.json - Turn count and timestamps
+#   - .ring/state/context-usage-*.json - Per-session usage estimates
+# =============================================================================
 # shellcheck disable=SC2034  # Unused variables OK for exported config
-# Context usage estimation utilities for Ring hooks
-#
-# Usage:
-#   source /path/to/context-check.sh
-#   percentage=$(estimate_context_usage)
-#   warning=$(get_context_warning "$percentage")
-#
-# Context estimation approach:
-#   - Claude Code's context window is ~200K tokens
-#   - We estimate usage from session state files
-#   - Conservative estimates to warn early
 
 set -euo pipefail
 
@@ -142,25 +160,36 @@ EOF
     ) 200>"$lock_file"
 }
 
-# Reset turn count (call on session start, with atomic write)
+# Reset turn count (call on session start, with atomic write and file locking)
+# Uses same locking pattern as increment_turn_count to prevent races
 reset_turn_count() {
     local state_dir
     state_dir=$(get_ring_state_dir)
     local session_file="${state_dir}/current-session.json"
-    local temp_file="${session_file}.tmp.$$"
+    local lock_file="${session_file}.lock"
 
-    local timestamp
-    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    # Use flock for atomic write (same pattern as increment_turn_count)
+    (
+        # Acquire exclusive lock with timeout to prevent deadlock
+        flock -w 5 -x 200 || {
+            echo "Warning: Could not acquire lock for reset_turn_count" >&2
+            return 1
+        }
 
-    # Atomic write: write to temp file then rename
-    cat > "$temp_file" <<EOF
+        local temp_file="${session_file}.tmp.$$"
+        local timestamp
+        timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+        # Atomic write: write to temp file then rename
+        cat > "$temp_file" <<EOF
 {
   "turn_count": 0,
   "started_at": "${timestamp}",
   "updated_at": "${timestamp}"
 }
 EOF
-    mv "$temp_file" "$session_file"
+        mv "$temp_file" "$session_file"
+    ) 200>"$lock_file"
 }
 
 # Get context warning message for a given percentage
