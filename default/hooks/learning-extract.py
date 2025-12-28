@@ -65,7 +65,7 @@ def get_session_id(input_data: dict) -> str:
     return datetime.now().strftime("%H%M%S-%f")[:13]
 
 
-def extract_learnings_from_handoffs(project_root: Path, session_id: str) -> dict:
+def extract_learnings_from_handoffs(project_root: Path) -> dict:
     """Extract learnings from recent handoffs in the artifact index.
 
     This queries the artifact index for handoffs from this session
@@ -104,6 +104,7 @@ def extract_learnings_from_handoffs(project_root: Path, session_id: str) -> dict
 
             seen_worked = set()
             seen_failed = set()
+            seen_decisions = set()
 
             for row in cursor.fetchall():
                 outcome = row["outcome"]
@@ -116,8 +117,9 @@ def extract_learnings_from_handoffs(project_root: Path, session_id: str) -> dict
                         learnings["what_failed"].append(row["what_failed"])
                         seen_failed.add(row["what_failed"])
 
-                if row["key_decisions"]:
+                if row["key_decisions"] and row["key_decisions"] not in seen_decisions:
                     learnings["key_decisions"].append(row["key_decisions"])
+                    seen_decisions.add(row["key_decisions"])
 
     except Exception as e:
         # Log error for debugging but continue gracefully
@@ -127,7 +129,7 @@ def extract_learnings_from_handoffs(project_root: Path, session_id: str) -> dict
     return learnings
 
 
-def extract_learnings_from_outcomes(project_root: Path, session_id: str) -> dict:
+def extract_learnings_from_outcomes(project_root: Path) -> dict:
     """Extract learnings from session outcomes file (if exists).
 
     This reads from .ring/state/session-outcome.json if it exists.
@@ -271,12 +273,12 @@ def main():
     }
 
     # Extract from handoffs (if artifact index available)
-    handoff_learnings = extract_learnings_from_handoffs(project_root, session_id)
+    handoff_learnings = extract_learnings_from_handoffs(project_root)
     for key in learnings:
         learnings[key].extend(handoff_learnings.get(key, []))
 
     # Extract from outcomes (if outcome tracking available)
-    outcome_learnings = extract_learnings_from_outcomes(project_root, session_id)
+    outcome_learnings = extract_learnings_from_outcomes(project_root)
     for key in learnings:
         learnings[key].extend(outcome_learnings.get(key, []))
 
