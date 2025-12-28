@@ -15,7 +15,7 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 87 specialized skills** - Complete coverage from finance to operations (22 core + 10 dev-team + 10 product planning + 6 FinOps regulatory + 8 finance ops + 8 production ops + 8 product marketing + 8 PMO + 7 technical writing)
+- **Providing 90 specialized skills** - Complete coverage from finance to operations (26 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 8 finance ops + 8 production ops + 8 product marketing + 8 PMO + 7 technical writing)
 - **44 specialized agents** - 5 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 6 finance + 5 operations + 6 product marketing + 5 PMO + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -251,9 +251,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 87 Skills (Across 9 Plugins)
+## 📚 All 90 Skills (Across 9 Plugins)
 
-### Core Skills (ring-default plugin - 22 skills)
+### Core Skills (ring-default plugin - 26 skills)
 
 **Testing & Debugging (7):**
 - `test-driven-development` - Write test first, watch fail, minimal code
@@ -282,7 +282,14 @@ No "should work" → Only "does work" with proof
 - `testing-skills-with-subagents` - Skill validation
 - `testing-agents-with-subagents` - Subagent-specific testing
 
-### Developer Skills (ring-dev-team plugin - 10 skills)
+**Session & Learning (5):**
+- `handoff-tracking` - Task handoff management and session continuity
+- `compound-learnings` - Pattern detection from session history
+- `artifact-query` - Semantic search over past artifacts
+- `exploring-codebase` - Two-phase codebase exploration
+- `doubt-triggered-questions` - Decision hierarchy for asking vs proceeding
+
+### Developer Skills (ring-dev-team plugin - 9 skills)
 
 **Code Development:**
 - `using-dev-team` - Introduction to developer specialist agents
@@ -335,7 +342,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 31 slash commands across 8 plugins for common workflows.
+Ring provides 35 slash commands across 9 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -347,6 +354,10 @@ Ring provides 31 slash commands across 8 plugins for common workflows.
 - `/execute-plan [path]` - Execute plan in batches with review checkpoints
 - `/lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
 - `/explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
+- `/create-handoff [task]` - Create task handoff document for session continuity
+- `/resume-handoff [path]` - Resume work from a previous handoff
+- `/query-artifacts [query]` - Search indexed artifacts for precedent
+- `/compound-learnings` - Extract learnings from session history
 
 ### Product Planning (ring-pm-team)
 
@@ -436,11 +447,11 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (9 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 22 core skills
+│   ├── skills/                       # 26 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
-│   │   └── shared-patterns/         # Universal patterns (5 patterns)
-│   ├── commands/                    # 7 slash command definitions
+│   │   └── shared-patterns/         # Universal patterns (6 patterns)
+│   ├── commands/                    # 12 slash command definitions
 │   ├── hooks/                       # Session initialization
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup

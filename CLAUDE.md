@@ -333,8 +333,8 @@ If ANY checkbox is NO → Agent is INCOMPLETE. Add missing sections.
 Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **9 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
-- **ring-default**: 22 core skills, 7 slash commands, 5 specialized agents
-- **ring-dev-team**: 10 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
+- **ring-default**: 26 core skills, 12 slash commands, 5 specialized agents
+- **ring-dev-team**: 9 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
 - **ring-pm-team**: 10 product planning skills, 3 research agents, 2 slash commands
 - **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
 - **ring-finance-team**: 8 financial operations skills, 6 finance agents, 3 slash commands (Financial Analyst, Budget Planner, Financial Modeler, Treasury Specialist, Accounting Specialist, Metrics Analyst)
@@ -345,8 +345,9 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 87 skills (22 + 10 + 10 + 6 + 8 + 8 + 8 + 8 + 7) across 9 plugins**
+**Total: 90 skills (26 + 9 + 10 + 6 + 8 + 8 + 8 + 8 + 7) across 9 plugins**
 **Total: 44 agents (5 + 9 + 3 + 2 + 6 + 5 + 6 + 5 + 3) across 9 plugins**
+**Total: 35 commands (12 + 5 + 2 + 0 + 3 + 4 + 3 + 3 + 3) across 9 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -366,8 +367,8 @@ See [README.md](README.md#installation) or [docs/platforms/](docs/platforms/) fo
 
 | Plugin | Path | Contents |
 |--------|------|----------|
-| ring-default | `default/` | 22 skills, 5 agents, 7 commands |
-| ring-dev-team | `dev-team/` | 10 skills, 9 agents, 5 commands |
+| ring-default | `default/` | 26 skills, 5 agents, 12 commands |
+| ring-dev-team | `dev-team/` | 9 skills, 9 agents, 5 commands |
 | ring-pm-team | `pm-team/` | 10 skills, 3 agents, 2 commands |
 | ring-finops-team | `finops-team/` | 6 skills, 2 agents |
 | ring-finance-team | `finance-team/` | 8 skills, 6 agents, 3 commands |
@@ -506,8 +507,8 @@ The system loads at SessionStart (from `default/` plugin):
 - Repository: Monorepo marketplace with multiple plugin collections
 - Active plugins: 9 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-finops-team`, `ring-finance-team`, `ring-ops-team`, `ring-pmm-team`, `ring-pmo-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
-- Core plugin: `default/` (22 skills, 5 agents, 7 commands)
-- Developer agents: `dev-team/` (10 skills, 9 agents, 5 commands)
+- Core plugin: `default/` (26 skills, 5 agents, 12 commands)
+- Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
 - Product planning: `pm-team/` (10 skills, 3 agents, 2 commands)
 - FinOps regulatory: `finops-team/` (6 skills, 2 agents)
 - Finance operations: `finance-team/` (8 skills, 6 agents, 3 commands)

@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 9 plugins with 87 skills, 44 agents, and 31 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 9 plugins with 90 skills, 44 agents, and 35 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,9 +13,9 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ ring-finops-  │      │
-│  │  Skills(22)   │  │  Skills(10)   │  │  Skills(10)   │  │  team(6)      │      │
+│  │  Skills(26)   │  │  Skills(9)    │  │  Skills(10)   │  │  team(6)      │      │
 │  │  Agents(5)    │  │  Agents(9)    │  │  Agents(3)    │  │  Agents(2)    │      │
-│  │  Cmds(8)      │  │  Cmds(5)      │  │  Cmds(2)      │  │               │      │
+│  │  Cmds(12)     │  │  Cmds(5)      │  │  Cmds(2)      │  │               │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-finance- │  │ ring-ops-team │  │ ring-pmm-team │  │ ring-pmo-team │      │
@@ -105,6 +105,15 @@ Plugin prefixes: ``, ``, ``, ``, ``, ``, ``, ``, ``.
 | `/commit [message]` | Create git commit with AI trailers | `/commit "fix(auth): improve token validation"` |
 | `/lint [path]` | Run lint and dispatch agents to fix all issues | `/lint src/` |
 
+### Session & Learning (ring-default)
+
+| Command | Use Case | Example |
+|---------|----------|---------|
+| `/create-handoff [task]` | Create task handoff for session continuity | `/create-handoff "implement auth"` |
+| `/resume-handoff [path]` | Resume work from a previous handoff | `/resume-handoff docs/handoffs/task-01.md` |
+| `/query-artifacts [query]` | Search indexed artifacts for precedent | `/query-artifacts "authentication OAuth"` |
+| `/compound-learnings` | Extract learnings from session history | `/compound-learnings` |
+
 ### Development Cycle (ring-dev-team)
 
 | Command | Use Case | Example |
@@ -127,7 +136,7 @@ Plugin prefixes: ``, ``, ``, ``, ``, ``, ``, ``, ``.
 
 ## 💡 About Skills
 
-Skills (87) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (90) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
 
@@ -431,7 +440,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 87 skills are auto-discovered and available
+2. All 90 skills are auto-discovered and available
 3. `using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
