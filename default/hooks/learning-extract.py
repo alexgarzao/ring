@@ -253,7 +253,14 @@ def save_learnings(project_root: Path, session_id: str, learnings: dict) -> Path
 
 
 def main():
-    """Main hook entry point."""
+    """Main hook entry point.
+
+    Extraction Strategy:
+    1. Extract learnings from handoffs database (primary source)
+    2. Extract learnings from session outcomes file (secondary source)
+    3. Perform cross-source deduplication to prevent duplicates when the same
+       learning appears in both sources (normalized comparison preserves order)
+    """
     input_data = read_stdin()
 
     # Only process on actual session end (not errors)
@@ -281,6 +288,20 @@ def main():
     outcome_learnings = extract_learnings_from_outcomes(project_root)
     for key in learnings:
         learnings[key].extend(outcome_learnings.get(key, []))
+
+    # Cross-source deduplication: Remove duplicates while preserving order
+    # This prevents the same learning from being counted multiple times
+    # when it appears in both handoffs and session outcomes
+    for key in learnings:
+        seen = set()
+        deduplicated = []
+        for item in learnings[key]:
+            # Normalize for comparison (lowercase, strip whitespace)
+            normalized = item.lower().strip() if isinstance(item, str) else str(item)
+            if normalized not in seen:
+                seen.add(normalized)
+                deduplicated.append(item)  # Keep original formatting
+        learnings[key] = deduplicated
 
     # Check if we have any learnings to save
     has_learnings = any(learnings.get(key) for key in learnings)
