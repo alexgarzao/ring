@@ -98,9 +98,25 @@ get_warning_message() {
     esac
 }
 
+# Wrap message in MANDATORY-USER-MESSAGE tags for critical actions
+# Args: $1 = message content (required)
+# Returns: Message wrapped in mandatory tags
+wrap_mandatory_message() {
+    local message="$1"
+    cat <<EOF
+<MANDATORY-USER-MESSAGE>
+$message
+</MANDATORY-USER-MESSAGE>
+EOF
+}
+
 # Format a context warning block for injection
 # Args: $1 = tier (required), $2 = percentage (required)
 # Returns: Formatted warning block or empty
+# BEHAVIOR:
+#   - critical (85%+): MANDATORY-USER-MESSAGE requiring STOP + ledger + handoff + /clear
+#   - warning (70-84%): MANDATORY-USER-MESSAGE requiring ledger creation
+#   - info (50-69%): Simple context-warning XML tag (no mandatory)
 format_context_warning() {
     local tier="$1"
     local pct="$2"
@@ -128,29 +144,46 @@ format_context_warning() {
             ;;
     esac
 
-    # Format based on severity
+    # Format based on severity - MANDATORY tags at warning+ tiers
     if [[ "$tier" == "critical" ]]; then
-        cat <<EOF
-<context-warning severity="critical">
-$icon $message
+        # Critical: MANDATORY message requiring immediate action
+        local critical_content
+        critical_content=$(cat <<INNER
+$icon CONTEXT CRITICAL: ${pct}% usage detected.
 
-Recommended actions:
-1. Run /create-handoff to save current progress
-2. Run /clear to reset context
-3. Session state will auto-restore from ledger
+**MANDATORY ACTIONS (NON-NEGOTIABLE):**
+1. STOP current task immediately
+2. Run /create-handoff to save progress NOW
+3. Create continuity-ledger with current state
+4. Run /clear to reset context
+5. Resume from handoff in new session
 
-Current turn count indicates approaching context limit.
-</context-warning>
-EOF
+**WARNING:** Continuing without handoff risks losing all session progress.
+Context approaching hard limit - further operations may be truncated.
+INNER
+)
+        wrap_mandatory_message "$critical_content"
     elif [[ "$tier" == "warning" ]]; then
-        cat <<EOF
-<context-warning severity="warning">
-$icon $message
+        # Warning: MANDATORY message requiring ledger creation
+        local warning_content
+        warning_content=$(cat <<INNER
+$icon Context Warning: ${pct}% usage detected.
 
-Suggested: /create-handoff to save state before clearing.
-</context-warning>
-EOF
+**MANDATORY ACTION:**
+Create a continuity-ledger NOW to preserve session state.
+
+Run: /create-handoff or manually create ledger with:
+- Current task progress
+- Key decisions made
+- Files modified
+- Next steps planned
+
+**Recommended:** Complete current task, then /clear before starting new work.
+INNER
+)
+        wrap_mandatory_message "$warning_content"
     else
+        # Info: Simple warning, no mandatory tags
         cat <<EOF
 <context-warning severity="info">
 $icon $message
@@ -163,4 +196,5 @@ EOF
 export -f estimate_context_pct 2>/dev/null || true
 export -f get_warning_tier 2>/dev/null || true
 export -f get_warning_message 2>/dev/null || true
+export -f wrap_mandatory_message 2>/dev/null || true
 export -f format_context_warning 2>/dev/null || true

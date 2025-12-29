@@ -80,8 +80,36 @@ else
         local tier="$1"
         local pct="$2"
         case "$tier" in
-            critical) echo "[!!!] CONTEXT CRITICAL: ${pct}% - MUST /clear soon!" ;;
-            warning) echo "[!!] Context Warning: ${pct}% - Consider creating ledger." ;;
+            critical)
+                cat <<EOF
+<MANDATORY-USER-MESSAGE>
+[!!!] CONTEXT CRITICAL: ${pct}% usage detected.
+
+**MANDATORY ACTIONS (NON-NEGOTIABLE):**
+1. STOP current task immediately
+2. Run /create-handoff to save progress NOW
+3. Create continuity-ledger with current state
+4. Run /clear to reset context
+5. Resume from handoff in new session
+
+**WARNING:** Continuing without handoff risks losing all session progress.
+</MANDATORY-USER-MESSAGE>
+EOF
+                ;;
+            warning)
+                cat <<EOF
+<MANDATORY-USER-MESSAGE>
+[!!] Context Warning: ${pct}% usage detected.
+
+**MANDATORY ACTION:**
+Create a continuity-ledger NOW to preserve session state.
+
+Run: /create-handoff or manually create ledger with current progress.
+
+**Recommended:** Complete current task, then /clear before starting new work.
+</MANDATORY-USER-MESSAGE>
+EOF
+                ;;
             info) echo "[i] Context at ${pct}%." ;;
             *) echo "" ;;
         esac
