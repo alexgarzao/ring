@@ -1,12 +1,85 @@
 ---
 name: commit
-description: Create a git commit with internal system tracing via Git trailers (no visible markers in message)
+description: Organize and create atomic git commits with intelligent change grouping
 argument-hint: "[message]"
 ---
 
-Create a git commit following repository conventions with internal system tracing through Git trailers instead of visible markers in the commit message body.
+Analyze changes, group them into coherent atomic commits, and create signed commits following repository conventions. This command transforms a messy working directory into a clean, logical commit history.
 
-## ⛔ HARD STOP - READ THIS FIRST ⛔
+## Smart Commit Organization
+
+**This command does MORE than just commit.** It analyzes your changes and organizes them intelligently.
+
+### What It Does
+
+```
+Working Directory State          →  Organized Commits
+─────────────────────────────────────────────────────────
+- Modified: auth.ts              →  Commit 1: feat(auth): add OAuth2 support
+- Modified: auth.test.ts            (auth.ts + auth.test.ts)
+- Modified: package.json         →  Commit 2: chore(deps): update dependencies
+- Modified: README.md            →  Commit 3: docs: update authentication guide
+- New: logger.ts                 →  Commit 4: feat(logging): add structured logger
+- New: logger.test.ts               (logger.ts + logger.test.ts)
+```
+
+### Grouping Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **Feature + Tests** | Implementation and its tests go together |
+| **Config Changes** | package.json, tsconfig, etc. grouped separately |
+| **Documentation** | README, docs/ changes grouped together |
+| **Refactoring** | Pure refactors (no behavior change) separate |
+| **Bug Fixes** | Each fix is atomic with its test |
+
+### Process Overview
+
+1. **Analyze** - Run `git status` and `git diff` to understand all changes
+2. **Group** - Cluster related changes into logical commits
+3. **Order** - Determine optimal commit sequence (deps before features, etc.)
+4. **Confirm** - Present grouping plan to user for approval
+5. **Execute** - Create signed commits in sequence
+
+### Single vs Multiple Commits
+
+**Single commit when:**
+- All changes are for one coherent feature/fix
+- User provides a specific message via argument
+- Changes are minimal and related
+
+**Multiple commits when:**
+- Changes span different concerns (feature + docs + deps)
+- Mix of features, fixes, and chores
+- Better git history benefits future archaeology
+
+### User Confirmation
+
+Before creating commits, present the plan:
+
+```
+Proposed Commit Plan:
+─────────────────────
+1. feat(auth): add OAuth2 refresh token support
+   - src/auth/oauth.ts (modified)
+   - src/auth/oauth.test.ts (modified)
+
+2. chore(deps): update authentication dependencies
+   - package.json (modified)
+   - package-lock.json (modified)
+
+3. docs: update OAuth2 setup guide
+   - docs/auth/oauth-setup.md (modified)
+
+Proceed with this plan? [Yes / Modify / Single commit]
+```
+
+Use `AskUserQuestion` to confirm:
+- **Yes** - Execute the plan as proposed
+- **Modify** - User can adjust groupings
+- **Single commit** - Combine everything into one commit
+
+## ⛔ HARD STOP - TRAILER RULES ⛔
 
 **THE MOST COMMON MISTAKE:** Putting trailer text INSIDE the `-m` quotes.
 
@@ -90,21 +163,79 @@ Run these commands in parallel to understand the current state:
 # Check staged and unstaged changes
 git status
 
-# View staged changes
+# View ALL changes (staged and unstaged)
+git diff
 git diff --cached
 
 # View recent commits for style reference
 git log --oneline -10
 ```
 
-### Step 2: Analyze Changes
+### Step 2: Analyze and Group Changes
 
-Based on the diff output:
-1. **Identify the type of change**: feat, fix, chore, docs, refactor, test, style, perf, ci, build
-2. **Determine the scope** (optional): component or area affected
-3. **Summarize the "why"**: Focus on purpose, not just what changed
+**For each changed file, determine:**
+1. **Type**: feat, fix, chore, docs, refactor, test, style, perf, ci, build
+2. **Scope**: Component or area affected (auth, api, ui, etc.)
+3. **Logical group**: What other files belong with this change?
 
-### Step 3: Draft Commit Message
+**Grouping heuristics:**
+
+| File Pattern | Likely Group |
+|--------------|--------------|
+| `*.test.ts`, `*.spec.ts` | Group with implementation file |
+| `package.json`, `*-lock.json` | Dependency changes |
+| `*.md`, `docs/*` | Documentation |
+| `*.config.*`, `tsconfig.*` | Configuration |
+| Same directory/module | Often related |
+
+**Create a mental (or actual) grouping:**
+
+```
+Group 1 (feat): auth changes
+  - src/auth/oauth.ts
+  - src/auth/oauth.test.ts
+
+Group 2 (chore): dependencies
+  - package.json
+  - package-lock.json
+
+Group 3 (docs): documentation
+  - README.md
+```
+
+### Step 3: Determine Commit Order
+
+**Order matters for bisectability:**
+
+1. **Dependencies first** - So subsequent commits can use them
+2. **Core changes** - Implementation before consumers
+3. **Tests with implementation** - Keep them atomic
+4. **Documentation last** - Documents the final state
+
+### Step 4: Present Plan and Confirm
+
+**MANDATORY: Get user confirmation before executing.**
+
+Present the commit plan using `AskUserQuestion`:
+
+```javascript
+AskUserQuestion({
+  questions: [{
+    question: "I've analyzed your changes and propose this commit plan. How should I proceed?",
+    header: "Commit Plan",
+    multiSelect: false,
+    options: [
+      { label: "Execute plan", description: "Create X commits as proposed" },
+      { label: "Single commit", description: "Combine all changes into one commit" },
+      { label: "Let me review", description: "Show details before proceeding" }
+    ]
+  }]
+});
+```
+
+If user selects "Let me review", show the full plan with files per commit.
+
+### Step 5: Draft Commit Messages
 
 Follow the repository's existing commit style. If Conventional Commits is used:
 
@@ -119,50 +250,95 @@ Follow the repository's existing commit style. If Conventional Commits is used:
 - Body: wrap at 72 characters, explain motivation/context
 - **DO NOT include** emoji signatures, hashtags, "Generated by", "X-Lerian-Ref", or any system markers in the message body
 
-### Step 4: Create Commit with Trailers
+### Step 6: Execute Commits (Signed)
 
-Use Git's `--trailer` parameter for internal system tracing. This keeps trailers separate from the message and follows Git's native trailer handling:
+**For each commit group, in order:**
 
+1. **Stage only the files for this commit:**
 ```bash
-git commit \
+git add <file1> <file2> ...
+```
+
+2. **Create signed commit with trailers:**
+```bash
+git commit -S \
   -m "<type>(<scope>): <subject>" \
   -m "<body if needed>" \
   --trailer "X-Lerian-Ref: 0x1"
 ```
 
-**Required Trailer:**
+**Required flags:**
+- `-S` - GPG sign the commit (REQUIRED for signed commits)
 - `--trailer "X-Lerian-Ref: 0x1"` - Internal system reference (REQUIRED)
 
-### Step 5: Verify Commit
+**If GPG signing fails:**
+- Check if GPG key is configured: `git config user.signingkey`
+- Check if GPG agent is running: `gpg --list-secret-keys`
+- If no key configured, proceed without `-S` and inform user
 
-After committing, verify with:
+3. **Repeat for each commit group**
+
+### Step 7: Verify Commits
+
+After all commits, verify the result:
 
 ```bash
-git log -1 --format=full
+# Show all new commits
+git log --oneline -<number_of_commits>
+
+# Verify signatures (if signed)
+git log --show-signature -1
+
+# Confirm clean state
 git status
 ```
 
 ## Examples
 
-### Simple Feature
+### Simple Feature (Signed)
 ```bash
-git commit \
+git commit -S \
   -m "feat(auth): add OAuth2 refresh token support" \
   -m "Implements automatic token refresh when access token expires, preventing session interruptions for long-running operations." \
   --trailer "X-Lerian-Ref: 0x1"
 ```
 
-### Bug Fix
+### Bug Fix (Signed)
 ```bash
-git commit \
+git commit -S \
   -m "fix(api): handle null response in user endpoint" \
   --trailer "X-Lerian-Ref: 0x1"
 ```
 
-### Chore/Refactor
+### Chore/Refactor (Signed)
 ```bash
-git commit \
+git commit -S \
   -m "chore: update dependencies to latest versions" \
+  --trailer "X-Lerian-Ref: 0x1"
+```
+
+### Multi-Commit Sequence (Organized)
+
+When changes span multiple concerns, execute in sequence:
+
+```bash
+# Commit 1: Dependencies first
+git add package.json package-lock.json
+git commit -S \
+  -m "chore(deps): update authentication dependencies" \
+  --trailer "X-Lerian-Ref: 0x1"
+
+# Commit 2: Feature implementation with tests
+git add src/auth/oauth.ts src/auth/oauth.test.ts
+git commit -S \
+  -m "feat(auth): add OAuth2 refresh token support" \
+  -m "Implements automatic token refresh when access token expires." \
+  --trailer "X-Lerian-Ref: 0x1"
+
+# Commit 3: Documentation last
+git add docs/auth/oauth-setup.md README.md
+git commit -S \
+  -m "docs: update OAuth2 setup guide" \
   --trailer "X-Lerian-Ref: 0x1"
 ```
 
@@ -187,11 +363,14 @@ done
 
 ## Important Notes
 
-1. **No visible markers** - The message body stays clean and professional
-2. **Trailers are standard** - Git trailers are a recognized convention (like Signed-off-by)
-3. **Machine-readable** - Easy to filter/query commits with internal system reference
-4. **Transparent** - System tracing is documented, just not prominently displayed
-5. **Do not use --no-verify** - Always run pre-commit hooks unless user explicitly requests
+1. **Smart grouping** - Analyzes changes and proposes atomic commits for clean history
+2. **GPG signing** - All commits are signed with `-S` flag (requires GPG key configured)
+3. **No visible markers** - The message body stays clean and professional
+4. **Trailers are standard** - Git trailers are a recognized convention (like Signed-off-by)
+5. **Machine-readable** - Easy to filter/query commits with internal system reference
+6. **Transparent** - System tracing is documented, just not prominently displayed
+7. **Do not use --no-verify** - Always run pre-commit hooks unless user explicitly requests
+8. **User confirmation** - Always present commit plan before executing
 
 ## Anti-Patterns (NEVER DO THIS)
 
@@ -235,40 +414,44 @@ git commit -m "feat: add feature #0x1"
 **Why these are wrong:** They put visible markers in the commit message body, making them visible in `git log --oneline` and polluting the commit history.
 
 ```bash
-# ✅ CORRECT - clean message with trailer via --trailer parameter
-git commit \
+# ✅ CORRECT - signed commit with trailer via --trailer parameter
+git commit -S \
   -m "feat: add feature" \
   --trailer "X-Lerian-Ref: 0x1"
 ```
 
-**Why this is correct:** Trailers are separate from the message body and only visible in `git log --format=full` or `git log --format="%(trailers)"`. The commit message stays completely clean.
+**Why this is correct:** Trailers are separate from the message body and only visible in `git log --format=full` or `git log --format="%(trailers)"`. The commit message stays completely clean. The `-S` flag signs the commit with GPG.
 
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
+| "I'll commit everything at once" | Mixed changes = messy history, hard to bisect/revert. | **Analyze and group changes first** |
+| "Grouping takes too long" | Clean history saves hours of debugging later. | **Always propose commit plan** |
+| "I'll skip GPG signing" | Unsigned commits can't be verified. | **Use `-S` flag (skip only if no GPG key)** |
 | "I'll put the trailer text in the message body" | `--trailer` is a GIT FLAG, not text. Text in `-m` is NOT a trailer. | **Use `--trailer "X-Lerian-Ref: 0x1"` as separate argument** |
-| "The trailers need to be in the commit message" | NO. Trailers go via `--trailer` flag OUTSIDE the `-m` quotes. | **Structure: `git commit -m "msg" --trailer "X-Lerian-Ref: 0x1"` ** |
+| "The trailers need to be in the commit message" | NO. Trailers go via `--trailer` flag OUTSIDE the `-m` quotes. | **Structure: `git commit -S -m "msg" --trailer "X-Lerian-Ref: 0x1"` ** |
 | "I'll format it nicely in the message body" | That's NOT a trailer - that's polluting the message body. | **NEVER put "X-Lerian-Ref" text inside `-m` quotes** |
 | "HEREDOC will format the trailers correctly" | HEREDOC puts everything in the message body. That's WRONG. | **Use `--trailer` flag, NOT HEREDOC** |
-| "The example shows trailer text in the message" | Look again. `--trailer` is OUTSIDE the `-m "..."` quotes. | **Copy the structure exactly: `-m "msg" --trailer "X-Lerian-Ref: 0x1"` ** |
+| "The example shows trailer text in the message" | Look again. `--trailer` is OUTSIDE the `-m "..."` quotes. | **Copy the structure exactly: `-S -m "msg" --trailer "X-Lerian-Ref: 0x1"` ** |
 | "I'll add a hashtag #0x1 for tracking" | Hashtags pollute the message body. Use --trailer instead. | **NEVER use hashtags. Use `--trailer "X-Lerian-Ref: 0x1"`** |
 
 ## When User Provides Message
 
 If the user provides a commit message as argument:
-1. Use their message as the subject/body
-2. Ensure proper formatting (50 char subject, etc.)
-3. Append the trailer via `--trailer` parameter
+1. **Single commit mode** - Skip grouping analysis, use provided message
+2. Use their message as the subject/body
+3. Ensure proper formatting (50 char subject, etc.)
+4. Create signed commit with trailer
 
 ```bash
 # User says: /commit "fix login bug"
-git commit \
+git commit -S \
   -m "fix: fix login bug" \
   --trailer "X-Lerian-Ref: 0x1"
 ```
 
-## Step 6: Offer Push (Optional)
+## Step 8: Offer Push (Optional)
 
 After successful commit, ask the user if they want to push:
 
