@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Stop hook: Prompt for session outcome
-# Purpose: Capture user feedback on session success/failure
-# Note: Non-blocking - user can skip
+# PreCompact hook: Prompt for session outcome grade
+# Purpose: Capture user feedback on session success/failure BEFORE /clear or /compact
+# Event: PreCompact (AI is still active, can prompt user)
 
 set -euo pipefail
 
@@ -10,6 +10,11 @@ INPUT=$(cat)
 
 # Determine project root
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+
+# Session identification
+SESSION_ID="${CLAUDE_SESSION_ID:-$PPID}"
+SESSION_ID_SAFE=$(echo "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
+[[ -z "$SESSION_ID_SAFE" ]] && SESSION_ID_SAFE="unknown"
 
 # Load shared JSON escape utility
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -34,58 +39,98 @@ else
     }
 fi
 
-# Check multiple handoff locations (matching artifact_index.py behavior)
-HANDOFFS_DIRS=(
-    "${PROJECT_ROOT}/docs/handoffs"
-    "${PROJECT_ROOT}/.ring/handoffs"
-)
+# Check if there's session work to grade
+# Priority: 1) todos state, 2) active ledger, 3) recent handoff
+HAS_SESSION_WORK=false
+SESSION_CONTEXT=""
 
-RECENT_HANDOFF=""
-for HANDOFFS_DIR in "${HANDOFFS_DIRS[@]}"; do
-    if [[ ! -d "$HANDOFFS_DIR" ]]; then
-        continue
+# Check for todos state (indicates TodoWrite was used this session)
+TODOS_FILE="${PROJECT_ROOT}/.ring/state/todos-state-${SESSION_ID_SAFE}.json"
+if [[ -f "$TODOS_FILE" ]]; then
+    HAS_SESSION_WORK=true
+    if command -v jq &>/dev/null; then
+        TOTAL=$(jq 'length' "$TODOS_FILE" 2>/dev/null || echo 0)
+        COMPLETED=$(jq '[.[] | select(.status == "completed")] | length' "$TODOS_FILE" 2>/dev/null || echo 0)
+        SESSION_CONTEXT="Task progress: ${COMPLETED}/${TOTAL} completed"
     fi
+fi
 
-    # Find most recent handoff in this directory (sorted by modification time)
-    # Use -print0 and xargs -0 for safe handling of special characters
-    FOUND=$(find "$HANDOFFS_DIR" -name "*.md" -mmin -60 -type f -print0 2>/dev/null | \
-        xargs -0 ls -t 2>/dev/null | head -1)
+# Check for active ledger
+LEDGER_DIR="${PROJECT_ROOT}/.ring/ledgers"
+if [[ -d "$LEDGER_DIR" ]]; then
+    ACTIVE_LEDGER=$(find "$LEDGER_DIR" -maxdepth 1 -name "CONTINUITY-*.md" -type f -mmin -120 2>/dev/null | head -1)
+    if [[ -n "$ACTIVE_LEDGER" ]]; then
+        HAS_SESSION_WORK=true
+        LEDGER_NAME=$(basename "$ACTIVE_LEDGER" .md)
+        if [[ -n "$SESSION_CONTEXT" ]]; then
+            SESSION_CONTEXT="${SESSION_CONTEXT}, Ledger: ${LEDGER_NAME}"
+        else
+            SESSION_CONTEXT="Ledger: ${LEDGER_NAME}"
+        fi
+    fi
+fi
 
-    if [[ -n "$FOUND" ]]; then
-        RECENT_HANDOFF="$FOUND"
-        break  # Found one, use it
+# Check for recent handoffs (modified in last 2 hours)
+HANDOFFS_DIRS=("${PROJECT_ROOT}/docs/handoffs" "${PROJECT_ROOT}/.ring/handoffs")
+for HANDOFFS_DIR in "${HANDOFFS_DIRS[@]}"; do
+    if [[ -d "$HANDOFFS_DIR" ]]; then
+        RECENT_HANDOFF=$(find "$HANDOFFS_DIR" -name "*.md" -mmin -120 -type f 2>/dev/null | head -1)
+        if [[ -n "$RECENT_HANDOFF" ]]; then
+            HAS_SESSION_WORK=true
+            HANDOFF_NAME=$(basename "$RECENT_HANDOFF")
+            if [[ -n "$SESSION_CONTEXT" ]]; then
+                SESSION_CONTEXT="${SESSION_CONTEXT}, Handoff: ${HANDOFF_NAME}"
+            else
+                SESSION_CONTEXT="Handoff: ${HANDOFF_NAME}"
+            fi
+            break
+        fi
     fi
 done
 
-if [[ -z "$RECENT_HANDOFF" ]]; then
-    # No recent handoff found in any location
+# If no session work detected, skip prompting
+if [[ "$HAS_SESSION_WORK" != "true" ]]; then
     cat <<'HOOKEOF'
 {
-  "result": "continue"
+  "hookSpecificOutput": {
+    "hookEventName": "PreCompact"
+  }
 }
 HOOKEOF
     exit 0
 fi
 
-# Extract handoff filename for display
-HANDOFF_NAME=$(basename "$RECENT_HANDOFF")
+# Build prompt message for the AI to ask user
+MESSAGE="<MANDATORY-USER-MESSAGE>
+SESSION OUTCOME GRADE REQUESTED
 
-# Build message with proper escaping for JSON safety
-MESSAGE="Session ending. Recent handoff found: ${HANDOFF_NAME}
+Before clearing context, please ask the user to rate this session's outcome.
 
-When you mark the session outcome, use:
-python3 default/lib/artifact-index/artifact_mark.py --file ${RECENT_HANDOFF} --outcome <SUCCEEDED|PARTIAL_PLUS|PARTIAL_MINUS|FAILED>
+**Session Context:** ${SESSION_CONTEXT}
 
-Or list recent handoffs: python3 default/lib/artifact-index/artifact_mark.py --list"
+**MANDATORY ACTION:** Use AskUserQuestion to ask:
+\"How would you rate this session's outcome?\"
 
-# Escape message for JSON (handles special chars, quotes, newlines)
+Options:
+- SUCCEEDED: All goals achieved, high quality output
+- PARTIAL_PLUS: Most goals achieved (≥80%), minor issues
+- PARTIAL_MINUS: Some progress (50-79%), significant gaps
+- FAILED: Goals not achieved (<50%), major issues
+
+After user responds, save the grade using:
+\`python3 default/lib/artifact-index/artifact_mark.py --session ${SESSION_ID_SAFE} --outcome <GRADE>\`
+
+Then proceed with the clear/compact operation.
+</MANDATORY-USER-MESSAGE>"
+
 MESSAGE_ESCAPED=$(json_escape "$MESSAGE")
 
-# Return message prompting for outcome
-# Note: The actual prompt will be handled by the agent using AskUserQuestion
+# Return hook response with additionalContext (AI will process this)
 cat <<HOOKEOF
 {
-  "result": "continue",
-  "message": "${MESSAGE_ESCAPED}"
+  "hookSpecificOutput": {
+    "hookEventName": "PreCompact",
+    "additionalContext": "${MESSAGE_ESCAPED}"
+  }
 }
 HOOKEOF
