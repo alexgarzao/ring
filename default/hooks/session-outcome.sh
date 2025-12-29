@@ -113,10 +113,12 @@ ARTIFACT_MARK_INSTRUCTION=""
 if [[ -n "$HANDOFF_FILE_PATH" ]]; then
     # Make path relative to project root for cleaner output
     RELATIVE_HANDOFF="${HANDOFF_FILE_PATH#"${PROJECT_ROOT}/"}"
+    # Use absolute path to artifact_mark.py (SCRIPT_DIR points to hooks/, lib/ is sibling)
+    ARTIFACT_MARK_SCRIPT="${SCRIPT_DIR}/../lib/artifact-index/artifact_mark.py"
     ARTIFACT_MARK_INSTRUCTION="
 
 After user responds, save the grade using:
-\`python3 default/lib/artifact-index/artifact_mark.py --file ${RELATIVE_HANDOFF} --outcome <GRADE>\`"
+\`python3 ${ARTIFACT_MARK_SCRIPT} --file ${RELATIVE_HANDOFF} --outcome <GRADE>\`"
 fi
 
 # Build prompt message for the AI to ask user
