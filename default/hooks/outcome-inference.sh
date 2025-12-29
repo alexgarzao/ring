@@ -55,8 +55,32 @@ if [[ ! -f "${LIB_DIR}/outcome_inference.py" ]]; then
     exit 0
 fi
 
-# Run inference with input piped
-RESULT=$(echo "$INPUT" | "$PYTHON_CMD" "${LIB_DIR}/outcome_inference.py" 2>/dev/null || echo '{}')
+# Session identification - use CLAUDE_SESSION_ID if available, fallback to PPID
+SESSION_ID="${CLAUDE_SESSION_ID:-$PPID}"
+# Sanitize session ID: keep only alphanumeric, hyphens, underscores
+SESSION_ID_SAFE=$(echo "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
+[[ -z "$SESSION_ID_SAFE" ]] && SESSION_ID_SAFE="unknown"
+
+# Read persisted todos from task-completion-check.sh
+# This solves the data flow break where Stop hook doesn't have direct access to todos
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+STATE_DIR="${PROJECT_ROOT}/.ring/state"
+TODOS_FILE="${STATE_DIR}/todos-state-${SESSION_ID_SAFE}.json"
+
+INPUT_FOR_PYTHON='{"todos": []}'
+if [[ -f "$TODOS_FILE" ]]; then
+    TODOS_DATA=$(cat "$TODOS_FILE" 2>/dev/null || echo '[]')
+    if command -v jq &>/dev/null; then
+        # Wrap in expected format for Python: {"todos": [...]}
+        INPUT_FOR_PYTHON=$(echo "$TODOS_DATA" | jq '{todos: .}' 2>/dev/null || echo '{"todos": []}')
+    else
+        # Fallback: simple string wrapping (assumes valid JSON array)
+        INPUT_FOR_PYTHON="{\"todos\": ${TODOS_DATA}}"
+    fi
+fi
+
+# Run inference with persisted todos piped
+RESULT=$(echo "$INPUT_FOR_PYTHON" | "$PYTHON_CMD" "${LIB_DIR}/outcome_inference.py" 2>/dev/null || echo '{}')
 
 # Extract outcome and reason using jq if available
 if command -v jq &>/dev/null; then
@@ -71,8 +95,7 @@ else
 fi
 
 # Save outcome to state file for learning-extract.py to pick up
-PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-STATE_DIR="${PROJECT_ROOT}/.ring/state"
+# Note: PROJECT_ROOT, STATE_DIR, and SESSION_ID_SAFE already defined above
 mkdir -p "$STATE_DIR"
 
 # Escape variables for safe JSON output
@@ -80,8 +103,8 @@ OUTCOME_ESCAPED=$(json_escape "$OUTCOME")
 REASON_ESCAPED=$(json_escape "$REASON")
 CONFIDENCE_ESCAPED=$(json_escape "$CONFIDENCE")
 
-# Write outcome state
-cat > "${STATE_DIR}/session-outcome.json" << EOF
+# Write outcome state (session-isolated filename)
+cat > "${STATE_DIR}/session-outcome-${SESSION_ID_SAFE}.json" << EOF
 {
   "status": "${OUTCOME_ESCAPED}",
   "summary": "${REASON_ESCAPED}",

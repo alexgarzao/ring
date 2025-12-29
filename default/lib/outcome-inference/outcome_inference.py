@@ -72,7 +72,7 @@ def infer_outcome_from_todos(
         Tuple of (outcome, reason)
     """
     if total == 0:
-        return (OUTCOME_UNKNOWN, "No todos tracked")
+        return (OUTCOME_FAILED, "No todos tracked - unable to measure completion")
 
     completion_ratio = completed / total
 
@@ -86,13 +86,9 @@ def infer_outcome_from_todos(
     if completion_ratio >= 0.5:
         return (OUTCOME_PARTIAL_MINUS, f"{completed}/{total} tasks done, significant work remains")
 
-    if completed > 0:
-        return (OUTCOME_PARTIAL_MINUS, f"Only {completed}/{total} tasks completed")
-
-    if in_progress > 0:
-        return (OUTCOME_PARTIAL_MINUS, f"Work started but no tasks completed ({in_progress} in progress)")
-
-    return (OUTCOME_FAILED, f"No progress made on {total} tasks")
+    # <50% completion is FAILED - insufficient progress
+    # Note: in_progress tasks without completion don't count toward progress
+    return (OUTCOME_FAILED, f"Insufficient progress: only {completed}/{total} tasks completed ({int(completion_ratio * 100)}%)")
 
 
 def infer_outcome(
@@ -113,20 +109,23 @@ def infer_outcome(
         "sources": [],
     }
 
-    if todos:
+    if todos is not None:
         total, completed, in_progress, pending = analyze_todos(todos)
-        if total > 0:
-            result["outcome"], result["reason"] = infer_outcome_from_todos(
-                total, completed, in_progress, pending
-            )
-            result["sources"].append("todos")
-            # Confidence based on completion clarity
-            if completed == total or completed == 0:
-                result["confidence"] = "high"
-            elif completed / total >= 0.8 or completed / total <= 0.2:
-                result["confidence"] = "medium"
-            else:
-                result["confidence"] = "low"
+        # Always infer outcome from todos - even if empty (total=0 -> FAILED)
+        result["outcome"], result["reason"] = infer_outcome_from_todos(
+            total, completed, in_progress, pending
+        )
+        result["sources"].append("todos")
+        # Confidence based on completion clarity
+        if total == 0:
+            # Empty todos = high confidence it's a failure
+            result["confidence"] = "high"
+        elif completed == total or completed == 0:
+            result["confidence"] = "high"
+        elif completed / total >= 0.8 or completed / total <= 0.2:
+            result["confidence"] = "medium"
+        else:
+            result["confidence"] = "low"
 
     return result
 

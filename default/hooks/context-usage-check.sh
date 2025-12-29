@@ -136,6 +136,23 @@ else
     }
 fi
 
+# Helper function to write state file (consolidates duplicate code)
+# Args: $1 = acknowledged_tier value
+write_state_file() {
+    local ack_tier="$1"
+    cat > "$TEMP_STATE" <<EOF
+{
+  "session_id": "${SESSION_ID_ESCAPED}",
+  "turn_count": ${turn_count},
+  "estimated_pct": ${estimated_pct},
+  "current_tier": "${current_tier}",
+  "acknowledged_tier": "${ack_tier}",
+  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+    mv "$TEMP_STATE" "$STATE_FILE"
+}
+
 # Read current state or initialize
 if [[ -f "$STATE_FILE" ]]; then
     if command -v jq &>/dev/null; then
@@ -160,24 +177,14 @@ estimated_pct=$(estimate_context_pct "$turn_count")
 # Determine warning tier
 current_tier=$(get_warning_tier "$estimated_pct")
 
-# Write updated state
-# Use atomic write pattern: write to temp, then mv (TEMP_STATE defined at top with trap)
+# Write updated state using helper function
+# Uses atomic write pattern: write to temp, then mv (TEMP_STATE defined at top with trap)
 mkdir -p "$(dirname "$STATE_FILE")"
 
 # JSON escape session ID to prevent injection
 SESSION_ID_ESCAPED=$(json_escape "$SESSION_ID")
 
-cat > "$TEMP_STATE" <<EOF
-{
-  "session_id": "${SESSION_ID_ESCAPED}",
-  "turn_count": ${turn_count},
-  "estimated_pct": ${estimated_pct},
-  "current_tier": "${current_tier}",
-  "acknowledged_tier": "${acknowledged_tier}",
-  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
-mv "$TEMP_STATE" "$STATE_FILE"
+write_state_file "$acknowledged_tier"
 
 # Determine if we should show a warning
 # Don't repeat same-tier warnings within session (user has seen it)
@@ -206,18 +213,8 @@ fi
 
 # Update acknowledged tier if showing a warning
 if [[ "$show_warning" == "true" ]]; then
-    # Update state with acknowledged tier
-    cat > "$TEMP_STATE" <<EOF
-{
-  "session_id": "${SESSION_ID_ESCAPED}",
-  "turn_count": ${turn_count},
-  "estimated_pct": ${estimated_pct},
-  "current_tier": "${current_tier}",
-  "acknowledged_tier": "${current_tier}",
-  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
-    mv "$TEMP_STATE" "$STATE_FILE"
+    # Update state with current tier as acknowledged
+    write_state_file "$current_tier"
 fi
 
 # Generate output

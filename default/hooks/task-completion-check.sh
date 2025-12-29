@@ -57,6 +57,26 @@ fi
 # Parse the todos from tool_input
 TODOS=$(echo "$INPUT" | jq -r '.tool_input.todos // []' 2>/dev/null)
 
+# Persist todos state for outcome-inference.sh to read later
+# This solves the data flow break where Stop hook doesn't have access to todos
+if [[ -n "$TODOS" ]] && [[ "$TODOS" != "null" ]] && [[ "$TODOS" != "[]" ]]; then
+    PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+    STATE_DIR="${PROJECT_ROOT}/.ring/state"
+    mkdir -p "$STATE_DIR"
+
+    # Session ID isolation - use CLAUDE_SESSION_ID if available, fallback to PPID
+    SESSION_ID="${CLAUDE_SESSION_ID:-$PPID}"
+    # Sanitize session ID: keep only alphanumeric, hyphens, underscores
+    SESSION_ID_SAFE=$(echo "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
+    [[ -z "$SESSION_ID_SAFE" ]] && SESSION_ID_SAFE="unknown"
+
+    # Atomic write: temp file + mv
+    TODOS_STATE_FILE="${STATE_DIR}/todos-state-${SESSION_ID_SAFE}.json"
+    TEMP_TODOS_FILE="${TODOS_STATE_FILE}.tmp.$$"
+    echo "$TODOS" > "$TEMP_TODOS_FILE"
+    mv "$TEMP_TODOS_FILE" "$TODOS_STATE_FILE"
+fi
+
 if [[ -z "$TODOS" ]] || [[ "$TODOS" == "null" ]] || [[ "$TODOS" == "[]" ]]; then
     # No todos or empty - nothing to check
     cat <<'EOF'
