@@ -18,12 +18,18 @@ json_escape() {
             echo "Warning: JSON escaping of multiline content may be incomplete without jq. Install: brew install jq" >&2
         fi
 
-        printf '%s' "$input" | sed \
-            -e 's/\\/\\\\/g' \
-            -e 's/"/\\"/g' \
-            -e 's/\t/\\t/g' \
-            -e 's/\r/\\r/g' \
-            -e ':a;N;$!ba;s/\n/\\n/g'
+        # Cross-platform fallback using awk (works on BSD and GNU)
+        printf '%s' "$input" | awk '
+            BEGIN { ORS="" }
+            {
+                gsub(/\\/, "\\\\")
+                gsub(/"/, "\\\"")
+                gsub(/\t/, "\\t")
+                gsub(/\r/, "\\r")
+                if (NR > 1) printf "\\n"
+                print
+            }
+        '
     fi
 }
 

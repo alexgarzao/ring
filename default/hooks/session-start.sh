@@ -40,26 +40,41 @@ reset_context_state() {
 # (whether startup, resume, clear, or compact)
 reset_context_state
 
+# Cleanup old state files (older than 7 days)
+cleanup_old_state_files() {
+    local project_dir="${CLAUDE_PROJECT_DIR:-.}"
+    local state_dir="${project_dir}/.ring/state"
+    [[ ! -d "$state_dir" ]] && return 0
+    # Remove state files older than 7 days
+    find "$state_dir" -name "*.json" -type f -mtime +7 -delete 2>/dev/null || true
+}
+
+# Cleanup old state files early in session
+cleanup_old_state_files
+
 # Auto-install PyYAML if Python is available but PyYAML is not
-if command -v python3 &> /dev/null; then
-    if ! python3 -c "import yaml" &> /dev/null 2>&1; then
-        # PyYAML not installed, try to install it
-        # Try different pip commands (pip3 preferred, then pip)
-        for pip_cmd in pip3 pip; do
-            if command -v "$pip_cmd" &> /dev/null; then
-                # Strategy: Try --user first, then --user --break-system-packages
-                # (--break-system-packages only exists in pip 22.1+, needed for PEP 668)
-                if "$pip_cmd" install --quiet --user 'PyYAML>=6.0,<7.0' &> /dev/null 2>&1; then
-                    echo "PyYAML installed successfully" >&2
-                    break
-                elif "$pip_cmd" install --quiet --user --break-system-packages 'PyYAML>=6.0,<7.0' &> /dev/null 2>&1; then
-                    echo "PyYAML installed successfully (with --break-system-packages)" >&2
-                    break
+# Set RING_AUTO_INSTALL_DEPS=false to disable automatic dependency installation
+if [[ "${RING_AUTO_INSTALL_DEPS:-true}" == "true" ]]; then
+    if command -v python3 &> /dev/null; then
+        if ! python3 -c "import yaml" &> /dev/null 2>&1; then
+            # PyYAML not installed, try to install it
+            # Try different pip commands (pip3 preferred, then pip)
+            for pip_cmd in pip3 pip; do
+                if command -v "$pip_cmd" &> /dev/null; then
+                    # Strategy: Try --user first, then --user --break-system-packages
+                    # (--break-system-packages only exists in pip 22.1+, needed for PEP 668)
+                    if "$pip_cmd" install --quiet --user 'PyYAML>=6.0,<7.0' &> /dev/null 2>&1; then
+                        echo "PyYAML installed successfully" >&2
+                        break
+                    elif "$pip_cmd" install --quiet --user --break-system-packages 'PyYAML>=6.0,<7.0' &> /dev/null 2>&1; then
+                        echo "PyYAML installed successfully (with --break-system-packages)" >&2
+                        break
+                    fi
                 fi
-            fi
-        done
-        # If all installation attempts fail, generate-skills-ref.py will use fallback parser
-        # (No error message needed - the Python script already warns about missing PyYAML)
+            done
+            # If all installation attempts fail, generate-skills-ref.py will use fallback parser
+            # (No error message needed - the Python script already warns about missing PyYAML)
+        fi
     fi
 fi
 

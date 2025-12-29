@@ -1,34 +1,46 @@
 {
-  "hooks": [
-    {
-      "event": "SessionStart",
-      "triggers": ["startup", "resume", "clear", "compact"],
-      "type": "command",
-      "command": "bash ${RING_PLUGIN_ROOT}/hooks/session-start.sh"
-    },
-    {
-      "event": "UserPromptSubmit",
-      "triggers": ["always"],
-      "type": "command",
-      "command": "bash ${RING_PLUGIN_ROOT}/hooks/prompt-submit.sh"
-    },
-    {
-      "event": "PreToolUse",
-      "triggers": ["Bash"],
-      "type": "prompt",
-      "prompt": "Verify the Bash command is safe to execute."
-    },
-    {
-      "event": "PostToolUse",
-      "triggers": ["Write", "Edit"],
-      "type": "command",
-      "command": "bash ${RING_PLUGIN_ROOT}/hooks/post-edit.sh"
-    },
-    {
-      "event": "Stop",
-      "triggers": ["always"],
-      "type": "command",
-      "command": "bash ${RING_PLUGIN_ROOT}/hooks/stop.sh"
-    }
-  ]
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${RING_PLUGIN_ROOT}/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${RING_PLUGIN_ROOT}/hooks/prompt-submit.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${RING_PLUGIN_ROOT}/hooks/post-edit.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${RING_PLUGIN_ROOT}/hooks/stop.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

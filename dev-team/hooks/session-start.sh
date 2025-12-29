@@ -93,7 +93,7 @@ EOF
     cat <<'EOF'
 {
   "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
+    "hookEventName": "SessionStart"
   }
 }
 EOF

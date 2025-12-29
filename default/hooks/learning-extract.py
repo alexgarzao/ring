@@ -21,7 +21,7 @@ import json
 import sys
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def read_stdin() -> dict:
@@ -89,8 +89,8 @@ def extract_learnings_from_handoffs(project_root: Path) -> dict:
         with sqlite3.connect(str(db_path), timeout=5.0) as conn:
             conn.row_factory = sqlite3.Row
 
-            # Get recent handoffs (from today)
-            today = datetime.now().strftime("%Y-%m-%d")
+            # Get recent handoffs (from last 24 hours instead of calendar date)
+            yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
             cursor = conn.execute(
                 """
                 SELECT outcome, what_worked, what_failed, key_decisions
@@ -99,7 +99,7 @@ def extract_learnings_from_handoffs(project_root: Path) -> dict:
                 ORDER BY created_at DESC
                 LIMIT 10
                 """,
-                (today,)
+                (yesterday,)
             )
 
             seen_worked = set()
@@ -129,12 +129,16 @@ def extract_learnings_from_handoffs(project_root: Path) -> dict:
     return learnings
 
 
-def extract_learnings_from_outcomes(project_root: Path) -> dict:
+def extract_learnings_from_outcomes(project_root: Path, session_id: str = None) -> dict:
     """Extract learnings from session outcomes file (if exists).
 
-    This reads from .ring/state/session-outcome.json if it exists.
+    This reads from .ring/state/session-outcome-{session}.json if it exists.
     Note: This file is optional - primary learnings come from handoffs database.
-    The file can be created manually or by future session outcome capture tools.
+    The file is created by outcome-inference.sh during session end.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session identifier for session-isolated file lookup
     """
     learnings = {
         "what_worked": [],
@@ -145,7 +149,18 @@ def extract_learnings_from_outcomes(project_root: Path) -> dict:
 
     # Check for outcome file (optional - may not exist)
     state_dir = project_root / ".ring" / "state"
-    outcome_file = state_dir / "session-outcome.json"
+
+    # Try session-isolated file first (from outcome-inference.sh)
+    if session_id:
+        session_id_safe = sanitize_session_id(session_id)
+        outcome_file = state_dir / f"session-outcome-{session_id_safe}.json"
+    else:
+        # Fallback: find most recent session-outcome-*.json
+        outcome_files = list(state_dir.glob("session-outcome-*.json"))
+        if outcome_files:
+            outcome_file = max(outcome_files, key=lambda f: f.stat().st_mtime)
+        else:
+            outcome_file = state_dir / "session-outcome.json"  # Legacy fallback
 
     if not outcome_file.exists():
         # File doesn't exist - this is normal, learnings come from handoffs
@@ -171,7 +186,9 @@ def extract_learnings_from_outcomes(project_root: Path) -> dict:
 
     except (json.JSONDecodeError, KeyError, IOError) as e:
         import sys
+        import traceback
         print(f"Warning: Failed to read session outcome file: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
 
     return learnings
 
@@ -285,7 +302,7 @@ def main():
         learnings[key].extend(handoff_learnings.get(key, []))
 
     # Extract from outcomes (if outcome tracking available)
-    outcome_learnings = extract_learnings_from_outcomes(project_root)
+    outcome_learnings = extract_learnings_from_outcomes(project_root, session_id)
     for key in learnings:
         learnings[key].extend(outcome_learnings.get(key, []))
 

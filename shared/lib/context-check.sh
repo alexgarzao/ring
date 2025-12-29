@@ -22,12 +22,11 @@
 #   estimated_tokens = 45000 + (turn_count * 2500)
 #   percentage = estimated_tokens * 100 / context_size
 #
-# TIERS:
-#   - safe:     0-49%
-#   - caution:  50-69%
-#   - warning:  70-84%
-#   - critical: 85-94%
-#   - danger:   95%+
+# TIERS (4 levels):
+#   - none:     0-49%   (safe, no warning)
+#   - info:     50-69%  (informational notice)
+#   - warning:  70-84%  (recommend handoff/ledger)
+#   - critical: 85%+    (mandatory action required)
 # =============================================================================
 # shellcheck disable=SC2034  # Unused variables OK for exported config
 
