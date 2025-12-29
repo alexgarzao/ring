@@ -98,15 +98,17 @@ if [[ "$TOTAL_COUNT" -gt 0 ]] && [[ "$COMPLETED_COUNT" -eq "$TOTAL_COUNT" ]]; th
     # All todos complete - trigger handoff creation
     TASK_LIST=$(echo "$TODOS" | jq -r '.[] | "- " + .content')
     MESSAGE="<MANDATORY-USER-MESSAGE>
-TASK COMPLETION DETECTED - HANDOFF REQUIRED
+TASK COMPLETION DETECTED - HANDOFF RECOMMENDED
 
-All ${TOTAL_COUNT} todos are marked complete. You MUST create a handoff document NOW:
+All ${TOTAL_COUNT} todos are marked complete.
 
-1. MANDATORY: Run /create-handoff to preserve this session's learnings
-2. MANDATORY: Document what worked and what failed in the handoff
-3. After handoff created, session can end or continue with new tasks
+**FIRST:** Run /context to check actual context usage.
 
-This handoff will be indexed for future sessions to learn from.
+**IF context is high (>70%):** Create handoff NOW:
+1. Run /create-handoff to preserve this session's learnings
+2. Document what worked and what failed in the handoff
+
+**IF context is low (<70%):** Handoff is optional - you can continue with new tasks.
 
 Completed tasks:
 ${TASK_LIST}

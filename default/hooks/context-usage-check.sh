@@ -83,34 +83,39 @@ else
             critical)
                 cat <<EOF
 <MANDATORY-USER-MESSAGE>
-[!!!] CONTEXT CRITICAL: ${pct}% usage detected.
+[!!!] CONTEXT CRITICAL: ~${pct}% usage estimated (based on turn count).
 
-**MANDATORY ACTIONS (NON-NEGOTIABLE):**
+**VERIFY ACTUAL USAGE:** Run /context to see real context window usage before acting.
+
+**IF CONTEXT IS TRULY HIGH (>85%):**
 1. STOP current task immediately
 2. Run /create-handoff to save progress NOW
 3. Create continuity-ledger with current state
 4. Run /clear to reset context
 5. Resume from handoff in new session
 
-**WARNING:** Continuing without handoff risks losing all session progress.
+**NOTE:** This is an estimate. /context provides accurate measurement.
 </MANDATORY-USER-MESSAGE>
 EOF
                 ;;
             warning)
                 cat <<EOF
 <MANDATORY-USER-MESSAGE>
-[!!] Context Warning: ${pct}% usage detected.
+[!!] Context Warning: ~${pct}% usage estimated (based on turn count).
 
-**MANDATORY ACTION:**
-Create a continuity-ledger NOW to preserve session state.
+**VERIFY:** Run /context to see actual context window usage.
 
-Run: /create-handoff or manually create ledger with current progress.
+**IF CONTEXT IS HIGH (>70%):**
+- Create a continuity-ledger to preserve session state
+- Run: /create-handoff or manually create ledger
 
 **Recommended:** Complete current task, then /clear before starting new work.
+
+**NOTE:** This is an estimate. /context provides accurate measurement.
 </MANDATORY-USER-MESSAGE>
 EOF
                 ;;
-            info) echo "[i] Context at ${pct}%." ;;
+            info) echo "[i] Context at ~${pct}% (estimate). Run /context for accurate measurement." ;;
             *) echo "" ;;
         esac
     }

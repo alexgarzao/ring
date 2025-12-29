@@ -149,17 +149,18 @@ format_context_warning() {
         # Critical: MANDATORY message requiring immediate action
         local critical_content
         critical_content=$(cat <<INNER
-$icon CONTEXT CRITICAL: ${pct}% usage detected.
+$icon CONTEXT CRITICAL: ~${pct}% usage estimated (based on turn count).
 
-**MANDATORY ACTIONS (NON-NEGOTIABLE):**
+**VERIFY ACTUAL USAGE:** Run /context to see real context window usage before acting.
+
+**IF CONTEXT IS TRULY HIGH (>85%):**
 1. STOP current task immediately
 2. Run /create-handoff to save progress NOW
 3. Create continuity-ledger with current state
 4. Run /clear to reset context
 5. Resume from handoff in new session
 
-**WARNING:** Continuing without handoff risks losing all session progress.
-Context approaching hard limit - further operations may be truncated.
+**NOTE:** This is an estimate. /context provides accurate measurement.
 INNER
 )
         wrap_mandatory_message "$critical_content"
@@ -167,18 +168,17 @@ INNER
         # Warning: MANDATORY message requiring ledger creation
         local warning_content
         warning_content=$(cat <<INNER
-$icon Context Warning: ${pct}% usage detected.
+$icon Context Warning: ~${pct}% usage estimated (based on turn count).
 
-**MANDATORY ACTION:**
-Create a continuity-ledger NOW to preserve session state.
+**VERIFY:** Run /context to see actual context window usage.
 
-Run: /create-handoff or manually create ledger with:
-- Current task progress
-- Key decisions made
-- Files modified
-- Next steps planned
+**IF CONTEXT IS HIGH (>70%):**
+- Create a continuity-ledger to preserve session state
+- Run: /create-handoff or manually create ledger
 
 **Recommended:** Complete current task, then /clear before starting new work.
+
+**NOTE:** This is an estimate. /context provides accurate measurement.
 INNER
 )
         wrap_mandatory_message "$warning_content"
@@ -186,7 +186,7 @@ INNER
         # Info: Simple warning, no mandatory tags
         cat <<EOF
 <context-warning severity="info">
-$icon $message
+$icon Context at ~${pct}% (estimate). Run /context for accurate measurement.
 </context-warning>
 EOF
     fi
