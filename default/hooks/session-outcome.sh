@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
-# PreCompact hook: Prompt for session outcome grade
-# Purpose: Capture user feedback on session success/failure BEFORE /clear or /compact
-# Event: PreCompact (AI is still active, can prompt user)
+# SessionStart hook: Prompt for previous session outcome grade
+# Purpose: Capture user feedback on session success/failure AFTER /clear or /compact
+# Event: SessionStart (matcher: clear|compact) - AI is active and can prompt user
+#
+# Why SessionStart instead of PreCompact?
+# - PreCompact additionalContext is NOT visible to AI (architectural limitation)
+# - SessionStart additionalContext IS visible to AI
+# - State files (todos, ledger, handoffs) persist on disk after clear/compact
 
 set -euo pipefail
 
@@ -93,7 +98,7 @@ if [[ "$HAS_SESSION_WORK" != "true" ]]; then
     cat <<'HOOKEOF'
 {
   "hookSpecificOutput": {
-    "hookEventName": "PreCompact"
+    "hookEventName": "SessionStart"
   }
 }
 HOOKEOF
@@ -102,14 +107,14 @@ fi
 
 # Build prompt message for the AI to ask user
 MESSAGE="<MANDATORY-USER-MESSAGE>
-SESSION OUTCOME GRADE REQUESTED
+PREVIOUS SESSION OUTCOME GRADE REQUESTED
 
-Before clearing context, please ask the user to rate this session's outcome.
+You just cleared/compacted the previous session. Please ask the user to rate the PREVIOUS session's outcome.
 
-**Session Context:** ${SESSION_CONTEXT}
+**Previous Session Context:** ${SESSION_CONTEXT}
 
 **MANDATORY ACTION:** Use AskUserQuestion to ask:
-\"How would you rate this session's outcome?\"
+\"How would you rate the previous session's outcome?\"
 
 Options:
 - SUCCEEDED: All goals achieved, high quality output
@@ -120,7 +125,7 @@ Options:
 After user responds, save the grade using:
 \`python3 default/lib/artifact-index/artifact_mark.py --session ${SESSION_ID_SAFE} --outcome <GRADE>\`
 
-Then proceed with the clear/compact operation.
+Then continue with the new session.
 </MANDATORY-USER-MESSAGE>"
 
 MESSAGE_ESCAPED=$(json_escape "$MESSAGE")
@@ -129,7 +134,7 @@ MESSAGE_ESCAPED=$(json_escape "$MESSAGE")
 cat <<HOOKEOF
 {
   "hookSpecificOutput": {
-    "hookEventName": "PreCompact",
+    "hookEventName": "SessionStart",
     "additionalContext": "${MESSAGE_ESCAPED}"
   }
 }
