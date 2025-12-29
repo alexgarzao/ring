@@ -149,18 +149,16 @@ format_context_warning() {
         # Critical: MANDATORY message requiring immediate action
         local critical_content
         critical_content=$(cat <<INNER
-$icon CONTEXT CRITICAL: ~${pct}% usage estimated (based on turn count).
+$icon CONTEXT CRITICAL: ${pct}% usage (from session data).
 
-**VERIFY ACTUAL USAGE:** Run /context to see real context window usage before acting.
-
-**IF CONTEXT IS TRULY HIGH (>85%):**
+**MANDATORY ACTIONS:**
 1. STOP current task immediately
 2. Run /create-handoff to save progress NOW
 3. Create continuity-ledger with current state
 4. Run /clear to reset context
 5. Resume from handoff in new session
 
-**NOTE:** This is an estimate. /context provides accurate measurement.
+**Verify with /context if needed.**
 INNER
 )
         wrap_mandatory_message "$critical_content"
@@ -168,17 +166,13 @@ INNER
         # Warning: MANDATORY message requiring ledger creation
         local warning_content
         warning_content=$(cat <<INNER
-$icon Context Warning: ~${pct}% usage estimated (based on turn count).
+$icon Context Warning: ${pct}% usage (from session data).
 
-**VERIFY:** Run /context to see actual context window usage.
-
-**IF CONTEXT IS HIGH (>70%):**
+**RECOMMENDED ACTIONS:**
 - Create a continuity-ledger to preserve session state
 - Run: /create-handoff or manually create ledger
 
 **Recommended:** Complete current task, then /clear before starting new work.
-
-**NOTE:** This is an estimate. /context provides accurate measurement.
 INNER
 )
         wrap_mandatory_message "$warning_content"
@@ -186,7 +180,7 @@ INNER
         # Info: Simple warning, no mandatory tags
         cat <<EOF
 <context-warning severity="info">
-$icon Context at ~${pct}% (estimate). Run /context for accurate measurement.
+$icon Context at ${pct}%.
 </context-warning>
 EOF
     fi

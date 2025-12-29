@@ -55,11 +55,28 @@ fi
 
 # Source shared libraries
 SHARED_LIB="${MONOREPO_ROOT}/shared/lib"
+
+# NEW: Try to get REAL context usage from session file
+get_real_context_usage() {
+    if [[ -f "${SHARED_LIB}/get-context-usage.sh" ]]; then
+        # shellcheck source=/dev/null
+        source "${SHARED_LIB}/get-context-usage.sh"
+        local pct
+        pct=$(get_context_usage 2>/dev/null)
+        if [[ "$pct" != "unknown" ]] && [[ "$pct" =~ ^[0-9]+$ ]]; then
+            echo "$pct"
+            return 0
+        fi
+    fi
+    echo ""
+    return 1
+}
+
 if [[ -f "${SHARED_LIB}/context-check.sh" ]]; then
     # shellcheck source=/dev/null
     source "${SHARED_LIB}/context-check.sh"
 else
-    # Fallback: inline minimal estimation
+    # Fallback: inline minimal estimation (used when real usage unavailable)
     estimate_context_pct() {
         local turn_count="${1:-0}"
         # Match shared lib: (45000 + turns*2500) * 100 / 200000 = 22.5 + turns*1.25
@@ -83,39 +100,33 @@ else
             critical)
                 cat <<EOF
 <MANDATORY-USER-MESSAGE>
-[!!!] CONTEXT CRITICAL: ~${pct}% usage estimated (based on turn count).
+[!!!] CONTEXT CRITICAL: ${pct}% usage (from session data).
 
-**VERIFY ACTUAL USAGE:** Run /context to see real context window usage before acting.
-
-**IF CONTEXT IS TRULY HIGH (>85%):**
+**MANDATORY ACTIONS:**
 1. STOP current task immediately
 2. Run /create-handoff to save progress NOW
 3. Create continuity-ledger with current state
 4. Run /clear to reset context
 5. Resume from handoff in new session
 
-**NOTE:** This is an estimate. /context provides accurate measurement.
+**Verify with /context if needed.**
 </MANDATORY-USER-MESSAGE>
 EOF
                 ;;
             warning)
                 cat <<EOF
 <MANDATORY-USER-MESSAGE>
-[!!] Context Warning: ~${pct}% usage estimated (based on turn count).
+[!!] Context Warning: ${pct}% usage (from session data).
 
-**VERIFY:** Run /context to see actual context window usage.
-
-**IF CONTEXT IS HIGH (>70%):**
+**RECOMMENDED ACTIONS:**
 - Create a continuity-ledger to preserve session state
 - Run: /create-handoff or manually create ledger
 
 **Recommended:** Complete current task, then /clear before starting new work.
-
-**NOTE:** This is an estimate. /context provides accurate measurement.
 </MANDATORY-USER-MESSAGE>
 EOF
                 ;;
-            info) echo "[i] Context at ~${pct}% (estimate). Run /context for accurate measurement." ;;
+            info) echo "[i] Context at ${pct}%." ;;
             *) echo "" ;;
         esac
     }
@@ -176,8 +187,17 @@ fi
 # Increment turn count
 turn_count=$((turn_count + 1))
 
-# Estimate context percentage
-estimated_pct=$(estimate_context_pct "$turn_count")
+# Get context percentage - try REAL usage first, fall back to estimate
+real_pct=$(get_real_context_usage 2>/dev/null || echo "")
+if [[ -n "$real_pct" ]] && [[ "$real_pct" =~ ^[0-9]+$ ]]; then
+    # Using REAL context usage from session file
+    estimated_pct="$real_pct"
+    usage_source="real"
+else
+    # Fallback to turn-count estimate
+    estimated_pct=$(estimate_context_pct "$turn_count")
+    usage_source="estimate"
+fi
 
 # Determine warning tier
 current_tier=$(get_warning_tier "$estimated_pct")
