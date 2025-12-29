@@ -86,7 +86,7 @@ ring/                                  # Monorepo root
 
 | Plugin | Description | Components |
 |--------|-------------|------------|
-| **ring-default** | Core skills library | 26 skills, 5 agents, 12 commands |
+| **ring-default** | Core skills library | 27 skills, 5 agents, 13 commands |
 | **ring-dev-team** | Developer agents | 9 skills, 9 agents, 5 commands |
 | **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
 | **ring-finops-team** | FinOps regulatory compliance | 6 skills, 2 agents |

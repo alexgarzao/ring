@@ -251,9 +251,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 90 Skills (Across 9 Plugins)
+## 📚 All 91 Skills (Across 9 Plugins)
 
-### Core Skills (ring-default plugin - 26 skills)
+### Core Skills (ring-default plugin - 27 skills)
 
 **Testing & Debugging (7):**
 - `test-driven-development` - Write test first, watch fail, minimal code
@@ -264,8 +264,9 @@ No "should work" → Only "does work" with proof
 - `defense-in-depth` - Multi-layer validation
 - `linting-codebase` - Parallel lint fixing with agent dispatch
 
-**Collaboration & Planning (10):**
+**Collaboration & Planning (11):**
 - `brainstorming` - Structured design refinement
+- `interviewing-user` - Proactive requirements gathering through structured interview
 - `writing-plans` - Zero-context implementation plans
 - `executing-plans` - Batch execution with checkpoints
 - `requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
