@@ -76,12 +76,15 @@ if [[ -d "$LEDGER_DIR" ]]; then
 fi
 
 # Check for recent handoffs (modified in last 2 hours)
+# Store the path for later use with artifact_mark.py
+HANDOFF_FILE_PATH=""
 HANDOFFS_DIRS=("${PROJECT_ROOT}/docs/handoffs" "${PROJECT_ROOT}/.ring/handoffs")
 for HANDOFFS_DIR in "${HANDOFFS_DIRS[@]}"; do
     if [[ -d "$HANDOFFS_DIR" ]]; then
         RECENT_HANDOFF=$(find "$HANDOFFS_DIR" -name "*.md" -mmin -120 -type f 2>/dev/null | head -1)
         if [[ -n "$RECENT_HANDOFF" ]]; then
             HAS_SESSION_WORK=true
+            HANDOFF_FILE_PATH="$RECENT_HANDOFF"
             HANDOFF_NAME=$(basename "$RECENT_HANDOFF")
             if [[ -n "$SESSION_CONTEXT" ]]; then
                 SESSION_CONTEXT="${SESSION_CONTEXT}, Handoff: ${HANDOFF_NAME}"
@@ -105,6 +108,17 @@ HOOKEOF
     exit 0
 fi
 
+# Build artifact_mark instruction only if we have a handoff file to mark
+ARTIFACT_MARK_INSTRUCTION=""
+if [[ -n "$HANDOFF_FILE_PATH" ]]; then
+    # Make path relative to project root for cleaner output
+    RELATIVE_HANDOFF="${HANDOFF_FILE_PATH#"${PROJECT_ROOT}/"}"
+    ARTIFACT_MARK_INSTRUCTION="
+
+After user responds, save the grade using:
+\`python3 default/lib/artifact-index/artifact_mark.py --file ${RELATIVE_HANDOFF} --outcome <GRADE>\`"
+fi
+
 # Build prompt message for the AI to ask user
 MESSAGE="<MANDATORY-USER-MESSAGE>
 PREVIOUS SESSION OUTCOME GRADE REQUESTED
@@ -121,9 +135,7 @@ Options:
 - PARTIAL_PLUS: Most goals achieved (≥80%), minor issues
 - PARTIAL_MINUS: Some progress (50-79%), significant gaps
 - FAILED: Goals not achieved (<50%), major issues
-
-After user responds, save the grade using:
-\`python3 default/lib/artifact-index/artifact_mark.py --session ${SESSION_ID_SAFE} --outcome <GRADE>\`
+${ARTIFACT_MARK_INSTRUCTION}
 
 Then continue with the new session.
 </MANDATORY-USER-MESSAGE>"
