@@ -1,6 +1,6 @@
 ---
-name: version-release-info
-version: 1.1.0
+name: release-guide-info
+version: 1.2.0
 description: |
   Generate Ops Update Guide from Git Diff. Produces internal Operations-facing
   update/migration guides based on git diff analysis. Supports STRICT_NO_TOUCH (default)
@@ -78,7 +78,7 @@ related:
   complementary: [finishing-a-development-branch, handoff-tracking]
 ---
 
-# Version Release Info — Ops Update Guide Generator
+# Release Guide Info — Ops Update Guide Generator
 
 ## Overview
 
