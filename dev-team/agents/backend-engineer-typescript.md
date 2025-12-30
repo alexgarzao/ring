@@ -397,6 +397,75 @@ I have loaded typescript.md standards via WebFetch.
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for complete loading process.
 
+## MANDATORY Instrumentation (NON-NEGOTIABLE)
+
+**⛔ HARD GATE: Every service method, handler, and repository method you create or modify MUST have observability instrumentation. This is NOT optional. This is NOT "nice to have". This is REQUIRED.**
+
+**Standards Reference (MANDATORY WebFetch):**
+
+| Standards File | Section to Load | Anchor |
+|----------------|-----------------|--------|
+| sre.md | Structured Logging with lib-common-js | #structured-logging-with-lib-common-js-mandatory-for-typescript |
+
+### What You MUST Implement
+
+| Component | Instrumentation Requirement |
+|-----------|----------------------------|
+| **Service methods** | MUST have structured logging with context |
+| **Handler methods** | MUST have request/response logging |
+| **Repository methods** | MUST have query logging for complex operations |
+| **External calls (HTTP/gRPC)** | MUST propagate trace context |
+| **Queue publishers** | MUST include trace context in headers |
+
+### MANDATORY Steps for EVERY Service Method
+
+```typescript
+async doSomething(ctx: Context, req: Request): Promise<Result<Response, AppError>> {
+    // 1. MANDATORY: Get logger from context (injected by middleware)
+    const logger = ctx.logger;
+
+    // 2. MANDATORY: Log entry with structured data
+    logger.info({ requestId: req.id, operation: 'doSomething' }, 'Processing request');
+
+    // 3. MANDATORY: Handle errors with proper logging
+    const result = await this.repo.create(ctx, entity);
+    if (result.isErr()) {
+        logger.error({ error: result.error, requestId: req.id }, 'Failed to create entity');
+        return err(result.error);
+    }
+
+    // 4. MANDATORY: Log success
+    logger.info({ entityId: result.value.id }, 'Entity created successfully');
+
+    return ok(result.value);
+}
+```
+
+### Instrumentation Checklist (ALL REQUIRED)
+
+| # | Check | If Missing |
+|---|-------|------------|
+| 1 | Logger from context (NOT console.log) | **REJECTED** |
+| 2 | Structured log fields (object first, message second) | **REJECTED** |
+| 3 | Entry log with operation name | **REJECTED** |
+| 4 | Error logging with error object | **REJECTED** |
+| 5 | Success logging with result identifiers | **REJECTED** |
+| 6 | Context passed to all downstream calls | **REJECTED** |
+| 7 | Trace context propagated for external calls | **REJECTED** (if applicable) |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's a simple method, doesn't need logging" | ALL methods need logging. Simple ≠ exempt. | **ADD instrumentation** |
+| "I'll add logging later" | Later = never. Logging is part of implementation. | **ADD instrumentation NOW** |
+| "console.log is fine for now" | console.log is FORBIDDEN. Use structured logger. | **USE logger from context** |
+| "This is just a helper function" | If it does I/O or business logic, it needs logging. | **ADD instrumentation** |
+| "Previous code doesn't have logging" | Previous code is non-compliant. New code MUST comply. | **ADD instrumentation** |
+| "Too verbose" | Observability is not negotiable. Verbosity saves debugging time. | **ADD instrumentation** |
+
+**⛔ If ANY service method is missing instrumentation → Implementation is INCOMPLETE and REJECTED.**
+
 ## REQUIRED Bootstrap Pattern Check (MANDATORY FOR NEW PROJECTS)
 
 **⛔ HARD GATE: When creating a NEW TypeScript service or initial setup, Bootstrap Pattern is MANDATORY. Not optional. Not "nice to have". REQUIRED.**
