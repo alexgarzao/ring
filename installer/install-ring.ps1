@@ -3,7 +3,7 @@
     Ring Multi-Platform Installer (PowerShell)
 
 .DESCRIPTION
-    Installs Ring skills to Claude Code, Factory AI, Cursor, and/or Cline.
+    Installs Ring skills to Claude Code, Codex, Factory AI, Cursor, Cline, and/or OpenCode.
     Multi-platform installer wrapper for the Python-based Ring installer.
 
 .NOTES
@@ -108,23 +108,25 @@ if ($args.Count -gt 0) {
 Write-Host "Select platforms to install Ring:"
 Write-Host ""
 Write-Host "  1) Claude Code     (recommended, native format)" -ForegroundColor Blue
-Write-Host "  2) Factory AI      (droids, transformed)" -ForegroundColor Blue
-Write-Host "  3) Cursor          (rules/workflows, transformed)" -ForegroundColor Blue
-Write-Host "  4) Cline           (prompts, transformed)" -ForegroundColor Blue
-Write-Host "  5) All detected platforms" -ForegroundColor Blue
-Write-Host "  6) Auto-detect and install" -ForegroundColor Blue
+Write-Host "  2) Codex           (native format)" -ForegroundColor Blue
+Write-Host "  3) Factory AI      (droids, transformed)" -ForegroundColor Blue
+Write-Host "  4) Cursor          (rules/workflows, transformed)" -ForegroundColor Blue
+Write-Host "  5) Cline           (prompts, transformed)" -ForegroundColor Blue
+Write-Host "  6) OpenCode        (native format)" -ForegroundColor Blue
+Write-Host "  7) All supported platforms" -ForegroundColor Blue
+Write-Host "  8) Auto-detect and install" -ForegroundColor Blue
 Write-Host ""
 
-$choices = Read-Host "Enter choice(s) separated by comma (e.g., 1,2,3) [default: 6]"
+$choices = Read-Host "Enter choice(s) separated by comma (e.g., 1,2,3) [default: 8]"
 
 # Default to auto-detect
 if ([string]::IsNullOrWhiteSpace($choices)) {
-    $choices = "6"
+    $choices = "8"
 }
 
-# Validate input - only allow digits 1-6, commas, and whitespace
-if ($choices -notmatch '^[1-6,\s]*$') {
-    Write-Host "Error: Invalid input. Please enter numbers 1-6 separated by commas." -ForegroundColor Red
+# Validate input - only allow digits 1-8, commas, and whitespace
+if ($choices -notmatch '^[1-8,\s]*$') {
+    Write-Host "Error: Invalid input. Please enter numbers 1-8 separated by commas." -ForegroundColor Red
     exit 1
 }
 
@@ -133,18 +135,20 @@ $platforms = @()
 $choiceList = $choices -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
 
 # Check for conflicting options (auto-detect with specific platforms)
-$hasAuto = ($choiceList -contains "5") -or ($choiceList -contains "6")
-$hasSpecific = ($choiceList -contains "1") -or ($choiceList -contains "2") -or ($choiceList -contains "3") -or ($choiceList -contains "4")
+$hasAuto = ($choiceList -contains "7") -or ($choiceList -contains "8")
+$hasSpecific = ($choiceList -contains "1") -or ($choiceList -contains "2") -or ($choiceList -contains "3") -or ($choiceList -contains "4") -or ($choiceList -contains "5") -or ($choiceList -contains "6")
 if ($hasAuto -and $hasSpecific) {
-    Write-Host "Note: Auto-detect selected - ignoring specific platform selections." -ForegroundColor Yellow
+    Write-Host "Note: Auto/all selected - ignoring specific platform selections." -ForegroundColor Yellow
 }
 
 if ($choiceList -contains "1") { $platforms += "claude" }
-if ($choiceList -contains "2") { $platforms += "factory" }
-if ($choiceList -contains "3") { $platforms += "cursor" }
-if ($choiceList -contains "4") { $platforms += "cline" }
-if ($choiceList -contains "5") { $platforms = @("claude", "factory", "cursor", "cline") }
-if ($choiceList -contains "6") { $platforms = @("auto") }
+if ($choiceList -contains "2") { $platforms += "codex" }
+if ($choiceList -contains "3") { $platforms += "factory" }
+if ($choiceList -contains "4") { $platforms += "cursor" }
+if ($choiceList -contains "5") { $platforms += "cline" }
+if ($choiceList -contains "6") { $platforms += "opencode" }
+if ($choiceList -contains "7") { $platforms = @("claude", "codex", "factory", "cursor", "cline", "opencode") }
+if ($choiceList -contains "8") { $platforms = @("auto") }
 
 if ($platforms.Count -eq 0) {
     Write-Host "Error: No valid platforms selected." -ForegroundColor Red

@@ -13,6 +13,7 @@ from ring_installer.adapters import (
     ADAPTER_REGISTRY,
     SUPPORTED_PLATFORMS,
     ClaudeAdapter,
+    CodexAdapter,
     ClineAdapter,
     CursorAdapter,
     FactoryAdapter,
@@ -41,6 +42,12 @@ class TestGetAdapter:
         adapter = get_adapter("factory")
         assert isinstance(adapter, FactoryAdapter)
         assert adapter.platform_id == "factory"
+
+    def test_get_adapter_returns_codex_adapter(self):
+        """get_adapter('codex') should return CodexAdapter instance."""
+        adapter = get_adapter("codex")
+        assert isinstance(adapter, CodexAdapter)
+        assert adapter.platform_id == "codex"
 
     def test_get_adapter_returns_cursor_adapter(self):
         """get_adapter('cursor') should return CursorAdapter instance."""
@@ -83,7 +90,7 @@ class TestGetAdapter:
 
     def test_supported_platforms_list(self):
         """SUPPORTED_PLATFORMS should contain all expected platforms."""
-        expected = {"claude", "factory", "cursor", "cline", "opencode"}
+        expected = {"claude", "codex", "factory", "cursor", "cline", "opencode"}
         assert set(SUPPORTED_PLATFORMS) == expected
 
 
@@ -148,6 +155,7 @@ class TestListPlatforms:
         platform_ids = {p["id"] for p in platforms}
 
         assert "claude" in platform_ids
+        assert "codex" in platform_ids
         assert "factory" in platform_ids
         assert "cursor" in platform_ids
         assert "cline" in platform_ids

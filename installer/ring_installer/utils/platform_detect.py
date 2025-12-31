@@ -122,6 +122,7 @@ def _detect_platform(platform_id: str) -> PlatformInfo:
     """
     detectors = {
         "claude": _detect_claude,
+        "codex": _detect_codex,
         "factory": _detect_factory,
         "cursor": _detect_cursor,
         "cline": _detect_cline,
@@ -316,6 +317,22 @@ def _detect_claude() -> PlatformInfo:
         name="Claude Code",
         config_dir_name=".claude",
         binary_name="claude",
+    )
+
+
+def _detect_codex() -> PlatformInfo:
+    """
+    Detect Codex CLI installation.
+
+    Checks for:
+    - ~/.codex directory (or CODEX_CONFIG_PATH env var)
+    - codex binary in PATH
+    """
+    return _detect_generic_cli_platform(
+        platform_id="codex",
+        name="Codex",
+        config_dir_name=".codex",
+        binary_name="codex",
     )
 
 

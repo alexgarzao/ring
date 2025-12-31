@@ -6,11 +6,17 @@ Provides shared fixtures for testing adapters, transformers, utilities, and core
 
 import json
 import shutil
+import sys
 from pathlib import Path
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+# Ensure ring_installer is importable when running pytest from repo root.
+INSTALLER_ROOT = Path(__file__).resolve().parents[1]
+if str(INSTALLER_ROOT) not in sys.path:
+    sys.path.insert(0, str(INSTALLER_ROOT))
 
 # ==============================================================================
 # Path Fixtures
@@ -365,6 +371,20 @@ def factory_adapter_config() -> Dict[str, Any]:
 
 
 @pytest.fixture
+def codex_adapter_config() -> Dict[str, Any]:
+    """
+    Return configuration for Codex adapter.
+
+    Returns:
+        Codex adapter configuration dictionary.
+    """
+    return {
+        "install_path": "~/.codex",
+        "native": True
+    }
+
+
+@pytest.fixture
 def cursor_adapter_config() -> Dict[str, Any]:
     """
     Return configuration for Cursor adapter.
@@ -451,6 +471,7 @@ def mock_platform_detection():
         Dictionary of mocked detection functions.
     """
     with patch("ring_installer.utils.platform_detect._detect_claude") as mock_claude, \
+         patch("ring_installer.utils.platform_detect._detect_codex") as mock_codex, \
          patch("ring_installer.utils.platform_detect._detect_factory") as mock_factory, \
          patch("ring_installer.utils.platform_detect._detect_cursor") as mock_cursor, \
          patch("ring_installer.utils.platform_detect._detect_cline") as mock_cline, \
@@ -462,6 +483,11 @@ def mock_platform_detection():
         mock_claude.return_value = PlatformInfo(
             platform_id="claude",
             name="Claude Code",
+            installed=False
+        )
+        mock_codex.return_value = PlatformInfo(
+            platform_id="codex",
+            name="Codex",
             installed=False
         )
         mock_factory.return_value = PlatformInfo(
@@ -487,6 +513,7 @@ def mock_platform_detection():
 
         yield {
             "claude": mock_claude,
+            "codex": mock_codex,
             "factory": mock_factory,
             "cursor": mock_cursor,
             "cline": mock_cline,

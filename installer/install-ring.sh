@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034  # Unused variables OK for exported config
 # Ring Multi-Platform Installer
-# Installs Ring skills to Claude Code, Factory AI, Cursor, and/or Cline
+# Installs Ring skills to Claude Code, Codex, Factory AI, Cursor, Cline, and/or OpenCode
 set -euo pipefail
 export LC_ALL=C
 
@@ -88,30 +88,32 @@ fi
 echo "Select platforms to install Ring:"
 echo ""
 echo "  ${BLUE}1)${RESET} Claude Code     (recommended, native format)"
-echo "  ${BLUE}2)${RESET} Factory AI      (droids, transformed)"
-echo "  ${BLUE}3)${RESET} Cursor          (rules/workflows, transformed)"
-echo "  ${BLUE}4)${RESET} Cline           (prompts, transformed)"
-echo "  ${BLUE}5)${RESET} All detected platforms"
-echo "  ${BLUE}6)${RESET} Auto-detect and install"
+echo "  ${BLUE}2)${RESET} Codex           (native format)"
+echo "  ${BLUE}3)${RESET} Factory AI      (droids, transformed)"
+echo "  ${BLUE}4)${RESET} Cursor          (rules/workflows, transformed)"
+echo "  ${BLUE}5)${RESET} Cline           (prompts, transformed)"
+echo "  ${BLUE}6)${RESET} OpenCode        (native format)"
+echo "  ${BLUE}7)${RESET} All supported platforms"
+echo "  ${BLUE}8)${RESET} Auto-detect and install"
 echo ""
 
-read -p "Enter choice(s) separated by comma (e.g., 1,2,3) [default: 6]: " choices
+read -p "Enter choice(s) separated by comma (e.g., 1,2,3) [default: 8]: " choices
 
 # Validate input only contains expected characters (locale-independent)
 LC_ALL=C
-if [[ -n "$choices" ]] && ! [[ "$choices" =~ ^[1-6,\ ]*$ ]]; then
-    echo "${RED}Error: Invalid input. Please enter numbers 1-6 separated by commas.${RESET}"
+if [[ -n "$choices" ]] && ! [[ "$choices" =~ ^[1-8,\ ]*$ ]]; then
+    echo "${RED}Error: Invalid input. Please enter numbers 1-8 separated by commas.${RESET}"
     exit 1
 fi
 
 # Default to auto-detect
 if [ -z "$choices" ]; then
-    choices="6"
+    choices="8"
 fi
 
 # Check for conflicting options (auto-detect with specific platforms)
-if [[ "$choices" =~ [56] ]] && [[ "$choices" =~ [1234] ]]; then
-    echo "${YELLOW}Note: Auto-detect selected - ignoring specific platform selections.${RESET}"
+if [[ "$choices" =~ [78] ]] && [[ "$choices" =~ [1-6] ]]; then
+    echo "${YELLOW}Note: Auto/all selected - ignoring specific platform selections.${RESET}"
 fi
 
 # Parse choices
@@ -120,19 +122,25 @@ case "$choices" in
     *1*) PLATFORMS="${PLATFORMS}claude," ;;
 esac
 case "$choices" in
-    *2*) PLATFORMS="${PLATFORMS}factory," ;;
+    *2*) PLATFORMS="${PLATFORMS}codex," ;;
 esac
 case "$choices" in
-    *3*) PLATFORMS="${PLATFORMS}cursor," ;;
+    *3*) PLATFORMS="${PLATFORMS}factory," ;;
 esac
 case "$choices" in
-    *4*) PLATFORMS="${PLATFORMS}cline," ;;
+    *4*) PLATFORMS="${PLATFORMS}cursor," ;;
 esac
 case "$choices" in
-    *5*) PLATFORMS="claude,factory,cursor,cline" ;;
+    *5*) PLATFORMS="${PLATFORMS}cline," ;;
 esac
 case "$choices" in
-    *6*) PLATFORMS="auto" ;;
+    *6*) PLATFORMS="${PLATFORMS}opencode," ;;
+esac
+case "$choices" in
+    *7*) PLATFORMS="claude,codex,factory,cursor,cline,opencode" ;;
+esac
+case "$choices" in
+    *8*) PLATFORMS="auto" ;;
 esac
 
 # Remove trailing comma
