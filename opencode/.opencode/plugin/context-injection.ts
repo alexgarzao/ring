@@ -11,6 +11,12 @@ import type { Plugin } from "@opencode-ai/plugin"
 export const RingContextInjection: Plugin = async (ctx) => {
   return {
     "experimental.session.compacting": async (input, output) => {
+      // SECURITY: Defensive check before pushing to output.context
+      if (!output?.context || !Array.isArray(output.context)) {
+        console.warn("[Ring:WARN] output.context not available for injection")
+        return
+      }
+
       output.context.push(`
 ## Ring Skills System
 

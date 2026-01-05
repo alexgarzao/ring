@@ -14,6 +14,7 @@ ring_installer/adapters/claude.py
 ring_installer/adapters/cline.py
 ring_installer/adapters/cursor.py
 ring_installer/adapters/factory.py
+ring_installer/adapters/opencode.py
 ring_installer/transformers/__init__.py
 ring_installer/transformers/agent.py
 ring_installer/transformers/base.py

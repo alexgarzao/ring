@@ -11,26 +11,43 @@ import type { Plugin } from "@opencode-ai/plugin"
  * - macOS: Uses osascript for native notifications
  * - Linux: Uses notify-send if available
  * - Windows: Uses PowerShell toast notifications
+ *
+ * SECURITY: All notification content is sanitized to prevent command injection.
  */
 export const RingNotification: Plugin = async ({ $ }) => {
+  /**
+   * Sanitize notification content to prevent command injection.
+   * Removes all characters except alphanumeric, spaces, and basic punctuation.
+   */
+  const sanitizeNotificationContent = (content: string, maxLength: number = 100): string => {
+    return content
+      .replace(/[^a-zA-Z0-9 .,!?:;()\-]/g, "")
+      .slice(0, maxLength)
+  }
+
   const sendNotification = async (title: string, message: string) => {
     const platform = process.platform
 
+    // SECURITY: Sanitize all user-influenced content before shell execution
+    const safeTitle = sanitizeNotificationContent(title, 50)
+    const safeMessage = sanitizeNotificationContent(message, 100)
+
     try {
       if (platform === "darwin") {
-        // macOS
-        await $`osascript -e ${"display notification \"" + message + "\" with title \"" + title + "\""}`
+        // macOS - Use array syntax for proper escaping
+        const appleScript = `display notification "${safeMessage}" with title "${safeTitle}"`
+        await $`osascript -e ${appleScript}`
       } else if (platform === "linux") {
-        // Linux with notify-send
-        await $`notify-send ${title} ${message}`
+        // Linux with notify-send - Use array syntax for proper escaping
+        await $`notify-send ${[safeTitle]} ${[safeMessage]}`
       } else if (platform === "win32") {
-        // Windows PowerShell toast
+        // Windows PowerShell toast - sanitized content prevents injection
         const script = `
           [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
           $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
           $textNodes = $template.GetElementsByTagName("text")
-          $textNodes.Item(0).AppendChild($template.CreateTextNode("${title}")) | Out-Null
-          $textNodes.Item(1).AppendChild($template.CreateTextNode("${message}")) | Out-Null
+          $textNodes.Item(0).AppendChild($template.CreateTextNode("${safeTitle}")) | Out-Null
+          $textNodes.Item(1).AppendChild($template.CreateTextNode("${safeMessage}")) | Out-Null
           $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
           [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Ring").Show($toast)
         `

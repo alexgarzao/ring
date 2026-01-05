@@ -91,41 +91,53 @@ export const RingEnvProtection: Plugin = async (ctx) => {
         const command = String(output.args?.command || output.args?.cmd || "")
 
         // Commands that can read or expose file contents
+        // KNOWN LIMITATION: Does not detect symlink-based bypasses
+        // (e.g., ln -s .env safe-name && cat safe-name)
+        // KNOWN LIMITATION: May not detect all shell invocation patterns
+        // (e.g., sh -c "cat .env" or bash with piped input)
         const READ_COMMANDS = [
-          "cat ",
-          "less ",
-          "more ",
-          "head ",
-          "tail ",
-          "grep ",
-          "sed ",
-          "awk ",
-          "python ",
-          "python3 ",
-          "node ",
-          "ruby ",
-          "perl ",
-          "xargs ",
-          "source ",
-          ". ",
-          "eval ",
-          "base64 ",
-          "xxd ",
-          "hexdump ",
-          "strings ",
-          "tee ",
-          "cp ",
-          "scp ",
-          "rsync ",
-          "curl ",
-          "wget ",
+          "cat",
+          "less",
+          "more",
+          "head",
+          "tail",
+          "grep",
+          "sed",
+          "awk",
+          "python",
+          "python3",
+          "node",
+          "ruby",
+          "perl",
+          "xargs",
+          "source",
+          "eval",
+          "base64",
+          "xxd",
+          "hexdump",
+          "strings",
+          "tee",
+          "cp",
+          "scp",
+          "rsync",
+          "curl",
+          "wget",
         ]
+
+        // SECURITY: Use word boundary regex for more robust command detection
+        // This prevents bypasses like "notcat .env" while still catching "cat .env"
+        const commandPattern = new RegExp(`\\b(${READ_COMMANDS.join("|")})\\s`, "i")
+
+        // Decode potential hex escapes to detect obfuscation attempts
+        const decodedCommand = command.replace(/\\x([0-9a-f]{2})/gi, (_, hex) =>
+          String.fromCharCode(parseInt(hex, 16))
+        )
 
         // Check if command references any protected file pattern
         for (const pattern of PROTECTED_PATTERNS) {
-          if (command.includes(pattern)) {
+          if (command.includes(pattern) || decodedCommand.includes(pattern)) {
             // Check if any read command is used with the protected pattern
-            const usesReadCommand = READ_COMMANDS.some((cmd) => command.includes(cmd))
+            const usesReadCommand = commandPattern.test(command) || commandPattern.test(decodedCommand)
             // Also block if redirecting protected files via < or piping
             const usesRedirect = command.includes("<") || command.includes("|")
 

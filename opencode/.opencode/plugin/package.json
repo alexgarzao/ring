@@ -16,11 +16,14 @@
     "lint": "eslint *.ts"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.0.0"
+    "@opencode-ai/plugin": "1.0.0",
+    "better-sqlite3": "9.0.0",
+    "shescape": "2.1.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "typescript": "5.0.0",
+    "@types/node": "20.0.0",
+    "@types/better-sqlite3": "7.6.8"
   },
   "keywords": [
     "opencode",
