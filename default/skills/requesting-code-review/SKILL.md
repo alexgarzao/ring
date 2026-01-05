@@ -750,7 +750,54 @@ IF CodeRabbit found CRITICAL or HIGH issues:
         3. Commit fixes with descriptive message
     
     → After agent completes, re-run CodeRabbit: `coderabbit --prompt-only`
-    → If issues remain, repeat fix cycle (max 2 iterations)
+    → If CodeRabbit issues remain, repeat fix cycle (max 2 iterations for CodeRabbit)
+    
+    → ⛔ AFTER CodeRabbit passes, MUST re-run Ring reviewers:
+    
+    ┌─────────────────────────────────────────────────────────────────┐
+    │ 🔄 RE-RUNNING RING REVIEWERS AFTER CODERABBIT FIXES             │
+    ├─────────────────────────────────────────────────────────────────┤
+    │                                                                 │
+    │ CodeRabbit fixes may have introduced new issues detectable by   │
+    │ Ring reviewers. Re-validation is MANDATORY before Gate 5.       │
+    │                                                                 │
+    └─────────────────────────────────────────────────────────────────┘
+    
+    Step 7.5.3a: Re-Run All 3 Ring Reviewers
+    ─────────────────────────────────────────
+    1. Get new HEAD_SHA after CodeRabbit fixes
+    2. Dispatch all 3 reviewers in parallel (per Step 3):
+       - code-reviewer
+       - business-logic-reviewer  
+       - security-reviewer
+    3. Wait for all 3 to complete
+    
+    Step 7.5.3b: Handle Ring Reviewer Results
+    ─────────────────────────────────────────
+    IF all 3 Ring reviewers PASS:
+      → Proceed to Step 8 (Success Output)
+    
+    IF any Ring reviewer finds CRITICAL/HIGH/MEDIUM issues:
+      → Increment coderabbit_ring_iteration counter
+      → IF coderabbit_ring_iteration >= 2:
+          → ESCALATE: "Max iterations reached after CodeRabbit fixes"
+          → Go to Step 9 (Escalate)
+      → DISPATCH implementation agent to fix Ring reviewer issues
+      → After fixes committed:
+          → Re-run CodeRabbit: `coderabbit --prompt-only`
+          → IF CodeRabbit passes:
+              → Re-run all 3 Ring reviewers (loop back to Step 7.5.3a)
+          → IF CodeRabbit finds issues:
+              → Fix CodeRabbit issues first, then re-run Ring reviewers
+    
+    State tracking for CodeRabbit fix cycle:
+    ```
+    coderabbit_fix_state = {
+      coderabbit_iterations: 0,      // max 2 for CodeRabbit-only fixes
+      ring_revalidation_iterations: 0,  // max 2 for Ring reviewer re-runs
+      total_max_iterations: 4        // absolute cap: 2 CR + 2 Ring
+    }
+    ```
 
 IF CodeRabbit found only MEDIUM/LOW issues:
   → Display summary
@@ -766,11 +813,15 @@ IF CodeRabbit found only MEDIUM/LOW issues:
       
       Format: // TODO(coderabbit): [issue description]
   
-  → Proceed to Gate 5
+  → After TODO comments added (code changed):
+      → Re-run all 3 Ring reviewers (per Step 7.5.3a above)
+      → IF Ring reviewers PASS: Proceed to Step 8
+      → IF Ring reviewers find issues: Fix and re-run (max 2 iterations)
 
 IF CodeRabbit found no issues:
   → Display: "✅ CodeRabbit review passed - no additional issues found"
-  → Proceed to Gate 5
+  → No code changes made by CodeRabbit flow
+  → Proceed directly to Step 8 (no Ring re-run needed)
 ```
 
 ### Anti-Rationalization for Direct Editing
