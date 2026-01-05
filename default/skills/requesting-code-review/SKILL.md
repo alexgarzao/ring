@@ -65,6 +65,9 @@ output_schema:
     - name: "Reviewer Verdicts"
       pattern: "^## Reviewer Verdicts"
       required: true
+    - name: "CodeRabbit External Review"
+      pattern: "^## CodeRabbit External Review"
+      required: false
     - name: "Handoff to Next Gate"
       pattern: "^## Handoff to Next Gate"
       required: true
@@ -85,6 +88,12 @@ output_schema:
       type: integer
     - name: iterations
       type: integer
+    - name: coderabbit_status
+      type: enum
+      values: [PASS, ISSUES_FOUND, SKIPPED, NOT_INSTALLED]
+    - name: coderabbit_issues
+      type: integer
+      description: "Number of issues found by CodeRabbit (0 if skipped)"
 
 examples:
   - name: "Feature review"
@@ -422,6 +431,196 @@ After fixes committed:
 Do NOT cherry-pick reviewers.
 ```
 
+## Step 7.5: Optional CodeRabbit CLI Review (AFTER Ring Reviewers Pass)
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ ALL 3 RING REVIEWERS PASSED                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Would you like to run CodeRabbit CLI for additional external    │
+│ AI-powered code review before proceeding to validation?         │
+│                                                                 │
+│ CodeRabbit catches race conditions, memory leaks, security      │
+│ vulnerabilities, and edge cases that may complement Ring        │
+│ reviewers.                                                      │
+│                                                                 │
+│ ⚠️  Requires: CodeRabbit CLI installed and authenticated        │
+│     Install: curl -fsSL https://cli.coderabbit.ai/install.sh | sh│
+│     Auth: coderabbit auth login                                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Ask user:** "Do you want to run CodeRabbit CLI review before proceeding? (a) Yes (b) No, skip"
+
+### If User Selects YES:
+
+#### Step 7.5.1: Check CodeRabbit Installation
+
+```bash
+# Verify CodeRabbit CLI is installed
+which coderabbit || which cr
+```
+
+**If NOT installed:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ⚠️  CodeRabbit CLI not found                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ CodeRabbit CLI is not installed on your system.                 │
+│                                                                 │
+│ Would you like to:                                              │
+│   (a) Skip CodeRabbit review and proceed to Gate 5              │
+│   (b) Install CodeRabbit CLI now (I'll guide you)               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**If user selects (b) Install:**
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ 📦 INSTALLING CODERABBIT CLI                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Step 1: Installing CodeRabbit CLI...                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+```bash
+# Step 1: Download and install CodeRabbit CLI
+curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+```
+
+**After installation, verify:**
+```bash
+# Verify installation
+which coderabbit || which cr
+```
+
+**If installation successful:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ CodeRabbit CLI installed successfully!                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Step 2: Authentication required                                 │
+│                                                                 │
+│ You need to authenticate with your CodeRabbit account.          │
+│ This will open a browser window for login.                      │
+│                                                                 │
+│ Options:                                                        │
+│   (a) Authenticate now (opens browser)                          │
+│   (b) Skip authentication and CodeRabbit review                 │
+│                                                                 │
+│ Note: Free tier allows 1 review/hour.                           │
+│       Paid plans get enhanced reviews + higher limits.          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**If user selects (a) Authenticate:**
+```bash
+# Step 2: Authenticate with CodeRabbit
+coderabbit auth login
+```
+
+**After authentication:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ CodeRabbit CLI ready!                                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Installation: Complete                                          │
+│ Authentication: Complete                                        │
+│                                                                 │
+│ Proceeding to CodeRabbit review...                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+→ Proceed to Step 7.5.2 (Run CodeRabbit Review)
+
+**If installation failed:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ❌ CodeRabbit CLI installation failed                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Error: [error message from curl/sh]                             │
+│                                                                 │
+│ Troubleshooting:                                                │
+│   • Check internet connection                                   │
+│   • Try manual install: https://docs.coderabbit.ai/cli/overview │
+│   • macOS/Linux only (Windows not supported yet)                │
+│                                                                 │
+│ Would you like to:                                              │
+│   (a) Retry installation                                        │
+│   (b) Skip CodeRabbit and proceed to Gate 5                     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 7.5.2: Run CodeRabbit Review
+
+```bash
+# Run CodeRabbit in prompt-only mode (optimized for AI agents)
+coderabbit --prompt-only --type uncommitted --base [base_branch]
+```
+
+**Parse CodeRabbit output for:**
+- Critical issues
+- High severity issues
+- Security vulnerabilities
+- Performance concerns
+
+#### Step 7.5.3: Handle CodeRabbit Findings
+
+```text
+IF CodeRabbit found CRITICAL or HIGH issues:
+  → Display findings to user
+  → Ask: "CodeRabbit found [N] critical/high issues. Fix now or proceed anyway?"
+    (a) Fix issues - dispatch to implementation agent
+    (b) Proceed to Gate 5 (acknowledge risk)
+    (c) Review findings in detail
+
+IF CodeRabbit found only MEDIUM/LOW issues:
+  → Display summary
+  → Add TODO comments for trackable issues
+  → Proceed to Gate 5
+
+IF CodeRabbit found no issues:
+  → Display: "✅ CodeRabbit review passed - no additional issues found"
+  → Proceed to Gate 5
+```
+
+#### Step 7.5.4: CodeRabbit Results Summary
+
+```markdown
+## CodeRabbit External Review
+**Status:** [PASS|ISSUES_FOUND|SKIPPED]
+**Issues Found:** [N]
+
+| Severity | Count | Action |
+|----------|-------|--------|
+| Critical | [N] | [Fixed/Acknowledged] |
+| High | [N] | [Fixed/Acknowledged] |
+| Medium | [N] | [TODO added] |
+| Low | [N] | [TODO added] |
+```
+
+### If User Selects NO (Skip):
+
+```text
+→ Record: "CodeRabbit review: SKIPPED (user choice)"
+→ Proceed directly to Step 8 (Success Output)
+```
+
+---
+
 ## Step 8: Prepare Success Output
 
 ```text
@@ -547,8 +746,13 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 | business-logic-reviewer | ✅/❌ |
 | security-reviewer | ✅/❌ |
 
+## CodeRabbit External Review (Optional)
+**Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
+**Issues Found:** [N or N/A]
+
 ## Handoff to Next Gate
 - Review status: [COMPLETE|FAILED]
 - Blocking issues: [resolved|N remaining]
+- CodeRabbit: [PASS|SKIPPED|N issues acknowledged]
 - Ready for Gate 5: [YES|NO]
 ```
