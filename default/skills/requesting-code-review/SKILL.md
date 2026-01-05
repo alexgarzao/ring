@@ -462,6 +462,17 @@ Do NOT cherry-pick reviewers.
 
 ## Step 7.5: Optional CodeRabbit CLI Review (AFTER Ring Reviewers Pass)
 
+### Common Commands Reference
+
+<a id="coderabbit-install-check"></a>
+**CodeRabbit Installation Check:**
+```bash
+which coderabbit || which cr
+```
+> Used in Step 7.5.1 and after installation to verify CLI availability.
+
+---
+
 ### ⚠️ PREREQUISITES & ENVIRONMENT REQUIREMENTS
 
 **Before attempting Step 7.5, verify your environment supports the required operations:**
@@ -555,10 +566,7 @@ coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 
 #### Step 7.5.1: Check CodeRabbit Installation
 
-```bash
-# Verify CodeRabbit CLI is installed
-which coderabbit || which cr
-```
+Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
 **If NOT installed:**
 ```text
@@ -615,11 +623,7 @@ curl -sI https://cli.coderabbit.ai | head -1 | grep -q "200\|301\|302" && echo "
 curl -fsSL https://cli.coderabbit.ai/install.sh | sh
 ```
 
-**After installation, verify:**
-```bash
-# Verify installation
-which coderabbit || which cr
-```
+**After installation, verify:** Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
 **If installation successful:**
 ```text
