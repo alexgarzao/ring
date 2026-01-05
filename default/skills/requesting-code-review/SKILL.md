@@ -462,6 +462,69 @@ Do NOT cherry-pick reviewers.
 
 ## Step 7.5: Optional CodeRabbit CLI Review (AFTER Ring Reviewers Pass)
 
+### ⚠️ PREREQUISITES & ENVIRONMENT REQUIREMENTS
+
+**Before attempting Step 7.5, verify your environment supports the required operations:**
+
+| Requirement | Local Dev | CI/CD | Containerized | Remote/SSH |
+|-------------|-----------|-------|---------------|------------|
+| `curl \| sh` install | ✅ Yes | ⚠️ May require elevated permissions | ❌ Often blocked | ⚠️ Depends on config |
+| Browser auth (`coderabbit auth login`) | ✅ Yes | ❌ No browser | ❌ No browser | ❌ No browser |
+| Write to `$HOME/.coderabbit/` | ✅ Yes | ⚠️ Ephemeral | ⚠️ Ephemeral | ✅ Usually |
+| Internet access to `cli.coderabbit.ai` | ✅ Yes | ⚠️ Check firewall | ⚠️ Check firewall | ⚠️ Check firewall |
+
+**⛔ HARD STOP CONDITIONS - Skip Step 7.5 if ANY apply:**
+- Running in containerized environment without persistent storage
+- CI/CD pipeline without pre-installed CodeRabbit CLI
+- Non-interactive environment (no TTY for browser auth)
+- Network restrictions blocking `cli.coderabbit.ai`
+- Read-only filesystem
+
+### Environment-Specific Guidance
+
+#### Local Development (RECOMMENDED)
+Standard flow works: `curl | sh` install + browser authentication.
+
+#### CI/CD Pipelines
+**Option A: Pre-install in CI image**
+```dockerfile
+# Add to your CI Dockerfile
+RUN curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+```
+
+**Option B: Use API token authentication (headless)**
+```bash
+# Set token via environment variable (add to CI secrets)
+export CODERABBIT_API_TOKEN="your-api-token"
+coderabbit auth login --token "$CODERABBIT_API_TOKEN"
+```
+
+**Option C: Skip CodeRabbit in CI, run locally**
+```bash
+# In CI config, set env var to auto-skip
+export SKIP_CODERABBIT_REVIEW=true
+```
+
+#### Containerized/Docker Environments
+```bash
+# Option 1: Mount credentials from host
+docker run -v ~/.coderabbit:/root/.coderabbit ...
+
+# Option 2: Pass token as env var
+docker run -e CODERABBIT_API_TOKEN="..." ...
+
+# Option 3: Pre-bake into image (not recommended for tokens)
+```
+
+#### Non-Interactive/Headless Authentication
+```bash
+# Generate API token at: https://app.coderabbit.ai/settings/api-tokens
+# Then authenticate without browser:
+coderabbit auth login --token "cr_xxxxxxxxxxxxx"
+```
+
+---
+
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
 │ ✅ ALL 3 RING REVIEWERS PASSED                                  │
@@ -474,14 +537,19 @@ Do NOT cherry-pick reviewers.
 │ vulnerabilities, and edge cases that may complement Ring        │
 │ reviewers.                                                      │
 │                                                                 │
+│ ⚠️  ENVIRONMENT CHECK:                                          │
+│     • Interactive terminal with browser access? → Standard flow │
+│     • CI/headless? → Requires API token or pre-installed CLI    │
+│     • Container? → Mount credentials or use token auth          │
+│                                                                 │
 │ ⚠️  Requires: CodeRabbit CLI installed and authenticated        │
 │     Install: curl -fsSL https://cli.coderabbit.ai/install.sh | sh│
-│     Auth: coderabbit auth login                                 │
+│     Auth: coderabbit auth login (or --token for headless)       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Ask user:** "Do you want to run CodeRabbit CLI review before proceeding? (a) Yes (b) No, skip"
+**Ask user:** "Do you want to run CodeRabbit CLI review before proceeding? (a) Yes (b) No, skip (c) Skip - environment doesn't support it"
 
 ### If User Selects YES:
 
@@ -514,8 +582,31 @@ which coderabbit || which cr
 │ 📦 INSTALLING CODERABBIT CLI                                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│ Step 1: Installing CodeRabbit CLI...                            │
+│ ⚠️  ENVIRONMENT CHECK FIRST:                                    │
 │                                                                 │
+│ This installation requires:                                     │
+│   • curl command available                                      │
+│   • Write access to $HOME or /usr/local/bin                     │
+│   • Internet access to cli.coderabbit.ai                        │
+│   • Non-containerized environment (or persistent storage)       │
+│                                                                 │
+│ If in CI/container, see "Environment-Specific Guidance" above.  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Check environment before proceeding:**
+```bash
+# Verify prerequisites
+curl --version && echo "curl: OK" || echo "curl: MISSING"
+test -w "$HOME" && echo "HOME writable: OK" || echo "HOME writable: NO"
+curl -sI https://cli.coderabbit.ai | head -1 | grep -q "200\|301\|302" && echo "Network: OK" || echo "Network: BLOCKED"
+```
+
+**If prerequisites pass, install:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ 📦 Step 1: Installing CodeRabbit CLI...                         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -538,12 +629,18 @@ which coderabbit || which cr
 │                                                                 │
 │ Step 2: Authentication required                                 │
 │                                                                 │
-│ You need to authenticate with your CodeRabbit account.          │
-│ This will open a browser window for login.                      │
+│ Choose your authentication method:                              │
 │                                                                 │
-│ Options:                                                        │
-│   (a) Authenticate now (opens browser)                          │
-│   (b) Skip authentication and CodeRabbit review                 │
+│   (a) Browser login (interactive - opens browser)               │
+│       → Best for: Local development with GUI                    │
+│       → Command: coderabbit auth login                          │
+│                                                                 │
+│   (b) API token (headless - no browser needed)                  │
+│       → Best for: CI/CD, containers, SSH sessions               │
+│       → Get token: https://app.coderabbit.ai/settings/api-tokens│
+│       → Command: coderabbit auth login --token "cr_xxx"         │
+│                                                                 │
+│   (c) Skip authentication and CodeRabbit review                 │
 │                                                                 │
 │ Note: Free tier allows 1 review/hour.                           │
 │       Paid plans get enhanced reviews + higher limits.          │
@@ -551,10 +648,18 @@ which coderabbit || which cr
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**If user selects (a) Authenticate:**
+**If user selects (a) Browser login:**
 ```bash
-# Step 2: Authenticate with CodeRabbit
+# Step 2a: Authenticate with CodeRabbit (opens browser)
+# ⚠️ Requires: GUI environment with default browser
 coderabbit auth login
+```
+
+**If user selects (b) API token:**
+```bash
+# Step 2b: Authenticate with API token (headless)
+# Get your token from: https://app.coderabbit.ai/settings/api-tokens
+coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 ```
 
 **After authentication:**
