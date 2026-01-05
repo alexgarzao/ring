@@ -461,7 +461,45 @@ After fixes committed:
 Do NOT cherry-pick reviewers.
 ```
 
-## Step 7.5: Optional CodeRabbit CLI Review (AFTER Ring Reviewers Pass)
+## Step 7.5: CodeRabbit CLI Validation (Per-Subtask/Task)
+
+**⛔ NEW APPROACH: CodeRabbit validates EACH subtask/task as it completes, accumulating findings to a file.**
+
+### CodeRabbit Integration Overview
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ CODERABBIT PER-UNIT VALIDATION FLOW                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ DURING REVIEW (after each subtask/task Ring reviewers pass):   │
+│   1. Run CodeRabbit for that unit's files                      │
+│   2. Append findings to .coderabbit-findings.md                │
+│   3. Continue to next unit                                     │
+│                                                                 │
+│ BEFORE COMMIT (Step 8):                                        │
+│   1. Display accumulated .coderabbit-findings.md               │
+│   2. User decides: fix issues OR acknowledge and proceed       │
+│                                                                 │
+│ BENEFITS:                                                      │
+│   • Catches issues close to when code was written              │
+│   • Smaller scope = faster reviews (7-30 min per unit)         │
+│   • Issues isolated to specific units, easier to fix           │
+│   • Accumulated file provides audit trail                      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Rate Limits (Official - per developer per repository per hour)
+
+| Limit Type | Value | Notes |
+|------------|-------|-------|
+| Files reviewed | 200 files/hour | Per review |
+| Reviews | 3 back-to-back, then 4/hour | **7 reviews possible in first hour** |
+| Conversations | 25 back-to-back, then 50/hour | For follow-up questions |
+
+**⏱️ TIMING:** Each CodeRabbit review takes **7-30+ minutes** depending on scope.
+Run in background and check periodically for completion.
 
 ### Common Commands Reference
 
@@ -834,11 +872,16 @@ FOR EACH unit IN validation_scope.units:
 
 ```bash
 # Run CodeRabbit for specific files (subtask-level) or all files (task-level)
+# ⏱️ TIMING: 7-30+ minutes per review. Run in background if possible.
+
 # Option 1: If validating specific files (subtask mode)
 coderabbit --prompt-only --type uncommitted --base [unit.base_sha] -- [unit.files...]
 
 # Option 2: If validating all changes (task mode)
 coderabbit --prompt-only --type uncommitted --base [base_branch]
+
+# Check if CodeRabbit is still running (no status endpoint - wait for command to complete)
+# The command is synchronous - it completes when output is returned
 ```
 
 ```text
@@ -858,6 +901,33 @@ coderabbit --prompt-only --type uncommitted --base [base_branch]
   
   IF unit_result.issues.critical.length > 0 OR unit_result.issues.high.length > 0:
     → coderabbit_results.overall_status = "ISSUES_FOUND"
+  
+  ─────────────────────────────────────────────────────────────────
+  ⛔ MANDATORY: APPEND FINDINGS TO .coderabbit-findings.md
+  ─────────────────────────────────────────────────────────────────
+  
+  After EACH unit validation, append results to findings file:
+  
+  IF .coderabbit-findings.md does NOT exist:
+    → Create file with header (see "Findings File Format" below)
+  
+  APPEND to .coderabbit-findings.md:
+  ```
+  ## Unit: [unit.id] - [unit.name]
+  **Validated:** [timestamp]
+  **Status:** [PASS | ISSUES_FOUND]
+  **Files:** [unit.files.join(", ")]
+  
+  ### Issues Found
+  | # | Severity | Description | File:Line | Recommendation |
+  |---|----------|-------------|-----------|----------------|
+  | 1 | [severity] | [description] | [file:line] | [recommendation] |
+  | ... | ... | ... | ... | ... |
+  
+  ---
+  ```
+  
+  This ensures ALL findings are accumulated for review before commit.
 
 AFTER ALL UNITS VALIDATED:
   Display summary:
@@ -884,6 +954,64 @@ AFTER ALL UNITS VALIDATED:
 - High severity issues
 - Security vulnerabilities
 - Performance concerns
+
+### Findings File Format (.coderabbit-findings.md)
+
+**This file accumulates ALL CodeRabbit findings across all validated units.**
+
+```markdown
+# CodeRabbit Findings
+
+**Generated:** [initial timestamp]
+**Last Updated:** [latest timestamp]
+**Total Units Validated:** [N]
+**Overall Status:** [PASS | ISSUES_FOUND]
+
+## Summary
+
+| Severity | Count | Status |
+|----------|-------|--------|
+| Critical | [N] | [N pending / N fixed] |
+| High | [N] | [N pending / N fixed] |
+| Medium | [N] | [N pending / N fixed] |
+| Low | [N] | [N pending / N fixed] |
+
+---
+
+## Unit: [subtask-1-id] - [subtask-1-name]
+**Validated:** [timestamp]
+**Status:** [PASS | ISSUES_FOUND]
+**Files:** [file1.go, file2.go]
+
+### Issues Found
+| # | Severity | Description | File:Line | Recommendation | Status |
+|---|----------|-------------|-----------|----------------|--------|
+| 1 | CRITICAL | Race condition in handler | handler.go:45 | Use sync.Mutex | PENDING |
+| 2 | HIGH | Unchecked error return | repo.go:123 | Handle error | PENDING |
+
+---
+
+## Unit: [subtask-2-id] - [subtask-2-name]
+**Validated:** [timestamp]
+**Status:** PASS
+**Files:** [file3.go]
+
+### Issues Found
+_No issues found._
+
+---
+
+[... additional units ...]
+```
+
+**File Location:** Project root (`.coderabbit-findings.md`)
+
+**Lifecycle:**
+1. Created when first CodeRabbit validation runs
+2. Appended after each unit validation
+3. Displayed before commit (Step 8)
+4. User decides: fix issues or acknowledge and proceed
+5. After commit, file can be deleted or kept for audit
 
 #### Step 7.5.3: Handle CodeRabbit Findings
 
@@ -1282,7 +1410,79 @@ CodeRabbit review is skipped in these cases:
 
 ---
 
-## Step 8: Prepare Success Output
+## Step 8: Display Accumulated Findings & Prepare Success Output
+
+**⛔ BEFORE generating success output, MUST display accumulated CodeRabbit findings.**
+
+### Step 8.1: Display Accumulated CodeRabbit Findings
+
+```text
+IF .coderabbit-findings.md exists:
+  
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 CODERABBIT FINDINGS - ACCUMULATED DURING REVIEW              │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ The following issues were identified by CodeRabbit during the  │
+  │ review process. Review before proceeding to commit.            │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  → Display contents of .coderabbit-findings.md
+  → Show summary table:
+  
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📊 CODERABBIT FINDINGS SUMMARY                                  │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ | Severity | Count | Status |                                  │
+  │ |----------|-------|--------|                                  │
+  │ | Critical | [N]   | [pending/fixed] |                         │
+  │ | High     | [N]   | [pending/fixed] |                         │
+  │ | Medium   | [N]   | [pending/fixed] |                         │
+  │ | Low      | [N]   | [pending/fixed] |                         │
+  │                                                                 │
+  │ Total Issues: [N] | Fixed: [N] | Pending: [N]                  │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  → Ask user:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ ❓ ACTION REQUIRED                                              │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ [N] CodeRabbit issues are pending. What would you like to do?  │
+  │                                                                 │
+  │   (a) Fix all pending issues now (dispatch implementation agent)│
+  │   (b) Acknowledge and proceed to commit (issues documented)    │
+  │   (c) Review issues in detail (.coderabbit-findings.md)        │
+  │                                                                 │
+  │ Note: Choosing (b) will include findings file in commit for    │
+  │       tracking. Issues remain documented for future fixing.    │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  IF user selects (a) Fix issues:
+    → Dispatch implementation agent with ALL pending issues from findings file
+    → After fixes, update .coderabbit-findings.md (mark issues as FIXED)
+    → Re-run CodeRabbit validation for affected files
+    → Loop back to Step 8.1 to display updated findings
+  
+  IF user selects (b) Acknowledge and proceed:
+    → Record: "CodeRabbit issues acknowledged by user"
+    → Include .coderabbit-findings.md in commit (for audit trail)
+    → Proceed to Step 8.2 (Success Output)
+  
+  IF user selects (c) Review details:
+    → Display full .coderabbit-findings.md content
+    → Return to action prompt
+
+ELSE (no findings file exists):
+  → CodeRabbit was skipped or found no issues
+  → Proceed directly to Step 8.2 (Success Output)
+```
+
+### Step 8.2: Generate Success Output
 
 ```text
 Generate skill output:
@@ -1311,10 +1511,18 @@ Generate skill output:
 ## Low/Cosmetic Issues (TODO/FIXME added)
 [list with file locations]
 
+## CodeRabbit Findings
+**Findings File:** .coderabbit-findings.md
+**Total Issues Found:** [N]
+**Issues Fixed:** [N]
+**Issues Acknowledged:** [N]
+**Status:** [ALL_FIXED | ACKNOWLEDGED | NO_ISSUES]
+
 ## Handoff to Next Gate
 - Review status: COMPLETE
 - All blocking issues: RESOLVED
 - Reviewers passed: 3/3
+- CodeRabbit findings: [status]
 - Ready for Gate 5 (Validation): YES
 ```
 
