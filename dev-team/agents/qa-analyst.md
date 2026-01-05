@@ -529,7 +529,9 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 | Mutation testing | Check if golang.md/typescript.md REQUIRES them |
 | Specific coverage % | Check EXACT threshold in standards |
 
-**⛔ HARD GATE:** If you cannot quote the requirement from golang.md/typescript.md → Do NOT flag it as missing
+**⛔ HARD GATE:** If you cannot quote the requirement from golang.md/typescript.md → Do NOT flag it as missing.
+
+**→ See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for:**
 - Anti-rationalization rules
 - Completeness verification checklist
 
