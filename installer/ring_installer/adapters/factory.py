@@ -46,19 +46,19 @@ class FactoryAdapter(PlatformAdapter):
         "MultiEdit": "Edit",  # Factory uses Edit for modifications
         "NotebookEdit": "Edit",
         "BrowseURL": "FetchUrl",
-        # Context7 tool names (Factory uses triple-underscore namespace)
-        "mcp__context7__resolve-library-id": "context7___resolve-library-id",
-        "mcp__context7__get-library-docs": "context7___get-library-docs",
+        # MCP tools: Factory uses same mcp__server__tool format as Claude Code
+        # No transformation needed for MCP tools
     }
 
-    # Tools that droids cannot use (droids can't spawn other droids)
-    _FACTORY_INVALID_TOOLS: set = {"Task", "Dispatch", "SubAgent"}
+    # Tools that droids cannot use
+    # NOTE: Task IS valid - droids CAN spawn other droids via Task tool
+    _FACTORY_INVALID_TOOLS: set = {"Dispatch", "SubAgent"}
 
     # Model shorthand to Factory model ID mapping
     _FACTORY_MODEL_MAP: Dict[str, str] = {
         "opus": "claude-opus-4-5-20251101",
         "sonnet": "claude-sonnet-4-5-20250929",
-        "haiku": "claude-haiku-4-5-20250929",
+        "haiku": "claude-haiku-4-5-20251001",
         "inherit": "inherit",
     }
 
@@ -230,7 +230,7 @@ class FactoryAdapter(PlatformAdapter):
 
         return result
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
         Transform a Ring hook for Factory AI.
 
@@ -247,9 +247,8 @@ class FactoryAdapter(PlatformAdapter):
         """
         # Replace Claude Code's plugin root variable with Factory's hooks directory
         # Factory hooks are installed to ~/.factory/hooks/, not a plugin directory
-        # Add 'bash' prefix for proper shell execution
-        result = hook_content.replace("${CLAUDE_PLUGIN_ROOT}/hooks/", "bash ~/.factory/hooks/")
-        result = result.replace("$CLAUDE_PLUGIN_ROOT/hooks/", "bash ~/.factory/hooks/")
+        result = hook_content.replace("${CLAUDE_PLUGIN_ROOT}/hooks/", "~/.factory/hooks/")
+        result = result.replace("$CLAUDE_PLUGIN_ROOT/hooks/", "~/.factory/hooks/")
         # Also handle any remaining references
         result = result.replace("${CLAUDE_PLUGIN_ROOT}", "~/.factory")
         result = result.replace("$CLAUDE_PLUGIN_ROOT", "~/.factory")
@@ -379,26 +378,28 @@ class FactoryAdapter(PlatformAdapter):
 
         # Merge hooks - combine with existing hooks if any
         existing_hooks = existing_settings.get("hooks", {})
-        
+
         for event_name, event_hooks in hooks_to_merge.items():
             if event_name not in existing_hooks:
                 existing_hooks[event_name] = []
-            
+
             # Add new hooks, avoiding duplicates based on (command + matcher) combination
             existing_hook_keys = {
                 (h.get("hooks", [{}])[0].get("command", ""), h.get("matcher", ""))
                 for h in existing_hooks[event_name]
                 if h.get("hooks")
             }
-            
+
             for hook_entry in event_hooks:
-                hook_commands = hook_entry.get("hooks", [])
+                # Transform hook commands to use Factory paths
+                transformed_entry = self._transform_hook_entry(hook_entry, base_path)
+                hook_commands = transformed_entry.get("hooks", [])
                 if hook_commands:
                     cmd = hook_commands[0].get("command", "")
-                    matcher = hook_entry.get("matcher", "")
+                    matcher = transformed_entry.get("matcher", "")
                     key = (cmd, matcher)
                     if cmd and key not in existing_hook_keys:
-                        existing_hooks[event_name].append(hook_entry)
+                        existing_hooks[event_name].append(transformed_entry)
                         existing_hook_keys.add(key)
 
         existing_settings["hooks"] = existing_hooks
@@ -418,6 +419,57 @@ class FactoryAdapter(PlatformAdapter):
         except Exception as e:
             logger.error(f"Failed to write settings.json: {e}")
             return False
+
+    def _transform_hook_entry(
+        self,
+        hook_entry: Dict[str, Any],
+        install_path: Path
+    ) -> Dict[str, Any]:
+        """
+        Transform a hook entry's commands for Factory compatibility.
+
+        Converts Claude Code plugin paths to Factory absolute paths:
+        - ${CLAUDE_PLUGIN_ROOT}/hooks/script.sh -> ~/.factory/hooks/script.sh
+        - $CLAUDE_PLUGIN_ROOT/hooks/script.sh -> ~/.factory/hooks/script.sh
+
+        Args:
+            hook_entry: A hook entry dict with 'hooks' array and optional 'matcher'
+            install_path: The Factory installation path
+
+        Returns:
+            Transformed hook entry with updated command paths
+        """
+        result = dict(hook_entry)
+        hooks_path = install_path / "hooks"
+
+        if "hooks" in result:
+            transformed_hooks = []
+            for hook_cmd in result["hooks"]:
+                if not isinstance(hook_cmd, dict):
+                    transformed_hooks.append(hook_cmd)
+                    continue
+
+                transformed_cmd = dict(hook_cmd)
+                if "command" in transformed_cmd:
+                    cmd = transformed_cmd["command"]
+                    # Transform Claude plugin paths to Factory absolute paths
+                    # Use absolute path with ~ expansion for portability
+                    cmd = cmd.replace(
+                        "${CLAUDE_PLUGIN_ROOT}/hooks/",
+                        f"{hooks_path}/"
+                    )
+                    cmd = cmd.replace(
+                        "$CLAUDE_PLUGIN_ROOT/hooks/",
+                        f"{hooks_path}/"
+                    )
+                    # Handle any remaining plugin root references
+                    cmd = cmd.replace("${CLAUDE_PLUGIN_ROOT}", str(install_path))
+                    cmd = cmd.replace("$CLAUDE_PLUGIN_ROOT", str(install_path))
+                    transformed_cmd["command"] = cmd
+                transformed_hooks.append(transformed_cmd)
+            result["hooks"] = transformed_hooks
+
+        return result
 
     def should_skip_hook_file(self, filename: str) -> bool:
         """
