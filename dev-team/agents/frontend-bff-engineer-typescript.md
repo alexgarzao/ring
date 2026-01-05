@@ -565,22 +565,13 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 
 ### ⛔ Standards Boundary Enforcement (CRITICAL)
 
-**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
-
-**ONLY requirements from typescript.md apply. Do NOT invent additional requirements.**
-
-**⛔ FORBIDDEN to flag as missing (NOT in typescript.md unless explicitly listed):**
-
-| Item | Why NOT Required |
-|------|------------------|
-| class-validator | Zod is the standard |
-| TypeORM | Prisma is the standard |
-| Jest | Vitest is the standard |
-| InversifyJS | TSyringe is the standard |
-
-**⛔ HARD GATE:** If you cannot quote the requirement from typescript.md → Do NOT flag it as missing
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for:**
+- Complete boundary rules
+- FORBIDDEN patterns list (do NOT duplicate here)
 - Anti-rationalization rules
 - Completeness verification checklist
+
+**⛔ HARD GATE:** If you cannot quote the requirement from typescript.md → Do NOT flag it as missing.
 
 ### Output Format
 
