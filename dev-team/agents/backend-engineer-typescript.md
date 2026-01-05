@@ -810,8 +810,6 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 | InversifyJS | Check if TSyringe is the standard |
 
 **⛔ HARD GATE:** If you cannot quote the requirement from typescript.md → Do NOT flag it as missing
-- Anti-rationalization rules
-- Completeness verification checklist
 
 ### Output Format
 
