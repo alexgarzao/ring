@@ -6,16 +6,22 @@ It uses similar concepts to Ring/Claude Code with minor directory differences:
 - agents -> agent (singular directory name)
 - commands -> command (singular directory name)
 - skills -> skill (singular directory name)
-- hooks -> integrated into config or via plugins
+- hooks -> NOT SUPPORTED (OpenCode uses plugin-based hooks)
+
+IMPORTANT: OpenCode hooks are plugin-based (tool.execute.before, etc.) which are
+incompatible with Ring's file-based hooks. Ring hooks CANNOT be installed on OpenCode.
 """
 
 import json
+import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
+
+logger = logging.getLogger(__name__)
 
 
 class OpenCodeAdapter(PlatformAdapter):
@@ -25,17 +31,26 @@ class OpenCodeAdapter(PlatformAdapter):
     OpenCode uses a format very similar to Claude Code with these differences:
     - Install path: ~/.config/opencode/ (user) or .opencode/ (project)
     - Directory names: singular (agent/, command/, skill/) not plural
-    - Hooks: Merged into opencode.json config or handled via plugins
+    - Hooks: NOT SUPPORTED - OpenCode uses plugin-based hooks incompatible with Ring
     - Config: opencode.json or opencode.jsonc instead of settings.json
 
     Key OpenCode features:
     - Agent modes: primary, subagent, all
     - Tools: bash, read, write, edit, list, glob, grep, webfetch, task, todowrite, todoread
     - Model format: provider/model-id (e.g., anthropic/claude-sonnet-4-5)
+    - Permissions: edit/bash with ask/allow/deny values
+
+    Limitations:
+    - Hooks are NOT supported (OpenCode uses plugin-based hooks)
+    - Command argument-hint field is NOT supported
+    - Some Ring-specific frontmatter fields are stripped
     """
 
     platform_id = "opencode"
     platform_name = "OpenCode"
+
+    # Flag indicating hooks are not supported on this platform
+    supports_hooks = False
 
     # OpenCode tool name mappings (Claude Code -> OpenCode)
     _OPENCODE_TOOL_NAME_MAP: Dict[str, str] = {
@@ -66,6 +81,47 @@ class OpenCodeAdapter(PlatformAdapter):
         "inherit": "inherit",
     }
 
+    # OpenCode skill allowed frontmatter fields
+    # Reference: OpenCode skill schema - only these fields are recognized
+    # All other fields (model, tools, version, etc.) are stripped during transformation
+    _OPENCODE_SKILL_ALLOWED_FIELDS: List[str] = [
+        "name",          # Required: skill identifier
+        "description",   # Optional: displayed in skill list
+        "license",       # Optional: license identifier (e.g., "MIT")
+        "compatibility", # Optional: version constraints
+        "metadata",      # Optional: arbitrary key-value metadata
+    ]
+
+    # OpenCode agent allowed frontmatter fields
+    # Reference: OpenCode agent schema - defines agent behavior and capabilities
+    _OPENCODE_AGENT_ALLOWED_FIELDS: List[str] = [
+        "name",          # Required: agent identifier
+        "description",   # Optional: shown in agent selection
+        "mode",          # Optional: "primary", "subagent", or "all"
+        "model",         # Optional: "provider/model-id" format
+        "tools",         # Optional: tool access configuration
+        "hidden",        # Optional: hide from agent list
+        "subtask",       # Optional: mark as subtask-only agent
+        "temperature",   # Optional: response randomness (0.0-1.0)
+        "maxSteps",      # Optional: max agentic iterations
+        "permission",    # Optional: {edit: ask|allow|deny, bash: ask|allow|deny}
+    ]
+
+    # OpenCode command allowed frontmatter fields
+    # Reference: OpenCode command schema
+    # Note: argument-hint is NOT supported - use $ARGUMENTS in template body
+    _OPENCODE_COMMAND_ALLOWED_FIELDS: List[str] = [
+        "name",          # Optional: override filename-based name
+        "description",   # Optional: shown in slash command suggestions
+        "model",         # Optional: override model for this command
+        "subtask",       # Optional: mark as subtask command
+        "agent",         # Optional: which agent executes this command
+    ]
+
+    # OpenCode permission values
+    # Used for edit and bash permission configuration
+    _OPENCODE_PERMISSION_VALUES: List[str] = ["ask", "allow", "deny"]
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize the OpenCode adapter.
@@ -80,7 +136,12 @@ class OpenCodeAdapter(PlatformAdapter):
         Transform a Ring skill for OpenCode.
 
         OpenCode uses the same markdown + YAML frontmatter format as Ring/Claude Code.
-        Transformation is mostly passthrough with tool name normalization.
+        Transformation includes:
+        - Tool name normalization (capitalized -> lowercase)
+        - Frontmatter filtering (only allowed fields kept)
+
+        OpenCode skill frontmatter only supports: name, description, license,
+        compatibility, metadata. All other fields are stripped.
 
         Args:
             skill_content: The original skill content
@@ -92,13 +153,45 @@ class OpenCodeAdapter(PlatformAdapter):
         frontmatter, body = self.extract_frontmatter(skill_content)
 
         if frontmatter:
-            frontmatter = self._transform_frontmatter(frontmatter)
+            frontmatter = self._transform_skill_frontmatter(frontmatter)
 
         body = self._normalize_tool_references(body)
 
         if frontmatter:
             return self.create_frontmatter(frontmatter) + "\n" + body
         return body
+
+    def _transform_skill_frontmatter(self, frontmatter: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Transform skill frontmatter for OpenCode compatibility.
+
+        Filters frontmatter to only include fields supported by OpenCode:
+        name, description, license, compatibility, metadata.
+
+        Note: Unlike agents/commands, skills don't need model/tools transformation
+        since those fields aren't in the allowed list anyway. We filter directly
+        from the original frontmatter for efficiency.
+
+        Args:
+            frontmatter: Original skill frontmatter
+
+        Returns:
+            Filtered frontmatter with only OpenCode-supported fields
+        """
+        # Filter directly to allowed fields (no need for base transformation
+        # since model/tools aren't in skill allowed fields anyway)
+        filtered = {
+            key: value
+            for key, value in frontmatter.items()
+            if key in self._OPENCODE_SKILL_ALLOWED_FIELDS
+        }
+
+        # Log count of stripped fields for debugging (not field names for security)
+        stripped_count = len(frontmatter) - len(filtered)
+        if stripped_count > 0:
+            logger.debug("Stripped %d unsupported skill frontmatter field(s)", stripped_count)
+
+        return filtered
 
     def transform_agent(self, agent_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -165,7 +258,11 @@ class OpenCodeAdapter(PlatformAdapter):
         - description: Brief description
         - model: Override model for this command
         - subtask: Mark as subtask command
-        - argument-hint: Usage hint for arguments
+        - agent: Which agent executes this command
+
+        Note:
+            OpenCode does NOT support argument-hint. Arguments should be
+            handled in the command template body using $ARGUMENTS placeholder.
 
         Args:
             command_content: The original command content
@@ -185,27 +282,34 @@ class OpenCodeAdapter(PlatformAdapter):
             return self.create_frontmatter(frontmatter) + "\n" + body
         return body
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
         Transform a Ring hook for OpenCode.
 
-        OpenCode handles hooks differently - they're typically integrated into
-        the opencode.json config or handled via plugins. This transforms
-        hook paths for OpenCode's directory structure.
+        IMPORTANT: OpenCode does NOT support file-based hooks. OpenCode uses a
+        plugin-based hook system (tool.execute.before, tool.execute.after, etc.)
+        which is incompatible with Ring's file-based hooks.
+
+        This method returns None to indicate hooks should not be installed.
 
         Args:
             hook_content: The original hook content (JSON or script)
             metadata: Optional metadata about the hook
 
         Returns:
-            Transformed hook content for OpenCode
-        """
-        result = hook_content.replace("${CLAUDE_PLUGIN_ROOT}/hooks/", "bash ~/.config/opencode/hook/")
-        result = result.replace("$CLAUDE_PLUGIN_ROOT/hooks/", "bash ~/.config/opencode/hook/")
-        result = result.replace("${CLAUDE_PLUGIN_ROOT}", "~/.config/opencode")
-        result = result.replace("$CLAUDE_PLUGIN_ROOT", "~/.config/opencode")
+            None - hooks are not supported on OpenCode
 
-        return result
+        Note:
+            Logs a warning instead of raising an exception.
+        """
+        hook_name = metadata.get("name", "unknown") if metadata else "unknown"
+        logger.warning(
+            "Hook '%s' cannot be installed: OpenCode uses plugin-based hooks "
+            "(tool.execute.before, tool.execute.after, etc.) which are incompatible with "
+            "Ring's file-based hooks. This hook will be skipped.",
+            hook_name
+        )
+        return None
 
     def get_install_path(self) -> Path:
         """
@@ -224,8 +328,7 @@ class OpenCodeAdapter(PlatformAdapter):
                     candidate.relative_to(home)
                     env_path = candidate
                 except ValueError:
-                    import logging
-                    logging.getLogger(__name__).warning(
+                    logger.warning(
                         "OPENCODE_CONFIG_PATH=%s ignored: path must be under home", override
                     )
             self._install_path = env_path
@@ -238,8 +341,11 @@ class OpenCodeAdapter(PlatformAdapter):
         Note: OpenCode uses singular directory names (agent/, command/, skill/)
         unlike Claude Code which uses plural (agents/, commands/, skills/).
 
+        IMPORTANT: Hooks are NOT included because OpenCode uses plugin-based hooks
+        which are incompatible with Ring's file-based hooks.
+
         Returns:
-            Mapping of Ring components to OpenCode directories
+            Mapping of Ring components to OpenCode directories (excludes hooks)
         """
         return {
             "agents": {
@@ -253,27 +359,50 @@ class OpenCodeAdapter(PlatformAdapter):
             "skills": {
                 "target_dir": "skill",  # Singular in OpenCode
                 "extension": ".md"
-            },
-            "hooks": {
-                "target_dir": "hook",  # Singular in OpenCode
-                "extension": ""  # Multiple extensions supported
             }
+            # NOTE: hooks intentionally excluded - OpenCode uses plugin-based hooks
         }
+
+    def supports_component(self, component_type: str) -> bool:
+        """
+        Check if this platform supports a specific component type.
+
+        OpenCode supports agents, commands, and skills but NOT hooks.
+        OpenCode uses plugin-based hooks (tool.execute.before, etc.) which are
+        incompatible with Ring's file-based hooks.
+
+        Note: This explicit override exists for two reasons:
+        1. Fast short-circuit for hooks checks without mapping lookup
+        2. Clear documentation that hooks are intentionally unsupported
+        The base class would also return False (hooks not in mapping), but
+        this explicit check makes the intent clearer and avoids dict lookup.
+
+        Args:
+            component_type: Type of component (skills, agents, commands, hooks)
+
+        Returns:
+            True for skills/agents/commands, False for hooks
+        """
+        if component_type == "hooks":
+            return False  # OpenCode uses plugin-based hooks, not file-based
+        return super().supports_component(component_type)
 
     def get_terminology(self) -> Dict[str, str]:
         """
         Get OpenCode terminology.
 
-        OpenCode uses the same terminology as Claude Code/Ring.
+        OpenCode uses the same terminology as Claude Code/Ring for supported
+        components. Note: hooks are intentionally excluded since OpenCode
+        does not support Ring's file-based hooks.
 
         Returns:
-            Identity mapping since OpenCode uses Ring terminology
+            Mapping for supported components only (excludes hooks)
         """
         return {
             "agent": "agent",
             "skill": "skill",
             "command": "command",
-            "hook": "hook"
+            # NOTE: hook excluded - OpenCode uses plugin-based hooks, not file-based
         }
 
     def is_native_format(self) -> bool:
@@ -289,11 +418,12 @@ class OpenCodeAdapter(PlatformAdapter):
         """
         Check if this platform requires hooks to be merged into settings.
 
-        OpenCode can handle hooks via the opencode.json config file,
-        but also supports hook files in the hook/ directory.
+        IMPORTANT: OpenCode does NOT support Ring's file-based hooks at all.
+        OpenCode uses a plugin-based hook system (tool.execute.before, etc.)
+        which cannot be configured through settings.
 
         Returns:
-            False - OpenCode supports standalone hook files
+            False - hooks are not supported on OpenCode
         """
         return False
 
@@ -334,6 +464,7 @@ class OpenCodeAdapter(PlatformAdapter):
         - subtask: Mark as subtask agent
         - temperature: Response randomness
         - maxSteps: Max agentic iterations
+        - permission: {edit: ask|allow|deny, bash: ask|allow|deny}
 
         Args:
             frontmatter: Original agent frontmatter
@@ -343,6 +474,7 @@ class OpenCodeAdapter(PlatformAdapter):
         """
         result = self._transform_frontmatter(frontmatter)
 
+        # Convert Ring 'type' field to OpenCode 'mode' field
         if "type" in result:
             agent_type = result.pop("type")
             if agent_type == "subagent" and "mode" not in result:
@@ -350,39 +482,131 @@ class OpenCodeAdapter(PlatformAdapter):
             elif agent_type == "primary" and "mode" not in result:
                 result["mode"] = "primary"
 
-        # Remove Ring-specific fields not supported by OpenCode
-        for field in ["version", "last_updated", "changelog", "output_schema", "color", "type"]:
-            result.pop(field, None)
+        # Transform permissions if present
+        if "permissions" in result or "permission" in result:
+            result["permission"] = self._transform_permissions(
+                result.pop("permissions", result.pop("permission", None))
+            )
 
-        return result
+        # Filter to only allowed fields
+        filtered = {
+            key: value
+            for key, value in result.items()
+            if key in self._OPENCODE_AGENT_ALLOWED_FIELDS
+        }
+
+        # Log count of stripped fields for debugging (not field names for security)
+        stripped_count = len(result) - len(filtered)
+        if stripped_count > 0:
+            logger.debug("Stripped %d unsupported agent frontmatter field(s)", stripped_count)
+
+        return filtered
+
+    def _transform_permissions(self, permissions: Any) -> Optional[Dict[str, str]]:
+        """
+        Transform Ring permissions to OpenCode permission format.
+
+        OpenCode permissions format:
+        {
+            "edit": "ask|allow|deny",
+            "bash": "ask|allow|deny"
+        }
+
+        Args:
+            permissions: Ring permission data (dict, list, or string)
+
+        Returns:
+            OpenCode-formatted permission dict, or None if invalid
+        """
+        if permissions is None:
+            return None
+
+        # Declare result once to avoid variable shadowing
+        result: Dict[str, str] = {}
+
+        # If already in OpenCode format
+        if isinstance(permissions, dict):
+            for key in ["edit", "bash"]:
+                if key in permissions:
+                    value = str(permissions[key]).lower()
+                    # Validate value
+                    if value in self._OPENCODE_PERMISSION_VALUES:
+                        result[key] = value
+                    elif value in ["true", "1", "yes"]:
+                        result[key] = "allow"
+                    elif value in ["false", "0", "no"]:
+                        result[key] = "deny"
+                    else:
+                        result[key] = "ask"  # Default to ask for unknown values
+            return result if result else None
+
+        # If it's a list of permission names (Ring format)
+        if isinstance(permissions, list):
+            for perm in permissions:
+                perm_str = str(perm).lower()
+                if "edit" in perm_str:
+                    result["edit"] = "allow"
+                if "bash" in perm_str or "shell" in perm_str:
+                    result["bash"] = "allow"
+            return result if result else None
+
+        # If it's a string
+        if isinstance(permissions, str):
+            perm_lower = permissions.lower()
+            if perm_lower in self._OPENCODE_PERMISSION_VALUES:
+                # Apply same permission to both
+                return {"edit": perm_lower, "bash": perm_lower}
+
+        return None
 
     def _transform_command_frontmatter(self, frontmatter: Dict[str, Any]) -> Dict[str, Any]:
         """
         Transform command frontmatter for OpenCode.
 
-        OpenCode command frontmatter:
+        OpenCode command frontmatter (supported fields only):
+        - name: Command name
         - description: Shown in slash suggestions
         - model: Override model for command
         - subtask: Mark as subtask command
-        - argument-hint: Usage hint
+
+        NOTE: OpenCode does NOT support argument-hint field. Arguments should be
+        handled in the command template body using $ARGUMENTS placeholder.
 
         Args:
             frontmatter: Original command frontmatter
 
         Returns:
-            Transformed OpenCode command frontmatter
+            Transformed OpenCode command frontmatter (filtered to valid fields)
         """
         result = self._transform_frontmatter(frontmatter)
 
-        if "args" in result and "argument-hint" not in result:
-            result["argument-hint"] = result.pop("args")
-        elif "arguments" in result and "argument-hint" not in result:
-            result["argument-hint"] = result.pop("arguments")
+        # Log if argument hints are being dropped
+        dropped_args = []
+        for arg_field in ["args", "arguments", "argument-hint", "allowed_args"]:
+            if arg_field in result:
+                dropped_args.append(arg_field)
+                result.pop(arg_field, None)
 
-        for field in ["name", "version", "type", "tags"]:
-            result.pop(field, None)
+        if dropped_args:
+            logger.debug(
+                "Dropped unsupported argument fields: %s. "
+                "OpenCode doesn't support argument-hint. Use $ARGUMENTS in template body.",
+                dropped_args
+            )
 
-        return result
+        # Filter to only allowed fields
+        filtered = {
+            key: value
+            for key, value in result.items()
+            if key in self._OPENCODE_COMMAND_ALLOWED_FIELDS
+        }
+
+        # Log count of stripped fields for debugging (not field names for security)
+        stripped_count = len(result) - len(filtered)
+        if stripped_count > 0:
+            logger.debug("Stripped %d unsupported command frontmatter field(s)", stripped_count)
+
+        return filtered
 
     def _transform_tools_for_opencode(self, tools: Any) -> Any:
         """
@@ -476,57 +700,38 @@ class OpenCodeAdapter(PlatformAdapter):
         """
         Merge hooks configuration into OpenCode's config file.
 
-        OpenCode can optionally have hooks defined in opencode.json.
-        This method handles merging Ring hooks into that config.
+        IMPORTANT: This method is a NO-OP for OpenCode because OpenCode does NOT
+        support Ring's file-based hooks. OpenCode uses a plugin-based hook system
+        (tool.execute.before, tool.execute.after, etc.) which cannot be configured
+        through simple JSON merging.
+
+        Ring hooks require:
+        - Session start/stop scripts
+        - Prompt submission handlers
+        - File-based execution
+
+        OpenCode hooks are:
+        - Plugin-based (Go/TypeScript plugins)
+        - Event-driven (tool.execute.*, session.*, etc.)
+        - Registered programmatically
+
+        These systems are fundamentally incompatible.
 
         Args:
-            hooks_config: The hooks configuration to merge
-            dry_run: If True, don't actually write the file
-            install_path: Optional custom install path
+            hooks_config: The hooks configuration to merge (ignored)
+            dry_run: If True, don't actually write the file (ignored)
+            install_path: Optional custom install path (ignored)
 
         Returns:
-            True if successful, False otherwise
+            True - always returns True but performs no action
         """
-        import logging
-
-        logger = logging.getLogger(__name__)
-        base_path = install_path or self.get_install_path()
-        config_path = base_path / "opencode.json"
-
-        existing_config: Dict[str, Any] = {}
-        if config_path.exists():
-            try:
-                content = config_path.read_text(encoding="utf-8")
-                lines = []
-                for line in content.split("\n"):
-                    stripped = line.strip()
-                    if not stripped.startswith("//"):
-                        lines.append(line)
-                clean_content = "\n".join(lines)
-                existing_config = json.loads(clean_content) if clean_content.strip() else {}
-            except Exception as e:
-                logger.warning(f"Failed to read opencode.json: {e}")
-
-        if "hooks" not in existing_config:
-            existing_config["hooks"] = {}
-
-        hooks_to_merge = hooks_config.get("hooks", hooks_config)
-        for event_name, event_hooks in hooks_to_merge.items():
-            if event_name not in existing_config["hooks"]:
-                existing_config["hooks"][event_name] = []
-            existing_config["hooks"][event_name].extend(event_hooks)
-
-        if dry_run:
-            logger.info(f"[DRY RUN] Would merge hooks into {config_path}")
-            return True
-
-        try:
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-            config_path.write_text(
-                json.dumps(existing_config, indent=2),
-                encoding="utf-8"
+        if hooks_config:
+            hook_count = len(hooks_config.get("hooks", hooks_config))
+            logger.warning(
+                "Cannot merge %d hook(s) to OpenCode config: "
+                "OpenCode uses plugin-based hooks (tool.execute.before, etc.) "
+                "which are incompatible with Ring's file-based hooks. "
+                "Hooks will not be installed.",
+                hook_count
             )
-            return True
-        except Exception as e:
-            logger.error(f"Failed to write opencode.json: {e}")
-            return False
+        return True

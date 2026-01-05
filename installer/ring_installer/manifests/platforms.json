@@ -224,12 +224,6 @@
           "target_dir": "skill",
           "file_extension": ".md",
           "transform": "opencode_skill"
-        },
-        "hooks": {
-          "source_dir": "hooks",
-          "target_dir": "hook",
-          "file_extension": [".json", ".sh", ".py"],
-          "transform": "opencode_hook"
         }
       },
       "config_file": "opencode.json",
@@ -239,6 +233,8 @@
         "version_command": "opencode --version"
       },
       "native_format": true,
+      "supports_hooks": false,
+      "hooks_note": "OpenCode uses plugin-based hooks (tool.execute.before, etc.) incompatible with Ring file-based hooks",
       "terminology": {
         "agent": "agent",
         "skill": "skill",
