@@ -789,6 +789,31 @@ The Standards Compliance section exists to:
 - Anti-rationalization rules
 - Completeness verification checklist
 
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**⛔ HARD GATE:** Check ONLY items listed in `golang.md → Frameworks & Libraries` table.
+
+**Process:**
+1. WebFetch golang.md
+2. Find "Frameworks & Libraries" section
+3. Check ONLY the libraries/frameworks listed in that table
+4. Do NOT invent additional requirements
+
+**⛔ FORBIDDEN to flag as missing (common hallucinations NOT in golang.md):**
+
+| Item | Why NOT Required |
+|------|------------------|
+| gRPC | NOT in golang.md Frameworks & Libraries |
+| GraphQL | NOT in golang.md Frameworks & Libraries |
+| Gin | Fiber is the standard per golang.md |
+| Echo | Fiber is the standard per golang.md |
+| GORM | pgx is the standard per golang.md |
+| logrus | zap is the standard per golang.md |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from golang.md → Do NOT flag it as missing.
+
 ### Output Format
 
 **ALWAYS output Standards Coverage Table per shared-patterns format. The table serves as EVIDENCE of verification.**

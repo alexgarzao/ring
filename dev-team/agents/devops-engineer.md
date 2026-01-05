@@ -359,6 +359,33 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify ALL required commands exist.
 
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**⛔ HARD GATE:** Check ONLY commands listed in `devops.md → Makefile Standards → Required Commands` table.
+
+**Process:**
+1. WebFetch devops.md
+2. Find "Makefile Standards" → "Required Commands" table
+3. Check ONLY the commands listed in that table
+4. Do NOT invent additional commands
+
+**⛔ FORBIDDEN to flag as missing (common hallucinations NOT in devops.md):**
+
+| Command | Why NOT Required |
+|---------|------------------|
+| `make proto` | Protobuf generation - NOT in devops.md |
+| `make mocks` | Mock generation - NOT in devops.md |
+| `make migrate-up` | DB migrations - NOT in devops.md |
+| `make migrate-down` | DB migrations - NOT in devops.md |
+| `make install` | Dependency install - NOT in devops.md |
+| `make clean` | Cleanup - NOT in devops.md |
+| `make docker-push` | Registry push - NOT in devops.md |
+| `make helm-*` | Helm commands - NOT in devops.md |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from devops.md → Do NOT flag it as missing.
+
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)

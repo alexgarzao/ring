@@ -105,6 +105,22 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ---
 
+## ⛔ CRITICAL: Standards Boundary Enforcement
+
+**You MUST check ONLY what the standards file explicitly defines. NEVER invent requirements.**
+
+See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enforcement.md) for:
+- Complete list of what IS and IS NOT required per agent
+- Agent-specific requirement boundaries
+- Self-verification checklist
+
+**⛔ HARD GATE:** Before flagging ANY item as non-compliant:
+1. Verify the requirement EXISTS in the WebFetch result
+2. Quote the EXACT standard that requires it
+3. If you cannot quote it → Do NOT flag it
+
+---
+
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |

@@ -415,6 +415,29 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
+
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**⛔ HARD GATE:** Check ONLY items listed in `sre.md` sections.
+
+**Process:**
+1. WebFetch sre.md
+2. Check ONLY the requirements explicitly listed in each section
+3. Do NOT invent additional observability requirements
+
+**⛔ FORBIDDEN to flag as missing (common hallucinations - verify in sre.md first):**
+
+| Item | Why Verify First |
+|------|------------------|
+| Prometheus metrics endpoint | Check if explicitly required in sre.md |
+| Jaeger UI | Check if explicitly required in sre.md |
+| Custom dashboards | Check if explicitly required in sre.md |
+| Alert rules | Check if explicitly required in sre.md |
+| Grafana configuration | Check if explicitly required in sre.md |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from sre.md → Do NOT flag it as missing
 - Anti-rationalization rules
 - Completeness verification checklist
 

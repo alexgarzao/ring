@@ -919,6 +919,14 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
+
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**ONLY requirements from frontend.md apply. Do NOT invent additional requirements.**
+
+**⛔ HARD GATE:** If you cannot quote the requirement from frontend.md → Do NOT flag it as missing
 - Anti-rationalization rules
 - Completeness verification checklist
 

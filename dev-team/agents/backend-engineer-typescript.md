@@ -787,6 +787,29 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
+
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**⛔ HARD GATE:** Check ONLY items listed in `typescript.md → Frameworks & Libraries` table.
+
+**Process:**
+1. WebFetch typescript.md
+2. Find "Frameworks & Libraries" section
+3. Check ONLY the libraries/frameworks listed in that table
+4. Do NOT invent additional requirements
+
+**⛔ FORBIDDEN to flag as missing (common hallucinations - verify in typescript.md first):**
+
+| Item | Why Verify First |
+|------|------------------|
+| class-validator | Check if Zod is the standard |
+| TypeORM | Check if Prisma is the standard |
+| Jest | Check if Vitest is the standard |
+| InversifyJS | Check if TSyringe is the standard |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from typescript.md → Do NOT flag it as missing
 - Anti-rationalization rules
 - Completeness verification checklist
 

@@ -513,6 +513,23 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
+
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**ONLY check testing requirements from the appropriate standards file (golang.md OR typescript.md).**
+
+**⛔ FORBIDDEN to flag as missing (check standards first):**
+
+| Item | Verify Before Flagging |
+|------|------------------------|
+| E2E tests | Check if golang.md/typescript.md REQUIRES them |
+| Performance tests | Check if golang.md/typescript.md REQUIRES them |
+| Mutation testing | Check if golang.md/typescript.md REQUIRES them |
+| Specific coverage % | Check EXACT threshold in standards |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from golang.md/typescript.md → Do NOT flag it as missing
 - Anti-rationalization rules
 - Completeness verification checklist
 

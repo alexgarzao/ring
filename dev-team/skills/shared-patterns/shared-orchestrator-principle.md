@@ -19,13 +19,33 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 ## FORBIDDEN Actions (Orchestrator)
 
+**⛔ HARD GATE: Using ANY of these tools on source code = IMMEDIATE SKILL FAILURE**
+
 ```
-❌ Read(file_path="*.go|*.ts")      → SKILL FAILURE - Agent reads code
-❌ Write(file_path="*.go|*.ts")     → SKILL FAILURE - Agent writes code
-❌ Edit(file_path="*.go|*.ts")      → SKILL FAILURE - Agent edits code
-❌ Bash(command="go test|npm test") → SKILL FAILURE - Agent runs tests
-❌ Direct code analysis             → SKILL FAILURE - Agent analyzes
+❌ Read(file_path="*.go|*.ts|*.tsx|*.jsx")  → SKILL FAILURE - Agent reads code
+❌ Write(file_path="*.go|*.ts|*.tsx|*.jsx") → SKILL FAILURE - Agent writes code
+❌ Edit(file_path="*.go|*.ts|*.tsx|*.jsx")  → SKILL FAILURE - Agent edits code
+❌ Bash(command="go test|npm test")         → SKILL FAILURE - Agent runs tests
+❌ Direct code analysis                     → SKILL FAILURE - Agent analyzes
 ```
+
+**⛔ EXPLICIT TOOL PROHIBITION:**
+
+| Tool | On Source Files | Correct Action |
+|------|-----------------|----------------|
+| `Read` | ❌ FORBIDDEN | Dispatch `codebase-explorer` or specialist agent |
+| `Edit` | ❌ FORBIDDEN | Dispatch specialist agent to make changes |
+| `Write` | ❌ FORBIDDEN | Dispatch specialist agent to create files |
+| `Grep` on code | ❌ FORBIDDEN | Dispatch `codebase-explorer` for pattern discovery |
+| `Bash` (go/npm/yarn) | ❌ FORBIDDEN | Specialist agent runs commands |
+
+**Source files include:** `*.go`, `*.ts`, `*.tsx`, `*.jsx`, `*.py`, `*.java`, `*.rs`, `*.rb`
+
+**You MAY use tools on:**
+- Task files (`tasks.md`, `findings.md`)
+- State files (`*-state.json`)
+- Report files (`*-report.md`)
+- Ring plugin files (when maintaining Ring itself, NOT via dev-refactor)
 
 ## REQUIRED Actions (Orchestrator)
 
@@ -209,11 +229,50 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 ## If You Violated This Principle
 
+**⛔ RECOVERY PROCESS (MANDATORY):**
+
 1. **STOP** current execution immediately
-2. **DISCARD** any direct changes you made (git checkout)
-3. **DISPATCH** the correct specialist agent
-4. **Agent implements** from scratch following TDD
+2. **ACKNOWLEDGE** the violation explicitly: "I violated the ORCHESTRATOR principle by [action]"
+3. **DISCARD** any direct changes:
+   ```bash
+   git checkout -- <files you edited>
+   # OR for all changes:
+   git checkout -- .
+   ```
+4. **DISPATCH** the correct specialist agent with the ORIGINAL task
+5. **Agent implements** from scratch following TDD and Ring standards
 
 **Sunk cost of direct work is IRRELEVANT. Specialist dispatch is MANDATORY.**
+
+### Recovery Checklist
+
+```text
+[ ] Did I directly Read/Edit/Write source code? → VIOLATION
+[ ] Did I run go test/npm test directly? → VIOLATION  
+[ ] Did I use Grep to analyze source patterns? → VIOLATION
+[ ] Did I make code changes without dispatching? → VIOLATION
+
+If ANY checkbox is YES:
+1. git checkout -- <affected files>
+2. Dispatch correct specialist agent
+3. Do NOT continue with direct changes
+```
+
+### What To Tell The User
+
+If you violated and need to recover:
+
+```markdown
+## ORCHESTRATOR Violation Detected
+
+I violated the ORCHESTRATOR principle by directly [editing/reading/analyzing] source code.
+
+**Recovery actions:**
+1. Discarding direct changes: `git checkout -- <files>`
+2. Dispatching specialist agent: `[agent-name]`
+3. Agent will implement correctly with Ring standards
+
+**Proceeding with correct workflow...**
+```
 
 **If you find yourself using Read/Write/Edit/Bash on source code → STOP. Dispatch agent instead.**
