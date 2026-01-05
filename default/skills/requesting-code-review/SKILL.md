@@ -1454,23 +1454,113 @@ IF .coderabbit-findings.md exists:
   │ [N] CodeRabbit issues are pending. What would you like to do?  │
   │                                                                 │
   │   (a) Fix all pending issues now (dispatch implementation agent)│
-  │   (b) Acknowledge and proceed to commit (issues documented)    │
+  │   (b) Review and fix issues one-by-one (interactive mode)      │
+  │   (c) Acknowledge and proceed to commit (issues documented)    │
   │                                                                 │
-  │ Note: Choosing (b) will include findings file in commit for    │
+  │ Note: Choosing (c) will include findings file in commit for    │
   │       tracking. Issues remain documented for future fixing.    │
   │                                                                 │
   └─────────────────────────────────────────────────────────────────┘
   
-  IF user selects (a) Fix issues:
+  IF user selects (a) Fix all issues:
     → Dispatch implementation agent with ALL pending issues from findings file
     → After fixes, update .coderabbit-findings.md (mark issues as FIXED)
     → Re-run CodeRabbit validation for affected files
     → Loop back to Step 8.1 to display updated findings
   
-  IF user selects (b) Acknowledge and proceed:
+  IF user selects (b) Interactive mode (one-by-one):
+    → Go to Step 8.1.1 (Interactive Issue Review)
+  
+  IF user selects (c) Acknowledge and proceed:
     → Record: "CodeRabbit issues acknowledged by user"
     → Include .coderabbit-findings.md in commit (for audit trail)
     → Proceed to Step 8.2 (Success Output)
+
+─────────────────────────────────────────────────────────────────
+Step 8.1.1: Interactive Issue Review (One-by-One)
+─────────────────────────────────────────────────────────────────
+
+issues_to_fix = []
+issues_to_skip = []
+
+FOR EACH issue IN pending_issues (ordered by severity: CRITICAL → HIGH → MEDIUM → LOW):
+  
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 🔍 ISSUE [current]/[total] - [SEVERITY]                         │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Unit: [unit.id] - [unit.name]                                  │
+  │ File: [file:line]                                              │
+  │                                                                 │
+  │ Description:                                                   │
+  │   [issue description]                                          │
+  │                                                                 │
+  │ Code Context:                                                  │
+  │   [code snippet around the issue]                              │
+  │                                                                 │
+  │ Why it matters:                                                │
+  │   [explanation of impact]                                      │
+  │                                                                 │
+  │ Recommendation:                                                │
+  │   [suggested fix]                                              │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ What would you like to do with this issue?                     │
+  │                                                                 │
+  │   (f) Fix this issue                                           │
+  │   (s) Skip this issue (acknowledge)                            │
+  │   (a) Fix ALL remaining issues                                 │
+  │   (k) Skip ALL remaining issues                                │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  IF user selects (f) Fix:
+    → Add to issues_to_fix list
+    → Continue to next issue
+  
+  IF user selects (s) Skip:
+    → Add to issues_to_skip list
+    → Continue to next issue
+  
+  IF user selects (a) Fix ALL remaining:
+    → Add current + all remaining to issues_to_fix list
+    → Break loop
+  
+  IF user selects (k) Skip ALL remaining:
+    → Add current + all remaining to issues_to_skip list
+    → Break loop
+
+AFTER loop completes:
+  Display summary:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 INTERACTIVE REVIEW COMPLETE                                  │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Issues to fix: [N]                                             │
+  │   [list of issues selected for fixing]                         │
+  │                                                                 │
+  │ Issues to skip: [N]                                            │
+  │   [list of issues selected to skip]                            │
+  │                                                                 │
+  │ Proceed with this selection? (y/n)                             │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  IF user confirms (y):
+    IF issues_to_fix.length > 0:
+      → Dispatch implementation agent with ONLY issues_to_fix
+      → After fixes, update .coderabbit-findings.md:
+        - Mark fixed issues as FIXED
+        - Mark skipped issues as ACKNOWLEDGED
+      → Re-run CodeRabbit validation for affected files
+      → Loop back to Step 8.1
+    ELSE:
+      → All issues skipped/acknowledged
+      → Proceed to Step 8.2 (Success Output)
+  
+  IF user cancels (n):
+    → Return to Step 8.1 main prompt
 
 ELSE (no findings file exists):
   → CodeRabbit was skipped or found no issues
