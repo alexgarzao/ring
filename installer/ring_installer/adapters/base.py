@@ -102,19 +102,21 @@ class PlatformAdapter(ABC):
         """
         pass
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
         Transform a Ring hook to the target platform format.
 
         Default implementation returns content unchanged. Override if platform
-        requires hook transformation.
+        requires hook transformation or does not support hooks.
 
         Args:
             hook_content: The original hook content
             metadata: Optional metadata about the hook
 
         Returns:
-            Transformed content suitable for the target platform
+            Transformed content suitable for the target platform, or None if
+            the platform does not support file-based hooks (e.g., OpenCode uses
+            plugin-based hooks which are incompatible with Ring's file-based hooks).
         """
         return hook_content
 

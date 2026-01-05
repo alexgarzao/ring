@@ -77,7 +77,7 @@ class ClaudeAdapter(PlatformAdapter):
         """
         return command_content
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
         Transform a Ring hook for Claude Code.
 
