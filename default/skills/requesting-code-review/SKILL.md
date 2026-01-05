@@ -403,13 +403,9 @@ IF blocking_count > 0:
 
 ### Orchestrator Boundaries (HARD GATE)
 
-| Action | Permitted? | Required Action |
-|--------|------------|-----------------|
-| Read review findings | ✅ YES | Parse reviewer output |
-| Edit source code files | ❌ NO | Dispatch agent |
-| Add TODO comments | ❌ NO | Dispatch agent |
-| Run tests | ❌ NO | Agent runs tests |
-| Commit changes | ❌ NO | Agent commits |
+**See [dev-team/skills/shared-patterns/standards-boundary-enforcement.md](../../dev-team/skills/shared-patterns/standards-boundary-enforcement.md) for core enforcement rules.**
+
+**Key prohibition:** Edit/Write/Create on source files is FORBIDDEN. Always dispatch agent.
 
 **If you catch yourself about to use Edit/Write/Create on source files → STOP. Dispatch agent.**
 
