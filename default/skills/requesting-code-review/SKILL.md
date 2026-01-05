@@ -91,9 +91,19 @@ output_schema:
     - name: coderabbit_status
       type: enum
       values: [PASS, ISSUES_FOUND, SKIPPED, NOT_INSTALLED]
+    - name: coderabbit_validation_mode
+      type: enum
+      values: [SUBTASK_LEVEL, TASK_LEVEL]
+      description: "Granularity of CodeRabbit validation"
+    - name: coderabbit_units_validated
+      type: integer
+      description: "Number of units (subtasks or tasks) validated by CodeRabbit"
+    - name: coderabbit_units_passed
+      type: integer
+      description: "Number of units that passed CodeRabbit validation"
     - name: coderabbit_issues
       type: integer
-      description: "Number of issues found by CodeRabbit (0 if skipped)"
+      description: "Total number of issues found by CodeRabbit across all units (0 if skipped)"
 
 examples:
   - name: "Feature review"
@@ -737,9 +747,145 @@ coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 
 #### Step 7.5.2: Run CodeRabbit Review
 
+**⛔ GRANULAR VALIDATION: CodeRabbit MUST validate at the most granular level available.**
+
+```text
+DETERMINE VALIDATION SCOPE:
+1. Check if current work has subtasks (from gate0_handoff or implementation context)
+2. IF subtasks exist → Validate EACH SUBTASK separately
+3. IF no subtasks → Validate the TASK as a whole
+
+WHY GRANULAR VALIDATION:
+- Subtask-level validation catches issues early
+- Easier to pinpoint which subtask introduced problems
+- Prevents "works for task A, breaks task B" scenarios
+- Enables incremental fixes without re-running entire review
+```
+
+**Step 7.5.2a: Determine Validation Scope**
+
+```text
+validation_scope = {
+  mode: null,  // "subtask" or "task"
+  units: [],   // list of {id, files, commits} to validate
+  current_index: 0
+}
+
+IF gate0_handoff.subtasks exists AND gate0_handoff.subtasks.length > 0:
+  → validation_scope.mode = "subtask"
+  → FOR EACH subtask in gate0_handoff.subtasks:
+      → Get files changed by this subtask (from commits or file mapping)
+      → Add to validation_scope.units: {
+          id: subtask.id,
+          name: subtask.name,
+          files: [files touched by this subtask],
+          base_sha: [sha before subtask],
+          head_sha: [sha after subtask]
+        }
+  
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 CODERABBIT VALIDATION MODE: SUBTASK-LEVEL                    │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Detected [N] subtasks. Will validate each separately:          │
+  │                                                                 │
+  │   1. [subtask-1-id]: [subtask-1-name]                          │
+  │      Files: [file1.go, file2.go]                               │
+  │                                                                 │
+  │   2. [subtask-2-id]: [subtask-2-name]                          │
+  │      Files: [file3.go, file4.go]                               │
+  │                                                                 │
+  │   ... (up to N subtasks)                                       │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+ELSE:
+  → validation_scope.mode = "task"
+  → Add single unit: {
+      id: unit_id,
+      name: implementation_summary,
+      files: implementation_files,
+      base_sha: base_sha,
+      head_sha: head_sha
+    }
+  
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 CODERABBIT VALIDATION MODE: TASK-LEVEL                       │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ No subtasks detected. Validating entire task:                  │
+  │                                                                 │
+  │   Task: [unit_id]                                              │
+  │   Files: [N] files changed                                     │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
+**Step 7.5.2b: Run CodeRabbit for Each Validation Unit**
+
+```text
+coderabbit_results = {
+  overall_status: "PASS",  // PASS only if ALL units pass
+  units: []
+}
+
+FOR EACH unit IN validation_scope.units:
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 🔍 VALIDATING: [unit.id] ([current]/[total])                    │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ Name: [unit.name]                                              │
+  │ Files: [unit.files.join(", ")]                                 │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
 ```bash
-# Run CodeRabbit in prompt-only mode (optimized for AI agents)
+# Run CodeRabbit for specific files (subtask-level) or all files (task-level)
+# Option 1: If validating specific files (subtask mode)
+coderabbit --prompt-only --type uncommitted --base [unit.base_sha] -- [unit.files...]
+
+# Option 2: If validating all changes (task mode)
 coderabbit --prompt-only --type uncommitted --base [base_branch]
+```
+
+```text
+  Parse output and record:
+  unit_result = {
+    id: unit.id,
+    status: "PASS" | "ISSUES_FOUND",
+    issues: {
+      critical: [list],
+      high: [list],
+      medium: [list],
+      low: [list]
+    }
+  }
+  
+  coderabbit_results.units.push(unit_result)
+  
+  IF unit_result.issues.critical.length > 0 OR unit_result.issues.high.length > 0:
+    → coderabbit_results.overall_status = "ISSUES_FOUND"
+
+AFTER ALL UNITS VALIDATED:
+  Display summary:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📊 CODERABBIT VALIDATION SUMMARY                                │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ Mode: [SUBTASK-LEVEL | TASK-LEVEL]                             │
+  │ Units Validated: [N]                                           │
+  │ Overall Status: [PASS | ISSUES_FOUND]                          │
+  │                                                                 │
+  │ Per-Unit Results:                                              │
+  │ ┌──────────────┬────────────┬──────┬──────┬────────┬─────┐     │
+  │ │ Unit ID      │ Status     │ Crit │ High │ Medium │ Low │     │
+  │ ├──────────────┼────────────┼──────┼──────┼────────┼─────┤     │
+  │ │ [subtask-1]  │ ✅ PASS    │  0   │  0   │   0    │  1  │     │
+  │ │ [subtask-2]  │ ❌ ISSUES  │  1   │  2   │   0    │  0  │     │
+  │ └──────────────┴────────────┴──────┴──────┴────────┴─────┘     │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Parse CodeRabbit output for:**
@@ -753,38 +899,254 @@ coderabbit --prompt-only --type uncommitted --base [base_branch]
 **⛔ CRITICAL: You are an ORCHESTRATOR. You CANNOT edit source files directly.**
 **You MUST dispatch the implementation agent to fix issues.**
 
+**⛔ GRANULAR FIX DISPATCH: Fixes MUST be dispatched per-unit (subtask or task).**
+
 ```text
-IF CodeRabbit found CRITICAL or HIGH issues:
-  → Display findings to user
-  → Ask: "CodeRabbit found [N] critical/high issues. Fix now or proceed anyway?"
-    (a) Fix issues - dispatch to implementation agent
+IF coderabbit_results.overall_status == "ISSUES_FOUND":
+  
+  → FIRST: Display EACH issue in detail (REQUIRED before any action):
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ ⚠️  CODERABBIT ISSUES FOUND - DETAILED DESCRIPTION               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ UNIT: [subtask-1] - [subtask name]                             │
+  │ ───────────────────────────────────────────────────────────────│
+  │ Issue #1 [CRITICAL]                                            │
+  │   Description: Race condition in concurrent request handler    │
+  │   File: src/handler.go:45                                      │
+  │   Code Context:                                                │
+  │     43 | func (h *Handler) Process(ctx context.Context) {      │
+  │     44 |     h.counter++  // ← NOT THREAD-SAFE                 │
+  │     45 |     data := h.sharedMap[key]                          │
+  │   Why it matters: Multiple goroutines can corrupt shared state │
+  │   Recommendation: Use sync.Mutex or atomic operations          │
+  │                                                                 │
+  │ Issue #2 [HIGH]                                                │
+  │   Description: Unchecked error return from database query      │
+  │   File: src/repo.go:123                                        │
+  │   Code Context:                                                │
+  │     121 | func (r *Repo) GetUser(id string) (*User, error) {   │
+  │     122 |     result, _ := r.db.Query(query, id)  // ← IGNORED │
+  │     123 |     return parseUser(result), nil                    │
+  │   Why it matters: Silent failures can cause data corruption    │
+  │   Recommendation: Check and handle the error properly          │
+  │                                                                 │
+  │ UNIT: [subtask-2] - [subtask name]                             │
+  │ ───────────────────────────────────────────────────────────────│
+  │ Issue #3 [HIGH]                                                │
+  │   Description: SQL injection vulnerability                     │
+  │   File: src/query.go:89                                        │
+  │   Code Context:                                                │
+  │     87 | func BuildQuery(userInput string) string {            │
+  │     88 |     return fmt.Sprintf("SELECT * FROM users WHERE     │
+  │     89 |            name = '%s'", userInput)  // ← INJECTABLE  │
+  │   Why it matters: Attacker can execute arbitrary SQL           │
+  │   Recommendation: Use parameterized queries                    │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  → THEN: Ask user for action:
+  "CodeRabbit found [N] issues in [M] units. What would you like to do?"
+    (a) Fix all issues - dispatch implementation agent per unit
     (b) Proceed to Gate 5 (acknowledge risk)
-    (c) Review findings in detail
+    (c) Review findings in detail (show code context)
 
   IF user selects (a) Fix issues:
     → ⛔ DO NOT edit files directly
-    → DISPATCH implementation agent with CodeRabbit findings:
+    → FOR EACH unit WITH issues (validation_scope.units where status == "ISSUES_FOUND"):
     
-    Task:
-      subagent_type: "[same agent used in Gate 0]"
-      model: "opus"
-      description: "Fix CodeRabbit issues for [unit_id]"
-      prompt: |
-        ## CodeRabbit Issues to Fix
+        Display:
+        ┌─────────────────────────────────────────────────────────────────┐
+        │ 🔧 DISPATCHING FIX: [unit.id] ([current]/[total with issues])   │
+        ├─────────────────────────────────────────────────────────────────┤
+        │ Unit: [unit.name]                                              │
+        │ Critical Issues: [N]                                           │
+        │ High Issues: [N]                                               │
+        └─────────────────────────────────────────────────────────────────┘
         
-        The following issues were found by CodeRabbit CLI external review.
-        Fix ALL Critical and High severity issues.
+        → DISPATCH implementation agent with unit-specific findings:
         
-        ### Critical Issues
-        [list from CodeRabbit output]
+        Task:
+          subagent_type: "[same agent used in Gate 0]"
+          model: "opus"
+          description: "Fix CodeRabbit issues for [unit.id]"
+          prompt: |
+            ## CodeRabbit Issues to Fix - [unit.id]
+            
+            **Scope:** This fix is for [subtask/task]: [unit.name]
+            **Files in Scope:** [unit.files.join(", ")]
+            
+            The following issues were found by CodeRabbit CLI external review
+            for THIS SPECIFIC [subtask/task].
+            
+            ⚠️ IMPORTANT: Only fix issues in files belonging to this unit:
+            [unit.files list]
+            
+            ### Critical Issues
+            [list from unit.issues.critical]
+            
+            ### High Issues  
+            [list from unit.issues.high]
+            
+            ## Requirements
+            1. Fix each issue following Ring Standards
+            2. Only modify files in scope: [unit.files]
+            3. Run tests to verify fixes don't break functionality
+            4. Commit fixes with message referencing unit: "fix([unit.id]): [description]"
         
-        ### High Issues
-        [list from CodeRabbit output]
+        → Wait for agent to complete
+        → Record fix result for this unit
         
-        ## Requirements
-        1. Fix each issue following Ring Standards
-        2. Run tests to verify fixes don't break functionality
-        3. Commit fixes with descriptive message
+        → VALIDATE EACH ISSUE INDIVIDUALLY:
+        ┌─────────────────────────────────────────────────────────────────┐
+        │ 🔍 VALIDATING FIXES FOR: [unit.id]                              │
+        ├─────────────────────────────────────────────────────────────────┤
+        │                                                                 │
+        │ Each issue MUST be validated individually:                      │
+        │                                                                 │
+        │ Issue #1: [issue description]                                   │
+        │   File: [file:line]                                            │
+        │   Severity: CRITICAL                                           │
+        │   Fix Applied: [description of fix]                            │
+        │   Validation: ✅ RESOLVED / ❌ NOT RESOLVED                     │
+        │   Evidence: [code snippet or test result]                      │
+        │                                                                 │
+        │ Issue #2: [issue description]                                   │
+        │   File: [file:line]                                            │
+        │   Severity: HIGH                                               │
+        │   Fix Applied: [description of fix]                            │
+        │   Validation: ✅ RESOLVED / ❌ NOT RESOLVED                     │
+        │   Evidence: [code snippet or test result]                      │
+        │                                                                 │
+        │ ... (repeat for ALL issues)                                    │
+        │                                                                 │
+        └─────────────────────────────────────────────────────────────────┘
+        
+        → IF any issue NOT RESOLVED:
+            → Identify the correct agent for re-dispatch:
+              - Check gate0_handoff.implementation_agent (if available)
+              - OR infer from file type:
+                - *.go files → ring-dev-team:backend-engineer-golang
+                - *.ts files (backend) → ring-dev-team:backend-engineer-typescript
+                - *.ts/*.tsx files (frontend) → ring-dev-team:frontend-engineer
+                - *.yaml/*.yml (infra) → ring-dev-team:devops-engineer
+            
+            → Re-dispatch ONLY unresolved issues to the correct agent:
+            
+            Task:
+              subagent_type: "[correct agent based on file type or gate0_handoff]"
+              model: "opus"
+              description: "Retry fix for unresolved issues in [unit.id]"
+              prompt: |
+                ## RETRY: Unresolved CodeRabbit Issues - [unit.id]
+                
+                Previous fix attempt did NOT resolve these issues.
+                This is attempt [N] of 2 maximum.
+                
+                ### Unresolved Issues (MUST FIX)
+                | # | Severity | Description | File:Line | Previous Attempt | Why It Failed |
+                |---|----------|-------------|-----------|------------------|---------------|
+                | [issue.id] | [severity] | [description] | [file:line] | [what was tried] | [why not resolved] |
+                
+                ### Requirements
+                1. Review the previous fix attempt and understand why it failed
+                2. Apply a different/better solution
+                3. Verify the fix resolves the issue
+                4. Run relevant tests
+                5. Commit with message: "fix([unit.id]): retry [issue description]"
+            
+            → Max 2 fix attempts per issue
+            → IF issue still NOT RESOLVED after 2 attempts:
+                → Mark as UNRESOLVED_ESCALATE
+                → Add to escalation report for manual review
+        
+        → Record per-issue validation results:
+        unit_validation = {
+          id: unit.id,
+          issues_validated: [
+            {
+              issue_id: 1,
+              description: "[issue]",
+              severity: "CRITICAL",
+              file: "[file:line]",
+              fix_applied: "[description]",
+              status: "RESOLVED" | "NOT_RESOLVED",
+              evidence: "[snippet or test]",
+              attempts: 1
+            },
+            ...
+          ],
+          all_resolved: true | false
+        }
+    
+    → AFTER ALL UNITS FIXED:
+        Display:
+        ┌─────────────────────────────────────────────────────────────────┐
+        │ ✅ FIX DISPATCH COMPLETE                                        │
+        ├─────────────────────────────────────────────────────────────────┤
+        │ Units Fixed: [N] / [total with issues]                         │
+        │ Total Issues Validated: [N]                                    │
+        │ Issues Resolved: [N] / [N]                                     │
+        │                                                                 │
+        │ Per-Unit Fix Status:                                           │
+        │ ┌──────────────┬────────────┬───────────────────────┐          │
+        │ │ Unit ID      │ Status     │ Commit                │          │
+        │ ├──────────────┼────────────┼───────────────────────┤          │
+        │ │ [subtask-1]  │ ✅ FIXED   │ abc123                │          │
+        │ │ [subtask-2]  │ ✅ FIXED   │ def456                │          │
+        │ └──────────────┴────────────┴───────────────────────┘          │
+        │                                                                 │
+        │ Issue-Level Validation Details:                                │
+        │ ┌──────────────────────────────────────────────────────────┐   │
+        │ │ UNIT: [subtask-1]                                        │   │
+        │ ├──────────────────────────────────────────────────────────┤   │
+        │ │ #1 [CRITICAL] Race condition in handler                  │   │
+        │ │    File: src/handler.go:45                               │   │
+        │ │    Fix: Added mutex lock                                 │   │
+        │ │    Status: ✅ RESOLVED                                   │   │
+        │ │    Evidence: Test race_test.go passes                    │   │
+        │ ├──────────────────────────────────────────────────────────┤   │
+        │ │ #2 [HIGH] Unchecked error return                         │   │
+        │ │    File: src/handler.go:67                               │   │
+        │ │    Fix: Added error check with proper handling           │   │
+        │ │    Status: ✅ RESOLVED                                   │   │
+        │ │    Evidence: Error path verified in unit test            │   │
+        │ └──────────────────────────────────────────────────────────┘   │
+        │                                                                 │
+        └─────────────────────────────────────────────────────────────────┘
+
+LEGACY FLOW (when validation_scope.mode == "task"):
+  IF CodeRabbit found CRITICAL or HIGH issues:
+    → Display findings to user
+    → Ask: "CodeRabbit found [N] critical/high issues. Fix now or proceed anyway?"
+      (a) Fix issues - dispatch to implementation agent
+      (b) Proceed to Gate 5 (acknowledge risk)
+      (c) Review findings in detail
+
+    IF user selects (a) Fix issues:
+      → ⛔ DO NOT edit files directly
+      → DISPATCH implementation agent with CodeRabbit findings:
+      
+      Task:
+        subagent_type: "[same agent used in Gate 0]"
+        model: "opus"
+        description: "Fix CodeRabbit issues for [unit_id]"
+        prompt: |
+          ## CodeRabbit Issues to Fix
+          
+          The following issues were found by CodeRabbit CLI external review.
+          Fix ALL Critical and High severity issues.
+          
+          ### Critical Issues
+          [list from CodeRabbit output]
+          
+          ### High Issues
+          [list from CodeRabbit output]
+          
+          ## Requirements
+          1. Fix each issue following Ring Standards
+          2. Run tests to verify fixes don't break functionality
+          3. Commit fixes with descriptive message
     
     → After agent completes, re-run CodeRabbit: `coderabbit --prompt-only`
     → If CodeRabbit issues remain, repeat fix cycle (max 2 iterations for CodeRabbit)
@@ -875,14 +1237,48 @@ IF CodeRabbit found no issues:
 ```markdown
 ## CodeRabbit External Review
 **Status:** [PASS|ISSUES_FOUND|SKIPPED]
-**Issues Found:** [N]
+**Validation Mode:** [SUBTASK-LEVEL|TASK-LEVEL]
+**Units Validated:** [N]
+**Total Issues Found:** [N]
+**Issues Resolved:** [N]/[N]
 
-| Severity | Count | Action |
-|----------|-------|--------|
-| Critical | [N] | [Fixed/Acknowledged] |
-| High | [N] | [Fixed/Acknowledged] |
-| Medium | [N] | [TODO added] |
-| Low | [N] | [TODO added] |
+### Per-Unit Validation Results
+| Unit ID | Unit Name | Status | Critical | High | Medium | Low |
+|---------|-----------|--------|----------|------|--------|-----|
+| [subtask-1] | [name] | ✅ PASS | 0 | 0 | 0 | 1 |
+| [subtask-2] | [name] | ✅ FIXED | 1→0 | 2→0 | 0 | 0 |
+| [task-id] | [name] | ✅ PASS | 0 | 0 | 0 | 0 |
+
+### Issues Found - Detailed Description (ALWAYS shown when issues exist)
+
+#### Unit: [subtask-2]
+| # | Severity | Description | File:Line | Code Context | Why It Matters | Recommendation |
+|---|----------|-------------|-----------|--------------|----------------|----------------|
+| 1 | CRITICAL | Race condition | handler.go:45 | `h.counter++` not thread-safe | Corrupts shared state | Use sync.Mutex |
+| 2 | HIGH | Unchecked error | repo.go:123 | `result, _ := r.db.Query()` | Silent failures | Handle error |
+| 3 | HIGH | SQL injection | query.go:89 | `fmt.Sprintf("...%s", input)` | Security breach | Parameterized query |
+
+### Issue-Level Validation (REQUIRED after fixes are applied)
+
+#### Unit: [subtask-2]
+| # | Severity | Description | File:Line | Fix Applied | Status | Evidence |
+|---|----------|-------------|-----------|-------------|--------|----------|
+| 1 | CRITICAL | Race condition in concurrent handler | handler.go:45 | Added mutex lock around shared state | ✅ RESOLVED | race_test.go passes |
+| 2 | HIGH | Unchecked error from DB query | repo.go:123 | Added error check with rollback | ✅ RESOLVED | Error path tested |
+| 3 | HIGH | SQL injection vulnerability | query.go:89 | Used parameterized query | ✅ RESOLVED | Security test added |
+
+#### Unit: [subtask-3] (if applicable)
+| # | Severity | Description | File:Line | Fix Applied | Status | Evidence |
+|---|----------|-------------|-----------|-------------|--------|----------|
+| 1 | HIGH | Missing input validation | api.go:34 | Added validation middleware | ✅ RESOLVED | Fuzz test passes |
+
+### Overall Summary by Severity
+| Severity | Found | Resolved | Remaining | Action |
+|----------|-------|----------|-----------|--------|
+| Critical | [N] | [N] | 0 | Fixed |
+| High | [N] | [N] | 0 | Fixed |
+| Medium | [N] | [N] | 0 | TODO added |
+| Low | [N] | - | [N] | TODO added |
 ```
 
 ### CodeRabbit Skip Scenarios
@@ -1027,11 +1423,28 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 
 ## CodeRabbit External Review (Optional)
 **Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
-**Issues Found:** [N or N/A]
+**Validation Mode:** [SUBTASK-LEVEL|TASK-LEVEL]
+**Units Validated:** [N]
+**Units Passed:** [N]/[N]
+**Issues Found:** [N]
+**Issues Resolved:** [N]/[N]
+
+### Per-Unit Results (if subtask-level)
+| Unit ID | Status | Critical | High | Medium | Low |
+|---------|--------|----------|------|--------|-----|
+| [subtask-1] | ✅ PASS | 0 | 0 | 0 | 1 |
+| [subtask-2] | ✅ FIXED | 0 | 0 | 0 | 0 |
+
+### Issue-Level Validation (REQUIRED when issues were fixed)
+| Unit | # | Severity | Description | Fix Applied | Status | Evidence |
+|------|---|----------|-------------|-------------|--------|----------|
+| subtask-2 | 1 | CRITICAL | Race condition | Mutex added | ✅ RESOLVED | Test passes |
+| subtask-2 | 2 | HIGH | Unchecked error | Error handling added | ✅ RESOLVED | Test passes |
 
 ## Handoff to Next Gate
 - Review status: [COMPLETE|FAILED]
 - Blocking issues: [resolved|N remaining]
 - CodeRabbit: [PASS|SKIPPED|N issues acknowledged]
+- CodeRabbit validation: [N]/[N] units passed
 - Ready for Gate 5: [YES|NO]
 ```
