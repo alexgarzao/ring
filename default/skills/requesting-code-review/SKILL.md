@@ -446,14 +446,9 @@ Task:
 
 ### Anti-Rationalization for Direct Editing
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "It's a one-line fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
-| "I already know how to fix it" | Knowing ≠ permission. Orchestrators orchestrate. | **Dispatch agent** |
-| "Agent dispatch takes too long" | Consistency > speed. Always dispatch. | **Dispatch agent** |
-| "Just adding a TODO comment" | TODO comments are code changes. Agents write code. | **Dispatch agent** |
-| "The reviewer told me exactly what to change" | Instructions are for the agent, not you. | **Dispatch agent** |
-| "I'll fix it faster myself" | Fast + wrong > slow + right. Dispatch agent. | **Dispatch agent** |
+**See [shared-patterns/orchestrator-direct-editing-anti-rationalization.md](../shared-patterns/orchestrator-direct-editing-anti-rationalization.md) for complete anti-rationalization table.**
+
+*Applies to: Step 6 (Fix dispatch after Ring reviewers) & Step 7.5.3 (Fix dispatch after CodeRabbit)*
 
 ## Step 7: Re-Run All Reviewers After Fixes
 
@@ -1221,12 +1216,7 @@ IF CodeRabbit found no issues:
 
 ### Anti-Rationalization for Direct Editing
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "It's just a small fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
-| "I can add TODO comments quickly" | Orchestrators don't write to source files. Period. | **Dispatch agent** |
-| "Agent dispatch is overkill for this" | Consistency > convenience. Always dispatch. | **Dispatch agent** |
-| "CodeRabbit already told me what to fix" | Knowing the fix ≠ permission to implement. | **Dispatch agent** |
+**See [shared-patterns/orchestrator-direct-editing-anti-rationalization.md](../shared-patterns/orchestrator-direct-editing-anti-rationalization.md) - same table applies here.**
 
 #### Step 7.5.4: CodeRabbit Results Summary
 
