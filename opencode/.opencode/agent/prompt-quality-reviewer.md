@@ -6,14 +6,15 @@ mode: subagent
 temperature: 0.1
 
 tools:
-  allow:
-    - Read
-    - Glob
-    - Grep
+  write: false
+  edit: false
+  bash: false
 
-permissions:
-  allow:
-    - read
+permission:
+  write: deny
+  edit: deny
+  bash:
+    "*": deny
 ---
 
 # Prompt Quality Reviewer

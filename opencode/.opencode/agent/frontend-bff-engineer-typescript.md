@@ -6,20 +6,15 @@ mode: subagent
 temperature: 0.3
 
 tools:
-  allow:
-    - Read
-    - Write
-    - Edit
-    - Glob
-    - Grep
-    - Bash
+  write: true
+  edit: true
+  bash: true
 
-permissions:
-  allow:
-    - read
-    - write
-    - edit
-    - bash
+permission:
+  write: allow
+  edit: allow
+  bash:
+    "*": allow
 ---
 
 # BFF Engineer (TypeScript Specialist)

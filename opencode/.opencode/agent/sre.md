@@ -6,16 +6,25 @@ mode: subagent
 temperature: 0.1
 
 tools:
-  allow:
-    - Read
-    - Glob
-    - Grep
-    - Bash
+  write: false
+  edit: false
+  bash: true
 
-permissions:
-  allow:
-    - read
-    - bash
+permission:
+  write: deny
+  edit: deny
+  bash:
+    "ls *": allow
+    "tree *": allow
+    "head *": allow
+    "tail *": allow
+    "cat *": allow
+    "wc *": allow
+    "git log*": allow
+    "git show*": allow
+    "git diff*": allow
+    "git status": allow
+    "*": deny
 ---
 
 # SRE (Site Reliability Engineer)

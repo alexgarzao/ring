@@ -6,18 +6,16 @@ mode: subagent
 temperature: 0.3
 
 tools:
-  allow:
-    - Read
-    - Write
-    - Edit
-    - Glob
-    - Grep
+  write: false
+  edit: false
+  bash: false
 
-permissions:
-  allow:
-    - read
-    - write
-    - edit
+permission:
+  write: deny
+  edit: deny
+  bash:
+    "*": deny
+
 ---
 
 # Frontend Designer

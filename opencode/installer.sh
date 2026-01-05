@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Ring → OpenCode installer
 #
-# Installs Ring's OpenCode plugins/skills/commands into ~/.config/opencode
+# Installs Ring's OpenCode plugins/skills/commands/agents into ~/.config/opencode
 # WITHOUT deleting any existing user content.
 #
 # Behavior:
@@ -70,7 +70,7 @@ if [[ -d "$SOURCE_ROOT/plugin" ]]; then
 fi
 
 # Copy trees (no deletes)
-for d in plugin skill command; do
+for d in plugin skill command agent; do
   if [[ -d "$SOURCE_ROOT/$d" ]]; then
     copy_tree_no_delete "$d"
   fi
