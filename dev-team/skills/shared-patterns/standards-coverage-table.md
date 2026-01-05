@@ -231,7 +231,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 |---|------------------|--------|-----------------|
 | 1 | Version | `#version` | Go 1.24+ |
 | 2 | Core Dependency: lib-commons | `#core-dependency-lib-commons-mandatory` | |
-| 3 | Frameworks & Libraries | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, mockery |
+| 3 | Frameworks & Libraries | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock |
 | 4 | Configuration | `#configuration` | Environment variable handling |
 | 5 | Observability | `#observability` | OpenTelemetry integration |
 | 6 | Bootstrap | `#bootstrap` | Application initialization |

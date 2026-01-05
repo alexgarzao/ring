@@ -97,7 +97,7 @@ import (
 | `go.opentelemetry.io/otel` | v1.38.0 | Telemetry |
 | `zap` | v1.27.0 | Logging implementation (internal to lib-commons) |
 | `testify` | v1.10.0 | Testing |
-| `mockery` | v2.50.0 | Mock generation |
+| `gomock` | v0.5.0 | Mock generation |
 | `mongo-driver` | v1.17.0 | MongoDB driver |
 | `go-redis/v9` | v9.7.0 | Redis client |
 | `validator/v10` | v10.26.0 | Input validation |
@@ -123,8 +123,8 @@ import (
 
 | Library | Use Case |
 |---------|----------|
-| testify | Assertions, mocks |
-| GoMock | Interface mocking (check if lib-commons already has a mock) |
+| testify | Assertions |
+| GoMock | Interface mocking (MANDATORY for all mocks) |
 | SQLMock | Database mocking |
 | testcontainers-go | Integration tests |
 
@@ -2250,14 +2250,14 @@ func TestUserService_CreateUser(t *testing.T) {
 }
 ```
 
-### Mock Generation
+### Mock Generation (GoMock - MANDATORY)
 
 ```go
-// Using mockery
-//go:generate mockery --name=OrderRepository --output=mocks --outpkg=mocks
-
-// Using GoMock
+// GoMock is the MANDATORY mock framework for all Go projects
 //go:generate mockgen -source=repository.go -destination=mocks/mock_repository.go -package=mocks
+
+// For interface in external package:
+//go:generate mockgen -destination=mocks/mock_service.go -package=mocks github.com/example/pkg Service
 ```
 
 ---
