@@ -703,6 +703,14 @@ def install(
                             transformed = adapter.transform_skill(content, metadata)
                         elif component_type == "hooks":
                             transformed = adapter.transform_hook(content, metadata)
+                            # None means platform doesn't support file-based hooks
+                            if transformed is None:
+                                result.add_skip(
+                                    source_file,
+                                    target_file,
+                                    "Platform does not support file-based hooks"
+                                )
+                                continue
                         else:
                             transformed = content
                     except Exception as e:
@@ -1142,6 +1150,14 @@ def update_with_diff(
                             transformed = adapter.transform_skill(content, metadata)
                         elif component_type == "hooks":
                             transformed = adapter.transform_hook(content, metadata)
+                            # None means platform doesn't support file-based hooks
+                            if transformed is None:
+                                result.add_skip(
+                                    source_file,
+                                    target_file,
+                                    "Platform does not support file-based hooks"
+                                )
+                                continue
                         else:
                             transformed = content
                     except Exception as e:
