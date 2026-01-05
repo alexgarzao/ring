@@ -815,8 +815,8 @@ IF CodeRabbit found CRITICAL or HIGH issues:
       → Proceed to Step 8 (Success Output)
     
     IF any Ring reviewer finds CRITICAL/HIGH/MEDIUM issues:
-      → Increment coderabbit_ring_iteration counter
-      → IF coderabbit_ring_iteration >= 2:
+      → Increment ring_revalidation_iterations counter
+      → IF ring_revalidation_iterations >= 2:
           → ESCALATE: "Max iterations reached after CodeRabbit fixes"
           → Go to Step 9 (Escalate)
       → DISPATCH implementation agent to fix Ring reviewer issues
