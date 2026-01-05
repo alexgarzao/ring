@@ -388,6 +388,23 @@ IF blocking_count > 0:
 
 ## Step 6: Dispatch Fixes to Implementation Agent
 
+**⛔ CRITICAL: You are an ORCHESTRATOR. You CANNOT edit source files directly.**
+**You MUST dispatch the implementation agent to fix ALL review issues.**
+
+### Orchestrator Boundaries (HARD GATE)
+
+| Action | Permitted? | Required Action |
+|--------|------------|-----------------|
+| Read review findings | ✅ YES | Parse reviewer output |
+| Edit source code files | ❌ NO | Dispatch agent |
+| Add TODO comments | ❌ NO | Dispatch agent |
+| Run tests | ❌ NO | Agent runs tests |
+| Commit changes | ❌ NO | Agent commits |
+
+**If you catch yourself about to use Edit/Write/Create on source files → STOP. Dispatch agent.**
+
+### Dispatch Implementation Agent
+
 ```yaml
 Task:
   subagent_type: "[implementation_agent from Gate 0]"
@@ -411,14 +428,26 @@ Task:
 
     ## Requirements
     1. Fix ALL Critical, High, and Medium issues
-    2. Commit fixes
-    3. Return list of fixed issues with evidence
+    2. Run tests to verify fixes
+    3. Commit fixes with descriptive message
+    4. Return list of fixed issues with evidence
 
     ## For Low/Cosmetic Issues
     Add TODO/FIXME comments:
     - Low: `// TODO(review): [Issue] - [reviewer] on [date]`
     - Cosmetic: `// FIXME(nitpick): [Issue] - [reviewer] on [date]`
 ```
+
+### Anti-Rationalization for Direct Editing
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's a one-line fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
+| "I already know how to fix it" | Knowing ≠ permission. Orchestrators orchestrate. | **Dispatch agent** |
+| "Agent dispatch takes too long" | Consistency > speed. Always dispatch. | **Dispatch agent** |
+| "Just adding a TODO comment" | TODO comments are code changes. Agents write code. | **Dispatch agent** |
+| "The reviewer told me exactly what to change" | Instructions are for the agent, not you. | **Dispatch agent** |
+| "I'll fix it faster myself" | Fast + wrong > slow + right. Dispatch agent. | **Dispatch agent** |
 
 ## Step 7: Re-Run All Reviewers After Fixes
 
