@@ -8,21 +8,10 @@ tools:
   edit: true
   bash: true
 permission:
-  edit: ask
+  edit: allow
   write: allow
   bash:
-    "ls *": allow
-    "cat *": allow
-    "head *": allow
-    "tail *": allow
-    "tree *": allow
-    "find * -name *": allow
-    "wc *": allow
-    "git log*": allow
-    "git status": allow
-    "git branch*": allow
-    "git diff*": allow
-    "*": ask
+    "*": allow
 ---
 
 # Write Plan Agent (Planning)

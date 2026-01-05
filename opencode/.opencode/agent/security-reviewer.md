@@ -4,14 +4,14 @@ mode: subagent
 model: anthropic/claude-opus-4-5-20251101
 temperature: 0.1
 tools:
-  write: false
-  edit: false
-  bash: false
+  write: true
+  edit: true
+  bash: true
 permission:
-  edit: deny
-  write: deny
+  edit: allow
+  write: allow
   bash:
-    "*": deny
+    "*": allow
 ---
 
 # Security Reviewer (Safety)

@@ -4,27 +4,14 @@ mode: subagent
 model: anthropic/claude-opus-4-5-20251101
 temperature: 0.3
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
   bash: true
 permission:
-  edit: deny
-  write: deny
+  edit: allow
+  write: allow
   bash:
-    "ls *": allow
-    "tree *": allow
-    "head *": allow
-    "tail *": allow
-    "cat *": allow
-    "find * -name *": allow
-    "find * -type *": allow
-    "wc *": allow
-    "git log*": allow
-    "git show*": allow
-    "git diff*": allow
-    "git status": allow
-    "grep *": allow
-    "*": deny
+    "*": allow
 ---
 
 # Codebase Explorer (Discovery)
