@@ -1455,7 +1455,6 @@ IF .coderabbit-findings.md exists:
   │                                                                 │
   │   (a) Fix all pending issues now (dispatch implementation agent)│
   │   (b) Acknowledge and proceed to commit (issues documented)    │
-  │   (c) Review issues in detail (.coderabbit-findings.md)        │
   │                                                                 │
   │ Note: Choosing (b) will include findings file in commit for    │
   │       tracking. Issues remain documented for future fixing.    │
@@ -1472,10 +1471,6 @@ IF .coderabbit-findings.md exists:
     → Record: "CodeRabbit issues acknowledged by user"
     → Include .coderabbit-findings.md in commit (for audit trail)
     → Proceed to Step 8.2 (Success Output)
-  
-  IF user selects (c) Review details:
-    → Display full .coderabbit-findings.md content
-    → Return to action prompt
 
 ELSE (no findings file exists):
   → CodeRabbit was skipped or found no issues
