@@ -11,26 +11,45 @@ import type { Plugin } from "@opencode-ai/plugin"
  */
 
 const PROTECTED_PATTERNS = [
-  /\.env(\..+)?$/, // .env, .env.local, .env.production
-  /credentials?\.?(json|yaml|yml)?$/i, // credentials.json, credential.yaml
-  /secrets?\.?(json|yaml|yml)?$/i, // secrets.json, secret.yaml
-  /\.(pem|key|p12|pfx|keystore|jks)$/i, // Private keys
-  /id_(rsa|ed25519|ecdsa|dsa)$/, // SSH keys
+  /\.env(?:\.[^/\\]+)?$/, // .env, .env.local, .env.production
+  /credentials?\.(?:json|ya?ml)$/i, // credentials.json, credentials.yaml
+  /secrets?\.(?:json|ya?ml)$/i, // secrets.json, secret.yml
+  /\.(?:pem|key|p12|pfx|keystore|jks)$/i, // Private keys
+  /id_(?:rsa|ed25519|ecdsa|dsa)$/, // SSH keys
   /aws_credentials$/i,
   /\.npmrc$/,
   /\.netrc$/,
   /kubeconfig$/i,
 ]
 
-const READ_COMMANDS = ["cat", "less", "more", "head", "tail", "grep", "awk", "sed", "xxd", "od", "strings"]
+const READ_COMMANDS = [
+  "cat",
+  "less",
+  "more",
+  "head",
+  "tail",
+  "grep",
+  "awk",
+  "sed",
+  "xxd",
+  "od",
+  "strings",
+  "python",
+  "python3",
+  "node",
+  "ruby",
+]
 
-// KNOWN LIMITATION: Does not detect symlink-based bypasses
-// (e.g., ln -s .env safe-name && cat safe-name)
-// This requires file system write access which indicates higher privilege compromise
-
-// KNOWN LIMITATION: May not detect all shell invocation patterns
-// (e.g., sh -c "cat .env" or bash with piped input)
-// Current implementation covers common direct read attempts
+// Patterns that commonly enable bypassing naive read detection
+const BYPASS_PATTERNS = [
+  /\bbase64\b\s+(-d|--decode)\b/i,
+  /\beval\b/i,
+  /\bsource\b/i,
+  /\b\.\s+[^\s]/, // `. file` source shorthand
+  /\$\([^)]*\)/, // $(...)
+  /`[^`]+`/, // backticks
+  /\b(sh|bash|zsh)\b\s+-c\b/i,
+]
 
 export const RingEnvProtection: Plugin = async () => {
   return {
@@ -42,14 +61,21 @@ export const RingEnvProtection: Plugin = async () => {
       // Decode potential hex escapes to prevent bypass
       const decoded = command.replace(/\\x([0-9a-f]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
 
+      const combined = `${command}\n${decoded}`
+
       for (const pattern of PROTECTED_PATTERNS) {
         if (pattern.test(command) || pattern.test(decoded)) {
           // Use word boundary regex for more robust command detection
-          const commandPattern = new RegExp(`\\b(${READ_COMMANDS.join("|")})\\s`, "i")
+          const commandPattern = new RegExp(`\\b(${READ_COMMANDS.join("|")})\\b`, "i")
           const isReadAttempt = commandPattern.test(command) || commandPattern.test(decoded)
-          if (isReadAttempt) {
-            console.error(`[Ring:ERROR] BLOCKED: Attempted read of protected file pattern: ${pattern}`)
-            throw new Error(`Security: Cannot read protected file matching ${pattern}`)
+
+          // If a protected file is referenced AND the command contains a bypass-enabler,
+          // block it even if we can't prove a direct read.
+          const hasBypassPattern = BYPASS_PATTERNS.some((p) => p.test(combined))
+
+          if (isReadAttempt || hasBypassPattern) {
+            console.error(`[Ring:ERROR] BLOCKED: Attempted access of protected file pattern: ${pattern}`)
+            throw new Error(`Security: Cannot access protected file matching ${pattern}`)
           }
         }
       }

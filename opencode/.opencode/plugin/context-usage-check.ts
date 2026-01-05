@@ -1,11 +1,7 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import {
-  getMessageState,
-  incrementMessageCount,
-  updateAcknowledgedTier,
-  resetMessageState,
-} from "./utils/message-tracking"
+import { incrementMessageCount, updateAcknowledgedTier, resetMessageState } from "./utils/message-tracking"
 import { getSessionId } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Context Usage Check Plugin
@@ -39,13 +35,18 @@ const TIER_THRESHOLDS = {
 // Configuration for context estimation
 // Formula: BASE_CONTEXT_PCT + (messageCount * PCT_PER_MESSAGE)
 // Based on observed patterns: ~23% base usage + ~1.25% per message exchange
-const CONFIG = {
-  BASE_CONTEXT_PCT: 23,
-  PCT_PER_MESSAGE: 1.25,
+function parseEnvNumber(key: string, fallback: number): number {
+  const raw = process.env[key]
+  if (!raw) return fallback
+
+  const parsed = Number(raw)
+  return Number.isNaN(parsed) ? fallback : parsed
 }
 
-// Debug: Track if we've logged event structure (for initial testing)
-let _loggedEventStructure = false
+const CONFIG = {
+  BASE_CONTEXT_PCT: parseEnvNumber("RING_CONTEXT_BASE_PCT", 23),
+  PCT_PER_MESSAGE: parseEnvNumber("RING_CONTEXT_PCT_PER_MESSAGE", 1.25),
+}
 
 /**
  * Estimate context usage from message count.
@@ -136,33 +137,20 @@ export const RingContextUsageCheck: Plugin = async ({ client, directory }) => {
   return {
     event: async ({ event }) => {
       // Reset state on session created
-      if (event.type === "session.created") {
+      if (event.type === EVENTS.SESSION_CREATED) {
         resetMessageState(projectRoot, "context", sessionId)
         return
       }
 
       // Track messages via message.updated
-      if (event.type !== "message.updated") {
+      if (event.type !== EVENTS.MESSAGE_UPDATED) {
         return
       }
 
-      // Debug: Log event structure on first event to verify assumptions (only in debug mode)
-      if (!_loggedEventStructure && process.env.RING_DEBUG) {
-        console.debug(
-          `[Ring:DEBUG] message.updated structure: ${JSON.stringify({
-            hasProperties: !!(event as any).properties,
-            hasData: !!(event as any).data,
-            keys: Object.keys(event),
-            propertiesKeys: (event as any).properties ? Object.keys((event as any).properties) : [],
-            dataKeys: (event as any).data ? Object.keys((event as any).data) : [],
-          })}`
-        )
-        _loggedEventStructure = true
-      }
-
-      // Filter to only count user messages to avoid double-counting
+      // Filter to only count user messages to avoid double-counting.
+      // If we can't determine the role due to SDK payload mismatch, proceed rather than disabling the hook.
       const message = (event as any).properties?.message || (event as any).data?.message
-      if (message?.role !== "user") {
+      if (message && message.role !== "user") {
         return // Skip assistant messages
       }
 
@@ -188,28 +176,35 @@ export const RingContextUsageCheck: Plugin = async ({ client, directory }) => {
       // Update acknowledged tier
       updateAcknowledgedTier(projectRoot, "context", currentTier, sessionId)
 
-      // Get current session and inject warning - SDK returns array directly
-      const sessions = await client.session.list()
-      const currentSession = sessions
-        // Note: Using any due to SDK type availability - replace with Session type when available
-        .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
-
-      if (currentSession) {
-        await client.session.prompt({
-          path: { id: currentSession.id },
-          body: {
-            noReply: true,
-            parts: [
-              {
-                type: "text",
-                text: warning,
-              },
-            ],
-          },
-        })
-
-        console.log(`[Ring:INFO] Context warning injected: ${currentTier} (${estimatedPct}%)`)
+      // Get current session and inject warning - SDK returns a RequestResult wrapper
+      const sessionsResult = await client.session.list()
+      if (sessionsResult.error) {
+        console.warn(`[Ring:WARN] Failed to list sessions: ${sessionsResult.error}`)
+        return
       }
+
+      const sessions = sessionsResult.data ?? []
+      const currentSession = sessions.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+
+      if (!currentSession) {
+        console.warn("[Ring:WARN] No sessions found, cannot inject context warning")
+        return
+      }
+
+      await client.session.prompt({
+        path: { id: currentSession.id },
+        body: {
+          noReply: true,
+          parts: [
+            {
+              type: "text",
+              text: warning,
+            },
+          ],
+        },
+      })
+
+      console.log(`[Ring:INFO] Context warning injected: ${currentTier} (${estimatedPct}%)`)
     },
   }
 }

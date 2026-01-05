@@ -11,6 +11,7 @@ Execute an existing implementation plan with controlled checkpoints and code rev
 ### Step 1: Load and Review Plan
 - Read the plan file completely
 - Review for any questions or concerns
+- If you need the user to choose between viable options, use the `ring_doubt` tool
 - Raise issues before starting
 - Create task list to track progress
 

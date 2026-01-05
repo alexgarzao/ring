@@ -1,8 +1,9 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import { existsSync, readFileSync } from "fs"
+import { existsSync, readFileSync, statSync } from "fs"
 import { join } from "path"
 import { incrementMessageCount, shouldInject } from "./utils/message-tracking"
-import { getSessionId, escapeXmlTags } from "./utils/state"
+import { getSessionId, escapeAngleBrackets } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Instruction Reminder Plugin
@@ -26,8 +27,6 @@ const CONFIG = {
 }
 const INSTRUCTION_FILES = ["CLAUDE.md", "AGENTS.md", "RULES.md"]
 
-// Debug: Track if we've logged event structure (for initial testing)
-let _loggedEventStructure = false
 
 // Agent usage reminder (compact version)
 const AGENT_REMINDER = `<agent-usage-reminder>
@@ -67,8 +66,10 @@ function isWithinRateLimit(): boolean {
   const now = Date.now()
   const oneMinuteAgo = now - 60000
 
-  // Clean up old timestamps
-  RATE_LIMIT.lastInjectionTimes = RATE_LIMIT.lastInjectionTimes.filter((t) => t > oneMinuteAgo)
+  // Clean up old timestamps and keep the array bounded
+  RATE_LIMIT.lastInjectionTimes = RATE_LIMIT.lastInjectionTimes
+    .filter((t) => t > oneMinuteAgo)
+    .slice(-RATE_LIMIT.maxInjectionsPerMinute)
 
   if (RATE_LIMIT.lastInjectionTimes.length >= RATE_LIMIT.maxInjectionsPerMinute) {
     console.warn(`[Ring:WARN] Rate limit reached (${RATE_LIMIT.maxInjectionsPerMinute}/min)`)
@@ -83,6 +84,8 @@ export const RingInstructionReminder: Plugin = async ({ client, directory }) => 
   const projectRoot = directory
   const sessionId = getSessionId()
   const homeDir = process.env.HOME || ""
+
+  const MAX_INSTRUCTION_FILE_SIZE_BYTES = 1024 * 1024
 
   /**
    * Find all instruction files, searching subdirectories.
@@ -123,9 +126,16 @@ Re-reading instruction files to combat context drift (message ${messageCount}):
 `
 
     for (const file of files) {
+      // Avoid injecting extremely large files
+      const st = statSync(file.path)
+      if (st.size > MAX_INSTRUCTION_FILE_SIZE_BYTES) {
+        console.warn(`[Ring:WARN] Skipping large instruction file: ${file.displayPath}`)
+        continue
+      }
+
       const content = readFileSync(file.path, "utf-8")
-      // Escape any XML-like tags to prevent prompt injection
-      const escapedContent = escapeXmlTags(content)
+      // Escape content to prevent prompt injection
+      const escapedContent = escapeAngleBrackets(content)
 
       reminder += `------------------------------------------------------------------------
 ${file.displayPath}
@@ -148,28 +158,14 @@ ${DUPLICATION_GUARD}`
   return {
     event: async ({ event }) => {
       // Track messages via message.updated
-      if (event.type !== "message.updated") {
+      if (event.type !== EVENTS.MESSAGE_UPDATED) {
         return
       }
 
-      // Debug: Log event structure on first event to verify assumptions (only in debug mode)
-      if (!_loggedEventStructure && process.env.RING_DEBUG) {
-        console.debug(
-          `[Ring:DEBUG] message.updated structure: ${JSON.stringify({
-            hasProperties: !!(event as any).properties,
-            hasData: !!(event as any).data,
-            keys: Object.keys(event),
-            propertiesKeys: (event as any).properties ? Object.keys((event as any).properties) : [],
-            dataKeys: (event as any).data ? Object.keys((event as any).data) : [],
-          })}`
-        )
-        _loggedEventStructure = true
-      }
-
-      // Filter to only count user messages to avoid double-counting
-      // Note: This requires verification of OpenCode's event payload structure
+      // Filter to only count user messages to avoid double-counting.
+      // If the message object isn't present (SDK mismatch), proceed rather than disabling the hook.
       const message = (event as any).properties?.message || (event as any).data?.message
-      if (message?.role !== "user") {
+      if (message && message.role !== "user") {
         return // Skip assistant messages
       }
 
@@ -198,28 +194,35 @@ ${DUPLICATION_GUARD}`
       // Mark that we're injecting
       incrementMessageCount(projectRoot, "reminder", sessionId, true)
 
-      // Get current session and inject - SDK returns array directly
-      const sessions = await client.session.list()
-      const currentSession = sessions
-        // Note: Using any due to SDK type availability - replace with Session type when available
-        .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
-
-      if (currentSession) {
-        await client.session.prompt({
-          path: { id: currentSession.id },
-          body: {
-            noReply: true,
-            parts: [
-              {
-                type: "text",
-                text: reminder,
-              },
-            ],
-          },
-        })
-
-        console.log(`[Ring:INFO] Instruction files reminder injected (message ${state.messageCount})`)
+      // Get current session and inject - SDK returns a RequestResult wrapper
+      const sessionsResult = await client.session.list()
+      if (sessionsResult.error) {
+        console.warn(`[Ring:WARN] Failed to list sessions: ${sessionsResult.error}`)
+        return
       }
+
+      const sessions = sessionsResult.data ?? []
+      const currentSession = sessions.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+
+      if (!currentSession) {
+        console.warn("[Ring:WARN] No sessions found, cannot inject instruction reminder")
+        return
+      }
+
+      await client.session.prompt({
+        path: { id: currentSession.id },
+        body: {
+          noReply: true,
+          parts: [
+            {
+              type: "text",
+              text: reminder,
+            },
+          ],
+        },
+      })
+
+      console.log(`[Ring:INFO] Instruction files reminder injected (message ${state.messageCount})`)
     },
   }
 }

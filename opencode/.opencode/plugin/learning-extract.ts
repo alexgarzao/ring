@@ -2,7 +2,8 @@ import type { Plugin } from "@opencode-ai/plugin"
 import { existsSync, writeFileSync, mkdirSync } from "fs"
 import { join } from "path"
 import Database from "better-sqlite3"
-import { readState, sanitizeSessionId, getSessionId } from "./utils/state"
+import { readState, writeState, sanitizeSessionId, getSessionId } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Learning Extract Plugin
@@ -84,7 +85,8 @@ export const RingLearningExtract: Plugin = async ({ directory }) => {
       return learnings
     }
 
-    let db: Database | null = null
+    type BetterSqliteDatabase = InstanceType<typeof Database>
+    let db: BetterSqliteDatabase | null = null
     try {
       // Use better-sqlite3 with parameterized queries to prevent SQL injection
       db = new Database(dbPath, { readonly: true })
@@ -253,9 +255,16 @@ export const RingLearningExtract: Plugin = async ({ directory }) => {
     return filePath
   }
 
+  const IDEMPOTENCY_WINDOW_MS = 10_000
+
   return {
     event: async ({ event }) => {
-      if (event.type !== "session.idle") {
+      if (event.type !== EVENTS.SESSION_IDLE) {
+        return
+      }
+
+      const alreadyRan = readState<{ timestamp: number }>(projectRoot, "learning-extract-ran", sessionId)
+      if (alreadyRan && Date.now() - alreadyRan.timestamp < IDEMPOTENCY_WINDOW_MS) {
         return
       }
 
@@ -275,6 +284,9 @@ export const RingLearningExtract: Plugin = async ({ directory }) => {
         learnings.what_failed.length > 0 ||
         learnings.key_decisions.length > 0 ||
         learnings.patterns.length > 0
+
+      // Mark as processed even if empty, to avoid repeated runs on rapid idle events
+      writeState(projectRoot, "learning-extract-ran", { timestamp: Date.now() }, sessionId)
 
       if (hasLearnings) {
         const filePath = saveLearnings(learnings)

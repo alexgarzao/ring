@@ -26,5 +26,8 @@ export { RingContextUsageCheck } from "./context-usage-check"
 export { RingOutcomeInference } from "./outcome-inference"
 export { RingLearningExtract } from "./learning-extract"
 
+// Interactive tools
+export { RingDoubtResolver } from "./doubt-resolver"
+
 // Default export for convenience
 export { RingSessionStart as default } from "./session-start"

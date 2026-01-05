@@ -1,5 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { readState, writeState, getSessionId } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Outcome Inference Plugin
@@ -136,9 +137,16 @@ export const RingOutcomeInference: Plugin = async ({ directory }) => {
   const projectRoot = directory
   const sessionId = getSessionId()
 
+  const IDEMPOTENCY_WINDOW_MS = 10_000
+
   return {
     event: async ({ event }) => {
-      if (event.type !== "session.idle") {
+      if (event.type !== EVENTS.SESSION_IDLE) {
+        return
+      }
+
+      const alreadyRan = readState<{ timestamp: number }>(projectRoot, "outcome-inference-ran", sessionId)
+      if (alreadyRan && Date.now() - alreadyRan.timestamp < IDEMPOTENCY_WINDOW_MS) {
         return
       }
 
@@ -160,6 +168,7 @@ export const RingOutcomeInference: Plugin = async ({ directory }) => {
       }
 
       writeState(projectRoot, "session-outcome", outcome, sessionId)
+      writeState(projectRoot, "outcome-inference-ran", { timestamp: Date.now() }, sessionId)
 
       console.log(
         `[Ring:INFO] Outcome inferred: ${result.outcome} (${result.confidence} confidence) - ${result.reason}`

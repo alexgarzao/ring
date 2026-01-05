@@ -1,5 +1,5 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import { existsSync } from "fs"
+import { existsSync, lstatSync } from "fs"
 import { join } from "path"
 import { isPathWithinRoot } from "./utils/state"
 
@@ -13,6 +13,12 @@ import { isPathWithinRoot } from "./utils/state"
  * This plugin intercepts Write tool completions and indexes any files
  * written to docs/handoffs/ or docs/plans/ directories for searchability.
  */
+type ShellExec = PromiseLike<unknown> & {
+  quiet: () => Promise<unknown>
+}
+
+type Shell = (strings: TemplateStringsArray, ...values: unknown[]) => ShellExec
+
 export const RingArtifactIndexWrite: Plugin = async ({ $, directory }) => {
   const projectRoot = directory
 
@@ -34,9 +40,17 @@ export const RingArtifactIndexWrite: Plugin = async ({ $, directory }) => {
     ]
 
     for (const candidate of candidates) {
-      if (existsSync(candidate)) {
-        return candidate
+      if (!existsSync(candidate)) continue
+      if (!isPathWithinRoot(candidate, projectRoot)) continue
+
+      try {
+        const st = lstatSync(candidate)
+        if (st.isSymbolicLink()) continue
+      } catch {
+        continue
       }
+
+      return candidate
     }
     return null
   }
@@ -45,12 +59,13 @@ export const RingArtifactIndexWrite: Plugin = async ({ $, directory }) => {
    * Ensure Python dependencies are available.
    */
   const ensurePythonDeps = async (): Promise<boolean> => {
+    const shell = $ as unknown as Shell
     try {
-      await $`python3 -c "import yaml"`.quiet()
+        await shell`python3 -c "import yaml"`.quiet()
       return true
     } catch {
       try {
-        await $`pip3 install --quiet --user 'PyYAML>=6.0'`
+        await shell`pip3 install --quiet --user 'PyYAML>=6.0'`
         return true
       } catch (err) {
         console.warn(`[Ring:WARN] Failed to install PyYAML: ${err}`)
@@ -67,10 +82,24 @@ export const RingArtifactIndexWrite: Plugin = async ({ $, directory }) => {
         return
       }
 
-      // Extract file path from tool arguments
-      const filePath = String(output.args?.file_path || output.args?.filePath || output.args?.path || "")
+      // Extract file path from tool output metadata
+      // NOTE: tool.execute.after output does not include args in the SDK typing.
+      // Many tool implementations include args inside metadata.
+      const metadata = output.metadata as any
+      const rawPath =
+        metadata?.args?.file_path ||
+        metadata?.args?.filePath ||
+        metadata?.args?.path ||
+        metadata?.file_path ||
+        metadata?.filePath ||
+        metadata?.path
 
-      if (!filePath) {
+      if (typeof rawPath !== "string") {
+        return
+      }
+
+      const filePath = rawPath.trim()
+      if (!filePath || filePath.includes("\0")) {
         return
       }
 

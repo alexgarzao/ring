@@ -102,8 +102,9 @@ export function getStatePath(projectRoot: string, key: string, sessionId?: strin
  * Reads from either location for backward compatibility.
  */
 function findStatePath(projectRoot: string, key: string, sessionId?: string): string | null {
+  const safeKey = sanitizeKey(key)
   const safeSession = sessionId ? sanitizeSessionId(sessionId) : "global"
-  const filename = `${key}-${safeSession}.json`
+  const filename = `${safeKey}-${safeSession}.json`
 
   for (const dir of STATE_DIRS) {
     const statePath = join(projectRoot, dir, filename)
@@ -215,13 +216,20 @@ export function sanitizeForPrompt(content: string, maxLength: number = 500): str
 }
 
 /**
- * Escapes XML-like tags in content to prevent prompt injection.
- * Combined with sanitizeForPrompt() which escapes < and >,
- * this provides layered protection against malformed tag injection.
+ * Escapes angle brackets to prevent prompt injection.
  *
- * The regex matches XML-like tags (e.g., <tag>, </tag>, <tag attr="val">)
- * and replaces < and > with HTML entities to neutralize them.
+ * This intentionally escapes ALL `<` and `>` characters rather than
+ * attempting tag-aware parsing. It's safer and avoids bypasses.
+ */
+export function escapeAngleBrackets(content: string): string {
+  return content.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
+/**
+ * Backwards-compatible alias.
+ *
+ * @deprecated Prefer `escapeAngleBrackets()`.
  */
 export function escapeXmlTags(content: string): string {
-  return content.replace(/<\/?[a-z][^>]*>/gi, (m) => `&#60;${m.slice(1, -1)}&#62;`)
+  return escapeAngleBrackets(content)
 }

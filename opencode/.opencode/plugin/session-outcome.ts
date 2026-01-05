@@ -1,7 +1,8 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import { existsSync, readdirSync, statSync } from "fs"
+import { existsSync, readdirSync, statSync, lstatSync } from "fs"
 import { join } from "path"
-import { readState, writeState, deleteState, getSessionId, sanitizeForPrompt } from "./utils/state"
+import { readState, writeState, deleteState, getSessionId, sanitizeForPrompt, isPathWithinRoot } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Session Outcome Plugin
@@ -26,12 +27,13 @@ interface Todo {
 
 interface PendingOutcomePrompt {
   timestamp: number
+  sourceSessionId: string
 }
 
 // Maximum time between session.compacted and session.created to show outcome prompt
-const OUTCOME_PROMPT_WINDOW_MS = 5000
+const OUTCOME_PROMPT_WINDOW_MS = 30000
 
-export const RingSessionOutcome: Plugin = async ({ client, directory, $ }) => {
+export const RingSessionOutcome: Plugin = async ({ client, directory }) => {
   const projectRoot = directory
   const sessionId = getSessionId()
 
@@ -104,10 +106,21 @@ export const RingSessionOutcome: Plugin = async ({ client, directory, $ }) => {
     ]
 
     for (const candidate of candidates) {
-      if (existsSync(candidate)) {
-        return candidate
+      if (!existsSync(candidate)) continue
+
+      // Prevent executing anything outside the project
+      if (!isPathWithinRoot(candidate, projectRoot)) continue
+
+      try {
+        const st = lstatSync(candidate)
+        if (st.isSymbolicLink()) continue
+      } catch {
+        continue
       }
+
+      return candidate
     }
+
     return null
   }
 
@@ -119,27 +132,38 @@ export const RingSessionOutcome: Plugin = async ({ client, directory, $ }) => {
 
     let markerInstruction = ""
     if (artifactMarker) {
+      // This is an instruction string shown to the user/agent.
+      // Escape characters that could prematurely close the code span.
+      const safeMarker = sanitizeForPrompt(artifactMarker, 300).replace(/`/g, "'").replace(/\n/g, " ")
       markerInstruction = `
 
 After user responds, save the grade using:
-\`python3 ${artifactMarker} --outcome <GRADE>\``
+\`python3 ${safeMarker} --outcome <GRADE>\``
     }
 
-    // Get current session - SDK returns array directly
-    const sessions = await client.session.list()
-    const currentSession = sessions
-      // Note: Using any due to SDK type availability - replace with Session type when available
-      .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+    // Get current session - SDK returns a RequestResult wrapper
+    const sessionsResult = await client.session.list()
+    if (sessionsResult.error) {
+      console.warn(`[Ring:WARN] Failed to list sessions: ${sessionsResult.error}`)
+      return
+    }
 
-    if (currentSession) {
-      await client.session.prompt({
-        path: { id: currentSession.id },
-        body: {
-          noReply: true,
-          parts: [
-            {
-              type: "text",
-              text: `<MANDATORY-USER-MESSAGE>
+    const sessions = sessionsResult.data ?? []
+    const currentSession = sessions.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+
+    if (!currentSession) {
+      console.warn("[Ring:WARN] No sessions found, cannot inject outcome prompt")
+      return
+    }
+
+    await client.session.prompt({
+      path: { id: currentSession.id },
+      body: {
+        noReply: true,
+        parts: [
+          {
+            type: "text",
+            text: `<MANDATORY-USER-MESSAGE>
 PREVIOUS SESSION OUTCOME GRADE REQUESTED
 
 You just cleared/compacted the previous session. Please ask the user to rate the PREVIOUS session's outcome.
@@ -158,23 +182,26 @@ ${markerInstruction}
 
 Then continue with the new session.
 </MANDATORY-USER-MESSAGE>`,
-            },
-          ],
-        },
-      })
+          },
+        ],
+      },
+    })
 
-      console.log(`[Ring:INFO] Session outcome prompt injected (context: ${contextStr})`)
-    }
+    console.log(`[Ring:INFO] Session outcome prompt injected (context: ${contextStr})`)
   }
 
   return {
     // When session is compacted, set a flag for the next session.created
     "session.compacted": async () => {
-      writeState(projectRoot, "pending-outcome-prompt", { timestamp: Date.now() } as PendingOutcomePrompt)
+      // Persist globally (no sessionId) so the next session.created can still find it.
+      writeState(projectRoot, "pending-outcome-prompt", {
+        timestamp: Date.now(),
+        sourceSessionId: sessionId,
+      } as PendingOutcomePrompt)
     },
     event: async ({ event }) => {
       // Handle session.created to check for pending outcome prompt
-      if (event.type === "session.created") {
+      if (event.type === EVENTS.SESSION_CREATED) {
         const pending = readState<PendingOutcomePrompt>(projectRoot, "pending-outcome-prompt")
         if (pending && Date.now() - pending.timestamp < OUTCOME_PROMPT_WINDOW_MS) {
           // Clear the flag
@@ -194,7 +221,7 @@ Then continue with the new session.
       }
 
       // Also handle session.compacted directly if it fires
-      if (event.type === "session.compacted") {
+      if (event.type === EVENTS.SESSION_COMPACTED) {
         const { hasWork, context } = detectSessionWork()
 
         if (!hasWork) {

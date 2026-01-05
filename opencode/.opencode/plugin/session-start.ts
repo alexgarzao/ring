@@ -1,7 +1,8 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import { existsSync, readFileSync, readdirSync, statSync } from "fs"
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from "fs"
 import { join } from "path"
-import { cleanupOldState, deleteState, getSessionId } from "./utils/state"
+import { cleanupOldState, deleteState, getSessionId, escapeAngleBrackets, sanitizeForPrompt, isPathWithinRoot } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Session Start Plugin (Enhanced)
@@ -64,7 +65,14 @@ State assumption -> Explain why -> Note what would change it`
 /**
  * Ensure Python dependencies are available.
  */
-const ensurePythonDeps = async ($: any): Promise<boolean> => {
+type ShellExec = PromiseLike<unknown> & {
+  quiet: () => Promise<unknown>
+  text: () => Promise<string>
+}
+
+type Shell = (strings: TemplateStringsArray, ...values: unknown[]) => ShellExec
+
+const ensurePythonDeps = async ($: Shell): Promise<boolean> => {
   try {
     await $`python3 -c "import yaml"`.quiet()
     return true
@@ -100,7 +108,9 @@ export const RingSessionStart: Plugin = async ({ client, directory, $ }) => {
           name: f,
           path: join(ledgerDir, f),
           mtime: statSync(join(ledgerDir, f)).mtimeMs,
+          isSymlink: lstatSync(join(ledgerDir, f)).isSymbolicLink(),
         }))
+        .filter((f) => !f.isSymlink)
         .sort((a, b) => b.mtime - a.mtime)
 
       if (files.length === 0) return null
@@ -138,14 +148,22 @@ export const RingSessionStart: Plugin = async ({ client, directory, $ }) => {
     ]
 
     for (const generator of pythonGenerators) {
-      if (existsSync(generator)) {
-        try {
-          const result = await $`python3 ${[generator]}`.text()
-          return result
-        } catch (err) {
-          console.debug(`[Ring:DEBUG] Python generator failed: ${err}`)
-          continue
-        }
+      if (!existsSync(generator)) continue
+      if (!isPathWithinRoot(generator, projectRoot)) continue
+
+      try {
+        const st = lstatSync(generator)
+        if (st.isSymbolicLink()) continue
+      } catch {
+        continue
+      }
+
+      try {
+        const result = await $`python3 ${[generator]}`.text()
+        return result
+      } catch (err) {
+        console.debug(`[Ring:DEBUG] Python generator failed: ${err}`)
+        continue
       }
     }
 
@@ -189,7 +207,7 @@ Run: \`skill: "using-ring"\` to see available workflows.`
 
   return {
     event: async ({ event }) => {
-      if (event.type !== "session.created") {
+      if (event.type !== EVENTS.SESSION_CREATED) {
         return
       }
 
@@ -222,15 +240,19 @@ ${skillsOverview}
 
       // Add ledger context if present
       if (ledger) {
+        const safeLedgerName = sanitizeForPrompt(ledger.name, 120)
+        const safePhase = sanitizeForPrompt(ledger.currentPhase || "No active phase marked", 200)
+        const safeLedgerContent = escapeAngleBrackets(ledger.content)
+
         context += `
 
 <ring-continuity-ledger>
-## Active Continuity Ledger: ${ledger.name}
+## Active Continuity Ledger: ${safeLedgerName}
 
-**Current Phase:** ${ledger.currentPhase || "No active phase marked"}
+**Current Phase:** ${safePhase}
 
 <continuity-ledger-content>
-${ledger.content}
+${safeLedgerContent}
 </continuity-ledger-content>
 
 **Instructions:**
@@ -241,30 +263,37 @@ ${ledger.content}
       }
 
       // Get current session and inject context
-      // SDK returns array directly, not { data: [] }
-      const sessions = await client.session.list()
-      const currentSession = sessions
-        // Note: Using any due to SDK type availability - replace with Session type when available
-        .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+      // SDK returns a RequestResult wrapper (data/error + request/response)
+      const sessionsResult = await client.session.list()
+      if (sessionsResult.error) {
+        console.warn(`[Ring:WARN] Failed to list sessions: ${sessionsResult.error}`)
+        return
+      }
 
-      if (currentSession) {
-        await client.session.prompt({
-          path: { id: currentSession.id },
-          body: {
-            noReply: true,
-            parts: [
-              {
-                type: "text",
-                text: context,
-              },
-            ],
-          },
-        })
+      const sessions = sessionsResult.data ?? []
+      const currentSession = sessions.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
 
-        console.log("[Ring:INFO] Context injected successfully")
-        if (ledger) {
-          console.log(`[Ring:INFO] Active ledger: ${ledger.name}`)
-        }
+      if (!currentSession) {
+        console.warn("[Ring:WARN] No sessions found, cannot inject session-start context")
+        return
+      }
+
+      await client.session.prompt({
+        path: { id: currentSession.id },
+        body: {
+          noReply: true,
+          parts: [
+            {
+              type: "text",
+              text: context,
+            },
+          ],
+        },
+      })
+
+      console.log("[Ring:INFO] Context injected successfully")
+      if (ledger) {
+        console.log(`[Ring:INFO] Active ledger: ${ledger.name}`)
       }
     },
   }

@@ -1,5 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { writeState, getSessionId, sanitizeForPrompt } from "./utils/state"
+import { EVENTS } from "./utils/events"
 
 /**
  * Ring Task Completion Check Plugin
@@ -34,7 +35,7 @@ export const RingTaskCompletionCheck: Plugin = async ({ client, directory }) => 
 
   return {
     event: async ({ event }) => {
-      if (event.type !== "todo.updated") {
+      if (event.type !== EVENTS.TODO_UPDATED) {
         return
       }
 
@@ -67,22 +68,30 @@ export const RingTaskCompletionCheck: Plugin = async ({ client, directory }) => 
         // Build task list for message (sanitized to prevent prompt injection)
         const taskList = todos.map((t) => `- ${sanitizeForPrompt(t.content, 200)}`).join("\n")
 
-        // Get current session - SDK returns array directly, not { data: [] }
-        const sessions = await client.session.list()
-        const currentSession = sessions
-          // Note: Using any due to SDK type availability - replace with Session type when available
-          .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+        // Get current session - SDK returns a RequestResult wrapper
+        const sessionsResult = await client.session.list()
+        if (sessionsResult.error) {
+          console.warn(`[Ring:WARN] Failed to list sessions: ${sessionsResult.error}`)
+          return
+        }
 
-        if (currentSession) {
-          // Inject completion message
-          await client.session.prompt({
-            path: { id: currentSession.id },
-            body: {
-              noReply: true,
-              parts: [
-                {
-                  type: "text",
-                  text: `<MANDATORY-USER-MESSAGE>
+        const sessions = sessionsResult.data ?? []
+        const currentSession = sessions.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+
+        if (!currentSession) {
+          console.warn("[Ring:WARN] No sessions found, cannot inject task completion message")
+          return
+        }
+
+        // Inject completion message
+        await client.session.prompt({
+          path: { id: currentSession.id },
+          body: {
+            noReply: true,
+            parts: [
+              {
+                type: "text",
+                text: `<MANDATORY-USER-MESSAGE>
 TASK COMPLETION DETECTED - HANDOFF RECOMMENDED
 
 All ${total} todos are marked complete.
@@ -98,13 +107,12 @@ All ${total} todos are marked complete.
 Completed tasks:
 ${taskList}
 </MANDATORY-USER-MESSAGE>`,
-                },
-              ],
-            },
-          })
+              },
+            ],
+          },
+        })
 
-          console.log(`[Ring:INFO] All ${total} tasks complete - handoff recommended`)
-        }
+        console.log(`[Ring:INFO] All ${total} tasks complete - handoff recommended`)
       } else if (completed > 0) {
         // Progress update - just log, don't inject
         console.log(
