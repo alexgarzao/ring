@@ -98,7 +98,7 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 | "This would improve the codebase" | Improvement suggestions ≠ compliance findings. | **Do NOT flag as non-compliant** |
 | "I've seen this in similar projects" | Similar ≠ this. Standards are project-specific. | **Do NOT flag** |
 | "Common sense says this is needed" | Common sense ≠ explicit requirement. Standards are explicit. | **Do NOT flag** |
-| "The team probably wants this" | Probably ≠ definitely. Standards define definitely. | **Do NOT flag** |
+| "The team probably wants this" | Speculation about preferences is not compliance. Standards state requirements explicitly. | **Do NOT flag** |
 | "It's implied by the architecture" | Implied ≠ explicit. Only explicit requirements count. | **Do NOT flag** |
 
 **⛔ HARD GATE:** If you cannot quote the EXACT requirement from WebFetch result → Do NOT flag it.
