@@ -404,15 +404,15 @@ Use this agent for review.
         assert adapter.requires_flat_components("hooks") is False
 
     def test_transform_hook_replaces_plugin_variable(self, adapter):
-        """FactoryAdapter should replace CLAUDE_PLUGIN_ROOT with bash ~/.factory paths."""
+        """FactoryAdapter should replace CLAUDE_PLUGIN_ROOT with ~/.factory paths."""
         hook_content = '{"command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"}'
         result = adapter.transform_hook(hook_content)
-        
-        assert "${CLAUDE_PLUGIN_ROOT}" not in result
-        assert "bash ~/.factory/hooks/session-start.sh" in result
 
-    def test_factory_adapter_transforms_tool_names(self, adapter):
-        """FactoryAdapter should normalize invalid tool names in frontmatter and content."""
+        assert "${CLAUDE_PLUGIN_ROOT}" not in result
+        assert "~/.factory/hooks/session-start.sh" in result
+
+    def test_factory_adapter_preserves_mcp_and_task_tools(self, adapter):
+        """FactoryAdapter should preserve MCP tools and Task tool (no transformation)."""
         content = """---
 name: tool-test
 tools:
@@ -428,12 +428,31 @@ Use WebFetch and mcp__context7__resolve-library-id.
 
         result = adapter.transform_agent(content, {"plugin": "pm-team", "name": "tool-test"})
 
+        # WebFetch should still be transformed to FetchUrl
         assert "WebFetch" not in result
-        assert "mcp__context7__" not in result
-        assert "- Task" not in result
         assert "FetchUrl" in result
-        assert "context7___resolve-library-id" in result
-        assert "context7___get-library-docs" in result
+
+        # MCP tools should be preserved unchanged
+        assert "mcp__context7__resolve-library-id" in result
+        assert "mcp__context7__get-library-docs" in result
+
+        # Task tool should be preserved (not removed)
+        assert "- Task" in result
+
+    def test_transform_hook_entry_transforms_plugin_paths(self, adapter, tmp_path):
+        """_transform_hook_entry() should transform CLAUDE_PLUGIN_ROOT paths."""
+        install_path = tmp_path / ".factory"
+
+        hook_entry = {
+            "matcher": "startup",
+            "hooks": [{"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/test.sh"}]
+        }
+
+        result = adapter._transform_hook_entry(hook_entry, install_path)
+
+        cmd = result["hooks"][0]["command"]
+        assert "${CLAUDE_PLUGIN_ROOT}" not in cmd
+        assert str(install_path / "hooks") in cmd
 
     def test_factory_adapter_transforms_additional_tools(self, adapter):
         """FactoryAdapter should map Write, Bash and other tools correctly."""
@@ -896,14 +915,15 @@ tools:
         assert "- bash" in result or "bash" in result.lower()
 
     def test_get_component_mapping_singular_dirs(self, adapter):
-        """get_component_mapping() should use singular directory names."""
+        """get_component_mapping() should use singular directory names and exclude hooks."""
         mapping = adapter.get_component_mapping()
 
         # OpenCode uses singular directory names
         assert mapping["agents"]["target_dir"] == "agent"
         assert mapping["commands"]["target_dir"] == "command"
         assert mapping["skills"]["target_dir"] == "skill"
-        assert mapping["hooks"]["target_dir"] == "hook"
+        # OpenCode does NOT support file-based hooks (uses plugin-based hooks)
+        assert "hooks" not in mapping
 
     def test_get_install_path_default(self, adapter):
         """get_install_path() should return ~/.config/opencode by default."""
@@ -916,13 +936,13 @@ tools:
         path = adapter.get_install_path()
         assert path == Path("/custom/path")
 
-    def test_transform_hook_replaces_plugin_variable(self, adapter):
-        """OpenCodeAdapter should replace CLAUDE_PLUGIN_ROOT with OpenCode paths."""
+    def test_transform_hook_returns_none_unsupported(self, adapter):
+        """OpenCodeAdapter should return None for hooks (not supported)."""
         hook_content = '{"command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"}'
         result = adapter.transform_hook(hook_content)
 
-        assert "${CLAUDE_PLUGIN_ROOT}" not in result
-        assert "~/.config/opencode" in result
+        # OpenCode does NOT support file-based hooks - returns None
+        assert result is None
 
     def test_requires_hooks_in_settings_is_false(self, adapter):
         """OpenCodeAdapter supports standalone hook files."""
@@ -937,7 +957,7 @@ tools:
         assert config_path.name == "opencode.json"
 
     def test_transform_command_frontmatter(self, adapter):
-        """OpenCodeAdapter should transform command frontmatter correctly."""
+        """OpenCodeAdapter should filter command frontmatter to supported fields only."""
         content = """---
 name: test-cmd
 description: A test command
@@ -948,8 +968,12 @@ args: <target>
 """
         result = adapter.transform_command(content)
 
-        # args should be renamed to argument-hint
-        assert "argument-hint" in result
+        # OpenCode does NOT support argument-hint - args field should be stripped
+        assert "argument-hint" not in result
+        assert "args" not in result
+        # Supported fields should remain
+        assert "name" in result
+        assert "description" in result
 
     def test_merge_hooks_to_config_dry_run(self, adapter, tmp_path, monkeypatch):
         """merge_hooks_to_config() should not write in dry_run mode."""
