@@ -536,39 +536,52 @@ coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 
 ---
 
+### Step 7.5 Flow Logic
+
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
 │ ✅ ALL 3 RING REVIEWERS PASSED                                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│ Would you like to run CodeRabbit CLI for additional external    │
-│ AI-powered code review before proceeding to validation?         │
+│ Checking CodeRabbit CLI availability...                         │
 │                                                                 │
-│ CodeRabbit catches race conditions, memory leaks, security      │
-│ vulnerabilities, and edge cases that may complement Ring        │
-│ reviewers.                                                      │
-│                                                                 │
-│ ⚠️  ENVIRONMENT CHECK:                                          │
-│     • Interactive terminal with browser access? → Standard flow │
-│     • CI/headless? → Requires API token or pre-installed CLI    │
-│     • Container? → Mount credentials or use token auth          │
-│                                                                 │
-│ ⚠️  Requires: CodeRabbit CLI installed and authenticated        │
-│     Install: curl -fsSL https://cli.coderabbit.ai/install.sh | sh│
-│     Auth: coderabbit auth login (or --token for headless)       │
+│ CodeRabbit provides additional AI-powered code review that      │
+│ catches race conditions, memory leaks, security vulnerabilities,│
+│ and edge cases that may complement Ring reviewers.              │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Ask user:** "Do you want to run CodeRabbit CLI review before proceeding? (a) Yes (b) No, skip (c) Skip - environment doesn't support it"
+**Step 7.5 is REQUIRED when CodeRabbit CLI is installed and authenticated.**
+**If not installed, user is offered installation assistance.**
 
-### If User Selects YES:
+```text
+FLOW:
+1. Run CodeRabbit Installation Check
+2. IF installed AND authenticated → Run CodeRabbit (REQUIRED, no prompt)
+3. IF installed BUT NOT authenticated → Guide authentication
+4. IF NOT installed → Offer installation assistance
+5. IF user declines installation → Skip CodeRabbit, proceed to Step 8
+```
 
 #### Step 7.5.1: Check CodeRabbit Installation
 
 Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
-**If NOT installed:**
+**IF INSTALLED AND AUTHENTICATED:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ CodeRabbit CLI detected                                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ CodeRabbit CLI is installed and authenticated.                  │
+│ Running CodeRabbit review (required step)...                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+→ Proceed directly to Step 7.5.2 (Run CodeRabbit Review)
+
+**IF NOT INSTALLED:**
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
 │ ⚠️  CodeRabbit CLI not found                                    │
@@ -576,14 +589,34 @@ Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 │                                                                 │
 │ CodeRabbit CLI is not installed on your system.                 │
 │                                                                 │
-│ Would you like to:                                              │
-│   (a) Skip CodeRabbit review and proceed to Gate 5              │
-│   (b) Install CodeRabbit CLI now (I'll guide you)               │
+│ CodeRabbit provides additional AI-powered review that catches:  │
+│   • Race conditions and concurrency issues                      │
+│   • Memory leaks and resource management                        │
+│   • Security vulnerabilities                                    │
+│   • Edge cases missed by other reviewers                        │
+│                                                                 │
+│ Would you like to install CodeRabbit CLI now?                   │
+│   (a) Yes, install CodeRabbit CLI (I'll guide you)              │
+│   (b) No, skip CodeRabbit and proceed to Gate 5                 │
+│                                                                 │
+│ ⚠️  ENVIRONMENT CHECK:                                          │
+│     • Interactive terminal with browser? → Standard install     │
+│     • CI/headless? → Requires API token auth                    │
+│     • Container? → See Environment-Specific Guidance above      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**If user selects (b) Install:**
+**If user selects (a) Yes, install:**
+→ Proceed to Installation Flow below
+
+**If user selects (b) No, skip:**
+```text
+→ Record: "CodeRabbit review: SKIPPED (not installed, user declined)"
+→ Proceed to Step 8 (Success Output)
+```
+
+#### Step 7.5.1a: CodeRabbit Installation Flow
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -852,12 +885,18 @@ IF CodeRabbit found no issues:
 | Low | [N] | [TODO added] |
 ```
 
-### If User Selects NO (Skip):
+### CodeRabbit Skip Scenarios
 
-```text
-→ Record: "CodeRabbit review: SKIPPED (user choice)"
-→ Proceed directly to Step 8 (Success Output)
-```
+CodeRabbit review is skipped in these cases:
+
+| Scenario | Record As | Next Step |
+|----------|-----------|-----------|
+| CLI not installed, user declines install | `SKIPPED (not installed, user declined)` | Step 8 |
+| Installation failed, user skips | `SKIPPED (installation failed)` | Step 8 |
+| Authentication failed, user skips | `SKIPPED (auth failed)` | Step 8 |
+| Environment doesn't support (CI/container) | `SKIPPED (unsupported environment)` | Step 8 |
+
+**Note:** When CodeRabbit CLI IS installed and authenticated, it runs automatically as a required step.
 
 ---
 
