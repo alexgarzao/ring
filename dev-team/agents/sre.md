@@ -437,7 +437,9 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 | Alert rules | Check if explicitly required in sre.md |
 | Grafana configuration | Check if explicitly required in sre.md |
 
-**⛔ HARD GATE:** If you cannot quote the requirement from sre.md → Do NOT flag it as missing
+**⛔ HARD GATE:** If you cannot quote the requirement from sre.md → Do NOT flag it as missing.
+
+**→ See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for:**
 - Anti-rationalization rules
 - Completeness verification checklist
 
