@@ -579,6 +579,9 @@ coderabbit --prompt-only --type uncommitted --base [base_branch]
 
 #### Step 7.5.3: Handle CodeRabbit Findings
 
+**⛔ CRITICAL: You are an ORCHESTRATOR. You CANNOT edit source files directly.**
+**You MUST dispatch the implementation agent to fix issues.**
+
 ```text
 IF CodeRabbit found CRITICAL or HIGH issues:
   → Display findings to user
@@ -587,15 +590,63 @@ IF CodeRabbit found CRITICAL or HIGH issues:
     (b) Proceed to Gate 5 (acknowledge risk)
     (c) Review findings in detail
 
+  IF user selects (a) Fix issues:
+    → ⛔ DO NOT edit files directly
+    → DISPATCH implementation agent with CodeRabbit findings:
+    
+    Task:
+      subagent_type: "[same agent used in Gate 0]"
+      model: "opus"
+      description: "Fix CodeRabbit issues for [unit_id]"
+      prompt: |
+        ## CodeRabbit Issues to Fix
+        
+        The following issues were found by CodeRabbit CLI external review.
+        Fix ALL Critical and High severity issues.
+        
+        ### Critical Issues
+        [list from CodeRabbit output]
+        
+        ### High Issues
+        [list from CodeRabbit output]
+        
+        ## Requirements
+        1. Fix each issue following Ring Standards
+        2. Run tests to verify fixes don't break functionality
+        3. Commit fixes with descriptive message
+    
+    → After agent completes, re-run CodeRabbit: `coderabbit --prompt-only`
+    → If issues remain, repeat fix cycle (max 2 iterations)
+
 IF CodeRabbit found only MEDIUM/LOW issues:
   → Display summary
-  → Add TODO comments for trackable issues
+  → ⛔ DO NOT edit files directly to add TODOs
+  → DISPATCH implementation agent to add TODO comments:
+  
+  Task:
+    subagent_type: "[same agent used in Gate 0]"
+    description: "Add TODO comments for CodeRabbit findings"
+    prompt: |
+      Add TODO comments for these CodeRabbit findings:
+      [list MEDIUM/LOW issues with file:line]
+      
+      Format: // TODO(coderabbit): [issue description]
+  
   → Proceed to Gate 5
 
 IF CodeRabbit found no issues:
   → Display: "✅ CodeRabbit review passed - no additional issues found"
   → Proceed to Gate 5
 ```
+
+### Anti-Rationalization for Direct Editing
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's just a small fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
+| "I can add TODO comments quickly" | Orchestrators don't write to source files. Period. | **Dispatch agent** |
+| "Agent dispatch is overkill for this" | Consistency > convenience. Always dispatch. | **Dispatch agent** |
+| "CodeRabbit already told me what to fix" | Knowing the fix ≠ permission to implement. | **Dispatch agent** |
 
 #### Step 7.5.4: CodeRabbit Results Summary
 
