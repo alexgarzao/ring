@@ -135,6 +135,15 @@ Each agent MUST:
 | Custom dashboards | Verify in sre.md if explicitly required |
 | Alert rules | Verify in sre.md if explicitly required |
 
+#### frontend-designer → frontend.md
+
+| Common Hallucination | Action |
+|---------------------|--------|
+| Design library (Material UI, Chakra) | Verify in frontend.md "Libraries & Tools" section |
+| CSS framework (Bootstrap, Bulma) | Verify in frontend.md "Styling Standards" section |
+| Accessibility standard (WCAG AAA) | Verify EXACT level in frontend.md "Accessibility" section |
+| Component library (Radix, Headless UI) | Verify in frontend.md "Component Patterns" section |
+
 ---
 
 ## Anti-Rationalization Table
