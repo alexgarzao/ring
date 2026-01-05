@@ -1,0 +1,39 @@
+{
+  "name": "ring-opencode-plugins",
+  "version": "1.0.0",
+  "description": "Ring plugins for OpenCode - session management, context injection, and security",
+  "type": "module",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./session-start": "./session-start.ts",
+    "./context-injection": "./context-injection.ts",
+    "./notification": "./notification.ts",
+    "./env-protection": "./env-protection.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint *.ts"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "keywords": [
+    "opencode",
+    "ring",
+    "plugin",
+    "ai",
+    "development"
+  ],
+  "author": "Lerian Studio",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LerianStudio/ring.git",
+    "directory": "opencode/.opencode/plugin"
+  }
+}
