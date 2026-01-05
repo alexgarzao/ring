@@ -65,6 +65,9 @@ output_schema:
     - name: "Reviewer Verdicts"
       pattern: "^## Reviewer Verdicts"
       required: true
+    - name: "CodeRabbit External Review"
+      pattern: "^## CodeRabbit External Review"
+      required: false
     - name: "Handoff to Next Gate"
       pattern: "^## Handoff to Next Gate"
       required: true
@@ -85,6 +88,12 @@ output_schema:
       type: integer
     - name: iterations
       type: integer
+    - name: coderabbit_status
+      type: enum
+      values: [PASS, ISSUES_FOUND, SKIPPED, NOT_INSTALLED]
+    - name: coderabbit_issues
+      type: integer
+      description: "Number of issues found by CodeRabbit (0 if skipped)"
 
 examples:
   - name: "Feature review"
@@ -379,6 +388,23 @@ IF blocking_count > 0:
 
 ## Step 6: Dispatch Fixes to Implementation Agent
 
+**⛔ CRITICAL: You are an ORCHESTRATOR. You CANNOT edit source files directly.**
+**You MUST dispatch the implementation agent to fix ALL review issues.**
+
+### Orchestrator Boundaries (HARD GATE)
+
+| Action | Permitted? | Required Action |
+|--------|------------|-----------------|
+| Read review findings | ✅ YES | Parse reviewer output |
+| Edit source code files | ❌ NO | Dispatch agent |
+| Add TODO comments | ❌ NO | Dispatch agent |
+| Run tests | ❌ NO | Agent runs tests |
+| Commit changes | ❌ NO | Agent commits |
+
+**If you catch yourself about to use Edit/Write/Create on source files → STOP. Dispatch agent.**
+
+### Dispatch Implementation Agent
+
 ```yaml
 Task:
   subagent_type: "[implementation_agent from Gate 0]"
@@ -402,14 +428,26 @@ Task:
 
     ## Requirements
     1. Fix ALL Critical, High, and Medium issues
-    2. Commit fixes
-    3. Return list of fixed issues with evidence
+    2. Run tests to verify fixes
+    3. Commit fixes with descriptive message
+    4. Return list of fixed issues with evidence
 
     ## For Low/Cosmetic Issues
     Add TODO/FIXME comments:
     - Low: `// TODO(review): [Issue] - [reviewer] on [date]`
     - Cosmetic: `// FIXME(nitpick): [Issue] - [reviewer] on [date]`
 ```
+
+### Anti-Rationalization for Direct Editing
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's a one-line fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
+| "I already know how to fix it" | Knowing ≠ permission. Orchestrators orchestrate. | **Dispatch agent** |
+| "Agent dispatch takes too long" | Consistency > speed. Always dispatch. | **Dispatch agent** |
+| "Just adding a TODO comment" | TODO comments are code changes. Agents write code. | **Dispatch agent** |
+| "The reviewer told me exactly what to change" | Instructions are for the agent, not you. | **Dispatch agent** |
+| "I'll fix it faster myself" | Fast + wrong > slow + right. Dispatch agent. | **Dispatch agent** |
 
 ## Step 7: Re-Run All Reviewers After Fixes
 
@@ -421,6 +459,446 @@ After fixes committed:
 ⛔ CRITICAL: Always re-run ALL 3 reviewers after fixes.
 Do NOT cherry-pick reviewers.
 ```
+
+## Step 7.5: Optional CodeRabbit CLI Review (AFTER Ring Reviewers Pass)
+
+### Common Commands Reference
+
+<a id="coderabbit-install-check"></a>
+**CodeRabbit Installation Check:**
+```bash
+which coderabbit || which cr
+```
+> Used in Step 7.5.1 and after installation to verify CLI availability.
+
+---
+
+### ⚠️ PREREQUISITES & ENVIRONMENT REQUIREMENTS
+
+**Before attempting Step 7.5, verify your environment supports the required operations:**
+
+| Requirement | Local Dev | CI/CD | Containerized | Remote/SSH |
+|-------------|-----------|-------|---------------|------------|
+| `curl \| sh` install | ✅ Yes | ⚠️ May require elevated permissions | ❌ Often blocked | ⚠️ Depends on config |
+| Browser auth (`coderabbit auth login`) | ✅ Yes | ❌ No browser | ❌ No browser | ❌ No browser |
+| Write to `$HOME/.coderabbit/` | ✅ Yes | ⚠️ Ephemeral | ⚠️ Ephemeral | ✅ Usually |
+| Internet access to `cli.coderabbit.ai` | ✅ Yes | ⚠️ Check firewall | ⚠️ Check firewall | ⚠️ Check firewall |
+
+**⛔ HARD STOP CONDITIONS - Skip Step 7.5 if ANY apply:**
+- Running in containerized environment without persistent storage
+- CI/CD pipeline without pre-installed CodeRabbit CLI
+- Non-interactive environment (no TTY for browser auth)
+- Network restrictions blocking `cli.coderabbit.ai`
+- Read-only filesystem
+
+### Environment-Specific Guidance
+
+#### Local Development (RECOMMENDED)
+Standard flow works: `curl | sh` install + browser authentication.
+
+#### CI/CD Pipelines
+**Option A: Pre-install in CI image**
+```dockerfile
+# Add to your CI Dockerfile
+RUN curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+```
+
+**Option B: Use API token authentication (headless)**
+```bash
+# Set token via environment variable (add to CI secrets)
+export CODERABBIT_API_TOKEN="your-api-token"
+coderabbit auth login --token "$CODERABBIT_API_TOKEN"
+```
+
+**Option C: Skip CodeRabbit in CI, run locally**
+```bash
+# In CI config, set env var to auto-skip
+export SKIP_CODERABBIT_REVIEW=true
+```
+
+#### Containerized/Docker Environments
+```bash
+# Option 1: Mount credentials from host
+docker run -v ~/.coderabbit:/root/.coderabbit ...
+
+# Option 2: Pass token as env var
+docker run -e CODERABBIT_API_TOKEN="..." ...
+
+# Option 3: Pre-bake into image (not recommended for tokens)
+```
+
+#### Non-Interactive/Headless Authentication
+```bash
+# Generate API token at: https://app.coderabbit.ai/settings/api-tokens
+# Then authenticate without browser:
+coderabbit auth login --token "cr_xxxxxxxxxxxxx"
+```
+
+---
+
+### Step 7.5 Flow Logic
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ ALL 3 RING REVIEWERS PASSED                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Checking CodeRabbit CLI availability...                         │
+│                                                                 │
+│ CodeRabbit provides additional AI-powered code review that      │
+│ catches race conditions, memory leaks, security vulnerabilities,│
+│ and edge cases that may complement Ring reviewers.              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Step 7.5 is REQUIRED when CodeRabbit CLI is installed and authenticated.**
+**If not installed, user is offered installation assistance.**
+
+```text
+FLOW:
+1. Run CodeRabbit Installation Check
+2. IF installed AND authenticated → Run CodeRabbit (REQUIRED, no prompt)
+3. IF installed BUT NOT authenticated → Guide authentication
+4. IF NOT installed → Offer installation assistance
+5. IF user declines installation → Skip CodeRabbit, proceed to Step 8
+```
+
+#### Step 7.5.1: Check CodeRabbit Installation
+
+Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
+
+**IF INSTALLED AND AUTHENTICATED:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ CodeRabbit CLI detected                                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ CodeRabbit CLI is installed and authenticated.                  │
+│ Running CodeRabbit review (required step)...                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+→ Proceed directly to Step 7.5.2 (Run CodeRabbit Review)
+
+**IF NOT INSTALLED:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ⚠️  CodeRabbit CLI not found                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ CodeRabbit CLI is not installed on your system.                 │
+│                                                                 │
+│ CodeRabbit provides additional AI-powered review that catches:  │
+│   • Race conditions and concurrency issues                      │
+│   • Memory leaks and resource management                        │
+│   • Security vulnerabilities                                    │
+│   • Edge cases missed by other reviewers                        │
+│                                                                 │
+│ Would you like to install CodeRabbit CLI now?                   │
+│   (a) Yes, install CodeRabbit CLI (I'll guide you)              │
+│   (b) No, skip CodeRabbit and proceed to Gate 5                 │
+│                                                                 │
+│ ⚠️  ENVIRONMENT CHECK:                                          │
+│     • Interactive terminal with browser? → Standard install     │
+│     • CI/headless? → Requires API token auth                    │
+│     • Container? → See Environment-Specific Guidance above      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**If user selects (a) Yes, install:**
+→ Proceed to Installation Flow below
+
+**If user selects (b) No, skip:**
+```text
+→ Record: "CodeRabbit review: SKIPPED (not installed, user declined)"
+→ Proceed to Step 8 (Success Output)
+```
+
+#### Step 7.5.1a: CodeRabbit Installation Flow
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ 📦 INSTALLING CODERABBIT CLI                                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ ⚠️  ENVIRONMENT CHECK FIRST:                                    │
+│                                                                 │
+│ This installation requires:                                     │
+│   • curl command available                                      │
+│   • Write access to $HOME or /usr/local/bin                     │
+│   • Internet access to cli.coderabbit.ai                        │
+│   • Non-containerized environment (or persistent storage)       │
+│                                                                 │
+│ If in CI/container, see "Environment-Specific Guidance" above.  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Check environment before proceeding:**
+```bash
+# Verify prerequisites
+curl --version && echo "curl: OK" || echo "curl: MISSING"
+test -w "$HOME" && echo "HOME writable: OK" || echo "HOME writable: NO"
+curl -sI https://cli.coderabbit.ai | head -1 | grep -q "200\|301\|302" && echo "Network: OK" || echo "Network: BLOCKED"
+```
+
+**If prerequisites pass, install:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ 📦 Step 1: Installing CodeRabbit CLI...                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+```bash
+# Step 1: Download and install CodeRabbit CLI
+curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+```
+
+**After installation, verify:** Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
+
+**If installation successful:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ CodeRabbit CLI installed successfully!                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Step 2: Authentication required                                 │
+│                                                                 │
+│ Choose your authentication method:                              │
+│                                                                 │
+│   (a) Browser login (interactive - opens browser)               │
+│       → Best for: Local development with GUI                    │
+│       → Command: coderabbit auth login                          │
+│                                                                 │
+│   (b) API token (headless - no browser needed)                  │
+│       → Best for: CI/CD, containers, SSH sessions               │
+│       → Get token: https://app.coderabbit.ai/settings/api-tokens│
+│       → Command: coderabbit auth login --token "cr_xxx"         │
+│                                                                 │
+│   (c) Skip authentication and CodeRabbit review                 │
+│                                                                 │
+│ Note: Free tier allows 1 review/hour.                           │
+│       Paid plans get enhanced reviews + higher limits.          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**If user selects (a) Browser login:**
+```bash
+# Step 2a: Authenticate with CodeRabbit (opens browser)
+# ⚠️ Requires: GUI environment with default browser
+coderabbit auth login
+```
+
+**If user selects (b) API token:**
+```bash
+# Step 2b: Authenticate with API token (headless)
+# Get your token from: https://app.coderabbit.ai/settings/api-tokens
+coderabbit auth login --token "cr_xxxxxxxxxxxxx"
+```
+
+**After authentication:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ CodeRabbit CLI ready!                                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Installation: Complete                                          │
+│ Authentication: Complete                                        │
+│                                                                 │
+│ Proceeding to CodeRabbit review...                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+→ Proceed to Step 7.5.2 (Run CodeRabbit Review)
+
+**If installation failed:**
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ ❌ CodeRabbit CLI installation failed                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ Error: [error message from curl/sh]                             │
+│                                                                 │
+│ Troubleshooting:                                                │
+│   • Check internet connection                                   │
+│   • Try manual install: https://docs.coderabbit.ai/cli/overview │
+│   • macOS/Linux only (Windows not supported yet)                │
+│                                                                 │
+│ Would you like to:                                              │
+│   (a) Retry installation                                        │
+│   (b) Skip CodeRabbit and proceed to Gate 5                     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 7.5.2: Run CodeRabbit Review
+
+```bash
+# Run CodeRabbit in prompt-only mode (optimized for AI agents)
+coderabbit --prompt-only --type uncommitted --base [base_branch]
+```
+
+**Parse CodeRabbit output for:**
+- Critical issues
+- High severity issues
+- Security vulnerabilities
+- Performance concerns
+
+#### Step 7.5.3: Handle CodeRabbit Findings
+
+**⛔ CRITICAL: You are an ORCHESTRATOR. You CANNOT edit source files directly.**
+**You MUST dispatch the implementation agent to fix issues.**
+
+```text
+IF CodeRabbit found CRITICAL or HIGH issues:
+  → Display findings to user
+  → Ask: "CodeRabbit found [N] critical/high issues. Fix now or proceed anyway?"
+    (a) Fix issues - dispatch to implementation agent
+    (b) Proceed to Gate 5 (acknowledge risk)
+    (c) Review findings in detail
+
+  IF user selects (a) Fix issues:
+    → ⛔ DO NOT edit files directly
+    → DISPATCH implementation agent with CodeRabbit findings:
+    
+    Task:
+      subagent_type: "[same agent used in Gate 0]"
+      model: "opus"
+      description: "Fix CodeRabbit issues for [unit_id]"
+      prompt: |
+        ## CodeRabbit Issues to Fix
+        
+        The following issues were found by CodeRabbit CLI external review.
+        Fix ALL Critical and High severity issues.
+        
+        ### Critical Issues
+        [list from CodeRabbit output]
+        
+        ### High Issues
+        [list from CodeRabbit output]
+        
+        ## Requirements
+        1. Fix each issue following Ring Standards
+        2. Run tests to verify fixes don't break functionality
+        3. Commit fixes with descriptive message
+    
+    → After agent completes, re-run CodeRabbit: `coderabbit --prompt-only`
+    → If CodeRabbit issues remain, repeat fix cycle (max 2 iterations for CodeRabbit)
+    
+    → ⛔ AFTER CodeRabbit passes, MUST re-run Ring reviewers:
+    
+    ┌─────────────────────────────────────────────────────────────────┐
+    │ 🔄 RE-RUNNING RING REVIEWERS AFTER CODERABBIT FIXES             │
+    ├─────────────────────────────────────────────────────────────────┤
+    │                                                                 │
+    │ CodeRabbit fixes may have introduced new issues detectable by   │
+    │ Ring reviewers. Re-validation is MANDATORY before Gate 5.       │
+    │                                                                 │
+    └─────────────────────────────────────────────────────────────────┘
+    
+    Step 7.5.3a: Re-Run All 3 Ring Reviewers
+    ─────────────────────────────────────────
+    1. Get new HEAD_SHA after CodeRabbit fixes
+    2. Dispatch all 3 reviewers in parallel (per Step 3):
+       - code-reviewer
+       - business-logic-reviewer  
+       - security-reviewer
+    3. Wait for all 3 to complete
+    
+    Step 7.5.3b: Handle Ring Reviewer Results
+    ─────────────────────────────────────────
+    IF all 3 Ring reviewers PASS:
+      → Proceed to Step 8 (Success Output)
+    
+    IF any Ring reviewer finds CRITICAL/HIGH/MEDIUM issues:
+      → Increment coderabbit_ring_iteration counter
+      → IF coderabbit_ring_iteration >= 2:
+          → ESCALATE: "Max iterations reached after CodeRabbit fixes"
+          → Go to Step 9 (Escalate)
+      → DISPATCH implementation agent to fix Ring reviewer issues
+      → After fixes committed:
+          → Re-run CodeRabbit: `coderabbit --prompt-only`
+          → IF CodeRabbit passes:
+              → Re-run all 3 Ring reviewers (loop back to Step 7.5.3a)
+          → IF CodeRabbit finds issues:
+              → Fix CodeRabbit issues first, then re-run Ring reviewers
+    
+    State tracking for CodeRabbit fix cycle:
+    ```
+    coderabbit_fix_state = {
+      coderabbit_iterations: 0,      // max 2 for CodeRabbit-only fixes
+      ring_revalidation_iterations: 0,  // max 2 for Ring reviewer re-runs
+      total_max_iterations: 4        // absolute cap: 2 CR + 2 Ring
+    }
+    ```
+
+IF CodeRabbit found only MEDIUM/LOW issues:
+  → Display summary
+  → ⛔ DO NOT edit files directly to add TODOs
+  → DISPATCH implementation agent to add TODO comments:
+  
+  Task:
+    subagent_type: "[same agent used in Gate 0]"
+    description: "Add TODO comments for CodeRabbit findings"
+    prompt: |
+      Add TODO comments for these CodeRabbit findings:
+      [list MEDIUM/LOW issues with file:line]
+      
+      Format: // TODO(coderabbit): [issue description]
+  
+  → After TODO comments added (code changed):
+      → Re-run all 3 Ring reviewers (per Step 7.5.3a above)
+      → IF Ring reviewers PASS: Proceed to Step 8
+      → IF Ring reviewers find issues: Fix and re-run (max 2 iterations)
+
+IF CodeRabbit found no issues:
+  → Display: "✅ CodeRabbit review passed - no additional issues found"
+  → No code changes made by CodeRabbit flow
+  → Proceed directly to Step 8 (no Ring re-run needed)
+```
+
+### Anti-Rationalization for Direct Editing
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's just a small fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
+| "I can add TODO comments quickly" | Orchestrators don't write to source files. Period. | **Dispatch agent** |
+| "Agent dispatch is overkill for this" | Consistency > convenience. Always dispatch. | **Dispatch agent** |
+| "CodeRabbit already told me what to fix" | Knowing the fix ≠ permission to implement. | **Dispatch agent** |
+
+#### Step 7.5.4: CodeRabbit Results Summary
+
+```markdown
+## CodeRabbit External Review
+**Status:** [PASS|ISSUES_FOUND|SKIPPED]
+**Issues Found:** [N]
+
+| Severity | Count | Action |
+|----------|-------|--------|
+| Critical | [N] | [Fixed/Acknowledged] |
+| High | [N] | [Fixed/Acknowledged] |
+| Medium | [N] | [TODO added] |
+| Low | [N] | [TODO added] |
+```
+
+### CodeRabbit Skip Scenarios
+
+CodeRabbit review is skipped in these cases:
+
+| Scenario | Record As | Next Step |
+|----------|-----------|-----------|
+| CLI not installed, user declines install | `SKIPPED (not installed, user declined)` | Step 8 |
+| Installation failed, user skips | `SKIPPED (installation failed)` | Step 8 |
+| Authentication failed, user skips | `SKIPPED (auth failed)` | Step 8 |
+| Environment doesn't support (CI/container) | `SKIPPED (unsupported environment)` | Step 8 |
+
+**Note:** When CodeRabbit CLI IS installed and authenticated, it runs automatically as a required step.
+
+---
 
 ## Step 8: Prepare Success Output
 
@@ -547,8 +1025,13 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 | business-logic-reviewer | ✅/❌ |
 | security-reviewer | ✅/❌ |
 
+## CodeRabbit External Review (Optional)
+**Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
+**Issues Found:** [N or N/A]
+
 ## Handoff to Next Gate
 - Review status: [COMPLETE|FAILED]
 - Blocking issues: [resolved|N remaining]
+- CodeRabbit: [PASS|SKIPPED|N issues acknowledged]
 - Ready for Gate 5: [YES|NO]
 ```
