@@ -226,6 +226,8 @@ Task:
 
     ### 0. FORBIDDEN Logging Patterns (CRITICAL - Check FIRST)
 
+    Any occurrence = CRITICAL severity, automatic FAIL verdict.
+
     <forbidden>
     - fmt.Println() in Go code
     - fmt.Printf() in Go code
@@ -237,8 +239,6 @@ Task:
     - console.error() in TypeScript
     - console.warn() in TypeScript
     </forbidden>
-
-    Any occurrence = CRITICAL severity, automatic FAIL verdict.
     
     **MUST search for and report all occurrences of FORBIDDEN patterns:**
     
