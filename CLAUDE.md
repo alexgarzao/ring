@@ -387,76 +387,10 @@ Handle auth tokens. Validate JWT. NEVER log credentials. Use repository pattern.
 
 **Use XML-like tags to create recognizable blocks for critical instructions.** Tags create semantic boundaries that AI models recognize as structured blocks requiring special attention.
 
-| Tag | Purpose | AI Behavior |
-|-----|---------|-------------|
-| `<fetch_required>` | URLs to load before task | WebFetch all URLs first |
-| `<block_condition>` | Blocker triggers | STOP if any condition true |
-| `<forbidden>` | Prohibited actions | Reject if detected |
-| `<dispatch_required>` | Single agent invocation | Use Task tool with specified agent |
-| `<parallel_dispatch>` | Multiple agents in parallel | Dispatch all listed agents simultaneously |
-| `<verify_before_proceed>` | Pre-conditions | Check all before continuing |
-| `<output_required>` | Mandatory output sections | Include in response |
-| `<cannot_skip>` | Non-negotiable steps | No exceptions allowed |
-| `<user_decision>` | Requires user input | Wait for explicit response |
-
-**Example Usage:**
-
-```markdown
-## Required Resources
-
-<fetch_required>
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
-</fetch_required>
-
-Fetch all URLs above before starting the task.
-
----
-
-<block_condition>
-- PROJECT_RULES.md not found
-- Coverage below 85%
-- Any reviewer returns FAIL
-</block_condition>
-
-If any condition is true, STOP immediately and report blocker.
-
----
-
-<forbidden>
-- fmt.Println() in Go code
-- console.log() in TypeScript
-- Direct source code editing by orchestrator
-</forbidden>
-
-Any occurrence = IMMEDIATE REJECTION.
-
----
-
-<dispatch_required agent="backend-engineer-golang" model="opus">
-Implement user authentication endpoint with JWT validation.
-</dispatch_required>
-
-MUST use Task tool with specified agent and model.
-
----
-
-<parallel_dispatch agents="backend-engineer-golang, qa-analyst, devops-engineer, sre" model="opus">
-Analyze codebase against Ring standards. All agents receive same context:
-- Codebase Report: docs/refactor/{timestamp}/codebase-report.md
-- Project Rules: docs/PROJECT_RULES.md
-</parallel_dispatch>
-
-MUST dispatch all listed agents simultaneously in one message.
-```
-
-**Why Tags Work:**
-- **Clear boundaries** - AI recognizes start/end of critical blocks
-- **Semantic meaning** - Tag name conveys intent
-- **Parseable** - Can be programmatically validated
-- **Consistent pattern** - Same tag = same behavior across all prompts
-
-See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) for complete patterns and the [lexical salience refactoring plan](docs/plans/lexical-salience-refactor.md) for implementation details.
+**→ See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md#semantic-block-tags-recognition-patterns) for:**
+- Complete tag reference table (9 tags)
+- Example usage with all tag types
+- Why tags work explanation
 
 ---
 
