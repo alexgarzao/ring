@@ -392,7 +392,8 @@ Handle auth tokens. Validate JWT. NEVER log credentials. Use repository pattern.
 | `<fetch_required>` | URLs to load before task | WebFetch all URLs first |
 | `<block_condition>` | Blocker triggers | STOP if any condition true |
 | `<forbidden>` | Prohibited actions | Reject if detected |
-| `<dispatch_required>` | Agent invocation | Use Task tool with specified agent |
+| `<dispatch_required>` | Single agent invocation | Use Task tool with specified agent |
+| `<parallel_dispatch>` | Multiple agents in parallel | Dispatch all listed agents simultaneously |
 | `<verify_before_proceed>` | Pre-conditions | Check all before continuing |
 | `<output_required>` | Mandatory output sections | Include in response |
 | `<cannot_skip>` | Non-negotiable steps | No exceptions allowed |
@@ -437,6 +438,16 @@ Implement user authentication endpoint with JWT validation.
 </dispatch_required>
 
 MUST use Task tool with specified agent and model.
+
+---
+
+<parallel_dispatch agents="backend-engineer-golang, qa-analyst, devops-engineer, sre" model="opus">
+Analyze codebase against Ring standards. All agents receive same context:
+- Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+- Project Rules: docs/PROJECT_RULES.md
+</parallel_dispatch>
+
+MUST dispatch all listed agents simultaneously in one message.
 ```
 
 **Why Tags Work:**

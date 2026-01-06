@@ -64,16 +64,18 @@ examples:
 
 **Before any gate execution, you MUST load Ring standards:**
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) as the canonical source. This table summarizes the loading process.
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
+</fetch_required>
 
-| Parameter | Value |
-|-----------|-------|
-| url | \`https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md\` |
-| prompt | "Extract Agent Modification Verification requirements, Anti-Rationalization Tables requirements, and Critical Rules" |
+Fetch URL above and extract: Agent Modification Verification requirements, Anti-Rationalization Tables requirements, and Critical Rules.
 
-**Execute WebFetch before proceeding.** Do not continue until standards are loaded.
+<block_condition>
+- WebFetch fails or returns empty
+- CLAUDE.md not accessible
+</block_condition>
 
-If WebFetch fails → STOP and report blocker. Cannot proceed without Ring standards.
+If any condition is true, STOP and report blocker. Cannot proceed without Ring standards.
 
 ## Overview
 
@@ -108,14 +110,16 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 ### What Orchestrator CANNOT Do (FORBIDDEN)
 
-| Action | Tool | Why FORBIDDEN |
-|--------|------|---------------|
-| Read source code | `Read` on `*.go`, `*.ts`, `*.tsx` | Agent reads code, not orchestrator |
-| Write source code | `Write`/`Create` on `*.go`, `*.ts` | Agent writes code, not orchestrator |
-| Edit source code | `Edit` on `*.go`, `*.ts`, `*.tsx` | Agent edits code, not orchestrator |
-| Run tests | `Execute` with `go test`, `npm test` | Agent runs tests in TDD cycle |
-| Analyze code | Direct pattern analysis | `codebase-explorer` analyzes |
-| Make architectural decisions | Choosing patterns/libraries | User decides, agent implements |
+<forbidden>
+- Read source code (`Read` on `*.go`, `*.ts`, `*.tsx`) - Agent reads code, not orchestrator
+- Write source code (`Write`/`Create` on `*.go`, `*.ts`) - Agent writes code, not orchestrator
+- Edit source code (`Edit` on `*.go`, `*.ts`, `*.tsx`) - Agent edits code, not orchestrator
+- Run tests (`Execute` with `go test`, `npm test`) - Agent runs tests in TDD cycle
+- Analyze code (Direct pattern analysis) - `codebase-explorer` analyzes
+- Make architectural decisions (Choosing patterns/libraries) - User decides, agent implements
+</forbidden>
+
+Any of these actions by orchestrator = IMMEDIATE VIOLATION. Dispatch agent instead.
 
 ---
 
@@ -157,14 +161,16 @@ This is not negotiable:
 
 **Before dispatching any agent, you MUST load the corresponding sub-skill first.**
 
-| Gate | Sub-Skill to Load | Then Dispatch Agent |
-|------|-------------------|---------------------|
-| Gate 0 | `Skill("dev-implementation")` | `Task(subagent_type="backend-engineer-*", ...)` |
-| Gate 1 | `Skill("dev-devops")` | `Task(subagent_type="devops-engineer", ...)` |
-| Gate 2 | `Skill("dev-sre")` | `Task(subagent_type="sre", ...)` |
-| Gate 3 | `Skill("dev-testing")` | `Task(subagent_type="qa-analyst", ...)` |
-| Gate 4 | `Skill("requesting-code-review")` | 3x `Task(...)` in parallel |
-| Gate 5 | `Skill("dev-validation")` | N/A (verification only) |
+<cannot_skip>
+- Gate 0: `Skill("dev-implementation")` → then `Task(subagent_type="backend-engineer-*", ...)`
+- Gate 1: `Skill("dev-devops")` → then `Task(subagent_type="devops-engineer", ...)`
+- Gate 2: `Skill("dev-sre")` → then `Task(subagent_type="sre", ...)`
+- Gate 3: `Skill("dev-testing")` → then `Task(subagent_type="qa-analyst", ...)`
+- Gate 4: `Skill("requesting-code-review")` → then 3x `Task(...)` in parallel
+- Gate 5: `Skill("dev-validation")` → N/A (verification only)
+</cannot_skip>
+
+Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 
 **The workflow for each gate is:**
 ```text
@@ -243,24 +249,26 @@ If you violated orchestrator boundaries:
 
 ## Blocker Criteria - STOP and Report
 
-| Decision Type | Examples | Action |
-|---------------|----------|--------|
-| **Gate Failure** | Tests not passing, review failed | STOP. Cannot proceed to next gate. |
-| **Missing Standards** | No PROJECT_RULES.md | STOP. Report blocker and wait. |
-| **Agent Failure** | Specialist agent returned errors | STOP. Diagnose and report. |
-| **User Decision Required** | Architecture choice, framework selection | STOP. Present options with trade-offs. |
+<block_condition>
+- Gate Failure: Tests not passing, review failed → STOP, cannot proceed to next gate
+- Missing Standards: No PROJECT_RULES.md → STOP, report blocker and wait
+- Agent Failure: Specialist agent returned errors → STOP, diagnose and report
+- User Decision Required: Architecture choice, framework selection → STOP, present options
+</block_condition>
 
 You CANNOT proceed when blocked. Report and wait for resolution.
 
 ### Cannot Be Overridden
 
-| Requirement | Rationale | Consequence If Skipped |
-|-------------|-----------|------------------------|
-| **All 6 gates must execute** | Each gate catches different issues | Missing critical defects, security vulnerabilities |
-| **Gates execute in order (0→5)** | Dependencies exist between gates | Testing untested code, reviewing unobservable systems |
-| **Gate 4 requires all 3 reviewers** | Different review perspectives are complementary | Missing security issues, business logic flaws |
-| **Coverage threshold ≥ 85%** | Industry standard for quality code | Untested edge cases, regression risks |
-| **PROJECT_RULES.md must exist** | Cannot verify standards without target | Arbitrary decisions, inconsistent implementations |
+<cannot_skip>
+- All 6 gates must execute - Each gate catches different issues
+- Gates execute in order (0→5) - Dependencies exist between gates
+- Gate 4 requires all 3 reviewers - Different review perspectives are complementary
+- Coverage threshold ≥ 85% - Industry standard for quality code
+- PROJECT_RULES.md must exist - Cannot verify standards without target
+</cannot_skip>
+
+No exceptions. User cannot override. Time pressure cannot override.
 
 ---
 
