@@ -265,7 +265,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
 </fetch_required>
 
-WebFetch the URL above before any implementation work.
+MUST WebFetch the URL above before any implementation work.
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
