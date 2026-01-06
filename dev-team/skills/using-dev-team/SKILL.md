@@ -115,7 +115,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "backend-engineer-golang"
+  subagent_type: "ring-dev-team:backend-engineer-golang"
   model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```

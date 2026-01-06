@@ -345,7 +345,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 1:
-  subagent_type: "backend-engineer-golang"
+  subagent_type: "ring-dev-team:backend-engineer-golang"
   model: "opus"
   description: "Go standards analysis"
   prompt: |
@@ -373,7 +373,7 @@ Task tool 1:
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 
 Task tool 2:
-  subagent_type: "qa-analyst"
+  subagent_type: "ring-dev-team:qa-analyst"
   model: "opus"
   description: "Test coverage analysis"
   prompt: |
@@ -383,7 +383,7 @@ Task tool 2:
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 3:
-  subagent_type: "devops-engineer"
+  subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   description: "DevOps analysis"
   prompt: |
@@ -395,7 +395,7 @@ Task tool 3:
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 4:
-  subagent_type: "sre"
+  subagent_type: "ring-dev-team:sre"
   model: "opus"
   description: "Observability analysis"
   prompt: |
@@ -414,7 +414,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 1:
-  subagent_type: "backend-engineer-typescript"
+  subagent_type: "ring-dev-team:backend-engineer-typescript"
   model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
@@ -451,7 +451,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 5:
-  subagent_type: "frontend-engineer"
+  subagent_type: "ring-dev-team:frontend-engineer"
   model: "opus"
   description: "Frontend standards analysis"
   prompt: |
@@ -479,7 +479,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 6:
-  subagent_type: "frontend-bff-engineer-typescript"
+  subagent_type: "ring-dev-team:frontend-bff-engineer-typescript"
   model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |

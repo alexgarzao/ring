@@ -198,7 +198,7 @@ Validate observability implementation for unit_id.
 
 ```yaml
 Task:
-  subagent_type: "sre"
+  subagent_type: "ring-dev-team:sre"
   model: "opus"
   description: "Validate observability for [unit_id]"
   prompt: |

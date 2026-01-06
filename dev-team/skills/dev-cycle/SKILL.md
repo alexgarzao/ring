@@ -949,7 +949,7 @@ Action: Use Task tool with EXACTLY these parameters:
 ```yaml
 # Agent 1: Codebase Explorer - Technical Analysis
 Task tool:
-  subagent_type: "codebase-explorer"
+  subagent_type: "ring-default:codebase-explorer"
   model: "opus"
   description: "Analyze legacy project for PROJECT_RULES.md"
   prompt: |

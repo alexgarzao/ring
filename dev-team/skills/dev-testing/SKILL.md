@@ -201,7 +201,7 @@ Write unit tests for all acceptance criteria with 85%+ coverage.
 
 ```yaml
 Task:
-  subagent_type: "qa-analyst"
+  subagent_type: "ring-dev-team:qa-analyst"
   model: "opus"
   description: "Write unit tests for [unit_id]"
   prompt: |

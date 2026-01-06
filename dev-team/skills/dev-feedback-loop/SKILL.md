@@ -349,7 +349,7 @@ Analyze prompt quality for all agents executed in this task.
 
 ```text
 Task tool:
-  subagent_type: "prompt-quality-reviewer"
+  subagent_type: "ring-dev-team:prompt-quality-reviewer"
   prompt: |
     Analyze prompt quality for agents in task [task_id].
 
