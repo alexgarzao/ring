@@ -32,6 +32,15 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- Technology Stack decision needed (Go vs TypeScript)
+- Architecture decision needed (monolith vs microservices)
+- Infrastructure decision needed (cloud provider)
+- Testing strategy decision needed (unit vs E2E)
+</block_condition>
+
+If any condition applies, STOP and ask user.
+
 **always pause and report blocker for:**
 
 | Decision Type | Examples | Action |
@@ -65,6 +74,14 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 ---
 
 ### Cannot Be Overridden
+
+<cannot_skip>
+- Dispatch to specialist (standards loading required)
+- 6-gate development cycle (quality gates)
+- Parallel reviewer dispatch (not sequential)
+- TDD in Gate 0 (test-first)
+- User approval in Gate 5
+</cannot_skip>
 
 **These requirements are NON-NEGOTIABLE:**
 
@@ -114,6 +131,10 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 ---
 
 ## 7 Developer Specialists
+
+<dispatch_required agent="{specialist}" model="opus">
+Use Task tool to dispatch appropriate specialist based on technology need.
+</dispatch_required>
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
