@@ -232,7 +232,7 @@ devops_state = {
 
 ## Step 4: Dispatch DevOps Agent
 
-<dispatch_required agent="devops-engineer" model="opus">
+<dispatch_required agent="ring-dev-team:devops-engineer" model="opus">
 Create/update Dockerfile, docker-compose.yml, and .env.example for containerization.
 </dispatch_required>
 
