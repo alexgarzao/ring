@@ -515,6 +515,8 @@ If observability is ALREADY adequate:
 
 **If adequate → say "observability sufficient" and move on.**
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**

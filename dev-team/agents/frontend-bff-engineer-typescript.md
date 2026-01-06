@@ -606,6 +606,8 @@ No migration actions required.
 
 **IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**

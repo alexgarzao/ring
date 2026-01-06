@@ -692,6 +692,8 @@ ls -la coverage.json coverage.out coverage.html 2>/dev/null
 
 **If verification fails → BLOCKER. Cannot proceed without real data.**
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**

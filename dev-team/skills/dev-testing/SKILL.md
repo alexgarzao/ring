@@ -421,6 +421,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "Manual testing covers it" | "Gate 3 requires executable unit tests. Dispatching QA analyst." |
 | "Skip testing, deadline" | "Testing is MANDATORY. Untested code = unverified claims." |
 
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.

@@ -724,6 +724,8 @@ If code is ALREADY compliant with all standards:
 
 **If compliant → say "no changes needed" and move on.**
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**

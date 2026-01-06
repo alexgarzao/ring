@@ -81,6 +81,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for the canonical validation policy.
 
+---
+
 ## Severity Calibration
 
 **When presenting validation results to user, issues are categorized by severity:**
@@ -119,6 +121,8 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 **Recommendation:** Fix AC-2 (HIGH) before approval. AC-3 (MEDIUM) user can decide.
 ```
 
+---
+
 ## Common Rationalizations - REJECTED
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Validation section).
@@ -138,6 +142,8 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Validation section).
 
 If you catch yourself thinking any of those patterns, STOP immediately. Wait for explicit "APPROVED" or "REJECTED".
+
+---
 
 ## Ambiguous Response Handling
 
@@ -166,6 +172,8 @@ Which is your decision?"
 ```
 
 **Never interpret intent. Require explicit keyword.**
+
+---
 
 ## Awaiting Approval - STOP all WORK
 
@@ -198,6 +206,8 @@ Which is your decision?"
 - ❌ "Approved with minor issues" (partial = REJECTED)
 
 **If user provides ambiguous response, ask for explicit APPROVED or REJECTED.**
+
+---
 
 ## Prerequisites
 

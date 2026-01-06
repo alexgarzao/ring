@@ -997,6 +997,8 @@ If design is ALREADY distinctive and standards-compliant:
 
 **If not specified → Ask user. Document choice in Analysis section.**
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**

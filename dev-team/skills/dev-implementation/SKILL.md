@@ -509,6 +509,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "Code exists, just add tests" | "DELETE existing code. TDD requires test-first." |
 | "Add observability later" | "Observability is part of implementation. Agent MUST add it now." |
 
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.

@@ -626,6 +626,8 @@ If code is ALREADY compliant with all standards:
 
 **If compliant → say "no changes needed" and move on.**
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**
@@ -740,6 +742,8 @@ The Standards Compliance section exists to:
 | "Code looks correct, skip verification" | Looking correct ≠ being correct. Verify. | **Verify all categories** |
 | "Previous refactor already checked this" | Each refactor is independent. Check again. | **Verify all categories** |
 | "Small codebase, not all applies" | Size is irrelevant. Standards apply uniformly. | **Verify all categories** |
+
+---
 
 **Output Rule:**
 - If all categories are ✅ Compliant → Report the table showing compliance + "No actions required"

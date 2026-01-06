@@ -105,6 +105,8 @@ See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md
 
 If you catch yourself thinking any of those patterns, STOP immediately. Collect metrics for every task.
 
+---
+
 ## Self-Preservation Bias Prevention
 
 **Agents must report accurately, even when scores are low:**
@@ -139,6 +141,8 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 
 **Consequence:** Skipping feedback breaks continuous improvement loop and masks systemic issues.
 
+---
+
 ## Repeated Feedback Detection
 
 **When the same feedback appears multiple times:**
@@ -162,6 +166,8 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 **Recommendation:** [Systemic fix needed]
 **Awaiting:** User decision on root cause resolution
 ```
+
+---
 
 ## Threshold Alerts - MANDATORY RESPONSE
 
@@ -192,6 +198,8 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 3. If in doubt → STOP and report blocker
 
 **You CANNOT skip feedback collection. Period.**
+
+---
 
 ## Assertiveness Score Calculation
 

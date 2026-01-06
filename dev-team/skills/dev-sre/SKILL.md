@@ -464,6 +464,8 @@ Generate skill output:
 | **MEDIUM** | Missing context propagation | NEEDS_FIXES | ⚠️ Fix and re-validate |
 | **LOW** | Minor logging improvements | PASS | ✅ Note for future |
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 | Decision Type | Examples | Action |
@@ -471,6 +473,8 @@ Generate skill output:
 | **HARD BLOCK** | Service lacks JSON structured logs | **STOP** - Dispatch fix to implementation agent |
 | **HARD BLOCK** | Instrumentation coverage < 50% | **STOP** - Dispatch fix to implementation agent |
 | **HARD BLOCK** | Max iterations reached | **STOP** - Escalate to user |
+
+---
 
 ### Cannot Be Overridden
 
@@ -489,6 +493,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "Skip SRE validation" | "Observability is MANDATORY. Dispatching SRE agent now." |
 | "90% coverage is too high" | "90% is the Ring Standard minimum. Cannot lower." |
 | "Will add instrumentation later" | "Instrumentation is part of implementation. Fix now." |
+
+---
 
 ## Anti-Rationalization Table
 

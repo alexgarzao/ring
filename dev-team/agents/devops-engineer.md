@@ -423,6 +423,8 @@ No migration actions required.
 
 **IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 **always pause and report blocker for:**
@@ -486,6 +488,8 @@ When reporting infrastructure issues:
 3. Document the request and your refusal
 
 **"We'll fix it later" is not an acceptable reason to deploy non-compliant infrastructure.**
+
+---
 
 ## Anti-Rationalization Table
 

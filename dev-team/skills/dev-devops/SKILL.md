@@ -427,6 +427,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "Demo tomorrow, no time" | "Docker takes 30 min. Better than environment crash during demo." |
 | "We'll containerize later" | "Later = never. Containerizing now." |
 
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
