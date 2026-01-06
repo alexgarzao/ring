@@ -261,6 +261,12 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+</fetch_required>
+
+WebFetch the URL above before any implementation work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -276,6 +282,18 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Prompt** | "Extract all Go coding standards, patterns, and requirements" |
 
 ## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
+
+<forbidden>
+- fmt.Println() in any Go code
+- fmt.Printf() in any Go code
+- log.Println() in any Go code
+- log.Printf() in any Go code
+- log.Fatal() in any Go code
+- panic() for error handling
+- Creating new logger instead of extracting from context
+</forbidden>
+
+Any occurrence = REJECTED implementation. Check golang.md for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -317,6 +335,14 @@ I have loaded golang.md standards via WebFetch.
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for complete loading process.
 
 ## MANDATORY Instrumentation (NON-NEGOTIABLE)
+
+<cannot_skip>
+- 90%+ function coverage with OpenTelemetry spans
+- Every handler/service/repository MUST have child span
+- MUST use libCommons.NewTrackingFromContext(ctx)
+- MUST use HandleSpanError / HandleSpanBusinessErrorEvent
+- MUST propagate trace context to external calls
+</cannot_skip>
 
 **⛔ HARD GATE: Every service method, handler, and repository method you create or modify MUST have OpenTelemetry instrumentation. This is not optional. This is not "nice to have". This is REQUIRED.**
 
@@ -630,6 +656,16 @@ If code is ALREADY compliant with all standards:
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- Database choice needed (PostgreSQL vs MongoDB)
+- Multi-tenancy strategy needed (schema vs row-level)
+- Auth provider choice needed (OAuth2 vs WorkOS vs Auth0)
+- Message queue choice needed (RabbitMQ vs Kafka vs NATS)
+- Architecture choice needed (monolith vs microservices)
+</block_condition>
+
+If any condition applies, STOP and wait for user decision.
+
 **always pause and report blocker for:**
 
 | Decision Type | Examples | Action |
@@ -798,6 +834,12 @@ The Standards Compliance section exists to:
 **⛔ HARD GATE:** If you cannot quote the requirement from golang.md → Do not flag it as missing.
 
 ### Output Format
+
+<output_required>
+- Standards Coverage Table with all sections checked
+- Evidence column with file:line references
+- ISSUE-XXX entries for each gap found
+</output_required>
 
 **always output Standards Coverage Table per shared-patterns format. The table serves as EVIDENCE of verification.**
 
