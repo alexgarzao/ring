@@ -495,7 +495,7 @@ Generate skill output:
 ## Blocker Criteria - STOP and Report
 
 <block_condition>
-- Service lacks JSON structured logs
+- Service lacks JSON-structured logs
 - Instrumentation coverage < 50%
 - Max iterations (3) reached
 </block_condition>
