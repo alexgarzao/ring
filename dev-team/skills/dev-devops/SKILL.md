@@ -238,7 +238,7 @@ Create/update Dockerfile, docker-compose.yml, and .env.example for containerizat
 
 ```yaml
 Task:
-  subagent_type: "devops-engineer"
+  subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   description: "Create/update DevOps artifacts for [unit_id]"
   prompt: |
@@ -349,7 +349,7 @@ if any section has ❌ or any verification FAIL:
 
 ```yaml
 Task:
-  subagent_type: "devops-engineer"
+  subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   description: "Fix DevOps issues for [unit_id]"
   prompt: |
