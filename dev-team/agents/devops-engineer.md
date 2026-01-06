@@ -251,7 +251,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | devops.md |
 | **Prompt** | "Extract all DevOps standards, patterns, and requirements" |
 
-## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
+## FORBIDDEN Patterns Check (MANDATORY - before any code)
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -310,7 +310,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ## When Implementation is Not Needed
 
-**HARD GATE:** If infrastructure is ALREADY compliant with all standards:
+**HARD GATE:** If infrastructure is already compliant with all standards:
 
 **Summary:** "No changes required - infrastructure follows DevOps standards"
 **Implementation:** "Existing configuration follows standards (reference: [specific files])"
@@ -437,7 +437,7 @@ No migration actions required.
 
 ## Security Checklist - MANDATORY
 
-**Before any Dockerfile is complete, verify all:**
+**before any Dockerfile is complete, verify all:**
 
 - [ ] `USER` directive present (non-root)
 - [ ] No secrets in build args or env
@@ -466,7 +466,7 @@ When reporting infrastructure issues:
 | **MEDIUM** | Operational risk | No logging, no metrics, manual scaling |
 | **LOW** | Best practices | Could use multi-stage, minor optimization |
 
-**Report all severities. CRITICAL must be fixed before deployment.**
+**Report all severities. CRITICAL MUST be fixed before deployment.**
 
 ### Cannot Be Overridden
 

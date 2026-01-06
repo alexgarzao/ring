@@ -13,7 +13,7 @@ Canonical source for TDD dispatch prompts used by dev-cycle and dev-implementati
 
 **Anti-Duplication Check:** Before accepting PROJECT_RULES.md content, verify entries (tech stack, external integrations, domain terminology) do not overlap or contradict Ring Standards; reject duplicates.
 
-See [standards-workflow.md](./standards-workflow.md) for the complete loading process.
+See [standards-workflow.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/standards-workflow.md) for the complete loading process.
 
 ### What Each Source Provides (no OVERLAP)
 
@@ -76,7 +76,7 @@ Example failure output:
 
 ## ⛔ CRITICAL: all Ring Standards Apply from Task 1 (no DEFERRAL)
 
-**See [shared-anti-rationalization.md](./shared-anti-rationalization.md) → "Standards Deferral Anti-Rationalizations" section.**
+**See [shared-anti-rationalization.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/shared-anti-rationalization.md) → "Standards Deferral Anti-Rationalizations" section.**
 
 **Summary:** Ring Standards are not phased. They apply IMMEDIATELY to every task. PM defines WHAT, Ring Standards define HOW.
 

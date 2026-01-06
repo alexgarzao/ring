@@ -10,8 +10,8 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 | Rule | Enforcement |
 |------|-------------|
-| **every section MUST be checked** | No exceptions. No skipping. |
-| **every section MUST appear in output table** | Missing row = INCOMPLETE output |
+| **Every section MUST be checked** | No exceptions. No skipping. |
+| **Every section MUST appear in output table** | Missing row = INCOMPLETE output |
 | **Subsections are INCLUDED** | If "Containers" is listed, all content (Dockerfile, Docker Compose) MUST be checked |
 | **N/A requires explicit reason** | Cannot mark N/A without justification |
 
@@ -125,7 +125,7 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I checked the important sections" | You don't decide importance. all sections MUST be checked. | **List every section in table** |
+| "I checked the important sections" | You don't decide importance. All sections MUST be checked. | **List every section in table** |
 | "Some sections obviously don't apply" | Report them as N/A with reason. Never skip silently. | **Include in table with N/A status** |
 | "The table would be too long" | Completeness > brevity. Every section MUST be visible. | **Output full table regardless of length** |
 | "I already mentioned these in findings" | Findings ≠ Coverage table. Both are REQUIRED. | **Output table BEFORE detailed findings** |
