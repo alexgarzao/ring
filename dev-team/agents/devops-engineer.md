@@ -237,6 +237,12 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
+</fetch_required>
+
+MUST WebFetch the URL above before any implementation work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -252,6 +258,16 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Prompt** | "Extract all DevOps standards, patterns, and requirements" |
 
 ## FORBIDDEN Patterns Check (MANDATORY - before any code)
+
+<forbidden>
+- :latest tag in FROM statements
+- Running as root user in containers
+- Secrets in Dockerfile or docker-compose
+- Hardcoded credentials in any file
+- Missing health checks in containers
+</forbidden>
+
+Any occurrence = REJECTED implementation. Check devops.md for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -423,7 +439,18 @@ No migration actions required.
 
 **IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
 
+---
+
 ## Blocker Criteria - STOP and Report
+
+<block_condition>
+- Cloud provider choice needed (AWS vs GCP vs Azure)
+- Secrets manager choice needed (AWS Secrets vs Vault)
+- Container registry choice needed (ECR vs Docker Hub vs GHCR)
+- Missing PROJECT_RULES.md
+</block_condition>
+
+If any condition applies, STOP and wait for user decision.
 
 **always pause and report blocker for:**
 
@@ -436,6 +463,14 @@ No migration actions required.
 **You CANNOT make infrastructure platform decisions autonomously. STOP and ask. Use blocker format from "What If No PROJECT_RULES.md Exists" section.**
 
 ## Security Checklist - MANDATORY
+
+<cannot_skip>
+- USER directive present (non-root)
+- No secrets in build args or env
+- Base image version pinned (no :latest)
+- .dockerignore excludes sensitive files
+- Health check configured
+</cannot_skip>
 
 **before any Dockerfile is complete, verify all:**
 
@@ -486,6 +521,8 @@ When reporting infrastructure issues:
 3. Document the request and your refusal
 
 **"We'll fix it later" is not an acceptable reason to deploy non-compliant infrastructure.**
+
+---
 
 ## Anti-Rationalization Table
 

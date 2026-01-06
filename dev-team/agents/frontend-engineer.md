@@ -175,6 +175,12 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md
+</fetch_required>
+
+MUST WebFetch the URL above before any implementation work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -190,6 +196,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Prompt** | "Extract all frontend standards, patterns, and requirements" |
 
 ## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
+
+<forbidden>
+- `any` type usage in TypeScript
+- console.log() in production code
+- div with onClick (use button for interactive elements)
+- Inline styles (use Tailwind or CSS modules)
+- useEffect/useState in Server Components
+- Missing alt text on images
+</forbidden>
+
+Any occurrence = REJECTED implementation. Check frontend.md for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -724,7 +741,20 @@ If code is ALREADY compliant with all standards:
 
 **If compliant → say "no changes needed" and move on.**
 
+---
+
 ## Blocker Criteria - STOP and Report
+
+<block_condition>
+- UI Library choice needed (shadcn vs Chakra vs custom)
+- State management choice needed (Redux vs Zustand vs Context)
+- Styling approach needed (Tailwind vs CSS Modules vs CSS-in-JS)
+- Form library choice needed (React Hook Form vs Formik)
+- Animation approach needed (Framer Motion vs CSS)
+- Server/Client component mixing detected
+</block_condition>
+
+If any condition applies, STOP and wait for user decision.
 
 **always pause and report blocker for:**
 

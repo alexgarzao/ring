@@ -21,15 +21,15 @@ Analyzes existing codebase against Ring/Lerian standards and generates refactori
 
 **any divergence from Ring standards = MANDATORY gap to implement.**
 
-Non-negotiable, not open to interpretation—a HARD RULE.
+<cannot_skip>
+- All divergences are gaps - Every difference MUST be tracked as FINDING-XXX
+- Severity affects PRIORITY, not TRACKING - Low severity = lower priority, not "optional"
+- No filtering allowed - You CANNOT decide which divergences "matter"
+- No alternative patterns accepted - Different approach = STILL A GAP
+- No cosmetic exceptions - Naming, formatting, structure differences = GAPS
+</cannot_skip>
 
-| Principle | Meaning |
-|-----------|---------|
-| **all divergences are gaps** | Every difference between codebase and Ring standards MUST be tracked as FINDING-XXX |
-| **Severity affects PRIORITY, not TRACKING** | Low severity = lower execution priority, not "optional to track" |
-| **no filtering allowed** | You CANNOT decide which divergences "matter" - all matter |
-| **no alternative patterns accepted** | "Codebase uses different but valid approach" = STILL A GAP |
-| **no cosmetic exceptions** | Naming, formatting, structure differences = GAPS |
+Non-negotiable, not open to interpretation—a HARD RULE.
 
 ### Anti-Rationalization: Mandatory Gap Principle
 
@@ -158,6 +158,12 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 **TodoWrite:** Mark "Validate PROJECT_RULES.md exists" as `in_progress`
 
+<block_condition>
+- docs/PROJECT_RULES.md does not exist
+</block_condition>
+
+If condition is true, output blocker and TERMINATE. Otherwise continue to Step 1.
+
 **Check:** Does `docs/PROJECT_RULES.md` exist?
 
 - **YES** → Mark todo as `completed`, continue to Step 1
@@ -224,43 +230,36 @@ Extract project-specific conventions for agent context.
 
 ### ⛔ MANDATORY: Use Task Tool with codebase-explorer
 
-**YOU MUST USE THIS EXACT TOOL CALL:**
+<dispatch_required agent="codebase-explorer" model="opus">
+Generate a comprehensive codebase report describing WHAT EXISTS.
 
-```yaml
-Task tool:
-  subagent_type: "codebase-explorer"  # ← EXACT STRING, not "Explore"
-  model: "opus"
-  description: "Generate codebase architecture report"
-  prompt: |
-    Generate a comprehensive codebase report describing WHAT EXISTS.
+Include:
+- Project structure and directory layout
+- Architecture pattern (hexagonal, clean, etc.)
+- Technology stack from manifests
+- Code patterns: config, database, handlers, errors, telemetry, testing
+- Key files inventory with file:line references
+- Code snippets showing current implementation patterns
+</dispatch_required>
 
-    Include:
-    - Project structure and directory layout
-    - Architecture pattern (hexagonal, clean, etc.)
-    - Technology stack from manifests
-    - Code patterns: config, database, handlers, errors, telemetry, testing
-    - Key files inventory with file:line references
-    - Code snippets showing current implementation patterns
+<output_required>
+## EXPLORATION SUMMARY
+[Your summary here]
 
-    ⛔ MANDATORY OUTPUT: You MUST return your findings using EXACTLY this format:
+## KEY FINDINGS
+[Your findings here]
 
-    ## EXPLORATION SUMMARY
-    [Your summary here]
+## ARCHITECTURE INSIGHTS
+[Your insights here]
 
-    ## KEY FINDINGS
-    [Your findings here]
+## RELEVANT FILES
+[Your file inventory here]
 
-    ## ARCHITECTURE INSIGHTS
-    [Your insights here]
+## RECOMMENDATIONS
+[Your recommendations here]
+</output_required>
 
-    ## RELEVANT FILES
-    [Your file inventory here]
-
-    ## RECOMMENDATIONS
-    [Your recommendations here]
-
-    **Do not complete without outputting your full report in the format above.**
-```
+Do not complete without outputting full report in the format above.
 
 ### Anti-Rationalization Table for Step 3
 
@@ -274,14 +273,16 @@ Task tool:
 
 ### FORBIDDEN Actions for Step 3
 
-```
-❌ Bash(command="find ... -name '*.go'")     → SKILL FAILURE
-❌ Bash(command="ls -la ...")                → SKILL FAILURE
-❌ Bash(command="tree ...")                  → SKILL FAILURE
-❌ Task(subagent_type="Explore", ...)        → SKILL FAILURE
-❌ Task(subagent_type="general-purpose", ...)→ SKILL FAILURE
-❌ Task(subagent_type="Plan", ...)           → SKILL FAILURE
-```
+<forbidden>
+- Bash(command="find ... -name '*.go'") → SKILL FAILURE
+- Bash(command="ls -la ...") → SKILL FAILURE
+- Bash(command="tree ...") → SKILL FAILURE
+- Task(subagent_type="Explore", ...) → SKILL FAILURE
+- Task(subagent_type="general-purpose", ...) → SKILL FAILURE
+- Task(subagent_type="Plan", ...) → SKILL FAILURE
+</forbidden>
+
+Any of these = IMMEDIATE SKILL FAILURE.
 
 ### REQUIRED Action for Step 3
 
@@ -337,9 +338,14 @@ Check 2: Was codebase-report.md created by codebase-explorer?
 
 ### For Go projects:
 
+<parallel_dispatch agents="backend-engineer-golang, qa-analyst, devops-engineer, sre" model="opus">
+All four agents MUST be dispatched in parallel via Task tool.
+Input: codebase-report.md, PROJECT_RULES.md
+</parallel_dispatch>
+
 ```yaml
 Task tool 1:
-  subagent_type: "backend-engineer-golang"
+  subagent_type: "ring-dev-team:backend-engineer-golang"
   model: "opus"
   description: "Go standards analysis"
   prompt: |
@@ -367,7 +373,7 @@ Task tool 1:
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 
 Task tool 2:
-  subagent_type: "qa-analyst"
+  subagent_type: "ring-dev-team:qa-analyst"
   model: "opus"
   description: "Test coverage analysis"
   prompt: |
@@ -377,7 +383,7 @@ Task tool 2:
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 3:
-  subagent_type: "devops-engineer"
+  subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   description: "DevOps analysis"
   prompt: |
@@ -389,7 +395,7 @@ Task tool 3:
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 4:
-  subagent_type: "sre"
+  subagent_type: "ring-dev-team:sre"
   model: "opus"
   description: "Observability analysis"
   prompt: |
@@ -401,9 +407,14 @@ Task tool 4:
 
 ### For TypeScript Backend projects:
 
+<parallel_dispatch agents="backend-engineer-typescript, qa-analyst, devops-engineer, sre" model="opus">
+All four agents MUST be dispatched in parallel via Task tool.
+Input: codebase-report.md, PROJECT_RULES.md
+</parallel_dispatch>
+
 ```yaml
 Task tool 1:
-  subagent_type: "backend-engineer-typescript"
+  subagent_type: "ring-dev-team:backend-engineer-typescript"
   model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
@@ -433,9 +444,14 @@ Task tool 1:
 
 ### For Frontend projects (React/Next.js):
 
+<parallel_dispatch agents="frontend-engineer, qa-analyst, devops-engineer, sre" model="opus">
+All four agents MUST be dispatched in parallel via Task tool.
+Input: codebase-report.md, PROJECT_RULES.md
+</parallel_dispatch>
+
 ```yaml
 Task tool 5:
-  subagent_type: "frontend-engineer"
+  subagent_type: "ring-dev-team:frontend-engineer"
   model: "opus"
   description: "Frontend standards analysis"
   prompt: |
@@ -456,9 +472,14 @@ Task tool 5:
 
 ### For BFF (Backend-for-Frontend) projects:
 
+<parallel_dispatch agents="frontend-bff-engineer-typescript, qa-analyst, devops-engineer, sre" model="opus">
+All four agents MUST be dispatched in parallel via Task tool.
+Input: codebase-report.md, PROJECT_RULES.md
+</parallel_dispatch>
+
 ```yaml
 Task tool 6:
-  subagent_type: "frontend-bff-engineer-typescript"
+  subagent_type: "ring-dev-team:frontend-bff-engineer-typescript"
   model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |
@@ -619,6 +640,8 @@ Write tool:
 ✅ Count findings in Step 5 MUST equal total issues from all agent reports
 ```
 
+---
+
 ### Anti-Rationalization Table for Step 4.1
 
 **⛔ See also: "Anti-Rationalization: Mandatory Gap Principle" at top of this skill.**
@@ -674,6 +697,8 @@ This means:
 ```
 
 **Purpose:** Track which issues escape which gates. If many `GATE 3 ESCAPE` findings occur, the Quality Gate checks need strengthening.
+
+---
 
 **Summary Table (MANDATORY at end of findings.md):**
 
@@ -896,6 +921,11 @@ Before proceeding to Step 7, verify:
 
 **TodoWrite:** Mark "Get user approval" as `in_progress`
 
+<user_decision>
+MUST wait for explicit user response before proceeding.
+Options: Approve all | Critical only | Cancel
+</user_decision>
+
 ```yaml
 AskUserQuestion:
   questions:
@@ -909,6 +939,8 @@ AskUserQuestion:
         - label: "Cancel"
           description: "Keep analysis, skip execution"
 ```
+
+CANNOT proceed without explicit user selection.
 
 **TodoWrite:** Mark "Get user approval" as `completed`
 

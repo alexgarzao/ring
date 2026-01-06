@@ -347,6 +347,12 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+</fetch_required>
+
+MUST WebFetch the URL above before any implementation work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -362,6 +368,16 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Prompt** | "Extract all TypeScript coding standards, patterns, and requirements" |
 
 ## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
+
+<forbidden>
+- `any` type usage (use `unknown` with type guards)
+- console.log() in production code
+- console.error() in production code
+- Non-null assertion operator (!) without validation
+- Type assertions without runtime checks
+</forbidden>
+
+Any occurrence = REJECTED implementation. Check typescript.md for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -706,7 +722,19 @@ If code is ALREADY compliant with all standards:
 
 **If compliant → say "no changes needed" and move on.**
 
+---
+
 ## Blocker Criteria - STOP and Report
+
+<block_condition>
+- ORM choice needed (Prisma vs Drizzle vs TypeORM)
+- Framework choice needed (NestJS vs Fastify vs Express)
+- Database choice needed (PostgreSQL vs MongoDB)
+- Auth strategy needed (JWT vs Session vs OAuth)
+- Architecture choice needed (monolith vs microservices)
+</block_condition>
+
+If any condition applies, STOP and wait for user decision.
 
 **always pause and report blocker for:**
 

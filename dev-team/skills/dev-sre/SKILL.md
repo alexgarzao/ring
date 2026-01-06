@@ -152,6 +152,14 @@ This skill VALIDATES that observability was correctly implemented by developers:
 
 ## Step 1: Validate Input
 
+<verify_before_proceed>
+- unit_id exists
+- language is valid (go|typescript|python)
+- service_type is valid (api|worker|batch|cli|library)
+- implementation_agent exists
+- implementation_files is not empty
+</verify_before_proceed>
+
 ```text
 REQUIRED INPUT (from dev-cycle orchestrator):
 - unit_id: [task/subtask being validated]
@@ -184,9 +192,13 @@ validation_state = {
 
 ## Step 3: Dispatch SRE Agent for Validation
 
+<dispatch_required agent="sre" model="opus">
+Validate observability implementation for unit_id.
+</dispatch_required>
+
 ```yaml
 Task:
-  subagent_type: "sre"
+  subagent_type: "ring-dev-team:sre"
   model: "opus"
   description: "Validate observability for [unit_id]"
   prompt: |
@@ -213,6 +225,20 @@ Task:
     ## Validation Checklist
 
     ### 0. FORBIDDEN Logging Patterns (CRITICAL - Check FIRST)
+
+    Any occurrence = CRITICAL severity, automatic FAIL verdict.
+
+    <forbidden>
+    - fmt.Println() in Go code
+    - fmt.Printf() in Go code
+    - log.Println() in Go code
+    - log.Printf() in Go code
+    - log.Fatal() in Go code
+    - println() in Go code
+    - console.log() in TypeScript
+    - console.error() in TypeScript
+    - console.warn() in TypeScript
+    </forbidden>
     
     **MUST search for and report all occurrences of FORBIDDEN patterns:**
     
@@ -464,7 +490,16 @@ Generate skill output:
 | **MEDIUM** | Missing context propagation | NEEDS_FIXES | ⚠️ Fix and re-validate |
 | **LOW** | Minor logging improvements | PASS | ✅ Note for future |
 
+---
+
 ## Blocker Criteria - STOP and Report
+
+<block_condition>
+If any condition is true, STOP and dispatch fix or escalate to user.
+- Service lacks JSON-structured logs
+- Instrumentation coverage < 50%
+- Max iterations (3) reached
+</block_condition>
 
 | Decision Type | Examples | Action |
 |---------------|----------|--------|
@@ -472,7 +507,15 @@ Generate skill output:
 | **HARD BLOCK** | Instrumentation coverage < 50% | **STOP** - Dispatch fix to implementation agent |
 | **HARD BLOCK** | Max iterations reached | **STOP** - Escalate to user |
 
+---
+
 ### Cannot Be Overridden
+
+<cannot_skip>
+- Gate 2 execution (no MVP exemptions)
+- 90% instrumentation coverage minimum
+- JSON structured logs requirement
+</cannot_skip>
 
 | Requirement | Cannot Be Waived By | Rationale |
 |-------------|---------------------|-----------|
@@ -489,6 +532,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "Skip SRE validation" | "Observability is MANDATORY. Dispatching SRE agent now." |
 | "90% coverage is too high" | "90% is the Ring Standard minimum. Cannot lower." |
 | "Will add instrumentation later" | "Instrumentation is part of implementation. Fix now." |
+
+---
 
 ## Anti-Rationalization Table
 

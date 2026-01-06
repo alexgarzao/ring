@@ -856,6 +856,12 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md
+</fetch_required>
+
+MUST WebFetch the URL above before any design work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -871,6 +877,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Prompt** | "Extract all frontend design standards, patterns, and requirements" |
 
 ## FORBIDDEN Patterns Check (MANDATORY - BEFORE any SPECIFICATION)
+
+<forbidden>
+- Inter/Roboto as primary fonts (AI aesthetic)
+- Purple gradients on buttons (AI aesthetic)
+- Generic color schemes without brand identity
+- Skipping WCAG AA accessibility requirements
+- Hardcoded pixel values instead of design tokens
+- Missing dark mode when specified in requirements
+</forbidden>
+
+Any occurrence = Specification Quality Gate FAIL. Check standards for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any specification.**
 
@@ -997,7 +1014,19 @@ If design is ALREADY distinctive and standards-compliant:
 
 **If not specified → Ask user. Document choice in Analysis section.**
 
+---
+
 ## Blocker Criteria - STOP and Report
+
+<block_condition>
+- PROJECT_RULES.md not found (brand identity unknown)
+- Brand colors not specified (cannot assume palette)
+- Font selection not defined (generic fonts forbidden)
+- Theme preference not stated (Dark vs Light vs Both)
+- Accessibility level unclear (AA vs AAA compliance)
+</block_condition>
+
+If any condition is true, STOP immediately and ask user for clarification.
 
 **always pause and report blocker for:**
 

@@ -38,6 +38,12 @@ Continuous improvement system that tracks development cycle effectiveness throug
 
 ## Step 0: TodoWrite Tracking (MANDATORY FIRST ACTION)
 
+<cannot_skip>
+- MUST add feedback-loop to todo list before any other action
+- MUST execute TodoWrite IMMEDIATELY when skill starts
+- CANNOT proceed to Step 1 without TodoWrite execution
+</cannot_skip>
+
 **⛔ HARD GATE: Before any other action, you MUST add feedback-loop to todo list.**
 
 **Execute this TodoWrite call IMMEDIATELY when this skill starts:**
@@ -105,6 +111,8 @@ See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md
 
 If you catch yourself thinking any of those patterns, STOP immediately. Collect metrics for every task.
 
+---
+
 ## Self-Preservation Bias Prevention
 
 **Agents must report accurately, even when scores are low:**
@@ -127,6 +135,12 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 
 ## Mandatory Feedback Collection
 
+<cannot_skip>
+- Feedback collection for EVERY completed task
+- No exemptions for task complexity, outcome, or time pressure
+- "Nothing to report" is still data that must be recorded
+</cannot_skip>
+
 **Non-negotiable:** Feedback MUST be collected for every completed task, regardless of:
 
 | Factor | Still Collect? | Reason |
@@ -138,6 +152,8 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 | "Nothing to report" | ✅ YES | Absence of issues is data |
 
 **Consequence:** Skipping feedback breaks continuous improvement loop and masks systemic issues.
+
+---
 
 ## Repeated Feedback Detection
 
@@ -163,7 +179,15 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 **Awaiting:** User decision on root cause resolution
 ```
 
+---
+
 ## Threshold Alerts - MANDATORY RESPONSE
+
+<block_condition>
+- Task score < 70 → Root cause analysis required
+- Gate iterations > 3 → STOP, request human intervention
+- Cycle average < 80 → Deep analysis required
+</block_condition>
 
 **When thresholds are breached, response is REQUIRED:**
 
@@ -192,6 +216,8 @@ If you catch yourself thinking any of those patterns, STOP immediately. Collect 
 3. If in doubt → STOP and report blocker
 
 **You CANNOT skip feedback collection. Period.**
+
+---
 
 ## Assertiveness Score Calculation
 
@@ -317,9 +343,13 @@ Agents to analyze (if executed, not null):
 
 ### 3.2 Dispatch Prompt Quality Reviewer
 
+<dispatch_required agent="prompt-quality-reviewer" model="opus">
+Analyze prompt quality for all agents executed in this task.
+</dispatch_required>
+
 ```text
 Task tool:
-  subagent_type: "prompt-quality-reviewer"
+  subagent_type: "ring-dev-team:prompt-quality-reviewer"
   prompt: |
     Analyze prompt quality for agents in task [task_id].
 

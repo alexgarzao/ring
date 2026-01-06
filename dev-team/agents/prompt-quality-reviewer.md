@@ -165,6 +165,12 @@ DECIDE WHEN: [specific condition] → [what to decide]
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
+</fetch_required>
+
+WebFetch CLAUDE.md before any analysis work.
+
 **Note:** This agent uses CLAUDE.md as its primary standard, not language-specific standards.
 
 **CLAUDE.md Requirements (WebFetch):**
@@ -222,6 +228,15 @@ If invoked with `**MODE: ANALYSIS only**` context, report blocker: "This agent a
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- No agent executions provided (empty execution list)
+- Agent definition file not found (missing .md file)
+- WebFetch fails (CLAUDE.md not loaded)
+- Execution too recent (< 2 minutes since task completion)
+</block_condition>
+
+If any condition is true, STOP immediately and report blocker.
+
 **HARD BLOCK conditions for this agent:**
 
 | Condition | Action | Why |
@@ -236,6 +251,16 @@ If invoked with `**MODE: ANALYSIS only**` context, report blocker: "This agent a
 ---
 
 ### Cannot Be Overridden
+
+<cannot_skip>
+- Load CLAUDE.md standards before analysis (via WebFetch)
+- Check all 6 required agent sections
+- Calculate assertiveness for every agent
+- Generate improvements for every gap identified
+- Report systemic patterns (3+ occurrences)
+</cannot_skip>
+
+No exceptions allowed. These are NON-NEGOTIABLE requirements.
 
 **These requirements are NON-NEGOTIABLE:**
 

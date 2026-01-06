@@ -165,6 +165,13 @@ This skill configures the development and deployment infrastructure:
 
 ## Step 1: Validate Input
 
+<verify_before_proceed>
+- unit_id exists
+- language is valid (go|typescript|python)
+- service_type is valid (api|worker|batch|cli)
+- implementation_files is not empty
+</verify_before_proceed>
+
 ```text
 REQUIRED INPUT (from dev-cycle orchestrator):
 - unit_id: [task/subtask being containerized]
@@ -225,9 +232,13 @@ devops_state = {
 
 ## Step 4: Dispatch DevOps Agent
 
+<dispatch_required agent="ring-dev-team:devops-engineer" model="opus">
+Create/update Dockerfile, docker-compose.yml, and .env.example for containerization.
+</dispatch_required>
+
 ```yaml
 Task:
-  subagent_type: "devops-engineer"
+  subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   description: "Create/update DevOps artifacts for [unit_id]"
   prompt: |
@@ -293,6 +304,14 @@ Task:
     | .env.example | Created/Updated | [summary] |
 
     ### Verification Commands
+
+    <verify_before_proceed>
+    - docker-compose build succeeds
+    - docker-compose up -d starts all services
+    - docker-compose ps shows healthy status
+    - docker-compose logs shows JSON format
+    </verify_before_proceed>
+
     Execute these and report results:
     1. `docker-compose build` → [PASS/FAIL]
     2. `docker-compose up -d` → [PASS/FAIL]
@@ -330,7 +349,7 @@ if any section has ❌ or any verification FAIL:
 
 ```yaml
 Task:
-  subagent_type: "devops-engineer"
+  subagent_type: "ring-dev-team:devops-engineer"
   model: "opus"
   description: "Fix DevOps issues for [unit_id]"
   prompt: |
@@ -426,6 +445,8 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "Skip Docker, runs fine locally" | "Docker ensures consistency. Dispatching devops-engineer now." |
 | "Demo tomorrow, no time" | "Docker takes 30 min. Better than environment crash during demo." |
 | "We'll containerize later" | "Later = never. Containerizing now." |
+
+---
 
 ## Anti-Rationalization Table
 

@@ -246,6 +246,12 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+</fetch_required>
+
+MUST WebFetch the URL above before any implementation work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -261,6 +267,16 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Prompt** | "Extract all TypeScript coding standards, patterns, and requirements" |
 
 ## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
+
+<forbidden>
+- `any` type usage (use `unknown` with type guards)
+- console.log() in production code
+- Direct instantiation without DI container
+- Skipping Zod validation on external data
+- Mixing layers (UI calling repository directly)
+</forbidden>
+
+Any occurrence = REJECTED implementation. Check typescript.md for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -606,7 +622,19 @@ No migration actions required.
 
 **IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
 
+---
+
 ## Blocker Criteria - STOP and Report
+
+<block_condition>
+- API design choice needed (REST vs GraphQL vs tRPC)
+- State management choice needed (Zustand vs Jotai vs Redux)
+- Auth integration needed (which provider)
+- Database/ORM choice needed
+- Architecture choice needed
+</block_condition>
+
+If any condition applies, STOP and wait for user decision.
 
 **always pause and report blocker for:**
 

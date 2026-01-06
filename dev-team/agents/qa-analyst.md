@@ -396,6 +396,13 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 ## Standards Loading (MANDATORY)
 
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+</fetch_required>
+
+WebFetch the appropriate URL based on project language before any test work.
+
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
 - Precedence rules
@@ -414,6 +421,16 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 **Execute WebFetch for the relevant language standard based on the project's test stack.**
 
 ## FORBIDDEN Test Patterns Check (MANDATORY - BEFORE any TEST)
+
+<forbidden>
+- .skip() or .todo() in test files
+- Tests without assertions (empty test bodies)
+- Shared state between tests (beforeAll mutations)
+- Production database in tests (use mocks)
+- Hardcoded test data without constants
+</forbidden>
+
+Any occurrence = Test Quality Gate FAIL. Check standards for complete list.
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any test.**
 
@@ -691,6 +708,8 @@ ls -la coverage.json coverage.out coverage.html 2>/dev/null
 ```
 
 **If verification fails → BLOCKER. Cannot proceed without real data.**
+
+---
 
 ## Blocker Criteria - STOP and Report
 

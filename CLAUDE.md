@@ -335,7 +335,23 @@ Examples:
 - FORBIDDEN: Reading source code directly as orchestrator
 ```
 
-See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) for complete patterns and the [lexical salience refactoring plan](docs/plans/lexical-salience-refactor.md) for implementation details.
+### Strategic Spacing (Attention Reset)
+
+**Spacing matters for AI attention.** When multiple critical rules appear in sequence, add blank lines between sections to allow "attention reset".
+
+**→ See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md#strategic-spacing-attention-reset) for:**
+- Effectiveness comparison table
+- Good example with spaced sections
+- Anti-pattern example (dense text)
+
+### Semantic Block Tags (Recognition Patterns)
+
+**Use XML-like tags to create recognizable blocks for critical instructions.** Tags create semantic boundaries that AI models recognize as structured blocks requiring special attention.
+
+**→ See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md#semantic-block-tags-recognition-patterns) for:**
+- Complete tag reference table (9 tags)
+- Example usage with all tag types
+- Why tags work explanation
 
 ---
 
