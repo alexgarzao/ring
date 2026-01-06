@@ -67,6 +67,13 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 ## Self-Approval Prohibition
 
+<forbidden>
+- Same agent approving code it implemented
+- Role switching to self-approve (e.g., backend-engineer → code-reviewer)
+- Interpreting silence as approval
+- Proceeding without explicit APPROVED/REJECTED
+</forbidden>
+
 **HARD GATE:** The agent that implemented code CANNOT approve validation for that same code.
 
 | Scenario | Allowed? | Action |
@@ -147,6 +154,15 @@ If you catch yourself thinking any of those patterns, STOP immediately. Wait for
 
 ## Ambiguous Response Handling
 
+<block_condition>
+- Response is "Looks good", "Sure", "Ok", "Fine"
+- Response is emoji only (👍, ✅)
+- Response is "Go ahead", "Ship it"
+- Response contains conditional ("APPROVED if X", "APPROVED with caveats")
+</block_condition>
+
+If any condition matches, ask for explicit APPROVED or REJECTED.
+
 **User responses that are not valid approvals:**
 
 | Response | Status | Action Required |
@@ -177,6 +193,12 @@ Which is your decision?"
 
 ## Awaiting Approval - STOP all WORK
 
+<cannot_skip>
+- STOP all work when validation request is presented
+- Wait for explicit APPROVED or REJECTED
+- Do not proceed with any "quick fixes" while waiting
+</cannot_skip>
+
 **When validation request is presented:**
 
 1. **STOP all WORK** on this feature, module, and related code
@@ -193,6 +215,12 @@ Which is your decision?"
 **Document pending status and WAIT.**
 
 ## Approval Format - MANDATORY
+
+<user_decision>
+Valid responses:
+- "APPROVED" → Proceed to next gate
+- "REJECTED: [reason]" → Return for fixes
+</user_decision>
 
 **User MUST respond with exactly one of:**
 

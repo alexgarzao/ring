@@ -164,6 +164,13 @@ This skill executes the implementation phase of the development cycle:
 
 ## Step 1: Validate Input
 
+<verify_before_proceed>
+- unit_id exists
+- requirements exists
+- language is valid (go|typescript|python)
+- service_type is valid (api|worker|batch|cli|frontend|bff)
+</verify_before_proceed>
+
 ```text
 REQUIRED INPUT (from dev-cycle orchestrator):
 - unit_id: [task/subtask being implemented]
@@ -182,6 +189,12 @@ if any REQUIRED input is missing:
 ```
 
 ## Step 2: Validate Prerequisites
+
+<block_condition>
+- PROJECT_RULES.md does not exist at project_rules_path
+</block_condition>
+
+If condition is true, STOP and return error to orchestrator.
 
 ```text
 1. Check PROJECT_RULES.md exists:
@@ -225,6 +238,10 @@ implementation_state = {
 ```
 
 ## Step 4: Gate 0.1 - TDD-RED (Write Failing Test)
+
+<dispatch_required agent="[selected_agent]" model="opus">
+Write failing test for unit_id following TDD-RED methodology.
+</dispatch_required>
 
 ```yaml
 Task:
@@ -282,6 +299,13 @@ Task:
 
 ## Step 5: Validate TDD-RED Output
 
+<block_condition>
+- failure_output is missing
+- failure_output does not contain "FAIL"
+</block_condition>
+
+If any condition is true, re-dispatch agent with clarification.
+
 ```text
 Parse agent output:
 
@@ -304,6 +328,10 @@ if failure_output contains "FAIL":
 ## Step 6: Gate 0.2 - TDD-GREEN (Implementation)
 
 **PREREQUISITE:** `implementation_state.tdd_red.status == "completed"`
+
+<dispatch_required agent="[selected_agent]" model="opus">
+Implement code to make test pass following TDD-GREEN methodology.
+</dispatch_required>
 
 ```yaml
 Task:
@@ -349,6 +377,13 @@ Task:
     4. Run the test and capture the PASS output
 
     ## ⛔ MANDATORY: Telemetry Instrumentation (NON-NEGOTIABLE)
+
+    <cannot_skip>
+    - 90%+ instrumentation coverage required
+    - WebFetch standards file before implementation
+    - Follow exact patterns from standards
+    - Output Standards Coverage Table with evidence
+    </cannot_skip>
 
     **every function that does work MUST be instrumented with telemetry.**
     This is not optional. This is not "nice to have". This is REQUIRED.

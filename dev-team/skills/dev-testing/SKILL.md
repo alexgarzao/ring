@@ -129,6 +129,11 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 
 **Core principle:** Untested acceptance criteria are unverified claims. Each criterion MUST map to at least one executable unit test.
 
+<block_condition>
+- Coverage below 85% = FAIL
+- Any acceptance criterion without test = FAIL
+</block_condition>
+
 **Coverage threshold:** 85% minimum (Ring standard). PROJECT_RULES.md can raise, not lower.
 
 ## CRITICAL: Role Clarification
@@ -146,6 +151,14 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 
 ```text
 REQUIRED INPUT (from dev-cycle orchestrator):
+<verify_before_proceed>
+- unit_id exists
+- acceptance_criteria is not empty
+- implementation_files is not empty
+- language is valid (go|typescript|python)
+</verify_before_proceed>
+
+```text
 - unit_id: [task/subtask being tested]
 - acceptance_criteria: [list of ACs to test]
 - implementation_files: [files from Gate 0]
@@ -181,6 +194,10 @@ testing_state = {
 ```
 
 ## Step 3: Dispatch QA Analyst Agent
+
+<dispatch_required agent="qa-analyst" model="opus">
+Write unit tests for all acceptance criteria with 85%+ coverage.
+</dispatch_required>
 
 ```yaml
 Task:
@@ -225,6 +242,13 @@ Task:
     - no database/API calls (unit tests only)
 
     ### Edge Cases Required per AC Type
+
+    <cannot_skip>
+    - Minimum 3+ edge cases per AC type
+    - null, empty, boundary conditions required
+    - Error conditions required
+    </cannot_skip>
+
     | AC Type | Required Edge Cases | Minimum |
     |---------|---------------------|---------|
     | Input validation | null, empty, boundary, invalid format | 3+ |
