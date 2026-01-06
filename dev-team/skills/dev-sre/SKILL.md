@@ -495,12 +495,11 @@ Generate skill output:
 ## Blocker Criteria - STOP and Report
 
 <block_condition>
+If any condition is true, STOP and dispatch fix or escalate to user.
 - Service lacks JSON-structured logs
 - Instrumentation coverage < 50%
 - Max iterations (3) reached
 </block_condition>
-
-If any condition is true, STOP and dispatch fix or escalate to user.
 
 | Decision Type | Examples | Action |
 |---------------|----------|--------|
