@@ -337,51 +337,12 @@ Examples:
 
 ### Strategic Spacing (Attention Reset)
 
-**Spacing matters for AI attention.** When multiple critical rules appear in sequence, add blank lines between sections to allow "attention reset" - each section gets its own salient word.
+**Spacing matters for AI attention.** When multiple critical rules appear in sequence, add blank lines between sections to allow "attention reset".
 
-| Pattern | Effectiveness | Why |
-|---------|---------------|-----|
-| Blank line between rule groups | HIGH | Attention "resets" between sections |
-| Dense continuous text | LOW | Critical words blur together |
-
-**Example - Strategic Spacing:**
-
-```markdown
-## Authentication
-
-Handle auth tokens according to existing patterns.
-Validate JWT signatures on every request.
-NEVER log sensitive credentials.
-
-## Data Access
-
-Use repository pattern for all queries.
-Implement pagination for list endpoints.
-CRITICAL: All mutations must be idempotent.
-
-## Error Handling
-
-Wrap errors with context.
-Map internal errors to HTTP codes.
-NEVER expose stack traces to clients.
-```
-
-**Why this works:**
-- Each section has ONE salient word (NEVER, CRITICAL, NEVER)
-- Blank lines create visual and semantic boundaries
-- AI attention focuses on one rule group at a time
-- The enforcement word in each section stands out
-
-**Anti-Pattern - Dense Text:**
-
-```markdown
-## Rules
-Handle auth tokens. Validate JWT. NEVER log credentials. Use repository pattern. CRITICAL: mutations idempotent. Wrap errors. NEVER expose stacks.
-```
-
-**Why this fails:** Three CAPS words in one dense block - none stands out.
-
-**Rule:** When writing multiple critical rules, space them into logical groups with blank lines between.
+**→ See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md#strategic-spacing-attention-reset) for:**
+- Effectiveness comparison table
+- Good example with spaced sections
+- Anti-pattern example (dense text)
 
 ### Semantic Block Tags (Recognition Patterns)
 
