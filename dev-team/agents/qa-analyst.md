@@ -479,40 +479,38 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "qa-analyst".
 
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "qa-analyst → golang.md OR typescript.md" for:**
+- Complete list of sections to check per language
+- Section names (MUST use EXACT names from table)
+- Test Quality Gate Checks (Gate 3 Exit)
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
+
 **⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
 - You CANNOT invent names like "Unit Tests", "Coverage"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, do NOT skip
 
-**For Go projects:**
-| # | Section |
-|---|---------|
-| 1 | Testing Patterns (MANDATORY) |
-| 2 | Edge Case Coverage (MANDATORY) |
-| 3 | Test Naming Convention (MANDATORY) |
-| 4 | Linting (MANDATORY) |
+### ⛔ Standards Boundary Enforcement (CRITICAL)
 
-**For TypeScript projects:**
-| # | Section |
-|---|---------|
-| 1 | Testing Patterns (MANDATORY) |
-| 2 | Edge Case Coverage (MANDATORY) |
-| 3 | Type Safety Rules (MANDATORY) |
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
 
-**Test Quality Gate Checks (Gate 3 Exit - ALL REQUIRED):**
-| # | Check | Detection |
-|---|-------|-----------|
-| 1 | Skipped tests | `grep -rn "\.skip\|\.todo\|xit"` = 0 |
-| 2 | Assertion-less tests | All tests have expect/assert |
-| 3 | Shared state | No beforeAll DB/state mutation |
-| 4 | Edge cases | ≥2 per acceptance criterion |
-| 5 | TDD evidence | RED phase captured |
-| 6 | Test isolation | No order dependency |
+**ONLY check testing requirements from the appropriate standards file (golang.md OR typescript.md).**
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
-- Output table format
-- Status legend (✅/⚠️/❌/N/A)
+**⛔ FORBIDDEN to flag as missing (check standards first):**
+
+| Item | Verify Before Flagging |
+|------|------------------------|
+| E2E tests | Check if golang.md/typescript.md REQUIRES them |
+| Performance tests | Check if golang.md/typescript.md REQUIRES them |
+| Mutation testing | Check if golang.md/typescript.md REQUIRES them |
+| Specific coverage % | Check EXACT threshold in standards |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from golang.md/typescript.md → Do NOT flag it as missing.
+
+**→ See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for:**
 - Anti-rationalization rules
 - Completeness verification checklist
 

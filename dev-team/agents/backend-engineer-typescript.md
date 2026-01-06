@@ -762,33 +762,42 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
 
-**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
-- You CANNOT invent names like "Security", "Code Quality", "Config"
-- You CANNOT merge sections
-- If section doesn't apply → Mark as N/A, do NOT skip
-
-| # | Section | Key Subsections |
-|---|---------|-----------------|
-| 1 | Version (MANDATORY) | |
-| 2 | Strict Configuration (MANDATORY) | |
-| 3 | Frameworks & Libraries (MANDATORY) | |
-| 4 | Type Safety Rules (MANDATORY) | |
-| 5 | Zod Validation Patterns (MANDATORY) | |
-| 6 | Dependency Injection (MANDATORY) | |
-| 7 | AsyncLocalStorage for Context (MANDATORY) | |
-| 8 | Testing Patterns (MANDATORY) | |
-| 9 | Error Handling (MANDATORY) | |
-| 10 | Function Design (MANDATORY) | |
-| 11 | Naming Conventions (MANDATORY) | |
-| 12 | Directory Structure (MANDATORY) | Lerian pattern |
-| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
-
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-typescript → typescript.md" for:**
+- Complete list of sections to check (13 sections)
+- Section names (MUST use EXACT names from table)
+- Key subsections per section
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
 - Anti-rationalization rules
 - Completeness verification checklist
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You CANNOT invent names like "Security", "Code Quality", "Config"
+- You CANNOT merge sections
+- If section doesn't apply → Mark as N/A, do NOT skip
+
+### ⛔ Standards Boundary Enforcement (CRITICAL)
+
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**⛔ HARD GATE:** Check ONLY items listed in `typescript.md → Frameworks & Libraries` table.
+
+**Process:**
+1. WebFetch typescript.md
+2. Find "Frameworks & Libraries" section
+3. Check ONLY the libraries/frameworks listed in that table
+4. Do NOT invent additional requirements
+
+**⛔ FORBIDDEN to flag as missing (common hallucinations - verify in typescript.md first):**
+
+| Item | Why Verify First |
+|------|------------------|
+| class-validator | Check if Zod is the standard |
+| TypeORM | Check if Prisma is the standard |
+| Jest | Check if Vitest is the standard |
+| InversifyJS | Check if TSyringe is the standard |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from typescript.md → Do NOT flag it as missing
 
 ### Output Format
 

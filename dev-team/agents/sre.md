@@ -397,24 +397,43 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "sre → sre.md".
 
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "sre → sre.md" for:**
+- Complete list of sections to check (6 sections)
+- Section names (MUST use EXACT names from table)
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
+
 **⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
 - You CANNOT invent names like "Monitoring", "Alerts"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, do NOT skip
 
-| # | Section |
-|---|---------|
-| 1 | Observability Stack (MANDATORY) |
-| 2 | Logging Standards (MANDATORY) |
-| 3 | Tracing Standards (MANDATORY) |
-| 4 | OpenTelemetry with lib-commons (MANDATORY) |
-| 5 | Structured Logging with lib-common-js (MANDATORY) |
-| 6 | Health Checks (MANDATORY) |
+### ⛔ Standards Boundary Enforcement (CRITICAL)
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
-- Output table format
-- Status legend (✅/⚠️/❌/N/A)
+**See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
+
+**⛔ HARD GATE:** Check ONLY items listed in `sre.md` sections.
+
+**Process:**
+1. WebFetch sre.md
+2. Check ONLY the requirements explicitly listed in each section
+3. Do NOT invent additional observability requirements
+
+**⛔ FORBIDDEN to flag as missing (common hallucinations - verify in sre.md first):**
+
+| Item | Why Verify First |
+|------|------------------|
+| Prometheus metrics endpoint | Check if explicitly required in sre.md |
+| Jaeger UI | Check if explicitly required in sre.md |
+| Custom dashboards | Check if explicitly required in sre.md |
+| Alert rules | Check if explicitly required in sre.md |
+| Grafana configuration | Check if explicitly required in sre.md |
+
+**⛔ HARD GATE:** If you cannot quote the requirement from sre.md → Do NOT flag it as missing.
+
+**→ See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for:**
 - Anti-rationalization rules
 - Completeness verification checklist
 

@@ -91,9 +91,19 @@ output_schema:
     - name: coderabbit_status
       type: enum
       values: [PASS, ISSUES_FOUND, SKIPPED, NOT_INSTALLED]
+    - name: coderabbit_validation_mode
+      type: enum
+      values: [SUBTASK_LEVEL, TASK_LEVEL]
+      description: "Granularity of CodeRabbit validation"
+    - name: coderabbit_units_validated
+      type: integer
+      description: "Number of units (subtasks or tasks) validated by CodeRabbit"
+    - name: coderabbit_units_passed
+      type: integer
+      description: "Number of units that passed CodeRabbit validation"
     - name: coderabbit_issues
       type: integer
-      description: "Number of issues found by CodeRabbit (0 if skipped)"
+      description: "Total number of issues found by CodeRabbit across all units (0 if skipped)"
 
 examples:
   - name: "Feature review"
@@ -393,13 +403,9 @@ IF blocking_count > 0:
 
 ### Orchestrator Boundaries (HARD GATE)
 
-| Action | Permitted? | Required Action |
-|--------|------------|-----------------|
-| Read review findings | ✅ YES | Parse reviewer output |
-| Edit source code files | ❌ NO | Dispatch agent |
-| Add TODO comments | ❌ NO | Dispatch agent |
-| Run tests | ❌ NO | Agent runs tests |
-| Commit changes | ❌ NO | Agent commits |
+**See [dev-team/skills/shared-patterns/standards-boundary-enforcement.md](../../dev-team/skills/shared-patterns/standards-boundary-enforcement.md) for core enforcement rules.**
+
+**Key prohibition:** Edit/Write/Create on source files is FORBIDDEN. Always dispatch agent.
 
 **If you catch yourself about to use Edit/Write/Create on source files → STOP. Dispatch agent.**
 
@@ -440,14 +446,9 @@ Task:
 
 ### Anti-Rationalization for Direct Editing
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "It's a one-line fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
-| "I already know how to fix it" | Knowing ≠ permission. Orchestrators orchestrate. | **Dispatch agent** |
-| "Agent dispatch takes too long" | Consistency > speed. Always dispatch. | **Dispatch agent** |
-| "Just adding a TODO comment" | TODO comments are code changes. Agents write code. | **Dispatch agent** |
-| "The reviewer told me exactly what to change" | Instructions are for the agent, not you. | **Dispatch agent** |
-| "I'll fix it faster myself" | Fast + wrong > slow + right. Dispatch agent. | **Dispatch agent** |
+**See [shared-patterns/orchestrator-direct-editing-anti-rationalization.md](../shared-patterns/orchestrator-direct-editing-anti-rationalization.md) for complete anti-rationalization table.**
+
+*Applies to: Step 6 (Fix dispatch after Ring reviewers) & Step 7.5.3 (Fix dispatch after CodeRabbit)*
 
 ## Step 7: Re-Run All Reviewers After Fixes
 
@@ -460,7 +461,45 @@ After fixes committed:
 Do NOT cherry-pick reviewers.
 ```
 
-## Step 7.5: Optional CodeRabbit CLI Review (AFTER Ring Reviewers Pass)
+## Step 7.5: CodeRabbit CLI Validation (Per-Subtask/Task)
+
+**⛔ NEW APPROACH: CodeRabbit validates EACH subtask/task as it completes, accumulating findings to a file.**
+
+### CodeRabbit Integration Overview
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ CODERABBIT PER-UNIT VALIDATION FLOW                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ DURING REVIEW (after each subtask/task Ring reviewers pass):   │
+│   1. Run CodeRabbit for that unit's files                      │
+│   2. Append findings to .coderabbit-findings.md                │
+│   3. Continue to next unit                                     │
+│                                                                 │
+│ BEFORE COMMIT (Step 8):                                        │
+│   1. Display accumulated .coderabbit-findings.md               │
+│   2. User decides: fix issues OR acknowledge and proceed       │
+│                                                                 │
+│ BENEFITS:                                                      │
+│   • Catches issues close to when code was written              │
+│   • Smaller scope = faster reviews (7-30 min per unit)         │
+│   • Issues isolated to specific units, easier to fix           │
+│   • Accumulated file provides audit trail                      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Rate Limits (Official - per developer per repository per hour)
+
+| Limit Type | Value | Notes |
+|------------|-------|-------|
+| Files reviewed | 200 files/hour | Per review |
+| Reviews | 3 back-to-back, then 4/hour | **7 reviews possible in first hour** |
+| Conversations | 25 back-to-back, then 50/hour | For follow-up questions |
+
+**⏱️ TIMING:** Each CodeRabbit review takes **7-30+ minutes** depending on scope.
+Run in background and check periodically for completion.
 
 ### Common Commands Reference
 
@@ -552,39 +591,63 @@ coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Step 7.5 is REQUIRED when CodeRabbit CLI is installed and authenticated.**
-**If not installed, user is offered installation assistance.**
+**⛔ HARD GATE: CodeRabbit Execution Rules (NON-NEGOTIABLE)**
+
+| Scenario | Rule | Action |
+|----------|------|--------|
+| **Installed & authenticated** | **MANDATORY** - CANNOT skip | Run CodeRabbit review, no prompt |
+| **Not installed** | **MUST ask** user about installation | Present installation option |
+| **User declines installation** | Optional - can proceed | Skip and continue to Step 8 |
+
+**Why this distinction:**
+- If CodeRabbit IS installed → User has committed to using it → MUST run
+- If CodeRabbit is NOT installed → User choice to add it → MUST ask, but can decline
 
 ```text
 FLOW:
 1. Run CodeRabbit Installation Check
-2. IF installed AND authenticated → Run CodeRabbit (REQUIRED, no prompt)
-3. IF installed BUT NOT authenticated → Guide authentication
-4. IF NOT installed → Offer installation assistance
-5. IF user declines installation → Skip CodeRabbit, proceed to Step 8
+2. IF installed AND authenticated → Run CodeRabbit (MANDATORY, NO prompt, CANNOT skip)
+3. IF installed BUT NOT authenticated → Guide authentication (REQUIRED before proceeding)
+4. IF NOT installed → MUST ask user about installation (REQUIRED prompt)
+5. IF user declines installation → Skip CodeRabbit, proceed to Step 8 (only valid skip path)
 ```
+
+### Anti-Rationalization for CodeRabbit Execution
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "CodeRabbit is optional, I'll skip it" | If installed, it's MANDATORY. Optional only means installation is optional. | **Run CodeRabbit if installed** |
+| "Ring reviewers passed, that's enough" | Different tools catch different issues. CodeRabbit complements Ring. | **Run CodeRabbit if installed** |
+| "User didn't ask for CodeRabbit" | User installed it. Installation = consent to mandatory execution. | **Run CodeRabbit if installed** |
+| "Takes too long, skip this time" | Time is irrelevant. Installed = mandatory. | **Run CodeRabbit if installed** |
+| "I'll just proceed without asking about install" | MUST ask every user if they want to install. No silent skips. | **Ask user about installation** |
 
 #### Step 7.5.1: Check CodeRabbit Installation
 
 Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
-**IF INSTALLED AND AUTHENTICATED:**
+**IF INSTALLED AND AUTHENTICATED → MANDATORY EXECUTION (CANNOT SKIP):**
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ ✅ CodeRabbit CLI detected                                      │
+│ ✅ CodeRabbit CLI detected - MANDATORY EXECUTION                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │ CodeRabbit CLI is installed and authenticated.                  │
-│ Running CodeRabbit review (required step)...                    │
+│                                                                 │
+│ ⛔ CodeRabbit review is MANDATORY when installed.               │
+│    This step CANNOT be skipped. Proceeding automatically...     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
-→ Proceed directly to Step 7.5.2 (Run CodeRabbit Review)
+→ Proceed directly to Step 7.5.2 (Run CodeRabbit Review) - **NO user prompt, NO skip option**
 
-**IF NOT INSTALLED:**
+**IF NOT INSTALLED → MUST ASK USER (REQUIRED PROMPT):**
+
+**⛔ You MUST present this prompt to the user. Silent skips are FORBIDDEN.**
+
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ ⚠️  CodeRabbit CLI not found                                    │
+│ ⚠️  CodeRabbit CLI not found - INSTALLATION PROMPT REQUIRED     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │ CodeRabbit CLI is not installed on your system.                 │
@@ -595,7 +658,8 @@ Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 │   • Security vulnerabilities                                    │
 │   • Edge cases missed by other reviewers                        │
 │                                                                 │
-│ Would you like to install CodeRabbit CLI now?                   │
+│ ⛔ You MUST choose one of the following options:                │
+│                                                                 │
 │   (a) Yes, install CodeRabbit CLI (I'll guide you)              │
 │   (b) No, skip CodeRabbit and proceed to Gate 5                 │
 │                                                                 │
@@ -612,8 +676,9 @@ Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
 **If user selects (b) No, skip:**
 ```text
-→ Record: "CodeRabbit review: SKIPPED (not installed, user declined)"
+→ Record: "CodeRabbit review: SKIPPED (not installed, user declined installation)"
 → Proceed to Step 8 (Success Output)
+→ This is the ONLY valid path to skip CodeRabbit
 ```
 
 #### Step 7.5.1a: CodeRabbit Installation Flow
@@ -737,9 +802,177 @@ coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 
 #### Step 7.5.2: Run CodeRabbit Review
 
+**⛔ GRANULAR VALIDATION: CodeRabbit MUST validate at the most granular level available.**
+
+```text
+DETERMINE VALIDATION SCOPE:
+1. Check if current work has subtasks (from gate0_handoff or implementation context)
+2. IF subtasks exist → Validate EACH SUBTASK separately
+3. IF no subtasks → Validate the TASK as a whole
+
+WHY GRANULAR VALIDATION:
+- Subtask-level validation catches issues early
+- Easier to pinpoint which subtask introduced problems
+- Prevents "works for task A, breaks task B" scenarios
+- Enables incremental fixes without re-running entire review
+```
+
+**Step 7.5.2a: Determine Validation Scope**
+
+```text
+validation_scope = {
+  mode: null,  // "subtask" or "task"
+  units: [],   // list of {id, files, commits} to validate
+  current_index: 0
+}
+
+IF gate0_handoff.subtasks exists AND gate0_handoff.subtasks.length > 0:
+  → validation_scope.mode = "subtask"
+  → FOR EACH subtask in gate0_handoff.subtasks:
+      → Get files changed by this subtask (from commits or file mapping)
+      → Add to validation_scope.units: {
+          id: subtask.id,
+          name: subtask.name,
+          files: [files touched by this subtask],
+          base_sha: [sha before subtask],
+          head_sha: [sha after subtask]
+        }
+  
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 CODERABBIT VALIDATION MODE: SUBTASK-LEVEL                    │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Detected [N] subtasks. Will validate each separately:          │
+  │                                                                 │
+  │   1. [subtask-1-id]: [subtask-1-name]                          │
+  │      Files: [file1.go, file2.go]                               │
+  │                                                                 │
+  │   2. [subtask-2-id]: [subtask-2-name]                          │
+  │      Files: [file3.go, file4.go]                               │
+  │                                                                 │
+  │   ... (up to N subtasks)                                       │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+ELSE:
+  → validation_scope.mode = "task"
+  → Add single unit: {
+      id: unit_id,
+      name: implementation_summary,
+      files: implementation_files,
+      base_sha: base_sha,
+      head_sha: head_sha
+    }
+  
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 CODERABBIT VALIDATION MODE: TASK-LEVEL                       │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ No subtasks detected. Validating entire task:                  │
+  │                                                                 │
+  │   Task: [unit_id]                                              │
+  │   Files: [N] files changed                                     │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
+**Step 7.5.2b: Run CodeRabbit for Each Validation Unit**
+
+```text
+coderabbit_results = {
+  overall_status: "PASS",  // PASS only if ALL units pass
+  units: []
+}
+
+FOR EACH unit IN validation_scope.units:
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 🔍 VALIDATING: [unit.id] ([current]/[total])                    │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ Name: [unit.name]                                              │
+  │ Files: [unit.files.join(", ")]                                 │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
 ```bash
-# Run CodeRabbit in prompt-only mode (optimized for AI agents)
+# Run CodeRabbit for specific files (subtask-level) or all files (task-level)
+# ⏱️ TIMING: 7-30+ minutes per review. Run in background if possible.
+
+# Option 1: If validating specific files (subtask mode)
+coderabbit --prompt-only --type uncommitted --base [unit.base_sha] -- [unit.files...]
+
+# Option 2: If validating all changes (task mode)
 coderabbit --prompt-only --type uncommitted --base [base_branch]
+
+# Check if CodeRabbit is still running (no status endpoint - wait for command to complete)
+# The command is synchronous - it completes when output is returned
+```
+
+```text
+  Parse output and record:
+  unit_result = {
+    id: unit.id,
+    status: "PASS" | "ISSUES_FOUND",
+    issues: {
+      critical: [list],
+      high: [list],
+      medium: [list],
+      low: [list]
+    }
+  }
+  
+  coderabbit_results.units.push(unit_result)
+  
+  IF unit_result.issues.critical.length > 0 OR unit_result.issues.high.length > 0:
+    → coderabbit_results.overall_status = "ISSUES_FOUND"
+  
+  ─────────────────────────────────────────────────────────────────
+  ⛔ MANDATORY: APPEND FINDINGS TO .coderabbit-findings.md
+  ─────────────────────────────────────────────────────────────────
+  
+  After EACH unit validation, append results to findings file:
+  
+  IF .coderabbit-findings.md does NOT exist:
+    → Create file with header (see "Findings File Format" below)
+  
+  APPEND to .coderabbit-findings.md:
+  ```
+  ## Unit: [unit.id] - [unit.name]
+  **Validated:** [timestamp]
+  **Status:** [PASS | ISSUES_FOUND]
+  **Files:** [unit.files.join(", ")]
+  
+  ### Issues Found
+  | # | Severity | Description | File:Line | Recommendation |
+  |---|----------|-------------|-----------|----------------|
+  | 1 | [severity] | [description] | [file:line] | [recommendation] |
+  | ... | ... | ... | ... | ... |
+  
+  ---
+  ```
+  
+  This ensures ALL findings are accumulated for review before commit.
+
+AFTER ALL UNITS VALIDATED:
+  Display summary:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📊 CODERABBIT VALIDATION SUMMARY                                │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ Mode: [SUBTASK-LEVEL | TASK-LEVEL]                             │
+  │ Units Validated: [N]                                           │
+  │ Overall Status: [PASS | ISSUES_FOUND]                          │
+  │                                                                 │
+  │ Per-Unit Results:                                              │
+  │ ┌──────────────┬────────────┬──────┬──────┬────────┬─────┐     │
+  │ │ Unit ID      │ Status     │ Crit │ High │ Medium │ Low │     │
+  │ ├──────────────┼────────────┼──────┼──────┼────────┼─────┤     │
+  │ │ [subtask-1]  │ ✅ PASS    │  0   │  0   │   0    │  1  │     │
+  │ │ [subtask-2]  │ ❌ ISSUES  │  1   │  2   │   0    │  0  │     │
+  │ └──────────────┴────────────┴──────┴──────┴────────┴─────┘     │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Parse CodeRabbit output for:**
@@ -748,43 +981,317 @@ coderabbit --prompt-only --type uncommitted --base [base_branch]
 - Security vulnerabilities
 - Performance concerns
 
+### Findings File Format (.coderabbit-findings.md)
+
+**This file accumulates ALL CodeRabbit findings across all validated units.**
+
+```markdown
+# CodeRabbit Findings
+
+**Generated:** [initial timestamp]
+**Last Updated:** [latest timestamp]
+**Total Units Validated:** [N]
+**Overall Status:** [PASS | ISSUES_FOUND]
+
+## Summary
+
+| Severity | Count | Status |
+|----------|-------|--------|
+| Critical | [N] | [N pending / N fixed] |
+| High | [N] | [N pending / N fixed] |
+| Medium | [N] | [N pending / N fixed] |
+| Low | [N] | [N pending / N fixed] |
+
+---
+
+## Unit: [subtask-1-id] - [subtask-1-name]
+**Validated:** [timestamp]
+**Status:** [PASS | ISSUES_FOUND]
+**Files:** [file1.go, file2.go]
+
+### Issues Found
+| # | Severity | Description | File:Line | Recommendation | Status |
+|---|----------|-------------|-----------|----------------|--------|
+| 1 | CRITICAL | Race condition in handler | handler.go:45 | Use sync.Mutex | PENDING |
+| 2 | HIGH | Unchecked error return | repo.go:123 | Handle error | PENDING |
+
+---
+
+## Unit: [subtask-2-id] - [subtask-2-name]
+**Validated:** [timestamp]
+**Status:** PASS
+**Files:** [file3.go]
+
+### Issues Found
+_No issues found._
+
+---
+
+[... additional units ...]
+```
+
+**File Location:** Project root (`.coderabbit-findings.md`)
+
+**Lifecycle:**
+1. Created when first CodeRabbit validation runs
+2. Appended after each unit validation
+3. Displayed before commit (Step 8)
+4. User decides: fix issues or acknowledge and proceed
+5. After commit, file can be deleted or kept for audit
+
 #### Step 7.5.3: Handle CodeRabbit Findings
 
 **⛔ CRITICAL: You are an ORCHESTRATOR. You CANNOT edit source files directly.**
 **You MUST dispatch the implementation agent to fix issues.**
 
+**⛔ GRANULAR FIX DISPATCH: Fixes MUST be dispatched per-unit (subtask or task).**
+
 ```text
-IF CodeRabbit found CRITICAL or HIGH issues:
-  → Display findings to user
-  → Ask: "CodeRabbit found [N] critical/high issues. Fix now or proceed anyway?"
-    (a) Fix issues - dispatch to implementation agent
+IF coderabbit_results.overall_status == "ISSUES_FOUND":
+  
+  → FIRST: Display EACH issue in detail (REQUIRED before any action):
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ ⚠️  CODERABBIT ISSUES FOUND - DETAILED DESCRIPTION               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ UNIT: [subtask-1] - [subtask name]                             │
+  │ ───────────────────────────────────────────────────────────────│
+  │ Issue #1 [CRITICAL]                                            │
+  │   Description: Race condition in concurrent request handler    │
+  │   File: src/handler.go:45                                      │
+  │   Code Context:                                                │
+  │     43 | func (h *Handler) Process(ctx context.Context) {      │
+  │     44 |     h.counter++  // ← NOT THREAD-SAFE                 │
+  │     45 |     data := h.sharedMap[key]                          │
+  │   Why it matters: Multiple goroutines can corrupt shared state │
+  │   Recommendation: Use sync.Mutex or atomic operations          │
+  │                                                                 │
+  │ Issue #2 [HIGH]                                                │
+  │   Description: Unchecked error return from database query      │
+  │   File: src/repo.go:123                                        │
+  │   Code Context:                                                │
+  │     121 | func (r *Repo) GetUser(id string) (*User, error) {   │
+  │     122 |     result, _ := r.db.Query(query, id)  // ← IGNORED │
+  │     123 |     return parseUser(result), nil                    │
+  │   Why it matters: Silent failures can cause data corruption    │
+  │   Recommendation: Check and handle the error properly          │
+  │                                                                 │
+  │ UNIT: [subtask-2] - [subtask name]                             │
+  │ ───────────────────────────────────────────────────────────────│
+  │ Issue #3 [HIGH]                                                │
+  │   Description: SQL injection vulnerability                     │
+  │   File: src/query.go:89                                        │
+  │   Code Context:                                                │
+  │     87 | func BuildQuery(userInput string) string {            │
+  │     88 |     return fmt.Sprintf("SELECT * FROM users WHERE     │
+  │     89 |            name = '%s'", userInput)  // ← INJECTABLE  │
+  │   Why it matters: Attacker can execute arbitrary SQL           │
+  │   Recommendation: Use parameterized queries                    │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  → THEN: Ask user for action:
+  "CodeRabbit found [N] issues in [M] units. What would you like to do?"
+    (a) Fix all issues - dispatch implementation agent per unit
     (b) Proceed to Gate 5 (acknowledge risk)
-    (c) Review findings in detail
+    (c) Review findings in detail (show code context)
 
   IF user selects (a) Fix issues:
     → ⛔ DO NOT edit files directly
-    → DISPATCH implementation agent with CodeRabbit findings:
+    → FOR EACH unit WITH issues (validation_scope.units where status == "ISSUES_FOUND"):
     
-    Task:
-      subagent_type: "[same agent used in Gate 0]"
-      model: "opus"
-      description: "Fix CodeRabbit issues for [unit_id]"
-      prompt: |
-        ## CodeRabbit Issues to Fix
+        Display:
+        ┌─────────────────────────────────────────────────────────────────┐
+        │ 🔧 DISPATCHING FIX: [unit.id] ([current]/[total with issues])   │
+        ├─────────────────────────────────────────────────────────────────┤
+        │ Unit: [unit.name]                                              │
+        │ Critical Issues: [N]                                           │
+        │ High Issues: [N]                                               │
+        └─────────────────────────────────────────────────────────────────┘
         
-        The following issues were found by CodeRabbit CLI external review.
-        Fix ALL Critical and High severity issues.
+        → DISPATCH implementation agent with unit-specific findings:
         
-        ### Critical Issues
-        [list from CodeRabbit output]
+        Task:
+          subagent_type: "[same agent used in Gate 0]"
+          model: "opus"
+          description: "Fix CodeRabbit issues for [unit.id]"
+          prompt: |
+            ## CodeRabbit Issues to Fix - [unit.id]
+            
+            **Scope:** This fix is for [subtask/task]: [unit.name]
+            **Files in Scope:** [unit.files.join(", ")]
+            
+            The following issues were found by CodeRabbit CLI external review
+            for THIS SPECIFIC [subtask/task].
+            
+            ⚠️ IMPORTANT: Only fix issues in files belonging to this unit:
+            [unit.files list]
+            
+            ### Critical Issues
+            [list from unit.issues.critical]
+            
+            ### High Issues  
+            [list from unit.issues.high]
+            
+            ## Requirements
+            1. Fix each issue following Ring Standards
+            2. Only modify files in scope: [unit.files]
+            3. Run tests to verify fixes don't break functionality
+            4. Commit fixes with message referencing unit: "fix([unit.id]): [description]"
         
-        ### High Issues
-        [list from CodeRabbit output]
+        → Wait for agent to complete
+        → Record fix result for this unit
         
-        ## Requirements
-        1. Fix each issue following Ring Standards
-        2. Run tests to verify fixes don't break functionality
-        3. Commit fixes with descriptive message
+        → VALIDATE EACH ISSUE INDIVIDUALLY:
+        ┌─────────────────────────────────────────────────────────────────┐
+        │ 🔍 VALIDATING FIXES FOR: [unit.id]                              │
+        ├─────────────────────────────────────────────────────────────────┤
+        │                                                                 │
+        │ Each issue MUST be validated individually:                      │
+        │                                                                 │
+        │ Issue #1: [issue description]                                   │
+        │   File: [file:line]                                            │
+        │   Severity: CRITICAL                                           │
+        │   Fix Applied: [description of fix]                            │
+        │   Validation: ✅ RESOLVED / ❌ NOT RESOLVED                     │
+        │   Evidence: [code snippet or test result]                      │
+        │                                                                 │
+        │ Issue #2: [issue description]                                   │
+        │   File: [file:line]                                            │
+        │   Severity: HIGH                                               │
+        │   Fix Applied: [description of fix]                            │
+        │   Validation: ✅ RESOLVED / ❌ NOT RESOLVED                     │
+        │   Evidence: [code snippet or test result]                      │
+        │                                                                 │
+        │ ... (repeat for ALL issues)                                    │
+        │                                                                 │
+        └─────────────────────────────────────────────────────────────────┘
+        
+        → IF any issue NOT RESOLVED:
+            → Identify the correct agent for re-dispatch:
+              - Check gate0_handoff.implementation_agent (if available)
+              - OR infer from file type:
+                - *.go files → ring-dev-team:backend-engineer-golang
+                - *.ts files (backend) → ring-dev-team:backend-engineer-typescript
+                - *.ts/*.tsx files (frontend) → ring-dev-team:frontend-engineer
+                - *.yaml/*.yml (infra) → ring-dev-team:devops-engineer
+            
+            → Re-dispatch ONLY unresolved issues to the correct agent:
+            
+            Task:
+              subagent_type: "[correct agent based on file type or gate0_handoff]"
+              model: "opus"
+              description: "Retry fix for unresolved issues in [unit.id]"
+              prompt: |
+                ## RETRY: Unresolved CodeRabbit Issues - [unit.id]
+                
+                Previous fix attempt did NOT resolve these issues.
+                This is attempt [N] of 2 maximum.
+                
+                ### Unresolved Issues (MUST FIX)
+                | # | Severity | Description | File:Line | Previous Attempt | Why It Failed |
+                |---|----------|-------------|-----------|------------------|---------------|
+                | [issue.id] | [severity] | [description] | [file:line] | [what was tried] | [why not resolved] |
+                
+                ### Requirements
+                1. Review the previous fix attempt and understand why it failed
+                2. Apply a different/better solution
+                3. Verify the fix resolves the issue
+                4. Run relevant tests
+                5. Commit with message: "fix([unit.id]): retry [issue description]"
+            
+            → Max 2 fix attempts per issue
+            → IF issue still NOT RESOLVED after 2 attempts:
+                → Mark as UNRESOLVED_ESCALATE
+                → Add to escalation report for manual review
+        
+        → Record per-issue validation results:
+        unit_validation = {
+          id: unit.id,
+          issues_validated: [
+            {
+              issue_id: 1,
+              description: "[issue]",
+              severity: "CRITICAL",
+              file: "[file:line]",
+              fix_applied: "[description]",
+              status: "RESOLVED" | "NOT_RESOLVED",
+              evidence: "[snippet or test]",
+              attempts: 1
+            },
+            ...
+          ],
+          all_resolved: true | false
+        }
+    
+    → AFTER ALL UNITS FIXED:
+        Display:
+        ┌─────────────────────────────────────────────────────────────────┐
+        │ ✅ FIX DISPATCH COMPLETE                                        │
+        ├─────────────────────────────────────────────────────────────────┤
+        │ Units Fixed: [N] / [total with issues]                         │
+        │ Total Issues Validated: [N]                                    │
+        │ Issues Resolved: [N] / [N]                                     │
+        │                                                                 │
+        │ Per-Unit Fix Status:                                           │
+        │ ┌──────────────┬────────────┬───────────────────────┐          │
+        │ │ Unit ID      │ Status     │ Commit                │          │
+        │ ├──────────────┼────────────┼───────────────────────┤          │
+        │ │ [subtask-1]  │ ✅ FIXED   │ abc123                │          │
+        │ │ [subtask-2]  │ ✅ FIXED   │ def456                │          │
+        │ └──────────────┴────────────┴───────────────────────┘          │
+        │                                                                 │
+        │ Issue-Level Validation Details:                                │
+        │ ┌──────────────────────────────────────────────────────────┐   │
+        │ │ UNIT: [subtask-1]                                        │   │
+        │ ├──────────────────────────────────────────────────────────┤   │
+        │ │ #1 [CRITICAL] Race condition in handler                  │   │
+        │ │    File: src/handler.go:45                               │   │
+        │ │    Fix: Added mutex lock                                 │   │
+        │ │    Status: ✅ RESOLVED                                   │   │
+        │ │    Evidence: Test race_test.go passes                    │   │
+        │ ├──────────────────────────────────────────────────────────┤   │
+        │ │ #2 [HIGH] Unchecked error return                         │   │
+        │ │    File: src/handler.go:67                               │   │
+        │ │    Fix: Added error check with proper handling           │   │
+        │ │    Status: ✅ RESOLVED                                   │   │
+        │ │    Evidence: Error path verified in unit test            │   │
+        │ └──────────────────────────────────────────────────────────┘   │
+        │                                                                 │
+        └─────────────────────────────────────────────────────────────────┘
+
+LEGACY FLOW (when validation_scope.mode == "task"):
+  IF CodeRabbit found CRITICAL or HIGH issues:
+    → Display findings to user
+    → Ask: "CodeRabbit found [N] critical/high issues. Fix now or proceed anyway?"
+      (a) Fix issues - dispatch to implementation agent
+      (b) Proceed to Gate 5 (acknowledge risk)
+      (c) Review findings in detail
+
+    IF user selects (a) Fix issues:
+      → ⛔ DO NOT edit files directly
+      → DISPATCH implementation agent with CodeRabbit findings:
+      
+      Task:
+        subagent_type: "[same agent used in Gate 0]"
+        model: "opus"
+        description: "Fix CodeRabbit issues for [unit_id]"
+        prompt: |
+          ## CodeRabbit Issues to Fix
+          
+          The following issues were found by CodeRabbit CLI external review.
+          Fix ALL Critical and High severity issues.
+          
+          ### Critical Issues
+          [list from CodeRabbit output]
+          
+          ### High Issues
+          [list from CodeRabbit output]
+          
+          ## Requirements
+          1. Fix each issue following Ring Standards
+          2. Run tests to verify fixes don't break functionality
+          3. Commit fixes with descriptive message
     
     → After agent completes, re-run CodeRabbit: `coderabbit --prompt-only`
     → If CodeRabbit issues remain, repeat fix cycle (max 2 iterations for CodeRabbit)
@@ -815,8 +1322,8 @@ IF CodeRabbit found CRITICAL or HIGH issues:
       → Proceed to Step 8 (Success Output)
     
     IF any Ring reviewer finds CRITICAL/HIGH/MEDIUM issues:
-      → Increment coderabbit_ring_iteration counter
-      → IF coderabbit_ring_iteration >= 2:
+      → Increment ring_revalidation_iterations counter
+      → IF ring_revalidation_iterations >= 2:
           → ESCALATE: "Max iterations reached after CodeRabbit fixes"
           → Go to Step 9 (Escalate)
       → DISPATCH implementation agent to fix Ring reviewer issues
@@ -863,44 +1370,239 @@ IF CodeRabbit found no issues:
 
 ### Anti-Rationalization for Direct Editing
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "It's just a small fix" | Size is irrelevant. Orchestrators don't edit code. | **Dispatch agent** |
-| "I can add TODO comments quickly" | Orchestrators don't write to source files. Period. | **Dispatch agent** |
-| "Agent dispatch is overkill for this" | Consistency > convenience. Always dispatch. | **Dispatch agent** |
-| "CodeRabbit already told me what to fix" | Knowing the fix ≠ permission to implement. | **Dispatch agent** |
+**See [shared-patterns/orchestrator-direct-editing-anti-rationalization.md](../shared-patterns/orchestrator-direct-editing-anti-rationalization.md) - same table applies here.**
 
 #### Step 7.5.4: CodeRabbit Results Summary
 
 ```markdown
 ## CodeRabbit External Review
 **Status:** [PASS|ISSUES_FOUND|SKIPPED]
-**Issues Found:** [N]
+**Validation Mode:** [SUBTASK-LEVEL|TASK-LEVEL]
+**Units Validated:** [N]
+**Total Issues Found:** [N]
+**Issues Resolved:** [N]/[N]
 
-| Severity | Count | Action |
-|----------|-------|--------|
-| Critical | [N] | [Fixed/Acknowledged] |
-| High | [N] | [Fixed/Acknowledged] |
-| Medium | [N] | [TODO added] |
-| Low | [N] | [TODO added] |
+### Per-Unit Validation Results
+| Unit ID | Unit Name | Status | Critical | High | Medium | Low |
+|---------|-----------|--------|----------|------|--------|-----|
+| [subtask-1] | [name] | ✅ PASS | 0 | 0 | 0 | 1 |
+| [subtask-2] | [name] | ✅ FIXED | 1→0 | 2→0 | 0 | 0 |
+| [task-id] | [name] | ✅ PASS | 0 | 0 | 0 | 0 |
+
+### Issues Found - Detailed Description (ALWAYS shown when issues exist)
+
+#### Unit: [subtask-2]
+| # | Severity | Description | File:Line | Code Context | Why It Matters | Recommendation |
+|---|----------|-------------|-----------|--------------|----------------|----------------|
+| 1 | CRITICAL | Race condition | handler.go:45 | `h.counter++` not thread-safe | Corrupts shared state | Use sync.Mutex |
+| 2 | HIGH | Unchecked error | repo.go:123 | `result, _ := r.db.Query()` | Silent failures | Handle error |
+| 3 | HIGH | SQL injection | query.go:89 | `fmt.Sprintf("...%s", input)` | Security breach | Parameterized query |
+
+### Issue-Level Validation (REQUIRED after fixes are applied)
+
+#### Unit: [subtask-2]
+| # | Severity | Description | File:Line | Fix Applied | Status | Evidence |
+|---|----------|-------------|-----------|-------------|--------|----------|
+| 1 | CRITICAL | Race condition in concurrent handler | handler.go:45 | Added mutex lock around shared state | ✅ RESOLVED | race_test.go passes |
+| 2 | HIGH | Unchecked error from DB query | repo.go:123 | Added error check with rollback | ✅ RESOLVED | Error path tested |
+| 3 | HIGH | SQL injection vulnerability | query.go:89 | Used parameterized query | ✅ RESOLVED | Security test added |
+
+#### Unit: [subtask-3] (if applicable)
+| # | Severity | Description | File:Line | Fix Applied | Status | Evidence |
+|---|----------|-------------|-----------|-------------|--------|----------|
+| 1 | HIGH | Missing input validation | api.go:34 | Added validation middleware | ✅ RESOLVED | Fuzz test passes |
+
+### Overall Summary by Severity
+| Severity | Found | Resolved | Remaining | Action |
+|----------|-------|----------|-----------|--------|
+| Critical | [N] | [N] | 0 | Fixed |
+| High | [N] | [N] | 0 | Fixed |
+| Medium | [N] | [N] | 0 | TODO added |
+| Low | [N] | - | [N] | TODO added |
 ```
 
-### CodeRabbit Skip Scenarios
+### CodeRabbit Skip Scenarios (ONLY VALID PATHS)
 
-CodeRabbit review is skipped in these cases:
+**⛔ CodeRabbit can ONLY be skipped in these specific scenarios. Any other skip is a VIOLATION.**
 
-| Scenario | Record As | Next Step |
-|----------|-----------|-----------|
-| CLI not installed, user declines install | `SKIPPED (not installed, user declined)` | Step 8 |
-| Installation failed, user skips | `SKIPPED (installation failed)` | Step 8 |
-| Authentication failed, user skips | `SKIPPED (auth failed)` | Step 8 |
-| Environment doesn't support (CI/container) | `SKIPPED (unsupported environment)` | Step 8 |
+| Scenario | Record As | Next Step | Why Valid |
+|----------|-----------|-----------|-----------|
+| CLI not installed, user **explicitly** declines install | `SKIPPED (not installed, user declined)` | Step 8 | User was asked and chose not to install |
+| Installation failed after attempt, user skips | `SKIPPED (installation failed)` | Step 8 | Technical failure, user informed |
+| Authentication failed after attempt, user skips | `SKIPPED (auth failed)` | Step 8 | Technical failure, user informed |
+| Environment doesn't support (CI/container) | `SKIPPED (unsupported environment)` | Step 8 | Technical limitation |
 
-**Note:** When CodeRabbit CLI IS installed and authenticated, it runs automatically as a required step.
+**⛔ INVALID SKIP SCENARIOS (FORBIDDEN):**
+
+| Invalid Scenario | Why FORBIDDEN | Required Action |
+|------------------|---------------|-----------------|
+| CLI installed but "skipped for speed" | Installed = MANDATORY | **Run CodeRabbit** |
+| CLI installed but "Ring reviewers passed" | Complementary tools, both required | **Run CodeRabbit** |
+| CLI not installed, no prompt shown | MUST ask user about installation | **Show installation prompt** |
+| Silent skip without user interaction | All skips require explicit user choice | **Ask user** |
+
+**⛔ NON-NEGOTIABLE:** When CodeRabbit CLI IS installed and authenticated, execution is **MANDATORY** - it CANNOT be skipped under any circumstance.
 
 ---
 
-## Step 8: Prepare Success Output
+## Step 8: Display Accumulated Findings & Prepare Success Output
+
+**⛔ BEFORE generating success output, MUST display accumulated CodeRabbit findings.**
+
+### Step 8.1: Display Accumulated CodeRabbit Findings
+
+```text
+IF .coderabbit-findings.md exists:
+  
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 CODERABBIT FINDINGS - ACCUMULATED DURING REVIEW              │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ The following issues were identified by CodeRabbit during the  │
+  │ review process. Review before proceeding to commit.            │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  → Display contents of .coderabbit-findings.md
+  → Show summary table:
+  
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📊 CODERABBIT FINDINGS SUMMARY                                  │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ | Severity | Count | Status |                                  │
+  │ |----------|-------|--------|                                  │
+  │ | Critical | [N]   | [pending/fixed] |                         │
+  │ | High     | [N]   | [pending/fixed] |                         │
+  │ | Medium   | [N]   | [pending/fixed] |                         │
+  │ | Low      | [N]   | [pending/fixed] |                         │
+  │                                                                 │
+  │ Total Issues: [N] | Fixed: [N] | Pending: [N]                  │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  → Ask user:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ ❓ ACTION REQUIRED                                              │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ [N] CodeRabbit issues are pending. What would you like to do?  │
+  │                                                                 │
+  │   (a) Fix all pending issues now (dispatch implementation agent)│
+  │   (b) Review and fix issues one-by-one (interactive mode)      │
+  │   (c) Acknowledge and proceed to commit (issues documented)    │
+  │                                                                 │
+  │ Note: Choosing (c) will include findings file in commit for    │
+  │       tracking. Issues remain documented for future fixing.    │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  IF user selects (a) Fix all issues:
+    → Dispatch implementation agent with ALL pending issues from findings file
+    → After fixes, update .coderabbit-findings.md (mark issues as FIXED)
+    → Re-run CodeRabbit validation for affected files
+    → Loop back to Step 8.1 to display updated findings
+  
+  IF user selects (b) Interactive mode (one-by-one):
+    → Go to Step 8.1.1 (Interactive Issue Review)
+  
+  IF user selects (c) Acknowledge and proceed:
+    → Record: "CodeRabbit issues acknowledged by user"
+    → Include .coderabbit-findings.md in commit (for audit trail)
+    → Proceed to Step 8.2 (Success Output)
+
+─────────────────────────────────────────────────────────────────
+Step 8.1.1: Interactive Issue Review (One-by-One)
+─────────────────────────────────────────────────────────────────
+
+issues_to_fix = []
+issues_to_skip = []
+
+FOR EACH issue IN pending_issues (ordered by severity: CRITICAL → HIGH → MEDIUM → LOW):
+  
+  Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 🔍 ISSUE [current]/[total] - [SEVERITY]                         │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Unit: [unit.id] - [unit.name]                                  │
+  │ File: [file:line]                                              │
+  │                                                                 │
+  │ Description:                                                   │
+  │   [issue description]                                          │
+  │                                                                 │
+  │ Code Context:                                                  │
+  │   [code snippet around the issue]                              │
+  │                                                                 │
+  │ Why it matters:                                                │
+  │   [explanation of impact]                                      │
+  │                                                                 │
+  │ Recommendation:                                                │
+  │   [suggested fix]                                              │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ What would you like to do with this issue?                     │
+  │                                                                 │
+  │   (f) Fix this issue                                           │
+  │   (s) Skip this issue (acknowledge)                            │
+  │   (a) Fix ALL remaining issues                                 │
+  │   (k) Skip ALL remaining issues                                │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  IF user selects (f) Fix:
+    → Add to issues_to_fix list
+    → Continue to next issue
+  
+  IF user selects (s) Skip:
+    → Add to issues_to_skip list
+    → Continue to next issue
+  
+  IF user selects (a) Fix ALL remaining:
+    → Add current + all remaining to issues_to_fix list
+    → Break loop
+  
+  IF user selects (k) Skip ALL remaining:
+    → Add current + all remaining to issues_to_skip list
+    → Break loop
+
+AFTER loop completes:
+  Display summary:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ 📋 INTERACTIVE REVIEW COMPLETE                                  │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Issues to fix: [N]                                             │
+  │   [list of issues selected for fixing]                         │
+  │                                                                 │
+  │ Issues to skip: [N]                                            │
+  │   [list of issues selected to skip]                            │
+  │                                                                 │
+  │ Proceed with this selection? (y/n)                             │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  
+  IF user confirms (y):
+    IF issues_to_fix.length > 0:
+      → Dispatch implementation agent with ONLY issues_to_fix
+      → After fixes, update .coderabbit-findings.md:
+        - Mark fixed issues as FIXED
+        - Mark skipped issues as ACKNOWLEDGED
+      → Re-run CodeRabbit validation for affected files
+      → Loop back to Step 8.1
+    ELSE:
+      → All issues skipped/acknowledged
+      → Proceed to Step 8.2 (Success Output)
+  
+  IF user cancels (n):
+    → Return to Step 8.1 main prompt
+
+ELSE (no findings file exists):
+  → CodeRabbit was skipped or found no issues
+  → Proceed directly to Step 8.2 (Success Output)
+```
+
+### Step 8.2: Generate Success Output
 
 ```text
 Generate skill output:
@@ -929,10 +1631,18 @@ Generate skill output:
 ## Low/Cosmetic Issues (TODO/FIXME added)
 [list with file locations]
 
+## CodeRabbit Findings
+**Findings File:** .coderabbit-findings.md
+**Total Issues Found:** [N]
+**Issues Fixed:** [N]
+**Issues Acknowledged:** [N]
+**Status:** [ALL_FIXED | ACKNOWLEDGED | NO_ISSUES]
+
 ## Handoff to Next Gate
 - Review status: COMPLETE
 - All blocking issues: RESOLVED
 - Reviewers passed: 3/3
+- CodeRabbit findings: [status]
 - Ready for Gate 5 (Validation): YES
 ```
 
@@ -1025,13 +1735,30 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 | business-logic-reviewer | ✅/❌ |
 | security-reviewer | ✅/❌ |
 
-## CodeRabbit External Review (Optional)
+## CodeRabbit External Review (MANDATORY if installed, Optional to install)
 **Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
-**Issues Found:** [N or N/A]
+**Validation Mode:** [SUBTASK-LEVEL|TASK-LEVEL]
+**Units Validated:** [N]
+**Units Passed:** [N]/[N]
+**Issues Found:** [N]
+**Issues Resolved:** [N]/[N]
+
+### Per-Unit Results (if subtask-level)
+| Unit ID | Status | Critical | High | Medium | Low |
+|---------|--------|----------|------|--------|-----|
+| [subtask-1] | ✅ PASS | 0 | 0 | 0 | 1 |
+| [subtask-2] | ✅ FIXED | 0 | 0 | 0 | 0 |
+
+### Issue-Level Validation (REQUIRED when issues were fixed)
+| Unit | # | Severity | Description | Fix Applied | Status | Evidence |
+|------|---|----------|-------------|-------------|--------|----------|
+| subtask-2 | 1 | CRITICAL | Race condition | Mutex added | ✅ RESOLVED | Test passes |
+| subtask-2 | 2 | HIGH | Unchecked error | Error handling added | ✅ RESOLVED | Test passes |
 
 ## Handoff to Next Gate
 - Review status: [COMPLETE|FAILED]
 - Blocking issues: [resolved|N remaining]
 - CodeRabbit: [PASS|SKIPPED|N issues acknowledged]
+- CodeRabbit validation: [N]/[N] units passed
 - Ready for Gate 5: [YES|NO]
 ```
