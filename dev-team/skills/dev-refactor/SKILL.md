@@ -619,6 +619,8 @@ Write tool:
 ✅ Count findings in Step 5 MUST equal total issues from all agent reports
 ```
 
+---
+
 ### Anti-Rationalization Table for Step 4.1
 
 **⛔ See also: "Anti-Rationalization: Mandatory Gap Principle" at top of this skill.**
@@ -674,6 +676,8 @@ This means:
 ```
 
 **Purpose:** Track which issues escape which gates. If many `GATE 3 ESCAPE` findings occur, the Quality Gate checks need strengthening.
+
+---
 
 **Summary Table (MANDATORY at end of findings.md):**
 

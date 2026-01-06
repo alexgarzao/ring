@@ -87,6 +87,8 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 **Summary:** You orchestrate. Agents execute. If using Read/Write/Edit/Bash on source code → STOP. Dispatch agent.
 
+---
+
 ## ⛔ ORCHESTRATOR BOUNDARIES (HARD GATE)
 
 **This section defines exactly what the orchestrator CAN and CANNOT do.**
@@ -114,6 +116,8 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 | Run tests | `Execute` with `go test`, `npm test` | Agent runs tests in TDD cycle |
 | Analyze code | Direct pattern analysis | `codebase-explorer` analyzes |
 | Make architectural decisions | Choosing patterns/libraries | User decides, agent implements |
+
+---
 
 ### The 3-FILE RULE
 
@@ -182,6 +186,8 @@ This is not negotiable:
 
 **Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".**
 
+---
+
 ### Anti-Rationalization for Direct Coding
 
 | Rationalization | Why It's WRONG | Required Action |
@@ -233,6 +239,8 @@ If you violated orchestrator boundaries:
 
 **Sunk cost of direct work is IRRELEVANT. Agent dispatch is MANDATORY.**
 
+---
+
 ## Blocker Criteria - STOP and Report
 
 | Decision Type | Examples | Action |
@@ -253,6 +261,8 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 | **Gate 4 requires all 3 reviewers** | Different review perspectives are complementary | Missing security issues, business logic flaws |
 | **Coverage threshold ≥ 85%** | Industry standard for quality code | Untested edge cases, regression risks |
 | **PROJECT_RULES.md must exist** | Cannot verify standards without target | Arbitrary decisions, inconsistent implementations |
+
+---
 
 ## Severity Calibration
 
@@ -282,11 +292,15 @@ Report all severities. Let user prioritize.
 
 No negotiation. No exceptions. No "special cases".
 
+---
+
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
 **Gate-specific note:** Execution mode selection affects CHECKPOINTS (user approval pauses), not GATES (quality checks). all gates execute regardless of mode.
+
+---
 
 ## Common Rationalizations - REJECTED
 
@@ -302,11 +316,15 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | "Backlog the Medium issue, it's documented" | Documented risk ≠ mitigated risk. Medium in Gate 4 = fix NOW, not later. |
 | "Risk-based prioritization allows deferral" | Gates ARE the risk-based system. Reviewers define severity, not you. |
 
+---
+
 ## Red Flags - STOP
 
 See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
 If you catch yourself thinking any of those patterns, STOP immediately and return to gate execution.
+
+---
 
 ## Incremental Compromise Prevention
 
@@ -324,6 +342,8 @@ Day 4: Production incident from Day 1 code
 2. **Document every pressure** - Log who requested, why, outcome
 3. **Escalate patterns** - If same pressure repeats, escalate to team lead
 4. **Gates are binary** - Complete or incomplete. No "mostly done".
+
+---
 
 ## Gate Completion Definition (HARD GATE)
 
@@ -350,6 +370,8 @@ Day 4: Production incident from Day 1 code
 | "Gate mostly complete" | Mostly ≠ complete. Binary: done or not done. | **Complete all components** |
 | "Can finish remaining in next cycle" | Gates don't carry over. Complete NOW. | **Finish current gate** |
 | "Core components done, optional can wait" | No component is optional within a gate. | **Complete all components** |
+
+---
 
 ## Gate Order Enforcement (HARD GATE)
 
