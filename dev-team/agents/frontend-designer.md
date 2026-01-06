@@ -829,31 +829,18 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend-designer → frontend.md" for:**
+- Complete list of sections to check (13 sections)
+- Section names (MUST use EXACT names from table)
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
+
 **⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
 - You CANNOT invent names like "Security", "Code Quality"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, do NOT skip
-
-| # | Section |
-|---|---------|
-| 1 | Framework (MANDATORY) |
-| 2 | Libraries & Tools (MANDATORY) |
-| 3 | State Management Patterns (MANDATORY) |
-| 4 | Form Patterns (MANDATORY) |
-| 5 | Styling Standards (MANDATORY) |
-| 6 | Typography Standards (MANDATORY) |
-| 7 | Animation Standards (MANDATORY) |
-| 8 | Component Patterns (MANDATORY) |
-| 9 | Accessibility (a11y) (MANDATORY) |
-| 10 | Performance (MANDATORY) |
-| 11 | Directory Structure (MANDATORY) |
-| 12 | FORBIDDEN Patterns (MANDATORY) |
-| 13 | Standards Compliance Categories (MANDATORY) |
-
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
-- Output table format
-- Status legend (✅/⚠️/❌/N/A)
 
 ### ⛔ Standards Boundary Enforcement (CRITICAL)
 

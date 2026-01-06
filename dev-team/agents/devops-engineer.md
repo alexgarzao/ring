@@ -339,21 +339,19 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md".
 
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md" for:**
+- Complete list of sections to check (7 sections)
+- Section names (MUST use EXACT names from table)
+- Subsections per section (ALL REQUIRED)
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
+
 **⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
 - You CANNOT invent names like "Docker", "CI/CD"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, do NOT skip
-
-| # | Section | Subsections (ALL REQUIRED) |
-|---|---------|---------------------------|
-| 1 | Cloud Provider (MANDATORY) | Provider table |
-| 2 | Infrastructure as Code (MANDATORY) | Terraform structure, State management, Module pattern, Best practices |
-| 3 | Containers (MANDATORY) | **Dockerfile patterns, Docker Compose (Local Dev), .env file**, Image guidelines |
-| 4 | Helm (MANDATORY) | Chart structure, Chart.yaml, values.yaml |
-| 5 | Observability (MANDATORY) | Logging (Structured JSON), Tracing (OpenTelemetry) |
-| 6 | Security (MANDATORY) | Secrets management, Network policies |
-| 7 | Makefile Standards (MANDATORY) | Required commands (build, lint, test, cover, up, down, etc.), Component delegation pattern |
 
 **⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
 

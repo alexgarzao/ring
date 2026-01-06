@@ -753,41 +753,20 @@ The Standards Compliance section exists to:
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md".
 
-**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
-- You CANNOT invent names like "Security", "Code Quality", "Config"
-- You CANNOT merge sections like "Error Handling & Logging"
-- You CANNOT abbreviate like "Bootstrap" instead of "Bootstrap Pattern"
-- If section doesn't apply → Mark as N/A, do NOT skip
-
-| # | Section | Key Subsections |
-|---|---------|-----------------|
-| 1 | Version (MANDATORY) | Go 1.24+ |
-| 2 | Core Dependency: lib-commons (MANDATORY) | |
-| 3 | Frameworks & Libraries (MANDATORY) | Fiber v2, Database (pgx/v5), Testing (testify, mockery) |
-| 4 | Configuration Loading (MANDATORY) | |
-| 5 | Telemetry & Observability (MANDATORY) | |
-| 6 | Bootstrap Pattern (MANDATORY) | |
-| 7 | Access Manager Integration (CONDITIONAL) | lib-auth, auth middleware, M2M auth - **if project has auth requirements** |
-| 8 | License Manager Integration (CONDITIONAL) | lib-license-go, global middleware, graceful shutdown - **if project is licensed** |
-| 9 | Data Transformation: ToEntity/FromEntity (MANDATORY) | |
-| 10 | Error Codes Convention (MANDATORY) | |
-| 11 | Error Handling (MANDATORY) | |
-| 12 | Function Design (MANDATORY) | |
-| 13 | Pagination Patterns (MANDATORY) | |
-| 14 | Testing Patterns (MANDATORY) | |
-| 15 | Logging Standards (MANDATORY) | |
-| 16 | Linting (MANDATORY) | |
-| 17 | Architecture Patterns (MANDATORY) | |
-| 18 | Directory Structure (MANDATORY) | Lerian pattern |
-| 19 | Concurrency Patterns (MANDATORY) | |
-| 20 | RabbitMQ Worker Pattern (MANDATORY) | |
-
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md" for:**
+- Complete list of sections to check (20 sections)
+- Section names (MUST use EXACT names from table)
+- Key subsections per section
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
 - Anti-rationalization rules
 - Completeness verification checklist
+
+**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+- You CANNOT invent names like "Security", "Code Quality", "Config"
+- You CANNOT merge sections like "Error Handling & Logging"
+- You CANNOT abbreviate like "Bootstrap" instead of "Bootstrap Pattern"
+- If section doesn't apply → Mark as N/A, do NOT skip
 
 ### ⛔ Standards Boundary Enforcement (CRITICAL)
 

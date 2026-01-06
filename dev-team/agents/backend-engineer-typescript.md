@@ -762,31 +762,19 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 **⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
 
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-typescript → typescript.md" for:**
+- Complete list of sections to check (13 sections)
+- Section names (MUST use EXACT names from table)
+- Key subsections per section
+- Output table format
+- Status legend (✅/⚠️/❌/N/A)
+- Anti-rationalization rules
+- Completeness verification checklist
+
 **⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
-- You MUST use EXACT section names from the table below
 - You CANNOT invent names like "Security", "Code Quality", "Config"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, do NOT skip
-
-| # | Section | Key Subsections |
-|---|---------|-----------------|
-| 1 | Version (MANDATORY) | |
-| 2 | Strict Configuration (MANDATORY) | |
-| 3 | Frameworks & Libraries (MANDATORY) | |
-| 4 | Type Safety Rules (MANDATORY) | |
-| 5 | Zod Validation Patterns (MANDATORY) | |
-| 6 | Dependency Injection (MANDATORY) | |
-| 7 | AsyncLocalStorage for Context (MANDATORY) | |
-| 8 | Testing Patterns (MANDATORY) | |
-| 9 | Error Handling (MANDATORY) | |
-| 10 | Function Design (MANDATORY) | |
-| 11 | Naming Conventions (MANDATORY) | |
-| 12 | Directory Structure (MANDATORY) | Lerian pattern |
-| 13 | RabbitMQ Worker Pattern (MANDATORY) | |
-
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
-- Output table format
-- Status legend (✅/⚠️/❌/N/A)
 
 ### ⛔ Standards Boundary Enforcement (CRITICAL)
 

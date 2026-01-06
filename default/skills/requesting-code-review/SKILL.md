@@ -591,39 +591,63 @@ coderabbit auth login --token "cr_xxxxxxxxxxxxx"
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Step 7.5 is REQUIRED when CodeRabbit CLI is installed and authenticated.**
-**If not installed, user is offered installation assistance.**
+**⛔ HARD GATE: CodeRabbit Execution Rules (NON-NEGOTIABLE)**
+
+| Scenario | Rule | Action |
+|----------|------|--------|
+| **Installed & authenticated** | **MANDATORY** - CANNOT skip | Run CodeRabbit review, no prompt |
+| **Not installed** | **MUST ask** user about installation | Present installation option |
+| **User declines installation** | Optional - can proceed | Skip and continue to Step 8 |
+
+**Why this distinction:**
+- If CodeRabbit IS installed → User has committed to using it → MUST run
+- If CodeRabbit is NOT installed → User choice to add it → MUST ask, but can decline
 
 ```text
 FLOW:
 1. Run CodeRabbit Installation Check
-2. IF installed AND authenticated → Run CodeRabbit (REQUIRED, no prompt)
-3. IF installed BUT NOT authenticated → Guide authentication
-4. IF NOT installed → Offer installation assistance
-5. IF user declines installation → Skip CodeRabbit, proceed to Step 8
+2. IF installed AND authenticated → Run CodeRabbit (MANDATORY, NO prompt, CANNOT skip)
+3. IF installed BUT NOT authenticated → Guide authentication (REQUIRED before proceeding)
+4. IF NOT installed → MUST ask user about installation (REQUIRED prompt)
+5. IF user declines installation → Skip CodeRabbit, proceed to Step 8 (only valid skip path)
 ```
+
+### Anti-Rationalization for CodeRabbit Execution
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "CodeRabbit is optional, I'll skip it" | If installed, it's MANDATORY. Optional only means installation is optional. | **Run CodeRabbit if installed** |
+| "Ring reviewers passed, that's enough" | Different tools catch different issues. CodeRabbit complements Ring. | **Run CodeRabbit if installed** |
+| "User didn't ask for CodeRabbit" | User installed it. Installation = consent to mandatory execution. | **Run CodeRabbit if installed** |
+| "Takes too long, skip this time" | Time is irrelevant. Installed = mandatory. | **Run CodeRabbit if installed** |
+| "I'll just proceed without asking about install" | MUST ask every user if they want to install. No silent skips. | **Ask user about installation** |
 
 #### Step 7.5.1: Check CodeRabbit Installation
 
 Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
-**IF INSTALLED AND AUTHENTICATED:**
+**IF INSTALLED AND AUTHENTICATED → MANDATORY EXECUTION (CANNOT SKIP):**
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ ✅ CodeRabbit CLI detected                                      │
+│ ✅ CodeRabbit CLI detected - MANDATORY EXECUTION                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │ CodeRabbit CLI is installed and authenticated.                  │
-│ Running CodeRabbit review (required step)...                    │
+│                                                                 │
+│ ⛔ CodeRabbit review is MANDATORY when installed.               │
+│    This step CANNOT be skipped. Proceeding automatically...     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
-→ Proceed directly to Step 7.5.2 (Run CodeRabbit Review)
+→ Proceed directly to Step 7.5.2 (Run CodeRabbit Review) - **NO user prompt, NO skip option**
 
-**IF NOT INSTALLED:**
+**IF NOT INSTALLED → MUST ASK USER (REQUIRED PROMPT):**
+
+**⛔ You MUST present this prompt to the user. Silent skips are FORBIDDEN.**
+
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ ⚠️  CodeRabbit CLI not found                                    │
+│ ⚠️  CodeRabbit CLI not found - INSTALLATION PROMPT REQUIRED     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │ CodeRabbit CLI is not installed on your system.                 │
@@ -634,7 +658,8 @@ Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 │   • Security vulnerabilities                                    │
 │   • Edge cases missed by other reviewers                        │
 │                                                                 │
-│ Would you like to install CodeRabbit CLI now?                   │
+│ ⛔ You MUST choose one of the following options:                │
+│                                                                 │
 │   (a) Yes, install CodeRabbit CLI (I'll guide you)              │
 │   (b) No, skip CodeRabbit and proceed to Gate 5                 │
 │                                                                 │
@@ -651,8 +676,9 @@ Run the [CodeRabbit Installation Check](#coderabbit-install-check) command.
 
 **If user selects (b) No, skip:**
 ```text
-→ Record: "CodeRabbit review: SKIPPED (not installed, user declined)"
+→ Record: "CodeRabbit review: SKIPPED (not installed, user declined installation)"
 → Proceed to Step 8 (Success Output)
+→ This is the ONLY valid path to skip CodeRabbit
 ```
 
 #### Step 7.5.1a: CodeRabbit Installation Flow
@@ -1395,18 +1421,27 @@ IF CodeRabbit found no issues:
 | Low | [N] | - | [N] | TODO added |
 ```
 
-### CodeRabbit Skip Scenarios
+### CodeRabbit Skip Scenarios (ONLY VALID PATHS)
 
-CodeRabbit review is skipped in these cases:
+**⛔ CodeRabbit can ONLY be skipped in these specific scenarios. Any other skip is a VIOLATION.**
 
-| Scenario | Record As | Next Step |
-|----------|-----------|-----------|
-| CLI not installed, user declines install | `SKIPPED (not installed, user declined)` | Step 8 |
-| Installation failed, user skips | `SKIPPED (installation failed)` | Step 8 |
-| Authentication failed, user skips | `SKIPPED (auth failed)` | Step 8 |
-| Environment doesn't support (CI/container) | `SKIPPED (unsupported environment)` | Step 8 |
+| Scenario | Record As | Next Step | Why Valid |
+|----------|-----------|-----------|-----------|
+| CLI not installed, user **explicitly** declines install | `SKIPPED (not installed, user declined)` | Step 8 | User was asked and chose not to install |
+| Installation failed after attempt, user skips | `SKIPPED (installation failed)` | Step 8 | Technical failure, user informed |
+| Authentication failed after attempt, user skips | `SKIPPED (auth failed)` | Step 8 | Technical failure, user informed |
+| Environment doesn't support (CI/container) | `SKIPPED (unsupported environment)` | Step 8 | Technical limitation |
 
-**Note:** When CodeRabbit CLI IS installed and authenticated, it runs automatically as a required step.
+**⛔ INVALID SKIP SCENARIOS (FORBIDDEN):**
+
+| Invalid Scenario | Why FORBIDDEN | Required Action |
+|------------------|---------------|-----------------|
+| CLI installed but "skipped for speed" | Installed = MANDATORY | **Run CodeRabbit** |
+| CLI installed but "Ring reviewers passed" | Complementary tools, both required | **Run CodeRabbit** |
+| CLI not installed, no prompt shown | MUST ask user about installation | **Show installation prompt** |
+| Silent skip without user interaction | All skips require explicit user choice | **Ask user** |
+
+**⛔ NON-NEGOTIABLE:** When CodeRabbit CLI IS installed and authenticated, execution is **MANDATORY** - it CANNOT be skipped under any circumstance.
 
 ---
 
@@ -1700,7 +1735,7 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 | business-logic-reviewer | ✅/❌ |
 | security-reviewer | ✅/❌ |
 
-## CodeRabbit External Review (Optional)
+## CodeRabbit External Review (MANDATORY if installed, Optional to install)
 **Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
 **Validation Mode:** [SUBTASK-LEVEL|TASK-LEVEL]
 **Units Validated:** [N]
