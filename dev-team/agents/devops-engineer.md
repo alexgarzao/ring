@@ -233,7 +233,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - Secrets Management
 - Health Checks
 
-**If `**MODE: ANALYSIS only**` is not detected:** Standards Compliance output is optional.
+**If `MODE: ANALYSIS only` is not detected:** Standards Compliance output is optional.
 
 ## Standards Loading (MANDATORY)
 

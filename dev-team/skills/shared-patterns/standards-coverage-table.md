@@ -4,7 +4,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ---
 
-## ⛔ CRITICAL: all Sections Are REQUIRED
+## ⛔ CRITICAL: All Sections Are Required
 
 **This is NON-NEGOTIABLE. Every section listed in the Agent → Standards Section Index below MUST be checked.**
 
@@ -21,7 +21,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ---
 
-## ⛔ CRITICAL: Section Names Are not Negotiable
+## ⛔ CRITICAL: Section Names Are Not Negotiable
 
 **You MUST use the EXACT section names from this file. You CANNOT:**
 
@@ -45,7 +45,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 - Not enumerating all sections systematically
 - Skipping subsections (e.g., checking Dockerfile but skipping Docker Compose)
 
-**Solution:** Require a completeness table that MUST list every section from the WebFetch result with explicit status. all content within each section MUST be evaluated.
+**Solution:** Require a completeness table that MUST list every section from the WebFetch result with explicit status. All content within each section MUST be evaluated.
 
 ---
 

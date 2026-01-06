@@ -98,7 +98,7 @@ Example failure output:
 - **Go:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md`
 - **TypeScript:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
 
-**⛔ HARD GATE: You MUST implement all sections listed in [standards-coverage-table.md](../shared-patterns/standards-coverage-table.md).**
+**⛔ HARD GATE: You MUST implement all sections listed in [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/standards-coverage-table.md).**
 
 - **Go projects:** See `backend-engineer-golang → golang.md` section index (20 sections)
 - **TypeScript projects:** See `backend-engineer-typescript → typescript.md` section index (13 sections)
@@ -125,7 +125,7 @@ Example failure output:
 
 ## Standards Coverage Table
 
-**You MUST output a Standards Coverage Table per [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md).**
+**You MUST output a Standards Coverage Table per [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/standards-coverage-table.md).**
 
 **Format:**
 ```markdown
@@ -222,7 +222,7 @@ if "all STANDARDS MET" = no:
 
 ### Anti-Rationalization for Standards Compliance
 
-See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md) for the complete anti-rationalization table.
+See [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/standards-coverage-table.md) for the complete anti-rationalization table.
 
 **Key rules:**
 - all sections from standards-coverage-table.md MUST be checked

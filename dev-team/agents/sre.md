@@ -405,7 +405,7 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 - Anti-rationalization rules
 - Completeness verification checklist
 
-**⛔ SECTION NAMES ARE not NEGOTIABLE:**
+**⛔ SECTION NAMES are not negotiable:**
 - You CANNOT invent names like "Monitoring", "Alerts"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, DO NOT skip
