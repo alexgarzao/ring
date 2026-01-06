@@ -244,7 +244,7 @@ Task:
     ### Edge Cases Required per AC Type
 
     <cannot_skip>
-    - Minimum 3+ edge cases per AC type
+    - Minimum 3 edge cases per AC type
     - null, empty, boundary conditions required
     - Error conditions required
     </cannot_skip>
