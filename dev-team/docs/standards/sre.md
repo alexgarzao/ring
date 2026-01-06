@@ -1,7 +1,7 @@
 # SRE Standards
 
 > **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
-> When adding/removing `## ` sections, update the coverage table and agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+> When adding/removing `## ` sections, follow FOUR-FILE UPDATE RULE in CLAUDE.md: (1) edit standards file, (2) update TOC, (3) update standards-coverage-table.md, (4) update agent file.
 
 This file defines the specific standards for Site Reliability Engineering and observability.
 
@@ -279,7 +279,7 @@ import (
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. any LAYER (handlers, services, repositories)                 │
+│ 3. any layer (handlers, services, repositories)                 │
 │    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)│
 │    ctx, span := tracer.Start(ctx, "operation_name")             │
 │    defer span.End()                                              │
@@ -515,7 +515,7 @@ import { createLoggingMiddleware } from '@LerianStudio/lib-common-js/http';
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. any LAYER (handlers, services, repositories)                 │
+│ 3. any layer (handlers, services, repositories)                 │
 │    const logger = req.logger || parentLogger                    │
 │    logger.info('Processing...', { entityId, requestId })        │
 │    → Structured JSON logs with correlation IDs                  │

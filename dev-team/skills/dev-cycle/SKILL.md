@@ -2492,7 +2492,7 @@ After completing all subtasks of a task:
    **After feedback-loop completes, update state:**
    - Set `feedback_loop_completed = true` at cycle level in state file
 
-   **⛔ HARD GATE: Cycle is not complete until feedback-loop executes.**
+   **⛔ HARD GATE: Cycle incomplete until feedback-loop executes.**
 
    | Rationalization | Why It's WRONG | Required Action |
    |-----------------|----------------|-----------------|

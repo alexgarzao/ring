@@ -837,7 +837,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - Anti-rationalization rules
 - Completeness verification checklist
 
-**⛔ SECTION NAMES ARE not NEGOTIABLE:**
+**⛔ MANDATORY: You CANNOT invent names or merge sections.**
 - You CANNOT invent names like "Security", "Code Quality"
 - You CANNOT merge sections
 - If section doesn't apply → Mark as N/A, DO NOT skip
@@ -916,7 +916,7 @@ I have loaded frontend.md standards via WebFetch.
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for complete loading process.
 
-## Anti-Patterns (never Do These)
+## Anti-Patterns (Never Do These)
 
 | Anti-Pattern | Correct Behavior |
 |--------------|------------------|

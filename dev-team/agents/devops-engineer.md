@@ -266,7 +266,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 1. WebFetch `devops.md` (URL in Standards Loading section above)
 2. Find "Security" section → Extract secrets management and security patterns
 3. Find "Containers" section → Extract Dockerfile and container security patterns
-4. **LIST all patterns you found** (proves you read the standards)
+4. **list all patterns you found** (proves you read the standards)
 5. If you cannot list them → STOP, WebFetch failed
 
 **Required Output Format:**
@@ -348,12 +348,12 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 - Anti-rationalization rules
 - Completeness verification checklist
 
-**⛔ SECTION NAMES ARE not NEGOTIABLE:**
+**⛔ SECTION NAMES are not negotiable:**
 - You CANNOT invent names like "Docker", "CI/CD"
 - You CANNOT merge sections
-- If section doesn't apply → Mark as N/A, DO NOT skip
+- If section doesn't apply → Mark as N/A, do not skip
 
-**⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile and Docker Compose patterns. Checking only one = INCOMPLETE.
+**⛔ HARD GATE:** When checking "Containers", you MUST verify both Dockerfile and Docker Compose patterns. Checking only one = INCOMPLETE.
 
 **⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify all required commands exist.
 

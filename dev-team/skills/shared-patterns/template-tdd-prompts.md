@@ -11,6 +11,8 @@ Canonical source for TDD dispatch prompts used by dev-cycle and dev-implementati
 
 **Priority:** Ring Standards define HOW to implement. PROJECT_RULES.md defines project-specific context only.
 
+**Anti-Duplication Check:** Before accepting PROJECT_RULES.md content, verify entries (tech stack, external integrations, domain terminology) do not overlap or contradict Ring Standards; reject duplicates.
+
 See [standards-workflow.md](./standards-workflow.md) for the complete loading process.
 
 ### What Each Source Provides (no OVERLAP)

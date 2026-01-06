@@ -107,7 +107,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ## ⛔ CRITICAL: Standards Boundary Enforcement
 
-**You MUST check only what the standards file explicitly defines. never invent requirements.**
+**You MUST check only what the standards file explicitly defines. Never invent requirements.**
 
 See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enforcement.md) for:
 - Complete list of what IS and IS not required per agent

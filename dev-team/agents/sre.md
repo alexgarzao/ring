@@ -186,7 +186,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Production needs metrics" | Ring Standards define scope, not general SRE knowledge | **Skip metrics validation** |
-| "Observability requires metrics" | Ring defines observability as logs + traces only | **Validate logs + traces only** |
+| "Observability requires metrics" | Ring defines observability as logs + traces only | **Validate logs + traces** |
 | "Should recommend Grafana" | Grafana is OUT OF SCOPE per v1.3.0 | **Do not mention Grafana** |
 | "Alerting is SRE responsibility" | Alerting removed from scope in v1.3.0 | **Do not validate alerting** |
 | "Best practice includes metrics" | Ring Standards > general best practices | **Follow Ring Standards** |
@@ -234,7 +234,7 @@ When validation fails, report issues to developers:
 - MEDIUM: Incomplete health endpoints
 - LOW: Logging improvements
 
-**Developers then fix the issues. SRE does not fix them.**
+**Developers then resolve the issues. SRE does not resolve them.**
 
 ## Pressure Resistance
 

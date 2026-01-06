@@ -21,7 +21,7 @@ Analyzes existing codebase against Ring/Lerian standards and generates refactori
 
 **any divergence from Ring standards = MANDATORY gap to implement.**
 
-This is not optional. This is not subject to interpretation. This is a HARD RULE.
+Non-negotiable, not open to interpretation—a HARD RULE.
 
 | Principle | Meaning |
 |-----------|---------|
