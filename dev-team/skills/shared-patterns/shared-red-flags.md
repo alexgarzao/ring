@@ -6,7 +6,7 @@ This file contains universal red flag indicators that should trigger immediate p
 
 ## Purpose
 
-If you catch yourself thinking ANY of the patterns below, **STOP immediately**. These thoughts indicate you're about to violate mandatory workflow requirements.
+If you catch yourself thinking any of the patterns below, **STOP immediately**. These thoughts indicate you're about to violate mandatory workflow requirements.
 
 ---
 
@@ -123,5 +123,5 @@ Skills should include:
 
 See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
-If you catch yourself thinking ANY of those patterns, STOP immediately and return to proper process.
+If you catch yourself thinking any of those patterns, STOP immediately and return to proper process.
 ```

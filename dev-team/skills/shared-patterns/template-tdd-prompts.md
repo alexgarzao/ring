@@ -7,25 +7,25 @@ Canonical source for TDD dispatch prompts used by dev-cycle and dev-implementati
 **Before dispatching any TDD phase, the agent MUST load:**
 
 1. **Ring Standards** (MANDATORY) → Base technical patterns (architecture, error handling, logging, testing)
-2. **PROJECT_RULES.md** (COMPLEMENTARY) → Project-specific info NOT in Ring Standards
+2. **PROJECT_RULES.md** (COMPLEMENTARY) → Project-specific info not in Ring Standards
 
 **Priority:** Ring Standards define HOW to implement. PROJECT_RULES.md defines project-specific context only.
 
 See [standards-workflow.md](./standards-workflow.md) for the complete loading process.
 
-### What Each Source Provides (NO OVERLAP)
+### What Each Source Provides (no OVERLAP)
 
 | Source | Provides | Examples |
 |--------|----------|----------|
 | **Ring Standards** | Technical patterns | Error handling, logging, testing, architecture, lib-commons, API structure |
 | **PROJECT_RULES.md** | Project-specific only | External APIs, non-standard dirs, domain terminology, tech not in Ring |
 
-**⛔ PROJECT_RULES.md MUST NOT duplicate Ring Standards content.**
+**⛔ PROJECT_RULES.md MUST not duplicate Ring Standards content.**
 
 ## TDD-RED Phase Prompt Template
 
 ```markdown
-**TDD-RED PHASE ONLY** for: [unit_id] - [title]
+**TDD-RED PHASE only** for: [unit_id] - [title]
 
 **MANDATORY:** WebFetch Ring Standards for your language FIRST (see standards-workflow.md)
 
@@ -44,7 +44,7 @@ See [standards-workflow.md](./standards-workflow.md) for the complete loading pr
 3. Run the test
 4. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
 
-**STOP AFTER RED PHASE.** Do NOT write implementation code.
+**STOP AFTER RED PHASE.** Do not write implementation code.
 
 **REQUIRED OUTPUT:**
 - Test file path
@@ -72,13 +72,13 @@ Example failure output:
 **PROJECT CONTEXT (if PROJECT_RULES.md exists):**
 [Insert relevant project-specific info: tech stack, internal libs, conventions]
 
-## ⛔ CRITICAL: ALL Ring Standards Apply from Task 1 (NO DEFERRAL)
+## ⛔ CRITICAL: all Ring Standards Apply from Task 1 (no DEFERRAL)
 
 **See [shared-anti-rationalization.md](./shared-anti-rationalization.md) → "Standards Deferral Anti-Rationalizations" section.**
 
-**Summary:** Ring Standards are NOT phased. They apply IMMEDIATELY to EVERY task. PM defines WHAT, Ring Standards define HOW.
+**Summary:** Ring Standards are not phased. They apply IMMEDIATELY to every task. PM defines WHAT, Ring Standards define HOW.
 
-**⛔ HARD GATE:** If you output "DEFERRED" regarding ANY Ring Standard → Implementation is INCOMPLETE. Fix before proceeding.
+**⛔ HARD GATE:** If you output "DEFERRED" regarding any Ring Standard → Implementation is INCOMPLETE. Fix before proceeding.
 
 **INSTRUCTIONS (TDD-GREEN):**
 1. Follow Ring Standards for architecture, error handling, and patterns
@@ -90,25 +90,25 @@ Example failure output:
 7. **VERIFY STANDARDS COMPLIANCE** - Complete the checklist below
 8. Commit
 
-**⛔ RING STANDARDS REQUIREMENTS (MANDATORY - ALL MUST BE IMPLEMENTED):**
+**⛔ RING STANDARDS REQUIREMENTS (MANDATORY - all MUST BE IMPLEMENTED):**
 
-**You MUST WebFetch and implement ALL sections from Ring Standards for your language:**
+**You MUST WebFetch and implement all sections from Ring Standards for your language:**
 - **Go:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md`
 - **TypeScript:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
 
-**⛔ HARD GATE: You MUST implement ALL sections listed in [standards-coverage-table.md](../shared-patterns/standards-coverage-table.md).**
+**⛔ HARD GATE: You MUST implement all sections listed in [standards-coverage-table.md](../shared-patterns/standards-coverage-table.md).**
 
 - **Go projects:** See `backend-engineer-golang → golang.md` section index (20 sections)
 - **TypeScript projects:** See `backend-engineer-typescript → typescript.md` section index (13 sections)
 
-**You CANNOT skip ANY section. Mark N/A only with explicit justification.**
+**You CANNOT skip any section. Mark N/A only with explicit justification.**
 
 **PROJECT-SPECIFIC (from PROJECT_RULES.md, if exists):**
 - Use internal libraries referenced in PROJECT_RULES.md
 - Follow project-specific naming conventions (if different from Ring Standards)
 - Use tech stack choices defined in PROJECT_RULES.md (database, frameworks, etc.)
 
-**⛔ REQUIRED OUTPUT (HARD GATE - ALL SECTIONS MANDATORY):**
+**⛔ REQUIRED OUTPUT (HARD GATE - all SECTIONS MANDATORY):**
 
 ## Implementation Summary
 - Implementation file path: [path]
@@ -139,10 +139,10 @@ Example failure output:
 - N/A - Not applicable (with reason)
 
 ## Compliance Summary
-- **ALL STANDARDS MET:** ✅ YES / ❌ NO
-- **If NO, what's missing:** [list missing items with section names]
+- **all STANDARDS MET:** ✅ YES / ❌ no
+- **If no, what's missing:** [list missing items with section names]
 
-**⛔ IF "ALL STANDARDS MET" = NO → Implementation is INCOMPLETE. Fix before proceeding.**
+**⛔ if "all STANDARDS MET" = no → Implementation is INCOMPLETE. Fix before proceeding.**
 
 Example pass output:
 ```text
@@ -157,18 +157,18 @@ ok      myapp/auth    0.015s
 ### After TDD-RED
 
 ```text
-IF failure_output is empty OR contains "PASS":
+if failure_output is empty or contains "PASS":
   → STOP. Cannot proceed. "TDD-RED incomplete - no failure output captured"
 ```
 
 ### After TDD-GREEN
 
 ```text
-IF pass_output is empty OR contains "FAIL":
+if pass_output is empty or contains "FAIL":
   → Return to TDD-GREEN (retry implementation)
   → Max 3 retries, then STOP and report blocker
 
-IF "ALL STANDARDS MET" = NO:
+if "all STANDARDS MET" = no:
   → STOP. Cannot proceed to Gate 1.
   → Re-dispatch to same agent with fix request:
     "Fix missing standards: [list from compliance checklist]"
@@ -185,13 +185,13 @@ IF "ALL STANDARDS MET" = NO:
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  1. Parse agent output for "## Standards Coverage Table"                    │
-│  2. Verify table has ALL sections from standards-coverage-table.md          │
-│  3. Check "ALL STANDARDS MET" value in Compliance Summary                   │
+│  2. Verify table has all sections from standards-coverage-table.md          │
+│  3. Check "all STANDARDS MET" value in Compliance Summary                   │
 │                                                                             │
-│  IF "ALL STANDARDS MET: ✅ YES" AND all sections have ✅ or N/A:            │
+│  if "all STANDARDS MET: ✅ YES" and all sections have ✅ or N/A:            │
 │    → Gate 0 PASSED. Proceed to Gate 1 (DevOps)                              │
 │                                                                             │
-│  IF ANY section has ❌:                                                      │
+│  if any section has ❌:                                                      │
 │    → Gate 0 BLOCKED. Standards not implemented.                             │
 │    → Extract ❌ sections from Standards Coverage Table                       │
 │    → Re-dispatch to SAME agent with fix request:                            │
@@ -209,8 +209,8 @@ IF "ALL STANDARDS MET" = NO:
 │          WebFetch the standards again:                                      │
 │          [URL for language-specific standards]                              │
 │                                                                             │
-│          Implement ALL missing sections.                                    │
-│          Return updated Standards Coverage Table with ALL ✅ or N/A.        │
+│          Implement all missing sections.                                    │
+│          Return updated Standards Coverage Table with all ✅ or N/A.        │
 │                                                                             │
 │    → After fix: Re-verify Standards Coverage Table                          │
 │    → Max 3 iterations, then STOP and escalate to user                       │
@@ -223,8 +223,8 @@ IF "ALL STANDARDS MET" = NO:
 See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md) for the complete anti-rationalization table.
 
 **Key rules:**
-- ALL sections from standards-coverage-table.md MUST be checked
-- ❌ on ANY section = BLOCKED (dispatch fix to same agent)
+- all sections from standards-coverage-table.md MUST be checked
+- ❌ on any section = BLOCKED (dispatch fix to same agent)
 - N/A requires explicit reason
 - Evidence (file:line) REQUIRED for all ✅ items
 
@@ -240,17 +240,17 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  ORCHESTRATOR: STANDARDS COMPLIANCE VERIFICATION                            │
 │                                                                             │
-│  After EVERY agent implementation output (TDD-GREEN, DevOps, SRE, etc.):   │
+│  After every agent implementation output (TDD-GREEN, DevOps, SRE, etc.):   │
 │                                                                             │
 │  1. SEARCH for "## Standards Coverage Table" in agent output                │
-│     └─ NOT FOUND → Output INCOMPLETE → Re-dispatch agent                    │
+│     └─ not FOUND → Output INCOMPLETE → Re-dispatch agent                    │
 │                                                                             │
-│  2. SEARCH for "ALL STANDARDS MET:" in agent output                         │
-│     └─ NOT FOUND → Output INCOMPLETE → Re-dispatch agent                    │
+│  2. SEARCH for "all STANDARDS MET:" in agent output                         │
+│     └─ not FOUND → Output INCOMPLETE → Re-dispatch agent                    │
 │                                                                             │
-│  3. CHECK value of "ALL STANDARDS MET:"                                     │
+│  3. CHECK value of "all STANDARDS MET:"                                     │
 │     ├─ "✅ YES" → PASSED → Proceed to next gate                             │
-│     └─ "❌ NO" → BLOCKED → Extract ❌ sections → Re-dispatch agent          │
+│     └─ "❌ no" → BLOCKED → Extract ❌ sections → Re-dispatch agent          │
 │                                                                             │
 │  4. If re-dispatch needed, use this prompt:                                 │
 │                                                                             │
@@ -258,7 +258,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 │       subagent_type: "[same agent]"                                         │
 │       model: "opus"                                                         │
 │       prompt: |                                                             │
-│         ⛔ STANDARDS NOT MET - Fix Required (Attempt [N] of 3)              │
+│         ⛔ STANDARDS not MET - Fix Required (Attempt [N] of 3)              │
 │                                                                             │
 │         Your Standards Coverage Table shows these sections as ❌:           │
 │         [list ❌ sections extracted from table]                              │
@@ -278,8 +278,8 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 │         For N/A sections, format as:                                        │
 │         | N | [Exact Section Name] | N/A | Reason: [why not applicable] |   │
 │                                                                             │
-│         Implement ALL missing sections.                                     │
-│         Return updated Standards Coverage Table with ALL ✅ or N/A.         │
+│         Implement all missing sections.                                     │
+│         Return updated Standards Coverage Table with all ✅ or N/A.         │
 │                                                                             │
 │         Previous attempt summary:                                           │
 │         - Total sections: [total_sections]                                  │
@@ -292,7 +292,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Verification Applies To ALL Gates
+### Verification Applies To all Gates
 
 | Gate | Agent | Orchestrator Verifies |
 |------|-------|----------------------|
@@ -326,7 +326,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 |-----------------|----------------|-----------------|
 | "Agent said it's complete" | Agent completion ≠ Standards compliance. Verify table. | **Parse and verify Standards Coverage Table** |
 | "Table wasn't in output" | Missing table = Incomplete output = BLOCKED | **Re-dispatch agent** |
-| "Only 1-2 sections are ❌" | ANY ❌ = BLOCKED. Count is irrelevant. | **Re-dispatch to fix ALL ❌** |
+| "Only 1-2 sections are ❌" | any ❌ = BLOCKED. Count is irrelevant. | **Re-dispatch to fix all ❌** |
 | "Agent knows the standards" | Knowledge ≠ implementation. Verify evidence. | **Check file:line evidence in table** |
 | "Verification is slow" | Verification prevents rework. 30 seconds now vs hours later. | **Always verify** |
 | "Trust the agent" | Trust but verify. Standards Coverage Table IS the verification. | **Parse the table** |
@@ -343,7 +343,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 | **Tracing** | Ring Standards | OpenTelemetry spans, trace_id propagation |
 | **Testing patterns** | Ring Standards | Table-driven tests, mocking |
 
-### PROJECT_RULES.md (COMPLEMENTARY - ONLY What Ring Does NOT Cover)
+### PROJECT_RULES.md (COMPLEMENTARY - only What Ring Does not Cover)
 
 | What | Source | Defines |
 |------|--------|---------|
@@ -352,7 +352,7 @@ See [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-c
 | **External integrations** | PROJECT_RULES.md | Third-party APIs, webhooks, external services |
 | **Domain terminology** | PROJECT_RULES.md | Technical names of entities/classes in this codebase |
 
-**⛔ PROJECT_RULES.md MUST NOT contain:**
+**⛔ PROJECT_RULES.md MUST not contain:**
 - Error handling patterns (Ring covers this)
 - Logging standards (Ring covers this)
 - Testing patterns (Ring covers this)

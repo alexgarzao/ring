@@ -44,11 +44,11 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 - dockerfile_action: CREATED/UPDATED/UNCHANGED
 - compose_action: CREATED/UPDATED/UNCHANGED
 - services_configured: N
-- verification_passed: YES/NO
+- verification_passed: YES/no
 
 ### SRE Gate (2)
-- logging_structured: YES/NO
-- tracing_enabled: YES/NO/N/A
+- logging_structured: YES/no
+- tracing_enabled: YES/no/N/A
 
 ### Testing Gate (3)
 - tests_written: N

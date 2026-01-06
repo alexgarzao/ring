@@ -1,7 +1,7 @@
 # SRE Standards
 
 > **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
-> When adding/removing `## ` sections, update the coverage table AND agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+> When adding/removing `## ` sections, update the coverage table and agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
 
 This file defines the specific standards for Site Reliability Engineering and observability.
 
@@ -89,7 +89,7 @@ This file defines the specific standards for Site Reliability Engineering and ob
 - Configuration changes
 - Deployment events
 
-# DO NOT log
+# DO not log
 - Passwords or API keys
 - Credit card numbers (full)
 - Personal identifiable information (PII)
@@ -279,7 +279,7 @@ import (
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. ANY LAYER (handlers, services, repositories)                 │
+│ 3. any LAYER (handlers, services, repositories)                 │
 │    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)│
 │    ctx, span := tracer.Start(ctx, "operation_name")             │
 │    defer span.End()                                              │
@@ -359,9 +359,9 @@ func NewRouter(lg libLog.Logger, tl *libOpentelemetry.Telemetry, ...) *fiber.App
 ### 3. Recovering Logger & Core three (MANDATORY)
 
 ```go
-// ANY file in ANY layer (handler, service, repository)
+// any file in any layer (handler, service, repository)
 func (s *Service) ProcessEntity(ctx context.Context, id string) error {
-    // Single call recovers BOTH logger AND tracer from context
+    // Single call recovers BOTH logger and tracer from context
     logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
     // Create child span for this operation
@@ -436,7 +436,7 @@ func (s *Server) Run(l *libCommons.Launcher) error {
 | Graceful Shutdown | `libServer.NewServerManager().StartWithGracefulShutdown()` | Required |
 | Env Variables | All OTEL_* variables configured | Required |
 
-### What NOT to Do
+### What not to Do
 
 ```go
 // FORBIDDEN: Manual OpenTelemetry setup without lib-commons
@@ -515,7 +515,7 @@ import { createLoggingMiddleware } from '@LerianStudio/lib-common-js/http';
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. ANY LAYER (handlers, services, repositories)                 │
+│ 3. any LAYER (handlers, services, repositories)                 │
 │    const logger = req.logger || parentLogger                    │
 │    logger.info('Processing...', { entityId, requestId })        │
 │    → Structured JSON logs with correlation IDs                  │
@@ -645,17 +645,17 @@ All logs **MUST** be JSON formatted with these fields:
 | Request Correlation | Logs include `requestId` from headers | Required |
 | Structured Format | All logs are JSON formatted | Required |
 | Error Logging | Errors include message, stack, and context | Required |
-| No Sensitive Data | Passwords, tokens, PII NOT logged | Required |
+| No Sensitive Data | Passwords, tokens, PII not logged | Required |
 | Log Levels | Appropriate levels used (info, warn, error) | Required |
 
-### What NOT to Do
+### What not to Do
 
 ```typescript
 // FORBIDDEN: Using console.log
 console.log('Processing user'); // DON'T do this
 
 // FORBIDDEN: Logging sensitive data
-logger.info('User login', { password: user.password }); // NEVER
+logger.info('User login', { password: user.password }); // never
 
 // FORBIDDEN: Unstructured log messages
 logger.info(`Processing user ${userId}`); // DON'T use string interpolation

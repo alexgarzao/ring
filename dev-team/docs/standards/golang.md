@@ -1,7 +1,7 @@
 # Go Standards
 
 > **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
-> When adding/removing `## ` sections, update the coverage table AND agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+> When adding/removing `## ` sections, update the coverage table and agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
 
 This file defines the specific standards for Go development at Lerian Studio.
 
@@ -244,7 +244,7 @@ func InitServers() *Service {
 | Auth Plugin | `PLUGIN_AUTH_` | `PLUGIN_AUTH_ENABLED`, `PLUGIN_AUTH_HOST` |
 | gRPC Services | `{SERVICE}_GRPC_` | `TRANSACTION_GRPC_ADDRESS` |
 
-### What NOT to Do
+### What not to Do
 
 ```go
 // FORBIDDEN: Manual os.Getenv calls scattered across code
@@ -368,7 +368,7 @@ Understanding how traces propagate is critical for proper instrumentation.
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. ANY LAYER (handlers, services, repositories)                 │
+│ 3. any LAYER (handlers, services, repositories)                 │
 │    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)│
 │    ctx, span := tracer.Start(ctx, "operation_name")             │
 │    defer span.End()                                              │
@@ -647,9 +647,9 @@ go get github.com/gofiber/contrib/otelfiber/v2
 ### 3. Recovering Logger & Core three (Any Layer)
 
 ```go
-// ANY file in ANY layer (handler, service, repository)
+// any file in any layer (handler, service, repository)
 func (s *Service) ProcessEntity(ctx context.Context, id string) error {
-    // Single call recovers BOTH logger AND tracer from context
+    // Single call recovers BOTH logger and tracer from context
     logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
     // Create child span for this operation
@@ -957,7 +957,7 @@ func InitServers() *Service {
 ```
 
 **Key Points:**
-- `InitServers()` is the ONLY place where dependencies are wired together
+- `InitServers()` is the only place where dependencies are wired together
 - Order matters: config → logger → telemetry → databases → repositories → services → handlers → router → server
 - All database connections use lib-commons packages
 - The function returns a `*Service` that is ready to run
@@ -1330,11 +1330,11 @@ f.Post("/v1/packages",
     handler.CreatePackage)
 ```
 
-### What NOT to Do
+### What not to Do
 
 ```go
 // FORBIDDEN: Hardcoded tokens
-req.Header.Set("Authorization", "Bearer hardcoded-token-here")  // NEVER
+req.Header.Set("Authorization", "Bearer hardcoded-token-here")  // never
 
 // FORBIDDEN: Skipping auth on protected endpoints
 f.Post("/v1/sensitive-data", handler.Create)  // Missing auth.Authorize
@@ -1592,11 +1592,11 @@ func NewGRPCServer(licenseClient *libLicense.LicenseClient) *grpc.Server {
 | `LCS-0012` | 403 | Failed to validate organization license |
 | `LCS-0013` | 403 | Organization license is invalid or expired |
 
-### What NOT to Do
+### What not to Do
 
 ```go
 // FORBIDDEN: Hardcoded license keys
-licenseClient := libLicense.NewLicenseClient(appName, "hardcoded-key", orgIDs, &logger)  // NEVER
+licenseClient := libLicense.NewLicenseClient(appName, "hardcoded-key", orgIDs, &logger)  // never
 
 // FORBIDDEN: Skipping license middleware on licensed routes
 f.Post("/v1/paid-feature", handler.Create)  // Missing lc.Middleware()
@@ -1754,12 +1754,12 @@ func ValidateBusinessError(err *BusinessError, entityType string, args ...any) e
 ### Rules
 
 ```go
-// ALWAYS check errors
+// always check errors
 if err != nil {
     return fmt.Errorf("context: %w", err)
 }
 
-// ALWAYS wrap errors with context
+// always wrap errors with context
 if err != nil {
     return fmt.Errorf("failed to create user %s: %w", userID, err)
 }
@@ -1776,13 +1776,13 @@ if errors.Is(err, ErrUserNotFound) {
 ### Forbidden
 
 ```go
-// NEVER use panic for business logic
+// never use panic for business logic
 panic(err) // FORBIDDEN
 
-// NEVER ignore errors
+// never ignore errors
 result, _ := doSomething() // FORBIDDEN
 
-// NEVER return nil error without checking
+// never return nil error without checking
 return nil, nil // SUSPICIOUS - check if error is possible
 ```
 
@@ -1870,7 +1870,7 @@ func applyDiscount(total float64, couponCode string) float64 {
 | "and" in function name | Split into separate functions |
 | More than 3 parameters | Consider parameter object or splitting |
 | Nested conditionals > 2 levels | Extract inner logic to functions |
-| Function does validation AND processing | Separate validation function |
+| Function does validation and processing | Separate validation function |
 
 ---
 
@@ -1893,15 +1893,15 @@ Lerian Studio supports multiple pagination patterns. This section provides **imp
 ```
 Is this a high-volume entity (>10k records typical)?
 ├── YES → Use Cursor-Based Pagination
-└── NO  → Use Page-Based Pagination
+└── no  → Use Page-Based Pagination
 
 Does the user need to jump to arbitrary pages?
 ├── YES → Use Page-Based Pagination
-└── NO  → Cursor-Based is fine
+└── no  → Cursor-Based is fine
 
 Does the UI need to show total count (e.g., "Page 1 of 10")?
 ├── YES → Use Page-Based with Total Count
-└── NO  → Standard Page-Based is sufficient
+└── no  → Standard Page-Based is sufficient
 ```
 
 ---
@@ -2277,7 +2277,7 @@ func TestUserService_CreateUser(t *testing.T) {
 | `log.Fatal()` | Exits without graceful shutdown, breaks telemetry flush | `grep -rn "log.Fatal" --include="*.go"` |
 | `println()` | Built-in, no structure, debugging only | `grep -rn "println(" --include="*.go"` |
 
-**If ANY of these patterns are found in production code → REVIEW FAILS. NO EXCEPTIONS.**
+**If any of these patterns are found in production code → REVIEW FAILS. no EXCEPTIONS.**
 
 ### Pre-Commit Check (MANDATORY)
 
@@ -2326,18 +2326,18 @@ libOpentelemetry.HandleSpanError(&span, "Connection failed", err)
 // ❌ FORBIDDEN: log.Fatal (breaks graceful shutdown)
 log.Fatal("Cannot start without config")
 
-// ✅ REQUIRED: panic in bootstrap ONLY (caught by recovery middleware)
+// ✅ REQUIRED: panic in bootstrap only (caught by recovery middleware)
 panic(fmt.Errorf("cannot start without config: %w", err))
 ```
 
-### What NOT to Log (Sensitive Data)
+### What not to Log (Sensitive Data)
 
 ```go
 // FORBIDDEN - sensitive data
-logger.Info("user login", "password", password)  // NEVER
-logger.Info("payment", "card_number", card)      // NEVER
-logger.Info("auth", "token", token)              // NEVER
-logger.Info("user", "cpf", cpf)                  // NEVER (PII)
+logger.Info("user login", "password", password)  // never
+logger.Info("payment", "card_number", card)      // never
+logger.Info("auth", "token", token)              // never
+logger.Info("user", "cpf", cpf)                  // never (PII)
 ```
 
 ### golangci-lint Custom Rule (RECOMMENDED)
@@ -2752,7 +2752,7 @@ func (s *Service) Run() {
 
 When producing a Standards Compliance report (used by dev-refactor workflow), follow these output formats:
 
-### If ALL Categories Are Compliant
+### If all Categories Are Compliant
 
 ```markdown
 ## Standards Compliance
@@ -2788,7 +2788,7 @@ When producing a Standards Compliance report (used by dev-refactor workflow), fo
 No migration actions required. All categories verified against Lerian/Ring Go Standards.
 ```
 
-### If ANY Category Is Non-Compliant
+### If any Category Is Non-Compliant
 
 ```markdown
 ## Standards Compliance
@@ -2842,7 +2842,7 @@ No migration actions required. All categories verified against Lerian/Ring Go St
    - Usage: ...
 ```
 
-**CRITICAL:** The comparison table is NOT optional. It serves as:
+**CRITICAL:** The comparison table is not optional. It serves as:
 1. **Evidence** that each category was actually checked
 2. **Documentation** for the codebase's compliance status
 3. **Audit trail** for future refactors

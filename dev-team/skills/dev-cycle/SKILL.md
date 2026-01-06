@@ -62,7 +62,7 @@ examples:
 
 ## Standards Loading (MANDATORY)
 
-**Before ANY gate execution, you MUST load Ring standards:**
+**Before any gate execution, you MUST load Ring standards:**
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) as the canonical source. This table summarizes the loading process.
 
@@ -71,7 +71,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 | url | \`https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md\` |
 | prompt | "Extract Agent Modification Verification requirements, Anti-Rationalization Tables requirements, and Critical Rules" |
 
-**Execute WebFetch before proceeding.** Do NOT continue until standards are loaded.
+**Execute WebFetch before proceeding.** Do not continue until standards are loaded.
 
 If WebFetch fails → STOP and report blocker. Cannot proceed without Ring standards.
 
@@ -119,10 +119,10 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 **If a task requires editing MORE than 3 files → MUST dispatch specialist agent.**
 
-This is NOT negotiable:
+This is not negotiable:
 - 1-3 files of non-source content (markdown, json, yaml) → Orchestrator MAY edit directly
 - 1+ source code files (`*.go`, `*.ts`, `*.tsx`) → MUST dispatch agent
-- 4+ files of ANY type → MUST dispatch agent
+- 4+ files of any type → MUST dispatch agent
 
 ### Orchestrator Workflow Order (MANDATORY)
 
@@ -151,7 +151,7 @@ This is NOT negotiable:
 
 ### ⛔ SUB-SKILL LOADING IS MANDATORY (HARD GATE)
 
-**Before dispatching ANY agent, you MUST load the corresponding sub-skill first.**
+**Before dispatching any agent, you MUST load the corresponding sub-skill first.**
 
 | Gate | Sub-Skill to Load | Then Dispatch Agent |
 |------|-------------------|---------------------|
@@ -162,7 +162,7 @@ This is NOT negotiable:
 | Gate 4 | `Skill("requesting-code-review")` | 3x `Task(...)` in parallel |
 | Gate 5 | `Skill("dev-validation")` | N/A (verification only) |
 
-**The workflow for EACH gate is:**
+**The workflow for each gate is:**
 ```text
 1. Skill("[sub-skill-name]")     ← Load sub-skill instructions
 2. Follow sub-skill instructions  ← Sub-skill tells you HOW to dispatch
@@ -190,13 +190,13 @@ This is NOT negotiable:
 | "I already loaded the standards" | Loading standards ≠ permission to implement. Standards are for AGENTS. | **DISPATCH specialist agent** |
 | "Agent dispatch adds overhead" | Overhead ensures compliance. Skip = skip verification. | **DISPATCH specialist agent** |
 | "I can write Go/TypeScript" | Knowing language ≠ having Ring standards loaded. Agent has them. | **DISPATCH specialist agent** |
-| "Just a quick fix" | "Quick" is irrelevant. ALL source changes require specialist. | **DISPATCH specialist agent** |
+| "Just a quick fix" | "Quick" is irrelevant. all source changes require specialist. | **DISPATCH specialist agent** |
 | "I'll read the file first to understand" | Reading source → temptation to edit. Agent reads for you. | **DISPATCH specialist agent** |
 | "Let me check if tests pass first" | Agent runs tests in TDD cycle. You don't run tests. | **DISPATCH specialist agent** |
 
 ### Red Flags - Orchestrator Violation in Progress
 
-**If you catch yourself doing ANY of these, STOP IMMEDIATELY:**
+**If you catch yourself doing any of these, STOP IMMEDIATELY:**
 
 ```text
 🚨 RED FLAG: About to Read *.go or *.ts file
@@ -217,7 +217,7 @@ This is NOT negotiable:
 🚨 RED FLAG: Thinking "This is simple enough..."
    → STOP. Simplicity is irrelevant. Dispatch agent.
 
-🚨 RED FLAG: Standards loaded, but next action is NOT Task tool
+🚨 RED FLAG: Standards loaded, but next action is not Task tool
    → STOP. After standards, IMMEDIATELY dispatch agent.
 ```
 
@@ -250,7 +250,7 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 |-------------|-----------|------------------------|
 | **All 6 gates must execute** | Each gate catches different issues | Missing critical defects, security vulnerabilities |
 | **Gates execute in order (0→5)** | Dependencies exist between gates | Testing untested code, reviewing unobservable systems |
-| **Gate 4 requires ALL 3 reviewers** | Different review perspectives are complementary | Missing security issues, business logic flaws |
+| **Gate 4 requires all 3 reviewers** | Different review perspectives are complementary | Missing security issues, business logic flaws |
 | **Coverage threshold ≥ 85%** | Industry standard for quality code | Untested edge cases, regression risks |
 | **PROJECT_RULES.md must exist** | Cannot verify standards without target | Arbitrary decisions, inconsistent implementations |
 
@@ -263,7 +263,7 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 | **MEDIUM** | Code quality, maintainability issues | Incomplete documentation, minor gaps |
 | **LOW** | Best practices, optimization | Style improvements, minor refactoring |
 
-Report ALL severities. Let user prioritize.
+Report all severities. Let user prioritize.
 
 ### Reviewer Verdicts Are Final
 
@@ -286,7 +286,7 @@ No negotiation. No exceptions. No "special cases".
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
-**Gate-specific note:** Execution mode selection affects CHECKPOINTS (user approval pauses), not GATES (quality checks). ALL gates execute regardless of mode.
+**Gate-specific note:** Execution mode selection affects CHECKPOINTS (user approval pauses), not GATES (quality checks). all gates execute regardless of mode.
 
 ## Common Rationalizations - REJECTED
 
@@ -297,7 +297,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Excuse | Reality |
 |--------|---------|
 | "Automatic mode means faster" | Automatic mode skips CHECKPOINTS, not GATES. Same quality, less interruption. |
-| "Automatic mode will skip review" | Automatic mode affects user approval pauses, NOT quality gates. ALL gates execute regardless. |
+| "Automatic mode will skip review" | Automatic mode affects user approval pauses, not quality gates. all gates execute regardless. |
 | "Defense in depth exists (frontend validates)" | Frontend can be bypassed. Backend is the last line. Fix at source. |
 | "Backlog the Medium issue, it's documented" | Documented risk ≠ mitigated risk. Medium in Gate 4 = fix NOW, not later. |
 | "Risk-based prioritization allows deferral" | Gates ARE the risk-based system. Reviewers define severity, not you. |
@@ -306,7 +306,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
-If you catch yourself thinking ANY of those patterns, STOP immediately and return to gate execution.
+If you catch yourself thinking any of those patterns, STOP immediately and return to gate execution.
 
 ## Incremental Compromise Prevention
 
@@ -327,7 +327,7 @@ Day 4: Production incident from Day 1 code
 
 ## Gate Completion Definition (HARD GATE)
 
-**A gate is COMPLETE only when ALL components finish successfully:**
+**A gate is COMPLETE only when all components finish successfully:**
 
 | Gate | Components Required | Partial = FAIL |
 |------|---------------------|----------------|
@@ -337,19 +337,19 @@ Day 4: Production incident from Day 1 code
 | 1 | Dockerfile + docker-compose + .env.example | Missing any = FAIL |
 | 2 | Structured JSON logs with trace correlation | Partial structured logs = FAIL |
 | 3 | Coverage ≥ 85% + all AC tested | 84% = FAIL |
-| 4 | **ALL 3 reviewers PASS** | 2/3 reviewers = FAIL |
-| 5 | Explicit "APPROVED" from user | "Looks good" = NOT approved |
+| 4 | **all 3 reviewers PASS** | 2/3 reviewers = FAIL |
+| 5 | Explicit "APPROVED" from user | "Looks good" = not approved |
 
-**CRITICAL for Gate 4:** Running 2 of 3 reviewers is NOT a partial pass - it's a FAIL. Re-run ALL 3 reviewers.
+**CRITICAL for Gate 4:** Running 2 of 3 reviewers is not a partial pass - it's a FAIL. Re-run all 3 reviewers.
 
 **Anti-Rationalization for Partial Gates:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "2 of 3 reviewers passed" | Gate 4 requires ALL 3. 2/3 = 0/3. | **Re-run ALL 3 reviewers** |
-| "Gate mostly complete" | Mostly ≠ complete. Binary: done or not done. | **Complete ALL components** |
+| "2 of 3 reviewers passed" | Gate 4 requires all 3. 2/3 = 0/3. | **Re-run all 3 reviewers** |
+| "Gate mostly complete" | Mostly ≠ complete. Binary: done or not done. | **Complete all components** |
 | "Can finish remaining in next cycle" | Gates don't carry over. Complete NOW. | **Finish current gate** |
-| "Core components done, optional can wait" | No component is optional within a gate. | **Complete ALL components** |
+| "Core components done, optional can wait" | No component is optional within a gate. | **Complete all components** |
 
 ## Gate Order Enforcement (HARD GATE)
 
@@ -362,7 +362,7 @@ Day 4: Production incident from Day 1 code
 | Reorder Gates | "Review before test" | Reviewing untested code wastes reviewer time |
 | Parallel Gates | "Run 2 and 3 together" | Dependencies exist. Order is intentional. |
 
-**Gates are NOT parallelizable across different gates. Sequential execution is MANDATORY.**
+**Gates are not parallelizable across different gates. Sequential execution is MANDATORY.**
 
 ## The 6 Gates
 
@@ -386,7 +386,7 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task OR subtask) passes through **all 6 gates** before the next unit.
+**Core Principle:** Each execution unit (task or subtask) passes through **all 6 gates** before the next unit.
 
 **Flow:** Unit → Gate 0-5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
 
@@ -443,9 +443,9 @@ The state file path depends on the **source of tasks**:
 
 **Detection Logic:**
 ```text
-IF source_file contains "docs/refactor/" THEN
+if source_file contains "docs/refactor/" THEN
   state_path = "docs/dev-refactor/current-cycle.json"
-ELSE
+else
   state_path = "docs/dev-cycle/current-cycle.json"
 ```
 
@@ -730,11 +730,11 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
 
 ## ⛔ State Persistence Rule (MANDATORY)
 
-**"Update state" means BOTH update the object AND write to file. Not just in-memory.**
+**"Update state" means BOTH update the object and write to file. Not just in-memory.**
 
-### After EVERY Gate Transition
+### After every Gate Transition
 
-You MUST execute these steps after completing ANY gate (0, 1, 2, 3, 4, or 5):
+You MUST execute these steps after completing any gate (0, 1, 2, 3, 4, or 5):
 
 ```yaml
 # Step 1: Update state object with gate results
@@ -772,10 +772,10 @@ Read tool:
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll save state at the end" | Crash/timeout loses ALL progress | **Save after EACH gate** |
+| "I'll save state at the end" | Crash/timeout loses all progress | **Save after each gate** |
 | "State is in memory, that's updated" | Memory is volatile. File is persistent. | **Write to JSON file** |
-| "Only save on checkpoints" | Gates without saves = unrecoverable on resume | **Save after EVERY gate** |
-| "Write tool is slow" | Write takes <100ms. Lost progress takes hours. | **Write after EVERY gate** |
+| "Only save on checkpoints" | Gates without saves = unrecoverable on resume | **Save after every gate** |
+| "Write tool is slow" | Write takes <100ms. Lost progress takes hours. | **Write after every gate** |
 | "I updated the state variable" | Variable ≠ file. Without Write tool, nothing persists. | **Use Write tool explicitly** |
 
 ### Verification Command
@@ -801,7 +801,7 @@ After each gate, the state file MUST reflect:
 │                                                                             │
 │  ├── YES → Proceed to Step 1 (Initialize or Resume)                        │
 │  │                                                                          │
-│  └── NO → ASK: "Is this a LEGACY project (created without PM workflow)?"   │
+│  └── no → ASK: "Is this a LEGACY project (created without PM workflow)?"   │
 │       │                                                                     │
 │       ├── YES (legacy project) → LEGACY PROJECT ANALYSIS:                   │
 │       │   Step 1: Dispatch codebase-explorer (technical info only)          │
@@ -810,10 +810,10 @@ After each gate, the state file MUST reflect:
 │       │     2. Any external APIs not visible in code?                       │
 │       │     3. Any specific technology not in Ring Standards?               │
 │       │   Step 3: Generate PROJECT_RULES.md (deduplicated from Ring)        │
-│       │   Note: Business rules belong in PRD, NOT in PROJECT_RULES          │
+│       │   Note: Business rules belong in PRD, not in PROJECT_RULES          │
 │       │   → Proceed to Step 1                                               │
 │       │                                                                     │
-│       └── NO (new project) → ASK: "Do you have PRD, TRD, or Feature Map?"  │
+│       └── no (new project) → ASK: "Do you have PRD, TRD, or Feature Map?"  │
 │           │                                                                 │
 │           ├── YES (has PM docs) → "Please provide the file path(s)"        │
 │           │   → Read PRD/TRD/Feature Map → Extract info                    │
@@ -821,7 +821,7 @@ After each gate, the state file MUST reflect:
 │           │   → Ask supplementary questions if info is incomplete          │
 │           │   → Save and proceed to Step 1                                 │
 │           │                                                                 │
-│           └── NO (no PM docs) → ⛔ HARD BLOCK:                              │
+│           └── no (no PM docs) → ⛔ HARD BLOCK:                              │
 │               "PM documents are REQUIRED for new projects.                  │
 │                Run /pre-dev-full or /pre-dev-feature first."               │
 │               → STOP (cycle cannot proceed)                                 │
@@ -836,7 +836,7 @@ Read tool:
   file_path: "docs/PROJECT_RULES.md"
 
 # If file exists and has content → Proceed to Step 1
-# If file does not exist OR is empty → Continue to Step 0.2
+# If file does not exist or is empty → Continue to Step 0.2
 ```
 
 ### Step 0.2: Check if Legacy Project
@@ -847,7 +847,7 @@ Use AskUserQuestion:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 📋 PROJECT_RULES.md NOT FOUND                                   │
+│ 📋 PROJECT_RULES.md not FOUND                                   │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │ I need to create docs/PROJECT_RULES.md to understand your       │
@@ -873,7 +873,7 @@ Use AskUserQuestion:
 
 Go to Step 0.2.1 (Legacy Project Analysis)
 
-#### If NO (new project)
+#### If no (new project)
 
 Go to Step 0.3 (Check for PM Documents)
 
@@ -895,14 +895,14 @@ For legacy projects, analyze codebase for TECHNICAL information only:
 │ Step 2: Ask for project-specific tech not in Ring Standards     │
 │ Step 3: Generate PROJECT_RULES.md (deduplicated)                │
 │                                                                 │
-│ Note: Business rules belong in PRD/product docs, NOT here.      │
+│ Note: Business rules belong in PRD/product docs, not here.      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 #### Step 0.2.1a: Automated Codebase Analysis (MANDATORY)
 
-**⛔ You MUST use the Task tool to dispatch codebase-explorer. This is NOT implicit.**
+**⛔ You MUST use the Task tool to dispatch codebase-explorer. This is not implicit.**
 
 #### Dispatch Agent
 
@@ -912,7 +912,7 @@ Dispatch codebase-explorer to analyze the legacy project for TECHNICAL informati
 Action: Use Task tool with EXACTLY these parameters:
 
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│  ⛔ If Task tool NOT used → Analysis does NOT happen → PROJECT_RULES.md INVALID │
+│  ⛔ If Task tool not used → Analysis does not happen → PROJECT_RULES.md INVALID │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -967,7 +967,7 @@ Task tool:
 
 ```
 
-**Note:** Business logic analysis is NOT needed for PROJECT_RULES.md. Business rules belong in PRD/product docs, not technical project rules.
+**Note:** Business logic analysis is not needed for PROJECT_RULES.md. Business rules belong in PRD/product docs, not technical project rules.
 
 #### Verification (MANDATORY)
 
@@ -981,7 +981,7 @@ After agent completes, confirm:
 
 #### Post-Analysis Questions
 
-After agents complete, ask ONLY what they couldn't determine from code:
+After agents complete, ask only what they couldn't determine from code:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -1004,7 +1004,7 @@ Use AskUserQuestion for each:
 | 2 | **Any external APIs or services not visible in code?** (Third-party integrations planned) | Planned integrations, not yet in code |
 | 3 | **Any specific technology not in Ring Standards?** (Message broker, cache, etc.) | Project-specific tech not in Ring |
 
-**Note:** Business rules belong in PRD/product docs, NOT in PROJECT_RULES.md.
+**Note:** Business rules belong in PRD/product docs, not in PROJECT_RULES.md.
 
 #### Step 0.2.1c: Generate PROJECT_RULES.md
 
@@ -1016,13 +1016,13 @@ Create tool:
   content: |
     # Project Rules
     
-    > Ring Standards apply automatically. This file documents ONLY what Ring does NOT cover.
+    > Ring Standards apply automatically. This file documents only what Ring does not cover.
     > For error handling, logging, testing, architecture, lib-commons → See Ring Standards (auto-loaded by agents)
     > Generated from legacy project analysis.
     
-    ## What Ring Standards Already Cover (DO NOT ADD HERE)
+    ## What Ring Standards Already Cover (DO not ADD HERE)
     
-    The following are defined in Ring Standards and MUST NOT be duplicated:
+    The following are defined in Ring Standards and MUST not be duplicated:
     - Error handling patterns (no panic, wrap errors)
     - Logging standards (structured JSON, zerolog/zap)
     - Testing patterns (table-driven tests, mocks)
@@ -1035,7 +1035,7 @@ Create tool:
     
     ## Tech Stack (Not in Ring Standards)
     
-    [From codebase-explorer: Technologies NOT covered by Ring Standards]
+    [From codebase-explorer: Technologies not covered by Ring Standards]
     [e.g., specific message broker, specific cache, DB if not PostgreSQL]
     
     | Technology | Purpose | Notes |
@@ -1061,7 +1061,7 @@ Create tool:
     
     ## Environment Configuration
     
-    [From codebase-explorer: Project-specific env vars NOT covered by Ring]
+    [From codebase-explorer: Project-specific env vars not covered by Ring]
     
     | Variable | Purpose | Example |
     |----------|---------|---------|
@@ -1100,7 +1100,7 @@ Create tool:
 │ Generated: docs/PROJECT_RULES.md                                │
 │                                                                 │
 │ Note: Ring Standards (error handling, logging, testing, etc.)   │
-│ are NOT duplicated - agents load them automatically via WebFetch│
+│ are not duplicated - agents load them automatically via WebFetch│
 │                                                                 │
 │ Please review the file and make any corrections needed.         │
 │                                                                 │
@@ -1180,7 +1180,7 @@ docs/pre-dev/{feature-name}/
 
 Go to Step 0.3.1 (Generate from PM Documents)
 
-#### If NO
+#### If no
 
 HARD BLOCK (Step 0.3.2)
 
@@ -1204,7 +1204,7 @@ Read tool:
 
 #### Extract PROJECT_RULES.md Content from PM Documents
 
-**⛔ DEDUPLICATION RULE:** Extract ONLY what Ring Standards do NOT cover.
+**⛔ DEDUPLICATION RULE:** Extract only what Ring Standards DO NOT cover.
 
 | From PRD | Extract For PROJECT_RULES.md | Note |
 |----------|------------------------------|------|
@@ -1235,17 +1235,17 @@ Create tool:
   content: |
     # Project Rules
     
-    > ⛔ IMPORTANT: Ring Standards are NOT automatic. Agents MUST WebFetch them before implementation.
-    > This file documents ONLY project-specific information not covered by Ring Standards.
+    > ⛔ IMPORTANT: Ring Standards are not automatic. Agents MUST WebFetch them before implementation.
+    > This file documents only project-specific information not covered by Ring Standards.
     > Generated from PM documents (PRD/TRD/Feature Map).
     >
     > Ring Standards URLs:
     > - Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     > - TypeScript: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
     
-    ## What Ring Standards Cover (DO NOT DUPLICATE HERE)
+    ## What Ring Standards Cover (DO not DUPLICATE HERE)
     
-    The following are defined in Ring Standards and MUST NOT be duplicated in this file:
+    The following are defined in Ring Standards and MUST not be duplicated in this file:
     - Error handling patterns (no panic, wrap errors)
     - Logging standards (structured JSON via lib-commons)
     - Testing patterns (table-driven tests, mocks)
@@ -1262,7 +1262,7 @@ Create tool:
     
     ## Tech Stack (Not in Ring Standards)
     
-    [From TRD/Feature Map: ONLY technologies NOT covered by Ring Standards]
+    [From TRD/Feature Map: only technologies not covered by Ring Standards]
     
     | Technology | Purpose | Notes |
     |------------|---------|-------|
@@ -1286,7 +1286,7 @@ Create tool:
     
     ## Environment Configuration
     
-    [From TRD: Project-specific env vars NOT covered by Ring]
+    [From TRD: Project-specific env vars not covered by Ring]
     
     | Variable | Purpose | Example |
     |----------|---------|---------|
@@ -1318,7 +1318,7 @@ If any section is empty or incomplete, ask supplementary questions:
 | Domain Terminology | "What are the main entities/classes in this codebase?" |
 | Non-Standard Directories | "Any directories that don't follow standard API structure (workers, consumers)?" |
 
-**Note:** Do NOT ask about architecture, error handling, logging, testing - Ring Standards covers these.
+**Note:** Do not ask about architecture, error handling, logging, testing - Ring Standards covers these.
 
 #### After Generation
 
@@ -1353,7 +1353,7 @@ Present to user for review, then proceed to Step 1.
 
 #### Action
 
-STOP EXECUTION. Do NOT proceed to Step 1.
+STOP EXECUTION. Do not proceed to Step 1.
 
 ### Step 0 Anti-Rationalization
 
@@ -1376,7 +1376,7 @@ STOP EXECUTION. Do NOT proceed to Step 1.
 | "This is just a quick prototype" | "Even prototypes need clear requirements. `/pre-dev-feature` takes ~30 minutes and prevents hours of rework." |
 | "I already explained what I want verbally" | "Verbal explanations cannot be used by agents. Requirements MUST be documented in PRD/TRD/Feature Map files." |
 | "It's a legacy project but skip the questions" | "The legacy analysis (codebase-explorer + 3 questions) is the only way I can understand your project. It takes ~5 minutes and enables me to help you effectively." |
-| "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with: Tech Stack (not in Ring), External Integrations, Domain Terminology. Do NOT duplicate Ring Standards content. Then run `/dev-cycle` again." |
+| "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with: Tech Stack (not in Ring), External Integrations, Domain Terminology. Do not duplicate Ring Standards content. Then run `/dev-cycle` again." |
 
 ---
 
@@ -1384,18 +1384,18 @@ STOP EXECUTION. Do NOT proceed to Step 1.
 
 ### New Cycle (with task file path)
 
-**Input:** `path/to/tasks.md` OR `path/to/pre-dev/{feature}/`
+**Input:** `path/to/tasks.md` or `path/to/pre-dev/{feature}/`
 
 1. **Detect input:** File → Load directly | Directory → Load tasks.md + discover subtasks/
 2. **Build order:** Read tasks, check for subtasks (ST-XXX-01, 02...) or TDD autonomous mode
 3. **Determine state path:**
-   - IF source_file contains `docs/refactor/` → `state_path = "docs/dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
-   - ELSE → `state_path = "docs/dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
+   - if source_file contains `docs/refactor/` → `state_path = "docs/dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
+   - else → `state_path = "docs/dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
 4. **Initialize state:** Generate cycle_id, create state file at `{state_path}`, set indices to 0
 5. **Display plan:** "Loaded X tasks with Y subtasks"
 6. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
    - Options: (a) Manual per subtask (b) Manual per task (c) Automatic
-   - **Do NOT skip:** User hints ≠ mode selection. Only explicit a/b/c is valid.
+   - **Do not skip:** User hints ≠ mode selection. Only explicit a/b/c is valid.
 7. **ASK COMMIT TIMING (MANDATORY - AskUserQuestion):**
    - Options: (a) Per subtask (b) Per task (c) At the end
    - Store in `commit_timing` field in state
@@ -1437,7 +1437,7 @@ Task files are generated by `/pre-dev-*` or `/dev-refactor`, which handle conten
 
 **REQUIRED SUB-SKILL:** Use dev-implementation
 
-**Execution Unit:** Task (if no subtasks) OR Subtask (if task has subtasks)
+**Execution Unit:** Task (if no subtasks) or Subtask (if task has subtasks)
 
 ### ⛔ MANDATORY: Agent Dispatch Required
 
@@ -1472,7 +1472,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
    - React/Frontend → frontend-engineer-typescript
    - Infrastructure → devops-engineer
 
-4. Dispatch to selected agent for TDD-RED ONLY:
+4. Dispatch to selected agent for TDD-RED only:
 
    See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) for the TDD-RED prompt template.
 
@@ -1579,7 +1579,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 **PREREQUISITE:** `gate_progress.implementation.tdd_green.status == "completed"`
 
-**Purpose:** Verify implementation follows ALL standards defined in agent's standards file.
+**Purpose:** Verify implementation follows all standards defined in agent's standards file.
 
 See [shared-patterns/template-tdd-prompts.md](../shared-patterns/template-tdd-prompts.md) → "Orchestrator Enforcement" section for full verification process.
 
@@ -1601,14 +1601,14 @@ LOOP while standards_compliance_iterations < MAX_ITERATIONS:
      standards_compliance_iterations += 1
   
   2. PARSE agent output for "## Standards Coverage Table":
-     IF NOT FOUND:
+     if not FOUND:
        → Output INCOMPLETE
        → Log: "Iteration [N]: Standards Coverage Table missing"
        → Re-dispatch agent (see Step 2.3.3)
        → CONTINUE loop
   
-  3. PARSE "ALL STANDARDS MET:" value:
-     IF NOT FOUND:
+  3. PARSE "all STANDARDS MET:" value:
+     if not FOUND:
        → Output INCOMPLETE
        → Log: "Iteration [N]: Compliance Summary missing"
        → Re-dispatch agent (see Step 2.3.3)
@@ -1621,11 +1621,11 @@ LOOP while standards_compliance_iterations < MAX_ITERATIONS:
      non_compliant = count rows with ❌
   
   5. VERIFY compliance:
-     IF "ALL STANDARDS MET: ✅ YES" AND non_compliant == 0:
+     if "all STANDARDS MET: ✅ YES" and non_compliant == 0:
        → Gate 0 PASSED
        → BREAK loop (proceed to Step 2.3.4)
      
-     IF "ALL STANDARDS MET: ❌ NO" OR non_compliant > 0:
+     if "all STANDARDS MET: ❌ no" or non_compliant > 0:
        → Gate 0 BLOCKED
        → Extract ❌ sections
        → Log: "Iteration [N]: [non_compliant] sections non-compliant"
@@ -1634,7 +1634,7 @@ LOOP while standards_compliance_iterations < MAX_ITERATIONS:
 
 END LOOP
 
-IF standards_compliance_iterations >= MAX_ITERATIONS AND non_compliant > 0:
+if standards_compliance_iterations >= MAX_ITERATIONS and non_compliant > 0:
   → HARD BLOCK
   → Update state with failure info
   → Report to user: "Standards compliance failed after 3 attempts"
@@ -1649,7 +1649,7 @@ Task tool:
   model: "opus"
   description: "Fix missing Ring Standards for [unit_id] (attempt [N]/3)"
   prompt: |
-    ⛔ STANDARDS NOT MET - Fix Required (Attempt [standards_compliance_iterations] of 3)
+    ⛔ STANDARDS not MET - Fix Required (Attempt [standards_compliance_iterations] of 3)
     
     Your Standards Coverage Table shows these sections as ❌:
     [list ❌ sections extracted from table]
@@ -1657,8 +1657,8 @@ Task tool:
     WebFetch your standards file:
     [URL for agent's standards - golang.md, typescript.md, etc.]
     
-    Implement ALL missing sections.
-    Return updated Standards Coverage Table with ALL ✅ or N/A.
+    Implement all missing sections.
+    Return updated Standards Coverage Table with all ✅ or N/A.
     
     Previous attempt summary:
     - Total sections: [total_sections]
@@ -1717,8 +1717,8 @@ gate_progress.implementation = {
 |-----------------|----------------|-----------------|
 | "Agent said implementation is complete" | Agent completion ≠ Standards compliance. Verify table. | **Parse and verify Standards Coverage Table** |
 | "Table wasn't in agent output" | Missing table = Incomplete output = Re-dispatch | **Re-dispatch agent to output table** |
-| "Only 1-2 sections are ❌" | ANY ❌ = BLOCKED. Count is irrelevant. | **Re-dispatch to fix ALL ❌ sections** |
-| "lib-commons is the main thing" | ALL sections are equally required. No prioritization. | **Verify ALL sections from standards-coverage-table.md** |
+| "Only 1-2 sections are ❌" | any ❌ = BLOCKED. Count is irrelevant. | **Re-dispatch to fix all ❌ sections** |
+| "lib-commons is the main thing" | all sections are equally required. No prioritization. | **Verify all sections from standards-coverage-table.md** |
 | "Agent knows the standards" | Knowledge ≠ implementation. Evidence required. | **Check file:line evidence in table** |
 | "Standards verification is slow" | Verification prevents rework. 30 seconds vs hours. | **Always verify before proceeding** |
 
@@ -1738,18 +1738,18 @@ gate_progress.implementation = {
 
 ### ⛔ HARD GATE: Required Artifacts MUST Be Created
 
-**Gate 1 is a BLOCKING gate.** DevOps agent MUST create ALL required artifacts. If ANY artifact is missing:
+**Gate 1 is a BLOCKING gate.** DevOps agent MUST create all required artifacts. If any artifact is missing:
 - You CANNOT proceed to Gate 2
 - You MUST re-dispatch to devops-engineer to create missing artifacts
-- You MUST verify ALL artifacts exist before proceeding
+- You MUST verify all artifacts exist before proceeding
 
 ### Required Artifacts
 
-**See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md" for ALL required sections.**
+**See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md" for all required sections.**
 
 **Key artifacts from devops.md:**
 - Containers (Dockerfile + Docker Compose)
-- Makefile Standards (ALL required commands)
+- Makefile Standards (all required commands)
 - Infrastructure as Code (if applicable)
 - Helm charts (if K8s deployment)
 
@@ -1810,12 +1810,12 @@ devops_input = {
    - "## DevOps Summary" → status, iterations
    - "## Files Changed" → Dockerfile, docker-compose, .env.example actions
    - "## Verification Results" → build, startup, health checks
-   - "## Handoff to Next Gate" → ready_for_sre: YES/NO
+   - "## Handoff to Next Gate" → ready_for_sre: YES/no
    
-   IF skill output contains "Status: PASS" AND "Ready for Gate 2: YES":
+   if skill output contains "Status: PASS" and "Ready for Gate 2: YES":
      → Gate 1 PASSED. Proceed to Step 3.3.
    
-   IF skill output contains "Status: FAIL" OR "Ready for Gate 2: NO":
+   if skill output contains "Status: FAIL" or "Ready for Gate 2: no":
      → Gate 1 BLOCKED.
      → Skill already dispatched fixes to devops-engineer
      → Skill already re-ran verification
@@ -1856,11 +1856,11 @@ devops_input = {
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Dockerfile exists, skip other artifacts" | ALL artifacts required. 1/4 ≠ complete. | **Create ALL artifacts** |
+| "Dockerfile exists, skip other artifacts" | all artifacts required. 1/4 ≠ complete. | **Create all artifacts** |
 | "docker-compose not needed locally" | docker-compose is MANDATORY for local dev. | **Create docker-compose.yml** |
 | "Makefile is optional" | Makefile is MANDATORY for standardized commands. | **Create Makefile** |
 | ".env.example can be added later" | .env.example documents required config NOW. | **Create .env.example** |
-| "Small service doesn't need all this" | Size is irrelevant. Standards apply uniformly. | **Create ALL artifacts** |
+| "Small service doesn't need all this" | Size is irrelevant. Standards apply uniformly. | **Create all artifacts** |
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
@@ -1920,12 +1920,12 @@ sre_input = {
    - "## Validation Result" → status, iterations, coverage
    - "## Instrumentation Coverage" → table with per-layer coverage
    - "## Issues Found" → list or "None"
-   - "## Handoff to Next Gate" → ready_for_testing: YES/NO
+   - "## Handoff to Next Gate" → ready_for_testing: YES/no
    
-   IF skill output contains "Status: PASS" AND "Ready for Gate 3: YES":
+   if skill output contains "Status: PASS" and "Ready for Gate 3: YES":
      → Gate 2 PASSED. Proceed to Step 4.3.
    
-   IF skill output contains "Status: FAIL" OR "Ready for Gate 3: NO":
+   if skill output contains "Status: FAIL" or "Ready for Gate 3: no":
      → Gate 2 BLOCKED. 
      → Skill already dispatched fixes to implementation agent
      → Skill already re-ran validation
@@ -2031,12 +2031,12 @@ testing_input = {
    - "## Testing Summary" → status, iterations
    - "## Coverage Report" → threshold vs actual
    - "## Traceability Matrix" → AC-to-test mapping
-   - "## Handoff to Next Gate" → ready_for_review: YES/NO
+   - "## Handoff to Next Gate" → ready_for_review: YES/no
    
-   IF skill output contains "Status: PASS" AND "Ready for Gate 4: YES":
+   if skill output contains "Status: PASS" and "Ready for Gate 4: YES":
      → Gate 3 PASSED. Proceed to Step 5.3.
    
-   IF skill output contains "Status: FAIL" OR "Ready for Gate 4: NO":
+   if skill output contains "Status: FAIL" or "Ready for Gate 4: no":
      → Gate 3 BLOCKED.
      → Skill already dispatched fixes to implementation agent
      → Skill already re-ran coverage check
@@ -2162,7 +2162,7 @@ review_input = {
    - Dispatching all 3 reviewers in PARALLEL (single message with 3 Task calls)
    - Aggregating issues by severity (CRITICAL/HIGH/MEDIUM/LOW/COSMETIC)
    - Dispatching fixes to implementation agent for blocking issues
-   - Re-running ALL 3 reviewers after fixes
+   - Re-running all 3 reviewers after fixes
    - Iteration tracking (max 3 attempts)
    - Adding TODO/FIXME comments for non-blocking issues
 
@@ -2172,12 +2172,12 @@ review_input = {
    - "## Review Summary" → status, iterations
    - "## Issues by Severity" → counts per severity level
    - "## Reviewer Verdicts" → code-reviewer, business-logic-reviewer, security-reviewer
-   - "## Handoff to Next Gate" → ready_for_validation: YES/NO
+   - "## Handoff to Next Gate" → ready_for_validation: YES/no
    
-   IF skill output contains "Status: PASS" AND "Ready for Gate 5: YES":
+   if skill output contains "Status: PASS" and "Ready for Gate 5: YES":
      → Gate 4 PASSED. Proceed to Step 6.3.
    
-   IF skill output contains "Status: FAIL" OR "Ready for Gate 5: NO":
+   if skill output contains "Status: FAIL" or "Ready for Gate 5: no":
      → Gate 4 BLOCKED.
      → Skill already dispatched fixes to implementation agent
      → Skill already re-ran all 3 reviewers
@@ -2223,7 +2223,7 @@ review_input = {
        }
      }
    
-   **Populate `issues[]` for each reviewer with ALL issues found (even if fixed):**
+   **Populate `issues[]` for each reviewer with all issues found (even if fixed):**
    ```json
    issues: [
      {
@@ -2241,7 +2241,7 @@ review_input = {
    ```
    
    **Issue tracking rules:**
-   - ALL issues found across ALL iterations MUST be recorded
+   - all issues found across all iterations MUST be recorded
    - `fixed: true` + `fixed_in_iteration: N` for issues resolved during review
    - `fixed: false` + `fixed_in_iteration: null` for LOW/COSMETIC (TODO/FIXME added)
    - This enables feedback-loop to analyze recurring issue patterns
@@ -2263,7 +2263,7 @@ review_input = {
 | "User approved, can skip fix" | User approval ≠ reviewer override. Fixes are mandatory. | **Fix the issue, re-run all reviewers** |
 | "Same issue keeps appearing, skip it" | Recurring issue = fix is wrong. Debug properly. | **Root cause analysis, then fix** |
 | "Only security reviewer found it" | One reviewer = valid finding. All findings matter. | **Fix the issue, re-run all reviewers** |
-| "Iteration limit reached, just proceed" | Limit = escalate, not bypass. Quality is non-negotiable. | **Escalate to user, do NOT proceed** |
+| "Iteration limit reached, just proceed" | Limit = escalate, not bypass. Quality is non-negotiable. | **Escalate to user, DO NOT proceed** |
 | "Tests pass, review issues don't matter" | Tests ≠ review. Different quality dimensions. | **Fix the issue, re-run all reviewers** |
 
 ### Gate 4 Pressure Resistance
@@ -2314,10 +2314,10 @@ For current execution unit:
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` → Execute | `manual_per_task` / `automatic` → Skip
 
 0. **COMMIT CHECK (before checkpoint):**
-   - IF `commit_timing == "per_subtask"`:
+   - if `commit_timing == "per_subtask"`:
      - Execute `/commit` command with message: `feat({unit_id}): {unit_title}`
      - Include all changed files from this subtask
-   - ELSE: Skip commit (will happen at task or cycle end)
+   - else: Skip commit (will happen at task or cycle end)
 
 1. Set `status = "paused_for_approval"`, save state
 2. Present summary: Unit ID, Parent Task, Gates 0-5 status, Criteria X/X, Duration, Files Changed, Commit Status
@@ -2335,11 +2335,11 @@ For current execution unit:
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` / `manual_per_task` → Execute | `automatic` → Skip
 
 0. **COMMIT CHECK (before task checkpoint):**
-   - IF `commit_timing == "per_task"`:
+   - if `commit_timing == "per_task"`:
      - Execute `/commit` command with message: `feat({task_id}): {task_title}`
      - Include all changed files from this task (all subtasks combined)
-   - ELSE IF `commit_timing == "per_subtask"`: Already committed per subtask
-   - ELSE: Skip commit (will happen at cycle end)
+   - else if `commit_timing == "per_subtask"`: Already committed per subtask
+   - else: Skip commit (will happen at cycle end)
 
 1. Set task `status = "completed"`, cycle `status = "paused_for_task_approval"`, save state
 2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed, Commit Status
@@ -2351,7 +2351,7 @@ After completing all subtasks of a task:
 
 0. Check execution_mode from state:
    - If "automatic": Still run feedback, then skip to next task
-   - If "manual_per_subtask" OR "manual_per_task": Continue with checkpoint below
+   - If "manual_per_subtask" or "manual_per_task": Continue with checkpoint below
 
 1. Set task status = "completed"
 
@@ -2428,7 +2428,7 @@ After completing all subtasks of a task:
    │                                                  │
    │ Next Task: [next_task_id] - [next_task_title]   │
    │            Subtasks: N (or "TDD autonomous")    │
-   │            OR "No more tasks - cycle complete"  │
+   │            or "No more tasks - cycle complete"  │
    └─────────────────────────────────────────────────┘
 
 6. **ASK FOR EXPLICIT APPROVAL using AskUserQuestion tool:**
@@ -2471,10 +2471,10 @@ After completing all subtasks of a task:
 ## Step 8: Cycle Completion
 
 0. **FINAL COMMIT CHECK (before completion):**
-   - IF `commit_timing == "at_end"`:
+   - if `commit_timing == "at_end"`:
      - Execute `/commit` command with message: `feat({cycle_id}): complete dev cycle for {feature_name}`
      - Include all changed files from the entire cycle
-   - ELSE: Already committed per subtask or per task
+   - else: Already committed per subtask or per task
 
 1. **Calculate metrics:** total_duration_ms, average gate durations, review iterations, pass/fail ratio
 2. **Update state:** `status = "completed"`, `completed_at = timestamp`
@@ -2492,7 +2492,7 @@ After completing all subtasks of a task:
    **After feedback-loop completes, update state:**
    - Set `feedback_loop_completed = true` at cycle level in state file
 
-   **⛔ HARD GATE: Cycle is NOT complete until feedback-loop executes.**
+   **⛔ HARD GATE: Cycle is not complete until feedback-loop executes.**
 
    | Rationalization | Why It's WRONG | Required Action |
    |-----------------|----------------|-----------------|

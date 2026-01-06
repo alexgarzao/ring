@@ -16,7 +16,7 @@ skip_when: |
   - Feedback already recorded for this task -> proceed
 
 NOT_skip_when: |
-  - "Exploratory/spike work" → ALL work produces learnings. Track metrics for spikes too.
+  - "Exploratory/spike work" → all work produces learnings. Track metrics for spikes too.
   - "Just experimenting" → Experiments need metrics to measure success. No exceptions.
 
 sequence:
@@ -38,7 +38,7 @@ Continuous improvement system that tracks development cycle effectiveness throug
 
 ## Step 0: TodoWrite Tracking (MANDATORY FIRST ACTION)
 
-**⛔ HARD GATE: Before ANY other action, you MUST add feedback-loop to todo list.**
+**⛔ HARD GATE: Before any other action, you MUST add feedback-loop to todo list.**
 
 **Execute this TodoWrite call IMMEDIATELY when this skill starts:**
 
@@ -57,7 +57,7 @@ TodoWrite tool:
 - Creates audit trail that feedback was collected
 - Hook enforcer checks for this todo item
 
-**After completing ALL feedback-loop steps, mark as completed:**
+**After completing all feedback-loop steps, mark as completed:**
 
 ```yaml
 TodoWrite tool:
@@ -74,7 +74,7 @@ TodoWrite tool:
 |-----------------|----------------|-----------------|
 | "TodoWrite slows things down" | 1 tool call = 2 seconds. Not an excuse. | **Execute TodoWrite NOW** |
 | "I'll remember to complete it" | Memory is unreliable. Todo is proof. | **Execute TodoWrite NOW** |
-| "Skill is simple, no tracking needed" | Simple ≠ optional. ALL skills get tracked. | **Execute TodoWrite NOW** |
+| "Skill is simple, no tracking needed" | Simple ≠ optional. all skills get tracked. | **Execute TodoWrite NOW** |
 
 **You CANNOT proceed to Step 1 without executing TodoWrite above.**
 
@@ -84,7 +84,7 @@ TodoWrite tool:
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
 
-**Feedback-specific note:** Feedback MUST be collected for EVERY completed task, regardless of outcome or complexity. "Simple tasks" and "perfect scores" still need tracking.
+**Feedback-specific note:** Feedback MUST be collected for every completed task, regardless of outcome or complexity. "Simple tasks" and "perfect scores" still need tracking.
 
 ## Common Rationalizations - REJECTED
 
@@ -103,7 +103,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
 
-If you catch yourself thinking ANY of those patterns, STOP immediately. Collect metrics for EVERY task.
+If you catch yourself thinking any of those patterns, STOP immediately. Collect metrics for every task.
 
 ## Self-Preservation Bias Prevention
 
@@ -112,9 +112,9 @@ If you catch yourself thinking ANY of those patterns, STOP immediately. Collect 
 | Bias Pattern | Why It's Wrong | Correct Behavior |
 |-------------|----------------|------------------|
 | "Round up score" | Falsifies data, masks trends | Report exact: 68, not 70 |
-| "Skip failed task" | Selection bias, incomplete picture | Report ALL tasks |
+| "Skip failed task" | Selection bias, incomplete picture | Report all tasks |
 | "Blame external factors" | Avoids actionable insights | Document factors + still log score |
-| "Report only successes" | Survivorship bias | Success AND failure needed |
+| "Report only successes" | Survivorship bias | Success and failure needed |
 
 **Reporting protocol:**
 1. Calculate score using exact formula (no rounding)
@@ -127,7 +127,7 @@ If you catch yourself thinking ANY of those patterns, STOP immediately. Collect 
 
 ## Mandatory Feedback Collection
 
-**Non-negotiable:** Feedback MUST be collected for EVERY completed task, regardless of:
+**Non-negotiable:** Feedback MUST be collected for every completed task, regardless of:
 
 | Factor | Still Collect? | Reason |
 |--------|---------------|--------|
@@ -177,7 +177,7 @@ If you catch yourself thinking ANY of those patterns, STOP immediately. Collect 
 
 ## Blocker Criteria - STOP and Report
 
-**ALWAYS pause and report blocker for:**
+**always pause and report blocker for:**
 
 | Decision Type | Examples | Action |
 |--------------|----------|--------|
@@ -186,8 +186,8 @@ If you catch yourself thinking ANY of those patterns, STOP immediately. Collect 
 | **Pattern judgment** | "Is this pattern significant?" | STOP. Document pattern, let user decide significance. |
 | **Improvement priority** | "Which fix first?" | STOP. Report all findings, let user prioritize. |
 
-**Before skipping ANY feedback collection:**
-1. Check if task is complete (feedback required for ALL completed tasks)
+**Before skipping any feedback collection:**
+1. Check if task is complete (feedback required for all completed tasks)
 2. Check threshold status (alerts are mandatory)
 3. If in doubt → STOP and report blocker
 
@@ -224,7 +224,7 @@ Base score of 100 points, with deductions for inefficiencies:
 
 ## Step 1: Collect Cycle Metrics
 
-**MANDATORY: Execute this step for ALL tasks, regardless of:**
+**MANDATORY: Execute this step for all tasks, regardless of:**
 - Score value (even 100%)
 - User satisfaction (even immediate approval)
 - Outcome quality (even perfect)
@@ -253,7 +253,7 @@ The state file now contains structured error/issue data for direct analysis:
 ### Reading Structured Data
 
 ```yaml
-# From state file, extract standards compliance from ALL gates:
+# From state file, extract standards compliance from all gates:
 all_standards_gaps = [
   ...agent_outputs.implementation.standards_compliance.gaps,
   ...agent_outputs.devops.standards_compliance.gaps,
@@ -328,7 +328,7 @@ Task tool:
 
     For each agent:
     1. Load definition from dev-team/agents/ or default/agents/
-    2. Extract rules: MUST, MUST NOT, ask_when, output_schema
+    2. Extract rules: MUST, MUST not, ask_when, output_schema
     3. Compare output vs rules
     4. Calculate score
     5. Identify gaps with evidence
@@ -519,7 +519,7 @@ If correlation > 0.5:
 
 ## Step 7: Complete TodoWrite Tracking (MANDATORY FINAL ACTION)
 
-**⛔ HARD GATE: After ALL steps complete, you MUST mark feedback-loop todo as completed.**
+**⛔ HARD GATE: After all steps complete, you MUST mark feedback-loop todo as completed.**
 
 **Execute this TodoWrite call to finalize:**
 
@@ -540,7 +540,7 @@ TodoWrite tool:
 - [ ] Step 5: Feedback report written to `.ring/dev-team/feedback/`
 - [ ] Step 6: Improvement suggestions generated
 
-**You CANNOT mark todo as completed until ALL steps above are done.**
+**You CANNOT mark todo as completed until all steps above are done.**
 
 ---
 

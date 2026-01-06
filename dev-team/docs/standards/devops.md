@@ -1,7 +1,7 @@
 # DevOps Standards
 
 > **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
-> When adding/removing `## ` sections, update the coverage table AND agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+> When adding/removing `## ` sections, update the coverage table and agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
 
 This file defines the specific standards for DevOps, SRE, and infrastructure.
 

@@ -13,10 +13,10 @@ Analyze existing codebase against standards and execute refactoring through dev-
 ```
 Does docs/PROJECT_RULES.md exist in the target project?
 ├── YES → Load skill: dev-refactor
-└── NO  → Output blocker below and STOP
+└── no  → Output blocker below and STOP
 ```
 
-**If file does NOT exist, output this EXACT response:**
+**If file does not exist, output this EXACT response:**
 
 ```markdown
 ## ⛔ HARD BLOCK: PROJECT_RULES.md Not Found
@@ -33,7 +33,7 @@ Create `docs/PROJECT_RULES.md` with your project's:
 Then re-run `/dev-refactor`.
 ```
 
-**DO NOT:**
+**DO not:**
 - Use "default" or "industry" standards
 - Infer standards from existing code
 - Proceed with partial analysis
@@ -123,7 +123,7 @@ When analyzing services for instrumentation compliance, verify:
 - Same format as PM Team output
 - Compatible with dev-cycle execution
 
-## Severity Levels (ALL ARE MANDATORY)
+## Severity Levels (all ARE MANDATORY)
 
 | Level | Description | Priority | Tracking |
 |-------|-------------|----------|----------|
@@ -132,7 +132,7 @@ When analyzing services for instrumentation compliance, verify:
 | **Medium** | Convention violations, moderate gaps | Fix in next sprint | **MANDATORY** |
 | **Low** | Style issues, minor gaps | Fix when capacity | **MANDATORY** |
 
-**⛔ ALL severities are MANDATORY to track and fix. Low ≠ Optional. Low = Lower priority, still required.**
+**⛔ all severities are MANDATORY to track and fix. Low ≠ Optional. Low = Lower priority, still required.**
 
 ## Prerequisites
 
@@ -162,10 +162,10 @@ Use Skill tool: dev-refactor
 
 The skill contains the complete analysis workflow with:
 - Anti-rationalization tables for codebase exploration
-- Mandatory use of `codebase-explorer` (NOT Bash/Explore)
+- Mandatory use of `codebase-explorer` (not Bash/Explore)
 - Standards coverage table requirements
 - Finding → Task mapping gates
-- Full agent dispatch prompts with `**MODE: ANALYSIS ONLY**`
+- Full agent dispatch prompts with `**MODE: ANALYSIS only**`
 
 ## Execution Context
 
@@ -203,7 +203,7 @@ See skill `dev-refactor` for full details. Key rules:
 
 - **All agents dispatch in parallel** - Single message, multiple Task calls
 - **Specify model: "opus"** - All agents need opus for comprehensive analysis
-- **MODE: ANALYSIS ONLY** - Agents analyze, they do NOT implement
+- **MODE: ANALYSIS only** - Agents analyze, they DO NOT implement
 - **Save artifacts** to `docs/refactor/{timestamp}/`
 - **Get user approval** before executing dev-cycle
 - **Handoff**: `/dev-cycle docs/refactor/{timestamp}/tasks.md`

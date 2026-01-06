@@ -14,7 +14,7 @@ NOT_skip_when: |
   - "Code already exists" → DELETE it. TDD is test-first.
   - "Simple feature" → Simple ≠ exempt. TDD for all.
   - "Time pressure" → TDD saves time. No shortcuts.
-  - "PROJECT_RULES.md doesn't require" → Ring ALWAYS requires TDD.
+  - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
 
 sequence:
   before: [dev-devops]
@@ -176,7 +176,7 @@ OPTIONAL INPUT:
 - existing_patterns: [patterns to follow]
 - project_rules_path: [default: docs/PROJECT_RULES.md]
 
-IF any REQUIRED input is missing:
+if any REQUIRED input is missing:
   → STOP and report: "Missing required input: [field]"
   → Return to orchestrator with error
 ```
@@ -187,7 +187,7 @@ IF any REQUIRED input is missing:
 1. Check PROJECT_RULES.md exists:
    Read tool → project_rules_path (default: docs/PROJECT_RULES.md)
    
-   IF not found:
+   if not found:
      → STOP with blocker: "Cannot implement without project standards"
      → Return error to orchestrator
 
@@ -255,7 +255,7 @@ Task:
     ## Requirements for Test
     - Follow project naming conventions from PROJECT_RULES.md
     - Use table-driven tests (Go) or describe/it blocks (TS)
-    - Test the happy path AND edge cases
+    - Test the happy path and edge cases
     - Include meaningful assertion messages
 
     ## Required Output Format
@@ -277,7 +277,7 @@ Task:
     ```
 
     ⛔ HARD GATE: You MUST include actual failure output.
-    Without failure output, TDD-RED is NOT complete.
+    Without failure output, TDD-RED is not complete.
 ```
 
 ## Step 5: Validate TDD-RED Output
@@ -288,11 +288,11 @@ Parse agent output:
 1. Extract test file path
 2. Extract failure output
 
-IF failure_output is missing OR does not contain "FAIL":
+if failure_output is missing or does not contain "FAIL":
   → STOP: "TDD-RED incomplete - no failure output captured"
   → Re-dispatch agent with clarification
 
-IF failure_output contains "FAIL":
+if failure_output contains "FAIL":
   → implementation_state.tdd_red = {
       status: "completed",
       test_file: [extracted path],
@@ -333,28 +333,28 @@ Task:
     For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
 
-    ## ⛔ CRITICAL: ALL Ring Standards Apply (NO DEFERRAL)
+    ## ⛔ CRITICAL: all Ring Standards Apply (no DEFERRAL)
     See Ring Standards for mandatory requirements:
     - Structured JSON logging with trace_id correlation
-    - OpenTelemetry instrumentation (spans in EVERY function)
+    - OpenTelemetry instrumentation (spans in every function)
     - Error handling (no panic, wrap with context)
     - Context propagation
 
-    **⛔ HARD GATE:** If you output "DEFERRED" for ANY Ring Standard → Implementation is INCOMPLETE.
+    **⛔ HARD GATE:** If you output "DEFERRED" for any Ring Standard → Implementation is INCOMPLETE.
 
     ## Your Task
     1. Write MINIMAL code to make the test pass
-    2. Follow ALL Ring Standards (logging, tracing, error handling)
-    3. **Instrument ALL code with telemetry** (100% of handlers, services, repositories)
+    2. Follow all Ring Standards (logging, tracing, error handling)
+    3. **Instrument all code with telemetry** (100% of handlers, services, repositories)
     4. Run the test and capture the PASS output
 
     ## ⛔ MANDATORY: Telemetry Instrumentation (NON-NEGOTIABLE)
 
-    **EVERY function that does work MUST be instrumented with telemetry.**
-    This is NOT optional. This is NOT "nice to have". This is REQUIRED.
+    **every function that does work MUST be instrumented with telemetry.**
+    This is not optional. This is not "nice to have". This is REQUIRED.
 
     ### What "Instrumented" Means
-    1. **Extract logger/tracer from context** (NOT create new ones)
+    1. **Extract logger/tracer from context** (not create new ones)
     2. **Create a child span** for the operation
     3. **Defer span.End()** immediately
     4. **Use structured logging** correlated with trace
@@ -362,14 +362,14 @@ Task:
 
     ### Language-Specific Patterns (MANDATORY)
 
-    **⛔ HARD GATE: Agent MUST WebFetch standards file BEFORE writing ANY code.**
+    **⛔ HARD GATE: Agent MUST WebFetch standards file BEFORE writing any code.**
 
     | Language | Standards File | REQUIRED Sections to WebFetch |
     |----------|----------------|-------------------------------|
     | **Go** | `golang.md` | "Telemetry & Observability (MANDATORY)", "Child Spans", "Context Propagation", "Anti-Patterns" |
     | **TypeScript** | `typescript.md` | "Observability", "Telemetry Patterns", "Context Propagation", "Anti-Patterns" |
 
-    **⛔ NON-NEGOTIABLE: Agent MUST implement EXACTLY the patterns from standards. NO deviations. NO shortcuts.**
+    **⛔ NON-NEGOTIABLE: Agent MUST implement EXACTLY the patterns from standards. no deviations. no shortcuts.**
 
     | Requirement | Enforcement |
     |-------------|-------------|
@@ -382,17 +382,17 @@ Task:
     
     **Agent MUST WebFetch standards and check Anti-Patterns table. Violations = REJECTED.**
 
-    - **Go:** `golang.md` → "Anti-Patterns" table - MUST check ALL rows
-    - **TypeScript:** `typescript.md` → "Anti-Patterns" table - MUST check ALL rows
+    - **Go:** `golang.md` → "Anti-Patterns" table - MUST check all rows
+    - **TypeScript:** `typescript.md` → "Anti-Patterns" table - MUST check all rows
 
-    **If agent uses ANY forbidden pattern → Implementation is INVALID. Start over.**
+    **If agent uses any forbidden pattern → Implementation is INVALID. Start over.**
 
     ### Verification (MANDATORY)
     
     **Agent MUST output Standards Coverage Table per `standards-coverage-table.md`.**
     
-    - ALL sections MUST show ✅ or N/A
-    - ANY ❌ = Implementation REJECTED
+    - all sections MUST show ✅ or N/A
+    - any ❌ = Implementation REJECTED
     - Missing table = Implementation INCOMPLETE
 
     ## Required Output Format
@@ -438,15 +438,15 @@ Parse agent output:
 3. Extract standards compliance
 4. Extract commit SHA
 
-IF pass_output is missing OR does not contain "PASS":
+if pass_output is missing or does not contain "PASS":
   → STOP: "TDD-GREEN incomplete - test not passing"
   → Re-dispatch agent with error details
 
-IF any standards compliance is ❌:
+if any standards compliance is ❌:
   → STOP: "Standards not met - [list failing standards]"
   → Re-dispatch agent to fix
 
-IF pass_output contains "PASS" AND all standards ✅:
+if pass_output contains "PASS" and all standards ✅:
   → implementation_state.tdd_green = {
       status: "completed",
       implementation_files: [extracted files],
@@ -521,10 +521,10 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | "Skip RED, go straight to GREEN" | RED proves test validity | **Execute RED phase first** |
 | "I'll add observability later" | Later = never. Observability is part of GREEN. | **Add logging + tracing NOW** |
 | "Minimal code = no logging" | Minimal = pass test. Logging is a standard, not extra. | **Include observability** |
-| "DEFERRED to later tasks" | DEFERRED = FAILED. Standards are not deferrable. | **Implement ALL standards NOW** |
+| "DEFERRED to later tasks" | DEFERRED = FAILED. Standards are not deferrable. | **Implement all standards NOW** |
 | "Using raw OTel is fine" | lib-commons wrappers are MANDATORY for consistency | **Use libCommons.NewTrackingFromContext** |
 | "c.JSON() works the same" | Direct Fiber breaks response standardization | **Use libHTTP.OK(), libHTTP.WithError()** |
-| "This function is too simple for spans" | Simple ≠ exempt. ALL functions need spans. | **Add span to EVERY function** |
+| "This function is too simple for spans" | Simple ≠ exempt. all functions need spans. | **Add span to every function** |
 | "Telemetry adds overhead" | Observability is non-negotiable for production | **Instrument 100% of code paths** |
 
 ## Agent Selection Guide
@@ -566,6 +566,6 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 ## Handoff to Next Gate
 - Implementation status: [COMPLETE|PARTIAL]
-- Ready for Gate 1: [YES|NO]
+- Ready for Gate 1: [YES|no]
 - Environment needs: [list]
 ```

@@ -6,44 +6,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## ⛔ CRITICAL RULES (READ FIRST)
 
-**These rules are NON-NEGOTIABLE. They MUST be followed for EVERY task.**
+**These rules are NON-NEGOTIABLE. They MUST be followed for every task.**
 
 ### 1. Agent Modification = Mandatory Verification
-When creating or modifying ANY agent in `*/agents/*.md`:
-- **MUST** verify agent has ALL required sections (see "Agent Modification Verification")
+When creating or modifying any agent in `*/agents/*.md`:
+- **MUST** verify agent has all required sections (see "Agent Modification Verification")
 - **MUST** use STRONG language (MUST, REQUIRED, CANNOT, FORBIDDEN)
 - **MUST** include anti-rationalization tables
-- If ANY section is missing → Agent is INCOMPLETE
+- If any section is missing → Agent is INCOMPLETE
 
 ### 2. Agents are EXECUTORS, Not DECISION-MAKERS
-- Agents **VERIFY**, they do NOT **ASSUME**
-- Agents **REPORT** blockers, they do NOT **SOLVE** ambiguity autonomously
-- Agents **FOLLOW** gates, they do NOT **SKIP** gates
-- Agents **ASK** when uncertain, they do NOT **GUESS**
+- Agents **VERIFY**, they DO NOT **ASSUME**
+- Agents **REPORT** blockers, they DO NOT **SOLVE** ambiguity autonomously
+- Agents **FOLLOW** gates, they DO NOT **SKIP** gates
+- Agents **ASK** when uncertain, they DO NOT **GUESS**
 
-### 3. Anti-Patterns (NEVER Do These)
-1. **NEVER skip using-ring** - It's mandatory, not optional
-2. **NEVER run reviewers sequentially** - Always dispatch in parallel
-3. **NEVER skip TDD's RED phase** - Test must fail before implementation
-4. **NEVER ignore skill when applicable** - "Simple task" is not an excuse
-5. **NEVER use panic() in Go** - Error handling required
-6. **NEVER commit manually** - Always use `/commit` command
-7. **NEVER assume compliance** - VERIFY with evidence
+### 3. Anti-Patterns (never Do These)
+1. **never skip using-ring** - It's mandatory, not optional
+2. **never run reviewers sequentially** - Always dispatch in parallel
+3. **never skip TDD's RED phase** - Test must fail before implementation
+4. **never ignore skill when applicable** - "Simple task" is not an excuse
+5. **never use panic() in Go** - Error handling required
+6. **never commit manually** - Always use `/commit` command
+7. **never assume compliance** - VERIFY with evidence
 
-### 4. Fully Qualified Names (ALWAYS)
+### 4. Fully Qualified Names (always)
 - ✅ `ring-default:code-reviewer`
 - ✅ `ring-dev-team:backend-engineer-golang`
 - ❌ `code-reviewer` (missing plugin prefix)
 - ❌ `ring:code-reviewer` (ambiguous shorthand)
 
-### 5. Standards-Agent Synchronization (ALWAYS CHECK)
+### 5. Standards-Agent Synchronization (always CHECK)
 When modifying standards files (`dev-team/docs/standards/*.md`):
 
 **⛔ FOUR-FILE UPDATE RULE:**
 1. Edit `dev-team/docs/standards/{file}.md` - Add your `## Section Name`
 2. **Update TOC** - Add section to the `## Table of Contents` at the top of the same file
 3. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
-4. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (NOT inline categories)
+4. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (not inline categories)
 5. **All files in same commit** - Never update one without the others
 
 **⛔ TOC MAINTENANCE RULE:**
@@ -68,9 +68,9 @@ Before committing changes to dev-team/docs/standards/*.md:
     - Count `## ` headers in standards file (excluding meta-sections)
     - Count rows in TOC
     - Count rows in standards-coverage-table.md for that agent
-    - ALL THREE must be equal
+    - all THREE must be equal
 
-If ANY checkbox is NO → Fix before committing.
+If any checkbox is no → Fix before committing.
 ```
 
 **⛔ AGENT INLINE CATEGORIES ARE FORBIDDEN:**
@@ -103,18 +103,18 @@ If ANY checkbox is NO → Fix before committing.
 | `frontend-designer` | frontend.md | See coverage table |
 | `devops-engineer` | devops.md | See coverage table |
 | `sre` | sre.md | See coverage table |
-| `qa-analyst` | golang.md OR typescript.md | See coverage table |
+| `qa-analyst` | golang.md or typescript.md | See coverage table |
 
 **⛔ If section counts in skills don't match this table → Update the skill.**
 
-### 6. Agent Model Requirements (ALWAYS RESPECT)
+### 6. Agent Model Requirements (always RESPECT)
 When invoking agents via Task tool:
 - **MUST** check agent's `model:` field in YAML frontmatter
 - **MUST** pass matching `model` parameter to Task tool
 - Agents with `model: opus` → **MUST** call with `model="opus"`
 - Agents with `model: sonnet` → **MUST** call with `model="sonnet"`
-- **NEVER** omit model parameter for specialized agents
-- **NEVER** let system auto-select model for agents with model requirements
+- **never** omit model parameter for specialized agents
+- **never** let system auto-select model for agents with model requirements
 
 **Examples:**
 - ✅ `Task(subagent_type="code-reviewer", model="opus", ...)`
@@ -127,28 +127,28 @@ All agents with `model:` field in frontmatter MUST include "Model Requirements" 
 
 ### 8. CLAUDE.md ↔ AGENTS.md Synchronization (AUTOMATIC via Symlink)
 
-**⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md - DO NOT BREAK:**
+**⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md - DO not BREAK:**
 - `CLAUDE.md` - Primary project instructions (source of truth)
 - `AGENTS.md` - Symlink to CLAUDE.md (automatically synchronized)
 
 **Current Setup:** `AGENTS.md -> CLAUDE.md` (symlink)
 
-**Why:** Both files serve as entry points for AI agents. CLAUDE.md is read by Claude Code, AGENTS.md is read by other AI systems. The symlink ensures they ALWAYS contain identical information.
+**Why:** Both files serve as entry points for AI agents. CLAUDE.md is read by Claude Code, AGENTS.md is read by other AI systems. The symlink ensures they always contain identical information.
 
 **Rules:**
-- **NEVER delete the AGENTS.md symlink**
-- **NEVER replace AGENTS.md with a regular file**
-- **ALWAYS edit CLAUDE.md** - changes automatically appear in AGENTS.md
+- **never delete the AGENTS.md symlink**
+- **never replace AGENTS.md with a regular file**
+- **always edit CLAUDE.md** - changes automatically appear in AGENTS.md
 - If symlink is broken → Restore with: `ln -sf CLAUDE.md AGENTS.md`
 
 ---
 
-### 7. Content Duplication Prevention (ALWAYS CHECK)
-Before adding ANY content to prompts, skills, agents, or documentation:
+### 7. Content Duplication Prevention (always CHECK)
+Before adding any content to prompts, skills, agents, or documentation:
 1. **SEARCH FIRST**: `grep -r "keyword" --include="*.md"` - Check if content already exists
-2. **If content exists** → **REFERENCE it**, do NOT duplicate. Use: `See [file](path) for details`
+2. **If content exists** → **REFERENCE it**, DO NOT duplicate. Use: `See [file](path) for details`
 3. **If adding new content** → Add to the canonical source per table below
-4. **NEVER copy** content between files - always link to the single source of truth
+4. **never copy** content between files - always link to the single source of truth
 
 | Information Type | Canonical Source (Single Source of Truth) |
 |-----------------|-------------------------------------------|
@@ -164,7 +164,7 @@ Before adding ANY content to prompts, skills, agents, or documentation:
 When content is reused across multiple skills within a plugin:
 1. **Extract to shared-patterns**: Create `{plugin}/skills/shared-patterns/{pattern-name}.md`
 2. **Reference from skills**: Use `See [shared-patterns/{name}.md](../shared-patterns/{name}.md)`
-3. **NEVER duplicate**: If the same table/section appears in 2+ skills → extract to shared-patterns
+3. **never duplicate**: If the same table/section appears in 2+ skills → extract to shared-patterns
 
 | Shared Pattern Type | Location |
 |--------------------|----------|
@@ -189,7 +189,7 @@ When content is reused across multiple skills within a plugin:
 | [CLAUDE.md ↔ AGENTS.md Sync](#8-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync |
 | [Content Duplication Prevention](#7-content-duplication-prevention-always-check) | Canonical sources + reference pattern |
 | [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents) | Prevent AI from assuming/skipping |
-| [Assertive Language Reference](#assertive-language-reference) | Quick reference + [full docs](docs/PROMPT_ENGINEERING.md) |
+| [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory) | Selective emphasis for effective prompts |
 | [Agent Modification Verification](#agent-modification-verification-mandatory) | Checklist for agent changes |
 | [Repository Overview](#repository-overview) | What Ring is |
 | [Architecture](#architecture) | Plugin summary |
@@ -203,12 +203,12 @@ When content is reused across multiple skills within a plugin:
 
 ## Anti-Rationalization Tables (MANDATORY for All Agents)
 
-**Every agent MUST include an anti-rationalization table.** This is NOT optional. This is REQUIRED. This is a HARD GATE for agent design.
+**MANDATORY: Every agent must include an anti-rationalization table.** This is a HARD GATE for agent design.
 
 **Why This Is Mandatory:**
-AI models naturally attempt to be "helpful" by making autonomous decisions. This is DANGEROUS in structured workflows. Agents MUST NOT rationalize skipping gates, assuming compliance, or making decisions that belong to users or orchestrators.
+AI models naturally attempt to be "helpful" by making autonomous decisions. This is dangerous in structured workflows. Agents MUST NOT rationalize skipping gates, assuming compliance, or making decisions that belong to users or orchestrators.
 
-**Anti-rationalization tables use aggressive language intentionally.** Words like "MUST", "REQUIRED", "MANDATORY", "CANNOT", "NON-NEGOTIABLE" are REQUIRED to override the AI's instinct to be accommodating.
+**Anti-rationalization tables use selective emphasis.** Place enforcement words (MUST, STOP, FORBIDDEN) at the beginning of instructions for maximum impact. See [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory).
 
 **Required Table Structure:**
 ```markdown
@@ -221,12 +221,12 @@ AI models naturally attempt to be "helpful" by making autonomous decisions. This
 ```markdown
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Codebase already uses lib-commons" | Partial usage ≠ full compliance. Check everything. | **Verify ALL categories** |
-| "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify ALL categories** |
-| "Only checking what seems relevant" | You don't decide relevance. The checklist does. | **Verify ALL categories** |
-| "Code looks correct, skip verification" | Looking correct ≠ being correct. Verify. | **Verify ALL categories** |
-| "Previous refactor already checked this" | Each refactor is independent. Check again. | **Verify ALL categories** |
-| "Small codebase, not all applies" | Size is irrelevant. Standards apply uniformly. | **Verify ALL categories** |
+| "Codebase already uses lib-commons" | Partial usage ≠ full compliance. Check everything. | **Verify all categories** |
+| "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify all categories** |
+| "Only checking what seems relevant" | You don't decide relevance. The checklist does. | **Verify all categories** |
+| "Code looks correct, skip verification" | Looking correct ≠ being correct. Verify. | **Verify all categories** |
+| "Previous refactor already checked this" | Each refactor is independent. Check again. | **Verify all categories** |
+| "Small codebase, not all applies" | Size is irrelevant. Standards apply uniformly. | **Verify all categories** |
 ```
 
 **Mandatory Sections Every Agent MUST Have:**
@@ -241,44 +241,114 @@ AI models naturally attempt to be "helpful" by making autonomous decisions. This
 
 **Language Guidelines for Agent Prompts:**
 
-| Weak (AVOID) | Strong (REQUIRED) |
-|--------------|-------------------|
-| "You should check..." | "You MUST check..." |
-| "It's recommended to..." | "It is REQUIRED to..." |
+| Weak (AVOID) | Strong (Correct) |
+|--------------|------------------|
+| "You should check..." | "MUST check..." |
+| "It's recommended to..." | "REQUIRED: ..." |
 | "Consider verifying..." | "MANDATORY: Verify..." |
-| "You can skip if..." | "You CANNOT skip. No exceptions." |
-| "Optionally include..." | "This section is NON-NEGOTIABLE." |
-| "Try to follow..." | "HARD GATE: You will follow..." |
+| "You can skip if..." | "CANNOT skip. No exceptions." |
+| "Optionally include..." | "MANDATORY: Include..." |
+| "Try to follow..." | "HARD GATE: Follow..." |
 
-**If an agent lacks anti-rationalization tables → The agent is INCOMPLETE and MUST be updated.**
+**Note:** Place enforcement word at the BEGINNING, not embedded in the sentence.
+
+**HARD GATE: If an agent lacks anti-rationalization tables, it is incomplete and must be updated.**
 
 ---
 
-## Assertive Language Reference (MANDATORY)
+## Lexical Salience Guidelines (MANDATORY)
 
-**Quick reference for prompt engineering:**
+**Effective prompts use selective emphasis.** When too many words are in CAPS, none stand out - the AI treats all as equal priority.
 
-| Category | Examples |
-|----------|----------|
-| Requirements | MUST, REQUIRED, MANDATORY, SHALL, ALWAYS |
-| Prohibitions | CANNOT, NEVER, FORBIDDEN, MUST NOT, PROHIBITED |
-| Enforcement | HARD GATE, NON-NEGOTIABLE, NO EXCEPTIONS, STOP AND REPORT |
-| Anti-rationalization | "Assumption ≠ Verification", "You don't decide X" |
+### Principle: Less is More
 
-See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) for complete language patterns and template examples.
+| Approach | Effectiveness | Why |
+|----------|---------------|-----|
+| Few CAPS words | HIGH | AI attention focuses on truly critical instructions |
+| Many CAPS words | LOW | Salience dilution - everything emphasized = nothing emphasized |
+
+### Words to Keep in Lowercase (Context Words)
+
+These words provide context but DO NOT need emphasis:
+
+| Word | Use Instead |
+|------|-------------|
+| ~~all~~ | all |
+| ~~any~~ | any |
+| ~~only~~ | only |
+| ~~each~~ | each |
+| ~~every~~ | every |
+| ~~not~~ | not (except in "MUST not") |
+| ~~no~~ | no |
+| ~~and~~ | and |
+| ~~or~~ | or |
+| ~~if~~ | if |
+| ~~else~~ | else |
+| ~~never~~ | "MUST NOT" |
+| ~~always~~ | "must" |
+
+### Words to Keep in CAPS (Enforcement Words)
+
+Use these sparingly and only at the **beginning** of instructions:
+
+| Word | Purpose | Correct Position |
+|------|---------|------------------|
+| MUST | Primary requirement | "MUST verify before proceeding" |
+| STOP | Immediate action | "STOP and report blocker" |
+| HARD GATE | Critical checkpoint | "HARD GATE: Cannot proceed without..." |
+| FAIL/PASS | Verdict states | "FAIL: Gate 4 incomplete" |
+| MANDATORY | Section marker | "MANDATORY: Initialize first" |
+| CRITICAL | Severity level | "CRITICAL: Security issue" |
+| FORBIDDEN | Strong prohibition | "FORBIDDEN: Direct code editing" |
+| REQUIRED | Alternative to MUST | "REQUIRED: Load standards first" |
+| CANNOT | Prohibition | "CANNOT skip this gate" |
+
+### Positioning Rule: Beginning of Instructions
+
+**Enforcement words MUST appear at the BEGINNING of instructions, not in the middle or end.**
+
+| Position | Effectiveness | Example |
+|----------|---------------|---------|
+| **Beginning** | HIGH | "MUST verify all sections before proceeding" |
+| Middle | LOW | "You should verify all sections, this is MUST" |
+| End | LOW | "Verify all sections before proceeding, MUST" |
+
+### Transformation Examples
+
+| Before (Diluted) | After (Focused) |
+|------------------|-----------------|
+| "You MUST check all sections" | "MUST check all sections" |
+| "never skip any gate" | "MUST not skip any gate" |
+| "This is MANDATORY for every task" | "MANDATORY: This applies to every task" |
+| "always verify BEFORE proceeding" | "MUST verify before proceeding" |
+| "Check if this CONDITION is met" | "MUST check if this condition is met" |
+
+### Sentence Structure Pattern
+
+```
+[ENFORCEMENT WORD]: [Action/Instruction] [Context]
+
+Examples:
+- MUST dispatch agent before proceeding to next gate
+- STOP and report if PROJECT_RULES.md is missing
+- HARD GATE: All 3 reviewers must pass before Gate 5
+- FORBIDDEN: Reading source code directly as orchestrator
+```
+
+See [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) for complete patterns and the [lexical salience refactoring plan](docs/plans/lexical-salience-refactor.md) for implementation details.
 
 ---
 
 ## Agent Modification Verification (MANDATORY)
 
-**HARD GATE: Before creating or modifying ANY agent file, Claude Code MUST verify compliance with this checklist.**
+**HARD GATE: Before creating or modifying any agent file, Claude Code MUST verify compliance with this checklist.**
 
 When you receive instructions to create or modify an agent in `*/agents/*.md`:
 
 **Step 1: Read This Section**
-Before ANY agent work, re-read this CLAUDE.md section to understand current requirements.
+Before any agent work, re-read this CLAUDE.md section to understand current requirements.
 
-**Step 2: Verify Agent Has ALL Required Sections**
+**Step 2: Verify Agent Has all Required Sections**
 
 | Required Section | Pattern to Check | If Missing |
 |------------------|------------------|------------|
@@ -308,7 +378,7 @@ SCAN for weak phrases → REPLACE with strong:
 **Step 4: Before Completing Agent Modification**
 
 ```text
-CHECKLIST (ALL must be YES):
+CHECKLIST (all must be YES):
 [ ] Does agent have Standards Loading section?
 [ ] Does agent have Blocker Criteria table?
 [ ] Does agent have Cannot Be Overridden table?
@@ -321,10 +391,10 @@ CHECKLIST (ALL must be YES):
 [ ] Does agent define non-negotiable requirements?
 [ ] If agent has model: field in frontmatter, does it have Model Requirements section?
 
-If ANY checkbox is NO → Agent is INCOMPLETE. Add missing sections.
+If any checkbox is no → Agent is INCOMPLETE. Add missing sections.
 ```
 
-**This verification is NOT optional. This is a HARD GATE for all agent modifications.**
+**This verification is not optional. This is a HARD GATE for all agent modifications.**
 
 ---
 
@@ -443,7 +513,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 - Hooks: `{event}-{purpose}.sh` format
 
 #### Agent/Skill/Command Invocation
-- **ALWAYS use fully qualified names**: `ring-{plugin}:{component}`
+- **always use fully qualified names**: `ring-{plugin}:{component}`
 - **Examples:**
   - ✅ Correct: `ring-default:code-reviewer`
   - ✅ Correct: `ring-dev-team:backend-engineer-golang`
@@ -481,17 +551,17 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 - Re-run all reviewers after fixes
 
 # Skill compliance (default/skills/using-ring/SKILL.md)
-- Check for applicable skills before ANY task
+- Check for applicable skills before any task
 - If skill exists for task → MUST use it
 - Announce non-obvious skill usage
 
 # Commit compliance (default/commands/commit.md)
-- ALWAYS use /commit for all commits
+- always use /commit for all commits
 - Never write git commit commands manually
 - Command enforces: conventional commits, trailers, no emoji signatures
-- MUST use --trailer parameter for AI identification (NOT in message body)
+- MUST use --trailer parameter for AI identification (not in message body)
 - Format: git commit -m "msg" --trailer "Generated-by: Claude" --trailer "AI-Model: <model>"
-- NEVER use HEREDOC to include trailers in message body
+- never use HEREDOC to include trailers in message body
 ```
 
 ---
@@ -523,7 +593,7 @@ The system loads at SessionStart (from `default/` plugin):
 
 ## Documentation Sync Checklist
 
-**IMPORTANT:** When modifying agents, skills, commands, or hooks, check ALL these files for consistency:
+**IMPORTANT:** When modifying agents, skills, commands, or hooks, check all these files for consistency:
 
 ```
 Root Documentation:

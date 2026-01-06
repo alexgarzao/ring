@@ -19,17 +19,17 @@ Analyzes existing codebase against Ring/Lerian standards and generates refactori
 
 ## ⛔ MANDATORY GAP PRINCIPLE (NON-NEGOTIABLE)
 
-**ANY divergence from Ring standards = MANDATORY gap to implement.**
+**any divergence from Ring standards = MANDATORY gap to implement.**
 
-This is NOT optional. This is NOT subject to interpretation. This is a HARD RULE.
+This is not optional. This is not subject to interpretation. This is a HARD RULE.
 
 | Principle | Meaning |
 |-----------|---------|
-| **ALL divergences are gaps** | Every difference between codebase and Ring standards MUST be tracked as FINDING-XXX |
-| **Severity affects PRIORITY, not TRACKING** | Low severity = lower execution priority, NOT "optional to track" |
-| **NO filtering allowed** | You CANNOT decide which divergences "matter" - ALL matter |
-| **NO alternative patterns accepted** | "Codebase uses different but valid approach" = STILL A GAP |
-| **NO cosmetic exceptions** | Naming, formatting, structure differences = GAPS |
+| **all divergences are gaps** | Every difference between codebase and Ring standards MUST be tracked as FINDING-XXX |
+| **Severity affects PRIORITY, not TRACKING** | Low severity = lower execution priority, not "optional to track" |
+| **no filtering allowed** | You CANNOT decide which divergences "matter" - all matter |
+| **no alternative patterns accepted** | "Codebase uses different but valid approach" = STILL A GAP |
+| **no cosmetic exceptions** | Naming, formatting, structure differences = GAPS |
 
 ### Anti-Rationalization: Mandatory Gap Principle
 
@@ -42,7 +42,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 ### Verification Rule
 
 ```
-COUNT(non-✅ items in ALL Standards Coverage Tables) == COUNT(FINDING-XXX entries)
+COUNT(non-✅ items in all Standards Coverage Tables) == COUNT(FINDING-XXX entries)
 
 If counts don't match → SKILL FAILURE. Go back and add missing findings.
 ```
@@ -59,10 +59,10 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 | Complex business logic | ✅ APPLY | ✅ APPLY |
 | Multiple bounded contexts | ✅ APPLY | ✅ APPLY |
 | Event-driven systems | ✅ APPLY | ✅ APPLY |
-| Simple scripts/utilities | ❌ NOT APPLICABLE | ❌ NOT APPLICABLE |
-| CLI tools | ❌ NOT APPLICABLE | ❌ NOT APPLICABLE |
-| Workers/background jobs | ❌ NOT APPLICABLE | ❌ NOT APPLICABLE |
-| Simple lambda/functions | ❌ NOT APPLICABLE | ❌ NOT APPLICABLE |
+| Simple scripts/utilities | ❌ not APPLICABLE | ❌ not APPLICABLE |
+| CLI tools | ❌ not APPLICABLE | ❌ not APPLICABLE |
+| Workers/background jobs | ❌ not APPLICABLE | ❌ not APPLICABLE |
+| Simple lambda/functions | ❌ not APPLICABLE | ❌ not APPLICABLE |
 
 ### Detection Criteria
 
@@ -73,7 +73,7 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 - Uses repositories for data access
 - → **MUST follow Hexagonal Architecture and Lerian directory pattern**
 
-**Simple Service (Hexagonal/Lerian NOT applicable):**
+**Simple Service (Hexagonal/Lerian not applicable):**
 - CLI tools and scripts
 - Workers and background jobs
 - Simple utility functions
@@ -87,7 +87,7 @@ When dispatching specialist agents, include:
 ```
 ⛔ ARCHITECTURE APPLICABILITY CHECK:
 1. If service is an API with CRUD operations → APPLY Hexagonal/Lerian standards
-2. If service is CLI tool, script, or simple utility → Do NOT flag Hexagonal/Lerian gaps
+2. If service is CLI tool, script, or simple utility → Do not flag Hexagonal/Lerian gaps
 
 CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Lerian directory pattern.
 ```
@@ -96,7 +96,7 @@ CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Lerian directo
 
 ## ⛔ MANDATORY: Initialize Todo List FIRST
 
-**Before ANY other action, create the todo list with ALL steps:**
+**Before any other action, create the todo list with all steps:**
 
 ```yaml
 TodoWrite:
@@ -142,7 +142,7 @@ TodoWrite:
       activeForm: "Handing off to dev-cycle"
 ```
 
-**This is NON-NEGOTIABLE. Do NOT skip creating the todo list.**
+**This is NON-NEGOTIABLE. Do not skip creating the todo list.**
 
 ---
 
@@ -161,7 +161,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 **Check:** Does `docs/PROJECT_RULES.md` exist?
 
 - **YES** → Mark todo as `completed`, continue to Step 1
-- **NO** → Output blocker and TERMINATE:
+- **no** → Output blocker and TERMINATE:
 
 ```markdown
 ## BLOCKED: PROJECT_RULES.md Not Found
@@ -198,7 +198,7 @@ Check for manifest files and frontend indicators:
 - `package.json` exists + `/api/` routes or Express/Fastify → Add TypeScript backend agent
 - `package.json` exists + BFF indicators (`/bff/`, gateway patterns) → Add BFF agent
 
-If multiple stacks detected, dispatch agents for ALL.
+If multiple stacks detected, dispatch agents for all.
 
 **TodoWrite:** Mark "Detect project stack (Go/TypeScript/Frontend)" as `completed`
 
@@ -228,7 +228,7 @@ Extract project-specific conventions for agent context.
 
 ```yaml
 Task tool:
-  subagent_type: "codebase-explorer"  # ← EXACT STRING, NOT "Explore"
+  subagent_type: "codebase-explorer"  # ← EXACT STRING, not "Explore"
   model: "opus"
   description: "Generate codebase architecture report"
   prompt: |
@@ -259,7 +259,7 @@ Task tool:
     ## RECOMMENDATIONS
     [Your recommendations here]
 
-    **Do NOT complete without outputting your full report in the format above.**
+    **Do not complete without outputting your full report in the format above.**
 ```
 
 ### Anti-Rationalization Table for Step 3
@@ -307,31 +307,31 @@ Write tool:
 
 ### ⛔ HARD GATE: Verify codebase-report.md Exists
 
-**BEFORE dispatching ANY specialist agent, verify:**
+**BEFORE dispatching any specialist agent, verify:**
 
 ```
 Check 1: Does docs/refactor/{timestamp}/codebase-report.md exist?
   - YES → Continue to dispatch agents
-  - NO  → STOP. Go back to Step 3.
+  - no  → STOP. Go back to Step 3.
 
 Check 2: Was codebase-report.md created by codebase-explorer?
   - YES → Continue
-  - NO (created by Bash output) → DELETE IT. Go back to Step 3. Use correct agent.
+  - no (created by Bash output) → DELETE IT. Go back to Step 3. Use correct agent.
 ```
 
 **If you skipped Step 3 or used Bash instead of Task tool → You MUST go back and redo Step 3 correctly.**
 
-**Dispatch ALL applicable agents in ONE message (parallel):**
+**Dispatch all applicable agents in ONE message (parallel):**
 
 ### ⛔ MANDATORY: Reference Standards Coverage Table
 
 **All agents MUST follow [shared-patterns/standards-coverage-table.md](../shared-patterns/standards-coverage-table.md) which defines:**
-- ALL sections to check per agent (including DDD)
+- all sections to check per agent (including DDD)
 - Required output format (Standards Coverage Table)
 - Anti-rationalization rules
 - Completeness verification
 
-**Section indexes are pre-defined in shared-patterns. Agents MUST check ALL sections listed.**
+**Section indexes are pre-defined in shared-patterns. Agents MUST check all sections listed.**
 
 ---
 
@@ -343,18 +343,18 @@ Task tool 1:
   model: "opus"
   description: "Go standards analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
+    **MODE: ANALYSIS only**
 
-    ⛔ MANDATORY: Check ALL sections in golang.md per shared-patterns/standards-coverage-table.md
+    ⛔ MANDATORY: Check all sections in golang.md per shared-patterns/standards-coverage-table.md
 
     ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
-    1. Read go.mod to extract ALL dependencies used in codebase
-    2. Load golang.md standards via WebFetch → extract ALL listed frameworks/libraries
-    3. For EACH category in standards (HTTP, Database, Validation, Testing, etc.):
+    1. Read go.mod to extract all dependencies used in codebase
+    2. Load golang.md standards via WebFetch → extract all listed frameworks/libraries
+    3. For each category in standards (HTTP, Database, Validation, Testing, etc.):
        - Compare codebase dependency vs standards requirement
        - If codebase uses DIFFERENT library than standards → ISSUE-XXX
        - If codebase is MISSING required library → ISSUE-XXX
-    4. ANY library not in standards that serves same purpose = ISSUE-XXX
+    4. any library not in standards that serves same purpose = ISSUE-XXX
 
     Input:
     - Ring Standards: Load via WebFetch (golang.md)
@@ -371,8 +371,8 @@ Task tool 2:
   model: "opus"
   description: "Test coverage analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
-    Check ALL testing sections per shared-patterns/standards-coverage-table.md → "qa-analyst"
+    **MODE: ANALYSIS only**
+    Check all testing sections per shared-patterns/standards-coverage-table.md → "qa-analyst"
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
@@ -381,10 +381,10 @@ Task tool 3:
   model: "opus"
   description: "DevOps analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
-    Check ALL 7 sections per shared-patterns/standards-coverage-table.md → "devops-engineer"
-    ⛔ "Containers" means BOTH Dockerfile AND Docker Compose
-    ⛔ "Makefile Standards" means ALL required commands: build, lint, test, cover, up, down, etc.
+    **MODE: ANALYSIS only**
+    Check all 7 sections per shared-patterns/standards-coverage-table.md → "devops-engineer"
+    ⛔ "Containers" means BOTH Dockerfile and Docker Compose
+    ⛔ "Makefile Standards" means all required commands: build, lint, test, cover, up, down, etc.
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
@@ -393,8 +393,8 @@ Task tool 4:
   model: "opus"
   description: "Observability analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
-    Check ALL 6 sections per shared-patterns/standards-coverage-table.md → "sre"
+    **MODE: ANALYSIS only**
+    Check all 6 sections per shared-patterns/standards-coverage-table.md → "sre"
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 ```
@@ -407,18 +407,18 @@ Task tool 1:
   model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
+    **MODE: ANALYSIS only**
 
-    ⛔ MANDATORY: Check ALL sections in typescript.md per shared-patterns/standards-coverage-table.md
+    ⛔ MANDATORY: Check all sections in typescript.md per shared-patterns/standards-coverage-table.md
 
     ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
-    1. Read package.json to extract ALL dependencies used in codebase
-    2. Load typescript.md standards via WebFetch → extract ALL listed frameworks/libraries
-    3. For EACH category in standards (Backend Framework, ORM, Validation, Testing, etc.):
+    1. Read package.json to extract all dependencies used in codebase
+    2. Load typescript.md standards via WebFetch → extract all listed frameworks/libraries
+    3. For each category in standards (Backend Framework, ORM, Validation, Testing, etc.):
        - Compare codebase dependency vs standards requirement
        - If codebase uses DIFFERENT library than standards → ISSUE-XXX
        - If codebase is MISSING required library → ISSUE-XXX
-    4. ANY library not in standards that serves same purpose = ISSUE-XXX
+    4. any library not in standards that serves same purpose = ISSUE-XXX
 
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
@@ -439,9 +439,9 @@ Task tool 5:
   model: "opus"
   description: "Frontend standards analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
+    **MODE: ANALYSIS only**
 
-    ⛔ MANDATORY: Check ALL 13 sections in frontend.md per shared-patterns/standards-coverage-table.md
+    ⛔ MANDATORY: Check all 13 sections in frontend.md per shared-patterns/standards-coverage-table.md
 
     Input:
     - Ring Standards: Load via WebFetch (frontend.md)
@@ -462,18 +462,18 @@ Task tool 6:
   model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |
-    **MODE: ANALYSIS ONLY**
+    **MODE: ANALYSIS only**
 
-    ⛔ MANDATORY: Check ALL sections in typescript.md per shared-patterns/standards-coverage-table.md
+    ⛔ MANDATORY: Check all sections in typescript.md per shared-patterns/standards-coverage-table.md
 
     ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
-    1. Read package.json to extract ALL dependencies used in codebase
-    2. Load typescript.md standards via WebFetch → extract ALL listed frameworks/libraries
-    3. For EACH category in standards (Backend Framework, ORM, Validation, Testing, etc.):
+    1. Read package.json to extract all dependencies used in codebase
+    2. Load typescript.md standards via WebFetch → extract all listed frameworks/libraries
+    3. For each category in standards (Backend Framework, ORM, Validation, Testing, etc.):
        - Compare codebase dependency vs standards requirement
        - If codebase uses DIFFERENT library than standards → ISSUE-XXX
        - If codebase is MISSING required library → ISSUE-XXX
-    4. ANY library not in standards that serves same purpose = ISSUE-XXX
+    4. any library not in standards that serves same purpose = ISSUE-XXX
 
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
@@ -507,7 +507,7 @@ Task tool 6:
 
 **⛔ MANDATORY: Each agent's output MUST be saved as an individual report file.**
 
-After ALL parallel agent tasks complete, save each agent's output to a separate file:
+After all parallel agent tasks complete, save each agent's output to a separate file:
 
 ```
 docs/refactor/{timestamp}/reports/
@@ -522,14 +522,14 @@ docs/refactor/{timestamp}/reports/
 
 ### Report File Format
 
-**Use Write tool for EACH agent report:**
+**Use Write tool for each agent report:**
 
 ```markdown
 # {Agent Name} Analysis Report
 
 **Generated:** {timestamp}
 **Agent:** {agent-name}
-**Mode:** ANALYSIS ONLY
+**Mode:** ANALYSIS only
 
 ## Standards Coverage Table
 
@@ -537,7 +537,7 @@ docs/refactor/{timestamp}/reports/
 
 ## Issues Found
 
-{Copy ALL ISSUE-XXX entries from agent output}
+{Copy all ISSUE-XXX entries from agent output}
 
 ## Summary
 
@@ -567,10 +567,10 @@ docs/refactor/{timestamp}/reports/
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll combine all reports into one file" | Individual reports enable targeted re-runs and tracking | **Save EACH agent to SEPARATE file** |
+| "I'll combine all reports into one file" | Individual reports enable targeted re-runs and tracking | **Save each agent to SEPARATE file** |
 | "Agent output is already visible in chat" | Chat history is ephemeral; files are artifacts | **MUST persist as files** |
-| "Only saving reports with issues" | Empty reports prove compliance was checked | **Save ALL dispatched agent reports** |
-| "findings.md already captures everything" | findings.md is processed; reports are raw agent output | **Save BOTH raw reports AND findings.md** |
+| "Only saving reports with issues" | Empty reports prove compliance was checked | **Save all dispatched agent reports** |
+| "findings.md already captures everything" | findings.md is processed; reports are raw agent output | **Save BOTH raw reports and findings.md** |
 
 ### REQUIRED Action for Step 4.5
 
@@ -580,7 +580,7 @@ Write tool:
   content: [Agent Task output formatted per template above]
 ```
 
-**Repeat for EACH agent dispatched in Step 4.**
+**Repeat for each agent dispatched in Step 4.**
 
 **TodoWrite:** Mark "Save individual agent reports" as `completed`
 
@@ -590,7 +590,7 @@ Write tool:
 
 **TodoWrite:** Mark "Map agent findings to FINDING-XXX entries" as `in_progress`
 
-**⛔ MANDATORY: ALL agent-reported issues MUST become findings.**
+**⛔ MANDATORY: all agent-reported issues MUST become findings.**
 
 | Agent Report | Action |
 |--------------|--------|
@@ -626,15 +626,15 @@ Write tool:
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Multiple similar issues can be one finding" | Distinct file:line = distinct finding. Merging loses traceability. | **One issue = One FINDING-XXX** |
-| "Agent report didn't use ISSUE-XXX format" | Format varies; presence matters. Every gap = one finding. | **Extract ALL gaps into findings** |
-| "I'll consolidate to reduce noise" | Consolidation = data loss. Noise is signal. | **Preserve ALL individual issues** |
+| "Agent report didn't use ISSUE-XXX format" | Format varies; presence matters. Every gap = one finding. | **Extract all gaps into findings** |
+| "I'll consolidate to reduce noise" | Consolidation = data loss. Noise is signal. | **Preserve all individual issues** |
 | "Some findings are duplicates across agents" | Different agents = different perspectives. Keep both. | **Create separate findings per agent** |
 | "Team has approved this deviation" | Team approval ≠ standards compliance. Document the gap. | **Create FINDING-XXX, note team decision** |
 | "Fixing this would break existing code" | Breaking risk = implementation concern, not tracking concern. | **Create FINDING-XXX, note risk in description** |
 
 ### ⛔ MANDATORY GAP RULE FOR STEP 4.1
 
-**Per the Mandatory Gap Principle (see top of skill): ANY divergence from Ring standards = FINDING-XXX.**
+**Per the Mandatory Gap Principle (see top of skill): any divergence from Ring standards = FINDING-XXX.**
 
 This means:
 - ✅ items in Standards Coverage Table = No finding needed
@@ -711,7 +711,7 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 ❌ Omitting file:line references from findings                → SKILL FAILURE
 ❌ Using vague descriptions instead of specific code excerpts → SKILL FAILURE
 ❌ Skipping "Why This Matters" section for any finding        → SKILL FAILURE
-❌ Generating findings.md without reading ALL agent reports   → SKILL FAILURE
+❌ Generating findings.md without reading all agent reports   → SKILL FAILURE
 ```
 
 ### REQUIRED Actions for Step 5
@@ -729,11 +729,11 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll add details later during implementation" | findings.md is the source of truth. Incomplete = useless. | **Complete ALL sections for EVERY finding** |
-| "Code snippet is too long to include" | Truncate to relevant lines, but NEVER omit. Context is required. | **Include code with file:line reference** |
-| "Standard URL is obvious, skip it" | Agents and humans need direct links. Nothing is obvious. | **Include full URL for EVERY standard** |
-| "Why This Matters is redundant" | It explains business impact. Standards alone don't convey urgency. | **Write Problem/Standard/Impact for ALL** |
-| "Some findings are self-explanatory" | Self-explanatory to you ≠ clear to implementer. | **Complete ALL sections without exception** |
+| "I'll add details later during implementation" | findings.md is the source of truth. Incomplete = useless. | **Complete all sections for every finding** |
+| "Code snippet is too long to include" | Truncate to relevant lines, but never omit. Context is required. | **Include code with file:line reference** |
+| "Standard URL is obvious, skip it" | Agents and humans need direct links. Nothing is obvious. | **Include full URL for every standard** |
+| "Why This Matters is redundant" | It explains business impact. Standards alone don't convey urgency. | **Write Problem/Standard/Impact for all** |
+| "Some findings are self-explanatory" | Self-explanatory to you ≠ clear to implementer. | **Complete all sections without exception** |
 | "I'll group small findings together" | Grouping happens in Step 6 (tasks). findings.md = atomic issues. | **One finding = one FINDING-XXX entry** |
 
 **Use Write tool to create findings.md:**
@@ -748,7 +748,7 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 
 ## ⛔ Mandatory Gap Principle Applied
 
-**ALL divergences from Ring standards are tracked below. No filtering applied.**
+**all divergences from Ring standards are tracked below. No filtering applied.**
 
 | Metric | Count |
 |--------|-------|
@@ -756,7 +756,7 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 | Total FINDING-XXX entries below | {X} |
 | **Counts match?** | ✅ YES (REQUIRED) |
 
-**Severity does NOT affect tracking - ALL gaps are mandatory:**
+**Severity does not affect tracking - all gaps are mandatory:**
 | Severity | Count | Priority | Tracking |
 |----------|-------|----------|----------|
 | Critical | {N} | Execute first | **MANDATORY** |
@@ -768,7 +768,7 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 
 ## FINDING-001: {Pattern Name}
 
-**Severity:** Critical | High | Medium | Low (ALL MANDATORY)
+**Severity:** Critical | High | Medium | Low (all MANDATORY)
 **Category:** {lib-commons | architecture | testing | devops}
 **Agent:** {agent-name}
 **Standard:** {file}.md:{section}
@@ -822,7 +822,7 @@ Before proceeding to Step 7, verify:
 - Orphan findings (not in any task): 0 (MUST BE ZERO)
 ```
 
-**If ANY finding is not mapped to a task → STOP. Add missing findings to tasks.**
+**If any finding is not mapped to a task → STOP. Add missing findings to tasks.**
 
 **TodoWrite:** Mark "Group findings into REFACTOR-XXX tasks" as `completed`
 
@@ -842,7 +842,7 @@ Before proceeding to Step 7, verify:
 
 ## ⛔ Mandatory Gap Verification
 
-**ALL findings from findings.md MUST be addressed in tasks below.**
+**all findings from findings.md MUST be addressed in tasks below.**
 
 | Metric | Count |
 |--------|-------|
@@ -851,7 +851,7 @@ Before proceeding to Step 7, verify:
 | Orphan findings (not in any task) | 0 (REQUIRED) |
 | **All findings mapped?** | ✅ YES (REQUIRED) |
 
-**Priority affects execution order, NOT whether to include:**
+**Priority affects execution order, not whether to include:**
 - Critical/High tasks: Execute first
 - Medium tasks: Execute in current cycle
 - Low tasks: Execute when capacity - STILL MANDATORY TO COMPLETE
@@ -860,7 +860,7 @@ Before proceeding to Step 7, verify:
 
 ## REFACTOR-001: {Task Name}
 
-**Priority:** Critical | High | Medium | Low (ALL ARE MANDATORY)
+**Priority:** Critical | High | Medium | Low (all ARE MANDATORY)
 **Effort:** {hours}h
 **Dependencies:** {other tasks or none}
 
@@ -955,10 +955,10 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "SlashCommand is equivalent to Skill tool" | SlashCommand is a hint; Skill tool guarantees skill loading | **Use Skill tool, NOT SlashCommand** |
+| "SlashCommand is equivalent to Skill tool" | SlashCommand is a hint; Skill tool guarantees skill loading | **Use Skill tool, not SlashCommand** |
 | "User can run /dev-cycle manually" | Manual run risks skill not being loaded | **Invoke Skill tool directly** |
 | "dev-cycle will auto-discover tasks" | Explicit path ensures correct file is used | **Pass explicit tasks path** |
-| "User approved, I can skip dev-cycle" | Approval = permission to proceed, NOT skip execution | **Invoke Skill tool** |
+| "User approved, I can skip dev-cycle" | Approval = permission to proceed, not skip execution | **Invoke Skill tool** |
 | "Tasks are saved, job is done" | Saved tasks without execution = incomplete workflow | **Invoke Skill tool** |
 
 **⛔ HARD GATE: You CANNOT complete dev-refactor without invoking `Skill tool: dev-cycle`.**

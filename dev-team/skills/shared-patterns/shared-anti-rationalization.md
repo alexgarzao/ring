@@ -12,16 +12,16 @@ AI models naturally attempt to be "helpful" by making autonomous decisions. This
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "PM plan says X is for later tasks" | PM defines WHAT to build, not HOW. Ring Standards define HOW. | **Implement ALL standards NOW** |
-| "Task 1 is just initial setup" | Setup WITH standards = correct setup. Without = wrong from Day 1. | **Implement ALL standards NOW** |
-| "Basic implementation is sufficient initially" | "Basic" is not compliant. Full standards or fail. | **Implement ALL standards NOW** |
-| "DEFERRED to later tasks as per plan" | DEFERRED = FAILED. Standards are not deferrable. | **Implement ALL standards NOW** |
-| "Task dependency graph shows standards later" | Dependency graph is for features, NOT for standards. Standards are prerequisites. | **Implement ALL standards NOW** |
-| "This standard doesn't apply to Task 1 scope" | ALL standards apply to ALL tasks. Scope is irrelevant. | **Implement ALL standards NOW** |
-| "Will add observability/testing/error-handling later" | Later = never. Retrofitting is 10x harder. | **Implement ALL standards NOW** |
-| "MVP doesn't need full standards" | MVP with standards = correct MVP. Without = technical debt from Day 1. | **Implement ALL standards NOW** |
+| "PM plan says X is for later tasks" | PM defines WHAT to build, not HOW. Ring Standards define HOW. | **Implement all standards NOW** |
+| "Task 1 is just initial setup" | Setup WITH standards = correct setup. Without = wrong from Day 1. | **Implement all standards NOW** |
+| "Basic implementation is sufficient initially" | "Basic" is not compliant. Full standards or fail. | **Implement all standards NOW** |
+| "DEFERRED to later tasks as per plan" | DEFERRED = FAILED. Standards are not deferrable. | **Implement all standards NOW** |
+| "Task dependency graph shows standards later" | Dependency graph is for features, not for standards. Standards are prerequisites. | **Implement all standards NOW** |
+| "This standard doesn't apply to Task 1 scope" | all standards apply to all tasks. Scope is irrelevant. | **Implement all standards NOW** |
+| "Will add observability/testing/error-handling later" | Later = never. Retrofitting is 10x harder. | **Implement all standards NOW** |
+| "MVP doesn't need full standards" | MVP with standards = correct MVP. Without = technical debt from Day 1. | **Implement all standards NOW** |
 
-**⛔ HARD GATE:** If your output contains "DEFERRED" regarding ANY Ring Standard → Implementation is INCOMPLETE. Fix before proceeding.
+**⛔ HARD GATE:** If your output contains "DEFERRED" regarding any Ring Standard → Implementation is INCOMPLETE. Fix before proceeding.
 
 **⛔ SEVERITY:** Any agent outputting "DEFERRED" for a Ring Standard = CRITICAL FAILURE = Return to previous gate.
 
@@ -29,21 +29,21 @@ AI models naturally attempt to be "helpful" by making autonomous decisions. This
 
 ## Universal Anti-Rationalizations
 
-These rationalizations are ALWAYS wrong, regardless of context:
+These rationalizations are always wrong, regardless of context:
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "This is prototype/throwaway code" | Prototypes become production 60% of time. Standards apply to ALL code. | **Apply full standards. No prototype exemption.** |
+| "This is prototype/throwaway code" | Prototypes become production 60% of time. Standards apply to all code. | **Apply full standards. No prototype exemption.** |
 | "Too exhausted to do this properly" | Exhaustion doesn't waive requirements. It increases error risk. | **STOP work. Resume when able to comply fully.** |
 | "Time pressure + authority says skip" | Combined pressures don't multiply exceptions. Zero exceptions × any pressure = zero exceptions. | **Follow all requirements regardless of pressure combination.** |
 | "Similar task worked without this step" | Past non-compliance doesn't justify future non-compliance. | **Follow complete process every time.** |
 | "User explicitly authorized skip" | User authorization doesn't override HARD GATES. | **Cannot comply. Explain non-negotiable requirement.** |
 | "Task is simple, doesn't need full process" | Simple tasks have complex impacts. Gates catch what you don't see. | **Follow complete process** |
-| "Already passed N steps/gates" | Each step catches different issues. Sunk cost is irrelevant. | **Complete ALL remaining steps** |
+| "Already passed N steps/gates" | Each step catches different issues. Sunk cost is irrelevant. | **Complete all remaining steps** |
 | "Manager/authority approved skipping" | Authority cannot override quality gates. Document the pressure. | **Cannot comply. Proceed with gate.** |
 | "We'll fix issues later/post-merge" | Later = never. Post-merge fixes are 10x more expensive. | **Fix NOW before proceeding** |
 | "Just this once won't hurt" | "Just this once" becomes precedent. Each exception erodes gates. | **No incremental compromise** |
-| "90% done, skip remaining" | 90% done with 0% gates = 0% verified. Gates verify the 90%. | **Complete ALL gates** |
+| "90% done, skip remaining" | 90% done with 0% gates = 0% verified. Gates verify the 90%. | **Complete all gates** |
 | "Close enough to threshold" | Close enough ≠ passing. Thresholds are exact minimums. | **Meet exact threshold** |
 
 ---
@@ -54,9 +54,9 @@ These rationalizations are ALWAYS wrong, regardless of context:
 |-----------------|----------------|-----------------|
 | "Code already works, add tests after" | Tests-after is not TDD. You're testing assumptions, not requirements. | **DELETE code. Write test FIRST.** |
 | "I'll keep code as reference" | Reference = adapting = testing-after. Delete means DELETE. | **Delete from everywhere. No backup.** |
-| "Too simple for TDD" | Simple code still needs tests. TDD is mandatory for ALL changes. | **TDD for ALL code** |
-| "I've TDDed 9/10 functions, skip last one" | TDD is ALL-or-nothing. 9/10 = 0/10. | **TDD for EVERY function** |
-| "Refactoring tests doesn't need TDD" | Test code refactoring is exempt. Production code is NOT. | **Clarify what you're changing** |
+| "Too simple for TDD" | Simple code still needs tests. TDD is mandatory for all changes. | **TDD for all code** |
+| "I've TDDed 9/10 functions, skip last one" | TDD is all-or-nothing. 9/10 = 0/10. | **TDD for every function** |
+| "Refactoring tests doesn't need TDD" | Test code refactoring is exempt. Production code is not. | **Clarify what you're changing** |
 
 ---
 
@@ -64,12 +64,12 @@ These rationalizations are ALWAYS wrong, regardless of context:
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Trivial change, skip review" | Security vulnerabilities fit in 1 line. ALL changes require review. | **Review ALL changes** |
-| "Only N lines changed" | Line count is irrelevant. SQL injection is 1 line. | **Review ALL changes** |
-| "One reviewer is enough" | 3 reviewers catch different issues. All required. | **Dispatch ALL 3 reviewers** |
+| "Trivial change, skip review" | Security vulnerabilities fit in 1 line. all changes require review. | **Review all changes** |
+| "Only N lines changed" | Line count is irrelevant. SQL injection is 1 line. | **Review all changes** |
+| "One reviewer is enough" | 3 reviewers catch different issues. All required. | **Dispatch all 3 reviewers** |
 | "Run reviewers sequentially" | Sequential = 3x slower. Parallel is REQUIRED. | **Single message, 3 Task calls** |
 | "Only MEDIUM issues, can proceed" | MEDIUM = Fix NOW. No deferral, no FIXME. | **Fix MEDIUM issues** |
-| "Small fix, no re-review needed" | Small fixes can have big impacts. | **Re-run ALL 3 reviewers after ANY fix** |
+| "Small fix, no re-review needed" | Small fixes can have big impacts. | **Re-run all 3 reviewers after any fix** |
 
 ---
 
@@ -86,22 +86,22 @@ These rationalizations are ALWAYS wrong, regardless of context:
 
 ## ⛔ Standards Boundary Anti-Rationalizations (CRITICAL)
 
-**Agents MUST check ONLY what standards explicitly define. Inventing requirements = FAILURE.**
+**Agents MUST check only what standards explicitly define. Inventing requirements = FAILURE.**
 
 See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enforcement.md) for complete boundaries.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Industry standard to have make proto" | Industry ≠ Ring standards. Ring defines requirements. | **Do NOT flag** |
-| "Most Go projects need gRPC" | Most ≠ this project. Standards define this project. | **Do NOT flag** |
-| "It's a best practice to have X" | Best practices are IN the standards. If not there, not required. | **Do NOT flag** |
-| "This would improve the codebase" | Improvement suggestions ≠ compliance findings. | **Do NOT flag as non-compliant** |
-| "I've seen this in similar projects" | Similar ≠ this. Standards are project-specific. | **Do NOT flag** |
-| "Common sense says this is needed" | Common sense ≠ explicit requirement. Standards are explicit. | **Do NOT flag** |
-| "The team probably wants this" | Speculation about preferences is not compliance. Standards state requirements explicitly. | **Do NOT flag** |
-| "It's implied by the architecture" | Implied ≠ explicit. Only explicit requirements count. | **Do NOT flag** |
+| "Industry standard to have make proto" | Industry ≠ Ring standards. Ring defines requirements. | **Do not flag** |
+| "Most Go projects need gRPC" | Most ≠ this project. Standards define this project. | **Do not flag** |
+| "It's a best practice to have X" | Best practices are IN the standards. If not there, not required. | **Do not flag** |
+| "This would improve the codebase" | Improvement suggestions ≠ compliance findings. | **Do not flag as non-compliant** |
+| "I've seen this in similar projects" | Similar ≠ this. Standards are project-specific. | **Do not flag** |
+| "Common sense says this is needed" | Common sense ≠ explicit requirement. Standards are explicit. | **Do not flag** |
+| "The team probably wants this" | Speculation about preferences is not compliance. Standards state requirements explicitly. | **Do not flag** |
+| "It's implied by the architecture" | Implied ≠ explicit. Only explicit requirements count. | **Do not flag** |
 
-**⛔ HARD GATE:** If you cannot quote the EXACT requirement from WebFetch result → Do NOT flag it.
+**⛔ HARD GATE:** If you cannot quote the EXACT requirement from WebFetch result → Do not flag it.
 
 ---
 
@@ -111,16 +111,16 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Prompt didn't have exact marker" | Multiple patterns trigger mode. Check all. | **Check ALL detection patterns** |
-| "User seems to want direct implementation" | Seeming ≠ knowing. If ANY pattern matches, include. | **Include if uncertain** |
+| "Prompt didn't have exact marker" | Multiple patterns trigger mode. Check all. | **Check all detection patterns** |
+| "User seems to want direct implementation" | Seeming ≠ knowing. If any pattern matches, include. | **Include if uncertain** |
 | "Standards section too long for this task" | Length doesn't determine requirement. Pattern match does. | **Include full section if triggered** |
 
 ### Standards Section Comparison
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll check the main sections only" | ALL sections must be checked. You don't decide relevance. | **Check EVERY section from WebFetch result** |
-| "This section doesn't apply" | Report it as N/A with reason, don't skip silently. | **Report ALL sections with status** |
+| "I'll check the main sections only" | all sections must be checked. You don't decide relevance. | **Check every section from WebFetch result** |
+| "This section doesn't apply" | Report it as N/A with reason, don't skip silently. | **Report all sections with status** |
 | "Codebase doesn't have this pattern" | That's a finding! Report as Non-Compliant or N/A. | **Report missing patterns** |
 
 ### WebFetch Standards Quoting
@@ -155,10 +155,10 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 | "Small change, skip full process" | Size doesn't determine requirements. | **Follow complete process** |
 | "Already tested manually" | Manual testing ≠ gate compliance. | **Execute automated verification** |
 | "It's faster to do it directly" | Speed ≠ correct process. The dev-cycle exists for a reason. | **Follow dev-cycle gates. No shortcuts.** |
-| "These are simple changes" | Simplicity doesn't justify skipping gates. Simple bugs cause complex incidents. | **ALL gates mandatory regardless of perceived simplicity.** |
-| "I know this code well, skip validation" | Familiarity breeds blind spots. Gates catch what you miss. | **Execute ALL gates. No expertise exemption.** |
-| "Deadline is tight, skip non-critical gates" | No gate is "non-critical". Each catches different issues. | **ALL gates are mandatory. Negotiate deadline, not quality.** |
-| "This is just a hotfix" | Hotfixes are highest-risk changes. They need MORE scrutiny, not less. | **Full dev-cycle for ALL changes including hotfixes.** |
+| "These are simple changes" | Simplicity doesn't justify skipping gates. Simple bugs cause complex incidents. | **all gates mandatory regardless of perceived simplicity.** |
+| "I know this code well, skip validation" | Familiarity breeds blind spots. Gates catch what you miss. | **Execute all gates. No expertise exemption.** |
+| "Deadline is tight, skip non-critical gates" | No gate is "non-critical". Each catches different issues. | **all gates are mandatory. Negotiate deadline, not quality.** |
+| "This is just a hotfix" | Hotfixes are highest-risk changes. They need MORE scrutiny, not less. | **Full dev-cycle for all changes including hotfixes.** |
 
 ### Refactor Gap Tracking
 
@@ -166,9 +166,9 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 |-----------------|----------------|-----------------|
 | "This divergence is too minor to track" | You don't decide what's minor. Standards do. | **Create FINDING-XXX** |
 | "Codebase pattern is acceptable alternative" | Alternative ≠ compliant. Ring standards are the baseline. | **Create FINDING-XXX** |
-| "Low severity means optional" | Low severity = low priority, NOT optional. | **Create FINDING-XXX** |
+| "Low severity means optional" | Low severity = low priority, not optional. | **Create FINDING-XXX** |
 | "Cosmetic differences don't count" | Cosmetic = standards compliance. They count. | **Create FINDING-XXX** |
-| "This would create too many findings" | Quantity is not your concern. Completeness is. | **Create ALL FINDING-XXX entries** |
+| "This would create too many findings" | Quantity is not your concern. Completeness is. | **Create all FINDING-XXX entries** |
 | "Team prefers current approach" | Preference ≠ compliance. Document the gap. | **Create FINDING-XXX** |
 | "Fixing this adds no value" | You don't assess value. Standards define value. | **Create FINDING-XXX** |
 
@@ -182,7 +182,7 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 
 See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
-[OPTIONAL: Add domain-specific rationalizations ONLY if not covered above]
+[OPTIONAL: Add domain-specific rationalizations only if not covered above]
 ```
 
 **For Skills:**
@@ -191,5 +191,5 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
-[OPTIONAL: Add gate-specific rationalizations ONLY if not covered above]
+[OPTIONAL: Add gate-specific rationalizations only if not covered above]
 ```

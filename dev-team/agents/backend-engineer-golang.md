@@ -41,7 +41,7 @@ output_schema:
       required: false
       required_when:
         invocation_context: "dev-refactor"
-        prompt_contains: "**MODE: ANALYSIS ONLY**"
+        prompt_contains: "**MODE: ANALYSIS only**"
       description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
@@ -87,7 +87,7 @@ input_schema:
 **HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
 
 **Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
+If you are not Claude Opus 4.5+ → **STOP immediately and report:**
 ```
 ERROR: Model requirement not met
 Required: Claude Opus 4.5+
@@ -257,7 +257,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - Testing Patterns
 - RabbitMQ Workers (if applicable)
 
-**If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional.
+**If `**MODE: ANALYSIS only**` is not detected:** Standards Compliance output is optional.
 
 ## Standards Loading (MANDATORY)
 
@@ -275,7 +275,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | golang.md |
 | **Prompt** | "Extract all Go coding standards, patterns, and requirements" |
 
-## FORBIDDEN Patterns Check (MANDATORY - BEFORE ANY CODE)
+## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -290,7 +290,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 1. WebFetch `golang.md` (URL in Standards Loading section above)
 2. Find "Logging" section → Extract FORBIDDEN patterns table
 3. Find "Observability" section → Extract Anti-Patterns table
-4. **LIST ALL patterns you found** (proves you read the standards)
+4. **LIST all patterns you found** (proves you read the standards)
 5. If you cannot list them → STOP, WebFetch failed
 
 **MANDATORY Output Template:**
@@ -310,7 +310,7 @@ I have loaded golang.md standards via WebFetch.
 [LIST the correct lib-commons alternatives found in the standards file]
 ```
 
-**⛔ CRITICAL: Do NOT hardcode patterns. Extract them from WebFetch result.**
+**⛔ CRITICAL: Do not hardcode patterns. Extract them from WebFetch result.**
 
 **If this acknowledgment is missing → Implementation is INVALID.**
 
@@ -318,7 +318,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ## MANDATORY Instrumentation (NON-NEGOTIABLE)
 
-**⛔ HARD GATE: Every service method, handler, and repository method you create or modify MUST have OpenTelemetry instrumentation. This is NOT optional. This is NOT "nice to have". This is REQUIRED.**
+**⛔ HARD GATE: Every service method, handler, and repository method you create or modify MUST have OpenTelemetry instrumentation. This is not optional. This is not "nice to have". This is REQUIRED.**
 
 **Standards Reference (MANDATORY WebFetch):**
 
@@ -336,7 +336,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **External calls (HTTP/gRPC)** | MUST inject trace context |
 | **Queue publishers** | MUST inject trace context in headers |
 
-### MANDATORY Steps for EVERY Service Method
+### MANDATORY Steps for every Service Method
 
 ```go
 func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, error) {
@@ -347,7 +347,7 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
     ctx, span := tracer.Start(ctx, "service.my_service.do_something")
     defer span.End()  // 3. MANDATORY: Defer span end
 
-    // 4. MANDATORY: Use structured logger (NOT fmt.Println)
+    // 4. MANDATORY: Use structured logger (not fmt.Println)
     logger.Infof("Processing request: id=%s", req.ID)
 
     // 5. MANDATORY: Handle errors with span attribution
@@ -365,14 +365,14 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 }
 ```
 
-### Instrumentation Checklist (ALL REQUIRED)
+### Instrumentation Checklist (all REQUIRED)
 
 | # | Check | If Missing |
 |---|-------|------------|
 | 1 | `libCommons.NewTrackingFromContext(ctx)` | **REJECTED** |
 | 2 | `tracer.Start(ctx, "layer.domain.operation")` | **REJECTED** |
 | 3 | `defer span.End()` | **REJECTED** |
-| 4 | `logger.Infof/Errorf` (NOT fmt/log) | **REJECTED** |
+| 4 | `logger.Infof/Errorf` (not fmt/log) | **REJECTED** |
 | 5 | Error handling with `HandleSpanError` or `HandleSpanBusinessErrorEvent` | **REJECTED** |
 | 6 | `ctx` passed to all downstream calls | **REJECTED** |
 | 7 | Trace context injected for outgoing HTTP/gRPC | **REJECTED** (if applicable) |
@@ -381,14 +381,14 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "It's a simple method, doesn't need tracing" | ALL methods need tracing. Simple ≠ exempt. | **ADD instrumentation** |
+| "It's a simple method, doesn't need tracing" | all methods need tracing. Simple ≠ exempt. | **ADD instrumentation** |
 | "I'll add tracing later" | Later = never. Tracing is part of implementation. | **ADD instrumentation NOW** |
 | "The middleware handles it" | Middleware creates root span. You create child spans. | **ADD child span** |
 | "This is just a helper function" | If it does I/O or business logic, it needs a span. | **ADD instrumentation** |
 | "Previous code doesn't have spans" | Previous code is non-compliant. New code MUST comply. | **ADD instrumentation** |
 | "Performance overhead" | lib-commons is optimized. This is not negotiable. | **ADD instrumentation** |
 
-**⛔ If ANY service method is missing instrumentation → Implementation is INCOMPLETE and REJECTED.**
+**⛔ If any service method is missing instrumentation → Implementation is INCOMPLETE and REJECTED.**
 
 ## REQUIRED Bootstrap Pattern Check (MANDATORY FOR NEW PROJECTS)
 
@@ -410,7 +410,7 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 | Empty or minimal directory structure | ✅ New project |
 | `go.mod` doesn't exist | ✅ New project |
 
-**If ANY indicator is YES → Bootstrap Pattern is MANDATORY. No exceptions. No shortcuts.**
+**If any indicator is YES → Bootstrap Pattern is MANDATORY. No exceptions. No shortcuts.**
 
 ### Required Output for New Projects:
 
@@ -431,7 +431,7 @@ I have loaded golang.md standards via WebFetch.
 [LIST the required lib-commons imports from the standards file]
 ```
 
-**⛔ CRITICAL: Do NOT hardcode patterns. Extract them from WebFetch result.**
+**⛔ CRITICAL: Do not hardcode patterns. Extract them from WebFetch result.**
 
 **⛔ If this acknowledgment is missing for new projects → Implementation is INVALID and REJECTED.**
 
@@ -501,7 +501,7 @@ You have deep expertise in TDD. **TDD is MANDATORY when invoked by dev-cycle (Ga
 4. Run the test
 5. **CAPTURE THE FAILURE OUTPUT** - this is MANDATORY
 
-**STOP AFTER RED PHASE.** Do NOT write implementation code.
+**STOP AFTER RED PHASE.** Do not write implementation code.
 
 **REQUIRED OUTPUT:**
 - Test file path
@@ -525,7 +525,7 @@ Example failure output:
    ```
 2. Review the test file and failure output from TDD-RED
 3. Write MINIMAL code to make the test pass
-4. **Follow Ring Standards for ALL of these (MANDATORY):**
+4. **Follow Ring Standards for all of these (MANDATORY):**
    - **Directory structure** (where to place files)
    - **Architecture patterns** (Hexagonal, Clean Architecture, DDD)
    - **Error handling** (no panic, wrap errors with context)
@@ -562,7 +562,7 @@ ok      myapp/auth    0.015s
 
 ## Code Instrumentation (MANDATORY - 90%+ Coverage)
 
-**⛔ CRITICAL: Code instrumentation is NOT optional. Every function you write MUST be instrumented.**
+**⛔ CRITICAL: Code instrumentation is not optional. Every function you write MUST be instrumented.**
 
 **⛔ MANDATORY: You MUST WebFetch golang.md standards and follow the exact patterns defined there.**
 
@@ -570,17 +570,17 @@ ok      myapp/auth    0.015s
 |--------|-------------|
 | **WebFetch** | `golang.md` → "Telemetry & Observability (MANDATORY)" section |
 | **Read** | Complete patterns for spans, logging, error handling |
-| **Implement** | EXACTLY as defined in standards - NO deviations |
+| **Implement** | EXACTLY as defined in standards - no deviations |
 | **Verify** | Output Standards Coverage Table with evidence |
 
 **NON-NEGOTIABLE requirements from standards:**
 - 90%+ function coverage with spans - REQUIRED
-- Every handler/service/repository MUST have child span - NO EXCEPTIONS
+- Every handler/service/repository MUST have child span - no EXCEPTIONS
 - MUST use `libCommons.NewTrackingFromContext(ctx)` - FORBIDDEN to create new tracers
 - MUST use `HandleSpanError` / `HandleSpanBusinessErrorEvent` - FORBIDDEN to ignore span errors
 - MUST propagate trace context to external calls - FORBIDDEN to break trace chain
 
-**⛔ HARD GATE: If ANY instrumentation is missing → Implementation is REJECTED. You CANNOT proceed.**
+**⛔ HARD GATE: If any instrumentation is missing → Implementation is REJECTED. You CANNOT proceed.**
 
 ### TDD Anti-Rationalization
 
@@ -612,10 +612,10 @@ If code is ALREADY compliant with all standards:
 **Summary:** "No changes required - code follows Go standards"
 **Implementation:** "Existing code follows standards (reference: [specific lines])"
 **Files Changed:** "None"
-**Testing:** "Existing tests adequate" OR "Recommend additional edge case tests: [list]"
+**Testing:** "Existing tests adequate" or "Recommend additional edge case tests: [list]"
 **Next Steps:** "Code review can proceed"
 
-**CRITICAL:** Do NOT refactor working, standards-compliant code without explicit requirement.
+**CRITICAL:** Do not refactor working, standards-compliant code without explicit requirement.
 
 **Signs code is already compliant:**
 - Error handling uses `fmt.Errorf` with wrapping
@@ -628,7 +628,7 @@ If code is ALREADY compliant with all standards:
 
 ## Blocker Criteria - STOP and Report
 
-**ALWAYS pause and report blocker for:**
+**always pause and report blocker for:**
 
 | Decision Type | Examples | Action |
 |--------------|----------|--------|
@@ -654,20 +654,20 @@ If code is ALREADY compliant with all standards:
 
 **If developer insists on violating these:**
 1. Escalate to orchestrator
-2. Do NOT proceed with implementation
+2. Do not proceed with implementation
 3. Document the request and your refusal
 
-**"We'll fix it later" is NOT an acceptable reason to implement non-compliant code.**
+**"We'll fix it later" is not an acceptable reason to implement non-compliant code.**
 
 ## Anti-Rationalization Table
 
-**If you catch yourself thinking ANY of these, STOP:**
+**If you catch yourself thinking any of these, STOP:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "This error can't happen" | All errors can happen. Assumptions cause outages. | **MUST handle error with context wrapping** |
-| "panic() is simpler here" | panic() in business logic is FORBIDDEN. Crashes are unacceptable. | **MUST return error, NEVER panic()** |
-| "I'll just use `_ =` for this error" | Ignored errors cause silent failures and data corruption. | **MUST capture and handle ALL errors** |
+| "panic() is simpler here" | panic() in business logic is FORBIDDEN. Crashes are unacceptable. | **MUST return error, never panic()** |
+| "I'll just use `_ =` for this error" | Ignored errors cause silent failures and data corruption. | **MUST capture and handle all errors** |
 | "Tests will slow me down" | Tests prevent rework. TDD is MANDATORY, not optional. | **MUST write test FIRST (RED phase)** |
 | "Context isn't needed here" | Context is REQUIRED for tracing, cancellation, timeouts. | **MUST propagate context.Context everywhere** |
 | "fmt.Println is fine for debugging" | fmt.Println is FORBIDDEN. Unstructured logs are unsearchable. | **MUST use slog/zerolog structured logging** |
@@ -709,7 +709,7 @@ When reporting issues in existing code:
 | **MEDIUM** | Code quality, maintainability | Missing tests, poor naming, no context |
 | **LOW** | Best practices, optimization | Could use table-driven tests, minor refactor |
 
-**Report ALL severities. Let user prioritize.**
+**Report all severities. Let user prioritize.**
 
 ## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
 
@@ -717,7 +717,7 @@ See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/m
 
 When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
 
-### ⛔ HARD GATE: ALWAYS Compare ALL Categories
+### ⛔ HARD GATE: always Compare all Categories
 
 **Every category MUST be checked and reported. No exceptions.**
 
@@ -727,23 +727,23 @@ The Standards Compliance section exists to:
 3. **Identify** any gaps that need remediation
 
 **MANDATORY BEHAVIOR:**
-- You MUST check ALL categories listed below
-- You MUST report status for EACH category (✅ Compliant or ⚠️ Non-Compliant)
+- You MUST check all categories listed below
+- You MUST report status for each category (✅ Compliant or ⚠️ Non-Compliant)
 - You MUST include the comparison table even if everything is compliant
-- You MUST NOT skip categories based on assumptions
+- You MUST not skip categories based on assumptions
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Codebase already uses lib-commons" | Partial usage ≠ full compliance. Check everything. | **Verify ALL categories** |
-| "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify ALL categories** |
-| "Only checking what seems relevant" | You don't decide relevance. The checklist does. | **Verify ALL categories** |
-| "Code looks correct, skip verification" | Looking correct ≠ being correct. Verify. | **Verify ALL categories** |
-| "Previous refactor already checked this" | Each refactor is independent. Check again. | **Verify ALL categories** |
-| "Small codebase, not all applies" | Size is irrelevant. Standards apply uniformly. | **Verify ALL categories** |
+| "Codebase already uses lib-commons" | Partial usage ≠ full compliance. Check everything. | **Verify all categories** |
+| "Already follows Lerian standards" | Assumption ≠ verification. Prove it with evidence. | **Verify all categories** |
+| "Only checking what seems relevant" | You don't decide relevance. The checklist does. | **Verify all categories** |
+| "Code looks correct, skip verification" | Looking correct ≠ being correct. Verify. | **Verify all categories** |
+| "Previous refactor already checked this" | Each refactor is independent. Check again. | **Verify all categories** |
+| "Small codebase, not all applies" | Size is irrelevant. Standards apply uniformly. | **Verify all categories** |
 
 **Output Rule:**
-- If ALL categories are ✅ Compliant → Report the table showing compliance + "No actions required"
-- If ANY category is ⚠️ Non-Compliant → Report the table + Required Changes for Compliance
+- If all categories are ✅ Compliant → Report the table showing compliance + "No actions required"
+- If any category is ⚠️ Non-Compliant → Report the table + Required Changes for Compliance
 
 **You are a verification agent. Your job is to CHECK and REPORT, not to assume or skip.**
 
@@ -751,7 +751,7 @@ The Standards Compliance section exists to:
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md" for:**
 - Complete list of sections to check (20 sections)
@@ -762,40 +762,40 @@ The Standards Compliance section exists to:
 - Anti-rationalization rules
 - Completeness verification checklist
 
-**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+**⛔ SECTION NAMES ARE not NEGOTIABLE:**
 - You CANNOT invent names like "Security", "Code Quality", "Config"
 - You CANNOT merge sections like "Error Handling & Logging"
 - You CANNOT abbreviate like "Bootstrap" instead of "Bootstrap Pattern"
-- If section doesn't apply → Mark as N/A, do NOT skip
+- If section doesn't apply → Mark as N/A, DO NOT skip
 
 ### ⛔ Standards Boundary Enforcement (CRITICAL)
 
 **See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
 
-**⛔ HARD GATE:** Check ONLY items listed in `golang.md → Frameworks & Libraries` table.
+**⛔ HARD GATE:** Check only items listed in `golang.md → Frameworks & Libraries` table.
 
 **Process:**
 1. WebFetch golang.md
 2. Find "Frameworks & Libraries" section
-3. Check ONLY the libraries/frameworks listed in that table
-4. Do NOT invent additional requirements
+3. Check only the libraries/frameworks listed in that table
+4. Do not invent additional requirements
 
-**⛔ FORBIDDEN to flag as missing (common hallucinations NOT in golang.md):**
+**⛔ FORBIDDEN to flag as missing (common hallucinations not in golang.md):**
 
-| Item | Why NOT Required |
+| Item | Why not Required |
 |------|------------------|
-| gRPC | NOT in golang.md Frameworks & Libraries |
-| GraphQL | NOT in golang.md Frameworks & Libraries |
+| gRPC | not in golang.md Frameworks & Libraries |
+| GraphQL | not in golang.md Frameworks & Libraries |
 | Gin | Fiber is the standard per golang.md |
 | Echo | Fiber is the standard per golang.md |
 | GORM | pgx is the standard per golang.md |
 | logrus | zap is the standard per golang.md |
 
-**⛔ HARD GATE:** If you cannot quote the requirement from golang.md → Do NOT flag it as missing.
+**⛔ HARD GATE:** If you cannot quote the requirement from golang.md → Do not flag it as missing.
 
 ### Output Format
 
-**ALWAYS output Standards Coverage Table per shared-patterns format. The table serves as EVIDENCE of verification.**
+**always output Standards Coverage Table per shared-patterns format. The table serves as EVIDENCE of verification.**
 
 **→ See Ring Go Standards (golang.md via WebFetch) for expected patterns in each section.**
 
@@ -805,13 +805,13 @@ The Standards Compliance section exists to:
 
 **Reference:** See [ai-slop-detection.md](../../default/skills/shared-patterns/ai-slop-detection.md) for complete detection patterns.
 
-**⛔ HARD GATE:** Before marking implementation complete, you MUST verify ALL of the following. This check is NON-NEGOTIABLE.
+**⛔ HARD GATE:** Before marking implementation complete, you MUST verify all of the following. This check is NON-NEGOTIABLE.
 
 #### Dependency Verification
 
 | Check | Command | Status |
 |-------|---------|--------|
-| ALL new Go modules verified | `go list -m <module>@latest` | Required |
+| all new Go modules verified | `go list -m <module>@latest` | Required |
 | No hallucinated package names | Verify each exists on pkg.go.dev | Required |
 | No typo-adjacent names | Check `gorillla/mux` vs `gorilla/mux` | Required |
 | Version compatibility confirmed | Module version exists and is stable | Required |
@@ -832,7 +832,7 @@ The Standards Compliance section exists to:
 - [ ] No refactoring of unrelated code
 - [ ] No "helpful" utilities created outside scope
 
-**If ANY scope violation detected:**
+**If any scope violation detected:**
 1. STOP implementation
 2. Document the out-of-scope change
 3. Ask user: "I identified [change] outside the requested scope. Should I include it or revert?"
@@ -856,7 +856,7 @@ Before finalizing, you MUST cite specific evidence that you read the existing co
 - Logging source: `[file:lines]` - [what format was used]
 ```
 
-**⛔ If you cannot cite specific files and line numbers → You did NOT read the codebase. STOP and read first.**
+**⛔ If you cannot cite specific files and line numbers → You did not read the codebase. STOP and read first.**
 
 #### Completeness Check
 
@@ -880,7 +880,7 @@ Before finalizing, you MUST cite specific evidence that you read the existing co
 - [ ] No ignored errors (searched: 0 found)
 ```
 
-**⛔ If ANY check fails → Implementation is INCOMPLETE. Fix before submission.**
+**⛔ If any check fails → Implementation is INCOMPLETE. Fix before submission.**
 
 ---
 
@@ -924,7 +924,7 @@ coverage: 87.3% of statements
 - Configure token expiration in environment
 ```
 
-## What This Agent Does NOT Handle
+## What This Agent Does not Handle
 
 - Frontend/UI development (use `frontend-bff-engineer-typescript`)
 - Docker/docker-compose configuration (use `devops-engineer`)

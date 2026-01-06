@@ -57,7 +57,7 @@ examples:
 
 Final validation gate requiring explicit user approval. Present evidence that each acceptance criterion is met and obtain APPROVED or REJECTED decision.
 
-**Core principle:** Passing tests and code review do not guarantee requirements are met. User validation confirms implementation matches intent.
+**Core principle:** Passing tests and code review DO NOT guarantee requirements are met. User validation confirms implementation matches intent.
 
 ## Pressure Resistance
 
@@ -72,7 +72,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | Scenario | Allowed? | Action |
 |----------|----------|--------|
 | Different agent/human approves | YES | Proceed with approval |
-| Same agent self-approves | NO | STOP - requires external approval |
+| Same agent self-approves | no | STOP - requires external approval |
 | User explicitly approves | YES | User approval always valid |
 
 **If you implemented the code, you CANNOT approve it. Wait for user or different reviewer.**
@@ -110,7 +110,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 | AC # | Criterion | Evidence | Status | Severity |
 |------|-----------|----------|--------|----------|
 | AC-1 | User can login | ✅ Tests pass, manual verification | MET | - |
-| AC-2 | Response < 200ms | ⚠️ Measured 350ms average | NOT MET | HIGH |
+| AC-2 | Response < 200ms | ⚠️ Measured 350ms average | not MET | HIGH |
 | AC-3 | Input validation | ⚠️ Works for valid input, crashes on empty | PARTIAL | MEDIUM |
 | AC-4 | Error messages clear | ✅ All errors have user-friendly messages | MET | - |
 
@@ -128,7 +128,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Excuse | Reality |
 |--------|---------|
 | "Async over sync - work in parallel" | Validation is a GATE, not async task. STOP means STOP. |
-| "Continue other tasks while waiting" | Other tasks may conflict. Validation blocks ALL related work. |
+| "Continue other tasks while waiting" | Other tasks may conflict. Validation blocks all related work. |
 | "User delegated approval to X" | Delegation ≠ stakeholder approval. Only original requester can approve. |
 | "I implemented it, I know requirements" | Knowledge ≠ approval authority. Implementer CANNOT self-approve. |
 | "I'll switch to QA role to approve" | Role switching is STILL self-approval. PROHIBITED. |
@@ -137,11 +137,11 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags (including Validation section).
 
-If you catch yourself thinking ANY of those patterns, STOP immediately. Wait for explicit "APPROVED" or "REJECTED".
+If you catch yourself thinking any of those patterns, STOP immediately. Wait for explicit "APPROVED" or "REJECTED".
 
 ## Ambiguous Response Handling
 
-**User responses that are NOT valid approvals:**
+**User responses that are not valid approvals:**
 
 | Response | Status | Action Required |
 |----------|--------|-----------------|
@@ -167,16 +167,16 @@ Which is your decision?"
 
 **Never interpret intent. Require explicit keyword.**
 
-## Awaiting Approval - STOP ALL WORK
+## Awaiting Approval - STOP all WORK
 
 **When validation request is presented:**
 
-1. **STOP ALL WORK** on this feature, module, and related code
-2. **DO NOT** proceed to documentation, refactoring, or "quick fixes"
-3. **DO NOT** work on "unrelated" tasks in the same codebase
+1. **STOP all WORK** on this feature, module, and related code
+2. **DO not** proceed to documentation, refactoring, or "quick fixes"
+3. **DO not** work on "unrelated" tasks in the same codebase
 4. **WAIT** for explicit user response
 
-**User unavailability is NOT permission to:**
+**User unavailability is not permission to:**
 - Assume approval
 - Work on "low-risk" next steps
 - Redefine criteria as "already met"
@@ -191,7 +191,7 @@ Which is your decision?"
 ✅ **"APPROVED"** - All criteria verified, proceed to next gate
 ✅ **"REJECTED: [specific reason]"** - Issues found, fix and revalidate
 
-**NOT acceptable:**
+**not acceptable:**
 - ❌ "Looks good" (vague)
 - ❌ "👍" (ambiguous)
 - ❌ Silence (not a response)
@@ -250,7 +250,7 @@ USER DECISION REQUIRED:
 
 If some criteria pass but others fail:
 
-1. **Do NOT partially approve**
+1. **Do not partially approve**
 2. Mark entire validation as REJECTED
 3. Document which criteria passed (won't need re-verification)
 4. Document which criteria failed (need fixes)
@@ -268,7 +268,7 @@ If some criteria pass but others fail:
 - Reuse old evidence for new changes
 
 **Always:**
-- Present evidence for EVERY criterion
+- Present evidence for every criterion
 - Require explicit APPROVED/REJECTED decision
 - Document rejection reason in detail
 - Track validation metrics
@@ -291,6 +291,6 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 
 | Scenario | Action |
 |----------|--------|
-| **User Unavailable** | Document pending → Do NOT proceed → Set escalation → Block task completion |
+| **User Unavailable** | Document pending → Do not proceed → Set escalation → Block task completion |
 | **Criterion Ambiguity** | STOP → Ask user to clarify → Update AC → Re-verify with new understanding |
-| **New Requirements** | Document as new req → Complete current validation on original AC → Create new task → NO scope creep |
+| **New Requirements** | Document as new req → Complete current validation on original AC → Create new task → no scope creep |

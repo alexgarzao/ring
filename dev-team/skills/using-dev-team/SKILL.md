@@ -32,7 +32,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 ## Blocker Criteria - STOP and Report
 
-**ALWAYS pause and report blocker for:**
+**always pause and report blocker for:**
 
 | Decision Type | Examples | Action |
 |--------------|----------|--------|
@@ -54,7 +54,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 2. Would a specialist follow standards I might miss?
 3. Am I avoiding dispatch because it feels like "overhead"?
 
-**If ANY answer is yes → You MUST DISPATCH the specialist. This is NON-NEGOTIABLE.**
+**If any answer is yes → You MUST DISPATCH the specialist. This is NON-NEGOTIABLE.**
 
 ---
 
@@ -103,7 +103,7 @@ Task tool:
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
 
-**IMPORTANT:** Specialist dispatch takes 5-10 minutes, NOT hours. This is NON-NEGOTIABLE even under CEO pressure.
+**IMPORTANT:** Specialist dispatch takes 5-10 minutes, not hours. This is NON-NEGOTIABLE even under CEO pressure.
 
 ---
 
@@ -228,7 +228,7 @@ All workflows converge to the 6-gate development cycle:
 
 ## Integration with Other Plugins
 
-- **using-ring** (default) – ORCHESTRATOR principle for ALL agents
+- **using-ring** (default) – ORCHESTRATOR principle for all agents
 - **using-finops-team** – Financial/regulatory agents
 - **using-pm-team** – Pre-dev workflow agents
 
