@@ -156,11 +156,11 @@ OPTIONAL INPUT:
 - gate0_handoff: [full Gate 0 output]
 - existing_tests: [existing test files]
 
-IF any REQUIRED input is missing:
+if any REQUIRED input is missing:
   → STOP and report: "Missing required input: [field]"
   → Return to orchestrator with error
 
-IF coverage_threshold < 85:
+if coverage_threshold < 85:
   → STOP and report: "Coverage threshold cannot be below Ring minimum (85%)"
   → Use 85% as threshold
 ```
@@ -222,7 +222,7 @@ Task:
     - One behavior per test
     - Arrange-Act-Assert pattern
     - Mock all external dependencies
-    - NO database/API calls (unit tests only)
+    - no database/API calls (unit tests only)
 
     ### Edge Cases Required per AC Type
     | AC Type | Required Edge Cases | Minimum |
@@ -287,14 +287,14 @@ testing_state.coverage_actual = [extracted coverage]
 testing_state.traceability_matrix = [extracted matrix]
 testing_state.tests_written = [count from Test Files Created]
 
-IF verdict == "PASS" AND coverage_actual >= coverage_threshold:
+if verdict == "PASS" and coverage_actual >= coverage_threshold:
   → testing_state.verdict = "PASS"
   → Proceed to Step 6
 
-IF verdict == "FAIL" OR coverage_actual < coverage_threshold:
+if verdict == "FAIL" or coverage_actual < coverage_threshold:
   → testing_state.verdict = "FAIL"
   → testing_state.iterations += 1
-  → IF iterations >= max_iterations: Go to Step 7 (Escalate)
+  → if iterations >= max_iterations: Go to Step 7 (Escalate)
   → Go to Step 5 (Dispatch Fix)
 ```
 
@@ -402,7 +402,7 @@ Generate skill output:
 
 ## Handoff to Next Gate
 - Testing status: FAILED
-- Ready for Gate 4: NO
+- Ready for Gate 4: no
 - **Action Required:** User must manually add tests or adjust scope
 
 ⛔ ESCALATION: Max iterations (3) reached. Coverage still below threshold.
@@ -440,7 +440,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Type | Characteristics | Gate 3? |
 |------|----------------|---------|
 | **Unit** ✅ | Mocks all external deps, tests single function | YES |
-| **Integration** ❌ | Hits real database/API/filesystem | NO |
+| **Integration** ❌ | Hits real database/API/filesystem | no |
 
 ---
 
@@ -468,5 +468,5 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 ## Handoff to Next Gate
 - Testing status: [COMPLETE|FAILED]
 - Coverage: [X%]
-- Ready for Gate 4: [YES|NO]
+- Ready for Gate 4: [YES|no]
 ```

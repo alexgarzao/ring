@@ -130,14 +130,14 @@ AskUserQuestion:
           description: "No checkpoints, run all gates"
 ```
 
-**Do NOT skip this.** User hints ≠ mode selection. Only explicit selection is valid.
+**Do not skip this.** User hints ≠ mode selection. Only explicit selection is valid.
 
 ## Quick Reference
 
 See skill `dev-cycle` for full details. Key rules:
 
-- **ALL 6 gates execute** - Checkpoints affect pauses, not gates
+- **all 6 gates execute** - Checkpoints affect pauses, not gates
 - **Gates execute in order** - 0 → 1 → 2 → 3 → 4 → 5
-- **Gate 4 requires ALL 3 reviewers** - 2/3 = FAIL
+- **Gate 4 requires all 3 reviewers** - 2/3 = FAIL
 - **Coverage threshold** - 85% minimum, no exceptions
 - **State persisted** - Can resume with `--resume` after any interruption

@@ -897,16 +897,15 @@ FOR EACH unit IN validation_scope.units:
 ```
 
 ```bash
-# Run CodeRabbit for specific files (subtask-level) or all files (task-level)
+# Run CodeRabbit review
 # ⏱️ TIMING: 7-30+ minutes per review. Run in background if possible.
 
-# Option 1: If validating specific files (subtask mode)
-coderabbit --prompt-only --type uncommitted --base [unit.base_sha] -- [unit.files...]
-
-# Option 2: If validating all changes (task mode)
+# Compare against base branch
 coderabbit --prompt-only --type uncommitted --base [base_branch]
 
-# Check if CodeRabbit is still running (no status endpoint - wait for command to complete)
+# Compare against specific commit on current branch
+coderabbit --prompt-only --type uncommitted --base-commit [unit.base_sha]
+
 # The command is synchronous - it completes when output is returned
 ```
 
@@ -1371,6 +1370,8 @@ IF CodeRabbit found no issues:
 ### Anti-Rationalization for Direct Editing
 
 **See [shared-patterns/orchestrator-direct-editing-anti-rationalization.md](../shared-patterns/orchestrator-direct-editing-anti-rationalization.md) - same table applies here.**
+
+*Applies to: Step 6 (Fix dispatch after Ring reviewers) & Step 7.5.3 (Fix dispatch after CodeRabbit)*
 
 #### Step 7.5.4: CodeRabbit Results Summary
 

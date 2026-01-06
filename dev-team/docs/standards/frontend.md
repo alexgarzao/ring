@@ -1,7 +1,7 @@
 # Frontend Standards
 
 > **⚠️ MAINTENANCE:** This file is indexed in `dev-team/skills/shared-patterns/standards-coverage-table.md`.
-> When adding/removing `## ` sections, update the coverage table AND agent files per THREE-FILE UPDATE RULE in CLAUDE.md.
+> When adding/removing `## ` sections, follow FOUR-FILE UPDATE RULE in CLAUDE.md: (1) edit standards file, (2) update TOC, (3) update standards-coverage-table.md, (4) update agent file.
 
 This file defines the specific standards for frontend development.
 
@@ -514,7 +514,7 @@ class ErrorBoundary extends Component<Props, State> {
 
 ```tsx
 // Always use semantic HTML
-<button>Click me</button>  // NOT <div onClick={}>
+<button>Click me</button>  // not <div onClick={}>
 
 // Images need alt text
 <img src={user.avatar} alt={`${user.name}'s avatar`} />
@@ -651,7 +651,7 @@ const handleClick = useCallback((id: string) => {
 
 ## Forbidden Patterns
 
-**The following patterns are NEVER allowed. Agents MUST refuse to implement these:**
+**The following patterns are never allowed. Agents MUST refuse to implement these:**
 
 ### TypeScript Anti-Patterns
 
@@ -709,13 +709,13 @@ const handleClick = useCallback((id: string) => {
 | Missing `key` prop in lists | React can't optimize | Always provide stable keys |
 | `useMemo`/`useCallback` everywhere | Premature optimization | Only when actually needed |
 
-**If existing code uses FORBIDDEN patterns → Report as blocker, do NOT extend.**
+**If existing code uses FORBIDDEN patterns → Report as blocker, DO NOT extend.**
 
 ---
 
 ## Standards Compliance Categories
 
-**When invoked from dev-refactor, check ALL categories:**
+**When invoked from dev-refactor, check all categories:**
 
 | Category | Ring Standard | What to Verify |
 |----------|--------------|----------------|

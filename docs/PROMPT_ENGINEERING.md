@@ -1,45 +1,101 @@
 # Prompt Engineering Reference
 
-This document contains assertive language patterns for writing effective AI agent instructions that prevent rationalization and ensure compliance.
+This document contains lexical salience patterns for writing effective AI agent instructions. The key principle: **selective emphasis creates focus** - when too many words are capitalized, none stand out.
 
 ---
 
-## Obligation & Requirement Words
+## Lexical Salience Principle
 
-| Word/Phrase | Usage | Example |
-|-------------|-------|---------|
-| **MUST** | Absolute requirement | "You MUST verify all categories" |
-| **REQUIRED** | Mandatory action | "Standards compliance is REQUIRED" |
-| **MANDATORY** | Non-optional | "MANDATORY: Read PROJECT_RULES.md first" |
-| **SHALL** | Formal obligation | "Agent SHALL report all blockers" |
-| **WILL** | Definite action | "You WILL follow this checklist" |
-| **ALWAYS** | Every time, no exceptions | "ALWAYS check before proceeding" |
+| Approach | Effectiveness | Why |
+|----------|---------------|-----|
+| Few CAPS words at sentence START | HIGH | AI attention focuses on critical instructions |
+| Many CAPS words scattered throughout | LOW | Salience dilution - everything emphasized = nothing emphasized |
+
+**Rule:** Place enforcement words at the BEGINNING of instructions, not in the middle or end.
 
 ---
 
-## Prohibition Words
+## Enforcement Words (Use Sparingly, at Beginning)
 
-| Word/Phrase | Usage | Example |
-|-------------|-------|---------|
-| **MUST NOT** | Absolute prohibition | "You MUST NOT skip verification" |
-| **CANNOT** | Inability/prohibition | "You CANNOT proceed without approval" |
-| **NEVER** | Zero tolerance | "NEVER assume compliance" |
-| **FORBIDDEN** | Explicitly banned | "Using `any` type is FORBIDDEN" |
-| **DO NOT** | Direct prohibition | "DO NOT make autonomous decisions" |
-| **PROHIBITED** | Not allowed | "Skipping gates is PROHIBITED" |
+| Word | Purpose | Correct Usage |
+|------|---------|---------------|
+| **MUST** | Primary requirement | "MUST verify before proceeding" |
+| **REQUIRED** | Mandatory action | "REQUIRED: Load standards first" |
+| **MANDATORY** | Section marker | "MANDATORY: Initialize todo list" |
+| **STOP** | Halt execution | "STOP and report blocker" |
+| **HARD GATE** | Critical checkpoint | "HARD GATE: Cannot proceed without..." |
+| **CANNOT** | Prohibition | "CANNOT skip this gate" |
+| **FORBIDDEN** | Explicitly banned | "FORBIDDEN: Direct code editing" |
 
 ---
 
-## Enforcement Phrases
+## Words to Keep Lowercase (Context Words)
+
+These provide context but dilute emphasis when capitalized:
+
+| Avoid | Use Instead |
+|-------|-------------|
+| ~~ALL~~ | all |
+| ~~ANY~~ | any |
+| ~~ONLY~~ | only |
+| ~~EACH~~ | each |
+| ~~EVERY~~ | every |
+| ~~NOT~~ | not (except in "MUST NOT") |
+| ~~NO~~ | no |
+| ~~AND~~ | and |
+| ~~OR~~ | or |
+| ~~IF~~ | if |
+| ~~NEVER~~ | use "MUST NOT" instead |
+| ~~ALWAYS~~ | use "MUST" instead |
+
+---
+
+## Positioning Examples
+
+| Position | Effectiveness | Example |
+|----------|---------------|---------|
+| **Beginning** | HIGH | "MUST verify all sections before proceeding" |
+| Middle | LOW | "You should verify all sections, this is MUST" |
+| End | LOW | "Verify all sections before proceeding, MUST" |
+
+---
+
+## Transformation Examples
+
+| Before (Diluted) | After (Focused) |
+|------------------|-----------------|
+| "You MUST check ALL sections" | "MUST check all sections" |
+| "NEVER skip ANY gate" | "MUST NOT skip any gate" |
+| "This is MANDATORY for EVERY task" | "MANDATORY: This applies to every task" |
+| "ALWAYS verify BEFORE proceeding" | "MUST verify before proceeding" |
+| "Check IF this CONDITION is met" | "MUST check if this condition is met" |
+| "ALL agents MUST have this" | "MANDATORY: All agents must have this" |
+
+---
+
+## Sentence Structure Pattern
+
+```
+[ENFORCEMENT WORD]: [Action/Instruction] [Context]
+
+Examples:
+- MUST dispatch agent before proceeding to next gate
+- STOP and report if PROJECT_RULES.md is missing
+- HARD GATE: All 3 reviewers must pass before Gate 5
+- FORBIDDEN: Reading source code directly as orchestrator
+- REQUIRED: WebFetch Ring standards before implementation
+- MANDATORY: Save state after every gate transition
+```
+
+---
+
+## Consequence Phrases
 
 | Phrase | When to Use | Example |
 |--------|-------------|---------|
-| **HARD GATE** | Checkpoint that blocks progress | "HARD GATE: Verify standards before implementation" |
-| **NON-NEGOTIABLE** | Cannot be changed or waived | "Security checks are NON-NEGOTIABLE" |
-| **NO EXCEPTIONS** | Rule applies universally | "All agents MUST have this section. No exceptions." |
-| **THIS IS NOT OPTIONAL** | Emphasize requirement | "Anti-rationalization tables - this is NOT optional" |
-| **STOP AND REPORT** | Halt execution | "If blocker found → STOP and report" |
-| **BLOCKING REQUIREMENT** | Prevents continuation | "This is a BLOCKING requirement" |
+| **→ STOP** | Define halt condition | "If PROJECT_RULES.md missing → STOP" |
+| **= FAIL** | Define failure | "Missing verification = FAIL" |
+| **is incomplete** | Define completeness | "Agent is incomplete if missing sections" |
 
 ---
 

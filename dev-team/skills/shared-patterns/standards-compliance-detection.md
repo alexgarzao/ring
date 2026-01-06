@@ -4,37 +4,37 @@ Canonical source for Standards Compliance detection logic used by all dev-team a
 
 ---
 
-## ⛔ CRITICAL: Standards Compliance is ALWAYS Required for Implementation
+## ⛔ CRITICAL: Standards Compliance is always Required for Implementation
 
-**Standards Compliance is NOT optional. It is MANDATORY for ALL implementation agents.**
+**Standards Compliance is not optional. It is MANDATORY for all implementation agents.**
 
 | Context | Standards Compliance | Rationale |
 |---------|---------------------|-----------|
-| **Implementation (TDD-GREEN)** | **ALWAYS REQUIRED** | Agent MUST output Standards Coverage Table |
-| **Analysis (MODE: ANALYSIS ONLY)** | **ALWAYS REQUIRED** | Agent MUST output Standards Coverage Table + Findings |
-| **Validation (SRE, QA)** | **ALWAYS REQUIRED** | Agent MUST verify against standards |
+| **Implementation (TDD-GREEN)** | **always REQUIRED** | Agent MUST output Standards Coverage Table |
+| **Analysis (MODE: ANALYSIS only)** | **always REQUIRED** | Agent MUST output Standards Coverage Table + Findings |
+| **Validation (SRE, QA)** | **always REQUIRED** | Agent MUST verify against standards |
 
-**There is NO context where an implementation agent can skip Standards Compliance.**
+**There is no context where an implementation agent can skip Standards Compliance.**
 
 ---
 
 ## Trigger Conditions
 
-### ALWAYS Required (Implementation Context)
+### always Required (Implementation Context)
 
-**These agents MUST ALWAYS output Standards Coverage Table:**
+**These agents MUST always output Standards Coverage Table:**
 
 | Agent | Standards File | When |
 |-------|---------------|------|
-| `backend-engineer-golang` | golang.md | ANY implementation task |
-| `backend-engineer-typescript` | typescript.md | ANY implementation task |
-| `frontend-bff-engineer-typescript` | typescript.md | ANY implementation task |
-| `frontend-engineer` | frontend.md | ANY implementation task |
-| `devops-engineer` | devops.md | ANY artifact creation |
-| `sre` | sre.md | ANY validation task |
-| `qa-analyst` | golang.md/typescript.md | ANY testing task |
+| `backend-engineer-golang` | golang.md | any implementation task |
+| `backend-engineer-typescript` | typescript.md | any implementation task |
+| `frontend-bff-engineer-typescript` | typescript.md | any implementation task |
+| `frontend-engineer` | frontend.md | any implementation task |
+| `devops-engineer` | devops.md | any artifact creation |
+| `sre` | sre.md | any validation task |
+| `qa-analyst` | golang.md/typescript.md | any testing task |
 
-**⛔ HARD GATE:** If agent does NOT output Standards Coverage Table → Output is INCOMPLETE → Orchestrator MUST re-dispatch.
+**⛔ HARD GATE:** If agent does not output Standards Coverage Table → Output is INCOMPLETE → Orchestrator MUST re-dispatch.
 
 ### Additional Triggers (Analysis Context)
 
@@ -42,8 +42,8 @@ These patterns trigger **detailed findings** in addition to Standards Coverage T
 
 | Detection Pattern | Examples |
 |------------------|----------|
-| Exact match | `**MODE: ANALYSIS ONLY**` |
-| Case variations | `MODE: Analysis Only`, `mode: analysis only`, `**mode: ANALYSIS ONLY**` |
+| Exact match | `**MODE: ANALYSIS only**` |
+| Case variations | `MODE: Analysis Only`, `mode: analysis only`, `**mode: ANALYSIS only**` |
 | Partial markers | `ANALYSIS MODE`, `analysis-only`, `analyze only`, `MODE ANALYSIS` |
 | Context clues | Invoked from `dev-refactor` skill |
 | Explicit request | "compare against standards", "audit compliance", "check against Ring standards" |
@@ -78,7 +78,7 @@ def get_standards_compliance_mode(prompt: str, context: dict) -> str:
     if context.get("invocation_source") == "dev-refactor":
         return "FULL"
 
-    # Default: TABLE_ONLY (Standards Coverage Table is ALWAYS required)
+    # Default: TABLE_ONLY (Standards Coverage Table is always required)
     return "TABLE_ONLY"
 ```
 
@@ -110,7 +110,7 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 
 ## Standards Coverage Table (dev-refactor context)
 
-**Detection:** This section applies when prompt contains `**MODE: ANALYSIS ONLY**`
+**Detection:** This section applies when prompt contains `**MODE: ANALYSIS only**`
 
 **Inputs (provided by dev-refactor):**
 
@@ -127,9 +127,9 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 **HARD GATE:** When invoked from dev-refactor skill, before outputting detailed findings, you MUST output a Standards Coverage Table.
 
 **Process:**
-1. **Parse the WebFetch result** - Extract ALL `## Section` headers from standards file
+1. **Parse the WebFetch result** - Extract all `## Section` headers from standards file
 2. **Count total sections found** - Record the number
-3. **For EACH section** - Determine status (✅ Compliant, ⚠️ Partial, ❌ Non-Compliant, or N/A with reason)
+3. **For each section** - Determine status (✅ Compliant, ⚠️ Partial, ❌ Non-Compliant, or N/A with reason)
 4. **Output table** - MUST have one row per section
 5. **Verify completeness** - Table rows MUST equal sections found
 
@@ -153,7 +153,7 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 
 ```
 ✅ Use EXACT section names from standards-coverage-table.md
-✅ Output ALL sections listed in coverage table for your agent type
+✅ Output all sections listed in coverage table for your agent type
 ✅ Mark missing/not-applicable sections as "N/A" with reason
 ✅ One row per section - no merging
 ```
@@ -163,7 +163,7 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 **For golang.md, section names MUST be:**
 - Version, Core Dependency: lib-commons, Frameworks & Libraries, Configuration Loading, Telemetry & Observability, Bootstrap Pattern, Data Transformation: ToEntity/FromEntity, Error Codes Convention, Error Handling, Function Design, Pagination Patterns, Testing Patterns, Logging Standards, Linting, Architecture Patterns, Directory Structure, Concurrency Patterns, RabbitMQ Worker Pattern
 
-**NOT:**
+**not:**
 - ❌ "Error Handling" (missing "Error Codes Convention" as separate row)
 - ❌ "Logging" (should be "Logging Standards")
 - ❌ "Configuration" (should be "Configuration Loading")
@@ -182,7 +182,7 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 
 ## MANDATORY: Quote Standards from WebFetch in Findings
 
-**For EVERY ⚠️ Partial or ❌ Non-Compliant finding, you MUST:**
+**For every ⚠️ Partial or ❌ Non-Compliant finding, you MUST:**
 
 1. **Quote the codebase pattern** from codebase-report.md (what exists)
 2. **Quote the Ring standard** from WebFetch result (what's expected)
@@ -209,7 +209,7 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 - Standard reference: {standards-file}.md → [Section Name]
 ```
 
-**⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md AND WebFetch result).**
+**⛔ HARD GATE: You MUST quote from BOTH sources (codebase-report.md and WebFetch result).**
 
 ## Anti-Rationalization
 
@@ -219,19 +219,19 @@ See [shared-anti-rationalization.md](shared-anti-rationalization.md) for univers
 |-----------------|----------------|-----------------|
 | "Detection wasn't exact match" | Partial matches and context clues count. | **Include Standards Compliance section** |
 | "Codebase already compliant" | Assumption ≠ verification. Check every section. | **Output full Standards Coverage Table** |
-| "Only relevant sections matter" | You don't decide relevance. Standards file does. | **Check ALL ## sections from WebFetch** |
+| "Only relevant sections matter" | You don't decide relevance. Standards file does. | **Check all ## sections from WebFetch** |
 | "Summary is enough" | Detailed quotes are MANDATORY for findings. | **Quote from BOTH sources** |
-| "WebFetch failed, skip compliance" | STOP and report blocker. Cannot proceed without standards. | **Report blocker, do NOT skip** |
+| "WebFetch failed, skip compliance" | STOP and report blocker. Cannot proceed without standards. | **Report blocker, DO NOT skip** |
 
 ## How to Reference This File
 
 Agents should include:
 
 ```markdown
-## Standards Compliance (ALWAYS REQUIRED)
+## Standards Compliance (always REQUIRED)
 
 See [shared-patterns/standards-compliance-detection.md](../skills/shared-patterns/standards-compliance-detection.md) for:
-- Standards Compliance is MANDATORY for ALL implementation agents
+- Standards Compliance is MANDATORY for all implementation agents
 - MANDATORY output table format (Standards Coverage Table)
 - Additional findings format for analysis mode
 - Anti-rationalization rules
@@ -240,7 +240,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - WebFetch URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/{file}.md`
 - Sections to check: See [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md)
 
-**⛔ Standards Coverage Table is ALWAYS required. No exceptions.**
+**⛔ Standards Coverage Table is always required. No exceptions.**
 - Implementation mode: Output Standards Coverage Table
 - Analysis mode: Output Standards Coverage Table + Detailed Findings
 ```

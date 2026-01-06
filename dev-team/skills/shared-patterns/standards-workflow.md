@@ -34,7 +34,7 @@ Read docs/PROJECT_RULES.md
 
 ### What PROJECT_RULES.md Contains (COMPLEMENTARY to Ring Standards)
 
-**⛔ DEDUPLICATION RULE:** PROJECT_RULES.md documents ONLY what Ring Standards do NOT cover.
+**⛔ DEDUPLICATION RULE:** PROJECT_RULES.md documents only what Ring Standards DO NOT cover.
 
 | Category | Belongs In | Examples |
 |----------|------------|----------|
@@ -43,13 +43,13 @@ Read docs/PROJECT_RULES.md
 | **External integrations** | PROJECT_RULES.md | Third-party APIs, webhooks, external services |
 | **Project-specific env vars** | PROJECT_RULES.md | Environment config not covered by Ring |
 | **Domain terminology** | PROJECT_RULES.md | Technical names of entities/classes in this codebase |
-| Error handling patterns | Ring Standards | ❌ Do NOT duplicate |
-| Logging standards | Ring Standards | ❌ Do NOT duplicate |
-| Testing patterns | Ring Standards | ❌ Do NOT duplicate |
-| Architecture patterns | Ring Standards | ❌ Do NOT duplicate |
-| lib-commons, shared packages | Ring Standards | ❌ Do NOT duplicate |
-| API directory structure | Ring Standards | ❌ Do NOT duplicate |
-| Business rules | Product docs (PRD) | ❌ Does NOT belong in PROJECT_RULES |
+| Error handling patterns | Ring Standards | ❌ Do not duplicate |
+| Logging standards | Ring Standards | ❌ Do not duplicate |
+| Testing patterns | Ring Standards | ❌ Do not duplicate |
+| Architecture patterns | Ring Standards | ❌ Do not duplicate |
+| lib-commons, shared packages | Ring Standards | ❌ Do not duplicate |
+| API directory structure | Ring Standards | ❌ Do not duplicate |
+| Business rules | Product docs (PRD) | ❌ Does not belong in PROJECT_RULES |
 
 ---
 
@@ -64,7 +64,7 @@ Read docs/PROJECT_RULES.md
 | url | See agent-specific URL below |
 | prompt | "Extract all [domain] standards, patterns, and requirements" |
 
-**Execute this WebFetch before proceeding.** Do NOT continue until standards are loaded and understood.
+**Execute this WebFetch before proceeding.** Do not continue until standards are loaded and understood.
 
 ### If WebFetch Fails → STOP IMMEDIATELY
 
@@ -149,15 +149,15 @@ Read docs/PROJECT_RULES.md
 │  ├─ Detect external integrations (third-party APIs, webhooks)               │
 │  └─ Detect domain terminology (entity names, module names)                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  Step 3: Ask User ONLY for What Cannot Be Detected                          │
+│  Step 3: Ask User only for What Cannot Be Detected                          │
 │  ├─ "Any external APIs or services not visible in code?"                    │
 │  ├─ "Any specific environment variables needed?"                            │
 │  └─ "Any planned tech not yet in codebase?"                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  Step 4: Generate PROJECT_RULES.md (Deduplicated)                           │
 │  ├─ Header referencing Ring Standards                                       │
-│  ├─ ONLY project-specific sections                                          │
-│  └─ NO content that duplicates Ring Standards                               │
+│  ├─ only project-specific sections                                          │
+│  └─ no content that duplicates Ring Standards                               │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -166,8 +166,8 @@ Read docs/PROJECT_RULES.md
 ```markdown
 # Project Rules
 
-> ⛔ IMPORTANT: Ring Standards are NOT automatic. Agents MUST WebFetch them before implementation.
-> This file documents ONLY project-specific information not covered by Ring Standards.
+> ⛔ IMPORTANT: Ring Standards are not automatic. Agents MUST WebFetch them before implementation.
+> This file documents only project-specific information not covered by Ring Standards.
 >
 > Ring Standards URLs:
 > - Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
@@ -176,9 +176,9 @@ Read docs/PROJECT_RULES.md
 > - DevOps: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
 > - SRE: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md
 
-## What Ring Standards Cover (DO NOT DUPLICATE HERE)
+## What Ring Standards Cover (DO not DUPLICATE HERE)
 
-The following are defined in Ring Standards and MUST NOT be duplicated in this file:
+The following are defined in Ring Standards and MUST not be duplicated in this file:
 - Error handling patterns (no panic, wrap errors)
 - Logging standards (structured JSON via lib-commons)
 - Testing patterns (table-driven tests, mocks)
@@ -195,7 +195,7 @@ The following are defined in Ring Standards and MUST NOT be duplicated in this f
 
 ## Tech Stack (Not in Ring Standards)
 
-[ONLY technologies not covered by Ring Standards]
+[only technologies not covered by Ring Standards]
 
 | Technology | Purpose | Notes |
 |------------|---------|-------|
@@ -204,7 +204,7 @@ The following are defined in Ring Standards and MUST NOT be duplicated in this f
 
 ## Non-Standard Directory Structure
 
-[ONLY directories that deviate from Ring's standard API structure]
+[only directories that deviate from Ring's standard API structure]
 
 | Directory | Purpose | Pattern |
 |-----------|---------|---------|
@@ -222,7 +222,7 @@ The following are defined in Ring Standards and MUST NOT be duplicated in this f
 
 ## Environment Configuration
 
-[Project-specific env vars NOT covered by Ring's standard config]
+[Project-specific env vars not covered by Ring's standard config]
 
 | Variable | Purpose | Example |
 |----------|---------|---------|
@@ -244,7 +244,7 @@ The following are defined in Ring Standards and MUST NOT be duplicated in this f
 
 ### Deduplication Validation
 
-**Before saving PROJECT_RULES.md, validate NO duplication exists:**
+**Before saving PROJECT_RULES.md, validate no duplication exists:**
 
 | If Content Mentions | Action |
 |---------------------|--------|
@@ -262,7 +262,7 @@ The following are defined in Ring Standards and MUST NOT be duplicated in this f
 ```markdown
 ## PROJECT_RULES.md Not Found
 
-I'll help you create `docs/PROJECT_RULES.md` with ONLY project-specific information.
+I'll help you create `docs/PROJECT_RULES.md` with only project-specific information.
 
 **Ring Standards already cover:**
 - Error handling, logging, testing patterns
@@ -297,11 +297,11 @@ I'll help you create `docs/PROJECT_RULES.md` with ONLY project-specific informat
 
 ---
 
-## Scenario 2: PROJECT_RULES.md Missing AND Existing Code is Non-Compliant
+## Scenario 2: PROJECT_RULES.md Missing and Existing Code is Non-Compliant
 
 **Scenario:** No PROJECT_RULES.md, existing code violates Ring Standards.
 
-**Action:** STOP. Report blocker. Do NOT match non-compliant patterns.
+**Action:** STOP. Report blocker. Do not match non-compliant patterns.
 
 ### Response Format
 
@@ -349,7 +349,7 @@ After loading both PROJECT_RULES.md and Ring Standards:
 - Logging format → Follow Ring Standards
 - Code structure → Check PROJECT_RULES.md or match compliant existing code
 
-**IMPORTANT:** "Match existing code" only applies when existing code IS COMPLIANT. If existing code violates Ring Standards, do NOT match it - report blocker instead.
+**IMPORTANT:** "Match existing code" only applies when existing code IS COMPLIANT. If existing code violates Ring Standards, DO NOT match it - report blocker instead.
 
 ---
 

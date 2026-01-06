@@ -2,7 +2,7 @@
 name: dev-sre
 description: |
   Gate 2 of the development cycle. VALIDATES that observability was correctly implemented
-  by developers. Does NOT implement observability code - only validates it.
+  by developers. Does not implement observability code - only validates it.
 
 trigger: |
   - Gate 2 of development cycle
@@ -11,8 +11,8 @@ trigger: |
   - Service needs observability validation (logging, tracing)
 
 NOT_skip_when: |
-  - "Task says observability not required" → AI cannot self-exempt. ALL services need observability.
-  - "Pure frontend" → If it calls ANY API, backend needs observability. Frontend-only = static HTML.
+  - "Task says observability not required" → AI cannot self-exempt. all services need observability.
+  - "Pure frontend" → If it calls any API, backend needs observability. Frontend-only = static HTML.
   - "MVP doesn't need observability" → MVP without observability = blind MVP. No exceptions.
 
 sequence:
@@ -165,7 +165,7 @@ OPTIONAL INPUT:
 - gate0_handoff: [summary from Gate 0]
 - gate1_handoff: [summary from Gate 1]
 
-IF any REQUIRED input is missing:
+if any REQUIRED input is missing:
   → STOP and report: "Missing required input: [field]"
   → Return to orchestrator with error
 ```
@@ -205,7 +205,7 @@ Task:
 
     ## Your Role
     - VALIDATE that observability is implemented correctly
-    - Do NOT implement - only verify and report
+    - Do not implement - only verify and report
     - Check structured JSON logging
     - Check OpenTelemetry instrumentation coverage
     - Check context propagation for external calls
@@ -214,7 +214,7 @@ Task:
 
     ### 0. FORBIDDEN Logging Patterns (CRITICAL - Check FIRST)
     
-    **MUST search for and report ALL occurrences of FORBIDDEN patterns:**
+    **MUST search for and report all occurrences of FORBIDDEN patterns:**
     
     | Language | FORBIDDEN Pattern | Search For |
     |----------|-------------------|------------|
@@ -228,7 +228,7 @@ Task:
     | TypeScript | `console.error()` | `console.error` in *.ts files |
     | TypeScript | `console.warn()` | `console.warn` in *.ts files |
     
-    **If ANY FORBIDDEN pattern found:**
+    **If any FORBIDDEN pattern found:**
     - Severity: **CRITICAL**
     - Verdict: **FAIL** (automatic, no exceptions)
     - Each occurrence MUST be listed with file:line
@@ -238,7 +238,7 @@ Task:
     - [ ] Uses `initializeLogger()` from lib-common-js (TypeScript)
     - [ ] JSON format with timestamp, level, message, service
     - [ ] trace_id correlation in logs
-    - [ ] **NO FORBIDDEN patterns** (see check 0 above)
+    - [ ] **no FORBIDDEN patterns** (see check 0 above)
 
     ### 2. Instrumentation Coverage (90%+ required)
     For [language], check these patterns:
@@ -272,8 +272,8 @@ Task:
     ### Validation Summary
     | Check | Status | Evidence |
     |-------|--------|----------|
-    | Structured Logging | ✅/❌ | [file:line or "NOT FOUND"] |
-    | Tracing Enabled | ✅/❌ | [file:line or "NOT FOUND"] |
+    | Structured Logging | ✅/❌ | [file:line or "not FOUND"] |
+    | Tracing Enabled | ✅/❌ | [file:line or "not FOUND"] |
     | Instrumentation ≥90% | ✅/❌ | [X%] |
     | Context Propagation | ✅/❌/N/A | [file:line or "N/A"] |
 
@@ -297,9 +297,9 @@ Task:
     - **Fix Required By:** [implementation_agent]
 
     ### Verdict
-    - **ALL CHECKS PASSED:** ✅ YES / ❌ NO
+    - **all CHECKS PASSED:** ✅ YES / ❌ no
     - **Instrumentation Coverage:** [X%]
-    - **If NO, blocking issues:** [list]
+    - **If no, blocking issues:** [list]
 ```
 
 ## Step 4: Parse SRE Agent Output
@@ -325,15 +325,15 @@ validation_state.sre_result = {
 ## Step 5: Handle Validation Result
 
 ```text
-IF validation_state.sre_result.verdict == "PASS" 
-   AND validation_state.sre_result.instrumentation_coverage >= 90:
+if validation_state.sre_result.verdict == "PASS" 
+   and validation_state.sre_result.instrumentation_coverage >= 90:
   → Go to Step 8 (Success)
 
-IF validation_state.sre_result.verdict == "FAIL"
-   OR validation_state.sre_result.instrumentation_coverage < 90:
+if validation_state.sre_result.verdict == "FAIL"
+   or validation_state.sre_result.instrumentation_coverage < 90:
   → Go to Step 6 (Dispatch Fix)
 
-IF validation_state.iteration >= validation_state.max_iterations:
+if validation_state.iteration >= validation_state.max_iterations:
   → Go to Step 9 (Escalate)
 ```
 
@@ -374,9 +374,9 @@ Task:
     - Use JSON format
 
     ### If Instrumentation Coverage < 90%:
-    - Add spans to ALL handlers: `tracer.Start(ctx, "handler.name")`
-    - Add spans to ALL services: `tracer.Start(ctx, "service.domain.operation")`
-    - Add spans to ALL repositories: `tracer.Start(ctx, "db.operation")`
+    - Add spans to all handlers: `tracer.Start(ctx, "handler.name")`
+    - Add spans to all services: `tracer.Start(ctx, "service.domain.operation")`
+    - Add spans to all repositories: `tracer.Start(ctx, "db.operation")`
     - Add `defer span.End()` after each span creation
 
     ### If Context Propagation Issues:
@@ -395,7 +395,7 @@ Task:
 ```text
 validation_state.iteration += 1
 
-IF validation_state.iteration > validation_state.max_iterations:
+if validation_state.iteration > validation_state.max_iterations:
   → Go to Step 9 (Escalate)
 
 → Go back to Step 3 (Dispatch SRE Agent)
@@ -444,7 +444,7 @@ Generate skill output:
 ## Handoff to Next Gate
 - SRE validation: FAILED
 - Remaining issues: [count]
-- Ready for Gate 3 (Testing): NO
+- Ready for Gate 3 (Testing): no
 - **Action Required:** User must manually resolve remaining issues
 
 ⛔ ESCALATION: Max iterations (3) reached. User intervention required.
@@ -456,7 +456,7 @@ Generate skill output:
 
 | Severity | Scenario | Gate 2 Status | Action |
 |----------|----------|---------------|--------|
-| **CRITICAL** | Missing ALL observability (no structured logs) | FAIL | ❌ Return to Gate 0 |
+| **CRITICAL** | Missing all observability (no structured logs) | FAIL | ❌ Return to Gate 0 |
 | **CRITICAL** | fmt.Println/echo instead of JSON logs | FAIL | ❌ Return to Gate 0 |
 | **CRITICAL** | Instrumentation coverage < 50% | FAIL | ❌ Return to Gate 0 |
 | **CRITICAL** | "DEFERRED" appears in validation output | FAIL | ❌ Return to Gate 0 |
@@ -499,9 +499,9 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "OpenTelemetry library is installed" | Installation ≠ Instrumentation | **Verify spans exist in code** |
-| "Middleware handles tracing" | Middleware = root span only | **Add child spans in ALL layers** |
-| "Small function doesn't need span" | Size is irrelevant | **Add span to EVERY function** |
-| "Only external calls need tracing" | Internal ops need tracing too | **Instrument ALL layers** |
+| "Middleware handles tracing" | Middleware = root span only | **Add child spans in all layers** |
+| "Small function doesn't need span" | Size is irrelevant | **Add span to every function** |
+| "Only external calls need tracing" | Internal ops need tracing too | **Instrument all layers** |
 | "Feature complete, observability later" | Observability IS completion | **Fix NOW before Gate 3** |
 
 ## Component Type Requirements
@@ -541,5 +541,5 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 ## Handoff to Next Gate
 - SRE validation status: [complete|needs_fixes|failed]
 - Instrumentation coverage: [X%]
-- Ready for testing: [YES|NO]
+- Ready for testing: [YES|no]
 ```

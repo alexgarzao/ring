@@ -19,7 +19,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 ## FORBIDDEN Actions (Orchestrator)
 
-**⛔ HARD GATE: Using ANY of these tools on source code = IMMEDIATE SKILL FAILURE**
+**⛔ HARD GATE: Using any of these tools on source code = IMMEDIATE SKILL FAILURE**
 
 ```
 ❌ Read(file_path="*.go|*.ts|*.tsx|*.jsx")  → SKILL FAILURE - Agent reads code
@@ -45,7 +45,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 - Task files (`tasks.md`, `findings.md`)
 - State files (`*-state.json`)
 - Report files (`*-report.md`)
-- Ring plugin files (when maintaining Ring itself, NOT via dev-refactor)
+- Ring plugin files (when maintaining Ring itself, not via dev-refactor)
 
 ## REQUIRED Actions (Orchestrator)
 
@@ -188,7 +188,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 
 | Responsibility | Description | When Required |
 |----------------|-------------|---------------|
-| **Structured Logging** | JSON logs with level, message, timestamp, service, trace_id | ALL code paths |
+| **Structured Logging** | JSON logs with level, message, timestamp, service, trace_id | all code paths |
 | **Tracing** | OpenTelemetry spans for operations, trace context propagation | External calls, DB queries, HTTP handlers |
 
 ### Library Requirements
@@ -207,12 +207,12 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | "I already know Go/TypeScript" | Knowing language ≠ knowing Ring standards. Agent has standards. | **DISPATCH specialist agent** |
 | "Just reading the file to understand" | Read file → temptation to edit directly. Agent reads for you. | **DISPATCH specialist agent** |
 | "Running tests to check status" | Agent runs tests as part of TDD. You orchestrate, not operate. | **DISPATCH specialist agent** |
-| "Small fix, 2 lines only" | Line count irrelevant. ALL code changes require specialist. | **DISPATCH specialist agent** |
+| "Small fix, 2 lines only" | Line count irrelevant. all code changes require specialist. | **DISPATCH specialist agent** |
 | "Agent will do same thing I would" | Agent has Ring standards loaded. You're guessing without them. | **DISPATCH specialist agent** |
 
 ## Red Flags - STOP Immediately
 
-**If you catch yourself doing ANY of these, STOP:**
+**If you catch yourself doing any of these, STOP:**
 
 | Red Flag | What You're Thinking | Why It's Wrong |
 |----------|---------------------|----------------|
@@ -236,7 +236,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 3. **DISCARD** any direct changes:
    ```bash
    git checkout -- <files you edited>
-   # OR for all changes:
+   # or for all changes:
    git checkout -- .
    ```
 4. **DISPATCH** the correct specialist agent with the ORIGINAL task
@@ -252,10 +252,10 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 [ ] Did I use Grep to analyze source patterns? → VIOLATION
 [ ] Did I make code changes without dispatching? → VIOLATION
 
-If ANY checkbox is YES:
+If any checkbox is YES:
 1. git checkout -- <affected files>
 2. Dispatch correct specialist agent
-3. Do NOT continue with direct changes
+3. Do not continue with direct changes
 ```
 
 ### What To Tell The User

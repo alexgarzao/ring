@@ -1,27 +1,27 @@
 # Standards Coverage Table Pattern
 
-This file defines the MANDATORY output format for agents comparing codebases against Ring standards. It ensures EVERY section in the standards is explicitly checked and reported.
+This file defines the MANDATORY output format for agents comparing codebases against Ring standards. It ensures every section in the standards is explicitly checked and reported.
 
 ---
 
-## ⛔ CRITICAL: ALL Sections Are REQUIRED
+## ⛔ CRITICAL: All Sections Are Required
 
 **This is NON-NEGOTIABLE. Every section listed in the Agent → Standards Section Index below MUST be checked.**
 
 | Rule | Enforcement |
 |------|-------------|
-| **EVERY section MUST be checked** | No exceptions. No skipping. |
-| **EVERY section MUST appear in output table** | Missing row = INCOMPLETE output |
-| **Subsections are INCLUDED** | If "Containers" is listed, ALL content (Dockerfile, Docker Compose) MUST be checked |
+| **Every section MUST be checked** | No exceptions. No skipping. |
+| **Every section MUST appear in output table** | Missing row = INCOMPLETE output |
+| **Subsections are INCLUDED** | If "Containers" is listed, all content (Dockerfile, Docker Compose) MUST be checked |
 | **N/A requires explicit reason** | Cannot mark N/A without justification |
 
-**If you skip ANY section → Your output is REJECTED. Start over.**
+**If you skip any section → Your output is REJECTED. Start over.**
 
 **If you invent section names → Your output is REJECTED. Start over.**
 
 ---
 
-## ⛔ CRITICAL: Section Names Are NOT Negotiable
+## ⛔ CRITICAL: Section Names Are Not Negotiable
 
 **You MUST use the EXACT section names from this file. You CANNOT:**
 
@@ -45,7 +45,7 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 - Not enumerating all sections systematically
 - Skipping subsections (e.g., checking Dockerfile but skipping Docker Compose)
 
-**Solution:** Require a completeness table that MUST list every section from the WebFetch result with explicit status. ALL content within each section MUST be evaluated.
+**Solution:** Require a completeness table that MUST list every section from the WebFetch result with explicit status. All content within each section MUST be evaluated.
 
 ---
 
@@ -53,22 +53,22 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ### ⛔ HARD GATE: Before Outputting Findings
 
-**You MUST output a Standards Coverage Table that enumerates EVERY section from the WebFetch result.**
+**You MUST output a Standards Coverage Table that enumerates every section from the WebFetch result.**
 
-**REQUIRED: When checking a section, you MUST check ALL subsections and patterns within it.**
+**REQUIRED: When checking a section, you MUST check all subsections and patterns within it.**
 
 | Section | What MUST Be Checked |
 |---------|---------------------|
-| Containers | Dockerfile patterns AND Docker Compose patterns |
-| Infrastructure as Code | Terraform structure AND state management AND modules |
-| Observability | Logging AND Tracing (structured JSON logs, OpenTelemetry spans) |
-| Security | Secrets management AND Network policies |
+| Containers | Dockerfile patterns and Docker Compose patterns |
+| Infrastructure as Code | Terraform structure and state management and modules |
+| Observability | Logging and Tracing (structured JSON logs, OpenTelemetry spans) |
+| Security | Secrets management and Network policies |
 
 ### Process
 
-1. **Parse the WebFetch result** - Extract ALL `## Section` headers from the standards file
+1. **Parse the WebFetch result** - Extract all `## Section` headers from the standards file
 2. **Count sections** - Record total number of sections found
-3. **For EACH section** - Determine status and evidence
+3. **For each section** - Determine status and evidence
 4. **Output table** - MUST have one row per section
 5. **Verify completeness** - Table row count MUST equal section count
 
@@ -107,17 +107,17 @@ This file defines the MANDATORY output format for agents comparing codebases aga
 
 ## ⛔ CRITICAL: Standards Boundary Enforcement
 
-**You MUST check ONLY what the standards file explicitly defines. NEVER invent requirements.**
+**You MUST check only what the standards file explicitly defines. Never invent requirements.**
 
 See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enforcement.md) for:
-- Complete list of what IS and IS NOT required per agent
+- Complete list of what IS and IS not required per agent
 - Agent-specific requirement boundaries
 - Self-verification checklist
 
-**⛔ HARD GATE:** Before flagging ANY item as non-compliant:
+**⛔ HARD GATE:** Before flagging any item as non-compliant:
 1. Verify the requirement EXISTS in the WebFetch result
 2. Quote the EXACT standard that requires it
-3. If you cannot quote it → Do NOT flag it
+3. If you cannot quote it → Do not flag it
 
 ---
 
@@ -125,12 +125,12 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I checked the important sections" | You don't decide importance. ALL sections MUST be checked. | **List EVERY section in table** |
+| "I checked the important sections" | You don't decide importance. All sections MUST be checked. | **List every section in table** |
 | "Some sections obviously don't apply" | Report them as N/A with reason. Never skip silently. | **Include in table with N/A status** |
 | "The table would be too long" | Completeness > brevity. Every section MUST be visible. | **Output full table regardless of length** |
 | "I already mentioned these in findings" | Findings ≠ Coverage table. Both are REQUIRED. | **Output table BEFORE detailed findings** |
 | "WebFetch result was unclear" | Parse all `## ` headers. If truly unclear, STOP and report blocker. | **Report blocker or parse all headers** |
-| "I checked Dockerfile, that covers Containers" | Containers = Dockerfile + Docker Compose. Partial ≠ Complete. | **Check ALL subsections within each section** |
+| "I checked Dockerfile, that covers Containers" | Containers = Dockerfile + Docker Compose. Partial ≠ Complete. | **Check all subsections within each section** |
 | "Project doesn't use Docker Compose" | Report as N/A with evidence. Never assume. VERIFY first. | **Search for docker-compose.yml, report finding** |
 | "Only checking what exists in codebase" | Standards define what SHOULD exist. Missing = Non-Compliant. | **Report missing patterns as ❌ Non-Compliant** |
 | "My section name is clearer" | Consistency > clarity. Coverage table names are the contract. | **Use EXACT names from coverage table** |
@@ -145,13 +145,13 @@ See [shared-patterns/standards-boundary-enforcement.md](standards-boundary-enfor
 **Before submitting output, verify:**
 
 ```text
-1. Did I extract ALL ## headers from WebFetch result?     [ ]
+1. Did I extract all ## headers from WebFetch result?     [ ]
 2. Does my table have exactly that many rows?             [ ]
-3. Does EVERY row have a status (✅/⚠️/❌/N/A)?           [ ]
-4. Does EVERY ⚠️/❌ have evidence (file:line)?           [ ]
-5. Does EVERY N/A have a reason?                         [ ]
+3. Does every row have a status (✅/⚠️/❌/N/A)?           [ ]
+4. Does every ⚠️/❌ have evidence (file:line)?           [ ]
+5. Does every N/A have a reason?                         [ ]
 
-If ANY checkbox is unchecked → FIX before submitting.
+If any checkbox is unchecked → FIX before submitting.
 ```
 
 ---
@@ -214,7 +214,7 @@ Agents MUST include this in their Standards Compliance section:
 ```markdown
 ## Standards Compliance Output (Conditional)
 
-**Detection:** Prompt contains `**MODE: ANALYSIS ONLY**`
+**Detection:** Prompt contains `**MODE: ANALYSIS only**`
 
 **When triggered, you MUST:**
 1. Output Standards Coverage Table per [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md)
@@ -234,7 +234,7 @@ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/stan
 **IMPORTANT:** When updating a standards file, you MUST also update the corresponding section index below.
 
 **Meta-sections (EXCLUDED from agent checks):**
-Standards files may contain these meta-sections that are NOT counted in section indexes:
+Standards files may contain these meta-sections that are not counted in section indexes:
 - `## Checklist` - Self-verification checklist for developers
 - `## Standards Compliance` - Output format examples for agents
 - `## Standards Compliance Output Format` - Output templates
@@ -322,7 +322,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ### devops-engineer → devops.md
 
-| # | Section to Check | Subsections (ALL REQUIRED) |
+| # | Section to Check | Subsections (all REQUIRED) |
 |---|------------------|---------------------------|
 | 1 | Cloud Provider (MANDATORY) | Provider table |
 | 2 | Infrastructure as Code (MANDATORY) | Terraform structure, State management, Module pattern, Best practices |
@@ -332,9 +332,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 6 | Security (MANDATORY) | Secrets management, Network policies |
 | 7 | Makefile Standards (MANDATORY) | Required commands (build, lint, test, cover, up, down, etc.), Component delegation pattern |
 
-**⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
+**⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile and Docker Compose patterns. Checking only one = INCOMPLETE.
 
-**⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify ALL required commands exist: `build`, `lint`, `test`, `cover`, `up`, `down`, `start`, `stop`, `restart`, `rebuild-up`, `set-env`, `generate-docs`.
+**⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify all required commands exist: `build`, `lint`, `test`, `cover`, `up`, `down`, `start`, `stop`, `restart`, `rebuild-up`, `set-env`, `generate-docs`.
 
 ---
 
@@ -351,7 +351,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### qa-analyst → golang.md OR typescript.md
+### qa-analyst → golang.md or typescript.md
 
 **Note:** qa-analyst checks testing-related sections based on project language.
 
@@ -370,7 +370,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 2 | Edge Case Coverage (MANDATORY) |
 | 3 | Type Safety Rules (MANDATORY) |
 
-**Test Quality Gate Checks (Gate 3 Exit - ALL REQUIRED):**
+**Test Quality Gate Checks (Gate 3 Exit - all REQUIRED):**
 | # | Check | Detection |
 |---|-------|-----------|
 | 1 | Skipped tests | `grep -rn "\.skip\|\.todo\|xit"` = 0 |

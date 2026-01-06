@@ -180,7 +180,7 @@ OPTIONAL INPUT:
 - existing_dockerfile: [true/false]
 - existing_compose: [true/false]
 
-IF any REQUIRED input is missing:
+if any REQUIRED input is missing:
   → STOP and report: "Missing required input: [field]"
   → Return to orchestrator with error
 ```
@@ -231,7 +231,7 @@ Task:
   model: "opus"
   description: "Create/update DevOps artifacts for [unit_id]"
   prompt: |
-    ⛔ MANDATORY: Create ALL DevOps Artifacts
+    ⛔ MANDATORY: Create all DevOps Artifacts
 
     ## Input Context
     - **Unit ID:** [unit_id]
@@ -250,14 +250,14 @@ Task:
     ## Standards Reference
     WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
 
-    You MUST implement ALL sections from devops.md.
+    You MUST implement all sections from devops.md.
 
     ## Requirements
 
     ### Dockerfile
     - Multi-stage build (builder → production)
     - Non-root USER (appuser)
-    - Specific versions (NO :latest)
+    - Specific versions (no :latest)
     - HEALTHCHECK instruction
     - Layer caching optimization
 
@@ -270,7 +270,7 @@ Task:
     - Network: app-network (bridge)
 
     ### .env.example
-    - ALL variables with placeholders
+    - all variables with placeholders
     - Comments explaining each
     - Grouped by service
     - Required vs optional marked
@@ -300,8 +300,8 @@ Task:
     4. `docker-compose logs app | head -5` → [JSON logs?]
 
     ### Compliance Summary
-    - **ALL STANDARDS MET:** ✅ YES / ❌ NO
-    - **If NO, what's missing:** [list sections]
+    - **all STANDARDS MET:** ✅ YES / ❌ no
+    - **If no, what's missing:** [list sections]
 ```
 
 ## Step 5: Validate Agent Output
@@ -313,16 +313,16 @@ Parse agent output:
 2. Extract Files Created/Updated
 3. Extract Verification results
 
-IF "ALL STANDARDS MET: ✅ YES" AND all verifications PASS:
+if "all STANDARDS MET: ✅ YES" and all verifications PASS:
   → devops_state.dockerfile_action = [from table]
   → devops_state.compose_action = [from table]
   → devops_state.env_action = [from table]
   → devops_state.verification = {build: PASS, startup: PASS, health: PASS}
   → Proceed to Step 7
 
-IF ANY section has ❌ OR any verification FAIL:
+if any section has ❌ or any verification FAIL:
   → devops_state.iterations += 1
-  → IF iterations >= max_iterations: Go to Step 8 (Escalate)
+  → if iterations >= max_iterations: Go to Step 8 (Escalate)
   → Re-dispatch agent with specific failures
 ```
 
@@ -342,8 +342,8 @@ Task:
     ## Standards Reference
     WebFetch: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
 
-    Fix ALL issues and re-run verification commands.
-    Return updated Standards Coverage Table with ALL ✅.
+    Fix all issues and re-run verification commands.
+    Return updated Standards Coverage Table with all ✅.
 ```
 
 After fix → Go back to Step 5
@@ -384,7 +384,7 @@ Generate skill output:
 - DevOps status: COMPLETE
 - Services: [list]
 - Env vars: [count] documented
-- Verification: ALL PASS
+- Verification: all PASS
 - Ready for Gate 2 (SRE): YES
 ```
 
@@ -409,7 +409,7 @@ Generate skill output:
 
 ## Handoff to Next Gate
 - DevOps status: FAILED
-- Ready for Gate 2: NO
+- Ready for Gate 2: no
 - **Action Required:** User must manually resolve issues
 
 ⛔ ESCALATION: Max iterations (3) reached. User intervention required.
@@ -473,5 +473,5 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 ## Handoff to Next Gate
 - DevOps status: [COMPLETE|PARTIAL|FAILED]
-- Ready for Gate 2: [YES|NO]
+- Ready for Gate 2: [YES|no]
 ```

@@ -37,8 +37,8 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      required_when: "invocation_context == 'dev-refactor' AND prompt_contains == 'MODE: ANALYSIS ONLY'"
-      description: "MANDATORY when invoked from dev-refactor skill with analysis mode. NOT optional."
+      required_when: "invocation_context == 'dev-refactor' and prompt_contains == 'MODE: ANALYSIS only'"
+      description: "MANDATORY when invoked from dev-refactor skill with analysis mode. not optional."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -86,7 +86,7 @@ input_schema:
 **HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
 
 **Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
+If you are not Claude Opus 4.5+ → **STOP immediately and report:**
 ```
 ERROR: Model requirement not met
 Required: Claude Opus 4.5+
@@ -233,7 +233,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - Secrets Management
 - Health Checks
 
-**If `**MODE: ANALYSIS ONLY**` is NOT detected:** Standards Compliance output is optional.
+**If `MODE: ANALYSIS only` is not detected:** Standards Compliance output is optional.
 
 ## Standards Loading (MANDATORY)
 
@@ -251,7 +251,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Standards File** | devops.md |
 | **Prompt** | "Extract all DevOps standards, patterns, and requirements" |
 
-## FORBIDDEN Patterns Check (MANDATORY - BEFORE ANY CODE)
+## FORBIDDEN Patterns Check (MANDATORY - before any code)
 
 **⛔ HARD GATE: You MUST execute this check BEFORE writing any code.**
 
@@ -266,7 +266,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 1. WebFetch `devops.md` (URL in Standards Loading section above)
 2. Find "Security" section → Extract secrets management and security patterns
 3. Find "Containers" section → Extract Dockerfile and container security patterns
-4. **LIST ALL patterns you found** (proves you read the standards)
+4. **list all patterns you found** (proves you read the standards)
 5. If you cannot list them → STOP, WebFetch failed
 
 **Required Output Format:**
@@ -286,7 +286,7 @@ I have loaded devops.md standards via WebFetch.
 [LIST the correct alternatives found in the standards file]
 ```
 
-**⛔ CRITICAL: Do NOT hardcode patterns. Extract them from WebFetch result.**
+**⛔ CRITICAL: Do not hardcode patterns. Extract them from WebFetch result.**
 
 **If this acknowledgment is missing → Implementation is INVALID.**
 
@@ -310,15 +310,15 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ## When Implementation is Not Needed
 
-**HARD GATE:** If infrastructure is ALREADY compliant with ALL standards:
+**HARD GATE:** If infrastructure is already compliant with all standards:
 
 **Summary:** "No changes required - infrastructure follows DevOps standards"
 **Implementation:** "Existing configuration follows standards (reference: [specific files])"
 **Files Changed:** "None"
-**Testing:** "Existing health checks adequate" OR "Recommend: [specific improvements]"
+**Testing:** "Existing health checks adequate" or "Recommend: [specific improvements]"
 **Next Steps:** "Deployment can proceed"
 
-**CRITICAL:** Do NOT reconfigure working, standards-compliant infrastructure without explicit requirement.
+**CRITICAL:** Do not reconfigure working, standards-compliant infrastructure without explicit requirement.
 
 **Signs infrastructure is already compliant:**
 - Dockerfile uses non-root user
@@ -337,52 +337,52 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check ALL sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md" for:**
 - Complete list of sections to check (7 sections)
 - Section names (MUST use EXACT names from table)
-- Subsections per section (ALL REQUIRED)
+- Subsections per section (all REQUIRED)
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
 - Anti-rationalization rules
 - Completeness verification checklist
 
-**⛔ SECTION NAMES ARE NOT NEGOTIABLE:**
+**⛔ SECTION NAMES are not negotiable:**
 - You CANNOT invent names like "Docker", "CI/CD"
 - You CANNOT merge sections
-- If section doesn't apply → Mark as N/A, do NOT skip
+- If section doesn't apply → Mark as N/A, do not skip
 
-**⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile AND Docker Compose patterns. Checking only one = INCOMPLETE.
+**⛔ HARD GATE:** When checking "Containers", you MUST verify both Dockerfile and Docker Compose patterns. Checking only one = INCOMPLETE.
 
-**⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify ALL required commands exist.
+**⛔ HARD GATE:** When checking "Makefile Standards", you MUST verify all required commands exist.
 
 ### ⛔ Standards Boundary Enforcement (CRITICAL)
 
 **See [shared-patterns/standards-boundary-enforcement.md](../skills/shared-patterns/standards-boundary-enforcement.md) for complete boundaries.**
 
-**⛔ HARD GATE:** Check ONLY commands listed in `devops.md → Makefile Standards → Required Commands` table.
+**⛔ HARD GATE:** Check only commands listed in `devops.md → Makefile Standards → Required Commands` table.
 
 **Process:**
 1. WebFetch devops.md
 2. Find "Makefile Standards" → "Required Commands" table
-3. Check ONLY the commands listed in that table
-4. Do NOT invent additional commands
+3. Check only the commands listed in that table
+4. Do not invent additional commands
 
-**⛔ FORBIDDEN to flag as missing (common hallucinations NOT in devops.md):**
+**⛔ FORBIDDEN to flag as missing (common hallucinations not in devops.md):**
 
-| Command | Why NOT Required |
+| Command | Why not Required |
 |---------|------------------|
-| `make proto` | Protobuf generation - NOT in devops.md |
-| `make mocks` | Mock generation - NOT in devops.md |
-| `make migrate-up` | DB migrations - NOT in devops.md |
-| `make migrate-down` | DB migrations - NOT in devops.md |
-| `make install` | Dependency install - NOT in devops.md |
-| `make clean` | Cleanup - NOT in devops.md |
-| `make docker-push` | Registry push - NOT in devops.md |
-| `make helm-*` | Helm commands - NOT in devops.md |
+| `make proto` | Protobuf generation - not in devops.md |
+| `make mocks` | Mock generation - not in devops.md |
+| `make migrate-up` | DB migrations - not in devops.md |
+| `make migrate-down` | DB migrations - not in devops.md |
+| `make install` | Dependency install - not in devops.md |
+| `make clean` | Cleanup - not in devops.md |
+| `make docker-push` | Registry push - not in devops.md |
+| `make helm-*` | Helm commands - not in devops.md |
 
-**⛔ HARD GATE:** If you cannot quote the requirement from devops.md → Do NOT flag it as missing.
+**⛔ HARD GATE:** If you cannot quote the requirement from devops.md → Do not flag it as missing.
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:**
 - Output table format
@@ -392,7 +392,7 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 
 ### Output Format
 
-**If ALL categories are compliant:**
+**If all categories are compliant:**
 ```markdown
 ## Standards Compliance
 
@@ -401,7 +401,7 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 No migration actions required.
 ```
 
-**If ANY category is non-compliant:**
+**If any category is non-compliant:**
 ```markdown
 ## Standards Compliance
 
@@ -421,11 +421,11 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do NOT skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ## Blocker Criteria - STOP and Report
 
-**ALWAYS pause and report blocker for:**
+**always pause and report blocker for:**
 
 | Decision Type | Examples | Action |
 |--------------|----------|--------|
@@ -437,7 +437,7 @@ No migration actions required.
 
 ## Security Checklist - MANDATORY
 
-**Before any Dockerfile is complete, verify ALL:**
+**before any Dockerfile is complete, verify all:**
 
 - [ ] `USER` directive present (non-root)
 - [ ] No secrets in build args or env
@@ -453,7 +453,7 @@ No migration actions required.
 | IaC security | Checkov, tfsec | Before apply |
 | Secrets detection | gitleaks, trufflehog | On commit |
 
-**Do NOT mark infrastructure complete without security scan passing.**
+**Do not mark infrastructure complete without security scan passing.**
 
 ## Severity Calibration
 
@@ -466,7 +466,7 @@ When reporting infrastructure issues:
 | **MEDIUM** | Operational risk | No logging, no metrics, manual scaling |
 | **LOW** | Best practices | Could use multi-stage, minor optimization |
 
-**Report ALL severities. CRITICAL must be fixed before deployment.**
+**Report all severities. CRITICAL MUST be fixed before deployment.**
 
 ### Cannot Be Overridden
 
@@ -482,14 +482,14 @@ When reporting infrastructure issues:
 
 **If developer insists on violating these:**
 1. Escalate to orchestrator
-2. Do NOT proceed with infrastructure configuration
+2. Do not proceed with infrastructure configuration
 3. Document the request and your refusal
 
-**"We'll fix it later" is NOT an acceptable reason to deploy non-compliant infrastructure.**
+**"We'll fix it later" is not an acceptable reason to deploy non-compliant infrastructure.**
 
 ## Anti-Rationalization Table
 
-**If you catch yourself thinking ANY of these, STOP:**
+**If you catch yourself thinking any of these, STOP:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -500,7 +500,7 @@ When reporting infrastructure issues:
 | "Health checks are optional for now" | Orchestration breaks without them. | **Add health checks** |
 | "Resource limits not needed locally" | Local = prod patterns. Train correctly. | **Define resource limits** |
 | "Security scan slows CI" | Slow CI > vulnerable production. | **Run security scans** |
-| "Existing infrastructure works fine" | Working ≠ compliant. Must verify checklist. | **Verify against ALL DevOps categories** |
+| "Existing infrastructure works fine" | Working ≠ compliant. Must verify checklist. | **Verify against all DevOps categories** |
 | "Codebase uses different patterns" | Existing patterns ≠ project standards. Check PROJECT_RULES.md. | **Follow PROJECT_RULES.md or block** |
 | "Standards Compliance section empty" | Empty ≠ skip. Must show verification attempt. | **Report "All categories verified, fully compliant"** |
 | "Self-check is for reviewers, not implementers" | Implementers must verify before submission. Reviewers are backup. | **Complete self-check** |
@@ -533,9 +533,9 @@ When reporting infrastructure issues:
 Before marking implementation complete, you MUST verify:
 
 #### Resource Verification
-- [ ] ALL Docker base images verified to exist on Docker Hub/registry
-- [ ] ALL Helm chart dependencies verified in artifact hub or specified repo
-- [ ] ALL Terraform providers verified in registry.terraform.io
+- [ ] all Docker base images verified to exist on Docker Hub/registry
+- [ ] all Helm chart dependencies verified in artifact hub or specified repo
+- [ ] all Terraform providers verified in registry.terraform.io
 - [ ] No hallucinated image tags or chart versions
 
 **Verification Commands:**
@@ -582,7 +582,7 @@ terraform providers lock -platform=linux_amd64
 - [ ] No empty resource blocks
 - [ ] All required labels/tags applied
 
-**If ANY check fails → Fix before submission. Do NOT rely on reviewers to catch these.**
+**If any check fails → Fix before submission. Do not rely on reviewers to catch these.**
 
 ---
 
@@ -636,7 +636,7 @@ Stopping app_postgres_1 ... done
 - Set up container registry push
 ```
 
-## What This Agent Does NOT Handle
+## What This Agent Does not Handle
 
 - Application code development (use `backend-engineer-golang`, `backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
 - Production monitoring and incident response (use `sre`)
