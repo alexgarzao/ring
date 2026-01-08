@@ -22,5 +22,8 @@ if [[ -z "$PYTHON_CMD" ]]; then
     exit 0
 fi
 
-# Pass stdin to Python script
-cat | "$PYTHON_CMD" "${SCRIPT_DIR}/learning-extract.py"
+# Construct input JSON for Stop event (framework doesn't provide stdin)
+INPUT_JSON='{"type": "stop"}'
+
+# Pass constructed input to Python script
+echo "$INPUT_JSON" | "$PYTHON_CMD" "${SCRIPT_DIR}/learning-extract.py"

@@ -62,8 +62,12 @@ if ! validate_path_boundary "$FILE_PATH" "$PROJECT_ROOT"; then
     exit 0
 fi
 
-# Check if file is a handoff or plan
-if [[ "$FILE_PATH" == *"/handoffs/"* ]] || [[ "$FILE_PATH" == *"/plans/"* ]]; then
+# Check if file is a handoff, plan, or continuity ledger
+FILE_BASENAME="$(basename "$FILE_PATH")"
+if [[ "$FILE_PATH" == *"/handoffs/"* ]] || \
+   [[ "$FILE_PATH" == *"/plans/"* ]] || \
+   [[ "$FILE_PATH" == *"/ledgers/"* ]] || \
+   [[ "$FILE_BASENAME" == CONTINUITY* ]]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
     PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 

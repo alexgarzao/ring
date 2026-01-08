@@ -69,6 +69,7 @@ python3 default/lib/artifact-index/artifact_query.py "<keywords>" [options]
 - `--limit N` - Maximum results (1-100, default: 5)
 - `--json` - Output as JSON for programmatic use
 - `--stats` - Show index statistics
+- `--no-save` - Disable automatic query saving (saving enabled by default)
 
 ### Planning Mode (Recommended for write-plan)
 

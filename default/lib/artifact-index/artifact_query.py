@@ -442,9 +442,9 @@ def main() -> int:
         help="Custom database path"
     )
     parser.add_argument(
-        "--save",
+        "--no-save",
         action="store_true",
-        help="Save query for compound learning"
+        help="Disable automatic query saving (saving enabled by default)"
     )
     parser.add_argument(
         "--json", "-j",
@@ -568,13 +568,16 @@ def main() -> int:
         results["continuity"] = search_continuity(conn, query, args.limit)
 
     if args.json:
-        print(json.dumps(results, indent=2, default=str))
+        formatted = json.dumps(results, indent=2, default=str)
+        print(formatted)
     else:
         formatted = format_results(results)
         print(formatted)
 
-        if args.save:
-            save_query(conn, query, formatted, results)
+    # Auto-save queries for compound learning (unless --no-save)
+    if not args.no_save:
+        save_query(conn, query, formatted, results)
+        if not args.json:
             print("\n[Query saved for compound learning]")
 
     conn.close()
