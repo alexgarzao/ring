@@ -1,16 +1,16 @@
 ---
 name: codereview
-description: Run comprehensive parallel code review with all 3 specialized reviewers
+description: Run comprehensive parallel code review with all 5 specialized reviewers
 argument-hint: "[files-or-paths]"
 ---
 
-Dispatch all 3 specialized code reviewers in parallel, collect their reports, and provide a consolidated analysis.
+Dispatch all 5 specialized code reviewers in parallel, collect their reports, and provide a consolidated analysis.
 
 ## Review Process
 
-### Step 1: Dispatch All Three Reviewers in Parallel
+### Step 1: Dispatch All Five Reviewers in Parallel
 
-**CRITICAL: Use a single message with 3 Task tool calls to launch all reviewers simultaneously.**
+**CRITICAL: Use a single message with 5 Task tool calls to launch all reviewers simultaneously.**
 
 Gather the required context first:
 - WHAT_WAS_IMPLEMENTED: Summary of changes made
@@ -18,11 +18,13 @@ Gather the required context first:
 - BASE_SHA: Base commit for comparison (if applicable)
 - HEAD_SHA: Head commit for comparison (if applicable)
 - DESCRIPTION: Additional context about the changes
+- LANGUAGES: Go, TypeScript, or both (for nil-safety-reviewer)
 
-Then dispatch all 3 reviewers:
+Then dispatch all 5 reviewers:
 
 ```
 Task tool #1 (code-reviewer):
+  subagent_type: "ring-default:code-reviewer"
   model: "opus"
   description: "Review code quality and architecture"
   prompt: |
@@ -33,19 +35,38 @@ Task tool #1 (code-reviewer):
     DESCRIPTION: [additional context]
 
 Task tool #2 (business-logic-reviewer):
+  subagent_type: "ring-default:business-logic-reviewer"
   model: "opus"
   description: "Review business logic correctness"
   prompt: |
     [Same parameters as above]
 
 Task tool #3 (security-reviewer):
+  subagent_type: "ring-default:security-reviewer"
   model: "opus"
   description: "Review security vulnerabilities"
   prompt: |
     [Same parameters as above]
+
+Task tool #4 (test-reviewer):
+  subagent_type: "ring-default:test-reviewer"
+  model: "opus"
+  description: "Review test quality and coverage"
+  prompt: |
+    [Same parameters as above]
+    Focus: Edge cases, error paths, test independence, assertion quality.
+
+Task tool #5 (nil-safety-reviewer):
+  subagent_type: "ring-default:nil-safety-reviewer"
+  model: "opus"
+  description: "Review nil/null pointer safety"
+  prompt: |
+    [Same parameters as above]
+    LANGUAGES: [Go|TypeScript|both]
+    Focus: Nil sources, propagation paths, missing guards.
 ```
 
-**Wait for all three reviewers to complete their work.**
+**Wait for all five reviewers to complete their work.**
 
 ### Step 2: Collect and Aggregate Reports
 
@@ -55,7 +76,7 @@ Each reviewer returns:
 - **Issues:** Categorized by severity (Critical/High/Medium/Low/Cosmetic)
 - **Recommendations:** Specific actionable feedback
 
-Consolidate all issues by severity across all three reviewers.
+Consolidate all issues by severity across all five reviewers.
 
 ### Step 3: Provide Consolidated Report
 
@@ -123,6 +144,36 @@ Return a consolidated report in this format:
 
 ---
 
+## Test Quality Review (Coverage)
+
+**Verdict:** [PASS | FAIL]
+**Issues:** Critical [N], High [N], Medium [N], Low [N]
+
+### Critical Issues
+[Untested core logic, tests testing mock behavior]
+
+### High Issues
+[Missing edge cases, test anti-patterns]
+
+[Medium/Low issues summary]
+
+---
+
+## Nil-Safety Review (Pointer Safety)
+
+**Verdict:** [PASS | FAIL]
+**Issues:** Critical [N], High [N], Medium [N], Low [N]
+
+### Critical Issues
+[Direct panic paths, unguarded nil dereference]
+
+### High Issues
+[Conditional nil risks, missing ok checks]
+
+[Medium/Low issues summary]
+
+---
+
 ## Consolidated Action Items
 
 **MUST FIX (Critical):**
@@ -141,14 +192,14 @@ Return a consolidated report in this format:
 ## Next Steps
 
 **If PASS:**
-- ✅ All 3 reviewers passed
+- ✅ All 5 reviewers passed
 - ✅ Ready for next step (merge/production)
 
 **If FAIL:**
 - ❌ Fix all Critical/High/Medium issues immediately
 - ❌ Add TODO(review) comments for Low issues in code
 - ❌ Add FIXME(nitpick) comments for Cosmetic/Nitpick issues in code
-- ❌ Re-run all 3 reviewers in parallel after fixes
+- ❌ Re-run all 5 reviewers in parallel after fixes
 
 **If NEEDS_DISCUSSION:**
 - 💬 [Specific discussion points across gates]
@@ -166,7 +217,7 @@ These issues MUST be fixed immediately:
 
 Recommended approach:
 - Dispatch fix subagent to address all Critical/High/Medium issues
-- After fixes complete, re-run all 3 reviewers in parallel to verify
+- After fixes complete, re-run all 5 reviewers in parallel to verify
 ```
 
 **Low Issues:**
@@ -195,7 +246,7 @@ If any reviewer fails during execution (timeout, error, incomplete output):
 
 ### Single Reviewer Failure
 
-1. **Do NOT aggregate partial results** - Wait for all 3 reviewers
+1. **Do NOT aggregate partial results** - Wait for all 5 reviewers
 2. **Retry the failed reviewer once:**
    ```
    Task tool (retry failed reviewer):
@@ -227,7 +278,7 @@ Signs that a reviewer produced incomplete output:
 ## Remember
 
 1. **All reviewers are independent** - They run in parallel, not sequentially
-2. **Dispatch all 3 reviewers in parallel** - Single message, 3 Task calls
+2. **Dispatch all 5 reviewers in parallel** - Single message, 5 Task calls
 3. **Specify model: "opus"** - All reviewers need opus for comprehensive analysis
 4. **Wait for all to complete** - Don't aggregate until all reports received
 5. **Consolidate findings by severity** - Group all issues across reviewers
@@ -247,7 +298,7 @@ Use Skill tool: requesting-code-review
 
 The skill contains the complete workflow with:
 - Auto-detection of git context (base_sha, head_sha, files)
-- Parallel dispatch of all 3 reviewers in single message
+- Parallel dispatch of all 5 reviewers in single message
 - Issue aggregation by severity
 - Iteration loop with fix dispatching
 - Escalation handling at max iterations
