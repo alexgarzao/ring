@@ -131,12 +131,43 @@ This reviewer focuses on:
 - [ ] DRY, single responsibility
 - [ ] Clear naming, no magic numbers
 
+#### Dead Code Detection
+- [ ] No `_ = variable` no-op assignments (use `//nolint:unused` if intentional)
+- [ ] No unused variables or imports
+- [ ] No unused type definitions (especially mock types in tests)
+- [ ] No unreachable code after return/panic
+- [ ] No commented-out code blocks
+
+| Pattern | Language | Example |
+|---------|----------|---------|
+| **No-op assignment** | Go | `_ = ctx` - remove or use the variable |
+| **Unused mock** | Go | `type mockDB struct{}` defined but never instantiated |
+| **Dead import** | Go/TS | Import statement with no usage |
+| **Unreachable code** | Any | Code after `return`, `panic()`, or `throw` |
+
 ### 4. Architecture & Design
 - [ ] SOLID principles followed
 - [ ] Proper separation of concerns
 - [ ] Loose coupling between components
 - [ ] No circular dependencies
 - [ ] Scalability considered
+
+#### Cross-Package Duplication
+- [ ] Helper functions not duplicated between packages
+- [ ] Shared utilities extracted to common package
+- [ ] No copy-paste of validation/formatting logic
+- [ ] Test helpers shared via testutil package, not duplicated
+
+| Duplication Type | Detection | Action |
+|-----------------|-----------|--------|
+| **Test helper** | Same function in multiple `*_test.go` files | Extract to `testutil/` or `internal/testing/` |
+| **Validation** | Same regex/rules in multiple packages | Extract to `pkg/validation/` |
+| **Formatting** | Same string formatting in multiple places | Extract to shared utility |
+
+**Note:** Minor duplication (2-3 lines) is acceptable. Flag when:
+- Same function appears in 2+ packages
+- Same logic block (5+ lines) is copy-pasted
+- Same test setup code in multiple test files
 
 ### 5. AI Slop Detection ⭐ MANDATORY
 
@@ -159,12 +190,12 @@ This reviewer focuses on:
 
 ## Domain-Specific Severity Examples
 
-| Severity | Code Quality Examples |
-|----------|----------------------|
-| **CRITICAL** | Memory leaks, infinite loops, broken core functionality, incorrect state sequencing, data flow breaks |
-| **HIGH** | Missing error handling, type safety violations, SOLID violations, missing context propagation, inconsistent patterns |
-| **MEDIUM** | Code duplication, unclear naming, missing documentation, complex logic needing refactoring |
-| **LOW** | Style deviations, minor refactoring opportunities, documentation improvements |
+| Severity | Code Quality Examples | Dead Code / Duplication Examples |
+|----------|----------------------|----------------------------------|
+| **CRITICAL** | Memory leaks, infinite loops, broken core functionality, incorrect state sequencing, data flow breaks | |
+| **HIGH** | Missing error handling, type safety violations, SOLID violations, missing context propagation, inconsistent patterns | Unused exported functions, significant dead code paths |
+| **MEDIUM** | Code duplication, unclear naming, missing documentation, complex logic needing refactoring | `_ = variable` no-op, helper duplicated across 2 packages |
+| **LOW** | Style deviations, minor refactoring opportunities, documentation improvements | Single unused import, minor internal duplication |
 
 ---
 

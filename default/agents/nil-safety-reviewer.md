@@ -1,7 +1,7 @@
 ---
 name: nil-safety-reviewer
 version: 1.0.0
-description: "Nil/Null Safety Review: Traces nil/null pointer risks from git diff changes through the codebase. Identifies missing guards, unsafe dereferences, and panic paths in Go and TypeScript. Runs in parallel with other reviewers."
+description: "Nil/Null Safety Review: Traces nil/null pointer risks from git diff changes through the codebase. Identifies missing guards, unsafe dereferences, panic paths, and API response consistency in Go and TypeScript. Runs in parallel with other reviewers."
 type: reviewer
 model: opus
 last_updated: 2025-01-09
@@ -106,6 +106,7 @@ This reviewer focuses on:
 | **Error-Then-Use** | Value not used when error is non-nil |
 | **Interface Nil** | Go interfaces can hold nil concrete values |
 | **Pointer Dereference** | Pointer/reference validated before use |
+| **API Response Consistency** | Slices/maps initialized to empty (not nil) for JSON responses |
 
 ---
 
@@ -152,6 +153,8 @@ This reviewer focuses on:
 | **Error-then-use** | HIGH | Using value when `err != nil` OR when function returns `(nil, nil)` for "not found" |
 | **Nil channel** | CRITICAL | Send/receive on nil channel blocks forever |
 | **Nil function call** | CRITICAL | Calling nil function panics |
+| **Nil slice in API response** | MEDIUM | Struct field `[]Item` defaults to nil → JSON `null` instead of `[]` |
+| **Nil map in API response** | MEDIUM | Struct field `map[K]V` defaults to nil → JSON `null` instead of `{}` |
 
 ### TypeScript Null/Undefined Patterns
 
@@ -208,6 +211,17 @@ This reviewer focuses on:
 - [ ] Each step in `a.b.c.d` verified non-nil
 - [ ] Optional chaining (`a?.b?.c`) used appropriately
 - [ ] Guard clauses at function entry
+
+### 8. API Response Initialization (Go)
+- [ ] Struct fields that serialize to JSON use initialized slices (`[]Item{}` not `var items []Item`)
+- [ ] Struct fields that serialize to JSON use initialized maps (`make(map[K]V)` not `var m map[K]V`)
+- [ ] Constructor functions initialize collection fields
+- [ ] Response builders don't leave nil collections
+- [ ] Consistent behavior: all endpoints return `[]` for empty, never `null`
+
+**Note:** `json:"field,omitempty"` is an alternative - nil fields are omitted from JSON entirely.
+The concern is inconsistent behavior (sometimes `null`, sometimes `[]`, sometimes omitted), not omission itself.
+Choose one approach and apply consistently across all API responses.
 
 ---
 
@@ -401,6 +415,49 @@ func process(r io.Reader) {
     // Now safe to use r
 }
 ```
+
+### API Response Consistency
+
+```go
+// ❌ MEDIUM: Inconsistent JSON - nil slice serializes to null
+type Response struct {
+    Items []Item `json:"items"`  // nil → {"items": null}
+}
+
+// ❌ MEDIUM: Sometimes null, sometimes []
+func GetItems(found bool) Response {
+    r := Response{}
+    if found {
+        r.Items = fetchItems()  // returns []Item{}
+    }
+    return r  // Items is nil when !found → {"items": null}
+}
+
+// ✅ SAFE: Consistent JSON - always []
+type Response struct {
+    Items []Item `json:"items"`
+}
+
+func NewResponse() Response {
+    return Response{
+        Items: []Item{},  // Initialized to empty
+    }
+}
+
+// ✅ SAFE: Defensive initialization
+func GetItems(found bool) Response {
+    r := NewResponse()  // Items already []Item{}
+    if found {
+        r.Items = fetchItems()
+    }
+    return r  // Items is [] when !found → {"items": []}
+}
+```
+
+**Why this matters:**
+- API consumers expect consistent responses
+- `null` vs `[]` can break client-side iteration: `for item in response.items` fails on null
+- TypeScript/JavaScript: `null.length` throws, `[].length` returns 0
 
 ---
 

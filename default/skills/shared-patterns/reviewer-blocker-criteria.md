@@ -87,7 +87,7 @@ Each reviewer has additional non-negotiable requirements:
 
 | Non-Negotiable | Why |
 |----------------|-----|
-| All 8 checklist categories verified | Incomplete coverage misses test quality issues |
+| All 9 checklist categories verified | Incomplete coverage misses test quality issues |
 | Test anti-patterns flagged | Silent failures corrupt test suite integrity |
 | Edge case coverage assessed | Missing edge cases = missing bugs |
 | Mock appropriateness verified | Testing mock behavior = false confidence |

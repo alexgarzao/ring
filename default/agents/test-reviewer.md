@@ -118,7 +118,7 @@ This reviewer focuses on:
 
 ## Review Checklist
 
-**HARD GATE: Work through ALL 8 categories. CANNOT skip any category. Incomplete checklist = incomplete review = FAIL verdict. No exceptions, no delegations to other reviewers.**
+**HARD GATE: Work through ALL 9 categories. CANNOT skip any category. Incomplete checklist = incomplete review = FAIL verdict. No exceptions, no delegations to other reviewers.**
 
 ### 1. Core Business Logic Coverage ⭐ HIGHEST PRIORITY
 - [ ] Happy path tested for all critical functions
@@ -158,6 +158,15 @@ This reviewer focuses on:
 - [ ] Failure messages clearly identify what failed
 - [ ] No assertions on implementation details
 - [ ] Assertions on observable behavior
+- [ ] **Error responses validate ALL relevant fields (status, message, code)**
+- [ ] **Struct assertions verify complete state, not just one field**
+- [ ] **Return values fully validated, not just existence**
+
+| Validation Type | ❌ BAD | ✅ GOOD |
+|-----------------|--------|---------|
+| **Error Response** | `assert.NotNil(err)` | `assert.Equal("invalid", err.Code); assert.Contains(err.Message, "field")` |
+| **Struct** | `assert.Equal("active", user.Status)` | `assert.Equal("active", user.Status); assert.NotEmpty(user.ID)` |
+| **Collection** | `assert.Len(items, 3)` | `assert.Len(items, 3); assert.Equal("expected", items[0].Name)` |
 
 ### 6. Mock Appropriateness
 - [ ] Only external dependencies mocked
@@ -181,6 +190,19 @@ This reviewer focuses on:
 - [ ] Mock data does not contain real credentials or PII
 - [ ] No hardcoded secrets in test files (use environment variables or test fixtures)
 
+### 9. Error Handling in Test Code ⭐ HIGHEST PRIORITY
+- [ ] Test helpers propagate or assert errors (no `_, _ :=` patterns)
+- [ ] Setup/teardown functions fail loudly on error
+- [ ] No silent failures that could mask real bugs
+- [ ] `defer` cleanup statements handle errors appropriately
+
+| Language | Silent Error Pattern | Detection |
+|----------|---------------------|-----------|
+| **Go** | `_, _ := json.Marshal(...)` | Look for `_, _ :=` or `_ =` with error returns |
+| **Go** | `_ = file.Close()` in defer | Check error-returning functions in defer |
+| **TypeScript** | `.catch(() => {})` | Empty catch blocks in test code |
+| **TypeScript** | Unhandled promise rejection | Missing await or .catch |
+
 ### Self-Verification (MANDATORY before submitting verdict)
 
 **HARD GATE: Before submitting any verdict, verify ALL categories were checked:**
@@ -193,6 +215,7 @@ This reviewer focuses on:
 - [ ] Category 6 (Mock Appropriateness) - COMPLETED with evidence
 - [ ] Category 7 (Test Type Appropriateness) - COMPLETED with evidence
 - [ ] Category 8 (Test Security Checks) - COMPLETED with evidence
+- [ ] Category 9 (Error Handling in Test Code) - COMPLETED with evidence
 
 **IF any checkbox is unchecked:** CANNOT submit verdict. Return to unchecked category and complete it.
 
@@ -301,6 +324,96 @@ test('should reject invalid email', () => { ... });
 test('should accept valid email', () => { ... });
 test('should hash password', () => { ... });
 ```
+
+### Anti-Pattern 7: Silenced Errors in Test Code
+
+```go
+// ❌ BAD: Error silently ignored - test may pass when helper fails
+func TestSomething(t *testing.T) {
+    data, _ := json.Marshal(input) // Silent failure!
+    result := process(string(data))
+    assert.NotNil(t, result)
+}
+
+// ✅ GOOD: Error propagated
+func TestSomething(t *testing.T) {
+    data, err := json.Marshal(input)
+    require.NoError(t, err)
+    result := process(string(data))
+    assert.NotNil(t, result)
+}
+```
+
+```javascript
+// ❌ BAD: Empty catch hides failures
+test('should process', async () => {
+  await setupData().catch(() => {}); // Silent!
+  const result = await process();
+  expect(result).toBeDefined();
+});
+
+// ✅ GOOD: Errors surface
+test('should process', async () => {
+  await setupData(); // Fails test if setup fails
+  const result = await process();
+  expect(result).toBeDefined();
+});
+```
+
+### Anti-Pattern 8: Misleading Test Names
+
+```javascript
+// ❌ BAD: "Success" prefix on failure test
+test('Success - should return error for invalid input', () => {
+  expect(() => process(null)).toThrow();
+});
+
+// ✅ GOOD: Name matches behavior
+test('should throw error for null input', () => {
+  expect(() => process(null)).toThrow();
+});
+
+// ❌ BAD: Vague names
+test('test1', () => { ... });
+test('should work', () => { ... });
+
+// ✅ GOOD: Describes expected behavior
+test('should calculate 10% discount on orders over $100', () => { ... });
+```
+
+**Test Name Checklist:**
+- Does the name describe WHAT is being tested?
+- Does the name describe the EXPECTED outcome?
+- Would another developer understand the purpose from the name alone?
+
+### Anti-Pattern 9: Testing Language Behavior
+
+```go
+// ❌ BAD: Testing Go's nil map behavior, not application logic
+func TestNilMapLookup(t *testing.T) {
+    var m map[string]int
+    _, ok := m["key"]
+    assert.False(t, ok)  // This is Go language behavior!
+}
+
+// ❌ BAD: Testing Go's append behavior
+func TestAppendToNil(t *testing.T) {
+    var slice []int
+    slice = append(slice, 1)
+    assert.Len(t, slice, 1)
+}
+
+// ✅ GOOD: Test application behavior
+func TestCacheGetMissReturnsDefault(t *testing.T) {
+    cache := NewCache()
+    val := cache.Get("missing")
+    assert.Equal(t, defaultValue, val)
+}
+```
+
+**Detection Questions:**
+- Would this test pass in ANY application using this language?
+- Does this test verify YOUR code or the LANGUAGE runtime?
 
 ---
 
