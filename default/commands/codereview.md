@@ -78,6 +78,32 @@ Each reviewer returns:
 
 Consolidate all issues by severity across all five reviewers.
 
+### Conflict Resolution
+
+When aggregating findings, detect and flag conflicting recommendations between reviewers:
+
+| Conflict Type | Resolution | Priority |
+|--------------|------------|----------|
+| Security vs Performance | Security recommendation wins | CRITICAL |
+| More tests vs Over-testing | Defer to test-reviewer for test scope | MEDIUM |
+| More mocks vs Less mocks | Evaluate based on test-reviewer guidance | MEDIUM |
+| Refactor vs Keep simple | Defer to code-reviewer for architecture decisions | MEDIUM |
+
+**Flagging Conflicts:**
+When reviewers provide contradictory guidance:
+1. Include BOTH recommendations in consolidated report
+2. Add a "⚠️ Conflict" marker
+3. Present to user for final decision
+4. Do NOT automatically resolve conflicting recommendations
+
+**Example:**
+```
+⚠️ Conflict Detected:
+- test-reviewer: "Add more mock isolation for external services"
+- code-reviewer: "Current mocking approach is sufficient"
+- Resolution: User decision required - see both perspectives above
+```
+
 ### Step 3: Provide Consolidated Report
 
 Return a consolidated report in this format:
@@ -269,9 +295,19 @@ If any reviewer fails during execution (timeout, error, incomplete output):
 ### Incomplete Output Detection
 
 Signs that a reviewer produced incomplete output:
-- Missing required sections (check output_schema in agent definition)
-- Verdict present but no issues listed
-- Summary only without detailed analysis
+
+| Pattern | Detection Method | Action |
+|---------|-----------------|--------|
+| Missing VERDICT | Output lacks "## VERDICT:" or "**Verdict:**" | Re-dispatch reviewer |
+| Empty Issues section | "## Issues Found" followed by no content or "None" only | Verify this is intentional (PASS case) |
+| Missing required sections | Check against output_schema in agent definition | Re-dispatch with explicit section reminder |
+| Truncated output | Ends mid-sentence or lacks closing sections | Re-dispatch with smaller scope |
+| Generic responses | Only contains boilerplate without file-specific analysis | Re-dispatch with explicit file list |
+
+**Validation Regex Patterns:**
+- Verdict present: `/^##?\s*VERDICT:?\s*(PASS|FAIL|NEEDS_DISCUSSION)/im`
+- Issues section: `/^##?\s*Issues Found/im`
+- Summary present: `/^##?\s*(Summary|Executive Summary)/im`
 
 **Action:** Re-dispatch the reviewer with explicit instruction to include all required sections.
 

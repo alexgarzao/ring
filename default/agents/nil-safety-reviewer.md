@@ -149,7 +149,7 @@ This reviewer focuses on:
 | **Nil receiver method call** | CRITICAL | `ptr.Method()` when ptr is nil |
 | **Nil slice append** | SAFE | `append(nil, x)` works |
 | **Nil map write** | CRITICAL | `nilMap[key] = value` panics |
-| **Error-then-use** | HIGH | Using value when `err != nil` |
+| **Error-then-use** | HIGH | Using value when `err != nil` OR when function returns `(nil, nil)` for "not found" |
 | **Nil channel** | CRITICAL | Send/receive on nil channel blocks forever |
 | **Nil function call** | CRITICAL | Calling nil function panics |
 
@@ -159,11 +159,13 @@ This reviewer focuses on:
 |---------|------|---------|
 | **Missing null check** | HIGH | `obj.field` when obj might be null |
 | **Optional chaining misuse** | MEDIUM | `obj?.method()` result not checked |
-| **Nullish coalescing gap** | MEDIUM | `value ?? default` but value could be falsy |
+| **Nullish coalescing gap** | MEDIUM | `??` only handles null/undefined, not other falsy values (0, '', false) |
 | **Array index access** | HIGH | `arr[i]` without bounds check |
 | **Object destructuring** | HIGH | `const { x } = maybeNull` |
 | **Promise rejection** | HIGH | Unhandled promise returning undefined |
 | **Type narrowing failure** | MEDIUM | Guard doesn't properly narrow type |
+| **Array.find()** | MEDIUM | Returns `undefined` if no element matches predicate |
+| **Map.get()** | MEDIUM | Returns `undefined` if key doesn't exist |
 
 ---
 
@@ -332,10 +334,6 @@ name := user.Name  // Safe
 const name = user?.profile?.name ?? 'Unknown';
 ```
 
-## Safe Patterns Observed
-- ✅ [Good nil handling pattern]
-- ✅ [Proper error checking]
-
 ## What Was Done Well
 - ✅ [Consistent error handling]
 - ✅ [Good use of guard clauses]
@@ -384,15 +382,23 @@ func process(r io.Reader) {
     r.Read(buf)  // Can still panic!
 }
 
-// ✅ SAFE: Type-specific check or reflect
+// ✅ SAFE: Type-specific check with Kind() guard
 func process(r io.Reader) {
     if r == nil {
         return
     }
-    // For interface, also check concrete value if needed
-    if rv := reflect.ValueOf(r); !rv.IsValid() || rv.IsNil() {
+    rv := reflect.ValueOf(r)
+    if !rv.IsValid() {
         return
     }
+    // IsNil() panics on non-nilable types - check Kind() first
+    switch rv.Kind() {
+    case reflect.Ptr, reflect.Interface, reflect.Map, reflect.Slice, reflect.Chan, reflect.Func:
+        if rv.IsNil() {
+            return
+        }
+    }
+    // Now safe to use r
 }
 ```
 
