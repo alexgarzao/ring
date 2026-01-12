@@ -1,3 +1,0 @@
-# Ignore all state files except this .gitignore
-*
-!.gitignore
