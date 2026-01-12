@@ -10,5 +10,17 @@ examples/
 __pycache__/
 *.pyc
 
+# Python virtual environments
+.venv/
+venv/
+
+# Python build artifacts
+*.egg-info/
+build/
+dist/
+
+# Type checking
+.mypy_cache/
+
 # Ring infrastructure runtime files
 .ring/
