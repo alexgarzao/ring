@@ -1,5 +1,5 @@
 ---
-name: write-plan
+name: ring:write-plan
 description: Create detailed implementation plan with bite-sized tasks
 argument-hint: "[feature-name]"
 ---

@@ -1,5 +1,5 @@
 ---
-name: qa-analyst
+name: ring:qa-analyst
 version: 1.3.1
 description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation.
 type: specialist

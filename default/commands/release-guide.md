@@ -1,5 +1,5 @@
 ---
-name: release-guide
+name: ring:release-guide
 description: Generate an Ops Update Guide from git diff between two refs
 ---
 

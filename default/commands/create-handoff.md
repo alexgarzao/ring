@@ -1,5 +1,5 @@
 ---
-name: create-handoff
+name: ring:create-handoff
 description: Create a handoff document capturing current session state for future resumption
 argument-hint: "[session-name] [description]"
 ---

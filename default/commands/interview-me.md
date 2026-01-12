@@ -1,5 +1,5 @@
 ---
-name: interview-me
+name: ring:interview-me
 description: Proactive requirements gathering through structured user interview
 argument-hint: "[topic]"
 ---

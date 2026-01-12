@@ -1,5 +1,5 @@
 ---
-name: compound-learnings
+name: ring:compound-learnings
 description: Analyze session learnings and propose new rules/skills
 argument-hint: "[--approve <id>] [--reject <id>] [--list]"
 ---

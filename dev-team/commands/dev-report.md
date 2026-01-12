@@ -1,5 +1,5 @@
 ---
-name: dev-report
+name: ring:dev-report
 description: View the feedback report from the last development cycle
 argument-hint: "[cycle-date]"
 ---

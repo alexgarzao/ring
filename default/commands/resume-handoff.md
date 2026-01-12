@@ -1,5 +1,5 @@
 ---
-name: resume-handoff
+name: ring:resume-handoff
 description: Resume work from a handoff document with context analysis and validation
 argument-hint: "<path-to-handoff.md>"
 ---

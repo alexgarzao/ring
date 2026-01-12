@@ -1,5 +1,5 @@
 ---
-name: compound-learnings
+name: ring:compound-learnings
 description: |
   Use when asked to "analyze learnings", "find patterns", "what should become rules",
   "compound my learnings", or after accumulating 5+ session learnings. Analyzes

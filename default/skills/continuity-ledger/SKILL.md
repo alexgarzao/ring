@@ -1,5 +1,5 @@
 ---
-name: continuity-ledger
+name: ring:continuity-ledger
 description: |
   Create or update continuity ledger for state preservation across /clear operations.
   Ledgers maintain session state externally, surviving context resets with full fidelity.

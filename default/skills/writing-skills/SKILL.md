@@ -1,5 +1,5 @@
 ---
-name: writing-skills
+name: ring:writing-skills
 description: |
   TDD for process documentation - write test cases (pressure scenarios), watch
   baseline fail, write skill, iterate until bulletproof against rationalization.
@@ -101,7 +101,7 @@ API docs, syntax guides, tool documentation (office docs)
 
 ```markdown
 ---
-name: Skill-Name-With-Hyphens
+name: ring:Skill-Name-With-Hyphens
 description: Use when [triggers/symptoms] - [what it does, third person]
 ---
 # Skill Name

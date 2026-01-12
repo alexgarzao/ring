@@ -1,5 +1,5 @@
 ---
-name: pre-dev-data-model
+name: ring:pre-dev-data-model
 description: |
   Gate 5: Data structures document - defines entities, relationships, and ownership
   before database technology selection. Large Track only.

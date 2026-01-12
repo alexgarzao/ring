@@ -1,5 +1,5 @@
 ---
-name: query-artifacts
+name: ring:query-artifacts
 description: Search the Artifact Index for relevant historical context
 argument-hint: "<search-terms> [--type TYPE] [--outcome OUTCOME]"
 ---

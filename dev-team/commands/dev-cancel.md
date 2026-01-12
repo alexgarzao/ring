@@ -1,5 +1,5 @@
 ---
-name: dev-cancel
+name: ring:dev-cancel
 description: Cancel the current development cycle
 argument-hint: "[--force]"
 ---

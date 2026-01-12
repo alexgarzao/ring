@@ -1,5 +1,5 @@
 ---
-name: dev-refactor
+name: ring:dev-refactor
 description: Analyze existing codebase against standards and execute refactoring through dev-cycle
 argument-hint: "[path]"
 ---

@@ -1,5 +1,5 @@
 ---
-name: codereview
+name: ring:codereview
 description: Run comprehensive parallel code review with all 5 specialized reviewers
 argument-hint: "[files-or-paths]"
 ---

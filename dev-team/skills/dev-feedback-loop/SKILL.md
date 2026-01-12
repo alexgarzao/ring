@@ -1,5 +1,5 @@
 ---
-name: dev-feedback-loop
+name: ring:dev-feedback-loop
 description: |
   Development cycle feedback system - calculates assertiveness scores, analyzes prompt
   quality for all agents executed, aggregates cycle metrics, performs root cause analysis

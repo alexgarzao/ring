@@ -1,5 +1,5 @@
 ---
-name: documentation-structure
+name: ring:documentation-structure
 description: |
   Patterns for organizing and structuring documentation including hierarchy,
   navigation, and information architecture.
