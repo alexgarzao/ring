@@ -111,7 +111,7 @@ The cash flow analysis workflow follows 5 phases:
 
 ```
 Task tool:
-  subagent_type: "treasury-specialist"
+  subagent_type: "ring:treasury-specialist"
   model: "opus"
   prompt: |
     Perform cash flow analysis per these specifications:

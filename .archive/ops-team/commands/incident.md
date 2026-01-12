@@ -33,7 +33,7 @@ Parse the severity and description from the command arguments.
 
 ```
 Task tool:
-  subagent_type: "incident-responder"
+  subagent_type: "ring:incident-responder"
   model: "opus"
   prompt: |
     PRODUCTION INCIDENT DECLARED
@@ -138,7 +138,7 @@ Expected: [timestamp]
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: ops-incident-response
+Use Skill tool: ring:ops-incident-response
 ```
 
 The skill contains the complete workflow with:

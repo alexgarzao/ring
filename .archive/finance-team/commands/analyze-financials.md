@@ -86,7 +86,7 @@ The command produces a comprehensive analysis report including:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: financial-analysis
+Use Skill tool: ring:financial-analysis
 ```
 
 The skill contains the complete 5-phase workflow with:

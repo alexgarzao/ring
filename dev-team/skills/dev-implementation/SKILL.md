@@ -245,7 +245,7 @@ Write failing test for unit_id following TDD-RED methodology.
 
 ```yaml
 Task:
-  subagent_type: "[selected_agent]"  # e.g., "backend-engineer-golang"
+  subagent_type: "[selected_agent]"  # e.g., "ring:backend-engineer-golang"
   model: "opus"
   description: "TDD-RED: Write failing test for [unit_id]"
   prompt: |

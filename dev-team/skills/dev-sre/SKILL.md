@@ -37,7 +37,7 @@ input_schema:
       description: "Type of service being validated"
     - name: implementation_agent
       type: string
-      description: "Agent that performed Gate 0 (e.g., backend-engineer-golang)"
+      description: "Agent that performed Gate 0 (e.g., ring:backend-engineer-golang)"
     - name: implementation_files
       type: array
       items: string
@@ -367,7 +367,7 @@ if validation_state.iteration >= validation_state.max_iterations:
 
 ```yaml
 Task:
-  subagent_type: "[implementation_agent from input]"  # e.g., "backend-engineer-golang"
+  subagent_type: "[implementation_agent from input]"  # e.g., "ring:backend-engineer-golang"
   model: "opus"
   description: "Fix observability issues for [unit_id]"
   prompt: |

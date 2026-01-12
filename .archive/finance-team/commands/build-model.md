@@ -90,7 +90,7 @@ The command produces a complete financial model including:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: financial-modeling
+Use Skill tool: ring:financial-modeling
 ```
 
 The skill contains the complete 6-phase workflow with:

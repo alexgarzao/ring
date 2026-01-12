@@ -328,7 +328,7 @@ if verdict == "FAIL" or coverage_actual < coverage_threshold:
 
 ```yaml
 Task:
-  subagent_type: "[implementation_agent from Gate 0]"  # e.g., "backend-engineer-golang"
+  subagent_type: "[implementation_agent from Gate 0]"  # e.g., "ring:backend-engineer-golang"
   model: "opus"
   description: "Add tests to meet coverage threshold for [unit_id]"
   prompt: |

@@ -75,7 +75,7 @@ Analyze cross-project dependencies across the portfolio.
 **This command MUST load the dependency-mapping skill for complete workflow execution.**
 
 ```
-Use Skill tool: dependency-mapping
+Use Skill tool: ring:dependency-mapping
 ```
 
 The skill contains the complete dependency mapping gates with:
@@ -95,7 +95,7 @@ Collect schedule and deliverable information from projects in scope.
 
 ```
 Task tool:
-  subagent_type: "portfolio-manager"
+  subagent_type: "ring:portfolio-manager"
   model: "opus"
   prompt: "Identify cross-project dependencies for: [scope]"
 ```
@@ -104,7 +104,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "risk-analyst"
+  subagent_type: "ring:risk-analyst"
   model: "opus"
   prompt: "Analyze risks associated with identified dependencies"
 ```

@@ -247,7 +247,7 @@ Next steps:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: gtm-planning
+Use Skill tool: ring:gtm-planning
 ```
 
 The skill contains the complete workflow with:

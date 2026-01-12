@@ -197,7 +197,7 @@ Next steps:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: market-analysis
+Use Skill tool: ring:market-analysis
 ```
 
 The skill contains the complete workflow with:

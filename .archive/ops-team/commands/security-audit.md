@@ -44,7 +44,7 @@ Parse scope and compliance frameworks from arguments.
 
 ```
 Task tool:
-  subagent_type: "security-operations"
+  subagent_type: "ring:security-operations"
   model: "opus"
   prompt: |
     SECURITY AUDIT REQUEST
@@ -268,7 +268,7 @@ Additional output:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: ops-security-audit
+Use Skill tool: ring:ops-security-audit
 ```
 
 The skill contains the complete workflow with:

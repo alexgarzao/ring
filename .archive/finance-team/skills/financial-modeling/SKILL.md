@@ -142,7 +142,7 @@ The financial modeling workflow follows 6 phases:
 
 ```
 Task tool:
-  subagent_type: "financial-modeler"
+  subagent_type: "ring:financial-modeler"
   model: "opus"
   prompt: |
     Build financial model per these specifications:

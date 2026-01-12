@@ -72,7 +72,7 @@ Generate an executive summary of portfolio status for leadership.
 **This command MUST load the executive-reporting skill for complete workflow execution.**
 
 ```
-Use Skill tool: executive-reporting
+Use Skill tool: ring:executive-reporting
 ```
 
 The skill contains the complete reporting workflow with:
@@ -88,7 +88,7 @@ The skill contains the complete reporting workflow with:
 
 ```
 Task tool:
-  subagent_type: "executive-reporter"
+  subagent_type: "ring:executive-reporter"
   model: "opus"
   prompt: "Create [type] executive report. Audience: [audience]. Period: [period]."
 ```
@@ -97,7 +97,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "portfolio-manager"
+  subagent_type: "ring:portfolio-manager"
   model: "opus"
   prompt: "Provide portfolio status data for executive report."
 ```

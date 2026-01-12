@@ -149,7 +149,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 3. Dispatch via Task tool:
    ```
-   subagent_type="your-reviewer"
+   subagent_type="ring:your-reviewer"
    ```
 
 4. **MUST run in parallel** with other reviewers (single message, multiple Tasks)
@@ -196,18 +196,18 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 ### Instead of sequential (60 min)
 
 ```python
-review1 = Task("code-reviewer")           # 20 min
-review2 = Task("business-logic-reviewer") # 20 min
-review3 = Task("security-reviewer")       # 20 min
+review1 = Task("ring:code-reviewer")           # 20 min
+review2 = Task("ring:business-logic-reviewer") # 20 min
+review3 = Task("ring:security-reviewer")       # 20 min
 ```
 
 ### Run parallel (20 min total)
 
 ```python
 Task.parallel([
-    ("code-reviewer", prompt),
-    ("business-logic-reviewer", prompt),
-    ("security-reviewer", prompt)
+    ("ring:code-reviewer", prompt),
+    ("ring:business-logic-reviewer", prompt),
+    ("ring:security-reviewer", prompt)
 ])  # Single message, 3 tool calls
 ```
 

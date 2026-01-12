@@ -141,7 +141,7 @@ The metrics dashboard workflow follows 5 phases:
 
 ```
 Task tool:
-  subagent_type: "metrics-analyst"
+  subagent_type: "ring:metrics-analyst"
   model: "opus"
   prompt: |
     Design metrics dashboard per these specifications:

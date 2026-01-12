@@ -43,7 +43,7 @@ Parse scope and focus from arguments.
 
 ```
 Task tool:
-  subagent_type: "cloud-cost-optimizer"
+  subagent_type: "ring:cloud-cost-optimizer"
   model: "opus"
   prompt: |
     COST ANALYSIS REQUEST
@@ -222,7 +222,7 @@ Additional output:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: ops-cost-optimization
+Use Skill tool: ring:ops-cost-optimization
 ```
 
 The skill contains the complete workflow with:

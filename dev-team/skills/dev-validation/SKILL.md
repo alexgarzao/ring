@@ -69,7 +69,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 <forbidden>
 - Same agent approving code it implemented
-- Role switching to self-approve (e.g., backend-engineer → code-reviewer)
+- Role switching to self-approve (e.g., ring:backend-engineer → ring:code-reviewer)
 - Interpreting silence as approval
 - Proceeding without explicit APPROVED/REJECTED
 </forbidden>

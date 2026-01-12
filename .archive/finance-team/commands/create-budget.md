@@ -99,7 +99,7 @@ The command produces a comprehensive budget including:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: budget-creation
+Use Skill tool: ring:budget-creation
 ```
 
 The skill contains the complete 6-phase workflow with:

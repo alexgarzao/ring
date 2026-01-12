@@ -162,10 +162,10 @@ This is not negotiable:
 **Before dispatching any agent, you MUST load the corresponding sub-skill first.**
 
 <cannot_skip>
-- Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="backend-engineer-*", ...)`
-- Gate 1: `Skill("dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
-- Gate 2: `Skill("dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
-- Gate 3: `Skill("dev-testing")` → then `Task(subagent_type="ring:qa-analyst", ...)`
+- Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
+- Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
+- Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
+- Gate 3: `Skill("ring:dev-testing")` → then `Task(subagent_type="ring:qa-analyst", ...)`
 - Gate 4: `Skill("ring:requesting-code-review")` → then 3x `Task(...)` in parallel
 - Gate 5: `Skill("ring:dev-validation")` → N/A (verification only)
 </cannot_skip>
@@ -1908,7 +1908,7 @@ sre_input = {
   // REQUIRED - from Gate 0 context
   language: state.current_unit.language,  // "go" | "typescript" | "python"
   service_type: state.current_unit.service_type,  // "api" | "worker" | "batch" | "cli"
-  implementation_agent: agent_outputs.implementation.agent,  // e.g., "backend-engineer-golang"
+  implementation_agent: agent_outputs.implementation.agent,  // e.g., "ring:backend-engineer-golang"
   implementation_files: agent_outputs.implementation.files_changed,  // list of files from Gate 0
   
   // OPTIONAL - additional context

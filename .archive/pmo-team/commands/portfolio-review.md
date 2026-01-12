@@ -73,7 +73,7 @@ Conduct a comprehensive portfolio review across multiple projects.
 **This command MUST load the portfolio-planning skill for complete workflow execution.**
 
 ```
-Use Skill tool: portfolio-planning
+Use Skill tool: ring:portfolio-planning
 ```
 
 The skill contains the complete portfolio review gates with:
@@ -89,7 +89,7 @@ The skill contains the complete portfolio review gates with:
 
 ```
 Task tool:
-  subagent_type: "portfolio-manager"
+  subagent_type: "ring:portfolio-manager"
   model: "opus"
   prompt: "Conduct portfolio health assessment. Scope: [scope]. Focus: [focus]."
 ```
@@ -98,7 +98,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "resource-planner"
+  subagent_type: "ring:resource-planner"
   model: "opus"
   prompt: "Analyze resource utilization across portfolio."
 ```
@@ -107,7 +107,7 @@ Task tool:
 
 ```
 Task tool:
-  subagent_type: "risk-analyst"
+  subagent_type: "ring:risk-analyst"
   model: "opus"
   prompt: "Assess portfolio risk posture and correlations."
 ```

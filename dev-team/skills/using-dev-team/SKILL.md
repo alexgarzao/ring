@@ -149,7 +149,7 @@ Use Task tool to dispatch appropriate specialist based on technology need.
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "{agent-name}"
+  subagent_type: "ring:{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```

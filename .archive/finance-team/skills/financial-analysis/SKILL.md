@@ -102,7 +102,7 @@ The financial analysis workflow follows 5 phases:
 
 ```
 Task tool:
-  subagent_type: "financial-analyst"
+  subagent_type: "ring:financial-analyst"
   model: "opus"
   prompt: |
     Perform financial analysis per these specifications:

@@ -214,7 +214,7 @@ Task #2: security-operations
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "incident-responder"
+  subagent_type: "ring:incident-responder"
   model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```

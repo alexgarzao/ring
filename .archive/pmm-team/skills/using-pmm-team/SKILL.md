@@ -115,9 +115,9 @@ PMM workflow ensures:
 ### Via Skills (Manual)
 
 ```
-Skill tool: "market-analysis"
+Skill tool: "ring:market-analysis"
 (Review output)
-Skill tool: "positioning-development"
+Skill tool: "ring:positioning-development"
 (Review output)
 ```
 

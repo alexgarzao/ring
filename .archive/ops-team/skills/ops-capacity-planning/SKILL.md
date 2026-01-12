@@ -296,7 +296,7 @@ For capacity planning tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "infrastructure-architect"
+  subagent_type: "ring:infrastructure-architect"
   model: "opus"
   prompt: |
     CAPACITY PLANNING: [scope]
@@ -309,7 +309,7 @@ For cost analysis of capacity options:
 
 ```
 Task tool:
-  subagent_type: "cloud-cost-optimizer"
+  subagent_type: "ring:cloud-cost-optimizer"
   model: "opus"
   prompt: |
     CAPACITY OPTIONS: [options to evaluate]

@@ -235,7 +235,7 @@ Next steps:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: competitive-intelligence
+Use Skill tool: ring:competitive-intelligence
 ```
 
 The skill contains the complete workflow with:

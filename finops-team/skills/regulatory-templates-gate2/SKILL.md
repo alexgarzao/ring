@@ -144,7 +144,7 @@ Check for template-specific sub-skill at `skills/regulatory-{template}/SKILL.md`
 
 ### Agent Dispatch with Gate 1 Context
 
-**Dispatch:** `Task(subagent_type: "finops-analyzer", model: "opus")`
+**Dispatch:** `Task(subagent_type: "ring:finops-analyzer", model: "opus")`
 
 **CRITICAL:** ⚠️ DO NOT MAKE MCP API CALLS - use Gate 1 context ONLY
 
