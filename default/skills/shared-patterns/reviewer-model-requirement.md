@@ -25,7 +25,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 When calling ANY reviewer agent, you MUST specify the model parameter:
 
 ```python
-Task(subagent_type="ring-default:{reviewer-name}", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:{reviewer-name}", model="opus", ...)  # REQUIRED
 ```
 
 ### Why Opus is Required for Reviewers

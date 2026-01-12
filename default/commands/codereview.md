@@ -24,7 +24,7 @@ Then dispatch all 5 reviewers:
 
 ```
 Task tool #1 (code-reviewer):
-  subagent_type: "ring-default:code-reviewer"
+  subagent_type: "ring:code-reviewer"
   model: "opus"
   description: "Review code quality and architecture"
   prompt: |
@@ -35,21 +35,21 @@ Task tool #1 (code-reviewer):
     DESCRIPTION: [additional context]
 
 Task tool #2 (business-logic-reviewer):
-  subagent_type: "ring-default:business-logic-reviewer"
+  subagent_type: "ring:business-logic-reviewer"
   model: "opus"
   description: "Review business logic correctness"
   prompt: |
     [Same parameters as above]
 
 Task tool #3 (security-reviewer):
-  subagent_type: "ring-default:security-reviewer"
+  subagent_type: "ring:security-reviewer"
   model: "opus"
   description: "Review security vulnerabilities"
   prompt: |
     [Same parameters as above]
 
 Task tool #4 (test-reviewer):
-  subagent_type: "ring-default:test-reviewer"
+  subagent_type: "ring:test-reviewer"
   model: "opus"
   description: "Review test quality and coverage"
   prompt: |
@@ -57,7 +57,7 @@ Task tool #4 (test-reviewer):
     Focus: Edge cases, error paths, test independence, assertion quality.
 
 Task tool #5 (nil-safety-reviewer):
-  subagent_type: "ring-default:nil-safety-reviewer"
+  subagent_type: "ring:nil-safety-reviewer"
   model: "opus"
   description: "Review nil/null pointer safety"
   prompt: |
@@ -329,7 +329,7 @@ Signs that a reviewer produced incomplete output:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: requesting-code-review
+Use Skill tool: ring:requesting-code-review
 ```
 
 The skill contains the complete workflow with:

@@ -51,7 +51,7 @@ The review covers five dimensions:
 
 ```
 Task tool:
-  subagent_type: "docs-reviewer"
+  subagent_type: "ring:docs-reviewer"
   model: "opus"
   prompt: "Review this documentation for quality. Check:
           1. Voice and tone (second person, active voice, present tense)
@@ -118,7 +118,7 @@ If no file path was provided, paste the documentation content or specify a file 
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: documentation-review
+Use Skill tool: ring:documentation-review
 ```
 
 The skill contains the complete workflow with:

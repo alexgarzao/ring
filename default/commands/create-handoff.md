@@ -96,7 +96,7 @@ Resume in a new session with:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: handoff-tracking
+Use Skill tool: ring:handoff-tracking
 ```
 
 The skill contains the complete workflow with:

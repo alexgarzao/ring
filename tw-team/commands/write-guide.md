@@ -66,7 +66,7 @@ For complex documentation, dispatch the functional-writer agent:
 
 ```
 Task tool:
-  subagent_type: "functional-writer"
+  subagent_type: "ring:functional-writer"
   model: "opus"
   prompt: "Write a [document type] for [topic]. Target audience: [audience].
           The reader should be able to [goal] after reading."
@@ -78,7 +78,7 @@ After writing, use the docs-reviewer agent:
 
 ```
 Task tool:
-  subagent_type: "docs-reviewer"
+  subagent_type: "ring:docs-reviewer"
   model: "opus"
   prompt: "Review this documentation for voice, tone, structure, and completeness:
           [paste documentation]"
@@ -137,7 +137,7 @@ Definition paragraph
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: writing-functional-docs
+Use Skill tool: ring:writing-functional-docs
 ```
 
 The skill contains the complete workflow with:

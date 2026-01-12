@@ -30,11 +30,12 @@ When creating or modifying any agent in `*/agents/*.md`:
 6. **never commit manually** - Always use `/commit` command
 7. **never assume compliance** - VERIFY with evidence
 
-### 4. Fully Qualified Names (always)
-- ✅ `ring-default:code-reviewer`
-- ✅ `ring-dev-team:backend-engineer-golang`
-- ❌ `code-reviewer` (missing plugin prefix)
-- ❌ `ring:code-reviewer` (ambiguous shorthand)
+### 4. Unified Ring Namespace (always)
+All Ring components use the unified `ring:` prefix. Plugin differentiation is handled internally.
+- ✅ `ring:code-reviewer`
+- ✅ `ring:backend-engineer-golang`
+- ❌ `code-reviewer` (missing ring: prefix)
+- ❌ `ring-default:code-reviewer` (deprecated plugin-specific prefix)
 
 ### 5. Standards-Agent Synchronization (always CHECK)
 When modifying standards files (`dev-team/docs/standards/*.md`):
@@ -117,10 +118,10 @@ When invoking agents via Task tool:
 - **never** let system auto-select model for agents with model requirements
 
 **Examples:**
-- ✅ `Task(subagent_type="code-reviewer", model="opus", ...)`
-- ✅ `Task(subagent_type="backend-engineer-golang", model="opus", ...)`
-- ❌ `Task(subagent_type="code-reviewer", ...)` - Missing model parameter
-- ❌ `Task(subagent_type="code-reviewer", model="sonnet", ...)` - Wrong model
+- ✅ `Task(subagent_type="ring:code-reviewer", model="opus", ...)`
+- ✅ `Task(subagent_type="ring:backend-engineer-golang", model="opus", ...)`
+- ❌ `Task(subagent_type="ring:code-reviewer", ...)` - Missing model parameter
+- ❌ `Task(subagent_type="ring:code-reviewer", model="sonnet", ...)` - Wrong model
 
 **Agent Self-Verification:**
 All agents with `model:` field in frontmatter MUST include "Model Requirements" section that verifies they are running on the correct model and STOPS if not.
@@ -416,19 +417,20 @@ If any checkbox is no → Agent is INCOMPLETE. Add missing sections.
 
 ## Repository Overview
 
-Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **4 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
+Ring is a comprehensive skills library and workflow system for AI agents that enforces proven software engineering practices through mandatory workflows, parallel code review, and systematic pre-development planning. Currently implemented as a Claude Code plugin marketplace with **5 active plugins**, the skills are agent-agnostic and reusable across different AI systems.
 
 **Active Plugins:**
 - **ring-default**: 27 core skills, 13 slash commands, 5 specialized agents
 - **ring-dev-team**: 9 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
 - **ring-pm-team**: 10 product planning skills, 3 research agents, 2 slash commands
+- **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 53 skills (27 + 9 + 10 + 7) across 4 plugins**
-**Total: 20 agents (5 + 9 + 3 + 3) across 4 plugins**
-**Total: 23 commands (13 + 5 + 2 + 3) across 4 plugins**
+**Total: 59 skills (27 + 9 + 10 + 6 + 7) across 5 plugins**
+**Total: 22 agents (5 + 9 + 3 + 2 + 3) across 5 plugins**
+**Total: 23 commands (13 + 5 + 2 + 0 + 3) across 5 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -444,13 +446,14 @@ See [README.md](README.md#installation) or [docs/platforms/](docs/platforms/) fo
 
 ## Architecture
 
-**Monorepo Structure** - 4 plugin collections:
+**Monorepo Structure** - 5 plugin collections:
 
 | Plugin | Path | Contents |
 |--------|------|----------|
 | ring-default | `default/` | 27 skills, 5 agents, 13 commands |
 | ring-dev-team | `dev-team/` | 9 skills, 9 agents, 5 commands |
 | ring-pm-team | `pm-team/` | 10 skills, 3 agents, 2 commands |
+| ring-finops-team | `finops-team/` | 6 skills, 2 agents |
 | ring-tw-team | `tw-team/` | 7 skills, 3 agents, 3 commands |
 
 Each plugin contains: `skills/`, `agents/`, `commands/`, `hooks/`
@@ -468,9 +471,9 @@ git log --oneline -20              # Recent commits show hook development
 git worktree list                  # Check isolated development branches
 
 # Skill invocation (via Claude Code)
-Skill tool: "test-driven-development"  # Enforce TDD workflow
-Skill tool: "systematic-debugging"     # Debug with 4-phase analysis
-Skill tool: "using-ring"               # Load mandatory workflows
+Skill tool: "ring:test-driven-development"  # Enforce TDD workflow
+Skill tool: "ring:systematic-debugging"     # Debug with 4-phase analysis
+Skill tool: "ring:using-ring"               # Load mandatory workflows
 
 # Slash commands
 /codereview          # Dispatch 3 parallel reviewers
@@ -515,17 +518,17 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 ### Naming Conventions
 - Skills: `kebab-case` matching directory name
 - Agents: `{domain}-reviewer.md` format
-- Commands: `/ring-{plugin}:{action}` format (e.g., `/brainstorm`, `/pre-dev-feature`)
+- Commands: `/{action}` format (e.g., `/brainstorm`, `/pre-dev-feature`)
 - Hooks: `{event}-{purpose}.sh` format
 
 #### Agent/Skill/Command Invocation
-- **always use fully qualified names**: `ring-{plugin}:{component}`
+- **always use the unified ring: namespace**: `ring:{component}`
 - **Examples:**
-  - ✅ Correct: `ring-default:code-reviewer`
-  - ✅ Correct: `ring-dev-team:backend-engineer-golang`
-  - ❌ Wrong: `code-reviewer` (missing plugin prefix)
-  - ❌ Wrong: `ring:code-reviewer` (ambiguous shorthand)
-- **Rationale:** Prevents ambiguity in multi-plugin environments
+  - ✅ Correct: `ring:code-reviewer`
+  - ✅ Correct: `ring:backend-engineer-golang`
+  - ❌ Wrong: `code-reviewer` (missing ring: prefix)
+  - ❌ Wrong: `ring-default:code-reviewer` (deprecated plugin-specific prefix)
+- **Rationale:** Unified namespace simplifies invocation; plugin routing is handled internally
 
 ---
 
@@ -581,11 +584,12 @@ The system loads at SessionStart (from `default/` plugin):
 
 **Monorepo Context:**
 - Repository: Monorepo marketplace with multiple plugin collections
-- Active plugins: 4 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-tw-team`)
+- Active plugins: 5 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-finops-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
 - Core plugin: `default/` (27 skills, 5 agents, 13 commands)
 - Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
 - Product planning: `pm-team/` (10 skills, 3 agents, 2 commands)
+- FinOps regulatory: `finops-team/` (6 skills, 2 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)
 - Current git branch: `main`
 - Remote: `github.com/LerianStudio/ring`
@@ -612,12 +616,14 @@ Plugin Hooks (inject context at session start):
 ├── default/hooks/session-start.sh        # Skills reference
 ├── dev-team/hooks/session-start.sh       # Developer agents
 ├── pm-team/hooks/session-start.sh        # Pre-dev skills
+├── finops-team/hooks/session-start.sh    # FinOps regulatory agents
 └── tw-team/hooks/session-start.sh        # Technical writing agents
 
 Using-* Skills (plugin introductions):
 ├── default/skills/using-ring/SKILL.md             # Core workflow + agent list
 ├── dev-team/skills/using-dev-team/SKILL.md        # Developer agents guide
 ├── pm-team/skills/using-pm-team/SKILL.md          # Pre-dev workflow
+├── finops-team/skills/using-finops-team/SKILL.md  # FinOps regulatory guide
 └── tw-team/skills/using-tw-team/SKILL.md          # Technical writing guide
 ```
 
@@ -631,10 +637,10 @@ Using-* Skills (plugin introductions):
 - [ ] Names changed? Search repo for old names: `grep -r "old-name" --include="*.md" --include="*.sh"`
 
 **Naming Convention Enforcement:**
-- [ ] All agent invocations use `ring-{plugin}:agent-name` format
-- [ ] All skill invocations use `ring-{plugin}:skill-name` format
-- [ ] All command invocations use `/ring-{plugin}:command-name` format
-- [ ] No `ring:` shorthand used (except in historical examples with context)
-- [ ] No bare agent/skill names in invocation contexts
+- [ ] All agent invocations use `ring:agent-name` format
+- [ ] All skill invocations use `ring:skill-name` format
+- [ ] All command invocations use `/{command-name}` format
+- [ ] No bare agent/skill names in invocation contexts (must have ring: prefix)
+- [ ] No deprecated `ring-{plugin}:` format used
 
-**Always use fully qualified names:** `ring-{plugin}:{component}` (e.g., `code-reviewer`)
+**Always use unified namespace:** `ring:{component}` (e.g., `ring:code-reviewer`)

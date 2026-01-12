@@ -116,7 +116,7 @@ Say "use your judgment" or "pick whatever fits best." Claude will make a choice 
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: interviewing-user
+Use Skill tool: ring:interviewing-user
 ```
 
 The skill contains the complete workflow with:

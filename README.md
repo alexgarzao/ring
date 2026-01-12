@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **4 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 53 specialized skills** (27 core + 9 dev-team + 10 product planning + 7 technical writing)
-- **20 specialized agents** - 5 review/planning + 9 developer + 3 product research + 3 technical writing
+- **Providing 59 specialized skills** (27 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
+- **22 specialized agents** - 5 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -56,6 +56,10 @@ Ring solves this by:
 - `functional-writer` - Functional documentation (guides, tutorials, conceptual docs)
 - `api-writer` - API reference documentation (endpoints, schemas, examples)
 - `docs-reviewer` - Documentation quality review (voice, tone, structure, completeness)
+
+**FinOps Agents (ring-finops-team plugin):**
+- `finops-analyzer` - Financial operations analysis
+- `finops-automation` - FinOps template creation and automation
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
 
@@ -217,7 +221,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 53 Skills (Across 4 Plugins)
+## 📚 All 59 Skills (Across 5 Plugins)
 
 ### Core Skills (ring-default plugin - 27 skills)
 
@@ -297,9 +301,19 @@ No "should work" → Only "does work" with proof
 - `documentation-review` - Quality checklist and review process
 - `api-field-descriptions` - Field description patterns by type
 
+### FinOps & Regulatory Skills (ring-finops-team plugin - 6 skills)
+
+**Regulatory Templates (6):**
+- `using-finops-team` - Introduction to FinOps team workflow
+- `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
+- `regulatory-templates-setup` - Template selection initialization
+- `regulatory-templates-gate1` - Compliance analysis and field mapping
+- `regulatory-templates-gate2` - Field mapping validation
+- `regulatory-templates-gate3` - Template file generation
+
 ## 🎮 Interactive Commands
 
-Ring provides 23 slash commands across 4 plugins for common workflows.
+Ring provides 23 slash commands across 5 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -402,7 +416,7 @@ Claude: Dispatching all 3 reviewers in parallel...
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (4 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
 │   ├── skills/                       # 26 core skills
 │   │   ├── skill-name/
@@ -432,6 +446,11 @@ ring/                                  # Monorepo root
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 10 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
+├── finops-team/                     # FinOps Regulatory plugin (ring-finops-team)
+│   ├── skills/                      # 6 regulatory skills
+│   ├── agents/                      # 2 FinOps agents
+│   ├── docs/regulatory/             # Regulatory templates and dictionaries
+│   └── hooks/                       # SessionStart hook
 └── tw-team/                         # Technical Writing plugin (ring-tw-team)
     ├── skills/                      # 7 documentation skills
     ├── agents/                      # 3 technical writing agents

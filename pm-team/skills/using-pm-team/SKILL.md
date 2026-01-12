@@ -17,7 +17,7 @@ skip_when: |
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "gate-name"` or via slash commands.
+The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring:gate-name"` or via slash commands.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
@@ -118,9 +118,9 @@ Pre-dev workflow ensures:
 ### Via Skills (Manual)
 
 ```
-Skill tool: "pre-dev-prd-creation"
+Skill tool: "ring:pre-dev-prd-creation"
 (Review output)
-Skill tool: "pre-dev-trd-creation"
+Skill tool: "ring:pre-dev-trd-creation"
 (Review output)
 ```
 

@@ -40,7 +40,7 @@ The skill generates:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: release-guide-info
+Use Skill tool: ring:release-guide-info
 ```
 
 The skill contains the complete workflow with:

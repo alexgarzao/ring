@@ -406,7 +406,7 @@ Ready to refine design? Use /brainstorm
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: exploring-codebase
+Use Skill tool: ring:exploring-codebase
 ```
 
 The skill contains the complete workflow with:

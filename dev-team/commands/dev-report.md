@@ -116,7 +116,7 @@ Search for reports in: `.ring/dev-team/feedback/cycle-*.md`
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: dev-feedback-loop
+Use Skill tool: ring:dev-feedback-loop
 ```
 
 The skill contains the complete workflow with:

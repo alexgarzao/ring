@@ -25,7 +25,7 @@ sequence:
   before: [dev-feedback-loop]
 
 related:
-  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, ring-default:requesting-code-review, dev-validation, dev-feedback-loop]
+  complementary: [dev-implementation, dev-devops, dev-sre, dev-testing, ring:requesting-code-review, dev-validation, dev-feedback-loop]
 
 verification:
   automated:
@@ -162,12 +162,12 @@ This is not negotiable:
 **Before dispatching any agent, you MUST load the corresponding sub-skill first.**
 
 <cannot_skip>
-- Gate 0: `Skill("dev-implementation")` → then `Task(subagent_type="backend-engineer-*", ...)`
-- Gate 1: `Skill("dev-devops")` → then `Task(subagent_type="devops-engineer", ...)`
-- Gate 2: `Skill("dev-sre")` → then `Task(subagent_type="sre", ...)`
-- Gate 3: `Skill("dev-testing")` → then `Task(subagent_type="qa-analyst", ...)`
-- Gate 4: `Skill("ring-default:requesting-code-review")` → then 3x `Task(...)` in parallel
-- Gate 5: `Skill("dev-validation")` → N/A (verification only)
+- Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="backend-engineer-*", ...)`
+- Gate 1: `Skill("dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
+- Gate 2: `Skill("dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
+- Gate 3: `Skill("dev-testing")` → then `Task(subagent_type="ring:qa-analyst", ...)`
+- Gate 4: `Skill("ring:requesting-code-review")` → then 3x `Task(...)` in parallel
+- Gate 5: `Skill("ring:dev-validation")` → N/A (verification only)
 </cannot_skip>
 
 Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
@@ -402,7 +402,7 @@ Day 4: Production incident from Day 1 code
 | 1 | dev-devops | Infrastructure and deployment | devops-engineer |
 | 2 | dev-sre | Observability (health, logging, tracing) | sre |
 | 3 | dev-testing | Unit tests for acceptance criteria | qa-analyst |
-| 4 | ring-default:requesting-code-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
+| 4 | ring:requesting-code-review | Parallel code review | code-reviewer, business-logic-reviewer, security-reviewer (3x parallel) |
 | 5 | dev-validation | Final acceptance validation | N/A (verification) |
 
 ## Integrated PM → Dev Workflow
@@ -949,7 +949,7 @@ Action: Use Task tool with EXACTLY these parameters:
 ```yaml
 # Agent 1: Codebase Explorer - Technical Analysis
 Task tool:
-  subagent_type: "ring-default:codebase-explorer"
+  subagent_type: "ring:codebase-explorer"
   model: "opus"
   description: "Analyze legacy project for PROJECT_RULES.md"
   prompt: |
@@ -1814,7 +1814,7 @@ devops_input = {
 
 2. Invoke dev-devops skill with structured input:
 
-   Skill("dev-devops") with input:
+   Skill("ring:dev-devops") with input:
      unit_id: devops_input.unit_id
      language: devops_input.language
      service_type: devops_input.service_type
@@ -1867,7 +1867,7 @@ devops_input = {
    - verification_passed: extract from "## Verification Results"
    
    - agent_outputs.devops = {
-       skill: "dev-devops",
+       skill: "ring:dev-devops",
        output: "[full skill output]",
        artifacts_created: ["Dockerfile", "docker-compose.yml", ".env.example"],
        verification_passed: true,
@@ -1925,7 +1925,7 @@ sre_input = {
 
 2. Invoke dev-sre skill with structured input:
 
-   Skill("dev-sre") with input:
+   Skill("ring:dev-sre") with input:
      unit_id: sre_input.unit_id
      language: sre_input.language
      service_type: sre_input.service_type
@@ -1976,7 +1976,7 @@ sre_input = {
    - iterations: extract from "Iterations:" line
    
    - agent_outputs.sre = {
-       skill: "dev-sre",
+       skill: "ring:dev-sre",
        output: "[full skill output]",
        validation_result: "PASS",
        instrumentation_coverage: "[X%]",
@@ -2038,7 +2038,7 @@ testing_input = {
 
 2. Invoke dev-testing skill with structured input:
 
-   Skill("dev-testing") with input:
+   Skill("ring:dev-testing") with input:
      unit_id: testing_input.unit_id
      acceptance_criteria: testing_input.acceptance_criteria
      implementation_files: testing_input.implementation_files
@@ -2088,7 +2088,7 @@ testing_input = {
    - iterations: extract from "Iterations:" line
    
    - agent_outputs.testing = {
-       skill: "dev-testing",
+       skill: "ring:dev-testing",
        output: "[full skill output]",
        verdict: "PASS",
        coverage_actual: [X%],
@@ -2151,9 +2151,9 @@ testing_input = {
 
 ## Step 6: Gate 4 - Review (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring-default:requesting-code-review`
+**REQUIRED SUB-SKILL:** Use `ring:requesting-code-review`
 
-### Step 6.1: Prepare Input for ring-default:requesting-code-review Skill
+### Step 6.1: Prepare Input for ring:requesting-code-review Skill
 
 ```text
 Gather from previous gates:
@@ -2172,14 +2172,14 @@ review_input = {
 }
 ```
 
-### Step 6.2: Invoke ring-default:requesting-code-review Skill
+### Step 6.2: Invoke ring:requesting-code-review Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring-default:requesting-code-review skill with structured input:
+2. Invoke ring:requesting-code-review skill with structured input:
 
-   Skill("ring-default:requesting-code-review") with input:
+   Skill("ring:requesting-code-review") with input:
      unit_id: review_input.unit_id
      base_sha: review_input.base_sha
      head_sha: review_input.head_sha
@@ -2220,7 +2220,7 @@ review_input = {
 ### Step 6.3: Gate 4 Complete
 
 ```text
-5. When ring-default:requesting-code-review skill returns PASS:
+5. When ring:requesting-code-review skill returns PASS:
    
    Parse from skill output:
    - reviewers_passed: extract from "## Reviewer Verdicts" (should be "3/3")
@@ -2230,7 +2230,7 @@ review_input = {
    - iterations: extract from "Iterations:" line
    
    - agent_outputs.review = {
-       skill: "ring-default:requesting-code-review",
+       skill: "ring:requesting-code-review",
        output: "[full skill output]",
        iterations: [count],
        timestamp: "[ISO timestamp]",
@@ -2389,7 +2389,7 @@ After completing all subtasks of a task:
 
    ```yaml
    Skill tool:
-     skill: "dev-feedback-loop"
+     skill: "ring:dev-feedback-loop"
    ```
 
    **Note:** dev-feedback-loop manages its own TodoWrite tracking internally.
@@ -2514,7 +2514,7 @@ After completing all subtasks of a task:
 
    ```yaml
    Skill tool:
-     skill: "dev-feedback-loop"
+     skill: "ring:dev-feedback-loop"
    ```
 
    **Note:** dev-feedback-loop manages its own TodoWrite tracking internally.

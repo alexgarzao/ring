@@ -423,7 +423,7 @@ Any occurrence = IMMEDIATE REJECTION.
 
 ---
 
-<dispatch_required agent="ring-dev-team:backend-engineer-golang" model="opus">
+<dispatch_required agent="ring:backend-engineer-golang" model="opus">
 Implement user authentication endpoint with JWT validation.
 </dispatch_required>
 
@@ -431,7 +431,7 @@ MUST use Task tool with specified agent and model.
 
 ---
 
-<parallel_dispatch agents="ring-dev-team:backend-engineer-golang, ring-dev-team:qa-analyst, ring-dev-team:devops-engineer, ring-dev-team:sre" model="opus">
+<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
 Analyze codebase against Ring standards. All agents receive same context:
 - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
 - Project Rules: docs/PROJECT_RULES.md

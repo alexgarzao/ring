@@ -107,7 +107,7 @@ The process is phase-locked. You cannot skip ahead until the current phase is co
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: brainstorming
+Use Skill tool: ring:brainstorming
 ```
 
 The skill contains the complete workflow with:

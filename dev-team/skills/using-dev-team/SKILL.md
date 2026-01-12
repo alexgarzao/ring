@@ -115,7 +115,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "ring-dev-team:backend-engineer-golang"
+  subagent_type: "ring:backend-engineer-golang"
   model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
@@ -251,8 +251,10 @@ All workflows converge to the 6-gate development cycle:
 
 - **using-ring** (default) – ORCHESTRATOR principle for all agents
 - **using-pm-team** – Pre-dev workflow agents
+- **using-finops-team** – Financial/regulatory agents
 
 Dispatch based on your need:
 - General code review → default plugin agents
 - Specific domain expertise → ring-dev-team agents
 - Feature planning → ring-pm-team agents
+- Regulatory compliance → ring-finops-team agents

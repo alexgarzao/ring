@@ -128,7 +128,7 @@ If you're not prompted for execution mode, this is a violation of the skill prot
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: executing-plans
+Use Skill tool: ring:executing-plans
 ```
 
 The skill contains the complete workflow with:

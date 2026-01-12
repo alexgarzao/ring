@@ -84,7 +84,7 @@ Lints only the services directory.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: linting-codebase
+Use Skill tool: ring:linting-codebase
 ```
 
 The skill contains the complete workflow with:

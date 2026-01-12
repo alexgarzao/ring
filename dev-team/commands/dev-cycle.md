@@ -89,7 +89,7 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: dev-cycle
+Use Skill tool: ring:dev-cycle
 ```
 
 The skill contains the complete 6-gate workflow with:

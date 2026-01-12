@@ -157,7 +157,7 @@ When analyzing services for instrumentation compliance, verify:
 **After PROJECT_RULES.md check passes, load the skill:**
 
 ```
-Use Skill tool: dev-refactor
+Use Skill tool: ring:dev-refactor
 ```
 
 The skill contains the complete analysis workflow with:

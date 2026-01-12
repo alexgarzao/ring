@@ -265,11 +265,11 @@ Do not complete without outputting full report in the format above.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll use Bash find/ls to quickly explore" | Bash cannot analyze patterns, just lists files. codebase-explorer provides architectural analysis. | **Use Task with subagent_type="codebase-explorer"** |
+| "I'll use Bash find/ls to quickly explore" | Bash cannot analyze patterns, just lists files. codebase-explorer provides architectural analysis. | **Use Task with subagent_type="ring:codebase-explorer"** |
 | "The Explore agent is faster" | "Explore" subagent_type ≠ "codebase-explorer". Different agents. | **Use exact string: "codebase-explorer"** |
-| "I already know the structure from find output" | Knowing file paths ≠ understanding architecture. Agent provides analysis. | **Use Task with subagent_type="codebase-explorer"** |
-| "This is a small codebase, Bash is enough" | Size is irrelevant. The agent provides standardized output format required by Step 4. | **Use Task with subagent_type="codebase-explorer"** |
-| "I'll explore manually then dispatch agents" | Manual exploration skips the codebase-report.md artifact required for Step 4 gate. | **Use Task with subagent_type="codebase-explorer"** |
+| "I already know the structure from find output" | Knowing file paths ≠ understanding architecture. Agent provides analysis. | **Use Task with subagent_type="ring:codebase-explorer"** |
+| "This is a small codebase, Bash is enough" | Size is irrelevant. The agent provides standardized output format required by Step 4. | **Use Task with subagent_type="ring:codebase-explorer"** |
+| "I'll explore manually then dispatch agents" | Manual exploration skips the codebase-report.md artifact required for Step 4 gate. | **Use Task with subagent_type="ring:codebase-explorer"** |
 
 ### FORBIDDEN Actions for Step 3
 
@@ -287,7 +287,7 @@ Any of these = IMMEDIATE SKILL FAILURE.
 ### REQUIRED Action for Step 3
 
 ```
-✅ Task(subagent_type="codebase-explorer", model="opus", ...)
+✅ Task(subagent_type="ring:codebase-explorer", model="opus", ...)
 ```
 
 **After Task completes, save with Write tool:**
@@ -345,7 +345,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 1:
-  subagent_type: "ring-dev-team:backend-engineer-golang"
+  subagent_type: "ring:backend-engineer-golang"
   model: "opus"
   description: "Go standards analysis"
   prompt: |
@@ -373,7 +373,7 @@ Task tool 1:
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 
 Task tool 2:
-  subagent_type: "ring-dev-team:qa-analyst"
+  subagent_type: "ring:qa-analyst"
   model: "opus"
   description: "Test coverage analysis"
   prompt: |
@@ -383,7 +383,7 @@ Task tool 2:
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 3:
-  subagent_type: "ring-dev-team:devops-engineer"
+  subagent_type: "ring:devops-engineer"
   model: "opus"
   description: "DevOps analysis"
   prompt: |
@@ -395,7 +395,7 @@ Task tool 3:
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 4:
-  subagent_type: "ring-dev-team:sre"
+  subagent_type: "ring:sre"
   model: "opus"
   description: "Observability analysis"
   prompt: |
@@ -414,7 +414,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 1:
-  subagent_type: "ring-dev-team:backend-engineer-typescript"
+  subagent_type: "ring:backend-engineer-typescript"
   model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
@@ -451,7 +451,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 5:
-  subagent_type: "ring-dev-team:frontend-engineer"
+  subagent_type: "ring:frontend-engineer"
   model: "opus"
   description: "Frontend standards analysis"
   prompt: |
@@ -479,7 +479,7 @@ Input: codebase-report.md, PROJECT_RULES.md
 
 ```yaml
 Task tool 6:
-  subagent_type: "ring-dev-team:frontend-bff-engineer-typescript"
+  subagent_type: "ring:frontend-bff-engineer-typescript"
   model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |
@@ -974,7 +974,7 @@ docs/refactor/{timestamp}/
 
 ```yaml
 Skill tool:
-  skill: "dev-cycle"
+  skill: "ring:dev-cycle"
 ```
 
 **⛔ CRITICAL: Pass tasks file path in context:**
@@ -993,10 +993,10 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 | "User approved, I can skip dev-cycle" | Approval = permission to proceed, not skip execution | **Invoke Skill tool** |
 | "Tasks are saved, job is done" | Saved tasks without execution = incomplete workflow | **Invoke Skill tool** |
 
-**⛔ HARD GATE: You CANNOT complete dev-refactor without invoking `Skill tool: dev-cycle`.**
+**⛔ HARD GATE: You CANNOT complete dev-refactor without invoking `Skill tool: ring:dev-cycle`.**
 
 If user approved execution, you MUST:
-1. Invoke `Skill tool: dev-cycle`
+1. Invoke `Skill tool: ring:dev-cycle`
 2. Pass tasks file path: `docs/refactor/{timestamp}/tasks.md`
 3. Wait for dev-cycle to complete all 6 gates
 

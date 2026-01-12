@@ -129,7 +129,7 @@ If `ring-dev-team` plugin is not installed, execution falls back to `general-pur
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: writing-plans
+Use Skill tool: ring:writing-plans
 ```
 
 The skill contains the complete workflow with:

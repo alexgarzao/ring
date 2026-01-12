@@ -40,7 +40,7 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 3. Test with:
    ```
-   Skill tool: "testing-skills-with-subagents"
+   Skill tool: "ring:testing-skills-with-subagents"
    ```
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
@@ -125,6 +125,14 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - api-writer (API reference)
   - docs-reviewer (quality review)
 - Commands: write-guide, write-api, review-docs
+
+### Ring FinOps Team Plugin
+- `using-finops-team` → 2 FinOps agents for Brazilian compliance
+- Auto-loads when ring-finops-team plugin is enabled
+- Located: `finops-team/skills/using-finops-team/SKILL.md`
+- Agents (invoke as `{agent-name}`):
+  - finops-analyzer (compliance analysis)
+  - finops-automation (template generation)
 
 ### Hook Configuration
 - Each plugin has: `{plugin}/hooks/hooks.json` + `{plugin}/hooks/session-start.sh`

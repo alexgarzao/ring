@@ -150,7 +150,7 @@ Queries should complete in < 100ms. If slow:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: artifact-query
+Use Skill tool: ring:artifact-query
 ```
 
 The skill contains the complete workflow with:

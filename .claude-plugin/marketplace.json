@@ -1,6 +1,6 @@
 {
   "name": "ring",
-  "description": "Lerian Studio plugin marketplace: Core software engineering skills (TDD, debugging, code review), specialized developer agents (Backend, DevOps, Frontend, QA, SRE), product planning workflows (9-gate pre-dev system), and technical writing specialists for documentation.",
+  "description": "Lerian Studio plugin marketplace: Core software engineering skills (TDD, debugging, code review), specialized developer agents (Backend, DevOps, Frontend, QA, SRE), product planning workflows (9-gate pre-dev system), FinOps/regulatory compliance for Brazilian financial systems (BACEN, RFB), and technical writing specialists for documentation.",
   "owner": {
     "name": "Presenter Name",
     "email": "fred@fredamaral.com.br"
@@ -72,6 +72,16 @@
         "feature-planning",
         "task-breakdown"
       ]
+    },
+    {
+      "name": "ring-finops-team",
+      "version": "0.6.0",
+      "description": "FinOps and Brazilian regulatory compliance skills for financial systems",
+      "source": "./finops-team",
+      "homepage": "https://github.com/lerianstudio/ring/tree/tw-team",
+      "repository": "https://github.com/lerianstudio/ring/tree/tw-team",
+      "license": "MIT",
+      "keywords": ["finops", "regulatory", "compliance", "bacen", "rfb", "brazil"]
     },
     {
       "name": "ring-tw-team",
