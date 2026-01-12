@@ -81,13 +81,6 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 ✅ Task(subagent_type="repo-research-analyst", ...)
 ```
 
-### ring-finops-team Agents (Financial Operations)
-
-```
-✅ Task(subagent_type="finops-analyzer", ...)
-✅ Task(subagent_type="finops-automation", ...)
-```
-
 ### ring-tw-team Agents (Technical Writing)
 
 ```
@@ -167,13 +160,6 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 | Functional documentation, user guides | `functional-writer` |
 | API documentation, OpenAPI specs | `api-writer` |
 | Documentation review | `docs-reviewer` |
-
-### Financial Operations
-
-| Task Type | Agent to Dispatch |
-|-----------|-------------------|
-| Cost analysis, FinOps metrics | `finops-analyzer` |
-| FinOps automation, alerts | `finops-automation` |
 
 ### Planning & Quality
 

@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **9 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **4 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 90 specialized skills** - Complete coverage from finance to operations (26 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 8 finance ops + 8 production ops + 8 product marketing + 8 PMO + 7 technical writing)
-- **44 specialized agents** - 5 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 6 finance + 5 operations + 6 product marketing + 5 PMO + 3 technical writing
+- **Providing 53 specialized skills** (27 core + 9 dev-team + 10 product planning + 7 technical writing)
+- **20 specialized agents** - 5 review/planning + 9 developer + 3 product research + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -52,44 +52,10 @@ Ring solves this by:
 >
 > See `dev-team/docs/standards/*.md` for standards source. Cross-references: CLAUDE.md (Standards Compliance section), `dev-team/skills/dev-refactor/SKILL.md`
 
-**FinOps Agents (ring-finops-team plugin):**
-- `finops-analyzer` - Financial operations analysis
-- `finops-automation` - FinOps template creation and automation
-
 **Technical Writing Agents (ring-tw-team plugin):**
 - `functional-writer` - Functional documentation (guides, tutorials, conceptual docs)
 - `api-writer` - API reference documentation (endpoints, schemas, examples)
 - `docs-reviewer` - Documentation quality review (voice, tone, structure, completeness)
-
-**Financial Operations Agents (ring-finance-team plugin):**
-- `financial-analyst` - Financial statement analysis, ratio analysis, trend analysis
-- `budget-planner` - Annual budgets, rolling forecasts, variance analysis
-- `financial-modeler` - DCF valuation, LBO models, M&A models, scenario analysis
-- `treasury-specialist` - Cash flow forecasting, liquidity management, working capital
-- `accounting-specialist` - Journal entries, reconciliations, month-end close
-- `metrics-analyst` - KPI definition, dashboard design, anomaly detection
-
-**Production Operations Agents (ring-ops-team plugin):**
-- `platform-engineer` - Service mesh, API gateways, developer platforms
-- `incident-responder` - Production incidents, RCA, post-mortems
-- `cloud-cost-optimizer` - Cost analysis, reserved instances, FinOps practices
-- `infrastructure-architect` - Multi-region architecture, DR, capacity planning
-- `security-operations` - Security audits, compliance, vulnerability management
-
-**Product Marketing Agents (ring-pmm-team plugin):**
-- `market-researcher` - TAM/SAM/SOM analysis, market segmentation, trend analysis
-- `positioning-strategist` - Differentiation strategy, category design, positioning
-- `messaging-specialist` - Value propositions, messaging frameworks, proof points
-- `gtm-planner` - Go-to-market strategy, channel selection, campaign planning
-- `launch-coordinator` - Launch checklists, stakeholder coordination, day-of execution
-- `pricing-analyst` - Pricing models, competitive pricing, value-based pricing
-
-**Portfolio Management Agents (ring-pmo-team plugin):**
-- `portfolio-manager` - Multi-project coordination, strategic alignment, portfolio optimization
-- `resource-planner` - Capacity planning, allocation optimization, conflict resolution
-- `governance-specialist` - Gate reviews, process compliance, audit readiness
-- `risk-analyst` - Risk identification, RAID logs, mitigation planning
-- `executive-reporter` - Executive dashboards, board packages, stakeholder communication
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
 
@@ -251,7 +217,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 91 Skills (Across 9 Plugins)
+## 📚 All 53 Skills (Across 4 Plugins)
 
 ### Core Skills (ring-default plugin - 27 skills)
 
@@ -320,16 +286,6 @@ No "should work" → Only "does work" with proof
 7. `pre-dev-task-breakdown` - Work increments
 8. `pre-dev-subtask-creation` - Atomic units
 
-### FinOps & Regulatory Skills (ring-finops-team plugin - 6 skills)
-
-**Regulatory Templates (6):**
-- `using-finops-team` - Introduction to FinOps team workflow
-- `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
-- `regulatory-templates-setup` - Template selection initialization
-- `regulatory-templates-gate1` - Compliance analysis and field mapping
-- `regulatory-templates-gate2` - Field mapping validation
-- `regulatory-templates-gate3` - Template file generation
-
 ### Technical Writing Skills (ring-tw-team plugin - 7 skills)
 
 **Documentation Creation:**
@@ -343,7 +299,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 35 slash commands across 9 plugins for common workflows.
+Ring provides 23 slash commands across 4 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -446,7 +402,7 @@ Claude: Dispatching all 3 reviewers in parallel...
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (9 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (4 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
 │   ├── skills/                       # 26 core skills
 │   │   ├── skill-name/
@@ -473,24 +429,14 @@ ring/                                  # Monorepo root
 │       ├── frontend-designer.md        # Visual design specialist
 │       ├── qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer
-├── finops-team/                     # FinOps plugin (ring-finops-team)
-│   ├── skills/                      # 6 regulatory compliance skills
-│   │   └── regulatory-templates*/   # Brazilian regulatory compliance
-│   ├── agents/                      # 2 FinOps agents
-│   │   ├── finops-analyzer.md      # FinOps analysis
-│   │   └── finops-automation.md    # FinOps automation
-│   └── docs/
-│       └── regulatory/             # Brazilian regulatory documentation
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 10 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
-├── tw-team/                         # Technical Writing plugin (ring-tw-team)
-│   ├── skills/                      # 7 documentation skills
-│   ├── agents/                      # 3 technical writing agents
-│   ├── commands/                    # 3 slash commands
-│   └── hooks/                       # SessionStart hook
-├── ops-team/                        # Production operations (8 skills, 5 agents, 4 commands)
-└── pmm-team/                        # Product marketing (8 skills, 6 agents, 3 commands)
+└── tw-team/                         # Technical Writing plugin (ring-tw-team)
+    ├── skills/                      # 7 documentation skills
+    ├── agents/                      # 3 technical writing agents
+    ├── commands/                    # 3 slash commands
+    └── hooks/                       # SessionStart hook
 ```
 
 ## 🤝 Contributing

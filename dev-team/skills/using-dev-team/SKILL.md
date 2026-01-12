@@ -250,11 +250,9 @@ All workflows converge to the 6-gate development cycle:
 ## Integration with Other Plugins
 
 - **using-ring** (default) – ORCHESTRATOR principle for all agents
-- **using-finops-team** – Financial/regulatory agents
 - **using-pm-team** – Pre-dev workflow agents
 
 Dispatch based on your need:
 - General code review → default plugin agents
 - Specific domain expertise → ring-dev-team agents
-- Regulatory compliance → ring-finops-team agents
 - Feature planning → ring-pm-team agents

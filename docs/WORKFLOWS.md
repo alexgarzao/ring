@@ -110,14 +110,6 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - qa-analyst
   - sre
 
-### Ring FinOps Team Plugin
-- `using-finops-team` → 2 FinOps agents for Brazilian compliance
-- Auto-loads when ring-finops-team plugin is enabled
-- Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents (invoke as `{agent-name}`):
-  - finops-analyzer (compliance analysis)
-  - finops-automation (template generation)
-
 ### Ring PM Team Plugin
 - `using-pm-team` → Pre-dev workflow skills (8 gates)
 - Auto-loads when ring-pm-team plugin is enabled
