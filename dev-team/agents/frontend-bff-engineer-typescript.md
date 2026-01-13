@@ -554,7 +554,7 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend-bff-engineer-typescript → typescript.md" for:**
-- Complete list of sections to check (13 sections)
+- Complete list of sections to check (14 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format

@@ -791,7 +791,7 @@ When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST p
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-typescript → typescript.md" for:**
-- Complete list of sections to check (13 sections)
+- Complete list of sections to check (14 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format

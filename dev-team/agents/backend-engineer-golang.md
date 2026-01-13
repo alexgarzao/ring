@@ -794,7 +794,7 @@ The Standards Compliance section exists to:
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md" for:**
-- Complete list of sections to check (20 sections)
+- Complete list of sections to check (21 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format
