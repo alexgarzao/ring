@@ -1,5 +1,5 @@
 ---
-name: testing-agents-with-subagents
+name: ring:testing-agents-with-subagents
 description: |
   Agent testing methodology - run agents with test inputs, observe outputs,
   iterate until outputs are accurate and well-structured.

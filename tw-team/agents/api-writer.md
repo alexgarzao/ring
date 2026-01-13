@@ -1,5 +1,5 @@
 ---
-name: api-writer
+name: ring:api-writer
 version: 0.2.0
 description: Senior Technical Writer specialized in API reference documentation including endpoint descriptions, request/response schemas, and error documentation.
 type: specialist
@@ -44,7 +44,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="api-writer", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:api-writer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:**

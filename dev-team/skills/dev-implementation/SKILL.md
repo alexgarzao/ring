@@ -1,5 +1,5 @@
 ---
-name: dev-implementation
+name: ring:dev-implementation
 description: |
   Gate 0 of the development cycle. Executes code implementation using the appropriate
   specialized agent based on task content and project language. Handles TDD workflow
@@ -245,7 +245,7 @@ Write failing test for unit_id following TDD-RED methodology.
 
 ```yaml
 Task:
-  subagent_type: "[selected_agent]"  # e.g., "backend-engineer-golang"
+  subagent_type: "[selected_agent]"  # e.g., "ring:backend-engineer-golang"
   model: "opus"
   description: "TDD-RED: Write failing test for [unit_id]"
   prompt: |

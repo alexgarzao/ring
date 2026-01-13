@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **9 active plugins**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the entire software delivery value chain: Finance → PMO → Product Marketing → Product Planning → Development → Operations.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **5 active plugins**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
 
 ### Architecture Philosophy
 
@@ -33,27 +33,17 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(26) Agents(5) │  │ Skills(9) Agents(9)  │                       │  │
-│  │  │ Cmds(12) Hooks/Lib   │  │ Cmds(5)              │                       │  │
+│  │  │ Skills(27) Agents(5) │  │ Skills(9) Agents(9)  │                       │  │
+│  │  │ Cmds(13) Hooks/Lib   │  │ Cmds(5)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
-│  │  │ ring-finops-team     │  │ ring-pm-team         │                       │  │
-│  │  │ Skills(6) Agents(2)  │  │ Skills(10) Cmds(2)   │                       │  │
-│  │  └──────────────────────┘  └──────────────────────┘                       │  │
-│  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
-│  │  │ ring-finance-team    │  │ ring-ops-team        │                       │  │
-│  │  │ Skills(8) Agents(6)  │  │ Skills(8) Agents(5)  │                       │  │
-│  │  │ Cmds(3)              │  │ Cmds(4)              │                       │  │
-│  │  └──────────────────────┘  └──────────────────────┘                       │  │
-│  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
-│  │  │ ring-pmm-team        │  │ ring-pmo-team        │                       │  │
-│  │  │ Skills(8) Agents(6)  │  │ Skills(8) Agents(5)  │                       │  │
-│  │  │ Cmds(3)              │  │ Cmds(3)              │                       │  │
+│  │  │ ring-pm-team         │  │ ring-tw-team         │                       │  │
+│  │  │ Skills(10) Agents(3) │  │ Skills(7) Agents(3)  │                       │  │
+│  │  │ Cmds(2)              │  │ Cmds(3)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐                                                 │  │
-│  │  │ ring-tw-team         │                                                 │  │
-│  │  │ Skills(7) Agents(3)  │                                                 │  │
-│  │  │ Cmds(3)              │                                                 │  │
+│  │  │ ring-finops-team     │                                                 │  │
+│  │  │ Skills(6) Agents(2)  │                                                 │  │
 │  │  └──────────────────────┘                                                 │  │
 │  └───────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                  │
@@ -68,15 +58,11 @@ Ring is organized as a monorepo marketplace with multiple plugin collections:
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin registry (9 active plugins)
+│   └── marketplace.json              # Multi-plugin registry (5 active plugins)
 ├── default/                          # Core plugin: ring-default
 ├── dev-team/                         # Developer agents: ring-dev-team
-├── finance-team/                     # Finance operations: ring-finance-team
 ├── finops-team/                      # FinOps & regulatory: ring-finops-team
-├── ops-team/                         # Production operations: ring-ops-team
 ├── pm-team/                          # Product planning: ring-pm-team
-├── pmm-team/                         # Product marketing: ring-pmm-team
-├── pmo-team/                         # Portfolio management: ring-pmo-team
 └── tw-team/                          # Technical writing: ring-tw-team
 ```
 
@@ -88,12 +74,8 @@ ring/                                  # Monorepo root
 |--------|-------------|------------|
 | **ring-default** | Core skills library | 27 skills, 5 agents, 13 commands |
 | **ring-dev-team** | Developer agents | 9 skills, 9 agents, 5 commands |
-| **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
 | **ring-finops-team** | FinOps regulatory compliance | 6 skills, 2 agents |
-| **ring-finance-team** | Financial operations & analysis | 8 skills, 6 agents, 3 commands |
-| **ring-ops-team** | Production operations & platform | 8 skills, 5 agents, 4 commands |
-| **ring-pmm-team** | Product marketing & GTM | 8 skills, 6 agents, 3 commands |
-| **ring-pmo-team** | Portfolio management & governance | 8 skills, 5 agents, 3 commands |
+| **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
 | **ring-tw-team** | Technical writing specialists | 7 skills, 3 agents, 3 commands |
 
 ## Component Hierarchy
@@ -247,7 +229,7 @@ pm-team/commands/
 
 **Key Characteristics:**
 - Simple `.md` files with YAML frontmatter
-- Invoked via `/ring-{plugin}:{command}` syntax
+- Invoked via `/{command}` syntax
 - Typically reference a corresponding skill
 - Expand into full skill/agent invocation
 
@@ -279,8 +261,8 @@ default/hooks/
 └── marketplace.json    # Multi-plugin registry
     ├── ring-default     # Core skills library
     ├── ring-dev-team    # Developer agents
+    ├── ring-finops-team # FinOps regulatory
     ├── ring-pm-team     # Product planning
-    ├── ring-finops-team # FinOps & regulatory
     └── ring-tw-team     # Technical writing
 ```
 
@@ -304,40 +286,16 @@ default/hooks/
       "keywords": ["developer", "agents"]
     },
     {
+      "name": "ring-finops-team",
+      "version": "...",
+      "source": "./finops-team",
+      "keywords": ["finops", "regulatory", "compliance"]
+    },
+    {
       "name": "ring-pm-team",
       "version": "...",
       "source": "./pm-team",
       "keywords": ["product", "planning"]
-    },
-    {
-      "name": "ring-finops-team",
-      "version": "...",
-      "source": "./finops-team",
-      "keywords": ["finops", "regulatory"]
-    },
-    {
-      "name": "ring-finance-team",
-      "version": "...",
-      "source": "./finance-team",
-      "keywords": ["finance", "operations", "budgeting"]
-    },
-    {
-      "name": "ring-ops-team",
-      "version": "...",
-      "source": "./ops-team",
-      "keywords": ["operations", "platform", "infrastructure"]
-    },
-    {
-      "name": "ring-pmm-team",
-      "version": "...",
-      "source": "./pmm-team",
-      "keywords": ["product-marketing", "gtm", "positioning"]
-    },
-    {
-      "name": "ring-pmo-team",
-      "version": "...",
-      "source": "./pmo-team",
-      "keywords": ["portfolio", "governance", "pmo"]
     },
     {
       "name": "ring-tw-team",
@@ -429,12 +387,12 @@ sequenceDiagram
 Ring leverages four primary Claude Code tools:
 
 1. **Skill Tool**
-   - Invokes skills by name: `skill: "test-driven-development"`
+   - Invokes skills by name: `skill: "ring:test-driven-development"`
    - Skills expand into full instructions within conversation
    - Skill content becomes part of Claude's working context
 
 2. **Task Tool**
-   - Dispatches agents to subagent instances: `Task(subagent_type="code-reviewer", model="opus")`
+   - Dispatches agents to subagent instances: `Task(subagent_type="ring:code-reviewer", model="opus")`
    - Enables parallel execution (multiple Tasks in one message)
    - Returns structured reports from independent analysis
 
@@ -611,14 +569,14 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ### Adding New Agents
 1. Create `{plugin}/agents/{name}.md` with model specification
 2. Include YAML frontmatter: `name`, `description`, `model`, `version`
-3. Invoke via Task tool with `subagent_type="ring-{plugin}:{name}"`
+3. Invoke via Task tool with `subagent_type="ring:{name}"`
 4. Review agents can run in parallel via `/codereview`
 5. Developer agents provide domain expertise via direct Task invocation
 
 ### Adding New Commands
 1. Create `commands/{name}.md`
 2. Reference skill or agent to invoke
-3. Available via `/ring-{plugin}:{name}`
+3. Available via `/{name}`
 
 ### Adding Shared Patterns
 1. Create `skills/shared-patterns/{pattern}.md`
@@ -712,36 +670,24 @@ Ring's architecture is designed for:
 
 | Component | Count | Location |
 |-----------|-------|----------|
-| Active Plugins | 9 | All plugin directories |
-| Skills (ring-default) | 26 | `default/skills/` |
+| Active Plugins | 5 | All plugin directories |
+| Skills (ring-default) | 27 | `default/skills/` |
 | Skills (ring-dev-team) | 9 | `dev-team/skills/` |
-| Skills (ring-finance-team) | 8 | `finance-team/skills/` |
 | Skills (ring-finops-team) | 6 | `finops-team/skills/` |
-| Skills (ring-ops-team) | 8 | `ops-team/skills/` |
 | Skills (ring-pm-team) | 10 | `pm-team/skills/` |
-| Skills (ring-pmm-team) | 8 | `pmm-team/skills/` |
-| Skills (ring-pmo-team) | 8 | `pmo-team/skills/` |
 | Skills (ring-tw-team) | 7 | `tw-team/skills/` |
-| **Total Skills** | **90** | **All plugins** |
+| **Total Skills** | **59** | **All plugins** |
 | Agents (ring-default) | 5 | `default/agents/` |
 | Agents (ring-dev-team) | 9 | `dev-team/agents/` |
-| Agents (ring-finance-team) | 6 | `finance-team/agents/` |
 | Agents (ring-finops-team) | 2 | `finops-team/agents/` |
-| Agents (ring-ops-team) | 5 | `ops-team/agents/` |
 | Agents (ring-pm-team) | 3 | `pm-team/agents/` |
-| Agents (ring-pmm-team) | 6 | `pmm-team/agents/` |
-| Agents (ring-pmo-team) | 5 | `pmo-team/agents/` |
 | Agents (ring-tw-team) | 3 | `tw-team/agents/` |
-| **Total Agents** | **44** | **All plugins** |
-| Commands (ring-default) | 12 | `default/commands/` |
+| **Total Agents** | **22** | **All plugins** |
+| Commands (ring-default) | 13 | `default/commands/` |
 | Commands (ring-dev-team) | 5 | `dev-team/commands/` |
-| Commands (ring-finance-team) | 3 | `finance-team/commands/` |
-| Commands (ring-ops-team) | 4 | `ops-team/commands/` |
 | Commands (ring-pm-team) | 2 | `pm-team/commands/` |
-| Commands (ring-pmm-team) | 3 | `pmm-team/commands/` |
-| Commands (ring-pmo-team) | 3 | `pmo-team/commands/` |
 | Commands (ring-tw-team) | 3 | `tw-team/commands/` |
-| **Total Commands** | **35** | **All plugins** |
+| **Total Commands** | **23** | **All plugins** |
 | Hooks | Per plugin | `{plugin}/hooks/` |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.

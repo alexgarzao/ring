@@ -1,5 +1,5 @@
 ---
-name: write-plan
+name: ring:write-plan
 description: Create detailed implementation plan with bite-sized tasks
 argument-hint: "[feature-name]"
 ---
@@ -97,8 +97,8 @@ Plans specify recommended agents for execution:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/brainstorm` | Use first if design is not yet validated |
-| `/execute-plan` | Use after to execute the created plan |
+| `/ring:brainstorm` | Use first if design is not yet validated |
+| `/ring:execute-plan` | Use after to execute the created plan |
 | `brainstorming` | Design validation before planning |
 | `executing-plans` | Batch execution with review checkpoints |
 | `subagent-driven-development` | Alternative execution for current session |
@@ -106,7 +106,7 @@ Plans specify recommended agents for execution:
 ## Troubleshooting
 
 ### "Design not validated"
-Planning requires a validated design. Use `/brainstorm` first to refine your concept before creating the implementation plan.
+Planning requires a validated design. Use `/ring:brainstorm` first to refine your concept before creating the implementation plan.
 
 ### "Plan is too vague"
 If the generated plan contains phrases like "implement the logic" or "add appropriate handling", the plan doesn't meet quality standards. Request revision with specific code examples.
@@ -129,7 +129,7 @@ If `ring-dev-team` plugin is not installed, execution falls back to `general-pur
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: writing-plans
+Use Skill tool: ring:writing-plans
 ```
 
 The skill contains the complete workflow with:

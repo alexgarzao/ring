@@ -1,5 +1,5 @@
 ---
-name: artifact-query
+name: ring:artifact-query
 description: |
   Search the Artifact Index for relevant historical context using semantic
   full-text search. Returns handoffs, plans, and continuity ledgers ranked

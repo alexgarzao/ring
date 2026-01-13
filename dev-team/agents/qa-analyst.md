@@ -124,7 +124,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="qa-analyst", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:qa-analyst", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Test strategy design + compliance validation requires Opus-level reasoning for comprehensive test case generation, edge case identification, and rigorous standards validation.

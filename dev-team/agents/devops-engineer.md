@@ -101,7 +101,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="devops-engineer", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:devops-engineer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Infrastructure compliance verification + IaC analysis requires Opus-level reasoning for security pattern recognition, multi-stage build optimization, and comprehensive DevOps standards validation.

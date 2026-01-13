@@ -1,5 +1,5 @@
 ---
-name: brainstorm
+name: ring:brainstorm
 description: Interactive design refinement using Socratic method
 argument-hint: "[topic]"
 ---
@@ -80,8 +80,8 @@ The brainstorming session follows these phases:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Use after brainstorming when design is complete |
-| `/execute-plan` | Use after planning to implement the design |
+| `/ring:write-plan` | Use after brainstorming when design is complete |
+| `/ring:execute-plan` | Use after planning to implement the design |
 | `writing-plans` | Underlying skill for creating implementation plans |
 
 ## Troubleshooting
@@ -107,7 +107,7 @@ The process is phase-locked. You cannot skip ahead until the current phase is co
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: brainstorming
+Use Skill tool: ring:brainstorming
 ```
 
 The skill contains the complete workflow with:

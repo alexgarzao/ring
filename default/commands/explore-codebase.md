@@ -1,5 +1,5 @@
 ---
-name: explore-codebase
+name: ring:explore-codebase
 description: Autonomous two-phase codebase exploration with adaptive agents
 argument-hint: "[target]"
 ---
@@ -255,9 +255,9 @@ Recommendations based on your goal (implementation, debugging, or learning)
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/brainstorm` | Use explore-codebase in Phase 1 for context |
-| `/write-plan` | Use explore-codebase before planning implementation |
-| `/execute-plan` | Use if plan execution reveals gaps in understanding |
+| `/ring:brainstorm` | Use explore-codebase in Phase 1 for context |
+| `/ring:write-plan` | Use explore-codebase before planning implementation |
+| `/ring:execute-plan` | Use if plan execution reveals gaps in understanding |
 | `exploring-codebase` | Underlying skill with full logic and prompts |
 | `dispatching-parallel-agents` | Pattern used twice (discovery + deep dive) |
 | `systematic-debugging` | Use explore-codebase before debugging |
@@ -406,7 +406,7 @@ Ready to refine design? Use /brainstorm
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: exploring-codebase
+Use Skill tool: ring:exploring-codebase
 ```
 
 The skill contains the complete workflow with:

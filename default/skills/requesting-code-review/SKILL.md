@@ -1,5 +1,5 @@
 ---
-name: requesting-code-review
+name: ring:requesting-code-review
 description: |
   Gate 4 of development cycle - dispatches 5 specialized reviewers (code, business-logic,
   security, test, nil-safety) in parallel for comprehensive code review feedback.
@@ -248,7 +248,7 @@ review_state = {
 ```yaml
 # Task 1: Code Reviewer
 Task:
-  subagent_type: "code-reviewer"
+  subagent_type: "ring:code-reviewer"
   model: "opus"
   description: "Code review for [unit_id]"
   prompt: |
@@ -287,7 +287,7 @@ Task:
 
 # Task 2: Business Logic Reviewer
 Task:
-  subagent_type: "business-logic-reviewer"
+  subagent_type: "ring:business-logic-reviewer"
   model: "opus"
   description: "Business logic review for [unit_id]"
   prompt: |
@@ -325,7 +325,7 @@ Task:
 
 # Task 3: Security Reviewer
 Task:
-  subagent_type: "security-reviewer"
+  subagent_type: "ring:security-reviewer"
   model: "opus"
   description: "Security review for [unit_id]"
   prompt: |
@@ -365,7 +365,7 @@ Task:
 
 # Task 4: Test Reviewer
 Task:
-  subagent_type: "test-reviewer"
+  subagent_type: "ring:test-reviewer"
   model: "opus"
   description: "Test quality review for [unit_id]"
   prompt: |
@@ -406,7 +406,7 @@ Task:
 
 # Task 5: Nil-Safety Reviewer
 Task:
-  subagent_type: "nil-safety-reviewer"
+  subagent_type: "ring:nil-safety-reviewer"
   model: "opus"
   description: "Nil/null safety review for [unit_id]"
   prompt: |
@@ -1255,10 +1255,10 @@ IF coderabbit_results.overall_status == "ISSUES_FOUND":
             → Identify the correct agent for re-dispatch:
               - Check gate0_handoff.implementation_agent (if available)
               - OR infer from file type:
-                - *.go files → ring-dev-team:backend-engineer-golang
-                - *.ts files (backend) → ring-dev-team:backend-engineer-typescript
-                - *.ts/*.tsx files (frontend) → ring-dev-team:frontend-engineer
-                - *.yaml/*.yml (infra) → ring-dev-team:devops-engineer
+                - *.go files → ring:backend-engineer-golang
+                - *.ts files (backend) → ring:backend-engineer-typescript
+                - *.ts/*.tsx files (frontend) → ring:frontend-engineer
+                - *.yaml/*.yml (infra) → ring:devops-engineer
             
             → Re-dispatch ONLY unresolved issues to the correct agent:
             

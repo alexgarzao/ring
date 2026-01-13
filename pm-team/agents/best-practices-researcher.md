@@ -1,5 +1,5 @@
 ---
-name: best-practices-researcher
+name: ring:best-practices-researcher
 description: |
   External research specialist for pre-dev planning. Searches web and documentation
   for industry best practices, open source examples, and authoritative guidance.
@@ -56,7 +56,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="best-practices-researcher", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:best-practices-researcher", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:**

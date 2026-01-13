@@ -1,5 +1,5 @@
 ---
-name: release-guide-info
+name: ring:release-guide-info
 version: 1.2.0
 description: |
   Generate Ops Update Guide from Git Diff. Produces internal Operations-facing

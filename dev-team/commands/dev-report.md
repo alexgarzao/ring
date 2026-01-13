@@ -1,5 +1,5 @@
 ---
-name: dev-report
+name: ring:dev-report
 description: View the feedback report from the last development cycle
 argument-hint: "[cycle-date]"
 ---
@@ -99,9 +99,9 @@ ls .ring/dev-team/feedback/
 
 | Command | Description |
 |---------|-------------|
-| `/dev-cycle` | Start new cycle |
-| `/dev-status` | Check current status |
-| `/dev-cancel` | Cancel running cycle |
+| `/ring:dev-cycle` | Start new cycle |
+| `/ring:dev-status` | Check current status |
+| `/ring:dev-cancel` | Cancel running cycle |
 
 ---
 
@@ -116,7 +116,7 @@ Search for reports in: `.ring/dev-team/feedback/cycle-*.md`
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: dev-feedback-loop
+Use Skill tool: ring:dev-feedback-loop
 ```
 
 The skill contains the complete workflow with:

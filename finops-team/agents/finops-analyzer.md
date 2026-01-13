@@ -1,5 +1,5 @@
 ---
-name: finops-analyzer
+name: ring:finops-analyzer
 version: 1.1.0
 description: Senior Regulatory Compliance Analyst specializing in Brazilian financial regulatory template analysis and field mapping validation (Gates 1-2). Expert in BACEN, RFB, and Open Banking compliance.
 type: specialist
@@ -41,7 +41,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="finops-analyzer", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:finops-analyzer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:**

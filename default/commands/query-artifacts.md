@@ -1,5 +1,5 @@
 ---
-name: query-artifacts
+name: ring:query-artifacts
 description: Search the Artifact Index for relevant historical context
 argument-hint: "<search-terms> [--type TYPE] [--outcome OUTCOME]"
 ---
@@ -115,8 +115,8 @@ python3 default/lib/artifact-index/artifact_index.py --all
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Query before planning to inform decisions |
-| `/create-handoff` | Creates handoffs that get indexed |
+| `/ring:write-plan` | Query before planning to inform decisions |
+| `/ring:create-handoff` | Creates handoffs that get indexed |
 | `artifact-query` | The underlying skill |
 | `writing-plans` | Uses query results for RAG-enhanced planning |
 
@@ -150,7 +150,7 @@ Queries should complete in < 100ms. If slow:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: artifact-query
+Use Skill tool: ring:artifact-query
 ```
 
 The skill contains the complete workflow with:

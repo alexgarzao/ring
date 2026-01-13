@@ -1,5 +1,5 @@
 ---
-name: dev-cycle
+name: ring:dev-cycle
 description: Execute the development cycle for tasks in a markdown file
 argument-hint: "[tasks-file] [options]"
 ---
@@ -78,9 +78,9 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 
 | Command | Description |
 |---------|-------------|
-| `/dev-status` | Check current cycle status |
-| `/dev-cancel` | Cancel running cycle |
-| `/dev-report` | View feedback report |
+| `/ring:dev-status` | Check current cycle status |
+| `/ring:dev-cancel` | Cancel running cycle |
+| `/ring:dev-report` | View feedback report |
 
 ---
 
@@ -89,7 +89,7 @@ After all tasks: `dev-feedback-loop` generates metrics report.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: dev-cycle
+Use Skill tool: ring:dev-cycle
 ```
 
 The skill contains the complete 6-gate workflow with:

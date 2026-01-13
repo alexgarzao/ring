@@ -1,5 +1,5 @@
 ---
-name: resume-handoff
+name: ring:resume-handoff
 description: Resume work from a handoff document with context analysis and validation
 argument-hint: "<path-to-handoff.md>"
 ---
@@ -107,7 +107,7 @@ Start with first approved task, referencing learnings from handoff.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: handoff-tracking
+Use Skill tool: ring:handoff-tracking
 ```
 
 The skill contains the complete workflow with:

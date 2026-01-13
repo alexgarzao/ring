@@ -1,5 +1,5 @@
 ---
-name: regulatory-templates-gate1
+name: ring:regulatory-templates-gate1
 description: |
   Gate 1 sub-skill - performs regulatory compliance analysis and field mapping
   from template specifications.
@@ -330,7 +330,7 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 
 ### Agent Dispatch
 
-**Dispatch:** `Task(subagent_type: "finops-analyzer", model: "opus")`
+**Dispatch:** `Task(subagent_type: "ring:finops-analyzer", model: "opus")`
 
 **Pre-dispatch:** Check dictionary at `~/.claude/docs/regulatory/dictionaries/{category}-{code}.yaml`
 

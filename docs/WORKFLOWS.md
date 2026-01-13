@@ -40,7 +40,7 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 3. Test with:
    ```
-   Skill tool: "testing-skills-with-subagents"
+   Skill tool: "ring:testing-skills-with-subagents"
    ```
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
@@ -110,14 +110,6 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - qa-analyst
   - sre
 
-### Ring FinOps Team Plugin
-- `using-finops-team` → 2 FinOps agents for Brazilian compliance
-- Auto-loads when ring-finops-team plugin is enabled
-- Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents (invoke as `{agent-name}`):
-  - finops-analyzer (compliance analysis)
-  - finops-automation (template generation)
-
 ### Ring PM Team Plugin
 - `using-pm-team` → Pre-dev workflow skills (8 gates)
 - Auto-loads when ring-pm-team plugin is enabled
@@ -134,6 +126,14 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - docs-reviewer (quality review)
 - Commands: write-guide, write-api, review-docs
 
+### Ring FinOps Team Plugin
+- `using-finops-team` → 2 FinOps agents for Brazilian compliance
+- Auto-loads when ring-finops-team plugin is enabled
+- Located: `finops-team/skills/using-finops-team/SKILL.md`
+- Agents (invoke as `{agent-name}`):
+  - finops-analyzer (compliance analysis)
+  - finops-automation (template generation)
+
 ### Hook Configuration
 - Each plugin has: `{plugin}/hooks/hooks.json` + `{plugin}/hooks/session-start.sh`
 - SessionStart hook executes, outputs additionalContext with skill reference
@@ -149,7 +149,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 3. Dispatch via Task tool:
    ```
-   subagent_type="your-reviewer"
+   subagent_type="ring:your-reviewer"
    ```
 
 4. **MUST run in parallel** with other reviewers (single message, multiple Tasks)
@@ -196,18 +196,18 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 ### Instead of sequential (60 min)
 
 ```python
-review1 = Task("code-reviewer")           # 20 min
-review2 = Task("business-logic-reviewer") # 20 min
-review3 = Task("security-reviewer")       # 20 min
+review1 = Task("ring:code-reviewer")           # 20 min
+review2 = Task("ring:business-logic-reviewer") # 20 min
+review3 = Task("ring:security-reviewer")       # 20 min
 ```
 
 ### Run parallel (20 min total)
 
 ```python
 Task.parallel([
-    ("code-reviewer", prompt),
-    ("business-logic-reviewer", prompt),
-    ("security-reviewer", prompt)
+    ("ring:code-reviewer", prompt),
+    ("ring:business-logic-reviewer", prompt),
+    ("ring:security-reviewer", prompt)
 ])  # Single message, 3 tool calls
 ```
 

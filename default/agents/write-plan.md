@@ -1,5 +1,5 @@
 ---
-name: write-plan
+name: ring:write-plan
 version: 1.1.0
 description: "Implementation Planning: Creates comprehensive plans for engineers with zero codebase context. Plans are executable by developers unfamiliar with the codebase, with bite-sized tasks (2-5 min each) and code review checkpoints."
 type: planning
@@ -47,7 +47,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 **Orchestrator Requirement:**
 When calling this agent, you MUST specify the model parameter:
 ```
-Task(subagent_type="write-plan", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:write-plan", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Comprehensive planning with zero-context test requires Opus capabilities to anticipate edge cases invisible in requirements, decompose complex features into atomic bite-sized tasks (2-5 min each), write complete copy-paste-ready code (no placeholders), identify hidden dependencies, design proper test structures that reveal behavior, and create plans executable by skilled developers with zero codebase familiarity - planning depth that prevents hours of debugging during execution.

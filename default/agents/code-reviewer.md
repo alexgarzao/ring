@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: ring:code-reviewer
 version: 4.0.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with business-logic-reviewer, security-reviewer, test-reviewer, and nil-safety-reviewer for fast feedback."
 type: reviewer

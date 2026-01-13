@@ -1,5 +1,5 @@
 ---
-name: testing-anti-patterns
+name: ring:testing-anti-patterns
 description: |
   Test quality guard - prevents testing mock behavior, production pollution with
   test-only methods, and mocking without understanding dependencies.

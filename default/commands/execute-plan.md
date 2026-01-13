@@ -1,5 +1,5 @@
 ---
-name: execute-plan
+name: ring:execute-plan
 description: Execute plan in batches with review checkpoints
 argument-hint: "[plan-file-path]"
 ---
@@ -93,8 +93,8 @@ After all tasks complete:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Use first to create the plan file |
-| `/brainstorm` | Use before writing-plans if design unclear |
+| `/ring:write-plan` | Use first to create the plan file |
+| `/ring:brainstorm` | Use before writing-plans if design unclear |
 | `writing-plans` | Creates the plan files this command executes |
 | `requesting-code-review` | Called automatically after each batch |
 | `finishing-a-development-branch` | Called at completion |
@@ -128,7 +128,7 @@ If you're not prompted for execution mode, this is a violation of the skill prot
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: executing-plans
+Use Skill tool: ring:executing-plans
 ```
 
 The skill contains the complete workflow with:

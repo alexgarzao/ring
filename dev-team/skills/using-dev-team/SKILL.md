@@ -1,5 +1,5 @@
 ---
-name: using-dev-team
+name: ring:using-dev-team
 description: |
   7 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
   design, QA, and SRE. Dispatch when you need deep technology expertise.
@@ -115,7 +115,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "ring-dev-team:backend-engineer-golang"
+  subagent_type: "ring:backend-engineer-golang"
   model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
@@ -149,7 +149,7 @@ Use Task tool to dispatch appropriate specialist based on technology need.
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "{agent-name}"
+  subagent_type: "ring:{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
@@ -250,11 +250,11 @@ All workflows converge to the 6-gate development cycle:
 ## Integration with Other Plugins
 
 - **using-ring** (default) – ORCHESTRATOR principle for all agents
-- **using-finops-team** – Financial/regulatory agents
 - **using-pm-team** – Pre-dev workflow agents
+- **using-finops-team** – Financial/regulatory agents
 
 Dispatch based on your need:
 - General code review → default plugin agents
 - Specific domain expertise → ring-dev-team agents
-- Regulatory compliance → ring-finops-team agents
 - Feature planning → ring-pm-team agents
+- Regulatory compliance → ring-finops-team agents

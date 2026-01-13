@@ -69,7 +69,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="frontend-engineer", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:frontend-engineer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Standards compliance + React Server Components expertise requires Opus-level reasoning for complex component patterns, accessibility validation, and comprehensive frontend standards verification.

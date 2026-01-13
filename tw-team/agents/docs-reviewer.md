@@ -1,5 +1,5 @@
 ---
-name: docs-reviewer
+name: ring:docs-reviewer
 version: 0.2.0
 description: Documentation Quality Reviewer specialized in checking voice, tone, structure, completeness, and technical accuracy of documentation.
 type: reviewer
@@ -47,7 +47,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="docs-reviewer", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:docs-reviewer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:**

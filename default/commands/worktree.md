@@ -1,5 +1,5 @@
 ---
-name: worktree
+name: ring:worktree
 description: Create isolated git worktree with interactive setup
 argument-hint: "[branch-name]"
 ---
@@ -79,7 +79,7 @@ Follow the complete process defined in `skills/using-git-worktrees/SKILL.md`.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: using-git-worktrees
+Use Skill tool: ring:using-git-worktrees
 ```
 
 The skill contains the complete workflow with:

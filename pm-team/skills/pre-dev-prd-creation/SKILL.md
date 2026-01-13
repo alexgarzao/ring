@@ -1,5 +1,5 @@
 ---
-name: pre-dev-prd-creation
+name: ring:pre-dev-prd-creation
 description: |
   Gate 1: Business requirements document - defines WHAT/WHY before HOW.
   Creates PRD with problem definition, user stories, success metrics.

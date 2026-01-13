@@ -1,5 +1,5 @@
 ---
-name: dev-refactor
+name: ring:dev-refactor
 description: Analyze existing codebase against standards and execute refactoring through dev-cycle
 argument-hint: "[path]"
 ---
@@ -146,9 +146,9 @@ When analyzing services for instrumentation compliance, verify:
 
 | Command | Description |
 |---------|-------------|
-| `/dev-cycle` | Execute development cycle (used after analysis) |
-| `/pre-dev-feature` | Plan new features (use instead for greenfield) |
-| `/codereview` | Manual code review (dev-cycle includes this) |
+| `/ring:dev-cycle` | Execute development cycle (used after analysis) |
+| `/ring:pre-dev-feature` | Plan new features (use instead for greenfield) |
+| `/ring:codereview` | Manual code review (dev-cycle includes this) |
 
 ---
 
@@ -157,7 +157,7 @@ When analyzing services for instrumentation compliance, verify:
 **After PROJECT_RULES.md check passes, load the skill:**
 
 ```
-Use Skill tool: dev-refactor
+Use Skill tool: ring:dev-refactor
 ```
 
 The skill contains the complete analysis workflow with:

@@ -1,5 +1,5 @@
 ---
-name: release-guide
+name: ring:release-guide
 description: Generate an Ops Update Guide from git diff between two refs
 ---
 
@@ -30,7 +30,7 @@ The skill generates:
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `release-guide-info` skill | Full workflow with all options |
-| `/commit` | Use after release guide to commit changes |
+| `/ring:commit` | Use after release guide to commit changes |
 | `finishing-a-development-branch` | Complementary workflow for branch completion |
 
 ---
@@ -40,7 +40,7 @@ The skill generates:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: release-guide-info
+Use Skill tool: ring:release-guide-info
 ```
 
 The skill contains the complete workflow with:

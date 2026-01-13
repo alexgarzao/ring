@@ -1,5 +1,5 @@
 ---
-name: create-handoff
+name: ring:create-handoff
 description: Create a handoff document capturing current session state for future resumption
 argument-hint: "[session-name] [description]"
 ---
@@ -72,7 +72,7 @@ Handoff created: docs/handoffs/{session-name}/{timestamp}_{desc}.md
 The handoff has been automatically indexed and will be searchable.
 
 Resume in a new session with:
-/resume-handoff docs/handoffs/{session-name}/{timestamp}_{desc}.md
+/ring:resume-handoff docs/handoffs/{session-name}/{timestamp}_{desc}.md
 ```
 
 ## Example
@@ -86,7 +86,7 @@ Assistant: Creating handoff for context-management session...
 Handoff created: docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
 
 Resume in a new session with:
-/resume-handoff docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
+/ring:resume-handoff docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
 ```
 
 ---
@@ -96,7 +96,7 @@ Resume in a new session with:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: handoff-tracking
+Use Skill tool: ring:handoff-tracking
 ```
 
 The skill contains the complete workflow with:

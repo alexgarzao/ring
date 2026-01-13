@@ -1,5 +1,5 @@
 ---
-name: dev-status
+name: ring:dev-status
 description: Check the status of the current development cycle
 argument-hint: ""
 ---
@@ -63,9 +63,9 @@ Or resume an interrupted cycle:
 
 | Command | Description |
 |---------|-------------|
-| `/dev-cycle` | Start or resume cycle |
-| `/dev-cancel` | Cancel running cycle |
-| `/dev-report` | View feedback report |
+| `/ring:dev-cycle` | Start or resume cycle |
+| `/ring:dev-cancel` | Cancel running cycle |
+| `/ring:dev-report` | View feedback report |
 
 ---
 

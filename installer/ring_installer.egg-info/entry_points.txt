@@ -1,2 +1,0 @@
-[console_scripts]
-ring-installer = ring_installer.__main__:main

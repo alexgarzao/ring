@@ -1,5 +1,5 @@
 ---
-name: lint
+name: ring:lint
 description: Run lint checks and dispatch parallel agents to fix all issues
 argument-hint: "[path]"
 ---
@@ -75,7 +75,7 @@ Lints only the services directory.
 |---------------|--------------|
 | `linting-codebase` | Underlying skill with full logic |
 | `dispatching-parallel-agents` | Pattern used for parallel fixes |
-| `/codereview` | Use after lint passes for deeper review |
+| `/ring:codereview` | Use after lint passes for deeper review |
 
 ---
 
@@ -84,7 +84,7 @@ Lints only the services directory.
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: linting-codebase
+Use Skill tool: ring:linting-codebase
 ```
 
 The skill contains the complete workflow with:

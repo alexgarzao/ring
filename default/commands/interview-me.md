@@ -1,5 +1,5 @@
 ---
-name: interview-me
+name: ring:interview-me
 description: Proactive requirements gathering through structured user interview
 argument-hint: "[topic]"
 ---
@@ -92,8 +92,8 @@ You must explicitly confirm this before Claude proceeds.
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `doubt-triggered-questions` pattern | For single questions during work |
-| `/brainstorm` | Use AFTER interview to explore solutions |
-| `/write-plan` | Use AFTER interview to create implementation plan |
+| `/ring:brainstorm` | Use AFTER interview to explore solutions |
+| `/ring:write-plan` | Use AFTER interview to create implementation plan |
 
 ## Troubleshooting
 
@@ -116,7 +116,7 @@ Say "use your judgment" or "pick whatever fits best." Claude will make a choice 
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: interviewing-user
+Use Skill tool: ring:interviewing-user
 ```
 
 The skill contains the complete workflow with:
