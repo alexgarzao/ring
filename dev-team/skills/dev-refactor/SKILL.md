@@ -1084,16 +1084,13 @@ If user approved execution, you MUST:
 
 **Skipping this step = SKILL FAILURE.**
 
-### Example: --prompt Handoff Flow
+### Example: --prompt Handoff
 
 ```bash
-# User runs (only this):
 /dev-refactor --prompt "Prioritize observability gaps"
 ```
 
-dev-refactor automatically:
-1. Analyzes codebase and generates `docs/refactor/2026-01-13/tasks.md`
-2. Invokes dev-cycle with tasks file + forwards `--prompt "Prioritize observability gaps"`
+The `--prompt` value is automatically forwarded to dev-cycle after analysis completes.
 
 dev-cycle executes each REFACTOR-XXX task through 6-gate process.
 
