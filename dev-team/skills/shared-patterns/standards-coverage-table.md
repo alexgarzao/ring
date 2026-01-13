@@ -265,6 +265,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 18 | Directory Structure | `#directory-structure` | Lerian pattern |
 | 19 | Concurrency Patterns | `#concurrency-patterns` | Goroutines, channels, errgroup |
 | 20 | RabbitMQ Worker Pattern | `#rabbitmq-worker-pattern` | Async message processing |
+| 21 | Always-Valid Domain Model | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
 
 ---
 
@@ -285,12 +286,13 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 11 | Naming Conventions | `#naming-conventions` | Files, interfaces, types |
 | 12 | Directory Structure | `#directory-structure` | Lerian pattern |
 | 13 | RabbitMQ Worker Pattern | `#rabbitmq-worker-pattern` | Async message processing |
+| 14 | Always-Valid Domain Model | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
 
 ---
 
 ### frontend-bff-engineer-typescript → typescript.md
 
-**Same sections as backend-engineer-typescript (13 sections).** See above.
+**Same sections as backend-engineer-typescript (14 sections).** See above.
 
 ---
 
