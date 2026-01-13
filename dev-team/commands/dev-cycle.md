@@ -32,50 +32,11 @@ Execute the development cycle for tasks in a markdown file.
 
 ### `--prompt` Flag Behavior
 
-Provides custom context to agents. CANNOT override CRITICAL gates.
+Provides custom context to agents but CANNOT override CRITICAL gates: Gate 3 (Testing), Gate 4 (Review), Gate 5 (Validation). Max 500 chars; plain-text sanitized. Stored as `custom_prompt` in `docs/dev-cycle/current-cycle.json`, survives `--resume`, included in execution reports.
 
-**Constraints:**
-- **Length:** Recommended up to 300 words (~2000 chars); hard limit 500 chars (truncated with warning). For longer context, summarize key points or link to external docs.
-- **Sanitization:** Whitespace trimmed, control chars stripped (except newlines), unicode normalized. Does NOT cover semantic prompt-injection attempts.
+See `ring:dev-cycle` skill's "Custom Prompt Injection" section in SKILL.md for full validation rules, gate protection, conflict detection, and examples.
 
-**Persistence and Lifecycle:**
-- **Stored:** Saved as `custom_prompt` field in `docs/dev-cycle/current-cycle.json`
-- **Scope:** Applied to ALL gates and ALL agent dispatches (prepended to agent prompt)
-- **Resume:** Survives interrupts; editable by modifying state file before `--resume`
-- **Reports:** Included in execution reports under "Custom Context Used"
-
-**Gate Protection:**
-
-CRITICAL: The following gates enforce mandatory requirements that `--prompt` CANNOT override:
-
-| Gate | What CANNOT Be Overridden |
-|------|---------------------------|
-| Gate 3 (Testing) | MUST enforce 85% coverage threshold, TDD RED phase |
-| Gate 4 (Review) | MUST dispatch all 3 reviewers |
-| Gate 5 (Validation) | MUST require user approval |
-
-**Conflict Detection:**
-- **Method:** Keyword/pattern matching for "skip", "bypass", "ignore", "override", "don't run"
-- **Output:** Warning logged to console stderr and recorded in state file
-- **Format:** `⚠️ IGNORED: Prompt directive "[matched text]" cannot override [gate/requirement]`
-- **Behavior:** Warning logged, gate executes normally
-
-See `ring:dev-cycle` skill's "Custom Prompt Injection" section for full validation logic.
-
-**Example:**
-```bash
-/dev-cycle --prompt "Focus on error handling"
-```
-
-**View/modify persisted prompt:**
-```bash
-# View current custom_prompt
-jq '.custom_prompt' docs/dev-cycle/current-cycle.json
-
-# Edit before resume (optional)
-# Modify custom_prompt in current-cycle.json, then:
-/dev-cycle --resume
-```
+**Conflicting prompt:** Warning logged, gate executes normally.
 
 ## Examples
 
