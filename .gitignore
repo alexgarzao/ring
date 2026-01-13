@@ -24,3 +24,8 @@ dist/
 
 # Ring infrastructure runtime files
 .ring/
+
+# Code review tool binaries and coverage
+scripts/codereview/bin/
+scripts/codereview/coverage.*
+scripts/codereview/*-test
