@@ -189,11 +189,7 @@ Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 
 ### Custom Prompt Injection (--prompt flag)
 
-**Validation Rules (canonical source):**
-- **Max Length:** 500 characters (truncated with warning if exceeded)
-- **Sanitization:** Whitespace trimmed, control chars stripped (except newlines)
-- **Gate Protection:** Cannot override CRITICAL gates (Gate 3 Testing, Gate 4 Review, Gate 5 Validation)
-- **Conflicting prompts:** Logged as warning, gate executes normally
+**Validation:** See [shared-patterns/custom-prompt-validation.md](../shared-patterns/custom-prompt-validation.md) for max length (500 chars), sanitization rules, gate protection, and conflict handling.
 
 **If `custom_prompt` is set in state, inject it into ALL agent dispatches:**
 
