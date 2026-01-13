@@ -33,7 +33,7 @@ Execute the development cycle for tasks in a markdown file.
 ### `--prompt` Flag Behavior
 
 **Constraints:**
-- **Length:** Maximum 500 characters (longer prompts are truncated with warning)
+- **Length:** No limit (use reasonable length for context)
 - **Encoding:** Input is trimmed of leading/trailing whitespace; control characters (except newlines) are stripped
 - **Format:** Plain text only; HTML/JSON special characters are not escaped (agents receive raw text)
 

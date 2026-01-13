@@ -180,7 +180,6 @@ custom_prompt = ""
 ```
 
 **Validation (applied before storing):**
-- **Length:** If > 500 characters, truncate and log warning
 - **Sanitize:** Trim whitespace, strip control characters (except newlines)
 - **Store:** Set `custom_prompt` variable for use in:
   - Custom Prompt Injection (all agent dispatches)
@@ -1084,6 +1083,22 @@ If user approved execution, you MUST:
 5. Wait for dev-cycle to complete all 6 gates
 
 **Skipping this step = SKILL FAILURE.**
+
+### Example: --prompt Handoff Flow
+
+```
+User runs:
+  /dev-refactor --prompt "Prioritize observability gaps"
+
+Step 0.5 captures:
+  custom_prompt = "Prioritize observability gaps"
+
+Step 10 handoff to dev-cycle:
+  Skill tool: ring:dev-cycle
+  Context:
+    tasks-file: docs/refactor/2026-01-13/tasks.md
+    --prompt: "Prioritize observability gaps"
+```
 
 dev-cycle executes each REFACTOR-XXX task through 6-gate process.
 

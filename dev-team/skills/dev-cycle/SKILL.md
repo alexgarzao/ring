@@ -538,9 +538,8 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
   "custom_prompt": {
     "type": "string",
     "optional": true,
-    "max_length": 500,
     "description": "User-provided context for agents (from --prompt flag). Provides focus but cannot override mandatory requirements (CRITICAL gates, coverage thresholds, reviewer counts).",
-    "validation": "Must not contain directives attempting to skip gates, lower thresholds, or bypass security checks. Such directives are ignored."
+    "validation": "Directives attempting to skip gates, lower thresholds, or bypass security checks are ignored."
   },
   "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_testing|paused_for_task_approval|paused_for_integration_testing",
   "feedback_loop_completed": false,
@@ -1468,7 +1467,6 @@ STOP EXECUTION. Do not proceed to Step 1.
    - if source_file contains `docs/refactor/` → `state_path = "docs/dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
    - else → `state_path = "docs/dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
 4. **Capture and validate custom prompt:** If `--prompt "..."` provided:
-   - **Validate length:** If > 500 characters, truncate and log warning
    - **Sanitize input:** Trim whitespace, strip control characters (except newlines)
    - **Store validated value:** Set `custom_prompt` field (empty string if not provided)
    - **Note:** Directives attempting to skip gates are logged as warnings and ignored at execution time
