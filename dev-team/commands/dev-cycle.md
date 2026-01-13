@@ -42,7 +42,7 @@ CANNOT override CRITICAL gates. Provides custom context to agents.
 **Propagation:** Prepended to ALL agent prompts in a dedicated `**CUSTOM CONTEXT (from user):**` section. Applies to all gates and all agent types.
 
 **Constraints:**
-- **Length:** Max 500 chars (hard limit, truncated with warning). For longer context, summarize or link to external docs.
+- **Length:** Recommended 50-75 words (~300-400 chars); hard limit 500 chars (truncated with warning). For longer context, summarize or link to external docs.
 - **Sanitization:** Whitespace trimmed, control chars stripped (except newlines), unicode normalized. Does NOT prevent semantic prompt-injection attempts.
 
 **Gate Protection:**
@@ -53,9 +53,9 @@ CRITICAL: Gates 3, 4, 5 enforce mandatory requirements:
 - MUST require user approval (Gate 5 Validation)
 
 **Conflict Detection:**
-- **Method:** Keyword matching for "skip", "bypass", "ignore", "override", "don't run"
+- **Method:** Targeted pattern matching (e.g., `skip (gate|test|review)`, `bypass (threshold|check)`)
 - **Output:** Warning to stderr + recorded in state file
-- **Format:** `⚠️ IGNORED: Prompt directive "[text]" cannot override [requirement]`
+- **Format:** `⚠️ IGNORED: Prompt matched pattern "[name]" at "[text]" — cannot override [requirement]`
 
 See `ring:dev-cycle` skill's "Custom Prompt Injection" section for full validation logic.
 

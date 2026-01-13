@@ -6,7 +6,7 @@ Canonical validation rules for `--prompt` flags in dev-cycle and dev-refactor sk
 
 | Rule | Description |
 |------|-------------|
-| **Recommended Length** | Up to 300 words (~2000 chars) |
+| **Recommended Length** | Up to 50-75 words (~300-400 chars) |
 | **Hard Limit** | 500 characters (truncated with warning if exceeded) |
 | **Whitespace** | Leading/trailing whitespace trimmed |
 | **Control Characters** | Stripped (except newlines) |
@@ -27,10 +27,19 @@ CRITICAL: The following gates enforce mandatory requirements that `--prompt` CAN
 
 ## Conflict Detection
 
-- **Method:** Keyword/pattern matching for "skip", "bypass", "ignore", "override", "don't run"
-- **Output:** Warning logged to console stderr and recorded in state file
-- **Format:** `⚠️ IGNORED: Prompt directive "[matched text]" cannot override [gate/requirement]`
-- **Behavior:** Warning logged, gate executes normally
+**Method:** Targeted pattern matching (reduces false positives):
+
+| Pattern | Matches | Example |
+|---------|---------|---------|
+| `skip (gate\|test\|review\|validation\|coverage)` | Gate bypass attempts | "skip testing" |
+| `bypass (check\|requirement\|threshold\|gate)` | Requirement bypass | "bypass coverage check" |
+| `ignore (coverage\|reviewer\|threshold)` | Threshold override | "ignore 85% coverage" |
+| `(disable\|lower\|reduce) .*(threshold\|coverage)` | Threshold modification | "lower threshold to 70%" |
+| `don't run (test\|review\|validation)` | Gate skip | "don't run tests" |
+
+**Output:** Warning to stderr + recorded in state file
+**Format:** `⚠️ IGNORED: Prompt matched pattern "[pattern_name]" at "[matched_text]" — cannot override [gate/requirement]`
+**Behavior:** Warning logged, directive ignored, gate executes normally
 
 ## Injection Format
 

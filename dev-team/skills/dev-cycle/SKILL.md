@@ -211,7 +211,7 @@ Task tool:
 1. **Inject at TOP of prompt** - User context takes precedence
 2. **Preserve in state** - custom_prompt persists for resume
 3. **Include in execution report** - Document what context was used
-4. **Forward to sub-skills** - Sub-skills pass it to their agent dispatches
+4. **Forward via state** - Sub-skills read `custom_prompt` from state file and inject into their agent dispatches (no explicit parameter passing needed)
 
 **Example custom prompts and their effect:**
 
@@ -219,7 +219,7 @@ Task tool:
 |---------------|------------------|
 | "Focus on error handling first" | Agents prioritize error-related acceptance criteria |
 | "Use existing UserRepository interface" | Agents integrate with specified interface instead of creating new |
-| "Skip testing section - separate QA review" | ⚠️ Ignored — Gate 3 executes normally; testing not skipped (see Gate Protection in dev-cycle command) |
+| "Deprioritize UI polish" | Gate 3 still enforces 85% coverage, but agents deprioritize non-functional UI tweaks |
 | "Prioritize observability gaps" | SRE gate gets more attention, implementation focuses on instrumentation |
 
 ### Anti-Rationalization for Skipping Sub-Skills

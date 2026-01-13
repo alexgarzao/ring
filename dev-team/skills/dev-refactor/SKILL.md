@@ -193,7 +193,7 @@ See [shared-patterns/custom-prompt-validation.md](../shared-patterns/custom-prom
 - Custom Prompt Injection (all agent dispatches)
 - Step 10 handoff to dev-cycle (pass `--prompt` flag with validated value if non-empty)
 
-**Note:** Custom prompts provide focus context but cannot skip mandatory analysis dimensions. All five dimensions (Architecture, Code Quality, Instrumentation, Testing, DevOps) are always analyzed.
+**Note:** Agents MUST NOT skip mandatory analysis dimensions. All five dimensions (Architecture, Code Quality, Instrumentation, Testing, DevOps) are ALWAYS analyzed regardless of custom prompt content.
 
 **TodoWrite:** Mark "Capture custom prompt" as `completed`
 
