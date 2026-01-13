@@ -58,11 +58,16 @@ The `--prompt` flag provides context to agents but **CANNOT override CRITICAL ga
 | "Accept 70% coverage" | ⚠️ Ignored - 85% threshold enforced |
 | "Focus on error handling" | ✅ Applied - Agents prioritize error-related work |
 
-**Example - Conflicting prompt:**
+**Example:**
 ```bash
-/dev-cycle tasks.md --prompt "Skip testing, we tested manually"
+/dev-cycle docs/tasks/sprint-001.md --prompt "Focus on error handling"
 ```
-**Result:** Warning logged: "Custom prompt cannot override Gate 3 (Testing). Gate will execute normally." Tests run as usual.
+
+**Example - Conflicting prompt (ignored):**
+```bash
+/dev-cycle tasks.md --prompt "Skip testing"
+```
+Result: Warning logged, Gate 3 executes normally.
 
 ## Examples
 
