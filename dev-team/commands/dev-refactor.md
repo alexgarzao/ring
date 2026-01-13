@@ -61,7 +61,6 @@ Then re-run `/dev-refactor`.
 | `--analyze-only` | Generate report without executing | `--analyze-only` |
 | `--critical-only` | Limit execution/output to Critical and High (analysis still tracks all) | `--critical-only` |
 | `--dry-run` | Show what would be analyzed | `--dry-run` |
-| `--prompt "..."` | Custom context for agents (max 500 chars, trimmed, control chars stripped; see dev-cycle.md) | `--prompt "Prioritize observability gaps"` |
 
 ## Examples
 
@@ -80,9 +79,6 @@ Then re-run `/dev-refactor`.
 
 # Use custom standards
 /dev-refactor --standards docs/team-standards.md
-
-# Analyze with custom context for agents (note: all dimensions still analyzed)
-/dev-refactor --prompt "Prioritize observability gaps"
 ```
 
 ## Workflow
@@ -106,7 +102,6 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 **Analysis vs Execution:**
 - **Analysis (always):** All five dimensions analyzed, all severities (Critical, High, Medium, Low) tracked
 - **Execution (filterable):** `--critical-only` limits execution/prioritization to Critical and High severity issues
-- **Context (--prompt):** Adds focus context but cannot skip dimensions or change severity tracking
 
 Example: `/dev-refactor --critical-only` analyzes all issues but only executes fixes for Critical and High.
 
@@ -191,7 +186,6 @@ Pass the following context to the skill:
 | `--analyze-only` | If provided, skip dev-cycle execution |
 | `--critical-only` | If provided, filter to Critical/High only |
 | `--dry-run` | If provided, show what would be analyzed |
-| `--prompt` | If provided, custom context passed to all agents and forwarded to dev-cycle |
 
 ## User Approval (MANDATORY)
 

@@ -62,6 +62,14 @@ examples:
       1. Load tasks and store custom_prompt in state
       2. All agent dispatches include custom prompt as context
       3. Custom context visible in execution report
+  - name: "Prompt-only mode (no tasks file)"
+    invocation: "/dev-cycle --prompt \"Implement multi-tenant support with organization_id in all entities\""
+    expected_flow: |
+      1. Detect prompt-only mode (no task file provided)
+      2. Dispatch codebase-explorer to analyze project
+      3. Generate tasks internally from prompt + codebase analysis
+      4. Present generated tasks for user confirmation
+      5. Execute Gate 0-5 for each generated task
 ---
 
 # Development Cycle Orchestrator
@@ -1459,6 +1467,54 @@ STOP EXECUTION. Do not proceed to Step 1.
 ---
 
 ## Step 1: Initialize or Resume
+
+### Prompt-Only Mode (no task file)
+
+**Input:** `--prompt "..."` without a task file path
+
+When `--prompt` is provided without a tasks file, dev-cycle generates tasks internally:
+
+1. **Detect prompt-only mode:** No task file argument AND `--prompt` provided
+2. **Analyze prompt:** Extract intent, scope, and requirements from the prompt
+3. **Explore codebase:** Dispatch `codebase-explorer` to understand project structure
+4. **Generate tasks:** Create task structure internally based on prompt + codebase analysis
+
+```yaml
+Task tool:
+  subagent_type: "ring:codebase-explorer"
+  model: "opus"
+  prompt: |
+    Analyze this codebase to support the following implementation request:
+    
+    **User Request:** {prompt}
+    
+    Provide:
+    1. Relevant files and patterns for this request
+    2. Suggested task breakdown (T-001, T-002, etc.)
+    3. Acceptance criteria for each task
+    4. Files that will need modification
+    
+    Output as structured task list compatible with dev-cycle.
+```
+
+5. **Present generated tasks:** Show user the auto-generated task breakdown
+6. **Confirm with user:** "I generated X tasks from your prompt. Proceed?"
+7. **Set state:**
+   - `state_path = "docs/dev-cycle/current-cycle.json"`
+   - `cycle_type = "prompt"`
+   - `source_prompt = "[user's prompt]"`
+   - Generate `tasks` array from codebase-explorer output
+8. **Continue to execution mode selection** (Step 1 substeps 7-9)
+
+**Anti-Rationalization for Prompt-Only Mode:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Skip codebase exploration, I understand the prompt" | Prompt understanding ≠ codebase understanding. Explorer provides context. | **Always run codebase-explorer** |
+| "Generate minimal tasks to go faster" | Minimal tasks = missed requirements. Comprehensive breakdown prevents rework. | **Generate complete task breakdown** |
+| "User knows what they want, skip confirmation" | User intent ≠ generated tasks. Confirmation prevents wrong implementation. | **Always confirm generated tasks** |
+
+---
 
 ### New Cycle (with task file path)
 
