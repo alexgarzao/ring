@@ -1087,12 +1087,13 @@ If user approved execution, you MUST:
 ### Example: --prompt Handoff Flow
 
 ```bash
-# User runs:
+# User runs (only this):
 /dev-refactor --prompt "Prioritize observability gaps"
-
-# dev-refactor completes analysis, then invokes dev-cycle with:
-/dev-cycle docs/refactor/2026-01-13/tasks.md --prompt "Prioritize observability gaps"
 ```
+
+dev-refactor automatically:
+1. Analyzes codebase and generates `docs/refactor/2026-01-13/tasks.md`
+2. Invokes dev-cycle with tasks file + forwards `--prompt "Prioritize observability gaps"`
 
 dev-cycle executes each REFACTOR-XXX task through 6-gate process.
 
