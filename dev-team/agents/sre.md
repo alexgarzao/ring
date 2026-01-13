@@ -382,7 +382,25 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | PROJECT_RULES.md | Found/Not Found | Path: docs/PROJECT_RULES.md |
 | Ring Standards (sre.md) | Loaded | 6 sections fetched |
 | Ring Standards (golang.md) | Loaded | For FORBIDDEN patterns |
+
+### Precedence Decisions
+
+*Example rows — illustrative only; agents populate dynamically based on actual PROJECT_RULES.md content:*
+
+| Topic | Ring Says | PROJECT_RULES Says | Decision |
+|-------|-----------|-------------------|----------|
+| Minimum log level | WARN | ERROR | PROJECT_RULES (override) |
+| Structured JSON logging | Required with trace_id | (silent) | Ring (no override) |
+
+*After rendering: if no row has Decision = "PROJECT_RULES (override)", append "No precedence conflicts. Following Ring Standards."*
 ```
+
+<gate>
+**Precedence Rules:** See [standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for Ring vs PROJECT_RULES precedence semantics.
+
+STOP and ask user when neither Ring nor PROJECT_RULES covers the topic.
+</gate>
+
 
 **If you cannot produce this section → STOP. You have not loaded the standards.**
 

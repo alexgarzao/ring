@@ -28,6 +28,42 @@ Execute the development cycle for tasks in a markdown file.
 | `--skip-gates` | Skip specific gates | `--skip-gates devops,review` |
 | `--dry-run` | Validate tasks without executing | `--dry-run` |
 | `--resume` | Resume interrupted cycle | `--resume` |
+| `--prompt "..."` | Custom context for agents | `--prompt "Focus on error handling"` |
+
+### `--prompt` Flag Behavior
+
+CANNOT override CRITICAL gates. Provides custom context to agents.
+
+**Persistence:**
+- **Stored:** `custom_prompt` field in `docs/dev-cycle/current-cycle.json`
+- **Resume:** Survives interrupts; editable by modifying state file before `--resume`
+- **Reports:** Included in execution reports under "Custom Context Used"
+
+**Propagation:** Prepended to ALL agent prompts in a dedicated `**CUSTOM CONTEXT (from user):**` section. Applies to all gates and all agent types.
+
+**Constraints:**
+- **Length:** Recommended 50-75 words (~300-400 chars); hard limit 500 chars (truncated with warning). For longer context, summarize or link to external docs.
+- **Sanitization:** Whitespace trimmed, control chars stripped (except newlines), unicode normalized. Does NOT prevent semantic prompt-injection attempts.
+
+**Gate Protection:**
+
+CRITICAL: Gates 3, 4, 5 enforce mandatory requirements:
+- MUST enforce 85% coverage (Gate 3 Testing)
+- MUST dispatch all 3 reviewers (Gate 4 Review)
+- MUST require user approval (Gate 5 Validation)
+
+**Conflict Detection:**
+- **Method:** Targeted pattern matching (e.g., `skip (gate|test|review)`, `bypass (threshold|check)`)
+- **Output:** Warning to stderr + recorded in state file
+- **Format:** `⚠️ IGNORED: Prompt matched pattern "[name]" at "[text]" — cannot override [requirement]`
+
+See `ring:dev-cycle` skill's "Custom Prompt Injection" section for full validation logic.
+
+**View/modify persisted prompt:**
+```bash
+jq '.custom_prompt' docs/dev-cycle/current-cycle.json  # View
+# Edit state file, then: /dev-cycle --resume
+```
 
 ## Examples
 
@@ -46,6 +82,9 @@ Execute the development cycle for tasks in a markdown file.
 
 # Resume interrupted cycle
 /dev-cycle --resume
+
+# Execute with custom context for agents
+/dev-cycle docs/tasks/sprint-001.md --prompt "Prioritize error handling. Use existing UserRepository interface."
 ```
 
 ## Prerequisites
@@ -111,6 +150,7 @@ Pass the following context to the skill:
 | `--skip-gates` | If provided, list of gates to skip |
 | `--dry-run` | If provided, validate only |
 | `--resume` | If provided, resume from existing state file (dev-cycle or dev-refactor) |
+| `--prompt` | If provided, custom context passed to all agents |
 
 ## Step 1: ASK EXECUTION MODE (MANDATORY)
 

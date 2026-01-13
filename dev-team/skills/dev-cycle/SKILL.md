@@ -56,6 +56,12 @@ examples:
       1. Execute Gate 0, pause for approval
       2. User approves, execute Gate 1, pause
       3. Continue until all gates complete
+  - name: "Execute with custom context for agents"
+    invocation: "/dev-cycle tasks.md --prompt \"Focus on error handling. Use existing UserRepository.\""
+    expected_flow: |
+      1. Load tasks and store custom_prompt in state
+      2. All agent dispatches include custom prompt as context
+      3. Custom context visible in execution report
 ---
 
 # Development Cycle Orchestrator
@@ -180,6 +186,41 @@ Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 4. Validate agent output          ← Per sub-skill validation rules
 5. Update state                   ← Record results
 ```
+
+### Custom Prompt Injection (--prompt flag)
+
+**Validation:** See [shared-patterns/custom-prompt-validation.md](../shared-patterns/custom-prompt-validation.md) for max length (500 chars), sanitization rules, gate protection, and conflict handling.
+
+**If `custom_prompt` is set in state, inject it into ALL agent dispatches:**
+
+```yaml
+Task tool:
+  subagent_type: "ring:backend-engineer-golang"
+  model: "opus"
+  prompt: |
+    **CUSTOM CONTEXT (from user):**
+    {state.custom_prompt}
+    
+    ---
+    
+    **Standard Instructions:**
+    [... rest of agent prompt ...]
+```
+
+**Rules for custom prompt:**
+1. **Inject at TOP of prompt** - User context takes precedence
+2. **Preserve in state** - custom_prompt persists for resume
+3. **Include in execution report** - Document what context was used
+4. **Forward via state** - Sub-skills read `custom_prompt` from state file and inject into their agent dispatches (no explicit parameter passing needed)
+
+**Example custom prompts and their effect:**
+
+| Custom Prompt | Effect on Agents |
+|---------------|------------------|
+| "Focus on error handling first" | Agents prioritize error-related acceptance criteria |
+| "Use existing UserRepository interface" | Agents integrate with specified interface instead of creating new |
+| "Deprioritize UI polish" | Gate 3 still enforces 85% coverage, but agents deprioritize non-functional UI tweaks |
+| "Prioritize observability gaps" | SRE gate gets more attention, implementation focuses on instrumentation |
 
 ### Anti-Rationalization for Skipping Sub-Skills
 
@@ -496,6 +537,13 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
   "cycle_type": "feature | refactor",
   "execution_mode": "manual_per_subtask|manual_per_task|automatic",
   "commit_timing": "per_subtask|per_task|at_end",
+  "custom_prompt": {
+    "type": "string",
+    "optional": true,
+    "max_length": 500,
+    "description": "User-provided context for agents (from --prompt flag). Max 500 characters. Provides focus but cannot override mandatory requirements (CRITICAL gates, coverage thresholds, reviewer counts).",
+    "validation": "Max 500 chars (truncated with warning if exceeded); whitespace trimmed; control chars stripped (except newlines). Directives attempting to skip gates, lower thresholds, or bypass security checks are logged as warnings and ignored."
+  },
   "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_testing|paused_for_task_approval|paused_for_integration_testing",
   "feedback_loop_completed": false,
   "current_task_index": 0,
@@ -1414,22 +1462,26 @@ STOP EXECUTION. Do not proceed to Step 1.
 
 ### New Cycle (with task file path)
 
-**Input:** `path/to/tasks.md` or `path/to/pre-dev/{feature}/`
+**Input:** `path/to/tasks.md` or `path/to/pre-dev/{feature}/` with optional `--prompt "..."`
 
 1. **Detect input:** File → Load directly | Directory → Load tasks.md + discover subtasks/
 2. **Build order:** Read tasks, check for subtasks (ST-XXX-01, 02...) or TDD autonomous mode
 3. **Determine state path:**
    - if source_file contains `docs/refactor/` → `state_path = "docs/dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
    - else → `state_path = "docs/dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
-4. **Initialize state:** Generate cycle_id, create state file at `{state_path}`, set indices to 0
-5. **Display plan:** "Loaded X tasks with Y subtasks"
-6. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
+4. **Capture and validate custom prompt:** If `--prompt "..."` provided:
+   - **Sanitize input:** Trim whitespace, strip control characters (except newlines)
+   - **Store validated value:** Set `custom_prompt` field (empty string if not provided)
+   - **Note:** Directives attempting to skip gates are logged as warnings and ignored at execution time
+5. **Initialize state:** Generate cycle_id, create state file at `{state_path}`, set indices to 0
+6. **Display plan:** "Loaded X tasks with Y subtasks"
+7. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
    - Options: (a) Manual per subtask (b) Manual per task (c) Automatic
    - **Do not skip:** User hints ≠ mode selection. Only explicit a/b/c is valid.
-7. **ASK COMMIT TIMING (MANDATORY - AskUserQuestion):**
+8. **ASK COMMIT TIMING (MANDATORY - AskUserQuestion):**
    - Options: (a) Per subtask (b) Per task (c) At the end
    - Store in `commit_timing` field in state
-8. **Start:** Display mode + commit timing, proceed to Gate 0
+9. **Start:** Display mode + commit timing, proceed to Gate 0
 
 ### Resume Cycle (--resume flag)
 

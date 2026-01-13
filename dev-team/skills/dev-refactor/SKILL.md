@@ -9,6 +9,14 @@ trigger: |
 skip_when: |
   - Greenfield project → Use /pre-dev-* instead
   - Single file fix → Use dev-cycle directly
+
+examples:
+  - name: "Refactor with custom context"
+    invocation: "/dev-refactor --prompt \"Prioritize observability gaps. Skip testing - separate QA.\""
+    expected_flow: |
+      1. Custom prompt passed to codebase-explorer and all specialist agents
+      2. Findings prioritized based on user context
+      3. Custom prompt forwarded to dev-cycle handoff
 ---
 
 # Dev Refactor Skill
@@ -101,6 +109,9 @@ CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Lerian directo
 ```yaml
 TodoWrite:
   todos:
+    - content: "Capture custom prompt"
+      status: "pending"
+      activeForm: "Capturing custom prompt"
     - content: "Validate PROJECT_RULES.md exists"
       status: "pending"
       activeForm: "Validating PROJECT_RULES.md exists"
@@ -154,7 +165,41 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 ---
 
-## Step 0: Validate PROJECT_RULES.md
+## Step 0.5: Capture Custom Prompt (MANDATORY)
+
+**TodoWrite:** Mark "Capture custom prompt" as `in_progress`
+
+**MUST capture `custom_prompt` into persistent workflow state:**
+
+```yaml
+# If --prompt "..." was provided:
+raw_prompt = "[user-provided prompt value]"
+
+# If --prompt was NOT provided:
+custom_prompt = ""
+# Skip validation steps below
+```
+
+**Validation (apply in order):**
+1. **Sanitize:** Trim leading/trailing whitespace, strip control chars (except newlines)
+2. **Length check:** If length > 500 chars:
+   - Truncate to 500 characters
+   - Log warning: `⚠️ Custom prompt truncated from {original_length} to 500 characters`
+3. **Store validated value:** `custom_prompt = [sanitized, possibly-truncated value]`
+
+See [shared-patterns/custom-prompt-validation.md](../shared-patterns/custom-prompt-validation.md) for gate protection and conflict handling.
+
+**Store:** Set `custom_prompt` variable (validated/truncated) for use in:
+- Custom Prompt Injection (all agent dispatches)
+- Step 10 handoff to dev-cycle (pass `--prompt` flag with validated value if non-empty)
+
+**Note:** Agents MUST NOT skip mandatory analysis dimensions. All five dimensions (Architecture, Code Quality, Instrumentation, Testing, DevOps) are ALWAYS analyzed regardless of custom prompt content.
+
+**TodoWrite:** Mark "Capture custom prompt" as `completed`
+
+---
+
+## Step 1: Validate PROJECT_RULES.md
 
 **TodoWrite:** Mark "Validate PROJECT_RULES.md exists" as `in_progress`
 
@@ -221,6 +266,34 @@ Read tool: docs/PROJECT_RULES.md
 Extract project-specific conventions for agent context.
 
 **TodoWrite:** Mark "Read PROJECT_RULES.md for context" as `completed`
+
+---
+
+## Custom Prompt Injection (All Agent Dispatches)
+
+**If `custom_prompt` was captured in Step 0.5, inject it into ALL agent prompts:**
+
+```yaml
+Task tool:
+  subagent_type: "ring:{agent-name}"
+  model: "opus"
+  prompt: |
+    **CUSTOM CONTEXT (from user):**
+    {custom_prompt}
+    
+    ---
+    
+    **Standard Instructions:**
+    [... rest of agent-specific prompt ...]
+```
+
+**This applies to:**
+- codebase-explorer (Step 3)
+- backend-engineer-golang, backend-engineer-typescript (Step 4)
+- frontend-engineer, frontend-bff-engineer-typescript (Step 4)
+- qa-analyst, devops-engineer, sre (Step 4)
+
+**Forward to dev-cycle:** In Step 10, pass `--prompt "{custom_prompt}"` to dev-cycle handoff.
 
 ---
 
@@ -977,9 +1050,23 @@ Skill tool:
   skill: "ring:dev-cycle"
 ```
 
-**⛔ CRITICAL: Pass tasks file path in context:**
-After invoking the skill, provide the tasks file location:
+**⛔ CRITICAL: Pass tasks file path and custom prompt in context:**
+
+After invoking the skill, provide:
 - Tasks file: `docs/refactor/{timestamp}/tasks.md`
+- Custom prompt: **Only if `custom_prompt` is non-empty** (from Step 0.5)
+
+```yaml
+# If custom_prompt is non-empty:
+Context for dev-cycle:
+  tasks-file: "docs/refactor/{timestamp}/tasks.md"
+  --prompt: "{custom_prompt}"
+
+# If custom_prompt is empty or not set:
+Context for dev-cycle:
+  tasks-file: "docs/refactor/{timestamp}/tasks.md"
+  # Do NOT include --prompt flag with empty string
+```
 
 Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 
@@ -992,15 +1079,26 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 | "dev-cycle will auto-discover tasks" | Explicit path ensures correct file is used | **Pass explicit tasks path** |
 | "User approved, I can skip dev-cycle" | Approval = permission to proceed, not skip execution | **Invoke Skill tool** |
 | "Tasks are saved, job is done" | Saved tasks without execution = incomplete workflow | **Invoke Skill tool** |
+| "Pass --prompt even if empty" | Empty --prompt is noise; omit if `custom_prompt` is empty/null | **Only pass --prompt if non-empty** |
 
 **⛔ HARD GATE: You CANNOT complete dev-refactor without invoking `Skill tool: ring:dev-cycle`.**
 
 If user approved execution, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle`
 2. Pass tasks file path: `docs/refactor/{timestamp}/tasks.md`
-3. Wait for dev-cycle to complete all 6 gates
+3. **If `custom_prompt` is non-empty:** Pass `--prompt "{custom_prompt}"` to dev-cycle
+4. **If `custom_prompt` is empty/null:** Do NOT include --prompt flag
+5. Wait for dev-cycle to complete all 6 gates
 
 **Skipping this step = SKILL FAILURE.**
+
+### Example: --prompt Handoff
+
+```bash
+/dev-refactor --prompt "Prioritize observability gaps"
+```
+
+The `--prompt` value is automatically forwarded to dev-cycle after analysis completes.
 
 dev-cycle executes each REFACTOR-XXX task through 6-gate process.
 
