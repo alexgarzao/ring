@@ -18,7 +18,7 @@ Execute the development cycle for tasks in a markdown file.
 |----------|----------|-------------|
 | `tasks-file` | No* | Path to markdown file with tasks (e.g., `docs/tasks/sprint-001.md`) |
 
-*Required unless using `--prompt` in prompt-only mode or `--resume`.
+*Required unless using `--prompt` (without tasks file) or `--resume`.
 
 ## Options
 
