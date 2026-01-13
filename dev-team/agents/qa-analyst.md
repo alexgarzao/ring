@@ -438,7 +438,20 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 |-------|--------|---------|
 | PROJECT_RULES.md | Found/Not Found | Path: docs/PROJECT_RULES.md |
 | Ring Standards | Loaded | golang.md or typescript.md (based on project) |
+
+### Precedence Decisions
+
+| Topic | Ring Says | PROJECT_RULES Says | Decision |
+|-------|-----------|-------------------|----------|
+| [topic where conflict exists] | [Ring value] | [PROJECT_RULES value] | PROJECT_RULES (override) |
+
+*If no conflicts: "No precedence conflicts. Following Ring Standards."*
 ```
+
+**Precedence Rules (MUST follow):**
+- Ring says X, PROJECT_RULES silent → **Follow Ring**
+- Ring says X, PROJECT_RULES says Y → **Follow PROJECT_RULES** (project can override)
+- Neither covers topic → **STOP and ask user**
 
 **If you cannot produce this section → STOP. You have not loaded the standards.**
 

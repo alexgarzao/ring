@@ -284,7 +284,21 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 |-------|--------|---------|
 | PROJECT_RULES.md | Found/Not Found | Path: docs/PROJECT_RULES.md |
 | Ring Standards (typescript.md) | Loaded | 14 sections fetched |
+
+### Precedence Decisions
+
+| Topic | Ring Says | PROJECT_RULES Says | Decision |
+|-------|-----------|-------------------|----------|
+| [topic where conflict exists] | [Ring value] | [PROJECT_RULES value] | PROJECT_RULES (override) |
+| [topic only in Ring] | [Ring value] | (silent) | Ring |
+
+*If no conflicts: "No precedence conflicts. Following Ring Standards."*
 ```
+
+**Precedence Rules (MUST follow):**
+- Ring says X, PROJECT_RULES silent → **Follow Ring**
+- Ring says X, PROJECT_RULES says Y → **Follow PROJECT_RULES** (project can override)
+- Neither covers topic → **STOP and ask user**
 
 **If you cannot produce this section → STOP. You have not loaded the standards.**
 
@@ -293,6 +307,8 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | "I'll load standards implicitly" | No evidence = no compliance | **Output the verification table** |
 | "Standards Verification is overhead" | 3 lines prove compliance. Worth it. | **Always output first** |
 | "I already know the standards" | Prove it with the table | **Fetch and show evidence** |
+| "No need to show precedence" | Conflicts must be visible for audit | **Always show Precedence Decisions** |
+| "I'll just follow Ring" | PROJECT_RULES can override Ring | **Check PROJECT_RULES first** |
 
 ## FORBIDDEN Patterns Check (MANDATORY - BEFORE any CODE)
 
