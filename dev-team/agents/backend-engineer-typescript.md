@@ -347,6 +347,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - Testing Patterns
 - Type Safety Requirements
 - RabbitMQ Workers (if applicable)
+- Always-Valid Domain Model (factory validation, invariant protection)
 
 **If `**MODE: ANALYSIS only**` is not detected:** Standards Compliance output is optional.
 
