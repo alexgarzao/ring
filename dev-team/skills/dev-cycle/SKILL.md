@@ -541,8 +541,8 @@ State is persisted to `{state_path}` (either `docs/dev-cycle/current-cycle.json`
     "type": "string",
     "optional": true,
     "max_length": 500,
-    "description": "User-provided context for agents (from --prompt flag). Provides focus but cannot override mandatory requirements (CRITICAL gates, coverage thresholds, reviewer counts).",
-    "validation": "Max 500 chars; whitespace trimmed; control chars stripped (except newlines). Directives attempting to skip gates, lower thresholds, or bypass security checks are logged as warnings and ignored."
+    "description": "User-provided context for agents (from --prompt flag). Max 500 characters. Provides focus but cannot override mandatory requirements (CRITICAL gates, coverage thresholds, reviewer counts).",
+    "validation": "Max 500 chars (truncated with warning if exceeded); whitespace trimmed; control chars stripped (except newlines). Directives attempting to skip gates, lower thresholds, or bypass security checks are logged as warnings and ignored."
   },
   "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_testing|paused_for_task_approval|paused_for_integration_testing",
   "feedback_loop_completed": false,
