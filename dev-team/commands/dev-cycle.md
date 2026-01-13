@@ -30,6 +30,40 @@ Execute the development cycle for tasks in a markdown file.
 | `--resume` | Resume interrupted cycle | `--resume` |
 | `--prompt "..."` | Custom context for agents | `--prompt "Focus on error handling"` |
 
+### `--prompt` Flag Behavior
+
+**Constraints:**
+- **Length:** Maximum 500 characters (longer prompts are truncated with warning)
+- **Encoding:** Input is trimmed of leading/trailing whitespace; control characters (except newlines) are stripped
+- **Format:** Plain text only; HTML/JSON special characters are not escaped (agents receive raw text)
+
+**CRITICAL Gates Protection:**
+
+The `--prompt` flag provides context to agents but **CANNOT override CRITICAL gates**:
+
+| Protected Gate | What Cannot Be Overridden |
+|----------------|---------------------------|
+| Gate 3 (Testing) | 85% coverage threshold, TDD RED phase requirement |
+| Gate 4 (Review) | All 3 reviewers must pass |
+| Gate 5 (Validation) | User approval requirement |
+| Security checks | No secrets in code, no hardcoded credentials |
+| Deployment blocks | Cannot bypass blocker conditions |
+
+**Conflicting Prompt Handling:**
+
+| Prompt Instruction | System Response |
+|--------------------|-----------------|
+| "Skip testing" | ⚠️ Ignored - Gate 3 executes normally |
+| "Don't run code review" | ⚠️ Ignored - Gate 4 dispatches all 3 reviewers |
+| "Accept 70% coverage" | ⚠️ Ignored - 85% threshold enforced |
+| "Focus on error handling" | ✅ Applied - Agents prioritize error-related work |
+
+**Example - Conflicting prompt:**
+```bash
+/dev-cycle tasks.md --prompt "Skip testing, we tested manually"
+```
+**Result:** Warning logged: "Custom prompt cannot override Gate 3 (Testing). Gate will execute normally." Tests run as usual.
+
 ## Examples
 
 ```bash

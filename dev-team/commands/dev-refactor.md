@@ -81,8 +81,8 @@ Then re-run `/dev-refactor`.
 # Use custom standards
 /dev-refactor --standards docs/team-standards.md
 
-# Analyze with custom context for agents
-/dev-refactor --prompt "Prioritize observability gaps. Skip testing section - we have separate QA review."
+# Analyze with custom context for agents (note: all dimensions still analyzed)
+/dev-refactor --prompt "Prioritize observability gaps"
 ```
 
 ## Workflow
@@ -93,6 +93,8 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 
 ## Analysis Dimensions
 
+**⛔ All five dimensions are MANDATORY and always analyzed. Custom prompts provide focus context but cannot skip any dimension.**
+
 | Dimension | What's Checked | Standards Reference |
 |-----------|----------------|---------------------|
 | **Architecture** | DDD patterns, layer separation, dependency direction, directory structure | `golang.md` § Architecture |
@@ -100,6 +102,8 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 | **Instrumentation** | Service method tracing, span naming, error classification, context propagation | `golang.md` § Distributed Tracing |
 | **Testing** | Coverage percentage, test patterns, naming, missing tests | `golang.md` § Testing |
 | **DevOps** | Dockerfile, docker-compose, env management, Helm charts | `golang.md` § DevOps |
+
+**Note:** The `--prompt` flag adds focus context (e.g., "Prioritize observability gaps") but cannot skip mandatory analysis dimensions. All five dimensions are always analyzed, and all severities (Critical, High, Medium, Low) are MANDATORY to track and fix.
 
 ### Instrumentation Checklist (Quick Reference)
 
