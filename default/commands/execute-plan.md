@@ -93,8 +93,8 @@ After all tasks complete:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Use first to create the plan file |
-| `/brainstorm` | Use before writing-plans if design unclear |
+| `/ring:write-plan` | Use first to create the plan file |
+| `/ring:brainstorm` | Use before writing-plans if design unclear |
 | `writing-plans` | Creates the plan files this command executes |
 | `requesting-code-review` | Called automatically after each batch |
 | `finishing-a-development-branch` | Called at completion |

@@ -80,8 +80,8 @@ The brainstorming session follows these phases:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/write-plan` | Use after brainstorming when design is complete |
-| `/execute-plan` | Use after planning to implement the design |
+| `/ring:write-plan` | Use after brainstorming when design is complete |
+| `/ring:execute-plan` | Use after planning to implement the design |
 | `writing-plans` | Underlying skill for creating implementation plans |
 
 ## Troubleshooting

@@ -255,9 +255,9 @@ Recommendations based on your goal (implementation, debugging, or learning)
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/brainstorm` | Use explore-codebase in Phase 1 for context |
-| `/write-plan` | Use explore-codebase before planning implementation |
-| `/execute-plan` | Use if plan execution reveals gaps in understanding |
+| `/ring:brainstorm` | Use explore-codebase in Phase 1 for context |
+| `/ring:write-plan` | Use explore-codebase before planning implementation |
+| `/ring:execute-plan` | Use if plan execution reveals gaps in understanding |
 | `exploring-codebase` | Underlying skill with full logic and prompts |
 | `dispatching-parallel-agents` | Pattern used twice (discovery + deep dive) |
 | `systematic-debugging` | Use explore-codebase before debugging |

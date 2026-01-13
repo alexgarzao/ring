@@ -28,7 +28,7 @@ Ring solves this by:
 - `security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
 - `write-plan` - Implementation planning agent
 - `codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
-- Use `/codereview` command to orchestrate parallel review workflow
+- Use `/ring:codereview` command to orchestrate parallel review workflow
 
 **Developer Agents (dev-team plugin):**
 - `backend-engineer-golang` - Go backend specialist for financial systems

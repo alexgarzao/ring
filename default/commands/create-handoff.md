@@ -72,7 +72,7 @@ Handoff created: docs/handoffs/{session-name}/{timestamp}_{desc}.md
 The handoff has been automatically indexed and will be searchable.
 
 Resume in a new session with:
-/resume-handoff docs/handoffs/{session-name}/{timestamp}_{desc}.md
+/ring:resume-handoff docs/handoffs/{session-name}/{timestamp}_{desc}.md
 ```
 
 ## Example
@@ -86,7 +86,7 @@ Assistant: Creating handoff for context-management session...
 Handoff created: docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
 
 Resume in a new session with:
-/resume-handoff docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
+/ring:resume-handoff docs/handoffs/context-management/2025-12-27_15-45-00_artifact-index-complete.md
 ```
 
 ---

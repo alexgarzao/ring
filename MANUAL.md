@@ -288,7 +288,7 @@ These enforce quality standards:
 
 1. **TDD is enforced** – Test must fail (RED) before implementation
 2. **Skill check is mandatory** – Use `using-ring` before any task
-3. **Reviewers run parallel** – Never sequential review (use `/codereview`)
+3. **Reviewers run parallel** – Never sequential review (use `/ring:codereview`)
 4. **Verification required** – Don't claim complete without evidence
 5. **No incomplete code** – No "TODO" or placeholder comments
 6. **Error handling required** – Don't ignore errors
@@ -301,18 +301,18 @@ These enforce quality standards:
 
 | Situation | Use This |
 |-----------|----------|
-| New feature, unsure about design | `/brainstorm` |
-| Feature will take < 2 days | `/pre-dev-feature` |
-| Feature will take ≥ 2 days or has complex dependencies | `/pre-dev-full` |
-| Need implementation tasks | `/write-plan` |
-| Before merging code | `/codereview` |
+| New feature, unsure about design | `/ring:brainstorm` |
+| Feature will take < 2 days | `/ring:pre-dev-feature` |
+| Feature will take ≥ 2 days or has complex dependencies | `/ring:pre-dev-full` |
+| Need implementation tasks | `/ring:write-plan` |
+| Before merging code | `/ring:codereview` |
 
 
 ### Agent Selection
 
 | Need | Agent to Use |
 |------|-------------|
-| General code quality review | 3 parallel reviewers via `/codereview` |
+| General code quality review | 3 parallel reviewers via `/ring:codereview` |
 | Implementation planning | `write-plan` |
 | Deep codebase analysis | `codebase-explorer` |
 | Go backend expertise | `backend-engineer-golang` |

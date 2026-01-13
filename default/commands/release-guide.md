@@ -30,7 +30,7 @@ The skill generates:
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `release-guide-info` skill | Full workflow with all options |
-| `/commit` | Use after release guide to commit changes |
+| `/ring:commit` | Use after release guide to commit changes |
 | `finishing-a-development-branch` | Complementary workflow for branch completion |
 
 ---

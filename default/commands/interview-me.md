@@ -92,8 +92,8 @@ You must explicitly confirm this before Claude proceeds.
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `doubt-triggered-questions` pattern | For single questions during work |
-| `/brainstorm` | Use AFTER interview to explore solutions |
-| `/write-plan` | Use AFTER interview to create implementation plan |
+| `/ring:brainstorm` | Use AFTER interview to explore solutions |
+| `/ring:write-plan` | Use AFTER interview to create implementation plan |
 
 ## Troubleshooting
 

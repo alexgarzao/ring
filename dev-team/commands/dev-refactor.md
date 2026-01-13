@@ -146,9 +146,9 @@ When analyzing services for instrumentation compliance, verify:
 
 | Command | Description |
 |---------|-------------|
-| `/dev-cycle` | Execute development cycle (used after analysis) |
-| `/pre-dev-feature` | Plan new features (use instead for greenfield) |
-| `/codereview` | Manual code review (dev-cycle includes this) |
+| `/ring:dev-cycle` | Execute development cycle (used after analysis) |
+| `/ring:pre-dev-feature` | Plan new features (use instead for greenfield) |
+| `/ring:codereview` | Manual code review (dev-cycle includes this) |
 
 ---
 
