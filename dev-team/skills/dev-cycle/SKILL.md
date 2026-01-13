@@ -219,7 +219,7 @@ Task tool:
 |---------------|------------------|
 | "Focus on error handling first" | Agents prioritize error-related acceptance criteria |
 | "Use existing UserRepository interface" | Agents integrate with specified interface instead of creating new |
-| "Skip testing section - separate QA review" | Testing gate uses lighter validation |
+| "Skip testing section - separate QA review" | ⚠️ Ignored — Gate 3 executes normally; testing not skipped (see Gate Protection in dev-cycle command) |
 | "Prioritize observability gaps" | SRE gate gets more attention, implementation focuses on instrumentation |
 
 ### Anti-Rationalization for Skipping Sub-Skills
