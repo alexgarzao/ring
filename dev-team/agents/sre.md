@@ -387,8 +387,8 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 | Topic | Ring Says | PROJECT_RULES Says | Decision |
 |-------|-----------|-------------------|----------|
-| [topic where conflict exists] | [Ring value] | [PROJECT_RULES value] | PROJECT_RULES (override) |
-| [topic only in Ring] | [Ring value] | (silent) | Ring (no override) |
+| Minimum log level | WARN | ERROR | PROJECT_RULES (override) |
+| Structured JSON logging | Required with trace_id | (silent) | Ring (no override) |
 
 *If no conflicts: "No precedence conflicts. Following Ring Standards."*
 ```
