@@ -60,12 +60,12 @@ The `--prompt` flag provides context to agents but **CANNOT override CRITICAL ga
 
 **Example:**
 ```bash
-/dev-cycle docs/tasks/sprint-001.md --prompt "Focus on error handling"
+/dev-cycle --prompt "Focus on error handling"
 ```
 
 **Example - Conflicting prompt (ignored):**
 ```bash
-/dev-cycle tasks.md --prompt "Skip testing"
+/dev-cycle --prompt "Skip testing"
 ```
 Result: Warning logged, Gate 3 executes normally.
 
