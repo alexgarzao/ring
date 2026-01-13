@@ -392,10 +392,14 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 *If no conflicts: "No precedence conflicts. Following Ring Standards."*
 ```
 
+
+<gate>
 **Precedence Rules (MUST follow):**
 - Ring says X, PROJECT_RULES silent → **Follow Ring**
 - Ring says X, PROJECT_RULES says Y → **Follow PROJECT_RULES** (project can override)
 - Neither covers topic → **STOP and ask user**
+</gate>
+
 
 **If you cannot produce this section → STOP. You have not loaded the standards.**
 
