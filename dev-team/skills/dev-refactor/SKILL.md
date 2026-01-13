@@ -9,6 +9,14 @@ trigger: |
 skip_when: |
   - Greenfield project → Use /pre-dev-* instead
   - Single file fix → Use dev-cycle directly
+
+examples:
+  - name: "Refactor with custom context"
+    invocation: "/dev-refactor --prompt \"Prioritize observability gaps. Skip testing - separate QA.\""
+    expected_flow: |
+      1. Custom prompt passed to codebase-explorer and all specialist agents
+      2. Findings prioritized based on user context
+      3. Custom prompt forwarded to dev-cycle handoff
 ---
 
 # Dev Refactor Skill
@@ -101,6 +109,9 @@ CRUD APIs MUST follow Hexagonal Architecture (ports/adapters) and Lerian directo
 ```yaml
 TodoWrite:
   todos:
+    - content: "Capture custom prompt"
+      status: "pending"
+      activeForm: "Capturing custom prompt"
     - content: "Validate PROJECT_RULES.md exists"
       status: "pending"
       activeForm: "Validating PROJECT_RULES.md exists"
@@ -154,7 +165,17 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 ---
 
-## Step 0: Validate PROJECT_RULES.md
+## Step 0.5: Capture Custom Prompt
+
+**TodoWrite:** Mark "Capture custom prompt" as `in_progress`
+
+If `--prompt "..."` was provided, store for use in all agent dispatches.
+
+**TodoWrite:** Mark "Capture custom prompt" as `completed`
+
+---
+
+## Step 1: Validate PROJECT_RULES.md
 
 **TodoWrite:** Mark "Validate PROJECT_RULES.md exists" as `in_progress`
 
@@ -221,6 +242,34 @@ Read tool: docs/PROJECT_RULES.md
 Extract project-specific conventions for agent context.
 
 **TodoWrite:** Mark "Read PROJECT_RULES.md for context" as `completed`
+
+---
+
+## Custom Prompt Injection (All Agent Dispatches)
+
+**If `custom_prompt` was captured in Step 0.5, inject it into ALL agent prompts:**
+
+```yaml
+Task tool:
+  subagent_type: "ring:{agent-name}"
+  model: "opus"
+  prompt: |
+    **CUSTOM CONTEXT (from user):**
+    {custom_prompt}
+    
+    ---
+    
+    **Standard Instructions:**
+    [... rest of agent-specific prompt ...]
+```
+
+**This applies to:**
+- codebase-explorer (Step 3)
+- backend-engineer-golang, backend-engineer-typescript (Step 4)
+- frontend-engineer, frontend-bff-engineer-typescript (Step 4)
+- qa-analyst, devops-engineer, sre (Step 4)
+
+**Forward to dev-cycle:** In Step 10, pass `--prompt "{custom_prompt}"` to dev-cycle handoff.
 
 ---
 
@@ -998,7 +1047,8 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 If user approved execution, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle`
 2. Pass tasks file path: `docs/refactor/{timestamp}/tasks.md`
-3. Wait for dev-cycle to complete all 6 gates
+3. Pass `--prompt` to dev-cycle if custom prompt was captured
+4. Wait for dev-cycle to complete all 6 gates
 
 **Skipping this step = SKILL FAILURE.**
 

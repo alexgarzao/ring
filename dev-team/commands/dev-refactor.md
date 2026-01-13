@@ -61,6 +61,7 @@ Then re-run `/dev-refactor`.
 | `--analyze-only` | Generate report without executing | `--analyze-only` |
 | `--critical-only` | Only Critical and High priority issues | `--critical-only` |
 | `--dry-run` | Show what would be analyzed | `--dry-run` |
+| `--prompt "..."` | Custom context for analysis agents | `--prompt "Prioritize observability gaps"` |
 
 ## Examples
 
@@ -79,6 +80,9 @@ Then re-run `/dev-refactor`.
 
 # Use custom standards
 /dev-refactor --standards docs/team-standards.md
+
+# Analyze with custom context for agents
+/dev-refactor --prompt "Prioritize observability gaps. Skip testing section - we have separate QA review."
 ```
 
 ## Workflow
@@ -178,6 +182,7 @@ Pass the following context to the skill:
 | `--analyze-only` | If provided, skip dev-cycle execution |
 | `--critical-only` | If provided, filter to Critical/High only |
 | `--dry-run` | If provided, show what would be analyzed |
+| `--prompt` | If provided, custom context passed to all agents and forwarded to dev-cycle |
 
 ## User Approval (MANDATORY)
 

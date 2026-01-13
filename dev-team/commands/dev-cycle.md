@@ -28,6 +28,7 @@ Execute the development cycle for tasks in a markdown file.
 | `--skip-gates` | Skip specific gates | `--skip-gates devops,review` |
 | `--dry-run` | Validate tasks without executing | `--dry-run` |
 | `--resume` | Resume interrupted cycle | `--resume` |
+| `--prompt "..."` | Custom context for agents | `--prompt "Focus on error handling"` |
 
 ## Examples
 
@@ -46,6 +47,9 @@ Execute the development cycle for tasks in a markdown file.
 
 # Resume interrupted cycle
 /dev-cycle --resume
+
+# Execute with custom context for agents
+/dev-cycle docs/tasks/sprint-001.md --prompt "Prioritize error handling. Use existing UserRepository interface."
 ```
 
 ## Prerequisites
@@ -111,6 +115,7 @@ Pass the following context to the skill:
 | `--skip-gates` | If provided, list of gates to skip |
 | `--dry-run` | If provided, validate only |
 | `--resume` | If provided, resume from existing state file (dev-cycle or dev-refactor) |
+| `--prompt` | If provided, custom context passed to all agents |
 
 ## Step 1: ASK EXECUTION MODE (MANDATORY)
 
