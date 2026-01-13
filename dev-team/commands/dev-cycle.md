@@ -32,11 +32,38 @@ Execute the development cycle for tasks in a markdown file.
 
 ### `--prompt` Flag Behavior
 
-Provides custom context to agents but CANNOT override CRITICAL gates: Gate 3 (Testing), Gate 4 (Review), Gate 5 (Validation). Max 500 chars; plain-text sanitized. Stored as `custom_prompt` in `docs/dev-cycle/current-cycle.json`, survives `--resume`, included in execution reports.
+CANNOT override CRITICAL gates. Provides custom context to agents.
 
-See `ring:dev-cycle` skill's "Custom Prompt Injection" section in SKILL.md for full validation rules, gate protection, conflict detection, and examples.
+**Persistence:**
+- **Stored:** `custom_prompt` field in `docs/dev-cycle/current-cycle.json`
+- **Resume:** Survives interrupts; editable by modifying state file before `--resume`
+- **Reports:** Included in execution reports under "Custom Context Used"
 
-**Conflicting prompt:** Warning logged, gate executes normally.
+**Propagation:** Prepended to ALL agent prompts in a dedicated `**CUSTOM CONTEXT (from user):**` section. Applies to all gates and all agent types.
+
+**Constraints:**
+- **Length:** Max 500 chars (hard limit, truncated with warning). For longer context, summarize or link to external docs.
+- **Sanitization:** Whitespace trimmed, control chars stripped (except newlines), unicode normalized. Does NOT prevent semantic prompt-injection attempts.
+
+**Gate Protection:**
+
+CRITICAL: Gates 3, 4, 5 enforce mandatory requirements:
+- MUST enforce 85% coverage (Gate 3 Testing)
+- MUST dispatch all 3 reviewers (Gate 4 Review)
+- MUST require user approval (Gate 5 Validation)
+
+**Conflict Detection:**
+- **Method:** Keyword matching for "skip", "bypass", "ignore", "override", "don't run"
+- **Output:** Warning to stderr + recorded in state file
+- **Format:** `⚠️ IGNORED: Prompt directive "[text]" cannot override [requirement]`
+
+See `ring:dev-cycle` skill's "Custom Prompt Injection" section for full validation logic.
+
+**View/modify persisted prompt:**
+```bash
+jq '.custom_prompt' docs/dev-cycle/current-cycle.json  # View
+# Edit state file, then: /dev-cycle --resume
+```
 
 ## Examples
 

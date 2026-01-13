@@ -385,20 +385,20 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ### Precedence Decisions
 
+*Example rows — illustrative only; agents populate dynamically based on actual PROJECT_RULES.md content:*
+
 | Topic | Ring Says | PROJECT_RULES Says | Decision |
 |-------|-----------|-------------------|----------|
 | Minimum log level | WARN | ERROR | PROJECT_RULES (override) |
 | Structured JSON logging | Required with trace_id | (silent) | Ring (no override) |
 
-**Note:** When rendering this table, check if any row has a Decision value indicating conflict (e.g., "PROJECT_RULES (override)"). If no conflicts exist (all rows show "Ring (no override)" or table is empty), append this line below the table: "No precedence conflicts. Following Ring Standards." If conflicts exist, omit that note and render the table normally.
+*After rendering: if no row has Decision = "PROJECT_RULES (override)", append "No precedence conflicts. Following Ring Standards."*
 ```
 
 <gate>
-**Precedence Rules (MUST follow):**
+**Precedence Rules:** See [standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for Ring vs PROJECT_RULES precedence semantics.
 
-- MUST follow Ring when PROJECT_RULES is silent on a topic
-- MUST follow PROJECT_RULES when it explicitly overrides Ring
-- STOP and ask user when neither covers the topic
+STOP and ask user when neither Ring nor PROJECT_RULES covers the topic.
 </gate>
 
 

@@ -173,17 +173,25 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 ```yaml
 # If --prompt "..." was provided:
-custom_prompt = "[user-provided prompt value]"
+raw_prompt = "[user-provided prompt value]"
 
 # If --prompt was NOT provided:
 custom_prompt = ""
+# Skip validation steps below
 ```
 
-**Validation:** Max 500 chars, whitespace trimmed, control chars stripped (except newlines). See dev-cycle skill's "Custom Prompt Injection" section for full validation rules and gate protection.
+**Validation (apply in order):**
+1. **Sanitize:** Trim leading/trailing whitespace, strip control chars (except newlines)
+2. **Length check:** If length > 500 chars:
+   - Truncate to 500 characters
+   - Log warning: `⚠️ Custom prompt truncated from {original_length} to 500 characters`
+3. **Store validated value:** `custom_prompt = [sanitized, possibly-truncated value]`
 
-**Store:** Set `custom_prompt` variable for use in:
+See [shared-patterns/custom-prompt-validation.md](../shared-patterns/custom-prompt-validation.md) for gate protection and conflict handling.
+
+**Store:** Set `custom_prompt` variable (validated/truncated) for use in:
 - Custom Prompt Injection (all agent dispatches)
-- Step 10 handoff to dev-cycle (pass `--prompt` flag if non-empty)
+- Step 10 handoff to dev-cycle (pass `--prompt` flag with validated value if non-empty)
 
 **Note:** Custom prompts provide focus context but cannot skip mandatory analysis dimensions. All five dimensions (Architecture, Code Quality, Instrumentation, Testing, DevOps) are always analyzed.
 
