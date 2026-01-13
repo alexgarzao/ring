@@ -390,15 +390,15 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | Minimum log level | WARN | ERROR | PROJECT_RULES (override) |
 | Structured JSON logging | Required with trace_id | (silent) | Ring (no override) |
 
-*If no conflicts: "No precedence conflicts. Following Ring Standards."*
+**Note:** When rendering this table, check if any row has a Decision value indicating conflict (e.g., "PROJECT_RULES (override)"). If no conflicts exist (all rows show "Ring (no override)" or table is empty), append this line below the table: "No precedence conflicts. Following Ring Standards." If conflicts exist, omit that note and render the table normally.
 ```
-
 
 <gate>
 **Precedence Rules (MUST follow):**
-- Ring says X, PROJECT_RULES silent → **Follow Ring**
-- Ring says X, PROJECT_RULES says Y → **Follow PROJECT_RULES** (project can override)
-- Neither covers topic → **STOP and ask user**
+
+- MUST follow Ring when PROJECT_RULES is silent on a topic
+- MUST follow PROJECT_RULES when it explicitly overrides Ring
+- STOP and ask user when neither covers the topic
 </gate>
 
 

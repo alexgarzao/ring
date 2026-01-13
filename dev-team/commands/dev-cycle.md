@@ -32,42 +32,16 @@ Execute the development cycle for tasks in a markdown file.
 
 ### `--prompt` Flag Behavior
 
-**Constraints:**
-- **Length:** No limit (use reasonable length for context)
-- **Encoding:** Input is trimmed of leading/trailing whitespace; control characters (except newlines) are stripped
-- **Format:** Plain text only; HTML/JSON special characters are not escaped (agents receive raw text)
+Provides custom context to agents. Max 500 chars; plain-text sanitized (whitespace trimmed, control chars stripped). Cannot override CRITICAL gates: Gate 3 (Testing), Gate 4 (Review), Gate 5 (Validation).
 
-**CRITICAL Gates Protection:**
-
-The `--prompt` flag provides context to agents but **CANNOT override CRITICAL gates**:
-
-| Protected Gate | What Cannot Be Overridden |
-|----------------|---------------------------|
-| Gate 3 (Testing) | 85% coverage threshold, TDD RED phase requirement |
-| Gate 4 (Review) | All 3 reviewers must pass |
-| Gate 5 (Validation) | User approval requirement |
-| Security checks | No secrets in code, no hardcoded credentials |
-| Deployment blocks | Cannot bypass blocker conditions |
-
-**Conflicting Prompt Handling:**
-
-| Prompt Instruction | System Response |
-|--------------------|-----------------|
-| "Skip testing" | ⚠️ Ignored - Gate 3 executes normally |
-| "Don't run code review" | ⚠️ Ignored - Gate 4 dispatches all 3 reviewers |
-| "Accept 70% coverage" | ⚠️ Ignored - 85% threshold enforced |
-| "Focus on error handling" | ✅ Applied - Agents prioritize error-related work |
+See `dev-cycle` skill's "Custom Prompt Injection" section in SKILL.md for full validation rules, gate protection details, and conflict handling behavior.
 
 **Example:**
 ```bash
 /dev-cycle --prompt "Focus on error handling"
 ```
 
-**Example - Conflicting prompt (ignored):**
-```bash
-/dev-cycle --prompt "Skip testing"
-```
-Result: Warning logged, Gate 3 executes normally.
+**Conflicting prompt:** Warning logged, gate executes normally.
 
 ## Examples
 

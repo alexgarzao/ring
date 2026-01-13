@@ -179,11 +179,11 @@ custom_prompt = "[user-provided prompt value]"
 custom_prompt = ""
 ```
 
-**Validation (applied before storing):**
-- **Sanitize:** Trim whitespace, strip control characters (except newlines)
-- **Store:** Set `custom_prompt` variable for use in:
-  - Custom Prompt Injection (all agent dispatches)
-  - Step 10 handoff to dev-cycle (pass `--prompt` flag if non-empty)
+**Validation:** Max 500 chars, whitespace trimmed, control chars stripped (except newlines). See dev-cycle skill's "Custom Prompt Injection" section for full validation rules and gate protection.
+
+**Store:** Set `custom_prompt` variable for use in:
+- Custom Prompt Injection (all agent dispatches)
+- Step 10 handoff to dev-cycle (pass `--prompt` flag if non-empty)
 
 **Note:** Custom prompts provide focus context but cannot skip mandatory analysis dimensions. All five dimensions (Architecture, Code Quality, Instrumentation, Testing, DevOps) are always analyzed.
 

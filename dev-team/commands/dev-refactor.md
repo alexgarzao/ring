@@ -59,9 +59,9 @@ Then re-run `/dev-refactor`.
 |--------|-------------|---------|
 | `--standards PATH` | Custom standards file | `--standards docs/MY_PROJECT_RULES.md` |
 | `--analyze-only` | Generate report without executing | `--analyze-only` |
-| `--critical-only` | Only Critical and High priority issues | `--critical-only` |
+| `--critical-only` | Limit execution/output to Critical and High (analysis still tracks all) | `--critical-only` |
 | `--dry-run` | Show what would be analyzed | `--dry-run` |
-| `--prompt "..."` | Custom context for analysis agents | `--prompt "Prioritize observability gaps"` |
+| `--prompt "..."` | Custom context for agents (max 500 chars, trimmed, control chars stripped; see dev-cycle.md) | `--prompt "Prioritize observability gaps"` |
 
 ## Examples
 
@@ -93,7 +93,7 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 
 ## Analysis Dimensions
 
-**⛔ All five dimensions are MANDATORY and always analyzed. Custom prompts provide focus context but cannot skip any dimension.**
+**⛔ All five dimensions are MANDATORY for analysis/tracking. The `--critical-only` flag filters execution/output only.**
 
 | Dimension | What's Checked | Standards Reference |
 |-----------|----------------|---------------------|
@@ -103,7 +103,12 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 | **Testing** | Coverage percentage, test patterns, naming, missing tests | `golang.md` § Testing |
 | **DevOps** | Dockerfile, docker-compose, env management, Helm charts | `golang.md` § DevOps |
 
-**Note:** The `--prompt` flag adds focus context (e.g., "Prioritize observability gaps") but cannot skip mandatory analysis dimensions. All five dimensions are always analyzed, and all severities (Critical, High, Medium, Low) are MANDATORY to track and fix.
+**Analysis vs Execution:**
+- **Analysis (always):** All five dimensions analyzed, all severities (Critical, High, Medium, Low) tracked
+- **Execution (filterable):** `--critical-only` limits execution/prioritization to Critical and High severity issues
+- **Context (--prompt):** Adds focus context but cannot skip dimensions or change severity tracking
+
+Example: `/dev-refactor --critical-only` analyzes all issues but only executes fixes for Critical and High.
 
 ### Instrumentation Checklist (Quick Reference)
 
