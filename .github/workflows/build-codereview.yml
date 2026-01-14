@@ -21,10 +21,10 @@ on:
         default: true
         type: boolean
 
-# Prevent concurrent builds
+# Prevent concurrent builds - use queue mode (don't cancel) to avoid race conditions
 concurrency:
   group: build-codereview-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -179,7 +179,18 @@ jobs:
 
           Co-authored-by: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
 
-          git push origin main
+          # Push with retry logic to handle race conditions when remote has advanced
+          for i in 1 2 3; do
+            echo "Push attempt $i..."
+            git pull --rebase origin main && git push origin main && break
+            if [ $i -lt 3 ]; then
+              echo "Push failed, retrying in 5 seconds..."
+              sleep 5
+            else
+              echo "Push failed after 3 attempts"
+              exit 1
+            fi
+          done
 
       - name: Summary
         run: |
