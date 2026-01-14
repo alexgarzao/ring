@@ -15,11 +15,11 @@ NOT_skip_when: |
   - "Coverage is close to 85%" → Close enough is not passing. Meet exact threshold.
 
 sequence:
-  after: [dev-implementation, dev-devops, dev-sre]
-  before: [requesting-code-review]
+  after: [ring:dev-implementation, ring:dev-devops, ring:dev-ring:sre]
+  before: [ring:requesting-code-review]
 
 related:
-  complementary: [test-driven-development, qa-analyst]
+  complementary: [ring:test-driven-development, ring:qa-analyst]
 
 input_schema:
   required:
@@ -150,7 +150,7 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 ## Step 1: Validate Input
 
 ```text
-REQUIRED INPUT (from dev-cycle orchestrator):
+REQUIRED INPUT (from ring:dev-cycle orchestrator):
 <verify_before_proceed>
 - unit_id exists
 - acceptance_criteria is not empty
@@ -195,7 +195,7 @@ testing_state = {
 
 ## Step 3: Dispatch QA Analyst Agent
 
-<dispatch_required agent="qa-analyst" model="opus">
+<dispatch_required agent="ring:qa-analyst" model="opus">
 Write unit tests for all acceptance criteria with 85%+ coverage.
 </dispatch_required>
 

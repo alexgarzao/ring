@@ -11,7 +11,7 @@ changelog:
   - 2.1.6: Renamed Core one → Lerian pattern
   - 2.1.5: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 2.1.4: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 2.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
+  - 2.1.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
   - 2.1.3: Added Anti-Rationalization Table to Standards Compliance, strengthened Cannot Be Overridden section, strengthened weak language (Apply → MUST apply)
   - 2.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 2.1.0: Added Standards Loading, Blocker Criteria, Severity Calibration per Go agent standards
@@ -43,9 +43,9 @@ output_schema:
       pattern: "^## Standards Compliance"
       required: false
       required_when:
-        invocation_context: "dev-refactor"
+        invocation_context: "ring:dev-refactor"
         prompt_contains: "**MODE: ANALYSIS only**"
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -428,7 +428,7 @@ You have deep expertise in Clean Architecture. **MUST apply when enabled** in pr
 
 ## Test-Driven Development (TDD)
 
-You have deep expertise in TDD. **TDD is MANDATORY when invoked by dev-cycle (Gate 0).**
+You have deep expertise in TDD. **TDD is MANDATORY when invoked by ring:dev-cycle (Gate 0).**
 
 ### Standards Priority
 
@@ -572,11 +572,11 @@ If code is ALREADY compliant with all standards:
 
 **If compliant → say "no changes needed" and move on.**
 
-## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
 
 ### ⛔ HARD GATE: always Compare all Categories
 
@@ -664,7 +664,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ---
 
@@ -856,8 +856,8 @@ Coverage: 88.5%
 
 ## What This Agent Does not Handle
 
-- Visual design specifications (use `frontend-designer`)
-- Docker/CI-CD configuration (use `devops-engineer`)
-- Server infrastructure and monitoring (use `sre`)
-- Backend microservices (use `backend-engineer-typescript`)
+- Visual design specifications (use `ring:frontend-designer`)
+- Docker/CI-CD configuration (use `ring:devops-engineer`)
+- Server infrastructure and monitoring (use `ring:sre`)
+- Backend microservices (use `ring:backend-engineer-typescript`)
 - Database schema design (use `backend-engineer`)

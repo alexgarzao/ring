@@ -45,7 +45,7 @@ python3 default/lib/artifact-index/artifact_query.py --mode planning "keywords" 
 
 ### 2. Historical Precedent Section
 
-Every plan created by the write-plan agent includes:
+Every plan created by the ring:write-plan agent includes:
 
 ```markdown
 ## Historical Precedent
@@ -88,7 +88,7 @@ python3 default/lib/validate-plan-precedent.py docs/plans/YYYY-MM-DD-feature.md
 
 ### Automatic (Recommended)
 
-When using `/write-plan` or the `writing-plans` skill, RAG enhancement happens automatically:
+When using `/ring:write-plan` or the `ring:writing-plans` skill, RAG enhancement happens automatically:
 
 1. Keywords are extracted from your planning request
 2. Artifact index is queried for precedent

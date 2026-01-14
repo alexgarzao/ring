@@ -100,14 +100,14 @@ Read docs/PROJECT_RULES.md
 
 | Agent | Standards File | URL |
 |-------|---------------|-----|
-| `backend-engineer-golang` | golang.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` |
-| `backend-engineer-typescript` | typescript.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
+| `ring:backend-engineer-golang` | golang.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` |
+| `ring:backend-engineer-typescript` | typescript.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
 | `frontend-bff-engineer-typescript` | typescript.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
-| `frontend-engineer` | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
-| `frontend-designer` | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
-| `devops-engineer` | devops.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
-| `sre` | sre.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
-| `qa-analyst` | golang.md or typescript.md | Based on project language (check PROJECT_RULES.md first) |
+| `ring:frontend-engineer` | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
+| `ring:frontend-designer` | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
+| `ring:devops-engineer` | devops.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
+| `ring:sre` | sre.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
+| `ring:qa-analyst` | golang.md or typescript.md | Based on project language (check PROJECT_RULES.md first) |
 | `prompt-quality-reviewer` | N/A | Domain-independent (no standards WebFetch required) |
 
 ---

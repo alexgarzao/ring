@@ -9,7 +9,7 @@ View the feedback report from the last development cycle.
 ## Usage
 
 ```
-/dev-report [cycle-date]
+/ring:dev-report [cycle-date]
 ```
 
 ## Arguments
@@ -22,10 +22,10 @@ View the feedback report from the last development cycle.
 
 ```bash
 # View most recent report
-/dev-report
+/ring:dev-report
 
 # View specific date
-/dev-report 2024-01-15
+/ring:dev-report 2024-01-15
 ```
 
 ## Report Contents
@@ -78,7 +78,7 @@ Top Issues:
 2. Gate 6 (review): Security findings in 2 tasks
 
 Recommendations:
-→ Skill dev-testing: Add test planning phase
+→ Skill ring:dev-testing: Add test planning phase
 → Agent backend-*: Reinforce input validation
 
 Full report: .ring/dev-team/feedback/cycle-2024-01-15.md
@@ -120,7 +120,7 @@ Use Skill tool: ring:dev-feedback-loop
 ```
 
 The skill contains the complete workflow with:
-- Metrics collection from dev-cycle
+- Metrics collection from ring:dev-cycle
 - Pattern analysis
 - Improvement recommendations
 - Report generation format

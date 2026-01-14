@@ -327,8 +327,8 @@ Designed multi-region active-passive architecture for payment processing platfor
 ### Phase 4: Testing (Week 7)
 | Task | Owner | Duration |
 |------|-------|----------|
-| DR failover test | @sre | 1 day |
-| Failback test | @sre | 1 day |
+| DR failover test | :ring:sre | 1 day |
+| Failback test | :ring:sre | 1 day |
 | Load testing | @qa | 2 days |
 | Documentation | @tech-writer | 1 day |
 

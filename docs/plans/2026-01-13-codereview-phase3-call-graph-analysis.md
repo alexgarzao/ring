@@ -1,6 +1,6 @@
 # Phase 3: Call Graph Analysis Implementation Plan
 
-> **For Agents:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
+> **For Agents:** REQUIRED SUB-SKILL: Use ring:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build call graph analysis for Go, TypeScript, and Python that identifies callers, callees, and test coverage for modified functions.
 
@@ -16,7 +16,7 @@
 **Global Prerequisites:**
 - Environment: macOS/Linux, Go 1.21+, Node.js 18+, Python 3.10+
 - Tools: `go`, `node`, `npm`, `python3`, `pip`
-- Access: Write access to `scripts/codereview/` directory
+- Access: Write access to `scripts/ring:codereview/` directory
 - State: Phase 2 completed (provides `{lang}-ast.json` files)
 
 **Verification before starting:**
@@ -25,7 +25,7 @@
 go version          # Expected: go version go1.21+ or higher
 node --version      # Expected: v18.0.0 or higher
 python3 --version   # Expected: Python 3.10+ or higher
-ls scripts/codereview/internal/ast/  # Expected: golang.go, typescript.go, python.go (from Phase 2)
+ls scripts/ring:codereview/internal/ast/  # Expected: golang.go, typescript.go, python.go (from Phase 2)
 ```
 
 ## Historical Precedent
@@ -58,11 +58,11 @@ Proceeding with standard planning approach.
 ## Task 1: Create internal/callgraph/types.go
 
 **Files:**
-- Create: `scripts/codereview/internal/callgraph/types.go`
+- Create: `scripts/ring:codereview/internal/callgraph/types.go`
 
 **Prerequisites:**
 - Tools: Go 1.21+
-- Directory `scripts/codereview/internal/` must exist (from Phase 2)
+- Directory `scripts/ring:codereview/internal/` must exist (from Phase 2)
 
 **Step 1: Write the types file**
 
@@ -130,7 +130,7 @@ type Analyzer interface {
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -140,8 +140,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/types.go
-git commit -m "feat(codereview): add call graph types for Phase 3"
+git add scripts/ring:codereview/internal/callgraph/types.go
+git commit -m "feat(ring:codereview): add call graph types for Phase 3"
 ```
 
 ---
@@ -149,15 +149,15 @@ git commit -m "feat(codereview): add call graph types for Phase 3"
 ## Task 2: Create internal/callgraph/golang.go - Package Loading
 
 **Files:**
-- Create: `scripts/codereview/internal/callgraph/golang.go`
+- Create: `scripts/ring:codereview/internal/callgraph/golang.go`
 
 **Prerequisites:**
 - Task 1 completed
-- `go.mod` exists in `scripts/codereview/`
+- `go.mod` exists in `scripts/ring:codereview/`
 
 **Step 1: Update go.mod with dependencies**
 
-Run: `cd scripts/codereview && go get golang.org/x/tools/go/packages golang.org/x/tools/go/callgraph/cha golang.org/x/tools/go/ssa golang.org/x/tools/go/ssa/ssautil`
+Run: `cd scripts/ring:codereview && go get golang.org/x/tools/go/packages golang.org/x/tools/go/callgraph/cha golang.org/x/tools/go/ssa golang.org/x/tools/go/ssa/ssautil`
 
 **Expected output:**
 ```
@@ -262,7 +262,7 @@ func getAffectedPackages(funcs []ModifiedFunction) []string {
 
 **Step 3: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -272,8 +272,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/golang.go scripts/codereview/go.mod scripts/codereview/go.sum
-git commit -m "feat(codereview): add Go call graph package loading"
+git add scripts/ring:codereview/internal/callgraph/golang.go scripts/ring:codereview/go.mod scripts/ring:codereview/go.sum
+git commit -m "feat(ring:codereview): add Go call graph package loading"
 ```
 
 ---
@@ -281,7 +281,7 @@ git commit -m "feat(codereview): add Go call graph package loading"
 ## Task 3: Implement Go Call Graph Analysis
 
 **Files:**
-- Modify: `scripts/codereview/internal/callgraph/golang.go`
+- Modify: `scripts/ring:codereview/internal/callgraph/golang.go`
 
 **Prerequisites:**
 - Task 2 completed
@@ -491,7 +491,7 @@ func extractPackageFromFile(filePath string) string {
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -501,8 +501,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/golang.go
-git commit -m "feat(codereview): implement Go call graph analysis with CHA"
+git add scripts/ring:codereview/internal/callgraph/golang.go
+git commit -m "feat(ring:codereview): implement Go call graph analysis with CHA"
 ```
 
 ---
@@ -510,7 +510,7 @@ git commit -m "feat(codereview): implement Go call graph analysis with CHA"
 ## Task 4: Add Transitive Caller Analysis for Go
 
 **Files:**
-- Modify: `scripts/codereview/internal/callgraph/golang.go`
+- Modify: `scripts/ring:codereview/internal/callgraph/golang.go`
 
 **Prerequisites:**
 - Task 3 completed
@@ -570,7 +570,7 @@ if targetFunc != nil {
 
 **Step 3: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -580,8 +580,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/golang.go
-git commit -m "feat(codereview): add transitive caller analysis for Go"
+git add scripts/ring:codereview/internal/callgraph/golang.go
+git commit -m "feat(ring:codereview): add transitive caller analysis for Go"
 ```
 
 ---
@@ -589,7 +589,7 @@ git commit -m "feat(codereview): add transitive caller analysis for Go"
 ## Task 5: Create internal/callgraph/typescript.go
 
 **Files:**
-- Create: `scripts/codereview/internal/callgraph/typescript.go`
+- Create: `scripts/ring:codereview/internal/callgraph/typescript.go`
 
 **Prerequisites:**
 - Task 1 completed
@@ -808,7 +808,7 @@ func isTypeScriptTestFile(filename string) bool {
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -818,8 +818,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/typescript.go
-git commit -m "feat(codereview): add TypeScript call graph analyzer using dependency-cruiser"
+git add scripts/ring:codereview/internal/callgraph/typescript.go
+git commit -m "feat(ring:codereview): add TypeScript call graph analyzer using dependency-cruiser"
 ```
 
 ---
@@ -827,7 +827,7 @@ git commit -m "feat(codereview): add TypeScript call graph analyzer using depend
 ## Task 6: Create TypeScript Function-Level Call Graph Helper
 
 **Files:**
-- Create: `scripts/codereview/ts/call-graph.ts`
+- Create: `scripts/ring:codereview/ts/call-graph.ts`
 
 **Prerequisites:**
 - Task 5 completed
@@ -835,17 +835,17 @@ git commit -m "feat(codereview): add TypeScript call graph analyzer using depend
 
 **Step 1: Create ts directory and package.json if not exists**
 
-Run: `mkdir -p scripts/codereview/ts`
+Run: `mkdir -p scripts/ring:codereview/ts`
 
 **Step 2: Write package.json**
 
-Create `scripts/codereview/ts/package.json`:
+Create `scripts/ring:codereview/ts/package.json`:
 
 ```json
 {
-  "name": "codereview-ts-helpers",
+  "name": "ring:codereview-ts-helpers",
   "version": "1.0.0",
-  "description": "TypeScript helpers for codereview analysis",
+  "description": "TypeScript helpers for ring:codereview analysis",
   "main": "call-graph.js",
   "scripts": {
     "build": "tsc",
@@ -862,7 +862,7 @@ Create `scripts/codereview/ts/package.json`:
 
 **Step 3: Write call-graph.ts**
 
-Create `scripts/codereview/ts/call-graph.ts`:
+Create `scripts/ring:codereview/ts/call-graph.ts`:
 
 ```typescript
 import * as ts from 'typescript';
@@ -1013,7 +1013,7 @@ export { analyzeCallGraph, FunctionInfo, CallSite };
 
 **Step 4: Create tsconfig.json**
 
-Create `scripts/codereview/ts/tsconfig.json`:
+Create `scripts/ring:codereview/ts/tsconfig.json`:
 
 ```json
 {
@@ -1034,7 +1034,7 @@ Create `scripts/codereview/ts/tsconfig.json`:
 
 **Step 5: Install dependencies and build**
 
-Run: `cd scripts/codereview/ts && npm install && npm run build`
+Run: `cd scripts/ring:codereview/ts && npm install && npm run build`
 
 **Expected output:**
 ```
@@ -1044,8 +1044,8 @@ added X packages...
 **Step 6: Commit**
 
 ```bash
-git add scripts/codereview/ts/
-git commit -m "feat(codereview): add TypeScript call graph helper script"
+git add scripts/ring:codereview/ts/
+git commit -m "feat(ring:codereview): add TypeScript call graph helper script"
 ```
 
 ---
@@ -1053,7 +1053,7 @@ git commit -m "feat(codereview): add TypeScript call graph helper script"
 ## Task 7: Integrate TypeScript Helper into Go Analyzer
 
 **Files:**
-- Modify: `scripts/codereview/internal/callgraph/typescript.go`
+- Modify: `scripts/ring:codereview/internal/callgraph/typescript.go`
 
 **Prerequisites:**
 - Task 6 completed
@@ -1068,7 +1068,7 @@ func (t *TypeScriptAnalyzer) analyzeWithTSHelper(ctx context.Context, files []st
 	args := append(files, "--functions", strings.Join(functions, ","))
 	
 	cmd := exec.CommandContext(ctx, "node",
-		append([]string{filepath.Join(t.workDir, "scripts/codereview/ts/dist/call-graph.js")}, args...)...)
+		append([]string{filepath.Join(t.workDir, "scripts/ring:codereview/ts/dist/call-graph.js")}, args...)...)
 	cmd.Dir = t.workDir
 
 	out, err := cmd.Output()
@@ -1087,7 +1087,7 @@ func (t *TypeScriptAnalyzer) analyzeWithTSHelper(ctx context.Context, files []st
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -1097,8 +1097,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/typescript.go
-git commit -m "feat(codereview): integrate TypeScript helper for function-level analysis"
+git add scripts/ring:codereview/internal/callgraph/typescript.go
+git commit -m "feat(ring:codereview): integrate TypeScript helper for function-level analysis"
 ```
 
 ---
@@ -1106,7 +1106,7 @@ git commit -m "feat(codereview): integrate TypeScript helper for function-level 
 ## Task 8: Create Python Call Graph Script
 
 **Files:**
-- Create: `scripts/codereview/py/call_graph.py`
+- Create: `scripts/ring:codereview/py/call_graph.py`
 
 **Prerequisites:**
 - Python 3.10+ available
@@ -1114,7 +1114,7 @@ git commit -m "feat(codereview): integrate TypeScript helper for function-level 
 
 **Step 1: Create py directory if not exists**
 
-Run: `mkdir -p scripts/codereview/py`
+Run: `mkdir -p scripts/ring:codereview/py`
 
 **Step 2: Write call_graph.py**
 
@@ -1390,11 +1390,11 @@ if __name__ == "__main__":
 
 **Step 3: Make executable**
 
-Run: `chmod +x scripts/codereview/py/call_graph.py`
+Run: `chmod +x scripts/ring:codereview/py/call_graph.py`
 
 **Step 4: Verify script works**
 
-Run: `python3 scripts/codereview/py/call_graph.py scripts/codereview/py/call_graph.py --functions main`
+Run: `python3 scripts/ring:codereview/py/call_graph.py scripts/ring:codereview/py/call_graph.py --functions main`
 
 **Expected output:**
 ```json
@@ -1407,8 +1407,8 @@ Run: `python3 scripts/codereview/py/call_graph.py scripts/codereview/py/call_gra
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/py/call_graph.py
-git commit -m "feat(codereview): add Python call graph analyzer script"
+git add scripts/ring:codereview/py/call_graph.py
+git commit -m "feat(ring:codereview): add Python call graph analyzer script"
 ```
 
 ---
@@ -1416,7 +1416,7 @@ git commit -m "feat(codereview): add Python call graph analyzer script"
 ## Task 9: Create internal/callgraph/python.go
 
 **Files:**
-- Create: `scripts/codereview/internal/callgraph/python.go`
+- Create: `scripts/ring:codereview/internal/callgraph/python.go`
 
 **Prerequisites:**
 - Task 8 completed
@@ -1539,7 +1539,7 @@ func (p *PythonAnalyzer) Analyze(modifiedFuncs []ModifiedFunction, timeBudgetSec
 
 // runCallGraphPy runs our custom Python call graph script.
 func (p *PythonAnalyzer) runCallGraphPy(ctx context.Context, files []string, funcNames []string) (*pythonCallGraphOutput, error) {
-	scriptPath := filepath.Join(p.workDir, "scripts/codereview/py/call_graph.py")
+	scriptPath := filepath.Join(p.workDir, "scripts/ring:codereview/py/call_graph.py")
 
 	args := []string{scriptPath}
 	args = append(args, files...)
@@ -1638,7 +1638,7 @@ func (p *PythonAnalyzer) convertOutput(pyOutput *pythonCallGraphOutput) *CallGra
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -1648,8 +1648,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/python.go
-git commit -m "feat(codereview): add Python call graph analyzer wrapper"
+git add scripts/ring:codereview/internal/callgraph/python.go
+git commit -m "feat(ring:codereview): add Python call graph analyzer wrapper"
 ```
 
 ---
@@ -1657,7 +1657,7 @@ git commit -m "feat(codereview): add Python call graph analyzer wrapper"
 ## Task 10: Add requirements.txt for Python Dependencies
 
 **Files:**
-- Create: `scripts/codereview/py/requirements.txt`
+- Create: `scripts/ring:codereview/py/requirements.txt`
 
 **Prerequisites:**
 - Task 8 completed
@@ -1665,7 +1665,7 @@ git commit -m "feat(codereview): add Python call graph analyzer wrapper"
 **Step 1: Create requirements.txt**
 
 ```text
-# Python dependencies for codereview analysis
+# Python dependencies for ring:codereview analysis
 # Note: ast module is stdlib, no external deps needed for call_graph.py
 
 # Optional: pyan3 for fallback call graph generation
@@ -1675,8 +1675,8 @@ pyan3>=1.2.0
 **Step 2: Commit**
 
 ```bash
-git add scripts/codereview/py/requirements.txt
-git commit -m "feat(codereview): add Python requirements for call graph analysis"
+git add scripts/ring:codereview/py/requirements.txt
+git commit -m "feat(ring:codereview): add Python requirements for call graph analysis"
 ```
 
 ---
@@ -1684,7 +1684,7 @@ git commit -m "feat(codereview): add Python requirements for call graph analysis
 ## Task 11: Create Analyzer Factory
 
 **Files:**
-- Create: `scripts/codereview/internal/callgraph/factory.go`
+- Create: `scripts/ring:codereview/internal/callgraph/factory.go`
 
 **Prerequisites:**
 - Tasks 3, 5, 9 completed
@@ -1720,7 +1720,7 @@ func SupportedLanguages() []string {
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go build ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -1730,8 +1730,8 @@ Run: `cd scripts/codereview && go build ./internal/callgraph/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/factory.go
-git commit -m "feat(codereview): add call graph analyzer factory"
+git add scripts/ring:codereview/internal/callgraph/factory.go
+git commit -m "feat(ring:codereview): add call graph analyzer factory"
 ```
 
 ---
@@ -1739,14 +1739,14 @@ git commit -m "feat(codereview): add call graph analyzer factory"
 ## Task 12: Create internal/output/markdown.go (Impact Summary)
 
 **Files:**
-- Modify: `scripts/codereview/internal/output/markdown.go` (or create if not exists)
+- Modify: `scripts/ring:codereview/internal/output/markdown.go` (or create if not exists)
 
 **Prerequisites:**
 - Task 1 completed (types available)
 
 **Step 1: Create output directory if needed**
 
-Run: `mkdir -p scripts/codereview/internal/output`
+Run: `mkdir -p scripts/ring:codereview/internal/output`
 
 **Step 2: Write the impact summary renderer**
 
@@ -1757,7 +1757,7 @@ import (
 	"fmt"
 	"strings"
 
-	"ring/scripts/codereview/internal/callgraph"
+	"ring/scripts/ring:codereview/internal/callgraph"
 )
 
 // RenderImpactSummary generates markdown for the impact analysis.
@@ -1913,7 +1913,7 @@ func filterLowImpact(funcs []callgraph.FunctionCallGraph) []callgraph.FunctionCa
 
 **Step 3: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/output/...`
+Run: `cd scripts/ring:codereview && go build ./internal/output/...`
 
 **Expected output:**
 ```
@@ -1923,8 +1923,8 @@ Run: `cd scripts/codereview && go build ./internal/output/...`
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/internal/output/markdown.go
-git commit -m "feat(codereview): add impact summary markdown renderer"
+git add scripts/ring:codereview/internal/output/markdown.go
+git commit -m "feat(ring:codereview): add impact summary markdown renderer"
 ```
 
 ---
@@ -1932,7 +1932,7 @@ git commit -m "feat(codereview): add impact summary markdown renderer"
 ## Task 13: Add JSON Output Writer
 
 **Files:**
-- Create: `scripts/codereview/internal/output/json.go`
+- Create: `scripts/ring:codereview/internal/output/json.go`
 
 **Prerequisites:**
 - Task 1 completed
@@ -1948,7 +1948,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"ring/scripts/codereview/internal/callgraph"
+	"ring/scripts/ring:codereview/internal/callgraph"
 )
 
 // WriteJSON writes the call graph result to a JSON file.
@@ -1991,7 +1991,7 @@ func WriteImpactSummary(result *callgraph.CallGraphResult, outputDir string) err
 
 **Step 2: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./internal/output/...`
+Run: `cd scripts/ring:codereview && go build ./internal/output/...`
 
 **Expected output:**
 ```
@@ -2001,8 +2001,8 @@ Run: `cd scripts/codereview && go build ./internal/output/...`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/output/json.go
-git commit -m "feat(codereview): add JSON and markdown output writers"
+git add scripts/ring:codereview/internal/output/json.go
+git commit -m "feat(ring:codereview): add JSON and markdown output writers"
 ```
 
 ---
@@ -2010,39 +2010,39 @@ git commit -m "feat(codereview): add JSON and markdown output writers"
 ## Task 14: Fix Module Path in Output Package
 
 **Files:**
-- Modify: `scripts/codereview/internal/output/markdown.go`
-- Modify: `scripts/codereview/internal/output/json.go`
+- Modify: `scripts/ring:codereview/internal/output/markdown.go`
+- Modify: `scripts/ring:codereview/internal/output/json.go`
 
 **Prerequisites:**
 - Tasks 12, 13 completed
 
 **Step 1: Check go.mod module path**
 
-Run: `head -1 scripts/codereview/go.mod`
+Run: `head -1 scripts/ring:codereview/go.mod`
 
-**Expected output:** Shows the module name (e.g., `module ring/scripts/codereview` or similar)
+**Expected output:** Shows the module name (e.g., `module ring/scripts/ring:codereview` or similar)
 
 **Step 2: Update imports to match module path**
 
 If the module is named differently, update the import in both files. For example, if `go.mod` says:
 
 ```
-module github.com/lerianstudio/ring/scripts/codereview
+module github.com/lerianstudio/ring/scripts/ring:codereview
 ```
 
 Then change the import from:
 ```go
-"ring/scripts/codereview/internal/callgraph"
+"ring/scripts/ring:codereview/internal/callgraph"
 ```
 
 To:
 ```go
-"github.com/lerianstudio/ring/scripts/codereview/internal/callgraph"
+"github.com/lerianstudio/ring/scripts/ring:codereview/internal/callgraph"
 ```
 
 **Step 3: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/...`
+Run: `cd scripts/ring:codereview && go build ./internal/...`
 
 **Expected output:**
 ```
@@ -2052,8 +2052,8 @@ Run: `cd scripts/codereview && go build ./internal/...`
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/internal/output/
-git commit -m "fix(codereview): fix module path in output package"
+git add scripts/ring:codereview/internal/output/
+git commit -m "fix(ring:codereview): fix module path in output package"
 ```
 
 ---
@@ -2061,14 +2061,14 @@ git commit -m "fix(codereview): fix module path in output package"
 ## Task 15: Create cmd/call-graph/main.go
 
 **Files:**
-- Create: `scripts/codereview/cmd/call-graph/main.go`
+- Create: `scripts/ring:codereview/cmd/call-graph/main.go`
 
 **Prerequisites:**
 - Tasks 1-14 completed
 
 **Step 1: Create cmd directory**
 
-Run: `mkdir -p scripts/codereview/cmd/call-graph`
+Run: `mkdir -p scripts/ring:codereview/cmd/call-graph`
 
 **Step 2: Write the CLI orchestrator**
 
@@ -2084,8 +2084,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"ring/scripts/codereview/internal/callgraph"
-	"ring/scripts/codereview/internal/output"
+	"ring/scripts/ring:codereview/internal/callgraph"
+	"ring/scripts/ring:codereview/internal/output"
 )
 
 // ASTInput represents the input from Phase 2 AST extraction.
@@ -2109,7 +2109,7 @@ func main() {
 	// CLI flags
 	scopeFile := flag.String("scope", "", "Path to scope.json from Phase 0")
 	astFile := flag.String("ast", "", "Path to {lang}-ast.json from Phase 2")
-	outputDir := flag.String("output", ".ring/codereview", "Output directory")
+	outputDir := flag.String("output", ".ring/ring:codereview", "Output directory")
 	timeBudget := flag.Int("timeout", 30, "Time budget in seconds (0 = no limit)")
 	language := flag.String("lang", "", "Language (go, typescript, python) - auto-detected from AST if not specified")
 	verbose := flag.Bool("verbose", false, "Enable verbose output")
@@ -2264,7 +2264,7 @@ func writeOutput(result *callgraph.CallGraphResult, outputDir string) {
 
 **Step 3: Verify file compiles**
 
-Run: `cd scripts/codereview && go build ./cmd/call-graph/...`
+Run: `cd scripts/ring:codereview && go build ./cmd/call-graph/...`
 
 **Expected output:**
 ```
@@ -2274,8 +2274,8 @@ Run: `cd scripts/codereview && go build ./cmd/call-graph/...`
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/cmd/call-graph/
-git commit -m "feat(codereview): add call-graph CLI orchestrator"
+git add scripts/ring:codereview/cmd/call-graph/
+git commit -m "feat(ring:codereview): add call-graph CLI orchestrator"
 ```
 
 ---
@@ -2283,29 +2283,29 @@ git commit -m "feat(codereview): add call-graph CLI orchestrator"
 ## Task 16: Fix Module Path in CLI
 
 **Files:**
-- Modify: `scripts/codereview/cmd/call-graph/main.go`
+- Modify: `scripts/ring:codereview/cmd/call-graph/main.go`
 
 **Prerequisites:**
 - Task 15 completed
 
 **Step 1: Check and update module path**
 
-Run: `head -1 scripts/codereview/go.mod`
+Run: `head -1 scripts/ring:codereview/go.mod`
 
-Update the imports in `main.go` to match the actual module path. For example, if the module is `github.com/lerianstudio/ring/scripts/codereview`:
+Update the imports in `main.go` to match the actual module path. For example, if the module is `github.com/lerianstudio/ring/scripts/ring:codereview`:
 
 ```go
 import (
 	// ... standard library imports ...
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/callgraph"
-	"github.com/lerianstudio/ring/scripts/codereview/internal/output"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/callgraph"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/output"
 )
 ```
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build -o bin/call-graph ./cmd/call-graph/`
+Run: `cd scripts/ring:codereview && go build -o bin/call-graph ./cmd/call-graph/`
 
 **Expected output:**
 ```
@@ -2315,8 +2315,8 @@ Run: `cd scripts/codereview && go build -o bin/call-graph ./cmd/call-graph/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/cmd/call-graph/main.go
-git commit -m "fix(codereview): fix module path in call-graph CLI"
+git add scripts/ring:codereview/cmd/call-graph/main.go
+git commit -m "fix(ring:codereview): fix module path in call-graph CLI"
 ```
 
 ---
@@ -2324,14 +2324,14 @@ git commit -m "fix(codereview): fix module path in call-graph CLI"
 ## Task 17: Build Binary and Verify
 
 **Files:**
-- Build: `scripts/codereview/bin/call-graph`
+- Build: `scripts/ring:codereview/bin/call-graph`
 
 **Prerequisites:**
 - Task 16 completed
 
 **Step 1: Build the binary**
 
-Run: `cd scripts/codereview && go build -o bin/call-graph ./cmd/call-graph/`
+Run: `cd scripts/ring:codereview && go build -o bin/call-graph ./cmd/call-graph/`
 
 **Expected output:**
 ```
@@ -2340,7 +2340,7 @@ Run: `cd scripts/codereview && go build -o bin/call-graph ./cmd/call-graph/`
 
 **Step 2: Verify binary runs**
 
-Run: `scripts/codereview/bin/call-graph --help`
+Run: `scripts/ring:codereview/bin/call-graph --help`
 
 **Expected output:**
 ```
@@ -2350,7 +2350,7 @@ Usage of call-graph:
   -lang string
     	Language (go, typescript, python) - auto-detected from AST if not specified
   -output string
-    	Output directory (default ".ring/codereview")
+    	Output directory (default ".ring/ring:codereview")
   -scope string
     	Path to scope.json from Phase 0
   -timeout int
@@ -2362,10 +2362,10 @@ Usage of call-graph:
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/bin/
-echo "scripts/codereview/bin/" >> .gitignore
+git add scripts/ring:codereview/bin/
+echo "scripts/ring:codereview/bin/" >> .gitignore
 git add .gitignore
-git commit -m "feat(codereview): build call-graph binary"
+git commit -m "feat(ring:codereview): build call-graph binary"
 ```
 
 ---
@@ -2373,7 +2373,7 @@ git commit -m "feat(codereview): build call-graph binary"
 ## Task 18: Create Unit Tests for Go Analyzer
 
 **Files:**
-- Create: `scripts/codereview/internal/callgraph/golang_test.go`
+- Create: `scripts/ring:codereview/internal/callgraph/golang_test.go`
 
 **Prerequisites:**
 - Task 4 completed
@@ -2491,7 +2491,7 @@ func TestNewGoAnalyzer(t *testing.T) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test -v ./internal/callgraph/...`
+Run: `cd scripts/ring:codereview && go test -v ./internal/callgraph/...`
 
 **Expected output:**
 ```
@@ -2512,8 +2512,8 @@ PASS
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/callgraph/golang_test.go
-git commit -m "test(codereview): add unit tests for Go call graph analyzer"
+git add scripts/ring:codereview/internal/callgraph/golang_test.go
+git commit -m "test(ring:codereview): add unit tests for Go call graph analyzer"
 ```
 
 ---
@@ -2521,7 +2521,7 @@ git commit -m "test(codereview): add unit tests for Go call graph analyzer"
 ## Task 19: Create Unit Tests for Python Script
 
 **Files:**
-- Create: `scripts/codereview/py/test_call_graph.py`
+- Create: `scripts/ring:codereview/py/test_call_graph.py`
 
 **Prerequisites:**
 - Task 8 completed
@@ -2688,11 +2688,11 @@ if __name__ == "__main__":
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview/py && python3 -m pytest test_call_graph.py -v`
+Run: `cd scripts/ring:codereview/py && python3 -m pytest test_call_graph.py -v`
 
 Or without pytest:
 
-Run: `cd scripts/codereview/py && python3 test_call_graph.py -v`
+Run: `cd scripts/ring:codereview/py && python3 test_call_graph.py -v`
 
 **Expected output:**
 ```
@@ -2708,8 +2708,8 @@ OK
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/py/test_call_graph.py
-git commit -m "test(codereview): add unit tests for Python call graph script"
+git add scripts/ring:codereview/py/test_call_graph.py
+git commit -m "test(ring:codereview): add unit tests for Python call graph script"
 ```
 
 ---
@@ -2717,7 +2717,7 @@ git commit -m "test(codereview): add unit tests for Python call graph script"
 ## Task 20: Create Unit Tests for Output Package
 
 **Files:**
-- Create: `scripts/codereview/internal/output/markdown_test.go`
+- Create: `scripts/ring:codereview/internal/output/markdown_test.go`
 
 **Prerequisites:**
 - Task 12 completed
@@ -2731,7 +2731,7 @@ import (
 	"strings"
 	"testing"
 
-	"ring/scripts/codereview/internal/callgraph"
+	"ring/scripts/ring:codereview/internal/callgraph"
 )
 
 func TestRenderImpactSummary_Empty(t *testing.T) {
@@ -2863,7 +2863,7 @@ Update the import to match your actual module path (same as Task 14).
 
 **Step 3: Run tests**
 
-Run: `cd scripts/codereview && go test -v ./internal/output/...`
+Run: `cd scripts/ring:codereview && go test -v ./internal/output/...`
 
 **Expected output:**
 ```
@@ -2878,8 +2878,8 @@ PASS
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/internal/output/markdown_test.go
-git commit -m "test(codereview): add unit tests for markdown output renderer"
+git add scripts/ring:codereview/internal/output/markdown_test.go
+git commit -m "test(ring:codereview): add unit tests for markdown output renderer"
 ```
 
 ---
@@ -2887,14 +2887,14 @@ git commit -m "test(codereview): add unit tests for markdown output renderer"
 ## Task 21: Integration Test
 
 **Files:**
-- Create: `scripts/codereview/test/integration_test.sh`
+- Create: `scripts/ring:codereview/test/integration_test.sh`
 
 **Prerequisites:**
 - All previous tasks completed
 
 **Step 1: Create test directory**
 
-Run: `mkdir -p scripts/codereview/test`
+Run: `mkdir -p scripts/ring:codereview/test`
 
 **Step 2: Write integration test script**
 
@@ -3005,11 +3005,11 @@ echo "=== All integration tests passed! ==="
 
 **Step 3: Make executable**
 
-Run: `chmod +x scripts/codereview/test/integration_test.sh`
+Run: `chmod +x scripts/ring:codereview/test/integration_test.sh`
 
 **Step 4: Run integration test**
 
-Run: `./scripts/codereview/test/integration_test.sh`
+Run: `./scripts/ring:codereview/test/integration_test.sh`
 
 **Expected output:**
 ```
@@ -3034,8 +3034,8 @@ PASS: JSON structure valid
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/test/integration_test.sh
-git commit -m "test(codereview): add integration test for call-graph binary"
+git add scripts/ring:codereview/test/integration_test.sh
+git commit -m "test(ring:codereview): add integration test for call-graph binary"
 ```
 
 ---
@@ -3050,11 +3050,11 @@ git commit -m "test(codereview): add integration test for call-graph binary"
 > **REQUIRED SUB-SKILL:** Use `ring:requesting-code-review`
 
 All reviewers run simultaneously:
-- code-reviewer
-- business-logic-reviewer
-- security-reviewer
-- test-reviewer
-- nil-safety-reviewer
+- ring:code-reviewer
+- ring:business-logic-reviewer
+- ring:security-reviewer
+- ring:test-reviewer
+- ring:nil-safety-reviewer
 
 **Step 2: Handle findings by severity**
 
@@ -3113,16 +3113,16 @@ All reviewers run simultaneously:
 
 Before marking Phase 3 complete:
 
-- [ ] `scripts/codereview/internal/callgraph/types.go` exists with all types
-- [ ] `scripts/codereview/internal/callgraph/golang.go` compiles and has tests
-- [ ] `scripts/codereview/internal/callgraph/typescript.go` compiles
-- [ ] `scripts/codereview/internal/callgraph/python.go` compiles
-- [ ] `scripts/codereview/internal/callgraph/factory.go` compiles
-- [ ] `scripts/codereview/py/call_graph.py` runs and has tests
-- [ ] `scripts/codereview/ts/call-graph.ts` compiles
-- [ ] `scripts/codereview/internal/output/markdown.go` compiles and has tests
-- [ ] `scripts/codereview/internal/output/json.go` compiles
-- [ ] `scripts/codereview/cmd/call-graph/main.go` builds to `bin/call-graph`
+- [ ] `scripts/ring:codereview/internal/callgraph/types.go` exists with all types
+- [ ] `scripts/ring:codereview/internal/callgraph/golang.go` compiles and has tests
+- [ ] `scripts/ring:codereview/internal/callgraph/typescript.go` compiles
+- [ ] `scripts/ring:codereview/internal/callgraph/python.go` compiles
+- [ ] `scripts/ring:codereview/internal/callgraph/factory.go` compiles
+- [ ] `scripts/ring:codereview/py/call_graph.py` runs and has tests
+- [ ] `scripts/ring:codereview/ts/call-graph.ts` compiles
+- [ ] `scripts/ring:codereview/internal/output/markdown.go` compiles and has tests
+- [ ] `scripts/ring:codereview/internal/output/json.go` compiles
+- [ ] `scripts/ring:codereview/cmd/call-graph/main.go` builds to `bin/call-graph`
 - [ ] `bin/call-graph --help` shows usage
 - [ ] Unit tests pass: `go test ./internal/...`
 - [ ] Python tests pass: `python3 py/test_call_graph.py`
@@ -3138,13 +3138,13 @@ After implementation, the binary can be invoked as:
 
 ```bash
 # Basic usage
-call-graph --ast .ring/codereview/go-ast.json --output .ring/codereview/
+call-graph --ast .ring/ring:codereview/go-ast.json --output .ring/ring:codereview/
 
 # With all options
 call-graph \
-  --scope .ring/codereview/scope.json \
-  --ast .ring/codereview/go-ast.json \
-  --output .ring/codereview/ \
+  --scope .ring/ring:codereview/scope.json \
+  --ast .ring/ring:codereview/go-ast.json \
+  --output .ring/ring:codereview/ \
   --lang go \
   --timeout 30 \
   --verbose

@@ -9,15 +9,15 @@
 
 ## Executive Summary
 
-This document breaks down the 15 tasks from Gate 7 into **78 bite-sized subtasks** (2-5 minutes each). Each subtask follows the **TDD pattern** (test first, then implementation) and includes **complete code** with no placeholders. Subtasks are grouped by phase for parallel write-plan agent execution.
+This document breaks down the 15 tasks from Gate 7 into **78 bite-sized subtasks** (2-5 minutes each). Each subtask follows the **TDD pattern** (test first, then implementation) and includes **complete code** with no placeholders. Subtasks are grouped by phase for parallel ring:write-plan agent execution.
 
-**Implementation Strategy:** Spawn 5 write-plan agents (one per phase) with comprehensive context from Gates 0-7.
+**Implementation Strategy:** Spawn 5 ring:write-plan agents (one per phase) with comprehensive context from Gates 0-7.
 
 ---
 
 ## Phase 1: Foundation (3 Tasks → 16 Subtasks)
 
-**Context for write-plan agent:**
+**Context for ring:write-plan agent:**
 - Read: `docs/pre-dev/ring-continuity/research.md` (Gate 0)
 - Read: `docs/pre-dev/ring-continuity/trd.md` (Gate 3)
 - Read: `docs/pre-dev/ring-continuity/api-design.md` (Gate 4)
@@ -906,7 +906,7 @@ test -d ~/.ring.backup-* || exit 1
 
 ## Phase 2: YAML Handoffs (4 Tasks → 18 Subtasks)
 
-**Context for write-plan agent:**
+**Context for ring:write-plan agent:**
 - Read all previous gates (research.md through dependency-map.md)
 - Read: `default/skills/handoff-tracking/SKILL.md` (existing implementation)
 - Read: `default/lib/artifact-index/artifact_schema.sql` (existing FTS5 schema)
@@ -1293,7 +1293,7 @@ test -f default/schemas/README.md || exit 1
 
 ---
 
-### Task 2.3: Update handoff-tracking Skill (5 subtasks)
+### Task 2.3: Update ring:handoff-tracking Skill (5 subtasks)
 
 #### Subtask 2.3.1: Create YAML handoff template - 3 min
 #### Subtask 2.3.2: Update skill to use serializer - 4 min
@@ -1315,7 +1315,7 @@ test -f default/schemas/README.md || exit 1
 
 ## Phase 3: Confidence Markers (2 Tasks → 12 Subtasks)
 
-**Context for write-plan agent:**
+**Context for ring:write-plan agent:**
 - Read: `docs/pre-dev/ring-continuity/api-design.md` (confidence interfaces)
 - Read: `docs/AGENT_DESIGN.md` (existing schemas)
 - Read: `default/agents/codebase-explorer.md` (target agent)
@@ -1335,7 +1335,7 @@ test -f default/schemas/README.md || exit 1
 
 ---
 
-### Task 3.2: Integrate in codebase-explorer (6 subtasks)
+### Task 3.2: Integrate in ring:codebase-explorer (6 subtasks)
 
 #### Subtask 3.2.1: Write test for confidence markers in output (RED) - 3 min
 #### Subtask 3.2.2: Add Verification section requirement to agent prompt - 3 min
@@ -1348,7 +1348,7 @@ test -f default/schemas/README.md || exit 1
 
 ## Phase 4: Skill Activation (3 Tasks → 17 Subtasks)
 
-**Context for write-plan agent:**
+**Context for ring:write-plan agent:**
 - Read: `docs/pre-dev/ring-continuity/api-design.md` (SkillActivator interface)
 - Read: `default/hooks/generate-skills-ref.py` (skill parsing logic)
 - Read: `.references/continuous-claude-v3/.claude/skills/skill-rules.json` (reference implementation)
@@ -1391,7 +1391,7 @@ test -f default/schemas/README.md || exit 1
 
 ## Phase 5: Persistent Memory (3 Tasks → 15 Subtasks)
 
-**Context for write-plan agent:**
+**Context for ring:write-plan agent:**
 - Read: `docs/pre-dev/ring-continuity/data-model.md` (Learning entity schema)
 - Read: `docs/pre-dev/ring-continuity/api-design.md` (MemoryRepository interface)
 - Read: `default/lib/artifact-index/artifact_schema.sql` (reference FTS5 schema)
@@ -1490,7 +1490,7 @@ Output implementation plan to: docs/plans/ring-continuity-phase1-plan.md
 - [x] Complete code provided (no placeholders)
 - [x] Zero-context executable (all context in subtask description)
 - [x] 78 subtasks across 5 phases
-- [x] Clear grouping for write-plan agents
+- [x] Clear grouping for ring:write-plan agents
 - [x] Context documents specified for each phase
 
 ---
@@ -1498,9 +1498,9 @@ Output implementation plan to: docs/plans/ring-continuity-phase1-plan.md
 ## Next Steps
 
 1. **Review all 9 gate documents** in `docs/pre-dev/ring-continuity/`
-2. **Spawn 5 write-plan agents** (one per phase) using subtasks as input
+2. **Spawn 5 ring:write-plan agents** (one per phase) using subtasks as input
 3. **Review plans for integration** - ensure phases work together
-4. **Execute implementation** using `/execute-plan` or dev-cycle
+4. **Execute implementation** using `/ring:execute-plan` or ring:dev-cycle
 
 ---
 

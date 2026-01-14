@@ -1,5 +1,5 @@
 ---
-name: frontend-designer
+name: ring:frontend-designer
 version: 1.2.3
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code.
 type: specialist
@@ -10,7 +10,7 @@ changelog:
   - 1.2.2: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 1.2.1: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 1.2.0: Fixed Anti-Rationalization Table to use mandatory format (Rationalization | Why It's WRONG | Required Action), added new rationalizations for PROJECT_RULES.md and standards compliance
-  - 1.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
+  - 1.1.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
   - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.1.0: Removed duplicated Domain Standards section, references Ring Frontend standards via WebFetch
   - 1.0.0: Refactored to specification-only format, removed format examples
@@ -48,9 +48,9 @@ output_schema:
       pattern: "^## Standards Compliance"
       required: false
       required_when:
-        invocation_context: "dev-refactor"
+        invocation_context: "ring:dev-refactor"
         prompt_contains: "**MODE: ANALYSIS only**"
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -834,7 +834,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend-designer → frontend.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:frontend-designer → frontend.md" for:**
 - Complete list of sections to check (13 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
@@ -1194,8 +1194,8 @@ If any condition is true, STOP immediately and ask user for clarification.
 **This agent does not write code.** For implementation, hand off specifications to:
 - `frontend-bff-engineer-typescript` - BFF layer for frontend
 - `frontend-bff-engineer-typescript` - BFF layer implementation (API Routes)
-- `backend-engineer-golang` - Backend API development (Go)
-- `backend-engineer-typescript` - Backend API development (TypeScript)
-- `devops-engineer` - Docker/CI-CD configuration
-- `qa-analyst` - Testing strategy and QA automation
-- `sre` - Performance optimization and monitoring
+- `ring:backend-engineer-golang` - Backend API development (Go)
+- `ring:backend-engineer-typescript` - Backend API development (TypeScript)
+- `ring:devops-engineer` - Docker/CI-CD configuration
+- `ring:qa-analyst` - Testing strategy and QA automation
+- `ring:sre` - Performance optimization and monitoring

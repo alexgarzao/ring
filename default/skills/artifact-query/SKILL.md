@@ -17,10 +17,10 @@ skip_when: |
   - Artifact index not initialized (run artifact_index.py --all first)
 
 sequence:
-  before: [writing-plans, executing-plans]
+  before: [ring:writing-plans, ring:executing-plans]
 
 related:
-  similar: [exploring-codebase]
+  similar: [ring:exploring-codebase]
 ---
 
 # Artifact Query
@@ -71,7 +71,7 @@ python3 default/lib/artifact-index/artifact_query.py "<keywords>" [options]
 - `--stats` - Show index statistics
 - `--no-save` - Disable automatic query saving (saving enabled by default)
 
-### Planning Mode (Recommended for write-plan)
+### Planning Mode (Recommended for ring:write-plan)
 
 For structured precedent when creating implementation plans:
 
@@ -139,7 +139,7 @@ python3 default/lib/artifact-index/artifact_query.py "context management" --type
 
 ## Integration with Planning
 
-When creating plans (writing-plans skill), query the artifact index first:
+When creating plans (ring:writing-plans skill), query the artifact index first:
 
 1. Search for similar past implementations
 2. Note which approaches succeeded vs failed

@@ -114,7 +114,7 @@ Never use relative paths like "./file" - always use absolute paths.
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `compound-learnings` skill | Underlying skill with full process details |
-| `handoff-tracking` | Provides source data (what_worked, what_failed) |
+| `ring:handoff-tracking` | Provides source data (what_worked, what_failed) |
 | `artifact-query` | Search past handoffs for context |
 
 ## Troubleshooting

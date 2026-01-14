@@ -4,7 +4,7 @@ description: Create isolated git worktree with interactive setup
 argument-hint: "[branch-name]"
 ---
 
-I'm using the using-git-worktrees skill to set up an isolated workspace for your feature work.
+I'm using the ring:using-git-worktrees skill to set up an isolated workspace for your feature work.
 
 **This command will:**
 1. Ask you for the feature/branch name
@@ -29,7 +29,7 @@ Please use the AskUserQuestion tool to gather:
 - This will be used for both the branch name and worktree directory name
 - Examples: "auth-system", "user-profiles", "payment-integration"
 
-After getting the feature name, follow the complete using-git-worktrees skill process:
+After getting the feature name, follow the complete ring:using-git-worktrees skill process:
 
 1. **Check for existing directories** (priority order):
    - `.worktrees/` (preferred)

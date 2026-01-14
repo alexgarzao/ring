@@ -26,13 +26,13 @@ Canonical source for Standards Compliance detection logic used by all dev-team a
 
 | Agent | Standards File | When |
 |-------|---------------|------|
-| `backend-engineer-golang` | golang.md | any implementation task |
-| `backend-engineer-typescript` | typescript.md | any implementation task |
+| `ring:backend-engineer-golang` | golang.md | any implementation task |
+| `ring:backend-engineer-typescript` | typescript.md | any implementation task |
 | `frontend-bff-engineer-typescript` | typescript.md | any implementation task |
-| `frontend-engineer` | frontend.md | any implementation task |
-| `devops-engineer` | devops.md | any artifact creation |
-| `sre` | sre.md | any validation task |
-| `qa-analyst` | golang.md/typescript.md | any testing task |
+| `ring:frontend-engineer` | frontend.md | any implementation task |
+| `ring:devops-engineer` | devops.md | any artifact creation |
+| `ring:sre` | sre.md | any validation task |
+| `ring:qa-analyst` | golang.md/typescript.md | any testing task |
 
 **⛔ HARD GATE:** If agent does not output Standards Coverage Table → Output is INCOMPLETE → Orchestrator MUST re-dispatch.
 
@@ -45,7 +45,7 @@ These patterns trigger **detailed findings** in addition to Standards Coverage T
 | Exact match | `**MODE: ANALYSIS only**` |
 | Case variations | `MODE: Analysis Only`, `mode: analysis only`, `**mode: ANALYSIS only**` |
 | Partial markers | `ANALYSIS MODE`, `analysis-only`, `analyze only`, `MODE ANALYSIS` |
-| Context clues | Invoked from `dev-refactor` skill |
+| Context clues | Invoked from `ring:dev-refactor` skill |
 | Explicit request | "compare against standards", "audit compliance", "check against Ring standards" |
 
 ## Detection Logic
@@ -75,7 +75,7 @@ def get_standards_compliance_mode(prompt: str, context: dict) -> str:
         return "FULL"
 
     # Check invocation context
-    if context.get("invocation_source") == "dev-refactor":
+    if context.get("invocation_source") == "ring:dev-refactor":
         return "FULL"
 
     # Default: TABLE_ONLY (Standards Coverage Table is always required)
@@ -108,11 +108,11 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 - ❌ Non-Compliant - Does not follow standard
 - N/A - Not applicable (with reason)
 
-## Standards Coverage Table (dev-refactor context)
+## Standards Coverage Table (ring:dev-refactor context)
 
 **Detection:** This section applies when prompt contains `**MODE: ANALYSIS only**`
 
-**Inputs (provided by dev-refactor):**
+**Inputs (provided by ring:dev-refactor):**
 
 | Input | Source | Contains |
 |-------|--------|----------|
@@ -120,11 +120,11 @@ If detection is ambiguous, output FULL compliance (table + findings). Better to 
 | codebase-report.md | Provided path | Current architecture, patterns, code snippets |
 | PROJECT_RULES.md | Provided path | Project-specific conventions |
 
-**Outputs (expected by dev-refactor):**
+**Outputs (expected by ring:dev-refactor):**
 1. Standards Coverage Table (every section enumerated)
 2. Detailed findings in FINDING-XXX format for ⚠️/❌ items
 
-**HARD GATE:** When invoked from dev-refactor skill, before outputting detailed findings, you MUST output a Standards Coverage Table.
+**HARD GATE:** When invoked from ring:dev-refactor skill, before outputting detailed findings, you MUST output a Standards Coverage Table.
 
 **Process:**
 1. **Parse the WebFetch result** - Extract all `## Section` headers from standards file

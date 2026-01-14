@@ -445,7 +445,7 @@ If the user provides a commit message as argument:
 4. Create signed commit with trailer
 
 ```bash
-# User says: /commit "fix login bug"
+# User says: /ring:commit "fix login bug"
 git commit -S \
   -m "fix: fix login bug" \
   --trailer "X-Lerian-Ref: 0x1"

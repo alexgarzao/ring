@@ -1,5 +1,5 @@
 ---
-name: frontend-engineer
+name: ring:frontend-engineer
 version: 3.2.6
 description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, and modern React patterns.
 type: specialist
@@ -11,7 +11,7 @@ changelog:
   - 3.2.4: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 3.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 3.2.2: Added Server/Client component mixing detection, styling consistency checks, improved edge case handling
-  - 3.2.1: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
+  - 3.2.1: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
   - 3.2.0: Added Blocker Criteria, Severity Calibration, Cannot Be Overridden, Pressure Resistance sections for consistency with other agents
   - 3.1.0: Added Standards Loading section with WebFetch references to Ring Frontend standards
   - 3.0.0: Refactored to specification-only format, removed code examples
@@ -43,9 +43,9 @@ output_schema:
       pattern: "^## Standards Compliance"
       required: false
       required_when:
-        invocation_context: "dev-refactor"
+        invocation_context: "ring:dev-refactor"
         prompt_contains: "**MODE: ANALYSIS only**"
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -626,7 +626,7 @@ You have deep expertise in accessibility. Apply WCAG 2.1 AA standards.
 
 ## Receiving Handoff from Frontend Designer
 
-**When receiving a Handoff Contract from `frontend-designer`, follow this process:**
+**When receiving a Handoff Contract from `ring:frontend-designer`, follow this process:**
 
 ### Step 1: Validate Handoff Contract
 
@@ -950,17 +950,17 @@ Before marking implementation complete, you MUST verify:
 
 **⛔ If any checkbox is unchecked → Fix before submission. Self-check is MANDATORY.**
 
-## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
 
 ### Sections to Check (MANDATORY)
 
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend-engineer → frontend.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:frontend-engineer → frontend.md" for:**
 - Complete list of sections to check (13 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
@@ -1014,14 +1014,14 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ## What This Agent Does not Handle
 
 - **BFF/API Routes development** → use `frontend-bff-engineer-typescript`
 - **Backend API development** → use `backend-engineer-*`
-- **Docker/CI-CD configuration** → use `devops-engineer`
-- **Server infrastructure and monitoring** → use `sre`
-- **API contract testing and load testing** → use `qa-analyst`
+- **Docker/CI-CD configuration** → use `ring:devops-engineer`
+- **Server infrastructure and monitoring** → use `ring:sre`
+- **API contract testing and load testing** → use `ring:qa-analyst`
 - **Database design and migrations** → use `backend-engineer-*`
-- **Design specifications and visual design** → use `frontend-designer`
+- **Design specifications and visual design** → use `ring:frontend-designer`

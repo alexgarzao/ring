@@ -1,7 +1,7 @@
 # Reviewer Model Requirement
 
 **Version:** 1.0.0
-**Applies to:** All reviewer agents (code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer)
+**Applies to:** All reviewer agents (ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer)
 
 ---
 

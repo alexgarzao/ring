@@ -16,11 +16,11 @@ NOT_skip_when: |
   - "We'll containerize before production" → Containerize NOW or never.
 
 sequence:
-  after: [dev-implementation]
-  before: [dev-sre]
+  after: [ring:dev-implementation]
+  before: [ring:dev-ring:sre]
 
 related:
-  complementary: [dev-implementation, dev-testing]
+  complementary: [ring:dev-implementation, ring:dev-testing]
 
 input_schema:
   required:
@@ -173,7 +173,7 @@ This skill configures the development and deployment infrastructure:
 </verify_before_proceed>
 
 ```text
-REQUIRED INPUT (from dev-cycle orchestrator):
+REQUIRED INPUT (from ring:dev-cycle orchestrator):
 - unit_id: [task/subtask being containerized]
 - language: [go|typescript|python]
 - service_type: [api|worker|batch|cli]
@@ -442,7 +442,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Skip Docker, runs fine locally" | "Docker ensures consistency. Dispatching devops-engineer now." |
+| "Skip Docker, runs fine locally" | "Docker ensures consistency. Dispatching ring:devops-engineer now." |
 | "Demo tomorrow, no time" | "Docker takes 30 min. Better than environment crash during demo." |
 | "We'll containerize later" | "Later = never. Containerizing now." |
 

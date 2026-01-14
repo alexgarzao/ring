@@ -18,7 +18,7 @@ skip_when: |
   - Doubt can be resolved via doubt-triggered-questions (single question)
 
 sequence:
-  before: [brainstorming, writing-plans]
+  before: [brainstorming, ring:writing-plans]
   after: []
 
 related:
@@ -34,7 +34,7 @@ Proactively surface and resolve ambiguities by systematically interviewing the u
 
 **Core principle:** It's better to ask 5 questions upfront than to rewrite code 3 times.
 
-**Announce at start:** "I'm using the interviewing-user skill to gather requirements before we begin."
+**Announce at start:** "I'm using the ring:interviewing-user skill to gather requirements before we begin."
 
 ## Quick Reference
 
@@ -224,9 +224,9 @@ Claude should NOT auto-trigger when:
 
 | Skill | Relationship |
 |-------|--------------|
-| `doubt-triggered-questions` | Use for single questions during work; use interviewing-user for systematic upfront gathering |
+| `doubt-triggered-questions` | Use for single questions during work; use ring:interviewing-user for systematic upfront gathering |
 | `brainstorming` | Interview first to gather requirements, THEN brainstorm solutions |
-| `writing-plans` | Interview first to clarify scope, THEN create plan |
+| `ring:writing-plans` | Interview first to clarify scope, THEN create plan |
 
 ## Required Patterns
 

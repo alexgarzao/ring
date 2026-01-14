@@ -14,7 +14,7 @@ Extract semantic changes from code (not line-level diffs) for Go, TypeScript, an
 ## Directory Structure
 
 ```
-scripts/codereview/
+scripts/ring:codereview/
 ├── cmd/ast-extractor/
 │   └── main.go                 # CLI entry point
 ├── internal/ast/
@@ -92,16 +92,16 @@ type ChangeSummary struct {
 Create the base directory structure for the AST extraction system.
 
 ```bash
-mkdir -p scripts/codereview/cmd/ast-extractor
-mkdir -p scripts/codereview/internal/ast
-mkdir -p scripts/codereview/ts
-mkdir -p scripts/codereview/py
-mkdir -p scripts/codereview/testdata/{go,ts,py}
+mkdir -p scripts/ring:codereview/cmd/ast-extractor
+mkdir -p scripts/ring:codereview/internal/ast
+mkdir -p scripts/ring:codereview/ts
+mkdir -p scripts/ring:codereview/py
+mkdir -p scripts/ring:codereview/testdata/{go,ts,py}
 ```
 
 **Verification:**
 ```bash
-ls -la scripts/codereview/
+ls -la scripts/ring:codereview/
 # Should show: cmd/, internal/, ts/, py/, testdata/
 ```
 
@@ -112,7 +112,7 @@ ls -la scripts/codereview/
 
 Create the shared type definitions used by all language extractors.
 
-**File:** `scripts/codereview/internal/ast/types.go`
+**File:** `scripts/ring:codereview/internal/ast/types.go`
 
 ```go
 package ast
@@ -212,7 +212,7 @@ type FilePair struct {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -222,7 +222,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Define the common interface that all language-specific extractors implement.
 
-**File:** `scripts/codereview/internal/ast/extractor.go`
+**File:** `scripts/ring:codereview/internal/ast/extractor.go`
 
 ```go
 package ast
@@ -350,7 +350,7 @@ func ComputeSummary(funcs []FunctionDiff, types []TypeDiff, imports []ImportDiff
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -360,7 +360,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Create the Go AST extractor with core parsing functionality.
 
-**File:** `scripts/codereview/internal/ast/golang.go`
+**File:** `scripts/ring:codereview/internal/ast/golang.go`
 
 ```go
 package ast
@@ -608,7 +608,7 @@ func (g *GoExtractor) typeToString(expr ast.Expr) string {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -618,7 +618,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Add the diff comparison logic to the Go extractor.
 
-**Append to file:** `scripts/codereview/internal/ast/golang.go`
+**Append to file:** `scripts/ring:codereview/internal/ast/golang.go`
 
 ```go
 // ExtractDiff compares two Go files and returns semantic differences
@@ -896,7 +896,7 @@ func (g *GoExtractor) stringsEqual(a, b []string) bool {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -906,7 +906,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Create test fixtures for the Go AST extractor.
 
-**File:** `scripts/codereview/testdata/go/before.go`
+**File:** `scripts/ring:codereview/testdata/go/before.go`
 
 ```go
 package example
@@ -943,7 +943,7 @@ func FormatName(name string) string {
 }
 ```
 
-**File:** `scripts/codereview/testdata/go/after.go`
+**File:** `scripts/ring:codereview/testdata/go/after.go`
 
 ```go
 package example
@@ -999,7 +999,7 @@ func NewGreeting(prefix, name string) string {
 
 **Verification:**
 ```bash
-ls scripts/codereview/testdata/go/
+ls scripts/ring:codereview/testdata/go/
 # Should show: before.go, after.go
 ```
 
@@ -1010,7 +1010,7 @@ ls scripts/codereview/testdata/go/
 
 Create unit tests for the Go AST extractor.
 
-**File:** `scripts/codereview/internal/ast/golang_test.go`
+**File:** `scripts/ring:codereview/internal/ast/golang_test.go`
 
 ```go
 package ast
@@ -1146,7 +1146,7 @@ func TestGoExtractor_DeletedFile(t *testing.T) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test ./internal/ast/ -v -run TestGoExtractor
+cd scripts/ring:codereview && go test ./internal/ast/ -v -run TestGoExtractor
 ```
 
 ---
@@ -1156,7 +1156,7 @@ cd scripts/codereview && go test ./internal/ast/ -v -run TestGoExtractor
 
 Set up the TypeScript package for AST extraction.
 
-**File:** `scripts/codereview/ts/package.json`
+**File:** `scripts/ring:codereview/ts/package.json`
 
 ```json
 {
@@ -1177,7 +1177,7 @@ Set up the TypeScript package for AST extraction.
 }
 ```
 
-**File:** `scripts/codereview/ts/tsconfig.json`
+**File:** `scripts/ring:codereview/ts/tsconfig.json`
 
 ```json
 {
@@ -1201,7 +1201,7 @@ Set up the TypeScript package for AST extraction.
 
 **Verification:**
 ```bash
-cd scripts/codereview/ts && npm install && npm run build
+cd scripts/ring:codereview/ts && npm install && npm run build
 ```
 
 ---
@@ -1211,7 +1211,7 @@ cd scripts/codereview/ts && npm install && npm run build
 
 Create the TypeScript AST extraction logic using the TypeScript Compiler API.
 
-**File:** `scripts/codereview/ts/ast-extractor.ts`
+**File:** `scripts/ring:codereview/ts/ast-extractor.ts`
 
 ```typescript
 import * as ts from 'typescript';
@@ -1803,7 +1803,7 @@ main();
 
 **Verification:**
 ```bash
-cd scripts/codereview/ts && npm run build
+cd scripts/ring:codereview/ts && npm run build
 ```
 
 ---
@@ -1813,7 +1813,7 @@ cd scripts/codereview/ts && npm run build
 
 Create test fixtures for the TypeScript AST extractor.
 
-**File:** `scripts/codereview/testdata/ts/before.ts`
+**File:** `scripts/ring:codereview/testdata/ts/before.ts`
 
 ```typescript
 import { useState } from 'react';
@@ -1853,7 +1853,7 @@ export class UserService {
 }
 ```
 
-**File:** `scripts/codereview/testdata/ts/after.ts`
+**File:** `scripts/ring:codereview/testdata/ts/after.ts`
 
 ```typescript
 import { useState, useEffect } from 'react';
@@ -1911,7 +1911,7 @@ export class UserService {
 
 **Verification:**
 ```bash
-ls scripts/codereview/testdata/ts/
+ls scripts/ring:codereview/testdata/ts/
 # Should show: before.ts, after.ts
 ```
 
@@ -1922,7 +1922,7 @@ ls scripts/codereview/testdata/ts/
 
 Create the Python AST extraction script.
 
-**File:** `scripts/codereview/py/ast_extractor.py`
+**File:** `scripts/ring:codereview/py/ast_extractor.py`
 
 ```python
 #!/usr/bin/env python3
@@ -2419,7 +2419,7 @@ if __name__ == "__main__":
 
 **Verification:**
 ```bash
-python3 scripts/codereview/py/ast_extractor.py --help 2>&1 || true
+python3 scripts/ring:codereview/py/ast_extractor.py --help 2>&1 || true
 # Should show usage message
 ```
 
@@ -2430,7 +2430,7 @@ python3 scripts/codereview/py/ast_extractor.py --help 2>&1 || true
 
 Create test fixtures for the Python AST extractor.
 
-**File:** `scripts/codereview/testdata/py/before.py`
+**File:** `scripts/ring:codereview/testdata/py/before.py`
 
 ```python
 """Example module for testing AST extraction."""
@@ -2475,7 +2475,7 @@ def format_name(name: str) -> str:
     return name.strip().title()
 ```
 
-**File:** `scripts/codereview/testdata/py/after.py`
+**File:** `scripts/ring:codereview/testdata/py/after.py`
 
 ```python
 """Example module for testing AST extraction."""
@@ -2539,7 +2539,7 @@ def validate_email(email: str) -> bool:  # New function
 
 **Verification:**
 ```bash
-ls scripts/codereview/testdata/py/
+ls scripts/ring:codereview/testdata/py/
 # Should show: before.py, after.py
 ```
 
@@ -2550,7 +2550,7 @@ ls scripts/codereview/testdata/py/
 
 Create the Go bridge that calls the TypeScript extractor.
 
-**File:** `scripts/codereview/internal/ast/typescript.go`
+**File:** `scripts/ring:codereview/internal/ast/typescript.go`
 
 ```go
 package ast
@@ -2615,7 +2615,7 @@ func (t *TypeScriptExtractor) ExtractDiff(ctx context.Context, beforePath, after
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -2625,7 +2625,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Create the Go bridge that calls the Python extractor.
 
-**File:** `scripts/codereview/internal/ast/python.go`
+**File:** `scripts/ring:codereview/internal/ast/python.go`
 
 ```go
 package ast
@@ -2690,7 +2690,7 @@ func (p *PythonExtractor) ExtractDiff(ctx context.Context, beforePath, afterPath
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -2700,7 +2700,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Create a renderer that converts AST JSON to human-readable markdown.
 
-**File:** `scripts/codereview/internal/ast/renderer.go`
+**File:** `scripts/ring:codereview/internal/ast/renderer.go`
 
 ```go
 package ast
@@ -2890,7 +2890,7 @@ func RenderJSON(diff *SemanticDiff) ([]byte, error) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/ast/
+cd scripts/ring:codereview && go build ./internal/ast/
 ```
 
 ---
@@ -2900,7 +2900,7 @@ cd scripts/codereview && go build ./internal/ast/
 
 Create the main CLI tool that orchestrates AST extraction.
 
-**File:** `scripts/codereview/cmd/ast-extractor/main.go`
+**File:** `scripts/ring:codereview/cmd/ast-extractor/main.go`
 
 ```go
 package main
@@ -2915,7 +2915,7 @@ import (
     "strings"
     "time"
 
-    "codereview/internal/ast"
+    "ring:codereview/internal/ast"
 )
 
 var (
@@ -3063,7 +3063,7 @@ func outputDiff(diff *ast.SemanticDiff) error {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build -o bin/ast-extractor ./cmd/ast-extractor/
+cd scripts/ring:codereview && go build -o bin/ast-extractor ./cmd/ast-extractor/
 ```
 
 ---
@@ -3073,17 +3073,17 @@ cd scripts/codereview && go build -o bin/ast-extractor ./cmd/ast-extractor/
 
 Initialize the Go module.
 
-**File:** `scripts/codereview/go.mod`
+**File:** `scripts/ring:codereview/go.mod`
 
 ```
-module codereview
+module ring:codereview
 
 go 1.21
 ```
 
 **Verification:**
 ```bash
-cd scripts/codereview && go mod tidy
+cd scripts/ring:codereview && go mod tidy
 ```
 
 ---
@@ -3093,7 +3093,7 @@ cd scripts/codereview && go mod tidy
 
 Create an integration test that exercises all extractors.
 
-**File:** `scripts/codereview/internal/ast/integration_test.go`
+**File:** `scripts/ring:codereview/internal/ast/integration_test.go`
 
 ```go
 //go:build integration
@@ -3243,7 +3243,7 @@ func TestIntegration_Registry(t *testing.T) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test -tags=integration ./internal/ast/ -v
+cd scripts/ring:codereview && go test -tags=integration ./internal/ast/ -v
 ```
 
 ---
@@ -3292,7 +3292,7 @@ After completing all tasks:
 
 ```bash
 # Build everything
-cd scripts/codereview
+cd scripts/ring:codereview
 go mod tidy
 go build ./...
 

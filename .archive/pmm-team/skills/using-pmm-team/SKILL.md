@@ -20,7 +20,7 @@ skip_when: |
 
 The ring-pmm-team plugin provides 7 product marketing skills and 6 specialist agents. Use them via `Skill tool: "skill-name"` or via slash commands.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch PMM specialists to handle marketing strategy; don't attempt marketing analysis without structured process.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch PMM specialists to handle marketing strategy; don't attempt marketing analysis without structured process.
 
 ## PMM Philosophy
 
@@ -144,7 +144,7 @@ docs/pmm/{product-or-feature}/
 | finops-team | PMM pricing → FinOps validates margins |
 
 **Combined with:**
-- `pre-dev-prd-creation` – Business requirements inform market analysis
+- `ring:pre-dev-prd-creation` – Business requirements inform market analysis
 - `functional-writer` – Turn positioning into documentation
 - `brainstorm` – Explore positioning options
 

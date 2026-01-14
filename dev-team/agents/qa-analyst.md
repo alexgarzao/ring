@@ -1,5 +1,5 @@
 ---
-name: qa-analyst
+name: ring:qa-analyst
 version: 1.3.2
 description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation.
 type: specialist
@@ -8,11 +8,11 @@ last_updated: 2026-01-13
 changelog:
   - 1.3.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.3.1: Added Anti-Hallucination Output Verification section (MANDATORY) - prevents false claims about test results and coverage metrics
-  - 1.3.0: Added Test Quality Gate (mandatory in Gate 3), Edge Case Requirements, prevents dev-refactor duplicate findings
+  - 1.3.0: Added Test Quality Gate (mandatory in Gate 3), Edge Case Requirements, prevents ring:dev-refactor duplicate findings
   - 1.2.2: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 1.2.1: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 1.2.0: Added Coverage Calculation Rules, Skipped Test Detection, TDD RED Phase Verification, Assertion-less Test Detection, and expanded Pressure Resistance and Anti-Rationalization sections
-  - 1.1.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
+  - 1.1.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
   - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.1.0: Added Standards Loading section with WebFetch references to language-specific standards
   - 1.0.0: Initial release
@@ -57,9 +57,9 @@ output_schema:
       pattern: "^## Standards Compliance"
       required: false
       required_when:
-        invocation_context: "dev-refactor"
+        invocation_context: "ring:dev-refactor"
         prompt_contains: "**MODE: ANALYSIS only**"
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -267,7 +267,7 @@ Invoke this agent when the task involves:
 | Unit tests (not integration) | Gate 3 scope. Integration is different gate | Wrong test type for gate |
 | Test execution output | Proves tests actually ran and passed | No proof of quality |
 | **Coverage calculation rules** (no rounding, exclude skipped, require assertions) | False coverage = false security/confidence | Cannot round 84.9% to 85%. Cannot include skipped tests. Cannot count assertion-less tests. |
-| **Test Quality Gate checks** | Prevents issues escaping to dev-refactor | all quality checks must pass, not just coverage % |
+| **Test Quality Gate checks** | Prevents issues escaping to ring:dev-refactor | all quality checks must pass, not just coverage % |
 | **Edge case coverage** (≥2 per AC) | Edge cases cause production incidents | Happy path only = incomplete testing |
 
 **User cannot override these. Manager cannot override these. Time pressure cannot override these.**
@@ -278,7 +278,7 @@ Invoke this agent when the task involves:
 
 **Beyond coverage %, all quality checks must PASS before Gate 3 exit.**
 
-**Purpose:** Prevent test-related issues from escaping to dev-refactor. If an issue can be caught here, it MUST be caught here.
+**Purpose:** Prevent test-related issues from escaping to ring:dev-refactor. If an issue can be caught here, it MUST be caught here.
 
 ### Quality Checks (all REQUIRED)
 
@@ -522,17 +522,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 - Missing coverage for critical paths
 - Tests mock too much (testing mocks, not code)
 
-## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "qa-analyst".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:qa-analyst".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "qa-analyst → golang.md or typescript.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:qa-analyst → golang.md or typescript.md" for:**
 - Complete list of sections to check per language
 - Section names (MUST use EXACT names from table)
 - Test Quality Gate Checks (Gate 3 Exit)
@@ -589,7 +589,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -791,7 +791,7 @@ The following testing standards MUST be followed when designing and implementing
 
 ### Test-Driven Development (TDD)
 
-**TDD is MANDATORY when invoked by dev-cycle (Gate 0 and Gate 3).**
+**TDD is MANDATORY when invoked by ring:dev-cycle (Gate 0 and Gate 3).**
 
 #### Standards Priority
 
@@ -882,7 +882,7 @@ The following testing standards MUST be followed when designing and implementing
 
 #### When TDD is Required
 
-**TDD is MANDATORY (via dev-cycle) for:**
+**TDD is MANDATORY (via ring:dev-cycle) for:**
 - All features going through Gate 0 (Implementation)
 - All test validation in Gate 3 (Testing)
 - Bug fixes (write test that reproduces bug first)
@@ -999,7 +999,7 @@ grep -rn "@pytest.mark.skip\|@unittest.skip" tests/
 
 ```bash
 # JavaScript/TypeScript (Jest)
-# Jest: If skipped tests exist, either (1) delete/commit fixes before coverage run, or
+# Jest: If skipped tests exist, either (1) delete/ring:commit fixes before coverage run, or
 # (2) manually exclude those test files from coverage:
 jest --coverage --collectCoverageFrom="!tests/**/*.skip.test.ts"
 
@@ -1227,8 +1227,8 @@ Tests: 3 passed | Coverage: 72%
 
 ## What This Agent Does not Handle
 
-- Application code development (use `backend-engineer-golang`, `backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
-- Docker/docker-compose configuration (use `devops-engineer`)
-- Observability validation (use `sre`)
-- Infrastructure provisioning (use `devops-engineer`)
-- Performance optimization implementation (use `sre` or language-specific backend engineer)
+- Application code development (use `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
+- Docker/docker-compose configuration (use `ring:devops-engineer`)
+- Observability validation (use `ring:sre`)
+- Infrastructure provisioning (use `ring:devops-engineer`)
+- Performance optimization implementation (use `ring:sre` or language-specific backend engineer)

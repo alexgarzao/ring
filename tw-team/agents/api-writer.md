@@ -351,8 +351,8 @@ Brief description of what this endpoint does.
 
 - Conceptual documentation (use `functional-writer`)
 - Documentation review (use `docs-reviewer`)
-- API implementation (use `backend-engineer-golang` or `backend-engineer-typescript`)
-- API design decisions (use `backend-engineer-golang` or `backend-engineer-typescript`)
+- API implementation (use `ring:backend-engineer-golang` or `ring:backend-engineer-typescript`)
+- API design decisions (use `ring:backend-engineer-golang` or `ring:backend-engineer-typescript`)
 
 ## Output Expectations
 

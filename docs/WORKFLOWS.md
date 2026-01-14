@@ -158,7 +158,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Pre-Dev Workflow
 
-### Simple Features (<2 days): `/pre-dev-feature`
+### Simple Features (<2 days): `/ring:pre-dev-feature`
 
 ```
 ├── Gate 0: pm-team/skills/pre-dev-research
@@ -171,7 +171,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
     └── Output: docs/pre-dev/feature/tasks.md
 ```
 
-### Complex Features (≥2 days): `/pre-dev-full`
+### Complex Features (≥2 days): `/ring:pre-dev-full`
 
 ```
 ├── Gate 0: Research Phase

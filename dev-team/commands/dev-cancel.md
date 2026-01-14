@@ -9,7 +9,7 @@ Cancel the current development cycle.
 ## Usage
 
 ```
-/dev-cancel [--force]
+/ring:dev-cancel [--force]
 ```
 
 ## Options
@@ -50,11 +50,11 @@ Cycle ID: 2024-01-15-143000
 Status: cancelled
 Completed: 3/5 tasks
 
-State saved to: docs/dev-cycle/current-cycle.json (or docs/dev-refactor/current-cycle.json)
+State saved to: docs/ring:dev-cycle/current-cycle.json (or docs/ring:dev-refactor/current-cycle.json)
 Partial report: .ring/dev-team/feedback/cycle-2024-01-15-partial.md
 
 To resume later:
-  /dev-cycle --resume
+  /ring:dev-cycle --resume
 ```
 
 ## When No Cycle is Running
@@ -63,7 +63,7 @@ To resume later:
 ℹ️ No development cycle to cancel.
 
 Check status with:
-  /dev-status
+  /ring:dev-status
 ```
 
 ## Related Commands
@@ -78,4 +78,4 @@ Check status with:
 
 Now checking for active cycle to cancel...
 
-Read state from: `docs/dev-cycle/current-cycle.json` or `docs/dev-refactor/current-cycle.json`
+Read state from: `docs/ring:dev-cycle/current-cycle.json` or `docs/ring:dev-refactor/current-cycle.json`

@@ -77,10 +77,10 @@ All while maintaining Ring's core principle: **lightweight, accessible, no heavy
 **US-2.1: As a Ring user, I want handoffs in YAML format so that they consume fewer tokens and can be machine-parsed.**
 
 - Acceptance Criteria:
-  - [ ] New `/create-handoff` produces YAML format
+  - [ ] New `/ring:create-handoff` produces YAML format
   - [ ] YAML handoffs are ~400 tokens (vs ~2000 markdown)
   - [ ] Schema validation ensures required fields present
-  - [ ] `/resume-handoff` reads both YAML and legacy Markdown
+  - [ ] `/ring:resume-handoff` reads both YAML and legacy Markdown
 
 **US-2.2: As a Ring user, I want handoffs to be auto-indexed so that I can search past sessions.**
 
@@ -99,7 +99,7 @@ All while maintaining Ring's core principle: **lightweight, accessible, no heavy
   - [ ] Agents output `✗ UNCERTAIN` for unverified assumptions
   - [ ] Confidence markers appear in Findings/Claims sections
 
-**US-3.2: As a Ring user, I want the codebase-explorer to distinguish verified facts from inferences so that I can trust its findings.**
+**US-3.2: As a Ring user, I want the ring:codebase-explorer to distinguish verified facts from inferences so that I can trust its findings.**
 
 - Acceptance Criteria:
   - [ ] Explorer agent marks each finding with confidence level

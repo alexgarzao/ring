@@ -24,17 +24,17 @@
 # Run ALL these commands and verify output:
 go version          # Expected: go version go1.22+ or higher
 git status          # Expected: clean working tree
-ls scripts/codereview/go.mod  # Expected: file exists (from Phase 0/1)
-ls scripts/codereview/internal/lint/  # Expected: linter wrappers exist (from Phase 1)
+ls scripts/ring:codereview/go.mod  # Expected: file exists (from Phase 0/1)
+ls scripts/ring:codereview/internal/ring:lint/  # Expected: linter wrappers exist (from Phase 1)
 ```
 
 ## Historical Precedent
 
-**Query:** "codereview context compilation reviewer analysis"
+**Query:** "ring:codereview context compilation reviewer analysis"
 **Index Status:** Populated (no direct matches)
 
 ### Successful Patterns to Reference
-- Phase 0/1 plans established Go binary structure in `scripts/codereview/`
+- Phase 0/1 plans established Go binary structure in `scripts/ring:codereview/`
 - Internal packages pattern: `internal/{domain}/` for shared code
 - JSON output/input pattern for inter-phase communication
 
@@ -42,16 +42,16 @@ ls scripts/codereview/internal/lint/  # Expected: linter wrappers exist (from Ph
 - None found - this is a new feature area
 
 ### Related Past Plans
-- `codereview-enhancement-macro-plan.md`: Parent macro plan defining context file templates
-- `2026-01-13-codereview-phase0-scope-detector.md`: Established Go module structure
-- `2026-01-13-codereview-phase1-static-analysis.md`: Established lint output formats
+- `ring:codereview-enhancement-macro-plan.md`: Parent macro plan defining context file templates
+- `2026-01-13-ring:codereview-phase0-scope-detector.md`: Established Go module structure
+- `2026-01-13-ring:codereview-phase1-static-analysis.md`: Established lint output formats
 
 ---
 
 ## File Structure Overview
 
 ```
-scripts/codereview/
+scripts/ring:codereview/
 ├── cmd/
 │   ├── compile-context/          # Phase 5 binary
 │   │   └── main.go
@@ -77,11 +77,11 @@ scripts/codereview/
 | 1 | Create context package structure | Set up `internal/context/` directory | 2 min |
 | 2 | Define input types | Create structs for reading phase outputs | 5 min |
 | 3 | Implement reviewer mappings | Map data sources to reviewers | 5 min |
-| 4 | Write templates for code-reviewer | Markdown template for code quality context | 5 min |
-| 5 | Write templates for security-reviewer | Markdown template for security context | 5 min |
-| 6 | Write templates for business-logic-reviewer | Markdown template for business logic context | 4 min |
-| 7 | Write templates for test-reviewer | Markdown template for testing context | 4 min |
-| 8 | Write templates for nil-safety-reviewer | Markdown template for nil safety context | 4 min |
+| 4 | Write templates for ring:code-reviewer | Markdown template for code quality context | 5 min |
+| 5 | Write templates for ring:security-reviewer | Markdown template for security context | 5 min |
+| 6 | Write templates for ring:business-logic-reviewer | Markdown template for business logic context | 4 min |
+| 7 | Write templates for ring:test-reviewer | Markdown template for testing context | 4 min |
+| 8 | Write templates for ring:nil-safety-reviewer | Markdown template for nil safety context | 4 min |
 | 9 | Implement compiler core | Main aggregation logic | 5 min |
 | 10 | Implement file reader | Read and parse phase outputs | 5 min |
 | 11 | Implement context writer | Write reviewer context files | 4 min |
@@ -100,20 +100,20 @@ scripts/codereview/
 ## Task 1: Create Context Package Structure
 
 **Files:**
-- Create: `scripts/codereview/internal/context/`
+- Create: `scripts/ring:codereview/internal/context/`
 
 **Prerequisites:**
-- Go module exists at `scripts/codereview/go.mod`
+- Go module exists at `scripts/ring:codereview/go.mod`
 
 **Step 1: Create directory**
 
 ```bash
-mkdir -p scripts/codereview/internal/context
+mkdir -p scripts/ring:codereview/internal/context
 ```
 
 **Step 2: Verify structure**
 
-Run: `ls -la scripts/codereview/internal/`
+Run: `ls -la scripts/ring:codereview/internal/`
 
 **Expected output:**
 ```
@@ -130,7 +130,7 @@ drwxr-xr-x  ... scope
 **If Task Fails:**
 
 1. **Directory creation fails:**
-   - Check: `ls scripts/codereview/internal/` (parent exists?)
+   - Check: `ls scripts/ring:codereview/internal/` (parent exists?)
    - Fix: Verify Phase 0 was completed
    - Rollback: N/A (no files created)
 
@@ -139,14 +139,14 @@ drwxr-xr-x  ... scope
 ## Task 2: Define Input Types
 
 **Files:**
-- Create: `scripts/codereview/internal/context/types.go`
+- Create: `scripts/ring:codereview/internal/context/types.go`
 
 **Prerequisites:**
 - Task 1 completed
 
 **Step 1: Write the types file**
 
-Create file `scripts/codereview/internal/context/types.go`:
+Create file `scripts/ring:codereview/internal/context/types.go`:
 
 ```go
 // Package context provides context compilation for code review.
@@ -492,7 +492,7 @@ type ReviewerContext struct {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/context/... && cd ../..`
+Run: `cd scripts/ring:codereview && go build ./internal/context/... && cd ../..`
 
 **Expected output:**
 ```
@@ -502,8 +502,8 @@ Run: `cd scripts/codereview && go build ./internal/context/... && cd ../..`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/context/types.go
-git commit -m "feat(codereview): add input types for context compilation
+git add scripts/ring:codereview/internal/context/types.go
+git commit -m "feat(ring:codereview): add input types for context compilation
 
 Phase 5 types for reading outputs from all analysis phases (0-4).
 Includes structures for scope, static analysis, AST, call graph,
@@ -515,21 +515,21 @@ and data flow data."
 1. **Compilation fails:**
    - Check: Error message for syntax issues
    - Fix: Correct JSON tags or type definitions
-   - Rollback: `rm scripts/codereview/internal/context/types.go`
+   - Rollback: `rm scripts/ring:codereview/internal/context/types.go`
 
 ---
 
 ## Task 3: Implement Reviewer Mappings
 
 **Files:**
-- Create: `scripts/codereview/internal/context/reviewer_mappings.go`
+- Create: `scripts/ring:codereview/internal/context/reviewer_mappings.go`
 
 **Prerequisites:**
 - Task 2 completed
 
 **Step 1: Write the failing test**
 
-Create file `scripts/codereview/internal/context/reviewer_mappings_test.go`:
+Create file `scripts/ring:codereview/internal/context/reviewer_mappings_test.go`:
 
 ```go
 package context
@@ -540,11 +540,11 @@ import (
 
 func TestReviewerNames(t *testing.T) {
 	expected := []string{
-		"code-reviewer",
-		"security-reviewer",
-		"business-logic-reviewer",
-		"test-reviewer",
-		"nil-safety-reviewer",
+		"ring:code-reviewer",
+		"ring:security-reviewer",
+		"ring:business-logic-reviewer",
+		"ring:test-reviewer",
+		"ring:nil-safety-reviewer",
 	}
 
 	names := GetReviewerNames()
@@ -564,11 +564,11 @@ func TestGetReviewerDataSources(t *testing.T) {
 		reviewer string
 		wantLen  int
 	}{
-		{"code-reviewer", 2},      // static-analysis, semantic-diff
-		{"security-reviewer", 2},  // static-analysis (security), security-summary
-		{"business-logic-reviewer", 2}, // semantic-diff, impact-summary
-		{"test-reviewer", 1},      // impact-summary (test coverage)
-		{"nil-safety-reviewer", 1}, // data-flow (nil_sources)
+		{"ring:code-reviewer", 2},      // static-analysis, semantic-diff
+		{"ring:security-reviewer", 2},  // static-analysis (security), security-summary
+		{"ring:business-logic-reviewer", 2}, // semantic-diff, impact-summary
+		{"ring:test-reviewer", 1},      // impact-summary (test coverage)
+		{"ring:nil-safety-reviewer", 1}, // data-flow (nil_sources)
 	}
 
 	for _, tt := range tests {
@@ -634,18 +634,18 @@ func TestFilterNilSourcesByRisk(t *testing.T) {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd scripts/codereview && go test -v ./internal/context/... 2>&1 | head -20 && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/context/... 2>&1 | head -20 && cd ../..`
 
 **Expected output:**
 ```
-# github.com/lerianstudio/ring/scripts/codereview/internal/context
+# github.com/lerianstudio/ring/scripts/ring:codereview/internal/context
 ./reviewer_mappings_test.go:XX:XX: undefined: GetReviewerNames
-FAIL	github.com/lerianstudio/ring/scripts/codereview/internal/context [build failed]
+FAIL	github.com/lerianstudio/ring/scripts/ring:codereview/internal/context [build failed]
 ```
 
 **Step 3: Write minimal implementation**
 
-Create file `scripts/codereview/internal/context/reviewer_mappings.go`:
+Create file `scripts/ring:codereview/internal/context/reviewer_mappings.go`:
 
 ```go
 package context
@@ -658,22 +658,22 @@ type DataSource struct {
 
 // reviewerDataSources maps each reviewer to their primary data sources.
 var reviewerDataSources = map[string][]DataSource{
-	"code-reviewer": {
+	"ring:code-reviewer": {
 		{Name: "static-analysis", Description: "Lint findings, style issues, deprecations"},
 		{Name: "semantic-diff", Description: "Function/type changes, signature modifications"},
 	},
-	"security-reviewer": {
+	"ring:security-reviewer": {
 		{Name: "static-analysis-security", Description: "Security scanner findings (gosec, bandit)"},
 		{Name: "security-summary", Description: "Data flow analysis, taint tracking"},
 	},
-	"business-logic-reviewer": {
+	"ring:business-logic-reviewer": {
 		{Name: "semantic-diff", Description: "Business logic changes in functions/methods"},
 		{Name: "impact-summary", Description: "Call graph impact, affected callers"},
 	},
-	"test-reviewer": {
+	"ring:test-reviewer": {
 		{Name: "impact-summary", Description: "Test coverage for modified code"},
 	},
-	"nil-safety-reviewer": {
+	"ring:nil-safety-reviewer": {
 		{Name: "data-flow", Description: "Nil/None source analysis"},
 	},
 }
@@ -706,11 +706,11 @@ var codeQualityCategories = map[string]bool{
 // GetReviewerNames returns the list of all reviewer names in order.
 func GetReviewerNames() []string {
 	return []string{
-		"code-reviewer",
-		"security-reviewer",
-		"business-logic-reviewer",
-		"test-reviewer",
-		"nil-safety-reviewer",
+		"ring:code-reviewer",
+		"ring:security-reviewer",
+		"ring:business-logic-reviewer",
+		"ring:test-reviewer",
+		"ring:nil-safety-reviewer",
 	}
 }
 
@@ -811,7 +811,7 @@ func GetHighImpactFunctions(callGraph *CallGraphData, threshold int) []FunctionC
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd scripts/codereview && go test -v ./internal/context/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/context/... && cd ../..`
 
 **Expected output:**
 ```
@@ -826,15 +826,15 @@ Run: `cd scripts/codereview && go test -v ./internal/context/... && cd ../..`
 === RUN   TestFilterNilSourcesByRisk
 --- PASS: TestFilterNilSourcesByRisk (0.00s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/context
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/context
 ```
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/internal/context/reviewer_mappings.go
-git add scripts/codereview/internal/context/reviewer_mappings_test.go
-git commit -m "feat(codereview): add reviewer data mappings and filters
+git add scripts/ring:codereview/internal/context/reviewer_mappings.go
+git add scripts/ring:codereview/internal/context/reviewer_mappings_test.go
+git commit -m "feat(ring:codereview): add reviewer data mappings and filters
 
 Maps each reviewer to their primary data sources and provides
 filter functions for findings by category, severity, and risk."
@@ -845,21 +845,21 @@ filter functions for findings by category, severity, and risk."
 1. **Tests fail:**
    - Check: Expected data source counts may need adjustment
    - Fix: Update expected values in tests
-   - Rollback: `git checkout -- scripts/codereview/internal/context/`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/context/`
 
 ---
 
-## Task 4: Write Templates for code-reviewer
+## Task 4: Write Templates for ring:code-reviewer
 
 **Files:**
-- Create: `scripts/codereview/internal/context/templates.go`
+- Create: `scripts/ring:codereview/internal/context/templates.go`
 
 **Prerequisites:**
 - Task 3 completed
 
 **Step 1: Write the templates file**
 
-Create file `scripts/codereview/internal/context/templates.go`:
+Create file `scripts/ring:codereview/internal/context/templates.go`:
 
 ```go
 package context
@@ -1122,23 +1122,23 @@ type TemplateData struct {
 	Findings     []Finding
 	FocusAreas   []FocusArea
 
-	// Semantic changes (code-reviewer, business-logic-reviewer)
+	// Semantic changes (ring:code-reviewer, ring:business-logic-reviewer)
 	HasSemanticChanges bool
 	ModifiedFunctions  []FunctionDiff
 	AddedFunctions     []FunctionInfo
 	ModifiedTypes      []TypeDiff
 
-	// Data flow (security-reviewer)
+	// Data flow (ring:security-reviewer)
 	HasDataFlowAnalysis bool
 	HighRiskFlows       []DataFlow
 	MediumRiskFlows     []DataFlow
 
-	// Call graph (business-logic-reviewer, test-reviewer)
+	// Call graph (ring:business-logic-reviewer, ring:test-reviewer)
 	HasCallGraph         bool
 	HighImpactFunctions  []FunctionCallGraph
 	UncoveredFunctions   []FunctionCallGraph
 
-	// Nil safety (nil-safety-reviewer)
+	// Nil safety (ring:nil-safety-reviewer)
 	HasNilSources       bool
 	NilSources          []NilSource
 	HighRiskNilSources  []NilSource
@@ -1234,15 +1234,15 @@ func RenderTemplate(templateStr string, data *TemplateData) (string, error) {
 // GetTemplateForReviewer returns the template string for a specific reviewer.
 func GetTemplateForReviewer(reviewer string) string {
 	switch reviewer {
-	case "code-reviewer":
+	case "ring:code-reviewer":
 		return codeReviewerTemplate
-	case "security-reviewer":
+	case "ring:security-reviewer":
 		return securityReviewerTemplate
-	case "business-logic-reviewer":
+	case "ring:business-logic-reviewer":
 		return businessLogicReviewerTemplate
-	case "test-reviewer":
+	case "ring:test-reviewer":
 		return testReviewerTemplate
-	case "nil-safety-reviewer":
+	case "ring:nil-safety-reviewer":
 		return nilSafetyReviewerTemplate
 	default:
 		return ""
@@ -1252,7 +1252,7 @@ func GetTemplateForReviewer(reviewer string) string {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/context/... && cd ../..`
+Run: `cd scripts/ring:codereview && go build ./internal/context/... && cd ../..`
 
 **Expected output:**
 ```
@@ -1262,11 +1262,11 @@ Run: `cd scripts/codereview && go build ./internal/context/... && cd ../..`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/context/templates.go
-git commit -m "feat(codereview): add markdown templates for all reviewers
+git add scripts/ring:codereview/internal/context/templates.go
+git commit -m "feat(ring:codereview): add markdown templates for all reviewers
 
-Includes templates for code-reviewer, security-reviewer,
-business-logic-reviewer, test-reviewer, and nil-safety-reviewer.
+Includes templates for ring:code-reviewer, ring:security-reviewer,
+ring:business-logic-reviewer, ring:test-reviewer, and ring:nil-safety-reviewer.
 Uses text/template with custom functions for rendering."
 ```
 
@@ -1275,21 +1275,21 @@ Uses text/template with custom functions for rendering."
 1. **Compilation fails:**
    - Check: Template syntax, especially backticks and escaping
    - Fix: Use raw string literals correctly
-   - Rollback: `git checkout -- scripts/codereview/internal/context/templates.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/context/templates.go`
 
 ---
 
 ## Task 5: Add Template Tests
 
 **Files:**
-- Create: `scripts/codereview/internal/context/templates_test.go`
+- Create: `scripts/ring:codereview/internal/context/templates_test.go`
 
 **Prerequisites:**
 - Task 4 completed
 
 **Step 1: Write template tests**
 
-Create file `scripts/codereview/internal/context/templates_test.go`:
+Create file `scripts/ring:codereview/internal/context/templates_test.go`:
 
 ```go
 package context
@@ -1426,11 +1426,11 @@ func TestGetTemplateForReviewer(t *testing.T) {
 		reviewer string
 		wantLen  int // non-zero means template exists
 	}{
-		{"code-reviewer", 100},
-		{"security-reviewer", 100},
-		{"business-logic-reviewer", 100},
-		{"test-reviewer", 100},
-		{"nil-safety-reviewer", 100},
+		{"ring:code-reviewer", 100},
+		{"ring:security-reviewer", 100},
+		{"ring:business-logic-reviewer", 100},
+		{"ring:test-reviewer", 100},
+		{"ring:nil-safety-reviewer", 100},
 		{"unknown-reviewer", 0},
 	}
 
@@ -1469,7 +1469,7 @@ func TestRenderTemplate_EmptyData(t *testing.T) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test -v ./internal/context/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/context/... && cd ../..`
 
 **Expected output:**
 ```
@@ -1487,16 +1487,16 @@ Run: `cd scripts/codereview && go test -v ./internal/context/... && cd ../..`
 === RUN   TestRenderTemplate_EmptyData
 --- PASS: TestRenderTemplate_EmptyData (0.00s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/context
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/context
 ```
 
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/context/templates_test.go
-git commit -m "test(codereview): add template rendering tests
+git add scripts/ring:codereview/internal/context/templates_test.go
+git commit -m "test(ring:codereview): add template rendering tests
 
-Covers code-reviewer, security-reviewer, nil-safety-reviewer templates
+Covers ring:code-reviewer, ring:security-reviewer, ring:nil-safety-reviewer templates
 and edge cases with empty data."
 ```
 
@@ -1505,21 +1505,21 @@ and edge cases with empty data."
 1. **Template rendering fails:**
    - Check: Template syntax errors in the error message
    - Fix: Adjust template string escaping
-   - Rollback: `git checkout -- scripts/codereview/internal/context/templates_test.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/context/templates_test.go`
 
 ---
 
 ## Task 6: Implement Compiler Core
 
 **Files:**
-- Create: `scripts/codereview/internal/context/compiler.go`
+- Create: `scripts/ring:codereview/internal/context/compiler.go`
 
 **Prerequisites:**
 - Tasks 4-5 completed
 
 **Step 1: Write the compiler implementation**
 
-Create file `scripts/codereview/internal/context/compiler.go`:
+Create file `scripts/ring:codereview/internal/context/compiler.go`:
 
 ```go
 package context
@@ -1539,7 +1539,7 @@ type Compiler struct {
 }
 
 // NewCompiler creates a new context compiler.
-// inputDir: directory containing phase outputs (e.g., .ring/codereview/)
+// inputDir: directory containing phase outputs (e.g., .ring/ring:codereview/)
 // outputDir: directory to write context files (typically same as inputDir)
 func NewCompiler(inputDir, outputDir string) *Compiler {
 	return &Compiler{
@@ -1672,15 +1672,15 @@ func (c *Compiler) buildTemplateData(reviewer string, outputs *PhaseOutputs) *Te
 	data := &TemplateData{}
 
 	switch reviewer {
-	case "code-reviewer":
+	case "ring:code-reviewer":
 		c.buildCodeReviewerData(data, outputs)
-	case "security-reviewer":
+	case "ring:security-reviewer":
 		c.buildSecurityReviewerData(data, outputs)
-	case "business-logic-reviewer":
+	case "ring:business-logic-reviewer":
 		c.buildBusinessLogicReviewerData(data, outputs)
-	case "test-reviewer":
+	case "ring:test-reviewer":
 		c.buildTestReviewerData(data, outputs)
-	case "nil-safety-reviewer":
+	case "ring:nil-safety-reviewer":
 		c.buildNilSafetyReviewerData(data, outputs)
 	}
 
@@ -1930,7 +1930,7 @@ func (c *Compiler) buildNilSafetyReviewerFocusAreas(outputs *PhaseOutputs) []Foc
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/context/... && cd ../..`
+Run: `cd scripts/ring:codereview && go build ./internal/context/... && cd ../..`
 
 **Expected output:**
 ```
@@ -1940,8 +1940,8 @@ Run: `cd scripts/codereview && go build ./internal/context/... && cd ../..`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/context/compiler.go
-git commit -m "feat(codereview): add context compiler core logic
+git add scripts/ring:codereview/internal/context/compiler.go
+git commit -m "feat(ring:codereview): add context compiler core logic
 
 Implements Compiler struct that reads phase outputs (0-4),
 builds template data for each reviewer, and generates
@@ -1953,21 +1953,21 @@ context markdown files."
 1. **Compilation fails:**
    - Check: Import paths and type references
    - Fix: Ensure all types are defined in types.go
-   - Rollback: `git checkout -- scripts/codereview/internal/context/compiler.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/context/compiler.go`
 
 ---
 
 ## Task 7: Add Compiler Tests
 
 **Files:**
-- Create: `scripts/codereview/internal/context/compiler_test.go`
+- Create: `scripts/ring:codereview/internal/context/compiler_test.go`
 
 **Prerequisites:**
 - Task 6 completed
 
 **Step 1: Write compiler tests**
 
-Create file `scripts/codereview/internal/context/compiler_test.go`:
+Create file `scripts/ring:codereview/internal/context/compiler_test.go`:
 
 ```go
 package context
@@ -2026,9 +2026,9 @@ func TestCompiler_CodeReviewerContext(t *testing.T) {
 		t.Fatalf("Compile() error = %v", err)
 	}
 
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-code-reviewer.md"))
+	content, err := os.ReadFile(filepath.Join(outputDir, "context-ring:code-reviewer.md"))
 	if err != nil {
-		t.Fatalf("Failed to read code-reviewer context: %v", err)
+		t.Fatalf("Failed to read ring:code-reviewer context: %v", err)
 	}
 
 	contentStr := string(content)
@@ -2050,9 +2050,9 @@ func TestCompiler_SecurityReviewerContext(t *testing.T) {
 		t.Fatalf("Compile() error = %v", err)
 	}
 
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-security-reviewer.md"))
+	content, err := os.ReadFile(filepath.Join(outputDir, "context-ring:security-reviewer.md"))
 	if err != nil {
-		t.Fatalf("Failed to read security-reviewer context: %v", err)
+		t.Fatalf("Failed to read ring:security-reviewer context: %v", err)
 	}
 
 	contentStr := string(content)
@@ -2074,7 +2074,7 @@ func TestCompiler_MissingInputs(t *testing.T) {
 	}
 
 	// Context files should still be created (with "no data" messages)
-	contextPath := filepath.Join(outputDir, "context-code-reviewer.md")
+	contextPath := filepath.Join(outputDir, "context-ring:code-reviewer.md")
 	if _, err := os.Stat(contextPath); os.IsNotExist(err) {
 		t.Error("Context file should be created even with missing inputs")
 	}
@@ -2208,7 +2208,7 @@ func writeJSON(t *testing.T, dir, filename string, data interface{}) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test -v ./internal/context/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/context/... && cd ../..`
 
 **Expected output:**
 ```
@@ -2223,14 +2223,14 @@ Run: `cd scripts/codereview && go test -v ./internal/context/... && cd ../..`
 === RUN   TestCompiler_PartialInputs
 --- PASS: TestCompiler_PartialInputs (0.XX s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/context
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/context
 ```
 
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/context/compiler_test.go
-git commit -m "test(codereview): add compiler integration tests
+git add scripts/ring:codereview/internal/context/compiler_test.go
+git commit -m "test(ring:codereview): add compiler integration tests
 
 Tests full compilation flow, individual reviewer contexts,
 missing inputs handling, and partial inputs scenarios."
@@ -2241,36 +2241,36 @@ missing inputs handling, and partial inputs scenarios."
 1. **Tests fail:**
    - Check: Error messages for file path issues
    - Fix: Ensure temp directories are created correctly
-   - Rollback: `git checkout -- scripts/codereview/internal/context/compiler_test.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/context/compiler_test.go`
 
 ---
 
 ## Task 8: Implement compile-context CLI
 
 **Files:**
-- Create: `scripts/codereview/cmd/compile-context/main.go`
+- Create: `scripts/ring:codereview/cmd/compile-context/main.go`
 
 **Prerequisites:**
 - Tasks 6-7 completed
 
 **Step 1: Create CLI binary**
 
-Create file `scripts/codereview/cmd/compile-context/main.go`:
+Create file `scripts/ring:codereview/cmd/compile-context/main.go`:
 
 ```go
 // compile-context aggregates analysis phase outputs into reviewer-specific context files.
 //
 // Usage:
 //
-//	compile-context --input=.ring/codereview/ --output=.ring/codereview/
+//	compile-context --input=.ring/ring:codereview/ --output=.ring/ring:codereview/
 //
 // This binary reads all phase outputs (scope.json, static-analysis.json, etc.)
 // and generates context files for each reviewer:
-//   - context-code-reviewer.md
-//   - context-security-reviewer.md
-//   - context-business-logic-reviewer.md
-//   - context-test-reviewer.md
-//   - context-nil-safety-reviewer.md
+//   - context-ring:code-reviewer.md
+//   - context-ring:security-reviewer.md
+//   - context-ring:business-logic-reviewer.md
+//   - context-ring:test-reviewer.md
+//   - context-ring:nil-safety-reviewer.md
 package main
 
 import (
@@ -2278,11 +2278,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/context"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/context"
 )
 
 func main() {
-	inputDir := flag.String("input", ".ring/codereview", "Directory containing phase outputs")
+	inputDir := flag.String("input", ".ring/ring:codereview", "Directory containing phase outputs")
 	outputDir := flag.String("output", "", "Directory to write context files (defaults to input dir)")
 	verbose := flag.Bool("verbose", false, "Enable verbose output")
 	help := flag.Bool("help", false, "Show help message")
@@ -2334,7 +2334,7 @@ Usage:
   compile-context [flags]
 
 Flags:
-  --input DIR    Directory containing phase outputs (default: .ring/codereview)
+  --input DIR    Directory containing phase outputs (default: .ring/ring:codereview)
   --output DIR   Directory to write context files (default: same as input)
   --verbose      Enable verbose output
   --help         Show this help message
@@ -2357,18 +2357,18 @@ Phase Outputs Expected (in input directory):
   - {go,ts,py}-flow.json (Phase 4: Data flow)
 
 Context Files Generated (in output directory):
-  - context-code-reviewer.md
-  - context-security-reviewer.md
-  - context-business-logic-reviewer.md
-  - context-test-reviewer.md
-  - context-nil-safety-reviewer.md
+  - context-ring:code-reviewer.md
+  - context-ring:security-reviewer.md
+  - context-ring:business-logic-reviewer.md
+  - context-ring:test-reviewer.md
+  - context-ring:nil-safety-reviewer.md
 `)
 }
 ```
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build -o bin/compile-context ./cmd/compile-context && cd ../..`
+Run: `cd scripts/ring:codereview && go build -o bin/compile-context ./cmd/compile-context && cd ../..`
 
 **Expected output:**
 ```
@@ -2377,7 +2377,7 @@ Run: `cd scripts/codereview && go build -o bin/compile-context ./cmd/compile-con
 
 **Step 3: Test binary**
 
-Run: `scripts/codereview/bin/compile-context --help`
+Run: `scripts/ring:codereview/bin/compile-context --help`
 
 **Expected output:**
 ```
@@ -2391,8 +2391,8 @@ Usage:
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/cmd/compile-context/main.go
-git commit -m "feat(codereview): add compile-context CLI binary
+git add scripts/ring:codereview/cmd/compile-context/main.go
+git commit -m "feat(ring:codereview): add compile-context CLI binary
 
 Phase 5 binary that reads all phase outputs and generates
 reviewer-specific context markdown files."
@@ -2403,28 +2403,28 @@ reviewer-specific context markdown files."
 1. **Build fails:**
    - Check: Import path for context package
    - Fix: Ensure module path matches
-   - Rollback: `rm -rf scripts/codereview/cmd/compile-context`
+   - Rollback: `rm -rf scripts/ring:codereview/cmd/compile-context`
 
 ---
 
 ## Task 9: Implement run-all Orchestrator
 
 **Files:**
-- Create: `scripts/codereview/cmd/run-all/main.go`
+- Create: `scripts/ring:codereview/cmd/run-all/main.go`
 
 **Prerequisites:**
 - Task 8 completed
 
 **Step 1: Create orchestrator binary**
 
-Create file `scripts/codereview/cmd/run-all/main.go`:
+Create file `scripts/ring:codereview/cmd/run-all/main.go`:
 
 ```go
 // run-all orchestrates the complete code review pre-analysis pipeline.
 //
 // Usage:
 //
-//	run-all --base=main --head=HEAD --output=.ring/codereview/
+//	run-all --base=main --head=HEAD --output=.ring/ring:codereview/
 //
 // This binary runs all phases in sequence:
 //   - Phase 0: Scope detection
@@ -2465,7 +2465,7 @@ type Config struct {
 func main() {
 	baseRef := flag.String("base", "main", "Base git ref for comparison")
 	headRef := flag.String("head", "HEAD", "Head git ref for comparison")
-	outputDir := flag.String("output", ".ring/codereview", "Output directory for analysis results")
+	outputDir := flag.String("output", ".ring/ring:codereview", "Output directory for analysis results")
 	binDir := flag.String("bin-dir", "", "Directory containing analysis binaries (auto-detected)")
 	verbose := flag.Bool("verbose", false, "Enable verbose output")
 	skipPhases := flag.String("skip", "", "Comma-separated phases to skip (e.g., 'ast,callgraph')")
@@ -2484,7 +2484,7 @@ func main() {
 		if err == nil {
 			*binDir = filepath.Dir(execPath)
 		} else {
-			*binDir = "scripts/codereview/bin"
+			*binDir = "scripts/ring:codereview/bin"
 		}
 	}
 
@@ -2676,7 +2676,7 @@ Usage:
 Flags:
   --base REF     Base git ref for comparison (default: main)
   --head REF     Head git ref for comparison (default: HEAD)
-  --output DIR   Output directory for results (default: .ring/codereview)
+  --output DIR   Output directory for results (default: .ring/ring:codereview)
   --bin-dir DIR  Directory containing binaries (auto-detected)
   --skip PHASES  Comma-separated phases to skip
   --verbose      Enable verbose output
@@ -2701,7 +2701,7 @@ Examples:
   run-all --skip=callgraph,dataflow
 
   # Custom output location
-  run-all --output=/tmp/codereview-analysis
+  run-all --output=/tmp/ring:codereview-analysis
 
 Graceful Degradation:
   If a phase fails, subsequent phases continue with available data.
@@ -2712,7 +2712,7 @@ Graceful Degradation:
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build -o bin/run-all ./cmd/run-all && cd ../..`
+Run: `cd scripts/ring:codereview && go build -o bin/run-all ./cmd/run-all && cd ../..`
 
 **Expected output:**
 ```
@@ -2721,7 +2721,7 @@ Run: `cd scripts/codereview && go build -o bin/run-all ./cmd/run-all && cd ../..
 
 **Step 3: Test binary**
 
-Run: `scripts/codereview/bin/run-all --help`
+Run: `scripts/ring:codereview/bin/run-all --help`
 
 **Expected output:**
 ```
@@ -2735,8 +2735,8 @@ Usage:
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/cmd/run-all/main.go
-git commit -m "feat(codereview): add run-all orchestrator binary
+git add scripts/ring:codereview/cmd/run-all/main.go
+git commit -m "feat(ring:codereview): add run-all orchestrator binary
 
 Main entry point that runs all analysis phases (0-5) in sequence
 with timeout handling and graceful degradation on failures."
@@ -2747,21 +2747,21 @@ with timeout handling and graceful degradation on failures."
 1. **Build fails:**
    - Check: Import paths and command structure
    - Fix: Ensure all packages are importable
-   - Rollback: `rm -rf scripts/codereview/cmd/run-all`
+   - Rollback: `rm -rf scripts/ring:codereview/cmd/run-all`
 
 ---
 
 ## Task 10: Update Makefile
 
 **Files:**
-- Modify: `scripts/codereview/Makefile`
+- Modify: `scripts/ring:codereview/Makefile`
 
 **Prerequisites:**
 - Tasks 8-9 completed
 
 **Step 1: Update Makefile with new targets**
 
-Modify `scripts/codereview/Makefile` to add the new binaries:
+Modify `scripts/ring:codereview/Makefile` to add the new binaries:
 
 ```makefile
 .PHONY: all build test clean install fmt vet lint
@@ -2839,7 +2839,7 @@ build-context: compile-context run-all
 
 **Step 2: Verify Makefile**
 
-Run: `cd scripts/codereview && make build-context && cd ../..`
+Run: `cd scripts/ring:codereview && make build-context && cd ../..`
 
 **Expected output:**
 ```
@@ -2851,8 +2851,8 @@ Context binaries built.
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/Makefile
-git commit -m "build(codereview): add compile-context and run-all targets to Makefile
+git add scripts/ring:codereview/Makefile
+git commit -m "build(ring:codereview): add compile-context and run-all targets to Makefile
 
 Updates Makefile with Phase 5 binaries and convenience target build-context."
 ```
@@ -2862,28 +2862,28 @@ Updates Makefile with Phase 5 binaries and convenience target build-context."
 1. **Make fails:**
    - Check: Tab vs spaces in Makefile
    - Fix: Ensure tabs are used for indentation
-   - Rollback: `git checkout -- scripts/codereview/Makefile`
+   - Rollback: `git checkout -- scripts/ring:codereview/Makefile`
 
 ---
 
 ## Task 11: Update install.sh
 
 **Files:**
-- Modify: `scripts/codereview/install.sh`
+- Modify: `scripts/ring:codereview/install.sh`
 
 **Prerequisites:**
 - Task 10 completed
 
 **Step 1: Update install.sh with new binaries**
 
-If `scripts/codereview/install.sh` exists, update it. If not, create it:
+If `scripts/ring:codereview/install.sh` exists, update it. If not, create it:
 
 ```bash
 #!/bin/bash
 set -e
 
-# Installs all required tools for codereview pre-analysis
-# Run: ./scripts/codereview/install.sh [go|ts|py|all]
+# Installs all required tools for ring:codereview pre-analysis
+# Run: ./scripts/ring:codereview/install.sh [go|ts|py|all]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_TARGET="${1:-all}"
@@ -3001,13 +3001,13 @@ echo "Run '$0 verify' to verify installation."
 
 **Step 2: Make script executable**
 
-Run: `chmod +x scripts/codereview/install.sh`
+Run: `chmod +x scripts/ring:codereview/install.sh`
 
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/install.sh
-git commit -m "build(codereview): update install.sh with all Phase 5 binaries
+git add scripts/ring:codereview/install.sh
+git commit -m "build(ring:codereview): update install.sh with all Phase 5 binaries
 
 Includes compile-context and run-all in build targets, adds verify option."
 ```
@@ -3017,7 +3017,7 @@ Includes compile-context and run-all in build targets, adds verify option."
 1. **Script fails:**
    - Check: Bash syntax
    - Fix: Verify shebang and variable expansion
-   - Rollback: `git checkout -- scripts/codereview/install.sh`
+   - Rollback: `git checkout -- scripts/ring:codereview/install.sh`
 
 ---
 
@@ -3028,7 +3028,7 @@ Includes compile-context and run-all in build targets, adds verify option."
 
 **Step 1: Run all tests**
 
-Run: `cd scripts/codereview && go test -v -race ./... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v -race ./... && cd ../..`
 
 **Expected output:**
 ```
@@ -3039,12 +3039,12 @@ Run: `cd scripts/codereview && go test -v -race ./... && cd ../..`
 --- PASS: TestCompiler_Compile (0.XX s)
 ...
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/context
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/context
 ```
 
 **Step 2: Build all binaries**
 
-Run: `cd scripts/codereview && make build-context && cd ../..`
+Run: `cd scripts/ring:codereview && make build-context && cd ../..`
 
 **Expected output:**
 ```
@@ -3056,7 +3056,7 @@ Context binaries built.
 **Step 3: Dispatch code review**
 
 1. **REQUIRED SUB-SKILL: Use ring:requesting-code-review**
-2. All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer)
+2. All reviewers run simultaneously (ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer)
 3. Wait for all to complete
 
 **Step 4: Handle findings by severity (MANDATORY):**
@@ -3087,7 +3087,7 @@ Context binaries built.
 
 **Step 1: Full build**
 
-Run: `cd scripts/codereview && make clean && make build && cd ../..`
+Run: `cd scripts/ring:codereview && make clean && make build && cd ../..`
 
 **Expected output:**
 ```
@@ -3103,7 +3103,7 @@ Building run-all...
 
 **Step 2: Verify binary sizes**
 
-Run: `ls -lh scripts/codereview/bin/`
+Run: `ls -lh scripts/ring:codereview/bin/`
 
 **Expected output:**
 ```
@@ -3117,10 +3117,10 @@ total XX
 
 ```bash
 # Create test directory
-mkdir -p /tmp/test-codereview
+mkdir -p /tmp/test-ring:codereview
 
 # Create minimal scope.json
-cat > /tmp/test-codereview/scope.json << 'EOF'
+cat > /tmp/test-ring:codereview/scope.json << 'EOF'
 {
   "base_ref": "main",
   "head_ref": "HEAD",
@@ -3136,37 +3136,37 @@ cat > /tmp/test-codereview/scope.json << 'EOF'
 EOF
 
 # Run compile-context
-scripts/codereview/bin/compile-context --input=/tmp/test-codereview --output=/tmp/test-codereview --verbose
+scripts/ring:codereview/bin/compile-context --input=/tmp/test-ring:codereview --output=/tmp/test-ring:codereview --verbose
 
 # Verify output
-ls -la /tmp/test-codereview/context-*.md
+ls -la /tmp/test-ring:codereview/context-*.md
 ```
 
 **Expected output:**
 ```
-Input directory: /tmp/test-codereview
-Output directory: /tmp/test-codereview
+Input directory: /tmp/test-ring:codereview
+Output directory: /tmp/test-ring:codereview
 Context files generated:
-  - context-code-reviewer.md
-  - context-security-reviewer.md
-  - context-business-logic-reviewer.md
-  - context-test-reviewer.md
-  - context-nil-safety-reviewer.md
+  - context-ring:code-reviewer.md
+  - context-ring:security-reviewer.md
+  - context-ring:business-logic-reviewer.md
+  - context-ring:test-reviewer.md
+  - context-ring:nil-safety-reviewer.md
 Context compilation complete.
 ...
--rw-r--r--  1 user  staff  XXX Jan 13 XX:XX /tmp/test-codereview/context-code-reviewer.md
+-rw-r--r--  1 user  staff  XXX Jan 13 XX:XX /tmp/test-ring:codereview/context-ring:code-reviewer.md
 ...
 ```
 
 **Step 4: Cleanup test data**
 
-Run: `rm -rf /tmp/test-codereview`
+Run: `rm -rf /tmp/test-ring:codereview`
 
 **Step 5: Final commit**
 
 ```bash
 git add .
-git commit -m "feat(codereview): complete Phase 5 context compilation
+git commit -m "feat(ring:codereview): complete Phase 5 context compilation
 
 Implements:
 - context package with types, templates, and compiler
@@ -3175,11 +3175,11 @@ Implements:
 - Updated Makefile and install.sh
 
 All 5 reviewers get dedicated context files:
-- context-code-reviewer.md
-- context-security-reviewer.md
-- context-business-logic-reviewer.md
-- context-test-reviewer.md
-- context-nil-safety-reviewer.md"
+- context-ring:code-reviewer.md
+- context-ring:security-reviewer.md
+- context-ring:business-logic-reviewer.md
+- context-ring:test-reviewer.md
+- context-ring:nil-safety-reviewer.md"
 ```
 
 **If Task Fails:**
@@ -3222,21 +3222,21 @@ After completing all tasks:
 
 1. **Verify all tests pass:**
    ```bash
-   cd scripts/codereview && go test -v -race ./... && cd ../..
+   cd scripts/ring:codereview && go test -v -race ./... && cd ../..
    ```
 
 2. **Verify all binaries build:**
    ```bash
-   cd scripts/codereview && make clean && make build && cd ../..
+   cd scripts/ring:codereview && make clean && make build && cd ../..
    ```
 
 3. **Integration test with real project:**
    ```bash
    # In a Go project with changes
-   scripts/codereview/bin/run-all --base=main --head=HEAD --verbose
+   scripts/ring:codereview/bin/run-all --base=main --head=HEAD --verbose
    ```
 
-4. **Review generated context files** in `.ring/codereview/`:
+4. **Review generated context files** in `.ring/ring:codereview/`:
    - Verify each reviewer's context file contains relevant data
    - Check that focus areas are actionable
    - Ensure empty sections show appropriate "no data" messages

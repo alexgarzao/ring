@@ -9,7 +9,7 @@ Run linting tools, analyze results, and dispatch parallel AI agents to fix all i
 ## Usage
 
 ```
-/lint [path]
+/ring:lint [path]
 ```
 
 ## Arguments
@@ -27,7 +27,7 @@ Run linting tools, analyze results, and dispatch parallel AI agents to fix all i
 
 ## Process
 
-This command invokes the `linting-codebase` skill which handles:
+This command invokes the `ring:linting-codebase` skill which handles:
 
 ### Phase 1: Lint Execution
 - Runs `make lint` (or detects appropriate lint command)
@@ -59,13 +59,13 @@ This command invokes the `linting-codebase` skill which handles:
 
 ### Lint Entire Codebase
 ```
-/lint
+/ring:lint
 ```
 Runs full lint, dispatches agents to fix everything.
 
 ### Lint Specific Path
 ```
-/lint src/services/
+/ring:lint src/services/
 ```
 Lints only the services directory.
 
@@ -73,7 +73,7 @@ Lints only the services directory.
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `linting-codebase` | Underlying skill with full logic |
+| `ring:linting-codebase` | Underlying skill with full logic |
 | `dispatching-parallel-agents` | Pattern used for parallel fixes |
 | `/ring:codereview` | Use after lint passes for deeper review |
 

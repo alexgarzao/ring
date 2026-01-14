@@ -15,7 +15,7 @@ skip_when: |
   - Already merged → proceed to next task
 
 sequence:
-  after: [verification-before-completion, requesting-code-review]
+  after: [verification-before-completion, ring:requesting-code-review]
 ---
 
 # Finishing a Development Branch
@@ -97,8 +97,8 @@ Present exactly these 4 options (no explanation):
 ## Integration
 
 **Called by:**
-- **subagent-driven-development** (Step 7) - After all tasks complete
-- **executing-plans** (Step 5) - After all batches complete
+- **ring:subagent-driven-development** (Step 7) - After all tasks complete
+- **ring:executing-plans** (Step 5) - After all batches complete
 
 **Pairs with:**
-- **using-git-worktrees** - Cleans up worktree created by that skill
+- **ring:using-git-worktrees** - Cleans up worktree created by that skill

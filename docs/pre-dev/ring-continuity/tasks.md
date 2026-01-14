@@ -279,9 +279,9 @@ def test_token_count():
 
 ---
 
-### Task 2.3: Update handoff-tracking Skill for YAML
+### Task 2.3: Update ring:handoff-tracking Skill for YAML
 
-**Description:** Modify handoff-tracking skill to output YAML instead of Markdown.
+**Description:** Modify ring:handoff-tracking skill to output YAML instead of Markdown.
 
 **Value:** Users immediately benefit from token savings.
 
@@ -416,9 +416,9 @@ grep -c "✗ UNCERTAIN" docs/AGENT_DESIGN.md
 
 ---
 
-### Task 3.2: Integrate Confidence Markers in codebase-explorer
+### Task 3.2: Integrate Confidence Markers in ring:codebase-explorer
 
-**Description:** Update codebase-explorer agent to include confidence markers in findings.
+**Description:** Update ring:codebase-explorer agent to include confidence markers in findings.
 
 **Value:** Most-used exploration agent immediately benefits from verification.
 

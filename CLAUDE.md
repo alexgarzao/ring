@@ -27,7 +27,7 @@ When creating or modifying any agent in `*/agents/*.md`:
 3. **never skip TDD's RED phase** - Test must fail before implementation
 4. **never ignore skill when applicable** - "Simple task" is not an excuse
 5. **never use panic() in Go** - Error handling required
-6. **never commit manually** - Always use `/commit` command
+6. **never commit manually** - Always use `/ring:commit` command
 7. **never assume compliance** - VERIFY with evidence
 
 ### 4. Unified Ring Namespace (always)
@@ -35,7 +35,7 @@ All Ring components use the unified `ring:` prefix. Plugin differentiation is ha
 - ✅ `ring:code-reviewer`
 - ✅ `ring:backend-engineer-golang`
 - ❌ `<missing ring prefix>` (FORBIDDEN: omitting the `ring:` prefix)
-- ❌ `ring-default:code-reviewer` (deprecated plugin-specific prefix)
+- ❌ `ring-default:ring:code-reviewer` (deprecated plugin-specific prefix)
 
 ### 5. Standards-Agent Synchronization (always CHECK)
 When modifying standards files (`dev-team/docs/standards/*.md`):
@@ -63,7 +63,7 @@ Before committing changes to dev-team/docs/standards/*.md:
     - Add/remove row: `| N | [Section Name](#anchor) | Description |`
     - Update numbering if needed
 [ ] 3. Did you update `dev-team/skills/shared-patterns/standards-coverage-table.md`?
-    - Find the agent's section index (e.g., "backend-engineer-golang → golang.md")
+    - Find the agent's section index (e.g., "ring:backend-engineer-golang → golang.md")
     - Add/remove the section row
 [ ] 4. Do the section counts match?
     - Count `## ` headers in standards file (excluding meta-sections)
@@ -85,11 +85,11 @@ If any checkbox is no → Fix before committing.
 
 | Standards File | Agents That Use It |
 |----------------|-------------------|
-| `golang.md` | `backend-engineer-golang`, `qa-analyst` |
-| `typescript.md` | `backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `qa-analyst` |
-| `frontend.md` | `frontend-engineer`, `frontend-designer` |
-| `devops.md` | `devops-engineer` |
-| `sre.md` | `sre` |
+| `golang.md` | `ring:backend-engineer-golang`, `ring:qa-analyst` |
+| `typescript.md` | `ring:backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `ring:qa-analyst` |
+| `frontend.md` | `ring:frontend-engineer`, `ring:frontend-designer` |
+| `devops.md` | `ring:devops-engineer` |
+| `sre.md` | `ring:sre` |
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
 
@@ -97,14 +97,14 @@ If any checkbox is no → Fix before committing.
 
 | Agent | Standards File | Section Count |
 |-------|----------------|---------------|
-| `backend-engineer-golang` | golang.md | See coverage table |
-| `backend-engineer-typescript` | typescript.md | See coverage table |
+| `ring:backend-engineer-golang` | golang.md | See coverage table |
+| `ring:backend-engineer-typescript` | typescript.md | See coverage table |
 | `frontend-bff-engineer-typescript` | typescript.md | See coverage table |
-| `frontend-engineer` | frontend.md | See coverage table |
-| `frontend-designer` | frontend.md | See coverage table |
-| `devops-engineer` | devops.md | See coverage table |
-| `sre` | sre.md | See coverage table |
-| `qa-analyst` | golang.md or typescript.md | See coverage table |
+| `ring:frontend-engineer` | frontend.md | See coverage table |
+| `ring:frontend-designer` | frontend.md | See coverage table |
+| `ring:devops-engineer` | devops.md | See coverage table |
+| `ring:sre` | sre.md | See coverage table |
+| `ring:qa-analyst` | golang.md or typescript.md | See coverage table |
 
 **⛔ If section counts in skills don't match this table → Update the skill.**
 
@@ -218,7 +218,7 @@ AI models naturally attempt to be "helpful" by making autonomous decisions. This
 | "[Common excuse AI might generate]" | [Why this thinking is incorrect] | **[MANDATORY action in bold]** |
 ```
 
-**Example from backend-engineer-golang.md:**
+**Example from ring:backend-engineer-golang.md:**
 ```markdown
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -476,12 +476,12 @@ Skill tool: "ring:systematic-debugging"     # Debug with 4-phase analysis
 Skill tool: "ring:using-ring"               # Load mandatory workflows
 
 # Slash commands
-/codereview          # Dispatch 3 parallel reviewers
-/brainstorm          # Socratic design refinement
-/pre-dev-feature     # <2 day features (4 gates)
-/pre-dev-full        # ≥2 day features (9 gates)
-/execute-plan        # Batch execution with checkpoints
-/worktree            # Create isolated development branch
+/ring:codereview          # Dispatch 3 parallel reviewers
+/ring:brainstorm          # Socratic design refinement
+/ring:pre-dev-feature     # <2 day features (4 gates)
+/ring:pre-dev-full        # ≥2 day features (9 gates)
+/ring:execute-plan        # Batch execution with checkpoints
+/ring:worktree            # Create isolated development branch
 
 # Hook validation (from default plugin)
 bash default/hooks/session-start.sh      # Test skill loading
@@ -497,9 +497,9 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter |
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
-| Code review | `/codereview` dispatches 3 parallel reviewers |
-| Pre-dev (small) | `/pre-dev-feature` → 4-gate workflow |
-| Pre-dev (large) | `/pre-dev-full` → 9-gate workflow |
+| Code review | `/ring:codereview` dispatches 3 parallel reviewers |
+| Pre-dev (small) | `/ring:pre-dev-feature` → 4-gate workflow |
+| Pre-dev (large) | `/ring:pre-dev-full` → 9-gate workflow |
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
@@ -518,7 +518,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 ### Naming Conventions
 - Skills: `kebab-case` matching directory name
 - Agents: `{domain}-reviewer.md` format
-- Commands: `/{action}` format (e.g., `/brainstorm`, `/pre-dev-feature`)
+- Commands: `/{action}` format (e.g., `/ring:brainstorm`, `/ring:pre-dev-feature`)
 - Hooks: `{event}-{purpose}.sh` format
 
 #### Agent/Skill/Command Invocation
@@ -527,7 +527,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
   - ✅ Correct: `ring:code-reviewer`
   - ✅ Correct: `ring:backend-engineer-golang`
   - ❌ Wrong: `<missing ring prefix>` (FORBIDDEN: omitting the `ring:` prefix)
-  - ❌ Wrong: `ring-default:code-reviewer` (deprecated plugin-specific prefix)
+  - ❌ Wrong: `ring-default:ring:code-reviewer` (deprecated plugin-specific prefix)
 - **Rationale:** Unified namespace simplifies invocation; plugin routing is handled internally
 
 ---
@@ -537,9 +537,9 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 | Schema Type | Used By | Key Sections |
 |-------------|---------|--------------|
 | Implementation | * engineers | Summary, Implementation, Files Changed, Testing |
-| Analysis | frontend-designer | Analysis, Findings, Recommendations |
+| Analysis | ring:frontend-designer | Analysis, Findings, Recommendations |
 | Reviewer | *-reviewer | VERDICT, Issues Found, What Was Done Well |
-| Exploration | codebase-explorer | Exploration Summary, Key Findings, Architecture |
+| Exploration | ring:codebase-explorer | Exploration Summary, Key Findings, Architecture |
 | Planning | ring:write-plan | Goal, Architecture, Tech Stack, Tasks |
 
 See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions and Standards Compliance requirements.
@@ -565,7 +565,7 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 - Announce non-obvious skill usage
 
 # Commit compliance (default/commands/commit.md)
-- always use /commit for all commits
+- always use /ring:commit for all commits
 - Never write git commit commands manually
 - Command enforces: conventional commits, trailers, no emoji signatures
 - MUST use --trailer parameter for AI identification (not in message body)

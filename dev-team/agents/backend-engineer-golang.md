@@ -1,5 +1,5 @@
 ---
-name: backend-engineer-golang
+name: ring:backend-engineer-golang
 version: 1.3.0
 description: Senior Backend Engineer specialized in Go for high-demand financial systems. Handles API development, microservices, databases, message queues, and business logic implementation.
 type: specialist
@@ -14,7 +14,7 @@ changelog:
   - 1.2.5: Added FORBIDDEN Patterns Check (HARD GATE - must list patterns before coding)
   - 1.2.4: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 1.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.2.2: Added required_when condition to Standards Compliance for dev-refactor gate enforcement
+  - 1.2.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
   - 1.2.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.2.0: Removed duplicated standards content, now references docs/standards/golang.md
   - 1.1.0: Added multi-tenancy patterns and security best practices
@@ -45,9 +45,9 @@ output_schema:
       pattern: "^## Standards Compliance"
       required: false
       required_when:
-        invocation_context: "dev-refactor"
+        invocation_context: "ring:dev-refactor"
         prompt_contains: "**MODE: ANALYSIS only**"
-      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from dev-refactor skill. Optional otherwise."
+      description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill. Optional otherwise."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -547,7 +547,7 @@ The **Lerian pattern** (simplified hexagonal without explicit DDD folders) is MA
 
 ## Test-Driven Development (TDD)
 
-You have deep expertise in TDD. **TDD is MANDATORY when invoked by dev-cycle (Gate 0).**
+You have deep expertise in TDD. **TDD is MANDATORY when invoked by ring:dev-cycle (Gate 0).**
 
 ### Standards Priority
 
@@ -794,11 +794,11 @@ When reporting issues in existing code:
 
 **Report all severities. Let user prioritize.**
 
-## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring Go Standards.
 
 ### ⛔ HARD GATE: always Compare all Categories
 
@@ -836,9 +836,9 @@ The Standards Compliance section exists to:
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "backend-engineer-golang → golang.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md" for:**
 - Complete list of sections to check (21 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
@@ -1018,6 +1018,6 @@ coverage: 87.3% of statements
 ## What This Agent Does not Handle
 
 - Frontend/UI development (use `frontend-bff-engineer-typescript`)
-- Docker/docker-compose configuration (use `devops-engineer`)
-- Observability validation (use `sre`)
-- End-to-end test scenarios and manual testing (use `qa-analyst`)
+- Docker/docker-compose configuration (use `ring:devops-engineer`)
+- Observability validation (use `ring:sre`)
+- End-to-end test scenarios and manual testing (use `ring:qa-analyst`)

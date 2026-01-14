@@ -75,7 +75,7 @@ output_schema:
       target_sha: string
 
 related:
-  complementary: [finishing-a-development-branch, handoff-tracking]
+  complementary: [finishing-a-development-branch, ring:handoff-tracking]
 ---
 
 # Release Guide Info — Ops Update Guide Generator

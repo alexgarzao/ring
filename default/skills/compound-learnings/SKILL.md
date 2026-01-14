@@ -19,7 +19,7 @@ skip_when: |
   - Looking for specific past learning (use artifact search instead)
 
 related:
-  complementary: [handoff-tracking, artifact-query]
+  complementary: [ring:handoff-tracking, artifact-query]
 ---
 
 # Compound Learnings
@@ -219,7 +219,7 @@ mv $PROJECT_ROOT/.ring/cache/learnings/2025-*.md $PROJECT_ROOT/.ring/cache/learn
 
 ### Created:
 - Rule: `explicit-paths.md` - Always use explicit file paths
-- Skill: `systematic-debugging` - Step-by-step debugging workflow
+- Skill: `ring:systematic-debugging` - Step-by-step debugging workflow
 
 ### Skipped (insufficient signal):
 - "Pattern X" (2 occurrences - below threshold)

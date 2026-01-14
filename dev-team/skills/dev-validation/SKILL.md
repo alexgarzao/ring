@@ -14,7 +14,7 @@ NOT_skip_when: |
   - "User will validate manually" → Gate 5 IS user validation. Cannot skip.
 
 sequence:
-  after: [requesting-code-review]
+  after: [ring:requesting-code-review]
 
 related:
   complementary: [verification-before-completion]
@@ -24,7 +24,7 @@ verification:
     - command: "go test ./... 2>&1 | grep -c PASS"
       description: "All tests pass"
       success_pattern: "[1-9][0-9]*"
-    - command: "cat docs/dev-cycle/current-cycle.json 2>/dev/null || cat docs/dev-refactor/current-cycle.json | jq '.gates[4].verdict'"
+    - command: "cat docs/ring:dev-cycle/current-cycle.json 2>/dev/null || cat docs/ring:dev-refactor/current-cycle.json | jq '.gates[4].verdict'"
       description: "Review gate passed"
       success_pattern: "PASS"
   manual:
@@ -84,7 +84,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 **If you implemented the code, you CANNOT approve it. Wait for user or different reviewer.**
 
-**Important:** "Different agent" means different human/entity. The same human using different agent roles (backend-engineer → code-reviewer) is STILL self-approval and PROHIBITED.
+**Important:** "Different agent" means different human/entity. The same human using different agent roles (ring:backend-engineer-* → ring:code-reviewer) is STILL self-approval and PROHIBITED.
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for the canonical validation policy.
 

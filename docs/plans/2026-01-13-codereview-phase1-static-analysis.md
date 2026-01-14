@@ -27,7 +27,7 @@ ls docs/plans/codereview-enhancement-macro-plan.md  # Expected: file exists
 
 ## Historical Precedent
 
-**Query:** "static analysis linter codereview Go TypeScript Python"
+**Query:** "static analysis linter ring:codereview Go TypeScript Python"
 **Index Status:** Populated (no relevant precedent found)
 
 ### Successful Patterns to Reference
@@ -37,7 +37,7 @@ ls docs/plans/codereview-enhancement-macro-plan.md  # Expected: file exists
 - None found
 
 ### Related Past Plans
-- `codereview-enhancement-macro-plan.md`: Parent macro plan defining overall architecture
+- `ring:codereview-enhancement-macro-plan.md`: Parent macro plan defining overall architecture
 
 ---
 
@@ -45,26 +45,26 @@ ls docs/plans/codereview-enhancement-macro-plan.md  # Expected: file exists
 
 | # | Task | Description | Time |
 |---|------|-------------|------|
-| 1 | Initialize Go module | Create `scripts/codereview/go.mod` and directory structure | 3 min |
-| 2 | Define common types | Create `internal/lint/types.go` with Finding, Result schemas | 4 min |
-| 3 | Create linter runner interface | Define `internal/lint/runner.go` with Linter interface | 4 min |
-| 4 | Implement tool executor | Create `internal/lint/executor.go` for subprocess execution | 5 min |
-| 5 | Implement Go: golangci-lint | Create `internal/lint/golangci.go` wrapper | 5 min |
-| 6 | Implement Go: staticcheck | Create `internal/lint/staticcheck.go` wrapper | 4 min |
-| 7 | Implement Go: gosec | Create `internal/lint/gosec.go` wrapper | 4 min |
-| 8 | Implement TypeScript: tsc | Create `internal/lint/tsc.go` wrapper | 5 min |
-| 9 | Implement TypeScript: eslint | Create `internal/lint/eslint.go` wrapper | 5 min |
-| 10 | Implement Python: ruff | Create `internal/lint/ruff.go` wrapper | 4 min |
-| 11 | Implement Python: mypy | Create `internal/lint/mypy.go` wrapper | 5 min |
-| 12 | Implement Python: pylint | Create `internal/lint/pylint.go` wrapper | 5 min |
-| 13 | Implement Python: bandit | Create `internal/lint/bandit.go` wrapper | 4 min |
+| 1 | Initialize Go module | Create `scripts/ring:codereview/go.mod` and directory structure | 3 min |
+| 2 | Define common types | Create `internal/ring:lint/types.go` with Finding, Result schemas | 4 min |
+| 3 | Create linter runner interface | Define `internal/ring:lint/runner.go` with Linter interface | 4 min |
+| 4 | Implement tool executor | Create `internal/ring:lint/executor.go` for subprocess execution | 5 min |
+| 5 | Implement Go: golangci-lint | Create `internal/ring:lint/golangci.go` wrapper | 5 min |
+| 6 | Implement Go: staticcheck | Create `internal/ring:lint/staticcheck.go` wrapper | 4 min |
+| 7 | Implement Go: gosec | Create `internal/ring:lint/gosec.go` wrapper | 4 min |
+| 8 | Implement TypeScript: tsc | Create `internal/ring:lint/tsc.go` wrapper | 5 min |
+| 9 | Implement TypeScript: eslint | Create `internal/ring:lint/eslint.go` wrapper | 5 min |
+| 10 | Implement Python: ruff | Create `internal/ring:lint/ruff.go` wrapper | 4 min |
+| 11 | Implement Python: mypy | Create `internal/ring:lint/mypy.go` wrapper | 5 min |
+| 12 | Implement Python: pylint | Create `internal/ring:lint/pylint.go` wrapper | 5 min |
+| 13 | Implement Python: bandit | Create `internal/ring:lint/bandit.go` wrapper | 4 min |
 | 14 | Create scope reader | Create `internal/scope/reader.go` to parse scope.json | 4 min |
 | 15 | Create output writer | Create `internal/output/json.go` for JSON output | 3 min |
 | 16 | Implement orchestrator | Create `cmd/static-analysis/main.go` | 5 min |
-| 17 | Add unit tests: types | Create `internal/lint/types_test.go` | 4 min |
-| 18 | Add unit tests: golangci parser | Create `internal/lint/golangci_test.go` | 4 min |
-| 19 | Add unit tests: eslint parser | Create `internal/lint/eslint_test.go` | 4 min |
-| 20 | Add unit tests: ruff parser | Create `internal/lint/ruff_test.go` | 4 min |
+| 17 | Add unit tests: types | Create `internal/ring:lint/types_test.go` | 4 min |
+| 18 | Add unit tests: golangci parser | Create `internal/ring:lint/golangci_test.go` | 4 min |
+| 19 | Add unit tests: eslint parser | Create `internal/ring:lint/eslint_test.go` | 4 min |
+| 20 | Add unit tests: ruff parser | Create `internal/ring:lint/ruff_test.go` | 4 min |
 | 21 | Integration test | End-to-end test with sample scope.json | 5 min |
 | 22 | Code Review | Run code review checkpoint | 5 min |
 | 23 | Build and verify | Build binary and verify with real project | 5 min |
@@ -74,11 +74,11 @@ ls docs/plans/codereview-enhancement-macro-plan.md  # Expected: file exists
 ## Task 1: Initialize Go Module
 
 **Files:**
-- Create: `scripts/codereview/go.mod`
-- Create: `scripts/codereview/cmd/static-analysis/.gitkeep`
-- Create: `scripts/codereview/internal/lint/.gitkeep`
-- Create: `scripts/codereview/internal/scope/.gitkeep`
-- Create: `scripts/codereview/internal/output/.gitkeep`
+- Create: `scripts/ring:codereview/go.mod`
+- Create: `scripts/ring:codereview/cmd/static-analysis/.gitkeep`
+- Create: `scripts/ring:codereview/internal/ring:lint/.gitkeep`
+- Create: `scripts/ring:codereview/internal/scope/.gitkeep`
+- Create: `scripts/ring:codereview/internal/output/.gitkeep`
 
 **Prerequisites:**
 - Tools: Go 1.22+
@@ -87,19 +87,19 @@ ls docs/plans/codereview-enhancement-macro-plan.md  # Expected: file exists
 **Step 1: Create directory structure**
 
 ```bash
-mkdir -p scripts/codereview/cmd/static-analysis
-mkdir -p scripts/codereview/internal/lint
-mkdir -p scripts/codereview/internal/scope
-mkdir -p scripts/codereview/internal/output
-mkdir -p scripts/codereview/bin
+mkdir -p scripts/ring:codereview/cmd/static-analysis
+mkdir -p scripts/ring:codereview/internal/ring:lint
+mkdir -p scripts/ring:codereview/internal/scope
+mkdir -p scripts/ring:codereview/internal/output
+mkdir -p scripts/ring:codereview/bin
 ```
 
 **Step 2: Create go.mod**
 
-Create file `scripts/codereview/go.mod`:
+Create file `scripts/ring:codereview/go.mod`:
 
 ```go
-module github.com/LerianStudio/ring/scripts/codereview
+module github.com/LerianStudio/ring/scripts/ring:codereview
 
 go 1.22
 
@@ -110,7 +110,7 @@ require (
 
 **Step 3: Initialize go.sum**
 
-Run: `cd scripts/codereview && go mod tidy`
+Run: `cd scripts/ring:codereview && go mod tidy`
 
 **Expected output:**
 ```
@@ -123,7 +123,7 @@ go: downloading gopkg.in/yaml.v3 v3.0.1
 
 **Step 4: Verify structure**
 
-Run: `ls -la scripts/codereview/`
+Run: `ls -la scripts/ring:codereview/`
 
 **Expected output:**
 ```
@@ -140,8 +140,8 @@ drwxr-xr-x  ... internal
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/
-git commit -m "feat(codereview): initialize Go module for static analysis scripts"
+git add scripts/ring:codereview/
+git commit -m "feat(ring:codereview): initialize Go module for static analysis scripts"
 ```
 
 **If Task Fails:**
@@ -149,26 +149,26 @@ git commit -m "feat(codereview): initialize Go module for static analysis script
 1. **Directory creation fails:**
    - Check: `ls scripts/` (parent may not exist)
    - Fix: Create parent directories first
-   - Rollback: `rm -rf scripts/codereview`
+   - Rollback: `rm -rf scripts/ring:codereview`
 
 2. **go mod tidy fails:**
    - Check: `go version` (needs 1.22+)
    - Fix: Update Go version
-   - Rollback: `rm scripts/codereview/go.sum`
+   - Rollback: `rm scripts/ring:codereview/go.sum`
 
 ---
 
 ## Task 2: Define Common Types
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/types.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/types.go`
 
 **Prerequisites:**
 - Task 1 completed (go.mod exists)
 
 **Step 1: Write the types file**
 
-Create file `scripts/codereview/internal/lint/types.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/types.go`:
 
 ```go
 // Package lint provides linter integrations for static analysis.
@@ -284,7 +284,7 @@ func (r *Result) FilterByFiles(files map[string]bool) *Result {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -294,8 +294,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/types.go
-git commit -m "feat(codereview): add common types for static analysis findings"
+git add scripts/ring:codereview/internal/ring:lint/types.go
+git commit -m "feat(ring:codereview): add common types for static analysis findings"
 ```
 
 **If Task Fails:**
@@ -303,21 +303,21 @@ git commit -m "feat(codereview): add common types for static analysis findings"
 1. **Compilation fails:**
    - Check: Error message for syntax issues
    - Fix: Correct syntax errors
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/types.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/types.go`
 
 ---
 
 ## Task 3: Create Linter Runner Interface
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/runner.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/runner.go`
 
 **Prerequisites:**
 - Task 2 completed (types.go exists)
 
 **Step 1: Write the runner interface**
 
-Create file `scripts/codereview/internal/lint/runner.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/runner.go`:
 
 ```go
 package lint
@@ -390,7 +390,7 @@ func (r *Registry) GetAvailableLinters(ctx context.Context, lang Language) []Lin
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -400,8 +400,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/runner.go
-git commit -m "feat(codereview): add Linter interface and Registry for linter management"
+git add scripts/ring:codereview/internal/ring:lint/runner.go
+git commit -m "feat(ring:codereview): add Linter interface and Registry for linter management"
 ```
 
 **If Task Fails:**
@@ -409,21 +409,21 @@ git commit -m "feat(codereview): add Linter interface and Registry for linter ma
 1. **Compilation fails:**
    - Check: Error message for interface definition issues
    - Fix: Ensure all method signatures are correct
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/runner.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/runner.go`
 
 ---
 
 ## Task 4: Implement Tool Executor
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/executor.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/executor.go`
 
 **Prerequisites:**
 - Task 3 completed (runner.go exists)
 
 **Step 1: Write the executor**
 
-Create file `scripts/codereview/internal/lint/executor.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/executor.go`:
 
 ```go
 package lint
@@ -534,7 +534,7 @@ func (e *Executor) GetVersion(ctx context.Context, name string, args ...string) 
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -544,8 +544,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/executor.go
-git commit -m "feat(codereview): add command executor for running external linters"
+git add scripts/ring:codereview/internal/ring:lint/executor.go
+git commit -m "feat(ring:codereview): add command executor for running external linters"
 ```
 
 **If Task Fails:**
@@ -553,21 +553,21 @@ git commit -m "feat(codereview): add command executor for running external linte
 1. **Compilation fails:**
    - Check: Import paths and error handling
    - Fix: Correct any typos in imports
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/executor.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/executor.go`
 
 ---
 
 ## Task 5: Implement Go: golangci-lint
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/golangci.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/golangci.go`
 
 **Prerequisites:**
 - Task 4 completed (executor.go exists)
 
 **Step 1: Write the golangci-lint wrapper**
 
-Create file `scripts/codereview/internal/lint/golangci.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/golangci.go`:
 
 ```go
 package lint
@@ -737,7 +737,7 @@ func normalizeFilePath(projectDir, filePath string) string {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -747,8 +747,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/golangci.go
-git commit -m "feat(codereview): add golangci-lint wrapper for Go static analysis"
+git add scripts/ring:codereview/internal/ring:lint/golangci.go
+git commit -m "feat(ring:codereview): add golangci-lint wrapper for Go static analysis"
 ```
 
 **If Task Fails:**
@@ -756,21 +756,21 @@ git commit -m "feat(codereview): add golangci-lint wrapper for Go static analysi
 1. **Compilation fails:**
    - Check: JSON struct tags and method signatures
    - Fix: Ensure struct fields match golangci-lint JSON output
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/golangci.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/golangci.go`
 
 ---
 
 ## Task 6: Implement Go: staticcheck
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/staticcheck.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/staticcheck.go`
 
 **Prerequisites:**
 - Task 5 completed
 
 **Step 1: Write the staticcheck wrapper**
 
-Create file `scripts/codereview/internal/lint/staticcheck.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/staticcheck.go`:
 
 ```go
 package lint
@@ -942,7 +942,7 @@ func mapStaticcheckCategory(code string) Category {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -952,8 +952,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/staticcheck.go
-git commit -m "feat(codereview): add staticcheck wrapper for Go static analysis"
+git add scripts/ring:codereview/internal/ring:lint/staticcheck.go
+git commit -m "feat(ring:codereview): add staticcheck wrapper for Go static analysis"
 ```
 
 **If Task Fails:**
@@ -961,21 +961,21 @@ git commit -m "feat(codereview): add staticcheck wrapper for Go static analysis"
 1. **Compilation fails:**
    - Check: JSON struct definitions match staticcheck output
    - Fix: Verify staticcheck JSON format with `staticcheck -f json ./...`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/staticcheck.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/staticcheck.go`
 
 ---
 
 ## Task 7: Implement Go: gosec
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/gosec.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/gosec.go`
 
 **Prerequisites:**
 - Task 6 completed
 
 **Step 1: Write the gosec wrapper**
 
-Create file `scripts/codereview/internal/lint/gosec.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/gosec.go`:
 
 ```go
 package lint
@@ -1135,7 +1135,7 @@ func mapGosecSeverity(severity, confidence string) Severity {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -1145,8 +1145,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/gosec.go
-git commit -m "feat(codereview): add gosec wrapper for Go security analysis"
+git add scripts/ring:codereview/internal/ring:lint/gosec.go
+git commit -m "feat(ring:codereview): add gosec wrapper for Go security analysis"
 ```
 
 **If Task Fails:**
@@ -1154,21 +1154,21 @@ git commit -m "feat(codereview): add gosec wrapper for Go security analysis"
 1. **Compilation fails:**
    - Check: strconv import and JSON struct tags
    - Fix: Verify gosec JSON format with `gosec -fmt=json ./...`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/gosec.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/gosec.go`
 
 ---
 
 ## Task 8: Implement TypeScript: tsc
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/tsc.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/tsc.go`
 
 **Prerequisites:**
 - Task 7 completed
 
 **Step 1: Write the tsc wrapper**
 
-Create file `scripts/codereview/internal/lint/tsc.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/tsc.go`:
 
 ```go
 package lint
@@ -1302,7 +1302,7 @@ func mapTSCSeverity(level string) Severity {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -1312,8 +1312,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/tsc.go
-git commit -m "feat(codereview): add TypeScript compiler (tsc) wrapper for type checking"
+git add scripts/ring:codereview/internal/ring:lint/tsc.go
+git commit -m "feat(ring:codereview): add TypeScript compiler (tsc) wrapper for type checking"
 ```
 
 **If Task Fails:**
@@ -1321,21 +1321,21 @@ git commit -m "feat(codereview): add TypeScript compiler (tsc) wrapper for type 
 1. **Compilation fails:**
    - Check: regexp package import and pattern
    - Fix: Test regexp pattern against sample tsc output
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/tsc.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/tsc.go`
 
 ---
 
 ## Task 9: Implement TypeScript: eslint
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/eslint.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/eslint.go`
 
 **Prerequisites:**
 - Task 8 completed
 
 **Step 1: Write the eslint wrapper**
 
-Create file `scripts/codereview/internal/lint/eslint.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/eslint.go`:
 
 ```go
 package lint
@@ -1497,7 +1497,7 @@ func mapESLintCategory(ruleID string) Category {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -1507,8 +1507,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/eslint.go
-git commit -m "feat(codereview): add ESLint wrapper for TypeScript linting"
+git add scripts/ring:codereview/internal/ring:lint/eslint.go
+git commit -m "feat(ring:codereview): add ESLint wrapper for TypeScript linting"
 ```
 
 **If Task Fails:**
@@ -1516,21 +1516,21 @@ git commit -m "feat(codereview): add ESLint wrapper for TypeScript linting"
 1. **Compilation fails:**
    - Check: JSON struct definitions for eslint output
    - Fix: Verify eslint JSON format with `npx eslint --format json .`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/eslint.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/eslint.go`
 
 ---
 
 ## Task 10: Implement Python: ruff
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/ruff.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/ruff.go`
 
 **Prerequisites:**
 - Task 9 completed
 
 **Step 1: Write the ruff wrapper**
 
-Create file `scripts/codereview/internal/lint/ruff.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/ruff.go`:
 
 ```go
 package lint
@@ -1710,7 +1710,7 @@ func mapRuffCategory(code string) Category {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -1720,8 +1720,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/ruff.go
-git commit -m "feat(codereview): add ruff wrapper for Python fast linting"
+git add scripts/ring:codereview/internal/ring:lint/ruff.go
+git commit -m "feat(ring:codereview): add ruff wrapper for Python fast linting"
 ```
 
 **If Task Fails:**
@@ -1729,21 +1729,21 @@ git commit -m "feat(codereview): add ruff wrapper for Python fast linting"
 1. **Compilation fails:**
    - Check: JSON struct definitions match ruff output
    - Fix: Verify ruff JSON format with `ruff check --output-format json .`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/ruff.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/ruff.go`
 
 ---
 
 ## Task 11: Implement Python: mypy
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/mypy.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/mypy.go`
 
 **Prerequisites:**
 - Task 10 completed
 
 **Step 1: Write the mypy wrapper**
 
-Create file `scripts/codereview/internal/lint/mypy.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/mypy.go`:
 
 ```go
 package lint
@@ -1887,7 +1887,7 @@ func mapMypySeverity(severity string) Severity {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -1897,8 +1897,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/mypy.go
-git commit -m "feat(codereview): add mypy wrapper for Python type checking"
+git add scripts/ring:codereview/internal/ring:lint/mypy.go
+git commit -m "feat(ring:codereview): add mypy wrapper for Python type checking"
 ```
 
 **If Task Fails:**
@@ -1906,21 +1906,21 @@ git commit -m "feat(codereview): add mypy wrapper for Python type checking"
 1. **Compilation fails:**
    - Check: JSON parsing for line-by-line output
    - Fix: Verify mypy JSON format with `mypy --output json .`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/mypy.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/mypy.go`
 
 ---
 
 ## Task 12: Implement Python: pylint
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/pylint.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/pylint.go`
 
 **Prerequisites:**
 - Task 11 completed
 
 **Step 1: Write the pylint wrapper**
 
-Create file `scripts/codereview/internal/lint/pylint.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/pylint.go`:
 
 ```go
 package lint
@@ -2082,7 +2082,7 @@ func mapPylintCategory(msgType, msgID string) Category {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -2092,8 +2092,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/pylint.go
-git commit -m "feat(codereview): add pylint wrapper for comprehensive Python linting"
+git add scripts/ring:codereview/internal/ring:lint/pylint.go
+git commit -m "feat(ring:codereview): add pylint wrapper for comprehensive Python linting"
 ```
 
 **If Task Fails:**
@@ -2101,21 +2101,21 @@ git commit -m "feat(codereview): add pylint wrapper for comprehensive Python lin
 1. **Compilation fails:**
    - Check: JSON struct field tags match pylint output
    - Fix: Verify pylint JSON format with `pylint --output-format=json .`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/pylint.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/pylint.go`
 
 ---
 
 ## Task 13: Implement Python: bandit
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/bandit.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/bandit.go`
 
 **Prerequisites:**
 - Task 12 completed
 
 **Step 1: Write the bandit wrapper**
 
-Create file `scripts/codereview/internal/lint/bandit.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/bandit.go`:
 
 ```go
 package lint
@@ -2267,7 +2267,7 @@ func mapBanditSeverity(severity, confidence string) Severity {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/lint/`
+Run: `cd scripts/ring:codereview && go build ./internal/ring:lint/`
 
 **Expected output:**
 ```
@@ -2277,8 +2277,8 @@ Run: `cd scripts/codereview && go build ./internal/lint/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/bandit.go
-git commit -m "feat(codereview): add bandit wrapper for Python security analysis"
+git add scripts/ring:codereview/internal/ring:lint/bandit.go
+git commit -m "feat(ring:codereview): add bandit wrapper for Python security analysis"
 ```
 
 **If Task Fails:**
@@ -2286,21 +2286,21 @@ git commit -m "feat(codereview): add bandit wrapper for Python security analysis
 1. **Compilation fails:**
    - Check: JSON struct definitions match bandit output
    - Fix: Verify bandit JSON format with `bandit -f json -r .`
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/bandit.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/bandit.go`
 
 ---
 
 ## Task 14: Create Scope Reader
 
 **Files:**
-- Create: `scripts/codereview/internal/scope/reader.go`
+- Create: `scripts/ring:codereview/internal/scope/reader.go`
 
 **Prerequisites:**
 - Task 13 completed
 
 **Step 1: Write the scope reader**
 
-Create file `scripts/codereview/internal/scope/reader.go`:
+Create file `scripts/ring:codereview/internal/scope/reader.go`:
 
 ```go
 // Package scope handles reading and parsing scope.json from Phase 0.
@@ -2312,7 +2312,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/LerianStudio/ring/scripts/codereview/internal/lint"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/ring:lint"
 )
 
 // Scope represents the scope.json structure from Phase 0.
@@ -2402,13 +2402,13 @@ func (s *Scope) GetPackages(lang string) []string {
 
 // DefaultScopePath returns the default scope.json path.
 func DefaultScopePath(projectDir string) string {
-	return filepath.Join(projectDir, ".ring", "codereview", "scope.json")
+	return filepath.Join(projectDir, ".ring", "ring:codereview", "scope.json")
 }
 ```
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/scope/`
+Run: `cd scripts/ring:codereview && go build ./internal/scope/`
 
 **Expected output:**
 ```
@@ -2418,8 +2418,8 @@ Run: `cd scripts/codereview && go build ./internal/scope/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/scope/reader.go
-git commit -m "feat(codereview): add scope.json reader for Phase 0 integration"
+git add scripts/ring:codereview/internal/scope/reader.go
+git commit -m "feat(ring:codereview): add scope.json reader for Phase 0 integration"
 ```
 
 **If Task Fails:**
@@ -2427,21 +2427,21 @@ git commit -m "feat(codereview): add scope.json reader for Phase 0 integration"
 1. **Compilation fails:**
    - Check: Import path for lint package
    - Fix: Ensure module path matches go.mod
-   - Rollback: `git checkout -- scripts/codereview/internal/scope/reader.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/scope/reader.go`
 
 ---
 
 ## Task 15: Create Output Writer
 
 **Files:**
-- Create: `scripts/codereview/internal/output/json.go`
+- Create: `scripts/ring:codereview/internal/output/json.go`
 
 **Prerequisites:**
 - Task 14 completed
 
 **Step 1: Write the output writer**
 
-Create file `scripts/codereview/internal/output/json.go`:
+Create file `scripts/ring:codereview/internal/output/json.go`:
 
 ```go
 // Package output handles writing analysis results to files.
@@ -2453,7 +2453,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/LerianStudio/ring/scripts/codereview/internal/lint"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/ring:lint"
 )
 
 // Writer handles writing analysis results.
@@ -2502,13 +2502,13 @@ func (w *Writer) writeJSON(filename string, data interface{}) error {
 
 // DefaultOutputDir returns the default output directory.
 func DefaultOutputDir(projectDir string) string {
-	return filepath.Join(projectDir, ".ring", "codereview")
+	return filepath.Join(projectDir, ".ring", "ring:codereview")
 }
 ```
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build ./internal/output/`
+Run: `cd scripts/ring:codereview && go build ./internal/output/`
 
 **Expected output:**
 ```
@@ -2518,8 +2518,8 @@ Run: `cd scripts/codereview && go build ./internal/output/`
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/output/json.go
-git commit -m "feat(codereview): add JSON output writer for analysis results"
+git add scripts/ring:codereview/internal/output/json.go
+git commit -m "feat(ring:codereview): add JSON output writer for analysis results"
 ```
 
 **If Task Fails:**
@@ -2527,21 +2527,21 @@ git commit -m "feat(codereview): add JSON output writer for analysis results"
 1. **Compilation fails:**
    - Check: Import path for lint package
    - Fix: Ensure module path matches go.mod
-   - Rollback: `git checkout -- scripts/codereview/internal/output/json.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/output/json.go`
 
 ---
 
 ## Task 16: Implement Orchestrator
 
 **Files:**
-- Create: `scripts/codereview/cmd/static-analysis/main.go`
+- Create: `scripts/ring:codereview/cmd/static-analysis/main.go`
 
 **Prerequisites:**
 - Tasks 1-15 completed
 
 **Step 1: Write the main orchestrator**
 
-Create file `scripts/codereview/cmd/static-analysis/main.go`:
+Create file `scripts/ring:codereview/cmd/static-analysis/main.go`:
 
 ```go
 // Package main implements the static-analysis binary.
@@ -2556,15 +2556,15 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/LerianStudio/ring/scripts/codereview/internal/lint"
-	"github.com/LerianStudio/ring/scripts/codereview/internal/output"
-	"github.com/LerianStudio/ring/scripts/codereview/internal/scope"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/ring:lint"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/output"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/scope"
 )
 
 func main() {
 	// Parse flags
-	scopePath := flag.String("scope", "", "Path to scope.json (default: .ring/codereview/scope.json)")
-	outputPath := flag.String("output", "", "Output directory (default: .ring/codereview/)")
+	scopePath := flag.String("scope", "", "Path to scope.json (default: .ring/ring:codereview/scope.json)")
+	outputPath := flag.String("output", "", "Output directory (default: .ring/ring:codereview/)")
 	verbose := flag.Bool("v", false, "Verbose output")
 	timeout := flag.Duration("timeout", 5*time.Minute, "Timeout for analysis")
 	flag.Parse()
@@ -2743,7 +2743,7 @@ func deduplicateFindings(result *lint.Result) {
 
 **Step 2: Verify compilation**
 
-Run: `cd scripts/codereview && go build -o bin/static-analysis ./cmd/static-analysis/`
+Run: `cd scripts/ring:codereview && go build -o bin/static-analysis ./cmd/static-analysis/`
 
 **Expected output:**
 ```
@@ -2752,7 +2752,7 @@ Run: `cd scripts/codereview && go build -o bin/static-analysis ./cmd/static-anal
 
 **Step 3: Verify binary exists**
 
-Run: `ls -la scripts/codereview/bin/static-analysis`
+Run: `ls -la scripts/ring:codereview/bin/static-analysis`
 
 **Expected output:**
 ```
@@ -2762,8 +2762,8 @@ Run: `ls -la scripts/codereview/bin/static-analysis`
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/cmd/static-analysis/main.go
-git commit -m "feat(codereview): add static-analysis orchestrator binary"
+git add scripts/ring:codereview/cmd/static-analysis/main.go
+git commit -m "feat(ring:codereview): add static-analysis orchestrator binary"
 ```
 
 **If Task Fails:**
@@ -2771,25 +2771,25 @@ git commit -m "feat(codereview): add static-analysis orchestrator binary"
 1. **Compilation fails:**
    - Check: All import paths match module structure
    - Fix: Run `go mod tidy` to resolve dependencies
-   - Rollback: `git checkout -- scripts/codereview/cmd/static-analysis/main.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/cmd/static-analysis/main.go`
 
 2. **Binary not created:**
    - Check: `bin/` directory exists
-   - Fix: `mkdir -p scripts/codereview/bin`
+   - Fix: `mkdir -p scripts/ring:codereview/bin`
 
 ---
 
 ## Task 17: Add Unit Tests: Types
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/types_test.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/types_test.go`
 
 **Prerequisites:**
 - Task 16 completed
 
 **Step 1: Write tests for types**
 
-Create file `scripts/codereview/internal/lint/types_test.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/types_test.go`:
 
 ```go
 package lint
@@ -2906,7 +2906,7 @@ func TestResult_FilterByFiles(t *testing.T) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test ./internal/lint/... -v`
+Run: `cd scripts/ring:codereview && go test ./internal/ring:lint/... -v`
 
 **Expected output:**
 ```
@@ -2927,14 +2927,14 @@ Run: `cd scripts/codereview && go test ./internal/lint/... -v`
 === RUN   TestResult_FilterByFiles
 --- PASS: TestResult_FilterByFiles (0.00s)
 PASS
-ok      github.com/LerianStudio/ring/scripts/codereview/internal/lint
+ok      github.com/LerianStudio/ring/scripts/ring:codereview/internal/ring:lint
 ```
 
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/types_test.go
-git commit -m "test(codereview): add unit tests for lint types"
+git add scripts/ring:codereview/internal/ring:lint/types_test.go
+git commit -m "test(ring:codereview): add unit tests for lint types"
 ```
 
 **If Task Fails:**
@@ -2942,21 +2942,21 @@ git commit -m "test(codereview): add unit tests for lint types"
 1. **Tests fail:**
    - Check: Test assertions match implementation
    - Fix: Adjust test expectations or fix implementation
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/types_test.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/types_test.go`
 
 ---
 
 ## Task 18: Add Unit Tests: golangci Parser
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/golangci_test.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/golangci_test.go`
 
 **Prerequisites:**
 - Task 17 completed
 
 **Step 1: Write parser tests**
 
-Create file `scripts/codereview/internal/lint/golangci_test.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/golangci_test.go`:
 
 ```go
 package lint
@@ -3067,7 +3067,7 @@ func TestGolangciLint_Language(t *testing.T) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test ./internal/lint/... -v -run Golangci`
+Run: `cd scripts/ring:codereview && go test ./internal/ring:lint/... -v -run Golangci`
 
 **Expected output:**
 ```
@@ -3090,8 +3090,8 @@ PASS
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/golangci_test.go
-git commit -m "test(codereview): add unit tests for golangci-lint parser"
+git add scripts/ring:codereview/internal/ring:lint/golangci_test.go
+git commit -m "test(ring:codereview): add unit tests for golangci-lint parser"
 ```
 
 **If Task Fails:**
@@ -3099,21 +3099,21 @@ git commit -m "test(codereview): add unit tests for golangci-lint parser"
 1. **Tests fail:**
    - Check: Test assertions match implementation
    - Fix: Verify mapping functions return expected values
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/golangci_test.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/golangci_test.go`
 
 ---
 
 ## Task 19: Add Unit Tests: eslint Parser
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/eslint_test.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/eslint_test.go`
 
 **Prerequisites:**
 - Task 18 completed
 
 **Step 1: Write parser tests**
 
-Create file `scripts/codereview/internal/lint/eslint_test.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/eslint_test.go`:
 
 ```go
 package lint
@@ -3183,7 +3183,7 @@ func TestESLint_Language(t *testing.T) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test ./internal/lint/... -v -run ESLint`
+Run: `cd scripts/ring:codereview && go test ./internal/ring:lint/... -v -run ESLint`
 
 **Expected output:**
 ```
@@ -3202,8 +3202,8 @@ PASS
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/eslint_test.go
-git commit -m "test(codereview): add unit tests for ESLint parser"
+git add scripts/ring:codereview/internal/ring:lint/eslint_test.go
+git commit -m "test(ring:codereview): add unit tests for ESLint parser"
 ```
 
 **If Task Fails:**
@@ -3211,21 +3211,21 @@ git commit -m "test(codereview): add unit tests for ESLint parser"
 1. **Tests fail:**
    - Check: Test assertions match implementation
    - Fix: Verify mapping functions
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/eslint_test.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/eslint_test.go`
 
 ---
 
 ## Task 20: Add Unit Tests: ruff Parser
 
 **Files:**
-- Create: `scripts/codereview/internal/lint/ruff_test.go`
+- Create: `scripts/ring:codereview/internal/ring:lint/ruff_test.go`
 
 **Prerequisites:**
 - Task 19 completed
 
 **Step 1: Write parser tests**
 
-Create file `scripts/codereview/internal/lint/ruff_test.go`:
+Create file `scripts/ring:codereview/internal/ring:lint/ruff_test.go`:
 
 ```go
 package lint
@@ -3303,7 +3303,7 @@ func TestRuff_Language(t *testing.T) {
 
 **Step 2: Run tests**
 
-Run: `cd scripts/codereview && go test ./internal/lint/... -v -run Ruff`
+Run: `cd scripts/ring:codereview && go test ./internal/ring:lint/... -v -run Ruff`
 
 **Expected output:**
 ```
@@ -3323,8 +3323,8 @@ PASS
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/lint/ruff_test.go
-git commit -m "test(codereview): add unit tests for ruff parser"
+git add scripts/ring:codereview/internal/ring:lint/ruff_test.go
+git commit -m "test(ring:codereview): add unit tests for ruff parser"
 ```
 
 **If Task Fails:**
@@ -3332,15 +3332,15 @@ git commit -m "test(codereview): add unit tests for ruff parser"
 1. **Tests fail:**
    - Check: Test assertions match implementation
    - Fix: Verify mapping functions
-   - Rollback: `git checkout -- scripts/codereview/internal/lint/ruff_test.go`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/ring:lint/ruff_test.go`
 
 ---
 
 ## Task 21: Integration Test
 
 **Files:**
-- Create: `scripts/codereview/testdata/scope.json` (test fixture)
-- Create: `scripts/codereview/integration_test.go`
+- Create: `scripts/ring:codereview/testdata/scope.json` (test fixture)
+- Create: `scripts/ring:codereview/integration_test.go`
 
 **Prerequisites:**
 - Task 20 completed
@@ -3348,12 +3348,12 @@ git commit -m "test(codereview): add unit tests for ruff parser"
 **Step 1: Create test fixture directory**
 
 ```bash
-mkdir -p scripts/codereview/testdata
+mkdir -p scripts/ring:codereview/testdata
 ```
 
 **Step 2: Create test scope.json**
 
-Create file `scripts/codereview/testdata/scope.json`:
+Create file `scripts/ring:codereview/testdata/scope.json`:
 
 ```json
 {
@@ -3380,7 +3380,7 @@ Create file `scripts/codereview/testdata/scope.json`:
 
 **Step 3: Create integration test**
 
-Create file `scripts/codereview/integration_test.go`:
+Create file `scripts/ring:codereview/integration_test.go`:
 
 ```go
 //go:build integration
@@ -3393,8 +3393,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/LerianStudio/ring/scripts/codereview/internal/lint"
-	"github.com/LerianStudio/ring/scripts/codereview/internal/scope"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/ring:lint"
+	"github.com/LerianStudio/ring/scripts/ring:codereview/internal/scope"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -3508,7 +3508,7 @@ func TestResultAggregation(t *testing.T) {
 
 func TestOutputWriterCreatesDirectory(t *testing.T) {
 	tmpDir := t.TempDir()
-	outputDir := filepath.Join(tmpDir, ".ring", "codereview")
+	outputDir := filepath.Join(tmpDir, ".ring", "ring:codereview")
 
 	// Verify directory doesn't exist
 	_, err := os.Stat(outputDir)
@@ -3521,7 +3521,7 @@ func TestOutputWriterCreatesDirectory(t *testing.T) {
 
 **Step 4: Run integration tests**
 
-Run: `cd scripts/codereview && go test -tags=integration -v`
+Run: `cd scripts/ring:codereview && go test -tags=integration -v`
 
 **Expected output:**
 ```
@@ -3539,8 +3539,8 @@ PASS
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/testdata/scope.json scripts/codereview/integration_test.go
-git commit -m "test(codereview): add integration tests for static analysis"
+git add scripts/ring:codereview/testdata/scope.json scripts/ring:codereview/integration_test.go
+git commit -m "test(ring:codereview): add integration tests for static analysis"
 ```
 
 **If Task Fails:**
@@ -3548,7 +3548,7 @@ git commit -m "test(codereview): add integration tests for static analysis"
 1. **Tests fail:**
    - Check: Test file paths and JSON fixture validity
    - Fix: Verify testdata directory structure
-   - Rollback: `rm -rf scripts/codereview/testdata scripts/codereview/integration_test.go`
+   - Rollback: `rm -rf scripts/ring:codereview/testdata scripts/ring:codereview/integration_test.go`
 
 ---
 
@@ -3558,7 +3558,7 @@ git commit -m "test(codereview): add integration tests for static analysis"
 
 1. **Dispatch all 5 reviewers in parallel:**
    - REQUIRED SUB-SKILL: Use ring:requesting-code-review
-   - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer)
+   - All reviewers run simultaneously (ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer)
    - Wait for all to complete
 
 2. **Handle findings by severity (MANDATORY):**
@@ -3588,14 +3588,14 @@ git commit -m "test(codereview): add integration tests for static analysis"
 ## Task 23: Build and Verify
 
 **Files:**
-- Build: `scripts/codereview/bin/static-analysis`
+- Build: `scripts/ring:codereview/bin/static-analysis`
 
 **Prerequisites:**
 - Task 22 completed (code review passed)
 
 **Step 1: Build final binary**
 
-Run: `cd scripts/codereview && go build -o bin/static-analysis ./cmd/static-analysis/`
+Run: `cd scripts/ring:codereview && go build -o bin/static-analysis ./cmd/static-analysis/`
 
 **Expected output:**
 ```
@@ -3604,15 +3604,15 @@ Run: `cd scripts/codereview && go build -o bin/static-analysis ./cmd/static-anal
 
 **Step 2: Verify binary runs**
 
-Run: `scripts/codereview/bin/static-analysis --help`
+Run: `scripts/ring:codereview/bin/static-analysis --help`
 
 **Expected output:**
 ```
 Usage of static-analysis:
   -output string
-        Output directory (default: .ring/codereview/)
+        Output directory (default: .ring/ring:codereview/)
   -scope string
-        Path to scope.json (default: .ring/codereview/scope.json)
+        Path to scope.json (default: .ring/ring:codereview/scope.json)
   -timeout duration
         Timeout for analysis (default 5m0s)
   -v    Verbose output
@@ -3620,7 +3620,7 @@ Usage of static-analysis:
 
 **Step 3: Run all unit tests**
 
-Run: `cd scripts/codereview && go test ./... -v`
+Run: `cd scripts/ring:codereview && go test ./... -v`
 
 **Expected output:**
 ```
@@ -3628,22 +3628,22 @@ Run: `cd scripts/codereview && go test ./... -v`
 --- PASS: TestNewResult (0.00s)
 ...
 PASS
-ok      github.com/LerianStudio/ring/scripts/codereview/internal/lint   X.XXXs
-ok      github.com/LerianStudio/ring/scripts/codereview/internal/scope  X.XXXs
-ok      github.com/LerianStudio/ring/scripts/codereview/internal/output X.XXXs
+ok      github.com/LerianStudio/ring/scripts/ring:codereview/internal/ring:lint   X.XXXs
+ok      github.com/LerianStudio/ring/scripts/ring:codereview/internal/scope  X.XXXs
+ok      github.com/LerianStudio/ring/scripts/ring:codereview/internal/output X.XXXs
 ```
 
 **Step 4: Final commit**
 
 ```bash
-git add scripts/codereview/bin/.gitkeep
-git commit -m "feat(codereview): complete Phase 1 static analysis implementation"
+git add scripts/ring:codereview/bin/.gitkeep
+git commit -m "feat(ring:codereview): complete Phase 1 static analysis implementation"
 ```
 
 **Step 5: Tag milestone**
 
 ```bash
-git tag -a codereview-phase1-complete -m "Phase 1: Static Analysis implementation complete"
+git tag -a ring:codereview-phase1-complete -m "Phase 1: Static Analysis implementation complete"
 ```
 
 **If Task Fails:**
@@ -3665,15 +3665,15 @@ git tag -a codereview-phase1-complete -m "Phase 1: Static Analysis implementatio
 This plan implements Phase 1: Static Analysis for the Codereview Enhancement feature. Upon completion:
 
 **Deliverables:**
-- `scripts/codereview/bin/static-analysis` - Main orchestrator binary
-- `internal/lint/` - 9 linter wrappers (3 Go, 2 TS, 4 Python)
+- `scripts/ring:codereview/bin/static-analysis` - Main orchestrator binary
+- `internal/ring:lint/` - 9 linter wrappers (3 Go, 2 TS, 4 Python)
 - `internal/scope/` - Scope reader for Phase 0 integration
 - `internal/output/` - JSON output writer
 - Unit tests for all parsers and types
 
 **CLI Usage:**
 ```bash
-# Run with defaults (reads .ring/codereview/scope.json)
+# Run with defaults (reads .ring/ring:codereview/scope.json)
 static-analysis
 
 # Run with custom paths
@@ -3684,7 +3684,7 @@ static-analysis -v
 ```
 
 **Output Files:**
-- `.ring/codereview/static-analysis.json` - Aggregate results
-- `.ring/codereview/{lang}-lint.json` - Language-specific results
+- `.ring/ring:codereview/static-analysis.json` - Aggregate results
+- `.ring/ring:codereview/{lang}-lint.json` - Language-specific results
 
 **Next Phase:** Phase 2 (AST Extraction) will build on this by adding semantic diff capabilities.

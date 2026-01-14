@@ -2,12 +2,12 @@
 
 ## Macro Plan v1.0
 
-**Goal:** Enhance `/codereview` with script-based static analysis, AST parsing, call graphs, and data flow analysis to catch issues before PR submission.
+**Goal:** Enhance `/ring:codereview` with script-based static analysis, AST parsing, call graphs, and data flow analysis to catch issues before PR submission.
 
 **Languages:** Go, TypeScript, Python (single-language projects, not mixed)
 **Approach:** Script-based with Go binaries for analysis tools
-**Integration:** `/codereview` unchanged; scripts provide enriched context to existing reviewers
-**Output Location:** `.ring/codereview/` (project-local, gitignored)
+**Integration:** `/ring:codereview` unchanged; scripts provide enriched context to existing reviewers
+**Output Location:** `.ring/ring:codereview/` (project-local, gitignored)
 
 ---
 
@@ -16,7 +16,7 @@
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Script language | Go binaries | Team codes in Go; native AST parsing |
-| Output location | `.ring/codereview/` | Project-local, consistent with Ring tooling |
+| Output location | `.ring/ring:codereview/` | Project-local, consistent with Ring tooling |
 | CI integration | Not in v1 | Focus on local dev experience first |
 | Monorepo support | Option B (detect & adapt) | Simple projects expected; warn on complexity |
 | Project type | Single-language | Go OR TypeScript OR Python per project, not mixed |
@@ -27,13 +27,13 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           /codereview INVOCATION                            │
+│                           /ring:codereview INVOCATION                            │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         PHASE 0: SCOPE DETECTION                            │
-│  scripts/codereview/bin/scope-detector                                      │
+│  scripts/ring:codereview/bin/scope-detector                                      │
 │  ├── Parses git diff to identify changed files                              │
 │  ├── Detects language (Go, TypeScript, or Python)                           │
 │  ├── Identifies change types (new files, modifications, deletions)          │
@@ -101,27 +101,27 @@
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                      PHASE 5: CONTEXT COMPILATION                           │
-│  scripts/codereview/bin/compile-context                                     │
+│  scripts/ring:codereview/bin/compile-context                                     │
 │  ├── Aggregates all phase outputs                                           │
 │  ├── Generates reviewer-specific context files:                             │
-│  │   ├── context-code-reviewer.md                                           │
-│  │   ├── context-security-reviewer.md                                       │
-│  │   ├── context-business-logic-reviewer.md                                 │
-│  │   ├── context-test-reviewer.md                                           │
-│  │   └── context-nil-safety-reviewer.md                                     │
-│  └── Outputs: .ring/codereview/ directory                                │
+│  │   ├── context-ring:code-reviewer.md                                           │
+│  │   ├── context-ring:security-reviewer.md                                       │
+│  │   ├── context-ring:business-logic-reviewer.md                                 │
+│  │   ├── context-ring:test-reviewer.md                                           │
+│  │   └── context-ring:nil-safety-reviewer.md                                     │
+│  └── Outputs: .ring/ring:codereview/ directory                                │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        EXISTING /codereview FLOW                            │
+│                        EXISTING /ring:codereview FLOW                            │
 │  5 reviewers dispatched in parallel (unchanged)                             │
 │  Each reviewer reads their context file + git diff                          │
-│  ├── ring:code-reviewer        + context-code-reviewer.md                   │
-│  ├── ring:security-reviewer    + context-security-reviewer.md               │
-│  ├── ring:business-logic-reviewer + context-business-logic-reviewer.md      │
-│  ├── ring:test-reviewer        + context-test-reviewer.md                   │
-│  └── ring:nil-safety-reviewer  + context-nil-safety-reviewer.md             │
+│  ├── ring:code-reviewer        + context-ring:code-reviewer.md                   │
+│  ├── ring:security-reviewer    + context-ring:security-reviewer.md               │
+│  ├── ring:business-logic-reviewer + context-ring:business-logic-reviewer.md      │
+│  ├── ring:test-reviewer        + context-ring:test-reviewer.md                   │
+│  └── ring:nil-safety-reviewer  + context-ring:nil-safety-reviewer.md             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -132,7 +132,7 @@
 ```
 ring/
 ├── scripts/
-│   └── codereview/
+│   └── ring:codereview/
 │       ├── cmd/                          # Go binaries (main packages)
 │       │   ├── scope-detector/           # Phase 0
 │       │   │   └── main.go
@@ -199,7 +199,7 @@ ring/
 │       └── install.sh                    # One-time setup
 │
 ├── .ring/                                # Project-local Ring data (gitignored)
-│   └── codereview/                       # Pre-analysis outputs
+│   └── ring:codereview/                       # Pre-analysis outputs
 │       ├── scope.json
 │       ├── static-analysis.json
 │       ├── ast.json                      # Language-specific AST
@@ -208,11 +208,11 @@ ring/
 │       ├── impact-summary.md
 │       ├── data-flow.json
 │       ├── security-summary.md
-│       ├── context-code-reviewer.md
-│       ├── context-security-reviewer.md
-│       ├── context-business-logic-reviewer.md
-│       ├── context-test-reviewer.md
-│       ├── context-nil-safety-reviewer.md
+│       ├── context-ring:code-reviewer.md
+│       ├── context-ring:security-reviewer.md
+│       ├── context-ring:business-logic-reviewer.md
+│       ├── context-ring:test-reviewer.md
+│       ├── context-ring:nil-safety-reviewer.md
 │       └── cache/                        # Hash-based cache
 │           └── ...
 │
@@ -227,7 +227,7 @@ ring/
 
 ### 3.1 Phase 0: Scope Detection
 
-**Binary:** `scripts/codereview/bin/scope-detector` (source: `cmd/scope-detector`)
+**Binary:** `scripts/ring:codereview/bin/scope-detector` (source: `cmd/scope-detector`)
 
 **Input:** Git diff (staged, unstaged, or between refs)
 **Output:** `scope.json`
@@ -273,7 +273,7 @@ ring/
 
 #### 3.2.1 Go Static Analysis
 
-**Binary:** `scripts/codereview/bin/static-analysis` (source: `cmd/static-analysis`)
+**Binary:** `scripts/ring:codereview/bin/static-analysis` (source: `cmd/static-analysis`)
 
 **Tools Required:**
 | Tool | Purpose | Install |
@@ -335,7 +335,7 @@ ring/
 
 #### 3.2.2 TypeScript Static Analysis
 
-**Script:** `internal/lint/tsc.go`, `internal/lint/eslint.go`
+**Script:** `internal/ring:lint/tsc.go`, `internal/ring:lint/eslint.go`
 
 **Tools Required:**
 | Tool | Purpose | Install |
@@ -353,7 +353,7 @@ ring/
 
 #### 3.2.3 Python Static Analysis
 
-**Script:** `internal/lint/ruff.go`, `internal/lint/mypy.go`, `internal/lint/pylint.go`, `internal/lint/bandit.go`
+**Script:** `internal/ring:lint/ruff.go`, `internal/ring:lint/mypy.go`, `internal/ring:lint/pylint.go`, `internal/ring:lint/bandit.go`
 
 **Tools Required:**
 | Tool | Purpose | Install |
@@ -429,7 +429,7 @@ ring/
 
 #### 3.3.1 Go AST Extractor
 
-**Binary:** `scripts/codereview/bin/ast-extractor` (source: `cmd/ast-extractor`)
+**Binary:** `scripts/ring:codereview/bin/ast-extractor` (source: `cmd/ast-extractor`)
 
 **Why Go binary?** Native `go/ast` and `go/parser` packages provide accurate parsing.
 
@@ -779,7 +779,7 @@ ring/
 
 #### 3.4.1 Go Call Graph
 
-**Binary:** `scripts/codereview/bin/call-graph` (source: `cmd/call-graph`)
+**Binary:** `scripts/ring:codereview/bin/call-graph` (source: `cmd/call-graph`)
 
 **Tools Required:**
 | Tool | Purpose | Install |
@@ -984,7 +984,7 @@ ring/
 
 #### 3.5.1 Go Data Flow
 
-**Binary:** `scripts/codereview/bin/data-flow` (source: `cmd/data-flow`)
+**Binary:** `scripts/ring:codereview/bin/data-flow` (source: `cmd/data-flow`)
 
 **Why Go binary?** Complex AST traversal for taint tracking.
 
@@ -1337,16 +1337,16 @@ if _, err := uuid.Parse(userID); err != nil {
 
 ### 3.6 Phase 5: Context Compilation
 
-**Binary:** `scripts/codereview/bin/compile-context` (source: `cmd/compile-context`)
+**Binary:** `scripts/ring:codereview/bin/compile-context` (source: `cmd/compile-context`)
 
 **Purpose:** Aggregate all analysis outputs into reviewer-specific context files.
 
 **Input:** All phase outputs
-**Output:** Reviewer context files in `.ring/codereview/`
+**Output:** Reviewer context files in `.ring/ring:codereview/`
 
 #### Context File Templates
 
-**`context-code-reviewer.md`:**
+**`context-ring:code-reviewer.md`:**
 ```markdown
 # Pre-Analysis Context: Code Quality
 
@@ -1370,7 +1370,7 @@ Based on analysis, pay special attention to:
 3. **Deprecated API usage** - grpc.Dial needs update
 ```
 
-**`context-security-reviewer.md`:**
+**`context-ring:security-reviewer.md`:**
 ```markdown
 # Pre-Analysis Context: Security
 
@@ -1392,7 +1392,7 @@ Based on analysis, pay special attention to:
 3. **Crypto weakness** - crypto/hash.go:23
 ```
 
-**`context-business-logic-reviewer.md`:**
+**`context-ring:business-logic-reviewer.md`:**
 ```markdown
 # Pre-Analysis Context: Business Logic
 
@@ -1415,7 +1415,7 @@ Based on analysis, pay special attention to:
 3. **New function** - `service.NotifyUser` - verify business requirements
 ```
 
-**`context-test-reviewer.md`:**
+**`context-ring:test-reviewer.md`:**
 ```markdown
 # Pre-Analysis Context: Testing
 
@@ -1434,7 +1434,7 @@ Based on analysis, pay special attention to:
 3. **New error path** - Line 67 error return needs negative test
 ```
 
-**`context-nil-safety-reviewer.md`:**
+**`context-ring:nil-safety-reviewer.md`:**
 ```markdown
 # Pre-Analysis Context: Nil Safety
 
@@ -1457,17 +1457,17 @@ Based on analysis, pay special attention to:
 
 ---
 
-## 4. Integration with /codereview
+## 4. Integration with /ring:codereview
 
 ### 4.1 Modified Reviewer Prompts
 
-Each reviewer's prompt in `codereview.md` gets updated to include:
+Each reviewer's prompt in `ring:codereview.md` gets updated to include:
 
 ```markdown
 ## Pre-Analysis Context
 
 Before reviewing, read the pre-analysis context:
-1. Run: `cat .ring/codereview/context-{reviewer-name}.md`
+1. Run: `cat .ring/ring:codereview/context-{reviewer-name}.md`
 2. Use findings to guide your review
 3. Verify pre-analysis findings (tools can miss context)
 4. Add findings that tools missed
@@ -1476,19 +1476,19 @@ Before reviewing, read the pre-analysis context:
 ### 4.2 Execution Flow
 
 ```
-User runs: /codereview
+User runs: /ring:codereview
 
-1. Orchestrator runs: scripts/codereview/bin/run-all
+1. Orchestrator runs: scripts/ring:codereview/bin/run-all
    ├── Phase 0: bin/scope-detector → scope.json
    ├── Phase 1: static-analysis (detected language only)
    ├── Phase 2: ast-extractor (detected language only)
    ├── Phase 3: call-graph (detected language only)
    ├── Phase 4: data-flow (detected language only)
-   └── Phase 5: bin/compile-context → .ring/codereview/
+   └── Phase 5: bin/compile-context → .ring/ring:codereview/
 
 2. Orchestrator dispatches 5 reviewers (parallel)
    Each reviewer:
-   ├── Reads: .ring/codereview/context-{name}.md
+   ├── Reads: .ring/ring:codereview/context-{name}.md
    ├── Reads: git diff
    └── Produces: findings
 
@@ -1499,11 +1499,11 @@ User runs: /codereview
 
 **Problem:** Re-running analysis on unchanged files wastes time.
 
-**Solution:** Hash-based caching in `.ring/codereview/cache/`
+**Solution:** Hash-based caching in `.ring/ring:codereview/cache/`
 
 ```bash
 # Cache structure
-.ring/codereview/cache/
+.ring/ring:codereview/cache/
 ├── scope-{hash}.json           # Cached scope
 ├── go-lint-{hash}.json         # Cached Go lint
 ├── ts-lint-{hash}.json         # Cached TS lint
@@ -1558,14 +1558,14 @@ User runs: /codereview
 
 ### 5.4 Installation Script
 
-**Script:** `scripts/codereview/install.sh`
+**Script:** `scripts/ring:codereview/install.sh`
 
 ```bash
 #!/bin/bash
 set -e
 
-# Installs all required tools for codereview pre-analysis
-# Run: ./scripts/codereview/install.sh [go|ts|py|all]
+# Installs all required tools for ring:codereview pre-analysis
+# Run: ./scripts/ring:codereview/install.sh [go|ts|py|all]
 
 INSTALL_TARGET="${1:-all}"
 
@@ -1643,7 +1643,7 @@ esac
 
 echo ""
 echo "🎉 Installation complete!"
-echo "Run 'scripts/codereview/verify.sh' to verify installation."
+echo "Run 'scripts/ring:codereview/verify.sh' to verify installation."
 ```
 
 ---
@@ -1744,7 +1744,7 @@ Some analysis tools failed. Manual verification recommended:
 |----------|----------|
 | Script language | Go binaries (team expertise, native AST) |
 | Context file format | Markdown for reviewers (human-readable) |
-| Cache location | `.ring/codereview/cache/` (project-local) |
+| Cache location | `.ring/ring:codereview/cache/` (project-local) |
 | CI mode | Not in v1 (local dev focus) |
 | Monorepo support | Option B: detect & adapt, warn on complexity |
 

@@ -67,7 +67,7 @@ Returns structured precedent for creating implementation plans:
 - **Failed Implementations** - What failed (AVOID these patterns)
 - **Relevant Past Plans** - Similar approaches
 
-This mode is used automatically by `/write-plan` to inform new plans with historical context.
+This mode is used automatically by `/ring:write-plan` to inform new plans with historical context.
 
 ## Output
 
@@ -118,7 +118,7 @@ python3 default/lib/artifact-index/artifact_index.py --all
 | `/ring:write-plan` | Query before planning to inform decisions |
 | `/ring:create-handoff` | Creates handoffs that get indexed |
 | `artifact-query` | The underlying skill |
-| `writing-plans` | Uses query results for RAG-enhanced planning |
+| `ring:writing-plans` | Uses query results for RAG-enhanced planning |
 
 ## Troubleshooting
 

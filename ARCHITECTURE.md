@@ -19,7 +19,7 @@ Ring is a **Claude Code plugin marketplace** that provides a comprehensive skill
 
 Ring operates on three core principles:
 
-1. **Mandatory Workflows** - Critical skills (like using-ring) enforce specific behaviors
+1. **Mandatory Workflows** - Critical skills (like ring:using-ring) enforce specific behaviors
 2. **Parallel Execution** - Review systems run concurrently for speed
 3. **Session Context** - Skills load automatically at session start
 4. **Modular Plugins** - Specialized plugins for different domains and teams
@@ -107,35 +107,35 @@ skills/
 **Structure (ring-default plugin):**
 ```
 default/agents/
-├── code-reviewer.md           # Foundation review (architecture, patterns)
-├── business-logic-reviewer.md # Correctness review (requirements, edge cases)
-├── security-reviewer.md       # Safety review (OWASP, auth, validation)
-├── write-plan.md              # Implementation planning
-└── codebase-explorer.md       # Deep architecture analysis (Opus)
+├── ring:code-reviewer.md           # Foundation review (architecture, patterns)
+├── ring:business-logic-reviewer.md # Correctness review (requirements, edge cases)
+├── ring:security-reviewer.md       # Safety review (OWASP, auth, validation)
+├── ring:write-plan.md              # Implementation planning
+└── ring:codebase-explorer.md       # Deep architecture analysis (Opus)
 ```
 
 **Structure (ring-dev-team plugin):**
 ```
 dev-team/agents/
-├── backend-engineer-golang.md     # Go backend specialist for financial systems
-├── backend-engineer-typescript.md # TypeScript/Node.js backend specialist
-├── devops-engineer.md             # DevOps infrastructure specialist
+├── ring:backend-engineer-golang.md     # Go backend specialist for financial systems
+├── ring:backend-engineer-typescript.md # TypeScript/Node.js backend specialist
+├── ring:devops-engineer.md             # DevOps infrastructure specialist
 ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js frontend specialist
-├── frontend-designer.md           # Visual design specialist
-├── frontend-engineer.md           # General frontend development
+├── ring:frontend-designer.md           # Visual design specialist
+├── ring:frontend-engineer.md           # General frontend development
 ├── prompt-quality-reviewer.md     # AI prompt quality review
-├── qa-analyst.md                  # Quality assurance specialist
+├── ring:qa-analyst.md                  # Quality assurance specialist
 └── sre.md                         # Site reliability engineer
 ```
 
 **Key Characteristics:**
 - Invoked via Claude's `Task` tool with `subagent_type`
 - Must specify model (typically "opus" for comprehensive analysis)
-- Review agents run in parallel (3 reviewers dispatch simultaneously via `/codereview` command)
+- Review agents run in parallel (3 reviewers dispatch simultaneously via `/ring:codereview` command)
 - Developer agents provide specialized domain expertise
 - Return structured reports with severity-based findings
 
-**Note:** Parallel review orchestration is handled by the `/codereview` command
+**Note:** Parallel review orchestration is handled by the `/ring:codereview` command
 
 **Standards Compliance Output (ring-dev-team agents):**
 
@@ -144,8 +144,8 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 ```yaml
 - name: "Standards Compliance"
   pattern: "^## Standards Compliance"
-  required: false  # In schema, but MANDATORY when invoked from dev-refactor
-  description: "MANDATORY when invoked from dev-refactor skill"
+  required: false  # In schema, but MANDATORY when invoked from ring:dev-refactor
+  description: "MANDATORY when invoked from ring:dev-refactor skill"
 ```
 
 **Conditional Requirement: `invoked_from_dev_refactor`**
@@ -153,16 +153,16 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 | Invocation Context | Standards Compliance | Detection Mechanism |
 |--------------------|---------------------|---------------------|
 | Direct agent call | Optional | N/A |
-| Via `dev-cycle` skill | Optional | N/A |
-| Via `dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
+| Via `ring:dev-cycle` skill | Optional | N/A |
+| Via `ring:dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
 
 **How Enforcement Works:**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  User invokes: /dev-refactor                          │
+│  User invokes: /ring:dev-refactor                          │
 │         ↓                                                           │
-│  dev-refactor skill dispatches agents with prompt:                  │
+│  ring:dev-refactor skill dispatches agents with prompt:                  │
 │  "**MODE: ANALYSIS ONLY** - Compare codebase with Ring standards"   │
 │         ↓                                                           │
 │  Agent detects "**MODE: ANALYSIS ONLY**" in prompt                  │
@@ -174,13 +174,13 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 ```
 
 **Affected Agents:**
-- `backend-engineer-golang` → loads `golang.md`
-- `backend-engineer-typescript` → loads `typescript.md`
-- `devops-engineer` → loads `devops.md`
+- `ring:backend-engineer-golang` → loads `golang.md`
+- `ring:backend-engineer-typescript` → loads `typescript.md`
+- `ring:devops-engineer` → loads `devops.md`
 - `frontend-bff-engineer-typescript` → loads `frontend.md`
-- `frontend-designer` → loads `frontend.md`
-- `qa-analyst` → loads `qa.md`
-- `sre` → loads `sre.md`
+- `ring:frontend-designer` → loads `frontend.md`
+- `ring:qa-analyst` → loads `qa.md`
+- `ring:sre` → loads `sre.md`
 
 **Output Format (when non-compliant):**
 ```markdown
@@ -213,18 +213,18 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 **Structure:**
 ```
 default/commands/
-├── brainstorm.md       # /brainstorm - Socratic design refinement
-├── codereview.md       # /codereview - Parallel 3-reviewer dispatch
-├── commit.md           # /commit - Git commit with trailers
-├── execute-plan.md     # /execute-plan - Batch execution
-├── explore-codebase.md # /explore-codebase - Deep architecture analysis
-├── lint.md             # /lint - Run linters and fix issues
-├── worktree.md         # /worktree - Git worktree creation
-└── write-plan.md       # /write-plan - Implementation planning
+├── brainstorm.md       # /ring:brainstorm - Socratic design refinement
+├── ring:codereview.md       # /ring:codereview - Parallel 3-reviewer dispatch
+├── commit.md           # /ring:commit - Git commit with trailers
+├── ring:execute-plan.md     # /ring:execute-plan - Batch execution
+├── ring:explore-codebase.md # /ring:explore-codebase - Deep architecture analysis
+├── lint.md             # /ring:lint - Run linters and fix issues
+├── worktree.md         # /ring:worktree - Git worktree creation
+└── ring:write-plan.md       # /ring:write-plan - Implementation planning
 
 pm-team/commands/
-├── pre-dev-feature.md  # /pre-dev-feature - 3-gate workflow
-└── pre-dev-full.md     # /pre-dev-full - 8-gate workflow
+├── ring:pre-dev-feature.md  # /ring:pre-dev-feature - 3-gate workflow
+└── ring:pre-dev-full.md     # /ring:pre-dev-full - 8-gate workflow
 ```
 
 **Key Characteristics:**
@@ -325,7 +325,7 @@ sequenceDiagram
     hooks.json->>session-start.sh: Execute initialization
     session-start.sh->>generate-skills-ref.py: Generate skills overview
     generate-skills-ref.py-->>session-start.sh: Return formatted reference
-    session-start.sh->>Claude Context: Inject skills + using-ring content
+    session-start.sh->>Claude Context: Inject skills + ring:using-ring content
     Claude Context-->>User: Session ready with skills loaded
 ```
 
@@ -340,7 +340,7 @@ sequenceDiagram
     participant TodoWrite
 
     User->>Claude: Request task
-    Claude->>Claude: Check using-ring mandatory workflow
+    Claude->>Claude: Check ring:using-ring mandatory workflow
     Claude->>Skill Tool: Invoke relevant skill
     Skill Tool->>SKILL.md: Load skill instructions
     SKILL.md-->>Claude: Return structured workflow
@@ -355,26 +355,26 @@ sequenceDiagram
     participant User
     participant Claude
     participant Task Tool
-    participant code-reviewer
-    participant business-reviewer
-    participant security-reviewer
+    participant ring:code-reviewer
+    participant ring:business-logic-reviewer
+    participant ring:security-reviewer
 
-    User->>Claude: /codereview
+    User->>Claude: /ring:codereview
     Note over Claude: Command provides<br/>parallel review workflow
 
     Claude->>Task Tool: Dispatch 3 parallel tasks
 
     par Parallel Execution
-        Task Tool->>code-reviewer: Review architecture
+        Task Tool->>ring:code-reviewer: Review architecture
         and
-        Task Tool->>business-reviewer: Review correctness
+        Task Tool->>ring:business-logic-reviewer: Review correctness
         and
-        Task Tool->>security-reviewer: Review vulnerabilities
+        Task Tool->>ring:security-reviewer: Review vulnerabilities
     end
 
-    code-reviewer-->>Claude: Return findings
-    business-reviewer-->>Claude: Return findings
-    security-reviewer-->>Claude: Return findings
+    ring:code-reviewer-->>Claude: Return findings
+    ring:business-logic-reviewer-->>Claude: Return findings
+    ring:security-reviewer-->>Claude: Return findings
 
     Note over Claude: Aggregate & prioritize by severity
     Claude->>User: Consolidated report
@@ -402,7 +402,7 @@ Ring leverages four primary Claude Code tools:
    - Provides progress visibility to users
 
 4. **SlashCommand Tool**
-   - Executes commands: `SlashCommand(command="/brainstorm")`
+   - Executes commands: `SlashCommand(command="/ring:brainstorm")`
    - Commands expand to skill/agent invocations
    - Provides user-friendly shortcuts
 
@@ -411,7 +411,7 @@ Ring leverages four primary Claude Code tools:
 At session start, Ring injects two critical pieces of context:
 
 1. **Skills Quick Reference** - Auto-generated overview of all available skills
-2. **using-ring Skill** - Mandatory workflow that enforces skill checking
+2. **ring:using-ring Skill** - Mandatory workflow that enforces skill checking
 
 This context becomes part of Claude's memory for the entire session, ensuring:
 - Claude knows which skills are available
@@ -423,20 +423,20 @@ This context becomes part of Claude's memory for the entire session, ensuring:
 ### Pattern 1: Mandatory Skill Checking
 
 ```
-User Request → using-ring check → Relevant skill?
+User Request → ring:using-ring check → Relevant skill?
     ├─ Yes → Invoke skill → Follow workflow
     └─ No → Proceed with task
 ```
 
-**Implementation:** The using-ring skill is loaded at session start and contains strict instructions to check for relevant skills before ANY task.
+**Implementation:** The ring:using-ring skill is loaded at session start and contains strict instructions to check for relevant skills before ANY task.
 
 ### Pattern 2: Parallel Review Execution
 
 ```
-Review Request → /codereview → Dispatch 3 Tasks (parallel)
-    ├─ code-reviewer           ─┐
-    ├─ business-logic-reviewer ─┼─→ Aggregate findings → Handle by severity
-    └─ security-reviewer       ─┘
+Review Request → /ring:codereview → Dispatch 3 Tasks (parallel)
+    ├─ ring:code-reviewer           ─┐
+    ├─ ring:business-logic-reviewer ─┼─→ Aggregate findings → Handle by severity
+    └─ ring:security-reviewer       ─┘
 ```
 
 **Implementation:** Single message with 3 Task tool calls ensures parallel execution. All reviewers work independently and return simultaneously.
@@ -444,15 +444,15 @@ Review Request → /codereview → Dispatch 3 Tasks (parallel)
 ### Pattern 3: Skill-to-Command Mapping
 
 ```
-User: /brainstorm
+User: /ring:brainstorm
     ↓
 SlashCommand Tool
     ↓
 commands/brainstorm.md
     ↓
-"Use and follow the brainstorming skill"
+"Use and follow the ring:brainstorming skill"
     ↓
-Skill Tool: brainstorming
+Skill Tool: ring:brainstorming
     ↓
 skills/brainstorming/SKILL.md
 ```
@@ -490,9 +490,9 @@ Complex Skill → TodoWrite tracking
 - Some commands (like review) orchestrate multiple components
 
 **Example Mappings:**
-- `/brainstorm` → `ring:brainstorming` skill
-- `/write-plan` → `ring:writing-plans` skill
-- `/codereview` → dispatches 3 parallel review agents (`ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`)
+- `/ring:brainstorm` → `ring:brainstorming` skill
+- `/ring:write-plan` → `ring:writing-plans` skill
+- `/ring:codereview` → dispatches 3 parallel review agents (`ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`)
 
 ### Skills ↔ Shared Patterns
 
@@ -545,7 +545,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 **Trade-off:** Larger initial context vs. consistent skill awareness
 
 ### 3. Mandatory Workflows
-**Decision:** Some skills (using-ring) are non-negotiable
+**Decision:** Some skills (ring:using-ring) are non-negotiable
 **Rationale:** Prevents common failures, enforces best practices
 **Enforcement:** Loaded automatically, contains strict instructions
 
@@ -570,7 +570,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 1. Create `{plugin}/agents/{name}.md` with model specification
 2. Include YAML frontmatter: `name`, `description`, `model`, `version`
 3. Invoke via Task tool with `subagent_type="ring:{name}"`
-4. Review agents can run in parallel via `/codereview`
+4. Review agents can run in parallel via `/ring:codereview`
 5. Developer agents provide domain expertise via direct Task invocation
 
 ### Adding New Commands
@@ -626,7 +626,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ✅ Specify models explicitly for agents
 
 ### Anti-Patterns to Avoid
-❌ Skipping skill checks (violates using-ring)
+❌ Skipping skill checks (violates ring:using-ring)
 ❌ Running reviewers sequentially (3x slower)
 ❌ Implementing without tests (violates TDD)
 ❌ Claiming completion without verification

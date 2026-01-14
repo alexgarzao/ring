@@ -307,7 +307,7 @@ Payment processing service experienced intermittent failures affecting 23% of tr
 |-------------|----------|-------|----------|
 | Add database index for slow query | HIGH | @backend-team | 2024-01-20 |
 | Increase connection pool baseline to 100 | MEDIUM | @devops | 2024-01-18 |
-| Add connection pool utilization alert | HIGH | @sre | 2024-01-19 |
+| Add connection pool utilization alert | HIGH | :ring:sre | 2024-01-19 |
 | Load test with 2x traffic before releases | MEDIUM | @qa-team | 2024-01-25 |
 
 **RCA Review Meeting:** Scheduled 2024-01-22 10:00 UTC

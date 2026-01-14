@@ -18,16 +18,16 @@ skip_when: |
   - Technical writing → use ring-tw-team
 
 related:
-  similar: [using-ring, using-pm-team]
+  similar: [ring:using-ring, ring:using-pm-team]
 ---
 
 # Using Ring PMO Team
 
 The ring-pmo-team plugin provides 5 specialized PMO agents for portfolio-level management. Use them via `Task tool with subagent_type: "ring:agent-name"`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces pmo-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces pmo-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 

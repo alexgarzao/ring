@@ -1,6 +1,6 @@
 # Custom Prompt Validation (Shared Pattern)
 
-Canonical validation rules for `--prompt` flags in dev-cycle and dev-refactor skills.
+Canonical validation rules for `--prompt` flags in ring:dev-cycle and ring:dev-refactor skills.
 
 ## Validation Rules
 
@@ -59,7 +59,7 @@ Task tool:
 
 ## State Persistence
 
-- **Stored:** `custom_prompt` field in `docs/dev-cycle/current-cycle.json`
+- **Stored:** `custom_prompt` field in `docs/ring:dev-cycle/current-cycle.json`
 - **Scope:** Applied to ALL gates and ALL agent dispatches
 - **Resume:** Survives interrupts; editable by modifying state file before `--resume`
 - **Reports:** Included in execution reports under "Custom Context Used"

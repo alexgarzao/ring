@@ -132,7 +132,7 @@ Ring Continuity consists of **5 interconnected feature domains** that work toget
 
 **Dependencies:**
 - F1.1 (Directory Creation) - needs ~/.ring/handoffs/ location
-- Existing handoff-tracking skill - extends, not replaces
+- Existing ring:handoff-tracking skill - extends, not replaces
 
 ---
 
@@ -146,7 +146,7 @@ Ring Continuity consists of **5 interconnected feature domains** that work toget
 |---------|-------------|----------|
 | F4.1 - Marker Vocabulary | Define ✓/?/✗ symbols and meanings | P0 |
 | F4.2 - Agent Output Schema | Add confidence section to schemas | P0 |
-| F4.3 - Explorer Integration | Add markers to codebase-explorer | P0 |
+| F4.3 - Explorer Integration | Add markers to ring:codebase-explorer | P0 |
 | F4.4 - Evidence Chains | Track how conclusions were reached | P1 |
 | F4.5 - Trust Calibration | Display confidence visually | P2 |
 
@@ -287,17 +287,17 @@ Can be deferred without breaking core functionality:
 
 | Skill | Features Integrated | Changes Required |
 |-------|---------------------|------------------|
-| **handoff-tracking** | F3.2 (YAML Writer), F3.4 (Validation) | Output YAML instead of Markdown |
+| **ring:handoff-tracking** | F3.2 (YAML Writer), F3.4 (Validation) | Output YAML instead of Markdown |
 | **continuity-ledger** | F3.2 (YAML Writer) | Optional YAML format |
 | **artifact-query** | F2.3 (Memory Retrieval) | Query both artifacts and memories |
-| **codebase-explorer** | F4.3 (Explorer Integration) | Add confidence markers to output |
+| **ring:codebase-explorer** | F4.3 (Explorer Integration) | Add confidence markers to output |
 
 ### Agent Integration Points
 
 | Agent | Features Integrated | Changes Required |
 |-------|---------------------|------------------|
 | **All exploration agents** | F4.2 (Agent Output Schema) | Add "Verification" section |
-| **codebase-explorer** | F4.3, F4.4 (Markers + Evidence) | Include evidence chain |
+| **ring:codebase-explorer** | F4.3, F4.4 (Markers + Evidence) | Include evidence chain |
 
 ---
 

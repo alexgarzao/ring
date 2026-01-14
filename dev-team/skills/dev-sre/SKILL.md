@@ -1,5 +1,5 @@
 ---
-name: ring:dev-sre
+name: ring:dev-ring:sre
 description: |
   Gate 2 of the development cycle. VALIDATES that observability was correctly implemented
   by developers. Does not implement observability code - only validates it.
@@ -16,11 +16,11 @@ NOT_skip_when: |
   - "MVP doesn't need observability" → MVP without observability = blind MVP. No exceptions.
 
 sequence:
-  after: [dev-devops]
-  before: [dev-testing]
+  after: [ring:dev-devops]
+  before: [ring:dev-testing]
 
 related:
-  complementary: [dev-cycle, dev-devops, dev-testing]
+  complementary: [ring:dev-cycle, ring:dev-devops, ring:dev-testing]
 
 input_schema:
   required:
@@ -100,7 +100,7 @@ examples:
       unit_id: "task-001"
       language: "go"
       service_type: "api"
-      implementation_agent: "backend-engineer-golang"
+      implementation_agent: "ring:backend-engineer-golang"
       implementation_files: ["internal/handler/user.go", "internal/service/user.go"]
     expected_output: |
       ## Validation Result
@@ -161,7 +161,7 @@ This skill VALIDATES that observability was correctly implemented by developers:
 </verify_before_proceed>
 
 ```text
-REQUIRED INPUT (from dev-cycle orchestrator):
+REQUIRED INPUT (from ring:dev-cycle orchestrator):
 - unit_id: [task/subtask being validated]
 - language: [go|typescript|python]
 - service_type: [api|worker|batch|cli|library]
@@ -192,7 +192,7 @@ validation_state = {
 
 ## Step 3: Dispatch SRE Agent for Validation
 
-<dispatch_required agent="sre" model="opus">
+<dispatch_required agent="ring:sre" model="opus">
 Validate observability implementation for unit_id.
 </dispatch_required>
 

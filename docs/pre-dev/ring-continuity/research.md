@@ -2,7 +2,7 @@
 
 > **Generated:** 2026-01-12
 > **Research Mode:** Modification (extending existing Ring functionality)
-> **Agents Used:** repo-research-analyst, best-practices-researcher, framework-docs-researcher
+> **Agents Used:** ring:repo-research-analyst, ring:best-practices-researcher, ring:framework-docs-researcher
 
 ---
 

@@ -9,7 +9,7 @@ Execute an existing implementation plan with controlled checkpoints and code rev
 ## Usage
 
 ```
-/execute-plan [plan-file-path]
+/ring:execute-plan [plan-file-path]
 ```
 
 ## Arguments
@@ -22,19 +22,19 @@ Execute an existing implementation plan with controlled checkpoints and code rev
 
 ### Execute a Feature Plan
 ```
-/execute-plan docs/plans/2024-01-15-oauth-integration.md
+/ring:execute-plan docs/plans/2024-01-15-oauth-integration.md
 ```
 Loads and executes the OAuth integration plan with review checkpoints.
 
 ### Execute from Absolute Path
 ```
-/execute-plan /Users/dev/project/docs/plans/2024-01-15-api-refactor.md
+/ring:execute-plan /Users/dev/project/docs/plans/2024-01-15-api-refactor.md
 ```
 Executes a plan using its full path.
 
 ### Execute Latest Plan
 ```
-/execute-plan docs/plans/2024-01-20-notification-system.md
+/ring:execute-plan docs/plans/2024-01-20-notification-system.md
 ```
 Executes the most recent plan for the notification system feature.
 
@@ -58,18 +58,18 @@ You will be asked to choose between:
 - Default batch size: first 3 tasks
 - Each task is marked in_progress, executed, then completed
 - Dispatches to specialized agents when available:
-  - Backend Go: `backend-engineer-golang`
-  - Backend TypeScript: `backend-engineer-typescript`
+  - Backend Go: `ring:backend-engineer-golang`
+  - Backend TypeScript: `ring:backend-engineer-typescript`
   - Frontend React/Next.js/BFF: `frontend-bff-engineer-typescript`
-  - Infrastructure: `devops-engineer`
-  - Testing: `qa-analyst`
-  - Reliability: `sre`
+  - Infrastructure: `ring:devops-engineer`
+  - Testing: `ring:qa-analyst`
+  - Reliability: `ring:sre`
 
 ### Step 4: Run Code Review
 After each batch, all 3 reviewers run in parallel:
-- `code-reviewer` - Architecture and patterns
-- `business-logic-reviewer` - Requirements and edge cases
-- `security-reviewer` - OWASP and auth validation
+- `ring:code-reviewer` - Architecture and patterns
+- `ring:business-logic-reviewer` - Requirements and edge cases
+- `ring:security-reviewer` - OWASP and auth validation
 
 **Issue handling by severity:**
 | Severity | Action |
@@ -94,10 +94,10 @@ After all tasks complete:
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `/ring:write-plan` | Use first to create the plan file |
-| `/ring:brainstorm` | Use before writing-plans if design unclear |
-| `writing-plans` | Creates the plan files this command executes |
-| `requesting-code-review` | Called automatically after each batch |
-| `finishing-a-development-branch` | Called at completion |
+| `/ring:brainstorm` | Use before ring:writing-plans if design unclear |
+| `ring:writing-plans` | Creates the plan files this command executes |
+| `ring:requesting-code-review` | Called automatically after each batch |
+| `ring:finishing-a-development-branch` | Called at completion |
 
 ## Troubleshooting
 
@@ -117,9 +117,9 @@ All Critical, High, and Medium issues must be fixed before proceeding. The revie
 If you're not prompted for execution mode, this is a violation of the skill protocol. The mode selection is mandatory regardless of any "just execute" or "don't wait" instructions.
 
 ### When NOT to use this command
-- No plan exists - use `/write-plan` first
-- Plan needs revision - use `/brainstorm` to refine the design
-- Working on independent tasks in current session - use `subagent-driven-development` skill directly
+- No plan exists - use `/ring:write-plan` first
+- Plan needs revision - use `/ring:brainstorm` to refine the design
+- Working on independent tasks in current session - use `ring:subagent-driven-development` skill directly
 
 ---
 

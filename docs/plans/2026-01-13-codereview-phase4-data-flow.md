@@ -13,7 +13,7 @@ Identify unsanitized flows and nil/null safety risks.
 ## Directory Structure
 
 ```
-scripts/codereview/
+scripts/ring:codereview/
 ├── cmd/data-flow/main.go
 ├── internal/dataflow/
 │   ├── types.go
@@ -34,16 +34,16 @@ scripts/codereview/
 
 **Commands:**
 ```bash
-mkdir -p scripts/codereview/cmd/data-flow
-mkdir -p scripts/codereview/internal/dataflow
-mkdir -p scripts/codereview/py
+mkdir -p scripts/ring:codereview/cmd/data-flow
+mkdir -p scripts/ring:codereview/internal/dataflow
+mkdir -p scripts/ring:codereview/py
 ```
 
 **Verification:**
 ```bash
-ls -la scripts/codereview/cmd/data-flow
-ls -la scripts/codereview/internal/dataflow
-ls -la scripts/codereview/py
+ls -la scripts/ring:codereview/cmd/data-flow
+ls -la scripts/ring:codereview/internal/dataflow
+ls -la scripts/ring:codereview/py
 ```
 
 ---
@@ -52,7 +52,7 @@ ls -la scripts/codereview/py
 
 **Description:** Define the core data structures for tracking data flows, sources, sinks, and nil safety.
 
-**File:** `scripts/codereview/internal/dataflow/types.go`
+**File:** `scripts/ring:codereview/internal/dataflow/types.go`
 
 ```go
 package dataflow
@@ -186,7 +186,7 @@ type Analyzer interface {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/dataflow/...
+cd scripts/ring:codereview && go build ./internal/dataflow/...
 ```
 
 ---
@@ -195,7 +195,7 @@ cd scripts/codereview && go build ./internal/dataflow/...
 
 **Description:** Detect untrusted data sources in Go code including HTTP requests, environment variables, database queries, and file reads.
 
-**File:** `scripts/codereview/internal/dataflow/golang.go`
+**File:** `scripts/ring:codereview/internal/dataflow/golang.go`
 
 ```go
 package dataflow
@@ -701,7 +701,7 @@ func (g *GoAnalyzer) Analyze(files []string) (*FlowAnalysis, error) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/dataflow/...
+cd scripts/ring:codereview && go build ./internal/dataflow/...
 ```
 
 ---
@@ -719,7 +719,7 @@ cd scripts/codereview && go build ./internal/dataflow/...
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test ./internal/dataflow/... -run TestDetectSinks -v
+cd scripts/ring:codereview && go test ./internal/dataflow/... -run TestDetectSinks -v
 ```
 
 ---
@@ -735,7 +735,7 @@ cd scripts/codereview && go test ./internal/dataflow/... -run TestDetectSinks -v
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test ./internal/dataflow/... -run TestTrackFlows -v
+cd scripts/ring:codereview && go test ./internal/dataflow/... -run TestTrackFlows -v
 ```
 
 ---
@@ -751,7 +751,7 @@ cd scripts/codereview && go test ./internal/dataflow/... -run TestTrackFlows -v
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test ./internal/dataflow/... -run TestNilSources -v
+cd scripts/ring:codereview && go test ./internal/dataflow/... -run TestNilSources -v
 ```
 
 ---
@@ -760,7 +760,7 @@ cd scripts/codereview && go test ./internal/dataflow/... -run TestNilSources -v
 
 **Description:** Python script for analyzing Python/TypeScript code with framework detection for Flask, Django, FastAPI, and Express.
 
-**File:** `scripts/codereview/py/data_flow.py`
+**File:** `scripts/ring:codereview/py/data_flow.py`
 
 ```python
 #!/usr/bin/env python3
@@ -1348,8 +1348,8 @@ if __name__ == "__main__":
 
 **Verification:**
 ```bash
-chmod +x scripts/codereview/py/data_flow.py
-python3 scripts/codereview/py/data_flow.py python scripts/codereview/py/data_flow.py
+chmod +x scripts/ring:codereview/py/data_flow.py
+python3 scripts/ring:codereview/py/data_flow.py python scripts/ring:codereview/py/data_flow.py
 ```
 
 ---
@@ -1358,7 +1358,7 @@ python3 scripts/codereview/py/data_flow.py python scripts/codereview/py/data_flo
 
 **Description:** Create Go wrapper to invoke Python analyzer for Python/TypeScript files.
 
-**File:** `scripts/codereview/internal/dataflow/python.go`
+**File:** `scripts/ring:codereview/internal/dataflow/python.go`
 
 ```go
 package dataflow
@@ -1494,7 +1494,7 @@ func (p *PythonAnalyzer) Analyze(files []string) (*FlowAnalysis, error) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/dataflow/...
+cd scripts/ring:codereview && go build ./internal/dataflow/...
 ```
 
 ---
@@ -1503,7 +1503,7 @@ cd scripts/codereview && go build ./internal/dataflow/...
 
 **Description:** Create markdown renderer for security summary report with risk levels and recommendations.
 
-**File:** `scripts/codereview/internal/dataflow/report.go`
+**File:** `scripts/ring:codereview/internal/dataflow/report.go`
 
 ```go
 package dataflow
@@ -1732,7 +1732,7 @@ func getRecommendation(flow Flow) string {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build ./internal/dataflow/...
+cd scripts/ring:codereview && go build ./internal/dataflow/...
 ```
 
 ---
@@ -1741,7 +1741,7 @@ cd scripts/codereview && go build ./internal/dataflow/...
 
 **Description:** Create the main CLI entry point that orchestrates the data flow analysis.
 
-**File:** `scripts/codereview/cmd/data-flow/main.go`
+**File:** `scripts/ring:codereview/cmd/data-flow/main.go`
 
 ```go
 package main
@@ -1754,7 +1754,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/dataflow"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/dataflow"
 )
 
 type ScopeFile struct {
@@ -1766,7 +1766,7 @@ func main() {
 	var (
 		scopeFile  = flag.String("scope", "scope.json", "Path to scope.json from Phase 0")
 		outputDir  = flag.String("output", ".", "Output directory for results")
-		scriptDir  = flag.String("scripts", "", "Path to scripts/codereview directory")
+		scriptDir  = flag.String("scripts", "", "Path to scripts/ring:codereview directory")
 		language   = flag.String("lang", "", "Analyze specific language only (go, python, typescript)")
 		jsonOutput = flag.Bool("json", false, "Output JSON only, no markdown summary")
 		verbose    = flag.Bool("v", false, "Verbose output")
@@ -1965,7 +1965,7 @@ func printSummary(results map[string]*dataflow.FlowAnalysis) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go build -o bin/data-flow ./cmd/data-flow
+cd scripts/ring:codereview && go build -o bin/data-flow ./cmd/data-flow
 ./bin/data-flow -h
 ```
 
@@ -1975,7 +1975,7 @@ cd scripts/codereview && go build -o bin/data-flow ./cmd/data-flow
 
 **Description:** Create unit tests for the Go analyzer.
 
-**File:** `scripts/codereview/internal/dataflow/golang_test.go`
+**File:** `scripts/ring:codereview/internal/dataflow/golang_test.go`
 
 ```go
 package dataflow
@@ -2294,7 +2294,7 @@ func TestCheckSanitization(t *testing.T) {
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test ./internal/dataflow/... -v
+cd scripts/ring:codereview && go test ./internal/dataflow/... -v
 ```
 
 ---
@@ -2303,7 +2303,7 @@ cd scripts/codereview && go test ./internal/dataflow/... -v
 
 **Description:** Create end-to-end integration test that runs the full analysis pipeline.
 
-**File:** `scripts/codereview/internal/dataflow/integration_test.go`
+**File:** `scripts/ring:codereview/internal/dataflow/integration_test.go`
 
 ```go
 //go:build integration
@@ -2542,7 +2542,7 @@ def index():
 
 **Verification:**
 ```bash
-cd scripts/codereview && go test ./internal/dataflow/... -v -tags=integration
+cd scripts/ring:codereview && go test ./internal/dataflow/... -v -tags=integration
 ```
 
 ---
@@ -2578,7 +2578,7 @@ cd scripts/codereview && go test ./internal/dataflow/... -v -tags=integration
 
 ```bash
 # Build
-cd scripts/codereview
+cd scripts/ring:codereview
 go build -o bin/data-flow ./cmd/data-flow
 
 # Run with scope file

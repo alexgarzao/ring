@@ -98,7 +98,7 @@ Each agent MUST:
 
 **These are items agents commonly invent that are not typically in standards. Always verify in WebFetch result before flagging.**
 
-#### devops-engineer → devops.md
+#### ring:devops-engineer → devops.md
 
 | Common Hallucination | Action |
 |---------------------|--------|
@@ -108,7 +108,7 @@ Each agent MUST:
 | `make install` | Verify in devops.md "Makefile Standards" section |
 | `make clean` | Verify in devops.md "Makefile Standards" section |
 
-#### backend-engineer-golang → golang.md
+#### ring:backend-engineer-golang → golang.md
 
 | Common Hallucination | Action |
 |---------------------|--------|
@@ -117,7 +117,7 @@ Each agent MUST:
 | Gin instead of Fiber | Check actual HTTP framework in golang.md |
 | GORM instead of pgx | Check actual ORM/driver in golang.md |
 
-#### backend-engineer-typescript → typescript.md
+#### ring:backend-engineer-typescript → typescript.md
 
 | Common Hallucination | Action |
 |---------------------|--------|
@@ -126,7 +126,7 @@ Each agent MUST:
 | Jest | Verify testing framework in typescript.md |
 | InversifyJS | Verify DI framework in typescript.md |
 
-#### sre → sre.md
+#### ring:sre → sre.md
 
 | Common Hallucination | Action |
 |---------------------|--------|
@@ -135,7 +135,7 @@ Each agent MUST:
 | Custom dashboards | Verify in sre.md if explicitly required |
 | Alert rules | Verify in sre.md if explicitly required |
 
-#### frontend-designer → frontend.md
+#### ring:frontend-designer → frontend.md
 
 | Common Hallucination | Action |
 |---------------------|--------|

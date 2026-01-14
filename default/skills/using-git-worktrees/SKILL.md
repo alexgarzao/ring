@@ -16,7 +16,7 @@ skip_when: |
 
 sequence:
   after: [brainstorming]
-  before: [writing-plans, executing-plans]
+  before: [ring:writing-plans, ring:executing-plans]
 ---
 
 # Using Git Worktrees
@@ -27,7 +27,7 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 
 **Core principle:** Systematic directory selection + safety verification = reliable isolation.
 
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+**Announce at start:** "I'm using the ring:using-git-worktrees skill to set up an isolated workspace."
 
 ## Directory Selection Process
 
@@ -118,4 +118,4 @@ Announce → Check `.worktrees/` exists → Verify .gitignore → `git worktree 
 
 **Pairs with:**
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
-- **executing-plans** or **subagent-driven-development** - Work happens in this worktree
+- **ring:executing-plans** or **ring:subagent-driven-development** - Work happens in this worktree

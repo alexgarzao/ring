@@ -216,9 +216,9 @@ Before any analysis, you MUST:
 
 **This agent does not produce Standards Compliance reports.**
 
-Unlike implementation agents (backend-engineer-golang, frontend-bff-engineer-typescript, etc.), the prompt-quality-reviewer is an **analyst agent** that evaluates other agents' executions. It does not:
+Unlike implementation agents (ring:backend-engineer-golang, frontend-bff-engineer-typescript, etc.), the prompt-quality-reviewer is an **analyst agent** that evaluates other agents' executions. It does not:
 - Analyze codebases for standards compliance
-- Get invoked from dev-refactor skill
+- Get invoked from ring:dev-refactor skill
 - Compare code against Ring/Lerian standards
 
 **Agent type:** Analyst (evaluates agent prompts and executions)
@@ -380,12 +380,12 @@ For the completed task, identify all agents that executed:
 
 \`\`\`text
 Task T-001 agents:
-├── backend-engineer-golang (Gate 0: Implementation)
-├── sre (Gate 2: Observability)
-├── qa-analyst (Gate 3: Testing)
-├── code-reviewer (Gate 4: Review)
-├── business-logic-reviewer (Gate 4: Review)
-└── security-reviewer (Gate 4: Review)
+├── ring:backend-engineer-golang (Gate 0: Implementation)
+├── ring:sre (Gate 2: Observability)
+├── ring:qa-analyst (Gate 3: Testing)
+├── ring:code-reviewer (Gate 4: Review)
+├── ring:business-logic-reviewer (Gate 4: Review)
+└── ring:security-reviewer (Gate 4: Review)
 \`\`\`
 
 ### Step 2: Load Agent Definitions
@@ -655,13 +655,13 @@ Each improvement MUST include:
 
 | Agent | Gate | Assertiveness | Rating | Key Gap |
 |-------|------|---------------|--------|---------|
-| backend-engineer-golang | 0 | 92% | Excellent | - |
-| qa-analyst | 3 | 67% | Needs Attention | TDD RED skipped |
-| code-reviewer | 4 | 83% | Good | Minor: verbose output |
+| ring:backend-engineer-golang | 0 | 92% | Excellent | - |
+| ring:qa-analyst | 3 | 67% | Needs Attention | TDD RED skipped |
+| ring:code-reviewer | 4 | 83% | Good | Minor: verbose output |
 
 ## Gaps Identified
 
-### qa-analyst (67% Assertiveness)
+### ring:qa-analyst (67% Assertiveness)
 
 **Expected Behaviors:** 12
 **Correct Behaviors:** 8
@@ -685,7 +685,7 @@ Each improvement MUST include:
 | Actual | User said "just happy path", agent complied |
 | Root Cause | No pressure resistance table in prompt |
 
-### code-reviewer (83% Assertiveness)
+### ring:code-reviewer (83% Assertiveness)
 
 **Expected Behaviors:** 10
 **Correct Behaviors:** 8
@@ -702,7 +702,7 @@ Each improvement MUST include:
 
 ## Improvement Suggestions
 
-### Priority 1: TDD RED Verification (qa-analyst)
+### Priority 1: TDD RED Verification (ring:qa-analyst)
 
 **File:** dev-team/agents/qa-analyst.md
 **Expected Impact:** +17% assertiveness
@@ -737,7 +737,7 @@ FAIL src/user.test.ts
 
 **Why this works:** Transforms soft instruction into hard requirement with explicit format and blocking language.
 
-### Priority 2: Pressure Resistance Table (qa-analyst)
+### Priority 2: Pressure Resistance Table (ring:qa-analyst)
 
 **File:** dev-team/agents/qa-analyst.md
 **Expected Impact:** +8% assertiveness
@@ -785,8 +785,8 @@ All agents performed with high assertiveness.
 
 | Agent | Assertiveness | Rating |
 |-------|---------------|--------|
-| qa-analyst | 95% | Excellent |
-| code-reviewer | 92% | Excellent |
+| ring:qa-analyst | 95% | Excellent |
+| ring:code-reviewer | 92% | Excellent |
 
 ## Gaps Identified
 
@@ -796,8 +796,8 @@ No gaps identified. All expected behaviors were observed.
 
 Document success patterns for future reference:
 
-1. **qa-analyst:** TDD RED phase clearly shown with failure output
-2. **code-reviewer:** Concise, actionable findings with evidence
+1. **ring:qa-analyst:** TDD RED phase clearly shown with failure output
+2. **ring:code-reviewer:** Concise, actionable findings with evidence
 3. **All agents:** Resisted scope reduction pressure from user
 
 ## Improvement Suggestions
@@ -811,7 +811,7 @@ No improvements required this cycle. Continue monitoring for:
 ### Agent Skipped
 
 \`\`\`markdown
-### devops-engineer
+### ring:devops-engineer
 
 **Status:** SKIPPED (no infrastructure changes needed)
 **Assertiveness:** N/A
@@ -826,7 +826,7 @@ When same gap appears 3+ times across tasks:
 ## SYSTEMIC ISSUE DETECTED
 
 **Pattern:** TDD RED phase skipped
-**Agent:** qa-analyst
+**Agent:** ring:qa-analyst
 **Occurrences:** 4 times this cycle
 **Tasks Affected:** T-001, T-002, T-004
 

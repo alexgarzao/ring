@@ -31,19 +31,19 @@ Ring solves this by:
 - Use `/ring:codereview` command to orchestrate parallel review workflow
 
 **Developer Agents (dev-team plugin):**
-- `backend-engineer-golang` - Go backend specialist for financial systems
-- `backend-engineer-typescript` - TypeScript/Node.js backend specialist (Express, NestJS, Fastify)
-- `devops-engineer` - DevOps infrastructure specialist
+- `ring:backend-engineer-golang` - Go backend specialist for financial systems
+- `ring:backend-engineer-typescript` - TypeScript/Node.js backend specialist (Express, NestJS, Fastify)
+- `ring:devops-engineer` - DevOps infrastructure specialist
 - `frontend-bff-engineer-typescript` - BFF & React/Next.js frontend with Clean Architecture
-- `frontend-designer` - Visual design specialist
-- `qa-analyst` - Quality assurance specialist
-- `sre` - Site reliability engineer
-- `frontend-engineer` - Senior Frontend Engineer (React/Next.js)
+- `ring:frontend-designer` - Visual design specialist
+- `ring:qa-analyst` - Quality assurance specialist
+- `ring:sre` - Site reliability engineer
+- `ring:frontend-engineer` - Senior Frontend Engineer (React/Next.js)
 - `prompt-quality-reviewer` - Agent Quality Analyst
 
 > **Standards Compliance:** All dev-team agents include a `## Standards Compliance` output section with conditional requirement:
-> - **Optional** when invoked directly or via `dev-cycle`
-> - **MANDATORY** when invoked from `dev-refactor` (triggered by `**MODE: ANALYSIS ONLY**` in prompt)
+> - **Optional** when invoked directly or via `ring:dev-cycle`
+> - **MANDATORY** when invoked from `ring:dev-refactor` (triggered by `**MODE: ANALYSIS ONLY**` in prompt)
 >
 > When mandatory, agents load Ring standards via WebFetch and produce comparison tables with:
 > - Current Pattern vs Expected Pattern
@@ -182,10 +182,10 @@ When you start a new Claude Code session with Ring installed, you'll see:
 
 ```
 ## Available Skills:
-- using-ring (Check for skills BEFORE any task)
-- test-driven-development (RED-GREEN-REFACTOR cycle)
-- systematic-debugging (4-phase root cause analysis)
-- verification-before-completion (Evidence before claims)
+- ring:using-ring (Check for skills BEFORE any task)
+- ring:test-driven-development (RED-GREEN-REFACTOR cycle)
+- ring:systematic-debugging (4-phase root cause analysis)
+- ring:verification-before-completion (Evidence before claims)
 ... and 50 more skills
 ```
 
@@ -193,14 +193,14 @@ When you start a new Claude Code session with Ring installed, you'll see:
 
 ### The Big Four (Use These First!)
 
-#### 1. **using-ring** - Mandatory Skill Discovery
+#### 1. **ring:using-ring** - Mandatory Skill Discovery
 ```
 Before ANY action → Check skills
 Before ANY tool → Check skills
 Before ANY code → Check skills
 ```
 
-#### 2. **test-driven-development** - Test First, Always
+#### 2. **ring:test-driven-development** - Test First, Always
 ```
 RED → Write failing test → Watch it fail
 GREEN → Minimal code → Watch it pass
@@ -215,7 +215,7 @@ Phase 3: Test hypothesis (one at a time)
 Phase 4: Implement fix (with test)
 ```
 
-#### 4. **verification-before-completion** - Prove It Works
+#### 4. **ring:verification-before-completion** - Prove It Works
 ```
 Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
@@ -228,67 +228,67 @@ No "should work" → Only "does work" with proof
 **Testing & Debugging (7):**
 - `ring:test-driven-development` - Write test first, watch fail, minimal code
 - `ring:systematic-debugging` - 4-phase root cause investigation
-- `verification-before-completion` - Evidence before claims
+- `ring:verification-before-completion` - Evidence before claims
 - `testing-anti-patterns` - Common test pitfalls to avoid
 - `condition-based-waiting` - Replace timeouts with conditions
 - `defense-in-depth` - Multi-layer validation
-- `linting-codebase` - Parallel lint fixing with agent dispatch
+- `ring:linting-codebase` - Parallel lint fixing with agent dispatch
 
 **Collaboration & Planning (11):**
 - `brainstorming` - Structured design refinement
-- `interviewing-user` - Proactive requirements gathering through structured interview
-- `writing-plans` - Zero-context implementation plans
+- `ring:interviewing-user` - Proactive requirements gathering through structured interview
+- `ring:writing-plans` - Zero-context implementation plans
 - `ring:executing-plans` - Batch execution with checkpoints
 - `ring:requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
-- `receiving-code-review` - Responding to feedback
+- `ring:receiving-code-review` - Responding to feedback
 - `dispatching-parallel-agents` - Concurrent workflows
-- `subagent-driven-development` - Fast iteration with **parallel reviews**
-- `using-git-worktrees` - Isolated development
+- `ring:subagent-driven-development` - Fast iteration with **parallel reviews**
+- `ring:using-git-worktrees` - Isolated development
 - `finishing-a-development-branch` - Merge/PR decisions
 - `root-cause-tracing` - Backward bug tracking
 
 **Meta Skills (4):**
 - `ring:using-ring` - Mandatory skill discovery
-- `writing-skills` - TDD for documentation
+- `ring:writing-skills` - TDD for documentation
 - `testing-skills-with-subagents` - Skill validation
 - `testing-agents-with-subagents` - Subagent-specific testing
 
 **Session & Learning (5):**
-- `handoff-tracking` - Task handoff management and session continuity
+- `ring:handoff-tracking` - Task handoff management and session continuity
 - `compound-learnings` - Pattern detection from session history
 - `artifact-query` - Semantic search over past artifacts
-- `exploring-codebase` - Two-phase codebase exploration
+- `ring:exploring-codebase` - Two-phase codebase exploration
 - `doubt-triggered-questions` - Decision hierarchy for asking vs proceeding
 
 ### Developer Skills (ring-dev-team plugin - 9 skills)
 
 **Code Development:**
-- `using-dev-team` - Introduction to developer specialist agents
-- `dev-refactor` - Codebase analysis against standards
-- `dev-cycle` - 6-gate development workflow orchestrator
+- `ring:using-dev-team` - Introduction to developer specialist agents
+- `ring:dev-refactor` - Codebase analysis against standards
+- `ring:dev-cycle` - 6-gate development workflow orchestrator
 
 **6-Gate Workflow Skills:**
-- `dev-implementation` - Gate 0: TDD implementation
-- `dev-devops` - Gate 1: DevOps setup (Docker, compose)
-- `dev-sre` - Gate 2: Observability setup
-- `dev-testing` - Gate 3: Test coverage
+- `ring:dev-implementation` - Gate 0: TDD implementation
+- `ring:dev-devops` - Gate 1: DevOps setup (Docker, compose)
+- `ring:dev-ring:sre` - Gate 2: Observability setup
+- `ring:dev-testing` - Gate 3: Test coverage
 - `ring:requesting-code-review` - Gate 4: Parallel code review (3 reviewers)
-- `dev-validation` - Gate 5: User approval
-- `dev-feedback-loop` - Assertiveness scoring and metrics
+- `ring:dev-validation` - Gate 5: User approval
+- `ring:dev-feedback-loop` - Assertiveness scoring and metrics
 
 ### Product Planning Skills (ring-pm-team plugin - 10 skills)
 
-**Pre-Development Workflow (includes using-pm-team + 9 gates):**
-- `using-pm-team` - Introduction to product planning workflow
-0. `pre-dev-research` - Research phase (parallel agents)
-1. `pre-dev-prd-creation` - Business requirements (WHAT/WHY)
-2. `pre-dev-feature-map` - Feature relationships
-3. `pre-dev-trd-creation` - Technical architecture (HOW)
-4. `pre-dev-api-design` - Component contracts
-5. `pre-dev-data-model` - Entity relationships
-6. `pre-dev-dependency-map` - Technology selection
-7. `pre-dev-task-breakdown` - Work increments
-8. `pre-dev-subtask-creation` - Atomic units
+**Pre-Development Workflow (includes ring:using-pm-team + 9 gates):**
+- `ring:using-pm-team` - Introduction to product planning workflow
+0. `ring:pre-dev-research` - Research phase (parallel agents)
+1. `ring:pre-dev-prd-creation` - Business requirements (WHAT/WHY)
+2. `ring:pre-dev-feature-map` - Feature relationships
+3. `ring:pre-dev-trd-creation` - Technical architecture (HOW)
+4. `ring:pre-dev-api-design` - Component contracts
+5. `ring:pre-dev-data-model` - Entity relationships
+6. `ring:pre-dev-dependency-map` - Technology selection
+7. `ring:pre-dev-task-breakdown` - Work increments
+8. `ring:pre-dev-subtask-creation` - Atomic units
 
 ### Technical Writing Skills (ring-tw-team plugin - 7 skills)
 
@@ -317,31 +317,31 @@ Ring provides 23 slash commands across 5 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
-- `/codereview [files-or-paths]` - Dispatch 3 parallel code reviewers for comprehensive review
-- `/commit [message]` - Create git commit with AI identification via Git trailers
-- `/worktree [branch-name]` - Create isolated git workspace for parallel development
-- `/brainstorm [topic]` - Interactive design refinement using Socratic method
-- `/write-plan [feature]` - Create detailed implementation plan with bite-sized tasks
-- `/execute-plan [path]` - Execute plan in batches with review checkpoints
-- `/lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
-- `/explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
-- `/create-handoff [task]` - Create task handoff document for session continuity
-- `/resume-handoff [path]` - Resume work from a previous handoff
+- `/ring:codereview [files-or-paths]` - Dispatch 3 parallel code reviewers for comprehensive review
+- `/ring:commit [message]` - Create git commit with AI identification via Git trailers
+- `/ring:worktree [branch-name]` - Create isolated git workspace for parallel development
+- `/ring:brainstorm [topic]` - Interactive design refinement using Socratic method
+- `/ring:write-plan [feature]` - Create detailed implementation plan with bite-sized tasks
+- `/ring:execute-plan [path]` - Execute plan in batches with review checkpoints
+- `/ring:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
+- `/ring:explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
+- `/ring:create-handoff [task]` - Create task handoff document for session continuity
+- `/ring:resume-handoff [path]` - Resume work from a previous handoff
 - `/query-artifacts [query]` - Search indexed artifacts for precedent
 - `/compound-learnings` - Extract learnings from session history
 
 ### Product Planning (ring-pm-team)
 
-- `/pre-dev-feature [feature-name]` - Lightweight 4-gate pre-dev workflow for small features (<2 days)
-- `/pre-dev-full [feature-name]` - Complete 9-gate pre-dev workflow for large features (>=2 days)
+- `/ring:pre-dev-feature [feature-name]` - Lightweight 4-gate pre-dev workflow for small features (<2 days)
+- `/ring:pre-dev-full [feature-name]` - Complete 9-gate pre-dev workflow for large features (>=2 days)
 
 ### Development Cycle (ring-dev-team)
 
-- `/dev-cycle [task]` - Start 6-gate development workflow (implementation→devops→SRE→testing→review→validation)
-- `/dev-refactor [path]` - Analyze codebase against standards
-- `/dev-status` - Show current gate progress
-- `/dev-report` - Generate development cycle report
-- `/dev-cancel` - Cancel active development cycle
+- `/ring:dev-cycle [task]` - Start 6-gate development workflow (implementation→devops→SRE→testing→review→validation)
+- `/ring:dev-refactor [path]` - Analyze codebase against standards
+- `/ring:dev-status` - Show current gate progress
+- `/ring:dev-report` - Generate development cycle report
+- `/ring:dev-cancel` - Cancel active development cycle
 
 ### Technical Writing (ring-tw-team)
 
@@ -354,11 +354,11 @@ Ring provides 23 slash commands across 5 plugins for common workflows.
 ### Building a Feature
 ```
 User: "Add user authentication to the app"
-Claude: I'm using the brainstorming skill to design this feature...
+Claude: I'm using the ring:brainstorming skill to design this feature...
         [Structured exploration of requirements]
-Claude: I'm using test-driven-development to implement...
+Claude: I'm using ring:test-driven-development to implement...
         [RED-GREEN-REFACTOR cycle for each component]
-Claude: I'm using verification-before-completion to confirm...
+Claude: I'm using ring:verification-before-completion to confirm...
         [Runs tests, shows actual output]
 ```
 
@@ -386,7 +386,7 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
 ```
 User: "Review my authentication implementation"
 Claude: Dispatching all 3 reviewers in parallel...
-        [Launches code-reviewer, business-logic-reviewer, security-reviewer simultaneously]
+        [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).
@@ -428,20 +428,20 @@ ring/                                  # Monorepo root
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
 │   ├── agents/                      # 5 specialized agents
-│   │   ├── code-reviewer.md        # Foundation review (parallel)
-│   │   ├── business-logic-reviewer.md  # Correctness review (parallel)
-│   │   ├── security-reviewer.md    # Safety review (parallel)
-│   │   ├── write-plan.md           # Implementation planning
-│   │   └── codebase-explorer.md    # Deep architecture analysis (Opus)
+│   │   ├── ring:code-reviewer.md        # Foundation review (parallel)
+│   │   ├── ring:business-logic-reviewer.md  # Correctness review (parallel)
+│   │   ├── ring:security-reviewer.md    # Safety review (parallel)
+│   │   ├── ring:write-plan.md           # Implementation planning
+│   │   └── ring:codebase-explorer.md    # Deep architecture analysis (Opus)
 │   └── docs/                       # Documentation
 ├── dev-team/                      # Developer Agents plugin (ring-dev-team)
 │   └── agents/                      # 7 specialized developer agents
-│       ├── backend-engineer-golang.md  # Go backend specialist
-│       ├── backend-engineer-typescript.md # TypeScript/Node.js backend specialist
-│       ├── devops-engineer.md          # DevOps infrastructure
+│       ├── ring:backend-engineer-golang.md  # Go backend specialist
+│       ├── ring:backend-engineer-typescript.md # TypeScript/Node.js backend specialist
+│       ├── ring:devops-engineer.md          # DevOps infrastructure
 │       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js frontend specialist
-│       ├── frontend-designer.md        # Visual design specialist
-│       ├── qa-analyst.md               # Quality assurance
+│       ├── ring:frontend-designer.md        # Visual design specialist
+│       ├── ring:qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 10 pre-dev workflow skills

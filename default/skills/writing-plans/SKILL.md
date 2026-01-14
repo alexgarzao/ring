@@ -11,12 +11,12 @@ trigger: |
 
 skip_when: |
   - Design not validated → use brainstorming first
-  - Requirements still unclear → use pre-dev-prd-creation first
-  - Already have a plan → use executing-plans
+  - Requirements still unclear → use ring:pre-dev-prd-creation first
+  - Already have a plan → use ring:executing-plans
 
 sequence:
-  after: [brainstorming, pre-dev-trd-creation]
-  before: [executing-plans, subagent-driven-development]
+  after: [brainstorming, ring:pre-dev-trd-creation]
+  before: [ring:executing-plans, ring:subagent-driven-development]
 
 related:
   similar: [brainstorming]
@@ -28,9 +28,9 @@ related:
 
 This skill dispatches a specialized agent to write comprehensive implementation plans for engineers with zero codebase context.
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+**Announce at start:** "I'm using the ring:writing-plans skill to create the implementation plan."
 
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+**Context:** This should be run in a dedicated worktree (created by ring:brainstorming skill).
 
 ## The Process
 
@@ -107,9 +107,9 @@ Every plan: **Historical Precedent section** | Header (goal, architecture, tech 
 |-----------|-------|
 | Backend API/services | `backend-engineer-{golang,typescript}` |
 | Frontend/BFF | `frontend-bff-engineer-typescript` |
-| Infra/CI/CD | `devops-engineer` |
-| Testing | `qa-analyst` |
-| Reliability | `sre` |
+| Infra/CI/CD | `ring:devops-engineer` |
+| Testing | `ring:qa-analyst` |
+| Reliability | `ring:sre` |
 | Fallback | `general-purpose` (built-in, no prefix) |
 
 ## Execution Options Reference

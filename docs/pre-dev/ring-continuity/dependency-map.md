@@ -765,7 +765,7 @@ ring/
 │   │   ├── skill_activator.py
 │   │   └── ...
 │   └── skills/
-│       └── handoff-tracking/
+│       └── ring:handoff-tracking/
 │           └── SKILL.md (updated)
 ├── install-ring-continuity.sh
 └── requirements.txt

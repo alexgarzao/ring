@@ -6,27 +6,27 @@ description: |
 
 trigger: |
   - Need deep expertise for specific technology (Go, TypeScript)
-  - Building infrastructure/CI-CD → devops-engineer
-  - Frontend with design focus → frontend-designer
-  - Test strategy needed → qa-analyst
-  - Reliability/monitoring → sre
+  - Building infrastructure/CI-CD → ring:devops-engineer
+  - Frontend with design focus → ring:frontend-designer
+  - Test strategy needed → ring:qa-analyst
+  - Reliability/monitoring → ring:sre
 
 skip_when: |
   - General code review → use default plugin reviewers
   - Planning/design → use brainstorming
-  - Debugging → use systematic-debugging
+  - Debugging → use ring:systematic-debugging
 
 related:
-  similar: [using-ring]
+  similar: [ring:using-ring]
 ---
 
 # Using Ring Developer Specialists
 
 The ring-dev-team plugin provides 7 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -138,13 +138,13 @@ Use Task tool to dispatch appropriate specialist based on technology need.
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
-| **`backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
-| **`backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
-| **`devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
+| **`ring:backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
+| **`ring:backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
+| **`ring:devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
 | **`frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
-| **`frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
-| **`qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
-| **`sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
+| **`ring:frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
+| **`ring:qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
+| **`ring:sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
 
 **Dispatch template:**
 ```
@@ -154,7 +154,7 @@ Task tool:
   prompt: "{Your specific request with context}"
 ```
 
-**Note:** `frontend-designer` = visual aesthetics. `frontend-bff-engineer-typescript` = business logic/architecture.
+**Note:** `ring:frontend-designer` = visual aesthetics. `frontend-bff-engineer-typescript` = business logic/architecture.
 
 ---
 
@@ -182,14 +182,14 @@ If you need multiple specialists (e.g., backend engineer + DevOps engineer), dis
 
 ```
 ✅ CORRECT:
-Task #1: backend-engineer-golang
-Task #2: devops-engineer
+Task #1: ring:backend-engineer-golang
+Task #2: ring:devops-engineer
 (Both run in parallel)
 
 ❌ WRONG:
-Task #1: backend-engineer-golang
+Task #1: ring:backend-engineer-golang
 (Wait for response)
-Task #2: devops-engineer
+Task #2: ring:devops-engineer
 (Sequential = 2x slower)
 ```
 
@@ -200,10 +200,10 @@ Task #2: devops-engineer
 Remember:
 - **You're the orchestrator** – Dispatch specialists, don't implement directly
 - **Don't read specialist docs yourself** – Dispatch to specialist, they know their domain
-- **Combine with using-ring principle** – Skills + Specialists = complete workflow
+- **Combine with ring:using-ring principle** – Skills + Specialists = complete workflow
 
 ### Good Example (ORCHESTRATOR):
-> "I need a Go service. Let me dispatch `backend-engineer-golang` to design it."
+> "I need a Go service. Let me dispatch `ring:backend-engineer-golang` to design it."
 
 ### Bad Example (OPERATOR):
 > "I'll manually read Go best practices and design the service myself."
@@ -214,9 +214,9 @@ Remember:
 
 **Agents:** See "7 Developer Specialists" table above.
 
-**Skills:** `using-dev-team` (this), `dev-cycle` (6-gate workflow), `dev-refactor` (codebase analysis)
+**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (6-gate workflow), `ring:dev-refactor` (codebase analysis)
 
-**Commands:** `/dev-cycle` (execute tasks), `/dev-refactor` (analyze codebase)
+**Commands:** `/ring:dev-cycle` (execute tasks), `/ring:dev-refactor` (analyze codebase)
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-dev-team plugin.
 
@@ -228,19 +228,19 @@ All workflows converge to the 6-gate development cycle:
 
 | Workflow | Entry Point | Output | Then |
 |----------|-------------|--------|------|
-| **New Feature** | `/pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md` | → `/dev-cycle tasks.md` |
-| **Direct Tasks** | `/dev-cycle tasks.md` | — | Execute 6 gates directly |
-| **Refactoring** | `/dev-refactor` | `docs/refactor/{timestamp}/tasks.md` | → `/dev-cycle tasks.md` |
+| **New Feature** | `/ring:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md` | → `/ring:dev-cycle tasks.md` |
+| **Direct Tasks** | `/ring:dev-cycle tasks.md` | — | Execute 6 gates directly |
+| **Refactoring** | `/ring:dev-refactor` | `docs/refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
 
 **6-Gate Development Cycle:**
 
 | Gate | Focus | Agent(s) |
 |------|-------|----------|
 | **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `frontend-bff-engineer-typescript` |
-| **1: DevOps** | Dockerfile, docker-compose, .env | `devops-engineer` |
-| **2: SRE** | Health checks, logging, tracing | `sre` |
-| **3: Testing** | Unit tests, coverage ≥85% | `qa-analyst` |
-| **4: Review** | 3 reviewers IN PARALLEL | `code-reviewer`, `business-logic`, `security` |
+| **1: DevOps** | Dockerfile, docker-compose, .env | `ring:devops-engineer` |
+| **2: SRE** | Health checks, logging, tracing | `ring:sre` |
+| **3: Testing** | Unit tests, coverage ≥85% | `ring:qa-analyst` |
+| **4: Review** | 3 reviewers IN PARALLEL | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer` |
 | **5: Validation** | User approval: APPROVED/REJECTED | User decision |
 
 **Key Principle:** All development follows the same 6-gate process.
@@ -249,9 +249,9 @@ All workflows converge to the 6-gate development cycle:
 
 ## Integration with Other Plugins
 
-- **using-ring** (default) – ORCHESTRATOR principle for all agents
-- **using-pm-team** – Pre-dev workflow agents
-- **using-finops-team** – Financial/regulatory agents
+- **ring:using-ring** (default) – ORCHESTRATOR principle for all agents
+- **ring:using-pm-team** – Pre-dev workflow agents
+- **ring:using-finops-team** – Financial/regulatory agents
 
 Dispatch based on your need:
 - General code review → default plugin agents

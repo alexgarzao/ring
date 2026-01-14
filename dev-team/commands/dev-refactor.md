@@ -1,10 +1,10 @@
 ---
 name: ring:dev-refactor
-description: Analyze existing codebase against standards and execute refactoring through dev-cycle
+description: Analyze existing codebase against standards and execute refactoring through ring:dev-cycle
 argument-hint: "[path]"
 ---
 
-Analyze existing codebase against standards and execute refactoring through dev-cycle.
+Analyze existing codebase against standards and execute refactoring through ring:dev-cycle.
 
 ## ⛔ PRE-EXECUTION CHECK (EXECUTE FIRST)
 
@@ -12,7 +12,7 @@ Analyze existing codebase against standards and execute refactoring through dev-
 
 ```
 Does docs/PROJECT_RULES.md exist in the target project?
-├── YES → Load skill: dev-refactor
+├── YES → Load skill: ring:dev-refactor
 └── no  → Output blocker below and STOP
 ```
 
@@ -30,7 +30,7 @@ Create `docs/PROJECT_RULES.md` with your project's:
 - Testing requirements
 - DevOps standards
 
-Then re-run `/dev-refactor`.
+Then re-run `/ring:dev-refactor`.
 ```
 
 **DO not:**
@@ -44,7 +44,7 @@ Then re-run `/dev-refactor`.
 ## Usage
 
 ```
-/dev-refactor [path] [options]
+/ring:dev-refactor [path] [options]
 ```
 
 ## Arguments
@@ -66,26 +66,26 @@ Then re-run `/dev-refactor`.
 
 ```bash
 # Analyze entire project and refactor
-/dev-refactor
+/ring:dev-refactor
 
 # Analyze specific directory
-/dev-refactor src/domain
+/ring:dev-refactor src/domain
 
 # Analysis only (no execution)
-/dev-refactor --analyze-only
+/ring:dev-refactor --analyze-only
 
 # Only fix critical issues
-/dev-refactor --critical-only
+/ring:dev-refactor --critical-only
 
 # Use custom standards
-/dev-refactor --standards docs/team-standards.md
+/ring:dev-refactor --standards docs/team-standards.md
 ```
 
 ## Workflow
 
-**See skill `dev-refactor` for the complete 13-step workflow with TodoWrite template.**
+**See skill `ring:dev-refactor` for the complete 13-step workflow with TodoWrite template.**
 
-The skill defines all steps including: stack detection, codebase-explorer dispatch, individual agent reports, finding mapping, and artifact generation.
+The skill defines all steps including: stack detection, ring:codebase-explorer dispatch, individual agent reports, finding mapping, and artifact generation.
 
 ## Analysis Dimensions
 
@@ -103,7 +103,7 @@ The skill defines all steps including: stack detection, codebase-explorer dispat
 - **Analysis (always):** All five dimensions analyzed, all severities (Critical, High, Medium, Low) tracked
 - **Execution (filterable):** `--critical-only` limits execution/prioritization to Critical and High severity issues
 
-Example: `/dev-refactor --critical-only` analyzes all issues but only executes fixes for Critical and High.
+Example: `/ring:dev-refactor --critical-only` analyzes all issues but only executes fixes for Critical and High.
 
 ### Instrumentation Checklist (Quick Reference)
 
@@ -129,7 +129,7 @@ When analyzing services for instrumentation compliance, verify:
 **Tasks File** (`docs/refactor/{timestamp}/tasks.md`):
 - Grouped refactoring tasks (REFACTOR-001, REFACTOR-002, etc.)
 - Same format as PM Team output
-- Compatible with dev-cycle execution
+- Compatible with ring:dev-cycle execution
 
 ## Severity Levels (all ARE MANDATORY)
 
@@ -156,7 +156,7 @@ When analyzing services for instrumentation compliance, verify:
 |---------|-------------|
 | `/ring:dev-cycle` | Execute development cycle (used after analysis) |
 | `/ring:pre-dev-feature` | Plan new features (use instead for greenfield) |
-| `/ring:codereview` | Manual code review (dev-cycle includes this) |
+| `/ring:codereview` | Manual code review (ring:dev-cycle includes this) |
 
 ---
 
@@ -170,7 +170,7 @@ Use Skill tool: ring:dev-refactor
 
 The skill contains the complete analysis workflow with:
 - Anti-rationalization tables for codebase exploration
-- Mandatory use of `codebase-explorer` (not Bash/Explore)
+- Mandatory use of `ring:codebase-explorer` (not Bash/Explore)
 - Standards coverage table requirements
 - Finding → Task mapping gates
 - Full agent dispatch prompts with `**MODE: ANALYSIS only**`
@@ -183,13 +183,13 @@ Pass the following context to the skill:
 |-----------|-------|
 | `path` | `$1` (first argument, default: project root) |
 | `--standards` | If provided, custom standards file path |
-| `--analyze-only` | If provided, skip dev-cycle execution |
+| `--analyze-only` | If provided, skip ring:dev-cycle execution |
 | `--critical-only` | If provided, filter to Critical/High only |
 | `--dry-run` | If provided, show what would be analyzed |
 
 ## User Approval (MANDATORY)
 
-**Before executing dev-cycle, you MUST ask:**
+**Before executing ring:dev-cycle, you MUST ask:**
 
 ```yaml
 AskUserQuestion:
@@ -198,7 +198,7 @@ AskUserQuestion:
       header: "Approval"
       options:
         - label: "Approve all"
-          description: "Proceed to dev-cycle execution"
+          description: "Proceed to ring:dev-cycle execution"
         - label: "Critical only"
           description: "Execute only Critical/High tasks"
         - label: "Cancel"
@@ -207,11 +207,11 @@ AskUserQuestion:
 
 ## Quick Reference
 
-See skill `dev-refactor` for full details. Key rules:
+See skill `ring:dev-refactor` for full details. Key rules:
 
 - **All agents dispatch in parallel** - Single message, multiple Task calls
 - **Specify model: "opus"** - All agents need opus for comprehensive analysis
 - **MODE: ANALYSIS only** - Agents analyze, they DO NOT implement
 - **Save artifacts** to `docs/refactor/{timestamp}/`
-- **Get user approval** before executing dev-cycle
-- **Handoff**: `/dev-cycle docs/refactor/{timestamp}/tasks.md`
+- **Get user approval** before executing ring:dev-cycle
+- **Handoff**: `/ring:dev-cycle docs/refactor/{timestamp}/tasks.md`

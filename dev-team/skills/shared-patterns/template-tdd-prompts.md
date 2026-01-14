@@ -1,6 +1,6 @@
 # TDD Prompt Templates
 
-Canonical source for TDD dispatch prompts used by dev-cycle and dev-implementation skills.
+Canonical source for TDD dispatch prompts used by ring:dev-cycle and ring:dev-implementation skills.
 
 ## Standards Loading (MANDATORY - Before TDD)
 
@@ -100,8 +100,8 @@ Example failure output:
 
 **⛔ HARD GATE: You MUST implement all sections listed in [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/standards-coverage-table.md).**
 
-- **Go projects:** See `backend-engineer-golang → golang.md` section index (20 sections)
-- **TypeScript projects:** See `backend-engineer-typescript → typescript.md` section index (13 sections)
+- **Go projects:** See `ring:backend-engineer-golang → golang.md` section index (20 sections)
+- **TypeScript projects:** See `ring:backend-engineer-typescript → typescript.md` section index (13 sections)
 
 **You CANNOT skip any section. Mark N/A only with explicit justification.**
 
@@ -234,7 +234,7 @@ See [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio
 
 ## ⛔ Orchestrator Enforcement (HARD GATE)
 
-**This section defines what the ORCHESTRATOR (dev-cycle, dev-implementation) MUST do after receiving agent output.**
+**This section defines what the ORCHESTRATOR (ring:dev-cycle, ring:dev-implementation) MUST do after receiving agent output.**
 
 ### Verification Process
 
@@ -299,9 +299,9 @@ See [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio
 | Gate | Agent | Orchestrator Verifies |
 |------|-------|----------------------|
 | Gate 0 (Implementation) | backend-engineer-*, frontend-* | Standards Coverage Table from TDD-GREEN |
-| Gate 1 (DevOps) | devops-engineer | Standards Coverage Table from artifacts |
-| Gate 2 (SRE) | sre | Standards Coverage Table from validation |
-| Gate 3 (Testing) | qa-analyst | Standards Coverage Table from test analysis |
+| Gate 1 (DevOps) | ring:devops-engineer | Standards Coverage Table from artifacts |
+| Gate 2 (SRE) | ring:sre | Standards Coverage Table from validation |
+| Gate 3 (Testing) | ring:qa-analyst | Standards Coverage Table from test analysis |
 
 ### State Update After Verification
 

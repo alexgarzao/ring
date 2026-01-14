@@ -11,12 +11,12 @@ trigger: |
   - New service security assessment
 
 skip_when: |
-  - Application code security -> use security-reviewer
+  - Application code security -> use ring:security-reviewer
   - Active security incident -> use ops-incident-response
   - Penetration testing -> external security team
 
 related:
-  similar: [security-reviewer]
+  similar: [ring:security-reviewer]
   uses: [security-operations]
 ---
 

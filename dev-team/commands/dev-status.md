@@ -9,7 +9,7 @@ Check the status of the current development cycle.
 ## Usage
 
 ```
-/dev-status
+/ring:dev-status
 ```
 
 ## Output
@@ -37,14 +37,14 @@ Tasks:
 
 Current:
   Task: AUTH-003 - Implementar refresh token
-  Gate: 5/8 (dev-testing)
+  Gate: 5/8 (ring:dev-testing)
   Iterations: 1
 
 Metrics (completed tasks):
   Average Assertiveness: 89%
   Total Duration: 1h 45m
 
-State file: docs/dev-cycle/current-cycle.json (or docs/dev-refactor/current-cycle.json)
+State file: docs/ring:dev-cycle/current-cycle.json (or docs/ring:dev-refactor/current-cycle.json)
 ```
 
 ## When No Cycle is Running
@@ -53,10 +53,10 @@ State file: docs/dev-cycle/current-cycle.json (or docs/dev-refactor/current-cycl
 ℹ️ No development cycle in progress.
 
 Start a new cycle with:
-  /dev-cycle docs/tasks/your-tasks.md
+  /ring:dev-cycle docs/tasks/your-tasks.md
 
 Or resume an interrupted cycle:
-  /dev-cycle --resume
+  /ring:dev-cycle --resume
 ```
 
 ## Related Commands
@@ -71,4 +71,4 @@ Or resume an interrupted cycle:
 
 Now checking cycle status...
 
-Read state from: `docs/dev-cycle/current-cycle.json` or `docs/dev-refactor/current-cycle.json`
+Read state from: `docs/ring:dev-cycle/current-cycle.json` or `docs/ring:dev-refactor/current-cycle.json`

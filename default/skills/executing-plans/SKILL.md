@@ -10,15 +10,15 @@ trigger: |
   - Need structured checkpoints during implementation
 
 skip_when: |
-  - Same session with independent tasks → use subagent-driven-development
-  - No plan exists → use writing-plans first
-  - Plan needs revision → use brainstorming first
+  - Same session with independent tasks → use ring:subagent-driven-development
+  - No plan exists → use ring:writing-plans first
+  - Plan needs revision → use ring:brainstorming first
 
 sequence:
-  after: [writing-plans, pre-dev-task-breakdown]
+  after: [ring:writing-plans, ring:pre-dev-task-breakdown]
 
 related:
-  similar: [subagent-driven-development]
+  similar: [ring:subagent-driven-development]
 ---
 
 # Executing Plans
@@ -33,7 +33,7 @@ Load plan, review critically, choose execution mode, execute tasks with code rev
 - **One-go (autonomous):** Execute all batches continuously with code review, report only at completion
 - **Batch (with review):** Execute one batch, code review, pause for human feedback, repeat
 
-**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+**Announce at start:** "I'm using the ring:executing-plans skill to implement this plan."
 
 ## The Process
 
@@ -78,12 +78,12 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 ### Step 3: Execute Batch
 **Default: First 3 tasks**
 
-**Agent Selection:** Backend Go → `backend-engineer-golang` | Backend TS → `backend-engineer-typescript` | Frontend → `frontend-bff-engineer-typescript` | Infra → `devops-engineer` | Testing → `qa-analyst` | Reliability → `sre`
+**Agent Selection:** Backend Go → `ring:backend-engineer-golang` | Backend TS → `ring:backend-engineer-typescript` | Frontend → `frontend-bff-engineer-typescript` | Infra → `ring:devops-engineer` | Testing → `ring:qa-analyst` | Reliability → `ring:sre`
 
 For each task: Mark in_progress → Dispatch to agent → Follow plan steps exactly → Run verifications → Mark completed
 
 ### Step 4: Run Code Review
-**After each batch, REQUIRED:** Use requesting-code-review (all 3 reviewers in parallel)
+**After each batch, REQUIRED:** Use ring:requesting-code-review (all 3 reviewers in parallel)
 
 **Handle by severity:**
 - **Critical/High/Medium:** Fix immediately (no TODO) → re-run all 3 reviewers → repeat until resolved

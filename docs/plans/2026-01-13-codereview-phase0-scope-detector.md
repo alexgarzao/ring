@@ -4,7 +4,7 @@
 
 **Goal:** Build the `scope-detector` Go binary that analyzes git diffs to detect changed files, identify project language (Go/TypeScript/Python), and output structured scope information for downstream code review phases.
 
-**Architecture:** Single Go binary in `scripts/codereview/cmd/scope-detector/` that uses `exec.Command` to run git operations, parses output to categorize files by language/extension, and produces JSON output. Internal packages under `scripts/codereview/internal/` provide reusable git operations, scope detection logic, and output formatting.
+**Architecture:** Single Go binary in `scripts/ring:codereview/cmd/scope-detector/` that uses `exec.Command` to run git operations, parses output to categorize files by language/extension, and produces JSON output. Internal packages under `scripts/ring:codereview/internal/` provide reusable git operations, scope detection logic, and output formatting.
 
 **Tech Stack:**
 - Go 1.22+ (stdlib only - no external dependencies)
@@ -27,7 +27,7 @@ ls -la scripts/      # Expected: directory does not exist (we'll create it)
 
 ## Historical Precedent
 
-**Query:** "codereview scope detection Go CLI git diff"
+**Query:** "ring:codereview scope detection Go CLI git diff"
 **Index Status:** Populated (no relevant matches)
 
 ### Successful Patterns to Reference
@@ -37,7 +37,7 @@ No directly relevant handoffs found. This is a new feature area.
 No failure patterns recorded for this domain.
 
 ### Related Past Plans
-- `codereview-enhancement-macro-plan.md` - Parent macro plan defining overall architecture
+- `ring:codereview-enhancement-macro-plan.md` - Parent macro plan defining overall architecture
 
 ---
 
@@ -45,7 +45,7 @@ No failure patterns recorded for this domain.
 
 ```
 scripts/
-└── codereview/
+└── ring:codereview/
     ├── cmd/
     │   └── scope-detector/
     │       └── main.go              # CLI binary entry point
@@ -69,8 +69,8 @@ scripts/
 ## Task 1: Create Go Module and Directory Structure
 
 **Files:**
-- Create: `scripts/codereview/go.mod`
-- Create: `scripts/codereview/Makefile`
+- Create: `scripts/ring:codereview/go.mod`
+- Create: `scripts/ring:codereview/Makefile`
 
 **Prerequisites:**
 - Tools: Go 1.22+
@@ -79,26 +79,26 @@ scripts/
 **Step 1: Create directory structure**
 
 ```bash
-mkdir -p scripts/codereview/cmd/scope-detector
-mkdir -p scripts/codereview/internal/git
-mkdir -p scripts/codereview/internal/scope
-mkdir -p scripts/codereview/internal/output
-mkdir -p scripts/codereview/bin
+mkdir -p scripts/ring:codereview/cmd/scope-detector
+mkdir -p scripts/ring:codereview/internal/git
+mkdir -p scripts/ring:codereview/internal/scope
+mkdir -p scripts/ring:codereview/internal/output
+mkdir -p scripts/ring:codereview/bin
 ```
 
 **Step 2: Create go.mod**
 
-Create file `scripts/codereview/go.mod`:
+Create file `scripts/ring:codereview/go.mod`:
 
 ```go
-module github.com/lerianstudio/ring/scripts/codereview
+module github.com/lerianstudio/ring/scripts/ring:codereview
 
 go 1.22
 ```
 
 **Step 3: Create Makefile**
 
-Create file `scripts/codereview/Makefile`:
+Create file `scripts/ring:codereview/Makefile`:
 
 ```makefile
 .PHONY: all build test clean install
@@ -148,7 +148,7 @@ lint: fmt vet
 
 **Step 4: Verify structure**
 
-Run: `ls -la scripts/codereview/`
+Run: `ls -la scripts/ring:codereview/`
 
 **Expected output:**
 ```
@@ -164,7 +164,7 @@ drwxr-xr-x  5 user  staff   160 Jan 13 XX:XX internal
 
 **Step 5: Verify go.mod is valid**
 
-Run: `cd scripts/codereview && go mod verify && cd ../..`
+Run: `cd scripts/ring:codereview && go mod verify && cd ../..`
 
 **Expected output:**
 ```
@@ -176,19 +176,19 @@ all modules verified
 1. **Directory creation fails:**
    - Check: `ls -la scripts/` (parent exists?)
    - Fix: Create parent first: `mkdir -p scripts`
-   - Rollback: `rm -rf scripts/codereview`
+   - Rollback: `rm -rf scripts/ring:codereview`
 
 2. **go mod verify fails:**
-   - Check: `cat scripts/codereview/go.mod` (syntax correct?)
+   - Check: `cat scripts/ring:codereview/go.mod` (syntax correct?)
    - Fix: Ensure go directive matches installed Go version
-   - Rollback: `rm scripts/codereview/go.mod`
+   - Rollback: `rm scripts/ring:codereview/go.mod`
 
 ---
 
 ## Task 2: Implement Git Operations Package - Types and Interface
 
 **Files:**
-- Create: `scripts/codereview/internal/git/git.go`
+- Create: `scripts/ring:codereview/internal/git/git.go`
 
 **Prerequisites:**
 - Task 1 completed (directory structure exists)
@@ -196,7 +196,7 @@ all modules verified
 
 **Step 1: Write the failing test**
 
-Create file `scripts/codereview/internal/git/git_test.go`:
+Create file `scripts/ring:codereview/internal/git/git_test.go`:
 
 ```go
 package git
@@ -287,22 +287,22 @@ func TestDiffStatsValidation(t *testing.T) {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd scripts/codereview && go test -v ./internal/git/... 2>&1 | head -20 && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/git/... 2>&1 | head -20 && cd ../..`
 
 **Expected output:**
 ```
-# github.com/lerianstudio/ring/scripts/codereview/internal/git [github.com/lerianstudio/ring/scripts/codereview/internal/git.test]
+# github.com/lerianstudio/ring/scripts/ring:codereview/internal/git [github.com/lerianstudio/ring/scripts/ring:codereview/internal/git.test]
 ./git_test.go:XX:XX: undefined: FileStatus
 ./git_test.go:XX:XX: undefined: StatusAdded
 ...
-FAIL	github.com/lerianstudio/ring/scripts/codereview/internal/git [build failed]
+FAIL	github.com/lerianstudio/ring/scripts/ring:codereview/internal/git [build failed]
 ```
 
 **If you see different error:** Check that git_test.go was created in the correct location
 
 **Step 3: Write minimal implementation**
 
-Create file `scripts/codereview/internal/git/git.go`:
+Create file `scripts/ring:codereview/internal/git/git.go`:
 
 ```go
 // Package git provides utilities for interacting with git repositories.
@@ -719,7 +719,7 @@ func parseNumstat(output []byte) map[string]fileStats {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd scripts/codereview && go test -v ./internal/git/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/git/... && cd ../..`
 
 **Expected output:**
 ```
@@ -740,16 +740,16 @@ Run: `cd scripts/codereview && go test -v ./internal/git/... && cd ../..`
 === RUN   TestParseFileStatus
 ...
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/git
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/git
 ```
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/
-git commit -m "feat(codereview): add git operations package with types and diff parsing
+git add scripts/ring:codereview/
+git commit -m "feat(ring:codereview): add git operations package with types and diff parsing
 
-Phase 0 of codereview enhancement - foundational git wrapper.
+Phase 0 of ring:codereview enhancement - foundational git wrapper.
 Includes FileStatus enum, ChangedFile struct, and Client with
 GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff methods."
 ```
@@ -759,7 +759,7 @@ GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff methods."
 1. **Test still fails after implementation:**
    - Check: `go build ./internal/git/` (syntax errors?)
    - Fix: Review error messages and fix type definitions
-   - Rollback: `git checkout -- scripts/codereview/internal/git/`
+   - Rollback: `git checkout -- scripts/ring:codereview/internal/git/`
 
 2. **Import errors:**
    - Check: Package name matches directory
@@ -770,7 +770,7 @@ GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff methods."
 ## Task 3: Add Integration Tests for Git Package
 
 **Files:**
-- Modify: `scripts/codereview/internal/git/git_test.go`
+- Modify: `scripts/ring:codereview/internal/git/git_test.go`
 
 **Prerequisites:**
 - Task 2 completed (git package exists)
@@ -778,7 +778,7 @@ GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff methods."
 
 **Step 1: Add integration tests to existing test file**
 
-Append to `scripts/codereview/internal/git/git_test.go`:
+Append to `scripts/ring:codereview/internal/git/git_test.go`:
 
 ```go
 // Integration tests - these run against the actual git repository
@@ -1018,7 +1018,7 @@ func TestParseNumstat(t *testing.T) {
 
 **Step 2: Run all tests**
 
-Run: `cd scripts/codereview && go test -v ./internal/git/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/git/... && cd ../..`
 
 **Expected output:**
 ```
@@ -1035,14 +1035,14 @@ Run: `cd scripts/codereview && go test -v ./internal/git/... && cd ../..`
 === RUN   TestParseNumstat
 --- PASS: TestParseNumstat (0.00s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/git
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/git
 ```
 
 **Step 3: Commit**
 
 ```bash
-git add scripts/codereview/internal/git/git_test.go
-git commit -m "test(codereview): add integration and unit tests for git package
+git add scripts/ring:codereview/internal/git/git_test.go
+git commit -m "test(ring:codereview): add integration and unit tests for git package
 
 Covers parseNameStatusLine, parseNumstat, and integration tests
 for Client.GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff."
@@ -1060,8 +1060,8 @@ for Client.GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff."
 ## Task 4: Implement Scope Detection Package - Language Detection
 
 **Files:**
-- Create: `scripts/codereview/internal/scope/scope.go`
-- Create: `scripts/codereview/internal/scope/scope_test.go`
+- Create: `scripts/ring:codereview/internal/scope/scope.go`
+- Create: `scripts/ring:codereview/internal/scope/scope_test.go`
 
 **Prerequisites:**
 - Task 2 completed (git package exists)
@@ -1069,7 +1069,7 @@ for Client.GetDiff, GetStagedDiff, GetWorkingTreeDiff, GetAllChangesDiff."
 
 **Step 1: Write the failing test**
 
-Create file `scripts/codereview/internal/scope/scope_test.go`:
+Create file `scripts/ring:codereview/internal/scope/scope_test.go`:
 
 ```go
 package scope
@@ -1077,7 +1077,7 @@ package scope
 import (
 	"testing"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/git"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/git"
 )
 
 func TestDetectLanguage(t *testing.T) {
@@ -1265,20 +1265,20 @@ func TestExtractPackages(t *testing.T) {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd scripts/codereview && go test -v ./internal/scope/... 2>&1 | head -20 && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/scope/... 2>&1 | head -20 && cd ../..`
 
 **Expected output:**
 ```
-# github.com/lerianstudio/ring/scripts/codereview/internal/scope [github.com/lerianstudio/ring/scripts/codereview/internal/scope.test]
+# github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope [github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope.test]
 ./scope_test.go:XX:XX: undefined: Language
 ./scope_test.go:XX:XX: undefined: LanguageGo
 ...
-FAIL	github.com/lerianstudio/ring/scripts/codereview/internal/scope [build failed]
+FAIL	github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope [build failed]
 ```
 
 **Step 3: Write minimal implementation**
 
-Create file `scripts/codereview/internal/scope/scope.go`:
+Create file `scripts/ring:codereview/internal/scope/scope.go`:
 
 ```go
 // Package scope provides scope detection for code review analysis.
@@ -1292,7 +1292,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/git"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/git"
 )
 
 // Language represents a supported programming language.
@@ -1519,7 +1519,7 @@ func FilterByLanguage(files []string, lang Language) []string {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd scripts/codereview && go test -v ./internal/scope/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/scope/... && cd ../..`
 
 **Expected output:**
 ```
@@ -1542,14 +1542,14 @@ Run: `cd scripts/codereview && go test -v ./internal/scope/... && cd ../..`
 === RUN   TestExtractPackages
 --- PASS: TestExtractPackages (0.00s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/scope
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope
 ```
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/internal/scope/
-git commit -m "feat(codereview): add scope detection package with language detection
+git add scripts/ring:codereview/internal/scope/
+git commit -m "feat(ring:codereview): add scope detection package with language detection
 
 Implements Language enum, DetectLanguage function (errors on mixed languages),
 CategorizeFilesByStatus, ExtractPackages, and Detector struct for building
@@ -1559,7 +1559,7 @@ complete scope results from git diffs."
 **If Task Fails:**
 
 1. **Import error for git package:**
-   - Check: `go mod tidy` in scripts/codereview directory
+   - Check: `go mod tidy` in scripts/ring:codereview directory
    - Fix: Ensure module path matches in imports
 
 ---
@@ -1567,14 +1567,14 @@ complete scope results from git diffs."
 ## Task 5: Add Integration Tests for Scope Package
 
 **Files:**
-- Modify: `scripts/codereview/internal/scope/scope_test.go`
+- Modify: `scripts/ring:codereview/internal/scope/scope_test.go`
 
 **Prerequisites:**
 - Task 4 completed (scope package exists)
 
 **Step 1: Add integration tests**
 
-Append to `scripts/codereview/internal/scope/scope_test.go`:
+Append to `scripts/ring:codereview/internal/scope/scope_test.go`:
 
 ```go
 import (
@@ -1691,13 +1691,13 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/git"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/git"
 )
 ```
 
 **Step 3: Run all tests**
 
-Run: `cd scripts/codereview && go test -v ./internal/scope/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/scope/... && cd ../..`
 
 **Expected output:**
 ```
@@ -1711,14 +1711,14 @@ Run: `cd scripts/codereview && go test -v ./internal/scope/... && cd ../..`
 === RUN   TestFilterByLanguage
 --- PASS: TestFilterByLanguage (0.00s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/scope
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope
 ```
 
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/internal/scope/scope_test.go
-git commit -m "test(codereview): add integration tests and FilterByLanguage tests
+git add scripts/ring:codereview/internal/scope/scope_test.go
+git commit -m "test(ring:codereview): add integration tests and FilterByLanguage tests
 
 Adds Detector integration tests and comprehensive FilterByLanguage tests."
 ```
@@ -1728,15 +1728,15 @@ Adds Detector integration tests and comprehensive FilterByLanguage tests."
 ## Task 6: Implement JSON Output Package
 
 **Files:**
-- Create: `scripts/codereview/internal/output/json.go`
-- Create: `scripts/codereview/internal/output/json_test.go`
+- Create: `scripts/ring:codereview/internal/output/json.go`
+- Create: `scripts/ring:codereview/internal/output/json_test.go`
 
 **Prerequisites:**
 - Task 4 completed (scope package exists)
 
 **Step 1: Write the failing test**
 
-Create file `scripts/codereview/internal/output/json_test.go`:
+Create file `scripts/ring:codereview/internal/output/json_test.go`:
 
 ```go
 package output
@@ -1747,7 +1747,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/scope"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope"
 )
 
 func TestScopeOutput_ToJSON(t *testing.T) {
@@ -1870,18 +1870,18 @@ func containsNewlines(data []byte) bool {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd scripts/codereview && go test -v ./internal/output/... 2>&1 | head -20 && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/output/... 2>&1 | head -20 && cd ../..`
 
 **Expected output:**
 ```
-# github.com/lerianstudio/ring/scripts/codereview/internal/output [github.com/lerianstudio/ring/scripts/codereview/internal/output.test]
+# github.com/lerianstudio/ring/scripts/ring:codereview/internal/output [github.com/lerianstudio/ring/scripts/ring:codereview/internal/output.test]
 ./json_test.go:XX:XX: undefined: NewScopeOutput
-FAIL	github.com/lerianstudio/ring/scripts/codereview/internal/output [build failed]
+FAIL	github.com/lerianstudio/ring/scripts/ring:codereview/internal/output [build failed]
 ```
 
 **Step 3: Write minimal implementation**
 
-Create file `scripts/codereview/internal/output/json.go`:
+Create file `scripts/ring:codereview/internal/output/json.go`:
 
 ```go
 // Package output provides formatters for writing analysis results.
@@ -1893,7 +1893,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/scope"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope"
 )
 
 // ScopeOutput wraps a ScopeResult for output formatting.
@@ -2022,7 +2022,7 @@ func (o *ScopeOutput) WriteToStdout() error {
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd scripts/codereview && go test -v ./internal/output/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./internal/output/... && cd ../..`
 
 **Expected output:**
 ```
@@ -2035,14 +2035,14 @@ Run: `cd scripts/codereview && go test -v ./internal/output/... && cd ../..`
 === RUN   TestScopeOutput_WriteToFile_CreatesDirectory
 --- PASS: TestScopeOutput_WriteToFile_CreatesDirectory (0.00s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/output
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/output
 ```
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/codereview/internal/output/
-git commit -m "feat(codereview): add JSON output package for scope results
+git add scripts/ring:codereview/internal/output/
+git commit -m "feat(ring:codereview): add JSON output package for scope results
 
 Implements ScopeOutput with ToJSON, ToPrettyJSON, WriteToFile, WriteToStdout
 methods. Output format matches macro plan specification with nested files
@@ -2054,14 +2054,14 @@ and stats structures."
 ## Task 7: Implement CLI Binary - Main Entry Point
 
 **Files:**
-- Create: `scripts/codereview/cmd/scope-detector/main.go`
+- Create: `scripts/ring:codereview/cmd/scope-detector/main.go`
 
 **Prerequisites:**
 - Tasks 2, 4, 6 completed (git, scope, output packages exist)
 
 **Step 1: Create the CLI binary**
 
-Create file `scripts/codereview/cmd/scope-detector/main.go`:
+Create file `scripts/ring:codereview/cmd/scope-detector/main.go`:
 
 ```go
 // scope-detector analyzes git diffs to detect changed files and project language.
@@ -2079,8 +2079,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lerianstudio/ring/scripts/codereview/internal/output"
-	"github.com/lerianstudio/ring/scripts/codereview/internal/scope"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/output"
+	"github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope"
 )
 
 // Version information (set via ldflags during build)
@@ -2111,7 +2111,7 @@ func run() error {
 		fmt.Fprintf(os.Stderr, "\nExamples:\n")
 		fmt.Fprintf(os.Stderr, "  scope-detector                             # All uncommitted changes\n")
 		fmt.Fprintf(os.Stderr, "  scope-detector --base=main --head=HEAD     # Compare branches\n")
-		fmt.Fprintf(os.Stderr, "  scope-detector --output=.ring/codereview/scope.json\n")
+		fmt.Fprintf(os.Stderr, "  scope-detector --output=.ring/ring:codereview/scope.json\n")
 	}
 
 	flag.Parse()
@@ -2167,7 +2167,7 @@ func run() error {
 
 **Step 2: Build the binary**
 
-Run: `cd scripts/codereview && make build && cd ../..`
+Run: `cd scripts/ring:codereview && make build && cd ../..`
 
 **Expected output:**
 ```
@@ -2176,7 +2176,7 @@ Building scope-detector...
 
 **Step 3: Verify binary exists**
 
-Run: `ls -la scripts/codereview/bin/`
+Run: `ls -la scripts/ring:codereview/bin/`
 
 **Expected output:**
 ```
@@ -2188,7 +2188,7 @@ drwxr-xr-x  8 user  staff  256 Jan 13 XX:XX ..
 
 **Step 4: Test binary with --help**
 
-Run: `./scripts/codereview/bin/scope-detector --help`
+Run: `./scripts/ring:codereview/bin/scope-detector --help`
 
 **Expected output:**
 ```
@@ -2211,12 +2211,12 @@ Options:
 Examples:
   scope-detector                             # All uncommitted changes
   scope-detector --base=main --head=HEAD     # Compare branches
-  scope-detector --output=.ring/codereview/scope.json
+  scope-detector --output=.ring/ring:codereview/scope.json
 ```
 
 **Step 5: Test binary with actual diff**
 
-Run: `./scripts/codereview/bin/scope-detector --base=HEAD~1 --head=HEAD`
+Run: `./scripts/ring:codereview/bin/scope-detector --base=HEAD~1 --head=HEAD`
 
 **Expected output:** (varies based on actual changes)
 ```json
@@ -2241,8 +2241,8 @@ Run: `./scripts/codereview/bin/scope-detector --base=HEAD~1 --head=HEAD`
 **Step 6: Commit**
 
 ```bash
-git add scripts/codereview/cmd/scope-detector/
-git commit -m "feat(codereview): implement scope-detector CLI binary
+git add scripts/ring:codereview/cmd/scope-detector/
+git commit -m "feat(ring:codereview): implement scope-detector CLI binary
 
 Entry point for Phase 0 scope detection. Supports:
 - Default: all uncommitted changes (staged + unstaged)
@@ -2256,7 +2256,7 @@ Entry point for Phase 0 scope detection. Supports:
 1. **Build fails:**
    - Check: `go build ./cmd/scope-detector/` for detailed errors
    - Fix: Ensure all imports are correct
-   - Rollback: `rm -rf scripts/codereview/bin/`
+   - Rollback: `rm -rf scripts/ring:codereview/bin/`
 
 2. **Binary runs but errors:**
    - Check: Are you in a git repository?
@@ -2274,7 +2274,7 @@ Entry point for Phase 0 scope detection. Supports:
 
 **Step 1: Run all tests with coverage**
 
-Run: `cd scripts/codereview && make test-coverage && cd ../..`
+Run: `cd scripts/ring:codereview && make test-coverage && cd ../..`
 
 **Expected output:**
 ```
@@ -2284,21 +2284,21 @@ Running tests with coverage...
 ...
 PASS
 coverage: XX.X% of statements
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/git
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/git
 ...
 PASS
 coverage: XX.X% of statements
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/scope
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope
 ...
 PASS
 coverage: XX.X% of statements
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/output
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/output
 Coverage report: coverage.html
 ```
 
 **Step 2: Run linters**
 
-Run: `cd scripts/codereview && make lint && cd ../..`
+Run: `cd scripts/ring:codereview && make lint && cd ../..`
 
 **Expected output:**
 ```
@@ -2307,22 +2307,22 @@ Run: `cd scripts/codereview && make lint && cd ../..`
 
 **Step 3: Test binary end-to-end**
 
-Run: `./scripts/codereview/bin/scope-detector --output=.ring/codereview/scope.json --base=HEAD~5 --head=HEAD`
+Run: `./scripts/ring:codereview/bin/scope-detector --output=.ring/ring:codereview/scope.json --base=HEAD~5 --head=HEAD`
 
 **Expected output:**
 ```
-Scope written to .ring/codereview/scope.json
+Scope written to .ring/ring:codereview/scope.json
 ```
 
 **Step 4: Verify output file**
 
-Run: `cat .ring/codereview/scope.json`
+Run: `cat .ring/ring:codereview/scope.json`
 
 **Expected output:** Valid JSON with scope information
 
 **Step 5: Clean up test output**
 
-Run: `rm -f .ring/codereview/scope.json`
+Run: `rm -f .ring/ring:codereview/scope.json`
 
 ### Code Review Checkpoint
 
@@ -2358,14 +2358,14 @@ Run: `rm -f .ring/codereview/scope.json`
 ## Task 9: Add CLI Tests
 
 **Files:**
-- Create: `scripts/codereview/cmd/scope-detector/main_test.go`
+- Create: `scripts/ring:codereview/cmd/scope-detector/main_test.go`
 
 **Prerequisites:**
 - Task 7 completed (CLI binary exists)
 
 **Step 1: Create CLI test file**
 
-Create file `scripts/codereview/cmd/scope-detector/main_test.go`:
+Create file `scripts/ring:codereview/cmd/scope-detector/main_test.go`:
 
 ```go
 package main
@@ -2551,7 +2551,7 @@ func TestMain_JSONStructure(t *testing.T) {
 
 **Step 2: Run CLI tests**
 
-Run: `cd scripts/codereview && go test -v ./cmd/scope-detector/... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./cmd/scope-detector/... && cd ../..`
 
 **Expected output:**
 ```
@@ -2564,20 +2564,20 @@ Run: `cd scripts/codereview && go test -v ./cmd/scope-detector/... && cd ../..`
 === RUN   TestMain_JSONStructure
 --- PASS: TestMain_JSONStructure (X.XX s)
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/cmd/scope-detector
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/cmd/scope-detector
 ```
 
 **Step 3: Run full test suite**
 
-Run: `cd scripts/codereview && go test -v ./... && cd ../..`
+Run: `cd scripts/ring:codereview && go test -v ./... && cd ../..`
 
 **Expected output:** All tests pass
 
 **Step 4: Commit**
 
 ```bash
-git add scripts/codereview/cmd/scope-detector/main_test.go
-git commit -m "test(codereview): add CLI integration tests for scope-detector
+git add scripts/ring:codereview/cmd/scope-detector/main_test.go
+git commit -m "test(ring:codereview): add CLI integration tests for scope-detector
 
 Tests version flag, help output, file output, and JSON structure validation."
 ```
@@ -2616,8 +2616,8 @@ We should ensure the built binaries are not committed. Add to `.gitignore`:
 ```bash
 echo "" >> .gitignore
 echo "# Code review binaries" >> .gitignore
-echo "scripts/codereview/bin/" >> .gitignore
-echo "scripts/codereview/coverage.*" >> .gitignore
+echo "scripts/ring:codereview/bin/" >> .gitignore
+echo "scripts/ring:codereview/coverage.*" >> .gitignore
 ```
 
 **Step 4: Verify additions**
@@ -2629,15 +2629,15 @@ Run: `tail -5 .gitignore`
 .ring/
 
 # Code review binaries
-scripts/codereview/bin/
-scripts/codereview/coverage.*
+scripts/ring:codereview/bin/
+scripts/ring:codereview/coverage.*
 ```
 
 **Step 5: Commit**
 
 ```bash
 git add .gitignore
-git commit -m "chore: gitignore codereview binaries and coverage files"
+git commit -m "chore: gitignore ring:codereview binaries and coverage files"
 ```
 
 ---
@@ -2652,7 +2652,7 @@ git commit -m "chore: gitignore codereview binaries and coverage files"
 
 **Step 1: Clean build**
 
-Run: `cd scripts/codereview && make clean && make build && cd ../..`
+Run: `cd scripts/ring:codereview && make clean && make build && cd ../..`
 
 **Expected output:**
 ```
@@ -2662,28 +2662,28 @@ Building scope-detector...
 
 **Step 2: Run complete test suite**
 
-Run: `cd scripts/codereview && make test && cd ../..`
+Run: `cd scripts/ring:codereview && make test && cd ../..`
 
 **Expected output:**
 ```
 Running tests...
 ...
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/git
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/git
 ...
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/scope
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/scope
 ...
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/internal/output
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/internal/output
 ...
 PASS
-ok  	github.com/lerianstudio/ring/scripts/codereview/cmd/scope-detector
+ok  	github.com/lerianstudio/ring/scripts/ring:codereview/cmd/scope-detector
 ```
 
 **Step 3: End-to-end test with output**
 
-Run: `./scripts/codereview/bin/scope-detector --base=HEAD~3 --head=HEAD --output=.ring/codereview/scope.json && cat .ring/codereview/scope.json`
+Run: `./scripts/ring:codereview/bin/scope-detector --base=HEAD~3 --head=HEAD --output=.ring/ring:codereview/scope.json && cat .ring/ring:codereview/scope.json`
 
 **Expected output:** Valid JSON scope file with detected language and files
 
@@ -2712,7 +2712,7 @@ The output should match this structure from the macro plan:
 
 **Step 5: Clean up**
 
-Run: `rm -f .ring/codereview/scope.json`
+Run: `rm -f .ring/ring:codereview/scope.json`
 
 **Step 6: Final commit (if any uncommitted changes)**
 
@@ -2746,9 +2746,9 @@ Before saving the plan, verify:
 
 ## Summary
 
-This plan implements Phase 0 (Scope Detection) of the codereview enhancement with:
+This plan implements Phase 0 (Scope Detection) of the ring:codereview enhancement with:
 
-1. **Go module structure** - `scripts/codereview/` with proper layout
+1. **Go module structure** - `scripts/ring:codereview/` with proper layout
 2. **Git package** - Wrapper for git CLI operations (diff, name-status, numstat)
 3. **Scope package** - Language detection, file categorization, package extraction
 4. **Output package** - JSON formatter with file/stdout output

@@ -16,11 +16,11 @@ NOT_skip_when: |
   - "Already reviewed similar code" → Each change needs fresh review.
 
 sequence:
-  after: [dev-testing]
-  before: [dev-validation]
+  after: [ring:dev-testing]
+  before: [ring:dev-validation]
 
 related:
-  complementary: [dev-cycle, dev-implementation, dev-testing]
+  complementary: [ring:dev-cycle, ring:dev-implementation, ring:dev-testing]
 
 input_schema:
   required: []  # All inputs optional for standalone usage
@@ -46,11 +46,11 @@ input_schema:
       description: "List of files changed (auto-detected via git diff if not provided)"
     - name: gate0_handoff
       type: object
-      description: "Full handoff from Gate 0 (only when called from dev-cycle)"
+      description: "Full handoff from Gate 0 (only when called from ring:dev-cycle)"
     - name: skip_reviewers
       type: array
       items: string
-      enum: [code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer]
+      enum: [ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer]
       description: "Reviewers to skip (use sparingly)"
 
 output_schema:
@@ -129,11 +129,11 @@ examples:
       ## Reviewer Verdicts
       | Reviewer | Verdict |
       |----------|---------|
-      | code-reviewer | ✅ PASS |
-      | business-logic-reviewer | ✅ PASS |
-      | security-reviewer | ✅ PASS |
-      | test-reviewer | ✅ PASS |
-      | nil-safety-reviewer | ✅ PASS |
+      | ring:code-reviewer | ✅ PASS |
+      | ring:business-logic-reviewer | ✅ PASS |
+      | ring:security-reviewer | ✅ PASS |
+      | ring:test-reviewer | ✅ PASS |
+      | ring:nil-safety-reviewer | ✅ PASS |
 
       ## Handoff to Next Gate
       - Ready for Gate 5: YES
@@ -145,11 +145,11 @@ examples:
 
 Dispatch all five reviewer subagents in **parallel** for fast, comprehensive feedback:
 
-1. **code-reviewer** - Architecture, design patterns, code quality
-2. **business-logic-reviewer** - Domain correctness, business rules, edge cases
-3. **security-reviewer** - Vulnerabilities, authentication, OWASP risks
-4. **test-reviewer** - Test quality, coverage, edge cases, anti-patterns
-5. **nil-safety-reviewer** - Nil/null pointer safety for Go and TypeScript
+1. **ring:code-reviewer** - Architecture, design patterns, code quality
+2. **ring:business-logic-reviewer** - Domain correctness, business rules, edge cases
+3. **ring:security-reviewer** - Vulnerabilities, authentication, OWASP risks
+4. **ring:test-reviewer** - Test quality, coverage, edge cases, anti-patterns
+5. **ring:nil-safety-reviewer** - Nil/null pointer safety for Go and TypeScript
 
 **Core principle:** All 5 reviewers run simultaneously in a single message with 5 Task tool calls.
 
@@ -1395,11 +1395,11 @@ LEGACY FLOW (when validation_scope.mode == "task"):
     ─────────────────────────────────────────
     1. Get new HEAD_SHA after CodeRabbit fixes
     2. Dispatch all 5 reviewers in parallel (per Step 3):
-       - code-reviewer
-       - business-logic-reviewer
-       - security-reviewer
-       - test-reviewer
-       - nil-safety-reviewer
+       - ring:code-reviewer
+       - ring:business-logic-reviewer
+       - ring:security-reviewer
+       - ring:test-reviewer
+       - ring:nil-safety-reviewer
     3. Wait for all 5 to complete
     
     Step 7.5.3b: Handle Ring Reviewer Results
@@ -1712,11 +1712,11 @@ Generate skill output:
 ## Reviewer Verdicts
 | Reviewer | Verdict | Issues |
 |----------|---------|--------|
-| code-reviewer | ✅ PASS | [count] |
-| business-logic-reviewer | ✅ PASS | [count] |
-| security-reviewer | ✅ PASS | [count] |
-| test-reviewer | ✅ PASS | [count] |
-| nil-safety-reviewer | ✅ PASS | [count] |
+| ring:code-reviewer | ✅ PASS | [count] |
+| ring:business-logic-reviewer | ✅ PASS | [count] |
+| ring:security-reviewer | ✅ PASS | [count] |
+| ring:test-reviewer | ✅ PASS | [count] |
+| ring:nil-safety-reviewer | ✅ PASS | [count] |
 
 ## Low/Cosmetic Issues (TODO/FIXME added)
 [list with file locations]
@@ -1759,9 +1759,9 @@ Generate skill output:
 ## Reviewer Verdicts
 | Reviewer | Verdict |
 |----------|---------|
-| code-reviewer | [PASS/FAIL] |
-| business-logic-reviewer | [PASS/FAIL] |
-| security-reviewer | [PASS/FAIL] |
+| ring:code-reviewer | [PASS/FAIL] |
+| ring:business-logic-reviewer | [PASS/FAIL] |
+| ring:security-reviewer | [PASS/FAIL] |
 
 ## Handoff to Next Gate
 - Review status: FAILED
@@ -1781,7 +1781,7 @@ See [dev-team/skills/shared-patterns/shared-pressure-resistance.md](../../dev-te
 | User Says | Your Response |
 |-----------|---------------|
 | "Skip review, code is simple" | "Simple code can have security issues. Dispatching all 5 reviewers." |
-| "Just run code-reviewer" | "All 5 reviewers run in parallel. No time saved by skipping." |
+| "Just run ring:code-reviewer" | "All 5 reviewers run in parallel. No time saved by skipping." |
 | "Fix later, merge now" | "Blocking issues (Critical/High/Medium) MUST be fixed before Gate 5." |
 
 ## Anti-Rationalization Table
@@ -1793,7 +1793,7 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Run reviewers one at a time" | Sequential = slow. Parallel = 5x faster. | **Dispatch all 5 in single message** |
-| "Skip security for internal code" | Internal code can have vulnerabilities. | **Include security-reviewer** |
+| "Skip security for internal code" | Internal code can have vulnerabilities. | **Include ring:security-reviewer** |
 | "Critical issue is false positive" | Prove it with evidence, don't assume. | **Fix or provide evidence** |
 | "Low issues don't need TODO" | TODOs ensure issues aren't forgotten. | **Add TODO comments** |
 | "4 of 5 reviewers passed" | Gate 4 requires ALL 5. 4/5 = 0/5. | **Re-run ALL 5 reviewers** |
@@ -1821,11 +1821,11 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 ## Reviewer Verdicts
 | Reviewer | Verdict |
 |----------|---------|
-| code-reviewer | ✅/❌ |
-| business-logic-reviewer | ✅/❌ |
-| security-reviewer | ✅/❌ |
-| test-reviewer | ✅/❌ |
-| nil-safety-reviewer | ✅/❌ |
+| ring:code-reviewer | ✅/❌ |
+| ring:business-logic-reviewer | ✅/❌ |
+| ring:security-reviewer | ✅/❌ |
+| ring:test-reviewer | ✅/❌ |
+| ring:nil-safety-reviewer | ✅/❌ |
 
 ## CodeRabbit External Review (MANDATORY if installed, Optional to install)
 **Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]

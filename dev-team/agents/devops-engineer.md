@@ -1,5 +1,5 @@
 ---
-name: devops-engineer
+name: ring:devops-engineer
 version: 1.3.3
 description: Senior DevOps Engineer specialized in cloud infrastructure for financial services. Handles containerization, IaC, and local development environments.
 type: specialist
@@ -12,7 +12,7 @@ changelog:
   - 1.3.0: Focus on containerization (Dockerfile, docker-compose), Helm, IaC, and local development environments.
   - 1.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
   - 1.2.2: Fixed critical loopholes - added WebFetch checkpoint, clarified required_when logic, added anti-rationalizations, strengthened weak language
-  - 1.2.1: Added required_when condition for Standards Compliance (mandatory when invoked from dev-refactor)
+  - 1.2.1: Added required_when condition for Standards Compliance (mandatory when invoked from ring:dev-refactor)
   - 1.2.0: Added Pressure Resistance section for consistency with other agents
   - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
   - 1.1.0: Refactored to reference Ring DevOps standards via WebFetch, removed duplicated domain standards
@@ -42,8 +42,8 @@ output_schema:
     - name: "Standards Compliance"
       pattern: "^## Standards Compliance"
       required: false
-      required_when: "invocation_context == 'dev-refactor' and prompt_contains == 'MODE: ANALYSIS only'"
-      description: "MANDATORY when invoked from dev-refactor skill with analysis mode. not optional."
+      required_when: "invocation_context == 'ring:dev-refactor' and prompt_contains == 'MODE: ANALYSIS only'"
+      description: "MANDATORY when invoked from ring:dev-refactor skill with analysis mode. not optional."
     - name: "Blockers"
       pattern: "^## Blockers"
       required: false
@@ -381,17 +381,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **If compliant → say "no changes needed" and move on.**
 
-## Standards Compliance Report (MANDATORY when invoked from dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the infrastructure against Lerian/Ring DevOps Standards.
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the infrastructure against Lerian/Ring DevOps Standards.
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "devops-engineer → devops.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md" for:**
 - Complete list of sections to check (7 sections)
 - Section names (MUST use EXACT names from table)
 - Subsections per section (all REQUIRED)
@@ -473,7 +473,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ---
 
@@ -711,8 +711,8 @@ Stopping app_postgres_1 ... done
 
 ## What This Agent Does not Handle
 
-- Application code development (use `backend-engineer-golang`, `backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
-- Production monitoring and incident response (use `sre`)
-- Test case design and execution (use `qa-analyst`)
-- Application performance optimization (use `sre`)
-- Business logic implementation (use `backend-engineer-golang`)
+- Application code development (use `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
+- Production monitoring and incident response (use `ring:sre`)
+- Test case design and execution (use `ring:qa-analyst`)
+- Application performance optimization (use `ring:sre`)
+- Business logic implementation (use `ring:backend-engineer-golang`)

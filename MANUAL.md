@@ -57,7 +57,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
     │ PLUGIN     │ Self-contained package (skills+agents+commands)  │
     │ HOOK       │ Auto-runs at session events (injects context)    │
     │ SKILL      │ Workflow pattern (Claude Code uses internally)   │
-    │ COMMAND    │ User-invokable action (/codereview)         │
+    │ COMMAND    │ User-invokable action (/ring:codereview)         │
     │ AGENT      │ Specialized subprocess (Task tool dispatch)      │
     └────────────┴──────────────────────────────────────────────────┘
 ```
@@ -82,28 +82,28 @@ Commands are invoked directly: `/command-name`.
 
 | Command | Use Case | Example |
 |---------|----------|---------|
-| `/brainstorm [topic]` | Interactive design refinement before coding | `/brainstorm user-authentication` |
-| `/explore-codebase [path]` | Autonomous two-phase codebase exploration | `/explore-codebase payment/` |
-| `/pre-dev-feature [name]` | Plan simple features (<2 days) – 3 gates | `/pre-dev-feature logout-button` |
-| `/pre-dev-full [name]` | Plan complex features (≥2 days) – 8 gates | `/pre-dev-full payment-system` |
-| `/worktree [branch-name]` | Create isolated git workspace | `/worktree auth-system` |
-| `/write-plan [feature]` | Generate detailed task breakdown | `/write-plan dashboard-redesign` |
-| `/execute-plan [path]` | Execute plan in batches with checkpoints | `/execute-plan docs/pre-dev/feature/tasks.md` |
+| `/ring:brainstorm [topic]` | Interactive design refinement before coding | `/ring:brainstorm user-authentication` |
+| `/ring:explore-codebase [path]` | Autonomous two-phase codebase exploration | `/ring:explore-codebase payment/` |
+| `/ring:pre-dev-feature [name]` | Plan simple features (<2 days) – 3 gates | `/ring:pre-dev-feature logout-button` |
+| `/ring:pre-dev-full [name]` | Plan complex features (≥2 days) – 8 gates | `/ring:pre-dev-full payment-system` |
+| `/ring:worktree [branch-name]` | Create isolated git workspace | `/ring:worktree auth-system` |
+| `/ring:write-plan [feature]` | Generate detailed task breakdown | `/ring:write-plan dashboard-redesign` |
+| `/ring:execute-plan [path]` | Execute plan in batches with checkpoints | `/ring:execute-plan docs/pre-dev/feature/tasks.md` |
 
 ### Code & Integration Workflows
 
 | Command | Use Case | Example |
 |---------|----------|---------|
-| `/codereview [files-or-paths]` | Dispatch 3 parallel code reviewers | `/codereview src/auth/` |
-| `/commit [message]` | Create git commit with AI trailers | `/commit "fix(auth): improve token validation"` |
-| `/lint [path]` | Run lint and dispatch agents to fix all issues | `/lint src/` |
+| `/ring:codereview [files-or-paths]` | Dispatch 3 parallel code reviewers | `/ring:codereview src/auth/` |
+| `/ring:commit [message]` | Create git commit with AI trailers | `/ring:commit "fix(auth): improve token validation"` |
+| `/ring:lint [path]` | Run lint and dispatch agents to fix all issues | `/ring:lint src/` |
 
 ### Session & Learning (ring-default)
 
 | Command | Use Case | Example |
 |---------|----------|---------|
-| `/create-handoff [task]` | Create task handoff for session continuity | `/create-handoff "implement auth"` |
-| `/resume-handoff [path]` | Resume work from a previous handoff | `/resume-handoff docs/handoffs/task-01.md` |
+| `/ring:create-handoff [task]` | Create task handoff for session continuity | `/ring:create-handoff "implement auth"` |
+| `/ring:resume-handoff [path]` | Resume work from a previous handoff | `/ring:resume-handoff docs/handoffs/task-01.md` |
 | `/query-artifacts [query]` | Search indexed artifacts for precedent | `/query-artifacts "authentication OAuth"` |
 | `/compound-learnings` | Extract learnings from session history | `/compound-learnings` |
 
@@ -111,11 +111,11 @@ Commands are invoked directly: `/command-name`.
 
 | Command | Use Case | Example |
 |---------|----------|---------|
-| `/dev-cycle [task]` | Start 6-gate development workflow | `/dev-cycle "implement user auth"` |
-| `/dev-refactor [path]` | Analyze codebase against standards | `/dev-refactor src/` |
-| `/dev-status` | Show current gate progress | `/dev-status` |
-| `/dev-report` | Generate development cycle report | `/dev-report` |
-| `/dev-cancel` | Cancel active development cycle | `/dev-cancel` |
+| `/ring:dev-cycle [task]` | Start 6-gate development workflow | `/ring:dev-cycle "implement user auth"` |
+| `/ring:dev-refactor [path]` | Analyze codebase against standards | `/ring:dev-refactor src/` |
+| `/ring:dev-status` | Show current gate progress | `/ring:dev-status` |
+| `/ring:dev-report` | Generate development cycle report | `/ring:dev-report` |
+| `/ring:dev-cancel` | Cancel active development cycle | `/ring:dev-cancel` |
 
 ### Technical Writing (Documentation)
 
@@ -131,7 +131,7 @@ Commands are invoked directly: `/command-name`.
 
 Skills (59) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
-Examples: test-driven-development, systematic-debugging, requesting-code-review, verification-before-completion, etc.
+Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, verification-before-completion, etc.
 
 ### Skill Selection Criteria
 
@@ -167,14 +167,14 @@ Invoke via `Task tool with subagent_type: "..."`.
 | `ring:business-logic-reviewer` | Domain correctness, edge cases, requirements | Opus |
 | `ring:security-reviewer` | Vulnerabilities, OWASP, auth, validation | Opus |
 
-**Example:** Before merging, run all 3 parallel reviewers via `/codereview src/`
+**Example:** Before merging, run all 3 parallel reviewers via `/ring:codereview src/`
 
 ### Planning & Analysis (ring-default)
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
 | `ring:write-plan` | Generate implementation plans for zero-context execution | Opus |
-| `codebase-explorer` | Deep architecture analysis (vs `Explore` for speed) | Opus |
+| `ring:codebase-explorer` | Deep architecture analysis (vs `Explore` for speed) | Opus |
 
 ### Developer Specialists (ring-dev-team)
 
@@ -197,11 +197,11 @@ Use when you need expert depth in specific domains:
 | Invocation Context | Standards Compliance | Trigger |
 |--------------------|---------------------|---------|
 | Direct agent call | Optional | N/A |
-| Via `dev-cycle` | Optional | N/A |
-| Via `dev-refactor` | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
+| Via `ring:dev-cycle` | Optional | N/A |
+| Via `ring:dev-refactor` | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
 
 **How it works:**
-1. `dev-refactor` dispatches agents with `**MODE: ANALYSIS ONLY**` in prompt
+1. `ring:dev-refactor` dispatches agents with `**MODE: ANALYSIS ONLY**` in prompt
 2. Agents detect this pattern and load Ring standards via WebFetch
 3. Agents produce comparison tables: Current Pattern vs Expected Pattern
 4. Output includes severity, location, and migration recommendations
@@ -223,9 +223,9 @@ For best practices research and repository analysis:
 
 | Agent | Purpose | Use For |
 |-------|---------|---------|
-| `best-practices-researcher` | Best practices research | Industry patterns, framework standards |
-| `framework-docs-researcher` | Framework documentation research | Official docs, API references, examples |
-| `repo-research-analyst` | Repository analysis | Codebase patterns, structure analysis |
+| `ring:best-practices-researcher` | Best practices research | Industry patterns, framework standards |
+| `ring:framework-docs-researcher` | Framework documentation research | Official docs, API references, examples |
+| `ring:repo-research-analyst` | Repository analysis | Codebase patterns, structure analysis |
 
 ### Technical Writing (ring-tw-team)
 
@@ -252,12 +252,12 @@ For Brazilian financial compliance workflows:
 
 ### New Feature Development
 
-1. **Design** → `/brainstorm feature-name`
-2. **Plan** → `/pre-dev-feature feature-name` (or `pre-dev-full` if complex)
-3. **Isolate** → `/worktree feature-branch`
+1. **Design** → `/ring:brainstorm feature-name`
+2. **Plan** → `/ring:pre-dev-feature feature-name` (or `ring:pre-dev-full` if complex)
+3. **Isolate** → `/ring:worktree feature-branch`
 4. **Implement** → Use `ring:test-driven-development` skill
-5. **Review** → `/codereview src/` (dispatches 3 reviewers)
-6. **Commit** → `/commit "message"`
+5. **Review** → `/ring:codereview src/` (dispatches 3 reviewers)
+6. **Commit** → `/ring:commit "message"`
 
 ### Bug Investigation
 
@@ -265,12 +265,12 @@ For Brazilian financial compliance workflows:
 2. **Trace** → Use `root-cause-tracing` if needed
 3. **Implement** → Use `ring:test-driven-development` skill
 4. **Verify** → Use `verification-before-completion` skill
-5. **Review & Merge** → `/codereview` + `/commit`
+5. **Review & Merge** → `/ring:codereview` + `/ring:commit`
 
 ### Code Review
 
 ```
-/codereview [files-or-paths]
+/ring:codereview [files-or-paths]
     ↓
 Runs in parallel:
   • ring:code-reviewer (Opus)
@@ -288,7 +288,7 @@ These enforce quality standards:
 
 1. **TDD is enforced** – Test must fail (RED) before implementation
 2. **Skill check is mandatory** – Use `ring:using-ring` before any task
-3. **Reviewers run parallel** – Never sequential review (use `/codereview`)
+3. **Reviewers run parallel** – Never sequential review (use `/ring:codereview`)
 4. **Verification required** – Don't claim complete without evidence
 5. **No incomplete code** – No "TODO" or placeholder comments
 6. **Error handling required** – Don't ignore errors
@@ -301,18 +301,18 @@ These enforce quality standards:
 
 | Situation | Use This |
 |-----------|----------|
-| New feature, unsure about design | `/brainstorm` |
-| Feature will take < 2 days | `/pre-dev-feature` |
-| Feature will take ≥ 2 days or has complex dependencies | `/pre-dev-full` |
-| Need implementation tasks | `/write-plan` |
-| Before merging code | `/codereview` |
+| New feature, unsure about design | `/ring:brainstorm` |
+| Feature will take < 2 days | `/ring:pre-dev-feature` |
+| Feature will take ≥ 2 days or has complex dependencies | `/ring:pre-dev-full` |
+| Need implementation tasks | `/ring:write-plan` |
+| Before merging code | `/ring:codereview` |
 
 
 ### Agent Selection
 
 | Need | Agent to Use |
 |------|-------------|
-| General code quality review | 3 parallel reviewers via `/codereview` |
+| General code quality review | 3 parallel reviewers via `/ring:codereview` |
 | Implementation planning | `ring:write-plan` |
 | Deep codebase analysis | `ring:codebase-explorer` |
 | Go backend expertise | `ring:backend-engineer-golang` |
@@ -324,9 +324,9 @@ These enforce quality standards:
 | AI prompt quality review | `ring:prompt-quality-reviewer` |
 | Quality assurance & testing | `ring:qa-analyst` |
 | Site reliability & operations | `ring:sre` |
-| Best practices research | `best-practices-researcher` |
-| Framework documentation research | `framework-docs-researcher` |
-| Repository analysis | `repo-research-analyst` |
+| Best practices research | `ring:best-practices-researcher` |
+| Framework documentation research | `ring:framework-docs-researcher` |
+| Repository analysis | `ring:repo-research-analyst` |
 | Functional documentation (guides) | `functional-writer` |
 | API reference documentation | `api-writer` |
 | Documentation quality review | `docs-reviewer` |

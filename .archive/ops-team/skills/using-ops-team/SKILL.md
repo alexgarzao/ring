@@ -13,21 +13,21 @@ trigger: |
   - Security audits and compliance -> security-operations
 
 skip_when: |
-  - Development infrastructure (IaC, Docker) -> use devops-engineer
+  - Development infrastructure (IaC, Docker) -> use ring:devops-engineer
   - Application development -> use ring-dev-team specialists
   - Code review -> use ring-default reviewers
 
 related:
-  similar: [using-ring, using-dev-team]
+  similar: [ring:using-ring, ring:using-dev-team]
 ---
 
 # Using Ring Operations Specialists
 
 The ring-ops-team plugin provides 5 specialized operations agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces ops-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -37,14 +37,14 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 
 | Domain | Plugin | Agents |
 |--------|--------|--------|
-| **Development Infrastructure** | ring-dev-team | devops-engineer (Docker, IaC, CI/CD) |
+| **Development Infrastructure** | ring-dev-team | ring:devops-engineer (Docker, IaC, CI/CD) |
 | **Production Operations** | ring-ops-team | platform-engineer, incident-responder, etc. |
 
 | Scenario | Use |
 |----------|-----|
-| "Set up Dockerfile and docker-compose" | `devops-engineer` |
+| "Set up Dockerfile and docker-compose" | `ring:devops-engineer` |
 | "Configure service mesh for production" | `platform-engineer` |
-| "Create Terraform modules" | `devops-engineer` |
+| "Create Terraform modules" | `ring:devops-engineer` |
 | "Design multi-region architecture" | `infrastructure-architect` |
 | "Handle production outage" | `incident-responder` |
 | "Optimize cloud costs" | `cloud-cost-optimizer` |
@@ -252,6 +252,6 @@ Task tool:
 
 Dispatch based on your need:
 - Production operations -> ring-ops-team agents
-- Development infrastructure -> devops-engineer
+- Development infrastructure -> ring:devops-engineer
 - Application code -> ring-dev-team specialists
 - Code review -> ring-default reviewers

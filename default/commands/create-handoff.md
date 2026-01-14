@@ -9,7 +9,7 @@ Create a detailed handoff document that preserves the current session's context,
 ## Usage
 
 ```
-/create-handoff [session-name] [description]
+/ring:create-handoff [session-name] [description]
 ```
 
 **Arguments:**
@@ -54,7 +54,7 @@ date -u +"%Y-%m-%dT%H:%M:%SZ"
 
 ### Step 3: Write Handoff Document
 
-Use the handoff-tracking skill template. Fill in:
+Use the ring:handoff-tracking skill template. Fill in:
 
 1. **Task Summary**: What were you working on? What's the status?
 2. **Critical References**: What files MUST be read to continue?
@@ -78,7 +78,7 @@ Resume in a new session with:
 ## Example
 
 ```
-User: /create-handoff context-management artifact-index-complete
+User: /ring:create-handoff context-management artifact-index-complete
 Assistant: Creating handoff for context-management session...
 
 [Gathers metadata, writes handoff document]

@@ -9,8 +9,8 @@ Resume work from a handoff document through an interactive process. Handoffs con
 ## Usage
 
 ```
-/resume-handoff <path-to-handoff.md>
-/resume-handoff <session-name>
+/ring:resume-handoff <path-to-handoff.md>
+/ring:resume-handoff <session-name>
 ```
 
 **Arguments:**

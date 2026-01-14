@@ -15,19 +15,19 @@ trigger: |
 skip_when: |
   - General code review → use default plugin reviewers
   - Brazilian regulatory compliance → use ring-finops-team
-  - Planning/design → use brainstorming
+  - Planning/design → use ring:brainstorming
 
 related:
-  similar: [using-ring, using-finops-team]
+  similar: [ring:using-ring, ring:using-finops-team]
 ---
 
 # Using Ring Finance Specialists
 
 The ring-finance-team plugin provides 6 specialized financial agents. Use them via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces finance-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces finance-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 **Domain Distinction:**
 - **ring-finops-team**: Brazilian regulatory compliance (BACEN, RFB, Open Banking)
@@ -187,7 +187,7 @@ Task #2: budget-planner
 Remember:
 - **You're the orchestrator** - Dispatch specialists, don't calculate directly
 - **Don't perform analysis yourself** - Dispatch to specialist, they have standards
-- **Combine with using-ring principle** - Skills + Specialists = complete workflow
+- **Combine with ring:using-ring principle** - Skills + Specialists = complete workflow
 
 ### Good Example (ORCHESTRATOR):
 > "I need a DCF valuation. Let me dispatch `financial-modeler` to build it."
@@ -234,10 +234,10 @@ Remember:
 
 ## Integration with Other Plugins
 
-- **using-ring** (default) - ORCHESTRATOR principle for ALL agents
+- **ring:using-ring** (default) - ORCHESTRATOR principle for ALL agents
 - **using-finops-team** - Brazilian regulatory compliance
-- **using-dev-team** - Development when building financial systems
-- **using-pm-team** - Planning for financial features
+- **ring:using-dev-team** - Development when building financial systems
+- **ring:using-pm-team** - Planning for financial features
 
 Dispatch based on your need:
 - Financial analysis/modeling -> ring-finance-team agents

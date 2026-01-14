@@ -15,7 +15,7 @@ skip_when: |
   - Still in development (not claiming completion) → continue working
 
 sequence:
-  before: [finishing-a-development-branch, requesting-code-review]
+  before: [finishing-a-development-branch, ring:requesting-code-review]
 ---
 
 # Verification Before Completion

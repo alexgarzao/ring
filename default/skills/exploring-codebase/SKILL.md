@@ -26,7 +26,7 @@ skip_when: |
 related:
   similar: [dispatching-parallel-agents, systematic-debugging]
   sequence_after: [brainstorming]
-  sequence_before: [writing-plans, executing-plans]
+  sequence_before: [ring:writing-plans, ring:executing-plans]
 ---
 
 # Autonomous Two-Phase Codebase Exploration
@@ -39,7 +39,7 @@ Traditional exploration assumes structure upfront or explores sequentially. This
 
 **MANDATORY ANNOUNCEMENT at start:**
 
-"I'm using the exploring-codebase skill to autonomously discover and explore the codebase structure.
+"I'm using the ring:exploring-codebase skill to autonomously discover and explore the codebase structure.
 
 Before proceeding, I've checked the Red Flags table and confirmed:
 - [X] Production pressure makes me WANT to skip discovery → Using skill anyway
@@ -655,7 +655,7 @@ Based on autonomous exploration:
 - `file1.ext:line` - [why important]
 - `file2.ext:line` - [why important]
 
-Ready to create implementation plan? (Use /write-plan)
+Ready to create implementation plan? (Use /ring:write-plan)
 ```
 
 **If user's goal is debugging:**
@@ -1093,11 +1093,11 @@ Based on autonomous exploration:
 
 | Skill | When to use together |
 |-------|----------------------|
-| **brainstorming** | Use exploring-codebase in Phase 1 (Understanding) to gather context |
-| **writing-plans** | Use exploring-codebase before creating implementation plans |
-| **executing-plans** | Use exploring-codebase if plan execution reveals gaps |
-| **systematic-debugging** | Use exploring-codebase to understand system before debugging |
-| **dispatching-parallel-agents** | This skill is built on that pattern (twice!) |
+| **ring:brainstorming** | Use ring:exploring-codebase in Phase 1 (Understanding) to gather context |
+| **ring:writing-plans** | Use ring:exploring-codebase before creating implementation plans |
+| **ring:executing-plans** | Use ring:exploring-codebase if plan execution reveals gaps |
+| **ring:systematic-debugging** | Use ring:exploring-codebase to understand system before debugging |
+| **ring:dispatching-parallel-agents** | This skill is built on that pattern (twice!) |
 
 ## Output Format
 

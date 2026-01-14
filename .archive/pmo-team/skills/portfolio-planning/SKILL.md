@@ -11,12 +11,12 @@ trigger: |
   - Rebalancing portfolio priorities
 
 skip_when: |
-  - Single project planning → use pre-dev-feature
+  - Single project planning → use ring:pre-dev-feature
   - Immediate status report → use executive-reporting
   - Resource-only analysis → use resource-allocation
 
 related:
-  similar: [pre-dev-feature]
+  similar: [ring:pre-dev-feature]
   complementary: [resource-allocation, risk-management, executive-reporting]
 ---
 

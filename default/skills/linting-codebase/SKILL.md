@@ -5,7 +5,7 @@ description: |
   streams, and dispatches AI agents to fix all issues until the codebase is clean.
 
 trigger: |
-  - User runs /lint command
+  - User runs /ring:lint command
   - Codebase has lint issues that need fixing
   - Multiple lint errors across different files/components
 
@@ -45,7 +45,7 @@ Priority: `make lint` → `npm run lint` → `yarn lint` → `pnpm lint` → `go
 
 ### Step 1.2: Run Lint
 
-`<lint_command> 2>&1 | tee /tmp/lint-output.txt && echo "EXIT_CODE: $?"`
+`<lint_command> 2>&1 | tee /tmp/ring:lint-output.txt && echo "EXIT_CODE: $?"`
 
 ### Step 1.3: Parse Results
 
@@ -124,8 +124,8 @@ After all agents complete, run `<lint_command> 2>&1`.
 | Issue Type | Agent Type |
 |------------|------------|
 | TypeScript/JavaScript | `general-purpose` |
-| Go | `general-purpose` or `backend-engineer-golang` |
-| Security lints | `security-reviewer` for analysis first |
+| Go | `general-purpose` or `ring:backend-engineer-golang` |
+| Security lints | `ring:security-reviewer` for analysis first |
 | Style/formatting | `general-purpose` |
 
 ## Output Format
@@ -146,10 +146,10 @@ After all agents complete, run `<lint_command> 2>&1`.
 
 | Skill | When to use |
 |-------|-------------|
-| `dispatching-parallel-agents` | Pattern basis for this skill |
-| `systematic-debugging` | If lint errors indicate deeper issues |
-| `requesting-code-review` | After lint passes, before merge |
+| `ring:dispatching-parallel-agents` | Pattern basis for this skill |
+| `ring:systematic-debugging` | If lint errors indicate deeper issues |
+| `ring:requesting-code-review` | After lint passes, before merge |
 
 ## Example Session
 
-`/lint` → Run lint → 16 issues in 3 areas → Analyze streams (API: 5, Services: 8, Utils: 3) → Dispatch 3 parallel agents → All complete → Re-run lint → ✅ All pass.
+`/ring:lint` → Run lint → 16 issues in 3 areas → Analyze streams (API: 5, Services: 8, Utils: 3) → Dispatch 3 parallel agents → All complete → Re-run lint → ✅ All pass.

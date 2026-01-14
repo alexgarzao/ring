@@ -1050,7 +1050,7 @@ Return EnforcementAction in hook JSON
 
 **Flow:**
 ```
-User invokes: /create-handoff
+User invokes: /ring:create-handoff
      │
      ▼
 Skill gathers handoff data

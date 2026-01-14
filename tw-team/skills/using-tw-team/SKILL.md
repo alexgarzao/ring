@@ -17,22 +17,22 @@ skip_when: |
   - General code review → use default plugin reviewers
 
 related:
-  similar: [using-ring, using-dev-team]
+  similar: [ring:using-ring, ring:using-dev-team]
 ---
 
 # Using Ring Technical Writing Specialists
 
 The ring-tw-team plugin provides specialized agents for technical documentation. Use them via `Task tool with subagent_type:`.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `using-ring`. Dispatch agents to handle documentation tasks; don't write complex documentation directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle documentation tasks; don't write complex documentation directly.
 
 ## 3 Documentation Specialists
 
 | Agent | Specialization | Use When |
 |-------|---------------|----------|
-| `functional-writer` | Conceptual docs, guides, tutorials, best practices, workflows | Writing product guides, tutorials, "how to" content |
-| `api-writer` | REST API reference, endpoints, schemas, errors, field descriptions | Documenting API endpoints, request/response examples |
-| `docs-reviewer` | Voice/tone, structure, completeness, clarity, accuracy | Reviewing drafts, pre-publication quality check |
+| `ring:functional-writer` | Conceptual docs, guides, tutorials, best practices, workflows | Writing product guides, tutorials, "how to" content |
+| `ring:api-writer` | REST API reference, endpoints, schemas, errors, field descriptions | Documenting API endpoints, request/response examples |
+| `ring:docs-reviewer` | Voice/tone, structure, completeness, clarity, accuracy | Reviewing drafts, pre-publication quality check |
 
 ---
 
@@ -99,9 +99,9 @@ Task #3: docs-reviewer (review both)
 
 | Plugin | Use For |
 |--------|---------|
-| using-ring (default) | ORCHESTRATOR principle |
-| using-dev-team | Developer agents for technical accuracy |
-| using-pm-team | Pre-dev planning before documentation |
+| ring:using-ring (default) | ORCHESTRATOR principle |
+| ring:using-dev-team | Developer agents for technical accuracy |
+| ring:using-pm-team | Pre-dev planning before documentation |
 
 ---
 

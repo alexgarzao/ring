@@ -7,7 +7,7 @@ description: |
 
 trigger: |
   - Session ending or transitioning
-  - User runs /create-handoff command
+  - User runs /ring:create-handoff command
   - Context pressure requiring /clear
   - Completing a major milestone
 
@@ -17,7 +17,7 @@ skip_when: |
   - Session was exploratory with no decisions
 
 related:
-  before: [executing-plans, subagent-driven-development]
+  before: [ring:executing-plans, ring:subagent-driven-development]
   after: [artifact-query]
 ---
 

@@ -313,7 +313,7 @@ Show, don't just tell. Provide realistic examples for technical concepts.
 - API endpoint documentation (use `api-writer`)
 - Documentation quality review (use `docs-reviewer`)
 - Code implementation (use `*` agents)
-- Technical architecture decisions (use `backend-engineer-golang` or `backend-engineer-typescript`)
+- Technical architecture decisions (use `ring:backend-engineer-golang` or `ring:backend-engineer-typescript`)
 
 ## Output Expectations
 

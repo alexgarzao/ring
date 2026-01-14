@@ -11,7 +11,7 @@ This document defines the mandatory separation of responsibilities between revie
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        ORCHESTRATOR                              │
-│  (dev-cycle, user, or workflow coordinator)                     │
+│  (ring:dev-cycle, user, or workflow coordinator)                     │
 │                                                                  │
 │  1. Dispatches reviewers in parallel                            │
 │  2. Collects review reports                                     │
@@ -23,11 +23,11 @@ This document defines the mandatory separation of responsibilities between revie
 ┌─────────────────────────────┐          ┌─────────────────────────────────┐
 │         REVIEWERS           │          │     IMPLEMENTATION AGENTS       │
 │                             │          │                                 │
-│ • code-reviewer             │          │ • backend-engineer-golang       │
-│ • business-logic-reviewer   │          │ • backend-engineer-typescript   │
-│ • security-reviewer         │          │ • frontend-engineer             │
-│ • test-reviewer             │          │ • devops-engineer               │
-│ • nil-safety-reviewer       │          │ • qa-analyst                    │
+│ • ring:code-reviewer         │          │ • ring:backend-engineer-golang      │
+│ • ring:business-logic-reviewer│          │ • ring:backend-engineer-typescript  │
+│ • ring:security-reviewer     │          │ • ring:frontend-engineer            │
+│ • ring:test-reviewer         │          │ • ring:devops-engineer              │
+│ • ring:nil-safety-reviewer   │          │ • ring:qa-analyst                   │
 │                             │          │                                 │
 │ OUTPUT: Report              │          │ OUTPUT: Code changes            │
 │ ACTION: NONE                │          │ ACTION: Edit, Create, Delete    │
@@ -140,9 +140,9 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 
 ---
 
-## Integration with dev-cycle
+## Integration with ring:dev-cycle
 
-The `dev-cycle` skill enforces this boundary at Gate 4 (Review):
+The `ring:dev-cycle` skill enforces this boundary at Gate 4 (Review):
 
 1. **Dispatch reviewers in parallel** (code, business-logic, security, test, nil-safety)
 2. **Collect structured reports** from each reviewer

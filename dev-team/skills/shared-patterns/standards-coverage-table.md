@@ -241,7 +241,7 @@ Standards files may contain these meta-sections that are not counted in section 
 
 These sections describe HOW to use the standards, not WHAT the standards are.
 
-### backend-engineer-golang → golang.md
+### ring:backend-engineer-golang → golang.md
 
 | # | Section to Check | Anchor | Key Subsections |
 |---|------------------|--------|-----------------|
@@ -269,7 +269,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### backend-engineer-typescript → typescript.md
+### ring:backend-engineer-typescript → typescript.md
 
 | # | Section to Check | Anchor | Key Subsections |
 |---|------------------|--------|-----------------|
@@ -292,11 +292,11 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ### frontend-bff-engineer-typescript → typescript.md
 
-**Same sections as backend-engineer-typescript (14 sections).** See above.
+**Same sections as ring:backend-engineer-typescript (14 sections).** See above.
 
 ---
 
-### frontend-engineer → frontend.md
+### ring:frontend-engineer → frontend.md
 
 | # | Section to Check | Anchor |
 |---|------------------|--------|
@@ -316,13 +316,13 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### frontend-designer → frontend.md
+### ring:frontend-designer → frontend.md
 
-**Same sections as frontend-engineer (13 sections).** See above.
+**Same sections as ring:frontend-engineer (13 sections).** See above.
 
 ---
 
-### devops-engineer → devops.md
+### ring:devops-engineer → devops.md
 
 | # | Section to Check | Subsections (all REQUIRED) |
 |---|------------------|---------------------------|
@@ -340,7 +340,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### sre → sre.md
+### ring:sre → sre.md
 
 | # | Section to Check | Anchor |
 |---|------------------|--------|
@@ -353,9 +353,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### qa-analyst → golang.md or typescript.md
+### ring:qa-analyst → golang.md or typescript.md
 
-**Note:** qa-analyst checks testing-related sections based on project language.
+**Note:** ring:qa-analyst checks testing-related sections based on project language.
 
 **For Go projects:**
 | # | Section to Check |
