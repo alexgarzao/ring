@@ -62,6 +62,19 @@ func readScopeJSON(outputDir string) (*scopeJSON, error) {
 	return &scope, nil
 }
 
+// shouldSkipForUnknownLanguage checks if phase should be skipped when language is unknown.
+// This is used for AST, callgraph, and dataflow phases that require language-specific analysis.
+func shouldSkipForUnknownLanguage(cfg *config) (bool, string) {
+	scope, err := readScopeJSON(cfg.outputDir)
+	if err != nil {
+		return false, "" // Let phase fail with its own error
+	}
+	if scope.Language == "unknown" {
+		return true, "No supported code files detected (language: unknown)"
+	}
+	return false, ""
+}
+
 // generateASTBatchFile creates a batch JSON file for ast-extractor from scope data.
 // It handles modified, added, and deleted files appropriately.
 // For modified files, it extracts the "before" version from git to a temp directory.
@@ -173,13 +186,14 @@ func extractFileFromGit(ref, filePath, tempDir string) (string, error) {
 }
 
 // detectASTOutputFile finds the AST output file from the output directory.
-// Returns the path to the first found AST file (go-ast.json, ts-ast.json, py-ast.json).
+// Returns the path to the first found AST file (go-ast.json, ts-ast.json, py-ast.json, unknown-ast.json).
 func detectASTOutputFile(outputDir string) (string, error) {
 	// Check for language-specific AST files in priority order
 	candidates := []string{
 		filepath.Join(outputDir, "go-ast.json"),
 		filepath.Join(outputDir, "ts-ast.json"),
 		filepath.Join(outputDir, "py-ast.json"),
+		filepath.Join(outputDir, "unknown-ast.json"), // Fallback for unknown language
 	}
 
 	for _, path := range candidates {
@@ -210,6 +224,7 @@ type Phase struct {
 	Binary  string
 	Timeout time.Duration
 	Args    func(cfg *config) []string
+	Skip    func(cfg *config) (bool, string) // Optional skip condition
 }
 
 // config holds the parsed CLI configuration.
@@ -225,11 +240,12 @@ type config struct {
 
 // PhaseResult captures the outcome of a phase execution.
 type PhaseResult struct {
-	Name     string
-	Duration time.Duration
-	Success  bool
-	Error    error
-	Skipped  bool
+	Name       string
+	Duration   time.Duration
+	Success    bool
+	Error      error
+	Skipped    bool
+	SkipReason string // Reason for skipping (when Skipped is true)
 }
 
 func main() {
@@ -323,6 +339,7 @@ func getPhases() []Phase {
 			Name:    "ast",
 			Binary:  "ast-extractor",
 			Timeout: 2 * time.Minute,
+			Skip:    shouldSkipForUnknownLanguage,
 			Args: func(cfg *config) []string {
 				// Generate batch file from scope.json
 				// This reads scope.json, extracts before-files from git, and creates ast-batch.json
@@ -345,6 +362,7 @@ func getPhases() []Phase {
 			Name:    "callgraph",
 			Binary:  "call-graph",
 			Timeout: 3 * time.Minute,
+			Skip:    shouldSkipForUnknownLanguage,
 			Args: func(cfg *config) []string {
 				// Detect which AST output file exists from previous phase
 				astFile, err := detectASTOutputFile(cfg.outputDir)
@@ -366,6 +384,7 @@ func getPhases() []Phase {
 			Name:    "dataflow",
 			Binary:  "data-flow",
 			Timeout: 3 * time.Minute,
+			Skip:    shouldSkipForUnknownLanguage,
 			Args: func(cfg *config) []string {
 				return []string{
 					"--scope", filepath.Join(cfg.outputDir, "scope.json"),
@@ -490,7 +509,11 @@ func run() error {
 
 		// Print progress
 		if result.Skipped {
-			fmt.Fprintf(os.Stderr, "[SKIP] %s\n", phase.Name)
+			if result.SkipReason != "" {
+				fmt.Fprintf(os.Stderr, "[SKIP] %s: %s\n", phase.Name, result.SkipReason)
+			} else {
+				fmt.Fprintf(os.Stderr, "[SKIP] %s\n", phase.Name)
+			}
 		} else if result.Success {
 			fmt.Fprintf(os.Stderr, "[PASS] %s (%v)\n", phase.Name, result.Duration.Round(time.Millisecond))
 		} else {
@@ -551,11 +574,22 @@ func executePhase(ctx context.Context, cfg *config, phase Phase, skipSet map[str
 		Name: phase.Name,
 	}
 
-	// Check if phase should be skipped
+	// Check if phase should be skipped via CLI flag
 	if skipSet[phase.Name] {
 		result.Skipped = true
 		result.Success = true
+		result.SkipReason = "skipped via --skip flag"
 		return result
+	}
+
+	// Check if phase has a Skip condition (e.g., unknown language)
+	if phase.Skip != nil {
+		if skip, reason := phase.Skip(cfg); skip {
+			result.Skipped = true
+			result.Success = true
+			result.SkipReason = reason
+			return result
+		}
 	}
 
 	startTime := time.Now()
@@ -689,13 +723,17 @@ func printSummary(results []PhaseResult, totalDuration time.Duration) {
 	// Phase breakdown
 	fmt.Fprintf(os.Stderr, "Phase Breakdown:\n")
 	for _, result := range results {
-		status := "PASS"
 		if result.Skipped {
-			status = "SKIP"
-		} else if !result.Success {
-			status = "FAIL"
+			if result.SkipReason != "" {
+				fmt.Fprintf(os.Stderr, "  [SKIP] %-20s %s\n", result.Name, result.SkipReason)
+			} else {
+				fmt.Fprintf(os.Stderr, "  [SKIP] %-20s\n", result.Name)
+			}
+		} else if result.Success {
+			fmt.Fprintf(os.Stderr, "  [PASS] %-20s %v\n", result.Name, result.Duration.Round(time.Millisecond))
+		} else {
+			fmt.Fprintf(os.Stderr, "  [FAIL] %-20s %v\n", result.Name, result.Duration.Round(time.Millisecond))
 		}
-		fmt.Fprintf(os.Stderr, "  [%s] %-20s %v\n", status, result.Name, result.Duration.Round(time.Millisecond))
 	}
 	fmt.Fprintf(os.Stderr, "\n")
 
