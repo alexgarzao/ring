@@ -52,6 +52,14 @@ input_schema:
       items: string
       enum: [ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer]
       description: "Reviewers to skip (use sparingly)"
+    - name: skip_preanalysis
+      type: boolean
+      default: false
+      description: "Skip pre-analysis pipeline for faster reviews (reviewers work without static analysis context)"
+    - name: preanalysis_timeout
+      type: integer
+      default: 300000
+      description: "Timeout for pre-analysis pipeline in milliseconds (default: 5 minutes)"
 
 output_schema:
   format: markdown
@@ -241,6 +249,86 @@ review_state = {
 }
 ```
 
+## Step 2.5: Run Pre-Analysis Pipeline (Optional)
+
+**Purpose:** Run static analysis, AST extraction, and call graph analysis to provide rich context to reviewers.
+
+**Skip Condition:** If `skip_preanalysis` is `true`, skip this entire step and proceed directly to Step 3.
+
+### Step 2.5.1: Detect Binary Location
+
+Detect the platform-specific binary path:
+
+```bash
+# Detect OS and architecture
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case $ARCH in
+  x86_64) ARCH="amd64" ;;
+  aarch64|arm64) ARCH="arm64" ;;
+esac
+
+# Try plugin path first, then fallback to dev repo
+PLUGIN_BIN="${CLAUDE_PLUGIN_ROOT:-}/lib/codereview/bin/${OS}_${ARCH}/run-all"
+DEV_BIN="scripts/codereview/bin/run-all"
+```
+
+Check paths in order:
+1. `${CLAUDE_PLUGIN_ROOT}/lib/codereview/bin/${OS}_${ARCH}/run-all` (installed plugin)
+2. `scripts/codereview/bin/run-all` (development repo)
+3. `default/lib/codereview/bin/${OS}_${ARCH}/run-all` (local build)
+
+If no binary found:
+- Display warning: "Pre-analysis binary not found. Continuing without static analysis context."
+- Set `preanalysis_state.enabled = false`
+- Proceed to Step 3
+
+### Step 2.5.2: Execute Pipeline
+
+If binary found, run the pre-analysis pipeline:
+
+```bash
+[binary_path] \
+  --base=[base_sha] \
+  --head=[head_sha] \
+  --output=.ring/codereview \
+  --verbose
+```
+
+- Timeout: Use `preanalysis_timeout` input (default 5 minutes)
+- On success: Set `preanalysis_state.success = true`
+- On failure: Display warning, set `preanalysis_state.success = false`, continue to Step 3
+
+### Step 2.5.3: Read Context Files
+
+If pipeline succeeded, read the 5 context files:
+
+| Reviewer | Context File |
+|----------|--------------|
+| `ring:code-reviewer` | `.ring/codereview/context-code-reviewer.md` |
+| `ring:security-reviewer` | `.ring/codereview/context-security-reviewer.md` |
+| `ring:business-logic-reviewer` | `.ring/codereview/context-business-logic-reviewer.md` |
+| `ring:test-reviewer` | `.ring/codereview/context-test-reviewer.md` |
+| `ring:nil-safety-reviewer` | `.ring/codereview/context-nil-safety-reviewer.md` |
+
+Store each file's content in `preanalysis_state.context[reviewer_name]`.
+
+If a context file is missing or empty, log warning and continue (reviewer will work without context).
+
+```text
+preanalysis_state = {
+  enabled: true,
+  success: false,
+  context: {
+    "ring:code-reviewer": null,
+    "ring:security-reviewer": null,
+    "ring:business-logic-reviewer": null,
+    "ring:test-reviewer": null,
+    "ring:nil-safety-reviewer": null
+  }
+}
+```
+
 ## Step 3: Dispatch All 5 Reviewers in Parallel
 
 **⛔ CRITICAL: All 5 reviewers MUST be dispatched in a SINGLE message with 5 Task calls.**
@@ -266,22 +354,37 @@ Task:
     
     ## Files Changed
     [implementation_files or "Use git diff"]
-    
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:code-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:code-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available. Perform standard review based on git diff._
+
+    ---
+
     ## Your Focus
     - Architecture and design patterns
     - Code quality and maintainability
     - Naming conventions
     - Error handling patterns
     - Performance concerns
-    
+
     ## Required Output
     ### VERDICT: PASS / FAIL
-    
+
     ### Issues Found
     | Severity | Description | File:Line | Recommendation |
     |----------|-------------|-----------|----------------|
     | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
-    
+
     ### What Was Done Well
     [positive observations]
 
@@ -302,22 +405,37 @@ Task:
     
     ## Requirements
     [requirements]
-    
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:business-logic-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:business-logic-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available. Perform standard review based on git diff._
+
+    ---
+
     ## Your Focus
     - Domain correctness
     - Business rules implementation
     - Edge cases handling
     - Requirements coverage
     - Data validation
-    
+
     ## Required Output
     ### VERDICT: PASS / FAIL
-    
+
     ### Issues Found
     | Severity | Description | File:Line | Recommendation |
     |----------|-------------|-----------|----------------|
     | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
-    
+
     ### Requirements Traceability
     | Requirement | Status | Evidence |
     |-------------|--------|----------|
@@ -340,6 +458,21 @@ Task:
 
     ## Requirements
     [requirements]
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:security-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:security-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available. Perform standard review based on git diff._
+
+    ---
 
     ## Your Focus
     - Authentication and authorization
@@ -380,6 +513,21 @@ Task:
 
     ## Requirements
     [requirements]
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:test-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:test-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available. Perform standard review based on git diff._
+
+    ---
 
     ## Your Focus
     - Test coverage for business logic
@@ -422,6 +570,21 @@ Task:
 
     ## Requirements
     [requirements]
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:nil-safety-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:nil-safety-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available. Perform standard review based on git diff._
+
+    ---
 
     ## Your Focus
     - Nil/null pointer risks in changed code

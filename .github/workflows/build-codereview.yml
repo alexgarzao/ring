@@ -1,0 +1,150 @@
+name: Build Codereview Binaries
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/codereview/**'
+      - '!scripts/codereview/**_test.go'
+      - '!scripts/codereview/**/*.md'
+  pull_request:
+    paths:
+      - 'scripts/codereview/**'
+      - '!scripts/codereview/**_test.go'
+      - '!scripts/codereview/**/*.md'
+  workflow_dispatch:
+    inputs:
+      clean_build:
+        description: 'Clean build (remove existing binaries first)'
+        required: false
+        default: 'true'
+        type: boolean
+
+# Prevent concurrent builds
+concurrency:
+  group: build-codereview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache-dependency-path: scripts/codereview/go.sum
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build binaries
+        id: build
+        run: |
+          set -e
+
+          # Determine if clean build
+          CLEAN_FLAG=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.clean_build }}" == "true" ]]; then
+            CLEAN_FLAG="--clean"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            # Always clean on push to main for consistent builds
+            CLEAN_FLAG="--clean"
+          fi
+
+          echo "Building codereview binaries..."
+          ./scripts/codereview/build-release.sh $CLEAN_FLAG
+
+          # Verify binary count (7 binaries x 4 platforms = 28)
+          EXPECTED_COUNT=28
+          ACTUAL_COUNT=$(find default/lib/codereview/bin -type f -executable 2>/dev/null | wc -l | tr -d ' ')
+
+          echo "Expected binaries: $EXPECTED_COUNT"
+          echo "Actual binaries: $ACTUAL_COUNT"
+
+          if [[ "$ACTUAL_COUNT" -ne "$EXPECTED_COUNT" ]]; then
+            echo "ERROR: Binary count mismatch!"
+            echo "Expected $EXPECTED_COUNT but found $ACTUAL_COUNT"
+            find default/lib/codereview/bin -type f 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "binary_count=$ACTUAL_COUNT" >> $GITHUB_OUTPUT
+          echo "All $EXPECTED_COUNT binaries built successfully"
+
+      - name: List built binaries
+        run: |
+          echo "Built binaries:"
+          for platform in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
+            echo ""
+            echo "=== $platform ==="
+            ls -la default/lib/codereview/bin/$platform/ 2>/dev/null || echo "  (not found)"
+          done
+
+      - name: Check for changes
+        id: check_changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Check if there are any changes to commit
+          git add default/lib/codereview/bin/
+
+          if git diff --staged --quiet; then
+            echo "No changes to binaries"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Binaries have changed"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+
+            # Show what changed
+            echo ""
+            echo "Changed files:"
+            git diff --staged --name-only
+          fi
+
+      - name: Commit binaries
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git commit -m "chore(codereview): rebuild binaries [skip-version-bump]
+
+          Automated rebuild triggered by changes to scripts/codereview/
+
+          Built ${{ steps.build.outputs.binary_count }} binaries for 4 platforms:
+            - darwin/amd64 (macOS Intel)
+            - darwin/arm64 (macOS Apple Silicon)
+            - linux/amd64 (Linux x64)
+            - linux/arm64 (Linux ARM)
+
+          Co-authored-by: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
+          git push origin main
+
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Binaries built:** ${{ steps.build.outputs.binary_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platforms:** darwin/amd64, darwin/arm64, linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            if [[ "${{ steps.check_changes.outputs.has_changes }}" == "true" ]]; then
+              echo "- **Commit:** Yes (binaries changed)" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- **Commit:** No (binaries unchanged)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- **Commit:** Skipped (not a push to main)" >> $GITHUB_STEP_SUMMARY
+          fi
