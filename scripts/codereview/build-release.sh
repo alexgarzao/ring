@@ -341,6 +341,71 @@ main() {
         build_platform "$os" "$arch"
     done
 
+    # Generate checksums for release verification
+    log_info "=== Generating Checksums ==="
+
+    # Determine checksum command (macOS uses shasum, Linux uses sha256sum)
+    if command -v sha256sum &> /dev/null; then
+        CHECKSUM_CMD="sha256sum"
+    elif command -v shasum &> /dev/null; then
+        CHECKSUM_CMD="shasum -a 256"
+    else
+        log_error "No sha256sum or shasum available for checksum generation"
+        exit 1
+    fi
+    log_info "Using checksum command: $CHECKSUM_CMD"
+
+    for platform_dir in "${OUTPUT_DIR}"/*/; do
+        platform=$(basename "$platform_dir")
+        checksum_file="${platform_dir}CHECKSUMS.sha256"
+
+        # Delete existing checksum file before regenerating to avoid self-inclusion
+        rm -f "$checksum_file"
+
+        # Generate checksums for all binaries in this platform directory
+        if ! (cd "$platform_dir" && $CHECKSUM_CMD * > CHECKSUMS.sha256); then
+            log_error "Failed to generate checksums for $platform"
+            FAILED_BUILDS=$((FAILED_BUILDS + 1))
+            continue
+        fi
+
+        if [[ -f "$checksum_file" ]]; then
+            log_success "Generated checksums for $platform"
+        else
+            log_warn "Failed to generate checksums for $platform"
+        fi
+    done
+
+    # Generate combined checksums file at root
+    root_checksum="${OUTPUT_DIR}/CHECKSUMS.sha256"
+
+    # Delete existing root checksum file before regenerating
+    rm -f "$root_checksum"
+
+    # Generate checksums for all platform binaries
+    root_checksum_failed=false
+    {
+        for platform_dir in "${OUTPUT_DIR}"/*/; do
+            platform=$(basename "$platform_dir")
+            for binary in "${platform_dir}"*; do
+                if [[ -f "$binary" && -x "$binary" ]]; then
+                    # Include platform in path for uniqueness
+                    if ! (cd "${OUTPUT_DIR}" && $CHECKSUM_CMD "${platform}/$(basename "$binary")"); then
+                        root_checksum_failed=true
+                    fi
+                fi
+            done
+        done
+    } > "$root_checksum"
+
+    if [[ "$root_checksum_failed" == "true" ]]; then
+        log_error "Some checksums failed to generate for root CHECKSUMS.sha256"
+    elif [[ -f "$root_checksum" ]]; then
+        log_success "Generated root CHECKSUMS.sha256 with $(wc -l < "$root_checksum" | tr -d ' ') entries"
+    else
+        log_error "Failed to generate root CHECKSUMS.sha256"
+    fi
+
     print_summary
 }
 

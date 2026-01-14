@@ -18,7 +18,7 @@ on:
       clean_build:
         description: 'Clean build (remove existing binaries first)'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 # Prevent concurrent builds
@@ -69,21 +69,36 @@ jobs:
           ./scripts/codereview/build-release.sh $CLEAN_FLAG
 
           # Verify binary count (7 binaries x 4 platforms = 28)
-          EXPECTED_COUNT=28
-          ACTUAL_COUNT=$(find default/lib/codereview/bin -type f -executable 2>/dev/null | wc -l | tr -d ' ')
+          EXPECTED_BINARIES=28
+          ACTUAL_BINARIES=$(find default/lib/codereview/bin -type f -executable 2>/dev/null | wc -l | tr -d ' ')
 
-          echo "Expected binaries: $EXPECTED_COUNT"
-          echo "Actual binaries: $ACTUAL_COUNT"
+          echo "Expected binaries: $EXPECTED_BINARIES"
+          echo "Actual binaries: $ACTUAL_BINARIES"
 
-          if [[ "$ACTUAL_COUNT" -ne "$EXPECTED_COUNT" ]]; then
+          if [[ "$ACTUAL_BINARIES" -ne "$EXPECTED_BINARIES" ]]; then
             echo "ERROR: Binary count mismatch!"
-            echo "Expected $EXPECTED_COUNT but found $ACTUAL_COUNT"
-            find default/lib/codereview/bin -type f 2>/dev/null || true
+            echo "Expected $EXPECTED_BINARIES but found $ACTUAL_BINARIES"
+            find default/lib/codereview/bin -type f -executable 2>/dev/null || true
             exit 1
           fi
 
-          echo "binary_count=$ACTUAL_COUNT" >> $GITHUB_OUTPUT
-          echo "All $EXPECTED_COUNT binaries built successfully"
+          # Verify checksum files (4 platform checksums + 1 root checksum = 5)
+          EXPECTED_CHECKSUMS=5
+          ACTUAL_CHECKSUMS=$(find default/lib/codereview/bin -name "CHECKSUMS.sha256" -type f 2>/dev/null | wc -l | tr -d ' ')
+
+          echo "Expected checksum files: $EXPECTED_CHECKSUMS"
+          echo "Actual checksum files: $ACTUAL_CHECKSUMS"
+
+          if [[ "$ACTUAL_CHECKSUMS" -ne "$EXPECTED_CHECKSUMS" ]]; then
+            echo "ERROR: Checksum file count mismatch!"
+            echo "Expected $EXPECTED_CHECKSUMS but found $ACTUAL_CHECKSUMS"
+            find default/lib/codereview/bin -name "CHECKSUMS.sha256" -type f 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "binary_count=$ACTUAL_BINARIES" >> $GITHUB_OUTPUT
+          echo "checksum_count=$ACTUAL_CHECKSUMS" >> $GITHUB_OUTPUT
+          echo "All $EXPECTED_BINARIES binaries and $EXPECTED_CHECKSUMS checksum files built successfully"
 
       - name: List built binaries
         run: |
@@ -92,6 +107,41 @@ jobs:
             echo ""
             echo "=== $platform ==="
             ls -la default/lib/codereview/bin/$platform/ 2>/dev/null || echo "  (not found)"
+          done
+
+      - name: Verify checksums generated
+        run: |
+          echo "Verifying checksum files..."
+          for platform in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
+            checksum_file="default/lib/codereview/bin/${platform}/CHECKSUMS.sha256"
+            if [[ -f "$checksum_file" ]]; then
+              echo "✓ $platform checksums: $(wc -l < "$checksum_file") entries"
+            else
+              echo "✗ Missing checksums for $platform"
+              exit 1
+            fi
+          done
+
+          # Verify root checksums
+          root_checksums="default/lib/codereview/bin/CHECKSUMS.sha256"
+          if [[ -f "$root_checksums" ]]; then
+            echo "✓ Root checksums: $(wc -l < "$root_checksums") entries"
+          else
+            echo "✗ Missing root checksums"
+            exit 1
+          fi
+
+          # Verify checksums are actually correct (not just that files exist)
+          echo ""
+          echo "Verifying checksum integrity..."
+          for platform in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
+            platform_dir="default/lib/codereview/bin/${platform}"
+            echo "Verifying $platform..."
+            (cd "$platform_dir" && sha256sum --check CHECKSUMS.sha256) || {
+              echo "✗ Checksum verification FAILED for $platform"
+              exit 1
+            }
+            echo "✓ $platform checksums verified"
           done
 
       - name: Check for changes
@@ -117,11 +167,11 @@ jobs:
       - name: Commit binaries
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.check_changes.outputs.has_changes == 'true'
         run: |
-          git commit -m "chore(codereview): rebuild binaries [skip-version-bump]
+          git commit -m "chore(codereview): rebuild binaries with checksums [skip-version-bump]
 
           Automated rebuild triggered by changes to scripts/codereview/
 
-          Built ${{ steps.build.outputs.binary_count }} binaries for 4 platforms:
+          Built ${{ steps.build.outputs.binary_count }} binaries and ${{ steps.build.outputs.checksum_count }} checksum files for 4 platforms:
             - darwin/amd64 (macOS Intel)
             - darwin/arm64 (macOS Apple Silicon)
             - linux/amd64 (Linux x64)
@@ -136,6 +186,7 @@ jobs:
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Binaries built:** ${{ steps.build.outputs.binary_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Checksum files:** ${{ steps.build.outputs.checksum_count }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Platforms:** darwin/amd64, darwin/arm64, linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
 
