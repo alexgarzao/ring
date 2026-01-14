@@ -6,6 +6,17 @@ BIN_DIR="${SCRIPT_DIR}/bin"
 CHECKSUMS_FILE="${SCRIPT_DIR}/checksums.txt"
 INSTALL_TARGET="${1:-all}"
 
+# List of all codereview binaries
+BINARIES=(
+    "scope-detector"
+    "static-analysis"
+    "ast-extractor"
+    "call-graph"
+    "data-flow"
+    "compile-context"
+    "run-all"
+)
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -101,7 +112,7 @@ install_go_tools() {
     if command -v staticcheck &> /dev/null; then
         log_info "staticcheck already installed: $(staticcheck --version 2>&1 | head -1)"
     else
-        install_tool "staticcheck" go install honnef.co/go/tools/cmd/staticcheck@v0.5.1 || return 1
+        install_tool "staticcheck" go install honnef.co/go/tools/cmd/staticcheck@2024.1.1 || return 1
         verify_checksum "$(get_go_binary_path staticcheck)" "staticcheck" || return 1
     fi
 
@@ -109,7 +120,7 @@ install_go_tools() {
     if command -v gosec &> /dev/null; then
         log_info "gosec already installed: $(gosec --version 2>&1 | head -1)"
     else
-        install_tool "gosec" go install github.com/securego/gosec/v2/cmd/gosec@v2.21.4 || return 1
+        install_tool "gosec" go install github.com/securego/gosec/v2/cmd/gosec@v2.22.0 || return 1
         verify_checksum "$(get_go_binary_path gosec)" "gosec" || return 1
     fi
 
@@ -117,7 +128,7 @@ install_go_tools() {
     if command -v golangci-lint &> /dev/null; then
         log_info "golangci-lint already installed: $(golangci-lint --version 2>&1 | head -1)"
     else
-        install_tool "golangci-lint" go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2 || return 1
+        install_tool "golangci-lint" go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4 || return 1
         verify_checksum "$(get_go_binary_path golangci-lint)" "golangci-lint" || return 1
     fi
 
@@ -133,37 +144,39 @@ install_ts_tools() {
         exit 1
     fi
 
-    cd "${SCRIPT_DIR}"
+    (  # START SUBSHELL - automatically restores directory on exit
+        cd "${SCRIPT_DIR}"
 
-    # Initialize package.json if it doesn't exist
-    if [[ ! -f "package.json" ]]; then
-        log_info "Initializing package.json..."
-        npm init -y > /dev/null 2>&1
-    fi
+        # Initialize package.json if it doesn't exist
+        if [[ ! -f "package.json" ]]; then
+            log_info "Initializing package.json..."
+            npm init -y > /dev/null 2>&1
+        fi
 
-    # typescript - TypeScript compiler (pinned version, local install)
-    if [[ -f "node_modules/.bin/tsc" ]]; then
-        log_info "typescript already installed locally"
-    else
-        install_tool "typescript" npm install --save-dev typescript@5.7.2 || return 1
-    fi
+        # typescript - TypeScript compiler (pinned version, local install)
+        if [[ -f "node_modules/.bin/tsc" ]]; then
+            log_info "typescript already installed locally"
+        else
+            install_tool "typescript" npm install --save-dev typescript@5.7.2 || exit 1
+        fi
 
-    # dependency-cruiser - Dependency analysis (pinned version, local install)
-    if [[ -f "node_modules/.bin/depcruise" ]]; then
-        log_info "dependency-cruiser already installed locally"
-    else
-        install_tool "dependency-cruiser" npm install --save-dev dependency-cruiser@16.8.0 || return 1
-    fi
+        # dependency-cruiser - Dependency analysis (pinned version, local install)
+        if [[ -f "node_modules/.bin/depcruise" ]]; then
+            log_info "dependency-cruiser already installed locally"
+        else
+            install_tool "dependency-cruiser" npm install --save-dev dependency-cruiser@16.8.0 || exit 1
+        fi
 
-    # madge - Circular dependency detection (pinned version, local install)
-    if [[ -f "node_modules/.bin/madge" ]]; then
-        log_info "madge already installed locally"
-    else
-        install_tool "madge" npm install --save-dev madge@8.0.0 || return 1
-    fi
+        # madge - Circular dependency detection (pinned version, local install)
+        if [[ -f "node_modules/.bin/madge" ]]; then
+            log_info "madge already installed locally"
+        else
+            install_tool "madge" npm install --save-dev madge@8.0.0 || exit 1
+        fi
 
-    log_info "TypeScript tools installation complete."
-    log_info "Note: TypeScript tools are installed locally. Use npx or ./node_modules/.bin/ to run them."
+        log_info "TypeScript tools installation complete."
+        log_info "Note: TypeScript tools are installed locally. Use npx or ./node_modules/.bin/ to run them."
+    )  # END SUBSHELL
 }
 
 install_py_tools() {
@@ -180,32 +193,38 @@ install_py_tools() {
         PIP_CMD="pip"
     fi
 
+    # Use --user flag when not in a virtual environment to avoid permission issues
+    PIP_ARGS=()
+    if [[ -z "${VIRTUAL_ENV:-}" ]]; then
+        PIP_ARGS+=("--user")
+    fi
+
     # ruff - Fast Python linter (pinned version)
     if command -v ruff &> /dev/null; then
         log_info "ruff already installed: $(ruff --version 2>&1)"
     else
-        install_tool "ruff" $PIP_CMD install ruff==0.8.4 || return 1
+        install_tool "ruff" "$PIP_CMD" install "${PIP_ARGS[@]}" ruff==0.8.4 || return 1
     fi
 
     # mypy - Static type checker (pinned version)
     if command -v mypy &> /dev/null; then
         log_info "mypy already installed: $(mypy --version 2>&1)"
     else
-        install_tool "mypy" $PIP_CMD install mypy==1.14.1 || return 1
+        install_tool "mypy" "$PIP_CMD" install "${PIP_ARGS[@]}" mypy==1.14.1 || return 1
     fi
 
     # pylint - Python linter (pinned version)
     if command -v pylint &> /dev/null; then
         log_info "pylint already installed: $(pylint --version 2>&1 | head -1)"
     else
-        install_tool "pylint" $PIP_CMD install pylint==3.3.3 || return 1
+        install_tool "pylint" "$PIP_CMD" install "${PIP_ARGS[@]}" pylint==3.3.3 || return 1
     fi
 
     # bandit - Security linter (pinned version)
     if command -v bandit &> /dev/null; then
         log_info "bandit already installed: $(bandit --version 2>&1 | head -1)"
     else
-        install_tool "bandit" $PIP_CMD install bandit==1.8.0 || return 1
+        install_tool "bandit" "$PIP_CMD" install "${PIP_ARGS[@]}" bandit==1.8.0 || return 1
     fi
 
     log_info "Python tools installation complete."
@@ -215,28 +234,20 @@ build_binaries() {
     log_info "Building codereview binaries..."
 
     mkdir -p "${BIN_DIR}"
-    cd "${SCRIPT_DIR}"
 
-    # List of all binaries to build
-    BINARIES=(
-        "scope-detector"
-        "static-analysis"
-        "ast-extractor"
-        "call-graph"
-        "data-flow"
-        "compile-context"
-        "run-all"
-    )
+    (  # START SUBSHELL - automatically restores directory on exit
+        cd "${SCRIPT_DIR}"
 
-    for binary in "${BINARIES[@]}"; do
-        log_info "Building ${binary}..."
-        go build -o "${BIN_DIR}/${binary}" "./cmd/${binary}"
-    done
+        for binary in "${BINARIES[@]}"; do
+            log_info "Building ${binary}..."
+            go build -o "${BIN_DIR}/${binary}" "./cmd/${binary}"
+        done
 
-    # Make all binaries executable
-    chmod +x "${BIN_DIR}"/*
+        # Make all binaries executable
+        chmod +x "${BIN_DIR}"/*
 
-    log_info "All binaries built successfully in ${BIN_DIR}/"
+        log_info "All binaries built successfully in ${BIN_DIR}/"
+    )  # END SUBSHELL
 }
 
 verify_installation() {
@@ -281,16 +292,6 @@ verify_installation() {
 
     # Verify binaries
     log_info "Checking codereview binaries..."
-    BINARIES=(
-        "scope-detector"
-        "static-analysis"
-        "ast-extractor"
-        "call-graph"
-        "data-flow"
-        "compile-context"
-        "run-all"
-    )
-
     for binary in "${BINARIES[@]}"; do
         if [[ -x "${BIN_DIR}/${binary}" ]]; then
             echo "  [OK] ${binary}"

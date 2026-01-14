@@ -12,46 +12,12 @@ all: build
 
 build: $(BINARIES)
 
-# Phase 0: Scope Detection
-scope-detector:
-	@echo "Building scope-detector..."
+# Pattern rule for building all phase binaries
+# Replaces individual targets with identical echo/mkdir/go-build pattern
+$(BINARIES):
+	@echo "Building $@..."
 	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/scope-detector ./cmd/scope-detector
-
-# Phase 1: Static Analysis
-static-analysis:
-	@echo "Building static-analysis..."
-	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/static-analysis ./cmd/static-analysis
-
-# Phase 2: AST Extraction
-ast-extractor:
-	@echo "Building ast-extractor..."
-	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/ast-extractor ./cmd/ast-extractor
-
-# Phase 3: Call Graph
-call-graph:
-	@echo "Building call-graph..."
-	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/call-graph ./cmd/call-graph
-
-# Phase 4: Data Flow
-data-flow:
-	@echo "Building data-flow..."
-	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/data-flow ./cmd/data-flow
-
-# Phase 5: Context Compilation
-compile-context:
-	@echo "Building compile-context..."
-	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/compile-context ./cmd/compile-context
-
-run-all:
-	@echo "Building run-all..."
-	@mkdir -p $(BIN_DIR)
-	@go build -o $(BIN_DIR)/run-all ./cmd/run-all
+	@go build -o $(BIN_DIR)/$@ ./cmd/$@
 
 # Convenience target for Phase 5 binaries only
 build-context: compile-context run-all
