@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/lerianstudio/ring/scripts/codereview/internal/callgraph"
+	"github.com/lerianstudio/ring/scripts/codereview/internal/fileutil"
 )
 
 func TestReadJSONFileWithLimit(t *testing.T) {
@@ -67,23 +68,23 @@ func TestReadJSONFileWithLimit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := tt.setup(t)
-			data, err := readJSONFileWithLimit(filePath)
+			data, err := fileutil.ReadJSONFileWithLimit(filePath)
 
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("readJSONFileWithLimit(%q) expected error, got nil", filePath)
+					t.Errorf("fileutil.ReadJSONFileWithLimit(%q) expected error, got nil", filePath)
 					return
 				}
 				if tt.errSubstr != "" && !containsSubstring(err.Error(), tt.errSubstr) {
-					t.Errorf("readJSONFileWithLimit(%q) error = %v, want error containing %q", filePath, err, tt.errSubstr)
+					t.Errorf("fileutil.ReadJSONFileWithLimit(%q) error = %v, want error containing %q", filePath, err, tt.errSubstr)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("readJSONFileWithLimit(%q) unexpected error: %v", filePath, err)
+					t.Errorf("fileutil.ReadJSONFileWithLimit(%q) unexpected error: %v", filePath, err)
 					return
 				}
 				if data == nil {
-					t.Errorf("readJSONFileWithLimit(%q) returned nil data without error", filePath)
+					t.Errorf("fileutil.ReadJSONFileWithLimit(%q) returned nil data without error", filePath)
 				}
 			}
 		})
@@ -99,13 +100,13 @@ func TestReadJSONFileWithLimit_ContentPreservation(t *testing.T) {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
-	data, err := readJSONFileWithLimit(filePath)
+	data, err := fileutil.ReadJSONFileWithLimit(filePath)
 	if err != nil {
-		t.Fatalf("readJSONFileWithLimit returned error: %v", err)
+		t.Fatalf("fileutil.ReadJSONFileWithLimit returned error: %v", err)
 	}
 
 	if string(data) != expectedContent {
-		t.Errorf("readJSONFileWithLimit content mismatch:\ngot:  %s\nwant: %s", string(data), expectedContent)
+		t.Errorf("fileutil.ReadJSONFileWithLimit content mismatch:\ngot:  %s\nwant: %s", string(data), expectedContent)
 	}
 }
 

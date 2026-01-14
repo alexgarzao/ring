@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/lerianstudio/ring/scripts/codereview/internal/ast"
+	"github.com/lerianstudio/ring/scripts/codereview/internal/fileutil"
 )
 
 var (
@@ -57,9 +58,9 @@ func main() {
 // validateScriptsDir validates the scripts directory path for security.
 // It prevents path traversal attacks and verifies the directory exists.
 func validateScriptsDir(scriptsDir string) error {
-	// Prevent path traversal sequences
+	// Check for traversal attempts in the ORIGINAL path before normalization
 	if strings.Contains(scriptsDir, "..") {
-		return fmt.Errorf("scripts directory cannot contain path traversal sequences '..'")
+		return fmt.Errorf("path traversal detected in scripts directory")
 	}
 
 	// Get absolute path
@@ -85,26 +86,6 @@ func validateScriptsDir(scriptsDir string) error {
 	return nil
 }
 
-// maxJSONFileSize is the maximum allowed size for JSON input files (50MB).
-const maxJSONFileSize = 50 * 1024 * 1024
-
-// readJSONFileWithLimit reads a JSON file with a size limit to prevent resource exhaustion.
-func readJSONFileWithLimit(path string) ([]byte, error) {
-	// Sanitize path to prevent directory traversal (gosec G304)
-	cleanPath := filepath.Clean(path)
-
-	info, err := os.Stat(cleanPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to stat file: %w", err)
-	}
-
-	if info.Size() > maxJSONFileSize {
-		return nil, fmt.Errorf("file %s exceeds maximum allowed size of %d bytes (actual: %d bytes)", cleanPath, maxJSONFileSize, info.Size())
-	}
-
-	return os.ReadFile(cleanPath) // #nosec G304 - path is cleaned and validated
-}
-
 func run() error {
 	// Determine script directory for TypeScript/Python extractors
 	scriptsPath := *scriptDir
@@ -118,11 +99,9 @@ func run() error {
 		}
 	}
 
-	// Validate scripts directory before use (only if explicitly provided)
-	if *scriptDir != "" {
-		if err := validateScriptsDir(scriptsPath); err != nil {
-			return fmt.Errorf("scripts directory validation failed: %w", err)
-		}
+	// Validate scripts directory before use (ALWAYS, not just when flag provided)
+	if err := validateScriptsDir(scriptsPath); err != nil {
+		return fmt.Errorf("scripts directory validation failed: %w", err)
 	}
 
 	if *verbose {
@@ -198,7 +177,7 @@ func getExtractorByLanguage(lang string, scriptsPath string) (ast.Extractor, err
 }
 
 func processBatch(ctx context.Context, registry *ast.Registry, batchPath string) error {
-	data, err := readJSONFileWithLimit(batchPath)
+	data, err := fileutil.ReadJSONFileWithLimit(batchPath)
 	if err != nil {
 		return fmt.Errorf("failed to read batch file: %w", err)
 	}
