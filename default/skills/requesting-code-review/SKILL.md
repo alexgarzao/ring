@@ -255,12 +255,10 @@ review_state = {
 
 **Skip Override:** The `skip_preanalysis` parameter allows bypassing this step ONLY when explicitly requested by the user. This is NOT recommended.
 
-### Step 2.5.1: Detect Binary Location
-
-Detect the platform-specific binary path:
+### Step 2.5.1: Detect Platform and Find Binary
 
 ```bash
-# Detect OS and architecture
+# Detect platform
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
 case $ARCH in
@@ -268,38 +266,177 @@ case $ARCH in
   aarch64|arm64) ARCH="arm64" ;;
 esac
 
-# Try plugin path first, then fallback to dev repo
+# Binary search paths (in priority order)
 PLUGIN_BIN="${CLAUDE_PLUGIN_ROOT:-}/lib/codereview/bin/${OS}_${ARCH}/run-all"
-DEV_BIN="scripts/codereview/bin/run-all"
+LOCAL_BIN="./default/lib/codereview/bin/${OS}_${ARCH}/run-all"
+
+# Find binary
+BINARY=""
+CHECKSUM_FILE=""
+if [[ -x "$PLUGIN_BIN" ]]; then
+    BINARY="$PLUGIN_BIN"
+    CHECKSUM_FILE="${CLAUDE_PLUGIN_ROOT:-}/lib/codereview/bin/${OS}_${ARCH}/CHECKSUMS.sha256"
+elif [[ -x "$LOCAL_BIN" ]]; then
+    BINARY="$LOCAL_BIN"
+    CHECKSUM_FILE="./default/lib/codereview/bin/${OS}_${ARCH}/CHECKSUMS.sha256"
+fi
 ```
 
-Check paths in order:
-1. `${CLAUDE_PLUGIN_ROOT}/lib/codereview/bin/${OS}_${ARCH}/run-all` (installed plugin)
-2. `scripts/codereview/bin/run-all` (development repo)
-3. `default/lib/codereview/bin/${OS}_${ARCH}/run-all` (local build)
-
-If no binary found:
-- ⚠️ **DEGRADED MODE:** Pre-analysis binary not found. Reviewers will proceed WITHOUT static analysis context. Review quality may be reduced.
-- Set `preanalysis_state.enabled = false`
-- Proceed to Step 3
-
-### Step 2.5.2: Execute Pipeline
-
-If binary found, run the pre-analysis pipeline:
+### Step 2.5.2: Secure Binary Execution (Security)
 
 ```bash
-[binary_path] \
-  --base=[base_sha] \
-  --head=[head_sha] \
-  --output=.ring/codereview \
-  --verbose
+# Secure execution: copy to temp, verify copy, execute copy
+# This prevents TOCTOU race conditions by verifying the COPY we execute
+secure_execute_binary() {
+    local binary="$1"
+    local checksum_file="$2"
+    shift 2
+    local args=("$@")
+
+    # Create secure temporary copy
+    local secure_copy=$(mktemp)
+    trap "rm -f '$secure_copy'" EXIT
+
+    # Copy binary to secure location
+    if ! cp "$binary" "$secure_copy"; then
+        echo "✗ Failed to create secure copy"
+        return 1
+    fi
+    chmod 700 "$secure_copy"
+
+    # Verify the COPY (not the original - prevents TOCTOU)
+    local binary_name=$(basename "$binary")
+
+    # Check checksum file exists
+    if [[ ! -f "$checksum_file" ]]; then
+        echo "✗ ERROR: Checksum file required for security verification"
+        echo "  Set RING_ALLOW_UNVERIFIED=true to bypass (not recommended)"
+        if [[ "${RING_ALLOW_UNVERIFIED:-false}" != "true" ]]; then
+            return 1
+        fi
+        echo "⚠️ WARNING: Running in unverified mode"
+    else
+        # Get expected hash using exact match (prevents partial match attacks)
+        local expected_hash=$(awk -v name="$binary_name" '$2 == name {print $1}' "$checksum_file")
+
+        if [[ -z "$expected_hash" ]]; then
+            echo "✗ ERROR: Binary '$binary_name' not found in checksum file"
+            return 1
+        fi
+
+        # Compute hash of the COPY (macOS and Linux compatible)
+        local actual_hash
+        if command -v sha256sum &> /dev/null; then
+            actual_hash=$(sha256sum "$secure_copy" | awk '{print $1}')
+        elif command -v shasum &> /dev/null; then
+            actual_hash=$(shasum -a 256 "$secure_copy" | awk '{print $1}')
+        else
+            echo "✗ ERROR: No sha256sum or shasum available"
+            return 1
+        fi
+
+        if [[ "$expected_hash" != "$actual_hash" ]]; then
+            echo "✗ CHECKSUM MISMATCH - Binary may be corrupted or tampered"
+            echo "  Expected: $expected_hash"
+            echo "  Actual:   $actual_hash"
+            return 1
+        fi
+
+        echo "✓ Binary integrity verified"
+    fi
+
+    # Execute the verified copy
+    "$secure_copy" "${args[@]}"
+    local result=$?
+
+    rm -f "$secure_copy"
+    trap - EXIT
+
+    return $result
+}
+```
+
+### Step 2.5.3: Fallback to Build from Source
+
+```bash
+build_from_source() {
+    echo "Attempting to build from source..."
+
+    # Check if Go is available
+    if ! command -v go &> /dev/null; then
+        echo "✗ Go not installed. Cannot build from source."
+        echo "  Install Go from https://go.dev/dl/ or use pre-built binaries."
+        return 1
+    fi
+
+    # Find source directory
+    local source_dir=""
+    if [[ -d "./scripts/codereview" ]]; then
+        source_dir="./scripts/codereview"
+    elif [[ -d "${CLAUDE_PLUGIN_ROOT:-}/../../scripts/codereview" ]]; then
+        source_dir="${CLAUDE_PLUGIN_ROOT:-}/../../scripts/codereview"
+    fi
+
+    if [[ -z "$source_dir" || ! -d "$source_dir" ]]; then
+        echo "✗ Source directory not found. Cannot build from source."
+        return 1
+    fi
+
+    # Build the binary
+    local output_binary="/tmp/ring-codereview-run-all"
+    echo "Building run-all from $source_dir..."
+
+    if (cd "$source_dir" && go build -o "$output_binary" ./cmd/run-all/); then
+        echo "✓ Built successfully: $output_binary"
+        BINARY="$output_binary"
+        return 0
+    else
+        echo "✗ Build failed"
+        return 1
+    fi
+}
+```
+
+### Step 2.5.4: Execute with Verification
+
+```bash
+# Main execution flow using secure_execute_binary
+# This ensures atomic verify-and-execute to prevent TOCTOU attacks
+if [[ -n "$BINARY" ]]; then
+    if secure_execute_binary "$BINARY" "$CHECKSUM_FILE" \
+        --base="$BASE_SHA" --head="$HEAD_SHA" --output=".ring/codereview" --verbose; then
+        echo "Pre-analysis pipeline completed successfully"
+    else
+        echo "⚠️ Binary verification or execution failed"
+        if build_from_source; then
+            # Execute the newly built binary (no checksum for local builds)
+            RING_ALLOW_UNVERIFIED=true secure_execute_binary "$BINARY" "" \
+                --base="$BASE_SHA" --head="$HEAD_SHA" --output=".ring/codereview" --verbose
+        else
+            echo "⚠️ DEGRADED MODE: Proceeding without pre-analysis"
+            echo "  Reviewers will work without static analysis context."
+            # Skip to Step 3 (dispatch reviewers)
+        fi
+    fi
+else
+    # No binary found - try building from source
+    echo "No pre-built binary found for ${OS}_${ARCH}"
+    if build_from_source; then
+        RING_ALLOW_UNVERIFIED=true secure_execute_binary "$BINARY" "" \
+            --base="$BASE_SHA" --head="$HEAD_SHA" --output=".ring/codereview" --verbose
+    else
+        echo "⚠️ DEGRADED MODE: Pre-analysis binary not available"
+        echo "  Reviewers will proceed WITHOUT static analysis context."
+        # Skip to Step 3 (dispatch reviewers)
+    fi
+fi
 ```
 
 - Timeout: Use `preanalysis_timeout` input (default 5 minutes)
 - On success: Set `preanalysis_state.success = true`
 - On failure: Display warning, set `preanalysis_state.success = false`, continue to Step 3
 
-### Step 2.5.3: Read Context Files
+### Step 2.5.5: Read Context Files
 
 If pipeline succeeded, read the 5 context files:
 
