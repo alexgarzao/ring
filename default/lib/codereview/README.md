@@ -45,6 +45,78 @@ default/lib/codereview/
         └── ... (same binaries)
 ```
 
+## Security Model
+
+The codereview binaries use a hybrid security approach combining checksum verification with build-from-source fallback.
+
+### How It Works
+
+```
+Binary Found? ──Yes──> Verify Checksum ──Pass──> Execute
+     │                      │
+     No                    Fail
+     │                      │
+     └────> Build from Source <────┘
+                  │
+           ┌─────┴─────┐
+        Success      Fail
+           │           │
+       Execute    Degraded Mode
+```
+
+### Checksum Verification
+
+Each platform directory contains a `CHECKSUMS.sha256` file with SHA256 hashes for all binaries:
+
+```
+default/lib/codereview/bin/
+├── CHECKSUMS.sha256           # All platforms (28 entries)
+├── darwin_amd64/
+│   └── CHECKSUMS.sha256       # 7 entries
+├── darwin_arm64/
+│   └── CHECKSUMS.sha256       # 7 entries
+├── linux_amd64/
+│   └── CHECKSUMS.sha256       # 7 entries
+└── linux_arm64/
+    └── CHECKSUMS.sha256       # 7 entries
+```
+
+**Manual verification:**
+
+```bash
+# Linux
+cd default/lib/codereview/bin/linux_amd64
+sha256sum --check CHECKSUMS.sha256
+
+# macOS
+cd default/lib/codereview/bin/darwin_arm64
+shasum -a 256 --check CHECKSUMS.sha256
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RING_ALLOW_UNVERIFIED` | `false` | Set to `true` to bypass checksum verification (development only) |
+
+**Security implications:**
+- When `false` (default): Missing or invalid checksums cause the pipeline to fail or trigger build-from-source
+- When `true`: Binaries execute without verification (NOT recommended for production)
+
+### What This Protects Against
+
+| Threat | Protection |
+|--------|------------|
+| Tampered binaries | Checksum mismatch triggers rebuild |
+| Missing checksums | Fails closed (requires explicit bypass) |
+| TOCTOU race conditions | Atomic verify-and-execute pattern |
+| Partial string bypass | Exact match verification |
+
+### Limitations
+
+- **Integrity, not authenticity**: Checksums verify the binary hasn't changed, not who created it
+- **Future enhancement**: GPG/Sigstore signatures planned for authenticity verification
+
 ## Rebuilding Binaries
 
 ### Prerequisites

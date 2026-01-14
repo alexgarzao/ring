@@ -176,6 +176,12 @@ git clone https://github.com/lerianstudio/ring.git ~/ring
 # No additional configuration needed for Claude Code
 ```
 
+### Binary Security
+
+The codereview pipeline includes pre-built binaries with SHA256 checksum verification. Binaries are verified before execution; if verification fails, they are automatically rebuilt from source.
+
+See [Binary Security Model](default/lib/codereview/README.md#security-model) for details on checksum verification and the `RING_ALLOW_UNVERIFIED` environment variable.
+
 ### First Session
 
 When you start a new Claude Code session with Ring installed, you'll see:

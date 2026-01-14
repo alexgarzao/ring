@@ -370,6 +370,15 @@ All run in parallel (saves ~15 minutes vs sequential)
 Consolidated report
 ```
 
+### Environment Variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `RING_ALLOW_UNVERIFIED` | `false` | Bypass binary checksum verification (development only) |
+| `CLAUDE_PLUGIN_ROOT` | (auto) | Path to installed plugin directory |
+
+> **Security Note:** Setting `RING_ALLOW_UNVERIFIED=true` disables checksum verification for codereview binaries. Only use in development environments where you trust the binary source.
+
 ---
 
 ## 📚 More Information
