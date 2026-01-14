@@ -216,7 +216,11 @@ func TestWriteToFile_CreatesFileWithValidJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Fatalf("Failed to clean temp dir: %v", err)
+		}
+	})
 
 	filePath := filepath.Join(tmpDir, "scope.json")
 
@@ -257,7 +261,11 @@ func TestWriteToFile_CreatesParentDirectories(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Fatalf("Failed to clean temp dir: %v", err)
+		}
+	})
 
 	// Use nested path that doesn't exist
 	filePath := filepath.Join(tmpDir, "nested", "deep", "scope.json")
@@ -306,7 +314,9 @@ func TestWriteToStdout(t *testing.T) {
 	err = output.WriteToStdout()
 
 	// Restore stdout
-	w.Close()
+	if err := w.Close(); err != nil {
+		t.Fatalf("failed to close stdout pipe writer: %v", err)
+	}
 	os.Stdout = oldStdout
 
 	if err != nil {
@@ -376,13 +386,17 @@ func TestWriteToFile_OverwritesExistingFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Fatalf("Failed to clean temp dir: %v", err)
+		}
+	})
 
 	filePath := filepath.Join(tmpDir, "scope.json")
 
 	// Create existing file with different content (use unique marker)
 	existingContent := []byte(`{"previous_marker": "SHOULD_BE_REPLACED"}`)
-	if err := os.WriteFile(filePath, existingContent, 0644); err != nil {
+	if err := os.WriteFile(filePath, existingContent, 0o644); err != nil {
 		t.Fatalf("Failed to create existing file: %v", err)
 	}
 

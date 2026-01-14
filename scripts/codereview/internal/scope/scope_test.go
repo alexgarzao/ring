@@ -366,7 +366,7 @@ func TestNewDetector(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := NewDetector(tt.workDir)
 			if d == nil {
-				t.Error("NewDetector() returned nil")
+				t.Fatalf("NewDetector() returned nil")
 			}
 			if d.workDir != tt.workDir {
 				t.Errorf("NewDetector().workDir = %q, want %q", d.workDir, tt.workDir)
