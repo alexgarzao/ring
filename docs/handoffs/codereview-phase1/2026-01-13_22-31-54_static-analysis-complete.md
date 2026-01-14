@@ -85,7 +85,7 @@ All files in `scripts/codereview/` were created/modified in this session:
 ### What Worked
 
 - **One-go autonomous mode** - Executing all 23 tasks with code review between batches was efficient; no human interruption needed until completion
-- **Parallel code review** - Dispatching all 5 reviewers simultaneously (code, business-logic, security, test, nil-safety) saves significant time
+- **Parallel code review** - Dispatching all 5 reviewers simultaneously (ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer) saves significant time
 - **Clean Linter interface** - Minimal 5-method interface (Name, Language, Available, Version, Run) made adding 9 linters systematic
 - **Registry pattern** - Language-based linter registry is extensible and follows Open/Closed principle
 - **TDD for parser tests** - Writing severity/category mapping tests caught edge cases early
@@ -199,7 +199,7 @@ go test -tags=integration -v  # Integration tests only
 ```
 
 ### Code Review Results
-- **5 reviewers ran:** code, business-logic, security, test, nil-safety
+- **5 reviewers ran:** ring:code, ring:business-logic, ring:security, ring:test, ring:nil-safety
 - **Issues found:** 1 Critical (nil safety), 16 High, 19 Medium, 13 Low
 - **Resolution:** All Critical/High/Medium fixed; Low items have TODO comments
 - **Final verdict:** All reviewers PASS after fixes

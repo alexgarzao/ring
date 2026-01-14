@@ -1,6 +1,6 @@
 # Codereview Phase 0: Scope Detector Implementation Plan
 
-> **For Agents:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
+> **For Agents:** REQUIRED SUB-SKILL: Use ring:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build the `scope-detector` Go binary that analyzes git diffs to detect changed files, identify project language (Go/TypeScript/Python), and output structured scope information for downstream code review phases.
 
@@ -2329,8 +2329,8 @@ Run: `rm -f .ring/codereview/scope.json`
 **CRITICAL: Dispatch all 5 reviewers in parallel before proceeding.**
 
 1. **Dispatch all 5 reviewers in parallel:**
-   - REQUIRED SUB-SKILL: Use requesting-code-review
-   - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer)
+   - REQUIRED SUB-SKILL: Use ring:requesting-code-review
+   - All reviewers run simultaneously (ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer)
    - Wait for all to complete
 
 2. **Handle findings by severity (MANDATORY):**

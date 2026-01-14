@@ -99,9 +99,9 @@ Plans specify recommended agents for execution:
 |---------------|--------------|
 | `/ring:brainstorm` | Use first if design is not yet validated |
 | `/ring:execute-plan` | Use after to execute the created plan |
-| `brainstorming` | Design validation before planning |
-| `executing-plans` | Batch execution with review checkpoints |
-| `subagent-driven-development` | Alternative execution for current session |
+| `ring:brainstorming` | Design validation before planning |
+| `ring:executing-plans` | Batch execution with review checkpoints |
+| `ring:subagent-driven-development` | Alternative execution for current session |
 
 ## Troubleshooting
 

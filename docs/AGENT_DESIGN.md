@@ -91,11 +91,11 @@ output_schema:
       required: true
 ```
 
-**Used by:** `code-reviewer`, `business-logic-reviewer`, `security-reviewer`
+**Used by:** `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`
 
-**Note:** `business-logic-reviewer` and `security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
-- `business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
-- `security-reviewer` adds: "OWASP Top 10 Coverage", "Compliance Status"
+**Note:** `ring:business-logic-reviewer` and `ring:security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
+- `ring:business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
+- `ring:security-reviewer` adds: "OWASP Top 10 Coverage", "Compliance Status"
 
 ---
 
@@ -153,7 +153,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `write-plan`
+**Used by:** `ring:write-plan`
 
 ---
 

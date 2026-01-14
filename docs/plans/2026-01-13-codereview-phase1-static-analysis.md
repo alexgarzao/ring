@@ -1,6 +1,6 @@
 # Phase 1: Static Analysis Implementation Plan
 
-> **For Agents:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
+> **For Agents:** REQUIRED SUB-SKILL: Use ring:executing-plans to implement this plan task-by-task.
 
 **Goal:** Implement the static analysis binary that runs language-specific linters (Go, TypeScript, Python), normalizes their output, and produces `static-analysis.json` for downstream phases.
 
@@ -3557,7 +3557,7 @@ git commit -m "test(codereview): add integration tests for static analysis"
 ### Task 22: Run Code Review
 
 1. **Dispatch all 5 reviewers in parallel:**
-   - REQUIRED SUB-SKILL: Use requesting-code-review
+   - REQUIRED SUB-SKILL: Use ring:requesting-code-review
    - All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer)
    - Wait for all to complete
 

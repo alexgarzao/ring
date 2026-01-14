@@ -85,8 +85,8 @@ python3 default/lib/validate-plan-precedent.py docs/plans/YYYY-MM-DD-<feature>.m
 **Step 4: Ask User About Execution**
 
 Ask via `AskUserQuestion`: "Execute now?" Options:
-1. Execute now → `subagent-driven-development`
-2. Parallel session → user opens new session with `executing-plans`
+1. Execute now → `ring:subagent-driven-development`
+2. Parallel session → user opens new session with `ring:executing-plans`
 3. Save for later → report location and end
 
 ## Why Use an Agent?
@@ -116,8 +116,8 @@ Every plan: **Historical Precedent section** | Header (goal, architecture, tech 
 
 | Option | Description |
 |--------|-------------|
-| **Execute now** | Fresh subagent per task, code review between tasks → `subagent-driven-development` |
-| **Parallel session** | User opens new session, batch execution with human review → `executing-plans` |
+| **Execute now** | Fresh subagent per task, code review between tasks → `ring:subagent-driven-development` |
+| **Parallel session** | User opens new session, batch execution with human review → `ring:executing-plans` |
 | **Save for later** | Plan at `docs/plans/YYYY-MM-DD-<feature>.md`, manual review before execution |
 
 ## Required Patterns

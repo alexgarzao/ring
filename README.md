@@ -23,11 +23,11 @@ Ring solves this by:
 ## 🤖 Specialized Agents
 
 **Review & Planning Agents (default plugin):**
-- `code-reviewer` - Foundation review (architecture, code quality, design patterns)
-- `business-logic-reviewer` - Correctness review (domain logic, requirements, edge cases)
-- `security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
-- `write-plan` - Implementation planning agent
-- `codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
+- `ring:code-reviewer` - Foundation review (architecture, code quality, design patterns)
+- `ring:business-logic-reviewer` - Correctness review (domain logic, requirements, edge cases)
+- `ring:security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
+- `ring:write-plan` - Implementation planning agent
+- `ring:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
 - Use `/ring:codereview` command to orchestrate parallel review workflow
 
 **Developer Agents (dev-team plugin):**
@@ -207,7 +207,7 @@ GREEN → Minimal code → Watch it pass
 REFACTOR → Clean up → Stay green
 ```
 
-#### 3. **systematic-debugging** - Find Root Cause
+#### 3. **ring:systematic-debugging** - Find Root Cause
 ```
 Phase 1: Investigate (gather ALL evidence)
 Phase 2: Analyze patterns
@@ -226,8 +226,8 @@ No "should work" → Only "does work" with proof
 ### Core Skills (ring-default plugin - 27 skills)
 
 **Testing & Debugging (7):**
-- `test-driven-development` - Write test first, watch fail, minimal code
-- `systematic-debugging` - 4-phase root cause investigation
+- `ring:test-driven-development` - Write test first, watch fail, minimal code
+- `ring:systematic-debugging` - 4-phase root cause investigation
 - `verification-before-completion` - Evidence before claims
 - `testing-anti-patterns` - Common test pitfalls to avoid
 - `condition-based-waiting` - Replace timeouts with conditions
@@ -238,8 +238,8 @@ No "should work" → Only "does work" with proof
 - `brainstorming` - Structured design refinement
 - `interviewing-user` - Proactive requirements gathering through structured interview
 - `writing-plans` - Zero-context implementation plans
-- `executing-plans` - Batch execution with checkpoints
-- `requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
+- `ring:executing-plans` - Batch execution with checkpoints
+- `ring:requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
 - `receiving-code-review` - Responding to feedback
 - `dispatching-parallel-agents` - Concurrent workflows
 - `subagent-driven-development` - Fast iteration with **parallel reviews**
@@ -248,7 +248,7 @@ No "should work" → Only "does work" with proof
 - `root-cause-tracing` - Backward bug tracking
 
 **Meta Skills (4):**
-- `using-ring` - Mandatory skill discovery
+- `ring:using-ring` - Mandatory skill discovery
 - `writing-skills` - TDD for documentation
 - `testing-skills-with-subagents` - Skill validation
 - `testing-agents-with-subagents` - Subagent-specific testing
@@ -272,7 +272,7 @@ No "should work" → Only "does work" with proof
 - `dev-devops` - Gate 1: DevOps setup (Docker, compose)
 - `dev-sre` - Gate 2: Observability setup
 - `dev-testing` - Gate 3: Test coverage
-- `requesting-code-review` - Gate 4: Parallel code review (3 reviewers)
+- `ring:requesting-code-review` - Gate 4: Parallel code review (3 reviewers)
 - `dev-validation` - Gate 5: User approval
 - `dev-feedback-loop` - Assertiveness scoring and metrics
 

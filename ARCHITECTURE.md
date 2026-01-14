@@ -480,7 +480,7 @@ Complex Skill → TodoWrite tracking
 - **Agents:** Specialized reviewers executed by separate Claude instances
 
 **Interaction:**
-- Skills can invoke agents (e.g., requesting-code-review skill dispatches review agents)
+- Skills can invoke agents (e.g., ring:requesting-code-review skill dispatches review agents)
 - Agents don't typically invoke skills (they're independent analyzers)
 
 ### Skills ↔ Commands
@@ -490,9 +490,9 @@ Complex Skill → TodoWrite tracking
 - Some commands (like review) orchestrate multiple components
 
 **Example Mappings:**
-- `/brainstorm` → `brainstorming` skill
-- `/write-plan` → `writing-plans` skill
-- `/codereview` → dispatches 3 parallel review agents (`code-reviewer`, `business-logic-reviewer`, `security-reviewer`)
+- `/brainstorm` → `ring:brainstorming` skill
+- `/write-plan` → `ring:writing-plans` skill
+- `/codereview` → dispatches 3 parallel review agents (`ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`)
 
 ### Skills ↔ Shared Patterns
 
@@ -511,7 +511,7 @@ See `skills/shared-patterns/todowrite-integration.md` for tracking setup
 **Relationship:** Initialization and context loading
 - Hooks load skill metadata at session start
 - generate-skills-ref.py scans all SKILL.md frontmatter
-- session-start.sh injects using-ring skill content
+- session-start.sh injects ring:using-ring skill content
 
 **Data Flow:**
 ```

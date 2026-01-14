@@ -1,6 +1,6 @@
 # Phase 5: Context Compilation Implementation Plan
 
-> **For Agents:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
+> **For Agents:** REQUIRED SUB-SKILL: Use ring:executing-plans to implement this plan task-by-task.
 
 **Goal:** Implement the context compilation phase that aggregates all analysis outputs (Phases 0-4) into reviewer-specific markdown files, and create the main orchestrator that runs all phases in sequence.
 
@@ -3055,7 +3055,7 @@ Context binaries built.
 
 **Step 3: Dispatch code review**
 
-1. **REQUIRED SUB-SKILL: Use requesting-code-review**
+1. **REQUIRED SUB-SKILL: Use ring:requesting-code-review**
 2. All reviewers run simultaneously (code-reviewer, business-logic-reviewer, security-reviewer, test-reviewer, nil-safety-reviewer)
 3. Wait for all to complete
 

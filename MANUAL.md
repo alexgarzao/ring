@@ -163,9 +163,9 @@ Invoke via `Task tool with subagent_type: "..."`.
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `code-reviewer` | Architecture, patterns, maintainability | Opus |
-| `business-logic-reviewer` | Domain correctness, edge cases, requirements | Opus |
-| `security-reviewer` | Vulnerabilities, OWASP, auth, validation | Opus |
+| `ring:code-reviewer` | Architecture, patterns, maintainability | Opus |
+| `ring:business-logic-reviewer` | Domain correctness, edge cases, requirements | Opus |
+| `ring:security-reviewer` | Vulnerabilities, OWASP, auth, validation | Opus |
 
 **Example:** Before merging, run all 3 parallel reviewers via `/codereview src/`
 
@@ -173,7 +173,7 @@ Invoke via `Task tool with subagent_type: "..."`.
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `write-plan` | Generate implementation plans for zero-context execution | Opus |
+| `ring:write-plan` | Generate implementation plans for zero-context execution | Opus |
 | `codebase-explorer` | Deep architecture analysis (vs `Explore` for speed) | Opus |
 
 ### Developer Specialists (ring-dev-team)
@@ -182,15 +182,15 @@ Use when you need expert depth in specific domains:
 
 | Agent | Specialization | Technologies |
 |-------|----------------|--------------|
-| `backend-engineer-golang` | Go microservices & APIs | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2 |
-| `backend-engineer-typescript` | TypeScript/Node.js backend | Express, NestJS, Prisma, TypeORM, GraphQL |
-| `devops-engineer` | Infrastructure & CI/CD | Docker, Kubernetes, Terraform, GitHub Actions |
-| `frontend-bff-engineer-typescript` | BFF & React/Next.js frontend | Next.js API Routes, Clean Architecture, DDD, React |
-| `frontend-designer` | Visual design & aesthetics | Typography, motion, CSS, distinctive UI |
-| `frontend-engineer` | General frontend development | React, TypeScript, CSS, component architecture |
-| `prompt-quality-reviewer` | AI prompt quality review | Prompt engineering, clarity, effectiveness |
-| `qa-analyst` | Quality assurance | Test strategy, automation, coverage |
-| `sre` | Site reliability & ops | Monitoring, alerting, incident response, SLOs |
+| `ring:backend-engineer-golang` | Go microservices & APIs | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2 |
+| `ring:backend-engineer-typescript` | TypeScript/Node.js backend | Express, NestJS, Prisma, TypeORM, GraphQL |
+| `ring:devops-engineer` | Infrastructure & CI/CD | Docker, Kubernetes, Terraform, GitHub Actions |
+| `ring:frontend-bff-engineer-typescript` | BFF & React/Next.js frontend | Next.js API Routes, Clean Architecture, DDD, React |
+| `ring:frontend-designer` | Visual design & aesthetics | Typography, motion, CSS, distinctive UI |
+| `ring:frontend-engineer` | General frontend development | React, TypeScript, CSS, component architecture |
+| `ring:prompt-quality-reviewer` | AI prompt quality review | Prompt engineering, clarity, effectiveness |
+| `ring:qa-analyst` | Quality assurance | Test strategy, automation, coverage |
+| `ring:sre` | Site reliability & ops | Monitoring, alerting, incident response, SLOs |
 
 **Standards Compliance Output:** All ring-dev-team agents include a `## Standards Compliance` output section with conditional requirement:
 
@@ -255,15 +255,15 @@ For Brazilian financial compliance workflows:
 1. **Design** → `/brainstorm feature-name`
 2. **Plan** → `/pre-dev-feature feature-name` (or `pre-dev-full` if complex)
 3. **Isolate** → `/worktree feature-branch`
-4. **Implement** → Use `test-driven-development` skill
+4. **Implement** → Use `ring:test-driven-development` skill
 5. **Review** → `/codereview src/` (dispatches 3 reviewers)
 6. **Commit** → `/commit "message"`
 
 ### Bug Investigation
 
-1. **Investigate** → Use `systematic-debugging` skill
+1. **Investigate** → Use `ring:systematic-debugging` skill
 2. **Trace** → Use `root-cause-tracing` if needed
-3. **Implement** → Use `test-driven-development` skill
+3. **Implement** → Use `ring:test-driven-development` skill
 4. **Verify** → Use `verification-before-completion` skill
 5. **Review & Merge** → `/codereview` + `/commit`
 
@@ -273,9 +273,9 @@ For Brazilian financial compliance workflows:
 /codereview [files-or-paths]
     ↓
 Runs in parallel:
-  • code-reviewer (Opus)
-  • business-logic-reviewer (Opus)
-  • security-reviewer (Opus)
+  • ring:code-reviewer (Opus)
+  • ring:business-logic-reviewer (Opus)
+  • ring:security-reviewer (Opus)
     ↓
 Consolidated report with recommendations
 ```
@@ -287,8 +287,8 @@ Consolidated report with recommendations
 These enforce quality standards:
 
 1. **TDD is enforced** – Test must fail (RED) before implementation
-2. **Skill check is mandatory** – Use `using-ring` before any task
-3. **Reviewers run parallel** – Never sequential review (use `/ring:codereview`)
+2. **Skill check is mandatory** – Use `ring:using-ring` before any task
+3. **Reviewers run parallel** – Never sequential review (use `/codereview`)
 4. **Verification required** – Don't claim complete without evidence
 5. **No incomplete code** – No "TODO" or placeholder comments
 6. **Error handling required** – Don't ignore errors
@@ -301,29 +301,29 @@ These enforce quality standards:
 
 | Situation | Use This |
 |-----------|----------|
-| New feature, unsure about design | `/ring:brainstorm` |
-| Feature will take < 2 days | `/ring:pre-dev-feature` |
-| Feature will take ≥ 2 days or has complex dependencies | `/ring:pre-dev-full` |
-| Need implementation tasks | `/ring:write-plan` |
-| Before merging code | `/ring:codereview` |
+| New feature, unsure about design | `/brainstorm` |
+| Feature will take < 2 days | `/pre-dev-feature` |
+| Feature will take ≥ 2 days or has complex dependencies | `/pre-dev-full` |
+| Need implementation tasks | `/write-plan` |
+| Before merging code | `/codereview` |
 
 
 ### Agent Selection
 
 | Need | Agent to Use |
 |------|-------------|
-| General code quality review | 3 parallel reviewers via `/ring:codereview` |
-| Implementation planning | `write-plan` |
-| Deep codebase analysis | `codebase-explorer` |
-| Go backend expertise | `backend-engineer-golang` |
-| TypeScript/Node.js backend | `backend-engineer-typescript` |
-| Infrastructure/DevOps | `devops-engineer` |
-| React/Next.js frontend & BFF | `frontend-bff-engineer-typescript` |
-| General frontend development | `frontend-engineer` |
-| Visual design & aesthetics | `frontend-designer` |
-| AI prompt quality review | `prompt-quality-reviewer` |
-| Quality assurance & testing | `qa-analyst` |
-| Site reliability & operations | `sre` |
+| General code quality review | 3 parallel reviewers via `/codereview` |
+| Implementation planning | `ring:write-plan` |
+| Deep codebase analysis | `ring:codebase-explorer` |
+| Go backend expertise | `ring:backend-engineer-golang` |
+| TypeScript/Node.js backend | `ring:backend-engineer-typescript` |
+| Infrastructure/DevOps | `ring:devops-engineer` |
+| React/Next.js frontend & BFF | `ring:frontend-bff-engineer-typescript` |
+| General frontend development | `ring:frontend-engineer` |
+| Visual design & aesthetics | `ring:frontend-designer` |
+| AI prompt quality review | `ring:prompt-quality-reviewer` |
+| Quality assurance & testing | `ring:qa-analyst` |
+| Site reliability & operations | `ring:sre` |
 | Best practices research | `best-practices-researcher` |
 | Framework documentation research | `framework-docs-researcher` |
 | Repository analysis | `repo-research-analyst` |
@@ -341,7 +341,7 @@ These enforce quality standards:
 
 1. SessionStart hook runs automatically
 2. All 59 skills are auto-discovered and available
-3. `using-ring` workflow is activated (skill checking is now mandatory)
+3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
 
@@ -361,9 +361,9 @@ Returns structured output per agent's output_schema
 ```
 Single message with 3 Task calls (not sequential):
 
-Task #1: code-reviewer
-Task #2: business-logic-reviewer
-Task #3: security-reviewer
+Task #1: ring:code-reviewer
+Task #2: ring:business-logic-reviewer
+Task #3: ring:security-reviewer
     ↓
 All run in parallel (saves ~15 minutes vs sequential)
     ↓
@@ -385,5 +385,5 @@ Consolidated report
 ## ❓ Need Help?
 
 - **How to use Claude Code?** → Ask about Claude Code features, MCP servers, slash commands
-- **How to use Ring?** → Check skill names in this manual or in `using-ring` skill
+- **How to use Ring?** → Check skill names in this manual or in `ring:using-ring` skill
 - **Feature/bug tracking?** → https://github.com/lerianstudio/ring/issues

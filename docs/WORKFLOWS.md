@@ -93,25 +93,25 @@ This document contains detailed workflow instructions for adding skills, agents,
 Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introduce available agents and capabilities:
 
 ### Default Plugin
-- `using-ring` → ORCHESTRATOR principle, mandatory workflow
+- `ring:using-ring` → ORCHESTRATOR principle, mandatory workflow
 - Always injected, always mandatory
 - Located: `default/skills/using-ring/SKILL.md`
 
 ### Ring Dev Team Plugin
-- `using-dev-team` → 7 specialist developer agents
+- `ring:using-dev-team` → 7 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
 - Agents (invoke as `{agent-name}`):
-  - backend-engineer-golang
-  - backend-engineer-typescript
-  - devops-engineer
-  - frontend-bff-engineer-typescript
-  - frontend-designer
-  - qa-analyst
-  - sre
+  - ring:backend-engineer-golang
+  - ring:backend-engineer-typescript
+  - ring:devops-engineer
+  - ring:frontend-bff-engineer-typescript
+  - ring:frontend-designer
+  - ring:qa-analyst
+  - ring:sre
 
 ### Ring PM Team Plugin
-- `using-pm-team` → Pre-dev workflow skills (8 gates)
+- `ring:using-pm-team` → Pre-dev workflow skills (8 gates)
 - Auto-loads when ring-pm-team plugin is enabled
 - Located: `pm-team/skills/using-pm-team/SKILL.md`
 - Skills: 8 pre-dev gates for feature planning

@@ -3132,6 +3132,7 @@ Before marking Phase 3 complete:
 ---
 
 ## CLI Interface Summary
+## CLI Summary
 
 After implementation, the binary can be invoked as:
 

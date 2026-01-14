@@ -22,7 +22,7 @@ When creating or modifying any agent in `*/agents/*.md`:
 - Agents **ASK** when uncertain, they DO NOT **GUESS**
 
 ### 3. Anti-Patterns (never Do These)
-1. **never skip using-ring** - It's mandatory, not optional
+1. **never skip ring:using-ring** - It's mandatory, not optional
 2. **never run reviewers sequentially** - Always dispatch in parallel
 3. **never skip TDD's RED phase** - Test must fail before implementation
 4. **never ignore skill when applicable** - "Simple task" is not an excuse
@@ -34,7 +34,7 @@ When creating or modifying any agent in `*/agents/*.md`:
 All Ring components use the unified `ring:` prefix. Plugin differentiation is handled internally.
 - ✅ `ring:code-reviewer`
 - ✅ `ring:backend-engineer-golang`
-- ❌ `code-reviewer` (missing ring: prefix)
+- ❌ `<missing ring prefix>` (FORBIDDEN: omitting the `ring:` prefix)
 - ❌ `ring-default:code-reviewer` (deprecated plugin-specific prefix)
 
 ### 5. Standards-Agent Synchronization (always CHECK)
@@ -526,7 +526,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 - **Examples:**
   - ✅ Correct: `ring:code-reviewer`
   - ✅ Correct: `ring:backend-engineer-golang`
-  - ❌ Wrong: `code-reviewer` (missing ring: prefix)
+  - ❌ Wrong: `<missing ring prefix>` (FORBIDDEN: omitting the `ring:` prefix)
   - ❌ Wrong: `ring-default:code-reviewer` (deprecated plugin-specific prefix)
 - **Rationale:** Unified namespace simplifies invocation; plugin routing is handled internally
 
@@ -540,7 +540,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 | Analysis | frontend-designer | Analysis, Findings, Recommendations |
 | Reviewer | *-reviewer | VERDICT, Issues Found, What Was Done Well |
 | Exploration | codebase-explorer | Exploration Summary, Key Findings, Architecture |
-| Planning | write-plan | Goal, Architecture, Tech Stack, Tasks |
+| Planning | ring:write-plan | Goal, Architecture, Tech Stack, Tasks |
 
 See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions and Standards Compliance requirements.
 
@@ -579,7 +579,7 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 
 The system loads at SessionStart (from `default/` plugin):
 1. `default/hooks/session-start.sh` - Loads skill quick reference via `generate-skills-ref.py`
-2. `using-ring` skill - Injected as mandatory workflow
+2. `ring:using-ring` skill - Injected as mandatory workflow
 3. `default/hooks/claude-md-reminder.sh` - Reminds about CLAUDE.md on prompt submit
 
 **Monorepo Context:**
