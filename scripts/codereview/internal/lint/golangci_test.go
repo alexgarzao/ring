@@ -63,7 +63,7 @@ func TestMapGolangciCategory(t *testing.T) {
 		expected Category
 	}{
 		{"gosec", CategorySecurity},
-		{"gocritic", CategorySecurity},
+		{"gocritic", CategoryStyle},
 		{"staticcheck", CategoryBug},
 		{"typecheck", CategoryBug},
 		{"gofmt", CategoryStyle},
