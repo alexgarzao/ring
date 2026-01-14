@@ -99,7 +99,7 @@ type FunctionInfo struct {
 	LineStart int         `json:"line_start"`
 	LineEnd   int         `json:"line_end"`
 	Params    []ParamInfo `json:"params,omitempty"`
-	Returns   []TypeInfo  `json:"returns,omitempty"`
+	Returns   []ReturnTypeInfo  `json:"returns,omitempty"`
 }
 
 // ParamInfo holds parameter details.
@@ -109,16 +109,16 @@ type ParamInfo struct {
 	Default string `json:"default,omitempty"`
 }
 
-// TypeInfo holds type information.
-type TypeInfo struct {
+// ReturnTypeInfo holds return type information for functions.
+type ReturnTypeInfo struct {
 	Type string `json:"type"`
 }
 
 // TypeChanges holds struct/type changes.
 type TypeChanges struct {
-	Modified []TypeDiff `json:"modified"`
-	Added    []TypeInfo `json:"added"`
-	Deleted  []TypeInfo `json:"deleted"`
+	Modified []TypeDiff       `json:"modified"`
+	Added    []ReturnTypeInfo `json:"added"`
+	Deleted  []ReturnTypeInfo `json:"deleted"`
 }
 
 // TypeDiff represents a modified type.
@@ -338,7 +338,7 @@ type FlowSummary struct {
 
 // ReviewerContext holds the compiled context for a specific reviewer.
 type ReviewerContext struct {
-	ReviewerName string
-	Title        string
-	Content      string
+	ReviewerName string `json:"reviewer_name"`
+	Title        string `json:"title"`
+	Content      string `json:"content"`
 }

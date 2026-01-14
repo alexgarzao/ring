@@ -1,5 +1,7 @@
 package context
 
+import "fmt"
+
 // DataSource represents a data source for a reviewer.
 type DataSource struct {
 	Name        string // e.g., "static-analysis", "semantic-diff"
@@ -28,12 +30,33 @@ var reviewerDataSources = map[string][]DataSource{
 	},
 }
 
+// reviewerOrder defines the canonical order of reviewers.
+// This is the single source of truth for reviewer names and their order.
+var reviewerOrder = []string{
+	"code-reviewer",
+	"security-reviewer",
+	"business-logic-reviewer",
+	"test-reviewer",
+	"nil-safety-reviewer",
+}
+
+func init() {
+	// Validate that all reviewers in reviewerOrder exist in reviewerDataSources.
+	// This catches drift at startup rather than at runtime.
+	for _, name := range reviewerOrder {
+		if _, ok := reviewerDataSources[name]; !ok {
+			panic(fmt.Sprintf("reviewer %q in reviewerOrder but not in reviewerDataSources", name))
+		}
+	}
+}
+
 // severityOrder defines severity ranking for filtering.
 var severityOrder = map[string]int{
 	"critical": 4,
 	"high":     3,
-	"warning":  2,
-	"info":     1,
+	"medium":   2,
+	"warning":  1,
+	"info":     0,
 }
 
 // securityCategories lists categories relevant to security reviewer.
@@ -63,13 +86,7 @@ var codeQualityCategories = map[string]bool{
 
 // GetReviewerNames returns the list of all reviewer names in order.
 func GetReviewerNames() []string {
-	return []string{
-		"code-reviewer",
-		"security-reviewer",
-		"business-logic-reviewer",
-		"test-reviewer",
-		"nil-safety-reviewer",
-	}
+	return reviewerOrder
 }
 
 // GetReviewerDataSources returns the data sources for a specific reviewer.
@@ -102,7 +119,13 @@ func FilterFindingsBySeverity(findings []Finding, minSeverity string) []Finding 
 	}
 	var filtered []Finding
 	for _, f := range findings {
-		if level, ok := severityOrder[f.Severity]; ok && level >= minLevel {
+		level, ok := severityOrder[f.Severity]
+		if !ok {
+			// Include findings with unknown severity to avoid silent data loss
+			filtered = append(filtered, f)
+			continue
+		}
+		if level >= minLevel {
 			filtered = append(filtered, f)
 		}
 	}

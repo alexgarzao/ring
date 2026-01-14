@@ -58,120 +58,71 @@ func TestCompiler_Compile(t *testing.T) {
 	}
 }
 
-func TestCompiler_CodeReviewerContext(t *testing.T) {
-	inputDir := t.TempDir()
-	outputDir := t.TempDir()
-	createSamplePhaseOutputs(t, inputDir)
-
-	compiler := NewCompiler(inputDir, outputDir)
-	if err := compiler.Compile(); err != nil {
-		t.Fatalf("Compile() error = %v", err)
+func TestCompiler_ReviewerContexts(t *testing.T) {
+	tests := []struct {
+		name             string
+		reviewer         string
+		expectedTitle    string
+		expectedSections []string
+	}{
+		{
+			name:             "code reviewer has quality sections",
+			reviewer:         "code-reviewer",
+			expectedTitle:    "Code Quality",
+			expectedSections: []string{"Static Analysis Findings"},
+		},
+		{
+			name:             "security reviewer has security sections",
+			reviewer:         "security-reviewer",
+			expectedTitle:    "Security",
+			expectedSections: []string{"Data Flow Analysis"},
+		},
+		{
+			name:             "business logic reviewer has impact sections",
+			reviewer:         "business-logic-reviewer",
+			expectedTitle:    "Business Logic",
+			expectedSections: []string{"Impact Analysis"},
+		},
+		{
+			name:             "test reviewer has coverage sections",
+			reviewer:         "test-reviewer",
+			expectedTitle:    "Testing",
+			expectedSections: []string{"Test Coverage"},
+		},
+		{
+			name:             "nil safety reviewer has nil analysis sections",
+			reviewer:         "nil-safety-reviewer",
+			expectedTitle:    "Nil Safety",
+			expectedSections: []string{"Nil Source Analysis"},
+		},
 	}
 
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-code-reviewer.md"))
-	if err != nil {
-		t.Fatalf("Failed to read code-reviewer context: %v", err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			inputDir := t.TempDir()
+			outputDir := t.TempDir()
+			createSamplePhaseOutputs(t, inputDir)
 
-	contentStr := string(content)
-	if !strings.Contains(contentStr, "Code Quality") {
-		t.Error("Missing 'Code Quality' title")
-	}
-	if !strings.Contains(contentStr, "Static Analysis Findings") {
-		t.Error("Missing static analysis section")
-	}
-}
+			compiler := NewCompiler(inputDir, outputDir)
+			if err := compiler.Compile(); err != nil {
+				t.Fatalf("Compile() error = %v", err)
+			}
 
-func TestCompiler_SecurityReviewerContext(t *testing.T) {
-	inputDir := t.TempDir()
-	outputDir := t.TempDir()
-	createSamplePhaseOutputs(t, inputDir)
+			content, err := os.ReadFile(filepath.Join(outputDir, "context-"+tt.reviewer+".md"))
+			if err != nil {
+				t.Fatalf("Failed to read %s context: %v", tt.reviewer, err)
+			}
 
-	compiler := NewCompiler(inputDir, outputDir)
-	if err := compiler.Compile(); err != nil {
-		t.Fatalf("Compile() error = %v", err)
-	}
-
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-security-reviewer.md"))
-	if err != nil {
-		t.Fatalf("Failed to read security-reviewer context: %v", err)
-	}
-
-	contentStr := string(content)
-	if !strings.Contains(contentStr, "Security") {
-		t.Error("Missing 'Security' title")
-	}
-}
-
-func TestCompiler_BusinessLogicReviewerContext(t *testing.T) {
-	inputDir := t.TempDir()
-	outputDir := t.TempDir()
-	createSamplePhaseOutputs(t, inputDir)
-
-	compiler := NewCompiler(inputDir, outputDir)
-	if err := compiler.Compile(); err != nil {
-		t.Fatalf("Compile() error = %v", err)
-	}
-
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-business-logic-reviewer.md"))
-	if err != nil {
-		t.Fatalf("Failed to read business-logic-reviewer context: %v", err)
-	}
-
-	contentStr := string(content)
-	if !strings.Contains(contentStr, "Business Logic") {
-		t.Error("Missing 'Business Logic' title")
-	}
-	if !strings.Contains(contentStr, "Impact Analysis") {
-		t.Error("Missing impact analysis section")
-	}
-}
-
-func TestCompiler_TestReviewerContext(t *testing.T) {
-	inputDir := t.TempDir()
-	outputDir := t.TempDir()
-	createSamplePhaseOutputs(t, inputDir)
-
-	compiler := NewCompiler(inputDir, outputDir)
-	if err := compiler.Compile(); err != nil {
-		t.Fatalf("Compile() error = %v", err)
-	}
-
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-test-reviewer.md"))
-	if err != nil {
-		t.Fatalf("Failed to read test-reviewer context: %v", err)
-	}
-
-	contentStr := string(content)
-	if !strings.Contains(contentStr, "Testing") {
-		t.Error("Missing 'Testing' title")
-	}
-	if !strings.Contains(contentStr, "Test Coverage") {
-		t.Error("Missing test coverage section")
-	}
-}
-
-func TestCompiler_NilSafetyReviewerContext(t *testing.T) {
-	inputDir := t.TempDir()
-	outputDir := t.TempDir()
-	createSamplePhaseOutputs(t, inputDir)
-
-	compiler := NewCompiler(inputDir, outputDir)
-	if err := compiler.Compile(); err != nil {
-		t.Fatalf("Compile() error = %v", err)
-	}
-
-	content, err := os.ReadFile(filepath.Join(outputDir, "context-nil-safety-reviewer.md"))
-	if err != nil {
-		t.Fatalf("Failed to read nil-safety-reviewer context: %v", err)
-	}
-
-	contentStr := string(content)
-	if !strings.Contains(contentStr, "Nil Safety") {
-		t.Error("Missing 'Nil Safety' title")
-	}
-	if !strings.Contains(contentStr, "Nil Source Analysis") {
-		t.Error("Missing nil source analysis section")
+			contentStr := string(content)
+			if !strings.Contains(contentStr, tt.expectedTitle) {
+				t.Errorf("Missing %q title", tt.expectedTitle)
+			}
+			for _, section := range tt.expectedSections {
+				if !strings.Contains(contentStr, section) {
+					t.Errorf("Missing section: %s", section)
+				}
+			}
+		})
 	}
 }
 

@@ -1,6 +1,7 @@
 package context
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -14,14 +15,8 @@ func TestReviewerNames(t *testing.T) {
 	}
 
 	names := GetReviewerNames()
-	if len(names) != len(expected) {
-		t.Errorf("GetReviewerNames() returned %d names, want %d", len(names), len(expected))
-	}
-
-	for i, name := range expected {
-		if names[i] != name {
-			t.Errorf("GetReviewerNames()[%d] = %q, want %q", i, names[i], name)
-		}
+	if !reflect.DeepEqual(names, expected) {
+		t.Errorf("GetReviewerNames() = %v, want %v", names, expected)
 	}
 }
 
@@ -35,6 +30,7 @@ func TestGetReviewerDataSources(t *testing.T) {
 		{"business-logic-reviewer", 2}, // semantic-diff, impact-summary
 		{"test-reviewer", 1},           // impact-summary (test coverage)
 		{"nil-safety-reviewer", 1},     // data-flow (nil_sources)
+		{"unknown-reviewer", 0},        // unknown reviewer returns empty slice
 	}
 
 	for _, tt := range tests {
@@ -80,6 +76,19 @@ func TestFilterFindingsBySeverity(t *testing.T) {
 	highAndAbove := FilterFindingsBySeverity(findings, "high")
 	if len(highAndAbove) != 3 { // critical + 2 high
 		t.Errorf("FilterFindingsBySeverity(high) returned %d, want 3", len(highAndAbove))
+	}
+}
+
+func TestFilterFindingsBySeverity_UnknownThreshold(t *testing.T) {
+	findings := []Finding{
+		{Severity: "critical", Message: "crash"},
+		{Severity: "info", Message: "hint"},
+	}
+
+	// Unknown severity threshold should return all findings
+	result := FilterFindingsBySeverity(findings, "unknown")
+	if len(result) != 2 {
+		t.Errorf("FilterFindingsBySeverity(unknown) returned %d, want 2 (all findings)", len(result))
 	}
 }
 

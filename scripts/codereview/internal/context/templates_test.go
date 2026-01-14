@@ -210,23 +210,34 @@ func TestRenderTemplate_TestReviewer(t *testing.T) {
 
 func TestGetTemplateForReviewer(t *testing.T) {
 	tests := []struct {
-		reviewer string
-		wantLen  int // non-zero means template exists
+		reviewer  string
+		wantLen   int  // non-zero means template exists
+		wantError bool // true if error expected
 	}{
-		{"code-reviewer", 100},
-		{"security-reviewer", 100},
-		{"business-logic-reviewer", 100},
-		{"test-reviewer", 100},
-		{"nil-safety-reviewer", 100},
-		{"unknown-reviewer", 0},
+		{"code-reviewer", 100, false},
+		{"security-reviewer", 100, false},
+		{"business-logic-reviewer", 100, false},
+		{"test-reviewer", 100, false},
+		{"nil-safety-reviewer", 100, false},
+		{"unknown-reviewer", 0, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.reviewer, func(t *testing.T) {
-			tmpl := GetTemplateForReviewer(tt.reviewer)
-			if (len(tmpl) > 0) != (tt.wantLen > 0) {
-				t.Errorf("GetTemplateForReviewer(%q) returned len=%d, want len>0: %v",
-					tt.reviewer, len(tmpl), tt.wantLen > 0)
+			tmpl, err := GetTemplateForReviewer(tt.reviewer)
+			if tt.wantError {
+				if err == nil {
+					t.Errorf("GetTemplateForReviewer(%q) expected error, got nil", tt.reviewer)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("GetTemplateForReviewer(%q) unexpected error: %v", tt.reviewer, err)
+				return
+			}
+			if len(tmpl) < tt.wantLen {
+				t.Errorf("GetTemplateForReviewer(%q) returned len=%d, want len>=%d",
+					tt.reviewer, len(tmpl), tt.wantLen)
 			}
 		})
 	}

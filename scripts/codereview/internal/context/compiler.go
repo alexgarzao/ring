@@ -15,6 +15,18 @@ const highImpactCallerThreshold = 3
 // maxJSONFileSize is the maximum allowed size for JSON input files (50MB).
 const maxJSONFileSize = 50 * 1024 * 1024
 
+// reviewerDataBuilder is a function that populates template data for a specific reviewer.
+type reviewerDataBuilder func(c *Compiler, data *TemplateData, outputs *PhaseOutputs)
+
+// reviewerDataBuilders maps reviewer names to their data builder functions.
+var reviewerDataBuilders = map[string]reviewerDataBuilder{
+	"code-reviewer":           (*Compiler).buildCodeReviewerData,
+	"security-reviewer":       (*Compiler).buildSecurityReviewerData,
+	"business-logic-reviewer": (*Compiler).buildBusinessLogicReviewerData,
+	"test-reviewer":           (*Compiler).buildTestReviewerData,
+	"nil-safety-reviewer":     (*Compiler).buildNilSafetyReviewerData,
+}
+
 // Compiler aggregates phase outputs and generates reviewer context files.
 type Compiler struct {
 	inputDir  string
@@ -25,9 +37,9 @@ type Compiler struct {
 // validatePath validates a directory path for security.
 // It prevents path traversal attacks and optionally verifies the directory exists.
 func validatePath(path string, mustExist bool) error {
-	// Prevent path traversal sequences
+	// Check for traversal attempts in the ORIGINAL path before normalization
 	if strings.Contains(path, "..") {
-		return fmt.Errorf("path cannot contain path traversal sequences '..': %s", path)
+		return fmt.Errorf("path contains traversal sequences: %s", path)
 	}
 
 	// Get absolute path
@@ -163,6 +175,8 @@ func (c *Compiler) readPhaseOutputs() (*PhaseOutputs, error) {
 				if outputs.AST == nil {
 					outputs.AST = &ast
 				}
+			} else {
+				outputs.Errors = append(outputs.Errors, fmt.Sprintf("%s-ast.json parse error: %v", lang, err))
 			}
 		}
 	}
@@ -179,6 +193,8 @@ func (c *Compiler) readPhaseOutputs() (*PhaseOutputs, error) {
 				if outputs.CallGraph == nil {
 					outputs.CallGraph = &calls
 				}
+			} else {
+				outputs.Errors = append(outputs.Errors, fmt.Sprintf("%s-calls.json parse error: %v", lang, err))
 			}
 		}
 	}
@@ -195,6 +211,8 @@ func (c *Compiler) readPhaseOutputs() (*PhaseOutputs, error) {
 				if outputs.DataFlow == nil {
 					outputs.DataFlow = &flow
 				}
+			} else {
+				outputs.Errors = append(outputs.Errors, fmt.Sprintf("%s-flow.json parse error: %v", lang, err))
 			}
 		}
 	}
@@ -208,9 +226,9 @@ func (c *Compiler) generateReviewerContext(reviewer string, outputs *PhaseOutput
 	data := c.buildTemplateData(reviewer, outputs)
 
 	// Get and render template
-	templateStr := GetTemplateForReviewer(reviewer)
-	if templateStr == "" {
-		return fmt.Errorf("no template found for reviewer: %s", reviewer)
+	templateStr, err := GetTemplateForReviewer(reviewer)
+	if err != nil {
+		return fmt.Errorf("failed to get template: %w", err)
 	}
 
 	content, err := RenderTemplate(templateStr, data)
@@ -234,20 +252,9 @@ func (c *Compiler) generateReviewerContext(reviewer string, outputs *PhaseOutput
 // buildTemplateData constructs the template data for a specific reviewer.
 func (c *Compiler) buildTemplateData(reviewer string, outputs *PhaseOutputs) *TemplateData {
 	data := &TemplateData{}
-
-	switch reviewer {
-	case "code-reviewer":
-		c.buildCodeReviewerData(data, outputs)
-	case "security-reviewer":
-		c.buildSecurityReviewerData(data, outputs)
-	case "business-logic-reviewer":
-		c.buildBusinessLogicReviewerData(data, outputs)
-	case "test-reviewer":
-		c.buildTestReviewerData(data, outputs)
-	case "nil-safety-reviewer":
-		c.buildNilSafetyReviewerData(data, outputs)
+	if builder, ok := reviewerDataBuilders[reviewer]; ok {
+		builder(c, data, outputs)
 	}
-
 	return data
 }
 

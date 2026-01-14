@@ -367,19 +367,19 @@ func RenderTemplate(templateStr string, data *TemplateData) (string, error) {
 }
 
 // GetTemplateForReviewer returns the template string for a specific reviewer.
-func GetTemplateForReviewer(reviewer string) string {
+func GetTemplateForReviewer(reviewer string) (string, error) {
 	switch reviewer {
 	case "code-reviewer":
-		return codeReviewerTemplate
+		return codeReviewerTemplate, nil
 	case "security-reviewer":
-		return securityReviewerTemplate
+		return securityReviewerTemplate, nil
 	case "business-logic-reviewer":
-		return businessLogicReviewerTemplate
+		return businessLogicReviewerTemplate, nil
 	case "test-reviewer":
-		return testReviewerTemplate
+		return testReviewerTemplate, nil
 	case "nil-safety-reviewer":
-		return nilSafetyReviewerTemplate
+		return nilSafetyReviewerTemplate, nil
 	default:
-		return ""
+		return "", fmt.Errorf("unknown reviewer: %s", reviewer)
 	}
 }
