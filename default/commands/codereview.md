@@ -8,6 +8,36 @@ Dispatch all 5 specialized code reviewers in parallel, collect their reports, an
 
 ## Review Process
 
+### Step 0: Run Pre-Analysis Pipeline (MANDATORY)
+
+**MANDATORY:** Before dispatching reviewers, run the pre-analysis pipeline to generate static analysis context.
+
+```bash
+# Detect platform
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+
+# Find binary (plugin path or dev repo)
+BINARY="${CLAUDE_PLUGIN_ROOT}/lib/codereview/bin/${OS}_${ARCH}/run-all"
+if [ ! -x "$BINARY" ]; then
+  BINARY="./default/lib/codereview/bin/${OS}_${ARCH}/run-all"
+fi
+
+# Run pipeline
+$BINARY --base=main --head=HEAD --output=.ring/codereview --verbose
+```
+
+**Output:** Creates 5 context files in `.ring/codereview/`:
+- `context-code-reviewer.md`
+- `context-security-reviewer.md`
+- `context-business-logic-reviewer.md`
+- `context-test-reviewer.md`
+- `context-nil-safety-reviewer.md`
+
+⚠️ **DEGRADED MODE:** If binary not found, display warning and continue. Reviewers will work without pre-analysis context.
+
+---
+
 ### Step 1: Dispatch All Five Reviewers in Parallel
 
 **CRITICAL: Use a single message with 5 Task tool calls to launch all reviewers simultaneously.**

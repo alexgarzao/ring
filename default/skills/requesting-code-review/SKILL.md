@@ -249,11 +249,11 @@ review_state = {
 }
 ```
 
-## Step 2.5: Run Pre-Analysis Pipeline (Optional)
+## Step 2.5: Run Pre-Analysis Pipeline (MANDATORY)
 
-**Purpose:** Run static analysis, AST extraction, and call graph analysis to provide rich context to reviewers.
+**MANDATORY:** Run static analysis, AST extraction, and call graph analysis BEFORE dispatching reviewers. This provides critical context that significantly improves review quality.
 
-**Skip Condition:** If `skip_preanalysis` is `true`, skip this entire step and proceed directly to Step 3.
+**Skip Override:** The `skip_preanalysis` parameter allows bypassing this step ONLY when explicitly requested by the user. This is NOT recommended.
 
 ### Step 2.5.1: Detect Binary Location
 
@@ -279,7 +279,7 @@ Check paths in order:
 3. `default/lib/codereview/bin/${OS}_${ARCH}/run-all` (local build)
 
 If no binary found:
-- Display warning: "Pre-analysis binary not found. Continuing without static analysis context."
+- ⚠️ **DEGRADED MODE:** Pre-analysis binary not found. Reviewers will proceed WITHOUT static analysis context. Review quality may be reduced.
 - Set `preanalysis_state.enabled = false`
 - Proceed to Step 3
 
