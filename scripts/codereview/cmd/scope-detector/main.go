@@ -16,35 +16,20 @@ import (
 // version is set via ldflags during build.
 var version = "dev"
 
+var (
+	baseRef     = flag.String("base", "", "Base reference (commit/branch). When both refs empty, detects all uncommitted changes")
+	headRef     = flag.String("head", "", "Head reference (commit/branch). When both refs empty, detects all uncommitted changes")
+	outputPath  = flag.String("output", "", "Output file path. Empty = write to stdout")
+	workDir     = flag.String("workdir", "", "Working directory. Empty = current directory")
+	showVersion = flag.Bool("version", false, "Show version and exit")
+	verbose     = flag.Bool("v", false, "Enable verbose output")
+)
+
+func init() {
+	flag.BoolVar(verbose, "verbose", false, "Enable verbose output")
+}
+
 func main() {
-	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-// config holds the parsed CLI configuration.
-type config struct {
-	baseRef     string
-	headRef     string
-	outputPath  string
-	workDir     string
-	showVersion bool
-	verbose     bool
-}
-
-// parseFlags parses command-line flags and returns the configuration.
-func parseFlags() *config {
-	cfg := &config{}
-
-	flag.StringVar(&cfg.baseRef, "base", "", "Base reference (commit/branch). When both refs empty, detects all uncommitted changes")
-	flag.StringVar(&cfg.headRef, "head", "", "Head reference (commit/branch). When both refs empty, detects all uncommitted changes")
-	flag.StringVar(&cfg.outputPath, "output", "", "Output file path. Empty = write to stdout")
-	flag.StringVar(&cfg.workDir, "workdir", "", "Working directory. Empty = current directory")
-	flag.BoolVar(&cfg.showVersion, "version", false, "Show version and exit")
-	flag.BoolVar(&cfg.verbose, "v", false, "Enable verbose output")
-	flag.BoolVar(&cfg.verbose, "verbose", false, "Enable verbose output")
-
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: scope-detector [options]\n\n")
 		fmt.Fprintf(os.Stderr, "Analyzes git diff to detect changed files and project language.\n\n")
@@ -55,45 +40,45 @@ func parseFlags() *config {
 		fmt.Fprintf(os.Stderr, "  scope-detector --base=main --head=HEAD     # Compare branches\n")
 		fmt.Fprintf(os.Stderr, "  scope-detector --output=.ring/codereview/scope.json\n")
 	}
-
 	flag.Parse()
 
-	return cfg
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 // run executes the main CLI logic.
 func run() error {
-	cfg := parseFlags()
-
 	// Handle --version flag
-	if cfg.showVersion {
+	if *showVersion {
 		fmt.Printf("scope-detector version %s\n", version)
 		return nil
 	}
 
 	// Determine working directory
-	workDir := cfg.workDir
-	if workDir == "" {
+	wd := *workDir
+	if wd == "" {
 		var err error
-		workDir, err = os.Getwd()
+		wd, err = os.Getwd()
 		if err != nil {
 			return fmt.Errorf("failed to get current directory: %w", err)
 		}
 	}
 
 	// Create detector
-	detector := scope.NewDetector(workDir)
+	detector := scope.NewDetector(wd)
 
 	// Detect scope based on refs
 	var result *scope.ScopeResult
 	var err error
 
-	if cfg.baseRef == "" && cfg.headRef == "" {
+	if *baseRef == "" && *headRef == "" {
 		// No refs specified: detect all uncommitted changes (staged + unstaged)
 		result, err = detector.DetectAllChanges()
 	} else {
 		// Refs specified: compare specific refs
-		result, err = detector.DetectFromRefs(cfg.baseRef, cfg.headRef)
+		result, err = detector.DetectFromRefs(*baseRef, *headRef)
 	}
 
 	if err != nil {
@@ -105,18 +90,18 @@ func run() error {
 	}
 
 	// Verbose output
-	if cfg.verbose {
+	if *verbose {
 		fmt.Fprintln(os.Stderr, "=== Scope Detector (Verbose) ===")
-		fmt.Fprintf(os.Stderr, "Working directory: %s\n", workDir)
-		if cfg.baseRef == "" {
+		fmt.Fprintf(os.Stderr, "Working directory: %s\n", wd)
+		if *baseRef == "" {
 			fmt.Fprintln(os.Stderr, "Base ref: (empty - detecting all uncommitted changes)")
 		} else {
-			fmt.Fprintf(os.Stderr, "Base ref: %s\n", cfg.baseRef)
+			fmt.Fprintf(os.Stderr, "Base ref: %s\n", *baseRef)
 		}
-		if cfg.headRef == "" {
+		if *headRef == "" {
 			fmt.Fprintln(os.Stderr, "Head ref: (empty - using working tree)")
 		} else {
-			fmt.Fprintf(os.Stderr, "Head ref: %s\n", cfg.headRef)
+			fmt.Fprintf(os.Stderr, "Head ref: %s\n", *headRef)
 		}
 		fmt.Fprintf(os.Stderr, "Files found: %d\n", result.TotalFiles)
 		fmt.Fprintf(os.Stderr, "Language detected: %s\n", result.Language)
@@ -138,12 +123,12 @@ func run() error {
 	}
 
 	// Write output
-	if cfg.outputPath != "" {
+	if *outputPath != "" {
 		// Write to file
-		if err := scopeOutput.WriteToFile(cfg.outputPath); err != nil {
+		if err := scopeOutput.WriteToFile(*outputPath); err != nil {
 			return fmt.Errorf("failed to write output file: %w", err)
 		}
-		fmt.Fprintf(os.Stderr, "Scope written to %s\n", cfg.outputPath)
+		fmt.Fprintf(os.Stderr, "Scope written to %s\n", *outputPath)
 	} else {
 		// Write to stdout
 		if err := scopeOutput.WriteToStdout(); err != nil {

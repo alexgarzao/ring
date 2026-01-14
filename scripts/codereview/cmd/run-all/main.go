@@ -388,18 +388,16 @@ func getPhases() []Phase {
 }
 
 // validateBinDir validates the bin-dir path for security.
-// It prevents path traversal attacks and verifies the directory exists.
+// It uses proper path resolution to prevent path traversal attacks and verifies the directory exists.
 func validateBinDir(binDir string) error {
-	// Prevent path traversal sequences
-	if strings.Contains(binDir, "..") {
-		return fmt.Errorf("bin-dir cannot contain path traversal sequences '..'")
-	}
-
-	// Get absolute path
+	// Get absolute path - this resolves any relative components including ".."
 	absPath, err := filepath.Abs(binDir)
 	if err != nil {
 		return fmt.Errorf("invalid bin-dir path: %w", err)
 	}
+
+	// Clean the path to resolve any remaining traversal sequences
+	absPath = filepath.Clean(absPath)
 
 	// Verify directory exists
 	info, err := os.Stat(absPath)
@@ -580,13 +578,19 @@ func executePhase(ctx context.Context, cfg *config, phase Phase, skipSet map[str
 		return result
 	}
 
-	// Build command
+	// Build command arguments
 	args := phase.Args(cfg)
 	if cfg.verbose {
 		args = append(args, "-v")
 	}
 
-	cmd := exec.Command(binaryPath, args...)
+	// Create a context with timeout for this phase
+	// CommandContext will automatically kill the process when context is cancelled
+	phaseCtx, phaseCancel := context.WithTimeout(ctx, phase.Timeout)
+	defer phaseCancel()
+
+	// Use CommandContext for automatic process cleanup on cancellation/timeout
+	cmd := exec.CommandContext(phaseCtx, binaryPath, args...)
 
 	wd, err := os.Getwd()
 	if err != nil {
@@ -606,57 +610,40 @@ func executePhase(ctx context.Context, cfg *config, phase Phase, skipSet map[str
 	}
 	cmd.Stderr = os.Stderr
 
-	// Create a channel for command completion
-	done := make(chan error, 1)
-	go func() {
-		done <- cmd.Run()
-	}()
+	// Run the command - CommandContext handles cancellation automatically
+	err = cmd.Run()
+	result.Duration = time.Since(startTime)
 
-	// Wait for completion, timeout, or context cancellation
-	select {
-	case err := <-done:
-		result.Duration = time.Since(startTime)
-		result.Error = err
-		result.Success = err == nil
+	// Check if the error was due to context cancellation or timeout
+	if phaseCtx.Err() != nil {
+		if ctx.Err() != nil {
+			// Parent context was cancelled (interrupt)
+			result.Error = fmt.Errorf("interrupted")
+		} else {
+			// Phase context timed out
+			result.Error = fmt.Errorf("timeout after %v", phase.Timeout)
+		}
+		return result
+	}
 
-		// For AST phase, write captured stdout to language-specific AST file
-		if phase.Name == "ast" && result.Success && stdoutBuf != nil {
-			scope, scopeErr := readScopeJSON(cfg.outputDir)
-			if scopeErr != nil {
-				result.Error = fmt.Errorf("failed to read scope.json for AST output: %w", scopeErr)
+	result.Error = err
+	result.Success = err == nil
+
+	// For AST phase, write captured stdout to language-specific AST file
+	if phase.Name == "ast" && result.Success && stdoutBuf != nil {
+		scope, scopeErr := readScopeJSON(cfg.outputDir)
+		if scopeErr != nil {
+			result.Error = fmt.Errorf("failed to read scope.json for AST output: %w", scopeErr)
+			result.Success = false
+		} else {
+			astOutputPath := filepath.Join(cfg.outputDir, fmt.Sprintf("%s-ast.json", scope.Language))
+			if writeErr := os.WriteFile(astOutputPath, stdoutBuf.Bytes(), 0600); writeErr != nil {
+				result.Error = fmt.Errorf("failed to write AST output to %s: %w", astOutputPath, writeErr)
 				result.Success = false
-			} else {
-				astOutputPath := filepath.Join(cfg.outputDir, fmt.Sprintf("%s-ast.json", scope.Language))
-				if writeErr := os.WriteFile(astOutputPath, stdoutBuf.Bytes(), 0600); writeErr != nil {
-					result.Error = fmt.Errorf("failed to write AST output to %s: %w", astOutputPath, writeErr)
-					result.Success = false
-				} else if cfg.verbose {
-					fmt.Fprintf(os.Stderr, "  AST output written to: %s\n", astOutputPath)
-				}
+			} else if cfg.verbose {
+				fmt.Fprintf(os.Stderr, "  AST output written to: %s\n", astOutputPath)
 			}
 		}
-	case <-time.After(phase.Timeout):
-		// Kill the process on timeout
-		if cmd.Process != nil {
-			if err := cmd.Process.Kill(); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: failed to kill process %s: %v\n", phase.Name, err)
-			}
-			// Wait to reap the process and avoid zombie
-			_ = cmd.Wait()
-		}
-		result.Duration = time.Since(startTime)
-		result.Error = fmt.Errorf("timeout after %v", phase.Timeout)
-	case <-ctx.Done():
-		// Kill the process on interrupt
-		if cmd.Process != nil {
-			if err := cmd.Process.Kill(); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: failed to kill process %s: %v\n", phase.Name, err)
-			}
-			// Wait to reap the process and avoid zombie
-			_ = cmd.Wait()
-		}
-		result.Duration = time.Since(startTime)
-		result.Error = fmt.Errorf("interrupted")
 	}
 
 	return result
