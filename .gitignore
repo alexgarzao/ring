@@ -29,3 +29,5 @@ dist/
 scripts/codereview/bin/
 scripts/codereview/coverage.*
 scripts/codereview/*-test
+
+node_modules/
