@@ -30,18 +30,20 @@ type config struct {
 	outputPath  string
 	workDir     string
 	showVersion bool
+	verbose     bool
 }
 
 // parseFlags parses command-line flags and returns the configuration.
 func parseFlags() *config {
 	cfg := &config{}
 
-	// TODO(review): Clarify help text - when both empty, DetectAllChanges() is used, not HEAD comparison (business-logic-reviewer, 2026-01-13, Low)
-	flag.StringVar(&cfg.baseRef, "base", "", "Base reference (commit/branch). Empty = use HEAD for comparison")
-	flag.StringVar(&cfg.headRef, "head", "", "Head reference (commit/branch). Empty = use working tree")
+	flag.StringVar(&cfg.baseRef, "base", "", "Base reference (commit/branch). When both refs empty, detects all uncommitted changes")
+	flag.StringVar(&cfg.headRef, "head", "", "Head reference (commit/branch). When both refs empty, detects all uncommitted changes")
 	flag.StringVar(&cfg.outputPath, "output", "", "Output file path. Empty = write to stdout")
 	flag.StringVar(&cfg.workDir, "workdir", "", "Working directory. Empty = current directory")
 	flag.BoolVar(&cfg.showVersion, "version", false, "Show version and exit")
+	flag.BoolVar(&cfg.verbose, "v", false, "Enable verbose output")
+	flag.BoolVar(&cfg.verbose, "verbose", false, "Enable verbose output")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: scope-detector [options]\n\n")
@@ -100,6 +102,25 @@ func run() error {
 			return fmt.Errorf("mixed languages detected in changed files: %w", err)
 		}
 		return fmt.Errorf("failed to detect scope: %w", err)
+	}
+
+	// Verbose output
+	if cfg.verbose {
+		fmt.Fprintln(os.Stderr, "=== Scope Detector (Verbose) ===")
+		fmt.Fprintf(os.Stderr, "Working directory: %s\n", workDir)
+		if cfg.baseRef == "" {
+			fmt.Fprintln(os.Stderr, "Base ref: (empty - detecting all uncommitted changes)")
+		} else {
+			fmt.Fprintf(os.Stderr, "Base ref: %s\n", cfg.baseRef)
+		}
+		if cfg.headRef == "" {
+			fmt.Fprintln(os.Stderr, "Head ref: (empty - using working tree)")
+		} else {
+			fmt.Fprintf(os.Stderr, "Head ref: %s\n", cfg.headRef)
+		}
+		fmt.Fprintf(os.Stderr, "Files found: %d\n", result.TotalFiles)
+		fmt.Fprintf(os.Stderr, "Language detected: %s\n", result.Language)
+		fmt.Fprintln(os.Stderr, "================================")
 	}
 
 	// Check for no changes
