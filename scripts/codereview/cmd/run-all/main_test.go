@@ -51,14 +51,6 @@ func cleanupTestBinary(t *testing.T, binaryPath string) {
 	}
 }
 
-// isGitRepo checks if the current directory is inside a git repository.
-func isGitRepo(t *testing.T) bool {
-	t.Helper()
-
-	cmd := exec.Command("git", "rev-parse", "--git-dir")
-	return cmd.Run() == nil
-}
-
 // ============================================================================
 // parseSkipList Unit Tests
 // ============================================================================
@@ -133,7 +125,9 @@ func TestParseSkipList_InvalidPhase(t *testing.T) {
 
 	result := parseSkipList("scope,unknown-phase,ast")
 
-	w.Close()
+	if err := w.Close(); err != nil {
+		t.Fatalf("failed to close stderr pipe: %v", err)
+	}
 	os.Stderr = oldStderr
 
 	var buf bytes.Buffer
@@ -270,7 +264,7 @@ func TestExecutePhase_Timeout(t *testing.T) {
 		sleepBinary = "slow-phase.bat"
 		sleepBinaryPath = filepath.Join(binDir, sleepBinary)
 		script := "@echo off\nping -n 30 127.0.0.1 > nul\n"
-		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0755); err != nil {
+		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0o755); err != nil {
 			t.Fatalf("Failed to create slow script: %v", err)
 		}
 	} else {
@@ -278,7 +272,7 @@ func TestExecutePhase_Timeout(t *testing.T) {
 		sleepBinary = "slow-phase"
 		sleepBinaryPath = filepath.Join(binDir, sleepBinary)
 		script := "#!/bin/sh\nsleep 30\n"
-		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0755); err != nil {
+		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0o755); err != nil {
 			t.Fatalf("Failed to create slow script: %v", err)
 		}
 	}
@@ -332,14 +326,14 @@ func TestExecutePhase_Success(t *testing.T) {
 		fastBinary = "fast-phase.bat"
 		fastBinaryPath = filepath.Join(binDir, fastBinary)
 		script := "@echo off\necho success\n"
-		if err := os.WriteFile(fastBinaryPath, []byte(script), 0755); err != nil {
+		if err := os.WriteFile(fastBinaryPath, []byte(script), 0o755); err != nil {
 			t.Fatalf("Failed to create fast script: %v", err)
 		}
 	} else {
 		fastBinary = "fast-phase"
 		fastBinaryPath = filepath.Join(binDir, fastBinary)
 		script := "#!/bin/sh\necho success\nexit 0\n"
-		if err := os.WriteFile(fastBinaryPath, []byte(script), 0755); err != nil {
+		if err := os.WriteFile(fastBinaryPath, []byte(script), 0o755); err != nil {
 			t.Fatalf("Failed to create fast script: %v", err)
 		}
 	}
@@ -386,14 +380,14 @@ func TestExecutePhase_ContextCancellation(t *testing.T) {
 		sleepBinary = "slow-cancel.bat"
 		sleepBinaryPath = filepath.Join(binDir, sleepBinary)
 		script := "@echo off\nping -n 30 127.0.0.1 > nul\n"
-		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0755); err != nil {
+		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0o755); err != nil {
 			t.Fatalf("Failed to create slow script: %v", err)
 		}
 	} else {
 		sleepBinary = "slow-cancel"
 		sleepBinaryPath = filepath.Join(binDir, sleepBinary)
 		script := "#!/bin/sh\nsleep 30\n"
-		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0755); err != nil {
+		if err := os.WriteFile(sleepBinaryPath, []byte(script), 0o755); err != nil {
 			t.Fatalf("Failed to create slow script: %v", err)
 		}
 	}
@@ -574,8 +568,10 @@ func TestRun_AllPhasesSkipped(t *testing.T) {
 	stderrStr := stderr.String()
 
 	// Should show all phases as skipped
-	expectedSkips := []string{"[SKIP] scope", "[SKIP] static-analysis", "[SKIP] ast",
-		"[SKIP] callgraph", "[SKIP] dataflow", "[SKIP] context"}
+	expectedSkips := []string{
+		"[SKIP] scope", "[SKIP] static-analysis", "[SKIP] ast",
+		"[SKIP] callgraph", "[SKIP] dataflow", "[SKIP] context",
+	}
 
 	for _, expected := range expectedSkips {
 		if !strings.Contains(stderrStr, expected) {
@@ -921,7 +917,7 @@ func writeMockJSON(t *testing.T, path string, data interface{}) {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	if err := os.WriteFile(path, content, 0644); err != nil {
+	if err := os.WriteFile(path, content, 0o644); err != nil {
 		t.Fatalf("Failed to write file %s: %v", path, err)
 	}
 }
