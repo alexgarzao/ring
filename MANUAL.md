@@ -98,14 +98,12 @@ Commands are invoked directly: `/command-name`.
 | `/ring:commit [message]` | Create git commit with AI trailers | `/ring:commit "fix(auth): improve token validation"` |
 | `/ring:lint [path]` | Run lint and dispatch agents to fix all issues | `/ring:lint src/` |
 
-### Session & Learning (ring-default)
+### Session Management
 
 | Command | Use Case | Example |
 |---------|----------|---------|
-| `/ring:create-handoff [task]` | Create task handoff for session continuity | `/ring:create-handoff "implement auth"` |
-| `/ring:resume-handoff [path]` | Resume work from a previous handoff | `/ring:resume-handoff docs/handoffs/task-01.md` |
-| `/query-artifacts [query]` | Search indexed artifacts for precedent | `/query-artifacts "authentication OAuth"` |
-| `/compound-learnings` | Extract learnings from session history | `/compound-learnings` |
+| `/ring:create-handoff [name]` | Create handoff document before /clear | `/ring:create-handoff auth-refactor` |
+| `/ring:resume-handoff [path]` | Resume from handoff after /clear | `/ring:resume-handoff docs/handoffs/auth-refactor/...` |
 
 ### Development Cycle (ring-dev-team)
 
@@ -121,9 +119,9 @@ Commands are invoked directly: `/command-name`.
 
 | Command | Use Case | Example |
 |---------|----------|---------|
-| `/write-guide [topic]` | Start writing a functional guide | `/write-guide authentication` |
-| `/write-api [endpoint]` | Start writing API documentation | `/write-api POST /accounts` |
-| `/review-docs [file]` | Review documentation for quality | `/review-docs docs/guide.md` |
+| `/ring:write-guide [topic]` | Start writing a functional guide | `/ring:write-guide authentication` |
+| `/ring:write-api [endpoint]` | Start writing API documentation | `/ring:write-api POST /accounts` |
+| `/ring:review-docs [file]` | Review documentation for quality | `/ring:review-docs docs/guide.md` |
 
 ---
 
@@ -262,9 +260,9 @@ For Brazilian financial compliance workflows:
 ### Bug Investigation
 
 1. **Investigate** → Use `ring:systematic-debugging` skill
-2. **Trace** → Use `root-cause-tracing` if needed
+2. **Trace** → Use `ring:root-cause-tracing` if needed
 3. **Implement** → Use `ring:test-driven-development` skill
-4. **Verify** → Use `verification-before-completion` skill
+4. **Verify** → Use `ring:verification-before-completion` skill
 5. **Review & Merge** → `/ring:codereview` + `/ring:commit`
 
 ### Code Review

@@ -8,10 +8,10 @@ Generate an internal Operations-facing update/migration guide based on git diff 
 ## Usage
 
 ```
-/release-guide
+/ring:release-guide
 ```
 
-This command invokes the `release-guide-info` skill, which will interactively collect all required information:
+This command invokes the `ring:release-guide-info` skill, which will interactively collect all required information:
 - Base ref (starting point)
 - Target ref (ending point)
 - Version (optional, auto-detected from tags)
@@ -29,9 +29,9 @@ The skill generates:
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `release-guide-info` skill | Full workflow with all options |
+| `ring:release-guide-info` skill | Full workflow with all options |
 | `/ring:commit` | Use after release guide to commit changes |
-| `finishing-a-development-branch` | Complementary workflow for branch completion |
+| `ring:finishing-a-development-branch` | Complementary workflow for branch completion |
 
 ---
 

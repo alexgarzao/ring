@@ -224,8 +224,8 @@ Claude should NOT auto-trigger when:
 
 | Skill | Relationship |
 |-------|--------------|
-| `doubt-triggered-questions` | Use for single questions during work; use ring:interviewing-user for systematic upfront gathering |
-| `brainstorming` | Interview first to gather requirements, THEN brainstorm solutions |
+| `ring:doubt-triggered-questions` | Use for single questions during work; use ring:interviewing-user for systematic upfront gathering |
+| `ring:brainstorming` | Interview first to gather requirements, THEN brainstorm solutions |
 | `ring:writing-plans` | Interview first to clarify scope, THEN create plan |
 
 ## Required Patterns

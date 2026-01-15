@@ -74,7 +74,7 @@ Lints only the services directory.
 | Command/Skill | Relationship |
 |---------------|--------------|
 | `ring:linting-codebase` | Underlying skill with full logic |
-| `dispatching-parallel-agents` | Pattern used for parallel fixes |
+| `ring:dispatching-parallel-agents` | Pattern used for parallel fixes |
 | `/ring:codereview` | Use after lint passes for deeper review |
 
 ---

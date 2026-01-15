@@ -85,7 +85,7 @@ After each batch, all 3 reviewers run in parallel:
 
 ### Step 6: Complete Development
 After all tasks complete:
-- Uses `finishing-a-development-branch` skill
+- Uses `ring:finishing-a-development-branch` skill
 - Verifies tests pass
 - Presents options for branch completion
 

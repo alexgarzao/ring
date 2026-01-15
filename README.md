@@ -15,7 +15,7 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 59 specialized skills** (27 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
+- **Providing 56 specialized skills** (24 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
 - **22 specialized agents** - 5 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -192,7 +192,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 - ring:test-driven-development (RED-GREEN-REFACTOR cycle)
 - ring:systematic-debugging (4-phase root cause analysis)
 - ring:verification-before-completion (Evidence before claims)
-... and 50 more skills
+... and 47 more skills
 ```
 
 ## 🎯 Core Skills
@@ -227,31 +227,31 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 59 Skills (Across 5 Plugins)
+## 📚 All 56 Skills (Across 5 Plugins)
 
-### Core Skills (ring-default plugin - 27 skills)
+### Core Skills (ring-default plugin - 24 skills)
 
 **Testing & Debugging (7):**
 - `ring:test-driven-development` - Write test first, watch fail, minimal code
 - `ring:systematic-debugging` - 4-phase root cause investigation
 - `ring:verification-before-completion` - Evidence before claims
-- `testing-anti-patterns` - Common test pitfalls to avoid
-- `condition-based-waiting` - Replace timeouts with conditions
-- `defense-in-depth` - Multi-layer validation
+- `ring:testing-anti-patterns` - Common test pitfalls to avoid
+- `ring:condition-based-waiting` - Replace timeouts with conditions
+- `ring:defense-in-depth` - Multi-layer validation
 - `ring:linting-codebase` - Parallel lint fixing with agent dispatch
 
 **Collaboration & Planning (11):**
-- `brainstorming` - Structured design refinement
+- `ring:brainstorming` - Structured design refinement
 - `ring:interviewing-user` - Proactive requirements gathering through structured interview
 - `ring:writing-plans` - Zero-context implementation plans
 - `ring:executing-plans` - Batch execution with checkpoints
 - `ring:requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
 - `ring:receiving-code-review` - Responding to feedback
-- `dispatching-parallel-agents` - Concurrent workflows
+- `ring:dispatching-parallel-agents` - Concurrent workflows
 - `ring:subagent-driven-development` - Fast iteration with **parallel reviews**
 - `ring:using-git-worktrees` - Isolated development
-- `finishing-a-development-branch` - Merge/PR decisions
-- `root-cause-tracing` - Backward bug tracking
+- `ring:finishing-a-development-branch` - Merge/PR decisions
+- `ring:root-cause-tracing` - Backward bug tracking
 
 **Meta Skills (4):**
 - `ring:using-ring` - Mandatory skill discovery
@@ -259,12 +259,9 @@ No "should work" → Only "does work" with proof
 - `testing-skills-with-subagents` - Skill validation
 - `testing-agents-with-subagents` - Subagent-specific testing
 
-**Session & Learning (5):**
-- `ring:handoff-tracking` - Task handoff management and session continuity
-- `compound-learnings` - Pattern detection from session history
-- `artifact-query` - Semantic search over past artifacts
+**Session & Learning (2):**
 - `ring:exploring-codebase` - Two-phase codebase exploration
-- `doubt-triggered-questions` - Decision hierarchy for asking vs proceeding
+- `ring:doubt-triggered-questions` - Decision hierarchy for asking vs proceeding
 
 ### Developer Skills (ring-dev-team plugin - 9 skills)
 
@@ -319,7 +316,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 23 slash commands across 5 plugins for common workflows.
+Ring provides 22 slash commands across 5 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -331,10 +328,8 @@ Ring provides 23 slash commands across 5 plugins for common workflows.
 - `/ring:execute-plan [path]` - Execute plan in batches with review checkpoints
 - `/ring:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
 - `/ring:explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
-- `/ring:create-handoff [task]` - Create task handoff document for session continuity
+- `/ring:create-handoff [name]` - Create handoff document for session continuity
 - `/ring:resume-handoff [path]` - Resume work from a previous handoff
-- `/query-artifacts [query]` - Search indexed artifacts for precedent
-- `/compound-learnings` - Extract learnings from session history
 
 ### Product Planning (ring-pm-team)
 
@@ -351,9 +346,9 @@ Ring provides 23 slash commands across 5 plugins for common workflows.
 
 ### Technical Writing (ring-tw-team)
 
-- `/write-guide [topic]` - Start writing a functional guide with voice/tone guidance
-- `/write-api [endpoint]` - Start writing API reference documentation
-- `/review-docs [file]` - Review existing documentation for quality
+- `/ring:write-guide [topic]` - Start writing a functional guide with voice/tone guidance
+- `/ring:write-api [endpoint]` - Start writing API reference documentation
+- `/ring:review-docs [file]` - Review existing documentation for quality
 
 ## 💡 Usage Examples
 
@@ -424,7 +419,7 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 26 core skills
+│   ├── skills/                       # 24 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
 │   │   └── shared-patterns/         # Universal patterns (6 patterns)

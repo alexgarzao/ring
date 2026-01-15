@@ -9,7 +9,7 @@ Surface ambiguities and gather requirements BEFORE implementation begins. This c
 ## Usage
 
 ```
-/interview-me [topic]
+/ring:interview-me [topic]
 ```
 
 ## Arguments
@@ -22,19 +22,19 @@ Surface ambiguities and gather requirements BEFORE implementation begins. This c
 
 ### Before Starting a Feature
 ```
-/interview-me user notifications
+/ring:interview-me user notifications
 ```
 Claude interviews you about notification types, delivery channels, preferences, etc.
 
 ### When Claude Seems Confused
 ```
-/interview-me
+/ring:interview-me
 ```
 Claude analyzes the current conversation and surfaces its uncertainties.
 
 ### Before Architecture Decisions
 ```
-/interview-me database migration strategy
+/ring:interview-me database migration strategy
 ```
 Claude gathers constraints, timelines, compatibility requirements, etc.
 
@@ -77,7 +77,7 @@ You must explicitly confirm this before Claude proceeds.
 
 ## When to Use This Command
 
-| Scenario | Use /interview-me? |
+| Scenario | Use /ring:interview-me? |
 |----------|-------------------|
 | Starting a new feature with vague requirements | ✅ Yes |
 | Claude made wrong assumptions previously | ✅ Yes |
@@ -91,7 +91,7 @@ You must explicitly confirm this before Claude proceeds.
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `doubt-triggered-questions` pattern | For single questions during work |
+| `ring:doubt-triggered-questions` pattern | For single questions during work |
 | `/ring:brainstorm` | Use AFTER interview to explore solutions |
 | `/ring:write-plan` | Use AFTER interview to create implementation plan |
 
