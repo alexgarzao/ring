@@ -4,28 +4,28 @@ package dataflow
 type SourceType string
 
 const (
-	SourceHTTPBody    SourceType = "http_body"
-	SourceHTTPQuery   SourceType = "http_query"
-	SourceHTTPHeader  SourceType = "http_header"
-	SourceHTTPPath    SourceType = "http_path"
-	SourceEnvVar      SourceType = "env_var"
-	SourceFile        SourceType = "file_read"
-	SourceDatabase    SourceType = "database"
-	SourceUserInput   SourceType = "user_input"
-	SourceExternal    SourceType = "external_api"
+	SourceHTTPBody   SourceType = "http_body"
+	SourceHTTPQuery  SourceType = "http_query"
+	SourceHTTPHeader SourceType = "http_header"
+	SourceHTTPPath   SourceType = "http_path"
+	SourceEnvVar     SourceType = "env_var"
+	SourceFile       SourceType = "file_read"
+	SourceDatabase   SourceType = "database"
+	SourceUserInput  SourceType = "user_input"
+	SourceExternal   SourceType = "external_api"
 )
 
 // SinkType categorizes where data flows to
 type SinkType string
 
 const (
-	SinkDatabase   SinkType = "database"
-	SinkExec       SinkType = "command_exec"
-	SinkResponse   SinkType = "http_response"
-	SinkLog        SinkType = "logging"
-	SinkFile       SinkType = "file_write"
-	SinkTemplate   SinkType = "template"
-	SinkRedirect   SinkType = "redirect"
+	SinkDatabase SinkType = "database"
+	SinkExec     SinkType = "command_exec"
+	SinkResponse SinkType = "http_response"
+	SinkLog      SinkType = "logging"
+	SinkFile     SinkType = "file_write"
+	SinkTemplate SinkType = "template"
+	SinkRedirect SinkType = "redirect"
 )
 
 // RiskLevel indicates severity of a flow
@@ -75,24 +75,24 @@ type Flow struct {
 
 // NilSource tracks variables that may be nil/null
 type NilSource struct {
-	File       string `json:"file"`
-	Line       int    `json:"line"`
-	Variable   string `json:"variable"`
-	Origin     string `json:"origin"`
-	IsChecked  bool   `json:"is_checked"`
-	CheckLine  int    `json:"check_line,omitempty"`
-	UsageLine  int    `json:"usage_line,omitempty"`
-	Risk       RiskLevel `json:"risk"`
+	File      string    `json:"file"`
+	Line      int       `json:"line"`
+	Variable  string    `json:"variable"`
+	Origin    string    `json:"origin"`
+	IsChecked bool      `json:"is_checked"`
+	CheckLine int       `json:"check_line,omitempty"`
+	UsageLine int       `json:"usage_line,omitempty"`
+	Risk      RiskLevel `json:"risk"`
 }
 
 // FlowAnalysis contains all analysis results for a language
 type FlowAnalysis struct {
-	Language    string      `json:"language"`
-	Sources     []Source    `json:"sources"`
-	Sinks       []Sink      `json:"sinks"`
-	Flows       []Flow      `json:"flows"`
-	NilSources  []NilSource `json:"nil_sources"`
-	Statistics  Stats       `json:"statistics"`
+	Language   string      `json:"language"`
+	Sources    []Source    `json:"sources"`
+	Sinks      []Sink      `json:"sinks"`
+	Flows      []Flow      `json:"flows"`
+	NilSources []NilSource `json:"nil_sources"`
+	Statistics Stats       `json:"statistics"`
 }
 
 // Stats provides summary statistics
@@ -109,11 +109,11 @@ type Stats struct {
 
 // SecuritySummary aggregates results across languages
 type SecuritySummary struct {
-	Timestamp   string                  `json:"timestamp"`
-	Languages   []string                `json:"languages"`
-	Analyses    map[string]FlowAnalysis `json:"analyses"`
-	TotalStats  Stats                   `json:"total_stats"`
-	TopRisks    []Flow                  `json:"top_risks"`
+	Timestamp  string                  `json:"timestamp"`
+	Languages  []string                `json:"languages"`
+	Analyses   map[string]FlowAnalysis `json:"analyses"`
+	TotalStats Stats                   `json:"total_stats"`
+	TopRisks   []Flow                  `json:"top_risks"`
 }
 
 // Analyzer interface for language-specific implementations

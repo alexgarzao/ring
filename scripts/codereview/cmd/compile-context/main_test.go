@@ -40,10 +40,23 @@ func buildTestBinary(t *testing.T) string {
 }
 
 // cleanupTestBinary removes the test binary.
+// Failures are logged but do not fail the test, as cleanup failures are typically
+// transient (e.g., file locked on Windows) and do not affect test correctness.
 func cleanupTestBinary(t *testing.T, binaryPath string) {
 	t.Helper()
 
-	if err := os.Remove(binaryPath); err != nil && !os.IsNotExist(err) {
+	err := os.Remove(binaryPath)
+	switch {
+	case err == nil:
+		// Successfully removed
+	case os.IsNotExist(err):
+		// Already removed or never created - not an issue
+	case os.IsPermission(err):
+		// Permission denied - log for debugging but don't fail
+		// This can happen on some platforms when the binary is still in use
+		t.Logf("Warning: permission denied removing test binary %s (may still be in use): %v", binaryPath, err)
+	default:
+		// Other errors - log with details for debugging
 		t.Logf("Warning: failed to remove test binary %s: %v", binaryPath, err)
 	}
 }
@@ -54,11 +67,11 @@ func createMockPhaseOutputs(t *testing.T, dir string) {
 
 	// Create scope.json
 	scopeData := map[string]interface{}{
-		"base_ref":  "main",
-		"head_ref":  "HEAD",
-		"language":  "go",
-		"files":     map[string]interface{}{"modified": []string{"main.go"}, "added": []string{}, "deleted": []string{}},
-		"stats":     map[string]interface{}{"total_files": 1, "total_additions": 10, "total_deletions": 5},
+		"base_ref":          "main",
+		"head_ref":          "HEAD",
+		"language":          "go",
+		"files":             map[string]interface{}{"modified": []string{"main.go"}, "added": []string{}, "deleted": []string{}},
+		"stats":             map[string]interface{}{"total_files": 1, "total_additions": 10, "total_deletions": 5},
 		"packages_affected": []string{"main"},
 	}
 	writeMockJSON(t, filepath.Join(dir, "scope.json"), scopeData)
@@ -148,13 +161,14 @@ func TestMain_Help(t *testing.T) {
 	// Accept either as valid since we just want to verify the output content
 	if err != nil {
 		// Check if it's an exit error with expected code
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			if exitErr.ExitCode() != 2 {
-				t.Fatalf("--help exited with unexpected code %d: %v\nOutput: %s",
-					exitErr.ExitCode(), err, string(output))
-			}
-		} else {
-			t.Fatalf("--help failed unexpectedly: %v\nOutput: %s", err, string(output))
+		exitErr, ok := err.(*exec.ExitError)
+		if !ok {
+			t.Fatalf("--help failed with unexpected error type %T: %v\nOutput: %s", err, err, string(output))
+		}
+		// Go's flag package exits with code 2 for --help
+		if exitCode := exitErr.ExitCode(); exitCode != 2 {
+			t.Fatalf("--help exited with unexpected code %d (expected 0 or 2): %v\nOutput: %s",
+				exitCode, err, string(output))
 		}
 	}
 

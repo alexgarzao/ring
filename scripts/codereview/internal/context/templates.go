@@ -268,10 +268,10 @@ type TemplateData struct {
 	MediumRiskFlows     []DataFlow
 
 	// Call graph (business-logic-reviewer, test-reviewer)
-	HasCallGraph               bool
-	HighImpactFunctions        []FunctionCallGraph
-	AllModifiedFunctionsGraph  []FunctionCallGraph // All modified functions with call graph data
-	UncoveredFunctions         []FunctionCallGraph
+	HasCallGraph              bool
+	HighImpactFunctions       []FunctionCallGraph
+	AllModifiedFunctionsGraph []FunctionCallGraph // All modified functions with call graph data
+	UncoveredFunctions        []FunctionCallGraph
 
 	// Nil safety (nil-safety-reviewer)
 	HasNilSources      bool

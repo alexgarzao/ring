@@ -1009,11 +1009,11 @@ func containsVariableOrDerivative(line, varName string) bool {
 
 	// Check for common transformations
 	derivatives := []string{
-		varName + ".",      // Method call
-		varName + "[",      // Index access
-		"*" + varName,      // Dereference
-		"&" + varName,      // Address
-		varName + "Str",    // Common suffixes
+		varName + ".",   // Method call
+		varName + "[",   // Index access
+		"*" + varName,   // Dereference
+		"&" + varName,   // Address
+		varName + "Str", // Common suffixes
 		varName + "String",
 		varName + "Bytes",
 	}

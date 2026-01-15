@@ -92,14 +92,14 @@ type FunctionDiff struct {
 
 // FunctionInfo holds function details.
 type FunctionInfo struct {
-	Name      string      `json:"name,omitempty"`
-	Signature string      `json:"signature"`
-	File      string      `json:"file,omitempty"`
-	Package   string      `json:"package,omitempty"`
-	LineStart int         `json:"line_start"`
-	LineEnd   int         `json:"line_end"`
-	Params    []ParamInfo `json:"params,omitempty"`
-	Returns   []ReturnTypeInfo  `json:"returns,omitempty"`
+	Name      string           `json:"name,omitempty"`
+	Signature string           `json:"signature"`
+	File      string           `json:"file,omitempty"`
+	Package   string           `json:"package,omitempty"`
+	LineStart int              `json:"line_start"`
+	LineEnd   int              `json:"line_end"`
+	Params    []ParamInfo      `json:"params,omitempty"`
+	Returns   []ReturnTypeInfo `json:"returns,omitempty"`
 }
 
 // ParamInfo holds parameter details.

@@ -5,6 +5,9 @@ import (
 	"testing"
 )
 
+// minTemplateLength is the minimum expected length for valid reviewer templates.
+const minTemplateLength = 100
+
 func TestRenderTemplate_CodeReviewer(t *testing.T) {
 	data := &TemplateData{
 		FindingCount: 2,
@@ -208,17 +211,17 @@ func TestRenderTemplate_TestReviewer(t *testing.T) {
 	}
 }
 
-func TestGetTemplateForReviewer(t *testing.T) {
+func TestGetTemplateForReviewer_ValidReviewers(t *testing.T) {
 	tests := []struct {
 		reviewer  string
 		wantLen   int  // non-zero means template exists
 		wantError bool // true if error expected
 	}{
-		{"code-reviewer", 100, false},
-		{"security-reviewer", 100, false},
-		{"business-logic-reviewer", 100, false},
-		{"test-reviewer", 100, false},
-		{"nil-safety-reviewer", 100, false},
+		{"code-reviewer", minTemplateLength, false},
+		{"security-reviewer", minTemplateLength, false},
+		{"business-logic-reviewer", minTemplateLength, false},
+		{"test-reviewer", minTemplateLength, false},
+		{"nil-safety-reviewer", minTemplateLength, false},
 		{"unknown-reviewer", 0, true},
 	}
 
@@ -266,11 +269,22 @@ func TestRenderTemplate_EmptyData(t *testing.T) {
 
 func TestTemplateFuncs_Inc(t *testing.T) {
 	fn := templateFuncs["inc"].(func(int) int)
-	if fn(0) != 1 {
-		t.Error("inc(0) should return 1")
+	tests := []struct {
+		name     string
+		input    int
+		expected int
+	}{
+		{"zero", 0, 1},
+		{"positive", 5, 6},
+		{"negative", -1, 0},
+		{"large_negative", -100, -99},
 	}
-	if fn(5) != 6 {
-		t.Error("inc(5) should return 6")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := fn(tt.input); got != tt.expected {
+				t.Errorf("inc(%d) = %d, want %d", tt.input, got, tt.expected)
+			}
+		})
 	}
 }
 
@@ -349,9 +363,9 @@ func TestTemplateFuncs_FieldChanges(t *testing.T) {
 		},
 		After: FieldsData{
 			Fields: []FieldInfo{
-				{Name: "ID", Type: "int64"},      // modified
-				{Name: "Name", Type: "string"},   // unchanged (should not appear)
-				{Name: "Email", Type: "string"},  // added
+				{Name: "ID", Type: "int64"},     // modified
+				{Name: "Name", Type: "string"},  // unchanged (should not appear)
+				{Name: "Email", Type: "string"}, // added
 			},
 		},
 	}
