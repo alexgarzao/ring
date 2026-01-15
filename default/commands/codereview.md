@@ -24,10 +24,10 @@ if [ ! -x "$BINARY" ]; then
 fi
 
 # Run pipeline
-$BINARY --base=main --head=HEAD --output=.ring/codereview --verbose
+$BINARY --base=main --head=HEAD --output=docs/codereview --verbose
 ```
 
-**Output:** Creates 5 context files in `.ring/codereview/`:
+**Output:** Creates 5 context files in `docs/codereview/`:
 - `context-code-reviewer.md`
 - `context-security-reviewer.md`
 - `context-business-logic-reviewer.md`

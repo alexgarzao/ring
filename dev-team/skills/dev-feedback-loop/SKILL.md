@@ -523,7 +523,7 @@ If correlation > 0.5:
 
 ## Step 5: Write Feedback Report
 
-**Location:** `.ring/dev-team/feedback/cycle-YYYY-MM-DD.md`
+**Location:** `docs/dev-team/feedback/cycle-YYYY-MM-DD.md`
 
 **Required sections:**
 
@@ -567,7 +567,7 @@ TodoWrite tool:
 - [ ] Step 2: Assertiveness score calculated
 - [ ] Step 3: Prompt quality analyzed (if agents executed)
 - [ ] Step 4: Threshold alerts checked
-- [ ] Step 5: Feedback report written to `.ring/dev-team/feedback/`
+- [ ] Step 5: Feedback report written to `docs/dev-team/feedback/`
 - [ ] Step 6: Improvement suggestions generated
 
 **You CANNOT mark todo as completed until all steps above are done.**
@@ -585,7 +585,7 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 | Threshold Alerts | X |
 | Root Cause Analyses | Y |
 | Improvement Suggestions | Z |
-| Report Location | .ring/dev-team/feedback/cycle-YYYY-MM-DD.md |
+| Report Location | docs/dev-team/feedback/cycle-YYYY-MM-DD.md |
 
 ## Anti-Patterns
 

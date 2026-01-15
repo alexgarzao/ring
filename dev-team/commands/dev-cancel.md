@@ -51,7 +51,7 @@ Status: cancelled
 Completed: 3/5 tasks
 
 State saved to: docs/ring:dev-cycle/current-cycle.json (or docs/ring:dev-refactor/current-cycle.json)
-Partial report: .ring/dev-team/feedback/cycle-2024-01-15-partial.md
+Partial report: docs/dev-team/feedback/cycle-2024-01-15-partial.md
 
 To resume later:
   /ring:dev-cycle --resume

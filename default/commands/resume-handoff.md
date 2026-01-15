@@ -1,118 +1,140 @@
 ---
 name: ring:resume-handoff
-description: Resume work from a handoff document with context analysis and validation
-argument-hint: "<path-to-handoff.md>"
+description: Resume work from a handoff document after context clear
+user_invocable: true
+arguments:
+  - name: path
+    description: Path to the handoff markdown file
+    required: true
 ---
 
-Resume work from a handoff document through an interactive process. Handoffs contain critical context, learnings, and next steps from previous sessions.
+# /ring:resume-handoff Command
+
+Resumes work from a previously created handoff document. Use this after running `/clear` to restore context from a handoff file created with `/ring:create-handoff`.
 
 ## Usage
 
 ```
 /ring:resume-handoff <path-to-handoff.md>
-/ring:resume-handoff <session-name>
 ```
 
-**Arguments:**
-- `path-to-handoff.md`: Direct path to handoff file
-- `session-name`: Session folder name (will find most recent handoff)
+## Arguments
 
-## Process
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `path` | Yes | Path to the handoff markdown file |
 
-### Step 1: Locate Handoff
+## How It Works
 
-**If path provided:** Read the handoff file directly.
+1. **Read the handoff file** at the specified path
+2. **Parse all sections** to understand session state
+3. **Acknowledge the context** by summarizing what was happening
+4. **Identify next steps** from the handoff
+5. **Continue work** from where the previous session left off
 
-**If session-name provided:**
-```bash
-# Find most recent handoff for session
-ls -t docs/handoffs/{session-name}/*.md | head -1
-```
-
-**If nothing provided:** List available handoffs:
-```bash
-find docs/handoffs -name "*.md" -type f | head -10
-```
-
-### Step 2: Read and Analyze Handoff
-
-1. Read handoff document completely
-2. Extract key sections:
-   - Task(s) and their statuses
-   - Recent changes
-   - Learnings (what worked, what failed)
-   - Critical references
-   - Action items and next steps
-
-### Step 3: Verify Current State
-
-Check if changes from handoff still exist:
-
-```bash
-# Check files mentioned in handoff exist
-ls -la {files-from-handoff}
-
-# Check git state
-git log --oneline -5
-git status
-```
-
-### Step 4: Present Analysis
-
-Present to user:
-```
-I have analyzed the handoff from {date}.
-
-**Original Tasks:**
-- [Task 1]: {Status from handoff} -> {Current verification}
-
-**Key Learnings:**
-- {Learning} - {Still valid / Changed}
-
-**Recommended Next Actions:**
-1. {Most logical next step}
-2. {Second priority}
-
-Shall I proceed with {recommended action}?
-```
-
-### Step 5: Create Action Plan
-
-Use TodoWrite to create task list from action items.
-
-### Step 6: Begin Implementation
-
-Start with first approved task, referencing learnings from handoff.
-
-## Guidelines
-
-1. **Read entire handoff first** - Do not start work until fully analyzed
-2. **Verify current state** - Handoff state may not match current state
-3. **Apply learnings** - Use documented patterns and avoid documented failures
-4. **Be interactive** - Get user buy-in before starting work
-
-## Common Scenarios
-
-| Scenario | Action |
-|----------|--------|
-| All changes present | Proceed with next steps |
-| Some changes missing | Reconcile differences first |
-| Tasks in_progress | Complete unfinished work first |
-| Stale handoff | Re-evaluate strategy with user |
-
----
-
-## MANDATORY: Load Full Skill
-
-**This command MUST load the skill for complete workflow execution.**
+## Workflow
 
 ```
-Use Skill tool: ring:handoff-tracking
+# Previous session
+User: /ring:create-handoff auth-refactor "OAuth integration"
+Assistant: [Creates handoff file]
+
+# Clear context
+User: /clear
+
+# New session - resume from handoff
+User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
+Assistant: [Reads handoff, acknowledges context, continues work]
 ```
 
-The skill contains the complete workflow with:
-- Handoff location and reading process
-- State verification procedures
-- Action plan creation
-- Learnings application
-- Interactive resumption guidelines
+## What to Do When Resuming
+
+When this command is invoked:
+
+1. **Read the entire handoff file**
+2. **Summarize the context** back to the user:
+   - What was being worked on
+   - Current state
+   - Key decisions made
+3. **Identify blockers** from Open Questions section
+4. **Propose next action** based on Next Steps section
+5. **Ask for confirmation** before proceeding
+
+## Response Template
+
+When resuming, respond with:
+
+```
+## Resuming: {Session Name}
+
+**Previous Session:** {timestamp from handoff}
+**Status:** {status from handoff}
+
+### Context Restored
+
+{Brief summary of what was happening}
+
+### Key Decisions (Already Made)
+
+- {List key decisions so they're not revisited}
+
+### Current State
+
+{Where things stand}
+
+### Recommended Next Action
+
+Based on the handoff, the next step is: {first item from Next Steps}
+
+Should I proceed with this, or would you like to adjust the approach?
+```
+
+## Examples
+
+### Basic Resume
+```
+User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.mdAssistant: 
+
+## Resuming: auth-refactor
+
+**Previous Session:** 2025-12-27 15:45:00
+**Status:** In Progress
+
+### Context Restored
+
+Working on OAuth provider integration for the authentication system. 
+Google OAuth was completed, currently implementing GitHub OAuth.
+
+### Key Decisions (Already Made)
+
+- Using passport.js for OAuth handling
+- Storing tokens in Redis with 24h TTL
+- Using refresh token rotation
+
+### Current State
+
+- Google OAuth: Complete
+- GitHub OAuth: Partially implemented (callback handler pending)
+- Tests: 12/15 passing
+
+### Recommended Next Action
+
+Based on the handoff, the next step is: Complete GitHub OAuth callback handler
+
+Should I proceed with this, or would you like to adjust the approach?
+```
+
+## Error Handling
+
+| Error | Cause | Resolution |
+|-------|-------|------------|
+| File not found | Invalid path | Check the path and try again |
+| Invalid format | Not a handoff file | Ensure file was created with /ring:create-handoff |
+| Missing sections | Incomplete handoff | Review handoff file and add missing sections |
+
+## Tips
+
+- **Keep handoffs fresh**: Create new handoffs frequently during long sessions
+- **Be specific**: The more detail in the handoff, the better the resumption
+- **Check Next Steps**: Ensure the Next Steps section is actionable
+- **Review before clearing**: Verify the handoff captures everything important

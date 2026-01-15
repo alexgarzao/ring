@@ -81,18 +81,18 @@ Recommendations:
 → Skill ring:dev-testing: Add test planning phase
 → Agent backend-*: Reinforce input validation
 
-Full report: .ring/dev-team/feedback/cycle-2024-01-15.md
+Full report: docs/dev-team/feedback/cycle-2024-01-15.md
 ```
 
 ## Report Location
 
-Reports are saved to: `.ring/dev-team/feedback/cycle-YYYY-MM-DD.md`
+Reports are saved to: `docs/dev-team/feedback/cycle-YYYY-MM-DD.md`
 
 ## Available Reports
 
 List all reports:
 ```bash
-ls .ring/dev-team/feedback/
+ls docs/dev-team/feedback/
 ```
 
 ## Related Commands
@@ -107,7 +107,7 @@ ls .ring/dev-team/feedback/
 
 Now loading the most recent feedback report...
 
-Search for reports in: `.ring/dev-team/feedback/cycle-*.md`
+Search for reports in: `docs/dev-team/feedback/cycle-*.md`
 
 ---
 

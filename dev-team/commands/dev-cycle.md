@@ -140,7 +140,7 @@ After all tasks: `ring:dev-feedback-loop` generates metrics report.
 ## Output
 
 - **State file**: `docs/ring:dev-cycle/current-cycle.json` (feature) or `docs/ring:dev-refactor/current-cycle.json` (refactor)
-- **Feedback report**: `.ring/dev-team/feedback/cycle-YYYY-MM-DD.md`
+- **Feedback report**: `docs/dev-team/feedback/cycle-YYYY-MM-DD.md`
 
 ## Related Commands
 

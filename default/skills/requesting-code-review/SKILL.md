@@ -404,14 +404,14 @@ build_from_source() {
 # This ensures atomic verify-and-execute to prevent TOCTOU attacks
 if [[ -n "$BINARY" ]]; then
     if secure_execute_binary "$BINARY" "$CHECKSUM_FILE" \
-        --base="$BASE_SHA" --head="$HEAD_SHA" --output=".ring/codereview" --verbose; then
+        --base="$BASE_SHA" --head="$HEAD_SHA" --output="docs/codereview" --verbose; then
         echo "Pre-analysis pipeline completed successfully"
     else
         echo "⚠️ Binary verification or execution failed"
         if build_from_source; then
             # Execute the newly built binary (no checksum for local builds)
             RING_ALLOW_UNVERIFIED=true secure_execute_binary "$BINARY" "" \
-                --base="$BASE_SHA" --head="$HEAD_SHA" --output=".ring/codereview" --verbose
+                --base="$BASE_SHA" --head="$HEAD_SHA" --output="docs/codereview" --verbose
         else
             echo "⚠️ DEGRADED MODE: Proceeding without pre-analysis"
             echo "  Reviewers will work without static analysis context."
@@ -423,7 +423,7 @@ else
     echo "No pre-built binary found for ${OS}_${ARCH}"
     if build_from_source; then
         RING_ALLOW_UNVERIFIED=true secure_execute_binary "$BINARY" "" \
-            --base="$BASE_SHA" --head="$HEAD_SHA" --output=".ring/codereview" --verbose
+            --base="$BASE_SHA" --head="$HEAD_SHA" --output="docs/codereview" --verbose
     else
         echo "⚠️ DEGRADED MODE: Pre-analysis binary not available"
         echo "  Reviewers will proceed WITHOUT static analysis context."
@@ -442,11 +442,11 @@ If pipeline succeeded, read the 5 context files:
 
 | Reviewer | Context File |
 |----------|--------------|
-| `ring:code-reviewer` | `.ring/codereview/context-code-reviewer.md` |
-| `ring:security-reviewer` | `.ring/codereview/context-security-reviewer.md` |
-| `ring:business-logic-reviewer` | `.ring/codereview/context-business-logic-reviewer.md` |
-| `ring:test-reviewer` | `.ring/codereview/context-test-reviewer.md` |
-| `ring:nil-safety-reviewer` | `.ring/codereview/context-nil-safety-reviewer.md` |
+| `ring:code-reviewer` | `docs/codereview/context-code-reviewer.md` |
+| `ring:security-reviewer` | `docs/codereview/context-security-reviewer.md` |
+| `ring:business-logic-reviewer` | `docs/codereview/context-business-logic-reviewer.md` |
+| `ring:test-reviewer` | `docs/codereview/context-test-reviewer.md` |
+| `ring:nil-safety-reviewer` | `docs/codereview/context-nil-safety-reviewer.md` |
 
 Store each file's content in `preanalysis_state.context[reviewer_name]`.
 
