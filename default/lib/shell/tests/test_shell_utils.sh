@@ -8,7 +8,6 @@
 # Tests:
 #   - json-escape.sh: json_escape(), json_string()
 #   - hook-utils.sh: get_json_field(), output_hook_result(), etc.
-#   - context-check.sh: estimate_context_usage(), increment_turn_count(), etc.
 
 set -euo pipefail
 
@@ -133,38 +132,6 @@ assert_exit_code() {
     fi
 }
 
-assert_file_exists() {
-    local filepath="$1"
-    local test_name="$2"
-    TESTS_RUN=$((TESTS_RUN + 1))
-    if [[ -f "$filepath" ]]; then
-        echo -e "${GREEN}✓${NC} $test_name"
-        TESTS_PASSED=$((TESTS_PASSED + 1))
-        return 0
-    else
-        echo -e "${RED}✗${NC} $test_name"
-        echo "  File does not exist: $filepath"
-        TESTS_FAILED=$((TESTS_FAILED + 1))
-        return 1
-    fi
-}
-
-assert_dir_exists() {
-    local dirpath="$1"
-    local test_name="$2"
-    TESTS_RUN=$((TESTS_RUN + 1))
-    if [[ -d "$dirpath" ]]; then
-        echo -e "${GREEN}✓${NC} $test_name"
-        TESTS_PASSED=$((TESTS_PASSED + 1))
-        return 0
-    else
-        echo -e "${RED}✗${NC} $test_name"
-        echo "  Directory does not exist: $dirpath"
-        TESTS_FAILED=$((TESTS_FAILED + 1))
-        return 1
-    fi
-}
-
 # =============================================================================
 # Source the utilities (after helpers are defined)
 # =============================================================================
@@ -172,7 +139,6 @@ assert_dir_exists() {
 # Source in order of dependencies
 source "${SCRIPT_DIR}/../json-escape.sh"
 source "${SCRIPT_DIR}/../hook-utils.sh"
-source "${SCRIPT_DIR}/../context-check.sh"
 
 # =============================================================================
 # json_escape() Tests
@@ -384,34 +350,6 @@ test_get_project_root_fallback() {
 }
 
 # =============================================================================
-# get_ring_state_dir() Tests
-# =============================================================================
-
-test_get_ring_state_dir_creates() {
-    echo -e "\n${YELLOW}=== get_ring_state_dir() Tests ===${NC}"
-    setup_test_env
-
-    local result
-    result=$(get_ring_state_dir)
-    assert_equals "${TEST_TMP_DIR}/.ring/state" "$result" "get_ring_state_dir: returns correct path"
-    assert_dir_exists "$result" "get_ring_state_dir: creates directory"
-
-    teardown_test_env
-}
-
-test_get_ring_state_dir_permissions() {
-    setup_test_env
-
-    local result
-    result=$(get_ring_state_dir)
-    local perms
-    perms=$(stat -f "%Lp" "$result" 2>/dev/null || stat -c "%a" "$result" 2>/dev/null)
-    assert_equals "700" "$perms" "get_ring_state_dir: has secure permissions (700)"
-
-    teardown_test_env
-}
-
-# =============================================================================
 # output_hook_result() Tests
 # =============================================================================
 
@@ -468,300 +406,6 @@ test_output_hook_empty_with_event() {
 }
 
 # =============================================================================
-# estimate_context_usage() Tests
-# =============================================================================
-
-test_estimate_context_usage_no_data() {
-    echo -e "\n${YELLOW}=== estimate_context_usage() Tests ===${NC}"
-    setup_test_env
-
-    local result
-    result=$(estimate_context_usage)
-    assert_equals "0" "$result" "estimate_context_usage: returns 0 when no data"
-
-    teardown_test_env
-}
-
-test_estimate_context_usage_from_turns() {
-    setup_test_env
-
-    # Create session file with turn count
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    cat > "${state_dir}/current-session.json" <<EOF
-{
-  "turn_count": 23,
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-EOF
-
-    local result
-    result=$(estimate_context_usage)
-    assert_equals "23" "$result" "estimate_context_usage: turn 23 → ~23%"
-
-    teardown_test_env
-}
-
-test_estimate_context_usage_from_context_file() {
-    setup_test_env
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    cat > "${state_dir}/context-usage.json" <<EOF
-{
-  "estimated_percentage": 50,
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-EOF
-
-    local result
-    result=$(estimate_context_usage)
-    assert_equals "50" "$result" "estimate_context_usage: reads from context-usage.json"
-
-    teardown_test_env
-}
-
-test_estimate_context_usage_capped_at_100() {
-    setup_test_env
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    cat > "${state_dir}/current-session.json" <<EOF
-{
-  "turn_count": 150,
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-EOF
-
-    local result
-    result=$(estimate_context_usage)
-    assert_equals "100" "$result" "estimate_context_usage: capped at 100%"
-
-    teardown_test_env
-}
-
-# =============================================================================
-# increment_turn_count() Tests
-# =============================================================================
-
-test_increment_turn_count_from_zero() {
-    echo -e "\n${YELLOW}=== increment_turn_count() Tests ===${NC}"
-    setup_test_env
-
-    local result
-    result=$(increment_turn_count)
-    assert_equals "1" "$result" "increment_turn_count: 0 → 1"
-
-    teardown_test_env
-}
-
-test_increment_turn_count_existing() {
-    setup_test_env
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    cat > "${state_dir}/current-session.json" <<EOF
-{
-  "turn_count": 5,
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-EOF
-
-    local result
-    result=$(increment_turn_count)
-    assert_equals "6" "$result" "increment_turn_count: 5 → 6"
-
-    # Verify file was updated
-    local stored
-    stored=$(get_json_field "$(cat "${state_dir}/current-session.json")" "turn_count")
-    assert_equals "6" "$stored" "increment_turn_count: file updated to 6"
-
-    teardown_test_env
-}
-
-test_increment_turn_count_concurrent() {
-    echo -e "\n${YELLOW}=== increment_turn_count() Concurrency Test ===${NC}"
-    setup_test_env
-
-    # Reset to 0
-    reset_turn_count
-
-    # Run 10 concurrent increments
-    for i in {1..10}; do
-        increment_turn_count &
-    done
-    wait
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    local final_count
-    final_count=$(get_json_field "$(cat "${state_dir}/current-session.json")" "turn_count")
-
-    # With proper locking, should be exactly 10
-    assert_equals "10" "$final_count" "increment_turn_count: concurrent increments (10 parallel) → 10"
-
-    teardown_test_env
-}
-
-# =============================================================================
-# reset_turn_count() Tests
-# =============================================================================
-
-test_reset_turn_count() {
-    echo -e "\n${YELLOW}=== reset_turn_count() Tests ===${NC}"
-    setup_test_env
-
-    # First increment a few times
-    increment_turn_count >/dev/null
-    increment_turn_count >/dev/null
-    increment_turn_count >/dev/null
-
-    # Now reset
-    reset_turn_count
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    local count
-    count=$(get_json_field "$(cat "${state_dir}/current-session.json")" "turn_count")
-    assert_equals "0" "$count" "reset_turn_count: resets to 0"
-
-    teardown_test_env
-}
-
-test_reset_turn_count_creates_file() {
-    setup_test_env
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    local session_file="${state_dir}/current-session.json"
-
-    # Ensure file doesn't exist
-    rm -f "$session_file"
-
-    # Reset should create it
-    reset_turn_count
-
-    assert_file_exists "$session_file" "reset_turn_count: creates file if missing"
-
-    teardown_test_env
-}
-
-test_reset_turn_count_includes_timestamps() {
-    setup_test_env
-
-    reset_turn_count
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    local content
-    content=$(cat "${state_dir}/current-session.json")
-
-    assert_contains "started_at" "$content" "reset_turn_count: includes started_at"
-    assert_contains "updated_at" "$content" "reset_turn_count: includes updated_at"
-
-    teardown_test_env
-}
-
-# =============================================================================
-# update_context_usage() Tests
-# =============================================================================
-
-test_update_context_usage() {
-    echo -e "\n${YELLOW}=== update_context_usage() Tests ===${NC}"
-    setup_test_env
-
-    update_context_usage 75
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    local content
-    content=$(cat "${state_dir}/context-usage.json")
-
-    assert_contains '"estimated_percentage": 75' "$content" "update_context_usage: stores percentage"
-    assert_contains "threshold_info" "$content" "update_context_usage: includes thresholds"
-
-    teardown_test_env
-}
-
-test_update_context_usage_invalid_input() {
-    setup_test_env
-
-    # Non-numeric input should be treated as 0
-    update_context_usage "invalid"
-
-    local state_dir
-    state_dir=$(get_ring_state_dir)
-    local content
-    content=$(cat "${state_dir}/context-usage.json")
-
-    assert_contains '"estimated_percentage": 0' "$content" "update_context_usage: invalid input → 0"
-
-    teardown_test_env
-}
-
-# =============================================================================
-# get_context_warning() Tests
-# =============================================================================
-
-test_get_context_warning_ok() {
-    echo -e "\n${YELLOW}=== get_context_warning() Tests ===${NC}"
-
-    local result
-    result=$(get_context_warning 30)
-    assert_empty "$result" "get_context_warning: 30% → no warning"
-}
-
-test_get_context_warning_info() {
-    local result
-    result=$(get_context_warning 50)
-    assert_contains "INFO" "$result" "get_context_warning: 50% → INFO"
-    assert_contains "50%" "$result" "get_context_warning: includes percentage"
-}
-
-test_get_context_warning_warning() {
-    local result
-    result=$(get_context_warning 70)
-    assert_contains "WARNING" "$result" "get_context_warning: 70% → WARNING"
-}
-
-test_get_context_warning_critical() {
-    local result
-    result=$(get_context_warning 85)
-    assert_contains "CRITICAL" "$result" "get_context_warning: 85% → CRITICAL"
-    assert_contains "/clear" "$result" "get_context_warning: critical includes /clear suggestion"
-}
-
-# =============================================================================
-# get_warning_level() Tests
-# =============================================================================
-
-test_get_warning_level_ok() {
-    echo -e "\n${YELLOW}=== get_warning_level() Tests ===${NC}"
-
-    local result
-    result=$(get_warning_level 30)
-    assert_equals "ok" "$result" "get_warning_level: 30% → ok"
-}
-
-test_get_warning_level_info() {
-    local result
-    result=$(get_warning_level 55)
-    assert_equals "info" "$result" "get_warning_level: 55% → info"
-}
-
-test_get_warning_level_warning() {
-    local result
-    result=$(get_warning_level 75)
-    assert_equals "warning" "$result" "get_warning_level: 75% → warning"
-}
-
-test_get_warning_level_critical() {
-    local result
-    result=$(get_warning_level 90)
-    assert_equals "critical" "$result" "get_warning_level: 90% → critical"
-}
-
-# =============================================================================
 # Run All Tests
 # =============================================================================
 
@@ -802,10 +446,6 @@ main() {
     test_get_project_root
     test_get_project_root_fallback
 
-    # get_ring_state_dir tests
-    test_get_ring_state_dir_creates
-    test_get_ring_state_dir_permissions
-
     # output_hook_result tests
     test_output_hook_result_continue
     test_output_hook_result_block_with_message
@@ -817,38 +457,6 @@ main() {
     # output_hook_empty tests
     test_output_hook_empty
     test_output_hook_empty_with_event
-
-    # estimate_context_usage tests
-    test_estimate_context_usage_no_data
-    test_estimate_context_usage_from_turns
-    test_estimate_context_usage_from_context_file
-    test_estimate_context_usage_capped_at_100
-
-    # increment_turn_count tests
-    test_increment_turn_count_from_zero
-    test_increment_turn_count_existing
-    test_increment_turn_count_concurrent
-
-    # reset_turn_count tests
-    test_reset_turn_count
-    test_reset_turn_count_creates_file
-    test_reset_turn_count_includes_timestamps
-
-    # update_context_usage tests
-    test_update_context_usage
-    test_update_context_usage_invalid_input
-
-    # get_context_warning tests
-    test_get_context_warning_ok
-    test_get_context_warning_info
-    test_get_context_warning_warning
-    test_get_context_warning_critical
-
-    # get_warning_level tests
-    test_get_warning_level_ok
-    test_get_warning_level_info
-    test_get_warning_level_warning
-    test_get_warning_level_critical
 
     # Summary
     echo ""

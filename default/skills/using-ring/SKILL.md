@@ -282,52 +282,6 @@ Your human partner's specific instructions describe WHAT to do, not HOW.
 
 **Why:** Specific instructions mean clear requirements, which is when workflows matter MOST. Skipping process on "simple" tasks is how simple tasks become complex problems.
 
-## Context Management & Self-Improvement
-
-Ring includes skills for managing context and enabling self-improvement:
-
-| Skill | Use When | Trigger |
-|-------|----------|---------|
-| `continuity-ledger` | Save session state for future resumption | At 70%+ context OR task completion |
-| `ring:create-handoff` | Full handoff document with all context | At 85%+ context OR session end |
-| `artifact-query` | Search past handoffs, plans, or outcomes by keywords | Need historical context |
-| `ring:handoff-tracking` | Mark task completion with what_worked/what_failed/key_decisions | Task complete |
-| `compound-learnings` | Analyze learnings from multiple sessions, detect patterns | After 3+ sessions |
-
-**Compound Learnings workflow:** Session ends → Hook extracts learnings → After 3+ sessions, patterns emerge → User approves → Permanent rules/skills created.
-
-### MANDATORY Context Preservation (NON-NEGOTIABLE)
-
-**Context warnings are BEHAVIORAL TRIGGERS, not informational messages.**
-
-| Context Level | Warning Type | MANDATORY Action |
-|---------------|--------------|------------------|
-| 50-69% (info) | `<context-warning>` | Acknowledge, plan for handoff |
-| 70-84% (warning) | `<MANDATORY-USER-MESSAGE>` | **CREATE ledger NOW** - No exceptions |
-| 85%+ (critical) | `<MANDATORY-USER-MESSAGE>` | **STOP + handoff + /clear** - Immediate |
-
-**When you receive a MANDATORY-USER-MESSAGE about context:**
-1. Display the message verbatim at start of response (per MANDATORY-USER-MESSAGE contract)
-2. Execute the required action BEFORE continuing other work
-3. Do NOT rationalize delaying action
-
-**Anti-Rationalization for Context Management:**
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "I'll create handoff after this task" | Context may truncate mid-task, losing everything | **Create handoff NOW** |
-| "70% is just a warning, not urgent" | 70% = MANDATORY action, not suggestion | **Create ledger immediately** |
-| "The message is informational" | MANDATORY-USER-MESSAGE = behavioral trigger | **Execute required action** |
-| "User didn't ask for handoff" | System requires it for context safety | **Create handoff anyway** |
-| "I'm almost done, can finish first" | "Almost done" at 85% = high truncation risk | **STOP and handoff NOW** |
-| "Small task, won't use much more context" | Every response adds ~2500 tokens | **Follow threshold rules** |
-
-**Verification Checklist:**
-- [ ] At 70%+: Did I create a continuity-ledger?
-- [ ] At 85%+: Did I STOP, create handoff, and recommend /clear?
-- [ ] Did I display MANDATORY-USER-MESSAGE verbatim?
-- [ ] Did I execute required action BEFORE other work?
-
 ## Summary
 
 **Starting any task:**

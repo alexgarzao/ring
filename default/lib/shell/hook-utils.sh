@@ -13,7 +13,6 @@
 #   - output_hook_context: Output hook response with additionalContext
 #   - get_json_field: Extract field from JSON using jq or grep fallback
 #   - get_project_root: Get project root directory
-#   - get_ring_state_dir: Get .ring/state directory path
 
 set -euo pipefail
 
@@ -101,54 +100,6 @@ get_project_root() {
     printf '%s' "$project_dir"
 }
 
-# Get .ring state directory path (creates if needed with secure permissions)
-# Returns: path to .ring/state directory
-get_ring_state_dir() {
-    local project_root
-    project_root=$(get_project_root)
-    local state_dir="${project_root}/.ring/state"
-
-    # Create if it doesn't exist (owner-only permissions for security)
-    if [[ ! -d "$state_dir" ]]; then
-        mkdir -p "$state_dir"
-        chmod 700 "$state_dir"
-    fi
-
-    printf '%s' "$state_dir"
-}
-
-# Get .ring cache directory path (creates if needed with secure permissions)
-# Returns: path to .ring/cache directory
-get_ring_cache_dir() {
-    local project_root
-    project_root=$(get_project_root)
-    local cache_dir="${project_root}/.ring/cache"
-
-    # Create if it doesn't exist (owner-only permissions for security)
-    if [[ ! -d "$cache_dir" ]]; then
-        mkdir -p "$cache_dir"
-        chmod 700 "$cache_dir"
-    fi
-
-    printf '%s' "$cache_dir"
-}
-
-# Get .ring ledgers directory path (creates if needed with secure permissions)
-# Returns: path to .ring/ledgers directory
-get_ring_ledgers_dir() {
-    local project_root
-    project_root=$(get_project_root)
-    local ledgers_dir="${project_root}/.ring/ledgers"
-
-    # Create if it doesn't exist (owner-only permissions for security)
-    if [[ ! -d "$ledgers_dir" ]]; then
-        mkdir -p "$ledgers_dir"
-        chmod 700 "$ledgers_dir"
-    fi
-
-    printf '%s' "$ledgers_dir"
-}
-
 # Output a basic hook result
 # Args: $1 - result ("continue" or "block"), $2 - message (optional)
 output_hook_result() {
@@ -214,9 +165,6 @@ EOF
 export -f read_hook_stdin 2>/dev/null || true
 export -f get_json_field 2>/dev/null || true
 export -f get_project_root 2>/dev/null || true
-export -f get_ring_state_dir 2>/dev/null || true
-export -f get_ring_cache_dir 2>/dev/null || true
-export -f get_ring_ledgers_dir 2>/dev/null || true
 export -f output_hook_result 2>/dev/null || true
 export -f output_hook_context 2>/dev/null || true
 export -f output_hook_empty 2>/dev/null || true

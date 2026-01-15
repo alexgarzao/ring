@@ -17,40 +17,6 @@ fi
 # Determine plugin root directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-MONOREPO_ROOT="$(cd "${PLUGIN_ROOT}/.." && pwd)"
-
-# Reset context usage state on session start
-# This ensures fresh estimates after /clear or compact
-reset_context_state() {
-    local session_id="${CLAUDE_SESSION_ID:-$PPID}"
-    local project_dir="${CLAUDE_PROJECT_DIR:-.}"
-
-    # REQUIRED: Validate session ID - alphanumeric, hyphens, underscores only
-    if [[ ! "$session_id" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-        # Invalid session ID, skip cleanup (don't risk path traversal)
-        return 0
-    fi
-
-    # Clear state files for this session
-    rm -f "${project_dir}/.ring/state/context-usage-${session_id}.json" 2>/dev/null || true
-    rm -f "/tmp/context-usage-${session_id}.json" 2>/dev/null || true
-}
-
-# Always reset context state on SessionStart
-# (whether startup, resume, clear, or compact)
-reset_context_state
-
-# Cleanup old state files (older than 7 days)
-cleanup_old_state_files() {
-    local project_dir="${CLAUDE_PROJECT_DIR:-.}"
-    local state_dir="${project_dir}/.ring/state"
-    [[ ! -d "$state_dir" ]] && return 0
-    # Remove state files older than 7 days
-    find "$state_dir" -name "*.json" -type f -mtime +7 -delete 2>/dev/null || true
-}
-
-# Cleanup old state files early in session
-cleanup_old_state_files
 
 # Auto-install PyYAML if Python is available but PyYAML is not
 # Set RING_AUTO_INSTALL_DEPS=false to disable automatic dependency installation
@@ -127,84 +93,6 @@ State assumption → Explain why → Note what would change it
 **Full pattern:** See shared-patterns/doubt-triggered-questions.md
 '
 
-# Source shared ledger utilities
-SHARED_LIB_LEDGER="${MONOREPO_ROOT}/shared/lib"
-if [[ -f "${SHARED_LIB_LEDGER}/ledger-utils.sh" ]]; then
-    # shellcheck source=/dev/null
-    source "${SHARED_LIB_LEDGER}/ledger-utils.sh"
-else
-    # Fallback: define find_active_ledger locally if shared lib not found
-    find_active_ledger() {
-        local ledger_dir="$1"
-        [[ ! -d "$ledger_dir" ]] && echo "" && return 0
-        local newest="" newest_time=0
-        while IFS= read -r -d '' file; do
-            [[ -L "$file" ]] && continue
-            local mtime
-            if [[ "$(uname)" == "Darwin" ]]; then
-                mtime=$(stat -f %m "$file" 2>/dev/null || echo 0)
-            else
-                mtime=$(stat -c %Y "$file" 2>/dev/null || echo 0)
-            fi
-            (( mtime > newest_time )) && newest_time=$mtime && newest="$file"
-        done < <(find "$ledger_dir" -maxdepth 1 -name "CONTINUITY-*.md" -type f -print0 2>/dev/null)
-        echo "$newest"
-    }
-fi
-
-# Detect and load active continuity ledger
-detect_active_ledger() {
-    local project_root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-    local ledger_dir="${project_root}/.ring/ledgers"
-    local active_ledger=""
-    local ledger_content=""
-
-    # Check if ledger directory exists
-    if [[ ! -d "$ledger_dir" ]]; then
-        echo ""
-        return 0
-    fi
-
-    # Find most recently modified ledger (safe implementation)
-    active_ledger=$(find_active_ledger "$ledger_dir")
-
-    if [[ -z "$active_ledger" ]]; then
-        echo ""
-        return 0
-    fi
-
-    # Read ledger content
-    ledger_content=$(cat "$active_ledger" 2>/dev/null || echo "")
-
-    if [[ -z "$ledger_content" ]]; then
-        echo ""
-        return 0
-    fi
-
-    # Extract current phase (line with [->] marker)
-    local current_phase=""
-    current_phase=$(grep -E '\[->' "$active_ledger" 2>/dev/null | head -1 | sed 's/^[[:space:]]*//' || echo "")
-
-    # Format output
-    local ledger_name
-    ledger_name=$(basename "$active_ledger" .md)
-
-    cat <<LEDGER_EOF
-## Active Continuity Ledger: ${ledger_name}
-
-**Current Phase:** ${current_phase:-"No active phase marked"}
-
-<continuity-ledger-content>
-${ledger_content}
-</continuity-ledger-content>
-
-**Instructions:**
-1. Review the State section - find [->] for current work
-2. Check Open Questions for UNCONFIRMED items
-3. Continue from where you left off
-LEDGER_EOF
-}
-
 # Generate skills overview with cascading fallback
 # Priority: Python+PyYAML > Python regex > Bash fallback > Error message
 generate_skills_overview() {
@@ -244,9 +132,6 @@ generate_skills_overview() {
 
 skills_overview=$(generate_skills_overview || echo "Error generating skills quick reference")
 
-# Detect active ledger (if any)
-ledger_context=$(detect_active_ledger)
-
 # Source shared JSON escaping utility
 SHARED_LIB="${PLUGIN_ROOT}/../shared/lib"
 if [[ -f "${SHARED_LIB}/json-escape.sh" ]]; then
@@ -275,15 +160,9 @@ fi
 overview_escaped=$(json_escape "$skills_overview")
 critical_rules_escaped=$(json_escape "$CRITICAL_RULES")
 doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
-ledger_context_escaped=$(json_escape "$ledger_context")
 
-# Build additionalContext with optional ledger section
+# Build additionalContext
 additional_context="<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
-
-# Append ledger context if present
-if [[ -n "$ledger_context" ]]; then
-    additional_context="${additional_context}\n\n<ring-continuity-ledger>\n${ledger_context_escaped}\n</ring-continuity-ledger>"
-fi
 
 # Build JSON output
 cat <<EOF
