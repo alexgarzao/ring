@@ -75,7 +75,7 @@ output_schema:
       target_sha: string
 
 related:
-  complementary: [finishing-a-development-branch, ring:handoff-tracking]
+  complementary: [finishing-a-development-branch]
 ---
 
 # Release Guide Info — Ops Update Guide Generator
@@ -770,6 +770,6 @@ Output:
 
 **Via slash command:**
 ```
-User: /release-guide <base-ref> <target-ref>
+User: /ring:release-guide <base-ref> <target-ref>
 Assistant: [Executes skill with BASE_REF and TARGET_REF]
 ```

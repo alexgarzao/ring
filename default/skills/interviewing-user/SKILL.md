@@ -5,7 +5,7 @@ description: |
   ambiguities, preferences, and constraints BEFORE implementation begins.
 
 trigger: |
-  - User invokes /interview-me command
+  - User invokes /ring:interview-me command
   - Claude detects significant ambiguity in requirements
   - Multiple valid implementation paths exist with no clear winner
   - User says "interview me", "ask me questions", "clarify with me"
