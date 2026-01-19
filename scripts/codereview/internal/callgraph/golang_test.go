@@ -1,7 +1,12 @@
 package callgraph
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"golang.org/x/tools/go/packages"
 )
 
 func TestGetAffectedPackages(t *testing.T) {
@@ -113,6 +118,102 @@ func TestGetAffectedPackages(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAnalyze_GoAnalyzer_Basic(t *testing.T) {
+	workDir := t.TempDir()
+
+	module := `module example.com/test
+
+go 1.20
+`
+	if err := os.WriteFile(filepath.Join(workDir, "go.mod"), []byte(module), 0o644); err != nil {
+		t.Fatalf("failed to write go.mod: %v", err)
+	}
+
+	source := `package calc
+
+func Add(a, b int) int {
+	return a + b
+}
+
+func Multiply(a, b int) int {
+	return a * b
+}
+
+func UseAdd() int {
+	return Add(1, 2)
+}
+
+func UseMultiply() int {
+	return Multiply(2, 3)
+}
+`
+	pkgDir := filepath.Join(workDir, "calc")
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		t.Fatalf("failed to create package dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(pkgDir, "calc.go"), []byte(source), 0o644); err != nil {
+		t.Fatalf("failed to write calc.go: %v", err)
+	}
+
+	testSource := `package calc
+
+import "testing"
+
+func TestUseAdd(t *testing.T) {
+	if UseAdd() == 0 {
+		t.Fatal("unexpected")
+	}
+}
+`
+	if err := os.WriteFile(filepath.Join(pkgDir, "calc_test.go"), []byte(testSource), 0o644); err != nil {
+		t.Fatalf("failed to write calc_test.go: %v", err)
+	}
+
+	analyzer := NewGoAnalyzer(workDir)
+	timeBudgetSec := 30
+	result, err := analyzer.Analyze([]ModifiedFunction{{Name: "Add", File: filepath.Join("calc", "calc.go")}}, timeBudgetSec)
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("Analyze returned nil result")
+	}
+
+	if result.Language != "go" {
+		t.Errorf("Language = %q, want %q", result.Language, "go")
+	}
+
+	if len(result.ModifiedFunctions) != 1 {
+		t.Fatalf("expected 1 modified function, got %d", len(result.ModifiedFunctions))
+	}
+
+	fcg := result.ModifiedFunctions[0]
+	if fcg.Function != "Add" {
+		t.Errorf("Function = %q, want %q", fcg.Function, "Add")
+	}
+
+	if len(fcg.Callers) == 0 {
+		t.Errorf("expected Add to have callers, got none")
+	}
+
+	hasUseAdd := false
+	for _, caller := range fcg.Callers {
+		if caller.Function == "UseAdd" {
+			hasUseAdd = true
+			break
+		}
+	}
+	if !hasUseAdd {
+		t.Errorf("expected UseAdd to be a caller of Add")
+	}
+
+	if len(fcg.TestCoverage) == 0 {
+		t.Logf("Warning: expected test coverage for Add, got none")
+	}
+
 }
 
 func TestIsTestFunction(t *testing.T) {
@@ -310,4 +411,67 @@ func TestGoAnalyzerType(t *testing.T) {
 
 	// Type assertion should work
 	var _ *GoAnalyzer = analyzer
+}
+
+func TestAnalyzeTimeout(t *testing.T) {
+	analyzer := NewGoAnalyzer("/tmp/does-not-exist")
+	analyzer.loadPackagesFn = func(ctx context.Context, patterns []string) ([]*packages.Package, []string, error) {
+		<-ctx.Done()
+		return nil, nil, context.DeadlineExceeded
+	}
+
+	result, err := analyzer.Analyze([]ModifiedFunction{{Name: "Foo", File: "foo.go"}}, 1)
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if !result.TimeBudgetExceeded {
+		t.Fatalf("expected TimeBudgetExceeded")
+	}
+	if !result.PartialResults {
+		t.Fatalf("expected PartialResults")
+	}
+}
+
+func TestAnalyzeTruncatesModifiedFunctions(t *testing.T) {
+	workDir := t.TempDir()
+	module := `module example.com/test
+
+go 1.20
+`
+	if err := os.WriteFile(filepath.Join(workDir, "go.mod"), []byte(module), 0o644); err != nil {
+		t.Fatalf("failed to write go.mod: %v", err)
+	}
+	pkgDir := filepath.Join(workDir, "calc")
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		t.Fatalf("failed to create package dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(pkgDir, "calc.go"), []byte("package calc\n\nfunc Add(a, b int) int { return a + b }\n"), 0o644); err != nil {
+		t.Fatalf("failed to write calc.go: %v", err)
+	}
+
+	funcs := make([]ModifiedFunction, maxModifiedFunctions+2)
+	for i := range funcs {
+		funcs[i] = ModifiedFunction{Name: "Add", File: filepath.Join("calc", "calc.go")}
+	}
+
+	analyzer := NewGoAnalyzer(workDir)
+	result, err := analyzer.Analyze(funcs, 30)
+	if err != nil {
+		t.Fatalf("Analyze returned error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("Analyze returned nil result")
+	}
+	if !result.PartialResults {
+		t.Fatalf("expected partial results when truncating")
+	}
+	if len(result.ModifiedFunctions) != maxModifiedFunctions {
+		t.Fatalf("modified functions = %d, want %d", len(result.ModifiedFunctions), maxModifiedFunctions)
+	}
+	if len(result.Warnings) == 0 {
+		t.Fatalf("expected warnings when truncating")
+	}
 }
