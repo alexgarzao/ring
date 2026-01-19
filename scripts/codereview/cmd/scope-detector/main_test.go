@@ -117,6 +117,9 @@ func TestMain_Help(t *testing.T) {
 		"scope-detector",
 		"-base",
 		"-head",
+		"-files",
+		"-files-from",
+		"-unstaged",
 		"-output",
 		"-workdir",
 		"-version",
@@ -177,6 +180,44 @@ func TestMain_OutputToFile(t *testing.T) {
 	// Verify stderr mentions the output file
 	if !strings.Contains(stderrBuf.String(), "Scope written to") {
 		t.Errorf("Expected stderr to mention output file, got: %s", stderrBuf.String())
+	}
+}
+
+func TestMain_UnstagedMode(t *testing.T) {
+	if !isGitRepo(t) {
+		t.Skip("Skipping: not in a git repository")
+	}
+
+	binaryPath := buildTestBinary(t)
+	defer cleanupTestBinary(t, binaryPath)
+
+	// Create temp directory for output
+	tempDir := t.TempDir()
+	outputPath := filepath.Join(tempDir, "scope.json")
+
+	cmd := exec.Command(binaryPath, "--unstaged", "--output="+outputPath)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("Failed to run with --unstaged: %v\nOutput: %s", err, string(output))
+	}
+
+	fileContent, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("Failed to read output file: %v", err)
+	}
+
+	var jsonData map[string]interface{}
+	if err := json.Unmarshal(fileContent, &jsonData); err != nil {
+		t.Fatalf("Output file contains invalid JSON: %v", err)
+	}
+	if jsonData["base_ref"] != "HEAD" {
+		t.Fatalf("base_ref = %v, want HEAD", jsonData["base_ref"])
+	}
+	if jsonData["head_ref"] != "working-tree" {
+		t.Fatalf("head_ref = %v, want working-tree", jsonData["head_ref"])
+	}
+	if jsonData["files"] == nil {
+		t.Fatalf("expected files field in output")
 	}
 }
 
@@ -269,7 +310,7 @@ func TestMain_JSONStructure(t *testing.T) {
 	}
 
 	// Check top-level required fields
-	requiredTopLevel := []string{"base_ref", "head_ref", "language", "files", "stats", "packages_affected"}
+	requiredTopLevel := []string{"base_ref", "head_ref", "language", "languages", "files", "stats", "packages_affected"}
 	for _, field := range requiredTopLevel {
 		if _, exists := rawJSON[field]; !exists {
 			t.Errorf("Missing required top-level field: %s", field)
