@@ -197,7 +197,7 @@ When content is reused across multiple skills within a plugin:
 | [Key Workflows](#key-workflows) | Quick reference + [full docs](docs/WORKFLOWS.md) |
 | [Agent Output Schemas](#agent-output-schema-archetypes) | Schema summary + [full docs](docs/AGENT_DESIGN.md) |
 | [Compliance Rules](#compliance-rules) | TDD, Review, Commit rules |
-| [Standards-Agent Synchronization](#standards-agent-synchronization) | Standards ↔ Agent mapping |
+| [Standards-Agent Synchronization](#5-standards-agent-synchronization-always-check) | Standards ↔ Agent mapping |
 | [Documentation Sync](#documentation-sync-checklist) | Files to update |
 
 ---
@@ -438,7 +438,7 @@ The architecture uses markdown-based skill definitions with YAML frontmatter, au
 
 ## Installation
 
-See [README.md](README.md#installation) or [docs/platforms/](docs/platforms/) for detailed installation instructions.
+See [README.md](README.md#installation) for detailed installation instructions.
 
 **Quick install:** `curl -fsSL https://raw.githubusercontent.com/lerianstudio/ring/main/install-ring.sh | bash`
 
@@ -450,7 +450,7 @@ See [README.md](README.md#installation) or [docs/platforms/](docs/platforms/) fo
 
 | Plugin | Path | Contents |
 |--------|------|----------|
-| ring-default | `default/` | 24 skills, 7 agents, 10 commands |
+| ring-default | `default/` | 24 skills, 7 agents, 12 commands |
 | ring-dev-team | `dev-team/` | 9 skills, 9 agents, 5 commands |
 | ring-pm-team | `pm-team/` | 10 skills, 3 agents, 2 commands |
 | ring-finops-team | `finops-team/` | 6 skills, 2 agents |
@@ -586,7 +586,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Repository: Monorepo marketplace with multiple plugin collections
 - Active plugins: 5 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-finops-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
-- Core plugin: `default/` (24 skills, 7 agents, 10 commands)
+- Core plugin: `default/` (24 skills, 7 agents, 12 commands)
 - Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
 - Product planning: `pm-team/` (10 skills, 3 agents, 2 commands)
 - FinOps regulatory: `finops-team/` (6 skills, 2 agents)

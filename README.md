@@ -16,7 +16,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
 - **Providing 56 specialized skills** (24 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
-- **22 specialized agents** - 5 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing
+- **24 specialized agents** - 7 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -26,6 +26,8 @@ Ring solves this by:
 - `ring:code-reviewer` - Foundation review (architecture, code quality, design patterns)
 - `ring:business-logic-reviewer` - Correctness review (domain logic, requirements, edge cases)
 - `ring:security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
+- `ring:test-reviewer` - Test quality review (coverage, edge cases, assertions, test anti-patterns)
+- `ring:nil-safety-reviewer` - Nil/null safety review (traces pointer risks, missing guards, panic paths)
 - `ring:write-plan` - Implementation planning agent
 - `ring:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
 - Use `/ring:codereview` command to orchestrate parallel review workflow
@@ -273,7 +275,7 @@ No "should work" → Only "does work" with proof
 **6-Gate Workflow Skills:**
 - `ring:dev-implementation` - Gate 0: TDD implementation
 - `ring:dev-devops` - Gate 1: DevOps setup (Docker, compose)
-- `ring:dev-ring:sre` - Gate 2: Observability setup
+- `ring:dev-sre` - Gate 2: Observability setup
 - `ring:dev-testing` - Gate 3: Test coverage
 - `ring:requesting-code-review` - Gate 4: Parallel code review (3 reviewers)
 - `ring:dev-validation` - Gate 5: User approval
@@ -328,6 +330,8 @@ Ring provides 22 slash commands across 5 plugins for common workflows.
 - `/ring:execute-plan [path]` - Execute plan in batches with review checkpoints
 - `/ring:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
 - `/ring:explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
+- `/ring:interview-me [topic]` - Proactive requirements gathering through structured user interview
+- `/ring:release-guide` - Generate Ops Update Guide from git diff between two refs
 - `/ring:create-handoff [name]` - Create handoff document for session continuity
 - `/ring:resume-handoff [path]` - Resume work from a previous handoff
 
@@ -428,20 +432,24 @@ ring/                                  # Monorepo root
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
-│   ├── agents/                      # 5 specialized agents
+│   ├── agents/                      # 7 specialized agents
 │   │   ├── ring:code-reviewer.md        # Foundation review (parallel)
 │   │   ├── ring:business-logic-reviewer.md  # Correctness review (parallel)
 │   │   ├── ring:security-reviewer.md    # Safety review (parallel)
+│   │   ├── ring:test-reviewer.md        # Test quality review (parallel)
+│   │   ├── ring:nil-safety-reviewer.md  # Nil/null safety review (parallel)
 │   │   ├── ring:write-plan.md           # Implementation planning
 │   │   └── ring:codebase-explorer.md    # Deep architecture analysis (Opus)
 │   └── docs/                       # Documentation
 ├── dev-team/                      # Developer Agents plugin (ring-dev-team)
-│   └── agents/                      # 7 specialized developer agents
+│   └── agents/                      # 9 specialized developer agents
 │       ├── ring:backend-engineer-golang.md  # Go backend specialist
 │       ├── ring:backend-engineer-typescript.md # TypeScript/Node.js backend specialist
 │       ├── ring:devops-engineer.md          # DevOps infrastructure
 │       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js frontend specialist
 │       ├── ring:frontend-designer.md        # Visual design specialist
+│       ├── ring:frontend-engineer.md        # Senior Frontend Engineer (React/Next.js)
+│       ├── prompt-quality-reviewer.md       # Agent Quality Analyst
 │       ├── ring:qa-analyst.md               # Quality assurance
 │       └── sre.md                      # Site reliability engineer
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)

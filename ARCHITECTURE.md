@@ -33,8 +33,8 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(27) Agents(5) │  │ Skills(9) Agents(9)  │                       │  │
-│  │  │ Cmds(13) Hooks/Lib   │  │ Cmds(5)              │                       │  │
+│  │  │ Skills(24) Agents(7) │  │ Skills(9) Agents(9)  │                       │  │
+│  │  │ Cmds(12) Hooks/Lib   │  │ Cmds(5)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-pm-team         │  │ ring-tw-team         │                       │  │
@@ -72,7 +72,7 @@ ring/                                  # Monorepo root
 
 | Plugin | Description | Components |
 |--------|-------------|------------|
-| **ring-default** | Core skills library | 27 skills, 5 agents, 13 commands |
+| **ring-default** | Core skills library | 24 skills, 7 agents, 12 commands |
 | **ring-dev-team** | Developer agents | 9 skills, 9 agents, 5 commands |
 | **ring-finops-team** | FinOps regulatory compliance | 6 skills, 2 agents |
 | **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
@@ -110,6 +110,8 @@ default/agents/
 ├── ring:code-reviewer.md           # Foundation review (architecture, patterns)
 ├── ring:business-logic-reviewer.md # Correctness review (requirements, edge cases)
 ├── ring:security-reviewer.md       # Safety review (OWASP, auth, validation)
+├── ring:test-reviewer.md           # Test coverage and quality review
+├── ring:nil-safety-reviewer.md     # Null/nil safety analysis
 ├── ring:write-plan.md              # Implementation planning
 └── ring:codebase-explorer.md       # Deep architecture analysis (Opus)
 ```
@@ -671,23 +673,23 @@ Ring's architecture is designed for:
 | Component | Count | Location |
 |-----------|-------|----------|
 | Active Plugins | 5 | All plugin directories |
-| Skills (ring-default) | 27 | `default/skills/` |
+| Skills (ring-default) | 24 | `default/skills/` |
 | Skills (ring-dev-team) | 9 | `dev-team/skills/` |
 | Skills (ring-finops-team) | 6 | `finops-team/skills/` |
 | Skills (ring-pm-team) | 10 | `pm-team/skills/` |
 | Skills (ring-tw-team) | 7 | `tw-team/skills/` |
-| **Total Skills** | **59** | **All plugins** |
-| Agents (ring-default) | 5 | `default/agents/` |
+| **Total Skills** | **56** | **All plugins** |
+| Agents (ring-default) | 7 | `default/agents/` |
 | Agents (ring-dev-team) | 9 | `dev-team/agents/` |
 | Agents (ring-finops-team) | 2 | `finops-team/agents/` |
 | Agents (ring-pm-team) | 3 | `pm-team/agents/` |
 | Agents (ring-tw-team) | 3 | `tw-team/agents/` |
-| **Total Agents** | **22** | **All plugins** |
-| Commands (ring-default) | 13 | `default/commands/` |
+| **Total Agents** | **24** | **All plugins** |
+| Commands (ring-default) | 12 | `default/commands/` |
 | Commands (ring-dev-team) | 5 | `dev-team/commands/` |
 | Commands (ring-pm-team) | 2 | `pm-team/commands/` |
 | Commands (ring-tw-team) | 3 | `tw-team/commands/` |
-| **Total Commands** | **23** | **All plugins** |
+| **Total Commands** | **22** | **All plugins** |
 | Hooks | Per plugin | `{plugin}/hooks/` |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.
