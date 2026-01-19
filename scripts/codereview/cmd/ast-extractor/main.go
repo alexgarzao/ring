@@ -58,32 +58,14 @@ func main() {
 // validateScriptsDir validates the scripts directory path for security.
 // It prevents path traversal attacks and verifies the directory exists.
 func validateScriptsDir(scriptsDir string) error {
-	// Check for traversal attempts in the ORIGINAL path before normalization
+	if scriptsDir == "" {
+		return nil
+	}
 	if strings.Contains(scriptsDir, "..") {
 		return fmt.Errorf("path traversal detected in scripts directory")
 	}
-
-	// Get absolute path
-	absPath, err := filepath.Abs(scriptsDir)
-	if err != nil {
-		return fmt.Errorf("invalid scripts directory path: %w", err)
-	}
-
-	// Verify directory exists
-	info, err := os.Stat(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("scripts directory does not exist: %s", absPath)
-		}
-		return fmt.Errorf("failed to stat scripts directory: %w", err)
-	}
-
-	// Verify it's a directory
-	if !info.IsDir() {
-		return fmt.Errorf("scripts path is not a directory: %s", absPath)
-	}
-
-	return nil
+	_, err := fileutil.ValidateDirectory(scriptsDir, "")
+	return err
 }
 
 func run() error {
@@ -106,6 +88,38 @@ func run() error {
 
 	if *verbose {
 		fmt.Fprintf(os.Stderr, "Scripts directory: %s\n", scriptsPath)
+	}
+
+	workDir, workErr := os.Getwd()
+	if workErr != nil {
+		return fmt.Errorf("failed to get working directory: %w", workErr)
+	}
+
+	validator, validatorErr := ast.NewPathValidator(workDir)
+	if validatorErr != nil {
+		return fmt.Errorf("failed to initialize path validator: %w", validatorErr)
+	}
+
+	if *beforeFile != "" {
+		validated, err := validator.ValidatePath(*beforeFile)
+		if err != nil {
+			return fmt.Errorf("invalid before file path: %w", err)
+		}
+		*beforeFile = validated
+	}
+	if *afterFile != "" {
+		validated, err := validator.ValidatePath(*afterFile)
+		if err != nil {
+			return fmt.Errorf("invalid after file path: %w", err)
+		}
+		*afterFile = validated
+	}
+	if *batchFile != "" {
+		validated, err := validator.ValidatePath(*batchFile)
+		if err != nil {
+			return fmt.Errorf("invalid batch file path: %w", err)
+		}
+		*batchFile = validated
 	}
 
 	// Create registry with all extractors
@@ -135,16 +149,16 @@ func run() error {
 
 	// Get extractor
 	var extractor ast.Extractor
-	var err error
+	var extractErr error
 
 	if *language != "" {
-		extractor, err = getExtractorByLanguage(*language, scriptsPath)
+		extractor, extractErr = getExtractorByLanguage(*language, scriptsPath)
 	} else {
-		extractor, err = registry.GetExtractor(filePath)
+		extractor, extractErr = registry.GetExtractor(filePath)
 	}
 
-	if err != nil {
-		return fmt.Errorf("failed to get extractor: %w", err)
+	if extractErr != nil {
+		return fmt.Errorf("failed to get extractor: %w", extractErr)
 	}
 
 	if *verbose {
