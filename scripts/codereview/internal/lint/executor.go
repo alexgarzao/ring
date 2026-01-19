@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -24,6 +25,7 @@ type ExecResult struct {
 // Executor runs external commands.
 type Executor struct {
 	timeout time.Duration
+	runFn   func(ctx context.Context, dir string, name string, args ...string) *ExecResult
 }
 
 // NewExecutor creates a new command executor.
@@ -31,6 +33,10 @@ func NewExecutor() *Executor {
 	return &Executor{
 		timeout: DefaultTimeout,
 	}
+}
+
+func (e *Executor) SetRunFn(runFn func(ctx context.Context, dir string, name string, args ...string) *ExecResult) {
+	e.runFn = runFn
 }
 
 // WithTimeout sets a custom timeout.
@@ -42,11 +48,16 @@ func (e *Executor) WithTimeout(d time.Duration) *Executor {
 
 // Run executes a command and returns the result.
 func (e *Executor) Run(ctx context.Context, dir string, name string, args ...string) *ExecResult {
+	if e.runFn != nil {
+		return e.runFn(ctx, dir, name, args...)
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, e.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 - name/args come from registered linters
 	cmd.Dir = dir
+	cmd.Env = append([]string{"LC_ALL=C"}, os.Environ()...)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

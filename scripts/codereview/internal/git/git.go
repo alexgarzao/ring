@@ -5,7 +5,10 @@ package git
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -87,10 +90,52 @@ type DiffResult struct {
 	StatsError string
 }
 
+// FileStats contains per-file additions/deletions.
+type FileStats struct {
+	Additions int
+	Deletions int
+}
+
 // Client provides methods for interacting with git.
 type Client struct {
 	workDir string
 	runner  func(workDir string, args ...string) ([]byte, error)
+}
+
+// ListUnstagedFiles returns tracked unstaged files and untracked files.
+func (c *Client) ListUnstagedFiles() ([]string, error) {
+	unstaged, err := c.runGit("diff", "--name-only", "-z")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list unstaged files: %w", err)
+	}
+	untracked, err := c.runGit("ls-files", "--others", "--exclude-standard", "-z")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list untracked files: %w", err)
+	}
+
+	files := parseNulSeparated(unstaged)
+	files = append(files, parseNulSeparated(untracked)...)
+	return uniqueSortedFiles(files), nil
+}
+
+// FileExistsAtRef checks if a file exists at a given git ref.
+func (c *Client) FileExistsAtRef(ref, path string) (bool, error) {
+	if err := validateRef(ref); err != nil {
+		return false, err
+	}
+	if path == "" {
+		return false, fmt.Errorf("invalid file path: empty")
+	}
+
+	_, err := c.runGit("cat-file", "-e", ref+":"+path)
+	if err != nil {
+		if isMissingPathError(err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to check file at ref %s: %w", ref, err)
+	}
+
+	return true, nil
 }
 
 // NewClient creates a new git client for the specified directory.
@@ -106,16 +151,31 @@ func validateRef(ref string) error {
 	if strings.HasPrefix(ref, "-") {
 		return fmt.Errorf("invalid ref %q: cannot start with '-'", ref)
 	}
-	// TODO(review): consider stricter ref validation for untrusted inputs (reported by security-reviewer on 2026-01-13, severity: Low)
+	for _, r := range ref {
+		if r == '.' || r == '/' || r == '_' || r == '-' || r == ':' || r == '@' || r == '~' || r == '^' {
+			continue
+		}
+		if r >= '0' && r <= '9' {
+			continue
+		}
+		if r >= 'A' && r <= 'Z' {
+			continue
+		}
+		if r >= 'a' && r <= 'z' {
+			continue
+		}
+		return fmt.Errorf("invalid ref %q: contains unsupported character %q", ref, r)
+	}
 	return nil
 }
 
 // runGitCommand executes a git command and returns stdout.
 func runGitCommand(workDir string, args ...string) ([]byte, error) {
-	cmd := exec.Command("git", args...)
+	cmd := exec.Command("git", args...) // #nosec G204 - args validated by validateRef and internal usage
 	if workDir != "" {
 		cmd.Dir = workDir
 	}
+	cmd.Env = append([]string{"LC_ALL=C"}, os.Environ()...)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -135,6 +195,28 @@ func (c *Client) runGit(args ...string) ([]byte, error) {
 		runner = runGitCommand
 	}
 	return runner(c.workDir, args...)
+}
+
+// ShowFile returns file content from a git ref.
+func (c *Client) ShowFile(ref, path string) ([]byte, error) {
+	if err := validateRef(ref); err != nil {
+		return nil, err
+	}
+	if path == "" {
+		return nil, fmt.Errorf("invalid path: empty")
+	}
+	if strings.HasPrefix(path, "-") {
+		return nil, fmt.Errorf("invalid path: cannot start with '-'")
+	}
+	return c.runGit("show", ref+":"+path)
+}
+
+func isMissingPathError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "does not exist in") || strings.Contains(msg, "Path '")
 }
 
 // GetDiff returns the diff between two refs, or combined changes vs HEAD when refs are empty.
@@ -202,7 +284,7 @@ func (c *Client) GetDiff(baseRef, headRef string) (*DiffResult, error) {
 	if err != nil {
 		result.Stats.TotalFiles = len(result.Files)
 		result.StatsError = fmt.Sprintf("failed to parse diff numstat: %v", err)
-		return result, nil
+		statsMap = make(map[string]fileStats)
 	}
 	for i, f := range result.Files {
 		if stats, ok := statsMap[f.Path]; ok {
@@ -247,7 +329,7 @@ func (c *Client) GetStagedDiff() (*DiffResult, error) {
 	if parseErr != nil {
 		result.Stats.TotalFiles = len(result.Files)
 		result.StatsError = fmt.Sprintf("failed to parse staged numstat: %v", parseErr)
-		return result, nil
+		statsMap = make(map[string]fileStats)
 	}
 	for i, f := range result.Files {
 		if stats, ok := statsMap[f.Path]; ok {
@@ -292,7 +374,7 @@ func (c *Client) GetWorkingTreeDiff() (*DiffResult, error) {
 	if parseErr != nil {
 		result.Stats.TotalFiles = len(result.Files)
 		result.StatsError = fmt.Sprintf("failed to parse working tree numstat: %v", parseErr)
-		return result, nil
+		statsMap = make(map[string]fileStats)
 	}
 	for i, f := range result.Files {
 		if stats, ok := statsMap[f.Path]; ok {
@@ -323,6 +405,40 @@ func (c *Client) GetAllChangesDiff() (*DiffResult, error) {
 	return result, nil
 }
 
+// GetDiffStatsForFiles returns numstat data for a list of files against a base ref.
+func (c *Client) GetDiffStatsForFiles(baseRef string, files []string) (DiffStats, map[string]FileStats, error) {
+	if err := validateRef(baseRef); err != nil {
+		return DiffStats{}, nil, err
+	}
+
+	if len(files) == 0 {
+		return DiffStats{}, map[string]FileStats{}, nil
+	}
+
+	args := []string{"diff", "--numstat", "-z", baseRef, "--"}
+	args = append(args, files...)
+
+	output, err := c.runGit(args...)
+	if err != nil {
+		return DiffStats{TotalFiles: len(files)}, nil, fmt.Errorf("failed to get diff numstat: %w", err)
+	}
+
+	statsMap, err := parseNumstat(output)
+	if err != nil {
+		return DiffStats{TotalFiles: len(files)}, nil, fmt.Errorf("failed to parse diff numstat: %w", err)
+	}
+
+	result := make(map[string]FileStats, len(statsMap))
+	stats := DiffStats{TotalFiles: len(files)}
+	for path, fileStat := range statsMap {
+		result[path] = FileStats{Additions: fileStat.additions, Deletions: fileStat.deletions}
+		stats.TotalAdditions += fileStat.additions
+		stats.TotalDeletions += fileStat.deletions
+	}
+
+	return stats, result, nil
+}
+
 // parseNameStatusOutput parses NUL-delimited output from git diff --name-status -z.
 func parseNameStatusOutput(output []byte) ([]ChangedFile, error) {
 	if len(output) == 0 {
@@ -340,32 +456,73 @@ func parseNameStatusOutput(output []byte) ([]ChangedFile, error) {
 			i++
 			continue
 		}
-
 		statusToken := string(tokens[i])
-		i++
-
 		status := ParseFileStatus(statusToken)
 		cf := ChangedFile{Status: status}
+		i++
+
+		if i >= len(tokens) {
+			return nil, fmt.Errorf("unexpected end of output")
+		}
+		cf.Path = string(tokens[i])
+		i++
 
 		if status == StatusRenamed || status == StatusCopied {
-			if i+1 >= len(tokens) {
-				return nil, fmt.Errorf("invalid rename/copy record: %s", statusToken)
-			}
-			cf.OldPath = string(tokens[i])
-			cf.Path = string(tokens[i+1])
-			i += 2
-		} else {
 			if i >= len(tokens) {
-				return nil, fmt.Errorf("invalid name-status record: %s", statusToken)
+				return nil, fmt.Errorf("unexpected end of output for rename/copy")
 			}
+			cf.OldPath = cf.Path
 			cf.Path = string(tokens[i])
 			i++
 		}
 
 		files = append(files, cf)
 	}
-
 	return files, nil
+}
+
+func parseNulSeparated(output []byte) []string {
+	if len(output) == 0 {
+		return []string{}
+	}
+	parts := bytes.Split(output, []byte{0})
+	for len(parts) > 0 && len(parts[len(parts)-1]) == 0 {
+		parts = parts[:len(parts)-1]
+	}
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if len(part) == 0 {
+			continue
+		}
+		result = append(result, string(part))
+	}
+	return result
+}
+
+func uniqueSortedFiles(files []string) []string {
+	if len(files) == 0 {
+		return []string{}
+	}
+	seen := make(map[string]bool)
+	result := make([]string, 0, len(files))
+	for _, file := range files {
+		if file == "" {
+			continue
+		}
+		cleaned := filepath.Clean(file)
+		if cleaned == "." {
+			continue
+		}
+		if !seen[cleaned] {
+			seen[cleaned] = true
+			result = append(result, cleaned)
+		}
+	}
+	if len(result) == 0 {
+		return []string{}
+	}
+	sort.Strings(result)
+	return result
 }
 
 type fileStats struct {
@@ -391,6 +548,9 @@ func normalizeNumstatPath(path string) string {
 		}
 	}
 	parts := strings.Split(path, " => ")
+	if len(parts) == 0 {
+		return strings.TrimSpace(path)
+	}
 	return strings.TrimSpace(parts[len(parts)-1])
 }
 
