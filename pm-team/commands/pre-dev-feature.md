@@ -54,7 +54,70 @@ Use the AskUserQuestion tool to gather:
 
 **Why auto-detection?** Access Manager and License Manager are project-level infrastructure decisions, not feature-level. Once integrated, all features in the project inherit them.
 
-After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 4-gate workflow:
+**Question 4 (MANDATORY):** "Does this feature include user interface (UI)?"
+- Header: "Has UI?"
+- Options:
+  - "Yes" - Feature includes pages, screens, forms, dashboards, or any visual interface
+  - "No" - Backend-only feature (API, service, CLI, etc.)
+- **IMPORTANT:** This question MUST always be asked. Do NOT assume based on feature description keywords.
+- **Why mandatory?** Keyword detection is unreliable. Explicitly asking prevents skipping UI configuration.
+
+**Question 5 (MANDATORY if Q4=Yes):** "Which UI component library should be used?"
+- **Trigger:** Only ask if Q4 = "Yes"
+- **Auto-detection:** Before asking, check `package.json` for existing UI libraries:
+  - `@radix-ui/*` packages → shadcn/ui detected
+  - `@chakra-ui/*` packages → Chakra UI detected
+  - `@headlessui/*` packages → Headless UI detected
+  - `@mui/*` or `@material-ui/*` → Material UI detected
+  - If **library found** → Still ask, but pre-select detected option and display: "Detected: [library] from package.json"
+  - If **not found** → Ask without pre-selection
+- Header: "UI Library"
+- Options:
+  - "shadcn/ui + Radix (Recommended)" - TailwindCSS-based, highly customizable, copy-paste components
+  - "Chakra UI" - Full component library with built-in theming system
+  - "Headless UI" - Minimal unstyled primitives, Tailwind-native
+  - "Material UI" - Google's Material Design components
+  - "Ant Design" - Enterprise-grade React components
+  - "Custom components only" - Build from scratch, no external UI library
+- **Usage:** This choice informs wireframes (component names), TRD (dependencies), and implementation tasks
+- **CANNOT be skipped:** Even with auto-detection, user must confirm the choice
+
+**Question 6 (MANDATORY if Q4=Yes):** "Which styling approach should be used?"
+- **Trigger:** Only ask if Q4 = "Yes"
+- **Auto-detection:** Before asking, check `package.json` for existing styling:
+  - `tailwindcss` → TailwindCSS detected
+  - `styled-components` → Styled Components detected
+  - `@emotion/*` → Emotion detected
+  - `sass` or `node-sass` → Sass/SCSS detected
+  - If **styling found** → Still ask, but pre-select detected option and display: "Detected: [styling] from package.json"
+  - If **not found** → Ask without pre-selection
+- Header: "Styling"
+- Options:
+  - "TailwindCSS (Recommended)" - Utility-first CSS, excellent for design systems
+  - "CSS Modules" - Scoped CSS files, traditional approach
+  - "Styled Components" - CSS-in-JS with tagged template literals
+  - "Sass/SCSS" - CSS preprocessor with variables and nesting
+  - "Vanilla CSS" - Plain CSS without preprocessors
+- **Usage:** This choice informs wireframes (class naming), component implementation, and code review criteria
+- **CANNOT be skipped:** Even with auto-detection, user must confirm the choice
+
+**UI Configuration Summary:** After Q4/Q5/Q6, display:
+```
+UI Configuration:
+- Has UI: Yes/No
+- UI Library: [choice] (confirmed by user)
+- Styling: [choice] (confirmed by user)
+```
+
+**GATE BLOCKER:** If Q4 = "Yes" but Q5 or Q6 were not answered, DO NOT proceed to Gate 0. Return and ask the missing questions.
+
+This configuration is passed to all subsequent gates and used by:
+- **Gate 0 (Research):** product-designer searches for patterns in the chosen library
+- **Gate 1 (PRD/UX):** wireframes use component names from the library
+- **Gate 2 (TRD):** dependencies section lists the UI library and styling framework
+- **Gate 3 (Tasks):** implementation tasks reference specific components
+
+After getting the feature name (and auth/license/UI requirements if applicable), create the directory structure and run the 4-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>
@@ -67,7 +130,11 @@ mkdir -p docs/pre-dev/<feature-name>
 Even small features benefit from quick research:
 
 1. Determine research mode (usually **modification** for small features)
-2. Dispatch 3 research agents in PARALLEL (quick mode)
+2. Dispatch 4 research agents in PARALLEL (quick mode):
+   - repo-research-analyst (codebase patterns)
+   - best-practices-researcher (external best practices)
+   - framework-docs-researcher (tech stack docs)
+   - product-designer (UX research, mode: ux-research)
 3. Save to: `docs/pre-dev/<feature-name>/research.md`
 4. Get human approval before proceeding
 
@@ -75,10 +142,11 @@ Even small features benefit from quick research:
 - [ ] Research mode determined
 - [ ] Existing patterns identified (if any)
 - [ ] No conflicting implementations found
+- [ ] Product/UX research documented
 
 **Note:** For very simple changes, Gate 0 can be abbreviated - focus on checking for existing patterns.
 
-## Gate 1: PRD Creation
+## Gate 1: PRD Creation + UX Validation
 
 **Skill:** ring:pre-dev-prd-creation
 
@@ -91,13 +159,20 @@ Even small features benefit from quick research:
    - Out of scope
 3. Save to: `docs/pre-dev/<feature-name>/prd.md`
 4. Run Gate 1 validation checklist
-5. Get human approval before proceeding
+5. Dispatch product-designer for UX validation (mode: ux-validation)
+6. Save to: `docs/pre-dev/<feature-name>/ux-criteria.md`
+7. **If feature has UI:** product-designer also creates wireframes
+8. Save to: `docs/pre-dev/<feature-name>/wireframes/`
+9. Get human approval before proceeding
 
 **Gate 1 Pass Criteria:**
 - [ ] Problem is clearly defined
 - [ ] User value is measurable
 - [ ] Acceptance criteria are testable
 - [ ] Scope is explicitly bounded
+- [ ] UX criteria defined (ux-criteria.md created)
+- [ ] Wireframes created (if feature has UI)
+- [ ] User flows documented (if feature has UI)
 
 ## Gate 2: TRD Creation (Skipping Feature Map)
 
@@ -153,8 +228,12 @@ Report to human:
 ✅ Small Track (4 gates) complete for <feature-name>
 
 Artifacts created:
-- docs/pre-dev/<feature-name>/research.md (Gate 0)
+- docs/pre-dev/<feature-name>/research.md (Gate 0) - includes Product/UX Research
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
+- docs/pre-dev/<feature-name>/ux-criteria.md (Gate 1) - UX acceptance criteria
+- docs/pre-dev/<feature-name>/wireframes/ (Gate 1) - if feature has UI
+  - {screen-name}.yaml - low-fidelity prototypes
+  - user-flows.md - user flow diagrams
 - docs/pre-dev/<feature-name>/trd.md (Gate 2)
 - docs/pre-dev/<feature-name>/tasks.md (Gate 3)
 
@@ -189,12 +268,12 @@ Next steps:
 
 ### Gate Sequence
 
-| Gate | Skill | Purpose |
-|------|-------|---------|
-| 0 | `ring:pre-dev-research` | Domain and technical research |
-| 1 | `ring:pre-dev-prd-creation` | Product requirements |
-| 2 | `ring:pre-dev-trd-creation` | Technical requirements |
-| 3 | `ring:pre-dev-task-breakdown` | Task decomposition |
+| Gate | Skill | Purpose | New Outputs |
+|------|-------|---------|-------------|
+| 0 | `ring:pre-dev-research` | Domain, technical, and UX research (4 agents) | research.md (includes Product/UX Research) |
+| 1 | `ring:pre-dev-prd-creation` | Product requirements + UX validation + wireframes | prd.md, ux-criteria.md, wireframes/ (if UI) |
+| 2 | `ring:pre-dev-trd-creation` | Technical requirements | trd.md |
+| 3 | `ring:pre-dev-task-breakdown` | Task decomposition | tasks.md |
 
 ### Execution Pattern
 
