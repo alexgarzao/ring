@@ -92,11 +92,12 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}.md`
 #### Step 1: Initialize Report File
 
 ```markdown
-Write to docs/audits/production-readiness-{YYYY-MM-DD}.md:
+Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 
 # Production Readiness Audit Report
 
 **Date:** {YYYY-MM-DD}
+**Hour:** {hh:mm}
 **Codebase:** {project-name}
 **Auditor:** Claude Code (Production Readiness Skill v2.0)
 **Status:** In Progress...
