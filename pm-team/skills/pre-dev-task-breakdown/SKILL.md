@@ -105,8 +105,78 @@ If you catch yourself writing any of these in a task, **STOP**:
 | **Technical Clarity** | Success criteria measurable/testable; dependencies correctly mapped; testing approach defined; DoD comprehensive |
 | **Team Readiness** | Skills match capabilities; estimates realistic; capacity available; handoffs minimized |
 | **Risk Management** | Risks identified per task; mitigations defined; high-risk tasks scheduled early; fallback plans exist |
+| **Multi-Module** (if applicable) | All tasks have `target:` field; all tasks have `working_directory:`; per-module files generated (if doc_organization: per-module) |
 
 **Gate Result:** ✅ PASS → Subtasks | ⚠️ CONDITIONAL (refine oversized/vague) | ❌ FAIL (re-decompose)
+
+## Multi-Module Task Tagging
+
+**If TopologyConfig exists in research.md frontmatter** (from Gate 0):
+
+### Read Topology Configuration
+
+```yaml
+# From research.md frontmatter
+topology:
+  scope: fullstack
+  structure: monorepo | multi-repo
+  modules:
+    backend:
+      path: packages/api
+      language: golang
+    frontend:
+      path: packages/web
+      framework: nextjs
+  doc_organization: unified | per-module
+```
+
+### Task Target Assignment
+
+Each task MUST have `target:` and `working_directory:` fields when topology is multi-module:
+
+| Target | When to Use | Working Directory |
+|--------|-------------|-------------------|
+| `backend` | API endpoints, services, data layer, CLI | `topology.modules.backend.path` |
+| `frontend` | UI components, pages, BFF routes, client code | `topology.modules.frontend.path` |
+| `shared` | CI/CD, configs, docs, cross-module utilities | `.` (root) |
+
+### Task Format with Target
+
+```markdown
+## T-003: User Login API Endpoint
+
+**Target:** backend
+**Working Directory:** packages/api
+**Agent:** ring:backend-engineer-golang
+
+**Deliverable:** Working login API that validates credentials and returns JWT token.
+
+...rest of task...
+```
+
+### Per-Module Output (if doc_organization: per-module)
+
+When `topology.doc_organization: per-module`, generate split task files:
+
+```
+docs/pre-dev/{feature}/
+├── tasks.md           # Index with all tasks (includes target tags)
+├── backend/
+│   └── tasks.md       # Backend tasks only (filtered by target: backend)
+└── frontend/
+    └── tasks.md       # Frontend tasks only (filtered by target: frontend)
+```
+
+### Validation for Multi-Module
+
+| Check | Requirement |
+|-------|-------------|
+| All tasks have `target:` | If topology is monorepo or multi-repo |
+| All tasks have `working_directory:` | If topology is monorepo or multi-repo |
+| Target matches task content | Backend tasks have backend work, etc. |
+| Working directory resolves correctly | Path exists or will be created |
+
+---
 
 ## Task Template Structure
 
@@ -115,6 +185,9 @@ Output to `docs/pre-dev/{feature-name}/tasks.md`. Each task includes:
 | Section | Content |
 |---------|---------|
 | **Header** | T-[XXX]: [Task Title - What It Delivers] |
+| **Target** | backend \| frontend \| shared (if multi-module) |
+| **Working Directory** | Path from topology config (if multi-module) |
+| **Agent** | Recommended agent: ring:backend-engineer-*, ring:frontend-*-engineer-*, etc. |
 | **Deliverable** | One sentence: what working software ships |
 | **Scope** | Includes (specific capabilities), Excludes (future tasks with IDs) |
 | **Success Criteria** | Testable items: Functional, Technical, Operational, Quality |

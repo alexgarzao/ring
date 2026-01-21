@@ -75,6 +75,47 @@ Explore codebase → identify files → break into bite-sized tasks (2-5 min) �
 
 Every plan: Header (goal, architecture, tech stack) | Verification commands with expected output | Exact file paths (never "somewhere in src") | Complete code (never "add validation here") | Bite-sized steps with verification | Failure recovery | Review checkpoints | Zero-Context Test | **Recommended agents per task**
 
+### Multi-Module Task Requirements
+
+**If TopologyConfig exists** (from pre-dev research.md frontmatter or user input):
+
+Each task MUST include:
+- **Target:** `backend` | `frontend` | `shared`
+- **Working Directory:** Resolved path from topology configuration
+- **Agent:** Recommended agent matching the target
+
+**Task Format with Target:**
+
+```markdown
+## Task 3: Create User Login API
+
+**Target:** backend
+**Working Directory:** packages/api
+**Agent:** ring:backend-engineer-golang
+
+**Files to Create/Modify:**
+- `packages/api/internal/handlers/auth.go`
+- `packages/api/internal/services/auth_service.go`
+
+...rest of task...
+```
+
+**Target Assignment Rules:**
+
+| Target | When | Agent |
+|--------|------|-------|
+| `backend` | API endpoints, services, data layer, CLI | `backend-engineer-{golang,typescript}` |
+| `frontend` | UI components, pages, BFF routes | `frontend-bff-engineer-typescript` |
+| `shared` | CI/CD, configs, docs, cross-module | `devops-engineer` or `general-purpose` |
+
+**Working Directory Resolution:**
+
+| Topology Structure | Backend Path | Frontend Path |
+|-------------------|--------------|---------------|
+| `single-repo` | `.` | `.` |
+| `monorepo` | `topology.modules.backend.path` | `topology.modules.frontend.path` |
+| `multi-repo` | `topology.modules.backend.path` (absolute) | `topology.modules.frontend.path` (absolute) |
+
 ## Agent Selection
 
 | Task Type | Agent |

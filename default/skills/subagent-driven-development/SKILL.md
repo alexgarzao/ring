@@ -51,9 +51,55 @@ Execute plan by dispatching fresh subagent per task, with code review after each
 
 Read plan file, create TodoWrite with all tasks.
 
+### 1.5 Handle Multi-Module Tasks (if applicable)
+
+**If plan has tasks with `target:` and `working_directory:` fields:**
+
+1. **Track current module context:**
+   ```
+   current_module = None
+   current_directory = "."
+   ```
+
+2. **Before dispatching task subagent, check for context switch:**
+   ```
+   IF task.target != current_module AND current_module != None:
+     # Prompt user for confirmation
+     AskUserQuestion:
+       question: "Switching to {task.target} module at {task.working_directory}. Continue?"
+       header: "Context"
+       options:
+         - label: "Continue"
+           description: "Switch and execute task"
+         - label: "Skip task"
+           description: "Skip this task"
+         - label: "Stop"
+           description: "Stop execution"
+
+     Handle response accordingly
+   ```
+
+3. **Include working directory in subagent prompt:**
+   ```
+   Task(
+     subagent_type=task.agent,
+     model="opus",
+     prompt="Working directory: {task.working_directory}
+
+     FIRST: cd {task.working_directory}
+     THEN: Check for PROJECT_RULES.md and follow if exists
+
+     {original task prompt}"
+   )
+   ```
+
+**Optimization:** Reorder tasks to minimize context switches (if no dependencies between modules).
+
+---
+
 ### 2. Execute Task with Subagent
 
-**Dispatch:** `Task tool (general-purpose)` with: Task N from [plan-file], instructions (implement, test with TDD, verify, commit, report back), working directory. Subagent reports summary.
+**Dispatch:** `Task tool` with: Task N from [plan-file], working directory (if multi-module), instructions (implement, test with TDD, verify, commit, report back). Subagent reports summary.
 
 ### 3. Review Subagent's Work (Parallel Execution)
 
