@@ -29,6 +29,71 @@ Use the AskUserQuestion tool to gather:
 - This will be used for the directory name
 - Use kebab-case (e.g., "user-logout", "email-validation", "rate-limiting")
 
+---
+
+### Topology Discovery (MANDATORY)
+
+**After getting the feature name, determine the project topology.**
+
+See [shared-patterns/topology-discovery.md](../skills/shared-patterns/topology-discovery.md) for full pattern.
+
+**Question 1.1:** "What is the scope of this feature?"
+- Header: "Scope"
+- Options:
+  - "Fullstack (Recommended)" - Both backend API and frontend UI components
+  - "Backend only" - API endpoints, services, data layer, no UI
+  - "Frontend only" - UI components, pages, BFF routes, no backend API
+- **Processing:**
+  - If "Backend only" or "Frontend only" → Skip Q1.2-Q1.4, set `structure: single-repo`
+  - If "Fullstack" → Continue to Q1.2
+
+**Question 1.2 (if scope=fullstack):** "How is the codebase organized?"
+- Header: "Structure"
+- Options:
+  - "Single repo (Recommended)" - All code in one repository, same root directory
+  - "Monorepo" - Multiple packages in one repo (e.g., packages/api, packages/web)
+  - "Multi-repo" - Separate repositories for backend and frontend
+- **Processing:**
+  - If "Single repo" → Skip Q1.3, continue to Q1.4
+  - If "Monorepo" or "Multi-repo" → Continue to Q1.3
+
+**Question 1.3 (if structure=monorepo or multi-repo):** Module paths
+- For monorepo: Ask "Backend package path?" and "Frontend package path?"
+  - Examples: `packages/api`, `apps/backend`, `services/api`
+- For multi-repo: Ask "Backend repo path?" and "Frontend repo path?"
+  - Use absolute paths: `/home/user/projects/backend-api`
+- **Auto-detection hints:**
+  - Run `ls packages/ apps/ libs/ 2>/dev/null` to suggest common monorepo paths
+  - Check for `go.mod` or `package.json` in subdirectories
+
+**Question 1.4 (if scope=fullstack):** "How should pre-dev docs be organized?"
+- Header: "Docs"
+- Options:
+  - "Unified (Recommended)" - Single tasks.md with module tags - easier to track
+  - "Per-module" - Separate task files per module (backend/, frontend/)
+
+**TopologyConfig Output:**
+
+After topology discovery, construct and display the configuration:
+
+```yaml
+Topology Configuration:
+  scope: fullstack | backend-only | frontend-only
+  structure: single-repo | monorepo | multi-repo
+  modules:  # (only if monorepo or multi-repo)
+    backend:
+      path: [user input]
+      language: [auto-detected]
+    frontend:
+      path: [user input]
+      framework: [auto-detected]
+  doc_organization: unified | per-module
+```
+
+**This TopologyConfig is passed to all gates and persisted in research.md frontmatter.**
+
+---
+
 **Question 2 (CONDITIONAL):** "Does this feature require authentication or authorization?"
 - **Auto-detection:** Before asking, check if `go.mod` contains `github.com/LerianStudio/lib-auth`
   - If **found** → Skip this question. Auth is already integrated at project level.
