@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 56 skills, 24 agents, and 22 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 57 skills, 24 agents, and 22 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,7 +13,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(24)   │  │  Skills(9)    │  │  Skills(10)   │  │  team         │      │
+│  │  Skills(25)   │  │  Skills(9)    │  │  Skills(10)   │  │  team         │      │
 │  │  Agents(7)    │  │  Agents(9)    │  │  Agents(3)    │  │  Skills(6)    │      │
 │  │  Cmds(12)     │  │  Cmds(5)      │  │  Cmds(2)      │  │  Agents(2)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
@@ -129,7 +129,7 @@ Commands are invoked directly: `/command-name`.
 
 ## 💡 About Skills
 
-Skills (56) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (57) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, verification-before-completion, etc.
 
@@ -344,7 +344,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 56 skills are auto-discovered and available
+2. All 57 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

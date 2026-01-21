@@ -33,7 +33,7 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(24) Agents(7) │  │ Skills(9) Agents(9)  │                       │  │
+│  │  │ Skills(25) Agents(7) │  │ Skills(9) Agents(9)  │                       │  │
 │  │  │ Cmds(12) Hooks/Lib   │  │ Cmds(5)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
@@ -72,7 +72,7 @@ ring/                                  # Monorepo root
 
 | Plugin | Description | Components |
 |--------|-------------|------------|
-| **ring-default** | Core skills library | 24 skills, 7 agents, 12 commands |
+| **ring-default** | Core skills library | 25 skills, 7 agents, 12 commands |
 | **ring-dev-team** | Developer agents | 9 skills, 9 agents, 5 commands |
 | **ring-finops-team** | FinOps regulatory compliance | 6 skills, 2 agents |
 | **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
@@ -673,12 +673,12 @@ Ring's architecture is designed for:
 | Component | Count | Location |
 |-----------|-------|----------|
 | Active Plugins | 5 | All plugin directories |
-| Skills (ring-default) | 24 | `default/skills/` |
+| Skills (ring-default) | 25 | `default/skills/` |
 | Skills (ring-dev-team) | 9 | `dev-team/skills/` |
 | Skills (ring-finops-team) | 6 | `finops-team/skills/` |
 | Skills (ring-pm-team) | 10 | `pm-team/skills/` |
 | Skills (ring-tw-team) | 7 | `tw-team/skills/` |
-| **Total Skills** | **56** | **All plugins** |
+| **Total Skills** | **57** | **All plugins** |
 | Agents (ring-default) | 7 | `default/agents/` |
 | Agents (ring-dev-team) | 9 | `dev-team/agents/` |
 | Agents (ring-finops-team) | 2 | `finops-team/agents/` |

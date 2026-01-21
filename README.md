@@ -15,7 +15,7 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 56 specialized skills** (24 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
+- **Providing 57 specialized skills** (25 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
 - **24 specialized agents** - 7 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -229,9 +229,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 56 Skills (Across 5 Plugins)
+## 📚 All 57 Skills (Across 5 Plugins)
 
-### Core Skills (ring-default plugin - 24 skills)
+### Core Skills (ring-default plugin - 25 skills)
 
 **Testing & Debugging (7):**
 - `ring:test-driven-development` - Write test first, watch fail, minimal code
@@ -423,7 +423,7 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 24 core skills
+│   ├── skills/                       # 25 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
 │   │   └── shared-patterns/         # Universal patterns (6 patterns)
