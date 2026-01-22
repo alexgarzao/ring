@@ -114,6 +114,7 @@ topology:
       path: {path}
       framework: nextjs | react | vue
   doc_organization: unified | per-module
+  api_pattern: direct | bff | other  # Only if scope=fullstack
 ---
 ```
 

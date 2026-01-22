@@ -105,7 +105,7 @@ Each task MUST include:
 | Target | When | Agent |
 |--------|------|-------|
 | `backend` | API endpoints, services, data layer, CLI | `backend-engineer-{golang,typescript}` |
-| `frontend` | UI components, pages, BFF routes | `frontend-bff-engineer-typescript` |
+| `frontend` | UI components, pages, BFF routes | See [Frontend Tasks (api_pattern aware)](#frontend-tasks-api_pattern-aware) |
 | `shared` | CI/CD, configs, docs, cross-module | `devops-engineer` or `general-purpose` |
 
 **Working Directory Resolution:**
@@ -118,14 +118,82 @@ Each task MUST include:
 
 ## Agent Selection
 
+### Backend Tasks
+
 | Task Type | Agent |
 |-----------|-------|
-| Backend API/services | `backend-engineer-{golang,typescript}` |
-| Frontend/BFF | `frontend-bff-engineer-typescript` |
+| Go backend API/services | `backend-engineer-golang` |
+| TypeScript backend API/services | `backend-engineer-typescript` |
+
+### Frontend Tasks (api_pattern aware)
+
+**Read `api_pattern` from topology configuration to determine correct agent:**
+
+| API Pattern | Task Type | Agent |
+|-------------|-----------|-------|
+| `direct` | UI components, pages, forms | `frontend-engineer` |
+| `direct` | Server Actions, data fetching | `frontend-engineer` |
+| `direct` | Server Components with data loading | `frontend-engineer` |
+| `bff` | API routes (`/api/*`) | `frontend-bff-engineer-typescript` |
+| `bff` | Data aggregation, transformation | `frontend-bff-engineer-typescript` |
+| `bff` | External service integration | `frontend-bff-engineer-typescript` |
+| `bff` | UI components, pages, forms | `frontend-engineer` |
+| `other` | Depends on pattern | Ask user or use frontend-engineer default |
+
+### Decision Logic for Frontend Tasks
+
+```
+def get_frontend_agent(task, topology):
+    api_pattern = topology.get('api_pattern', 'direct')
+
+    if api_pattern == 'direct':
+        return 'frontend-engineer'
+
+    if api_pattern == 'bff':
+        if is_bff_task(task):  # API routes, aggregation, transformation
+            return 'frontend-bff-engineer-typescript'
+        else:  # UI components, pages
+            return 'frontend-engineer'
+
+    return 'frontend-engineer'  # Default for 'other'
+
+def is_bff_task(task):
+    bff_indicators = [
+        'API route', 'api route', '/api/',
+        'aggregat', 'transform', 'BFF',
+        'external service', 'backend service',
+        'data layer', 'HTTP client'
+    ]
+    return any(ind in task.description for ind in bff_indicators)
+```
+
+### Infrastructure and Other Tasks
+
+| Task Type | Agent |
+|-----------|-------|
 | Infra/CI/CD | `ring:devops-engineer` |
 | Testing | `ring:qa-analyst` |
 | Reliability | `ring:sre` |
 | Fallback | `general-purpose` (built-in, no prefix) |
+
+### Task Format with api_pattern
+
+When TopologyConfig includes `api_pattern`, include it in task metadata:
+
+```markdown
+## Task 3: Aggregate Dashboard Data
+
+**Target:** frontend
+**Working Directory:** packages/web
+**API Pattern:** bff
+**Agent:** ring:frontend-bff-engineer-typescript
+
+**Files to Create/Modify:**
+- `packages/web/app/api/dashboard/route.ts`
+- `packages/web/lib/services/dashboard-aggregator.ts`
+
+...rest of task...
+```
 
 ## Execution Options Reference
 

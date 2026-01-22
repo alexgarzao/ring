@@ -15,6 +15,7 @@ Standards for project structure discovery and multi-module coordination in Ring 
 | 5 | [Context Switching](#5-context-switching) | when to prompt for directory change |
 | 6 | [Multi-Repo Coordination](#6-multi-repo-coordination) | handling separate repositories |
 | 7 | [PROJECT_RULES.md Hierarchy](#7-project_rulesmd-hierarchy) | rule precedence in multi-module projects |
+| 8 | [API Pattern](#8-api-pattern) | direct, bff, other - determines agent assignment |
 
 ---
 
@@ -285,6 +286,57 @@ When same rule exists in both:
 
 ---
 
+## 8. API Pattern
+
+API Pattern determines how the frontend communicates with backend services and affects agent assignment.
+
+### Pattern Options
+
+| Pattern | Description | Use When |
+|---------|-------------|----------|
+| `direct` | Frontend calls backend APIs directly | Single backend, simple CRUD, no aggregation |
+| `bff` | Frontend calls BFF layer which aggregates backends | Multiple backends, complex transformations, sensitive keys |
+| `other` | Custom pattern (GraphQL, tRPC, gateway) | Existing patterns, specific requirements |
+
+### Pattern Decision Criteria
+
+| Criteria | Direct | BFF |
+|----------|--------|-----|
+| Number of backend services | 1 | 2+ |
+| Data aggregation needed | No | Yes |
+| Complex transformations | No | Yes |
+| API calls per page | <3 | 3+ |
+| Sensitive keys to hide | No | Yes |
+| Request optimization | Not needed | Needed |
+
+### Agent Assignment by Pattern
+
+| API Pattern | Frontend Tasks | Agent |
+|-------------|----------------|-------|
+| `direct` | UI components, pages, forms | `ring:frontend-engineer` |
+| `direct` | Server Actions, data fetching | `ring:frontend-engineer` (Next.js Server Components) |
+| `bff` | API routes, data aggregation | `ring:frontend-bff-engineer-typescript` |
+| `bff` | UI components, pages | `ring:frontend-engineer` |
+
+### Pattern in TopologyConfig
+
+```yaml
+topology:
+  scope: fullstack
+  structure: single-repo
+  api_pattern: bff  # Determines agent assignment
+```
+
+### Defaults
+
+| Scope | Default Pattern | Rationale |
+|-------|-----------------|-----------|
+| `fullstack` | `direct` | Simpler architecture, most features don't need BFF |
+| `frontend-only` | N/A | Frontend-only already implies client-side |
+| `backend-only` | N/A | No frontend to consider |
+
+---
+
 ## Checklist
 
 When implementing topology support:
@@ -295,3 +347,4 @@ When implementing topology support:
 - [ ] Execution skills implement context switching
 - [ ] Multi-repo generates per-module task files
 - [ ] PROJECT_RULES.md hierarchy respected
+- [ ] api_pattern captured for fullstack features

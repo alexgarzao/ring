@@ -19,8 +19,8 @@ This pattern ensures:
 
 ```
 Q1: Feature scope?
-├─ backend-only → Set scope, skip Q2-Q4, use single directory
-├─ frontend-only → Set scope, skip Q2-Q4, use single directory
+├─ backend-only → Set scope, skip Q2-Q5, use single directory
+├─ frontend-only → Set scope, skip Q2-Q5, use single directory
 └─ fullstack → Continue to Q2
 
 Q2: Repository structure? (only if fullstack)
@@ -35,6 +35,11 @@ Q3: Module paths (only if monorepo or multi-repo)
 Q4: Doc organization? (only if fullstack)
 ├─ unified → Single tasks.md with target tags
 └─ per-module → Separate task files per module
+
+Q5: API Pattern? (only if scope=fullstack)
+├─ direct → Set api_pattern: direct
+├─ bff → Set api_pattern: bff
+└─ other → Ask for specification, set api_pattern: other
 ```
 
 ---
@@ -149,6 +154,45 @@ find . -maxdepth 3 -name "package.json" -o -name "go.mod" | head -10
 - "Unified" → `doc_organization: unified`
 - "Per-module" → `doc_organization: per-module`
 
+### Q5: API Pattern
+
+**Only ask if `scope: fullstack`**
+
+```json
+{
+  "question": "How will the frontend communicate with backend services?",
+  "header": "API Pattern",
+  "multiSelect": false,
+  "options": [
+    {
+      "label": "Direct API calls (Recommended for simple features)",
+      "description": "Frontend calls backend APIs directly. Best for single backend service, no aggregation needed."
+    },
+    {
+      "label": "BFF (Backend-for-Frontend) layer",
+      "description": "Frontend calls BFF which aggregates/transforms data from multiple backends. Best for complex data needs."
+    },
+    {
+      "label": "Other (specify)",
+      "description": "Custom pattern - describe your approach"
+    }
+  ]
+}
+```
+
+**Processing:**
+- "Direct API calls" → `api_pattern: direct`
+- "BFF" → `api_pattern: bff`
+- "Other" → Ask for specification, set `api_pattern: other`
+
+**When to Recommend Each Pattern:**
+
+| Pattern | Recommend When |
+|---------|---------------|
+| **Direct** | Single backend service, simple CRUD, no aggregation, <3 API calls per page |
+| **BFF** | Multiple backend services, data aggregation needed, complex transformations, sensitive keys to hide |
+| **Other** | GraphQL federation, tRPC, custom gateway, existing patterns |
+
 ---
 
 ## Output: TopologyConfig
@@ -170,6 +214,7 @@ topology:
   scope: fullstack
   structure: single-repo
   doc_organization: unified  # or per-module
+  api_pattern: direct        # or bff, other
 ```
 
 ### Monorepo Fullstack
@@ -186,6 +231,7 @@ topology:
       path: packages/web        # From Q3
       framework: nextjs         # Auto-detected or asked
   doc_organization: unified     # From Q4
+  api_pattern: bff              # From Q5
 ```
 
 ### Multi-repo Fullstack
@@ -202,6 +248,7 @@ topology:
       path: /home/user/projects/frontend-app   # From Q3
       framework: react                          # Auto-detected
   doc_organization: per-module                  # From Q4
+  api_pattern: direct                           # From Q5
 ```
 
 ---
@@ -262,6 +309,7 @@ topology:
       path: packages/web
       framework: nextjs
   doc_organization: unified
+  api_pattern: bff
 ---
 
 # Research: My Feature Name
@@ -289,9 +337,10 @@ All subsequent gates MUST read the topology from the research.md frontmatter.
 
 | Condition | Default | Rationale |
 |-----------|---------|-----------|
-| Scope not fullstack | Skip Q2-Q4 | Single directory, no module coordination needed |
+| Scope not fullstack | Skip Q2-Q5 | Single directory, no module coordination needed |
 | Structure is single-repo | Skip Q3 | No separate paths |
 | User selects "Other" | Ask follow-up | Allow custom configurations |
+| API pattern "Other" | Ask specification | Support custom patterns (GraphQL, tRPC, etc.) |
 
 ---
 

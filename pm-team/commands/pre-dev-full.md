@@ -88,6 +88,7 @@ Topology Configuration:
       path: [user input]
       framework: [auto-detected]
   doc_organization: unified | per-module
+  api_pattern: direct | bff | other  # (only if fullstack)
 ```
 
 **This TopologyConfig is passed to all gates and persisted in research.md frontmatter.**
@@ -166,15 +167,32 @@ Topology Configuration:
 - **Usage:** This choice informs wireframes (class naming), component implementation, and code review criteria
 - **CANNOT be skipped:** Even with auto-detection, user must confirm the choice
 
-**UI Configuration Summary:** After Q4/Q5/Q6, display:
+**Question 7 (MANDATORY if scope=fullstack):** "How will the frontend communicate with backend services?"
+- **Trigger:** Only ask if topology scope = "Fullstack" (from Q1.1)
+- Header: "API Pattern"
+- Options:
+  - "Direct API calls (Recommended for simple features)" - Frontend calls backend APIs directly
+  - "BFF (Backend-for-Frontend) layer" - Frontend calls BFF which aggregates/transforms data
+  - "Other (specify)" - Custom pattern (GraphQL, tRPC, custom gateway)
+- **Auto-recommend based on feature complexity:**
+  - If research.md indicates multiple backend services → Pre-select "BFF"
+  - If simple CRUD feature → Pre-select "Direct API calls"
+  - Otherwise → No pre-selection
+- **Why this matters:** Determines which agent handles frontend tasks:
+  - Direct → All frontend tasks use `ring:frontend-engineer`
+  - BFF → Data aggregation uses `ring:frontend-bff-engineer-typescript`, UI uses `ring:frontend-engineer`
+- **CANNOT be skipped for fullstack features**
+
+**UI Configuration Summary:** After Q4/Q5/Q6/Q7, display:
 ```
 UI Configuration:
 - Has UI: Yes/No
 - UI Library: [choice] (confirmed by user)
 - Styling: [choice] (confirmed by user)
+- API Pattern: [direct | bff | other] (only for fullstack)
 ```
 
-**GATE BLOCKER:** If Q4 = "Yes" but Q5 or Q6 were not answered, DO NOT proceed to Gate 0. Return and ask the missing questions.
+**GATE BLOCKER:** If Q4 = "Yes" but Q5 or Q6 were not answered, DO NOT proceed to Gate 0. Return and ask the missing questions. If scope = "Fullstack" but Q7 was not answered, DO NOT proceed to Gate 0.
 
 This configuration is passed to all subsequent gates and used by:
 - **Gate 0 (Research):** product-designer searches for patterns in the chosen library

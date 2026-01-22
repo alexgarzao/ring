@@ -132,15 +132,43 @@ topology:
 
 ### Task Target Assignment
 
-Each task MUST have `target:` and `working_directory:` fields when topology is multi-module:
+Each task MUST have `target:` and `working_directory:` fields when topology is multi-module.
 
-| Target | When to Use | Working Directory |
-|--------|-------------|-------------------|
-| `backend` | API endpoints, services, data layer, CLI | `topology.modules.backend.path` |
-| `frontend` | UI components, pages, BFF routes, client code | `topology.modules.frontend.path` |
-| `shared` | CI/CD, configs, docs, cross-module utilities | `.` (root) |
+**Agent assignment depends on both `target` and `api_pattern`:**
 
-### Task Format with Target
+| Target | API Pattern | Task Type | Agent |
+|--------|-------------|-----------|-------|
+| `backend` | any | API endpoints, services, data layer, CLI | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
+| `frontend` | `direct` | UI components, pages, forms, Server Components | `ring:frontend-engineer` |
+| `frontend` | `direct` | Server Actions, data fetching hooks | `ring:frontend-engineer` |
+| `frontend` | `bff` | API routes, data aggregation, transformation | `ring:frontend-bff-engineer-typescript` |
+| `frontend` | `bff` | UI components, pages, forms | `ring:frontend-engineer` |
+| `shared` | any | CI/CD, configs, docs, cross-module utilities | DevOps or general |
+
+### How to Determine Agent for Frontend Tasks
+
+**Read `api_pattern` from research.md frontmatter:**
+
+```yaml
+# From research.md
+topology:
+  scope: fullstack
+  api_pattern: direct | bff | other
+```
+
+**Decision Flow:**
+
+```
+Is task target: frontend?
+├─ NO → Use backend-engineer-* based on language
+└─ YES → Check api_pattern
+    ├─ direct → ALL frontend tasks use frontend-engineer
+    └─ bff → Split tasks:
+        ├─ API routes, aggregation, transformation → frontend-bff-engineer-typescript
+        └─ UI components, pages, forms → frontend-engineer
+```
+
+### Task Format with Agent Assignment
 
 ```markdown
 ## T-003: User Login API Endpoint
@@ -153,6 +181,39 @@ Each task MUST have `target:` and `working_directory:` fields when topology is m
 
 ...rest of task...
 ```
+
+```markdown
+## T-004: User Dashboard Data Aggregation
+
+**Target:** frontend
+**Working Directory:** packages/web
+**Agent:** ring:frontend-bff-engineer-typescript  # Because api_pattern: bff
+
+**Deliverable:** BFF endpoint that aggregates user profile, recent activity, and notifications.
+
+...rest of task...
+```
+
+```markdown
+## T-005: User Dashboard UI
+
+**Target:** frontend
+**Working Directory:** packages/web
+**Agent:** ring:frontend-engineer  # UI task, even with BFF pattern
+
+**Deliverable:** Dashboard page component consuming aggregated data from BFF.
+
+...rest of task...
+```
+
+### Validation for Agent Assignment
+
+| Check | Requirement |
+|-------|-------------|
+| All tasks have `Agent:` field | MANDATORY |
+| Agent matches api_pattern rules | If frontend + bff → check task type |
+| BFF tasks clearly separated | Data aggregation vs UI clearly split |
+| No mixed responsibilities | One task = one agent |
 
 ### Per-Module Output (if doc_organization: per-module)
 
