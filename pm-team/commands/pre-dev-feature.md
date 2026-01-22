@@ -88,6 +88,7 @@ Topology Configuration:
       path: [user input]
       framework: [auto-detected]
   doc_organization: unified | per-module
+  doc_placement: unified | per-module | distributed  # NEW: derived from structure
   api_pattern: direct | bff | other  # (only if fullstack)
 ```
 
@@ -310,15 +311,30 @@ Report to human:
 ```
 ✅ Small Track (4 gates) complete for <feature-name>
 
-Artifacts created:
-- docs/pre-dev/<feature-name>/research.md (Gate 0) - includes Product/UX Research
-- docs/pre-dev/<feature-name>/prd.md (Gate 1)
-- docs/pre-dev/<feature-name>/ux-criteria.md (Gate 1) - UX acceptance criteria
-- docs/pre-dev/<feature-name>/wireframes/ (Gate 1) - if feature has UI
-  - {screen-name}.yaml - low-fidelity prototypes
-  - user-flows.md - user flow diagrams
-- docs/pre-dev/<feature-name>/trd.md (Gate 2)
-- docs/pre-dev/<feature-name>/tasks.md (Gate 3)
+Artifacts created (paths depend on topology.structure):
+
+**For single-repo:**
+- docs/pre-dev/<feature-name>/research.md
+- docs/pre-dev/<feature-name>/prd.md
+- docs/pre-dev/<feature-name>/ux-criteria.md
+- docs/pre-dev/<feature-name>/wireframes/
+- docs/pre-dev/<feature-name>/trd.md
+- docs/pre-dev/<feature-name>/tasks.md
+
+**For monorepo:**
+- docs/pre-dev/<feature-name>/research.md (root - shared)
+- docs/pre-dev/<feature-name>/prd.md (root - shared)
+- docs/pre-dev/<feature-name>/trd.md (root - shared)
+- docs/pre-dev/<feature-name>/tasks.md (root - index)
+- {frontend.path}/docs/pre-dev/<feature-name>/ux-criteria.md
+- {frontend.path}/docs/pre-dev/<feature-name>/wireframes/
+- {frontend.path}/docs/pre-dev/<feature-name>/tasks.md (filtered)
+- {backend.path}/docs/pre-dev/<feature-name>/tasks.md (filtered)
+
+**For multi-repo:**
+- Both repos: research.md, prd.md, trd.md (synchronized)
+- Frontend repo: ux-criteria.md, wireframes/, tasks.md
+- Backend repo: tasks.md
 
 Skipped from full workflow:
 - Feature Map (features simple enough to map directly)

@@ -242,7 +242,9 @@ If you catch yourself writing any of these in Data Model, **STOP**:
 
 ## Data Model Template Structure
 
-Output to `docs/pre-dev/{feature-name}/data-model.md` with these sections:
+Output to (path depends on topology.structure):
+- **single-repo:** `docs/pre-dev/{feature-name}/data-model.md`
+- **monorepo/multi-repo:** `{backend.path}/docs/pre-dev/{feature-name}/data-model.md`
 
 | Section | Content |
 |---------|---------|
@@ -297,6 +299,32 @@ Output to `docs/pre-dev/{feature-name}/data-model.md` with these sections:
 | Constraint Completeness | 0-20 | All rules: 20, Common cases: 12, Minimal: 5 |
 
 **Action:** 80+ autonomous generation | 50-79 present options | <50 ask clarifying questions
+
+---
+
+## Document Placement
+
+**data-model.md is a backend document** - it defines entity structures owned by backend services.
+
+| Structure | data-model.md Location |
+|-----------|------------------------|
+| single-repo | `docs/pre-dev/{feature}/data-model.md` |
+| monorepo | `{backend.path}/docs/pre-dev/{feature}/data-model.md` |
+| multi-repo | `{backend.path}/docs/pre-dev/{feature}/data-model.md` |
+
+**Why backend path?** Data models are:
+- Implemented as database schemas by backend engineers
+- Define entities owned by backend components
+- Versioned with backend database migrations
+
+**Directory creation for multi-module:**
+```bash
+# Read topology from research.md frontmatter
+backend_path="${topology_modules_backend_path:-"."}"
+mkdir -p "${backend_path}/docs/pre-dev/{feature}"
+```
+
+---
 
 ## After Approval
 

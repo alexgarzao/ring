@@ -16,6 +16,7 @@ Standards for project structure discovery and multi-module coordination in Ring 
 | 6 | [Multi-Repo Coordination](#6-multi-repo-coordination) | handling separate repositories |
 | 7 | [PROJECT_RULES.md Hierarchy](#7-project_rulesmd-hierarchy) | rule precedence in multi-module projects |
 | 8 | [API Pattern](#8-api-pattern) | direct, bff, other - determines agent assignment |
+| 9 | [Documentation Placement](#9-documentation-placement) | Where docs are stored per structure |
 
 ---
 
@@ -222,22 +223,25 @@ When `structure: multi-repo`, the repository where `/pre-dev-feature` is run bec
 - Task files are generated with clear module markers
 - Execution requires manual or scripted distribution
 
-### Task Distribution Options
+### Task Distribution
 
-**Option A: Manual Copy**
+**Automatic Placement:** Documents are now automatically written to the correct repository based on `doc_placement: distributed`.
+
+- Shared documents (research.md, prd.md, trd.md) are written to both repos
+- Backend documents (api-design.md, data-model.md, tasks.md) go to backend repo
+- Frontend documents (ux-criteria.md, wireframes/, tasks.md) go to frontend repo
+
+**See Section 9 (Documentation Placement)** for complete placement rules.
+
+**Manual Sync (if needed):**
+If automatic placement fails or repos are on different machines:
+
 ```bash
-# After pre-dev completes
-cp docs/pre-dev/feature/_backend.tasks.md /path/to/backend/docs/
-cp docs/pre-dev/feature/_frontend.tasks.md /path/to/frontend/docs/
+# Sync shared docs from backend to frontend
+rsync -av {backend.path}/docs/pre-dev/{feature}/research.md {frontend.path}/docs/pre-dev/{feature}/
+rsync -av {backend.path}/docs/pre-dev/{feature}/prd.md {frontend.path}/docs/pre-dev/{feature}/
+rsync -av {backend.path}/docs/pre-dev/{feature}/trd.md {frontend.path}/docs/pre-dev/{feature}/
 ```
-
-**Option B: Symlinks (same machine)**
-```bash
-ln -s /coordinator/docs/pre-dev/feature/_backend.tasks.md /backend/docs/feature-tasks.md
-```
-
-**Option C: Git Submodules**
-Include coordinator as submodule in each repo.
 
 ### Execution in Multi-Repo
 
@@ -334,6 +338,119 @@ topology:
 | `fullstack` | `direct` | Simpler architecture, most features don't need BFF |
 | `frontend-only` | N/A | Frontend-only already implies client-side |
 | `backend-only` | N/A | No frontend to consider |
+
+---
+
+## 9. Documentation Placement
+
+Documentation placement determines where pre-dev artifacts are written based on project structure.
+
+### Placement Modes
+
+| Mode | Structure | Description |
+|------|-----------|-------------|
+| `unified` | single-repo | All docs in `docs/pre-dev/{feature}/` |
+| `per-module` | monorepo | Docs distributed to module directories |
+| `distributed` | multi-repo | Docs written to each repository |
+
+### Document Types and Placement
+
+| Document | Type | single-repo | monorepo | multi-repo |
+|----------|------|-------------|----------|------------|
+| research.md | Shared | Root | Root | Both repos |
+| prd.md | Shared | Root | Root | Both repos |
+| trd.md | Shared | Root | Root | Both repos |
+| ux-criteria.md | Frontend | Root | Frontend module | Frontend repo |
+| wireframes/ | Frontend | Root | Frontend module | Frontend repo |
+| api-design.md | Backend | Root | Backend module | Backend repo |
+| data-model.md | Backend | Root | Backend module | Backend repo |
+| dependency-map.md | Split | Root | Root + modules | Per repo |
+| tasks.md | Split | Root | Root + modules | Per repo |
+
+### Single-Repo (unified)
+
+All documentation stays in the repository root:
+
+```
+docs/pre-dev/{feature}/
+├── research.md
+├── prd.md
+├── ux-criteria.md
+├── wireframes/
+├── trd.md
+├── api-design.md
+├── data-model.md
+├── dependency-map.md
+└── tasks.md
+```
+
+### Monorepo (per-module)
+
+Shared docs at root, module-specific docs in module directories:
+
+```
+# Root (shared)
+docs/pre-dev/{feature}/
+├── research.md
+├── prd.md
+├── trd.md
+└── tasks.md           # Index with all tasks
+
+# Backend module
+{backend.path}/docs/pre-dev/{feature}/
+├── api-design.md
+├── data-model.md
+├── dependency-map.md  # Backend dependencies
+└── tasks.md           # Backend tasks only
+
+# Frontend module
+{frontend.path}/docs/pre-dev/{feature}/
+├── ux-criteria.md
+├── wireframes/
+├── dependency-map.md  # Frontend dependencies
+└── tasks.md           # Frontend tasks only
+```
+
+### Multi-Repo (distributed)
+
+Shared docs copied to both repos, module-specific docs in respective repos:
+
+```
+# Backend repository
+{backend.path}/docs/pre-dev/{feature}/
+├── research.md        # Copy of shared
+├── prd.md             # Copy of shared
+├── trd.md             # Copy of shared
+├── api-design.md
+├── data-model.md
+├── dependency-map.md
+└── tasks.md           # Backend tasks only
+
+# Frontend repository
+{frontend.path}/docs/pre-dev/{feature}/
+├── research.md        # Copy of shared
+├── prd.md             # Copy of shared
+├── trd.md             # Copy of shared
+├── ux-criteria.md
+├── wireframes/
+├── dependency-map.md
+└── tasks.md           # Frontend tasks only
+```
+
+### Implementation Notes
+
+**For skills writing documents:**
+
+1. Read `topology.structure` from research.md frontmatter
+2. Use path resolution logic from `topology-discovery.md`
+3. Create directories before writing
+4. For multi-repo shared docs, write to both paths
+
+**Backward Compatibility:**
+
+- Single-repo behavior is unchanged
+- Existing projects without `doc_placement` default to `unified`
+- Skills MUST handle missing `topology` in frontmatter gracefully
 
 ---
 

@@ -214,6 +214,7 @@ topology:
   scope: fullstack
   structure: single-repo
   doc_organization: unified  # or per-module
+  doc_placement: unified     # derived from structure
   api_pattern: direct        # or bff, other
 ```
 
@@ -231,6 +232,7 @@ topology:
       path: packages/web        # From Q3
       framework: nextjs         # Auto-detected or asked
   doc_organization: unified     # From Q4
+  doc_placement: per-module     # derived from structure
   api_pattern: bff              # From Q5
 ```
 
@@ -248,6 +250,7 @@ topology:
       path: /home/user/projects/frontend-app   # From Q3
       framework: react                          # Auto-detected
   doc_organization: per-module                  # From Q4
+  doc_placement: distributed                    # derived from structure
   api_pattern: direct                           # From Q5
 ```
 
@@ -341,6 +344,122 @@ All subsequent gates MUST read the topology from the research.md frontmatter.
 | Structure is single-repo | Skip Q3 | No separate paths |
 | User selects "Other" | Ask follow-up | Allow custom configurations |
 | API pattern "Other" | Ask specification | Support custom patterns (GraphQL, tRPC, etc.) |
+
+---
+
+## Documentation Path Resolution
+
+### Path Resolution Function
+
+Skills MUST use this logic to determine where to write documents:
+
+```python
+def get_doc_path(doc_type: str, feature_name: str, topology: dict) -> str | list[str]:
+    """
+    Returns the path(s) where a document should be written.
+
+    Args:
+        doc_type: One of 'research', 'prd', 'trd', 'ux-criteria', 'wireframes',
+                  'api-design', 'data-model', 'dependency-map', 'tasks'
+        feature_name: The feature name in kebab-case
+        topology: The TopologyConfig dictionary
+
+    Returns:
+        Single path string, or list of paths for multi-repo shared docs
+    """
+    structure = topology.get('structure', 'single-repo')
+    modules = topology.get('modules', {})
+
+    # Single-repo: all docs in one place
+    if structure == 'single-repo':
+        return f"docs/pre-dev/{feature_name}/"
+
+    # Shared documents (research, prd, trd)
+    if doc_type in ['research', 'prd', 'trd']:
+        if structure == 'monorepo':
+            return f"docs/pre-dev/{feature_name}/"
+        else:  # multi-repo
+            # Return both paths - document must be copied to both repos
+            backend_path = modules.get('backend', {}).get('path', '.')
+            frontend_path = modules.get('frontend', {}).get('path', '.')
+            return [
+                f"{backend_path}/docs/pre-dev/{feature_name}/",
+                f"{frontend_path}/docs/pre-dev/{feature_name}/"
+            ]
+
+    # Frontend documents (ux-criteria, wireframes)
+    if doc_type in ['ux-criteria', 'wireframes']:
+        frontend_path = modules.get('frontend', {}).get('path', '.')
+        return f"{frontend_path}/docs/pre-dev/{feature_name}/"
+
+    # Backend documents (api-design, data-model)
+    if doc_type in ['api-design', 'data-model']:
+        backend_path = modules.get('backend', {}).get('path', '.')
+        return f"{backend_path}/docs/pre-dev/{feature_name}/"
+
+    # Split documents (dependency-map, tasks)
+    if doc_type in ['dependency-map', 'tasks']:
+        # Return paths for both modules - skill handles split logic
+        if structure == 'monorepo':
+            backend_path = modules.get('backend', {}).get('path', '.')
+            frontend_path = modules.get('frontend', {}).get('path', '.')
+            return {
+                'index': f"docs/pre-dev/{feature_name}/",
+                'backend': f"{backend_path}/docs/pre-dev/{feature_name}/",
+                'frontend': f"{frontend_path}/docs/pre-dev/{feature_name}/"
+            }
+        else:  # multi-repo
+            backend_path = modules.get('backend', {}).get('path', '.')
+            frontend_path = modules.get('frontend', {}).get('path', '.')
+            return {
+                'backend': f"{backend_path}/docs/pre-dev/{feature_name}/",
+                'frontend': f"{frontend_path}/docs/pre-dev/{feature_name}/"
+            }
+
+    # Default fallback
+    return f"docs/pre-dev/{feature_name}/"
+```
+
+### Document Classification
+
+| Document | Classification | Placement Rule |
+|----------|---------------|----------------|
+| research.md | Shared | Root (monorepo) or both repos (multi-repo) |
+| prd.md | Shared | Root (monorepo) or both repos (multi-repo) |
+| trd.md | Shared | Root (monorepo) or both repos (multi-repo) |
+| ux-criteria.md | Frontend | Frontend module/repo path |
+| wireframes/ | Frontend | Frontend module/repo path |
+| api-design.md | Backend | Backend module/repo path |
+| data-model.md | Backend | Backend module/repo path |
+| dependency-map.md | Split | Index at root, module-specific at module paths |
+| tasks.md | Split | Index at root, filtered tasks at module paths |
+
+### Multi-Repo Document Synchronization
+
+For multi-repo with shared documents (research.md, prd.md, trd.md):
+
+1. **Write to primary location first** (backend repo by convention)
+2. **Copy to secondary location** (frontend repo)
+3. **Include sync note in document footer:**
+
+```markdown
+---
+**Note:** This document is synchronized across repositories.
+Primary: {backend.path}/docs/pre-dev/{feature}/
+Mirror: {frontend.path}/docs/pre-dev/{feature}/
+```
+
+### Directory Creation
+
+Before writing any document, create the target directory:
+
+```bash
+# Single path
+mkdir -p "{path}"
+
+# Multi-repo (both paths)
+mkdir -p "{backend_path}" "{frontend_path}"
+```
 
 ---
 
