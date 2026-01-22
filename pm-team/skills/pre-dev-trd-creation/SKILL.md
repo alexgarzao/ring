@@ -447,9 +447,46 @@ If reviewing a TRD for a UI feature and you see NONE of these, **STOP and add th
 
 **Action:** 80+ present autonomously | 50-79 present options | <50 request clarification
 
+---
+
+## Document Placement
+
+**trd.md is a shared document** - it defines architecture for the entire feature.
+
+| Structure | trd.md Location |
+|-----------|-----------------|
+| single-repo | `docs/pre-dev/{feature}/trd.md` |
+| monorepo | `docs/pre-dev/{feature}/trd.md` (root) |
+| multi-repo | Write to BOTH repos |
+
+**Multi-repo handling:**
+
+```bash
+# Read topology from research.md frontmatter
+if [[ "$structure" == "multi-repo" ]]; then
+    # Write to both repositories
+    mkdir -p "{backend.path}/docs/pre-dev/{feature}"
+    mkdir -p "{frontend.path}/docs/pre-dev/{feature}"
+
+    # Write TRD to primary (backend)
+    # Then copy to frontend
+    cp "{backend.path}/docs/pre-dev/{feature}/trd.md" "{frontend.path}/docs/pre-dev/{feature}/trd.md"
+fi
+```
+
+**Sync footer for multi-repo:**
+```markdown
+---
+**Sync Status:** Architecture document maintained in both repositories.
+```
+
+---
+
 ## Output & After Approval
 
-**Output to:** `docs/pre-dev/{feature-name}/trd.md`
+**Output to:**
+- **single-repo/monorepo:** `docs/pre-dev/{feature-name}/trd.md`
+- **multi-repo:** Both `{backend.path}/docs/pre-dev/{feature}/trd.md` AND `{frontend.path}/docs/pre-dev/{feature}/trd.md`
 
 1. ✅ Lock TRD - architecture patterns are now reference
 2. 🎯 Use as input for API Design (`ring:pre-dev-api-design`)

@@ -88,6 +88,7 @@ Topology Configuration:
       path: [user input]
       framework: [auto-detected]
   doc_organization: unified | per-module
+  doc_placement: unified | per-module | distributed  # NEW: derived from structure
   api_pattern: direct | bff | other  # (only if fullstack)
 ```
 
@@ -432,21 +433,33 @@ Report to human:
 ```
 ✅ Full Track (9 gates) complete for <feature-name>
 
-Artifacts created:
-- docs/pre-dev/<feature-name>/research.md (Gate 0) - includes Product/UX Research
-- docs/pre-dev/<feature-name>/prd.md (Gate 1)
-- docs/pre-dev/<feature-name>/ux-criteria.md (Gate 1) ← NEW - UX acceptance criteria
-- docs/pre-dev/<feature-name>/feature-map.md (Gate 2)
-- docs/pre-dev/<feature-name>/user-flows.md (Gate 2) ← NEW - Detailed user flows
-- docs/pre-dev/<feature-name>/wireframes/ (Gate 2) ← NEW - Wireframe specs (YAML)
-- docs/pre-dev/<feature-name>/trd.md (Gate 3)
-- docs/pre-dev/<feature-name>/api-design.md (Gate 4)
-- docs/pre-dev/<feature-name>/api-standards-ref.md (Gate 4 - if standards provided)
-- docs/pre-dev/<feature-name>/data-model.md (Gate 5)
-- docs/pre-dev/<feature-name>/db-standards-ref.md (Gate 5 - always generated: conversion from API standards, separate dictionary, or manual)
-- docs/pre-dev/<feature-name>/dependency-map.md (Gate 6)
-- docs/pre-dev/<feature-name>/tasks.md (Gate 7)
-- docs/pre-dev/<feature-name>/subtasks.md (Gate 8)
+Artifacts created (paths depend on topology.structure):
+
+**For single-repo (all in docs/pre-dev/<feature-name>/):**
+- research.md (Gate 0) - includes Product/UX Research
+- prd.md (Gate 1)
+- ux-criteria.md (Gate 1) - UX acceptance criteria
+- feature-map.md (Gate 2)
+- user-flows.md (Gate 2) - Detailed user flows
+- wireframes/ (Gate 2) - Wireframe specs (YAML)
+- trd.md (Gate 3)
+- api-design.md (Gate 4)
+- api-standards-ref.md (Gate 4 - if standards provided)
+- data-model.md (Gate 5)
+- db-standards-ref.md (Gate 5 - always generated)
+- dependency-map.md (Gate 6)
+- tasks.md (Gate 7)
+- subtasks.md (Gate 8)
+
+**For monorepo (distributed by module):**
+*Root (shared):* research.md, prd.md, feature-map.md, trd.md, tasks.md (index)
+*Backend module:* api-design.md, data-model.md, dependency-map.md, tasks.md
+*Frontend module:* ux-criteria.md, user-flows.md, wireframes/, dependency-map.md, tasks.md
+
+**For multi-repo (per-repository):**
+*Both repos:* research.md, prd.md, trd.md (synchronized)
+*Backend repo:* api-design.md, data-model.md, dependency-map.md, tasks.md
+*Frontend repo:* ux-criteria.md, user-flows.md, wireframes/, dependency-map.md, tasks.md
 
 Planning time: 2.5-4.5 hours (comprehensive with UX design)
 

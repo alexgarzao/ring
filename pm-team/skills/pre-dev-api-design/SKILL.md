@@ -228,7 +228,9 @@ If you catch yourself writing any of these in API Design, **STOP**:
 
 ## Contract Template Structure
 
-Output to `docs/pre-dev/{feature-name}/api-design.md` with these sections:
+Output to (path depends on topology.structure):
+- **single-repo:** `docs/pre-dev/{feature-name}/api-design.md`
+- **monorepo/multi-repo:** `{backend.path}/docs/pre-dev/{feature-name}/api-design.md`
 
 | Section | Content |
 |---------|---------|
@@ -290,6 +292,32 @@ Output to `docs/pre-dev/{feature-name}/api-design.md` with these sections:
 | Error Handling | 0-20 | All scenarios: 20, Common cases: 12, Minimal: 5 |
 
 **Action:** 80+ autonomous generation | 50-79 present options | <50 ask clarifying questions
+
+---
+
+## Document Placement
+
+**api-design.md is a backend document** - it defines API contracts implemented by backend services.
+
+| Structure | api-design.md Location |
+|-----------|------------------------|
+| single-repo | `docs/pre-dev/{feature}/api-design.md` |
+| monorepo | `{backend.path}/docs/pre-dev/{feature}/api-design.md` |
+| multi-repo | `{backend.path}/docs/pre-dev/{feature}/api-design.md` |
+
+**Why backend path?** API contracts are:
+- Implemented by backend engineers
+- Referenced during backend code review
+- Versioned with backend code
+
+**Directory creation for multi-module:**
+```bash
+# Read topology from research.md frontmatter
+backend_path="${topology_modules_backend_path:-"."}"
+mkdir -p "${backend_path}/docs/pre-dev/{feature}"
+```
+
+---
 
 ## After Approval
 

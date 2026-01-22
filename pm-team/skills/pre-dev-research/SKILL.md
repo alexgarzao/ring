@@ -118,6 +118,29 @@ topology:
 ---
 ```
 
+**Document Placement (based on topology.structure):**
+
+| Structure | research.md Location |
+|-----------|---------------------|
+| single-repo | `docs/pre-dev/{feature-name}/research.md` |
+| monorepo | `docs/pre-dev/{feature-name}/research.md` (root) |
+| multi-repo | Write to BOTH: `{backend.path}/docs/pre-dev/{feature-name}/research.md` AND `{frontend.path}/docs/pre-dev/{feature-name}/research.md` |
+
+**Multi-repo directory creation:**
+```bash
+# Create directories in both repos
+mkdir -p "{backend.path}/docs/pre-dev/{feature-name}"
+mkdir -p "{frontend.path}/docs/pre-dev/{feature-name}"
+```
+
+**Multi-repo sync note:** Add this footer to research.md for multi-repo:
+```markdown
+---
+**Sync Status:** This document is maintained in both repositories.
+- Primary: {backend.path}/docs/pre-dev/{feature-name}/research.md
+- Mirror: {frontend.path}/docs/pre-dev/{feature-name}/research.md
+```
+
 2. **Adjust agent dispatch for multi-module projects:**
 
 If `topology.structure` is `monorepo` or `multi-repo`:
@@ -142,7 +165,9 @@ If `topology.structure` is `monorepo` or `multi-repo`:
 
 ## Step 3: Aggregate Research Findings
 
-**Output:** `docs/pre-dev/{feature-name}/research.md`
+**Output:**
+- **single-repo/monorepo:** `docs/pre-dev/{feature-name}/research.md`
+- **multi-repo:** Both `{backend.path}/docs/pre-dev/{feature-name}/research.md` AND `{frontend.path}/docs/pre-dev/{feature-name}/research.md`
 
 | Section | Content |
 |---------|---------|
