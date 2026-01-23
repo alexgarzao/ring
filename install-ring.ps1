@@ -151,6 +151,7 @@ try {
         Write-Host "  • ring-dev-team - Developer role agents"
         Write-Host "  • ring-finops-team - FinOps & regulatory compliance"
         Write-Host "  • ring-pm-team - Product planning workflows"
+        Write-Host "  • ring-pmo-team - PMO portfolio management specialists"
         Write-Host ""
         Write-Host "To install manually: claude plugin install <plugin-name>"
     }
@@ -162,6 +163,7 @@ try {
     Write-Host "  • ring-dev-team - Developer role agents"
     Write-Host "  • ring-finops-team - FinOps & regulatory compliance"
     Write-Host "  • ring-pm-team - Product planning workflows"
+    Write-Host "  • ring-pmo-team - PMO portfolio management specialists"
     Write-Host ""
     Write-Host "To install: claude plugin install <plugin-name>"
 }

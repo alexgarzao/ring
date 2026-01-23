@@ -74,6 +74,25 @@
       ]
     },
     {
+      "name": "ring-pmo-team",
+      "description": "PMO (Project Management Office) specialists for portfolio-level oversight: 5 agents (portfolio-manager, resource-planner, risk-analyst, governance-specialist, executive-reporter), 8 skills for portfolio planning, resource allocation, risk management, and executive reporting. Complements ring-pm-team (single feature) with portfolio-level coordination.",
+      "version": "0.1.0",
+      "source": "./pmo-team",
+      "homepage": "https://github.com/lerianstudio/ring/tree/pmo-team",
+      "repository": "https://github.com/lerianstudio/ring/tree/pmo-team",
+      "license": "MIT",
+      "keywords": [
+        "pmo",
+        "portfolio",
+        "project-management",
+        "resource-planning",
+        "risk-management",
+        "governance",
+        "executive-reporting",
+        "agents"
+      ]
+    },
+    {
       "name": "ring-finops-team",
       "version": "0.6.3",
       "description": "FinOps and Brazilian regulatory compliance skills for financial systems",

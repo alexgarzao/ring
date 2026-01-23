@@ -2,7 +2,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **5 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 57 specialized skills** (25 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing)
-- **24 specialized agents** - 7 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing
+- **Providing 65 specialized skills** (25 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing + 8 PMO)
+- **29 specialized agents** - 7 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing + 5 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -62,6 +62,13 @@ Ring solves this by:
 **FinOps Agents (ring-finops-team plugin):**
 - `finops-analyzer` - Financial operations analysis
 - `finops-automation` - FinOps template creation and automation
+
+**PMO Agents (ring-pmo-team plugin):**
+- `portfolio-manager` - Portfolio-level planning and multi-project coordination
+- `resource-planner` - Capacity planning and resource allocation optimization
+- `risk-analyst` - Portfolio risk identification and mitigation planning
+- `governance-specialist` - Gate reviews and process compliance
+- `executive-reporter` - Executive dashboards and stakeholder communications
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
 
@@ -229,7 +236,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 57 Skills (Across 5 Plugins)
+## 📚 All 65 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 25 skills)
 
@@ -316,9 +323,21 @@ No "should work" → Only "does work" with proof
 - `regulatory-templates-gate2` - Field mapping validation
 - `regulatory-templates-gate3` - Template file generation
 
+### PMO Skills (ring-pmo-team plugin - 8 skills)
+
+**Portfolio Management:**
+- `ring:using-pmo-team` - Introduction to PMO specialist agents
+- `ring:portfolio-planning` - Multi-project coordination and portfolio optimization
+- `ring:resource-allocation` - Capacity planning and conflict resolution
+- `ring:risk-management` - Portfolio-level risk identification and mitigation
+- `ring:dependency-mapping` - Cross-project dependency analysis
+- `ring:project-health-check` - Individual project health assessment
+- `ring:pmo-retrospective` - Portfolio lessons learned and process improvements
+- `ring:executive-reporting` - Executive dashboards and board packages
+
 ## 🎮 Interactive Commands
 
-Ring provides 22 slash commands across 5 plugins for common workflows.
+Ring provides 25 slash commands across 6 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -353,6 +372,12 @@ Ring provides 22 slash commands across 5 plugins for common workflows.
 - `/ring:write-guide [topic]` - Start writing a functional guide with voice/tone guidance
 - `/ring:write-api [endpoint]` - Start writing API reference documentation
 - `/ring:review-docs [file]` - Review existing documentation for quality
+
+### PMO (ring-pmo-team)
+
+- `/ring:portfolio-review [scope]` - Conduct comprehensive portfolio review across projects
+- `/ring:dependency-analysis [scope]` - Analyze cross-project dependencies
+- `/ring:executive-summary [scope]` - Generate executive summary for leadership
 
 ## 💡 Usage Examples
 
@@ -421,7 +446,7 @@ Claude: Dispatching all 3 reviewers in parallel...
 ```
 ring/                                  # Monorepo root
 ├── .claude-plugin/
-│   └── marketplace.json              # Multi-plugin marketplace config (5 active plugins)
+│   └── marketplace.json              # Multi-plugin marketplace config (6 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
 │   ├── skills/                       # 25 core skills
 │   │   ├── skill-name/
@@ -460,6 +485,16 @@ ring/                                  # Monorepo root
 │   ├── agents/                      # 2 FinOps agents
 │   ├── docs/regulatory/             # Regulatory templates and dictionaries
 │   └── hooks/                       # SessionStart hook
+├── pmo-team/                         # PMO Specialists plugin (ring-pmo-team)
+│   ├── agents/                       # 5 PMO specialist agents
+│   │   ├── portfolio-manager.md
+│   │   ├── resource-planner.md
+│   │   ├── risk-analyst.md
+│   │   ├── governance-specialist.md
+│   │   └── executive-reporter.md
+│   ├── skills/                       # 8 PMO skills
+│   ├── commands/                     # 3 PMO commands
+│   └── hooks/                        # SessionStart hook
 └── tw-team/                         # Technical Writing plugin (ring-tw-team)
     ├── skills/                      # 7 documentation skills
     ├── agents/                      # 3 technical writing agents

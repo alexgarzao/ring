@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 5 plugins with 57 skills, 24 agents, and 22 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 65 skills, 29 agents, and 25 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -8,7 +8,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────┐
-│                              MARKETPLACE (5 PLUGINS)                               │
+│                              MARKETPLACE (6 PLUGINS)                               │
 │                     (monorepo: .claude-plugin/marketplace.json)                    │
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
@@ -17,12 +17,12 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  │  Agents(7)    │  │  Agents(9)    │  │  Agents(3)    │  │  Skills(6)    │      │
 │  │  Cmds(12)     │  │  Cmds(5)      │  │  Cmds(2)      │  │  Agents(2)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
-│  ┌───────────────┐                                                                │
-│  │ ring-tw-team  │                                                                │
-│  │  Skills(7)    │                                                                │
-│  │  Agents(3)    │                                                                │
-│  │  Cmds(3)      │                                                                │
-│  └───────────────┘                                                                │
+│  ┌───────────────┐  ┌───────────────┐                                            │
+│  │ ring-tw-team  │  │ ring-pmo-team │                                            │
+│  │  Skills(7)    │  │  Skills(8)    │                                            │
+│  │  Agents(3)    │  │  Agents(5)    │                                            │
+│  │  Cmds(3)      │  │  Cmds(3)      │                                            │
+│  └───────────────┘  └───────────────┘                                            │
 └────────────────────────────────────────────────────────────────────────────────────┘
 
                               HOW IT WORKS
@@ -125,11 +125,19 @@ Commands are invoked directly: `/command-name`.
 | `/ring:write-api [endpoint]` | Start writing API documentation | `/ring:write-api POST /accounts` |
 | `/ring:review-docs [file]` | Review documentation for quality | `/ring:review-docs docs/guide.md` |
 
+### PMO Portfolio (ring-pmo-team)
+
+| Command | Use Case | Example |
+|---------|----------|---------|
+| `/ring:portfolio-review [scope]` | Comprehensive portfolio review | `/ring:portfolio-review Q1-2025` |
+| `/ring:dependency-analysis [scope]` | Cross-project dependency mapping | `/ring:dependency-analysis payment-system` |
+| `/ring:executive-summary [scope]` | Executive status summary | `/ring:executive-summary board-meeting` |
+
 ---
 
 ## 💡 About Skills
 
-Skills (57) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (65) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, verification-before-completion, etc.
 
@@ -248,6 +256,18 @@ For Brazilian financial compliance workflows:
 | `finops-analyzer` | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
 | `finops-automation` | Template generation | Create .tpl files (Gate 3) |
 
+### PMO Specialists (ring-pmo-team)
+
+For portfolio-level project management and oversight:
+
+| Agent | Purpose | Use For |
+|-------|---------|---------|
+| `portfolio-manager` | Portfolio-level planning | Multi-project coordination, strategic alignment |
+| `resource-planner` | Capacity planning | Resource allocation, conflict resolution |
+| `risk-analyst` | Portfolio risk management | Risk identification, mitigation planning |
+| `governance-specialist` | Process compliance | Gate reviews, audit readiness |
+| `executive-reporter` | Executive communications | Dashboards, board packages, status summaries |
+
 ---
 
 ## 📖 Common Workflows
@@ -336,6 +356,11 @@ These enforce quality standards:
 | Documentation quality review | `docs-reviewer` |
 | Regulatory compliance analysis | `finops-analyzer` |
 | Regulatory template generation | `finops-automation` |
+| Portfolio-level planning | `portfolio-manager` |
+| Resource capacity planning | `resource-planner` |
+| Portfolio risk assessment | `risk-analyst` |
+| Governance and compliance | `governance-specialist` |
+| Executive reporting | `executive-reporter` |
 
 ---
 
@@ -344,7 +369,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 57 skills are auto-discovered and available
+2. All 65 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
