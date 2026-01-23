@@ -35,12 +35,130 @@ Jumping to implementation without contract definition creates:
 **The API Design answers**: WHAT data/operations components expose and consume?
 **The API Design never answers**: HOW those are implemented (protocols, serialization, specific tech).
 
+## Phase 0: API Standards Discovery (MANDATORY)
+
+**Before defining contracts, check for organizational naming standards.**
+
+See [shared-patterns/standards-discovery.md](../shared-patterns/standards-discovery.md) for complete workflow.
+
+**Context:** API field naming standards
+**Output:** `docs/pre-dev/{feature-name}/api-standards-ref.md`
+
+Use AskUserQuestion tool:
+
+**Question:** "Do you have a data dictionary or API field naming standards to reference?"
+- Header: "API Standards"
+- multiSelect: false
+- Options:
+  - "No - Use industry best practices" (description: "Generate contracts using standard naming conventions")
+  - "Yes - URL to document" (description: "Provide a URL to your data dictionary or standards document")
+  - "Yes - File path" (description: "Provide a local file path (.md, .json, .yaml, .csv)")
+
+### If "Yes" Selected:
+
+**1. Load the document:**
+
+| Source Type | Tool | Actions |
+|------------|------|---------|
+| URL | WebFetch | Fetch document content; parse for field definitions, naming rules, validation patterns |
+| File path | Read | Read file content; support .md (markdown tables), .json (structured), .yaml (structured), .csv (tabular) |
+
+**2. Extract standards:**
+
+MUST extract these elements if present:
+
+| Element | What to Extract | Example |
+|---------|----------------|---------|
+| **Field naming convention** | camelCase, snake_case, PascalCase | `userId` vs `user_id` |
+| **Standard field names** | Common fields used across APIs | `createdAt`, `updatedAt`, `isActive` |
+| **Data type formats** | How to represent dates, IDs, amounts | ISO8601, UUID v4, Decimal(10,2) |
+| **Validation patterns** | Regex, constraints, rules | Email RFC 5322, phone E.164 |
+| **Standard error codes** | Organizational error naming | `EMAIL_ALREADY_EXISTS` vs `DuplicateEmail` |
+| **Pagination fields** | Standard query/response pagination | `page`, `pageSize`, `totalCount` |
+
+**3. Save extracted standards:**
+
+Output to: `docs/pre-dev/{feature-name}/api-standards-ref.md`
+
+Format:
+```markdown
+# API Standards Reference - {Feature Name}
+
+Source: {URL or file path}
+Extracted: {timestamp}
+
+## Field Naming Conventions
+- IDs: `{pattern}` (example)
+- Timestamps: `{pattern}` (example)
+- Booleans: `{pattern}` (example)
+- Collections: `{pattern}` (example)
+
+## Standard Fields
+| Field | Type | Format | Validation | Example |
+|-------|------|--------|------------|---------|
+| userId | string | UUID v4 | Required, unique | "550e8400-e29b-41d4-a716-446655440000" |
+| email | string | RFC 5322 | Required, unique | "user@example.com" |
+| createdAt | string | ISO 8601 | Auto-generated | "2026-01-23T10:30:00Z" |
+
+## Standard Error Codes
+| Code | Usage | HTTP Equivalent (for reference) |
+|------|-------|--------------------------------|
+| EMAIL_ALREADY_EXISTS | Duplicate email registration | 409 Conflict |
+| INVALID_INPUT | Validation failure | 400 Bad Request |
+
+## Validation Patterns
+| Pattern Type | Rule | Example |
+|-------------|------|---------|
+| Email | RFC 5322, max 254 chars | "user@example.com" |
+| Phone | E.164 format | "+5511987654321" |
+
+## Pagination Standards
+| Field | Type | Description |
+|-------|------|-------------|
+| page | integer | 1-indexed page number |
+| pageSize | integer | Items per page (max 100) |
+| totalCount | integer | Total items across all pages |
+```
+
+**4. Apply throughout Gate 4:**
+
+- **Use standard field names** in operation definitions
+- **Reference validation patterns** in contract constraints
+- **Apply naming conventions** consistently
+- **Note any justified deviations** with rationale
+
+### If Dictionary Conflicts with Existing Codebase:
+
+If Phase 0 from Gate 0 (Research) found existing patterns that conflict with the dictionary:
+
+**STOP and use AskUserQuestion:**
+
+**Question:** "Dictionary says `{dictionary_pattern}`, but codebase uses `{codebase_pattern}`. Which should we follow?"
+- Header: "Standards Conflict"
+- multiSelect: false
+- Options:
+  - "Follow dictionary" (description: "Use organizational standards, refactor existing code later")
+  - "Follow codebase" (description: "Maintain consistency with existing implementation")
+  - "Hybrid approach" (description: "Let me decide per-field")
+
+### If "No" Selected (Industry Best Practices):
+
+Proceed with standard naming conventions:
+- camelCase for field names (JavaScript/TypeScript)
+- snake_case for field names (Python/Ruby/SQL)
+- ISO 8601 for timestamps
+- UUID v4 for identifiers
+- RFC 5322 for emails
+
+**Document the choice** in `api-standards-ref.md` with rationale.
+
 ## Mandatory Workflow
 
 | Phase | Activities |
 |-------|------------|
+| **0. API Standards Discovery** | Check for organizational field naming standards (data dictionary); load from URL or file if provided; extract field conventions, types, validation patterns; save to `api-standards-ref.md` for reference throughout gate |
 | **1. Contract Analysis** | Load approved TRD (Gate 3), Feature Map (Gate 2), PRD (Gate 1); identify integration points from TRD component diagram; extract data flows |
-| **2. Contract Definition** | Per interface: define operations, specify inputs/outputs, define errors, document events, set constraints (validation, rate limits), version contracts |
+| **2. Contract Definition** | Per interface: define operations, specify inputs/outputs, define errors, document events, set constraints (validation, rate limits), version contracts; **apply standards from Phase 0 if available** |
 | **3. Gate 4 Validation** | Verify all checkboxes in validation checklist before proceeding to Data Modeling |
 
 ## Explicit Rules
@@ -65,6 +183,9 @@ HTTP verbs (GET/POST/PUT), gRPC/GraphQL/WebSocket details, URL paths/routes, ser
 
 | Excuse | Reality |
 |--------|---------|
+| "No need to ask about data dictionary" | Organizations have standards. Check first, don't assume. Phase 0 is MANDATORY. |
+| "I'll just use common sense for field names" | "Common sense" varies. Ask for standards, or explicitly choose best practices. |
+| "Skip Phase 0, user will mention standards if important" | User doesn't know when to mention it. YOU must ask proactively. |
 | "REST is obvious, just document endpoints" | Protocol choice goes in Dependency Map. Define contracts abstractly. |
 | "We need HTTP codes for errors" | Error semantics matter; HTTP codes are protocol. Abstract the errors. |
 | "Teams need to see JSON examples" | JSON is serialization. Define structure; format comes later. |

@@ -157,41 +157,53 @@ mkdir -p docs/pre-dev/<feature-name>
 
 **Skill:** ring:pre-dev-api-design
 
-1. Load previous artifacts (PRD, Feature Map, TRD)
-2. Create API design document with:
+1. **Phase 0:** Ask user for API naming standards (URL/file/none)
+2. If provided: Load and extract to `api-standards-ref.md`
+3. Load previous artifacts (PRD, Feature Map, TRD)
+4. Create API design document with:
    - Component contracts and interfaces
-   - Request/response formats
+   - Request/response formats (using standards if available)
    - Error handling patterns
    - Integration specifications
-3. Save to: `docs/pre-dev/<feature-name>/api-design.md`
-4. Run Gate 4 validation checklist
-5. Get human approval before proceeding
+5. Save to: `docs/pre-dev/<feature-name>/api-design.md`
+6. Run Gate 4 validation checklist
+7. Get human approval before proceeding
 
 **Gate 4 Pass Criteria:**
+- [ ] Standards discovery completed (asked user)
 - [ ] All component interfaces defined
 - [ ] Contracts are clear and complete
 - [ ] Error cases covered
 - [ ] Protocol-agnostic (no REST/gRPC specifics yet)
+- [ ] Field naming follows standards (if provided) or best practices
 
 ## Gate 5: Data Model
 
 **Skill:** ring:pre-dev-data-model
 
-1. Load previous artifacts
-2. Create data model document with:
-   - Entity relationships and schemas
+1. **Phase 0:** Determine database field naming strategy
+   - Check if Gate 4 API standards exist
+   - Ask user: Convert to snake_case? Keep camelCase? Load separate DB dictionary? Define manually?
+   - Generate `db-standards-ref.md` with automatic conversion and mapping if applicable
+2. Load previous artifacts (API Design, TRD, Feature Map, PRD)
+3. Create data model document with:
+   - Entity relationships and schemas (using field naming strategy from Phase 0)
    - Data ownership boundaries
    - Access patterns
    - Migration strategy
-3. Save to: `docs/pre-dev/<feature-name>/data-model.md`
-4. Run Gate 5 validation checklist
-5. Get human approval before proceeding
+   - API-to-DB field mapping (automatically generated if conversion applied)
+4. Save to: `docs/pre-dev/<feature-name>/data-model.md`
+5. Run Gate 5 validation checklist
+6. Get human approval before proceeding
 
 **Gate 5 Pass Criteria:**
+- [ ] Field naming strategy determined (asked user)
 - [ ] All entities defined with relationships
 - [ ] Data ownership is clear
 - [ ] Access patterns documented
 - [ ] Database-agnostic (no PostgreSQL/MongoDB specifics yet)
+- [ ] Schema naming follows chosen strategy
+- [ ] API-to-DB mapping documented (if API standards exist)
 
 ## Gate 6: Dependency Map
 
@@ -262,12 +274,14 @@ Report to human:
 ✅ Full Track (9 gates) complete for <feature-name>
 
 Artifacts created:
-- docs/pre-dev/<feature-name>/research.md (Gate 0) ← NEW
+- docs/pre-dev/<feature-name>/research.md (Gate 0)
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
 - docs/pre-dev/<feature-name>/feature-map.md (Gate 2)
 - docs/pre-dev/<feature-name>/trd.md (Gate 3)
 - docs/pre-dev/<feature-name>/api-design.md (Gate 4)
+- docs/pre-dev/<feature-name>/api-standards-ref.md (Gate 4 - if standards provided)
 - docs/pre-dev/<feature-name>/data-model.md (Gate 5)
+- docs/pre-dev/<feature-name>/db-standards-ref.md (Gate 5 - always generated: conversion from API standards, separate dictionary, or manual)
 - docs/pre-dev/<feature-name>/dependency-map.md (Gate 6)
 - docs/pre-dev/<feature-name>/tasks.md (Gate 7)
 - docs/pre-dev/<feature-name>/subtasks.md (Gate 8)

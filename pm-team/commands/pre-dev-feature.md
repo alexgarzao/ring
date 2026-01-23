@@ -153,15 +153,15 @@ Report to human:
 ✅ Small Track (4 gates) complete for <feature-name>
 
 Artifacts created:
-- docs/pre-dev/<feature-name>/research.md (Gate 0) ← NEW
+- docs/pre-dev/<feature-name>/research.md (Gate 0)
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
 - docs/pre-dev/<feature-name>/trd.md (Gate 2)
 - docs/pre-dev/<feature-name>/tasks.md (Gate 3)
 
 Skipped from full workflow:
 - Feature Map (features simple enough to map directly)
-- API Design (no new APIs)
-- Data Model (no new data structures)
+- API Design (no new APIs - standards discovery not applicable)
+- Data Model (no new data structures - standards discovery not applicable)
 - Dependency Map (no new dependencies)
 - Subtask Creation (tasks small enough already)
 
