@@ -85,7 +85,7 @@ Use AskUserQuestion tool:
 | userId | user_id | Split on capital letters, join with underscore |
 | createdAt | created_at | Split on capital letters, join with underscore |
 | isActive | is_active | Preserve boolean prefix |
-| phoneNumber | phone_number | Handle consecutive capitals |
+| phoneNumber | phone_number | Split on capital letters within words |
 | userID | user_id | Collapse consecutive capitals |
 
 3. Create `db-standards-ref.md` with converted names + mapping table

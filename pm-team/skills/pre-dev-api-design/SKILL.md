@@ -61,7 +61,7 @@ Use AskUserQuestion tool:
 | Source Type | Tool | Actions |
 |------------|------|---------|
 | URL | WebFetch | Fetch document content; parse for field definitions, naming rules, validation patterns |
-| File path | Read | Read file content; support .md (markdown tables), .json (structured), .yaml (structured), .csv (tabular) |
+| File path | Read | Read file content; support .md (Markdown tables), .json (structured), .yaml (structured), .csv (tabular) |
 
 **2. Extract standards:**
 
