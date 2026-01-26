@@ -13,7 +13,7 @@ This file defines the specific standards for frontend development.
 
 | # | Section | Description |
 |---|---------|-------------|
-| 1 | [Framework](#framework) | React 18+, Next.js 14+ |
+| 1 | [Framework](#framework) | React 18+, Next.js (version policy) |
 | 2 | [Libraries & Tools](#libraries--tools) | Core, state, forms, UI, styling, testing |
 | 3 | [State Management Patterns](#state-management-patterns) | TanStack Query, Zustand |
 | 4 | [Form Patterns](#form-patterns) | React Hook Form + Zod |
@@ -34,8 +34,21 @@ This file defines the specific standards for frontend development.
 
 ## Framework
 
-- React 18+ / Next.js 14+
+- React 18+
+- Next.js (see version policy below)
 - TypeScript strict mode (see `typescript.md`)
+
+### Framework Version Policy
+
+| Scenario | Rule |
+|----------|------|
+| **New project** | Use **latest stable version** (verify at nextjs.org before starting) |
+| **Existing codebase** | **Maintain project's current version** (read package.json) |
+
+**Before starting any project:**
+1. For NEW projects: Check https://nextjs.org for latest stable version
+2. For EXISTING projects: Read `package.json` to determine current version
+3. NEVER hardcode a specific version in implementation - use project's version
 
 ---
 
@@ -46,7 +59,7 @@ This file defines the specific standards for frontend development.
 | Library | Use Case |
 |---------|----------|
 | React 18+ | UI framework |
-| Next.js 14+ | Full-stack framework |
+| Next.js (latest stable) | Full-stack framework (see version policy above) |
 | TypeScript 5+ | Type safety |
 
 ### State Management

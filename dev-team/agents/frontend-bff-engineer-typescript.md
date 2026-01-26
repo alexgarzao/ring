@@ -211,7 +211,7 @@ Invoke this agent when the task involves:
 ## Technical Expertise
 
 - **Language**: TypeScript (strict mode)
-- **Framework**: Next.js 14+ (App Router)
+- **Framework**: Next.js (latest stable for new projects, project version for existing codebases) - App Router
 - **Dependency Injection**: Inversify
 - **Validation**: Zod
 - **HTTP Client**: Native fetch with typed wrappers

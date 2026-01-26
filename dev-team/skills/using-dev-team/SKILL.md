@@ -1,13 +1,14 @@
 ---
 name: ring:using-dev-team
 description: |
-  7 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
-  design, QA, and SRE. Dispatch when you need deep technology expertise.
+  8 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
+  design, UI implementation, QA, and SRE. Dispatch when you need deep technology expertise.
 
 trigger: |
   - Need deep expertise for specific technology (Go, TypeScript)
   - Building infrastructure/CI-CD → ring:devops-engineer
   - Frontend with design focus → ring:frontend-designer
+  - Frontend from product-designer specs → ring:ui-engineer
   - Test strategy needed → ring:qa-analyst
   - Reliability/monitoring → ring:sre
 
@@ -22,7 +23,7 @@ related:
 
 # Using Ring Developer Specialists
 
-The ring-dev-team plugin provides 7 specialized developer agents. Use them via `Task tool with subagent_type:`.
+The ring-dev-team plugin provides 8 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
 
@@ -130,7 +131,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 ---
 
-## 7 Developer Specialists
+## 8 Developer Specialists
 
 <dispatch_required agent="{specialist}" model="opus">
 Use Task tool to dispatch appropriate specialist based on technology need.
@@ -141,8 +142,9 @@ Use Task tool to dispatch appropriate specialist based on technology need.
 | **`ring:backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
 | **`ring:backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
 | **`ring:devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
-| **`frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
+| **`ring:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
 | **`ring:frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
+| **`ring:ui-engineer`** | Wireframe-to-code, Design System compliance, UX criteria satisfaction, UI states implementation | Implementing from product-designer specs (ux-criteria.md, user-flows.md, wireframes/) |
 | **`ring:qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
 | **`ring:sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
 
@@ -154,7 +156,13 @@ Task tool:
   prompt: "{Your specific request with context}"
 ```
 
-**Note:** `ring:frontend-designer` = visual aesthetics. `frontend-bff-engineer-typescript` = business logic/architecture.
+**Frontend Agent Selection:**
+- `ring:frontend-designer` = visual aesthetics, design specifications (no code)
+- `ring:frontend-bff-engineer-typescript` = business logic/architecture, BFF layer
+- `ring:ui-engineer` = implementing UI from product-designer specs (ux-criteria.md, user-flows.md, wireframes/)
+
+**When to use ring:ui-engineer:**
+Use `ring:ui-engineer` when product-designer outputs exist in `docs/pre-dev/{feature}/`. The ring:ui-engineer specializes in translating design specifications into production code while ensuring all UX criteria are satisfied.
 
 ---
 
@@ -236,12 +244,16 @@ All workflows converge to the 6-gate development cycle:
 
 | Gate | Focus | Agent(s) |
 |------|-------|----------|
-| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `backend-engineer-*`, `frontend-bff-engineer-typescript` |
+| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `ring:backend-engineer-*`, `ring:frontend-bff-engineer-typescript`, `ring:ui-engineer` |
 | **1: DevOps** | Dockerfile, docker-compose, .env | `ring:devops-engineer` |
 | **2: SRE** | Health checks, logging, tracing | `ring:sre` |
 | **3: Testing** | Unit tests, coverage ≥85% | `ring:qa-analyst` |
 | **4: Review** | 3 reviewers IN PARALLEL | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer` |
 | **5: Validation** | User approval: APPROVED/REJECTED | User decision |
+
+**Gate 0 Agent Selection for Frontend:**
+- If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ui-engineer`
+- Otherwise → use `frontend-bff-engineer-typescript`
 
 **Key Principle:** All development follows the same 6-gate process.
 

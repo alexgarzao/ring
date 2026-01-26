@@ -1,0 +1,118 @@
+screen: Login SSO
+route: /login
+layout: centered-card
+
+components:
+  - type: card
+    width: 400px
+    padding: 32px
+    children:
+      - type: heading
+        text: "Sign in with SSO"
+        level: 1
+        align: center
+
+      - type: spacer
+        height: 24px
+
+      - type: button-group
+        direction: vertical
+        gap: 12px
+        buttons:
+          - id: btn-google
+            label: "Continue with Google"
+            icon: google
+            variant: outline
+            fullWidth: true
+            ariaLabel: "Sign in with Google account"
+
+          - id: btn-microsoft
+            label: "Continue with Microsoft"
+            icon: microsoft
+            variant: outline
+            fullWidth: true
+            ariaLabel: "Sign in with Microsoft account"
+
+      - type: divider
+        text: "or"
+        margin: 24px
+
+      - type: link
+        text: "Sign in with email instead"
+        href: /login/email
+        align: center
+        variant: subtle
+
+states:
+  default:
+    description: "Initial state when page loads"
+    buttons:
+      - id: btn-google
+        disabled: false
+        loading: false
+      - id: btn-microsoft
+        disabled: false
+        loading: false
+
+  loading-google:
+    description: "User clicked Google button"
+    buttons:
+      - id: btn-google
+        disabled: true
+        loading: true
+        label: "Connecting..."
+      - id: btn-microsoft
+        disabled: true
+        loading: false
+
+  loading-microsoft:
+    description: "User clicked Microsoft button"
+    buttons:
+      - id: btn-google
+        disabled: true
+        loading: false
+      - id: btn-microsoft
+        disabled: true
+        loading: true
+        label: "Connecting..."
+
+  error:
+    description: "Authentication failed"
+    components:
+      - type: toast
+        variant: error
+        position: top-center
+        text: "Authentication failed. Please try again."
+        duration: 5000
+        action:
+          label: "Retry"
+          onClick: "dismissToast"
+    buttons:
+      - id: btn-google
+        disabled: false
+        loading: false
+      - id: btn-microsoft
+        disabled: false
+        loading: false
+
+responsive:
+  mobile:
+    breakpoint: 640px
+    card:
+      width: 100%
+      padding: 24px
+      borderRadius: 0
+    button-group:
+      gap: 16px
+
+accessibility:
+  focusOrder:
+    - btn-google
+    - btn-microsoft
+    - link-email
+  screenReader:
+    pageTitle: "Sign in with Single Sign-On"
+    liveRegions:
+      - id: auth-status
+        role: status
+        ariaLive: polite

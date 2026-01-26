@@ -136,7 +136,7 @@ Invoke this agent when the task involves:
 ## Technical Expertise
 
 - **Languages**: TypeScript (strict mode), JavaScript (ES2022+)
-- **Frameworks**: Next.js 14+ (App Router), React 18+, Remix
+- **Frameworks**: Next.js (latest stable for new projects, project version for existing codebases), React 18+, Remix
 - **Styling**: TailwindCSS, CSS Modules, Styled Components, Sass
 - **Server State**: TanStack Query (React Query), SWR
 - **Client State**: Zustand, Jotai, Redux Toolkit, Context API

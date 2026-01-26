@@ -338,6 +338,33 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
+### ring:ui-engineer → frontend.md
+
+**Same sections as ring:frontend-engineer (13 sections).** See above.
+
+**Additional ui-engineer requirements:**
+The ring:ui-engineer MUST also validate against product-designer outputs:
+
+| # | Additional Check | Source | Required |
+|---|------------------|--------|----------|
+| 1 | UX Criteria Compliance | `ux-criteria.md` | All criteria satisfied |
+| 2 | User Flow Implementation | `user-flows.md` | All flows implemented |
+| 3 | Wireframe Adherence | `wireframes/*.yaml` | All specs implemented |
+| 4 | UI States Coverage | `ux-criteria.md` | Loading, error, empty, success |
+
+**Output Format for ring:ui-engineer:**
+In addition to the standard Coverage Table, ring:ui-engineer MUST output:
+
+```markdown
+## UX Criteria Compliance
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| [From ux-criteria.md] | ✅/❌ | file:line |
+```
+
+---
+
 ### ring:devops-engineer → devops.md
 
 | # | Section to Check | Subsections (all REQUIRED) |
