@@ -1,7 +1,7 @@
 ---
 name: ring:dev-refactor
 description: Analyze existing codebase against standards and execute refactoring through ring:dev-cycle
-argument-hint: "[path]"
+argument-hint: "[path] [options] [prompt]"
 ---
 
 Analyze existing codebase against standards and execute refactoring through ring:dev-cycle.
@@ -44,7 +44,8 @@ Then re-run `/ring:dev-refactor`.
 ## Usage
 
 ```
-/ring:dev-refactor [path] [options]
+/ring:dev-refactor [path] [options] [prompt]
+/ring:dev-refactor [prompt]
 ```
 
 ## Arguments
@@ -52,6 +53,7 @@ Then re-run `/ring:dev-refactor`.
 | Argument | Required | Description |
 |----------|----------|-------------|
 | `path` | No | Directory to analyze (default: current project root) |
+| `prompt` | No | Direct instruction for refactoring focus (no quotes needed) |
 
 ## Options
 
@@ -65,11 +67,20 @@ Then re-run `/ring:dev-refactor`.
 ## Examples
 
 ```bash
+# Direct prompt - focus refactoring on specific area
+/ring:dev-refactor Focus on multi-tenant patterns and ensure all repositories use poolmanager
+
+# Direct prompt - another example
+/ring:dev-refactor Check idempotency implementation against standards
+
 # Analyze entire project and refactor
 /ring:dev-refactor
 
 # Analyze specific directory
 /ring:dev-refactor src/domain
+
+# Analyze with specific focus
+/ring:dev-refactor src/domain Focus on error handling patterns
 
 # Analysis only (no execution)
 /ring:dev-refactor --analyze-only
@@ -77,8 +88,8 @@ Then re-run `/ring:dev-refactor`.
 # Only fix critical issues
 /ring:dev-refactor --critical-only
 
-# Use custom standards
-/ring:dev-refactor --standards docs/team-standards.md
+# Use custom standards with focus
+/ring:dev-refactor --standards docs/team-standards.md Prioritize security issues
 ```
 
 ## Workflow
@@ -181,11 +192,17 @@ Pass the following context to the skill:
 
 | Parameter | Value |
 |-----------|-------|
-| `path` | `$1` (first argument, default: project root) |
+| `path` | First argument if it's a directory path (default: project root) |
+| `prompt` | Remaining text after path and options (direct instruction for focus) |
 | `--standards` | If provided, custom standards file path |
 | `--analyze-only` | If provided, skip ring:dev-cycle execution |
 | `--critical-only` | If provided, filter to Critical/High only |
 | `--dry-run` | If provided, show what would be analyzed |
+
+**Argument Parsing:**
+- If first argument is a path (contains `/` or is a known directory) → treat as path
+- If first argument is an option (`--*`) → no path specified
+- Remaining non-option text → prompt (refactoring focus)
 
 ## User Approval (MANDATORY)
 
