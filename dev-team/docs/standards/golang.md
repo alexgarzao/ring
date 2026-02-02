@@ -2947,14 +2947,19 @@ func (h *Handler) CreateRule(c *fiber.Ctx) error {
 
 **HARD GATE:** Before implementing idempotency, ask the user about the key scope.
 
-**ring:AskUserQuestion:** "What should be the idempotency key scope for this service?"
+**ring:AskUserQuestion:** "What should be the idempotency key scope for this service? Please specify the identifiers to use (e.g., `organizationID:ledgerID`, `organizationID`, `tenantID`, or empty for global)."
 
-| Scope Option | Key Format |
-|--------------|------------|
-| **Organization + Ledger** | `idempotency:{orgId:ledgerId:key}` |
-| **Organization only** | `idempotency:{orgId:key}` |
-| **Tenant only** | `idempotency:{tenantId:key}` |
-| **No scope (global)** | `idempotency:{key}` |
+The user defines the scope based on their domain model. Examples:
+
+| User Response | Scope Build Code | Key Format |
+|---------------|------------------|------------|
+| `organizationID:ledgerID` | `scope := orgID.String() + ":" + ledgerID.String()` | `idempotency:{orgId:ledgerId:key}` |
+| `organizationID` | `scope := orgID.String()` | `idempotency:{orgId:key}` |
+| `tenantID` | `scope := tenantID` | `idempotency:{tenantId:key}` |
+| `accountID:transactionType` | `scope := accountID.String() + ":" + txType` | `idempotency:{accountId:txType:key}` |
+| (empty/global) | `scope := ""` | `idempotency:{key}` |
+
+**Note:** The scope is domain-specific. Use whatever identifiers make sense for your service's isolation requirements.
 
 ---
 
@@ -3075,19 +3080,15 @@ import (
     "github.com/redis/go-redis/v9"
 )
 
-// Caller builds scope based on service design (from ring:AskUserQuestion decision):
+// Caller builds scope based on user's answer to ring:AskUserQuestion.
+// The scope is domain-specific - use whatever identifiers the user specified.
 //
-// Org+Ledger scope:  scope := organizationID.String() + ":" + ledgerID.String()
-// Org only scope:    scope := organizationID.String()
-// Tenant scope:      scope := tenantID
-// Global scope:      scope := "" (empty string)
-//
-// NOTE: Function signature depends on scope decision from ring:AskUserQuestion.
-// Examples:
-//   - Org+Ledger scope: (ctx, organizationID, ledgerID uuid.UUID, key, hash string, ttl time.Duration)
-//   - Org only scope:   (ctx, organizationID uuid.UUID, key, hash string, ttl time.Duration)
-//   - Tenant scope:     (ctx, tenantID string, key, hash string, ttl time.Duration)
-//   - Global scope:     (ctx, key, hash string, ttl time.Duration)
+// Example scope builds:
+//   scope := organizationID.String() + ":" + ledgerID.String()  // org:ledger
+//   scope := organizationID.String()                            // org only
+//   scope := tenantID                                           // tenant
+//   scope := accountID.String() + ":" + txType                  // custom domain
+//   scope := ""                                                 // global (no scope)
 
 func (uc *UseCase) CreateOrCheckIdempotencyKey(
     ctx context.Context,
