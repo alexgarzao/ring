@@ -3072,13 +3072,26 @@ import (
 
     libCommons "github.com/LerianStudio/lib-commons/v2/commons"
     libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"
-    "github.com/google/uuid"
     "github.com/redis/go-redis/v9"
 )
 
+// Caller builds scope based on service design (from ring:AskUserQuestion decision):
+//
+// Org+Ledger scope:  scope := organizationID.String() + ":" + ledgerID.String()
+// Org only scope:    scope := organizationID.String()
+// Tenant scope:      scope := tenantID
+// Global scope:      scope := "" (empty string)
+//
+// NOTE: Function signature depends on scope decision from ring:AskUserQuestion.
+// Examples:
+//   - Org+Ledger scope: (ctx, organizationID, ledgerID uuid.UUID, key, hash string, ttl time.Duration)
+//   - Org only scope:   (ctx, organizationID uuid.UUID, key, hash string, ttl time.Duration)
+//   - Tenant scope:     (ctx, tenantID string, key, hash string, ttl time.Duration)
+//   - Global scope:     (ctx, key, hash string, ttl time.Duration)
+
 func (uc *UseCase) CreateOrCheckIdempotencyKey(
     ctx context.Context,
-    organizationID, ledgerID uuid.UUID,
+    scope string, // Built from domain identifiers per service design
     key, hash string,
     ttl time.Duration,
 ) (*string, error) {
@@ -3093,9 +3106,6 @@ func (uc *UseCase) CreateOrCheckIdempotencyKey(
     if key == "" {
         key = hash
     }
-
-    // Build scope from domain identifiers
-    scope := organizationID.String() + ":" + ledgerID.String()
 
     // Create scoped internal key (multi-tenant isolation)
     internalKey := utils.IdempotencyInternalKey(scope, key)
@@ -3146,7 +3156,7 @@ func (uc *UseCase) CreateOrCheckIdempotencyKey(
 // SetValueOnExistingIdempotencyKey func that set value on idempotency key to return to user.
 func (uc *UseCase) SetValueOnExistingIdempotencyKey(
     ctx context.Context,
-    organizationID, ledgerID uuid.UUID,
+    scope string, // Built from domain identifiers per service design
     key, hash string,
     t transaction.Transaction,
     ttl time.Duration,
@@ -3161,9 +3171,6 @@ func (uc *UseCase) SetValueOnExistingIdempotencyKey(
     if key == "" {
         key = hash
     }
-
-    // Build scope from domain identifiers
-    scope := organizationID.String() + ":" + ledgerID.String()
 
     internalKey := utils.IdempotencyInternalKey(scope, key)
 
@@ -3182,7 +3189,7 @@ func (uc *UseCase) SetValueOnExistingIdempotencyKey(
 // This allows looking up which idempotency key corresponds to a given transaction.
 func (uc *UseCase) SetTransactionIdempotencyMapping(
     ctx context.Context,
-    organizationID, ledgerID uuid.UUID,
+    scope string, // Built from domain identifiers per service design
     transactionID, idempotencyKey string,
     ttl time.Duration,
 ) {
@@ -3193,9 +3200,6 @@ func (uc *UseCase) SetTransactionIdempotencyMapping(
 
     logger.Infof("Trying to set transaction idempotency mapping in redis for transactionID: %s",
         transactionID)
-
-    // Build scope from domain identifiers
-    scope := organizationID.String() + ":" + ledgerID.String()
 
     reverseKey := utils.IdempotencyReverseKey(scope, transactionID)
 
