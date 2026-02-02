@@ -3436,14 +3436,12 @@ Redis SetNX (atomic lock with empty value)
 |---------|-------------|---------|----------|
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
 | `POOL_MANAGER_URL` | Pool Manager service URL | - | If multi-tenant |
-| `MULTI_TENANT_SYNC_INTERVAL` | Interval to sync tenant configs from Pool Manager | `30s` | No |
 | `MULTI_TENANT_CACHE_TTL` | Tenant configuration cache duration | `24h` | No |
 
 **Example `.env` for multi-tenant:**
 ```bash
 MULTI_TENANT_ENABLED=true
 POOL_MANAGER_URL=http://pool-manager:4003
-MULTI_TENANT_SYNC_INTERVAL=30s
 MULTI_TENANT_CACHE_TTL=24h
 ```
 
@@ -3453,10 +3451,9 @@ MULTI_TENANT_CACHE_TTL=24h
 // internal/bootstrap/config.go
 type Config struct {
     // Multi-Tenant Configuration
-    MultiTenantEnabled      bool          `env:"MULTI_TENANT_ENABLED" default:"false"`
-    PoolManagerURL          string        `env:"POOL_MANAGER_URL"`
-    MultiTenantSyncInterval time.Duration `env:"MULTI_TENANT_SYNC_INTERVAL" default:"30s"`
-    MultiTenantCacheTTL          string        `env:"MULTI_TENANT_CACHE_TTL" default:"24h"`
+    MultiTenantEnabled  bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
+    PoolManagerURL      string `env:"POOL_MANAGER_URL"`
+    MultiTenantCacheTTL string `env:"MULTI_TENANT_CACHE_TTL" default:"24h"`
 
     // Prefixed DB vars (unified deployment)
     PrefixedPrimaryDBHost string `env:"DB_TRANSACTION_HOST"`
@@ -3857,7 +3854,6 @@ func InitService(cfg *Config) (*Service, error) {
 **Environment Variables:**
 - [ ] `MULTI_TENANT_ENABLED` in config struct (default: `false`)
 - [ ] `POOL_MANAGER_URL` in config struct (required if multi-tenant)
-- [ ] `MULTI_TENANT_SYNC_INTERVAL` in config struct (default: `30s`)
 - [ ] `MULTI_TENANT_CACHE_TTL` in config struct (default: `24h`)
 
 **Middleware & Context:**
