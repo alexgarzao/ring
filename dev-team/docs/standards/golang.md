@@ -34,6 +34,8 @@ This file defines the specific standards for Go development at Lerian Studio.
 | 19 | [Concurrency Patterns](#concurrency-patterns) | Goroutines, channels, errgroup |
 | 20 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
 | 21 | [Always-Valid Domain Model](#always-valid-domain-model-mandatory) | Constructor validation, invariant protection |
+| 22 | [Idempotency Patterns](#idempotency-patterns-mandatory-for-transaction-apis) | Redis SetNX, hash fallback, async caching |
+| 23 | [Multi-Tenant Patterns](#multi-tenant-patterns-conditional) | Pool Manager, JWT tenant extraction, context injection |
 
 **Meta-sections (not checked by agents):**
 - [Standards Compliance Output Format](#standards-compliance-output-format) - Report format for ring:dev-refactor
@@ -2920,6 +2922,795 @@ func (h *Handler) CreateRule(c *fiber.Ctx) error {
 
 ---
 
+## Idempotency Patterns (MANDATORY for Transaction APIs)
+
+**HARD GATE:** All APIs that create resources or trigger side effects MUST implement idempotency. This prevents duplicate operations from network retries, client bugs, or user double-clicks.
+
+### Why This Pattern Is Mandatory
+
+| Problem | Consequence | Solution |
+|---------|-------------|----------|
+| Network retry creates duplicate | Double charge, duplicate records | Idempotency key deduplication |
+| Client retries after timeout | Operation executed twice | Cached response replay |
+| User double-clicks submit | Two identical transactions | Request fingerprinting |
+| Load balancer retry | Multiple side effects | Atomic lock with SetNX |
+
+### HTTP Headers (lib-commons constants)
+
+| Constant | Header | Type | Description |
+|----------|--------|------|-------------|
+| `libConstants.IdempotencyKey` | `X-Idempotency` | string | Client-provided unique key |
+| `libConstants.IdempotencyTTL` | `X-TTL` | int | Cache TTL in seconds |
+| `libConstants.IdempotencyReplayed` | `X-Idempotency-Replayed` | bool | Response header: `"true"` if cached |
+
+### Implementation Decisions (Ask Before Implementing)
+
+**HARD GATE:** Before implementing idempotency, ask the user about the key scope.
+
+**AskUserQuestion:** "What should be the idempotency key scope for this service?"
+
+| Scope Option | Key Format |
+|--------------|------------|
+| **Organization + Ledger** | `idempotency:{orgId:ledgerId:key}` |
+| **Organization only** | `idempotency:{orgId:key}` |
+| **Tenant only** | `idempotency:{tenantId:key}` |
+| **No scope (global)** | `idempotency:{key}` |
+
+---
+
+### Implementation Pattern (midaz reference)
+
+#### 1. Header Extraction
+
+```go
+// pkg/net/http/httputils.go
+import (
+    libConstants "github.com/LerianStudio/lib-commons/v2/commons/constants"
+    libRedis "github.com/LerianStudio/lib-commons/v2/commons/redis"
+)
+
+// GetIdempotencyKeyAndTTL returns idempotency key and ttl if pass through.
+func GetIdempotencyKeyAndTTL(c *fiber.Ctx) (string, time.Duration) {
+    ikey := c.Get(libConstants.IdempotencyKey)
+    iTTL := c.Get(libConstants.IdempotencyTTL)
+
+    // Interpret TTL as seconds count. Downstream Redis helpers multiply by time.Second.
+    t, err := strconv.Atoi(iTTL)
+    if err != nil || t <= 0 {
+        t = libRedis.TTL
+    }
+
+    ttl := time.Duration(t)
+
+    return ikey, ttl
+}
+```
+
+#### 2. Handler Implementation
+
+```go
+// internal/adapters/http/in/transaction.go
+func (handler *TransactionHandler) createTransaction(c *fiber.Ctx, ...) error {
+    ctx := c.UserContext()
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    _, span := tracer.Start(ctx, "handler.create_transaction")
+    defer span.End()
+
+    organizationID := c.Locals("organization_id").(uuid.UUID)
+    ledgerID := c.Locals("ledger_id").(uuid.UUID)
+
+    // Initialize replay flag
+    c.Set(libConstants.IdempotencyReplayed, "false")
+
+    // ... validation code ...
+
+    // Create idempotency span
+    ctxIdempotency, spanIdempotency := tracer.Start(ctx, "handler.create_transaction_idempotency")
+
+    // Generate hash from request payload
+    ts, _ := libCommons.StructToJSONString(parserDSL)
+    hash := libCommons.HashSHA256(ts)
+    key, ttl := http.GetIdempotencyKeyAndTTL(c)
+
+    // Check or create idempotency lock
+    value, err := handler.Command.CreateOrCheckIdempotencyKey(
+        ctxIdempotency, organizationID, ledgerID, key, hash, ttl)
+    if err != nil {
+        libOpentelemetry.HandleSpanBusinessErrorEvent(&spanIdempotency,
+            "Error on create or check redis idempotency key", err)
+        spanIdempotency.End()
+
+        logger.Infof("Error on create or check redis idempotency key: %v", err.Error())
+
+        return http.WithError(c, err)
+    } else if !libCommons.IsNilOrEmpty(value) {
+        // Return cached response
+        t := transaction.Transaction{}
+        if err = json.Unmarshal([]byte(*value), &t); err != nil {
+            libOpentelemetry.HandleSpanError(&spanIdempotency,
+                "Error to deserialization idempotency transaction json on redis", err)
+
+            logger.Errorf("Error to deserialization idempotency transaction json on redis: %v", err)
+            spanIdempotency.End()
+
+            return http.WithError(c, err)
+        }
+
+        spanIdempotency.End()
+        c.Set(libConstants.IdempotencyReplayed, "true")
+
+        return http.Created(c, t)
+    }
+
+    spanIdempotency.End()
+
+    // ... process transaction ...
+
+    // Cache result asynchronously (non-blocking)
+    go handler.Command.SetValueOnExistingIdempotencyKey(
+        ctx, organizationID, ledgerID, key, hash, *tran, ttl)
+
+    // Store reverse mapping synchronously (short TTL for lookups)
+    handler.Command.SetTransactionIdempotencyMapping(
+        ctx, organizationID, ledgerID, tran.ID, key, 5)
+
+    return http.Created(c, tran)
+}
+```
+
+#### 3. Command Layer (Use Case)
+
+```go
+// internal/services/command/create-idempotency-key.go
+package command
+
+import (
+    "context"
+    "errors"
+    "time"
+
+    libCommons "github.com/LerianStudio/lib-commons/v2/commons"
+    libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"
+    "github.com/google/uuid"
+    "github.com/redis/go-redis/v9"
+)
+
+func (uc *UseCase) CreateOrCheckIdempotencyKey(
+    ctx context.Context,
+    organizationID, ledgerID uuid.UUID,
+    key, hash string,
+    ttl time.Duration,
+) (*string, error) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "command.create_idempotency_key")
+    defer span.End()
+
+    logger.Infof("Trying to create or check idempotency key in redis")
+
+    // Use hash as fallback if no key provided
+    if key == "" {
+        key = hash
+    }
+
+    // Create scoped internal key (multi-tenant isolation)
+    internalKey := utils.IdempotencyInternalKey(organizationID, ledgerID, key)
+
+    // Atomic lock acquisition with SetNX
+    success, err := uc.RedisRepo.SetNX(ctx, internalKey, "", ttl)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span,
+            "Error to lock idempotency key on redis failed", err)
+
+        logger.Error("Error to lock idempotency key on redis failed:", err.Error())
+
+        return nil, err
+    }
+
+    // Lock acquired - first request
+    if success {
+        return nil, nil
+    }
+
+    // Lock exists - check for cached value
+    value, err := uc.RedisRepo.Get(ctx, internalKey)
+    if err != nil && !errors.Is(err, redis.Nil) {
+        libOpentelemetry.HandleSpanError(&span,
+            "Error to get idempotency key on redis failed", err)
+
+        logger.Error("Error to get idempotency key on redis failed:", err.Error())
+
+        return nil, err
+    }
+
+    // Return cached value if found
+    if !libCommons.IsNilOrEmpty(&value) {
+        logger.Infof("Found value on redis with this key: %v", internalKey)
+
+        return &value, nil
+    }
+
+    // Lock exists but no value - duplicate in-flight request
+    err = pkg.ValidateBusinessError(constant.ErrIdempotencyKey,
+        "CreateOrCheckIdempotencyKey", key)
+
+    logger.Warnf("Failed, exists value on redis with this key: %v", err)
+
+    return nil, err
+}
+
+// SetValueOnExistingIdempotencyKey func that set value on idempotency key to return to user.
+func (uc *UseCase) SetValueOnExistingIdempotencyKey(
+    ctx context.Context,
+    organizationID, ledgerID uuid.UUID,
+    key, hash string,
+    t transaction.Transaction,
+    ttl time.Duration,
+) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "command.set_value_idempotency_key")
+    defer span.End()
+
+    logger.Infof("Trying to set value on idempotency key in redis")
+
+    if key == "" {
+        key = hash
+    }
+
+    internalKey := utils.IdempotencyInternalKey(organizationID, ledgerID, key)
+
+    value, err := libCommons.StructToJSONString(t)
+    if err != nil {
+        logger.Error("Err to serialize transaction struct %v\n", err)
+    }
+
+    err = uc.RedisRepo.Set(ctx, internalKey, value, ttl)
+    if err != nil {
+        logger.Error("Error to set value on lock idempotency key on redis:", err.Error())
+    }
+}
+
+// SetTransactionIdempotencyMapping stores the reverse mapping from transactionID to idempotency key.
+// This allows looking up which idempotency key corresponds to a given transaction.
+func (uc *UseCase) SetTransactionIdempotencyMapping(
+    ctx context.Context,
+    organizationID, ledgerID uuid.UUID,
+    transactionID, idempotencyKey string,
+    ttl time.Duration,
+) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "command.set_transaction_idempotency_mapping")
+    defer span.End()
+
+    logger.Infof("Trying to set transaction idempotency mapping in redis for transactionID: %s",
+        transactionID)
+
+    reverseKey := utils.IdempotencyReverseKey(organizationID, ledgerID, transactionID)
+
+    err := uc.RedisRepo.Set(ctx, reverseKey, idempotencyKey, ttl)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span,
+            "Error setting transaction idempotency mapping in redis", err)
+
+        logger.Errorf("Error setting transaction idempotency mapping in redis for transactionID %s: %s",
+            transactionID, err.Error())
+    }
+}
+```
+
+#### 4. Redis Key Format
+
+**Two isolation levels depending on deployment mode:**
+
+| Mode | Key Format | Isolation |
+|------|------------|-----------|
+| Single-tenant | `idempotency:{scope:key}` | Query-level filtering |
+| Multi-tenant | `{tenantId}:idempotency:{scope:key}` | Connection + Query |
+
+**Scope identifiers** depend on your domain model:
+
+| Domain | Scope Example | Key Format |
+|--------|---------------|------------|
+| Ledger (midaz) | `organizationID:ledgerID` | `idempotency:{orgId:ledgerId:key}` |
+| CRM | `organizationID` | `idempotency:{orgId:key}` |
+| Auth | `tenantId` | `idempotency:{tenantId:key}` |
+| Simple API | (none) | `idempotency:{key}` |
+
+##### Single-Tenant Mode (default)
+
+```go
+// pkg/utils/cache.go
+
+// IdempotencyInternalKey returns a key with scope identifiers for your domain.
+// Format: "idempotency:{scope:key}" where scope depends on your domain model.
+//
+// Examples:
+//   - Ledger:  "idempotency:{organizationID:ledgerID:key}"
+//   - CRM:     "idempotency:{organizationID:key}"
+//   - Simple:  "idempotency:{key}"
+func IdempotencyInternalKey(scope, key string) string {
+    var builder strings.Builder
+
+    builder.WriteString("idempotency")
+    builder.WriteString(keySeparator)       // ":"
+    builder.WriteString(beginningKey)        // "{"
+    if scope != "" {
+        builder.WriteString(scope)
+        builder.WriteString(keySeparator)
+    }
+    builder.WriteString(key)
+    builder.WriteString(endKey)              // "}"
+
+    return builder.String()
+}
+
+// Domain-specific helper (midaz example with organizationID + ledgerID)
+func IdempotencyKeyForLedger(organizationID, ledgerID uuid.UUID, key string) string {
+    scope := organizationID.String() + ":" + ledgerID.String()
+    return IdempotencyInternalKey(scope, key)
+}
+
+// Domain-specific helper (CRM example with organizationID only)
+func IdempotencyKeyForOrg(organizationID uuid.UUID, key string) string {
+    return IdempotencyInternalKey(organizationID.String(), key)
+}
+```
+
+##### Multi-Tenant Mode (MULTI_TENANT_ENABLED=true)
+
+When multi-tenant mode is enabled, `poolmanager` adds the tenant prefix automatically:
+
+```go
+// In Redis repository layer - applies tenant prefix from context
+func (rr *RedisRepository) SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
+    // poolmanager adds tenantId prefix when MULTI_TENANT_ENABLED=true
+    key = poolmanager.GetKeyFromContext(ctx, key)
+
+    // Result: "{tenantId}:idempotency:{scope:key}"
+
+    rds, err := rr.conn.GetClient(ctx)
+    return rds.SetNX(ctx, key, value, ttl*time.Second).Result()
+}
+```
+
+**Key format in multi-tenant mode:**
+```
+{tenantId}:idempotency:{scope:key}
+```
+
+**Defense-in-depth isolation:**
+1. **tenantId** - Routes to correct Redis instance/namespace (connection-level, via poolmanager)
+2. **scope** - Domain-specific identifiers (data-level, defined by your service)
+
+##### Reverse Key (Both Modes) - Optional
+
+Reverse mapping is optional. Use it when you need to look up the idempotency key from a resource ID.
+
+```go
+// IdempotencyReverseKey returns a key for reverse lookups (resourceID → idempotencyKey).
+// Format: "idempotency_reverse:{scope}:resourceID"
+//
+// Examples:
+//   - Ledger:  "idempotency_reverse:{organizationID:ledgerID}:transactionID"
+//   - CRM:     "idempotency_reverse:{organizationID}:contactID"
+func IdempotencyReverseKey(scope, resourceID string) string {
+    var builder strings.Builder
+
+    builder.WriteString("idempotency_reverse")
+    builder.WriteString(keySeparator)
+    builder.WriteString(beginningKey)
+    builder.WriteString(scope)
+    builder.WriteString(endKey)
+    builder.WriteString(keySeparator)
+    builder.WriteString(resourceID)
+
+    return builder.String()
+}
+
+// Domain-specific helper (midaz example)
+func IdempotencyReverseKeyForLedger(organizationID, ledgerID uuid.UUID, transactionID string) string {
+    scope := organizationID.String() + ":" + ledgerID.String()
+    return IdempotencyReverseKey(scope, transactionID)
+}
+```
+
+#### 5. Error Code (Service-Specific)
+
+**MUST follow [Error Codes Convention](#error-codes-convention-mandatory)** - use your service prefix.
+
+```go
+// pkg/constant/errors.go
+const (
+    // Use your service prefix (e.g., PLT for Platform, TXN for Transaction, CRM for CRM)
+    ErrCodeIdempotencyConflict = "SVC-0084"  // Replace SVC with your service prefix
+)
+
+var ErrIdempotencyKey = &BusinessError{
+    Code:    ErrCodeIdempotencyConflict,
+    Message: "Idempotency key %s is already in use (duplicate in-flight request)",
+}
+
+// pkg/errors.go - Error mapping to HTTP response
+constant.ErrIdempotencyKey: EntityConflictError{
+    Code:  constant.ErrIdempotencyKey.Error(),
+    Title: "Duplicate Idempotency Key",
+}
+```
+
+### Flow Diagram
+
+```
+Request → Extract X-Idempotency & X-TTL headers → SHA256(payload) as hash
+    ↓
+CreateOrCheckIdempotencyKey(scope, key, hash, ttl)
+    ↓                        ↑
+    │               (scope = domain-specific identifiers)
+    │               (e.g., "orgId:ledgerId", "orgId", or "")
+    ↓
+Build key: IdempotencyInternalKey(scope, key)
+    ↓
+Redis layer: poolmanager.GetKeyFromContext(ctx, key)
+    ↓ (adds {tenantId}: prefix if MULTI_TENANT_ENABLED=true)
+Redis SetNX (atomic lock with empty value)
+    ├─ Success (lock acquired) → FIRST REQUEST
+    │   ├─→ Process operation
+    │   ├─→ Async goroutine: SetValueOnExistingIdempotencyKey()
+    │   ├─→ Optional: SetIdempotencyMapping() (reverse lookup)
+    │   └─→ Return result + X-Idempotency-Replayed: false
+    │
+    └─ Fail (lock exists) → DUPLICATE REQUEST
+        ├─→ Get cached value from same key
+        │   ├─→ Value found → Return cached + X-Idempotency-Replayed: true
+        │   └─→ No value → Return error SVC-XXXX (in-flight duplicate)
+```
+
+### Key Design Decisions (midaz)
+
+| Decision | Rationale |
+|----------|-----------|
+| **Hash fallback** | If client doesn't provide key, SHA256 of payload ensures natural deduplication |
+| **Empty initial value** | SetNX with `""` acts as lock; actual value set asynchronously |
+| **Async caching** | `go handler.Command.SetValueOnExistingIdempotencyKey()` - non-blocking |
+| **Two-level tenant isolation** | `tenantId` (connection) + domain scope (data) for defense-in-depth |
+| **Domain-specific scope** | Scope identifiers depend on your domain (org+ledger, org only, or none) |
+| **Poolmanager tenant prefix** | `poolmanager.GetKeyFromContext()` adds tenantId prefix when multi-tenant enabled |
+| **Reverse mapping (optional)** | `IdempotencyReverseKey` enables resource lookup by ID when needed |
+| **Service-specific error code** | Follows Error Codes Convention with service prefix |
+
+### Which Endpoints Need Idempotency
+
+| Endpoint Type | Idempotency Required | Reason |
+|---------------|---------------------|--------|
+| POST (create transactions) | ✅ YES | Creates resources, has side effects |
+| PUT (replace) | ⚠️ Conditional | If not naturally idempotent |
+| PATCH (update) | ⚠️ Conditional | If not naturally idempotent |
+| DELETE | ❌ Usually no | Naturally idempotent |
+| GET | ❌ No | Read-only, no side effects |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Our network is reliable" | Networks fail. Retries happen. Always. | **Implement idempotency for all create operations** |
+| "Clients won't retry" | HTTP clients auto-retry on timeout. Load balancers retry. | **Assume retries will happen** |
+| "Database constraints prevent duplicates" | Constraints cause errors, not graceful handling. | **Return cached success instead of error** |
+| "Too complex to implement" | Pattern is standard. Redis SetNX is simple. | **Follow the midaz pattern above** |
+| "Only needed for payments" | Any duplicate has cost: support tickets, data cleanup. | **Apply to all resource creation** |
+| "We'll add it later" | Retrofitting is harder than building in. | **Implement from the start** |
+
+### Checklist
+
+- [ ] All POST endpoints that create resources have idempotency
+- [ ] Using `libConstants.IdempotencyKey`, `libConstants.IdempotencyTTL`, `libConstants.IdempotencyReplayed` from lib-commons
+- [ ] Hash fallback implemented (`libCommons.HashSHA256`) for clients without key
+- [ ] Redis SetNX used for atomic lock acquisition with empty initial value
+- [ ] Cached response returned with `c.Set(libConstants.IdempotencyReplayed, "true")`
+- [ ] Error code defined for in-flight duplicates (following Error Codes Convention with service prefix)
+- [ ] Key scoping with domain-specific scope (e.g., `IdempotencyInternalKey(scope, key)`)
+- [ ] Scope defined based on domain model (org+ledger, org only, tenantId, or none)
+- [ ] If multi-tenant enabled: `poolmanager.GetKeyFromContext()` adds tenantId prefix in Redis layer
+- [ ] TTL configurable via `X-TTL` header (default from `libRedis.TTL`)
+- [ ] Async caching via goroutine (`go handler.Command.SetValueOnExistingIdempotencyKey(...)`)
+- [ ] Reverse mapping with `IdempotencyReverseKey` for transaction lookups (if needed)
+
+---
+
+## Multi-Tenant Patterns (CONDITIONAL)
+
+**CONDITIONAL:** Only implement if `MULTI_TENANT_ENABLED=true` is required for your service.
+
+### When to Use Multi-Tenant Mode
+
+| Scenario | Mode | Configuration |
+|----------|------|---------------|
+| Single customer deployment | Single-tenant | `MULTI_TENANT_ENABLED=false` (default) |
+| SaaS with shared infrastructure | Multi-tenant | `MULTI_TENANT_ENABLED=true` |
+| Multiple isolated databases per customer | Multi-tenant | Requires Pool Manager |
+
+### Configuration
+
+```go
+// internal/bootstrap/config.go
+type Config struct {
+    // Multi-Tenant Configuration
+    MultiTenantEnabled bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
+    PoolManagerURL     string `env:"POOL_MANAGER_URL"`
+
+    // Prefixed DB vars (unified deployment)
+    PrefixedPrimaryDBHost string `env:"DB_TRANSACTION_HOST"`
+
+    // Fallback DB vars (standalone deployment)
+    PrimaryDBHost string `env:"DB_HOST"`
+}
+
+// Environment fallback pattern
+func envFallback(prefixed, fallback string) string {
+    if prefixed != "" {
+        return prefixed
+    }
+    return fallback
+}
+```
+
+### JWT Tenant Extraction
+
+**Claim key:** `tenantId` (camelCase, hardcoded)
+
+```go
+// internal/bootstrap/middleware.go
+func (m *Middleware) extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
+    // Get token from Authorization header
+    authHeader := c.Get("Authorization")
+    if authHeader == "" {
+        return "", errors.New("authorization header required")
+    }
+
+    tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+    // Parse without validation (validation done by auth middleware)
+    token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
+    if err != nil {
+        return "", fmt.Errorf("failed to parse token: %w", err)
+    }
+
+    claims, ok := token.Claims.(jwt.MapClaims)
+    if !ok {
+        return "", errors.New("invalid token claims")
+    }
+
+    // Extract tenantId (hardcoded claim key)
+    tenantID, ok := claims["tenantId"].(string)
+    if !ok || tenantID == "" {
+        return "", errors.New("tenantId claim not found in token")
+    }
+
+    return tenantID, nil
+}
+```
+
+### Context Injection Middleware
+
+```go
+// internal/bootstrap/middleware.go
+func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "middleware.with_tenant_db")
+    defer span.End()
+
+    // Skip for public endpoints
+    if m.isPublicPath(c.Path()) {
+        return c.Next()
+    }
+
+    // Skip if not multi-tenant mode
+    if !m.pool.IsMultiTenant() {
+        return c.Next()
+    }
+
+    // Extract tenant ID from JWT
+    tenantID, err := m.extractTenantIDFromToken(c)
+    if err != nil {
+        logger.Errorf("Failed to extract tenant ID: %v", err)
+        return libHTTP.Unauthorized(c, "TENANT_ID_REQUIRED", "Unauthorized",
+            "tenantId claim is required in JWT token")
+    }
+
+    // Inject tenant ID into context
+    ctx = poolmanager.ContextWithTenantID(ctx, tenantID)
+
+    // Get tenant-specific database connection
+    conn, err := m.pool.GetConnection(ctx, tenantID)
+    if err != nil {
+        if errors.Is(err, poolmanager.ErrTenantNotFound) {
+            return libHTTP.NotFound(c, "TENANT_NOT_FOUND", "Not Found", "tenant not found")
+        }
+        return libHTTP.InternalServerError(c, "CONNECTION_ERROR", "Internal Server Error",
+            "failed to establish database connection")
+    }
+
+    db, err := conn.GetDB()
+    if err != nil {
+        return libHTTP.InternalServerError(c, "DB_ERROR", "Internal Server Error",
+            "failed to get database interface")
+    }
+
+    // Inject connection into context
+    ctx = poolmanager.ContextWithPGConnection(ctx, db)
+    c.SetUserContext(ctx)
+
+    return c.Next()
+}
+
+func (m *Middleware) isPublicPath(path string) bool {
+    publicPaths := []string{"/health", "/version", "/swagger"}
+    for _, p := range publicPaths {
+        if strings.HasPrefix(path, p) {
+            return true
+        }
+    }
+    return false
+}
+```
+
+### Database Connection in Repositories
+
+```go
+// internal/adapters/postgres/repository.go
+func (r *Repository) Create(ctx context.Context, entity *Entity) (*Entity, error) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "repository.entity.create")
+    defer span.End()
+
+    // Get tenant-specific connection from context
+    db, err := poolmanager.GetPostgresForTenant(ctx)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
+        logger.Errorf("Failed to get database connection: %v", err)
+        return nil, err
+    }
+
+    // Use db for queries - automatically scoped to tenant
+    query := `INSERT INTO entities (...) VALUES (...) RETURNING *`
+    row := db.QueryRowContext(ctx, query, ...)
+
+    // ... rest of implementation
+}
+```
+
+### Redis Key Prefixing
+
+```go
+// internal/adapters/redis/repository.go
+func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.Duration) error {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "redis.set")
+    defer span.End()
+
+    // Tenant-aware key prefixing (adds {tenantId}: prefix if multi-tenant)
+    key = poolmanager.GetKeyFromContext(ctx, key)
+
+    rds, err := r.conn.GetClient(ctx)
+    if err != nil {
+        return err
+    }
+
+    return rds.Set(ctx, key, value, ttl*time.Second).Err()
+}
+```
+
+### RabbitMQ Multi-Tenant Producer
+
+```go
+// internal/adapters/rabbitmq/producer.go
+type ProducerRepository struct {
+    conn            *libRabbitmq.RabbitMQConnection
+    rabbitMQPool    *poolmanager.RabbitMQPool
+    multiTenantMode bool
+}
+
+// Single-tenant constructor
+func NewProducer(conn *libRabbitmq.RabbitMQConnection) *ProducerRepository {
+    return &ProducerRepository{
+        conn:            conn,
+        multiTenantMode: false,
+    }
+}
+
+// Multi-tenant constructor
+func NewProducerMultiTenant(pool *poolmanager.RabbitMQPool) *ProducerRepository {
+    return &ProducerRepository{
+        rabbitMQPool:    pool,
+        multiTenantMode: true,
+    }
+}
+
+func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, message []byte) error {
+    // Inject tenant ID header
+    tenantID := poolmanager.GetTenantID(ctx)
+    headers := amqp.Table{}
+    if tenantID != "" {
+        headers["X-Tenant-ID"] = tenantID
+    }
+
+    if p.multiTenantMode {
+        // Get tenant-specific channel
+        channel, err := p.rabbitMQPool.GetChannel(ctx, tenantID)
+        if err != nil {
+            return err
+        }
+        return channel.PublishWithContext(ctx, exchange, key, false, false,
+            amqp.Publishing{Body: message, Headers: headers})
+    }
+
+    // Single-tenant: use static connection
+    return p.conn.Channel.Publish(exchange, key, false, false,
+        amqp.Publishing{Body: message, Headers: headers})
+}
+```
+
+### Conditional Initialization
+
+```go
+// internal/bootstrap/service.go
+func InitService(cfg *Config) (*Service, error) {
+    var producer rabbitmq.ProducerRepository
+
+    if cfg.MultiTenantEnabled {
+        // Multi-tenant mode: use pool manager
+        poolClient := poolmanager.NewClient(cfg.PoolManagerURL, logger)
+        rabbitPool := poolmanager.NewRabbitMQPool(poolClient, serviceName, logger)
+        producer = rabbitmq.NewProducerMultiTenant(rabbitPool)
+    } else {
+        // Single-tenant mode: use static connection
+        conn, err := libRabbitmq.NewRabbitMQConnection(cfg.RabbitMQURL)
+        if err != nil {
+            return nil, err
+        }
+        producer = rabbitmq.NewProducer(conn)
+    }
+
+    return &Service{producer: producer}, nil
+}
+```
+
+### Error Handling
+
+| Error | HTTP Status | Code | When |
+|-------|-------------|------|------|
+| Missing tenantId claim | 401 | `TENANT_ID_REQUIRED` | JWT doesn't have tenantId |
+| Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Pool Manager |
+| Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized |
+| Connection error | 500 | `CONNECTION_ERROR` | Failed to get tenant connection |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
+| "Pool Manager adds complexity" | Complexity is in connection management anyway. Pool Manager standardizes it. | **Use Pool Manager for multi-tenant** |
+| "JWT parsing is expensive" | Parse once in middleware, use from context everywhere. | **Extract tenant once, propagate via context** |
+| "We'll add tenant isolation later" | Retrofitting tenant isolation is a rewrite. | **Build tenant-aware from the start** |
+
+### Checklist
+
+- [ ] `MULTI_TENANT_ENABLED` and `POOL_MANAGER_URL` in config struct
+- [ ] JWT tenant extraction middleware (claim key: `tenantId`)
+- [ ] `poolmanager.ContextWithTenantID()` in middleware
+- [ ] `poolmanager.GetPostgresForTenant(ctx)` in repositories
+- [ ] `poolmanager.GetKeyFromContext(ctx, key)` for Redis keys
+- [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
+- [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
+- [ ] Proper error codes for tenant-related failures
+
+---
+
 ## Standards Compliance Output Format
 
 When producing a Standards Compliance report (used by ring:dev-refactor workflow), follow these output formats:
@@ -3044,3 +3835,5 @@ Before submitting Go code, verify:
 - [ ] Pagination strategy defined in TRD (or confirmed with user if no TRD)
 - [ ] Domain entities use constructor functions (NewXxx) with validation
 - [ ] Constructor functions return `(Entity, error)` - never create invalid state
+- [ ] POST endpoints that create resources implement idempotency (Redis SetNX pattern)
+- [ ] If multi-tenant: JWT tenant extraction + `poolmanager` for connections
