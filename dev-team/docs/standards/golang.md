@@ -3094,8 +3094,11 @@ func (uc *UseCase) CreateOrCheckIdempotencyKey(
         key = hash
     }
 
+    // Build scope from domain identifiers
+    scope := organizationID.String() + ":" + ledgerID.String()
+
     // Create scoped internal key (multi-tenant isolation)
-    internalKey := utils.IdempotencyInternalKey(organizationID, ledgerID, key)
+    internalKey := utils.IdempotencyInternalKey(scope, key)
 
     // Atomic lock acquisition with SetNX
     success, err := uc.RedisRepo.SetNX(ctx, internalKey, "", ttl)
@@ -3159,7 +3162,10 @@ func (uc *UseCase) SetValueOnExistingIdempotencyKey(
         key = hash
     }
 
-    internalKey := utils.IdempotencyInternalKey(organizationID, ledgerID, key)
+    // Build scope from domain identifiers
+    scope := organizationID.String() + ":" + ledgerID.String()
+
+    internalKey := utils.IdempotencyInternalKey(scope, key)
 
     value, err := libCommons.StructToJSONString(t)
     if err != nil {
@@ -3188,7 +3194,10 @@ func (uc *UseCase) SetTransactionIdempotencyMapping(
     logger.Infof("Trying to set transaction idempotency mapping in redis for transactionID: %s",
         transactionID)
 
-    reverseKey := utils.IdempotencyReverseKey(organizationID, ledgerID, transactionID)
+    // Build scope from domain identifiers
+    scope := organizationID.String() + ":" + ledgerID.String()
+
+    reverseKey := utils.IdempotencyReverseKey(scope, transactionID)
 
     err := uc.RedisRepo.Set(ctx, reverseKey, idempotencyKey, ttl)
     if err != nil {
