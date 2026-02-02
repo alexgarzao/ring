@@ -241,33 +241,47 @@ Standards files may contain these meta-sections that are not counted in section 
 
 These sections describe HOW to use the standards, not WHAT the standards are.
 
-### ring:backend-engineer-golang → golang.md
+### ring:backend-engineer-golang → golang/
 
-| # | Section to Check | Anchor | Key Subsections |
-|---|------------------|--------|-----------------|
-| 1 | Version | `#version` | Go 1.24+ |
-| 2 | Core Dependency: lib-commons | `#core-dependency-lib-commons-mandatory` | |
-| 3 | Frameworks & Libraries | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock |
-| 4 | Configuration | `#configuration` | Environment variable handling |
-| 5 | Observability | `#observability` | OpenTelemetry integration |
-| 6 | Bootstrap | `#bootstrap` | Application initialization |
-| 7 | Access Manager Integration | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
-| 8 | License Manager Integration | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
-| 9 | Data Transformation | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
-| 10 | Error Codes Convention | `#error-codes-convention-mandatory` | Service-prefixed codes |
-| 11 | Error Handling | `#error-handling` | Error wrapping and checking |
-| 12 | Function Design | `#function-design-mandatory` | Single responsibility |
-| 13 | Pagination Patterns | `#pagination-patterns` | Cursor and page-based |
-| 14 | Testing | `#testing` | Table-driven tests, edge cases |
-| 15 | Logging | `#logging` | Structured logging with lib-commons |
-| 16 | Linting | `#linting` | golangci-lint configuration |
-| 17 | Architecture Patterns | `#architecture-patterns` | Hexagonal architecture |
-| 18 | Directory Structure | `#directory-structure` | Lerian pattern |
-| 19 | Concurrency Patterns | `#concurrency-patterns` | Goroutines, channels, errgroup |
-| 20 | RabbitMQ Worker Pattern | `#rabbitmq-worker-pattern` | Async message processing |
-| 21 | Always-Valid Domain Model | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
-| 22 | Idempotency Patterns | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 23 | Multi-Tenant Patterns | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection |
+**Modular Structure:** Standards are split into focused modules. Load index.md first, then required modules.
+
+| # | Section to Check | File | Anchor | Key Subsections |
+|---|------------------|------|--------|-----------------|
+| 1 | Version | core.md | `#version` | Go 1.24+ |
+| 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | |
+| 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock |
+| 4 | Configuration | core.md | `#configuration` | Environment variable handling |
+| 5 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration |
+| 6 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
+| 7 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
+| 8 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
+| 9 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
+| 10 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
+| 11 | Error Handling | domain.md | `#error-handling` | Error wrapping and checking |
+| 12 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
+| 13 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
+| 14 | Testing | quality.md | `#testing` | Table-driven tests, edge cases |
+| 15 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 16 | Linting | quality.md | `#linting` | golangci-lint configuration |
+| 17 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 18 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 19 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
+| 20 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
+| 21 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
+| 22 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 23 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection |
+
+**Module Loading Guide:**
+
+| Task Type | Required Modules |
+|-----------|------------------|
+| New feature (full) | core.md → bootstrap.md → domain.md → quality.md |
+| Auth implementation | core.md → security.md |
+| Add tracing | bootstrap.md |
+| Testing | quality.md |
+| Idempotency | idempotency.md + domain.md |
+| Multi-tenant | multi-tenant.md + bootstrap.md |
+| Full compliance check | ALL modules |
 
 ---
 
