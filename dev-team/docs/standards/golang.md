@@ -2924,7 +2924,7 @@ func (h *Handler) CreateRule(c *fiber.Ctx) error {
 
 ## Idempotency Patterns (MANDATORY for Transaction APIs)
 
-**HARD GATE:** All APIs that create resources or trigger side effects MUST implement idempotency. This prevents duplicate operations from network retries, client bugs, or user double-clicks.
+**MUST implement idempotency:** All APIs that create resources or trigger side effects. This prevents duplicate operations from network retries, client bugs, or user double-clicks. **HARD GATE**
 
 ### Why This Pattern Is Mandatory
 
@@ -2947,7 +2947,7 @@ func (h *Handler) CreateRule(c *fiber.Ctx) error {
 
 **HARD GATE:** Before implementing idempotency, ask the user about the key scope.
 
-**AskUserQuestion:** "What should be the idempotency key scope for this service?"
+**ring:AskUserQuestion:** "What should be the idempotency key scope for this service?"
 
 | Scope Option | Key Format |
 |--------------|------------|
