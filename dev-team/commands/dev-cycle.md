@@ -1,15 +1,16 @@
 ---
 name: ring:dev-cycle
 description: Execute the development cycle for tasks in a markdown file
-argument-hint: "[tasks-file] [options]"
+argument-hint: "[tasks-file] [options] [prompt]"
 ---
 
-Execute the development cycle for tasks in a markdown file.
+Execute the development cycle for tasks in a markdown file or from a direct prompt.
 
 ## Usage
 
 ```
-/ring:dev-cycle [tasks-file] [options]
+/ring:dev-cycle [tasks-file] [options] [prompt]
+/ring:dev-cycle [prompt]
 ```
 
 ## Arguments
@@ -17,8 +18,9 @@ Execute the development cycle for tasks in a markdown file.
 | Argument | Required | Description |
 |----------|----------|-------------|
 | `tasks-file` | No* | Path to markdown file with tasks (e.g., `docs/tasks/sprint-001.md`) |
+| `prompt` | No* | Direct instruction for what to implement (no quotes needed) |
 
-*Required unless using `--prompt` (without tasks file) or `--resume`.
+*Either `tasks-file`, `prompt`, or `--resume` is required.
 
 ## Options
 
@@ -28,25 +30,36 @@ Execute the development cycle for tasks in a markdown file.
 | `--skip-gates` | Skip specific gates | `--skip-gates devops,review` |
 | `--dry-run` | Validate tasks without executing | `--dry-run` |
 | `--resume` | Resume interrupted cycle | `--resume` |
-| `--prompt "..."` | Custom context for agents OR prompt-only mode (generates tasks internally) | `--prompt "Focus on error handling"` |
 
-### Prompt-Only Mode
+## Prompt Modes
 
-When `--prompt` is provided **without a tasks file**, ring:dev-cycle enters prompt-only mode:
+### Direct Prompt (No Tasks File)
+
+When a prompt is provided **without a tasks file**, ring:dev-cycle enters prompt-only mode:
 
 1. **Analyzes the prompt** to understand what needs to be done
 2. **Generates tasks internally** (similar to pre-dev but streamlined)
 3. **Executes through 6 gates** as normal
 
 ```bash
-# Prompt-only mode - no tasks file needed
-/ring:dev-cycle --prompt "Implement multi-tenant support for the API"
+# Direct prompt - no tasks file needed
+/ring:dev-cycle Implement multi-tenant support for the API
 
-# With tasks file - prompt provides additional context
-/ring:dev-cycle docs/tasks/sprint-001.md --prompt "Focus on error handling"
+# Another example
+/ring:dev-cycle Add pagination to all list endpoints with cursor-based navigation
 ```
 
-**When to use prompt-only mode:**
+### With Tasks File + Additional Context
+
+```bash
+# Tasks file with additional context
+/ring:dev-cycle docs/tasks/sprint-001.md Focus on error handling
+
+# Tasks file with specific guidance
+/ring:dev-cycle docs/tasks/sprint-001.md Prioritize security validations
+```
+
+**When to use direct prompt:**
 - Quick implementations without full pre-dev planning
 - Exploratory work where full planning is overkill
 - When you know exactly what you want and want to skip task file creation
@@ -56,7 +69,7 @@ When `--prompt` is provided **without a tasks file**, ring:dev-cycle enters prom
 - Refactoring work (use `/ring:dev-refactor` first)
 - When you need documented task breakdown for tracking
 
-### `--prompt` Flag Behavior (with tasks file)
+### Prompt Behavior (with tasks file)
 
 CANNOT override CRITICAL gates. Provides custom context to agents.
 
@@ -65,11 +78,11 @@ CANNOT override CRITICAL gates. Provides custom context to agents.
 - **Resume:** Survives interrupts; editable by modifying state file before `--resume`
 - **Reports:** Included in execution reports under "Custom Context Used"
 
-**Propagation:** Prepended to ALL agent prompts in a dedicated `**CUSTOM CONTEXT (from user):**` section. Applies to all gates and all agent types.
+**Propagation:** Prepended to all agent prompts in a dedicated `**CUSTOM CONTEXT (from user):**` section. Applies to all gates and all agent types.
 
 **Constraints:**
 - **Length:** Recommended 50-75 words (~300-400 chars); hard limit 500 chars (truncated with warning). For longer context, summarize or link to external docs.
-- **Sanitization:** Whitespace trimmed, control chars stripped (except newlines), unicode normalized. Does NOT prevent semantic prompt-injection attempts.
+- **Sanitization:** Whitespace trimmed, control chars stripped (except newlines), unicode normalized. Does not prevent semantic prompt-injection attempts.
 
 **Gate Protection:**
 
@@ -94,6 +107,12 @@ jq '.custom_prompt' docs/ring:dev-cycle/current-cycle.json  # View
 ## Examples
 
 ```bash
+# Direct prompt - implement feature
+/ring:dev-cycle Implement multi-tenant support with organization_id in all entities
+
+# Direct prompt - another example
+/ring:dev-cycle Add idempotency support to transaction create endpoint
+
 # Execute all tasks from a file
 /ring:dev-cycle docs/tasks/sprint-001.md
 
@@ -109,16 +128,13 @@ jq '.custom_prompt' docs/ring:dev-cycle/current-cycle.json  # View
 # Resume interrupted cycle
 /ring:dev-cycle --resume
 
-# Execute with custom context for agents
-/ring:dev-cycle docs/tasks/sprint-001.md --prompt "Prioritize error handling. Use existing UserRepository interface."
-
-# Prompt-only mode (no tasks file needed)
-/ring:dev-cycle --prompt "Implement multi-tenant support with organization_id in all entities"
+# Tasks file with additional context
+/ring:dev-cycle docs/tasks/sprint-001.md Prioritize error handling and use existing UserRepository interface
 ```
 
 ## Prerequisites
 
-1. **Task file OR prompt**: Either a markdown file generated by `/pre-dev-*` or `/ring:dev-refactor`, OR `--prompt` for prompt-only mode
+1. **Task file or prompt**: Either a markdown file generated by `/pre-dev-*` or `/ring:dev-refactor`, or a direct prompt
 2. **Project standards** (optional but recommended): `docs/PROJECT_RULES.md` with project conventions
 3. **PRD/TRD** (optional): If exists in `docs/pre-dev/{feature}/`, will be used in design phase
 
@@ -174,12 +190,17 @@ Pass the following context to the skill:
 
 | Parameter | Value |
 |-----------|-------|
-| `tasks-file` | `$1` (first argument, e.g., `docs/tasks/sprint-001.md`) |
+| `tasks-file` | First argument if it's a `.md` file path (e.g., `docs/tasks/sprint-001.md`) |
+| `prompt` | Remaining text after tasks-file and options (direct instruction) |
 | `--task` | If provided, filter to specific task ID |
 | `--skip-gates` | If provided, list of gates to skip |
 | `--dry-run` | If provided, validate only |
 | `--resume` | If provided, resume from existing state file (ring:dev-cycle or ring:dev-refactor) |
-| `--prompt` | If provided, custom context passed to all agents |
+
+**Argument Parsing:**
+- If first argument ends with `.md` → treat as tasks-file
+- If first argument is an option (`--*`) → no tasks-file
+- Remaining non-option text → prompt
 
 ## Step 1: ASK EXECUTION MODE (MANDATORY)
 

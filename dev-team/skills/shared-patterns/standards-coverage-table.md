@@ -266,6 +266,8 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 19 | Concurrency Patterns | `#concurrency-patterns` | Goroutines, channels, errgroup |
 | 20 | RabbitMQ Worker Pattern | `#rabbitmq-worker-pattern` | Async message processing |
 | 21 | Always-Valid Domain Model | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
+| 22 | Idempotency Patterns | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 23 | Multi-Tenant Patterns | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection |
 
 ---
 
