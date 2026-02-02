@@ -3655,6 +3655,141 @@ func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, 
 }
 ```
 
+### MongoDB Multi-Tenant Repository
+
+```go
+// internal/adapters/mongodb/metadata.go
+type MetadataMongoDBRepository struct {
+    conn *libMongo.MongoConnection // Single-tenant
+}
+
+func NewMetadataMongoDBRepository(conn *libMongo.MongoConnection) *MetadataMongoDBRepository {
+    return &MetadataMongoDBRepository{conn: conn}
+}
+
+func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection string, metadata *Metadata) error {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "mongodb.create_metadata")
+    defer span.End()
+
+    // Get tenant-specific database from context
+    tenantDB, err := poolmanager.GetMongoForTenant(ctx)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
+        return err
+    }
+
+    // Use tenant's database for operations
+    coll := tenantDB.Collection(strings.ToLower(collection))
+
+    record := &MetadataMongoDBModel{}
+    if err := record.FromEntity(metadata); err != nil {
+        return err
+    }
+
+    _, err = coll.InsertOne(ctx, record)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span, "Failed to insert metadata", err)
+        return err
+    }
+
+    return nil
+}
+
+func (r *MetadataMongoDBRepository) FindByEntity(ctx context.Context, collection, id string) (*Metadata, error) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "mongodb.find_by_entity")
+    defer span.End()
+
+    tenantDB, err := poolmanager.GetMongoForTenant(ctx)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span, "Failed to get database", err)
+        return nil, err
+    }
+
+    coll := tenantDB.Collection(strings.ToLower(collection))
+
+    var record MetadataMongoDBModel
+    if err = coll.FindOne(ctx, bson.M{"entity_id": id}).Decode(&record); err != nil {
+        if errors.Is(err, mongo.ErrNoDocuments) {
+            return nil, nil
+        }
+        return nil, err
+    }
+
+    return record.ToEntity(), nil
+}
+```
+
+### MongoDB Pool Initialization
+
+```go
+// internal/bootstrap/config.go
+func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
+    poolManagerClient := poolmanager.NewClient(cfg.PoolManagerURL, logger)
+
+    // Create MongoDB pool with module-specific credentials
+    mongoPool := poolmanager.NewMongoPool(poolManagerClient, serviceName,
+        poolmanager.WithMongoModule("transaction"),
+        poolmanager.WithMongoLogger(logger),
+    )
+    logger.Info("Created MongoDB connection pool for multi-tenant mode")
+
+    return &MultiTenantPools{
+        MongoPool: mongoPool,
+        // ... other pools
+    }
+}
+```
+
+### MongoDB Context Injection in Middleware
+
+```go
+// internal/bootstrap/middleware.go
+func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
+    // ... tenant extraction code ...
+
+    // Inject MongoDB if pool configured
+    if m.mongoPool != nil {
+        mongoDB, err := m.mongoPool.GetDatabaseForTenant(ctx, tenantID)
+        if err != nil {
+            logger.Errorf("Failed to get MongoDB connection for tenant %s: %v", tenantID, err)
+            return libHTTP.InternalServerError(c, "TENANT_MONGO_ERROR", "Internal Server Error",
+                "failed to resolve tenant MongoDB connection")
+        }
+
+        ctx = poolmanager.ContextWithTenantMongo(ctx, mongoDB)
+        logger.Infof("Set MongoDB connection for tenant: %s (db: %s)", tenantID, mongoDB.Name())
+    }
+
+    c.SetUserContext(ctx)
+    return c.Next()
+}
+```
+
+### MongoDB in RabbitMQ Consumer (Async Context)
+
+```go
+// internal/bootstrap/rabbitmq_consumer.go
+func (c *MultiTenantConsumer) injectTenantDBConnections(ctx context.Context, tenantID string, logger libLog.Logger) (context.Context, error) {
+    // Inject MongoDB connection (optional - service may not use MongoDB)
+    if c.mongoPool != nil {
+        mongoDB, err := c.mongoPool.GetDatabaseForTenant(ctx, tenantID)
+        if err != nil {
+            // MongoDB is optional for some services - warn but don't fail
+            logger.Warnf("Failed to get MongoDB for tenant %s: %v (continuing without MongoDB)", tenantID, err)
+        } else {
+            ctx = poolmanager.ContextWithTenantMongo(ctx, mongoDB)
+            logger.Infof("Injected MongoDB connection for tenant: %s", tenantID)
+        }
+    }
+
+    return ctx, nil
+}
+```
+
 ### Conditional Initialization
 
 ```go
@@ -3703,9 +3838,12 @@ func InitService(cfg *Config) (*Service, error) {
 - [ ] `MULTI_TENANT_ENABLED` and `POOL_MANAGER_URL` in config struct
 - [ ] JWT tenant extraction middleware (claim key: `tenantId`)
 - [ ] `poolmanager.ContextWithTenantID()` in middleware
-- [ ] `poolmanager.GetPostgresForTenant(ctx)` in repositories
+- [ ] `poolmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
 - [ ] `poolmanager.GetKeyFromContext(ctx, key)` for Redis keys
+- [ ] `poolmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
+- [ ] `poolmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
+- [ ] MongoDB injection in RabbitMQ consumers for async processing
 - [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
 - [ ] Proper error codes for tenant-related failures
 
