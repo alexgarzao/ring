@@ -3430,14 +3430,33 @@ Redis SetNX (atomic lock with empty value)
 | SaaS with shared infrastructure | Multi-tenant | `MULTI_TENANT_ENABLED=true` |
 | Multiple isolated databases per customer | Multi-tenant | Requires Pool Manager |
 
+### Environment Variables
+
+| Env Var | Description | Default | Required |
+|---------|-------------|---------|----------|
+| `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
+| `POOL_MANAGER_URL` | Pool Manager service URL | - | If multi-tenant |
+| `MULTI_TENANT_SYNC_INTERVAL` | Interval to sync tenant configs from Pool Manager | `30s` | No |
+| `TENANT_CACHE_TTL` | Tenant configuration cache duration | `24h` | No |
+
+**Example `.env` for multi-tenant:**
+```bash
+MULTI_TENANT_ENABLED=true
+POOL_MANAGER_URL=http://pool-manager:4003
+MULTI_TENANT_SYNC_INTERVAL=30s
+TENANT_CACHE_TTL=24h
+```
+
 ### Configuration
 
 ```go
 // internal/bootstrap/config.go
 type Config struct {
     // Multi-Tenant Configuration
-    MultiTenantEnabled bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
-    PoolManagerURL     string `env:"POOL_MANAGER_URL"`
+    MultiTenantEnabled      bool          `env:"MULTI_TENANT_ENABLED" default:"false"`
+    PoolManagerURL          string        `env:"POOL_MANAGER_URL"`
+    MultiTenantSyncInterval time.Duration `env:"MULTI_TENANT_SYNC_INTERVAL" default:"30s"`
+    TenantCacheTTL          string        `env:"TENANT_CACHE_TTL" default:"24h"`
 
     // Prefixed DB vars (unified deployment)
     PrefixedPrimaryDBHost string `env:"DB_TRANSACTION_HOST"`
@@ -3835,16 +3854,27 @@ func InitService(cfg *Config) (*Service, error) {
 
 ### Checklist
 
-- [ ] `MULTI_TENANT_ENABLED` and `POOL_MANAGER_URL` in config struct
+**Environment Variables:**
+- [ ] `MULTI_TENANT_ENABLED` in config struct (default: `false`)
+- [ ] `POOL_MANAGER_URL` in config struct (required if multi-tenant)
+- [ ] `MULTI_TENANT_SYNC_INTERVAL` in config struct (default: `30s`)
+- [ ] `TENANT_CACHE_TTL` in config struct (default: `24h`)
+
+**Middleware & Context:**
 - [ ] JWT tenant extraction middleware (claim key: `tenantId`)
 - [ ] `poolmanager.ContextWithTenantID()` in middleware
+- [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
+
+**Repositories:**
 - [ ] `poolmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
 - [ ] `poolmanager.GetKeyFromContext(ctx, key)` for Redis keys
 - [ ] `poolmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
 - [ ] `poolmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
+
+**Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
 - [ ] MongoDB injection in RabbitMQ consumers for async processing
-- [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
+- [ ] PostgreSQL injection in RabbitMQ consumers for async processing
 - [ ] Proper error codes for tenant-related failures
 
 ---
