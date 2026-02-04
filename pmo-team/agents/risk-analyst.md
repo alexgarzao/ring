@@ -3,7 +3,6 @@ name: risk-analyst
 version: 1.0.0
 description: Portfolio Risk Analyst specialized in risk identification, assessment, correlation analysis, and mitigation planning across portfolio projects. Manages RAID logs and portfolio risk exposure.
 type: specialist
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.0.0: Initial release with risk analysis capabilities
@@ -53,28 +52,6 @@ input_schema:
     - name: "project_context"
       type: "string"
       description: "Project background for context"
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:risk-analyst", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Risk analysis requires nuanced probability assessment, impact analysis, correlation identification, and strategic judgment that demands Opus-level reasoning capabilities.
-
 ---
 
 # Risk Analyst

@@ -3,7 +3,6 @@ name: executive-reporter
 version: 1.0.0
 description: Executive Reporting Specialist for creating dashboards, status summaries, board packages, and stakeholder communications. Focuses on actionable insights for leadership.
 type: specialist
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.0.0: Initial release with executive reporting capabilities
@@ -53,28 +52,6 @@ input_schema:
     - name: "previous_report"
       type: "file_content"
       description: "Previous report for trend analysis"
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:executive-reporter", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Executive communication requires sophisticated audience analysis, appropriate abstraction levels, and nuanced presentation of complex information that demands Opus-level reasoning capabilities.
-
 ---
 
 # Executive Reporter

@@ -3,7 +3,6 @@ name: governance-specialist
 version: 1.0.0
 description: Project Governance Specialist for gate reviews, process compliance, audit readiness, and governance framework implementation across portfolio projects.
 type: specialist
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.0.0: Initial release with governance capabilities
@@ -53,28 +52,6 @@ input_schema:
     - name: "governance_framework"
       type: "string"
       description: "Specific framework to apply"
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:governance-specialist", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Governance assessment requires detailed analysis of process compliance, risk evaluation, and nuanced judgment about gate passage that demands Opus-level reasoning capabilities.
-
 ---
 
 # Governance Specialist
