@@ -407,7 +407,7 @@ Ring leverages four primary Claude Code tools:
    - Skill content becomes part of Claude's working context
 
 2. **Task Tool**
-   - Dispatches agents to subagent instances: `Task(subagent_type="ring:code-reviewer", model="opus")`
+   - Dispatches agents to subagent instances: `Task(subagent_type="ring:code-reviewer")`
    - Enables parallel execution (multiple Tasks in one message)
    - Returns structured reports from independent analysis
 

@@ -165,7 +165,7 @@ name: ring:code-reviewer
 version: 4.0.0
 description: "Reviews code quality, architecture, design patterns"
 type: reviewer
-model: opus  # Can require specific model!
+# model: optional - inherits from Task invocation
 output_schema:
   format: "markdown"
   required_sections:
