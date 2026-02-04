@@ -268,10 +268,10 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 ## Standards Loading (MANDATORY)
 
 <fetch_required>
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/index.md
 </fetch_required>
 
-MUST WebFetch the URL above before any implementation work.
+MUST WebFetch the index.md above first, then load required modules based on task type.
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 - Full loading process (PROJECT_RULES.md + WebFetch)
@@ -279,13 +279,29 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 - Missing/non-compliant handling
 - Anti-rationalization table
 
-**Go-Specific Configuration:**
+**Go Standards - Modular Structure:**
 
 | Setting | Value |
 |---------|-------|
-| **WebFetch URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` |
-| **Standards File** | golang.md |
-| **Prompt** | "Extract all Go coding standards, patterns, and requirements" |
+| **Index URL** | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/index.md` |
+| **Standards Directory** | golang/ (12 modules) |
+| **Prompt** | "Extract Go coding standards from required modules" |
+
+**Step 1: Load index.md** to understand which modules to fetch.
+
+**Step 2: Load required modules based on task:**
+
+| Task Type | Required Modules | URLs to Fetch |
+|-----------|------------------|---------------|
+| New feature (full) | core.md, bootstrap.md, domain.md, quality.md | `golang/core.md`, `golang/bootstrap.md`, `golang/domain.md`, `golang/quality.md` |
+| Auth implementation | core.md, security.md | `golang/core.md`, `golang/security.md` |
+| Add tracing | bootstrap.md | `golang/bootstrap.md` |
+| Testing | quality.md | `golang/quality.md` |
+| Idempotency | idempotency.md, domain.md | `golang/idempotency.md`, `golang/domain.md` |
+| Multi-tenant | multi-tenant.md, bootstrap.md | `golang/multi-tenant.md`, `golang/bootstrap.md` |
+| Full compliance check | all modules | See index.md for complete list |
+
+**Base URL:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/`
 
 ### Standards Verification Output (MANDATORY - FIRST SECTION)
 
@@ -299,7 +315,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | Check | Status | Details |
 |-------|--------|---------|
 | PROJECT_RULES.md | Found/Not Found | Path: docs/PROJECT_RULES.md |
-| Ring Standards (golang.md) | Loaded | 21 sections fetched |
+| Ring Standards (golang/) | Loaded | index.md + N modules fetched |
 
 ### Precedence Decisions
 
@@ -344,13 +360,13 @@ Any occurrence = REJECTED implementation. Check golang.md for complete list.
 
 **Standards Reference (MANDATORY WebFetch):**
 
-| Standards File | Sections to Load | Anchor |
-|----------------|------------------|--------|
-| golang.md | Logging | #logging |
-| golang.md | Observability | #observability |
+| Module | Sections to Load | Anchor |
+|--------|------------------|--------|
+| quality.md | Logging | #logging |
+| bootstrap.md | Observability | #observability |
 
 **Process:**
-1. WebFetch `golang.md` (URL in Standards Loading section above)
+1. WebFetch `golang/quality.md` and `golang/bootstrap.md`
 2. Find "Logging" section → Extract FORBIDDEN patterns table
 3. Find "Observability" section → Extract Anti-Patterns table
 4. **LIST all patterns you found** (proves you read the standards)
@@ -839,7 +855,7 @@ The Standards Compliance section exists to:
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md" for:**
-- Complete list of sections to check (21 sections)
+- Complete list of sections to check (23 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format

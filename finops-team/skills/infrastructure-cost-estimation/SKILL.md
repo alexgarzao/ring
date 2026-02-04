@@ -1,8 +1,9 @@
 ---
 name: ring:infrastructure-cost-estimation
-version: 5.0.0
+version: 6.0.0
 description: |
-  Orchestrates infrastructure cost estimation with per-component sharing model.
+  Orchestrates infrastructure cost estimation with tier-based or custom TPS sizing.
+  Offers pre-configured tiers (Starter/Growth/Business/Enterprise) or custom TPS input.
   Skill discovers components, asks shared/dedicated for EACH, selects environment(s),
   reads actual Helm chart configs, then dispatches agent for accurate calculations.
 
@@ -32,7 +33,11 @@ skip_when: |
 │    - Reporter: [YES / NO]                                   │
 │                                                             │
 │  Step 2: Basic Info                                         │
-│    - Repo path, TPS, Total customers                        │
+│    - Repo path, Total customers                             │
+│                                                             │
+│  Step 2a: Infrastructure Sizing (NEW in v6.0)               │
+│    - Option 1: Tier (Starter/Growth/Business/Enterprise)    │
+│    - Option 2: Custom TPS (backwards compatible)            │
 │                                                             │
 │  Step 3: Select Environment(s) to Calculate                 │
 │    - [x] Homolog (us-east-2, Single-AZ, 1 replica)         │
@@ -48,16 +53,16 @@ skip_when: |
 │                                                             │
 │  Steps 6-7: Database Config + Billing Model                 │
 │                                                             │
-│  ↓ All data collected (products + Helm configs)             │
+│  ↓ All data collected (products + tier/TPS + Helm configs)  │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    AGENT (Calculator)                       │
 │                                                             │
-│  Receives: Products selected + Helm configs → Calculates:   │
+│  Receives: Products + Tier/TPS + Helm configs → Calculates: │
 │  - Infrastructure costs PER ENVIRONMENT (Homolog + Prod)    │
-│  - EKS node sizing from actual CPU/memory requirements      │
+│  - EKS node sizing from tier config OR actual CPU/memory    │
 │  - Cost attribution (shared ÷ customers, dedicated = full)  │
 │  - Access Manager costs ALWAYS shared across ALL customers  │
 │  - Profitability analysis (using combined env costs)        │
@@ -107,10 +112,83 @@ AskUserQuestion:
 |-------|----------|----------|---------|
 | **Repo Path** | Yes | "What is the application repository path?" | `/workspace/midaz` |
 | **Helm Charts Repo** | Optional | "Path to LerianStudio/helm repository?" | `/workspace/helm` |
-| **TPS** | Yes | "What is the expected TPS?" | `100` |
 | **Total Customers** | Yes | "How many customers share the platform?" | `5` |
 
 **Why Helm Charts Repo?** LerianStudio/helm contains actual CPU/memory configurations per service. Without it, the agent uses Core one default values.
+
+**Note:** TPS/Tier selection moved to Step 2a below.
+
+---
+
+## Step 2a: Select Infrastructure Sizing Method (NEW in v6.0)
+
+**Choose between pre-configured tier or custom TPS:**
+
+### 2a.1: Ask Sizing Method
+
+```
+AskUserQuestion:
+  question: "How would you like to size the infrastructure?"
+  header: "Sizing Method"
+  multiSelect: false
+  options:
+    - label: "Pre-configured Tier (Recommended)"
+      description: "Choose optimized tier by TPS range - faster, cost-optimized"
+    - label: "Custom TPS"
+      description: "Specify exact TPS for custom infrastructure sizing"
+```
+
+### 2a.2: If "Pre-configured Tier" Selected
+
+```
+AskUserQuestion:
+  question: "Which infrastructure tier matches your expected traffic?"
+  header: "Tier"
+  multiSelect: false
+  options:
+    - label: "Starter (50-100 TPS) - ~R$ 11.7k/mo"
+      description: "Small deployments, POC, single tenant. 2× c6i.large nodes."
+    - label: "Growth (100-500 TPS) - ~R$ 19.3k/mo"
+      description: "Growing business, moderate traffic. 3× c6i.xlarge nodes."
+    - label: "Business (500-1,500 TPS) - ~R$ 27.5k/mo (Recommended)"
+      description: "Production app, full HA. 4× c6i.xlarge nodes, Multi-AZ."
+    - label: "Enterprise (1,500-5,000 TPS) - ~R$ 56.7k/mo"
+      description: "Mission critical, high performance. 8× c6i.2xlarge nodes."
+```
+
+**Tier Reference:** See [infrastructure-tiers-by-tps.md](../../docs/infrastructure-tiers-by-tps.md) for detailed tier specifications.
+
+**Tier Configurations (stored for agent dispatch):**
+
+| Tier | Target TPS | Max Capacity | Prod Nodes | Prod Replicas (auth) |
+|------|-----------|--------------|------------|---------------------|
+| Starter | 100 | 670 | 2× c6i.large | 1 |
+| Growth | 500 | 1,340 | 3× c6i.xlarge | 2 |
+| Business | 1,500 | 2,010 | 4× c6i.xlarge | 3 |
+| Enterprise | 5,000 | 6,030 | 8× c6i.2xlarge | 9 |
+
+### 2a.3: If "Custom TPS" Selected
+
+```
+AskUserQuestion:
+  question: "What is the expected TPS (transactions per second)?"
+  header: "TPS"
+  multiSelect: false
+  options:
+    - label: "50 TPS"
+      description: "Low traffic, testing"
+    - label: "150 TPS"
+      description: "Small to medium traffic"
+    - label: "500 TPS"
+      description: "Medium to high traffic"
+    - label: "Custom value"
+      description: "I'll specify exact TPS"
+```
+
+**Custom TPS Calculation:**
+- Agent will calculate required replicas: `(TPS ÷ 670) × 1.25` for auth service
+- Agent will size EKS nodes based on total CPU/memory requirements
+- More flexible but requires more calculation
 
 ---
 
@@ -465,79 +543,126 @@ If Reporter selected:
 
 ### 8b. Dispatch Agent with Collected Data
 
-**Only dispatch AFTER reading actual values for selected products:**
+**Only dispatch AFTER reading actual values for selected products.**
+
+**Two dispatch patterns:**
+1. **Tier-based** (user selected pre-configured tier)
+2. **Custom TPS** (user specified exact TPS)
+
+---
+
+#### Pattern 1: Tier-Based Dispatch
+
+**If user selected a tier in Step 2a, provide tier configuration:**
 
 ```
 Task tool:
   subagent_type: "ring:infrastructure-cost-estimator"
   model: "opus"
   prompt: |
-    Calculate infrastructure costs and profitability.
+    Calculate infrastructure costs using PRE-CONFIGURED TIER.
 
-    ALL DATA PROVIDED (do not ask questions):
+    Tier: BUSINESS (500-1,500 TPS)
+    Target TPS: 1,500
+    Max Capacity: 2,010 TPS
+
+    Tier Configuration:
+    Production:
+      Replicas: auth=3, transaction=3, onboarding=2, identity=1, auth-backend=1
+      Nodes: 4× c6i.xlarge (4 vCPU, 8 GiB each)
+      Databases:
+        - auth-postgresql: db.m7g.large (Multi-AZ + 1 replica)
+        - midaz-postgresql: db.m7g.large (Multi-AZ + 1 replica)
+        - documentdb: db.r8g.large (Multi-AZ + 1 replica)
+      Cache:
+        - auth-valkey: cache.m7g.large (Multi-AZ)
+        - midaz-valkey: cache.m7g.large (Multi-AZ)
+      Queue:
+        - rabbitmq: mq.m7g.large (active/standby)
+
+    Homolog:
+      Nodes: 2× c6i.xlarge
+      Databases: All db.m7g.large (Single-AZ)
 
     Products Selected:
     - Access Manager: ALWAYS INCLUDED (shared platform)
     - Core one Core: YES
-    - Reporter: YES
+    - Reporter: NO
 
     Infrastructure:
     - App Repo: /workspace/midaz
-    - Helm Charts Source: LerianStudio/helm (values read below)
-    - TPS: 100
     - Total Customers on Platform: 5
 
     Environments to Calculate: [Homolog, Production]
 
-    Actual Resource Configurations (READ from LerianStudio/helm for selected products):
-
-    # Access Manager (ALWAYS - shared platform)
+    Actual Resource Configurations (from Helm charts):
     [INSERT VALUES FROM charts/plugin-access-manager/values.yaml]
-
-    # Core one Core (selected)
     [INSERT VALUES FROM charts/midaz/values.yaml]
 
-    # Reporter (selected)
-    [INSERT VALUES FROM charts/reporter/values.yaml]
-
     Component Sharing Model:
-    | Component | Sharing | Customers |
-    |-----------|---------|-----------|
-    | VPC | SHARED | 5 |
-    | EKS Cluster | SHARED | 5 |
-    | EKS Nodes | SHARED | 5 |
-    | PostgreSQL | DEDICATED | 1 |
-    | Valkey | SHARED | 5 |
-    | DocumentDB | SHARED | 5 |
-    | RabbitMQ | SHARED | 5 |
-    | ALB | SHARED | 5 |
-    | NAT Gateway | ALWAYS SHARED | ALL |
+    [... same as before ...]
 
-    Database Configuration (Production):
-    - Multi-AZ: YES
-    - Read Replicas: Based on TPS (see Step 5)
-
-    Database Configuration (Homolog):
-    - All databases: Single-AZ, No replicas (testing only)
+    Database Configuration:
+    [... same as before ...]
 
     Billing Model:
-    - Billing Unit: transaction
-    - Price per Unit: R$ 0.10
-    - Expected Volume: 1,000,000/month
+    [... same as before ...]
 
     Calculate and return:
-    1. Discovered Services (from Helm charts)
-    2. Compute Resources (from actual configs - calculate EKS nodes needed)
-    3. Service Component Dependencies (which services use which components + Access Manager as ALWAYS SHARED)
-    4. HOMOLOG Environment Costs (Ohio, Single-AZ, 1 replica)
-    5. PRODUCTION Environment Costs (São Paulo, Multi-AZ, 3 replicas)
-    6. Environment Comparison Summary (side-by-side)
-    7. Cost by Category (compute, database, cache, network, storage)
-    8. Shared vs Dedicated Summary
-    9. TPS Capacity Analysis
-    10. Profitability Analysis (using combined homolog + production costs)
-    11. Summary with recommendations
+    [... same 11 sections as before ...]
 ```
+
+---
+
+#### Pattern 2: Custom TPS Dispatch
+
+**If user specified custom TPS, agent calculates infrastructure:**
+
+```
+Task tool:
+  subagent_type: "ring:infrastructure-cost-estimator"
+  model: "opus"
+  prompt: |
+    Calculate infrastructure costs for CUSTOM TPS.
+
+    TPS: 750 (custom)
+
+    Calculate required infrastructure:
+    - Required auth replicas = (750 ÷ 670) × 1.25 = ~2 replicas
+    - Required transaction replicas = (750 ÷ 815) × 1.25 = ~2 replicas
+    - Calculate EKS node sizing from total CPU/memory requirements
+    - Use appropriate database instance sizes for traffic level
+
+    Products Selected:
+    - Access Manager: ALWAYS INCLUDED (shared platform)
+    - Core one Core: YES
+    - Reporter: NO
+
+    Infrastructure:
+    - App Repo: /workspace/midaz
+    - Helm Charts Source: LerianStudio/helm
+    - Total Customers on Platform: 5
+
+    Environments to Calculate: [Homolog, Production]
+
+    Actual Resource Configurations (from Helm charts):
+    [INSERT VALUES FROM charts/plugin-access-manager/values.yaml]
+    [INSERT VALUES FROM charts/midaz/values.yaml]
+
+    Component Sharing Model:
+    [... same as before ...]
+
+    Database Configuration:
+    [... same as before ...]
+
+    Billing Model:
+    [... same as before ...]
+
+    Calculate and return:
+    [... same 11 sections as before ...]
+```
+
+**Note:** Custom TPS dispatch is backwards compatible with v5.0.
 
 ---
 
@@ -579,11 +704,20 @@ Products Selected:
 - Reporter: YES (full platform)
 ```
 
-### Steps 2-7: Skill Gathers Data
+### Step 2: Basic Info
 ```
 Repo: /workspace/midaz
-TPS: 100
 Total Customers: 5
+```
+
+### Step 2a: Sizing Method
+```
+User selected: "Pre-configured Tier"
+Tier: STARTER (50-100 TPS)
+```
+
+### Steps 3-7: Skill Gathers Data
+```
 Environments: Both (Homolog + Production)
 
 Component Sharing:
@@ -657,15 +791,29 @@ Agent receives: Products selected + actual Helm values + all collected data
 ## Checklist Before Dispatch
 
 ```
+STEP 1 - PRODUCTS:
 [ ] Products selected (Core one Core, Reporter)?
 [ ] Access Manager included (ALWAYS)?
+
+STEP 2 - BASIC INFO:
 [ ] Repo path collected?
-[ ] TPS collected?
 [ ] Total customers collected?
+
+STEP 2a - SIZING (NEW in v6.0):
+[ ] Sizing method selected (Tier OR Custom TPS)?
+  If Tier:
+    [ ] Tier selected (Starter/Growth/Business/Enterprise)?
+  If Custom TPS:
+    [ ] TPS value collected?
+
+STEP 3 - ENVIRONMENTS:
 [ ] Environments selected (Homolog, Production, Both)?
+
+STEP 4 - HELM CHARTS:
 [ ] LerianStudio/helm values read for selected products?
 
-DATABASE COMPONENTS (CRITICAL - verify BOTH):
+STEP 5 - COMPONENT SHARING (CRITICAL):
+DATABASE COMPONENTS - verify BOTH:
 [ ] PostgreSQL sharing model collected? (SHARED or DEDICATED)
 [ ] DocumentDB sharing model collected? (SHARED or DEDICATED)
 
@@ -675,7 +823,9 @@ OTHER COMPONENTS:
 [ ] Valkey sharing model collected?
 [ ] RabbitMQ sharing model collected?
 
-BILLING:
+STEP 6-7 - DATABASE & BILLING:
+[ ] Database HA configuration collected?
+[ ] Backup policy collected?
 [ ] Billing unit collected?
 [ ] Price per unit collected?
 [ ] Expected volume collected?
