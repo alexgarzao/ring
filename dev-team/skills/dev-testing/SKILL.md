@@ -195,14 +195,13 @@ testing_state = {
 
 ## Step 3: Dispatch QA Analyst Agent
 
-<dispatch_required agent="ring:qa-analyst" model="opus">
+<dispatch_required agent="ring:qa-analyst">
 Write unit tests for all acceptance criteria with 85%+ coverage.
 </dispatch_required>
 
 ```yaml
 Task:
   subagent_type: "ring:qa-analyst"
-  model: "opus"
   description: "Write unit tests for [unit_id]"
   prompt: |
     ⛔ WRITE UNIT TESTS for All Acceptance Criteria
@@ -329,7 +328,6 @@ if verdict == "FAIL" or coverage_actual < coverage_threshold:
 ```yaml
 Task:
   subagent_type: "[implementation_agent from Gate 0]"  # e.g., "ring:backend-engineer-golang"
-  model: "opus"
   description: "Add tests to meet coverage threshold for [unit_id]"
   prompt: |
     ⛔ COVERAGE BELOW THRESHOLD - Add More Tests

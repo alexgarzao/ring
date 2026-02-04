@@ -132,7 +132,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 ## 7 Developer Specialists
 
-<dispatch_required agent="{specialist}" model="opus">
+<dispatch_required agent="{specialist}">
 Use Task tool to dispatch appropriate specialist based on technology need.
 </dispatch_required>
 

@@ -343,7 +343,7 @@ Agents to analyze (if executed, not null):
 
 ### 3.2 Dispatch Prompt Quality Reviewer
 
-<dispatch_required agent="prompt-quality-reviewer" model="opus">
+<dispatch_required agent="prompt-quality-reviewer">
 Analyze prompt quality for all agents executed in this task.
 </dispatch_required>
 

@@ -231,7 +231,7 @@ Extract project-specific conventions for agent context.
 
 ### ⛔ MANDATORY: Use Task Tool with ring:codebase-explorer
 
-<dispatch_required agent="ring:codebase-explorer" model="opus">
+<dispatch_required agent="ring:codebase-explorer">
 Generate a comprehensive codebase report describing WHAT EXISTS.
 
 Include:
@@ -288,7 +288,7 @@ Any of these = IMMEDIATE SKILL FAILURE.
 ### REQUIRED Action for Step 3
 
 ```
-✅ Task(subagent_type="ring:codebase-explorer", model="opus", ...)
+✅ Task(subagent_type="ring:codebase-explorer", ...)
 ```
 
 **After Task completes, save with Write tool:**
@@ -339,7 +339,7 @@ Check 2: Was codebase-report.md created by ring:codebase-explorer?
 
 ### For Go projects:
 
-<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -347,7 +347,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 1:
   subagent_type: "ring:backend-engineer-golang"
-  model: "opus"
   description: "Go standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -375,7 +374,6 @@ Task tool 1:
 
 Task tool 2:
   subagent_type: "ring:qa-analyst"
-  model: "opus"
   description: "Test coverage analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -385,7 +383,6 @@ Task tool 2:
 
 Task tool 3:
   subagent_type: "ring:devops-engineer"
-  model: "opus"
   description: "DevOps analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -397,7 +394,6 @@ Task tool 3:
 
 Task tool 4:
   subagent_type: "ring:sre"
-  model: "opus"
   description: "Observability analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -408,7 +404,7 @@ Task tool 4:
 
 ### For TypeScript Backend projects:
 
-<parallel_dispatch agents="ring:backend-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="ring:backend-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -416,7 +412,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 1:
   subagent_type: "ring:backend-engineer-typescript"
-  model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -445,7 +440,7 @@ Task tool 1:
 
 ### For Frontend projects (React/Next.js):
 
-<parallel_dispatch agents="ring:frontend-engineer, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="ring:frontend-engineer, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -453,7 +448,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 5:
   subagent_type: "ring:frontend-engineer"
-  model: "opus"
   description: "Frontend standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -473,7 +467,7 @@ Task tool 5:
 
 ### For BFF (Backend-for-Frontend) projects:
 
-<parallel_dispatch agents="frontend-bff-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="frontend-bff-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -481,7 +475,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 6:
   subagent_type: "ring:frontend-bff-engineer-typescript"
-  model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
