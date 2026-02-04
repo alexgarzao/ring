@@ -108,25 +108,7 @@ If any checkbox is no → Fix before committing.
 
 **⛔ If section counts in skills don't match this table → Update the skill.**
 
-### 6. Agent Model Requirements (always RESPECT)
-When invoking agents via Task tool:
-- **MUST** check agent's `model:` field in YAML frontmatter
-- **MUST** pass matching `model` parameter to Task tool
-- Agents with `model: opus` → **MUST** call with `model="opus"`
-- Agents with `model: sonnet` → **MUST** call with `model="sonnet"`
-- **never** omit model parameter for specialized agents
-- **never** let system auto-select model for agents with model requirements
-
-**Examples:**
-- ✅ `Task(subagent_type="ring:code-reviewer", model="opus", ...)`
-- ✅ `Task(subagent_type="ring:backend-engineer-golang", model="opus", ...)`
-- ❌ `Task(subagent_type="ring:code-reviewer", ...)` - Missing model parameter
-- ❌ `Task(subagent_type="ring:code-reviewer", model="sonnet", ...)` - Wrong model
-
-**Agent Self-Verification:**
-All agents with `model:` field in frontmatter MUST include "Model Requirements" section that verifies they are running on the correct model and STOPS if not.
-
-### 8. CLAUDE.md ↔ AGENTS.md Synchronization (AUTOMATIC via Symlink)
+### 6. CLAUDE.md ↔ AGENTS.md Synchronization (AUTOMATIC via Symlink)
 
 **⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md - DO not BREAK:**
 - `CLAUDE.md` - Primary project instructions (source of truth)
@@ -187,7 +169,7 @@ When content is reused across multiple skills within a plugin:
 | Section | Content |
 |---------|---------|
 | [CRITICAL RULES](#-critical-rules-read-first) | Non-negotiable requirements |
-| [CLAUDE.md ↔ AGENTS.md Sync](#8-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync |
+| [CLAUDE.md ↔ AGENTS.md Sync](#6-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync |
 | [Content Duplication Prevention](#7-content-duplication-prevention-always-check) | Canonical sources + reference pattern |
 | [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents) | Prevent AI from assuming/skipping |
 | [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory) | Selective emphasis for effective prompts |
@@ -406,7 +388,6 @@ CHECKLIST (all must be YES):
 [ ] Does agent use STRONG language (MUST, REQUIRED, CANNOT)?
 [ ] Does agent define when to STOP and report?
 [ ] Does agent define non-negotiable requirements?
-[ ] If agent has model: field in frontmatter, does it have Model Requirements section?
 
 If any checkbox is no → Agent is INCOMPLETE. Add missing sections.
 ```
