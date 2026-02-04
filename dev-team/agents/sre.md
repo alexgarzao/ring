@@ -357,32 +357,23 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 6 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+See standards-coverage-table.md for sections to check (see coverage table for applicability - some sections apply conditionally for Go/TS).
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT validate without checking ALL sections |
-| **No cherry-picking** | All 6 SRE sections MUST be validated |
+| **All sections apply** | You CANNOT validate without checking all sections |
+| **No cherry-picking** | All SRE sections MUST be validated |
 | **Coverage table is authoritative** | See `ring:sre → sre.md` section for full list |
-
-**The 6 sections you MUST validate:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1 | Observability | ✅ |
-| 2 | Logging | ✅ |
-| 3 | Tracing | ✅ |
-| 4 | OpenTelemetry with lib-commons (Go) | ✅ (if Go project) |
-| 5 | Structured Logging with lib-common-js (TS) | ✅ (if TS project) |
-| 6 | Health Checks | ✅ |
 
 **Anti-Rationalization:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Health checks are trivial" | All sections must be validated. | **Validate all 6 sections** |
+| "Health checks are trivial" | All sections must be validated. | **Validate all sections** |
 | "Logging looks fine" | "Looks fine" ≠ validated. Show evidence. | **Provide file:line evidence** |
 | "Project doesn't need tracing" | Mark N/A with evidence. Don't skip. | **Check all, mark N/A with evidence** |
 

@@ -195,33 +195,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 13 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+All sections are mandatory—see standards-coverage-table.md for the authoritative list.
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT generate code that violates ANY section |
-| **No cherry-picking** | All 13 Frontend sections MUST be followed |
+| **All sections apply** | You CANNOT generate code that violates any section |
+| **No cherry-picking** | All Frontend sections MUST be followed |
 | **Coverage table is authoritative** | See `ring:frontend-engineer → frontend.md` section for full list |
-
-**The 13 sections you MUST follow:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1 | Framework | ✅ |
-| 2 | Libraries & Tools | ✅ |
-| 3 | State Management Patterns | ✅ |
-| 4 | Form Patterns | ✅ |
-| 5 | Styling Standards | ✅ |
-| 6 | Typography Standards | ✅ |
-| 7 | Animation Standards | ✅ |
-| 8 | Component Patterns | ✅ |
-| 9 | Accessibility | ✅ |
-| 10 | Performance | ✅ |
-| 11 | Directory Structure | ✅ |
-| 12 | Forbidden Patterns | ✅ |
-| 13 | Standards Compliance Categories | ✅ |
 
 **Anti-Rationalization:**
 
@@ -229,7 +213,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 |-----------------|----------------|-----------------|
 | "Accessibility is optional" | WCAG 2.1 AA is MANDATORY. | **Follow all a11y standards** |
 | "I know React best practices" | Ring standards > general knowledge. | **Follow Ring patterns** |
-| "Performance can wait" | Performance is part of implementation. | **Check all 13 sections** |
+| "Performance can wait" | Performance is part of implementation. | **Check all sections** |
 
 ---
 

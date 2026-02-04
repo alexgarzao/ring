@@ -876,23 +876,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 13 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+See standards-coverage-table.md for the authoritative list of sections to check.
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT produce designs that violate ANY section |
-| **No cherry-picking** | All 13 Frontend sections MUST inform your designs |
+| **All sections apply** | You CANNOT produce designs that violate any section |
+| **No cherry-picking** | All Frontend sections MUST inform your designs |
 | **Coverage table is authoritative** | See `ring:frontend-designer → frontend.md` section for full list |
-
-**The 13 sections you MUST follow:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1-7 | Framework, Libraries, State, Forms, Styling, Typography, Animation | ✅ |
-| 8-10 | Component Patterns, Accessibility, Performance | ✅ |
-| 11-13 | Directory Structure, Forbidden Patterns, Standards Categories | ✅ |
 
 **Anti-Rationalization:**
 

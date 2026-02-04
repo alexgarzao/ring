@@ -18,15 +18,18 @@ This module covers API naming conventions, pagination patterns, and OpenAPI docu
 
 ## JSON Naming Convention (camelCase) (MANDATORY)
 
-**HARD GATE:** All JSON field names in API requests and responses MUST use `camelCase`.
+**HARD GATE:** All JSON data fields in API requests and responses MUST use `camelCase`.
+
+**EXCEPTION:** Pagination metadata fields use `snake_case` (see "Query Parameters vs Body Fields" below).
 
 ### Rule
 
-| Layer | Format | Example |
-|-------|--------|---------|
-| **JSON (API)** | camelCase | `userId`, `createdAt`, `accountBalance` |
-| **Go structs** | PascalCase | `UserID`, `CreatedAt`, `AccountBalance` |
-| **Database** | snake_case | `user_id`, `created_at`, `account_balance` |
+| Layer | Format | Example | Exception |
+|-------|--------|---------|-----------|
+| **JSON data fields** | camelCase | `userId`, `createdAt`, `accountBalance` | - |
+| **Pagination metadata** | snake_case | `limit`, `next_cursor`, `prev_cursor` | Core one standard |
+| **Go structs** | PascalCase | `UserID`, `CreatedAt`, `AccountBalance` | - |
+| **Database** | snake_case | `user_id`, `created_at`, `account_balance` | - |
 
 ### Implementation Pattern
 

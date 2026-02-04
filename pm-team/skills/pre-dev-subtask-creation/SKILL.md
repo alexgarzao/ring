@@ -81,7 +81,7 @@ Placeholders: "...", "TODO", "implement here"; vague instructions: "update the s
 
 ### ⛔ HARD GATE: lib-commons in Go Code Examples
 
-**For Go projects: Code examples MUST use lib-commons instead of custom utilities.**
+MUST: For Go projects, code examples use lib-commons instead of custom utilities.
 
 See **[shared-patterns/code-example-standards.md](../shared-patterns/code-example-standards.md)** for:
 - Complete list of what lib-commons provides
@@ -89,7 +89,7 @@ See **[shared-patterns/code-example-standards.md](../shared-patterns/code-exampl
 - Correct import patterns with `lib` prefix aliases
 - Anti-rationalization table
 
-**Quick Reference - NEVER Create Custom:**
+**Quick Reference - DO NOT Create Custom:**
 
 | Category | Use lib-commons |
 |----------|-----------------|
@@ -99,7 +99,7 @@ See **[shared-patterns/code-example-standards.md](../shared-patterns/code-exampl
 | Telemetry | `libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"` |
 | PostgreSQL | `libPostgres "github.com/LerianStudio/lib-commons/v2/commons/postgres"` |
 
-**If you write a custom logger, config loader, or HTTP helper in a subtask → DELETE IT and use lib-commons.**
+MUST NOT: Create custom logger, config loader, or HTTP helper in subtasks—use lib-commons.
 
 ## Rationalization Table
 
@@ -118,7 +118,7 @@ See **[shared-patterns/code-example-standards.md](../shared-patterns/code-exampl
 | "Steps are too small, feels like hand-holding" | Small steps = verifiable progress. Stay small. |
 | "Custom logger is simpler for this example" | Examples teach patterns. Teach lib-commons. |
 | "lib-commons import is too verbose" | Verbosity shows correct dependencies. Keep it. |
-| "I'll use lib-commons in the real code" | Subtask IS real code. Use lib-commons now. |
+| "I'll use lib-commons in the real code" | Subtask is real code. Use lib-commons now. |
 
 ## Red Flags - STOP
 
@@ -133,10 +133,10 @@ If you catch yourself writing any of these in a subtask, **STOP and rewrite**:
 - Steps longer than 5 minutes
 - Context dependencies: "you need to understand X"
 - No TDD cycle in implementation steps
-- **Custom logger creation** (Go): `func NewLogger()` → Use `libZap.NewLogger()`
-- **Custom config loader** (Go): `os.Getenv()` scattered → Use `libCommons.SetConfigFromEnvVars()`
-- **Custom HTTP helpers** (Go): `func JSONResponse()` → Use `libHTTP` utilities
-- **Files in `utils/`, `helpers/`, `pkg/common/`** (Go) → Check if lib-commons has it first
+- Use `libZap.NewLogger()` instead of custom `func NewLogger()` (Go)
+- Use `libCommons.SetConfigFromEnvVars()` instead of scattered `os.Getenv()` (Go)
+- Use `libHTTP` utilities instead of custom `func JSONResponse()` (Go)
+- Check lib-commons first before creating files in `utils/`, `helpers/`, `pkg/common/` (Go)
 
 **When you catch yourself**: Expand the subtask until it's completely self-contained.
 

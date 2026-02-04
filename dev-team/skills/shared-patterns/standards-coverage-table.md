@@ -251,7 +251,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | **HARD GATE:** No duplicate utils/helpers - use lib-commons |
 | 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock |
 | 4 | Configuration | core.md | `#configuration` | Environment variable handling |
-| 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake_case-mandatory` | Table and column naming |
+| 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake-case-mandatory` | Table and column naming |
 | 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
 | 7 | License Headers | core.md | `#license-headers-conditional` | **CONDITIONAL** - If LICENSE file exists |
 | 8 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration |

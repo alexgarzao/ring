@@ -594,7 +594,7 @@ linters-settings:
 | **No semantic meaning** | `if attempts > 3` - What does 3 mean? Max retries? |
 | **Maintenance nightmare** | Same number in 10 places → change requires finding all |
 | **No IDE support** | Cannot "Find References" on a literal `3` |
-| **Silent bugs** | Two unrelated `3`s changed together by accident |
+| **Silent bugs** | Two unrelated `3`s changed together accidentally |
 
 #### Allowed Exceptions
 

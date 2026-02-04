@@ -289,35 +289,20 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 27 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT generate code that violates ANY section |
+| **All sections apply** | You CANNOT generate code that violates any section |
 | **No cherry-picking** | Even if you only WebFetch core.md, you MUST follow quality.md rules |
-| **Coverage table is authoritative** | See `ring:backend-engineer-golang → golang/` section for full list |
+| **Coverage table is authoritative** | See standards-coverage-table.md for the authoritative list of sections to check |
 | **Ignorance is not an excuse** | "I didn't load that module" = INVALID justification |
-
-**The 27 sections you MUST follow:**
-
-| # | Section | File | MANDATORY |
-|---|---------|------|-----------|
-| 1-6 | Version, lib-commons, Frameworks, Config, Migrations, License | core.md | ✅ |
-| 7-8 | Observability, Bootstrap | bootstrap.md | ✅ |
-| 9-10 | Access Manager, License Manager | security.md | ✅ (if applicable) |
-| 11-15 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal, Functions | domain.md | ✅ |
-| 16-17 | Pagination, OpenAPI (Swaggo) | api-patterns.md | ✅ |
-| 18-20 | Testing, Logging, Linting (incl. Magic Numbers) | quality.md | ✅ |
-| 21-23 | Architecture, Directory Structure, Concurrency | architecture.md | ✅ |
-| 24 | RabbitMQ Worker | messaging.md | ✅ (if applicable) |
-| 25 | Always-Valid Domain Model | domain-modeling.md | ✅ |
-| 26-27 | Idempotency, Multi-Tenant | idempotency.md, multi-tenant.md | ✅ (if applicable) |
 
 **Anti-Rationalization:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I only loaded core.md" | Loading ≠ Compliance. All standards apply. | **Follow all 27 sections** |
+| "I only loaded core.md" | Loading ≠ Compliance. All standards apply. | **Follow all sections** |
 | "Magic numbers is in quality.md, I loaded domain.md" | Standards are not modular for compliance. | **No magic numbers ever** |
 | "This section doesn't apply to my task" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
 | "I'll follow the important ones" | All sections are important. No hierarchy. | **Follow all sections equally** |
@@ -326,7 +311,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ### WebFetch Strategy (Efficiency, NOT Compliance Scope)
 
-**WebFetch by task type for efficiency - but you are STILL bound to ALL 27 sections.**
+**WebFetch by task type for efficiency - but you are STILL bound to all sections in standards-coverage-table.md.**
 
 | Setting | Value |
 |---------|-------|
