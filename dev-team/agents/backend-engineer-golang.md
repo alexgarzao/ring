@@ -299,7 +299,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | Testing | quality.md | `golang/quality.md` |
 | Idempotency | idempotency.md, domain.md | `golang/idempotency.md`, `golang/domain.md` |
 | Multi-tenant | multi-tenant.md, bootstrap.md | `golang/multi-tenant.md`, `golang/bootstrap.md` |
-| Full compliance check | ALL modules | See index.md for complete list |
+| Full compliance check | all modules | See index.md for complete list |
 
 **Base URL:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/`
 
@@ -855,7 +855,7 @@ The Standards Compliance section exists to:
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md" for:**
-- Complete list of sections to check (21 sections)
+- Complete list of sections to check (23 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format

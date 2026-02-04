@@ -6,6 +6,17 @@ This module covers the foundational requirements for all Go projects.
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Version](#version) | Go version requirements |
+| 2 | [Core Dependency: lib-commons](#core-dependency-lib-commons-mandatory) | Required lib-commons v2 integration |
+| 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions and library choices |
+| 4 | [Configuration](#configuration) | Environment variable handling |
+
+---
+
 ## Version
 
 - **Minimum**: Go 1.24

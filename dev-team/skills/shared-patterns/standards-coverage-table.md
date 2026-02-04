@@ -281,7 +281,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | Testing | quality.md |
 | Idempotency | idempotency.md + domain.md |
 | Multi-tenant | multi-tenant.md + bootstrap.md |
-| Full compliance check | ALL modules |
+| Full compliance check | all modules |
 
 ---
 

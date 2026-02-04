@@ -6,6 +6,16 @@ This module covers RabbitMQ worker patterns for async message processing.
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing with RabbitMQ |
+
+**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, Exponential Backoff with Jitter, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist.
+
+---
+
 ## RabbitMQ Worker Pattern
 
 When the application includes async processing (API+Worker or Worker Only), follow this pattern.

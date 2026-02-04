@@ -119,7 +119,7 @@ Before submitting Go code, verify:
 - [ ] **No direct Fiber responses** (`c.JSON()`, `c.Send()`) - use `libHTTP.OK()`, `libHTTP.WithError()`
 - [ ] All errors are checked and wrapped with context
 - [ ] Error codes use service prefix (e.g., PLT-0001)
-- [ ] No `panic()` outside of `main.go` or `InitServers`
+- [ ] No `panic()` outside `main.go` or `InitServers`
 - [ ] Tests use table-driven pattern
 - [ ] Database models have ToEntity/FromEntity methods
 - [ ] Interfaces defined where they're used

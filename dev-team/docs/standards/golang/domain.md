@@ -6,6 +6,17 @@ This module covers data transformation, error handling, and function design.
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Data Transformation: ToEntity/FromEntity](#data-transformation-toentityfromentity-mandatory) | Database model to domain entity conversion |
+| 2 | [Error Codes Convention](#error-codes-convention-mandatory) | Service-prefixed error codes |
+| 3 | [Error Handling](#error-handling) | Error wrapping and checking rules |
+| 4 | [Function Design](#function-design-mandatory) | Single responsibility principle |
+
+---
+
 ## Data Transformation: ToEntity/FromEntity (MANDATORY)
 
 All database models **MUST** implement transformation methods to/from domain entities.

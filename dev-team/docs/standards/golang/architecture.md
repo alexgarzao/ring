@@ -6,6 +6,16 @@ This module covers architecture patterns, directory structure, and concurrency.
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Architecture Patterns](#architecture-patterns) | Hexagonal architecture and interface-based abstractions |
+| 2 | [Directory Structure](#directory-structure) | Lerian pattern directory layout |
+| 3 | [Concurrency Patterns](#concurrency-patterns) | Goroutines with context and channel patterns |
+
+---
+
 ## Architecture Patterns
 
 ### Hexagonal Architecture (Ports & Adapters)

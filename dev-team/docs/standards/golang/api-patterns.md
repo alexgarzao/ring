@@ -6,6 +6,14 @@ This module covers pagination patterns for list endpoints.
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Pagination Patterns](#pagination-patterns) | Cursor-based and page-based pagination implementation |
+
+---
+
 ## Pagination Patterns
 
 Lerian Studio supports multiple pagination patterns. This section provides **implementation details** for each pattern.
