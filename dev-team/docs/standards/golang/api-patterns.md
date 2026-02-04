@@ -59,7 +59,7 @@ type UserResponse struct {
 
 ### Query Parameters vs Body Fields
 
-**HARD GATE:** Query parameters and body fields use DIFFERENT conventions.
+**HARD GATE:** Query parameters and body fields use different conventions.
 
 | Location | Convention | Examples |
 |----------|------------|----------|

@@ -531,7 +531,7 @@ golangci-lint run --fix ./...
 
 #### Agent Execution (MANDATORY)
 
-**HARD GATE:** After generating or modifying Go files, agents MUST run `goimports` to ensure correct import ordering.
+**HARD GATE:** MUST run `goimports` after generating or modifying Go files to ensure correct import ordering.
 
 ```bash
 # Agent MUST execute after code generation:

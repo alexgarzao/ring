@@ -1094,12 +1094,12 @@ $ golangci-lint run ./...
 
 #### Anti-Rationalization
 
-| Excuse | Response |
-|--------|----------|
-| "CI will catch it" | **Run linter now. CI is too late.** |
-| "It's just a warning" | **Fix ALL issues. No exceptions.** |
-| "I'll fix in next PR" | **Fix before completing this task.** |
-| "Linter is too strict" | **Follow standards. Fix violations.** |
+| Rationalization | Why it's wrong | Required Action |
+|-----------------|----------------|-----------------|
+| "CI will catch it" | CI is too late. Linter issues block development flow. | **Run linter now** |
+| "It's just a warning" | Warnings become errors. Standards apply to all. | **Fix all issues** |
+| "I'll fix in next PR" | Next PR = never. Fix while context is fresh. | **Fix before completing this task** |
+| "Linter is too strict" | Standards exist for consistency and quality. | **Follow standards. Fix violations** |
 
 **⛔ If golangci-lint shows ANY violations → Task is INCOMPLETE. Fix before proceeding to "Files Changed" section.**
 
@@ -1122,22 +1122,22 @@ Implemented user authentication service with JWT token generation and validation
 ## Post-Implementation Validation
 
 ### Import Ordering
-```bash
+\```bash
 $ goimports -w ./internal
 # (no output - success)
-```
+\```
 
 ### Linter Execution
-```bash
+\```bash
 $ golangci-lint run ./internal
 # (no issues found)
-```
+\```
 
 ### Full Project Lint
-```bash
+\```bash
 $ golangci-lint run ./...
 # (no issues found)
-```
+\```
 
 ✅ All validation checks passed
 
