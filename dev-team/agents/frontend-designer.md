@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-04
 changelog:
-  - 1.3.0: Added HARD GATE requiring ALL 13 sections from standards-coverage-table.md - no cherry-picking allowed
+  - 1.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.2.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.2.2: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
   - 1.2.1: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
@@ -876,6 +876,8 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
+<cannot_skip>
+
 ### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
 **You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
@@ -890,10 +892,12 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 
 **Anti-Rationalization:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "I'm designing, not coding" | Design specs must be implementable per standards. | **Follow all standards** |
 | "Accessibility is an implementation detail" | A11y affects design decisions. | **WCAG 2.1 AA in designs** |
+
+</cannot_skip>
 
 ---
 

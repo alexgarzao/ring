@@ -271,6 +271,8 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
+<cannot_skip>
+
 ### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
 **You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
@@ -285,10 +287,12 @@ Refer to standards-coverage-table.md for required sections and enforcement detai
 
 **Anti-Rationalization:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "BFF is simpler, fewer rules" | Same TypeScript standards apply. | **Follow all sections** |
 | "Type safety is implicit" | Explicit verification required. | **Check all type safety rules** |
+
+</cannot_skip>
 
 ---
 

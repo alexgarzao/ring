@@ -185,7 +185,7 @@ grep -rn 'json:"next_cursor\|json:"prev_cursor' --include="*.go" ./internal
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Database uses snake_case" | DB ≠ API body. Each layer has its convention. | **Use camelCase in JSON body tags** |
 | "It's more readable" | Consistency > personal preference. | **Follow the standard** |
@@ -705,7 +705,7 @@ make generate-docs && git diff --exit-code api/
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Editing YAML is faster" | Edits are lost on next generation. Causes drift. | **Edit annotations, run generate-docs** |
 | "The annotation is verbose" | Verbosity ensures complete documentation. | **Write complete annotations** |

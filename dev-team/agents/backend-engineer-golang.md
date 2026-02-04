@@ -287,7 +287,9 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+<cannot_skip>
+
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
 **You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
 
@@ -300,12 +302,14 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **Anti-Rationalization:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "I only loaded core.md" | Loading ≠ Compliance. All standards apply. | **Follow all sections** |
 | "Magic numbers is in quality.md, I loaded domain.md" | Standards are not modular for compliance. | **No magic numbers ever** |
 | "This section doesn't apply to my task" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
 | "I'll follow the important ones" | All sections are important. No hierarchy. | **Follow all sections equally** |
+
+</cannot_skip>
 
 ---
 
