@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-04
 changelog:
-  - 1.4.0: Added HARD GATE requiring ALL testing sections from standards-coverage-table.md - no cherry-picking allowed
+  - 1.4.0: Added HARD GATE requiring all testing sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.3.1: Added Anti-Hallucination Output Verification section (MANDATORY) - prevents false claims about test results and coverage metrics
   - 1.3.0: Added Test Quality Gate (mandatory in Gate 3), Edge Case Requirements, prevents ring:dev-refactor duplicate findings
@@ -325,7 +325,7 @@ Invoke this agent when the task involves:
 
 ### Anti-Rationalization for Quality Gate
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Coverage is 90%, quality gate is overkill" | 90% coverage with bad tests = 0% real coverage | **Run all quality checks** |
 | "Edge cases are unlikely in production" | Edge cases cause 80% of production incidents | **Add edge case tests** |
@@ -342,7 +342,7 @@ Invoke this agent when the task involves:
 
 **If you catch yourself thinking any of these, STOP:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Coverage is close enough" | Close ≠ passing. Binary: meets threshold or not. | **Write tests until 85%+** |
 | "All AC tested, low coverage OK" | Both required. AC coverage and % threshold. | **Write edge case tests** |
@@ -427,7 +427,7 @@ Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—
 
 | Rule | Enforcement |
 |------|-------------|
-| **All testing sections apply** | You CANNOT validate without checking all test-related sections |
+| **all testing sections apply** | You CANNOT validate without checking all test-related sections |
 | **No cherry-picking** | All testing standards MUST be validated |
 | **Coverage table is authoritative** | See `ring:qa-analyst` section for full list |
 
@@ -444,7 +444,7 @@ Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—
 
 **Anti-Rationalization:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Happy path tests are enough" | Edge cases are MANDATORY. | **Verify ≥2 edge cases per AC** |
 | "TDD evidence is overhead" | RED phase proof is REQUIRED. | **Check for failure output** |
@@ -913,7 +913,7 @@ The following testing standards MUST be followed when designing and implementing
 
 #### TDD Anti-Rationalization
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Test passes on first run" | Passing test ≠ TDD. Test MUST fail first. | **Rewrite test to fail first** |
 | "Skip RED, go straight to GREEN" | RED proves test validity. | **Execute RED phase first** |
