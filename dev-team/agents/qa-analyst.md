@@ -417,34 +417,21 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Testing Standards Are MANDATORY (NO EXCEPTIONS)
+<cannot_skip>
 
-**You are bound to ALL testing sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+### ⛔ HARD GATE: All Testing Standards Are MANDATORY (NO EXCEPTIONS)
+
+**You are bound to all testing sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—do not create inline comparison-category tables.
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL testing sections apply** | You CANNOT validate without checking ALL test-related sections |
+| **All testing sections apply** | You CANNOT validate without checking all test-related sections |
 | **No cherry-picking** | All testing standards MUST be validated |
 | **Coverage table is authoritative** | See `ring:qa-analyst` section for full list |
 
-**For Go Projects - Sections you MUST check:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1 | Testing Patterns | ✅ |
-| 2 | Edge Case Coverage | ✅ |
-| 3 | Test Naming Convention | ✅ |
-| 4 | Linting | ✅ |
-
-**For TypeScript Projects - Sections you MUST check:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1 | Testing Patterns | ✅ |
-| 2 | Edge Case Coverage | ✅ |
-| 3 | Type Safety Rules | ✅ |
-
-**Test Quality Gate Checks (ALL REQUIRED):**
+**Test Quality Gate Checks (all REQUIRED):**
 
 | # | Check | Detection |
 |---|-------|-----------|
@@ -461,7 +448,9 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 |-----------------|----------------|-----------------|
 | "Happy path tests are enough" | Edge cases are MANDATORY. | **Verify ≥2 edge cases per AC** |
 | "TDD evidence is overhead" | RED phase proof is REQUIRED. | **Check for failure output** |
-| "Test coverage is high enough" | Coverage ≠ quality. Check all gates. | **Verify all 6 quality gates** |
+| "Test coverage is high enough" | Coverage ≠ quality. Check all gates. | **Verify all quality gates** |
+
+</cannot_skip>
 
 ---
 

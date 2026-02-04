@@ -6,9 +6,9 @@ This file defines MANDATORY rules for code examples in pre-dev documents (PRDs, 
 
 ## ⛔ HARD GATE: lib-commons First (Go Projects)
 
-**When generating Go code examples, you MUST use lib-commons instead of creating custom utilities.**
+MUST use lib-commons instead of creating custom utilities when generating Go code examples.
 
-### What lib-commons Already Provides (DO NOT RECREATE)
+### What lib-commons Already Provides (do not recreate)
 
 | Category | lib-commons Package | What It Provides |
 |----------|---------------------|------------------|
@@ -35,7 +35,7 @@ Before writing any Go code example in subtasks:
 [ ] 5. Does this example need telemetry?      → Use libOpentelemetry
 [ ] 6. Does this example need server setup?   → Use libServer
 
-If YES to any → Use lib-commons. DO NOT create custom helpers.
+If yes to any → Use lib-commons. Do not create custom helpers.
 ```
 
 ---
@@ -176,9 +176,9 @@ provider := libOpentelemetry.NewCore threeProvider(/* config */)
 
 ## Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
-| "Custom helper is simpler for this example" | Examples teach patterns. Teach the RIGHT pattern (lib-commons). | **Use lib-commons in example** |
+| "Custom helper is simpler for this example" | Examples teach patterns. Teach the right pattern (lib-commons). | **Use lib-commons** in example |
 | "lib-commons import is too verbose" | Verbosity is intentional for clarity. Don't hide dependencies. | **Show full lib-commons imports** |
 | "I don't know if lib-commons has this" | Check before writing. See table above. | **Verify lib-commons first** |
 | "The example is just pseudocode" | Pseudocode with custom helpers trains wrong patterns. | **Use real lib-commons calls** |

@@ -701,7 +701,7 @@ down:
 
 ### Database Migration Commands (MANDATORY)
 
-All projects with database MUST include these migration commands using `golang-migrate`:
+MUST: All projects with a database include these migration commands using `golang-migrate`:
 
 ```makefile
 #-------------------------------------------------------

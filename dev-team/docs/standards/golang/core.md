@@ -14,7 +14,7 @@ This module covers the foundational requirements for all Go projects.
 | 2 | [Core Dependency: lib-commons](#core-dependency-lib-commons-mandatory) | Required lib-commons v2 integration |
 | 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions and library choices |
 | 4 | [Configuration](#configuration) | Environment variable handling |
-| 5 | [Database Naming Convention (snake_case)](#database-naming-convention-snake_case-mandatory) | Table and column naming |
+| 5 | [Database Naming Convention (snake_case)](#database-naming-convention-snake-case-mandatory) | Table and column naming |
 | 6 | [Database Migrations](#database-migrations-mandatory) | golang-migrate requirement |
 | 7 | [License Headers](#license-headers-conditional) | Copyright headers in source files |
 

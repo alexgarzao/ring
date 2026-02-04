@@ -37,7 +37,7 @@ output_schema:
     - name: "Post-Implementation Validation"
       pattern: "^## Post-Implementation Validation"
       required: true
-      description: "MANDATORY: ESLint + Prettier execution results"
+      description: "MANDATORY: ESLint + Prettier + TypeScript type-check (tsc) execution results"
     - name: "Files Changed"
       pattern: "^## Files Changed"
       required: true
@@ -375,39 +375,22 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 14 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+See standards-coverage-table.md for the authoritative list of sections to check.
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT generate code that violates ANY section |
-| **No cherry-picking** | All 14 TypeScript sections MUST be followed |
+| **All sections apply** | You CANNOT generate code that violates any section |
+| **No cherry-picking** | All TypeScript sections MUST be followed |
 | **Coverage table is authoritative** | See `ring:backend-engineer-typescript → typescript.md` section for full list |
 | **Ignorance is not an excuse** | "I didn't read that section" = INVALID justification |
-
-**The 14 sections you MUST follow:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1 | Version | ✅ |
-| 2 | Strict Configuration | ✅ |
-| 3 | Frameworks & Libraries | ✅ |
-| 4 | Type Safety | ✅ |
-| 5 | Zod Validation Patterns | ✅ |
-| 6 | Dependency Injection | ✅ |
-| 7 | AsyncLocalStorage for Context | ✅ |
-| 8 | Testing | ✅ |
-| 9 | Error Handling | ✅ |
-| 10 | Function Design | ✅ |
-| 11 | Naming Conventions | ✅ |
-| 12 | Directory Structure | ✅ |
-| 13 | RabbitMQ Worker Pattern | ✅ (if applicable) |
-| 14 | Always-Valid Domain Model | ✅ |
 
 **Anti-Rationalization:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I only need a few sections" | All sections apply. No hierarchy. | **Follow all 14 sections** |
+| "I only need a few sections" | All sections apply. No hierarchy. | **Follow all sections** |
 | "Type Safety is obvious" | Obvious ≠ verified. Check standards. | **Follow exact patterns from standards** |
 | "This section doesn't apply" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
 

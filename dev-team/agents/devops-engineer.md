@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-04
 changelog:
-  - 1.4.0: Added HARD GATE requiring ALL 7 sections from standards-coverage-table.md - no cherry-picking allowed
+  - 1.4.0: Added HARD GATE requiring all 7 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.3.2: Added Pre-Submission Self-Check section (MANDATORY) to prevent AI slop in infrastructure code
   - 1.3.1: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
@@ -257,28 +257,18 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 7 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+See standards-coverage-table.md for the authoritative list of sections to check.
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT generate infra that violates ANY section |
-| **No cherry-picking** | All 7 DevOps sections MUST be followed |
+| **All sections apply** | You CANNOT generate infra that violates any section |
+| **No cherry-picking** | All DevOps sections MUST be followed |
 | **Coverage table is authoritative** | See `ring:devops-engineer → devops.md` section for full list |
 | **Subsections are INCLUDED** | Containers = Dockerfile + Docker Compose (both REQUIRED) |
-
-**The 7 sections you MUST follow:**
-
-| # | Section | Subsections | MANDATORY |
-|---|---------|-------------|-----------|
-| 1 | Cloud Provider | Provider table | ✅ |
-| 2 | Infrastructure as Code | Terraform structure, state, modules | ✅ |
-| 3 | Containers | **Dockerfile + Docker Compose** | ✅ |
-| 4 | Helm | Chart structure, values.yaml | ✅ |
-| 5 | Observability | Logging (JSON), Tracing (OTEL) | ✅ |
-| 6 | Security | Secrets, network policies | ✅ |
-| 7 | Makefile Standards | Required commands | ✅ |
 
 **Anti-Rationalization:**
 

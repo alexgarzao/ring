@@ -35,7 +35,7 @@ output_schema:
     - name: "Post-Implementation Validation"
       pattern: "^## Post-Implementation Validation"
       required: true
-      description: "MANDATORY: ESLint + Prettier execution results"
+      description: "MANDATORY: ESLint + Prettier + TypeScript type-check (tsc) execution results"
     - name: "Files Changed"
       pattern: "^## Files Changed"
       required: true
@@ -271,30 +271,23 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to ALL 14 sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+
+Refer to standards-coverage-table.md for required sections and enforcement details.
 
 | Rule | Enforcement |
 |------|-------------|
-| **ALL sections apply** | You CANNOT generate code that violates ANY section |
-| **No cherry-picking** | All 14 TypeScript sections MUST be followed |
-| **Coverage table is authoritative** | See `frontend-bff-engineer-typescript → typescript.md` section |
-
-**The 14 sections you MUST follow:**
-
-| # | Section | MANDATORY |
-|---|---------|-----------|
-| 1-3 | Version, Strict Config, Frameworks | ✅ |
-| 4-7 | Type Safety, Zod, DI, AsyncLocalStorage | ✅ |
-| 8-11 | Testing, Error Handling, Functions, Naming | ✅ |
-| 12-14 | Directory Structure, RabbitMQ, Domain Model | ✅ |
+| **All sections apply** | You CANNOT generate code that violates any section |
+| **No cherry-picking** | All TypeScript sections MUST be followed |
+| **Coverage table is authoritative** | See `frontend-bff-engineer-typescript → typescript.md` section for full list |
 
 **Anti-Rationalization:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "BFF is simpler, fewer rules" | Same TypeScript standards apply. | **Follow all 14 sections** |
+| "BFF is simpler, fewer rules" | Same TypeScript standards apply. | **Follow all sections** |
 | "Type safety is implicit" | Explicit verification required. | **Check all type safety rules** |
 
 ---
