@@ -76,7 +76,7 @@ ring/                                  # Monorepo root
 |--------|-------------|------------|
 | **ring-default** | Core skills library | 25 skills, 7 agents, 12 commands |
 | **ring-dev-team** | Developer agents | 9 skills, 9 agents, 5 commands |
-| **ring-finops-team** | FinOps regulatory compliance | 6 skills, 2 agents |
+| **ring-finops-team** | FinOps regulatory compliance | 7 skills, 3 agents |
 | **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
 | **ring-pmo-team** | PMO portfolio management specialists | 8 skills, 5 agents, 3 commands |
 | **ring-tw-team** | Technical writing specialists | 7 skills, 3 agents, 3 commands |
@@ -688,18 +688,18 @@ Ring's architecture is designed for:
 | Active Plugins | 6 | All plugin directories |
 | Skills (ring-default) | 25 | `default/skills/` |
 | Skills (ring-dev-team) | 9 | `dev-team/skills/` |
-| Skills (ring-finops-team) | 6 | `finops-team/skills/` |
+| Skills (ring-finops-team) | 7 | `finops-team/skills/` |
 | Skills (ring-pm-team) | 10 | `pm-team/skills/` |
 | Skills (ring-pmo-team) | 8 | `pmo-team/skills/` |
 | Skills (ring-tw-team) | 7 | `tw-team/skills/` |
-| **Total Skills** | **65** | **All plugins** |
+| **Total Skills** | **66** | **All plugins** |
 | Agents (ring-default) | 7 | `default/agents/` |
 | Agents (ring-dev-team) | 9 | `dev-team/agents/` |
-| Agents (ring-finops-team) | 2 | `finops-team/agents/` |
+| Agents (ring-finops-team) | 3 | `finops-team/agents/` |
 | Agents (ring-pm-team) | 3 | `pm-team/agents/` |
 | Agents (ring-pmo-team) | 5 | `pmo-team/agents/` |
 | Agents (ring-tw-team) | 3 | `tw-team/agents/` |
-| **Total Agents** | **29** | **All plugins** |
+| **Total Agents** | **30** | **All plugins** |
 | Commands (ring-default) | 12 | `default/commands/` |
 | Commands (ring-dev-team) | 5 | `dev-team/commands/` |
 | Commands (ring-pm-team) | 2 | `pm-team/commands/` |

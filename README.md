@@ -15,8 +15,8 @@ Without Ring, AI assistants often:
 
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 65 specialized skills** (25 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing + 8 PMO)
-- **29 specialized agents** - 7 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing + 5 PMO
+- **Providing 66 specialized skills** (25 core + 9 dev-team + 10 product planning + 7 FinOps regulatory + 7 technical writing + 8 PMO)
+- **30 specialized agents** - 7 review/planning + 9 developer + 3 product research + 3 FinOps regulatory + 3 technical writing + 5 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -62,6 +62,7 @@ Ring solves this by:
 **FinOps Agents (ring-finops-team plugin):**
 - `finops-analyzer` - Financial operations analysis
 - `finops-automation` - FinOps template creation and automation
+- `infrastructure-cost-estimator` - Infrastructure cost estimation and analysis
 
 **PMO Agents (ring-pmo-team plugin):**
 - `portfolio-manager` - Portfolio-level planning and multi-project coordination
@@ -236,7 +237,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 65 Skills (Across 6 Plugins)
+## 📚 All 66 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 25 skills)
 
@@ -313,7 +314,7 @@ No "should work" → Only "does work" with proof
 - `documentation-review` - Quality checklist and review process
 - `api-field-descriptions` - Field description patterns by type
 
-### FinOps & Regulatory Skills (ring-finops-team plugin - 6 skills)
+### FinOps & Regulatory Skills (ring-finops-team plugin - 7 skills)
 
 **Regulatory Templates (6):**
 - `using-finops-team` - Introduction to FinOps team workflow
@@ -322,6 +323,9 @@ No "should work" → Only "does work" with proof
 - `regulatory-templates-gate1` - Compliance analysis and field mapping
 - `regulatory-templates-gate2` - Field mapping validation
 - `regulatory-templates-gate3` - Template file generation
+
+**Cost Estimation (1):**
+- `infrastructure-cost-estimation` - Infrastructure cost estimation and analysis
 
 ### PMO Skills (ring-pmo-team plugin - 8 skills)
 
@@ -481,8 +485,8 @@ ring/                                  # Monorepo root
 │   └── skills/                      # 10 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── finops-team/                     # FinOps Regulatory plugin (ring-finops-team)
-│   ├── skills/                      # 6 regulatory skills
-│   ├── agents/                      # 2 FinOps agents
+│   ├── skills/                      # 7 regulatory skills
+│   ├── agents/                      # 3 FinOps agents
 │   ├── docs/regulatory/             # Regulatory templates and dictionaries
 │   └── hooks/                       # SessionStart hook
 ├── pmo-team/                         # PMO Specialists plugin (ring-pmo-team)
