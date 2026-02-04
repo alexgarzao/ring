@@ -373,7 +373,7 @@ See standards-coverage-table.md for sections to check (see coverage table for ap
 
 **Anti-Rationalization:**
 
-| Rationalization | Why it's wrong | Required Action |
+| Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Health checks are trivial" | All sections must be validated. | **Validate all sections** |
 | "Logging looks fine" | "Looks fine" ≠ validated. Show evidence. | **Provide file:line evidence** |

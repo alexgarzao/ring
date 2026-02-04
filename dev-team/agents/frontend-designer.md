@@ -880,14 +880,14 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+MUST: Be bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
 
 See standards-coverage-table.md for the authoritative list of sections to check.
 
 | Rule | Enforcement |
 |------|-------------|
-| **All sections apply** | You CANNOT produce designs that violate any section |
-| **No cherry-picking** | All Frontend sections MUST inform your designs |
+| **all sections apply** | CANNOT produce designs that violate any section |
+| **No cherry-picking** | MUST inform designs with all Frontend sections |
 | **Coverage table is authoritative** | See `ring:frontend-designer → frontend.md` section for full list |
 
 **Anti-Rationalization:**

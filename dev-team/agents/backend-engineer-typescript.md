@@ -383,7 +383,7 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 
 | Rule | Enforcement |
 |------|-------------|
-| **All sections apply** | You CANNOT generate code that violates any section |
+| **all sections apply** | You CANNOT generate code that violates any section |
 | **No cherry-picking** | All TypeScript sections MUST be followed |
 | **Coverage table is authoritative** | See `ring:backend-engineer-typescript → typescript.md` section for full list |
 | **Ignorance is not an excuse** | "I didn't read that section" = INVALID justification |
