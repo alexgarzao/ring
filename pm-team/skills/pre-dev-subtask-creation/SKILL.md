@@ -79,6 +79,8 @@ Exact file paths (absolute or from root), complete file contents (if creating), 
 ### ❌ NEVER Include in Subtasks
 Placeholders: "...", "TODO", "implement here"; vague instructions: "update the service", "add validation"; assumptions: "assuming setup is done"; context requirements: "you need to understand X first"; incomplete code: "add the rest yourself"; missing imports: "import necessary packages"; undefined success: "make sure it works"; no verification: "test it manually"
 
+<cannot_skip>
+
 ### ⛔ HARD GATE: lib-commons in Go Code Examples
 
 MUST: For Go projects, code examples use lib-commons instead of custom utilities.
@@ -100,6 +102,8 @@ See **[shared-patterns/code-example-standards.md](../shared-patterns/code-exampl
 | PostgreSQL | `libPostgres "github.com/LerianStudio/lib-commons/v2/commons/postgres"` |
 
 MUST NOT: Create custom logger, config loader, or HTTP helper in subtasks—use lib-commons.
+
+</cannot_skip>
 
 ## Rationalization Table
 

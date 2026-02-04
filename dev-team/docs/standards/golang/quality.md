@@ -213,7 +213,7 @@ func BenchmarkNew(b *testing.B) {
 
 #### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "The old pattern still works" | Deprecated. Use modern Go patterns. | **Use b.Loop()** |
 | "I'm used to the for loop" | Familiarity ≠ best practice. Adapt. | **Use b.Loop()** |
@@ -317,7 +317,7 @@ grep -rn "os\.Setenv" --include="*_test.go" ./internal ./pkg ./cmd
 
 #### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "I use defer os.Unsetenv" | Defer doesn't run if test panics. t.Setenv always cleans up. | **Use t.Setenv** |
 | "Tests run sequentially anyway" | Today yes, tomorrow parallel. Write tests correctly from start. | **Use t.Setenv** |
@@ -574,7 +574,7 @@ linters-settings:
 
 #### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "goimports will fix it" | CI may not have --fix. Code review sees the mess. | **Fix before commit** |
 | "Import order doesn't affect runtime" | Readability and maintainability matter. | **Follow the standard** |
@@ -763,7 +763,7 @@ Agent: "Linter shows magic number, but I'll leave it."
 
 #### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "CI will catch it" | CI is too late. Fix during development. | **Run linter now** |
 | "It's just a warning" | Warnings become errors. Fix them. | **Fix all issues** |

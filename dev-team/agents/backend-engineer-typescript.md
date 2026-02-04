@@ -373,7 +373,9 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-### ⛔ HARD GATE: ALL Standards Are MANDATORY (NO EXCEPTIONS)
+<cannot_skip>
+
+### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
 **You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
 
@@ -388,11 +390,13 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 
 **Anti-Rationalization:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "I only need a few sections" | All sections apply. No hierarchy. | **Follow all sections** |
 | "Type Safety is obvious" | Obvious ≠ verified. Check standards. | **Follow exact patterns from standards** |
 | "This section doesn't apply" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
+
+</cannot_skip>
 
 ---
 

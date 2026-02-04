@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-04
 changelog:
-  - 1.5.0: Added HARD GATE requiring ALL 6 sections from standards-coverage-table.md - no cherry-picking allowed
+  - 1.5.0: Added HARD GATE requiring all 6 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.4.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.4.1: Added Anti-Hallucination Command Output Requirement section to ensure all validation claims are backed by actual command output
   - 1.4.0: Added explicit Scope Boundaries section to prevent metrics/Grafana/Prometheus validation (OUT OF SCOPE)
@@ -357,6 +357,8 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
+<cannot_skip>
+
 ### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
 
 **You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
@@ -365,17 +367,19 @@ See standards-coverage-table.md for sections to check (see coverage table for ap
 
 | Rule | Enforcement |
 |------|-------------|
-| **All sections apply** | You CANNOT validate without checking all sections |
+| **all sections apply** | You CANNOT validate without checking all sections |
 | **No cherry-picking** | All SRE sections MUST be validated |
 | **Coverage table is authoritative** | See `ring:sre → sre.md` section for full list |
 
 **Anti-Rationalization:**
 
-| Rationalization | Why It's WRONG | Required Action |
+| Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
 | "Health checks are trivial" | All sections must be validated. | **Validate all sections** |
 | "Logging looks fine" | "Looks fine" ≠ validated. Show evidence. | **Provide file:line evidence** |
 | "Project doesn't need tracing" | Mark N/A with evidence. Don't skip. | **Check all, mark N/A with evidence** |
+
+</cannot_skip>
 
 ---
 
