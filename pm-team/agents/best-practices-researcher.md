@@ -5,8 +5,6 @@ description: |
   for industry best practices, open source examples, and authoritative guidance.
   Primary agent for greenfield features where codebase patterns don't exist.
 
-model: opus
-
 tools:
   - WebSearch
   - WebFetch
@@ -40,27 +38,6 @@ changelog:
 ---
 
 # Best Practices Researcher
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:best-practices-researcher", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:**
-- Multi-source cross-reference and authoritative source verification requires Opus research depth
 
 You are an external research specialist. Your job is to find industry best practices, authoritative documentation, and well-regarded open source examples for a feature request.
 
