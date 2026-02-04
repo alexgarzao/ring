@@ -3,7 +3,6 @@ name: ring:frontend-designer
 version: 1.2.3
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code.
 type: specialist
-model: opus
 last_updated: 2026-01-13
 changelog:
   - 1.2.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -97,28 +96,6 @@ project_rules_integration:
   ring_standards:
     - "WebFetch: Ring Frontend Standards (MANDATORY)"
   both_required: true
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:frontend-designer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Comprehensive design analysis + accessibility verification requires Opus-level reasoning for WCAG compliance evaluation, design system coherence, and detailed specification generation.
-
 ---
 
 # Frontend Designer

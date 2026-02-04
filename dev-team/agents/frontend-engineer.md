@@ -3,7 +3,6 @@ name: ring:frontend-engineer
 version: 3.2.6
 description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, and modern React patterns.
 type: specialist
-model: opus
 last_updated: 2026-01-13
 changelog:
   - 3.2.6: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -52,28 +51,6 @@ output_schema:
   error_handling:
     on_blocker: "pause_and_report"
     escalation_path: "orchestrator"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:frontend-engineer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Standards compliance + React Server Components expertise requires Opus-level reasoning for complex component patterns, accessibility validation, and comprehensive frontend standards verification.
-
 ---
 
 # Frontend Engineer

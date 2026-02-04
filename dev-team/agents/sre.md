@@ -3,7 +3,6 @@ name: ring:sre
 version: 1.4.2
 description: Senior Site Reliability Engineer specialized in VALIDATING observability implementations for high-availability financial systems. Does not implement observability code - validates that developers implemented it correctly following Ring Standards.
 type: specialist
-model: opus
 last_updated: 2026-01-13
 changelog:
   - 1.4.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -64,28 +63,6 @@ input_schema:
     - name: "existing_observability"
       type: "file_content"
       description: "Current observability implementation to validate"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:sre", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Observability validation + OpenTelemetry expertise requires Opus-level reasoning for structured logging validation, distributed tracing analysis, and comprehensive SRE standards verification.
-
 ---
 
 # SRE (Site Reliability Engineer)

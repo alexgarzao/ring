@@ -3,7 +3,6 @@ name: ring:devops-engineer
 version: 1.3.3
 description: Senior DevOps Engineer specialized in cloud infrastructure for financial services. Handles containerization, IaC, and local development environments.
 type: specialist
-model: opus
 last_updated: 2026-01-13
 changelog:
   - 1.3.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -84,28 +83,6 @@ input_schema:
     - name: "environment_requirements"
       type: "list[string]"
       description: "New env vars, dependencies, services needed"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:devops-engineer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Infrastructure compliance verification + IaC analysis requires Opus-level reasoning for security pattern recognition, multi-stage build optimization, and comprehensive DevOps standards validation.
-
 ---
 
 # DevOps Engineer

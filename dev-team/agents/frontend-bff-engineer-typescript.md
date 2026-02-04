@@ -3,7 +3,6 @@ name: frontend-bff-engineer-typescript
 version: 2.1.8
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption.
 type: specialist
-model: opus
 last_updated: 2026-01-13
 changelog:
   - 2.1.8: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -83,28 +82,6 @@ input_schema:
     - name: "acceptance_criteria"
       type: "list[string]"
       description: "List of acceptance criteria to satisfy"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:frontend-bff-engineer-typescript", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Clean Architecture + DDD pattern implementation requires Opus-level reasoning for architectural boundary enforcement, dependency injection patterns, and comprehensive standards validation.
-
 ---
 
 # BFF Engineer (TypeScript Specialist)
