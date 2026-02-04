@@ -13,7 +13,8 @@ This module covers data transformation, error handling, and function design.
 | 1 | [Data Transformation: ToEntity/FromEntity](#data-transformation-toentityfromentity-mandatory) | Database model to domain entity conversion |
 | 2 | [Error Codes Convention](#error-codes-convention-mandatory) | Service-prefixed error codes |
 | 3 | [Error Handling](#error-handling) | Error wrapping and checking rules |
-| 4 | [Function Design](#function-design-mandatory) | Single responsibility principle |
+| 4 | [Exit/Fatal Location Rules](#exitfatal-location-rules-mandatory) | Where exit/fatal/panic is allowed |
+| 5 | [Function Design](#function-design-mandatory) | Single responsibility principle |
 
 ---
 
@@ -148,7 +149,138 @@ func ValidateBusinessError(err *BusinessError, entityType string, args ...any) e
 
 ## Error Handling
 
-### Rules
+### Sentinel Errors (MANDATORY)
+
+**HARD GATE:** All domain/business errors MUST be defined as sentinel errors (package-level variables). Creating errors inline with `errors.New()` or `fmt.Errorf()` for known error conditions is FORBIDDEN.
+
+#### Why Sentinel Errors Are MANDATORY
+
+| Benefit | Explanation |
+|---------|-------------|
+| **Comparability** | Callers can use `errors.Is(err, ErrNotFound)` for precise handling |
+| **Documentation** | All possible errors are visible in one place |
+| **Type safety** | IDE autocomplete, refactoring support |
+| **Testing** | Tests can assert exact error types |
+| **API contracts** | Errors are part of the public API |
+
+#### Correct Pattern (REQUIRED)
+
+```go
+// pkg/errors/errors.go - Define all sentinel errors
+package errors
+
+import "errors"
+
+// Domain errors - sentinel values
+var (
+    ErrNotFound          = errors.New("resource not found")
+    ErrAlreadyExists     = errors.New("resource already exists")
+    ErrInvalidInput      = errors.New("invalid input")
+    ErrUnauthorized      = errors.New("unauthorized")
+    ErrForbidden         = errors.New("forbidden")
+    ErrInsufficientFunds = errors.New("insufficient funds")
+    ErrExpired           = errors.New("resource expired")
+)
+
+// Service-specific errors
+var (
+    ErrUserNotFound      = errors.New("user not found")
+    ErrUserAlreadyExists = errors.New("user already exists")
+    ErrInvalidEmail      = errors.New("invalid email format")
+    ErrEmailTaken        = errors.New("email already taken")
+)
+```
+
+```go
+// internal/service/user.go - Use sentinel errors
+package service
+
+import (
+    "errors"
+    "fmt"
+
+    pkgErrors "github.com/your-org/your-service/pkg/errors"
+)
+
+func (s *UserService) GetUser(ctx context.Context, id string) (*User, error) {
+    user, err := s.repo.FindByID(ctx, id)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, pkgErrors.ErrUserNotFound  // ✅ Return sentinel
+        }
+        return nil, fmt.Errorf("failed to get user: %w", err)  // ✅ Wrap unknown errors
+    }
+    return user, nil
+}
+```
+
+```go
+// Caller can check specific errors
+user, err := userService.GetUser(ctx, id)
+if err != nil {
+    if errors.Is(err, pkgErrors.ErrUserNotFound) {
+        return c.Status(404).JSON(fiber.Map{"error": "user not found"})
+    }
+    return c.Status(500).JSON(fiber.Map{"error": "internal error"})
+}
+```
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Inline error creation for known conditions
+func (s *UserService) GetUser(ctx context.Context, id string) (*User, error) {
+    user, err := s.repo.FindByID(ctx, id)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, errors.New("user not found")  // WRONG: cannot compare with errors.Is
+        }
+        return nil, err
+    }
+    return user, nil
+}
+
+// ❌ FORBIDDEN: fmt.Errorf for known error types
+func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) (*User, error) {
+    existing, _ := s.repo.FindByEmail(ctx, input.Email)
+    if existing != nil {
+        return nil, fmt.Errorf("email %s already taken", input.Email)  // WRONG: not a sentinel
+    }
+    // ...
+}
+
+// ❌ FORBIDDEN: String comparison for errors
+if err.Error() == "user not found" {  // WRONG: brittle, breaks on message change
+    // handle
+}
+```
+
+#### When fmt.Errorf IS Allowed
+
+```go
+// ✅ ALLOWED: Wrapping errors with context (unknown/external errors)
+if err != nil {
+    return fmt.Errorf("failed to connect to database: %w", err)
+}
+
+// ✅ ALLOWED: Adding context to sentinel errors
+return fmt.Errorf("user %s: %w", userID, pkgErrors.ErrNotFound)
+
+// ✅ ALLOWED: Truly unexpected errors with dynamic context
+return fmt.Errorf("unexpected response from API: status=%d, body=%s", status, body)
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "The error message is descriptive enough" | Descriptive ≠ comparable. Callers cannot use `errors.Is()`. | **Define sentinel error** |
+| "No one needs to check this specific error" | You don't know future callers. Make errors checkable. | **Define sentinel error** |
+| "It's just a validation error" | Validation errors are domain errors. Define them. | **Define sentinel error** |
+| "I'm wrapping with context anyway" | Wrap sentinels: `fmt.Errorf("context: %w", ErrNotFound)` | **Define sentinel, then wrap** |
+| "Too many error variables" | Explicit > implicit. All errors documented in one place. | **Define all sentinels** |
+
+### Error Wrapping Rules
 
 ```go
 // always check errors
@@ -160,9 +292,6 @@ if err != nil {
 if err != nil {
     return fmt.Errorf("failed to create user %s: %w", userID, err)
 }
-
-// Use custom error types for domain errors
-var ErrUserNotFound = errors.New("user not found")
 
 // Check specific errors with errors.Is
 if errors.Is(err, ErrUserNotFound) {
@@ -181,6 +310,101 @@ result, _ := doSomething() // FORBIDDEN
 
 // never return nil error without checking
 return nil, nil // SUSPICIOUS - check if error is possible
+```
+
+---
+
+## Exit/Fatal Location Rules (MANDATORY)
+
+**HARD GATE:** Internal functions MUST return errors. They CANNOT terminate the program.
+
+### Where Exit/Fatal Is Allowed
+
+| Location | `log.Fatal` / `os.Exit` | `panic` | `return error` |
+|----------|-------------------------|---------|----------------|
+| `main()` | ✅ Acceptable | ✅ Last resort | N/A |
+| Bootstrap/init | ❌ FORBIDDEN | ⚠️ Only unrecoverable | ✅ Preferred |
+| Internal functions | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
+| Validation functions | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
+| Handlers/Services | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
+| Repository/Adapters | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
+
+### Why This Matters
+
+- `log.Fatal()` and `os.Exit()` terminate immediately without cleanup
+- Callers cannot handle the error or provide user feedback
+- Telemetry/tracing data is lost (no flush)
+- Graceful shutdown hooks don't run
+- Tests cannot capture the error condition
+
+### Anti-Patterns (FORBIDDEN)
+
+```go
+// ❌ FORBIDDEN: fatal inside validation function
+func validateJSON(data []byte) {
+    if !json.Valid(data) {
+        log.Fatal("invalid JSON")  // WRONG: kills the process
+    }
+}
+
+// ❌ FORBIDDEN: panic inside internal function
+func parseConfig(path string) Config {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        panic(err)  // WRONG: caller cannot recover
+    }
+    // ...
+}
+
+// ❌ FORBIDDEN: os.Exit inside service layer
+func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) {
+    if input.Email == "" {
+        os.Exit(1)  // WRONG: catastrophic for a validation error
+    }
+}
+```
+
+### Correct Patterns (REQUIRED)
+
+```go
+// ✅ CORRECT: validation returns error
+func validateJSON(data []byte) error {
+    if !json.Valid(data) {
+        return errors.New("invalid JSON format")
+    }
+    return nil
+}
+
+// ✅ CORRECT: internal function returns error
+func parseConfig(path string) (Config, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return Config{}, fmt.Errorf("failed to read config %s: %w", path, err)
+    }
+    // ...
+    return config, nil
+}
+
+// ✅ CORRECT: main() handles fatal conditions
+func main() {
+    config, err := parseConfig("config.yaml")
+    if err != nil {
+        log.Fatalf("Cannot start: %v", err)  // OK in main()
+    }
+    // ...
+}
+```
+
+### Detection Commands
+
+```bash
+# Find fatal/exit calls outside main.go
+grep -rn "log.Fatal\|os.Exit" --include="*.go" ./internal ./pkg
+
+# Find panic calls (review each - some may be acceptable)
+grep -rn "panic(" --include="*.go" ./internal ./pkg
+
+# Expected: Zero matches in internal/pkg directories
 ```
 
 ---
