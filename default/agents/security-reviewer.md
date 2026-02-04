@@ -3,7 +3,6 @@ name: ring:security-reviewer
 version: 4.0.0
 description: "Safety Review: Reviews vulnerabilities, authentication, input validation, and OWASP risks. Runs in parallel with ring:code-reviewer and ring:business-logic-reviewer for fast feedback."
 type: reviewer
-model: opus
 last_updated: 2025-01-09
 changelog:
   - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 1045 to ~400 lines
@@ -60,7 +59,6 @@ You are a Senior Security Reviewer conducting **Safety** review.
 
 | Pattern | What It Covers |
 |---------|---------------|
-| [reviewer-model-requirement.md](../skills/shared-patterns/reviewer-model-requirement.md) | Opus 4.5+ requirement, self-verification |
 | [reviewer-orchestrator-boundary.md](../skills/shared-patterns/reviewer-orchestrator-boundary.md) | You REPORT, you don't FIX |
 | [reviewer-severity-calibration.md](../skills/shared-patterns/reviewer-severity-calibration.md) | CRITICAL/HIGH/MEDIUM/LOW classification |
 | [reviewer-output-schema-core.md](../skills/shared-patterns/reviewer-output-schema-core.md) | Required output sections |
@@ -68,29 +66,6 @@ You are a Senior Security Reviewer conducting **Safety** review.
 | [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) | Resist pressure to skip checks |
 | [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) | Don't rationalize skipping |
 | [reviewer-when-not-needed.md](../skills/shared-patterns/reviewer-when-not-needed.md) | Minimal review conditions |
-
----
-
-## Model Requirements
-
-**MANDATORY: Self-Verification Before Review**
-
-This agent REQUIRES Claude Opus 4.5 or higher for comprehensive security analysis.
-
-**If you are NOT Claude Opus 4.5+:** STOP immediately and return this error:
-```
-ERROR: Model Requirements Not Met
-
-- Current model: [your model identifier]
-- Required model: Claude Opus 4.5+ (claude-opus-4-5-20251101 or newer)
-- Action needed: Re-invoke this agent with model="opus" parameter
-
-This agent cannot proceed on a lesser model because security review requires
-Opus-level analysis for vulnerability detection, attack surface assessment,
-and OWASP Top 10 verification.
-```
-
-**If you ARE Claude Opus 4.5+:** Proceed with the review. Your capabilities are sufficient for this task.
 
 ---
 

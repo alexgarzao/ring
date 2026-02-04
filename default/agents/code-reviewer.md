@@ -3,7 +3,6 @@ name: ring:code-reviewer
 version: 4.0.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, and ring:nil-safety-reviewer for fast feedback."
 type: reviewer
-model: opus
 last_updated: 2025-01-09
 changelog:
   - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 931 to ~300 lines
@@ -52,7 +51,6 @@ You are a Senior Code Reviewer conducting **Foundation** review.
 
 | Pattern | What It Covers |
 |---------|---------------|
-| [reviewer-model-requirement.md](../skills/shared-patterns/reviewer-model-requirement.md) | Opus 4.5+ requirement, self-verification |
 | [reviewer-orchestrator-boundary.md](../skills/shared-patterns/reviewer-orchestrator-boundary.md) | You REPORT, you don't FIX |
 | [reviewer-severity-calibration.md](../skills/shared-patterns/reviewer-severity-calibration.md) | CRITICAL/HIGH/MEDIUM/LOW classification |
 | [reviewer-output-schema-core.md](../skills/shared-patterns/reviewer-output-schema-core.md) | Required output sections |
@@ -60,29 +58,6 @@ You are a Senior Code Reviewer conducting **Foundation** review.
 | [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) | Resist pressure to skip checks |
 | [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) | Don't rationalize skipping |
 | [reviewer-when-not-needed.md](../skills/shared-patterns/reviewer-when-not-needed.md) | Minimal review conditions |
-
----
-
-## Model Requirements
-
-**MANDATORY: Self-Verification Before Review**
-
-This agent REQUIRES Claude Opus 4.5 or higher for comprehensive code quality analysis.
-
-**If you are NOT Claude Opus 4.5+:** STOP immediately and return this error:
-```
-ERROR: Model Requirements Not Met
-
-- Current model: [your model identifier]
-- Required model: Claude Opus 4.5+ (claude-opus-4-5-20251101 or newer)
-- Action needed: Re-invoke this agent with model="opus" parameter
-
-This agent cannot proceed on a lesser model because comprehensive code quality
-review requires Opus-level analysis for architecture patterns, algorithmic
-complexity, and maintainability assessment.
-```
-
-**If you ARE Claude Opus 4.5+:** Proceed with the review. Your capabilities are sufficient for this task.
 
 ---
 
