@@ -18,7 +18,7 @@ This file defines the specific standards for TypeScript (backend) development.
 | 3 | [Frameworks & Libraries](#frameworks--libraries) | Required packages |
 | 4 | [Type Safety](#type-safety) | Never use any, branded types |
 | 5 | [Zod Validation Patterns](#zod-validation-patterns) | Schema validation |
-| 6 | [Dependency Injection](#dependency-injection) | TSyringe patterns |
+| 6 | [Dependency Injection](#dependency-injection) | TSyringe/Inversify patterns |
 | 7 | [AsyncLocalStorage for Context](#asynclocalstorage-for-context) | Request context propagation |
 | 8 | [Testing](#testing) | Type-safe mocks, fixtures |
 | 9 | [Error Handling](#error-handling) | Custom error classes |
@@ -27,6 +27,12 @@ This file defines the specific standards for TypeScript (backend) development.
 | 12 | [Directory Structure](#directory-structure) | Project layout (Lerian pattern) |
 | 13 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing |
 | 14 | [Always-Valid Domain Model](#always-valid-domain-model-mandatory) | Constructor validation, invariant protection |
+| 15 | [BFF Architecture Pattern](#bff-architecture-pattern-mandatory) | Clean Architecture for Next.js API Routes |
+| 16 | [Three-Layer DTO Mapping](#three-layer-dto-mapping-mandatory) | HTTP ↔ Domain ↔ External DTOs |
+| 17 | [HttpService Lifecycle](#httpservice-lifecycle) | Request/response hooks for external APIs |
+| 18 | [API Routes Pattern](#api-routes-pattern-mandatory) | Next.js API Routes (NEVER Server Actions) |
+| 19 | [Exception Hierarchy](#exception-hierarchy) | Custom API exceptions with GlobalExceptionFilter |
+| 20 | [Cross-Cutting Decorators](#cross-cutting-decorators) | LogOperation and other decorators |
 
 **Meta-sections (not checked by agents):**
 - [Checklist](#checklist) - Self-verification before submitting code
@@ -1120,6 +1126,1024 @@ if (result.ok) {
 - [ ] Mutation through validated methods only
 - [ ] Reconstruct methods for database loading
 - [ ] No direct object instantiation outside factories
+
+---
+
+## BFF Architecture Pattern (MANDATORY)
+
+**HARD GATE:** All Next.js projects with dynamic data MUST use the BFF (Backend for Frontend) pattern via API Routes. Server Actions are FORBIDDEN.
+
+### Why BFF is Mandatory
+
+| Risk (Without BFF) | Impact |
+|--------------------|--------|
+| **Security** | API keys, tokens exposed in browser |
+| **CORS issues** | Cross-origin requests blocked or misconfigured |
+| **Type safety** | No server-side validation before client receives data |
+| **Error handling** | Inconsistent error formats across different backends |
+| **Performance** | No server-side caching, aggregation, or optimization |
+
+### Clean Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  src/core/                                                   │
+│  ├── domain/              # Business entities, interfaces   │
+│  │   ├── entities/        # Domain models                   │
+│  │   ├── repositories/    # Repository interfaces           │
+│  │   └── services/        # Domain service interfaces       │
+│  ├── application/         # Use cases, orchestration        │
+│  │   └── use-cases/       # Application logic               │
+│  └── infrastructure/      # External implementations        │
+│      ├── http/            # HTTP clients, external APIs     │
+│      ├── repositories/    # Repository implementations      │
+│      └── app.ts           # Application bootstrap           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Dual-Mode Architecture
+
+The BFF architecture supports two modes based on whether `@lerianstudio/sindarian-server` is available:
+
+| Mode | When to Use | Characteristics |
+|------|-------------|-----------------|
+| **With sindarian-server** | Project has `@lerianstudio/sindarian-server` dependency | Use decorators (@Controller, @Get, @injectable, @inject, @Module) |
+| **Without sindarian-server** | Standard Next.js project | Same architecture, manual DI container, no decorators |
+
+**IMPORTANT:** Both modes follow IDENTICAL architecture. The only difference is decorator usage.
+
+### Directory Structure
+
+```
+/src/core
+  /domain
+    /entities
+      organization.ts           # Domain entity
+    /repositories
+      organization-repository.ts # Repository interface
+  /application
+    /use-cases
+      /organization
+        get-organizations.use-case.ts
+        create-organization.use-case.ts
+  /infrastructure
+    /http
+      /services
+        midaz-http.service.ts    # External API client
+      /dtos
+        midaz-organization.dto.ts
+      /mappers
+        midaz-organization.mapper.ts
+    /repositories
+      organization.repository.ts # Implementation
+    /modules
+      organization.module.ts     # DI module (sindarian) or container setup
+    /controllers
+      organization.controller.ts
+    app.ts                       # Bootstrap
+```
+
+### With sindarian-server (Decorators)
+
+```typescript
+// src/core/infrastructure/controllers/organization.controller.ts
+import { Controller, Get, Post, Body, Query } from '@lerianstudio/sindarian-server';
+
+@Controller('/organizations')
+export class OrganizationController {
+    constructor(
+        @inject(GetOrganizationsUseCase) private getOrganizations: GetOrganizationsUseCase,
+        @inject(CreateOrganizationUseCase) private createOrganization: CreateOrganizationUseCase,
+    ) {}
+
+    @Get('/')
+    async list(@Query('limit') limit?: number) {
+        return this.getOrganizations.execute({ limit: limit ?? 10 });
+    }
+
+    @Post('/')
+    async create(@Body() body: CreateOrganizationDto) {
+        return this.createOrganization.execute(body);
+    }
+}
+
+// src/core/infrastructure/app.ts
+import { ServerFactory } from '@lerianstudio/sindarian-server';
+import { AppModule } from './modules/app.module';
+
+export const app = await ServerFactory.create(AppModule);
+
+// app/api/organizations/route.ts (Next.js API Route)
+import { app } from '@/core/infrastructure/app';
+
+export const GET = app.handler.bind(app);
+export const POST = app.handler.bind(app);
+```
+
+### Without sindarian-server (Manual DI)
+
+```typescript
+// src/core/infrastructure/controllers/organization.controller.ts
+export class OrganizationController {
+    constructor(
+        private getOrganizations: GetOrganizationsUseCase,
+        private createOrganization: CreateOrganizationUseCase,
+    ) {}
+
+    async list(limit: number = 10) {
+        return this.getOrganizations.execute({ limit });
+    }
+
+    async create(body: CreateOrganizationDto) {
+        return this.createOrganization.execute(body);
+    }
+}
+
+// src/core/infrastructure/container.ts
+import { Container } from 'inversify';
+
+const container = new Container();
+container.bind(OrganizationRepository).to(OrganizationRepositoryImpl);
+container.bind(GetOrganizationsUseCase).toSelf();
+container.bind(CreateOrganizationUseCase).toSelf();
+container.bind(OrganizationController).toSelf();
+
+export { container };
+
+// app/api/organizations/route.ts (Next.js API Route)
+import { NextRequest, NextResponse } from 'next/server';
+import { container } from '@/core/infrastructure/container';
+import { OrganizationController } from '@/core/infrastructure/controllers/organization.controller';
+
+export async function GET(request: NextRequest) {
+    const controller = container.get(OrganizationController);
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') ?? '10');
+
+    try {
+        const result = await controller.list(limit);
+        return NextResponse.json(result);
+    } catch (error) {
+        return handleError(error);
+    }
+}
+
+export async function POST(request: NextRequest) {
+    const controller = container.get(OrganizationController);
+    const body = await request.json();
+
+    try {
+        const result = await controller.create(body);
+        return NextResponse.json(result, { status: 201 });
+    } catch (error) {
+        return handleError(error);
+    }
+}
+```
+
+### Use Case Pattern
+
+```typescript
+// src/core/application/use-cases/organization/get-organizations.use-case.ts
+import { injectable, inject } from 'inversify';
+
+@injectable()
+export class GetOrganizationsUseCase {
+    constructor(
+        @inject(OrganizationRepository) private repository: OrganizationRepository,
+    ) {}
+
+    async execute(params: { limit: number }): Promise<Organization[]> {
+        return this.repository.findAll({ limit: params.limit });
+    }
+}
+```
+
+### Anti-Patterns (FORBIDDEN)
+
+| Pattern | Status | Why |
+|---------|--------|-----|
+| Server Actions | **FORBIDDEN** | No centralized error handling, no middleware support |
+| Direct API calls from client | **FORBIDDEN** | Security risk, no aggregation layer |
+| Business logic in API routes | **FORBIDDEN** | Must be in use cases |
+| Repository in controller | **FORBIDDEN** | Controller → Use Case → Repository |
+| Skipping use case for "simple" operations | **FORBIDDEN** | Consistency over convenience |
+
+---
+
+## Three-Layer DTO Mapping (MANDATORY)
+
+**HARD GATE:** All data transformations MUST use three-layer DTO mapping. Direct object passing between layers is FORBIDDEN.
+
+### The Three Layers
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  HTTP Layer (Controllers)                                     │
+│  └── HTTP DTOs (CreateOrganizationDto, OrganizationResponse) │
+├──────────────────────────────────────────────────────────────┤
+│  Domain Layer (Use Cases)                                     │
+│  └── Domain Entities (Organization)                           │
+├──────────────────────────────────────────────────────────────┤
+│  Infrastructure Layer (External Services)                     │
+│  └── External DTOs (MidazOrganizationDto)                    │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Mapper Interfaces
+
+```typescript
+// Domain ↔ HTTP Mapper
+interface EntityMapper<Entity, HttpDto, CreateDto> {
+    toEntity(dto: HttpDto): Entity;
+    toDto(entity: Entity): HttpDto;
+    fromCreateDto(dto: CreateDto): Partial<Entity>;
+}
+
+// Domain ↔ External Service Mapper
+interface ExternalMapper<Entity, ExternalDto> {
+    toDomain(external: ExternalDto): Entity;
+    toExternal(entity: Entity): ExternalDto;
+}
+```
+
+### Implementation Example
+
+```typescript
+// src/core/domain/entities/organization.ts
+export interface Organization {
+    id: string;
+    name: string;
+    status: OrganizationStatus;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// src/core/infrastructure/http/dtos/organization.dto.ts (HTTP Layer)
+export interface CreateOrganizationDto {
+    name: string;
+}
+
+export interface OrganizationResponseDto {
+    id: string;
+    name: string;
+    status: string;
+    created_at: string;  // snake_case for API response
+    updated_at: string;
+}
+
+// src/core/infrastructure/http/dtos/midaz-organization.dto.ts (External Service)
+export interface MidazOrganizationDto {
+    organization_id: string;
+    organization_name: string;
+    org_status: string;
+    created_timestamp: string;
+}
+
+// src/core/infrastructure/http/mappers/organization.mapper.ts
+export class OrganizationMapper implements EntityMapper<Organization, OrganizationResponseDto, CreateOrganizationDto> {
+    toEntity(dto: OrganizationResponseDto): Organization {
+        return {
+            id: dto.id,
+            name: dto.name,
+            status: dto.status as OrganizationStatus,
+            createdAt: new Date(dto.created_at),
+            updatedAt: new Date(dto.updated_at),
+        };
+    }
+
+    toDto(entity: Organization): OrganizationResponseDto {
+        return {
+            id: entity.id,
+            name: entity.name,
+            status: entity.status,
+            created_at: entity.createdAt.toISOString(),
+            updated_at: entity.updatedAt.toISOString(),
+        };
+    }
+
+    fromCreateDto(dto: CreateOrganizationDto): Partial<Organization> {
+        return {
+            name: dto.name,
+            status: 'active' as OrganizationStatus,
+        };
+    }
+}
+
+// src/core/infrastructure/http/mappers/midaz-organization.mapper.ts
+export class MidazOrganizationMapper implements ExternalMapper<Organization, MidazOrganizationDto> {
+    toDomain(external: MidazOrganizationDto): Organization {
+        return {
+            id: external.organization_id,
+            name: external.organization_name,
+            status: this.mapStatus(external.org_status),
+            createdAt: new Date(external.created_timestamp),
+            updatedAt: new Date(), // External doesn't provide this
+        };
+    }
+
+    toExternal(entity: Organization): MidazOrganizationDto {
+        return {
+            organization_id: entity.id,
+            organization_name: entity.name,
+            org_status: entity.status.toUpperCase(),
+            created_timestamp: entity.createdAt.toISOString(),
+        };
+    }
+
+    private mapStatus(externalStatus: string): OrganizationStatus {
+        const statusMap: Record<string, OrganizationStatus> = {
+            'ACTIVE': 'active',
+            'INACTIVE': 'inactive',
+            'SUSPENDED': 'suspended',
+        };
+        return statusMap[externalStatus] ?? 'inactive';
+    }
+}
+```
+
+### Data Flow
+
+```
+Client Request
+    │
+    ▼
+[HTTP DTO] ──────────────────────────────────────────────┐
+    │                                                     │
+    │ OrganizationMapper.fromCreateDto()                 │
+    ▼                                                     │
+[Domain Entity] ←─────────────────────────────────────────┤
+    │                                                     │
+    │ MidazOrganizationMapper.toExternal()               │
+    ▼                                                     │
+[External DTO] → External Service                        │
+    │                                                     │
+    │ MidazOrganizationMapper.toDomain()                 │
+    ▼                                                     │
+[Domain Entity] ──────────────────────────────────────────┤
+    │                                                     │
+    │ OrganizationMapper.toDto()                         │
+    ▼                                                     │
+[HTTP DTO] → Client Response                              │
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Same shape, no mapper needed" | Shapes evolve independently. Today same, tomorrow different. | **Create mapper now. Decouple layers.** |
+| "Too much boilerplate" | Boilerplate < debugging type mismatches in production. | **Write the mapper. It's documentation.** |
+| "External service uses same format" | External services change without notice. Mapper isolates impact. | **Always map. Never trust external shapes.** |
+| "Just pass-through for now" | Tech debt. Every pass-through becomes a bug later. | **Map from day one.** |
+
+---
+
+## HttpService Lifecycle
+
+The HttpService pattern provides hooks for request/response processing when calling external APIs.
+
+### Lifecycle Hooks
+
+```typescript
+// src/core/infrastructure/http/services/base-http.service.ts
+export abstract class BaseHttpService {
+    protected baseUrl: string;
+
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl;
+    }
+
+    // Hook 1: Create default headers and config
+    protected createDefaults(): RequestInit {
+        return {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+        };
+    }
+
+    // Hook 2: Modify request before sending
+    protected onBeforeFetch(url: string, init: RequestInit): RequestInit {
+        // Add auth token, request ID, etc.
+        return {
+            ...init,
+            headers: {
+                ...init.headers,
+                'X-Request-ID': crypto.randomUUID(),
+            },
+        };
+    }
+
+    // Hook 3: Process response after receiving
+    protected async onAfterFetch<T>(response: Response): Promise<T> {
+        if (!response.ok) {
+            throw await this.handleError(response);
+        }
+        return response.json();
+    }
+
+    // Hook 4: Handle errors
+    protected async catch(error: unknown): Promise<never> {
+        if (error instanceof ApiException) {
+            throw error;
+        }
+        throw new ApiException('External service error', 500, { cause: error });
+    }
+
+    // Main fetch method using hooks
+    protected async fetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+        const url = `${this.baseUrl}${path}`;
+        const defaults = this.createDefaults();
+        const merged = { ...defaults, ...init, headers: { ...defaults.headers, ...init.headers } };
+        const finalInit = this.onBeforeFetch(url, merged);
+
+        try {
+            const response = await fetch(url, finalInit);
+            return await this.onAfterFetch<T>(response);
+        } catch (error) {
+            return this.catch(error);
+        }
+    }
+}
+```
+
+### Implementation Example
+
+```typescript
+// src/core/infrastructure/http/services/midaz-http.service.ts
+import { injectable } from 'inversify';
+
+@injectable()
+export class MidazHttpService extends BaseHttpService {
+    constructor() {
+        super(process.env.MIDAZ_API_URL!);
+    }
+
+    protected createDefaults(): RequestInit {
+        return {
+            ...super.createDefaults(),
+            headers: {
+                ...super.createDefaults().headers,
+                'Authorization': `Bearer ${process.env.MIDAZ_API_TOKEN}`,
+            },
+        };
+    }
+
+    protected onBeforeFetch(url: string, init: RequestInit): RequestInit {
+        const modified = super.onBeforeFetch(url, init);
+        // Add Midaz-specific headers
+        return {
+            ...modified,
+            headers: {
+                ...modified.headers,
+                'X-Midaz-Client': 'bff-service',
+            },
+        };
+    }
+
+    protected async onAfterFetch<T>(response: Response): Promise<T> {
+        // Log response metrics
+        console.log(`[Midaz] ${response.status} - ${response.url}`);
+        return super.onAfterFetch<T>(response);
+    }
+
+    protected async catch(error: unknown): Promise<never> {
+        // Transform to Midaz-specific exception
+        if (error instanceof Response) {
+            const body = await error.json().catch(() => ({}));
+            throw new MidazApiException(body.message ?? 'Midaz API error', error.status, body);
+        }
+        return super.catch(error);
+    }
+
+    // Service-specific methods
+    async getOrganizations(limit: number): Promise<MidazOrganizationDto[]> {
+        return this.fetch<MidazOrganizationDto[]>(`/organizations?limit=${limit}`);
+    }
+
+    async createOrganization(data: CreateMidazOrganizationDto): Promise<MidazOrganizationDto> {
+        return this.fetch<MidazOrganizationDto>('/organizations', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+}
+```
+
+### Hook Execution Order
+
+```
+1. createDefaults()      → Base configuration
+2. onBeforeFetch()       → Request modification (auth, headers)
+3. fetch()               → Actual HTTP call
+4. onAfterFetch()        → Response processing (success path)
+   OR
+4. catch()               → Error handling (failure path)
+```
+
+---
+
+## API Routes Pattern (MANDATORY)
+
+**⛔ HARD GATE: Server Actions are FORBIDDEN. All dynamic data MUST flow through API Routes.**
+
+### Why Server Actions Are Forbidden
+
+| Server Actions Problem | Impact |
+|-----------------------|--------|
+| No centralized error handling | Each action handles errors differently |
+| No middleware support | Cannot add auth, logging, rate limiting |
+| No API versioning | Breaking changes affect all clients |
+| No OpenAPI/Swagger | Cannot generate API documentation |
+| Tight coupling | Client directly calls server functions |
+| No caching layer | Every call hits the server |
+
+### Required Pattern: API Routes
+
+```typescript
+// ✅ CORRECT: API Route with controller resolution
+// app/api/organizations/route.ts
+
+// With sindarian-server
+import { app } from '@/core/infrastructure/app';
+
+export const GET = app.handler.bind(app);
+export const POST = app.handler.bind(app);
+
+// Without sindarian-server
+import { NextRequest, NextResponse } from 'next/server';
+import { container } from '@/core/infrastructure/container';
+import { OrganizationController } from '@/core/infrastructure/controllers/organization.controller';
+import { GlobalExceptionFilter } from '@/core/infrastructure/filters/global-exception.filter';
+
+const exceptionFilter = new GlobalExceptionFilter();
+
+export async function GET(request: NextRequest) {
+    try {
+        const controller = container.get(OrganizationController);
+        const { searchParams } = new URL(request.url);
+        const limit = parseInt(searchParams.get('limit') ?? '10');
+
+        const result = await controller.list(limit);
+        return NextResponse.json(result);
+    } catch (error) {
+        return exceptionFilter.catch(error);
+    }
+}
+
+export async function POST(request: NextRequest) {
+    try {
+        const controller = container.get(OrganizationController);
+        const body = await request.json();
+
+        const result = await controller.create(body);
+        return NextResponse.json(result, { status: 201 });
+    } catch (error) {
+        return exceptionFilter.catch(error);
+    }
+}
+```
+
+```typescript
+// ❌ FORBIDDEN: Server Action
+// app/actions/organizations.ts
+'use server';
+
+export async function getOrganizations() {
+    // FORBIDDEN - This is a Server Action
+    const orgs = await db.organizations.findMany();
+    return orgs;
+}
+```
+
+### Dynamic Route Pattern
+
+```typescript
+// app/api/organizations/[id]/route.ts
+
+// With sindarian-server
+import { app } from '@/core/infrastructure/app';
+
+export const GET = app.handler.bind(app);
+export const PUT = app.handler.bind(app);
+export const DELETE = app.handler.bind(app);
+
+// Without sindarian-server
+export async function GET(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const controller = container.get(OrganizationController);
+        const result = await controller.getById(params.id);
+
+        if (!result) {
+            return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(result);
+    } catch (error) {
+        return exceptionFilter.catch(error);
+    }
+}
+```
+
+### Client-Side Consumption
+
+```typescript
+// hooks/use-organizations.ts
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export function useOrganizations(limit: number = 10) {
+    const { data, error, isLoading, mutate } = useSWR(
+        `/api/organizations?limit=${limit}`,
+        fetcher
+    );
+
+    return {
+        organizations: data,
+        isLoading,
+        isError: !!error,
+        refresh: mutate,
+    };
+}
+
+// Usage in component
+function OrganizationList() {
+    const { organizations, isLoading, isError } = useOrganizations();
+
+    if (isLoading) return <Spinner />;
+    if (isError) return <ErrorMessage />;
+
+    return (
+        <ul>
+            {organizations.map(org => (
+                <li key={org.id}>{org.name}</li>
+            ))}
+        </ul>
+    );
+}
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Server Actions are simpler" | Simplicity ≠ correctness. API Routes provide necessary middleware. | **Use API Routes. Add proper middleware.** |
+| "Just a small feature" | Small features grow. Start with correct architecture. | **API Route from day one.** |
+| "No external consumers" | Today internal, tomorrow external. API Routes are future-proof. | **API Routes enable evolution.** |
+| "Next.js recommends Server Actions" | For forms. Not for data fetching with complex requirements. | **Different tools for different jobs.** |
+
+---
+
+## Exception Hierarchy
+
+**HARD GATE:** All BFF services MUST use a consistent exception hierarchy with GlobalExceptionFilter.
+
+### Base Exception
+
+```typescript
+// src/core/infrastructure/exceptions/api.exception.ts
+export class ApiException extends Error {
+    constructor(
+        message: string,
+        public readonly statusCode: number = 500,
+        public readonly details?: Record<string, unknown>,
+        public readonly code?: string,
+    ) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+
+    toJSON() {
+        return {
+            error: {
+                code: this.code ?? this.name,
+                message: this.message,
+                statusCode: this.statusCode,
+                ...(this.details && { details: this.details }),
+            },
+        };
+    }
+}
+```
+
+### Common Exceptions
+
+```typescript
+// src/core/infrastructure/exceptions/index.ts
+export class ValidationException extends ApiException {
+    constructor(errors: Record<string, string[]>) {
+        super('Validation failed', 400, { fields: errors }, 'VALIDATION_ERROR');
+    }
+}
+
+export class NotFoundException extends ApiException {
+    constructor(resource: string, id?: string) {
+        super(
+            id ? `${resource} with id ${id} not found` : `${resource} not found`,
+            404,
+            { resource, id },
+            'NOT_FOUND'
+        );
+    }
+}
+
+export class UnauthorizedException extends ApiException {
+    constructor(message = 'Unauthorized') {
+        super(message, 401, undefined, 'UNAUTHORIZED');
+    }
+}
+
+export class ForbiddenException extends ApiException {
+    constructor(message = 'Forbidden') {
+        super(message, 403, undefined, 'FORBIDDEN');
+    }
+}
+
+export class ConflictException extends ApiException {
+    constructor(resource: string, field: string) {
+        super(
+            `${resource} with this ${field} already exists`,
+            409,
+            { resource, field },
+            'CONFLICT'
+        );
+    }
+}
+
+// External service exception
+export class MidazApiException extends ApiException {
+    constructor(message: string, statusCode: number, details?: Record<string, unknown>) {
+        super(message, statusCode, details, 'MIDAZ_API_ERROR');
+    }
+}
+```
+
+### GlobalExceptionFilter
+
+```typescript
+// src/core/infrastructure/filters/global-exception.filter.ts
+import { NextResponse } from 'next/server';
+import { ApiException } from '../exceptions/api.exception';
+import { ZodError } from 'zod';
+
+export class GlobalExceptionFilter {
+    catch(error: unknown): NextResponse {
+        // Known API exceptions
+        if (error instanceof ApiException) {
+            return NextResponse.json(error.toJSON(), { status: error.statusCode });
+        }
+
+        // Zod validation errors
+        if (error instanceof ZodError) {
+            return NextResponse.json({
+                error: {
+                    code: 'VALIDATION_ERROR',
+                    message: 'Validation failed',
+                    statusCode: 400,
+                    details: { fields: error.flatten().fieldErrors },
+                },
+            }, { status: 400 });
+        }
+
+        // Unknown errors - don't leak details
+        console.error('[GlobalExceptionFilter] Unhandled error:', error);
+
+        return NextResponse.json({
+            error: {
+                code: 'INTERNAL_ERROR',
+                message: 'An unexpected error occurred',
+                statusCode: 500,
+            },
+        }, { status: 500 });
+    }
+}
+```
+
+### Usage in Controllers
+
+```typescript
+// src/core/infrastructure/controllers/organization.controller.ts
+export class OrganizationController {
+    async getById(id: string): Promise<Organization> {
+        const organization = await this.repository.findById(id);
+
+        if (!organization) {
+            throw new NotFoundException('Organization', id);
+        }
+
+        return organization;
+    }
+
+    async create(dto: CreateOrganizationDto): Promise<Organization> {
+        // Validation
+        const parsed = createOrganizationSchema.safeParse(dto);
+        if (!parsed.success) {
+            throw new ValidationException(parsed.error.flatten().fieldErrors);
+        }
+
+        // Check duplicate
+        const existing = await this.repository.findByName(dto.name);
+        if (existing) {
+            throw new ConflictException('Organization', 'name');
+        }
+
+        return this.createUseCase.execute(parsed.data);
+    }
+}
+```
+
+---
+
+## Cross-Cutting Decorators
+
+Cross-cutting concerns (logging, caching, metrics) should be handled via decorators to keep business logic clean.
+
+### LogOperation Decorator
+
+```typescript
+// src/core/infrastructure/decorators/log-operation.decorator.ts
+type Layer = 'controller' | 'application' | 'infrastructure';
+
+interface LogOperationOptions {
+    layer: Layer;
+    operation?: string;
+}
+
+export function LogOperation(options: LogOperationOptions) {
+    return function (
+        target: any,
+        propertyKey: string,
+        descriptor: PropertyDescriptor
+    ) {
+        const originalMethod = descriptor.value;
+        const operation = options.operation ?? propertyKey;
+
+        descriptor.value = async function (...args: any[]) {
+            const startTime = Date.now();
+            const logger = (this as any).logger ?? console;
+
+            logger.info(`[${options.layer}] Starting ${operation}`, {
+                layer: options.layer,
+                operation,
+                args: args.length,
+            });
+
+            try {
+                const result = await originalMethod.apply(this, args);
+                const duration = Date.now() - startTime;
+
+                logger.info(`[${options.layer}] Completed ${operation}`, {
+                    layer: options.layer,
+                    operation,
+                    duration,
+                    success: true,
+                });
+
+                return result;
+            } catch (error) {
+                const duration = Date.now() - startTime;
+
+                logger.error(`[${options.layer}] Failed ${operation}`, {
+                    layer: options.layer,
+                    operation,
+                    duration,
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                });
+
+                throw error;
+            }
+        };
+
+        return descriptor;
+    };
+}
+```
+
+### Usage
+
+```typescript
+// src/core/application/use-cases/organization/get-organizations.use-case.ts
+@injectable()
+export class GetOrganizationsUseCase {
+    constructor(
+        @inject(OrganizationRepository) private repository: OrganizationRepository,
+        @inject(Logger) private logger: Logger,
+    ) {}
+
+    @LogOperation({ layer: 'application' })
+    async execute(params: { limit: number }): Promise<Organization[]> {
+        return this.repository.findAll({ limit: params.limit });
+    }
+}
+
+// src/core/infrastructure/controllers/organization.controller.ts
+@Controller('/organizations')
+export class OrganizationController {
+    @LogOperation({ layer: 'controller', operation: 'listOrganizations' })
+    @Get('/')
+    async list(@Query('limit') limit?: number) {
+        return this.getOrganizations.execute({ limit: limit ?? 10 });
+    }
+}
+```
+
+### Without Decorators (Function Wrapper)
+
+For projects without decorator support:
+
+```typescript
+// src/core/infrastructure/utils/log-operation.ts
+export function withLogging<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    options: { layer: string; operation: string; logger?: Logger }
+): T {
+    return (async (...args: Parameters<T>) => {
+        const logger = options.logger ?? console;
+        const startTime = Date.now();
+
+        logger.info(`[${options.layer}] Starting ${options.operation}`);
+
+        try {
+            const result = await fn(...args);
+            logger.info(`[${options.layer}] Completed ${options.operation}`, {
+                duration: Date.now() - startTime,
+            });
+            return result;
+        } catch (error) {
+            logger.error(`[${options.layer}] Failed ${options.operation}`, {
+                duration: Date.now() - startTime,
+                error,
+            });
+            throw error;
+        }
+    }) as T;
+}
+
+// Usage
+class GetOrganizationsUseCase {
+    execute = withLogging(
+        async (params: { limit: number }) => {
+            return this.repository.findAll({ limit: params.limit });
+        },
+        { layer: 'application', operation: 'getOrganizations' }
+    );
+}
+```
+
+### Other Common Decorators
+
+```typescript
+// Cache decorator
+export function Cached(ttlSeconds: number) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const cache = new Map<string, { value: any; expiry: number }>();
+        const original = descriptor.value;
+
+        descriptor.value = async function (...args: any[]) {
+            const key = JSON.stringify(args);
+            const cached = cache.get(key);
+
+            if (cached && cached.expiry > Date.now()) {
+                return cached.value;
+            }
+
+            const result = await original.apply(this, args);
+            cache.set(key, { value: result, expiry: Date.now() + ttlSeconds * 1000 });
+            return result;
+        };
+    };
+}
+
+// Retry decorator
+export function Retry(maxAttempts: number, delayMs: number = 1000) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const original = descriptor.value;
+
+        descriptor.value = async function (...args: any[]) {
+            let lastError: Error;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                try {
+                    return await original.apply(this, args);
+                } catch (error) {
+                    lastError = error as Error;
+                    if (attempt < maxAttempts) {
+                        await new Promise(r => setTimeout(r, delayMs * attempt));
+                    }
+                }
+            }
+
+            throw lastError!;
+        };
+    };
+}
+```
 
 ---
 

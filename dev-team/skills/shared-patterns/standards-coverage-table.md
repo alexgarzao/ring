@@ -315,7 +315,35 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ### frontend-bff-engineer-typescript → typescript.md
 
-**Same sections as ring:backend-engineer-typescript (14 sections).** See above.
+**Includes all backend-engineer-typescript sections PLUS 6 BFF-specific sections (20 total).**
+
+| # | Section to Check | Anchor | Key Subsections |
+|---|------------------|--------|-----------------|
+| 1 | Version | `#version` | TypeScript 5.0+, Node.js 20+ |
+| 2 | Strict Configuration | `#strict-configuration-mandatory` | tsconfig.json strict mode |
+| 3 | Frameworks & Libraries | `#frameworks--libraries` | Express, Fastify, NestJS, Prisma, Zod, Vitest |
+| 4 | Type Safety | `#type-safety` | No any, branded types, discriminated unions |
+| 5 | Zod Validation Patterns | `#zod-validation-patterns` | Schema validation |
+| 6 | Dependency Injection | `#dependency-injection` | TSyringe/Inversify patterns |
+| 7 | AsyncLocalStorage for Context | `#asynclocalstorage-for-context` | Request context propagation |
+| 8 | Testing | `#testing` | Type-safe mocks, fixtures, edge cases |
+| 9 | Error Handling | `#error-handling` | Custom error classes |
+| 10 | Function Design | `#function-design-mandatory` | Single responsibility |
+| 11 | Naming Conventions | `#naming-conventions` | Files, interfaces, types |
+| 12 | Directory Structure | `#directory-structure` | Lerian pattern |
+| 13 | RabbitMQ Worker Pattern | `#rabbitmq-worker-pattern` | Async message processing |
+| 14 | Always-Valid Domain Model | `#always-valid-domain-model-mandatory` | Constructor validation |
+| 15 | BFF Architecture Pattern | `#bff-architecture-pattern-mandatory` | **HARD GATE:** Clean Architecture, dual-mode (sindarian-server vs vanilla) |
+| 16 | Three-Layer DTO Mapping | `#three-layer-dto-mapping-mandatory` | **HARD GATE:** HTTP ↔ Domain ↔ External DTOs, mappers |
+| 17 | HttpService Lifecycle | `#httpservice-lifecycle` | createDefaults, onBeforeFetch, onAfterFetch, catch hooks |
+| 18 | API Routes Pattern | `#api-routes-pattern-mandatory` | **⛔ FORBIDDEN:** Server Actions. MUST use Next.js API Routes |
+| 19 | Exception Hierarchy | `#exception-hierarchy` | ApiException, GlobalExceptionFilter, typed exceptions |
+| 20 | Cross-Cutting Decorators | `#cross-cutting-decorators` | LogOperation, Cached, Retry decorators |
+
+**⛔ HARD GATES for BFF Engineer:**
+- Section 15: BFF is MANDATORY for all dynamic data
+- Section 16: Three-layer mapping is MANDATORY, no pass-through
+- Section 18: Server Actions are FORBIDDEN, API Routes only
 
 ---
 
