@@ -1,6 +1,6 @@
 # Go Standards - Core Foundation
 
-> **Module:** core.md | **Sections:** §1-4 | **Parent:** [index.md](index.md)
+> **Module:** core.md | **Sections:** §1-7 | **Parent:** [index.md](index.md)
 
 This module covers the foundational requirements for all Go projects.
 
@@ -14,6 +14,9 @@ This module covers the foundational requirements for all Go projects.
 | 2 | [Core Dependency: lib-commons](#core-dependency-lib-commons-mandatory) | Required lib-commons v2 integration |
 | 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions and library choices |
 | 4 | [Configuration](#configuration) | Environment variable handling |
+| 5 | [Database Naming Convention (snake_case)](#database-naming-convention-snake-case-mandatory) | Table and column naming |
+| 6 | [Database Migrations](#database-migrations-mandatory) | golang-migrate requirement |
+| 7 | [License Headers](#license-headers-conditional) | Copyright headers in source files |
 
 ---
 
@@ -59,6 +62,112 @@ import (
 | `commons/opentelemetry` | OpenTelemetry initialization and helpers | Bootstrap, middleware |
 | `commons/net/http` | HTTP utilities, telemetry middleware, pagination | Routes, handlers |
 | `commons/server` | Server lifecycle with graceful shutdown | Bootstrap |
+
+### ⛔ FORBIDDEN: Custom Utilities That Duplicate lib-commons (HARD GATE)
+
+**HARD GATE:** You CANNOT create custom helpers, utilities, or wrappers that duplicate functionality already provided by lib-commons. This is NON-NEGOTIABLE.
+
+#### What lib-commons Already Provides (DO NOT RECREATE)
+
+| Category | lib-commons Provides | FORBIDDEN to Create |
+|----------|---------------------|---------------------|
+| **Logging** | `libLog.Logger`, `libZap.NewLogger()` | Custom logger, log wrapper, log helper |
+| **Telemetry** | `libOpentelemetry.NewCore threeProvider()`, span helpers | Custom tracer, telemetry wrapper |
+| **HTTP** | `libHTTP.NewRouter()`, middleware, response helpers | Custom HTTP utils, response formatters |
+| **Config** | `libCommons.SetConfigFromEnvVars()` | Custom config loader, env parser |
+| **Server** | `libServer.NewServer()`, graceful shutdown | Custom server lifecycle |
+| **PostgreSQL** | `libPostgres.Connect()`, pagination, query builders | Custom DB helpers, pagination utils |
+| **MongoDB** | `libMongo.Connect()` | Custom Mongo wrapper |
+| **Redis** | `libRedis.Connect()` | Custom Redis wrapper |
+| **Context** | `libCommons.TrackingContext` | Custom context propagation |
+| **Errors** | Error wrapping utilities | Custom error helpers |
+
+#### Detection Commands (Run Before Creating Any Utility)
+
+```bash
+# BEFORE creating any utility, search lib-commons first
+# Clone or browse: https://github.com/LerianStudio/lib-commons
+
+# Search for existing functionality
+grep -rn "func.*Logger" ./vendor/github.com/LerianStudio/lib-commons/
+grep -rn "func.*Trace" ./vendor/github.com/LerianStudio/lib-commons/
+grep -rn "func.*Config" ./vendor/github.com/LerianStudio/lib-commons/
+```
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Custom logger wrapper
+package utils
+
+func NewLogger() *zap.Logger {
+    // DON'T DO THIS - use libZap.NewLogger()
+}
+
+// ❌ FORBIDDEN: Custom telemetry helper
+package helpers
+
+func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
+    // DON'T DO THIS - use libOpentelemetry helpers
+}
+
+// ❌ FORBIDDEN: Custom config loader
+package config
+
+func LoadFromEnv(cfg interface{}) error {
+    // DON'T DO THIS - use libCommons.SetConfigFromEnvVars()
+}
+
+// ❌ FORBIDDEN: Custom HTTP response helper
+package utils
+
+func JSONResponse(c *fiber.Ctx, status int, data interface{}) error {
+    // DON'T DO THIS - use libHTTP response helpers
+}
+
+// ❌ FORBIDDEN: Custom pagination utility
+package helpers
+
+func Paginate(page, pageSize int) (offset, limit int) {
+    // DON'T DO THIS - use libPostgres or libHTTP pagination
+}
+```
+
+#### When Custom Utilities ARE Allowed
+
+| Scenario | Allowed? | Condition |
+|----------|----------|-----------|
+| Functionality exists in lib-commons | ❌ NO | Use lib-commons instead |
+| Domain-specific business logic | ✅ YES | Not infrastructure-level |
+| lib-commons lacks the feature | ✅ YES | Document why, consider contributing to lib-commons |
+| Thin wrapper for testing | ⚠️ MAYBE | Only if it improves testability without duplicating |
+
+#### Verification Checklist (MANDATORY Before Creating Any Utility)
+
+```text
+Before creating any file in utils/, helpers/, pkg/common/, or similar:
+
+[ ] 1. Did I search lib-commons for this functionality?
+[ ] 2. Does lib-commons have a package that does this?
+[ ] 3. If lib-commons has it → USE IT, do not create custom
+[ ] 4. If lib-commons lacks it → Is this infrastructure or domain logic?
+[ ] 5. If infrastructure → Consider contributing to lib-commons instead
+
+If you checked YES to #2 or #3 → STOP. Use lib-commons.
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "My wrapper is simpler" | Simpler ≠ better. Consistency > convenience. | **Use lib-commons** |
+| "lib-commons is too complex for this" | Complexity exists for good reasons (telemetry, error handling). | **Use lib-commons** |
+| "I need a slightly different interface" | Adapt your code to lib-commons, not the other way around. | **Use lib-commons** |
+| "It's just a small helper" | Small helpers grow. Today's helper is tomorrow's tech debt. | **Use lib-commons** |
+| "I'll migrate to lib-commons later" | Later = never. Start with lib-commons. | **Use lib-commons now** |
+| "The project doesn't use lib-commons yet" | That's the first problem to fix. Add lib-commons dependency. | **Add lib-commons first** |
+| "I didn't know lib-commons had this" | Ignorance ≠ excuse. Always search lib-commons before creating. | **Search lib-commons first** |
+| "lib-commons version is outdated" | Update lib-commons, don't fork functionality. | **Update dependency** |
 
 ---
 
@@ -239,3 +348,524 @@ type Config struct {
 
 // Load with: libCommons.SetConfigFromEnvVars(&cfg)
 ```
+
+---
+
+## Database Naming Convention (snake_case) (MANDATORY)
+
+**HARD GATE:** All database tables and columns MUST use `snake_case` naming. This is NON-NEGOTIABLE.
+
+### Naming Rules
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| **Tables** | `snake_case`, plural | `users`, `user_preferences`, `order_items` |
+| **Columns** | `snake_case` | `user_id`, `created_at`, `email_address` |
+| **Primary keys** | `id` | `id UUID PRIMARY KEY` |
+| **Foreign keys** | `{referenced_table_singular}_id` | `user_id`, `organization_id` |
+| **Indexes** | `idx_{table}_{column(s)}` | `idx_users_email`, `idx_orders_user_id_status` |
+| **Unique constraints** | `uq_{table}_{column(s)}` | `uq_users_email`, `uq_preferences_user` |
+| **Check constraints** | `chk_{table}_{description}` | `chk_orders_positive_amount` |
+
+### Layer Separation
+
+**CRITICAL:** Different naming conventions apply at different layers:
+
+| Layer | Convention | Example |
+|-------|------------|---------|
+| **Database** | `snake_case` | `user_id`, `created_at`, `email_address` |
+| **Go structs** | `PascalCase` | `UserID`, `CreatedAt`, `EmailAddress` |
+| **JSON output** | `camelCase` | `userId`, `createdAt`, `emailAddress` |
+
+### Correct Examples
+
+#### SQL Migration
+```sql
+-- ✅ CORRECT: All identifiers use snake_case
+CREATE TABLE user_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    theme_name VARCHAR(50) DEFAULT 'light',
+    notification_enabled BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_preferences_user_id ON user_preferences(user_id);
+ALTER TABLE user_preferences ADD CONSTRAINT uq_user_preferences_user UNIQUE (user_id);
+```
+
+#### Go Model with Database Tags
+```go
+// ✅ CORRECT: Go uses PascalCase, db tags use snake_case, json tags use camelCase
+type UserPreference struct {
+    ID                  string    `json:"id" db:"id"`
+    UserID              string    `json:"userId" db:"user_id"`
+    ThemeName           string    `json:"themeName" db:"theme_name"`
+    NotificationEnabled bool      `json:"notificationEnabled" db:"notification_enabled"`
+    CreatedAt           time.Time `json:"createdAt" db:"created_at"`
+    UpdatedAt           time.Time `json:"updatedAt" db:"updated_at"`
+}
+```
+
+### FORBIDDEN Patterns
+
+```sql
+-- ❌ FORBIDDEN: camelCase in database
+CREATE TABLE userPreferences (
+    id UUID PRIMARY KEY,
+    userId UUID NOT NULL,          -- WRONG: should be user_id
+    themeName VARCHAR(50),         -- WRONG: should be theme_name
+    createdAt TIMESTAMP            -- WRONG: should be created_at
+);
+
+-- ❌ FORBIDDEN: PascalCase in database
+CREATE TABLE UserPreferences (
+    ID UUID PRIMARY KEY,
+    UserID UUID NOT NULL,          -- WRONG: should be user_id
+    ThemeName VARCHAR(50)          -- WRONG: should be theme_name
+);
+
+-- ❌ FORBIDDEN: Mixed conventions
+CREATE TABLE user_preferences (
+    id UUID PRIMARY KEY,
+    userId UUID NOT NULL,          -- WRONG: inconsistent with table naming
+    theme_name VARCHAR(50),        -- OK
+    CreatedAt TIMESTAMP            -- WRONG: PascalCase
+);
+```
+
+```go
+// ❌ FORBIDDEN: Database tags not using snake_case
+type UserPreference struct {
+    UserID    string `json:"userId" db:"userId"`       // WRONG: db tag should be "user_id"
+    ThemeName string `json:"themeName" db:"themeName"` // WRONG: db tag should be "theme_name"
+}
+```
+
+### Detection Commands
+
+```bash
+# Detect camelCase in SQL migrations (should return 0 matches for compliant code)
+grep -rn "[a-z][A-Z]" --include="*.sql" ./migrations | grep -v "^--"
+
+# Detect PascalCase column definitions (should return 0 matches)
+grep -rn "^\s*[A-Z][a-z]*[A-Z]" --include="*.sql" ./migrations
+
+# Detect incorrect db tags in Go files (should return 0 matches)
+grep -rn 'db:"[a-z]*[A-Z]' --include="*.go" ./internal
+```
+
+### Why snake_case for Databases
+
+| Reason | Explanation |
+|--------|-------------|
+| **PostgreSQL standard** | PostgreSQL folds unquoted identifiers to lowercase; snake_case avoids quoting |
+| **Readability** | `user_id` is clearer than `userid` or `UserID` in SQL queries |
+| **SQL convention** | Industry standard for relational databases |
+| **Tool compatibility** | Most DB tools expect snake_case |
+| **Cross-platform** | Works consistently across PostgreSQL, MySQL, SQLite |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "camelCase matches our Go code" | DB layer ≠ Go layer. Different conventions for different contexts. | **Use snake_case in DB** |
+| "PostgreSQL accepts camelCase in quotes" | Requiring quotes everywhere is error-prone and non-standard. | **Use snake_case without quotes** |
+| "ORM handles the mapping" | Explicit > implicit. Clear db tags prevent surprises. | **Use explicit db tags with snake_case** |
+| "It's just an internal database" | Internal ≠ exempt from standards. Consistency matters everywhere. | **Use snake_case** |
+| "The existing table uses camelCase" | Legacy debt must be migrated. New code cannot perpetuate mistakes. | **Create migration to fix naming** |
+
+---
+
+## Database Migrations (MANDATORY)
+
+**HARD GATE:** All database migrations MUST use `golang-migrate`. Creating custom migration runners is FORBIDDEN.
+
+### Required Tool
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| `golang-migrate/migrate` | v4.x | Database schema migrations |
+
+```bash
+# Installation
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+```
+
+### Why golang-migrate Is Mandatory
+
+| Benefit | Description |
+|---------|-------------|
+| **Battle-tested** | Used by thousands of production systems |
+| **Atomic** | Migrations run in transactions |
+| **Bi-directional** | Supports up/down migrations |
+| **Driver support** | PostgreSQL, MySQL, MongoDB, etc. |
+| **CI/CD friendly** | Easy to integrate with pipelines |
+
+### FORBIDDEN: Custom Migration Systems
+
+```go
+// ❌ FORBIDDEN: Creating custom version tracking table
+func initMigrations(db *sql.DB) {
+    db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+        version INT PRIMARY KEY,
+        applied_at TIMESTAMP
+    )`)
+}
+
+// ❌ FORBIDDEN: Manual version checking
+func runMigrations(db *sql.DB) {
+    var currentVersion int
+    db.QueryRow("SELECT MAX(version) FROM schema_migrations").Scan(&currentVersion)
+    // ... apply migrations manually
+}
+
+// ❌ FORBIDDEN: Embedding migrations in application code
+func applyMigration001(db *sql.DB) error {
+    return db.Exec("CREATE TABLE users (...)")
+}
+```
+
+**Why this is wrong:**
+- Reinvents what golang-migrate already does
+- Lacks transaction safety
+- No rollback support
+- Inconsistent across projects
+- Harder to debug and maintain
+
+### Correct Pattern: golang-migrate
+
+#### Migration File Structure
+
+```text
+/migrations
+  000001_create_users_table.up.sql
+  000001_create_users_table.down.sql
+  000002_add_email_column.up.sql
+  000002_add_email_column.down.sql
+  000003_create_orders_table.up.sql
+  000003_create_orders_table.down.sql
+```
+
+#### Naming Convention
+
+```text
+{version}_{description}.{direction}.sql
+
+version:     6-digit zero-padded number (000001, 000002, ...)
+description: snake_case description of the change
+direction:   up (apply) or down (rollback)
+```
+
+#### Migration Granularity (MANDATORY)
+
+**RULE: One migration per feature/release. NOT one migration per alteration.**
+
+| Approach | Atomicity | Rollback | Status |
+|----------|-----------|----------|--------|
+| One migration per feature | ✅ Atomic (all-or-nothing) | `migrate down 1` | **CORRECT** |
+| Multiple migrations per feature | ❌ Non-atomic | `migrate down N` (manual count) | **FORBIDDEN** |
+
+**Why this matters:**
+- **Atomicity:** A single migration runs in a transaction - it either fully succeeds or fully rolls back
+- **Simple rollback:** One feature = one migration = `migrate down 1` to undo
+- **Release alignment:** Migrations map 1:1 to features/releases for traceability
+
+**FORBIDDEN: Multiple migrations for one feature**
+
+```text
+# ❌ WRONG: 5 migrations for "add user preferences" feature
+/migrations
+  000005_create_preferences_table.up.sql
+  000006_add_theme_column.up.sql
+  000007_add_language_column.up.sql
+  000008_add_timezone_column.up.sql
+  000009_add_preferences_index.up.sql
+
+# Problem: To rollback this feature, you need "migrate down 5"
+# If you forget and do "migrate down 1", feature is partially rolled back
+```
+
+**CORRECT: One migration for one feature**
+
+```text
+# ✅ CORRECT: 1 migration for "add user preferences" feature
+/migrations
+  000005_add_user_preferences.up.sql
+  000005_add_user_preferences.down.sql
+
+# Rollback: "migrate down 1" undoes the entire feature
+```
+
+**What goes in a single migration:**
+
+```sql
+-- 000005_add_user_preferences.up.sql
+-- All changes for "user preferences" feature in ONE file
+
+-- 1. Create table
+CREATE TABLE user_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    theme VARCHAR(50) DEFAULT 'light',
+    language VARCHAR(10) DEFAULT 'en',
+    timezone VARCHAR(50) DEFAULT 'UTC',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. Add index
+CREATE INDEX idx_user_preferences_user_id ON user_preferences(user_id);
+
+-- 3. Add constraint
+ALTER TABLE user_preferences ADD CONSTRAINT uq_user_preferences_user UNIQUE (user_id);
+```
+
+```sql
+-- 000005_add_user_preferences.down.sql
+-- Reverse ALL changes in ONE file (reverse order)
+
+ALTER TABLE user_preferences DROP CONSTRAINT IF EXISTS uq_user_preferences_user;
+DROP INDEX IF EXISTS idx_user_preferences_user_id;
+DROP TABLE IF EXISTS user_preferences;
+```
+
+**Migration Granularity Decision Table:**
+
+| Scenario | Migrations | Example |
+|----------|------------|---------|
+| New feature with table + indexes | 1 migration | `000005_add_user_preferences.sql` |
+| Bug fix requiring schema change | 1 migration | `000006_fix_email_constraint.sql` |
+| Refactor with multiple table changes | 1 migration | `000007_normalize_addresses.sql` |
+| Unrelated changes in same release | Separate migrations | Each gets own migration |
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Smaller migrations are safer" | Atomicity makes single migration safer. Partial state is dangerous. | **Combine into one migration** |
+| "I want to track each change separately" | Use comments inside the migration file. Git tracks file history. | **Combine into one migration** |
+| "Rollback granularity is better with multiple" | Partial rollback = broken state. All-or-nothing is correct. | **Combine into one migration** |
+| "The migration file would be too long" | Long but atomic > short but fragmented. Use comments for sections. | **Combine into one migration** |
+
+#### Migration File Examples
+
+```sql
+-- 000001_create_users_table.up.sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_email ON users(email);
+```
+
+```sql
+-- 000001_create_users_table.down.sql
+DROP INDEX IF EXISTS idx_users_email;
+DROP TABLE IF EXISTS users;
+```
+
+### Makefile Commands (REQUIRED)
+
+**See [devops.md - Database Migration Commands](../devops.md#database-migration-commands-mandatory)** for the complete Makefile implementation.
+
+**Quick reference:**
+
+| Command | Purpose |
+|---------|---------|
+| `make migrate-up` | Apply all pending migrations |
+| `make migrate-down` | Rollback last migration |
+| `make migrate-create NAME=xxx` | Create new migration |
+| `make migrate-version` | Show current version |
+| `make dev-setup` | Install golang-migrate and other tools |
+
+### Docker Compose Integration
+
+```yaml
+# docker-compose.yml
+services:
+  migrate:
+    image: migrate/migrate:v4.17.0
+    volumes:
+      - ./migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://user:pass@db:5432/dbname?sslmode=disable", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+```
+
+### Anti-Patterns (Detection Commands)
+
+```bash
+# Detect custom migration tables (should return 0 matches)
+grep -rn "schema_migrations\|migration_version\|db_version" --include="*.go" ./internal
+
+# Detect manual migration tracking (should return 0 matches)
+grep -rn "CREATE TABLE.*migration" --include="*.go" ./internal
+
+# Detect embedded SQL DDL in Go code (review each match)
+grep -rn "CREATE TABLE\|ALTER TABLE\|DROP TABLE" --include="*.go" ./internal
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "golang-migrate is overkill for this project" | Consistency > simplicity. All projects use the same tool. | **Use golang-migrate** |
+| "I need custom logic before/after migrations" | Use golang-migrate hooks or run scripts separately. | **Use golang-migrate** |
+| "Embedding migrations is more portable" | SQL files are portable. Custom Go code is not. | **Use golang-migrate with SQL files** |
+| "My migration table is simpler" | Simpler ≠ better. golang-migrate handles edge cases you haven't thought of. | **Use golang-migrate** |
+| "This is just a small schema change" | Small changes grow. Start with the right tool. | **Use golang-migrate** |
+
+---
+
+## License Headers (CONDITIONAL)
+
+**CONDITION:** If the project has a `LICENSE` file in the root directory, all `.go` source files MUST include a license header.
+
+### Detection Rule
+
+```bash
+# Check if LICENSE file exists
+if [ -f "LICENSE" ]; then
+    # License headers are REQUIRED for all .go files
+fi
+```
+
+### Required Format (Elastic License 2.0)
+
+```go
+// Copyright (c) 2024 Lerian Studio. All rights reserved.
+// Use of this source code is governed by the Elastic License 2.0
+// that can be found in the LICENSE file.
+
+package yourpackage
+```
+
+### Header Components
+
+| Component | Value | Notes |
+|-----------|-------|-------|
+| Copyright holder | `Lerian Studio` | Fixed for all Lerian projects |
+| Year | Year of file creation | Use current year for new files |
+| License reference | `Elastic License 2.0` | Or as specified in LICENSE file |
+| LICENSE location | `LICENSE file` | Always reference root LICENSE |
+
+### Files That MUST Have Headers
+
+| File Type | Required | Notes |
+|-----------|----------|-------|
+| `*.go` (source files) | ✅ YES | All source code |
+| `*_test.go` (test files) | ✅ YES | Tests are also source code |
+| `cmd/**/*.go` | ✅ YES | Entry points |
+| `internal/**/*.go` | ✅ YES | Internal packages |
+| `pkg/**/*.go` | ✅ YES | Public packages |
+
+### Files That MAY Skip Headers
+
+| File Type | Required | Reason |
+|-----------|----------|--------|
+| Generated files (`*.pb.go`) | ⚠️ OPTIONAL | Auto-generated by protoc |
+| Mock files (`mock_*.go`) | ⚠️ OPTIONAL | Auto-generated by mockgen |
+| Vendor files (`vendor/**`) | ❌ NO | Third-party code |
+
+### Correct Examples
+
+```go
+// Copyright (c) 2024 Lerian Studio. All rights reserved.
+// Use of this source code is governed by the Elastic License 2.0
+// that can be found in the LICENSE file.
+
+package bootstrap
+
+import (
+    "context"
+    "fmt"
+)
+```
+
+```go
+// Copyright (c) 2024 Lerian Studio. All rights reserved.
+// Use of this source code is governed by the Elastic License 2.0
+// that can be found in the LICENSE file.
+
+package bootstrap_test
+
+import (
+    "testing"
+)
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Missing header entirely
+package model
+
+import "time"
+
+// ❌ FORBIDDEN: Wrong format (missing "All rights reserved")
+// Copyright 2024 Lerian Studio
+// Licensed under Elastic License 2.0
+package model
+
+// ❌ FORBIDDEN: Header after package declaration
+package model
+
+// Copyright (c) 2024 Lerian Studio. All rights reserved.
+// Use of this source code is governed by the Elastic License 2.0
+// that can be found in the LICENSE file.
+
+import "time"
+```
+
+### Verification Commands
+
+```bash
+# Find .go files without license header (should return 0 for compliant projects)
+find . -name "*.go" -not -path "./vendor/*" -not -name "*.pb.go" -not -name "mock_*.go" \
+    -exec sh -c 'head -1 "$1" | grep -q "^// Copyright" || echo "$1"' _ {} \;
+
+# Count files with correct header
+grep -rl "Copyright (c).*Lerian Studio" --include="*.go" . | wc -l
+
+# Count total .go files (excluding vendor/generated)
+find . -name "*.go" -not -path "./vendor/*" -not -name "*.pb.go" -not -name "mock_*.go" | wc -l
+```
+
+### Adding Headers to Existing Files
+
+For projects adopting this standard, use this script to add headers:
+
+```bash
+#!/bin/bash
+# add-license-headers.sh
+
+HEADER='// Copyright (c) 2024 Lerian Studio. All rights reserved.
+// Use of this source code is governed by the Elastic License 2.0
+// that can be found in the LICENSE file.
+
+'
+
+find . -name "*.go" -not -path "./vendor/*" -not -name "*.pb.go" -not -name "mock_*.go" | while read file; do
+    if ! head -1 "$file" | grep -q "^// Copyright"; then
+        echo "Adding header to: $file"
+        echo "$HEADER$(cat "$file")" > "$file"
+    fi
+done
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "It's just internal code" | Internal code is still copyrighted. Headers protect IP. | **Add header to all files** |
+| "Tests don't need headers" | Tests are source code. Same rules apply. | **Add header to test files** |
+| "I'll add them later" | Later = never. Add headers when creating files. | **Add header immediately** |
+| "The LICENSE file is enough" | Per-file headers provide clear attribution in copies. | **Add header to all files** |
+| "Generated files are excluded" | Only truly auto-generated (protobuf, mocks). Hand-written = header required. | **Check if truly generated** |

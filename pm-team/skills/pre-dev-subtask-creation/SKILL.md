@@ -79,6 +79,32 @@ Exact file paths (absolute or from root), complete file contents (if creating), 
 ### ❌ NEVER Include in Subtasks
 Placeholders: "...", "TODO", "implement here"; vague instructions: "update the service", "add validation"; assumptions: "assuming setup is done"; context requirements: "you need to understand X first"; incomplete code: "add the rest yourself"; missing imports: "import necessary packages"; undefined success: "make sure it works"; no verification: "test it manually"
 
+<cannot_skip>
+
+### ⛔ HARD GATE: lib-commons in Go Code Examples
+
+MUST: For Go projects, code examples use lib-commons instead of custom utilities.
+
+See **[shared-patterns/code-example-standards.md](../shared-patterns/code-example-standards.md)** for:
+- Complete list of what lib-commons provides
+- Forbidden patterns (custom loggers, config loaders, HTTP helpers)
+- Correct import patterns with `lib` prefix aliases
+- Anti-rationalization table
+
+**Quick Reference - DO NOT Create Custom:**
+
+| Category | Use lib-commons |
+|----------|-----------------|
+| Logging | `libLog "github.com/LerianStudio/lib-commons/v2/commons/log"` |
+| Config | `libCommons.SetConfigFromEnvVars()` |
+| HTTP | `libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"` |
+| Telemetry | `libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"` |
+| PostgreSQL | `libPostgres "github.com/LerianStudio/lib-commons/v2/commons/postgres"` |
+
+MUST NOT: Create custom logger, config loader, or HTTP helper in subtasks—use lib-commons.
+
+</cannot_skip>
+
 ## Rationalization Table
 
 | Excuse | Reality |
@@ -94,6 +120,9 @@ Placeholders: "...", "TODO", "implement here"; vague instructions: "update the s
 | "They can look at similar code for reference" | That's context. Make subtask self-contained. |
 | "This is too detailed, we're not that formal" | Detailed = parallelizable = faster. Be detailed. |
 | "Steps are too small, feels like hand-holding" | Small steps = verifiable progress. Stay small. |
+| "Custom logger is simpler for this example" | Examples teach patterns. Teach lib-commons. |
+| "lib-commons import is too verbose" | Verbosity shows correct dependencies. Keep it. |
+| "I'll use lib-commons in the real code" | Subtask is real code. Use lib-commons now. |
 
 ## Red Flags - STOP
 
@@ -108,6 +137,10 @@ If you catch yourself writing any of these in a subtask, **STOP and rewrite**:
 - Steps longer than 5 minutes
 - Context dependencies: "you need to understand X"
 - No TDD cycle in implementation steps
+- Use `libZap.NewLogger()` instead of custom `func NewLogger()` (Go)
+- Use `libCommons.SetConfigFromEnvVars()` instead of scattered `os.Getenv()` (Go)
+- Use `libHTTP` utilities instead of custom `func JSONResponse()` (Go)
+- Check lib-commons first before creating files in `utils/`, `helpers/`, `pkg/common/` (Go)
 
 **When you catch yourself**: Expand the subtask until it's completely self-contained.
 

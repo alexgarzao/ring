@@ -248,28 +248,34 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | # | Section to Check | File | Anchor | Key Subsections |
 |---|------------------|------|--------|-----------------|
 | 1 | Version | core.md | `#version` | Go 1.24+ |
-| 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | |
+| 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | **HARD GATE:** No duplicate utils/helpers - use lib-commons |
 | 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock |
 | 4 | Configuration | core.md | `#configuration` | Environment variable handling |
-| 5 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration |
-| 6 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
-| 7 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
-| 8 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
-| 9 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
-| 10 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
-| 11 | Error Handling | domain.md | `#error-handling` | Error wrapping and checking |
-| 12 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
-| 13 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
-| 14 | Testing | quality.md | `#testing` | Table-driven tests, edge cases |
-| 15 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
-| 16 | Linting | quality.md | `#linting` | golangci-lint configuration |
-| 17 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
-| 18 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
-| 19 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
-| 20 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
-| 21 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
-| 22 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 23 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection |
+| 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake-case-mandatory` | Table and column naming |
+| 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
+| 7 | License Headers | core.md | `#license-headers-conditional` | **CONDITIONAL** - If LICENSE file exists |
+| 8 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration |
+| 9 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
+| 10 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
+| 11 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
+| 12 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
+| 13 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
+| 14 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
+| 15 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | Where exit/fatal/panic is allowed |
+| 16 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
+| 17 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
+| 18 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
+| 19 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
+| 20 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
+| 21 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 22 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, magic numbers (mnd), golangci-lint |
+| 23 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 24 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 25 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
+| 26 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
+| 27 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
+| 28 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 29 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
 
 **Module Loading Guide:**
 
@@ -279,6 +285,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | Auth implementation | core.md → security.md |
 | Add tracing | bootstrap.md |
 | Testing | quality.md |
+| API endpoints | api-patterns.md (pagination + swaggo) |
 | Idempotency | idempotency.md + domain.md |
 | Multi-tenant | multi-tenant.md + bootstrap.md |
 | Full compliance check | all modules |

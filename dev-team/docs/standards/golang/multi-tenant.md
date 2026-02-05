@@ -419,6 +419,257 @@ func InitService(cfg *Config) (*Service, error) {
 }
 ```
 
+### Testing Multi-Tenant Code
+
+#### Unit Tests with Mock Tenant Context
+
+```go
+// internal/service/user_service_test.go
+func TestUserService_Create_WithTenantContext(t *testing.T) {
+    // Setup tenant context
+    tenantID := "tenant-123"
+    ctx := poolmanager.ContextWithTenantID(context.Background(), tenantID)
+
+    // Mock database connection
+    mockDB := setupMockDB(t)
+    ctx = poolmanager.ContextWithPGConnection(ctx, mockDB)
+
+    // Create service with mock dependencies
+    repo := repository.NewUserRepository()
+    service := service.NewUserService(repo, logger)
+
+    // Execute
+    input := &CreateUserInput{Name: "John", Email: "john@example.com"}
+    result, err := service.Create(ctx, input)
+
+    // Assert
+    require.NoError(t, err)
+    assert.Equal(t, "John", result.Name)
+    assert.Equal(t, tenantID, result.TenantID)
+}
+```
+
+#### Testing Tenant Isolation
+
+```go
+func TestRepository_Create_TenantIsolation(t *testing.T) {
+    tests := []struct {
+        name     string
+        tenantID string
+        input    *Entity
+        wantErr  bool
+    }{
+        {
+            name:     "tenant-1 creates entity",
+            tenantID: "tenant-1",
+            input:    &Entity{Name: "Entity A"},
+            wantErr:  false,
+        },
+        {
+            name:     "tenant-2 creates same entity (isolated)",
+            tenantID: "tenant-2",
+            input:    &Entity{Name: "Entity A"},
+            wantErr:  false, // Different tenant = allowed
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // Inject tenant-specific context
+            ctx := poolmanager.ContextWithTenantID(context.Background(), tt.tenantID)
+            ctx = poolmanager.ContextWithPGConnection(ctx, mockDB)
+
+            _, err := repo.Create(ctx, tt.input)
+
+            if tt.wantErr {
+                require.Error(t, err)
+            } else {
+                require.NoError(t, err)
+            }
+        })
+    }
+}
+```
+
+#### Integration Tests with testcontainers
+
+```go
+// internal/bootstrap/multi_tenant_integration_test.go
+func TestMultiTenant_EndToEnd(t *testing.T) {
+    ctx := context.Background()
+
+    // Setup PostgreSQL container
+    pgContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+        ContainerRequest: testcontainers.ContainerRequest{
+            Image:        "postgres:16-alpine",
+            ExposedPorts: []string{"5432/tcp"},
+            Env: map[string]string{
+                "POSTGRES_USER":     "test",
+                "POSTGRES_PASSWORD": "test",
+                "POSTGRES_DB":       "tenant_test",
+            },
+            WaitingFor: wait.ForLog("database system is ready to accept connections"),
+        },
+        Started: true,
+    })
+    require.NoError(t, err)
+    defer pgContainer.Terminate(ctx)
+
+    // Get container host/port
+    host, _ := pgContainer.Host(ctx)
+    port, _ := pgContainer.MappedPort(ctx, "5432")
+
+    // Set environment variables with t.Setenv
+    t.Setenv("DB_HOST", host)
+    t.Setenv("DB_PORT", port.Port())
+    t.Setenv("DB_USER", "test")
+    t.Setenv("DB_PASSWORD", "test")
+    t.Setenv("DB_NAME", "tenant_test")
+    t.Setenv("MULTI_TENANT_ENABLED", "true")
+    t.Setenv("POOL_MANAGER_URL", "http://mock-pool-manager:4003")
+
+    // Initialize service
+    cfg := &Config{}
+    require.NoError(t, libCommons.SetConfigFromEnvVars(cfg))
+
+    // Create Pool Manager mock
+    poolMock := setupMockPoolManager(t, cfg.PoolManagerURL)
+    defer poolMock.Close()
+
+    // Test tenant-specific database access
+    tenantID := "tenant-123"
+    ctx = poolmanager.ContextWithTenantID(ctx, tenantID)
+
+    // ... test multi-tenant operations
+}
+```
+
+#### Testing Error Cases
+
+```go
+func TestMiddleware_WithTenantDB_ErrorCases(t *testing.T) {
+    tests := []struct {
+        name           string
+        setupContext   func(*fiber.Ctx)
+        expectedStatus int
+        expectedCode   string
+    }{
+        {
+            name: "missing JWT token",
+            setupContext: func(c *fiber.Ctx) {
+                // No Authorization header
+            },
+            expectedStatus: 401,
+            expectedCode:   "TENANT_ID_REQUIRED",
+        },
+        {
+            name: "JWT without tenantId claim",
+            setupContext: func(c *fiber.Ctx) {
+                token := createJWTWithoutTenantClaim()
+                c.Request().Header.Set("Authorization", "Bearer "+token)
+            },
+            expectedStatus: 401,
+            expectedCode:   "TENANT_ID_REQUIRED",
+        },
+        {
+            name: "tenant not found in Pool Manager",
+            setupContext: func(c *fiber.Ctx) {
+                token := createJWT(map[string]interface{}{"tenantId": "unknown-tenant"})
+                c.Request().Header.Set("Authorization", "Bearer "+token)
+            },
+            expectedStatus: 404,
+            expectedCode:   "TENANT_NOT_FOUND",
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // Setup Fiber context
+            app := fiber.New()
+            ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
+            defer app.ReleaseCtx(ctx)
+
+            tt.setupContext(ctx)
+
+            // Execute middleware
+            err := middleware.WithTenantDB(ctx)
+
+            // Assert
+            require.Error(t, err)
+            fiberErr, ok := err.(*fiber.Error)
+            require.True(t, ok)
+            assert.Equal(t, tt.expectedStatus, fiberErr.Code)
+        })
+    }
+}
+```
+
+#### Testing RabbitMQ Multi-Tenant Consumer
+
+```go
+func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
+    t.Run("injects tenant context from X-Tenant-ID header", func(t *testing.T) {
+        tenantID := "tenant-456"
+
+        // Create message with tenant header
+        message := amqp.Delivery{
+            Headers: amqp.Table{
+                "X-Tenant-ID": tenantID,
+            },
+            Body: []byte(`{"action": "create"}`),
+        }
+
+        // Setup consumer
+        consumer := NewMultiTenantConsumer(pool, logger)
+
+        // Process message
+        ctx, err := consumer.injectTenantDBConnections(
+            context.Background(),
+            tenantID,
+            logger,
+        )
+
+        // Assert tenant context injected
+        require.NoError(t, err)
+        extractedTenant := poolmanager.GetTenantID(ctx)
+        assert.Equal(t, tenantID, extractedTenant)
+    })
+}
+```
+
+#### Testing Redis Key Prefixing
+
+```go
+func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
+    t.Run("prefixes keys with tenant ID", func(t *testing.T) {
+        tenantID := "tenant-789"
+        ctx := poolmanager.ContextWithTenantID(context.Background(), tenantID)
+
+        repo := NewRedisRepository(redisConn)
+
+        // Set value
+        err := repo.Set(ctx, "user:session", "value123", 3600)
+        require.NoError(t, err)
+
+        // Verify key was prefixed
+        // Expected key: {tenant-789}:user:session
+        key := poolmanager.GetKeyFromContext(ctx, "user:session")
+        assert.Equal(t, "{tenant-789}:user:session", key)
+    })
+
+    t.Run("single-tenant mode does not prefix keys", func(t *testing.T) {
+        // Context without tenant ID
+        ctx := context.Background()
+
+        repo := NewRedisRepository(redisConn)
+
+        // Key should NOT be prefixed
+        key := poolmanager.GetKeyFromContext(ctx, "user:session")
+        assert.Equal(t, "user:session", key)
+    })
+}
+```
+
 ### Error Handling
 
 | Error | HTTP Status | Code | When |
@@ -460,6 +711,14 @@ func InitService(cfg *Config) (*Service, error) {
 - [ ] MongoDB injection in RabbitMQ consumers for async processing
 - [ ] PostgreSQL injection in RabbitMQ consumers for async processing
 - [ ] Proper error codes for tenant-related failures
+
+**Testing:**
+- [ ] Unit tests with mock tenant context (`poolmanager.ContextWithTenantID`)
+- [ ] Tenant isolation tests (verify data separation between tenants)
+- [ ] Error case tests (missing tenant, invalid tenant, tenant not found)
+- [ ] Integration tests with testcontainers
+- [ ] RabbitMQ consumer tests (X-Tenant-ID header extraction)
+- [ ] Redis key prefixing tests (verify tenant prefix applied)
 
 ---
 

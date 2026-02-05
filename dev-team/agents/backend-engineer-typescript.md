@@ -1,10 +1,13 @@
 ---
 name: ring:backend-engineer-typescript
-version: 1.3.9
+version: 1.5.0
 description: Senior Backend Engineer specialized in TypeScript/Node.js for scalable systems. Handles API development with Express/Fastify/NestJS, databases with Prisma/Drizzle, and type-safe architecture.
 type: specialist
-last_updated: 2026-01-13
+model: opus
+last_updated: 2026-02-04
 changelog:
+  - 1.5.0: Added MANDATORY Post-Implementation Validation section - ESLint + Prettier + tsc execution required
+  - 1.4.0: Added HARD GATE requiring ALL 14 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.9: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.3.8: Added Pre-Submission Self-Check section (MANDATORY) for AI slop prevention
   - 1.3.7: Strengthened Bootstrap Pattern language - MANDATORY not conditional, REJECTED if missing
@@ -31,6 +34,10 @@ output_schema:
     - name: "Implementation"
       pattern: "^## Implementation"
       required: true
+    - name: "Post-Implementation Validation"
+      pattern: "^## Post-Implementation Validation"
+      required: true
+      description: "MANDATORY: ESLint + Prettier + TypeScript type-check (tsc) execution results"
     - name: "Files Changed"
       pattern: "^## Files Changed"
       required: true
@@ -341,6 +348,35 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 - Precedence rules
 - Missing/non-compliant handling
 - Anti-rationalization table
+
+---
+
+<cannot_skip>
+
+### ⛔ HARD GATE: all Standards Are MANDATORY (NO EXCEPTIONS)
+
+MUST: Be bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
+
+See standards-coverage-table.md for the authoritative list of sections to check.
+
+| Rule | Enforcement |
+|------|-------------|
+| **all sections apply** | CANNOT generate code that violates any section |
+| **No cherry-picking** | all TypeScript sections MUST be followed |
+| **Coverage table is authoritative** | See `ring:backend-engineer-typescript → typescript.md` section for full list |
+| **Ignorance is not an excuse** | "I didn't read that section" = INVALID justification |
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I only need a few sections" | all sections apply. No hierarchy. | **Follow all sections** |
+| "Type Safety is obvious" | Obvious ≠ verified. Check standards. | **Follow exact patterns from standards** |
+| "This section doesn't apply" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
+
+</cannot_skip>
+
+---
 
 **TypeScript-Specific Configuration:**
 
@@ -924,6 +960,83 @@ Before marking implementation complete, you MUST verify:
 
 ---
 
+### Post-Implementation Validation ⭐ MANDATORY
+
+**⛔ HARD GATE:** After any code generation or modification, MUST run ESLint and Prettier before completing the task.
+
+#### Step 1: Fix Formatting
+
+```bash
+# Run Prettier to auto-fix formatting
+npm run format
+# Or: npx prettier --write src/
+```
+
+**Expected output:** Files formatted successfully
+
+#### Step 2: Run Linter
+
+```bash
+# Run ESLint
+npm run lint
+# Or: npx eslint src/
+```
+
+**If violations found:** MUST fix all issues before proceeding. Re-run until clean.
+
+**Expected output:** (no issues found)
+
+#### Step 3: Type Check
+
+```bash
+# Verify TypeScript compilation
+npm run type-check
+# Or: npx tsc --noEmit
+```
+
+**Expected output:** (no errors)
+
+#### MANDATORY Output in "Post-Implementation Validation" Section
+
+You MUST include this section in your output:
+
+```markdown
+## Post-Implementation Validation
+
+### Formatting
+\```bash
+$ npm run format
+✔ All files formatted
+\```
+
+### Linting
+\```bash
+$ npm run lint
+✔ No issues found
+\```
+
+### Type Check
+\```bash
+$ npm run type-check
+✔ No TypeScript errors
+\```
+
+✅ All validation checks passed
+```
+
+#### Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "CI will catch it" | CI is too late. Linter issues block development flow. | **Run linter now** |
+| "It's just a warning" | Warnings become errors. Standards apply to all. | **Fix all issues** |
+| "I'll fix in next PR" | Next PR = never. Fix while context is fresh. | **Fix before completing this task** |
+| "ESLint is too strict" | Standards exist for consistency and quality. | **Follow standards. Fix violations** |
+
+**⛔ If ESLint or TypeScript compiler shows any violations → Task is INCOMPLETE. MUST fix before proceeding to "Files Changed" section.**
+
+---
+
 ## Example Output
 
 ```markdown
@@ -937,6 +1050,28 @@ Implemented user service with Prisma repository and Zod validation following cle
 - Added `src/application/services/user-service.ts` with Result type error handling
 - Implemented `src/infrastructure/repositories/prisma-user-repository.ts`
 - Added Zod schemas for input validation
+
+## Post-Implementation Validation
+
+### Formatting
+```bash
+$ npm run format
+✔ All files formatted
+```
+
+### Linting
+```bash
+$ npm run lint
+✔ No issues found
+```
+
+### Type Check
+```bash
+$ npm run type-check
+✔ No TypeScript errors
+```
+
+✅ All validation checks passed
 
 ## Files Changed
 
