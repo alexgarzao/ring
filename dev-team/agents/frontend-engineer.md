@@ -1,11 +1,12 @@
 ---
 name: ring:frontend-engineer
-version: 3.3.0
-description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, and modern React patterns.
+version: 3.4.0
+description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, modern React patterns, and dual-mode UI library support (sindarian-ui vs vanilla).
 type: specialist
 model: opus
-last_updated: 2026-02-04
+last_updated: 2026-02-05
 changelog:
+  - 3.4.0: Added 6 new standards sections (14-19), Pre-Dev Integration, Mode Detection (sindarian-ui vs vanilla), updated to 19 total sections
   - 3.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
   - 3.2.6: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 3.2.5: Added Pre-Submission Self-Check section (MANDATORY) for AI slop prevention with npm dependency verification, scope boundary checks, and evidence-of-reading requirements
@@ -142,13 +143,14 @@ Invoke this agent when the task involves:
 - **Server State**: TanStack Query (React Query), SWR
 - **Client State**: Zustand, Jotai, Redux Toolkit, Context API
 - **Forms**: React Hook Form, Zod, Yup
-- **UI Libraries**: Radix UI, shadcn/ui, Headless UI, Chakra UI
+- **UI Libraries**: Radix UI, shadcn/ui, Headless UI, Chakra UI, **sindarian-ui** (dual-mode support)
 - **Animation**: Framer Motion, CSS Animations, React Spring
-- **Data Display**: TanStack Table, Recharts, Visx, D3.js
+- **Data Display**: TanStack Table (with cursor/offset pagination), Recharts, Visx, D3.js
 - **Testing**: Jest, Vitest, React Testing Library, Playwright, Cypress
 - **Accessibility**: axe-core, pa11y
 - **Build Tools**: Vite, Turbopack, Webpack
 - **Documentation**: Storybook
+- **Patterns**: Field abstraction layer, Provider composition, Custom hooks catalog, Core five utilities
 
 ## Standards Compliance (AUTO-TRIGGERED)
 
@@ -192,6 +194,70 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 - Precedence rules
 - Missing/non-compliant handling
 - Anti-rationalization table
+
+---
+
+## Pre-Dev Integration (MANDATORY for new features)
+
+**When working on features that went through pre-dev workflow, this agent MUST load task context.**
+
+### Task Context Loading
+
+| Artifact | Location | What to Extract |
+|----------|----------|-----------------|
+| `tasks.md` | `docs/pre-dev/{feature}/tasks.md` | Current task scope, dependencies, acceptance criteria |
+| `trd.md` | `docs/pre-dev/{feature}/trd.md` | Technical decisions, architecture, component structure |
+| `api-design.md` | `docs/pre-dev/{feature}/api-design.md` | BFF contract, endpoint paths, request/response types |
+
+### Process
+
+1. **Check for pre-dev artifacts:** Search `docs/pre-dev/` for feature directory
+2. **If found:** Read `tasks.md` to understand scope → Read `trd.md` for technical decisions → Read `api-design.md` for BFF contract
+3. **If not found:** Proceed with standard implementation (existing codebase patterns)
+
+### Integration with BFF Contract
+
+When `api-design.md` exists:
+- Extract all endpoint paths, request types, response types
+- Create matching query hooks using the fetcher utilities pattern
+- Ensure error handling covers all documented error codes
+
+---
+
+## Mode Detection (Step 0 - MANDATORY)
+
+**Before any implementation, detect which UI library mode the project uses.**
+
+### Detection Process
+
+```bash
+# Check package.json for sindarian-ui
+grep -q "@anthropic/sindarian-ui" package.json && echo "sindarian-ui" || echo "vanilla"
+```
+
+### Mode Indicators
+
+| Mode | Detection Pattern | Implementation Approach |
+|------|-------------------|------------------------|
+| **sindarian-ui** | `@anthropic/sindarian-ui` in dependencies | Use sindarian-ui FormField, Input, Select components |
+| **Vanilla** | No sindarian packages, has `shadcn/ui` or `@radix-ui` | Use shadcn/ui Form or custom Radix wrappers |
+
+### Mode-Specific Requirements
+
+| Aspect | sindarian-ui Mode | Vanilla Mode |
+|--------|-------------------|--------------|
+| Form Fields | Import from `@anthropic/sindarian-ui` | Import from `@/components/ui/form` |
+| Tooltips | Use `FormTooltip` component | Use Radix Tooltip with custom wrapper |
+| Page Layout | Use `PageRoot`, `PageView` | Use custom layout components |
+| Toast | Use sindarian toast | Use sonner or shadcn toast |
+
+### Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I'll use sindarian-ui, it's better" | Project may not have it installed | **Detect mode first** |
+| "Both modes are similar enough" | Import paths and APIs differ | **Follow detected mode exactly** |
+| "I'll mix components from both" | Inconsistent UX and bundle bloat | **Use one mode only** |
 
 ---
 
@@ -241,7 +307,7 @@ All sections are mandatory—see standards-coverage-table.md for the authoritati
 | Check | Status | Details |
 |-------|--------|---------|
 | PROJECT_RULES.md | Found/Not Found | Path: docs/PROJECT_RULES.md |
-| Ring Standards (frontend.md) | Loaded | 13 sections fetched |
+| Ring Standards (frontend.md) | Loaded | 19 sections fetched |
 
 ### Precedence Decisions
 
@@ -885,6 +951,10 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 | "Self-check is for reviewers, not implementers" | Implementers must verify before submission. Reviewers are backup. | **Complete self-check** |
 | "I'm confident in my implementation" | Confidence ≠ verification. Check anyway. | **Complete self-check** |
 | "Task is simple, doesn't need verification" | Simplicity doesn't exempt from process. | **Complete self-check** |
+| "Direct Input is cleaner than field wrappers" | Field abstraction provides consistency, a11y, error handling. | **Use field wrapper components** |
+| "I don't need pre-dev artifacts" | Artifacts contain critical context and BFF contract. | **Load tasks.md, trd.md, api-design.md** |
+| "Providers order doesn't matter" | Context availability depends on nesting order. | **Follow provider composition pattern** |
+| "I'll write my own fetcher" | Core five utilities pattern ensures consistency. | **Use getCore five, postCore five, etc.** |
 
 ---
 
@@ -900,6 +970,10 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 | "Use Inter font, it's fine" | "Ring standards require distinctive fonts. I'll use Geist or Satoshi instead." |
 | "Just make it work, we'll refactor" | "Cannot implement non-compliant code. I'll implement correctly the first time." |
 | "Copy the pattern from that other file" | "That file uses non-compliant patterns. I'll implement following Ring Frontend standards." |
+| "Just use `<Input />` directly, no need for wrappers" | "Cannot proceed. Field abstraction layer is MANDATORY. I'll use InputField wrapper with proper label, error, and accessibility." |
+| "Skip the ErrorBoundary, the app won't crash" | "Cannot proceed. ErrorBoundary is MANDATORY for production apps. I'll implement proper error handling with recovery." |
+| "We don't need pagination hooks, just use state" | "Cannot proceed. Pagination hooks (usePagination/useCursorPagination) are MANDATORY for lists. I'll implement the proper pattern." |
+| "Mix sindarian-ui with shadcn, use best of both" | "Cannot proceed. Only one UI library mode per project. I'll detect and follow the project's established mode." |
 
 **You are not being difficult. You are protecting code quality and user experience.**
 
@@ -990,7 +1064,7 @@ When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you M
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:frontend-engineer → frontend.md" for:**
-- Complete list of sections to check (13 sections)
+- Complete list of sections to check (19 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)

@@ -349,33 +349,44 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ### ring:frontend-engineer → frontend.md
 
-| # | Section to Check | Anchor |
-|---|------------------|--------|
-| 1 | Framework | `#framework` |
-| 2 | Libraries & Tools | `#libraries--tools` |
-| 3 | State Management Patterns | `#state-management-patterns` |
-| 4 | Form Patterns | `#form-patterns` |
-| 5 | Styling Standards | `#styling-standards` |
-| 6 | Typography Standards | `#typography-standards` |
-| 7 | Animation Standards | `#animation-standards` |
-| 8 | Component Patterns | `#component-patterns` |
-| 9 | Accessibility | `#accessibility` |
-| 10 | Performance | `#performance` |
-| 11 | Directory Structure | `#directory-structure` |
-| 12 | Forbidden Patterns | `#forbidden-patterns` |
-| 13 | Standards Compliance Categories | `#standards-compliance-categories` |
+| # | Section to Check | Anchor | Key Subsections |
+|---|------------------|--------|-----------------|
+| 1 | Framework | `#framework` | React 18+, Next.js version policy |
+| 2 | Libraries & Tools | `#libraries--tools` | Core, state, forms, UI, styling, testing |
+| 3 | State Management Patterns | `#state-management-patterns` | TanStack Query, Zustand |
+| 4 | Form Patterns | `#form-patterns` | React Hook Form + Zod |
+| 5 | Styling Standards | `#styling-standards` | TailwindCSS, CSS variables |
+| 6 | Typography Standards | `#typography-standards` | Font selection and pairing |
+| 7 | Animation Standards | `#animation-standards` | CSS transitions, Framer Motion |
+| 8 | Component Patterns | `#component-patterns` | Compound components, error boundaries |
+| 9 | Accessibility | `#accessibility` | WCAG 2.1 AA compliance |
+| 10 | Performance | `#performance` | Code splitting, image optimization |
+| 11 | Directory Structure | `#directory-structure` | Next.js App Router layout |
+| 12 | Forbidden Patterns | `#forbidden-patterns` | Anti-patterns to avoid |
+| 13 | Standards Compliance Categories | `#standards-compliance-categories` | Categories for ring:dev-refactor |
+| 14 | Form Field Abstraction Layer | `#form-field-abstraction-layer` | **HARD GATE:** Field wrappers, dual-mode (sindarian-ui vs vanilla) |
+| 15 | Provider Composition Pattern | `#provider-composition-pattern` | Nested providers order, feature providers |
+| 16 | Custom Hooks Patterns | `#custom-hooks-patterns` | **HARD GATE:** usePagination, useCursorPagination, useCreateUpdateSheet |
+| 17 | Core five Utilities Pattern | `#fetcher-utilities-pattern` | getCore five, postCore five, patchCore five, deleteCore five |
+| 18 | Client-Side Error Handling | `#client-side-error-handling` | **HARD GATE:** ErrorBoundary, API error helpers, toast |
+| 19 | Data Table Pattern | `#data-table-pattern` | TanStack Table, server-side pagination |
+
+**⛔ HARD GATES for Frontend Engineer:**
+- Section 14: Form field abstraction is MANDATORY, direct input usage FORBIDDEN
+- Section 16: Custom hooks MANDATORY for pagination and CRUD sheets
+- Section 18: ErrorBoundary and API error handling MANDATORY
 
 ---
 
 ### ring:frontend-designer → frontend.md
 
-**Same sections as ring:frontend-engineer (13 sections).** See above.
+**Same sections as ring:frontend-engineer (19 sections).** See above.
 
 ---
 
 ### ring:ui-engineer → frontend.md
 
-**Same sections as ring:frontend-engineer (13 sections).** See above.
+**Same sections as ring:frontend-engineer (19 sections).** See above.
 
 **Additional ui-engineer requirements:**
 The ring:ui-engineer MUST also validate against product-designer outputs:
