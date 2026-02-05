@@ -367,15 +367,15 @@ See standards-coverage-table.md for sections to check (see coverage table for ap
 
 | Rule | Enforcement |
 |------|-------------|
-| **all sections apply** | CANNOT validate without checking all sections |
-| **No cherry-picking** | all SRE sections MUST be validated |
-| **Coverage table is authoritative** | See `ring:sre → sre.md` section for full list |
+| **all sections apply** | CANNOT: validate without checking all sections |
+| **no cherry-picking** | MUST: validate all SRE sections |
+| **Coverage table is authoritative** | REQUIRED: See `ring:sre → sre.md` section for full list |
 
 **Anti-Rationalization:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Health checks are trivial" | all sections must be validated. | **Validate all sections** |
+| "Health checks are trivial" | MUST validate all sections. | **Validate all sections** |
 | "Logging looks fine" | "Looks fine" ≠ validated. Show evidence. | **Provide file:line evidence** |
 | "Project doesn't need tracing" | Mark N/A with evidence. Don't skip. | **Check all, mark N/A with evidence** |
 

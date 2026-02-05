@@ -18,7 +18,7 @@ This module covers API naming conventions, pagination patterns, and OpenAPI docu
 
 ## JSON Naming Convention (camelCase) (MANDATORY)
 
-**HARD GATE:** All JSON data fields in API requests and responses MUST use `camelCase`.
+**HARD GATE:** all JSON data fields in API requests and responses MUST use `camelCase`.
 
 **EXCEPTION:** Pagination metadata fields use `snake_case` (see "Query Parameters vs Body Fields" below).
 
@@ -548,7 +548,7 @@ func main() {
 
 ### Handler Annotations (Complete Reference)
 
-MUST: Every handler function have swaggo annotations:
+MUST: Every handler function has swaggo annotations:
 
 ```go
 // CreateUser creates a new user
