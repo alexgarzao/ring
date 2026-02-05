@@ -3,7 +3,6 @@ name: resource-planner
 version: 1.0.0
 description: Resource Planning Specialist for capacity planning, allocation optimization, skills management, and conflict resolution across portfolio projects.
 type: specialist
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.0.0: Initial release with resource planning capabilities
@@ -53,28 +52,6 @@ input_schema:
     - name: "project_demands"
       type: "list[object]"
       description: "Resource demands from projects"
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:resource-planner", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Resource planning requires complex capacity modeling, conflict resolution, and optimization across multiple projects that demands Opus-level reasoning capabilities.
-
 ---
 
 # Resource Planner

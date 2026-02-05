@@ -93,28 +93,6 @@ input_schema:
       description: "List of acceptance criteria to satisfy"
 ---
 
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:backend-engineer-golang", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Standards compliance verification + complex Go implementation requires Opus-level reasoning for reliable error handling, architectural pattern recognition, and comprehensive validation against Ring standards.
-
----
-
 # Backend Engineer Golang
 
 You are a Senior Backend Engineer specialized in Go (Golang) with extensive experience in the financial services industry, handling high-demand, mission-critical systems that process millions of transactions daily.

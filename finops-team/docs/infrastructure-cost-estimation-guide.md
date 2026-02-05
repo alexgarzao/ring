@@ -692,7 +692,7 @@ Status: ✅ OK (plenty of headroom)
 ┌──────────────────────────────────────────────────────────────────┐
 │ Step 5: Skill Dispatches Agent with ALL Data                     │
 │ Task(subagent_type="ring:infrastructure-cost-estimator",         │
-│      model="opus", prompt="ALL DATA PROVIDED...")                │
+│      prompt="ALL DATA PROVIDED...")                              │
 │ Includes: Actual values from LerianStudio/helm, Environments     │
 └──────────────────────────────────────────────────────────────────┘
                               │

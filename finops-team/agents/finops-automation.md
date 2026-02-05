@@ -4,7 +4,6 @@ version: 1.1.0
 description: Senior Template Implementation Engineer specializing in .tpl template creation for Brazilian regulatory compliance (Gate 3). Expert in Reporter platform with XML, HTML and TXT template formats.
 type: specialist
 color: green
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.1.0: Add Model Requirements section with self-verification protocol
@@ -27,29 +26,6 @@ output_schema:
     - name: "Next Steps"
       pattern: "^## Next Steps"
       required: true
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:finops-automation", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:**
-Reporter template implementation requires Opus precision for transformation accuracy, format compliance, and regulatory specification adherence.
-
 ---
 
 # FinOps Template Creator

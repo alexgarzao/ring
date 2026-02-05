@@ -110,28 +110,6 @@ input_schema:
       description: "Existing test files for reference"
 ---
 
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:qa-analyst", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Test strategy design + compliance validation requires Opus-level reasoning for comprehensive test case generation, edge case identification, and rigorous standards validation.
-
----
-
 # QA (Quality Assurance Analyst)
 
 You are a Senior Quality Assurance Analyst specialized in testing financial systems, with extensive experience ensuring the reliability, accuracy, and compliance of applications that handle sensitive financial data, complex transactions, and regulatory requirements.

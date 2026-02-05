@@ -192,14 +192,13 @@ validation_state = {
 
 ## Step 3: Dispatch SRE Agent for Validation
 
-<dispatch_required agent="ring:sre" model="opus">
+<dispatch_required agent="ring:sre">
 Validate observability implementation for unit_id.
 </dispatch_required>
 
 ```yaml
 Task:
   subagent_type: "ring:sre"
-  model: "opus"
   description: "Validate observability for [unit_id]"
   prompt: |
     ⛔ VALIDATE Observability Implementation
@@ -368,7 +367,6 @@ if validation_state.iteration >= validation_state.max_iterations:
 ```yaml
 Task:
   subagent_type: "[implementation_agent from input]"  # e.g., "ring:backend-engineer-golang"
-  model: "opus"
   description: "Fix observability issues for [unit_id]"
   prompt: |
     ⛔ FIX REQUIRED - Observability Issues Found

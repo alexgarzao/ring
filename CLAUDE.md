@@ -108,25 +108,7 @@ If any checkbox is no → Fix before committing.
 
 **⛔ If section counts in skills don't match this table → Update the skill.**
 
-### 6. Agent Model Requirements (always RESPECT)
-When invoking agents via Task tool:
-- **MUST** check agent's `model:` field in YAML frontmatter
-- **MUST** pass matching `model` parameter to Task tool
-- Agents with `model: opus` → **MUST** call with `model="opus"`
-- Agents with `model: sonnet` → **MUST** call with `model="sonnet"`
-- **never** omit model parameter for specialized agents
-- **never** let system auto-select model for agents with model requirements
-
-**Examples:**
-- ✅ `Task(subagent_type="ring:code-reviewer", model="opus", ...)`
-- ✅ `Task(subagent_type="ring:backend-engineer-golang", model="opus", ...)`
-- ❌ `Task(subagent_type="ring:code-reviewer", ...)` - Missing model parameter
-- ❌ `Task(subagent_type="ring:code-reviewer", model="sonnet", ...)` - Wrong model
-
-**Agent Self-Verification:**
-All agents with `model:` field in frontmatter MUST include "Model Requirements" section that verifies they are running on the correct model and STOPS if not.
-
-### 8. CLAUDE.md ↔ AGENTS.md Synchronization (AUTOMATIC via Symlink)
+### 6. CLAUDE.md ↔ AGENTS.md Synchronization (AUTOMATIC via Symlink)
 
 **⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md - DO not BREAK:**
 - `CLAUDE.md` - Primary project instructions (source of truth)
@@ -187,7 +169,7 @@ When content is reused across multiple skills within a plugin:
 | Section | Content |
 |---------|---------|
 | [CRITICAL RULES](#-critical-rules-read-first) | Non-negotiable requirements |
-| [CLAUDE.md ↔ AGENTS.md Sync](#8-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync |
+| [CLAUDE.md ↔ AGENTS.md Sync](#6-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync |
 | [Content Duplication Prevention](#7-content-duplication-prevention-always-check) | Canonical sources + reference pattern |
 | [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents) | Prevent AI from assuming/skipping |
 | [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory) | Selective emphasis for effective prompts |
@@ -406,7 +388,6 @@ CHECKLIST (all must be YES):
 [ ] Does agent use STRONG language (MUST, REQUIRED, CANNOT)?
 [ ] Does agent define when to STOP and report?
 [ ] Does agent define non-negotiable requirements?
-[ ] If agent has model: field in frontmatter, does it have Model Requirements section?
 
 If any checkbox is no → Agent is INCOMPLETE. Add missing sections.
 ```
@@ -424,13 +405,13 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 - **ring-dev-team**: 9 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
 - **ring-pm-team**: 10 product planning skills, 3 research agents, 2 slash commands
 - **ring-pmo-team**: 8 PMO skills, 3 slash commands, 5 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter)
-- **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
+- **ring-finops-team**: 7 regulatory skills, 3 FinOps agents (Analyzer, Automation, Infrastructure Cost Estimator)
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 65 skills (25 + 9 + 10 + 8 + 6 + 7) across 6 plugins**
-**Total: 29 agents (7 + 9 + 3 + 5 + 2 + 3) across 6 plugins**
+**Total: 66 skills (25 + 9 + 10 + 8 + 7 + 7) across 6 plugins**
+**Total: 30 agents (7 + 9 + 3 + 5 + 3 + 3) across 6 plugins**
 **Total: 25 commands (12 + 5 + 2 + 3 + 0 + 3) across 6 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
@@ -455,7 +436,7 @@ See [README.md](README.md#installation) for detailed installation instructions.
 | ring-dev-team | `dev-team/` | 9 skills, 9 agents, 5 commands |
 | ring-pm-team | `pm-team/` | 10 skills, 3 agents, 2 commands |
 | ring-pmo-team | `pmo-team/` | 8 skills, 5 agents, 3 commands |
-| ring-finops-team | `finops-team/` | 6 skills, 2 agents |
+| ring-finops-team | `finops-team/` | 7 skills, 3 agents |
 | ring-tw-team | `tw-team/` | 7 skills, 3 agents, 3 commands |
 
 Each plugin contains: `skills/`, `agents/`, `commands/`, `hooks/`
@@ -592,7 +573,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
 - Product planning: `pm-team/` (10 skills, 3 agents, 2 commands)
 - PMO specialists: `pmo-team/` (8 skills, 5 agents, 3 commands)
-- FinOps regulatory: `finops-team/` (6 skills, 2 agents)
+- FinOps regulatory: `finops-team/` (7 skills, 3 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)
 - Current git branch: `main`
 - Remote: `github.com/LerianStudio/ring`

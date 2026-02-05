@@ -232,14 +232,13 @@ devops_state = {
 
 ## Step 4: Dispatch DevOps Agent
 
-<dispatch_required agent="ring:devops-engineer" model="opus">
+<dispatch_required agent="ring:devops-engineer">
 Create/update Dockerfile, docker-compose.yml, and .env.example for containerization.
 </dispatch_required>
 
 ```yaml
 Task:
   subagent_type: "ring:devops-engineer"
-  model: "opus"
   description: "Create/update DevOps artifacts for [unit_id]"
   prompt: |
     ⛔ MANDATORY: Create all DevOps Artifacts
@@ -350,7 +349,6 @@ if any section has ❌ or any verification FAIL:
 ```yaml
 Task:
   subagent_type: "ring:devops-engineer"
-  model: "opus"
   description: "Fix DevOps issues for [unit_id]"
   prompt: |
     ⛔ FIX REQUIRED - DevOps Standards Not Met

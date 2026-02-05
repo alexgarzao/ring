@@ -3,7 +3,6 @@ name: portfolio-manager
 version: 1.0.0
 description: Senior Portfolio Manager specialized in multi-project coordination, strategic alignment assessment, and portfolio optimization. Handles portfolio-level planning, prioritization, and health monitoring.
 type: specialist
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.0.0: Initial release with portfolio management capabilities
@@ -53,28 +52,6 @@ input_schema:
     - name: "strategic_objectives"
       type: "list[string]"
       description: "Strategic objectives for alignment assessment"
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:portfolio-manager", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Portfolio management requires complex multi-project analysis, strategic alignment assessment, and nuanced decision support that demands Opus-level reasoning capabilities.
-
 ---
 
 # Portfolio Manager

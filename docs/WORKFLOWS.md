@@ -127,11 +127,12 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Commands: write-guide, write-api, review-docs
 
 ### Ring FinOps Team Plugin
-- `using-finops-team` → 2 FinOps agents for Brazilian compliance
+- `using-finops-team` → 3 FinOps agents for Brazilian compliance and cost estimation
 - Auto-loads when ring-finops-team plugin is enabled
 - Located: `finops-team/skills/using-finops-team/SKILL.md`
 - Agents (invoke as `{agent-name}`):
   - finops-analyzer (compliance analysis)
+  - infrastructure-cost-estimator (cost estimation)
   - finops-automation (template generation)
 
 ### Hook Configuration

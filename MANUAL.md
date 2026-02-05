@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 65 skills, 29 agents, and 25 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 66 skills, 30 agents, and 25 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -249,12 +249,13 @@ For documentation creation and review:
 
 ### Regulatory & FinOps (ring-finops-team)
 
-For Brazilian financial compliance workflows:
+For Brazilian financial compliance workflows and cost analysis:
 
 | Agent | Purpose | Use For |
 |-------|---------|---------|
 | `finops-analyzer` | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
 | `finops-automation` | Template generation | Create .tpl files (Gate 3) |
+| `infrastructure-cost-estimator` | Cost estimation and analysis | Infrastructure cost planning and optimization |
 
 ### PMO Specialists (ring-pmo-team)
 
@@ -356,6 +357,7 @@ These enforce quality standards:
 | Documentation quality review | `docs-reviewer` |
 | Regulatory compliance analysis | `finops-analyzer` |
 | Regulatory template generation | `finops-automation` |
+| Infrastructure cost estimation | `infrastructure-cost-estimator` |
 | Portfolio-level planning | `portfolio-manager` |
 | Resource capacity planning | `resource-planner` |
 | Portfolio risk assessment | `risk-analyst` |
@@ -369,7 +371,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 65 skills are auto-discovered and available
+2. All 66 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

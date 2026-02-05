@@ -239,14 +239,13 @@ implementation_state = {
 
 ## Step 4: Gate 0.1 - TDD-RED (Write Failing Test)
 
-<dispatch_required agent="[selected_agent]" model="opus">
+<dispatch_required agent="[selected_agent]">
 Write failing test for unit_id following TDD-RED methodology.
 </dispatch_required>
 
 ```yaml
 Task:
   subagent_type: "[selected_agent]"  # e.g., "ring:backend-engineer-golang"
-  model: "opus"
   description: "TDD-RED: Write failing test for [unit_id]"
   prompt: |
     ⛔ TDD-RED PHASE: Write a FAILING Test
@@ -329,14 +328,13 @@ if failure_output contains "FAIL":
 
 **PREREQUISITE:** `implementation_state.tdd_red.status == "completed"`
 
-<dispatch_required agent="[selected_agent]" model="opus">
+<dispatch_required agent="[selected_agent]">
 Implement code to make test pass following TDD-GREEN methodology.
 </dispatch_required>
 
 ```yaml
 Task:
   subagent_type: "[selected_agent]"
-  model: "opus"
   description: "TDD-GREEN: Implement code to pass test for [unit_id]"
   prompt: |
     ⛔ TDD-GREEN PHASE: Make the Test PASS

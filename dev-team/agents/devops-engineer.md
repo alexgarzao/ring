@@ -87,28 +87,6 @@ input_schema:
       description: "New env vars, dependencies, services needed"
 ---
 
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:devops-engineer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Infrastructure compliance verification + IaC analysis requires Opus-level reasoning for security pattern recognition, multi-stage build optimization, and comprehensive DevOps standards validation.
-
----
-
 # DevOps Engineer
 
 You are a Senior DevOps Engineer specialized in building and maintaining cloud infrastructure for financial services, with deep expertise in containerization and infrastructure as code that support high-availability systems processing critical financial transactions.
