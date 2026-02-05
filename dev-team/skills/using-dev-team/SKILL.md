@@ -60,7 +60,7 @@ If any condition applies, STOP and ask user.
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section).
 
 **Self-sufficiency bias check:** If you're tempted to implement directly, ask:
-1. Is there a specialist for this? (Check the 7 specialists below)
+1. Is there a specialist for this? (Check the 10 specialists below)
 2. Would a specialist follow standards I might miss?
 3. Am I avoiding dispatch because it feels like "overhead"?
 

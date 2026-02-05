@@ -1,5 +1,5 @@
 ---
-name: frontend-bff-engineer-typescript
+name: ring:frontend-bff-engineer-typescript
 version: 2.5.0
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption. Supports dual-mode architecture (sindarian-server with decorators OR vanilla inversify).
 type: specialist
@@ -1213,10 +1213,10 @@ src/core/
 │   └── use-cases/
 └── infrastructure/
     ├── http/
-    │   ├── services/
-    │   ├── dtos/
-    │   └── mappers/
-    ├── controllers/
+    │   ├── controllers/
+    │   ├── dto/
+    │   ├── mappers/
+    │   └── services/
     ├── modules/
     ├── exceptions/
     ├── filters/
@@ -1528,7 +1528,7 @@ $ npm run type-check
 | src/core/application/use-cases/GetAccountUseCase.ts | Created | +62 |
 | src/core/infrastructure/http/services/AccountHttpService.ts | Created | +38 |
 | src/core/infrastructure/http/mappers/AccountMapper.ts | Created | +45 |
-| src/core/infrastructure/controllers/AccountController.ts | Created | +32 |
+| src/core/infrastructure/http/controllers/AccountController.ts | Created | +32 |
 | src/core/application/use-cases/GetAccountUseCase.test.ts | Created | +85 |
 
 ## Testing

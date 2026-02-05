@@ -98,17 +98,20 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Located: `default/skills/using-ring/SKILL.md`
 
 ### Ring Dev Team Plugin
-- `ring:using-dev-team` → 7 specialist developer agents
+- `ring:using-dev-team` → 10 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
-- Agents (invoke as `{agent-name}`):
+- Agents (invoke as `ring:{agent-name}`):
   - ring:backend-engineer-golang
   - ring:backend-engineer-typescript
   - ring:devops-engineer
   - ring:frontend-bff-engineer-typescript
   - ring:frontend-designer
+  - ring:frontend-engineer
+  - ring:prompt-quality-reviewer
   - ring:qa-analyst
   - ring:sre
+  - ring:ui-engineer
 
 ### Ring PM Team Plugin
 - `ring:using-pm-team` → Pre-dev workflow skills (8 gates)
@@ -120,19 +123,20 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - `using-tw-team` → 3 technical writing agents for documentation
 - Auto-loads when ring-tw-team plugin is enabled
 - Located: `tw-team/skills/using-tw-team/SKILL.md`
-- Agents (invoke as `{agent-name}`):
-  - functional-writer (guides)
-  - api-writer (API reference)
-  - docs-reviewer (quality review)
+- Agents (invoke as `ring:{agent-name}`):
+  - ring:functional-writer (guides)
+  - ring:api-writer (API reference)
+  - ring:docs-reviewer (quality review)
 - Commands: write-guide, write-api, review-docs
 
 ### Ring FinOps Team Plugin
-- `using-finops-team` → 2 FinOps agents for Brazilian compliance
+- `using-finops-team` → 3 FinOps agents for Brazilian compliance
 - Auto-loads when ring-finops-team plugin is enabled
 - Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents (invoke as `{agent-name}`):
-  - finops-analyzer (compliance analysis)
-  - finops-automation (template generation)
+- Agents (invoke as `ring:{agent-name}`):
+  - ring:finops-analyzer (compliance analysis)
+  - ring:finops-automation (template generation)
+  - ring:infrastructure-cost-estimator (cost estimation)
 
 ### Hook Configuration
 - Each plugin has: `{plugin}/hooks/hooks.json` + `{plugin}/hooks/session-start.sh`

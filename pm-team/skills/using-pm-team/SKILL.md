@@ -1,7 +1,7 @@
 ---
 name: ring:using-pm-team
 description: |
-  10 pre-dev workflow skills + 3 research agents organized into Small Track (4 gates, <2 days) and
+  10 pre-dev workflow skills + 4 research agents organized into Small Track (4 gates, <2 days) and
   Large Track (9 gates, 2+ days) for systematic feature planning with research-first approach.
 
 trigger: |
@@ -17,7 +17,7 @@ skip_when: |
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring:gate-name"` or via slash commands.
+The ring-pm-team plugin provides 10 pre-development planning skills and 4 research agents. Use them via `Skill tool: "ring:gate-name"` or via slash commands.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 

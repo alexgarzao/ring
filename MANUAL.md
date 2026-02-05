@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 65 skills, 29 agents, and 25 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 65 skills, 32 agents, and 25 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 

@@ -16,7 +16,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
 - **Providing 65 specialized skills** (25 core + 9 dev-team + 10 product planning + 6 FinOps regulatory + 7 technical writing + 8 PMO)
-- **29 specialized agents** - 7 review/planning + 9 developer + 3 product research + 2 FinOps regulatory + 3 technical writing + 5 PMO
+- **32 specialized agents** - 7 review/planning + 10 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 5 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -36,12 +36,13 @@ Ring solves this by:
 - `ring:backend-engineer-golang` - Go backend specialist for financial systems
 - `ring:backend-engineer-typescript` - TypeScript/Node.js backend specialist (Express, NestJS, Fastify)
 - `ring:devops-engineer` - DevOps infrastructure specialist
-- `frontend-bff-engineer-typescript` - BFF & React/Next.js frontend with Clean Architecture
+- `ring:frontend-bff-engineer-typescript` - BFF & React/Next.js frontend with Clean Architecture
 - `ring:frontend-designer` - Visual design specialist
+- `ring:frontend-engineer` - Senior Frontend Engineer (React/Next.js)
+- `ring:prompt-quality-reviewer` - Agent Quality Analyst
 - `ring:qa-analyst` - Quality assurance specialist
 - `ring:sre` - Site reliability engineer
-- `ring:frontend-engineer` - Senior Frontend Engineer (React/Next.js)
-- `prompt-quality-reviewer` - Agent Quality Analyst
+- `ring:ui-engineer` - UI component specialist (design systems, accessibility)
 
 > **Standards Compliance:** All dev-team agents include a `## Standards Compliance` output section with conditional requirement:
 > - **Optional** when invoked directly or via `ring:dev-cycle`
@@ -54,23 +55,42 @@ Ring solves this by:
 >
 > See `dev-team/docs/standards/*.md` for standards source. Cross-references: CLAUDE.md (Standards Compliance section), `dev-team/skills/dev-refactor/SKILL.md`
 
+**Product Research Agents (ring-pm-team plugin):**
+- `ring:repo-research-analyst` - Repository structure and codebase analysis
+- `ring:best-practices-researcher` - Industry best practices research
+- `ring:framework-docs-researcher` - Framework documentation research
+- `ring:product-designer` - Product design and UX research
+
 **Technical Writing Agents (ring-tw-team plugin):**
-- `functional-writer` - Functional documentation (guides, tutorials, conceptual docs)
-- `api-writer` - API reference documentation (endpoints, schemas, examples)
-- `docs-reviewer` - Documentation quality review (voice, tone, structure, completeness)
+- `ring:functional-writer` - Functional documentation (guides, tutorials, conceptual docs)
+- `ring:api-writer` - API reference documentation (endpoints, schemas, examples)
+- `ring:docs-reviewer` - Documentation quality review (voice, tone, structure, completeness)
 
 **FinOps Agents (ring-finops-team plugin):**
-- `finops-analyzer` - Financial operations analysis
-- `finops-automation` - FinOps template creation and automation
+- `ring:finops-analyzer` - Financial operations analysis
+- `ring:finops-automation` - FinOps template creation and automation
+- `ring:infrastructure-cost-estimator` - Infrastructure cost estimation and optimization
 
 **PMO Agents (ring-pmo-team plugin):**
-- `portfolio-manager` - Portfolio-level planning and multi-project coordination
-- `resource-planner` - Capacity planning and resource allocation optimization
-- `risk-analyst` - Portfolio risk identification and mitigation planning
-- `governance-specialist` - Gate reviews and process compliance
-- `executive-reporter` - Executive dashboards and stakeholder communications
+- `ring:portfolio-manager` - Portfolio-level planning and multi-project coordination
+- `ring:resource-planner` - Capacity planning and resource allocation optimization
+- `ring:risk-analyst` - Portfolio risk identification and mitigation planning
+- `ring:governance-specialist` - Gate reviews and process compliance
+- `ring:executive-reporter` - Executive dashboards and stakeholder communications
 
 *Plugin versions are managed in `.claude-plugin/marketplace.json`*
+
+### 📦 Archived Plugins
+
+The following plugins have been archived and are not actively maintained. They remain available in `.archive/` for reference:
+
+| Plugin | Description | Status |
+|--------|-------------|--------|
+| `pmm-team` | Product Marketing (GTM, positioning, competitive intel) | Archived - functionality may be restored based on demand |
+| `finance-team` | Financial planning and analysis | Archived - under evaluation |
+| `ops-team` | Operations management | Archived - under evaluation |
+
+*To restore an archived plugin, move its folder from `.archive/` to the root directory and register it in `marketplace.json`.*
 
 ## 🖥️ Supported Platforms
 
@@ -475,14 +495,14 @@ ring/                                  # Monorepo root
 │       ├── ring:frontend-designer.md        # Visual design specialist
 │       ├── ring:frontend-engineer.md        # Senior Frontend Engineer (React/Next.js)
 │       ├── prompt-quality-reviewer.md       # Agent Quality Analyst
-│       ├── ring:qa-analyst.md               # Quality assurance
+│       ├── qa-analyst.md                    # Quality assurance
 │       └── sre.md                      # Site reliability engineer
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 10 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── finops-team/                     # FinOps Regulatory plugin (ring-finops-team)
 │   ├── skills/                      # 6 regulatory skills
-│   ├── agents/                      # 2 FinOps agents
+│   ├── agents/                      # 3 FinOps agents
 │   ├── docs/regulatory/             # Regulatory templates and dictionaries
 │   └── hooks/                       # SessionStart hook
 ├── pmo-team/                         # PMO Specialists plugin (ring-pmo-team)

@@ -86,7 +86,7 @@ If any checkbox is no → Fix before committing.
 | Standards File | Agents That Use It |
 |----------------|-------------------|
 | `golang.md` | `ring:backend-engineer-golang`, `ring:qa-analyst` |
-| `typescript.md` | `ring:backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `ring:qa-analyst` |
+| `typescript.md` | `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`, `ring:qa-analyst` |
 | `frontend.md` | `ring:frontend-engineer`, `ring:frontend-designer` |
 | `devops.md` | `ring:devops-engineer` |
 | `sre.md` | `ring:sre` |
@@ -99,7 +99,7 @@ If any checkbox is no → Fix before committing.
 |-------|----------------|---------------|
 | `ring:backend-engineer-golang` | golang.md | See coverage table |
 | `ring:backend-engineer-typescript` | typescript.md | See coverage table |
-| `frontend-bff-engineer-typescript` | typescript.md | See coverage table |
+| `ring:frontend-bff-engineer-typescript` | typescript.md | See coverage table |
 | `ring:frontend-engineer` | frontend.md | See coverage table |
 | `ring:frontend-designer` | frontend.md | See coverage table |
 | `ring:devops-engineer` | devops.md | See coverage table |
@@ -421,16 +421,16 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Active Plugins:**
 - **ring-default**: 25 core skills, 12 slash commands, 7 specialized agents
-- **ring-dev-team**: 9 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
-- **ring-pm-team**: 10 product planning skills, 3 research agents, 2 slash commands
+- **ring-dev-team**: 9 development skills, 5 slash commands, 10 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend BFF TypeScript, Frontend Designer, Frontend Engineer, Prompt Quality Reviewer, QA, SRE, UI Engineer)
+- **ring-pm-team**: 10 product planning skills, 4 research agents, 2 slash commands
 - **ring-pmo-team**: 8 PMO skills, 3 slash commands, 5 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter)
-- **ring-finops-team**: 6 regulatory skills, 2 FinOps agents
+- **ring-finops-team**: 6 regulatory skills, 3 FinOps agents
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
 **Total: 66 skills (25 + 9 + 11 + 8 + 6 + 7) across 6 plugins**
-**Total: 29 agents (7 + 9 + 3 + 5 + 2 + 3) across 6 plugins**
+**Total: 32 agents (7 + 10 + 4 + 5 + 3 + 3) across 6 plugins**
 **Total: 25 commands (12 + 5 + 2 + 3 + 0 + 3) across 6 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
@@ -452,10 +452,10 @@ See [README.md](README.md#installation) for detailed installation instructions.
 | Plugin | Path | Contents |
 |--------|------|----------|
 | ring-default | `default/` | 25 skills, 7 agents, 12 commands |
-| ring-dev-team | `dev-team/` | 9 skills, 9 agents, 5 commands |
-| ring-pm-team | `pm-team/` | 11 skills, 3 agents, 2 commands |
+| ring-dev-team | `dev-team/` | 9 skills, 10 agents, 5 commands |
+| ring-pm-team | `pm-team/` | 11 skills, 4 agents, 2 commands |
 | ring-pmo-team | `pmo-team/` | 8 skills, 5 agents, 3 commands |
-| ring-finops-team | `finops-team/` | 6 skills, 2 agents |
+| ring-finops-team | `finops-team/` | 6 skills, 3 agents |
 | ring-tw-team | `tw-team/` | 7 skills, 3 agents, 3 commands |
 
 Each plugin contains: `skills/`, `agents/`, `commands/`, `hooks/`
@@ -589,10 +589,10 @@ The system loads at SessionStart (from `default/` plugin):
 - Active plugins: 6 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-pmo-team`, `ring-finops-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
 - Core plugin: `default/` (25 skills, 7 agents, 12 commands)
-- Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
-- Product planning: `pm-team/` (11 skills, 3 agents, 2 commands)
+- Developer agents: `dev-team/` (9 skills, 10 agents, 5 commands)
+- Product planning: `pm-team/` (11 skills, 4 agents, 2 commands)
 - PMO specialists: `pmo-team/` (8 skills, 5 agents, 3 commands)
-- FinOps regulatory: `finops-team/` (6 skills, 2 agents)
+- FinOps regulatory: `finops-team/` (6 skills, 3 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)
 - Current git branch: `main`
 - Remote: `github.com/LerianStudio/ring`
