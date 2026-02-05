@@ -7,7 +7,7 @@ model: opus
 last_updated: 2026-02-04
 changelog:
   - 1.5.0: Added MANDATORY Post-Implementation Validation section - goimports + golangci-lint execution required
-  - 1.4.0: Added HARD GATE requiring ALL 29 sections from standards-coverage-table.md - no cherry-picking allowed
+  - 1.4.0: Added HARD GATE requiring all 29 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.0: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.2.9: Added Pre-Submission Self-Check section (MANDATORY) to prevent AI slop - references ai-slop-detection.md
   - 1.2.8: Strengthened Bootstrap Pattern language - MANDATORY not conditional, REJECTED if missing
@@ -289,25 +289,25 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 <cannot_skip>
 
-### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: all Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+MUST: Be bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
 
 | Rule | Enforcement |
 |------|-------------|
-| **All sections apply** | You CANNOT generate code that violates any section |
-| **No cherry-picking** | Even if you only WebFetch core.md, you MUST follow quality.md rules |
+| **all sections apply** | CANNOT generate code that violates any section |
+| **No cherry-picking** | Even if you only WebFetch core.md, MUST follow quality.md rules |
 | **Coverage table is authoritative** | See standards-coverage-table.md for the authoritative list of sections to check |
 | **Ignorance is not an excuse** | "I didn't load that module" = INVALID justification |
 
 **Anti-Rationalization:**
 
-| Rationalization | Why it's wrong | Required Action |
+| Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I only loaded core.md" | Loading ≠ Compliance. All standards apply. | **Follow all sections** |
+| "I only loaded core.md" | Loading ≠ Compliance. all standards apply. | **Follow all sections** |
 | "Magic numbers is in quality.md, I loaded domain.md" | Standards are not modular for compliance. | **No magic numbers ever** |
 | "This section doesn't apply to my task" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
-| "I'll follow the important ones" | All sections are important. No hierarchy. | **Follow all sections equally** |
+| "I'll follow the important ones" | all sections are important. No hierarchy. | **Follow all sections equally** |
 
 </cannot_skip>
 
@@ -1033,7 +1033,7 @@ Before finalizing, you MUST cite specific evidence that you read the existing co
 
 ### Post-Implementation Validation ⭐ MANDATORY
 
-**⛔ HARD GATE:** After ANY code generation or modification, you MUST run `goimports` and `golangci-lint` before completing the task.
+**⛔ HARD GATE:** After any code generation or modification, MUST run `goimports` and `golangci-lint` before completing the task.
 
 **Reference:** See [quality.md § Linting - Post-Implementation Linting](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/quality.md) for complete requirements.
 
@@ -1053,7 +1053,7 @@ goimports -w ./internal ./cmd ./pkg
 golangci-lint run ./internal ./cmd ./pkg
 ```
 
-**If violations found:** Fix ALL issues before proceeding. Re-run until clean.
+**If violations found:** MUST fix all issues before proceeding. Re-run until clean.
 
 **Expected output:** (no issues found)
 
@@ -1094,14 +1094,14 @@ $ golangci-lint run ./...
 
 #### Anti-Rationalization
 
-| Rationalization | Why it's wrong | Required Action |
+| Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "CI will catch it" | CI is too late. Linter issues block development flow. | **Run linter now** |
 | "It's just a warning" | Warnings become errors. Standards apply to all. | **Fix all issues** |
 | "I'll fix in next PR" | Next PR = never. Fix while context is fresh. | **Fix before completing this task** |
 | "Linter is too strict" | Standards exist for consistency and quality. | **Follow standards. Fix violations** |
 
-**⛔ If golangci-lint shows ANY violations → Task is INCOMPLETE. Fix before proceeding to "Files Changed" section.**
+**⛔ If golangci-lint shows any violations → Task is INCOMPLETE. MUST fix before proceeding to "Files Changed" section.**
 
 ---
 

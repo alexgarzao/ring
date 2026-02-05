@@ -375,24 +375,24 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 <cannot_skip>
 
-### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: all Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+MUST: Be bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
 
 See standards-coverage-table.md for the authoritative list of sections to check.
 
 | Rule | Enforcement |
 |------|-------------|
-| **all sections apply** | You CANNOT generate code that violates any section |
-| **No cherry-picking** | All TypeScript sections MUST be followed |
+| **all sections apply** | CANNOT generate code that violates any section |
+| **No cherry-picking** | all TypeScript sections MUST be followed |
 | **Coverage table is authoritative** | See `ring:backend-engineer-typescript → typescript.md` section for full list |
 | **Ignorance is not an excuse** | "I didn't read that section" = INVALID justification |
 
 **Anti-Rationalization:**
 
-| Rationalization | Why it's wrong | Required Action |
+| Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I only need a few sections" | All sections apply. No hierarchy. | **Follow all sections** |
+| "I only need a few sections" | all sections apply. No hierarchy. | **Follow all sections** |
 | "Type Safety is obvious" | Obvious ≠ verified. Check standards. | **Follow exact patterns from standards** |
 | "This section doesn't apply" | You don't decide. Mark N/A with evidence. | **Check all, mark N/A if truly not applicable** |
 
@@ -984,7 +984,7 @@ Before marking implementation complete, you MUST verify:
 
 ### Post-Implementation Validation ⭐ MANDATORY
 
-**⛔ HARD GATE:** After ANY code generation or modification, you MUST run ESLint and Prettier before completing the task.
+**⛔ HARD GATE:** After any code generation or modification, MUST run ESLint and Prettier before completing the task.
 
 #### Step 1: Fix Formatting
 
@@ -1004,7 +1004,7 @@ npm run lint
 # Or: npx eslint src/
 ```
 
-**If violations found:** Fix ALL issues before proceeding. Re-run until clean.
+**If violations found:** MUST fix all issues before proceeding. Re-run until clean.
 
 **Expected output:** (no issues found)
 
@@ -1048,14 +1048,14 @@ $ npm run type-check
 
 #### Anti-Rationalization
 
-| Excuse | Response |
-|--------|----------|
-| "CI will catch it" | **Run linter now. CI is too late.** |
-| "It's just a warning" | **Fix ALL issues. No exceptions.** |
-| "I'll fix in next PR" | **Fix before completing this task.** |
-| "ESLint is too strict" | **Follow standards. Fix violations.** |
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "CI will catch it" | CI is too late. Linter issues block development flow. | **Run linter now** |
+| "It's just a warning" | Warnings become errors. Standards apply to all. | **Fix all issues** |
+| "I'll fix in next PR" | Next PR = never. Fix while context is fresh. | **Fix before completing this task** |
+| "ESLint is too strict" | Standards exist for consistency and quality. | **Follow standards. Fix violations** |
 
-**⛔ If ESLint or TypeScript compiler shows ANY violations → Task is INCOMPLETE. Fix before proceeding to "Files Changed" section.**
+**⛔ If ESLint or TypeScript compiler shows any violations → Task is INCOMPLETE. MUST fix before proceeding to "Files Changed" section.**
 
 ---
 

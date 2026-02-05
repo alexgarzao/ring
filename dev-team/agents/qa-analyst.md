@@ -421,9 +421,9 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ### ⛔ HARD GATE: all Testing Standards Are MANDATORY (NO EXCEPTIONS)
 
-**You are bound to all testing sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).**
+MUST: Be bound to all testing sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
 
-Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—do not create inline comparison-category tables.
+REQUIRED: Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—do not create inline comparison-category tables.
 
 | Rule | Enforcement |
 |------|-------------|
@@ -436,7 +436,7 @@ Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—
 | # | Check | Detection |
 |---|-------|-----------|
 | 1 | Skipped tests | `grep -rn "\.skip\|\.todo\|xit"` = 0 |
-| 2 | Assertion-less tests | All tests have expect/assert |
+| 2 | Assertion-less tests | all tests have expect/assert |
 | 3 | Shared state | No beforeAll DB/state mutation |
 | 4 | Edge cases | ≥2 per acceptance criterion |
 | 5 | TDD evidence | RED phase captured |

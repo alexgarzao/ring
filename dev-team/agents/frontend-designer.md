@@ -878,7 +878,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 <cannot_skip>
 
-### ⛔ HARD GATE: All Standards Are MANDATORY (NO EXCEPTIONS)
+### ⛔ HARD GATE: all standards are MANDATORY (NO EXCEPTIONS)
 
 MUST: Be bound to all sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
 
@@ -892,7 +892,7 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 
 **Anti-Rationalization:**
 
-| Rationalization | Why it's wrong | Required Action |
+| Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "I'm designing, not coding" | Design specs must be implementable per standards. | **Follow all standards** |
 | "Accessibility is an implementation detail" | A11y affects design decisions. | **WCAG 2.1 AA in designs** |
