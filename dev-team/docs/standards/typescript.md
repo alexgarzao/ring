@@ -1188,25 +1188,27 @@ The BFF architecture supports two modes based on whether `@lerianstudio/sindaria
         create-organization.use-case.ts
   /infrastructure
     /http
-      /services
-        midaz-http.service.ts    # External API client
-      /dtos
+      /controllers
+        organization.controller.ts
+      /dto
         midaz-organization.dto.ts
+        organization.dto.ts
       /mappers
         midaz-organization.mapper.ts
+        organization.mapper.ts
+      /services
+        midaz-http.service.ts    # External API client
     /repositories
       organization.repository.ts # Implementation
     /modules
       organization.module.ts     # DI module (sindarian) or container setup
-    /controllers
-      organization.controller.ts
     app.ts                       # Bootstrap
 ```
 
 ### With sindarian-server (Decorators)
 
 ```typescript
-// src/core/infrastructure/controllers/organization.controller.ts
+// src/core/infrastructure/http/controllers/organization.controller.ts
 import { Controller, Get, Post, Body, Query } from '@lerianstudio/sindarian-server';
 
 @Controller('/organizations')
@@ -1243,7 +1245,7 @@ export const POST = app.handler.bind(app);
 ### Without sindarian-server (Manual DI)
 
 ```typescript
-// src/core/infrastructure/controllers/organization.controller.ts
+// src/core/infrastructure/http/controllers/organization.controller.ts
 export class OrganizationController {
     constructor(
         private getOrganizations: GetOrganizationsUseCase,
@@ -1273,7 +1275,7 @@ export { container };
 // app/api/organizations/route.ts (Next.js API Route)
 import { NextRequest, NextResponse } from 'next/server';
 import { container } from '@/core/infrastructure/container';
-import { OrganizationController } from '@/core/infrastructure/controllers/organization.controller';
+import { OrganizationController } from '@/core/infrastructure/http/controllers/organization.controller';
 
 export async function GET(request: NextRequest) {
     const controller = container.get(OrganizationController);
@@ -1379,7 +1381,7 @@ export interface Organization {
     updatedAt: Date;
 }
 
-// src/core/infrastructure/http/dtos/organization.dto.ts (HTTP Layer)
+// src/core/infrastructure/http/dto/organization.dto.ts (HTTP Layer)
 export interface CreateOrganizationDto {
     name: string;
 }
@@ -1392,7 +1394,7 @@ export interface OrganizationResponseDto {
     updated_at: string;
 }
 
-// src/core/infrastructure/http/dtos/midaz-organization.dto.ts (External Service)
+// src/core/infrastructure/http/dto/midaz-organization.dto.ts (External Service)
 export interface MidazOrganizationDto {
     organization_id: string;
     organization_name: string;
@@ -1674,7 +1676,7 @@ export const POST = app.handler.bind(app);
 // Without sindarian-server
 import { NextRequest, NextResponse } from 'next/server';
 import { container } from '@/core/infrastructure/container';
-import { OrganizationController } from '@/core/infrastructure/controllers/organization.controller';
+import { OrganizationController } from '@/core/infrastructure/http/controllers/organization.controller';
 import { GlobalExceptionFilter } from '@/core/infrastructure/filters/global-exception.filter';
 
 const exceptionFilter = new GlobalExceptionFilter();
@@ -1927,7 +1929,7 @@ export class GlobalExceptionFilter {
 ### Usage in Controllers
 
 ```typescript
-// src/core/infrastructure/controllers/organization.controller.ts
+// src/core/infrastructure/http/controllers/organization.controller.ts
 export class OrganizationController {
     async getById(id: string): Promise<Organization> {
         const organization = await this.repository.findById(id);
@@ -2042,7 +2044,7 @@ export class GetOrganizationsUseCase {
     }
 }
 
-// src/core/infrastructure/controllers/organization.controller.ts
+// src/core/infrastructure/http/controllers/organization.controller.ts
 @Controller('/organizations')
 export class OrganizationController {
     @LogOperation({ layer: 'controller', operation: 'listOrganizations' })
