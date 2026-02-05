@@ -4,7 +4,7 @@ description: Lightweight 4-gate pre-dev workflow for small features (<2 days)
 argument-hint: "[feature-name]"
 ---
 
-I'm running the **Small Track** pre-development workflow (4 gates) for your feature.
+I'm running the **Small Track** pre-development workflow (5 gates) for your feature.
 
 **This track is for features that:**
 - ✅ Take <2 days to implement
@@ -329,6 +329,41 @@ Even small features benefit from quick research:
 - [ ] Wireframes created (if feature has UI)
 - [ ] User flows documented (if feature has UI)
 
+## Gate 1.5: Design Validation (if feature has UI)
+
+**Skill:** ring:pre-dev-design-validation
+
+**Purpose:** Verify UX specifications are complete before investing in technical architecture.
+
+1. **Skip condition:** If feature has NO UI (backend-only), skip to Gate 2
+2. Load and validate all design artifacts:
+   - ux-criteria.md
+   - wireframes/*.yaml
+   - wireframes/user-flows.md
+3. Run systematic validation checklist:
+   - Section 1: Wireframe Completeness (CRITICAL)
+   - Section 2: UI States Coverage (CRITICAL)
+   - Section 3: Accessibility Specifications
+   - Section 4: Responsive Specifications
+   - Section 5: User Flow Completeness
+   - Section 6: Content Specifications
+4. Save report to: `docs/pre-dev/<feature-name>/design-validation.md`
+5. Evaluate verdict:
+   - **DESIGN VALIDATED:** Proceed to Gate 2
+   - **CRITICAL GAPS:** Return to Gate 1 to fix gaps
+   - **MINOR GAPS:** Ask user - proceed with risk or fix first?
+6. Get human approval before proceeding
+
+**Gate 1.5 Pass Criteria:**
+- [ ] All wireframes have ASCII prototypes
+- [ ] All screens define loading/error/empty/success states
+- [ ] Accessibility criteria specified in ux-criteria.md
+- [ ] Responsive behavior documented
+- [ ] User flows cover happy path AND error paths
+- [ ] Button labels and error messages are specific (not generic)
+
+**Why this gate exists:** Incomplete design specs cause 10x implementation rework. Validating now saves time later.
+
 ## Gate 2: TRD Creation (Skipping Feature Map)
 
 **Skill:** ring:pre-dev-trd-creation
@@ -380,7 +415,7 @@ Even small features benefit from quick research:
 Report to human:
 
 ```
-✅ Small Track (4 gates) complete for <feature-name>
+✅ Small Track (5 gates) complete for <feature-name>
 
 Artifacts created (paths depend on topology.structure):
 
@@ -389,6 +424,7 @@ Artifacts created (paths depend on topology.structure):
 - docs/pre-dev/<feature-name>/prd.md
 - docs/pre-dev/<feature-name>/ux-criteria.md
 - docs/pre-dev/<feature-name>/wireframes/
+- docs/pre-dev/<feature-name>/design-validation.md (if UI)
 - docs/pre-dev/<feature-name>/trd.md
 - docs/pre-dev/<feature-name>/tasks.md
 
@@ -399,12 +435,13 @@ Artifacts created (paths depend on topology.structure):
 - docs/pre-dev/<feature-name>/tasks.md (root - index)
 - {frontend.path}/docs/pre-dev/<feature-name>/ux-criteria.md
 - {frontend.path}/docs/pre-dev/<feature-name>/wireframes/
+- {frontend.path}/docs/pre-dev/<feature-name>/design-validation.md (if UI)
 - {frontend.path}/docs/pre-dev/<feature-name>/tasks.md (filtered)
 - {backend.path}/docs/pre-dev/<feature-name>/tasks.md (filtered)
 
 **For multi-repo:**
 - Both repos: research.md, prd.md, trd.md (synchronized)
-- Frontend repo: ux-criteria.md, wireframes/, tasks.md
+- Frontend repo: ux-criteria.md, wireframes/, design-validation.md, tasks.md
 - Backend repo: tasks.md
 
 Skipped from full workflow:
@@ -423,8 +460,9 @@ Next steps:
 
 ## Remember
 
-- This is the **Small Track** - lightweight and fast
+- This is the **Small Track** - lightweight and fast (5 gates)
 - **Gate 0 (Research) checks for existing patterns** even for small features
+- **Gate 1.5 (Design Validation) ensures UI specs are complete** before technical work
 - If feature grows during planning, switch to `/ring:pre-dev-full`
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate
@@ -442,6 +480,7 @@ Next steps:
 |------|-------|---------|-------------|
 | 0 | `ring:pre-dev-research` | Domain, technical, and UX research (4 agents) | research.md (includes Product/UX Research) |
 | 1 | `ring:pre-dev-prd-creation` | Product requirements + UX validation + wireframes | prd.md, ux-criteria.md, wireframes/ (if UI) |
+| 1.5 | `ring:pre-dev-design-validation` | Verify UX specs complete (if UI) | design-validation.md |
 | 2 | `ring:pre-dev-trd-creation` | Technical requirements | trd.md |
 | 3 | `ring:pre-dev-task-breakdown` | Task decomposition | tasks.md |
 

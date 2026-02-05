@@ -429,7 +429,7 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 65 skills (25 + 9 + 10 + 8 + 6 + 7) across 6 plugins**
+**Total: 66 skills (25 + 9 + 11 + 8 + 6 + 7) across 6 plugins**
 **Total: 29 agents (7 + 9 + 3 + 5 + 2 + 3) across 6 plugins**
 **Total: 25 commands (12 + 5 + 2 + 3 + 0 + 3) across 6 plugins**
 
@@ -453,7 +453,7 @@ See [README.md](README.md#installation) for detailed installation instructions.
 |--------|------|----------|
 | ring-default | `default/` | 25 skills, 7 agents, 12 commands |
 | ring-dev-team | `dev-team/` | 9 skills, 9 agents, 5 commands |
-| ring-pm-team | `pm-team/` | 10 skills, 3 agents, 2 commands |
+| ring-pm-team | `pm-team/` | 11 skills, 3 agents, 2 commands |
 | ring-pmo-team | `pmo-team/` | 8 skills, 5 agents, 3 commands |
 | ring-finops-team | `finops-team/` | 6 skills, 2 agents |
 | ring-tw-team | `tw-team/` | 7 skills, 3 agents, 3 commands |
@@ -590,7 +590,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Plugin versions: See `.claude-plugin/marketplace.json`
 - Core plugin: `default/` (25 skills, 7 agents, 12 commands)
 - Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
-- Product planning: `pm-team/` (10 skills, 3 agents, 2 commands)
+- Product planning: `pm-team/` (11 skills, 3 agents, 2 commands)
 - PMO specialists: `pmo-team/` (8 skills, 5 agents, 3 commands)
 - FinOps regulatory: `finops-team/` (6 skills, 2 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)

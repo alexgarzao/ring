@@ -4,7 +4,7 @@ description: Complete 9-gate pre-dev workflow for large features (≥2 days)
 argument-hint: "[feature-name]"
 ---
 
-I'm running the **Full Track** pre-development workflow (9 gates) for your feature.
+I'm running the **Full Track** pre-development workflow (10 gates) for your feature.
 
 **This track is for features that have ANY of:**
 - ❌ Take ≥2 days to implement
@@ -359,6 +359,41 @@ mkdir -p docs/pre-dev/<feature-name>
 - [ ] User flows documented (user-flows.md created)
 - [ ] Wireframe specs created (wireframes/ directory)
 
+## Gate 2.5: Design Validation (if feature has UI)
+
+**Skill:** ring:pre-dev-design-validation
+
+**Purpose:** Verify UX specifications are complete before investing in technical architecture.
+
+1. **Skip condition:** If feature has NO UI (backend-only), skip to Gate 3
+2. Load and validate all design artifacts:
+   - ux-criteria.md
+   - wireframes/*.yaml
+   - wireframes/user-flows.md (or user-flows.md)
+3. Run systematic validation checklist:
+   - Section 1: Wireframe Completeness (CRITICAL)
+   - Section 2: UI States Coverage (CRITICAL)
+   - Section 3: Accessibility Specifications
+   - Section 4: Responsive Specifications
+   - Section 5: User Flow Completeness
+   - Section 6: Content Specifications
+4. Save report to: `docs/pre-dev/<feature-name>/design-validation.md`
+5. Evaluate verdict:
+   - **DESIGN VALIDATED:** Proceed to Gate 3
+   - **CRITICAL GAPS:** Return to Gate 2 to fix gaps
+   - **MINOR GAPS:** Ask user - proceed with risk or fix first?
+6. Get human approval before proceeding
+
+**Gate 2.5 Pass Criteria:**
+- [ ] All wireframes have ASCII prototypes
+- [ ] All screens define loading/error/empty/success states
+- [ ] Accessibility criteria specified in ux-criteria.md
+- [ ] Responsive behavior documented
+- [ ] User flows cover happy path AND error paths
+- [ ] Button labels and error messages are specific (not generic)
+
+**Why this gate exists:** Incomplete design specs cause 10x implementation rework. Validating now saves time later.
+
 ## Gate 3: TRD Creation
 
 **Skill:** ring:pre-dev-trd-creation
@@ -502,7 +537,7 @@ mkdir -p docs/pre-dev/<feature-name>
 Report to human:
 
 ```
-✅ Full Track (9 gates) complete for <feature-name>
+✅ Full Track (10 gates) complete for <feature-name>
 
 Artifacts created (paths depend on topology.structure):
 
@@ -513,6 +548,7 @@ Artifacts created (paths depend on topology.structure):
 - feature-map.md (Gate 2)
 - user-flows.md (Gate 2) - Detailed user flows
 - wireframes/ (Gate 2) - Wireframe specs (YAML)
+- design-validation.md (Gate 2.5) - Design completeness report (if UI)
 - trd.md (Gate 3)
 - api-design.md (Gate 4)
 - api-standards-ref.md (Gate 4 - if standards provided)
@@ -525,12 +561,12 @@ Artifacts created (paths depend on topology.structure):
 **For monorepo (distributed by module):**
 *Root (shared):* research.md, prd.md, feature-map.md, trd.md, tasks.md (index)
 *Backend module:* api-design.md, data-model.md, dependency-map.md, tasks.md
-*Frontend module:* ux-criteria.md, user-flows.md, wireframes/, dependency-map.md, tasks.md
+*Frontend module:* ux-criteria.md, user-flows.md, wireframes/, design-validation.md, dependency-map.md, tasks.md
 
 **For multi-repo (per-repository):**
 *Both repos:* research.md, prd.md, trd.md (synchronized)
 *Backend repo:* api-design.md, data-model.md, dependency-map.md, tasks.md
-*Frontend repo:* ux-criteria.md, user-flows.md, wireframes/, dependency-map.md, tasks.md
+*Frontend repo:* ux-criteria.md, user-flows.md, wireframes/, design-validation.md, dependency-map.md, tasks.md
 
 Planning time: 2.5-4.5 hours (comprehensive with UX design)
 
@@ -543,11 +579,12 @@ Next steps:
 
 ## Remember
 
-- This is the **Full Track** - comprehensive and thorough
-- All 9 gates provide maximum planning depth
+- This is the **Full Track** - comprehensive and thorough (10 gates)
+- All gates provide maximum planning depth
 - **Gate 0 (Research) runs 4 agents in parallel** for codebase, best practices, framework docs, and UX research
 - **Gate 1 creates ux-criteria.md** with UX acceptance criteria
 - **Gate 2 creates user-flows.md and wireframes/** with detailed UX design
+- **Gate 2.5 (Design Validation) ensures UI specs are complete** before technical work
 - Technology decisions happen at Gate 6 (Dependency Map)
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate before proceeding
@@ -557,7 +594,7 @@ Next steps:
 
 ## MANDATORY: Skills Orchestration
 
-**This command orchestrates multiple skills in a 9-gate workflow.**
+**This command orchestrates multiple skills in a 10-gate workflow.**
 
 ### Gate Sequence
 
@@ -566,6 +603,7 @@ Next steps:
 | 0 | `ring:pre-dev-research` | Domain, technical, and UX research (4 agents) | research.md (includes Product/UX Research) |
 | 1 | `ring:pre-dev-prd-creation` | Product requirements + UX validation | prd.md, ux-criteria.md |
 | 2 | `ring:pre-dev-feature-map` | Feature scope + UX design | feature-map.md, user-flows.md, wireframes/ |
+| 2.5 | `ring:pre-dev-design-validation` | Verify UX specs complete (if UI) | design-validation.md |
 | 3 | `ring:pre-dev-trd-creation` | Technical requirements | trd.md |
 | 4 | `ring:pre-dev-api-design` | API contracts | api-design.md |
 | 5 | `ring:pre-dev-data-model` | Data architecture | data-model.md |
