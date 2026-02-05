@@ -23,6 +23,29 @@ sequence:
 
 # Design Validation Gate
 
+## ⛔ MANDATORY GATE - CANNOT BE SKIPPED
+
+**This gate is REQUIRED for all features with UI. No exceptions. No shortcuts.**
+
+### Enforcement Points
+
+| Enforcement | What Happens |
+|-------------|--------------|
+| **TRD checks for design-validation.md** | TRD skill will STOP if this file is missing or verdict is not VALIDATED |
+| **Commands enforce gate order** | pre-dev-feature and pre-dev-full require this gate before TRD |
+| **Critical gaps = HARD STOP** | Any Section 1-2 failure blocks progression to TRD |
+
+### Why This Gate Exists
+
+| Without Validation | With Validation |
+|-------------------|-----------------|
+| Missing UI states discovered during coding | All states defined upfront |
+| "Mobile later" becomes "Mobile never" | Responsive specs locked in |
+| Accessibility retrofitted expensively | A11y baked in from start |
+| 10x implementation rework | Design complete before code |
+
+---
+
 ## Purpose
 
 **Verify that UX specifications are COMPLETE before investing in technical architecture.**

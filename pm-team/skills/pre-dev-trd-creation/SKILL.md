@@ -7,16 +7,18 @@ description: |
 trigger: |
   - PRD passed Gate 1 (required)
   - Feature Map passed Gate 2 (if Large Track)
+  - Design Validation passed Gate 1.5/2.5 (if feature has UI)
   - About to design technical architecture
   - Tempted to specify "PostgreSQL" instead of "Relational Database"
 
 skip_when: |
   - PRD not validated → complete Gate 1 first
+  - Design Validation not passed (for UI features) → complete Gate 1.5/2.5 first
   - Architecture already documented → proceed to API Design
   - Pure business requirement change → update PRD
 
 sequence:
-  after: [ring:pre-dev-prd-creation, ring:pre-dev-feature-map]
+  after: [ring:pre-dev-prd-creation, ring:pre-dev-feature-map, ring:pre-dev-design-validation]
   before: [ring:pre-dev-api-design, ring:pre-dev-task-breakdown]
 ---
 
@@ -33,6 +35,64 @@ Specifying technologies in TRD creates:
 
 **The TRD answers**: HOW we'll architect the solution and WHERE components will live.
 **The TRD never answers**: WHAT specific products, frameworks, versions, or packages we'll use.
+
+---
+
+## ⛔ HARD GATE: Design Validation Prerequisite (Step -1)
+
+**This check MUST happen BEFORE any TRD work begins.**
+
+### Step -1.1: Detect if Feature Has UI
+
+Read PRD from `docs/pre-dev/{feature}/prd.md` and check for UI indicators:
+- User stories with: "see", "view", "click", "navigate", "page", "screen", "button", "form"
+- Features involving: login, dashboard, settings, profile, reports, notifications, UI, interface
+- Any direct user-facing interaction
+
+### Step -1.2: If Feature Has UI → Verify Design Validation
+
+**⛔ HARD GATE: If feature has UI, design-validation.md MUST exist and show VALIDATED verdict.**
+
+```
+Check: docs/pre-dev/{feature}/design-validation.md
+
+If file NOT FOUND:
+  → STOP. Cannot proceed to TRD.
+  → Message: "Design Validation (Gate 1.5/2.5) not completed.
+             Run ring:pre-dev-design-validation before TRD."
+
+If file FOUND but verdict is NOT "DESIGN VALIDATED":
+  → STOP. Cannot proceed to TRD.
+  → Message: "Design Validation failed with gaps.
+             Fix design gaps and re-run validation before TRD."
+
+If file FOUND and verdict is "DESIGN VALIDATED":
+  → PASS. Proceed to Step 0.
+```
+
+### Step -1.3: If Feature Has NO UI → Skip to Step 0
+
+Backend-only features do not require design validation. Proceed directly to tech stack definition.
+
+### Anti-Rationalization for Design Validation Check
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Design validation is optional" | It's MANDATORY for UI features. Incomplete design = implementation rework. | **STOP. Run design validation first.** |
+| "We'll validate design later" | Later = after architecture. Changes cascade. | **STOP. Validate design NOW.** |
+| "The wireframes look complete" | "Look complete" ≠ validated. Run systematic check. | **STOP. Run design validation.** |
+| "We're in a hurry, skip validation" | Hurry now = 10x rework later. | **STOP. No shortcuts.** |
+| "TRD doesn't depend on design" | TRD for fullstack features depends on UI architecture decisions. | **STOP. Validate design first.** |
+| "Design validation just passed informally" | Informal ≠ documented. Need design-validation.md with VALIDATED. | **STOP. Run formal validation.** |
+
+### Pressure Resistance for Design Validation Check
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Skip design validation, we're behind schedule" | "Design validation prevents 10x implementation rework. CANNOT proceed to TRD without it." |
+| "The designer approved it verbally" | "Verbal approval ≠ systematic validation. Need design-validation.md with VALIDATED verdict." |
+| "We can validate design in parallel with TRD" | "TRD depends on complete design. Cannot architect what isn't fully specified. Run validation first." |
+| "Just this once, trust me the design is complete" | "Trust but verify. Ring requires documented validation. Run ring:pre-dev-design-validation." |
 
 ---
 

@@ -335,7 +335,11 @@ Even small features benefit from quick research:
 
 **Purpose:** Verify UX specifications are complete before investing in technical architecture.
 
-1. **Skip condition:** If feature has NO UI (backend-only), skip to Gate 2
+### ⛔ HARD GATE: This Gate CANNOT Be Skipped for UI Features
+
+**If Q4 = "Yes" (feature has UI), this gate is MANDATORY. No exceptions.**
+
+1. **Skip condition:** ONLY if feature has NO UI (Q4 = "No", backend-only)
 2. Load and validate all design artifacts:
    - ux-criteria.md
    - wireframes/*.yaml
@@ -350,8 +354,8 @@ Even small features benefit from quick research:
 4. Save report to: `docs/pre-dev/<feature-name>/design-validation.md`
 5. Evaluate verdict:
    - **DESIGN VALIDATED:** Proceed to Gate 2
-   - **CRITICAL GAPS:** Return to Gate 1 to fix gaps
-   - **MINOR GAPS:** Ask user - proceed with risk or fix first?
+   - **CRITICAL GAPS:** STOP. Return to Gate 1 to fix gaps. CANNOT proceed.
+   - **MINOR GAPS:** Ask user - proceed with documented risk or fix first?
 6. Get human approval before proceeding
 
 **Gate 1.5 Pass Criteria:**
@@ -362,7 +366,22 @@ Even small features benefit from quick research:
 - [ ] User flows cover happy path AND error paths
 - [ ] Button labels and error messages are specific (not generic)
 
+### ⛔ BLOCKER: Gate 2 (TRD) Will REFUSE to Start Without This
+
+**Gate 2 (TRD) checks for design-validation.md before proceeding.**
+- If feature has UI AND design-validation.md is missing → TRD will STOP
+- If design-validation.md exists but verdict is not VALIDATED → TRD will STOP
+
 **Why this gate exists:** Incomplete design specs cause 10x implementation rework. Validating now saves time later.
+
+### Anti-Rationalization
+
+| Excuse | Reality |
+|--------|---------|
+| "We're behind schedule, skip validation" | Skipping causes 10x rework. You'll be MORE behind. |
+| "Design looks complete to me" | "Looks complete" ≠ validated. Run systematic check. |
+| "We can validate later" | TRD depends on complete design. Cannot proceed without. |
+| "Just this once" | No exceptions. Every UI feature needs validation. |
 
 ## Gate 2: TRD Creation (Skipping Feature Map)
 
