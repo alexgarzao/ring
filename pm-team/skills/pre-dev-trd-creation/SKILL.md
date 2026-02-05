@@ -291,7 +291,7 @@ The api_pattern was determined during Topology Discovery (Q7) and persisted in r
 # From research.md frontmatter
 topology:
   scope: fullstack
-  api_pattern: direct | bff | other
+  api_pattern: bff | none  # bff if dynamic data, none if static
 ```
 
 ### Step 2: Document Pattern in TRD
@@ -313,26 +313,26 @@ topology:
 
 ### Pattern-Specific Documentation
 
-**If `api_pattern: direct`:**
+**If `api_pattern: none` (Static Frontend):**
 
 ```markdown
-### Frontend-Backend Communication
+### Frontend Architecture
 
-**Pattern:** Direct API calls
+**Pattern:** Static Frontend (no dynamic data)
 
-**Rationale:** Single backend service, simple CRUD operations, no data aggregation needed.
+**Rationale:** Pure static content, no server-side data fetching needed.
 
 **Architecture Implications:**
-- Frontend components call backend API directly via fetch/axios
-- No intermediate layer required
-- Authentication tokens managed client-side (httpOnly cookies recommended)
-- Error handling at component level
+- Static site generation (SSG) or client-side rendering of static content
+- No API routes needed
+- No backend integration
+- Content embedded at build time or loaded from static files
 
 **Data Flow:**
-Frontend Component → Backend API → Database
+Build Process → Static HTML/JS → Browser
 ```
 
-**If `api_pattern: bff`:**
+**If `api_pattern: bff` (MANDATORY for dynamic data):**
 
 ```markdown
 ### Frontend-Backend Communication
@@ -543,10 +543,22 @@ The feature requires creating a NEW BFF layer to consume existing backend APIs.
 
 | Excuse | Reality |
 |--------|---------|
-| "API pattern doesn't affect architecture" | Pattern determines data flow, error handling, and layer responsibilities. Document it. |
-| "We can decide direct vs BFF later" | Architecture depends on this choice. Decide now to inform component design. |
-| "BFF is overkill for our feature" | If research.md says `api_pattern: bff`, honor the decision. It was made with context. |
-| "Just use direct for simplicity" | Simplicity isn't always correct. Follow the topology decision. |
+| "Direct API calls are simpler" | **FORBIDDEN.** Direct client→API calls expose keys, break type safety. BFF is mandatory. |
+| "BFF is overkill for our feature" | If there's dynamic data, BFF is required. Not a choice, a rule. |
+| "We can call the API directly, it's just one endpoint" | Even one endpoint needs error normalization, type safety. Use BFF. |
+| "API pattern doesn't affect architecture" | Pattern determines data flow, security, and layer responsibilities. Document it. |
+| "Client-side fetch is fine for this" | Client-side fetch to external APIs exposes keys. Use BFF. |
+
+## ⛔ HARD RULE: BFF is MANDATORY for Dynamic Data
+
+**Client-side code MUST NEVER call backend APIs, databases, or external services directly.**
+
+| If Feature Has... | api_pattern | Implementation |
+|-------------------|-------------|----------------|
+| Dynamic data (API, DB, external) | `bff` | Next.js API Routes |
+| Static content only | `none` | No API layer |
+
+**"Direct API calls" is FORBIDDEN.** There is no `api_pattern: direct` option.
 
 ## Design System & Styling (For Frontend Features)
 

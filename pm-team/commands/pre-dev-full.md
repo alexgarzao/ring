@@ -89,7 +89,7 @@ Topology Configuration:
       framework: [auto-detected]
   doc_organization: unified | per-module
   doc_placement: unified | per-module | distributed  # NEW: derived from structure
-  api_pattern: direct | bff | other  # (only if fullstack)
+  api_pattern: bff | none  # bff if dynamic data, none if static frontend
 ```
 
 **This TopologyConfig is passed to all gates and persisted in research.md frontmatter.**
@@ -235,21 +235,31 @@ Topology Configuration:
 - **Why this matters:** Typography affects readability, brand perception, and page load performance
 - **Note:** Avoid generic fonts (Inter, Roboto, Arial) per frontend standards
 
-**Question 11 (MANDATORY if scope=fullstack):** "How will the frontend communicate with backend services?"
-- **Trigger:** Only ask if topology scope = "Fullstack" (from Q1.1)
-- Header: "API Pattern"
+**Question 11 (MANDATORY if scope=fullstack or frontend-only with UI):** "Does this feature require dynamic data?"
+- **Trigger:** Only ask if topology scope = "Fullstack" OR "Frontend-only" (from Q1.1)
+- Header: "Dynamic Data"
 - Options:
-  - "Direct API calls (Recommended for simple features)" - Frontend calls backend APIs directly
-  - "BFF (Backend-for-Frontend) layer" - Frontend calls BFF which aggregates/transforms data
-  - "Other (specify)" - Custom pattern (GraphQL, tRPC, custom gateway)
-- **Auto-recommend based on feature complexity:**
-  - If research.md indicates multiple backend services → Pre-select "BFF"
-  - If simple CRUD feature → Pre-select "Direct API calls"
-  - Otherwise → No pre-selection
-- **Why this matters:** Determines which agent handles frontend tasks:
-  - Direct → All frontend tasks use `ring:frontend-engineer`
-  - BFF → Data aggregation uses `ring:frontend-bff-engineer-typescript`, UI uses `ring:frontend-engineer`
-- **CANNOT be skipped for fullstack features**
+  - "Yes - Dynamic data required" - Feature needs API calls, database access, or external services
+  - "No - Static frontend only" - Pure static content, no server-side data fetching
+- **Processing:**
+  - "Yes" → `api_pattern: bff` (MANDATORY - BFF via Next.js API Routes)
+  - "No" → `api_pattern: none` (static frontend)
+- **Why this matters:** Determines if BFF layer is needed:
+  - Dynamic data → BFF routes handle all data fetching (MANDATORY)
+  - Static → No API layer needed
+
+## ⛔ HARD RULE: BFF is MANDATORY for Dynamic Data
+
+**Client-side code MUST NEVER call backend APIs, databases, or external services directly.**
+
+| If Feature Has... | Then... |
+|-------------------|---------|
+| API calls to backend | BFF is MANDATORY |
+| Database access | BFF is MANDATORY |
+| External service integration | BFF is MANDATORY |
+| Only static content | No BFF needed |
+
+**"Direct API calls" is FORBIDDEN.** All dynamic data flows through BFF (Next.js API Routes).
 
 **UI Configuration Summary:** After Q4-Q11, display:
 ```
@@ -261,10 +271,10 @@ UI Configuration:
 - Dark Mode: [Light + Dark | Light only | Dark only] (for new projects)
 - Brand Color: [Blue | Purple | Green | Orange | #hex] (for new projects)
 - Typography: [Geist | Satoshi | Cabinet Grotesk | General Sans] (for new projects)
-- API Pattern: [direct | bff | other] (only for fullstack)
+- API Pattern: [bff | none] (bff if dynamic data, none if static)
 ```
 
-**GATE BLOCKER:** If Q4 = "Yes" but Q5 or Q6 were not answered, DO NOT proceed to Gate 0. Return and ask the missing questions. For new projects with UI, Q7-Q10 are also required. If scope = "Fullstack" but Q11 was not answered, DO NOT proceed to Gate 0.
+**GATE BLOCKER:** If Q4 = "Yes" but Q5 or Q6 were not answered, DO NOT proceed to Gate 0. Return and ask the missing questions. For new projects with UI, Q7-Q10 are also required. If scope = "Fullstack" or "Frontend-only" with UI, Q11 (Dynamic Data) must be answered.
 
 This configuration is passed to all subsequent gates and used by:
 - **Gate 0 (Research):** product-designer searches for patterns in the chosen library

@@ -36,10 +36,9 @@ Q4: Doc organization? (only if fullstack)
 ├─ unified → Single tasks.md with target tags
 └─ per-module → Separate task files per module
 
-Q5: API Pattern? (only if scope=fullstack)
-├─ direct → Set api_pattern: direct
-├─ bff → Set api_pattern: bff
-└─ other → Ask for specification, set api_pattern: other
+Q5: Dynamic Data? (only if scope=fullstack or frontend-only)
+├─ yes → Set api_pattern: bff (MANDATORY - no other option)
+└─ no → Set api_pattern: none (static frontend)
 ```
 
 ---
@@ -154,44 +153,64 @@ find . -maxdepth 3 -name "package.json" -o -name "go.mod" | head -10
 - "Unified" → `doc_organization: unified`
 - "Per-module" → `doc_organization: per-module`
 
-### Q5: API Pattern
+### Q5: Dynamic Data
 
-**Only ask if `scope: fullstack`**
+**Only ask if `scope: fullstack` or `scope: frontend-only`**
 
 ```json
 {
-  "question": "How will the frontend communicate with backend services?",
-  "header": "API Pattern",
+  "question": "Does this feature require dynamic data (API calls, database, external services)?",
+  "header": "Dynamic Data",
   "multiSelect": false,
   "options": [
     {
-      "label": "Direct API calls (Recommended for simple features)",
-      "description": "Frontend calls backend APIs directly. Best for single backend service, no aggregation needed."
+      "label": "Yes - Dynamic data required",
+      "description": "Feature needs API calls, database access, or external service integration"
     },
     {
-      "label": "BFF (Backend-for-Frontend) layer",
-      "description": "Frontend calls BFF which aggregates/transforms data from multiple backends. Best for complex data needs."
-    },
-    {
-      "label": "Other (specify)",
-      "description": "Custom pattern - describe your approach"
+      "label": "No - Static frontend only",
+      "description": "Pure static content, no server-side data fetching needed"
     }
   ]
 }
 ```
 
 **Processing:**
-- "Direct API calls" → `api_pattern: direct`
-- "BFF" → `api_pattern: bff`
-- "Other" → Ask for specification, set `api_pattern: other`
+- "Yes" → `api_pattern: bff` (MANDATORY - BFF via Next.js API Routes)
+- "No" → `api_pattern: none` (static frontend, no API layer)
 
-**When to Recommend Each Pattern:**
+## ⛔ HARD RULE: BFF is MANDATORY for Dynamic Data
 
-| Pattern | Recommend When |
-|---------|---------------|
-| **Direct** | Single backend service, simple CRUD, no aggregation, <3 API calls per page |
-| **BFF** | Multiple backend services, data aggregation needed, complex transformations, sensitive keys to hide |
-| **Other** | GraphQL federation, tRPC, custom gateway, existing patterns |
+**Client-side code MUST NEVER call backend APIs, databases, or external services directly.**
+
+| Data Type | Required Pattern | Implementation |
+|-----------|-----------------|----------------|
+| Backend API calls | BFF | Next.js API Routes → Backend |
+| Database access | BFF | Next.js API Routes → Database |
+| External services | BFF | Next.js API Routes → External API |
+| Static content | None | Direct static rendering |
+
+**This is NOT a choice. If there's dynamic data, BFF is automatic.**
+
+### Why "Direct API Calls" is FORBIDDEN
+
+| Risk | Impact |
+|------|--------|
+| **Security** | API keys exposed in browser |
+| **CORS issues** | Cross-origin requests blocked |
+| **Type safety** | No server-side validation |
+| **Error handling** | Inconsistent error formats |
+| **Performance** | No server-side caching |
+
+### What BFF Provides
+
+| Benefit | Description |
+|---------|-------------|
+| **Security** | API keys stay server-side |
+| **Type safety** | Server validates before client receives |
+| **Error normalization** | Consistent error format for UI |
+| **Caching** | Server-side response caching |
+| **Aggregation** | Combine multiple API calls |
 
 ---
 
@@ -215,7 +234,7 @@ topology:
   structure: single-repo
   doc_organization: unified  # or per-module
   doc_placement: unified     # derived from structure
-  api_pattern: direct        # or bff, other
+  api_pattern: bff           # MANDATORY if dynamic data, "none" if static
 ```
 
 ### Monorepo Fullstack
@@ -251,7 +270,7 @@ topology:
       framework: react                          # Auto-detected
   doc_organization: per-module                  # From Q4
   doc_placement: distributed                    # derived from structure
-  api_pattern: direct                           # From Q5
+  api_pattern: bff                              # MANDATORY if dynamic data
 ```
 
 ---
@@ -340,10 +359,21 @@ All subsequent gates MUST read the topology from the research.md frontmatter.
 
 | Condition | Default | Rationale |
 |-----------|---------|-----------|
-| Scope not fullstack | Skip Q2-Q5 | Single directory, no module coordination needed |
+| Scope is backend-only | Skip Q2-Q5 | No frontend, no API pattern needed |
+| Scope is frontend-only | Ask Q5 only | Need to determine if static or dynamic |
 | Structure is single-repo | Skip Q3 | No separate paths |
-| User selects "Other" | Ask follow-up | Allow custom configurations |
-| API pattern "Other" | Ask specification | Support custom patterns (GraphQL, tRPC, etc.) |
+| Dynamic data = Yes | `api_pattern: bff` | BFF is MANDATORY, not a choice |
+| Dynamic data = No | `api_pattern: none` | Static frontend, no API layer |
+
+## ⛔ FORBIDDEN Patterns
+
+| Pattern | Status | Why |
+|---------|--------|-----|
+| `api_pattern: direct` | **FORBIDDEN** | Client-side must NEVER call APIs directly |
+| `api_pattern: other` | **REMOVED** | All dynamic data goes through BFF |
+| Client → Backend API | **FORBIDDEN** | Security, type safety, error handling |
+| Client → Database | **FORBIDDEN** | Never expose database to client |
+| Client → External API | **FORBIDDEN** | API keys must stay server-side |
 
 ---
 
