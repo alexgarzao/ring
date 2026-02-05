@@ -1,12 +1,12 @@
 ---
 name: production-readiness-audit
-description: Comprehensive 23-dimension production readiness audit. Runs in batches of 3 explorers, appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime), Security (auth, IDOR, SQL, validation, rate limiting), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations). Produces scored report (0-230) with severity ratings.
+description: Comprehensive 27-dimension production readiness audit. Runs in batches of 10 explorers, appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime), Security (auth, IDOR, SQL, validation, rate limiting), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations), Infrastructure (containers, hardening, cicd, async). Produces scored report (0-270) with severity ratings.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **23 dimensions in 4 categories**. This skill runs explorer agents in **batches of 3**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **27 dimensions in 5 categories**. This skill runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -21,7 +21,7 @@ Use this skill when:
 
 ## Audit Dimensions
 
-The skill evaluates **23 distinct dimensions** across 4 categories, each handled by a specialized explorer agent:
+The skill evaluates **27 distinct dimensions** across 5 categories, each handled by a specialized explorer agent:
 
 ### Category A: Code Structure & Patterns (5 dimensions)
 
@@ -66,26 +66,30 @@ The skill evaluates **23 distinct dimensions** across 4 categories, each handled
 | 22 | **Concurrency Safety** | Race conditions, goroutine leaks, mutex usage, worker pools |
 | 23 | **Migration Safety** | Up/down pairs, CONCURRENTLY indexes, NOT NULL defaults |
 
+### Category E: Infrastructure & Hardening (4 dimensions)
+
+| # | Dimension | Focus Area |
+|---|-----------|------------|
+| 24 | **Container Security** | Dockerfile best practices, non-root user, multi-stage, image pinning |
+| 25 | **HTTP Hardening** | Security headers (HSTS, CSP), cookie attributes, CORS strictness |
+| 26 | **CI/CD & Licensing** | Pipeline definitions, license headers, artifact signing, automated tests |
+| 27 | **Async Reliability** | DLQs, retry policies, consumer group usage, message durability |
+
 ## Execution Protocol
 
-This skill runs **23 explorer agents in batches of 3**, writing results incrementally to a single report file. This prevents context bloat while maintaining comprehensive coverage.
+This skill runs **27 explorer agents in batches of 10**, writing results incrementally to a single report file. This prevents context bloat while maintaining comprehensive coverage.
 
 ### Output File
 
-All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}.md`
+All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md`
 
 ### Batch Execution Schedule
 
 | Batch | Agents | Category Focus |
 |-------|--------|----------------|
-| 1 | 1-3 | Pagination, Error Framework, Route Organization |
-| 2 | 4-6 | Bootstrap, Runtime Safety, Auth Protection |
-| 3 | 7-9 | IDOR, SQL Safety, Input Validation |
-| 4 | 10-12 | Rate Limiting, Telemetry, Health Checks |
-| 5 | 13-15 | Config Management, Connection Mgmt, Logging/PII |
-| 6 | 16-18 | Idempotency, API Docs, Technical Debt |
-| 7 | 19-21 | Testing, Dependencies, Performance |
-| 8 | 22-23 | Concurrency, Migration Safety + Final Summary |
+| 1 | 1-10 | Pagination, Error Framework, Route Org, Bootstrap, Runtime Safety, Auth, IDOR, SQL Safety, Input Validation, Rate Limiting |
+| 2 | 11-20 | Telemetry, Health Checks, Config, Connection Mgmt, Logging/PII, Idempotency, API Docs, Technical Debt, Testing, Dependencies |
+| 3 | 21-27 | Performance, Concurrency, Migration Safety, Container Security, HTTP Hardening, CI/CD, Async Reliability + Final Summary |
 
 ### Step-by-Step Execution
 
@@ -105,94 +109,58 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 ---
 ```
 
-#### Step 2: Execute Batch 1 (Agents 1-3)
+#### Step 2: Execute Batch 1 (Agents 1-10)
 
-Launch 3 explorers in parallel:
+Launch 10 explorers in parallel:
 ```
 Task(subagent_type="Explore", prompt="<Agent 1: Pagination Standards>")
 Task(subagent_type="Explore", prompt="<Agent 2: Error Framework>")
 Task(subagent_type="Explore", prompt="<Agent 3: Route Organization>")
-```
-
-**After completion:** Append results to the report file.
-
-#### Step 3: Execute Batch 2 (Agents 4-6)
-
-Launch 3 explorers in parallel:
-```
 Task(subagent_type="Explore", prompt="<Agent 4: Bootstrap & Init>")
 Task(subagent_type="Explore", prompt="<Agent 5: Runtime Safety>")
 Task(subagent_type="Explore", prompt="<Agent 6: Auth Protection>")
-```
-
-**After completion:** Append results to the report file.
-
-#### Step 4: Execute Batch 3 (Agents 7-9)
-
-Launch 3 explorers in parallel:
-```
 Task(subagent_type="Explore", prompt="<Agent 7: IDOR Protection>")
 Task(subagent_type="Explore", prompt="<Agent 8: SQL Safety>")
 Task(subagent_type="Explore", prompt="<Agent 9: Input Validation>")
+Task(subagent_type="Explore", prompt="<Agent 10: Rate Limiting>")
 ```
 
 **After completion:** Append results to the report file.
 
-#### Step 5: Execute Batch 4 (Agents 10-12)
+#### Step 3: Execute Batch 2 (Agents 11-20)
 
-Launch 3 explorers in parallel:
+Launch 10 explorers in parallel:
 ```
-Task(subagent_type="Explore", prompt="<Agent 10: Rate Limiting>")
 Task(subagent_type="Explore", prompt="<Agent 11: Telemetry & Observability>")
 Task(subagent_type="Explore", prompt="<Agent 12: Health Checks>")
-```
-
-**After completion:** Append results to the report file.
-
-#### Step 6: Execute Batch 5 (Agents 13-15)
-
-Launch 3 explorers in parallel:
-```
 Task(subagent_type="Explore", prompt="<Agent 13: Configuration Management>")
 Task(subagent_type="Explore", prompt="<Agent 14: Connection Management>")
 Task(subagent_type="Explore", prompt="<Agent 15: Logging & PII Safety>")
-```
-
-**After completion:** Append results to the report file.
-
-#### Step 7: Execute Batch 6 (Agents 16-18)
-
-Launch 3 explorers in parallel:
-```
 Task(subagent_type="Explore", prompt="<Agent 16: Idempotency>")
 Task(subagent_type="Explore", prompt="<Agent 17: API Documentation>")
 Task(subagent_type="Explore", prompt="<Agent 18: Technical Debt>")
-```
-
-**After completion:** Append results to the report file.
-
-#### Step 8: Execute Batch 7 (Agents 19-21)
-
-Launch 3 explorers in parallel:
-```
 Task(subagent_type="Explore", prompt="<Agent 19: Testing Coverage>")
 Task(subagent_type="Explore", prompt="<Agent 20: Dependency Management>")
-Task(subagent_type="Explore", prompt="<Agent 21: Performance Patterns>")
 ```
 
 **After completion:** Append results to the report file.
 
-#### Step 9: Execute Batch 8 (Agents 22-23 + Summary)
+#### Step 4: Execute Batch 3 (Agents 21-27 + Summary)
 
-Launch 2 explorers in parallel:
+Launch 7 explorers in parallel:
 ```
+Task(subagent_type="Explore", prompt="<Agent 21: Performance Patterns>")
 Task(subagent_type="Explore", prompt="<Agent 22: Concurrency Safety>")
 Task(subagent_type="Explore", prompt="<Agent 23: Migration Safety>")
+Task(subagent_type="Explore", prompt="<Agent 24: Container Security>")
+Task(subagent_type="Explore", prompt="<Agent 25: HTTP Hardening>")
+Task(subagent_type="Explore", prompt="<Agent 26: CI/CD & Licensing>")
+Task(subagent_type="Explore", prompt="<Agent 27: Async Reliability>")
 ```
 
 **After completion:** Append results to the report file.
 
-#### Step 10: Finalize Report
+#### Step 5: Finalize Report
 
 1. Read the complete report file
 2. Calculate scores for each dimension
@@ -509,7 +477,7 @@ func InitServers(opts *Options) (*Service, error) {
 ```
 
 **Check For:**
-1. Staged initialization (config → logger → telemetry → infra)
+1. Staged initialization (config -> logger -> telemetry -> infra)
 2. Cleanup handlers for failed startup
 3. Graceful shutdown support
 4. Module initialization in dependency order
@@ -1390,7 +1358,7 @@ func (h *Handler) ProcessCallback(c *fiber.Ctx) error {
 2. Atomic acquire mechanism (SetNX or similar)
 3. TTL to prevent unbounded storage
 4. Key validation (format, length)
-5. Proper state transitions (acquired → complete/failed)
+5. Proper state transitions (acquired -> complete/failed)
 6. Retry-safe (failed operations can be retried)
 7. Idempotency for webhook callbacks
 8. Idempotency for payment operations
@@ -1713,7 +1681,7 @@ require github.com/dgrijalva/jwt-go v3.2.0  // Has CVE, use golang-jwt
 3. Known vulnerable packages identified
 4. Unused dependencies (not imported anywhere)
 5. Major version mismatches
-6. Deprecated packages (e.g., dgrijalva/jwt-go → golang-jwt)
+6. Deprecated packages (e.g., dgrijalva/jwt-go -> golang-jwt)
 7. go.sum exists and is committed
 
 **Known Vulnerable Packages to Flag:**
@@ -2057,6 +2025,251 @@ ALTER TABLE users RENAME COLUMN email TO user_email;
 ```
 ```
 
+### Agent 24: Container Security Auditor
+
+```prompt
+Audit container security and Dockerfile best practices for production readiness.
+
+**Search Patterns:**
+- Files: `Dockerfile*`, `docker-compose*.yml`, `Makefile`
+- Keywords: `FROM`, `USER`, `COPY`, `ADD`, `HEALTHCHECK`
+
+**Reference Implementation (GOOD):**
+```dockerfile
+# Multi-stage build
+FROM golang:1.24-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /main cmd/app/main.go
+
+# Distroless or minimal runtime image
+FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /
+COPY --from=builder /main .
+# Non-root user
+USER nonroot:nonroot
+# Healthcheck defined
+HEALTHCHECK --interval=30s --timeout=3s CMD ["/main", "-health"]
+ENTRYPOINT ["/main"]
+```
+
+**Check For:**
+1. Multi-stage builds (builder vs runtime)
+2. Minimal/Distroless runtime images
+3. Pinned base image versions (not `latest`)
+4. Non-root user execution (`USER nonroot` or numeric ID)
+5. `COPY` used instead of `ADD` (unless extracting tar)
+6. .dockerignore file exists and excludes secrets/git
+7. Sensitive args not passed as build-args (secrets)
+
+**Severity Ratings:**
+- CRITICAL: Running as root in production image
+- HIGH: Secrets in Dockerfile/history
+- MEDIUM: Using `latest` tag
+- LOW: Missing HEALTHCHECK in Dockerfile
+
+**Output Format:**
+```
+## Container Security Audit Findings
+
+### Summary
+- Multi-stage build: Yes/No
+- Non-root user: Yes/No
+- Base image pinned: Yes/No
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 25: HTTP Hardening Auditor
+
+```prompt
+Audit HTTP security headers and hardening configuration for production readiness.
+
+**Search Patterns:**
+- Files: `**/fiber_server.go`, `**/middleware*.go`, `**/cors.go`
+- Keywords: `Helmet`, `CORS`, `CSRF`, `Secure`, `HttpOnly`, `SameSite`
+
+**Reference Implementation (GOOD):**
+```go
+// Security headers
+app.Use(helmet.New(helmet.Config{
+    XSSProtection:             "1; mode=block",
+    ContentTypeNosniff:        "nosniff",
+    XFrameOptions:             "DENY",
+    HSTSMaxAge:                31536000,
+    HSTSExcludeSubdomains:     false,
+    HSTSPreloadEnabled:        true,
+    ContentSecurityPolicy:     "default-src 'self'",
+}))
+
+// CORS configuration
+app.Use(cors.New(cors.Config{
+    AllowOrigins:     "https://app.example.com", // Specific origin
+    AllowMethods:     "GET,POST,PUT,DELETE",
+    AllowCredentials: true,
+}))
+```
+
+**Check For:**
+1. HSTS enabled (Strict-Transport-Security)
+2. CSP configured (Content-Security-Policy)
+3. X-Frame-Options set to DENY or SAMEORIGIN
+4. CORS restricts origins (no `*` in production)
+5. Secure cookies (Secure, HttpOnly, SameSite=Strict/Lax)
+6. Server banner suppressed (Server: value removed)
+
+**Severity Ratings:**
+- CRITICAL: CORS `*` allowed with credentials
+- HIGH: Missing HSTS
+- MEDIUM: Missing CSP or overly permissive
+- LOW: Server banner exposed
+
+**Output Format:**
+```
+## HTTP Hardening Audit Findings
+
+### Summary
+- HSTS enabled: Yes/No
+- CORS strictness: Strict/Permissive/Open
+- CSP configured: Yes/No
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 26: CI/CD & Licensing Auditor
+
+```prompt
+Audit CI/CD pipelines and license compliance for production readiness.
+
+**Search Patterns:**
+- Files: `.github/workflows/*.yml`, `.gitlab-ci.yml`, `LICENSE*`
+- Keywords: `test`, `lint`, `build`, `docker`, `sign`
+
+**Reference Implementation (GOOD):**
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+      - run: go test -race -v ./...
+      - run: golangci-lint run
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: securego/gosec@master
+        with:
+          args: ./...
+```
+
+**Check For:**
+1. CI pipeline exists (GitHub Actions/GitLab CI)
+2. Tests and Linting run on PRs
+3. Security scanning (gosec, trivy) integrated
+4. Artifact signing (cosign/sigstore)
+5. **LICENSE File Check**:
+   - IF open source: `LICENSE` file MUST exist.
+   - IF proprietary: Ensure private repo settings/headers.
+   - **ACTION**: Explicitly verify if the project is Open Source or Private.
+6. Dependency license check (verify no GPL pollution if proprietary)
+
+**Severity Ratings:**
+- CRITICAL: No CI pipeline
+- CRITICAL: Tests not running on PR
+- HIGH: Open source project missing LICENSE file
+- MEDIUM: Missing security scanning
+- LOW: Artifacts not signed
+
+**Output Format:**
+```
+## CI/CD & Licensing Audit Findings
+
+### Summary
+- CI Pipeline: Active/Missing
+- Security Scans: Yes/No
+- License: [Type/Missing] (Context: Open Source/Proprietary)
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 27: Async Reliability Auditor
+
+```prompt
+Audit asynchronous processing reliability for production readiness.
+
+**Search Patterns:**
+- Files: `**/worker/*.go`, `**/queue/*.go`, `**/kafka/*.go`, `**/rabbitmq/*.go`
+- Keywords: `Ack`, `Nack`, `Retry`, `DeadLetter`, `DLQ`, `ConsumerGroup`
+
+**Reference Implementation (GOOD):**
+```go
+// Reliable consumer with DLQ strategy
+func (c *Consumer) Handle(msg *Message) error {
+    if err := c.process(msg); err != nil {
+        if msg.RetryCount >= maxRetries {
+            // Move to Dead Letter Queue
+            return c.dlq.Publish(msg)
+        }
+        // Retry with backoff
+        return c.RetryLater(msg, backoff(msg.RetryCount))
+    }
+    return msg.Ack()
+}
+```
+
+**Check For:**
+1. Dead Letter Queues (DLQ) configured for failed messages
+2. Retry policies with exponential backoff
+3. Explicit Ack/Nack handling (no auto-ack)
+4. Consumer groups for parallel processing
+5. Graceful shutdown of consumers (wait for processing to finish)
+6. Message durability settings (persistent queues)
+
+**Severity Ratings:**
+- CRITICAL: Messages auto-acked before processing
+- HIGH: No DLQ for poison messages (infinite loops)
+- HIGH: No retry backoff strategy
+- MEDIUM: Missing graceful shutdown for workers
+
+**Output Format:**
+```
+## Async Reliability Audit Findings
+
+### Summary
+- Async processing detected: Yes/No
+- DLQ configured: Yes/No
+- Retry strategy: Yes/No
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
 ---
 
 ## Consolidated Report Template
@@ -2119,11 +2332,21 @@ After all explorers complete, generate this report:
 | 23. Migrations | X/10 | 0 | 0 | 0 | 0 |
 | **Category D Total** | **X/80** | **0** | **0** | **0** | **0** |
 
+### Category E: Infrastructure & Hardening
+
+| Dimension | Score | Critical | High | Medium | Low |
+|-----------|-------|----------|------|--------|-----|
+| 24. Container Security | X/10 | 0 | 0 | 0 | 0 |
+| 25. HTTP Hardening | X/10 | 0 | 0 | 0 | 0 |
+| 26. CI/CD & Licensing | X/10 | 0 | 0 | 0 | 0 |
+| 27. Async Reliability | X/10 | 0 | 0 | 0 | 0 |
+| **Category E Total** | **X/40** | **0** | **0** | **0** | **0** |
+
 ### Overall Score
 
 | Metric | Value |
 |--------|-------|
-| **Total Score** | **X/230** |
+| **Total Score** | **X/270** |
 | **Percentage** | **X%** |
 | **Critical Issues** | **0** |
 | **High Issues** | **0** |
@@ -2134,10 +2357,10 @@ After all explorers complete, generate this report:
 
 | Score Range | Classification | Deployment Recommendation |
 |-------------|----------------|---------------------------|
-| 207-230 (90%+) | **Production Ready** | Clear to deploy |
-| 173-206 (75-89%) | **Ready with Minor Remediation** | Deploy after addressing HIGH issues |
-| 115-172 (50-74%) | **Needs Significant Work** | Do not deploy until CRITICAL/HIGH resolved |
-| Below 115 (<50%) | **Not Production Ready** | Major remediation required |
+| 243-270 (90%+) | **Production Ready** | Clear to deploy |
+| 203-242 (75-89%) | **Ready with Minor Remediation** | Deploy after addressing HIGH issues |
+| 135-202 (50-74%) | **Needs Significant Work** | Do not deploy until CRITICAL/HIGH resolved |
+| Below 135 (<50%) | **Not Production Ready** | Major remediation required |
 
 **Current Status:** {classification}
 
@@ -2228,6 +2451,20 @@ After all explorers complete, generate this report:
 #### 23. Migration Safety
 {Agent 23 output}
 
+### Category E: Infrastructure & Hardening
+
+#### 24. Container Security
+{Agent 24 output}
+
+#### 25. HTTP Hardening
+{Agent 25 output}
+
+#### 26. CI/CD & Licensing
+{Agent 26 output}
+
+#### 27. Async Reliability
+{Agent 27 output}
+
 ## Recommended Remediation Order
 
 ### 1. Immediate (before any deployment)
@@ -2253,7 +2490,7 @@ After all explorers complete, generate this report:
 | Property | Value |
 |----------|-------|
 | Audit Duration | X minutes |
-| Explorers Launched | 18 |
+| Explorers Launched | 27 |
 | Files Examined | X |
 | Lines of Code | X |
 | Skill Version | 2.0 |
@@ -2290,16 +2527,17 @@ After all explorers complete, generate this report:
 | B: Security | 5 | 50 |
 | C: Operations | 5 | 50 |
 | D: Quality | 8 | 80 |
-| **Total** | **23** | **230** |
+| E: Infrastructure | 4 | 40 |
+| **Total** | **27** | **270** |
 
 ### Overall Classification
 
 | Score Range | Percentage | Classification |
 |-------------|------------|----------------|
-| 207-230 | 90%+ | Production Ready |
-| 173-206 | 75-89% | Ready with Minor Remediation |
-| 115-172 | 50-74% | Needs Significant Work |
-| 0-114 | <50% | Not Production Ready |
+| 243-270 | 90%+ | Production Ready |
+| 203-242 | 75-89% | Ready with Minor Remediation |
+| 135-202 | 50-74% | Needs Significant Work |
+| 0-134 | <50% | Not Production Ready |
 
 ---
 
@@ -2318,7 +2556,7 @@ When this skill is invoked, follow this exact protocol:
 ### Step 1: Initialize Todo List
 
 ```
-TodoWrite: Create todos for all 10 audit dimensions + consolidation
+TodoWrite: Create todos for all 3 batches + consolidation
 ```
 
 ### Step 2: Launch Parallel Explorers (Batch 1)
@@ -2326,14 +2564,12 @@ TodoWrite: Create todos for all 10 audit dimensions + consolidation
 **CRITICAL**: Use a SINGLE response with 10 Task tool calls for Structure & Security dimensions.
 
 ```
-// Category A: Code Structure & Patterns (1-5)
+// Batch 1: Agents 1-10
 Task(subagent_type="Explore", prompt="<Agent 1: Pagination Standards>")
 Task(subagent_type="Explore", prompt="<Agent 2: Error Framework>")
 Task(subagent_type="Explore", prompt="<Agent 3: Route Organization>")
 Task(subagent_type="Explore", prompt="<Agent 4: Bootstrap & Init>")
 Task(subagent_type="Explore", prompt="<Agent 5: Runtime Safety>")
-
-// Category B: Security & Access Control (6-10)
 Task(subagent_type="Explore", prompt="<Agent 6: Auth Protection>")
 Task(subagent_type="Explore", prompt="<Agent 7: IDOR Protection>")
 Task(subagent_type="Explore", prompt="<Agent 8: SQL Safety>")
@@ -2343,20 +2579,35 @@ Task(subagent_type="Explore", prompt="<Agent 10: Rate Limiting>")
 
 ### Step 3: Launch Parallel Explorers (Batch 2)
 
-Launch remaining 8 agents for Operational & Quality dimensions:
+Launch next 10 agents for Operational & Quality dimensions:
 
 ```
-// Category C: Operational Readiness (11-15)
+// Batch 2: Agents 11-20
 Task(subagent_type="Explore", prompt="<Agent 11: Telemetry & Observability>")
 Task(subagent_type="Explore", prompt="<Agent 12: Health Checks>")
 Task(subagent_type="Explore", prompt="<Agent 13: Configuration Management>")
 Task(subagent_type="Explore", prompt="<Agent 14: Connection Management>")
 Task(subagent_type="Explore", prompt="<Agent 15: Logging & PII Safety>")
-
-// Category D: Quality & Maintainability (16-18)
 Task(subagent_type="Explore", prompt="<Agent 16: Idempotency>")
 Task(subagent_type="Explore", prompt="<Agent 17: API Documentation>")
 Task(subagent_type="Explore", prompt="<Agent 18: Technical Debt>")
+Task(subagent_type="Explore", prompt="<Agent 19: Testing Coverage>")
+Task(subagent_type="Explore", prompt="<Agent 20: Dependency Management>")
+```
+
+### Step 4: Launch Parallel Explorers (Batch 3)
+
+Launch remaining 7 agents for Quality & Infrastructure dimensions:
+
+```
+// Batch 3: Agents 21-27
+Task(subagent_type="Explore", prompt="<Agent 21: Performance Patterns>")
+Task(subagent_type="Explore", prompt="<Agent 22: Concurrency Safety>")
+Task(subagent_type="Explore", prompt="<Agent 23: Migration Safety>")
+Task(subagent_type="Explore", prompt="<Agent 24: Container Security>")
+Task(subagent_type="Explore", prompt="<Agent 25: HTTP Hardening>")
+Task(subagent_type="Explore", prompt="<Agent 26: CI/CD & Licensing>")
+Task(subagent_type="Explore", prompt="<Agent 27: Async Reliability>")
 ```
 
 Each Task call should include:
@@ -2364,27 +2615,27 @@ Each Task call should include:
 - Instruction to search the codebase thoroughly
 - Expected output format reminder
 
-### Step 4: Collect Results
+### Step 5: Collect Results
 
 As each explorer completes, mark its todo as completed.
 
-### Step 5: Consolidate Report
+### Step 6: Consolidate Report
 
-Once ALL 18 explorers complete:
+Once ALL 27 explorers complete:
 1. Calculate scores for each dimension (0-10 scale)
-2. Calculate category totals (A: /50, B: /50, C: /50, D: /30)
-3. Calculate overall score (/180)
+2. Calculate category totals (A: /50, B: /50, C: /50, D: /80, E: /40)
+3. Calculate overall score (/270)
 4. Aggregate critical/high/medium/low counts
 5. Determine readiness classification
 6. Generate the consolidated report
 
-### Step 6: Write Report
+### Step 7: Write Report
 
 ```
 Write: docs/audits/production-readiness-{YYYY-MM-DD}.md
 ```
 
-### Step 7: Present Summary
+### Step 8: Present Summary
 
 Provide a verbal summary to the user including:
 - Overall score and classification
