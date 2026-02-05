@@ -152,10 +152,82 @@ Output to `docs/pre-dev/{feature-name}/feature-map.md` with these sections:
 | **Domain Groupings** | Per domain: Purpose, Features list, Boundaries (Owns/Consumes/Provides), Integration Points (→/←) |
 | **User Journeys** | Per journey: User Type, Goal, Path (steps with features, integrations, success/failure), Cross-Domain Interactions |
 | **Feature Interaction Map** | ASCII/text diagram with relationships, Dependency Matrix table (Feature, Depends On, Blocks, Optional) |
+| **Backend Integration Points** | (Fullstack only) API dependencies per feature, data flow direction, BFF requirements |
 | **Phasing Strategy** | Per phase: Goal, Timeline, Features, User Value, Success Criteria, Triggers for next phase |
 | **Scope Boundaries** | In Scope, Out of Scope (with rationale), Assumptions, Constraints |
 | **Risk Assessment** | Feature Complexity Risks table, Integration Risks table |
 | **Gate 2 Validation** | Date, validator, checklist, approval, next step |
+
+## Backend Integration Points (Fullstack Features)
+
+**⛔ MANDATORY:** If `topology.scope: fullstack`, this section MUST be included.
+
+### When This Applies
+
+Check research.md frontmatter:
+```yaml
+topology:
+  scope: fullstack  # ← This triggers backend integration documentation
+```
+
+### Backend Integration Documentation
+
+**Add to feature-map.md under `## Backend Integration Points`:**
+
+```markdown
+## Backend Integration Points
+
+### Overview
+- **Topology:** Fullstack
+- **API Pattern:** [direct | bff]
+- **Backend Services:** List of backend services this feature depends on
+
+### Per-Feature API Dependencies
+
+| Feature | Backend Dependency | Data Direction | Notes |
+|---------|-------------------|----------------|-------|
+| F-001: User Dashboard | User Service | Read | Profile data |
+| F-001: User Dashboard | Order Service | Read | Recent orders |
+| F-002: Create Order | Order Service | Write | New order |
+| F-002: Create Order | Inventory Service | Read | Stock check |
+
+### Data Flow Summary
+
+| Frontend Component | → | BFF/API | → | Backend Service |
+|-------------------|---|---------|---|-----------------|
+| DashboardPage | → | /api/dashboard | → | User + Order Services |
+| OrderForm | → | /api/orders | → | Order + Inventory Services |
+
+### BFF Requirements Matrix
+
+| Feature | Needs BFF? | Reason |
+|---------|-----------|--------|
+| F-001 | Yes | Aggregates 2 services |
+| F-002 | Yes | Needs inventory validation |
+| F-003 | No | Single service, simple read |
+```
+
+### Integration Risk Identification
+
+**Document risks related to backend dependencies:**
+
+```markdown
+### Integration Risks
+
+| Feature | Backend Dependency | Risk | Mitigation |
+|---------|-------------------|------|------------|
+| F-001 | Order Service | Service unavailable | Graceful degradation |
+| F-002 | Inventory Service | Stale stock data | Real-time check before submit |
+```
+
+### Rationalization Table for Backend Integration
+
+| Excuse | Reality |
+|--------|---------|
+| "Backend integration is TRD concern" | TRD designs architecture. Feature Map identifies integration POINTS. Different scope. |
+| "We'll figure out APIs during implementation" | Late API discovery causes frontend/backend misalignment. Document early. |
+| "Feature Map is business only" | Integration points are business-level data flows. WHERE data comes from matters. |
+| "API pattern is already in research.md" | Pattern is high-level. Feature Map documents per-feature specifics. |
 
 ## Common Violations
 

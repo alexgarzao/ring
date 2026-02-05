@@ -359,6 +359,186 @@ Frontend Component → BFF API Route → Backend Service(s) → Database(s)
 - Error normalization
 ```
 
+## BFF Contract Specification (MANDATORY for BFF Pattern)
+
+**⛔ HARD GATE:** If `api_pattern: bff`, this section MUST be included in TRD.
+
+### When This Applies
+
+| Topology Scope | api_pattern | BFF Contract Required |
+|----------------|-------------|----------------------|
+| fullstack | bff | Yes |
+| frontend-only | bff | Yes |
+| fullstack | direct | No |
+| frontend-only | direct | No |
+
+### BFF Contract Structure
+
+**TRD MUST include a `## BFF Contracts` section:**
+
+```markdown
+## BFF Contracts
+
+### Purpose
+Define typed contracts between BFF layer and Frontend components.
+
+### Contract Per Feature
+
+#### Feature: {feature_name}
+
+**BFF Route:** `/api/{feature}/[operation]`
+
+**Frontend Consumer:** `{ComponentName}`
+
+**Request Contract:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| param1 | string | Yes | Description |
+| param2 | number | No | Description |
+
+**Response Contract:**
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| data | object | No | Main response data |
+| data.id | string | No | Entity identifier |
+| data.name | string | No | Display name |
+
+**Error Contract:**
+| Error Code | Condition | Frontend Handling |
+|------------|-----------|-------------------|
+| VALIDATION_ERROR | Invalid input | Show field errors |
+| NOT_FOUND | Resource missing | Show empty state |
+| UNAUTHORIZED | Session expired | Redirect to login |
+```
+
+### BFF-to-Backend Mapping
+
+**Document how BFF routes map to backend APIs:**
+
+```markdown
+### Backend API Mapping
+
+| BFF Route | Backend APIs Called | Aggregation Logic |
+|-----------|---------------------|-------------------|
+| /api/dashboard | GET /users/:id, GET /orders?userId= | Merge user + recent orders |
+| /api/profile | GET /users/:id, GET /preferences/:userId | Merge user + preferences |
+```
+
+### Frontend-only BFF Creation
+
+**If `topology.scope: frontend-only` AND `api_pattern: bff`:**
+
+The feature requires creating a NEW BFF layer to consume existing backend APIs.
+
+**TRD MUST document:**
+
+1. **BFF Location:** Where BFF code will live (e.g., `app/api/` for Next.js)
+2. **Existing APIs to Consume:** List of backend endpoints (from PRD Data Sources)
+3. **BFF Routes to Create:** New routes that aggregate/transform data
+4. **Type Definitions Location:** Where shared types will be defined
+
+```markdown
+### BFF Creation Plan (Frontend-only)
+
+**BFF Framework:** Next.js API Routes / tRPC / Custom
+
+**Existing Backend APIs (from PRD):**
+- User API: GET /api/v1/users/:id
+- Orders API: GET /api/v1/orders?userId=
+
+**New BFF Routes:**
+
+| Route | Purpose | Backend Calls | Response Shape |
+|-------|---------|---------------|----------------|
+| /api/dashboard | Dashboard data | users + orders | DashboardData type |
+| /api/export/pdf | Generate PDF | orders | Blob |
+
+**Type Definitions:**
+- `types/api/dashboard.ts` - DashboardData, DashboardRequest
+- `types/api/orders.ts` - Order, OrderList
+```
+
+### Rationalization Table for BFF Contracts
+
+| Excuse | Reality |
+|--------|---------|
+| "BFF contracts are implementation detail" | Contracts define component boundaries. Must be designed, not discovered. |
+| "Frontend will figure out the types" | Untyped APIs cause runtime errors. Define types upfront. |
+| "We'll add types as we implement" | Missing types cause frontend bugs. Specify contracts in TRD. |
+| "BFF is just a pass-through" | Even pass-through needs error handling and type transformation. Document it. |
+| "Backend already has types" | Backend types ≠ frontend types. BFF transforms shapes. Define both. |
+
+## BFF Task Ownership (MANDATORY for BFF Pattern)
+
+**⛔ HARD GATE:** If `api_pattern: bff`, TRD MUST specify task ownership.
+
+### Task Assignment Rules
+
+**TRD MUST include a `## Task Ownership` section when BFF is involved:**
+
+```markdown
+## Task Ownership
+
+### BFF Implementation
+
+| Task Type | Owner | Rationale |
+|-----------|-------|-----------|
+| BFF route creation | Frontend Engineer | BFF serves frontend, owned by consumer |
+| BFF type definitions | Frontend Engineer | Types consumed by frontend components |
+| Backend API integration | Frontend Engineer | BFF calls existing APIs |
+| Error normalization | Frontend Engineer | Frontend defines error UX |
+| Caching strategy | Frontend Engineer | Frontend knows cache requirements |
+
+### Collaboration Points
+
+| Activity | Frontend | Backend | Notes |
+|----------|----------|---------|-------|
+| BFF contract review | Author | Reviewer | Backend validates API assumptions |
+| Type definitions | Author | Contributor | Shared types may exist |
+| Error mapping | Author | Consultant | Backend clarifies error semantics |
+```
+
+### Why Frontend Owns BFF
+
+| Reason | Explanation |
+|--------|-------------|
+| **Consumer proximity** | BFF serves frontend; frontend knows data needs |
+| **Type safety chain** | Frontend types → BFF types → seamless |
+| **Iteration speed** | Frontend can modify BFF without backend coordination |
+| **Error UX** | Frontend defines how errors appear to users |
+
+### When Backend Should Own BFF
+
+| Scenario | Owner | Rationale |
+|----------|-------|-----------|
+| BFF includes business logic | Backend | Logic belongs with domain experts |
+| BFF requires database access | Backend | Data layer is backend concern |
+| BFF serves multiple frontends | Backend | Shared layer needs coordination |
+
+### TRD Must Document
+
+```markdown
+### BFF Ownership Decision
+
+**Owner:** [Frontend Engineer | Backend Engineer]
+
+**Rationale:** [Why this assignment]
+
+**Coordination Required:**
+- [ ] Backend API documentation review
+- [ ] Type definition alignment
+- [ ] Error code mapping
+```
+
+### Rationalization Table for Task Ownership
+
+| Excuse | Reality |
+|--------|---------|
+| "BFF is backend code" | BFF location ≠ ownership. Consumer drives ownership. |
+| "Let teams figure it out" | Undefined ownership causes delays. Decide in TRD. |
+| "Ownership is obvious" | Obvious to you ≠ clear to team. Document it. |
+| "We can split BFF tasks" | Split ownership causes integration bugs. One owner. |
+
 ### Rationalization Table for Integration Patterns
 
 | Excuse | Reality |
