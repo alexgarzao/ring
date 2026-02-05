@@ -548,7 +548,7 @@ func main() {
 
 ### Handler Annotations (Complete Reference)
 
-MUST: Every handler function has swaggo annotations:
+MUST: every handler function has swaggo annotations:
 
 ```go
 // CreateUser creates a new user
@@ -616,7 +616,7 @@ Required: true, false
 
 ### Required Failure Responses
 
-Every endpoint MUST document these failure responses:
+MUST document these failure responses for every endpoint:
 
 | Status | When | Annotation |
 |--------|------|------------|

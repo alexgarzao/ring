@@ -345,8 +345,8 @@ See standards-coverage-table.md for sections to check (see coverage table for ap
 
 | Rule | Enforcement |
 |------|-------------|
-| **all sections apply** | CANNOT: validate without checking all sections |
-| **no cherry-picking** | MUST: validate all SRE sections |
+| all sections apply | CANNOT: validate without checking all sections |
+| no cherry-picking | MUST: validate all SRE sections |
 | **Coverage table is authoritative** | REQUIRED: See `ring:sre → sre.md` section for full list |
 
 **Anti-Rationalization:**
