@@ -147,6 +147,62 @@ This gate prevents:
 | **Empty state CTAs** | Empty states have actionable CTAs | List empty states without CTA |
 | **Form validation messages** | Form fields with validation have error text | List fields without error text |
 
+### Section 7: Design System (New Projects)
+
+**This section applies when:** Project is new (no existing design system detected).
+
+| Check | Pass Criteria | Fail Action |
+|-------|---------------|-------------|
+| **design-system.md exists** | `docs/pre-dev/{feature}/design-system.md` present | Flag: "Missing design-system.md" |
+| **Color palette defined** | Primary, neutral, semantic colors documented | Flag: "Incomplete color palette" |
+| **Typography specified** | Font family, scale, line heights documented | Flag: "Missing typography specs" |
+| **Contrast validated** | Accessibility contrast ratios calculated | Flag: "Missing contrast validation" |
+| **CSS variables listed** | All required CSS custom properties documented | Flag: "Missing CSS variables" |
+
+**Detection Rule:** Project is "new" if:
+- No `globals.css` with CSS variables exists, OR
+- No `tailwind.config.*` with custom colors exists
+
+**Why This Matters:**
+- Frontend engineers need design tokens before implementation
+- TRD references design-system.md for styling architecture
+- Missing design system = styling decisions made ad-hoc during coding
+
+### Section 8: Component Library Alignment (All UI Features)
+
+**This section validates that wireframes use components available in the project's UI library.**
+
+| Check | Pass Criteria | Fail Action |
+|-------|---------------|-------------|
+| **UI library identified** | `ux-criteria.md` specifies UI library (shadcn, Chakra, etc.) | Flag: "Missing UI library specification" |
+| **Components exist in library** | all `components:` in wireframes exist in specified library | List unavailable components |
+| **Variants match library** | Button variants, input types match library's variants | List incorrect variant usage |
+| **Custom components flagged** | Components not in library marked as `custom: true` | List unmarked custom components |
+
+**Validation Process:**
+
+1. **Read UI library from ux-criteria.md:**
+   ```yaml
+   ui_library: shadcn/ui | Chakra UI | Material UI | Custom
+   ```
+
+2. **For each wireframe, check components:**
+   ```yaml
+   components:
+     - type: Button        # Exists in shadcn? ✅
+       variant: primary    # Valid variant? ✅
+     - type: DataGrid      # Exists in shadcn? ❌ (custom needed)
+   ```
+
+3. **Flag mismatches:**
+   - Component doesn't exist → Needs `custom: true` or different component
+   - Variant doesn't exist → Use correct library variant
+
+**Why This Matters:**
+- Prevents wireframes specifying components that don't exist
+- Prevents implementation errors from incorrect variant names
+- Identifies custom component work needed before TRD
+
 ---
 
 ## Validation Process
@@ -256,6 +312,25 @@ FOR EACH section in checklist:
 | Empty state CTAs | PASS/FAIL | Details |
 | Form validation messages | PASS/FAIL | Details |
 
+### Section 7: Design System (New Projects Only)
+
+| Check | Status | Details |
+|-------|--------|---------|
+| design-system.md exists | PASS/FAIL/N/A | Details |
+| Color palette defined | PASS/FAIL/N/A | Details |
+| Typography specified | PASS/FAIL/N/A | Details |
+| Contrast validated | PASS/FAIL/N/A | Details |
+| CSS variables listed | PASS/FAIL/N/A | Details |
+
+### Section 8: Component Library Alignment
+
+| Check | Status | Details |
+|-------|--------|---------|
+| UI library identified | PASS/FAIL | Details |
+| Components exist in library | PASS/FAIL | Details |
+| Variants match library | PASS/FAIL | Details |
+| Custom components flagged | PASS/FAIL | Details |
+
 ## Summary
 
 | Section | Status | Critical? |
@@ -266,6 +341,8 @@ FOR EACH section in checklist:
 | Responsive | PASS/FAIL | No |
 | User Flows | PASS/FAIL | Yes |
 | Content | PASS/FAIL | No |
+| Design System (new projects) | PASS/FAIL/N/A | Yes (if applicable) |
+| Component Library Alignment | PASS/FAIL | Yes |
 
 ## Verdict: [DESIGN VALIDATED | CRITICAL GAPS | MINOR GAPS]
 
@@ -344,6 +421,8 @@ FOR EACH section in checklist:
 | Severity | Criteria | Examples | Action |
 |----------|----------|----------|--------|
 | **CRITICAL** | Missing Section 1-2 items | No wireframe for screen, no error state, no loading state | STOP, return to previous gate |
+| **CRITICAL** | Missing Section 7 items (new projects) | No design-system.md, no color palette | STOP, return to PRD creation |
+| **CRITICAL** | Missing Section 8 items | Components don't exist in library, wrong variants | STOP, fix wireframes |
 | **HIGH** | Missing Section 3-5 items | No a11y criteria, no mobile layout, no error flow | Document, strongly recommend fix |
 | **MEDIUM** | Missing Section 6 items | Generic button labels, missing CTA on empty state | Document, recommend fix |
 | **LOW** | Incomplete but present | Mobile layout exists but lacks touch target note | Note for future improvement |

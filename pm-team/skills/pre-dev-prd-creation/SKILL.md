@@ -121,6 +121,82 @@ If you catch yourself writing or thinking any of these in a PRD, **STOP**:
 
 **When you catch yourself**: Move that content to a "technical notes" section to transfer to TRD later. Keep PRD pure business.
 
+## Data Source Discovery (Frontend-only Features)
+
+**⛔ MANDATORY:** If feature is frontend-only (uses existing backend APIs), this section MUST be completed.
+
+### When to Apply
+
+Check `research.md` frontmatter for topology:
+```yaml
+topology:
+  scope: frontend-only  # ← This triggers data source discovery
+```
+
+### Step 1: Identify Existing APIs
+
+**Document all existing APIs the feature will consume:**
+
+```markdown
+## Data Sources
+
+### Existing Backend APIs
+
+| API | Endpoint Pattern | Description | Documentation |
+|-----|------------------|-------------|---------------|
+| User API | /api/v1/users/* | User management | link to docs |
+| Orders API | /api/v1/orders/* | Order operations | link to docs |
+
+### API Capabilities Needed
+
+| User Story | Required Capability | Available API | Gap? |
+|------------|---------------------|---------------|------|
+| US-001 | Get user profile | GET /users/:id | No |
+| US-002 | List user orders | GET /orders?userId= | No |
+| US-003 | Export order PDF | None | Yes - needs BFF |
+```
+
+### Step 2: Identify API Gaps
+
+**If user story requires capability not available in existing APIs:**
+
+| Gap Type | Action |
+|----------|--------|
+| Data aggregation needed | Flag: "BFF required for aggregation" |
+| Data transformation needed | Flag: "BFF required for transformation" |
+| Missing endpoint | Flag: "Backend enhancement needed" |
+| Multiple API calls for single view | Flag: "BFF recommended for optimization" |
+
+### Step 3: Document in PRD
+
+**Add to PRD under "Technical Context" section:**
+
+```markdown
+## Technical Context (Frontend-only)
+
+**Data Source Type:** Existing Backend APIs
+
+**Available APIs:**
+- User API (v1) - user management operations
+- Orders API (v1) - order CRUD operations
+
+**API Gaps Identified:**
+- [ ] No endpoint for aggregated dashboard data → BFF needed
+- [ ] PDF export not available → Backend enhancement OR BFF generation
+
+**BFF Requirements:** [None | Aggregation | Transformation | Both]
+```
+
+### Rationalization Table for Data Source Discovery
+
+| Excuse | Reality |
+|--------|---------|
+| "We'll discover APIs during implementation" | Discovery during implementation causes rework. Document now. |
+| "Frontend devs know the APIs" | Documentation prevents tribal knowledge. Write it down. |
+| "APIs are obvious from the codebase" | Obvious to you ≠ documented for AI agents. Be explicit. |
+| "We don't need BFF, just call APIs directly" | Multiple API calls = poor UX. Evaluate BFF need properly. |
+| "BFF adds complexity" | BFF complexity < spaghetti frontend API calls. Evaluate objectively. |
+
 ## Gate 1 Validation Checklist
 
 | Category | Requirements |
@@ -129,6 +205,7 @@ If you catch yourself writing or thinking any of these in a PRD, **STOP**:
 | **Solution Value** | Features address core problem; success metrics measurable; ROI case documented; user value clear per feature |
 | **Scope Clarity** | In-scope items explicit; out-of-scope with rationale; assumptions documented; business dependencies identified |
 | **Market Fit** | Differentiation clear; value proposition validated; business case sound; go-to-market outlined |
+| **Data Sources (frontend-only)** | Existing APIs documented; API capabilities mapped to user stories; API gaps identified; BFF requirements determined |
 
 **Gate Result:** ✅ PASS → UX Validation → Feature Map | ⚠️ CONDITIONAL (address gaps) | ❌ FAIL (return to discovery)
 
