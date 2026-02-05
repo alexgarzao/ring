@@ -16,7 +16,8 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | **New feature (full)** | core.md → bootstrap.md → domain.md → quality.md |
 | **Auth implementation** | core.md → security.md |
 | **Add tracing/observability** | bootstrap.md |
-| **Testing** | quality.md |
+| **Unit testing** | quality.md |
+| **Integration testing** | testing-integration.md |
 | **Idempotency** | idempotency.md (+ domain.md for error codes) |
 | **Multi-tenant** | multi-tenant.md (+ bootstrap.md for context) |
 | **Compliance check** | ALL modules |
@@ -39,6 +40,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 10 | [idempotency.md](idempotency.md) | §22 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
 | 11 | [multi-tenant.md](multi-tenant.md) | §23 | ~460 | Multi-Tenant Patterns (Pool Manager, JWT) |
 | 12 | [compliance.md](compliance.md) | Meta | ~125 | Standards Compliance Output Format, Checklist |
+| 13 | [testing-integration.md](testing-integration.md) | INT-1-15 | ~600 | Integration Testing Patterns |
 
 ---
 
@@ -122,6 +124,26 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|---------|--------|
 | 23 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
 
+### Integration Testing (testing-integration.md)
+
+| # | Section | Anchor |
+|---|---------|--------|
+| INT-1 | Test Pyramid | [#test-pyramid](testing-integration.md#test-pyramid) |
+| INT-2 | Decision Tree for Test Level | [#decision-tree-for-test-level](testing-integration.md#decision-tree-for-test-level) |
+| INT-3 | File Naming Convention (MANDATORY) | [#file-naming-convention-mandatory](testing-integration.md#file-naming-convention-mandatory) |
+| INT-4 | Function Naming Convention (MANDATORY) | [#function-naming-convention-mandatory](testing-integration.md#function-naming-convention-mandatory) |
+| INT-5 | Build Tags (MANDATORY) | [#build-tags-mandatory](testing-integration.md#build-tags-mandatory) |
+| INT-6 | Testcontainers Patterns (MANDATORY) | [#testcontainers-patterns-mandatory](testing-integration.md#testcontainers-patterns-mandatory) |
+| INT-7 | Parallel Test Prohibition (MANDATORY) | [#parallel-test-prohibition-mandatory](testing-integration.md#parallel-test-prohibition-mandatory) |
+| INT-8 | Fixture Centralization (MANDATORY) | [#fixture-centralization-mandatory](testing-integration.md#fixture-centralization-mandatory) |
+| INT-9 | Stub Centralization (MANDATORY) | [#stub-centralization-mandatory](testing-integration.md#stub-centralization-mandatory) |
+| INT-10 | Property-Based Testing | [#property-based-testing](testing-integration.md#property-based-testing) |
+| INT-11 | Native Fuzz Testing | [#native-fuzz-testing](testing-integration.md#native-fuzz-testing) |
+| INT-12 | Chaos Testing | [#chaos-testing](testing-integration.md#chaos-testing) |
+| INT-13 | Logger Testing | [#logger-testing](testing-integration.md#logger-testing) |
+| INT-14 | Guardrails (11 Anti-Patterns) (MANDATORY) | [#guardrails-11-anti-patterns-mandatory](testing-integration.md#guardrails-11-anti-patterns-mandatory) |
+| INT-15 | Test Failure Analysis | [#test-failure-analysis-no-greenwashing](testing-integration.md#test-failure-analysis-no-greenwashing) |
+
 ---
 
 ## Dependency Graph
@@ -142,7 +164,10 @@ core.md (foundation - load first)
     │   └── Pagination (uses error handling)
     │
     ├── quality.md (depends on core.md, bootstrap.md)
-    │   └── Testing, Logging (uses telemetry context)
+    │   └── Unit Testing, Logging (uses telemetry context)
+    │
+    ├── testing-integration.md (depends on quality.md)
+    │   └── Integration Testing (testcontainers, property-based, chaos)
     │
     ├── architecture.md (depends on core.md)
     │   └── Hexagonal, Directory Structure, Concurrency
@@ -181,3 +206,4 @@ For agents loading standards via WebFetch:
 | idempotency.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/idempotency.md` |
 | multi-tenant.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md` |
 | compliance.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/compliance.md` |
+| testing-integration.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-integration.md` |

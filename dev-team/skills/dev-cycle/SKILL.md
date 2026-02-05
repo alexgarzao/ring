@@ -1,9 +1,9 @@
 ---
 name: ring:dev-cycle
 description: |
-  Main orchestrator for the 6-gate development cycle system. Loads tasks/subtasks
-  from PM team output and executes through implementation, devops, SRE, testing, review,
-  and validation gates with state persistence and metrics collection.
+  Main orchestrator for the 7-gate development cycle system. Loads tasks/subtasks
+  from PM team output and executes through implementation, devops, SRE, unit testing,
+  integration testing, review, and validation gates with state persistence and metrics collection.
 
 trigger: |
   - Starting a new development cycle with a task file
@@ -45,7 +45,7 @@ examples:
     expected_flow: |
       1. Load tasks with subtasks from tasks.md
       2. Ask user for checkpoint mode (per-task/per-gate/continuous)
-      3. Execute Gate 0-5 for each task sequentially
+      3. Execute Gate 0→1→2→3→3.5→4→5 for each task sequentially
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
     invocation: "/ring:dev-cycle --resume"
@@ -69,7 +69,7 @@ examples:
       2. Dispatch ring:codebase-explorer to analyze project
       3. Generate tasks internally from prompt + codebase analysis
       4. Present generated tasks for user confirmation
-      5. Execute Gate 0-5 for each generated task
+      5. Execute Gate 0→1→2→3→3.5→4→5 for each generated task
 ---
 
 # Development Cycle Orchestrator
@@ -93,9 +93,9 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 6 quality gates. Tasks are loaded at initialization - no separate import gate.
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 7 quality gates (Gate 0-5, with Gate 3.5 for integration testing). Tasks are loaded at initialization - no separate import gate.
 
-**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 6 gates."
+**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 7 gates."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -178,8 +178,9 @@ This is not negotiable:
 <cannot_skip>
 - Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
-- Gate 2: `Skill("ring:dev-ring:sre")` → then `Task(subagent_type="ring:sre", ...)`
-- Gate 3: `Skill("ring:dev-testing")` → then `Task(subagent_type="ring:qa-analyst", ...)`
+- Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
+- Gate 3: `Skill("ring:dev-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
+- Gate 3.5: `Skill("ring:dev-integration-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="integration", ...)` (conditional - see decision tree)
 - Gate 4: `Skill("ring:requesting-code-review")` → then 3x `Task(...)` in parallel
 - Gate 5: `Skill("ring:dev-validation")` → N/A (verification only)
 </cannot_skip>
@@ -310,8 +311,9 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 ### Cannot Be Overridden
 
 <cannot_skip>
-- All 6 gates must execute - Each gate catches different issues
-- Gates execute in order (0→5) - Dependencies exist between gates
+- All 7 gates must execute - Each gate catches different issues
+- Gates execute in order (0→1→2→3→3.5→4→5) - Dependencies exist between gates
+- Gate 3.5 may SKIP with documented reason - Only if no external dependencies
 - Gate 4 requires all 3 reviewers - Different review perspectives are complementary
 - Coverage threshold ≥ 85% - Industry standard for quality code
 - PROJECT_RULES.md must exist - Cannot verify standards without target
@@ -432,25 +434,29 @@ Day 4: Production incident from Day 1 code
 
 ## Gate Order Enforcement (HARD GATE)
 
-**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5. No exceptions.**
+**Gates MUST execute in order: 0 → 1 → 2 → 3 → 3.5 → 4 → 5. Gate 3.5 may SKIP with documented reason.**
 
 | Violation | Why It's WRONG | Consequence |
 |-----------|----------------|-------------|
 | Skip Gate 1 (DevOps) | "No infra changes" | Code without container = works on my machine only |
 | Skip Gate 2 (SRE) | "Observability later" | Blind production = debugging nightmare |
+| Skip Gate 3.5 without reason | "Unit tests are enough" | Integration bugs surface only in production |
 | Reorder Gates | "Review before test" | Reviewing untested code wastes reviewer time |
 | Parallel Gates | "Run 2 and 3 together" | Dependencies exist. Order is intentional. |
 
+**Gate 3.5 Exception:** May SKIP only when task has no external dependencies (database, API, queue). MUST document skip reason in state file.
+
 **Gates are not parallelizable across different gates. Sequential execution is MANDATORY.**
 
-## The 6 Gates
+## The 7 Gates
 
 | Gate | Skill | Purpose | Agent |
 |------|-------|---------|-------|
 | 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain |
 | 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer |
-| 2 | ring:dev-ring:sre | Observability (health, logging, tracing) | ring:sre |
-| 3 | ring:dev-testing | Unit tests for acceptance criteria | ring:qa-analyst |
+| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre |
+| 3 | ring:dev-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) |
+| 3.5 | ring:dev-integration-testing | Integration tests for external dependencies | ring:qa-analyst (test_mode: integration) |
 | 4 | ring:requesting-code-review | Parallel code review | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer (3x parallel) |
 | 5 | ring:dev-validation | Final acceptance validation | N/A (verification) |
 
@@ -465,14 +471,14 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **all 6 gates** before the next unit.
+**Core Principle:** Each execution unit (task or subtask) passes through **all 7 gates** (0→1→2→3→3.5→4→5) before the next unit. Gate 3.5 may SKIP with documented reason.
 
-**Flow:** Unit → Gate 0-5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
+**Flow:** Unit → Gate 0→1→2→3→3.5→4→5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
 
 | Scenario | Execution Unit | Gates Per Unit |
 |----------|----------------|----------------|
-| Task without subtasks | Task itself | 6 gates |
-| Task with subtasks | Each subtask | 6 gates per subtask |
+| Task without subtasks | Task itself | 7 gates (Gate 3.5 conditional) |
+| Task with subtasks | Each subtask | 7 gates per subtask (Gate 3.5 conditional) |
 
 ## Commit Timing
 
@@ -588,8 +594,16 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "devops": {"status": "pending"},
-        "ring:sre": {"status": "pending"},
+        "sre": {"status": "pending"},
         "testing": {"status": "pending"},
+        "integration_testing": {
+          "status": "pending|in_progress|completed|skipped",
+          "skip_reason": "No external dependencies",
+          "scenarios_tested": 0,
+          "tests_passed": 0,
+          "tests_failed": 0,
+          "flaky_tests_detected": 0
+        },
         "review": {"status": "pending"},
         "validation": {"status": "pending"}
       },
@@ -643,6 +657,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
         },
         "testing": {
           "agent": "ring:qa-analyst",
+          "test_mode": "unit",
           "output": "## Summary\n...",
           "verdict": "PASS",
           "coverage_actual": 87.5,
@@ -655,6 +670,27 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           "standards_compliance": {
             "total_sections": 6,
             "compliant": 6,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
+        "integration_testing": {
+          "agent": "ring:qa-analyst",
+          "test_mode": "integration",
+          "output": "## Summary\n...",
+          "verdict": "PASS|SKIP",
+          "skip_reason": "No external dependencies (only if SKIP)",
+          "scenarios_tested": 5,
+          "tests_passed": 5,
+          "tests_failed": 0,
+          "flaky_tests_detected": 0,
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "standards_compliance": {
+            "total_sections": 15,
+            "compliant": 15,
             "not_applicable": 0,
             "non_compliant": 0,
             "gaps": []
@@ -802,7 +838,8 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
 | Gate 0 (Implementation) | `standards_compliance` (total, compliant, gaps[]) |
 | Gate 1 (DevOps) | `standards_compliance` + `verification_errors[]` |
 | Gate 2 (SRE) | `standards_compliance` + `validation_errors[]` |
-| Gate 3 (Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
+| Gate 3 (Unit Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
+| Gate 3.5 (Integration Testing) | `standards_compliance` + `scenarios_tested` + `tests_passed` + `tests_failed` + `flaky_tests_detected` + `skip_reason` (if skipped) |
 | Gate 4 (Review) | `standards_compliance` per reviewer + `issues[]` per reviewer |
 
 **All gates track `standards_compliance`:**
@@ -847,8 +884,9 @@ Read tool:
 | Gate 0.1 (TDD-RED) | `tdd_red.status`, `tdd_red.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | `tdd_green.status`, `implementation.status` | ✅ YES |
 | Gate 1 (DevOps) | `devops.status`, `agent_outputs.devops` | ✅ YES |
-| Gate 2 (SRE) | `ring:sre.status`, `agent_outputs.ring:sre` | ✅ YES |
-| Gate 3 (Testing) | `testing.status`, `agent_outputs.testing` | ✅ YES |
+| Gate 2 (SRE) | `sre.status`, `agent_outputs.sre` | ✅ YES |
+| Gate 3 (Unit Testing) | `testing.status`, `agent_outputs.testing` | ✅ YES |
+| Gate 3.5 (Integration Testing) | `integration_testing.status`, `agent_outputs.integration_testing` | ✅ YES |
 | Gate 4 (Review) | `review.status`, `agent_outputs.review` | ✅ YES |
 | Gate 5 (Validation) | `validation.status`, task `status` | ✅ YES |
 | Step 7.1 (Unit Approval) | `status = "paused_for_approval"` | ✅ YES |
@@ -2240,7 +2278,7 @@ testing_input = {
    - gate_progress.testing.status = "completed"
    - gate_progress.testing.coverage = [coverage_actual]
 
-7. Proceed to Gate 4
+7. Proceed to Gate 3.5 (Integration Testing)
 ```
 
 ### Gate 3 Thresholds
@@ -2256,6 +2294,154 @@ testing_input = {
 | "84% is close enough" | "85% is Ring minimum. ring:dev-testing skill enforces this." |
 | "Skip testing, deadline" | "Testing is MANDATORY. ring:dev-testing skill handles iterations." |
 | "Manual testing covers it" | "Gate 3 requires executable unit tests. Invoking ring:dev-testing now." |
+
+## Step 5.5: Gate 3.5 - Integration Testing (Per Execution Unit)
+
+**REQUIRED SUB-SKILL:** Use `ring:dev-integration-testing`
+
+**CONDITIONAL GATE:** Gate 3.5 may be SKIPPED with documented reason when task has no external dependencies.
+
+### Step 5.5.1: Check If Integration Testing Required
+
+```text
+Decision Tree - Is Gate 3.5 Required?
+
+1. Does task have external_dependencies in requirements?
+   |
+   +-- YES → Gate 3.5 REQUIRED. Proceed to Step 5.5.2.
+   |
+   +-- NO → Continue to #2
+
+2. Does task have integration_scenarios defined?
+   |
+   +-- YES → Gate 3.5 REQUIRED. Proceed to Step 5.5.2.
+   |
+   +-- NO → Continue to #3
+
+3. Do acceptance criteria mention "database", "queue", "API", "integration"?
+   |
+   +-- YES → Gate 3.5 REQUIRED. Proceed to Step 5.5.2.
+   |
+   +-- NO → Gate 3.5 SKIP
+
+If SKIP:
+  - gate_progress.integration_testing.status = "skipped"
+  - gate_progress.integration_testing.skip_reason = "[documented reason]"
+  - **⛔ SAVE STATE TO FILE (MANDATORY)**
+  - Proceed to Step 6 (Gate 4)
+```
+
+### Step 5.5.2: Prepare Input for ring:dev-integration-testing Skill
+
+```text
+Gather from previous gates:
+
+integration_testing_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  integration_scenarios: state.current_unit.integration_scenarios || [],  // list of scenarios
+  external_dependencies: state.current_unit.external_dependencies || [],  // postgres, redis, rabbitmq
+  language: state.current_unit.language,  // "go" | "typescript"
+
+  // OPTIONAL - additional context
+  gate3_handoff: agent_outputs.testing,  // full Gate 3 output
+  implementation_files: agent_outputs.implementation.files_changed
+}
+```
+
+### Step 5.5.3: Invoke ring:dev-integration-testing Skill
+
+```text
+1. Record gate start timestamp
+
+2. Invoke ring:dev-integration-testing skill with structured input:
+
+   Skill("ring:dev-integration-testing") with input:
+     unit_id: integration_testing_input.unit_id
+     integration_scenarios: integration_testing_input.integration_scenarios
+     external_dependencies: integration_testing_input.external_dependencies
+     language: integration_testing_input.language
+     gate3_handoff: integration_testing_input.gate3_handoff
+     implementation_files: integration_testing_input.implementation_files
+
+   The skill handles:
+   - Dispatching ring:qa-analyst agent (test_mode: integration)
+   - Integration test creation using testcontainers
+   - Quality gate validation (build tags, no hardcoded ports, etc.)
+   - Scenario coverage verification
+   - Dispatching fixes to implementation agent if issues found
+   - Re-validation loop (max 3 iterations)
+
+3. Parse skill output for results:
+
+   Expected output sections:
+   - "## Integration Testing Summary" → status, iterations
+   - "## Scenario Coverage" → IS-to-test mapping
+   - "## Quality Gate Results" → build tags, testcontainers, etc.
+   - "## Handoff to Next Gate" → ready_for_review: YES/NO
+
+   if skill output contains "Status: PASS" and "Ready for Gate 4: YES":
+     → Gate 3.5 PASSED. Proceed to Step 5.5.4.
+
+   if skill output contains "Status: FAIL" or "Ready for Gate 4: NO":
+     → Gate 3.5 BLOCKED.
+     → Skill already dispatched fixes to implementation agent
+     → Skill already re-ran tests
+     → If "ESCALATION" in output: STOP and report to user
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 5.5.4: Gate 3.5 Complete
+
+```text
+5. When ring:dev-integration-testing skill returns PASS:
+
+   Parse from skill output:
+   - scenarios_tested: extract count from "## Integration Testing Summary"
+   - tests_passed: extract from "## Integration Testing Summary"
+   - tests_failed: extract from "## Integration Testing Summary"
+   - iterations: extract from "Iterations:" line
+
+   - agent_outputs.integration_testing = {
+       skill: "ring:dev-integration-testing",
+       output: "[full skill output]",
+       verdict: "PASS",
+       scenarios_tested: [count],
+       tests_passed: [count],
+       tests_failed: 0,
+       flaky_tests_detected: 0,
+       iterations: [count],
+       timestamp: "[ISO timestamp]",
+       duration_ms: [execution time]
+     }
+
+6. Update state:
+   - gate_progress.integration_testing.status = "completed"
+   - gate_progress.integration_testing.scenarios_tested = [count]
+   - gate_progress.integration_testing.tests_passed = [count]
+
+7. Proceed to Gate 4 (Review)
+```
+
+### Gate 3.5 Skip Conditions (Documented)
+
+| Condition | Skip Reason |
+|-----------|-------------|
+| No external dependencies | "Task has no database, API, or queue interactions" |
+| Pure business logic | "Task is pure function/logic with no I/O" |
+| Library/utility code | "Task is internal utility with no external calls" |
+| Already covered | "Integration tests exist and pass (verified)" |
+
+### Gate 3.5 Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Unit tests cover integration" | "Unit tests mock dependencies. Integration tests verify real behavior. Both required." |
+| "Testcontainers is slow" | "Correctness > speed. Real dependencies catch real bugs." |
+| "CI doesn't have Docker" | "Docker is baseline infrastructure. Fix CI before skipping integration tests." |
+| "No time for integration" | "Integration bugs cost 10x more in production. Testing is non-negotiable." |
 
 ## Step 6: Gate 4 - Review (Per Execution Unit)
 
