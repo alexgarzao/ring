@@ -68,7 +68,7 @@ type UserResponse struct {
 
 > **Source:** This pattern matches the Core one API standard (verified via Apidog).
 
-#### Query Parameters (ALL snake_case)
+#### Query Parameters (all snake_case)
 
 ```go
 // ✅ CORRECT: All query params use snake_case
@@ -548,7 +548,7 @@ func main() {
 
 ### Handler Annotations (Complete Reference)
 
-Every handler function MUST have swaggo annotations:
+MUST: Every handler function have swaggo annotations:
 
 ```go
 // CreateUser creates a new user
