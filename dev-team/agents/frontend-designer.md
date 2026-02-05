@@ -1,11 +1,12 @@
 ---
 name: ring:frontend-designer
-version: 1.3.0
-description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code.
+version: 1.4.0
+description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code. Includes UI Library Mode detection for handoff.
 type: specialist
 model: opus
-last_updated: 2026-02-04
+last_updated: 2026-02-05
 changelog:
+  - 1.4.0: Added UI Library Mode Detection for handoff, updated to 19 sections after frontend.md expansion
   - 1.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.2.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.2.2: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
@@ -776,13 +777,41 @@ When ambiguity exists, present options with trade-offs:
 
 **After completing design specifications, hand off to:**
 - `frontend-bff-engineer-typescript` - For BFF layer and API orchestration
-- `frontend-bff-engineer-typescript` - For BFF layer
+- `ring:frontend-engineer` - For UI implementation
+
+### UI Library Mode Detection (MANDATORY for Handoff)
+
+**Before handoff, detect and document the project's UI library mode.**
+
+```bash
+# Check package.json for sindarian-ui
+grep -q "@anthropic/sindarian-ui" package.json && echo "sindarian-ui" || echo "vanilla"
+```
+
+| Mode | Detection | What to Specify in Handoff |
+|------|-----------|---------------------------|
+| **sindarian-ui** | `@anthropic/sindarian-ui` in dependencies | Use sindarian-ui component names (FormField, PageRoot, etc.) |
+| **Vanilla** | No sindarian packages, has `shadcn/ui` or `@radix-ui` | Use shadcn/ui or Radix component names |
+
+**⛔ MANDATORY:** Include "UI Library Mode" row in handoff Overview section:
+
+```markdown
+## Overview
+
+| Field | Value |
+|-------|-------|
+| Feature | [Feature name] |
+| PRD/TRD | [References] |
+| **UI Library Mode** | sindarian-ui / vanilla (shadcn/ui) |
+```
+
+**Why This Matters:** Frontend Engineer needs this to select correct component imports and follow the right implementation patterns.
 
 ### Required Handoff Sections
 
 | Section | Content Required |
 |---------|------------------|
-| Overview | Feature name, PRD/TRD references |
+| Overview | Feature name, PRD/TRD references, **UI Library Mode** |
 | Design Tokens | Table with category, name, value |
 | Components Required | Status: Existing/New [SDK]/New [LOCAL] |
 | Component Specifications | Visual states, dimensions, animation, accessibility |
@@ -836,7 +865,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:frontend-designer → frontend.md" for:**
-- Complete list of sections to check (13 sections)
+- Complete list of sections to check (19 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
 - Status legend (✅/⚠️/❌/N/A)
@@ -921,7 +950,7 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 | Check | Status | Details |
 |-------|--------|---------|
 | PROJECT_RULES.md | Found/Not Found | Path: docs/PROJECT_RULES.md |
-| Ring Standards (frontend.md) | Loaded | 13 sections fetched |
+| Ring Standards (frontend.md) | Loaded | 19 sections fetched |
 
 ### Precedence Decisions
 
