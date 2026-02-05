@@ -376,11 +376,11 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → golang.md or typescript.md
+### ring:qa-analyst → golang.md or typescript.md (Unit Mode - Gate 3)
 
-**Note:** ring:qa-analyst checks testing-related sections based on project language.
+**Note:** ring:qa-analyst checks testing-related sections based on project language and test mode.
 
-**For Go projects:**
+**For Go projects (Unit Mode):**
 | # | Section to Check |
 |---|------------------|
 | 1 | Testing Patterns (MANDATORY) |
@@ -388,7 +388,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 3 | Test Naming Convention (MANDATORY) |
 | 4 | Linting (MANDATORY) |
 
-**For TypeScript projects:**
+**For TypeScript projects (Unit Mode):**
 | # | Section to Check |
 |---|------------------|
 | 1 | Testing Patterns (MANDATORY) |
@@ -404,6 +404,42 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 4 | Edge cases | ≥2 per acceptance criterion |
 | 5 | TDD evidence | RED phase captured |
 | 6 | Test isolation | No order dependency |
+
+---
+
+### ring:qa-analyst → testing-integration.md (Integration Mode - Gate 3.5)
+
+**Note:** When `test_mode: integration`, ring:qa-analyst checks integration testing sections.
+
+**For Go projects (Integration Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| INT-1 | Test Pyramid | `#test-pyramid` |
+| INT-2 | Decision Tree for Test Level | `#decision-tree-for-test-level` |
+| INT-3 | File Naming Convention (MANDATORY) | `#file-naming-convention-mandatory` |
+| INT-4 | Function Naming Convention (MANDATORY) | `#function-naming-convention-mandatory` |
+| INT-5 | Build Tags (MANDATORY) | `#build-tags-mandatory` |
+| INT-6 | Testcontainers Patterns (MANDATORY) | `#testcontainers-patterns-mandatory` |
+| INT-7 | Parallel Test Prohibition (MANDATORY) | `#parallel-test-prohibition-mandatory` |
+| INT-8 | Fixture Centralization (MANDATORY) | `#fixture-centralization-mandatory` |
+| INT-9 | Stub Centralization (MANDATORY) | `#stub-centralization-mandatory` |
+| INT-10 | Property-Based Testing | `#property-based-testing` |
+| INT-11 | Native Fuzz Testing | `#native-fuzz-testing` |
+| INT-12 | Chaos Testing | `#chaos-testing` |
+| INT-13 | Logger Testing | `#logger-testing` |
+| INT-14 | Guardrails (11 Anti-Patterns) (MANDATORY) | `#guardrails-11-anti-patterns-mandatory` |
+| INT-15 | Test Failure Analysis | `#test-failure-analysis-no-greenwashing` |
+
+**Integration Test Quality Gate Checks (Gate 3.5 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Build tag present | `//go:build integration` at top of file |
+| 2 | No hardcoded ports | `grep ":5432\|:6379"` = 0 |
+| 3 | Testcontainers used | import check for testcontainers |
+| 4 | No t.Parallel() | `grep "t.Parallel()"` in integration tests = 0 |
+| 5 | Cleanup present | `t.Cleanup()` for all containers |
+| 6 | Anti-pattern scan | Detection script passes |
+| 7 | No flaky tests | 3x consecutive pass |
 
 ---
 
