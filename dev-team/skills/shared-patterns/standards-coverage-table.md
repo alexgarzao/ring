@@ -278,10 +278,12 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 29 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
 | 30 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
 | 31 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
-| 32 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
-| 33 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
-| 34 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 35 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
+| 32 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
+| 33 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
+| 34 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
+| 35 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
+| 36 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 37 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
 
 **Module Loading Guide:**
 

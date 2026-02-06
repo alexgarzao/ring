@@ -34,7 +34,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 4 | [domain.md](domain.md) | §9-12 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
 | 5 | [api-patterns.md](api-patterns.md) | §13 | ~280 | Pagination Patterns (cursor and page-based) |
 | 6 | [quality.md](quality.md) | §18-22 | ~1050 | Testing, Logging, Linting, Config Validation, Container Security |
-| 7 | [architecture.md](architecture.md) | §17-19 | ~130 | Architecture Patterns, Directory Structure, Concurrency |
+| 7 | [architecture.md](architecture.md) | §23-27 | ~350 | Architecture, Directory, Concurrency, Goroutine Recovery, N+1 Detection |
 | 8 | [messaging.md](messaging.md) | §20 | ~220 | RabbitMQ Worker Pattern |
 | 9 | [domain-modeling.md](domain-modeling.md) | §21 | ~170 | Always-Valid Domain Model |
 | 10 | [idempotency.md](idempotency.md) | §22 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
@@ -109,30 +109,32 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 23 | Architecture Patterns | [#architecture-patterns](architecture.md#architecture-patterns) |
 | 24 | Directory Structure | [#directory-structure](architecture.md#directory-structure) |
 | 25 | Concurrency Patterns | [#concurrency-patterns](architecture.md#concurrency-patterns) |
+| 26 | Goroutine Recovery Patterns (MANDATORY) | [#goroutine-recovery-patterns-mandatory](architecture.md#goroutine-recovery-patterns-mandatory) |
+| 27 | N+1 Query Detection (MANDATORY) | [#n1-query-detection-mandatory](architecture.md#n1-query-detection-mandatory) |
 
 ### Messaging (messaging.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 26 | RabbitMQ Worker Pattern | [#rabbitmq-worker-pattern](messaging.md#rabbitmq-worker-pattern) |
+| 28 | RabbitMQ Worker Pattern | [#rabbitmq-worker-pattern](messaging.md#rabbitmq-worker-pattern) |
 
 ### Domain Modeling (domain-modeling.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 27 | Always-Valid Domain Model (MANDATORY) | [#always-valid-domain-model-mandatory](domain-modeling.md#always-valid-domain-model-mandatory) |
+| 29 | Always-Valid Domain Model (MANDATORY) | [#always-valid-domain-model-mandatory](domain-modeling.md#always-valid-domain-model-mandatory) |
 
 ### Idempotency (idempotency.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 28 | Idempotency Patterns (MANDATORY for Transaction APIs) | [#idempotency-patterns-mandatory-for-transaction-apis](idempotency.md#idempotency-patterns-mandatory-for-transaction-apis) |
+| 30 | Idempotency Patterns (MANDATORY for Transaction APIs) | [#idempotency-patterns-mandatory-for-transaction-apis](idempotency.md#idempotency-patterns-mandatory-for-transaction-apis) |
 
 ### Multi-Tenant (multi-tenant.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 29 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
+| 31 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
 
 ### Integration Testing (testing-integration.md)
 
