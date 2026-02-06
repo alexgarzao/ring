@@ -19,18 +19,20 @@
 | Module | Sections | Description |
 |--------|----------|-------------|
 | [index.md](golang/index.md) | - | Master TOC and routing guide |
-| [core.md](golang/core.md) | §1-4 | Version, lib-commons, Frameworks, Configuration |
-| [bootstrap.md](golang/bootstrap.md) | §5-6 | Observability, Bootstrap |
-| [security.md](golang/security.md) | §7-8 | Access Manager, License Manager |
-| [domain.md](golang/domain.md) | §9-12 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
-| [api-patterns.md](golang/api-patterns.md) | §13 | Pagination Patterns |
-| [quality.md](golang/quality.md) | §14-16 | Testing, Logging, Linting |
-| [architecture.md](golang/architecture.md) | §17-19 | Architecture Patterns, Directory Structure, Concurrency |
-| [messaging.md](golang/messaging.md) | §20 | RabbitMQ Worker Pattern |
-| [domain-modeling.md](golang/domain-modeling.md) | §21 | Always-Valid Domain Model |
-| [idempotency.md](golang/idempotency.md) | §22 | Idempotency Patterns |
-| [multi-tenant.md](golang/multi-tenant.md) | §23 | Multi-Tenant Patterns |
+| [core.md](golang/core.md) | 9 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License Headers, MongoDB, Dependency Management |
+| [bootstrap.md](golang/bootstrap.md) | 6 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting, Connection Management |
+| [security.md](golang/security.md) | 4 | Access Manager, License Manager, Secret Redaction, SQL Safety |
+| [domain.md](golang/domain.md) | 5 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
+| [api-patterns.md](golang/api-patterns.md) | 6 | JSON Naming, Pagination, HTTP Status, OpenAPI/Swaggo, Handler Constructor, Input Validation |
+| [quality.md](golang/quality.md) | 5 | Testing, Logging, Linting, Production Config Validation, Container Security |
+| [architecture.md](golang/architecture.md) | 6 | Architecture Patterns, Directory Structure, Concurrency, Goroutine Recovery, N+1 Detection, Performance |
+| [messaging.md](golang/messaging.md) | 1 | RabbitMQ Worker Pattern |
+| [domain-modeling.md](golang/domain-modeling.md) | 1 | Always-Valid Domain Model (Constructor Validation Patterns) |
+| [idempotency.md](golang/idempotency.md) | 1 | Idempotency Patterns |
+| [multi-tenant.md](golang/multi-tenant.md) | 1 | Multi-Tenant Patterns |
 | [compliance.md](golang/compliance.md) | Meta | Standards Compliance Output Format, Checklist |
+
+**Total:** 45 sections indexed in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md)
 
 ---
 
