@@ -6,6 +6,17 @@
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [New Location](#new-location) | Redirect to golang/ directory |
+| 2 | [Module Structure](#module-structure) | 13 modular files with 45 sections |
+| 3 | [Migration Guide](#migration-guide) | WebFetch URLs and selective loading |
+| 4 | [Deprecation Timeline](#deprecation-timeline) | Removal schedule |
+
+---
+
 ## New Location
 
 **Directory:** `dev-team/docs/standards/golang/`
