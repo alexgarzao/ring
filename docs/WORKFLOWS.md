@@ -45,6 +45,10 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
 
+### Production Readiness Audit (ring-default)
+
+The **production-readiness-audit** skill (`ring:production-readiness-audit`) evaluates codebase production readiness across **27 dimensions** in 5 categories. **Invocation:** use the Skill tool or the `/ring:production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** 27-dimension scored report (0–270) with severity ratings and standards cross-reference. Implementation details: [default/skills/ring:production-readiness-audit/SKILL.md](../default/skills/ring:production-readiness-audit/SKILL.md).
+
 ### For Product/Team-Specific Skills
 
 1. Create plugin directory:
@@ -189,6 +193,12 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 └── Gate 8: pm-team/skills/pre-dev-subtask-creation
     └── Output: docs/pre-dev/feature/subtasks.md
 ```
+
+---
+
+## Development Cycle (6-gate)
+
+The **ring:dev-cycle** skill orchestrates task execution through **6 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → testing (Gate 3) → review (Gate 4) → validation (Gate 5). Optional Gate 3.5 (integration testing) runs when the task has external dependencies. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
 
 ---
 
