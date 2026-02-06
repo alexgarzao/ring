@@ -29,7 +29,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | # | Module | Sections | Lines | Description |
 |---|--------|----------|-------|-------------|
 | 1 | [core.md](core.md) | §1-8 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB |
-| 2 | [bootstrap.md](bootstrap.md) | §5-8 | ~1050 | Observability, Bootstrap, Health Checks, Rate Limiting |
+| 2 | [bootstrap.md](bootstrap.md) | §5-9 | ~1200 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting |
 | 3 | [security.md](security.md) | §9-11 | ~700 | Access Manager, License Manager, Secret Redaction |
 | 4 | [domain.md](domain.md) | §9-12 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
 | 5 | [api-patterns.md](api-patterns.md) | §13 | ~280 | Pagination Patterns (cursor and page-based) |
@@ -65,8 +65,9 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|---------|--------|
 | 5 | Observability | [#observability](bootstrap.md#observability) |
 | 6 | Bootstrap | [#bootstrap](bootstrap.md#bootstrap) |
-| 7 | Health Checks (MANDATORY) | [#health-checks-mandatory](bootstrap.md#health-checks-mandatory) |
-| 8 | Rate Limiting (CONDITIONAL) | [#rate-limiting-conditional](bootstrap.md#rate-limiting-conditional) |
+| 7 | Graceful Shutdown Patterns (MANDATORY) | [#graceful-shutdown-patterns-mandatory](bootstrap.md#graceful-shutdown-patterns-mandatory) |
+| 8 | Health Checks (MANDATORY) | [#health-checks-mandatory](bootstrap.md#health-checks-mandatory) |
+| 9 | Rate Limiting (CONDITIONAL) | [#rate-limiting-conditional](bootstrap.md#rate-limiting-conditional) |
 
 ### Security (security.md)
 

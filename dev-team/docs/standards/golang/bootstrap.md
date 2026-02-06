@@ -1,8 +1,8 @@
 # Go Standards - Bootstrap & Observability
 
-> **Module:** bootstrap.md | **Sections:** §5-8 | **Parent:** [index.md](index.md)
+> **Module:** bootstrap.md | **Sections:** §5-9 | **Parent:** [index.md](index.md)
 
-This module covers application initialization, observability, health checks, and rate limiting.
+This module covers application initialization, observability, graceful shutdown, health checks, and rate limiting.
 
 ---
 
@@ -12,8 +12,9 @@ This module covers application initialization, observability, health checks, and
 |---|---------|-------------|
 | 1 | [Observability](#observability) | OpenTelemetry integration, distributed tracing |
 | 2 | [Bootstrap](#bootstrap) | Application initialization pattern |
-| 3 | [Health Checks](#health-checks-mandatory) | Liveness and readiness endpoints |
-| 4 | [Rate Limiting](#rate-limiting-conditional) | Service-level rate limiting (CONDITIONAL) |
+| 3 | [Graceful Shutdown Patterns](#graceful-shutdown-patterns-mandatory) | Signal handling, resource cleanup |
+| 4 | [Health Checks](#health-checks-mandatory) | Liveness and readiness endpoints |
+| 5 | [Rate Limiting](#rate-limiting-conditional) | Service-level rate limiting (CONDITIONAL) |
 
 ---
 
@@ -836,6 +837,137 @@ func main() {
 ```
 
 **That's it.** All complexity is encapsulated in bootstrap.
+
+---
+
+### Graceful Shutdown Patterns (MANDATORY)
+
+**Production Findings:**
+- HP-10: No cleanup/shutdown handlers found
+- P2-2: Graceful shutdown handlers missing
+
+**⛔ HARD GATE:** All services MUST implement graceful shutdown. Abrupt termination causes data loss, orphaned connections, and incomplete transactions.
+
+### Why Graceful Shutdown Is MANDATORY
+
+| Scenario | Without Graceful Shutdown | With Graceful Shutdown |
+|----------|---------------------------|------------------------|
+| SIGTERM received | Process killed immediately | In-flight requests complete |
+| Deployment rollout | Requests fail mid-processing | Zero downtime |
+| DB connection | Connection pool leaked | Connections properly closed |
+| Telemetry | Spans never exported | Spans flushed to collector |
+| RabbitMQ | Messages not acknowledged | Messages processed or requeued |
+
+### Signal Handling (REQUIRED)
+
+The `libCommonsServer.ServerManager` handles these signals automatically:
+
+| Signal | Source | Action |
+|--------|--------|--------|
+| `SIGTERM` | Kubernetes pod termination | Graceful shutdown initiated |
+| `SIGINT` | Ctrl+C (local dev) | Graceful shutdown initiated |
+
+### Shutdown Order (MANDATORY)
+
+Resources MUST be cleaned up in reverse initialization order:
+
+```text
+Shutdown Order (reverse of initialization):
+1. Stop accepting new requests (HTTP server)
+2. Wait for in-flight requests to complete (grace period)
+3. Close message queue consumers (RabbitMQ)
+4. Flush telemetry spans to collector
+5. Close database connections (PostgreSQL, MongoDB)
+6. Close cache connections (Redis)
+7. Exit process
+```
+
+### Implementation Pattern (REQUIRED)
+
+```go
+// bootstrap/fiber.server.go
+func (s *Server) Run(l *libCommons.Launcher) error {
+    // ServerManager handles all shutdown logic:
+    // - Signal trapping (SIGINT, SIGTERM)
+    // - HTTP server shutdown with grace period
+    // - Telemetry flush
+    // - Connection cleanup
+    libCommonsServer.NewServerManager(nil, &s.telemetry, s.logger).
+        WithHTTPServer(s.app, s.serverAddress).
+        StartWithGracefulShutdown()
+
+    return nil
+}
+```
+
+### Multiple Servers Pattern (gRPC + HTTP + Worker)
+
+```go
+// bootstrap/service.go
+func (app *Service) Run() {
+    libCommons.NewLauncher(
+        libCommons.WithLogger(app.Logger),
+        // All servers shut down gracefully in parallel
+        libCommons.RunApp("HTTP Server", app.HTTPServer),
+        libCommons.RunApp("gRPC Server", app.GRPCServer),
+        libCommons.RunApp("RabbitMQ Consumer", app.Consumer),
+    ).Run()
+}
+```
+
+### Shutdown Timeout Configuration
+
+```go
+// Default timeout is 30 seconds
+// For custom timeout, configure in ServerManager:
+libCommonsServer.NewServerManager(nil, &s.telemetry, s.logger).
+    WithHTTPServer(s.app, s.serverAddress).
+    WithShutdownTimeout(60 * time.Second).  // Custom timeout
+    StartWithGracefulShutdown()
+```
+
+| Environment | Recommended Timeout | Rationale |
+|-------------|---------------------|-----------|
+| Development | 5s | Fast iteration |
+| Production | 30-60s | Allow long requests to complete |
+| Batch processing | 120s+ | Allow batch jobs to complete |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR
+# Check for graceful shutdown implementation
+grep -rn "StartWithGracefulShutdown\|ServerManager" internal/bootstrap cmd/ --include="*.go"
+
+# Check for signal handling (if not using ServerManager)
+grep -rn "signal.Notify\|syscall.SIGTERM" internal/bootstrap cmd/ --include="*.go"
+
+# Expected: At least one pattern must match
+# If neither matches: STOP. Add graceful shutdown before proceeding.
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Direct Listen without graceful shutdown
+app.Listen(":8080")  // WRONG: No signal handling
+
+// ❌ FORBIDDEN: os.Exit without cleanup
+os.Exit(1)  // WRONG: Skips cleanup
+
+// ❌ FORBIDDEN: Ignoring shutdown errors
+_ = app.Shutdown()  // WRONG: Errors must be logged
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Kubernetes restarts pods anyway" | Restart != graceful. In-flight requests fail. | **Use ServerManager graceful shutdown** |
+| "Requests are fast" | Some requests are slow. DB transactions need completion. | **Use ServerManager graceful shutdown** |
+| "We don't have long-running requests" | Telemetry still needs flushing. | **Use ServerManager graceful shutdown** |
+| "lib-commons handles it" | Only if you call StartWithGracefulShutdown(). | **Verify implementation** |
+| "Process cleanup is automatic" | Connection pools and goroutines need explicit cleanup. | **Use ServerManager graceful shutdown** |
 
 ---
 
