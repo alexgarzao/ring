@@ -454,7 +454,7 @@ Day 4: Production incident from Day 1 code
 |------|-------|---------|-------|
 | 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain |
 | 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer |
-| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:dev-sre |
+| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre |
 | 3 | ring:dev-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) |
 | 3.5 | ring:dev-integration-testing | Integration tests for external dependencies (optional — run only when external dependencies exist)<sup>†</sup> | ring:qa-analyst (test_mode: integration) |
 | 4 | ring:requesting-code-review | Parallel code review | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer (3x parallel) |

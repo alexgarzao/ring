@@ -786,7 +786,7 @@ func TestFunction_LogsDeprecationWarning(t *testing.T) {
 | 4 | **Sleep-based waits** | `grep "time.Sleep"` | Slow, unreliable | Use wait strategies |
 | 5 | **Production database** | env var pointing to real DB | Data corruption | Always use containers |
 | 6 | **Missing build tag** | `//go:build integration` absent | Tests run with unit tests | Always add build tag |
-| 7 | **t.Parallel() usage** | `grep "t.Parallel()"` | State conflicts | Remove `t.Parallel()` |
+| 7 | **t.Parallel() usage** | `grep "t.Parallel()"` | State conflicts | Remove all `t.Parallel()` calls from integration tests |
 | 8 | **Hardcoded credentials** | `"postgres:password@"` in code | Security risk | Use containers default creds |
 | 9 | **Network-dependent tests** | Tests call external APIs | Flaky, slow | Mock or use testcontainers |
 | 10 | **Missing timeout** | No `context.WithTimeout` | Tests hang forever | Always set timeout |
