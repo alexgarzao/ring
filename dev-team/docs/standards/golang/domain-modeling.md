@@ -123,6 +123,106 @@ func ReconstructRule(id uuid.UUID, name, expression string, createdAt time.Time)
 
 **Note:** `Reconstruct*` functions skip validation because data is from trusted storage (already validated at creation).
 
+### Constructor Validation Patterns (MANDATORY)
+
+**Production Findings:**
+- HP-7: Models lack constructors/mapping
+- P2-1: Domain model constructors and ToEntity/FromEntity
+
+**⛔ HARD GATE:** All domain entities MUST have validated constructors. Public struct initialization is FORBIDDEN.
+
+#### Constructor Naming Convention
+
+| Type | Constructor Name | Returns |
+|------|------------------|---------|
+| New entity | `NewEntity(...)` | `(*Entity, error)` |
+| From DTO | `NewEntityFromDTO(dto)` | `(*Entity, error)` |
+| Reconstruction | `ReconstructEntity(...)` | `*Entity` (no error) |
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that modifies domain models
+# Find structs in domain packages without New* constructor
+for f in internal/domain/*.go pkg/mmodel/*.go; do
+  if [ -f "$f" ]; then
+    # Get struct names
+    structs=$(grep -E "^type [A-Z][a-zA-Z]+ struct" "$f" | awk '{print $2}')
+    for s in $structs; do
+      # Check if constructor exists
+      if ! grep -q "func New${s}" "$f" 2>/dev/null; then
+        echo "MISSING CONSTRUCTOR: $f - $s"
+      fi
+    done
+  fi
+done
+
+# Expected: All domain structs have New* constructor
+# If missing: BLOCKER - Add constructor before proceeding
+```
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Direct struct initialization in service layer
+func (s *Service) CreateUser(name, email string) (*domain.User, error) {
+    return &domain.User{  // WRONG: Bypasses constructor validation
+        ID:    uuid.New(),
+        Name:  name,
+        Email: email,
+    }, nil
+}
+
+// ❌ FORBIDDEN: Constructor without validation
+func NewUser(name, email string) *User {
+    return &User{  // WRONG: No validation, no error return
+        ID:    uuid.New(),
+        Name:  name,
+        Email: email,
+    }
+}
+
+// ❌ FORBIDDEN: Public fields allowing direct assignment
+type User struct {
+    ID    uuid.UUID  // WRONG: Public field
+    Name  string     // WRONG: Can be assigned directly
+    Email string     // WRONG: No validation enforced
+}
+```
+
+### ToEntity/FromEntity Integration (MANDATORY)
+
+Domain entities MUST integrate with ToEntity/FromEntity patterns for layer separation.
+
+```go
+// internal/adapters/postgres/user_mapper.go
+
+// FromEntity - Domain entity → Database model
+func (m *UserMapper) FromEntity(entity *domain.User) *UserModel {
+    return &UserModel{
+        ID:        entity.ID().String(),
+        Name:      entity.Name(),
+        Email:     entity.Email(),
+        CreatedAt: entity.CreatedAt(),
+    }
+}
+
+// ToEntity - Database model → Domain entity (uses Reconstruct, not New)
+func (m *UserMapper) ToEntity(model *UserModel) *domain.User {
+    id, _ := uuid.Parse(model.ID)
+    return domain.ReconstructUser(
+        id,
+        model.Name,
+        model.Email,
+        model.CreatedAt,
+    )
+}
+```
+
+**See [domain.md - ToEntity/FromEntity](domain.md#data-transformation-toentityfromentity-mandatory)** for complete patterns.
+
+---
+
 ### Integration with HTTP Layer
 
 HTTP handlers still use DTOs with validation tags, but MUST create domain entities via constructors:
