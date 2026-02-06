@@ -1,8 +1,8 @@
 # Go Standards - API Patterns
 
-> **Module:** api-patterns.md | **Sections:** §17-20 | **Parent:** [index.md](index.md)
+> **Module:** api-patterns.md | **Sections:** §17-21 | **Parent:** [index.md](index.md)
 
-This module covers API naming conventions, pagination patterns, HTTP status codes, and OpenAPI documentation.
+This module covers API naming conventions, pagination patterns, HTTP status codes, OpenAPI documentation, and handler initialization patterns.
 
 ---
 
@@ -14,6 +14,7 @@ This module covers API naming conventions, pagination patterns, HTTP status code
 | 2 | [Pagination Patterns](#pagination-patterns) | Cursor-based and page-based pagination implementation |
 | 3 | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory) | 201 for creation, 200 for update |
 | 4 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
+| 5 | [Handler Constructor Pattern](#handler-constructor-pattern-mandatory) | Dependency injection via constructor |
 
 ---
 
@@ -817,6 +818,142 @@ make generate-docs && git diff --exit-code api/
 | "I'll add annotations later" | Later = never. Undocumented APIs are incomplete. | **Add annotations with the handler** |
 | "Only public APIs need docs" | All APIs need docs for internal developers too. | **Document all endpoints** |
 | "CodeRabbit can fix the YAML directly" | YAML is generated. Fix the source (annotations). | **Edit handler annotations** |
+
+---
+
+## Handler Constructor Pattern (MANDATORY)
+
+**Production Finding (P3-4):** Handlers with implicit dependencies make testing difficult and hide coupling. Direct struct initialization bypasses validation.
+
+**⛔ HARD GATE:** All HTTP handlers MUST use constructor functions for initialization. Direct struct initialization is FORBIDDEN.
+
+### Why Constructor Pattern Is MANDATORY
+
+| Problem | Without Constructor | With Constructor |
+|---------|---------------------|------------------|
+| Dependency visibility | Hidden in struct | Explicit in signature |
+| Nil checks | Scattered in methods | Single place in constructor |
+| Testing | Mock injection difficult | Clean dependency injection |
+| Compilation safety | Runtime nil panics | Compile-time errors |
+
+### Handler Constructor Pattern
+
+```go
+// internal/adapters/http/in/user_handler.go
+
+// Handler struct holds dependencies (private fields)
+type UserHandler struct {
+    command *command.UseCase
+    query   *query.UseCase
+    logger  libLog.Logger
+}
+
+// NewUserHandler creates a handler with validated dependencies
+// MANDATORY: Constructor validates all dependencies
+func NewUserHandler(cmd *command.UseCase, qry *query.UseCase, logger libLog.Logger) *UserHandler {
+    if cmd == nil {
+        panic("command use case is required")  // Fail fast at startup, not request time
+    }
+    if qry == nil {
+        panic("query use case is required")
+    }
+    if logger == nil {
+        panic("logger is required")
+    }
+
+    return &UserHandler{
+        command: cmd,
+        query:   qry,
+        logger:  logger,
+    }
+}
+
+// Handler methods use injected dependencies
+func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
+    // h.command, h.query, h.logger are guaranteed non-nil
+    // ...
+}
+```
+
+### Bootstrap Integration (REQUIRED)
+
+```go
+// internal/bootstrap/config.go
+
+func InitServers() *Service {
+    // ... initialize dependencies ...
+
+    // CORRECT: Use constructor
+    userHandler := httpin.NewUserHandler(commandUseCase, queryUseCase, logger)
+
+    // Pass handler to router
+    httpApp := httpin.NewRouter(logger, telemetry, userHandler)
+
+    // ...
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Direct struct initialization
+userHandler := &httpin.UserHandler{
+    Command: commandUseCase,  // No validation
+    Query:   queryUseCase,
+    Logger:  logger,
+}
+
+// ❌ FORBIDDEN: Public fields allowing direct access
+type UserHandler struct {
+    Command *command.UseCase  // WRONG: Public field
+    Query   *query.UseCase    // WRONG: Public field
+}
+
+// ❌ FORBIDDEN: Constructor without validation
+func NewUserHandler(cmd *command.UseCase) *UserHandler {
+    return &UserHandler{command: cmd}  // WRONG: No nil check
+}
+
+// ❌ FORBIDDEN: Lazy initialization in handler methods
+func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
+    if h.command == nil {  // WRONG: Should fail at startup, not request time
+        return errors.New("not initialized")
+    }
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that adds/modifies handlers
+# Find handlers without constructor functions
+for f in internal/adapters/http/in/*_handler.go; do
+  handler=$(basename "$f" .go | sed 's/_handler//')
+  if ! grep -q "func New.*Handler" "$f" 2>/dev/null; then
+    echo "MISSING CONSTRUCTOR: $f"
+  fi
+done
+
+# Find direct struct initialization of handlers (potential violation)
+grep -rn "&.*Handler{" internal/bootstrap --include="*.go" | grep -v "New.*Handler"
+
+# Find handlers with public fields (violation)
+grep -rn "type.*Handler struct" internal/adapters/http/in --include="*.go" -A 10 | \
+  grep -E "^\s+[A-Z][a-zA-Z]*\s+\*?[a-zA-Z]+"
+
+# Expected: All handlers have New* constructor, no direct initialization, no public fields
+# If any violation found: STOP. Fix before proceeding.
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Direct initialization is simpler" | Simplicity now = nil panics later. | **Use constructor** |
+| "I'll add validation later" | Later = production incident. Fail fast at startup. | **Add validation in constructor** |
+| "Tests can set fields directly" | Tests should use same constructor as production. | **Use constructor in tests too** |
+| "Handler is small, doesn't need it" | Consistency matters more than size. | **Use constructor for all handlers** |
+| "Public fields are easier to access" | Easier access = easier to corrupt. | **Use private fields + constructor** |
 
 ---
 
