@@ -288,7 +288,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 39 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
 | 40 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
 | 41 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
-| 42 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)** |
+| 42 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
 | 43 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **Constructor Validation Patterns (MANDATORY)**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
 | 44 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
 | 45 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **Tenant Isolation Verification (⚠️ CONDITIONAL)**: IDOR prevention, detection commands |
