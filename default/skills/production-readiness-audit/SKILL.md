@@ -1,12 +1,12 @@
 ---
 name: production-readiness-audit
-description: Comprehensive 27-dimension production readiness audit. Runs in batches of 10 explorers, appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime), Security (auth, IDOR, SQL, validation, rate limiting), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations), Infrastructure (containers, hardening, cicd, async). Produces scored report (0-270) with severity ratings.
-allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite
+description: Comprehensive Ring-standards-aligned 34-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, IDOR, SQL, validation, rate limiting, multi-tenant), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-340) with severity ratings and standards cross-reference.
+allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **27 dimensions in 5 categories**. This skill runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **34 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -16,68 +16,73 @@ Use this skill when:
 - Conducting periodic security/quality reviews
 - Onboarding to understand codebase health
 - Evaluating technical debt before major releases
-- Validating compliance with engineering standards
-- Assessing a codebase's maturity level
+- Validating compliance with Ring engineering standards
+- Assessing a codebase's maturity level against Ring standards
 
 ## Audit Dimensions
 
-The skill evaluates **27 distinct dimensions** across 5 categories, each handled by a specialized explorer agent:
-
-### Category A: Code Structure & Patterns (5 dimensions)
+### Category A: Code Structure & Patterns (8 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
 | 1 | **Pagination Standards** | Cursor vs offset pagination, limit validation, response structure |
-| 2 | **Error Framework** | pkg/assert usage, domain errors, HTTP error responses, error propagation |
+| 2 | **Error Framework** | Domain errors, error codes convention, error handling, error propagation |
 | 3 | **Route Organization** | Hexagonal structure, handler construction, route registration |
 | 4 | **Bootstrap & Initialization** | Staged startup, cleanup handlers, graceful shutdown |
-| 5 | **Runtime Safety** | pkg/runtime usage, panic recovery, production mode handling |
+| 5 | **Runtime Safety** | Panic recovery, production mode handling |
+| 28 | **Core Dependencies & Frameworks** | lib-commons v2, framework version minimums, no custom utility duplication |
+| 29 | **Naming Conventions** | snake_case DB, camelCase JSON body, snake_case query params |
+| 30 | **Domain Modeling** | ToEntity/FromEntity, always-valid constructors, private fields + getters |
 
-### Category B: Security & Access Control (5 dimensions)
+### Category B: Security & Access Control (5-6 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
-| 6 | **Auth Protection** | Route protection, JWT validation, tenant extraction |
+| 6 | **Auth Protection** | Route protection, JWT validation, tenant extraction, Access Manager |
 | 7 | **IDOR & Access Control** | Ownership verification, tenant isolation, resource authorization |
 | 8 | **SQL Safety** | Parameterized queries, identifier escaping, injection prevention |
 | 9 | **Input Validation** | Request body validation, query params, VO validation |
 | 10 | **Rate Limiting** | Global/per-endpoint limits, tenant/user keying, abuse prevention |
+| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection — only if detected |
 
 ### Category C: Operational Readiness (5 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
-| 11 | **Telemetry & Observability** | OpenTelemetry integration, tracing, metrics, structured logging |
+| 11 | **Telemetry & Observability** | OpenTelemetry integration, tracing, metrics, lib-commons tracking |
 | 12 | **Health Checks** | Liveness/readiness probes, dependency health, degraded status |
 | 13 | **Configuration Management** | Env var validation, production constraints, secrets handling |
 | 14 | **Connection Management** | DB/Redis pool settings, timeouts, replica support |
 | 15 | **Logging & PII Safety** | Structured logging, sensitive data protection, log levels |
 
-### Category D: Quality & Maintainability (8 dimensions)
+### Category D: Quality & Maintainability (9 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
 | 16 | **Idempotency** | Idempotency keys, retry safety, duplicate prevention |
-| 17 | **API Documentation** | Swagger/OpenAPI annotations, response schemas, examples |
+| 17 | **API Documentation** | Swaggo/OpenAPI annotations, response schemas, examples |
 | 18 | **Technical Debt** | TODOs, FIXMEs, deprecated code, incomplete implementations |
 | 19 | **Testing Coverage** | Co-located tests, mockgen, table-driven tests, integration tests |
 | 20 | **Dependency Management** | Pinned versions, CVE scanning, deprecated packages |
 | 21 | **Performance Patterns** | N+1 queries, SELECT *, slice pre-allocation, batching |
 | 22 | **Concurrency Safety** | Race conditions, goroutine leaks, mutex usage, worker pools |
 | 23 | **Migration Safety** | Up/down pairs, CONCURRENTLY indexes, NOT NULL defaults |
+| 31 | **Linting & Code Quality** | Import ordering (3 groups), magic numbers, golangci-lint config |
 
-### Category E: Infrastructure & Hardening (4 dimensions)
+### Category E: Infrastructure & Hardening (5-6 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
 | 24 | **Container Security** | Dockerfile best practices, non-root user, multi-stage, image pinning |
 | 25 | **HTTP Hardening** | Security headers (HSTS, CSP), cookie attributes, CORS strictness |
-| 26 | **CI/CD & Licensing** | Pipeline definitions, license headers, artifact signing, automated tests |
+| 26 | **CI/CD Pipeline** | Pipeline definitions, automated tests, security scanning |
 | 27 | **Async Reliability** | DLQs, retry policies, consumer group usage, message durability |
+| 32 | **Makefile & Dev Tooling** | 17+ required Makefile commands, dev workflow automation |
+| 34 | **License Headers** *(CONDITIONAL)* | Copyright headers on all .go files — only if LICENSE file exists |
 
 ## Execution Protocol
 
-This skill runs **27 explorer agents in batches of 10**, writing results incrementally to a single report file. This prevents context bloat while maintaining comprehensive coverage.
+This skill runs **up to 34 explorer agents in 4 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -87,13 +92,80 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:
 
 | Batch | Agents | Category Focus |
 |-------|--------|----------------|
-| 1 | 1-10 | Pagination, Error Framework, Route Org, Bootstrap, Runtime Safety, Auth, IDOR, SQL Safety, Input Validation, Rate Limiting |
-| 2 | 11-20 | Telemetry, Health Checks, Config, Connection Mgmt, Logging/PII, Idempotency, API Docs, Technical Debt, Testing, Dependencies |
-| 3 | 21-27 | Performance, Concurrency, Migration Safety, Container Security, HTTP Hardening, CI/CD, Async Reliability + Final Summary |
+| 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input, Rate Limiting) |
+| 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
+| 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
+| 4 | 31-34 + Summary | Quality (Linting) + Infrastructure (Makefile, Multi-Tenant*, License*) + Final Summary (* = conditional) |
 
-### Step-by-Step Execution
+### Step 0: Stack Detection
 
-#### Step 1: Initialize Report File
+Before running any explorers, detect the project stack to determine which Ring standards to load.
+
+**Detection via Glob:**
+
+| Check | Flag | Standards to Load |
+|-------|------|-------------------|
+| `**/go.mod` exists | GO=true | All golang/*.md modules |
+| `**/package.json` + React/Next.js deps | FRONTEND=true | (future enrichment) |
+| `**/package.json` + Express/Fastify deps | TS_BACKEND=true | (future enrichment) |
+| `**/Dockerfile*` exists | DOCKER=true | devops.md |
+| `**/Makefile` exists | MAKEFILE=true | devops.md → Makefile Standards |
+| `**/LICENSE*` exists | LICENSE=true | Activates dimension 34 |
+| Multi-tenant indicators (`tenantId`, `tenant_id`, `pool_manager` in config/code) | MULTITENANT=true | multi-tenant.md |
+
+**Detection Logic:**
+```
+Glob("**/go.mod") → if found: GO=true
+Glob("**/package.json") → Read for React/Next.js → if found: FRONTEND=true
+Glob("**/package.json") → Read for Express/Fastify → if found: TS_BACKEND=true
+Glob("**/Dockerfile*") → if found: DOCKER=true
+Glob("**/Makefile") → if found: MAKEFILE=true
+Glob("**/LICENSE*") → if found: LICENSE=true
+Grep("tenantId|tenant_id|pool.?[Mm]anager") → if found: MULTITENANT=true
+```
+
+**Stack determines which standards are loaded in Step 0.5 and which conditional dimensions are activated.**
+
+### Step 0.5: Load Ring Standards
+
+Based on detected stack, load Ring development standards via WebFetch from the canonical source of truth. Store fetched content for injection into explorer prompts.
+
+**WebFetch URL Map** (from `dev-team/docs/standards/golang/index.md`):
+
+If **GO=true**, WebFetch these and store content:
+
+| Module | Variable | URL |
+|--------|----------|-----|
+| core.md | `standards_core` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/core.md` |
+| bootstrap.md | `standards_bootstrap` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/bootstrap.md` |
+| security.md | `standards_security` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/security.md` |
+| domain.md | `standards_domain` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain.md` |
+| api-patterns.md | `standards_api` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/api-patterns.md` |
+| quality.md | `standards_quality` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/quality.md` |
+| architecture.md | `standards_arch` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md` |
+| messaging.md | `standards_messaging` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/messaging.md` |
+| domain-modeling.md | `standards_dm` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain-modeling.md` |
+| idempotency.md | `standards_idempotency` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/idempotency.md` |
+
+If **MULTITENANT=true**, also WebFetch:
+
+| Module | Variable | URL |
+|--------|----------|-----|
+| multi-tenant.md | `standards_multitenant` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md` |
+
+**Always** WebFetch (stack-independent):
+
+| Module | Variable | URL |
+|--------|----------|-----|
+| devops.md | `standards_devops` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |
+| sre.md | `standards_sre` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md` |
+
+**Fallback:** If any WebFetch fails, note the failure in the audit report and proceed with existing generic patterns for that dimension. Do not abort the audit.
+
+**Standards Injection Pattern:**
+Each explorer prompt receives relevant standards content between `---BEGIN STANDARDS---` and `---END STANDARDS---` markers. The explorer uses these as the authoritative reference for its audit dimension.
+
+### Step 1: Initialize Report File
 
 ```markdown
 Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
@@ -103,13 +175,24 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 **Date:** {YYYY-MM-DD}
 **Hour:** {hh:mm}
 **Codebase:** {project-name}
-**Auditor:** Claude Code (Production Readiness Skill v2.0)
+**Auditor:** Claude Code (Production Readiness Skill v3.0)
 **Status:** In Progress...
+
+## Audit Configuration
+
+| Property | Value |
+|----------|-------|
+| **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
+| **Standards Loaded** | {list of loaded standards files} |
+| **Active Dimensions** | {32 base + N conditional} |
+| **Max Possible Score** | {320 + conditional points} |
+| **Conditional: Multi-Tenant** | {Active / Inactive} |
+| **Conditional: License Headers** | {Active / Inactive} |
 
 ---
 ```
 
-#### Step 2: Execute Batch 1 (Agents 1-10)
+### Step 2: Execute Batch 1 (Agents 1-10)
 
 Launch 10 explorers in parallel:
 ```
@@ -127,7 +210,7 @@ Task(subagent_type="Explore", prompt="<Agent 10: Rate Limiting>")
 
 **After completion:** Append results to the report file.
 
-#### Step 3: Execute Batch 2 (Agents 11-20)
+### Step 3: Execute Batch 2 (Agents 11-20)
 
 Launch 10 explorers in parallel:
 ```
@@ -145,29 +228,47 @@ Task(subagent_type="Explore", prompt="<Agent 20: Dependency Management>")
 
 **After completion:** Append results to the report file.
 
-#### Step 4: Execute Batch 3 (Agents 21-27 + Summary)
+### Step 4: Execute Batch 3 (Agents 21-30)
 
-Launch 7 explorers in parallel:
+Launch 10 explorers in parallel:
 ```
 Task(subagent_type="Explore", prompt="<Agent 21: Performance Patterns>")
 Task(subagent_type="Explore", prompt="<Agent 22: Concurrency Safety>")
 Task(subagent_type="Explore", prompt="<Agent 23: Migration Safety>")
 Task(subagent_type="Explore", prompt="<Agent 24: Container Security>")
 Task(subagent_type="Explore", prompt="<Agent 25: HTTP Hardening>")
-Task(subagent_type="Explore", prompt="<Agent 26: CI/CD & Licensing>")
+Task(subagent_type="Explore", prompt="<Agent 26: CI/CD Pipeline>")
 Task(subagent_type="Explore", prompt="<Agent 27: Async Reliability>")
+Task(subagent_type="Explore", prompt="<Agent 28: Core Dependencies & Frameworks>")
+Task(subagent_type="Explore", prompt="<Agent 29: Naming Conventions>")
+Task(subagent_type="Explore", prompt="<Agent 30: Domain Modeling>")
 ```
 
 **After completion:** Append results to the report file.
 
-#### Step 5: Finalize Report
+### Step 5: Execute Batch 4 (Agents 31-34 + Summary)
+
+Launch conditional and remaining explorers:
+```
+Task(subagent_type="Explore", prompt="<Agent 31: Linting & Code Quality>")
+Task(subagent_type="Explore", prompt="<Agent 32: Makefile & Dev Tooling>")
+# CONDITIONAL: Only if MULTITENANT=true
+Task(subagent_type="Explore", prompt="<Agent 33: Multi-Tenant Patterns>")
+# CONDITIONAL: Only if LICENSE=true
+Task(subagent_type="Explore", prompt="<Agent 34: License Headers>")
+```
+
+**After completion:** Append results to the report file.
+
+### Step 6: Finalize Report
 
 1. Read the complete report file
 2. Calculate scores for each dimension
 3. Generate Executive Summary with totals
 4. Prepend Executive Summary to the report
 5. Add remediation priorities
-6. Present verbal summary to user
+6. Add Standards Compliance Cross-Reference table
+7. Present verbal summary to user
 
 ---
 
@@ -178,9 +279,17 @@ Task(subagent_type="Explore", prompt="<Agent 27: Async Reliability>")
 ```prompt
 Audit pagination implementation across the codebase for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Pagination Patterns" section from api-patterns.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/pagination*.go`, `**/handlers.go`, `**/dto.go`
 - Keywords: `limit`, `offset`, `cursor`, `NextCursor`, `PrevCursor`, `HasMore`
+- Standards-specific: `CursorPagination`, `PaginationResponse`, `maxLimit`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -201,15 +310,17 @@ if limit < 1 {
 }
 ```
 
-**Check For:**
-1. Consistent pagination response structure across all list endpoints
-2. Maximum limit enforcement (typically 100-200)
+**Check Against Ring Standards For:**
+1. (HARD GATE) Consistent pagination response structure matching Ring standards across all list endpoints
+2. (HARD GATE) Maximum limit enforcement (typically 100-200) per api-patterns.md
 3. Cursor-based pagination for real-time data (preferred over offset)
 4. Proper error handling for invalid pagination params
 5. Default values when params missing
+6. Response field names match Ring API conventions (snake_case JSON)
 
 **Severity Ratings:**
 - CRITICAL: No limit validation (allows unlimited queries)
+- CRITICAL: HARD GATE violation per Ring standards — pagination response structure missing entirely
 - HIGH: Inconsistent pagination structures across endpoints
 - MEDIUM: Using offset pagination for frequently-changing data
 - LOW: Missing cursor pagination where beneficial
@@ -232,75 +343,23 @@ if limit < 1 {
 ```
 ```
 
-### Agent 2: Telemetry & Observability Auditor
-
-```prompt
-Audit telemetry and observability implementation for production readiness.
-
-**Search Patterns:**
-- Files: `**/observability*.go`, `**/telemetry*.go`, `**/handlers.go`
-- Keywords: `NewTrackingFromContext`, `tracer.Start`, `span`, `logger`, `metrics`
-
-**Reference Implementation (GOOD):**
-```go
-// Handler with proper telemetry
-func (h *Handler) DoSomething(c *fiber.Ctx) error {
-    ctx := c.UserContext()
-    logger, tracer, headerID, _ := libCommons.NewTrackingFromContext(ctx)
-    ctx, span := tracer.Start(ctx, "handler.DoSomething")
-    defer span.End()
-
-    span.SetAttributes(attribute.String("request_id", headerID))
-
-    // On error
-    span.RecordError(err)
-    span.SetStatus(codes.Error, err.Error())
-    logger.Errorf("operation failed: %v", err)
-
-    return nil
-}
-```
-
-**Check For:**
-1. All handlers start spans with descriptive names
-2. Errors recorded to spans before returning
-3. Request IDs propagated through context
-4. Metrics initialized at startup
-5. Structured logging with context (not fmt.Println)
-6. Graceful telemetry shutdown
-
-**Severity Ratings:**
-- CRITICAL: No tracing in handlers
-- HIGH: Errors not recorded to spans
-- MEDIUM: Missing request ID propagation
-- LOW: Inconsistent span naming conventions
-
-**Output Format:**
-```
-## Telemetry Audit Findings
-
-### Summary
-- Handlers with tracing: X/Y
-- Handlers with error recording: X/Y
-- Metrics initialization: Yes/No
-
-### Critical Issues
-[file:line] - Description
-
-### Recommendations
-1. ...
-```
-```
-
-### Agent 3: Error Framework Auditor
+### Agent 2: Error Framework Auditor
 
 ```prompt
 Audit error handling framework usage for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Error Codes Convention" and "Error Handling" sections from domain.md}
+---END STANDARDS---
 
 **Search Patterns:**
 - Files: `**/assert*.go`, `**/error*.go`, `**/handlers.go`
 - Keywords: `assert.New`, `AssertionError`, `ErrRepo`, `errors.Is`, `errors.As`
 - Also search: `panic(`, `log.Fatal`
+- Standards-specific: `ErrCode`, `DomainError`, `ErrorResponse`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -336,18 +395,20 @@ result, _ := doSomething()  // BAD: Ignoring error
 return errors.New("error")  // BAD: Not descriptive
 ```
 
-**Check For:**
-1. pkg/assert used instead of panic for validation
-2. Named error variables (sentinel errors) per module
-3. Proper error wrapping with %w
-4. errors.Is/errors.As for error matching
-5. No panic() in non-test production code
+**Check Against Ring Standards For:**
+1. (HARD GATE) pkg/assert used instead of panic for validation per Ring standards
+2. (HARD GATE) Named error variables (sentinel errors) per module following Ring error codes convention
+3. (HARD GATE) No panic() in non-test production code
+4. Proper error wrapping with %w
+5. errors.Is/errors.As for error matching
 6. No swallowed errors (_, err := ignored)
+7. HTTP error responses follow Ring ErrorResponse structure from domain.md
 
 **Severity Ratings:**
-- CRITICAL: panic() in production code paths
+- CRITICAL: panic() in production code paths (HARD GATE violation per Ring standards)
 - CRITICAL: Swallowed errors in critical paths
 - HIGH: Generic error messages without context
+- HIGH: Error response format does not match Ring standards
 - MEDIUM: Inconsistent error types across modules
 - LOW: Missing error wrapping context
 
@@ -368,14 +429,22 @@ return errors.New("error")  // BAD: Not descriptive
 ```
 ```
 
-### Agent 4: Route Organization Auditor
+### Agent 3: Route Organization Auditor
 
 ```prompt
 Audit route organization and handler structure for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Architecture Patterns" and "Directory Structure" sections from architecture.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/routes.go`, `**/handlers.go`, `internal/**/adapters/http/*.go`
 - Keywords: `RegisterRoutes`, `protected(`, `fiber.Router`, `NewHandler`
+- Standards-specific: `internal/{module}/adapters/`, `hexagonal`, `ports`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -399,16 +468,17 @@ func NewHandler(deps ...interface{}) (*Handler, error) {
 }
 ```
 
-**Check For:**
-1. Hexagonal structure: `internal/{module}/adapters/http/`
-2. Centralized route registration per module
+**Check Against Ring Standards For:**
+1. (HARD GATE) Hexagonal structure: `internal/{module}/adapters/http/` per architecture.md
+2. (HARD GATE) Centralized route registration per module
 3. Handler constructors validate all dependencies
-4. Consistent URL patterns (v1, kebab-case, plural resources)
-5. All routes use protected() wrapper (no public endpoints)
-6. Clear separation: routes.go vs handlers.go
+4. Consistent URL patterns (v1, kebab-case, plural resources) per Ring conventions
+5. All routes use protected() wrapper (no public endpoints without explicit exemption)
+6. Clear separation: routes.go vs handlers.go per Ring directory structure
 
 **Severity Ratings:**
 - CRITICAL: Unprotected routes (missing auth middleware)
+- CRITICAL: HARD GATE violation — project does not follow hexagonal architecture per Ring standards
 - HIGH: Scattered route definitions
 - MEDIUM: Handler accepts nil dependencies
 - LOW: Inconsistent URL naming conventions
@@ -430,14 +500,22 @@ func NewHandler(deps ...interface{}) (*Handler, error) {
 ```
 ```
 
-### Agent 5: Bootstrap & Initialization Auditor
+### Agent 4: Bootstrap & Initialization Auditor
 
 ```prompt
 Audit application bootstrap and initialization for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Bootstrap" section from bootstrap.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/main.go`, `**/init.go`, `**/bootstrap/*.go`
 - Keywords: `InitServers`, `startupSucceeded`, `defer`, `cleanup`, `graceful`
+- Standards-specific: `NewServiceBootstrap`, `staged initialization`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -476,16 +554,17 @@ func InitServers(opts *Options) (*Service, error) {
 }
 ```
 
-**Check For:**
-1. Staged initialization (config -> logger -> telemetry -> infra)
-2. Cleanup handlers for failed startup
-3. Graceful shutdown support
-4. Module initialization in dependency order
+**Check Against Ring Standards For:**
+1. (HARD GATE) Staged initialization order per bootstrap.md (config -> logger -> telemetry -> infra)
+2. (HARD GATE) Cleanup handlers for failed startup
+3. (HARD GATE) Graceful shutdown support
+4. Module initialization in dependency order per Ring bootstrap pattern
 5. Error propagation (not just logging and continuing)
 6. Production vs development mode handling
 
 **Severity Ratings:**
-- CRITICAL: No graceful shutdown
+- CRITICAL: No graceful shutdown (HARD GATE violation per Ring standards)
+- CRITICAL: HARD GATE violation — bootstrap does not follow Ring staged initialization pattern
 - HIGH: Resources not cleaned up on startup failure
 - HIGH: Errors logged but not returned
 - MEDIUM: Initialization order issues
@@ -508,14 +587,84 @@ func InitServers(opts *Options) (*Service, error) {
 ```
 ```
 
+### Agent 5: Runtime Safety Auditor
+
+```prompt
+Audit pkg/runtime usage and panic handling for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Search Patterns:**
+- Files: `**/runtime/*.go`, `**/recover*.go`, `**/*.go`
+- Keywords: `RecoverAndLog`, `RecoverWithPolicy`, `InitPanicMetrics`, `SetProductionMode`
+- Also search: `panic(`, `recover()` (manual usage)
+
+**Reference Implementation (GOOD):**
+```go
+// Bootstrap initialization
+runtime.InitPanicMetrics(telemetry.MetricsFactory)
+if cfg.EnvName == "production" {
+    runtime.SetProductionMode(true)
+}
+
+// In HTTP handlers
+defer runtime.RecoverAndLogWithContext(ctx, logger, "module", "handler_name")
+
+// In worker goroutines
+defer runtime.RecoverWithPolicyAndContext(ctx, logger, "module", "worker", runtime.CrashProcess)
+
+// In background jobs (should retry, not crash)
+defer runtime.RecoverWithPolicyAndContext(ctx, logger, "module", "job", runtime.LogAndContinue)
+```
+
+**Check For:**
+1. pkg/runtime initialized at startup
+2. Production mode set based on environment
+3. All goroutines have panic recovery
+4. Appropriate recovery policies per context
+5. Panic metrics enabled for alerting
+6. No raw recover() without pkg/runtime
+
+**Severity Ratings:**
+- CRITICAL: Goroutines without panic recovery
+- HIGH: Missing production mode setting
+- HIGH: Raw recover() without proper handling
+- MEDIUM: Inconsistent recovery policies
+- LOW: Missing panic metrics
+
+**Output Format:**
+```
+## Runtime Safety Audit Findings
+
+### Summary
+- Runtime initialized: Yes/No
+- Handlers with recovery: X/Y
+- Goroutines with recovery: X/Y
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
 ### Agent 6: Auth Protection Auditor
 
 ```prompt
 Audit authentication and authorization implementation for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Access Manager Integration" section from security.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/auth/*.go`, `**/middleware*.go`, `**/routes.go`
 - Keywords: `Authorize`, `protected`, `JWT`, `tenant`, `ExtractToken`
+- Standards-specific: `AccessManager`, `lib-auth`, `ProtectedGroup`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -544,17 +693,18 @@ func parseTokenClaims(tokenString string, secret []byte) (jwt.MapClaims, error) 
 }
 ```
 
-**Check For:**
-1. ALL routes protected (no public endpoints without auth)
-2. Resource/action authorization granularity
-3. JWT signature validation (not just parsing)
+**Check Against Ring Standards For:**
+1. (HARD GATE) All routes protected via Access Manager integration per security.md
+2. (HARD GATE) lib-auth used for JWT validation (not custom JWT parsing)
+3. Resource/action authorization granularity per Ring access control model
 4. Token expiration enforcement
 5. Tenant extraction from JWT claims
 6. Auth bypass for health/ready endpoints only
 
 **Severity Ratings:**
-- CRITICAL: Unprotected data endpoints
+- CRITICAL: Unprotected data endpoints (HARD GATE violation per Ring standards)
 - CRITICAL: JWT parsed but not validated
+- CRITICAL: HARD GATE violation — not using lib-auth for access management
 - HIGH: Missing token expiration check
 - HIGH: Tenant claims not enforced
 - MEDIUM: Overly broad permissions
@@ -581,6 +731,8 @@ func parseTokenClaims(tokenString string, secret []byte) (jwt.MapClaims, error) 
 
 ```prompt
 Audit IDOR (Insecure Direct Object Reference) protection for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
 
 **Search Patterns:**
 - Files: `**/verifier*.go`, `**/handlers.go`, `**/context.go`
@@ -667,6 +819,8 @@ func GetResource(c *fiber.Ctx) error {
 ```prompt
 Audit SQL injection prevention for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
 **Search Patterns:**
 - Files: `**/*.postgresql.go`, `**/repository/*.go`, `**/*_repo.go`
 - Keywords: `ExecContext`, `QueryContext`, `Exec(`, `Query(`, `$1`, `$2`
@@ -731,74 +885,22 @@ query := "SET search_path TO " + tenantID  // SQL injection via tenant
 ```
 ```
 
-### Agent 9: Runtime Safety Auditor
-
-```prompt
-Audit pkg/runtime usage and panic handling for production readiness.
-
-**Search Patterns:**
-- Files: `**/runtime/*.go`, `**/recover*.go`, `**/*.go`
-- Keywords: `RecoverAndLog`, `RecoverWithPolicy`, `InitPanicMetrics`, `SetProductionMode`
-- Also search: `panic(`, `recover()` (manual usage)
-
-**Reference Implementation (GOOD):**
-```go
-// Bootstrap initialization
-runtime.InitPanicMetrics(telemetry.MetricsFactory)
-if cfg.EnvName == "production" {
-    runtime.SetProductionMode(true)
-}
-
-// In HTTP handlers
-defer runtime.RecoverAndLogWithContext(ctx, logger, "module", "handler_name")
-
-// In worker goroutines
-defer runtime.RecoverWithPolicyAndContext(ctx, logger, "module", "worker", runtime.CrashProcess)
-
-// In background jobs (should retry, not crash)
-defer runtime.RecoverWithPolicyAndContext(ctx, logger, "module", "job", runtime.LogAndContinue)
-```
-
-**Check For:**
-1. pkg/runtime initialized at startup
-2. Production mode set based on environment
-3. All goroutines have panic recovery
-4. Appropriate recovery policies per context
-5. Panic metrics enabled for alerting
-6. No raw recover() without pkg/runtime
-
-**Severity Ratings:**
-- CRITICAL: Goroutines without panic recovery
-- HIGH: Missing production mode setting
-- HIGH: Raw recover() without proper handling
-- MEDIUM: Inconsistent recovery policies
-- LOW: Missing panic metrics
-
-**Output Format:**
-```
-## Runtime Safety Audit Findings
-
-### Summary
-- Runtime initialized: Yes/No
-- Handlers with recovery: X/Y
-- Goroutines with recovery: X/Y
-
-### Critical Issues
-[file:line] - Description
-
-### Recommendations
-1. ...
-```
-```
-
-### Agent 10: Input Validation Auditor
+### Agent 9: Input Validation Auditor
 
 ```prompt
 Audit input validation patterns for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Frameworks & Libraries" section from core.md — specifically go-playground/validator/v10 reference}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/dto.go`, `**/handlers.go`, `**/value_objects/*.go`
 - Keywords: `validate:`, `BodyParser`, `IsValid()`, `Parse`, `required`
+- Standards-specific: `validator/v10`, `go-playground/validator`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -846,18 +948,20 @@ c.BodyParser(&payload)  // Error ignored!
 amount := c.QueryInt("amount")  // Could be negative or huge
 ```
 
-**Check For:**
-1. All DTOs have validate: tags on required fields
-2. BodyParser errors are handled (not ignored)
-3. Query/path params validated before use
-4. Numeric bounds enforced (min/max)
-5. String length limits enforced
-6. Enum values constrained (oneof=)
-7. Value objects have IsValid() methods
-8. File upload size/type validation
+**Check Against Ring Standards For:**
+1. (HARD GATE) go-playground/validator/v10 used for struct validation per Ring core.md
+2. (HARD GATE) All DTOs have validate: tags on required fields
+3. BodyParser errors are handled (not ignored)
+4. Query/path params validated before use
+5. Numeric bounds enforced (min/max)
+6. String length limits enforced
+7. Enum values constrained (oneof=)
+8. Value objects have IsValid() methods
+9. File upload size/type validation
 
 **Severity Ratings:**
 - CRITICAL: BodyParser errors ignored
+- CRITICAL: HARD GATE violation — not using go-playground/validator/v10 per Ring standards
 - HIGH: No validation on user input DTOs
 - HIGH: Unbounded numeric inputs
 - MEDIUM: Missing string length limits
@@ -880,10 +984,12 @@ amount := c.QueryInt("amount")  // Could be negative or huge
 ```
 ```
 
-### Agent 11: Rate Limiting Auditor
+### Agent 10: Rate Limiting Auditor
 
 ```prompt
 Audit rate limiting implementation for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
 
 **Search Patterns:**
 - Files: `**/fiber_server.go`, `**/middleware*.go`, `**/limiter*.go`
@@ -953,14 +1059,93 @@ exportGroup.Use(limiter.New(limiter.Config{
 ```
 ```
 
+### Agent 11: Telemetry & Observability Auditor
+
+```prompt
+Audit telemetry and observability implementation for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Observability" section from bootstrap.md and "OpenTelemetry with lib-commons" section from sre.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/observability*.go`, `**/telemetry*.go`, `**/handlers.go`
+- Keywords: `NewTrackingFromContext`, `tracer.Start`, `span`, `logger`, `metrics`
+- Standards-specific: `libCommons.NewTrackingFromContext`, `otel`, `OpenTelemetry`
+
+**Reference Implementation (GOOD):**
+```go
+// Handler with proper telemetry
+func (h *Handler) DoSomething(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+    logger, tracer, headerID, _ := libCommons.NewTrackingFromContext(ctx)
+    ctx, span := tracer.Start(ctx, "handler.DoSomething")
+    defer span.End()
+
+    span.SetAttributes(attribute.String("request_id", headerID))
+
+    // On error
+    span.RecordError(err)
+    span.SetStatus(codes.Error, err.Error())
+    logger.Errorf("operation failed: %v", err)
+
+    return nil
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) lib-commons NewTrackingFromContext used for telemetry initialization per Ring standards
+2. (HARD GATE) OpenTelemetry integration (not custom tracing) per sre.md
+3. All handlers start spans with descriptive names
+4. Errors recorded to spans before returning
+5. Request IDs propagated through context
+6. Metrics initialized at startup per bootstrap.md observability section
+7. Structured logging with context (not fmt.Println)
+8. Graceful telemetry shutdown
+
+**Severity Ratings:**
+- CRITICAL: No tracing in handlers (HARD GATE violation per Ring standards)
+- CRITICAL: HARD GATE violation — not using lib-commons for telemetry
+- HIGH: Errors not recorded to spans
+- MEDIUM: Missing request ID propagation
+- LOW: Inconsistent span naming conventions
+
+**Output Format:**
+```
+## Telemetry Audit Findings
+
+### Summary
+- Handlers with tracing: X/Y
+- Handlers with error recording: X/Y
+- Metrics initialization: Yes/No
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
 ### Agent 12: Health Checks Auditor
 
 ```prompt
 Audit health check endpoints for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Health Checks" section from sre.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/fiber_server.go`, `**/health*.go`, `**/routes.go`
 - Keywords: `/health`, `/ready`, `/live`, `healthHandler`, `readinessHandler`
+- Standards-specific: `liveness`, `readiness`, `degraded`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1004,18 +1189,18 @@ app.Get("/health", healthHandler)
 app.Get("/ready", readinessHandler(deps))
 ```
 
-**Check For:**
-1. /health endpoint exists (liveness)
-2. /ready endpoint exists (readiness)
+**Check Against Ring Standards For:**
+1. (HARD GATE) /health endpoint exists (liveness) per sre.md
+2. (HARD GATE) /ready endpoint exists (readiness) per sre.md
 3. Health endpoints bypass auth middleware
 4. Database connectivity checked in readiness
 5. Message queue connectivity checked
-6. Optional deps don't fail readiness (just report degraded)
+6. Optional deps don't fail readiness (just report degraded) per Ring health check pattern
 7. Response includes individual check status
 8. Appropriate HTTP status codes (200 vs 503)
 
 **Severity Ratings:**
-- CRITICAL: No health endpoints at all
+- CRITICAL: No health endpoints at all (HARD GATE violation per Ring standards)
 - HIGH: No readiness probe (only liveness)
 - HIGH: Health endpoints require auth
 - MEDIUM: Missing dependency checks in readiness
@@ -1043,9 +1228,17 @@ app.Get("/ready", readinessHandler(deps))
 ```prompt
 Audit configuration management for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Configuration" section from core.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/config.go`, `**/bootstrap/*.go`, `**/.env*`
 - Keywords: `env:`, `envDefault:`, `Validate()`, `LoadConfig`, `production`
+- Standards-specific: `envconfig`, `caarlos0/env`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1092,10 +1285,10 @@ func LoadConfig() (*Config, error) {
 }
 ```
 
-**Check For:**
-1. All config loaded from env vars (not hardcoded)
-2. Sensible defaults for non-production
-3. Production-specific validation exists
+**Check Against Ring Standards For:**
+1. (HARD GATE) All config loaded from env vars (not hardcoded) per Ring core.md configuration section
+2. (HARD GATE) Production-specific validation exists
+3. Sensible defaults for non-production
 4. Auth required in production
 5. TLS/SSL required in production
 6. No wildcard CORS in production
@@ -1104,7 +1297,7 @@ func LoadConfig() (*Config, error) {
 9. Config validation fails fast (at startup)
 
 **Severity Ratings:**
-- CRITICAL: Hardcoded secrets in code
+- CRITICAL: Hardcoded secrets in code (HARD GATE violation per Ring standards)
 - CRITICAL: No production validation
 - HIGH: Auth can be disabled in production
 - HIGH: TLS not enforced in production
@@ -1133,9 +1326,17 @@ func LoadConfig() (*Config, error) {
 ```prompt
 Audit database and cache connection management for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Core Dependency: lib-commons" section from core.md — specifically connection packages}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/config.go`, `**/database*.go`, `**/redis*.go`, `**/postgres*.go`
 - Keywords: `MaxOpenConns`, `MaxIdleConns`, `PoolSize`, `Timeout`, `SetConnMaxLifetime`
+- Standards-specific: `lib-commons`, `mpostgres`, `mredis`, `mmongo`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1169,18 +1370,20 @@ type DatabaseConnections struct {
 }
 ```
 
-**Check For:**
-1. DB connection pool limits configured
-2. Redis pool settings configured
-3. Connection timeouts set (not infinite)
-4. Connection max lifetime set (prevents stale connections)
-5. Idle connection limits reasonable
-6. Read replica support (for scaling reads)
-7. Connection health checks (ping on checkout)
-8. Graceful connection shutdown
+**Check Against Ring Standards For:**
+1. (HARD GATE) lib-commons connection packages used (mpostgres, mredis, mmongo) per core.md
+2. DB connection pool limits configured
+3. Redis pool settings configured
+4. Connection timeouts set (not infinite)
+5. Connection max lifetime set (prevents stale connections)
+6. Idle connection limits reasonable
+7. Read replica support (for scaling reads)
+8. Connection health checks (ping on checkout)
+9. Graceful connection shutdown
 
 **Severity Ratings:**
 - CRITICAL: No connection pool limits (unbounded connections)
+- CRITICAL: HARD GATE violation — not using lib-commons connection packages
 - HIGH: No connection timeouts (hang forever)
 - HIGH: No max lifetime (stale connections)
 - MEDIUM: Missing read replica support
@@ -1209,10 +1412,18 @@ type DatabaseConnections struct {
 ```prompt
 Audit logging practices and PII protection for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Logging" section from quality.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/*.go`
 - Keywords: `logger.`, `log.`, `Errorf`, `Infof`, `WithFields`, `password`, `token`, `secret`
 - Also search: `fmt.Print`, `fmt.Println` (should not be used for logging)
+- Standards-specific: `zap`, `zerolog`, structured logging library references
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1256,8 +1467,8 @@ logger.Debugf("Request body: %+v", requestBody)
 log.Printf("Error: %v", err)
 ```
 
-**Check For:**
-1. Structured logging used (not fmt.Print)
+**Check Against Ring Standards For:**
+1. (HARD GATE) Structured logging used (not fmt.Print or log.Printf) per quality.md logging section
 2. Logger obtained from context (request tracking)
 3. No passwords/tokens logged
 4. Production mode sanitizes error details
@@ -1269,7 +1480,7 @@ log.Printf("Error: %v", err)
 **Severity Ratings:**
 - CRITICAL: Passwords/tokens logged
 - CRITICAL: PII logged in production
-- HIGH: fmt.Print used instead of logger
+- HIGH: fmt.Print used instead of logger (HARD GATE violation per Ring standards)
 - HIGH: Full error details in production
 - MEDIUM: Missing request ID in logs
 - LOW: Inappropriate log levels
@@ -1296,9 +1507,17 @@ log.Printf("Error: %v", err)
 ```prompt
 Audit idempotency implementation for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: Full module content from idempotency.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/idempotency*.go`, `**/value_objects/*.go`, `**/redis/*.go`
 - Keywords: `IdempotencyKey`, `TryAcquire`, `MarkComplete`, `SetNX`, `idempotent`
+- Standards-specific: `IdempotencyRepository`, `idempotency middleware`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1353,18 +1572,18 @@ func (h *Handler) ProcessCallback(c *fiber.Ctx) error {
 }
 ```
 
-**Check For:**
-1. Idempotency keys for financial/critical operations
-2. Atomic acquire mechanism (SetNX or similar)
+**Check Against Ring Standards For:**
+1. (HARD GATE) Idempotency keys for financial/critical operations per idempotency.md
+2. (HARD GATE) Atomic acquire mechanism (SetNX or similar)
 3. TTL to prevent unbounded storage
-4. Key validation (format, length)
+4. Key validation (format, length) per Ring idempotency patterns
 5. Proper state transitions (acquired -> complete/failed)
 6. Retry-safe (failed operations can be retried)
 7. Idempotency for webhook callbacks
 8. Idempotency for payment operations
 
 **Severity Ratings:**
-- CRITICAL: No idempotency for financial operations
+- CRITICAL: No idempotency for financial operations (HARD GATE violation per Ring standards)
 - HIGH: Non-atomic acquire (race conditions)
 - HIGH: No TTL (memory leak)
 - MEDIUM: Missing key validation
@@ -1393,9 +1612,17 @@ func (h *Handler) ProcessCallback(c *fiber.Ctx) error {
 ```prompt
 Audit API documentation (Swagger/OpenAPI) for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: Swaggo/OpenAPI subsection from "Pagination Patterns" in api-patterns.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/main.go`, `**/handlers.go`, `**/dto.go`, `**/swagger/*`
 - Keywords: `@Summary`, `@Router`, `@Param`, `@Success`, `@Failure`, `@Security`
+- Standards-specific: `swaggo`, `swag init`, `docs/swagger.json`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1432,20 +1659,21 @@ type CreateRequest struct {
 }
 ```
 
-**Check For:**
-1. API title, version, description in main.go
-2. Security definitions (Bearer token)
-3. All endpoints have @Router annotation
-4. Request/response types documented
-5. All error codes documented (@Failure)
-6. Examples in DTOs (example: tag)
-7. Enums documented (enums: tag)
-8. Parameter constraints documented (minimum, maximum)
-9. Tags organize endpoints logically
-10. Swagger UI accessible
+**Check Against Ring Standards For:**
+1. (HARD GATE) Swaggo annotations present per Ring api-patterns.md
+2. API title, version, description in main.go
+3. Security definitions (Bearer token)
+4. All endpoints have @Router annotation
+5. Request/response types documented
+6. All error codes documented (@Failure)
+7. Examples in DTOs (example: tag)
+8. Enums documented (enums: tag)
+9. Parameter constraints documented (minimum, maximum)
+10. Tags organize endpoints logically
+11. Swagger UI accessible
 
 **Severity Ratings:**
-- HIGH: No Swagger annotations at all
+- HIGH: No Swagger annotations at all (HARD GATE violation per Ring standards)
 - HIGH: Missing security definitions
 - MEDIUM: Endpoints without documentation
 - MEDIUM: Error responses not documented
@@ -1474,6 +1702,8 @@ type CreateRequest struct {
 
 ```prompt
 Audit technical debt indicators for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
 
 **Search Patterns (with context):**
 - `TODO` - Planned work
@@ -1539,9 +1769,17 @@ Audit technical debt indicators for production readiness.
 ```prompt
 Audit test coverage and testing patterns for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Testing" section from quality.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/*_test.go`, `**/mocks/**/*.go`, `tests/**/*.go`
 - Keywords: `func Test`, `t.Run`, `mock.Mock`, `assert.`, `require.`
+- Standards-specific: `mockgen`, `testify`, `testcontainers`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1599,19 +1837,19 @@ func TestIntegration_CreateResource(t *testing.T) {
 }
 ```
 
-**Check For:**
-1. Test files co-located with source (*_test.go)
-2. Mocks generated via mockgen (not hand-written)
-3. Table-driven tests for multiple cases
-4. Integration tests in separate directory or with build tags
-5. Test helpers/fixtures organized
-6. Assertions use testify (assert/require)
+**Check Against Ring Standards For:**
+1. (HARD GATE) Test files co-located with source (*_test.go) per quality.md testing section
+2. (HARD GATE) Mocks generated via mockgen (not hand-written) per Ring standards
+3. (HARD GATE) Assertions use testify (assert/require) per Ring standards
+4. Table-driven tests for multiple cases
+5. Integration tests in separate directory or with build tags
+6. Test helpers/fixtures organized
 7. Parallel tests where appropriate (t.Parallel())
 8. Test cleanup with t.Cleanup() or defer
 
 **Severity Ratings:**
-- HIGH: Critical paths without tests
-- HIGH: Hand-written mocks (should use mockgen)
+- HIGH: Critical paths without tests (HARD GATE violation per Ring standards)
+- HIGH: Hand-written mocks (should use mockgen per Ring standards)
 - MEDIUM: Missing table-driven tests for validators
 - MEDIUM: No integration tests
 - LOW: Tests not running in parallel
@@ -1635,14 +1873,22 @@ func TestIntegration_CreateResource(t *testing.T) {
 ```
 ```
 
-### Agent 20: Dependency Auditor
+### Agent 20: Dependency Management Auditor
 
 ```prompt
 Audit dependency management for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Frameworks & Libraries" section from core.md — specifically the version table}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `go.mod`, `go.sum`, `**/vendor/**`
 - Commands: Run `go list -m -u all` mentally based on go.mod
+- Standards-specific: Check for required Ring dependencies in go.mod
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1675,14 +1921,16 @@ require github.com/some/lib latest
 require github.com/dgrijalva/jwt-go v3.2.0  // Has CVE, use golang-jwt
 ```
 
-**Check For:**
-1. All dependencies pinned (no "latest")
-2. No local replace directives in production
-3. Known vulnerable packages identified
-4. Unused dependencies (not imported anywhere)
-5. Major version mismatches
-6. Deprecated packages (e.g., dgrijalva/jwt-go -> golang-jwt)
-7. go.sum exists and is committed
+**Check Against Ring Standards For:**
+1. (HARD GATE) Required Ring framework dependencies present in go.mod per core.md version table
+2. All dependencies pinned (no "latest")
+3. No local replace directives in production
+4. Known vulnerable packages identified
+5. Unused dependencies (not imported anywhere)
+6. Major version mismatches
+7. Deprecated packages (e.g., dgrijalva/jwt-go -> golang-jwt)
+8. go.sum exists and is committed
+9. Framework versions meet Ring minimum requirements (Go 1.24+, Fiber v2, etc.)
 
 **Known Vulnerable Packages to Flag:**
 - github.com/dgrijalva/jwt-go (use golang-jwt/jwt)
@@ -1692,9 +1940,11 @@ require github.com/dgrijalva/jwt-go v3.2.0  // Has CVE, use golang-jwt
 
 **Severity Ratings:**
 - CRITICAL: Known CVE in dependency
+- CRITICAL: HARD GATE violation — required Ring framework dependency missing from go.mod
 - HIGH: Local replace directive
 - HIGH: Deprecated package with security issues
 - MEDIUM: Significantly outdated dependencies
+- MEDIUM: Framework versions below Ring minimum requirements
 - LOW: Minor version behind
 
 **Output Format:**
@@ -1715,10 +1965,12 @@ require github.com/dgrijalva/jwt-go v3.2.0  // Has CVE, use golang-jwt
 ```
 ```
 
-### Agent 21: Performance Auditor
+### Agent 21: Performance Patterns Auditor
 
 ```prompt
 Audit performance patterns for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
 
 **Search Patterns:**
 - Files: `**/*.go`
@@ -1813,14 +2065,22 @@ func handleRequest() {
 ```
 ```
 
-### Agent 22: Concurrency Auditor
+### Agent 22: Concurrency Safety Auditor
 
 ```prompt
 Audit concurrency patterns for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Concurrency Patterns" section from architecture.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/*.go`
 - Keywords: `go func`, `sync.Mutex`, `sync.RWMutex`, `chan`, `select {`, `sync.WaitGroup`
+- Standards-specific: `errgroup`, `semaphore`, `worker pool`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -1907,18 +2167,18 @@ for _, item := range millionItems {
 }
 ```
 
-**Check For:**
-1. Maps protected by mutex when shared
+**Check Against Ring Standards For:**
+1. (HARD GATE) Maps protected by mutex when shared per architecture.md concurrency patterns
 2. Loop variables not captured in closures
 3. Goroutines have cancellation (context)
 4. WaitGroup used for coordination
-5. Bounded concurrency (worker pools)
+5. Bounded concurrency (worker pools) per Ring patterns
 6. Channels closed by sender
 7. Select with default for non-blocking
 8. No goroutine leaks (all paths exit)
 
 **Severity Ratings:**
-- CRITICAL: Race condition on shared map
+- CRITICAL: Race condition on shared map (HARD GATE violation per Ring standards)
 - CRITICAL: Goroutine leak (no exit path)
 - HIGH: Loop variable capture bug
 - HIGH: Unbounded goroutine spawning
@@ -1947,9 +2207,17 @@ for _, item := range millionItems {
 ```prompt
 Audit database migration safety for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Core Dependency: lib-commons" section from core.md — database migration patterns}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `migrations/*.sql`, `migrations/*.go`
 - Keywords: `DROP`, `ALTER`, `RENAME`, `NOT NULL`, `CREATE INDEX`
+- Standards-specific: `golang-migrate`, `lib-commons migration`
 
 **Reference Implementation (GOOD):**
 ```sql
@@ -1989,19 +2257,20 @@ DROP COLUMN email;
 ALTER TABLE users RENAME COLUMN email TO user_email;
 ```
 
-**Check For:**
-1. All migrations have up AND down files
-2. CREATE INDEX uses CONCURRENTLY
+**Check Against Ring Standards For:**
+1. (HARD GATE) All migrations have up AND down files per Ring migration patterns
+2. (HARD GATE) CREATE INDEX uses CONCURRENTLY
 3. New NOT NULL columns have DEFAULT
 4. DROP/ALTER use IF EXISTS
 5. No column renames (add new, migrate data, drop old)
 6. No destructive operations in up migrations
 7. Migrations are additive (safe rollback)
 8. Sequential numbering (no gaps)
+9. Migration tool matches Ring standard (golang-migrate or lib-commons)
 
 **Severity Ratings:**
-- CRITICAL: NOT NULL without default
-- CRITICAL: Missing down migration
+- CRITICAL: NOT NULL without default (HARD GATE violation per Ring standards)
+- CRITICAL: Missing down migration (HARD GATE violation)
 - HIGH: Non-concurrent index creation
 - HIGH: Column rename (breaking change)
 - MEDIUM: DROP without IF EXISTS
@@ -2030,9 +2299,17 @@ ALTER TABLE users RENAME COLUMN email TO user_email;
 ```prompt
 Audit container security and Dockerfile best practices for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Containers" section from devops.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `Dockerfile*`, `docker-compose*.yml`, `Makefile`
 - Keywords: `FROM`, `USER`, `COPY`, `ADD`, `HEALTHCHECK`
+- Standards-specific: `distroless`, `nonroot`, `multi-stage`
 
 **Reference Implementation (GOOD):**
 ```dockerfile
@@ -2055,17 +2332,18 @@ HEALTHCHECK --interval=30s --timeout=3s CMD ["/main", "-health"]
 ENTRYPOINT ["/main"]
 ```
 
-**Check For:**
-1. Multi-stage builds (builder vs runtime)
-2. Minimal/Distroless runtime images
-3. Pinned base image versions (not `latest`)
-4. Non-root user execution (`USER nonroot` or numeric ID)
+**Check Against Ring Standards For:**
+1. (HARD GATE) Multi-stage builds (builder vs runtime) per devops.md containers section
+2. (HARD GATE) Non-root user execution (`USER nonroot` or numeric ID) per Ring standards
+3. Minimal/Distroless runtime images per Ring container patterns
+4. Pinned base image versions (not `latest`)
 5. `COPY` used instead of `ADD` (unless extracting tar)
 6. .dockerignore file exists and excludes secrets/git
 7. Sensitive args not passed as build-args (secrets)
 
 **Severity Ratings:**
-- CRITICAL: Running as root in production image
+- CRITICAL: Running as root in production image (HARD GATE violation per Ring standards)
+- CRITICAL: HARD GATE violation — no multi-stage build per devops.md
 - HIGH: Secrets in Dockerfile/history
 - MEDIUM: Using `latest` tag
 - LOW: Missing HEALTHCHECK in Dockerfile
@@ -2091,6 +2369,8 @@ ENTRYPOINT ["/main"]
 
 ```prompt
 Audit HTTP security headers and hardening configuration for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
 
 **Search Patterns:**
 - Files: `**/fiber_server.go`, `**/middleware*.go`, `**/cors.go`
@@ -2148,14 +2428,22 @@ app.Use(cors.New(cors.Config{
 ```
 ```
 
-### Agent 26: CI/CD & Licensing Auditor
+### Agent 26: CI/CD Pipeline Auditor
 
 ```prompt
-Audit CI/CD pipelines and license compliance for production readiness.
+Audit CI/CD pipelines for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: CI section from devops.md}
+---END STANDARDS---
 
 **Search Patterns:**
-- Files: `.github/workflows/*.yml`, `.gitlab-ci.yml`, `LICENSE*`
+- Files: `.github/workflows/*.yml`, `.gitlab-ci.yml`, `Makefile`
 - Keywords: `test`, `lint`, `build`, `docker`, `sign`
+- Standards-specific: `golangci-lint`, `gosec`, `trivy`, `cosign`
 
 **Reference Implementation (GOOD):**
 ```yaml
@@ -2179,32 +2467,31 @@ jobs:
           args: ./...
 ```
 
-**Check For:**
-1. CI pipeline exists (GitHub Actions/GitLab CI)
-2. Tests and Linting run on PRs
-3. Security scanning (gosec, trivy) integrated
-4. Artifact signing (cosign/sigstore)
-5. **LICENSE File Check**:
-   - IF open source: `LICENSE` file MUST exist.
-   - IF proprietary: Ensure private repo settings/headers.
-   - **ACTION**: Explicitly verify if the project is Open Source or Private.
-6. Dependency license check (verify no GPL pollution if proprietary)
+**Check Against Ring Standards For:**
+1. (HARD GATE) CI pipeline exists (GitHub Actions/GitLab CI) per devops.md
+2. (HARD GATE) Tests run on PRs per Ring CI requirements
+3. Linting runs on PRs (golangci-lint)
+4. Security scanning (gosec, trivy) integrated
+5. Artifact signing (cosign/sigstore)
+6. Docker image build and push stages
+7. Automated deployment stages (if applicable)
 
 **Severity Ratings:**
-- CRITICAL: No CI pipeline
-- CRITICAL: Tests not running on PR
-- HIGH: Open source project missing LICENSE file
+- CRITICAL: No CI pipeline (HARD GATE violation per Ring standards)
+- CRITICAL: Tests not running on PR (HARD GATE violation)
+- HIGH: Missing linting in CI
 - MEDIUM: Missing security scanning
 - LOW: Artifacts not signed
 
 **Output Format:**
 ```
-## CI/CD & Licensing Audit Findings
+## CI/CD Pipeline Audit Findings
 
 ### Summary
 - CI Pipeline: Active/Missing
+- Tests on PR: Yes/No
+- Linting: Yes/No
 - Security Scans: Yes/No
-- License: [Type/Missing] (Context: Open Source/Proprietary)
 
 ### Critical Issues
 [file:line] - Description
@@ -2219,9 +2506,17 @@ jobs:
 ```prompt
 Audit asynchronous processing reliability for production readiness.
 
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "RabbitMQ Worker Pattern" section from messaging.md}
+---END STANDARDS---
+
 **Search Patterns:**
 - Files: `**/worker/*.go`, `**/queue/*.go`, `**/kafka/*.go`, `**/rabbitmq/*.go`
 - Keywords: `Ack`, `Nack`, `Retry`, `DeadLetter`, `DLQ`, `ConsumerGroup`
+- Standards-specific: `amqp`, `RabbitMQ`, `lib-commons messaging`
 
 **Reference Implementation (GOOD):**
 ```go
@@ -2239,17 +2534,18 @@ func (c *Consumer) Handle(msg *Message) error {
 }
 ```
 
-**Check For:**
-1. Dead Letter Queues (DLQ) configured for failed messages
-2. Retry policies with exponential backoff
-3. Explicit Ack/Nack handling (no auto-ack)
+**Check Against Ring Standards For:**
+1. (HARD GATE) Dead Letter Queues (DLQ) configured for failed messages per messaging.md
+2. (HARD GATE) Explicit Ack/Nack handling (no auto-ack) per Ring RabbitMQ worker pattern
+3. Retry policies with exponential backoff
 4. Consumer groups for parallel processing
 5. Graceful shutdown of consumers (wait for processing to finish)
 6. Message durability settings (persistent queues)
+7. lib-commons messaging integration where applicable
 
 **Severity Ratings:**
-- CRITICAL: Messages auto-acked before processing
-- HIGH: No DLQ for poison messages (infinite loops)
+- CRITICAL: Messages auto-acked before processing (HARD GATE violation per Ring standards)
+- HIGH: No DLQ for poison messages (infinite loops) — HARD GATE violation
 - HIGH: No retry backoff strategy
 - MEDIUM: Missing graceful shutdown for workers
 
@@ -2270,6 +2566,770 @@ func (c *Consumer) Handle(msg *Message) error {
 ```
 ```
 
+### Agent 28: Core Dependencies & Frameworks Auditor
+
+```prompt
+Audit core dependency usage and framework compliance for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: Sections 2 and 3 from core.md — "Core Dependency: lib-commons" and "Frameworks & Libraries"}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `go.mod`, `go.sum`, `**/utils/*.go`, `**/helpers/*.go`, `**/common/*.go`
+- Keywords: `lib-commons`, `github.com/LerianStudio`, `go 1.`, `fiber`, `gorm`, `validator`
+- Also search: Custom utility packages that may duplicate lib-commons functionality
+
+**Reference Implementation (GOOD):**
+```go
+// go.mod with lib-commons v2 and required frameworks
+module github.com/company/project
+
+go 1.24
+
+require (
+    github.com/LerianStudio/lib-commons/v2 v2.x.x   // lib-commons present
+    github.com/gofiber/fiber/v2 v2.52.x               // Fiber v2
+    gorm.io/gorm v1.25.x                              // GORM
+    github.com/go-playground/validator/v10 v10.x.x     // Validator
+    github.com/stretchr/testify v1.9.x                 // Testify
+)
+```
+
+**Reference Implementation (BAD):**
+```go
+// BAD: Custom utilities that duplicate lib-commons
+// internal/utils/database.go
+func ConnectDB(dsn string) (*sql.DB, error) {
+    // Custom connection logic duplicating lib-commons/mpostgres
+}
+
+// BAD: Custom telemetry wrapper duplicating lib-commons
+// internal/common/tracing.go
+func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
+    // Custom wrapper duplicating lib-commons/NewTrackingFromContext
+}
+
+// BAD: Missing lib-commons entirely
+// go.mod without github.com/LerianStudio/lib-commons
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) lib-commons v2 present in go.mod — this is mandatory per Ring standards
+2. (HARD GATE) No custom utility packages that duplicate lib-commons functionality (check utils/, helpers/, common/)
+3. Go version 1.24+ in go.mod
+4. Fiber v2 framework present
+5. GORM ORM present
+6. go-playground/validator/v10 present
+7. testify present for testing
+8. No alternative libraries used for functionality already covered by lib-commons
+
+**Severity Ratings:**
+- CRITICAL: lib-commons not in go.mod (HARD GATE violation per Ring standards)
+- CRITICAL: Custom utilities duplicating lib-commons functionality (HARD GATE violation)
+- HIGH: Framework versions below Ring minimum requirements
+- MEDIUM: Using alternative libraries for functionality covered by Ring stack
+- LOW: Minor version discrepancies
+
+**Output Format:**
+```
+## Core Dependencies & Frameworks Audit Findings
+
+### Summary
+- lib-commons v2 present: Yes/No
+- Go version: X (minimum 1.24)
+- Required frameworks present: X/Y
+- Custom utility packages found: [list]
+- lib-commons duplication detected: Yes/No
+
+### Critical Issues
+[file:line or go.mod] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 29: Naming Conventions Auditor
+
+```prompt
+Audit naming conventions across the codebase for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: Naming conventions from core.md section 5 (if exists) and JSON naming subsection from api-patterns.md section 1}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/*.go` for struct tags, `**/migrations/*.sql` for column names
+- Keywords: `json:"`, `db:"`, `gorm:"`, `column:`, `CREATE TABLE`
+- Also search: Query parameter handling for naming consistency
+
+**Reference Implementation (GOOD):**
+```go
+// Go struct with correct naming conventions
+type Account struct {
+    ID          uuid.UUID `json:"id" gorm:"column:id"`
+    DisplayName string    `json:"display_name" gorm:"column:display_name"`  // camelCase JSON, snake_case DB
+    AccountType string    `json:"account_type" gorm:"column:account_type"`
+    CreatedAt   time.Time `json:"created_at" gorm:"column:created_at"`
+}
+
+// Query parameters use snake_case
+// GET /v1/accounts?account_type=savings&created_after=2024-01-01
+
+// SQL migration with snake_case columns
+// CREATE TABLE accounts (
+//     id UUID PRIMARY KEY,
+//     display_name VARCHAR(255),
+//     account_type VARCHAR(50),
+//     created_at TIMESTAMP WITH TIME ZONE
+// );
+```
+
+**Reference Implementation (BAD):**
+```go
+// BAD: Inconsistent JSON naming
+type Account struct {
+    ID          uuid.UUID `json:"id"`
+    DisplayName string    `json:"displayName"`    // camelCase instead of snake_case
+    AccountType string    `json:"account_type"`   // snake_case — inconsistent with above!
+    CreatedAt   time.Time `json:"CreatedAt"`      // PascalCase — wrong!
+}
+
+// BAD: Mixed naming in query params
+// GET /v1/accounts?accountType=savings&created_after=2024-01-01
+```
+
+**Check Against Ring Standards For:**
+1. snake_case for database column names in migrations and GORM tags
+2. snake_case for JSON response body fields (json:"field_name")
+3. snake_case for query parameters
+4. PascalCase for Go exported types and functions
+5. camelCase for Go unexported fields and variables
+6. Consistent naming convention within each context (no mixing)
+
+**Severity Ratings:**
+- HIGH: Inconsistent JSON field naming across response DTOs (mix of conventions)
+- MEDIUM: Query params not using snake_case
+- MEDIUM: Database columns not using snake_case
+- LOW: Minor naming inconsistencies within a single file
+
+**Output Format:**
+```
+## Naming Conventions Audit Findings
+
+### Summary
+- JSON fields audited: X
+- Using snake_case JSON: Y/X
+- DB columns using snake_case: Y/Z
+- Query params using snake_case: Y/Z
+- Naming convention violations: N
+
+### Issues by Convention
+#### JSON Naming
+[file:line] - Field "displayName" should be "display_name"
+
+#### Database Naming
+[file:line] - Column "displayName" should be "display_name"
+
+#### Query Parameter Naming
+[file:line] - Param "accountType" should be "account_type"
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 30: Domain Modeling Auditor
+
+```prompt
+Audit domain modeling patterns for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "ToEntity/FromEntity" section 9 from domain.md and "Always-Valid Domain Model" section 21 from domain-modeling.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/domain/*.go`, `**/entity/*.go`, `**/model/*.go`, `**/value_objects/*.go`
+- Keywords: `ToEntity`, `FromEntity`, `NewXxx`, `IsValid()`, `private fields`
+- Also search: `**/adapters/**/*.go` for mapping patterns
+
+**Reference Implementation (GOOD):**
+```go
+// Always-valid domain model with private fields and constructor
+type Account struct {
+    id          uuid.UUID   // Private fields
+    name        string
+    accountType AccountType
+    status      Status
+    createdAt   time.Time
+}
+
+// Constructor enforces invariants
+func NewAccount(name string, accountType AccountType) (*Account, error) {
+    if name == "" {
+        return nil, ErrNameRequired
+    }
+    if !accountType.IsValid() {
+        return nil, ErrInvalidAccountType
+    }
+    return &Account{
+        id:          uuid.New(),
+        name:        name,
+        accountType: accountType,
+        status:      StatusActive,
+        createdAt:   time.Now(),
+    }, nil
+}
+
+// Exported getters (no setters for immutable fields)
+func (a *Account) ID() uuid.UUID       { return a.id }
+func (a *Account) Name() string        { return a.name }
+func (a *Account) Status() Status      { return a.status }
+
+// ToEntity/FromEntity mapping in adapters
+func (dto *CreateAccountDTO) ToEntity() (*domain.Account, error) {
+    return domain.NewAccount(dto.Name, domain.AccountType(dto.Type))
+}
+
+func FromEntity(account *domain.Account) *AccountResponse {
+    return &AccountResponse{
+        ID:     account.ID().String(),
+        Name:   account.Name(),
+        Status: string(account.Status()),
+    }
+}
+```
+
+**Reference Implementation (BAD):**
+```go
+// BAD: Domain model with exported mutable fields and no constructor
+type Account struct {
+    ID          uuid.UUID `json:"id"`           // Exported + mutable!
+    Name        string    `json:"name"`         // Can be set to "" directly
+    AccountType string    `json:"account_type"` // No type safety
+    Status      string    `json:"status"`       // No validation
+}
+
+// BAD: Direct field access without validation
+account := &Account{Name: ""}  // Invalid state allowed!
+
+// BAD: No ToEntity/FromEntity — DTOs used directly as domain models
+func (h *Handler) Create(c *fiber.Ctx) error {
+    var account Account
+    c.BodyParser(&account)
+    repo.Save(ctx, &account)  // DTO goes straight to persistence!
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) Domain models use private fields with exported getters per domain-modeling.md always-valid pattern
+2. (HARD GATE) Constructors (NewXxx) enforce invariants — no invalid domain objects can be created
+3. (HARD GATE) ToEntity/FromEntity mapping patterns in adapters per domain.md section 9
+4. Value objects have IsValid() methods
+5. No direct field access on domain models from outside the package
+6. DTOs are separate from domain models (not the same struct)
+7. Consistent domain modeling across all bounded contexts
+
+**Severity Ratings:**
+- CRITICAL: Domain models with exported mutable fields and no constructor (HARD GATE violation per Ring standards)
+- CRITICAL: DTOs used directly as domain models (no ToEntity/FromEntity)
+- HIGH: Missing ToEntity/FromEntity in adapters (HARD GATE violation)
+- MEDIUM: Inconsistent domain modeling across modules
+- MEDIUM: Value objects without IsValid()
+- LOW: Minor modeling inconsistencies
+
+**Output Format:**
+```
+## Domain Modeling Audit Findings
+
+### Summary
+- Domain models found: X
+- Using always-valid pattern: Y/X
+- With constructors (NewXxx): Y/X
+- ToEntity/FromEntity present: Y/Z adapters
+- Value objects with IsValid: Y/Z
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 31: Linting & Code Quality Auditor
+
+```prompt
+Audit linting configuration and code quality patterns for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Linting" section 16 from quality.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `.golangci.yml`, `.golangci.yaml`, `**/*.go`
+- Keywords: `//nolint`, `golangci-lint`, import grouping patterns
+- Also search: Magic numbers in business logic code
+
+**Reference Implementation (GOOD):**
+```go
+// Import ordering: 3 groups (stdlib, external, internal)
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "github.com/gofiber/fiber/v2"
+    "github.com/google/uuid"
+    "go.opentelemetry.io/otel"
+
+    "github.com/company/project/internal/domain"
+    "github.com/company/project/pkg/assert"
+)
+
+// Named constants instead of magic numbers
+const (
+    maxRetries       = 3
+    defaultTimeout   = 30 * time.Second
+    maxPageSize      = 100
+    minPasswordLen   = 8
+)
+
+// Using named constants in logic
+if retryCount >= maxRetries {
+    return ErrMaxRetriesExceeded
+}
+```
+
+**Reference Implementation (BAD):**
+```go
+// BAD: Import ordering not following convention
+import (
+    "github.com/company/project/internal/domain"
+    "fmt"
+    "github.com/gofiber/fiber/v2"
+    "context"
+)
+
+// BAD: Magic numbers in business logic
+if retryCount >= 3 {           // What is 3?
+    time.Sleep(30 * time.Second) // What is 30?
+}
+if len(password) < 8 {          // What is 8?
+    return errors.New("too short")
+}
+if pageSize > 100 {             // What is 100?
+    pageSize = 100
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) golangci-lint configuration exists per quality.md linting section
+2. Import ordering follows 3-group convention (stdlib, external, internal)
+3. Magic numbers replaced with named constants in business logic
+4. Required linters enabled in golangci-lint config
+5. No blanket //nolint without specific linter name
+6. Consistent code formatting (gofmt/goimports applied)
+
+**Severity Ratings:**
+- HIGH: No golangci-lint configuration (HARD GATE violation per Ring standards)
+- MEDIUM: Magic numbers in business logic
+- MEDIUM: Import ordering not following 3-group convention
+- MEDIUM: Blanket //nolint without justification
+- LOW: Minor style inconsistencies
+
+**Output Format:**
+```
+## Linting & Code Quality Audit Findings
+
+### Summary
+- golangci-lint config: Yes/No
+- Import ordering violations: X files
+- Magic numbers found: Y locations
+- Blanket //nolint usage: Z locations
+
+### Issues
+#### golangci-lint Configuration
+[config status and missing linters]
+
+#### Import Ordering
+[file:line] - Imports not following 3-group convention
+
+#### Magic Numbers
+[file:line] - Magic number N used (suggest: named constant)
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 32: Makefile & Dev Tooling Auditor
+
+```prompt
+Audit Makefile and development tooling for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "Makefile Standards" section 7 from devops.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `Makefile`, `makefile`, `GNUmakefile`
+- Keywords: `.PHONY`, `build`, `test`, `lint`, `help`, `docker`
+- Also search: `scripts/*.sh` for development scripts
+
+**Reference Implementation (GOOD):**
+```makefile
+.PHONY: build test lint cover up down logs setup migrate seed generate swagger docker-build docker-push clean help check
+
+build: ## Build the application binary
+	go build -o bin/app cmd/app/main.go
+
+test: ## Run all unit tests
+	go test -race -v ./...
+
+lint: ## Run linters
+	golangci-lint run
+
+cover: ## Run tests with coverage
+	go test -race -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+
+up: ## Start local dependencies (docker-compose)
+	docker compose up -d
+
+down: ## Stop local dependencies
+	docker compose down
+
+logs: ## Tail local dependency logs
+	docker compose logs -f
+
+setup: ## Initial project setup
+	go mod download
+	go install github.com/swaggo/swag/cmd/swag@latest
+
+migrate: ## Run database migrations
+	migrate -path migrations -database "$$DATABASE_URL" up
+
+seed: ## Seed database with test data
+	go run cmd/seed/main.go
+
+generate: ## Run code generators (mockgen, etc.)
+	go generate ./...
+
+swagger: ## Generate Swagger documentation
+	swag init -g cmd/app/main.go
+
+docker-build: ## Build Docker image
+	docker build -t app:latest .
+
+docker-push: ## Push Docker image
+	docker push app:latest
+
+clean: ## Clean build artifacts
+	rm -rf bin/ coverage.out coverage.html
+
+help: ## Show this help message
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+check: ## Run all checks (lint + test + cover)
+	$(MAKE) lint
+	$(MAKE) test
+	$(MAKE) cover
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) Makefile exists in project root per devops.md
+2. Required targets present: build, lint, test, cover, up, down, logs, setup, migrate, seed, generate, swagger, docker-build, docker-push, clean, help, check
+3. All targets have help descriptions (## comments)
+4. .PHONY declarations for non-file targets
+5. `help` target shows available commands
+6. `check` target runs full validation pipeline
+
+**Severity Ratings:**
+- HIGH: No Makefile in project (HARD GATE violation per Ring standards)
+- MEDIUM: Missing required Makefile targets (list which ones are missing)
+- MEDIUM: Targets without help descriptions
+- LOW: Missing .PHONY declarations
+- LOW: Targets without error handling
+
+**Output Format:**
+```
+## Makefile & Dev Tooling Audit Findings
+
+### Summary
+- Makefile present: Yes/No
+- Required targets present: X/17
+- Missing targets: [list]
+- Targets with help: X/Y
+
+### Required Targets Checklist
+| Target | Present | Has Help |
+|--------|---------|----------|
+| build | Yes/No | Yes/No |
+| test | Yes/No | Yes/No |
+| lint | Yes/No | Yes/No |
+| cover | Yes/No | Yes/No |
+| up | Yes/No | Yes/No |
+| down | Yes/No | Yes/No |
+| logs | Yes/No | Yes/No |
+| setup | Yes/No | Yes/No |
+| migrate | Yes/No | Yes/No |
+| seed | Yes/No | Yes/No |
+| generate | Yes/No | Yes/No |
+| swagger | Yes/No | Yes/No |
+| docker-build | Yes/No | Yes/No |
+| docker-push | Yes/No | Yes/No |
+| clean | Yes/No | Yes/No |
+| help | Yes/No | Yes/No |
+| check | Yes/No | Yes/No |
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 33: Multi-Tenant Patterns Auditor
+
+```prompt
+**CONDITIONAL: Only run this auditor if MULTITENANT=true is set. If the project does not use multi-tenancy, skip this audit and report "N/A - Single-tenant project".**
+
+Audit multi-tenant architecture patterns for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: Section 23 from multi-tenant.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/tenant*.go`, `**/pool*.go`, `**/middleware*.go`, `**/context*.go`
+- Keywords: `tenantID`, `PoolManager`, `TenantContext`, `schema`, `search_path`
+- Also search: `**/jwt*.go`, `**/auth*.go` for tenant extraction
+
+**Reference Implementation (GOOD):**
+```go
+// Pool Manager for tenant connection management
+type PoolManager struct {
+    mu       sync.RWMutex
+    pools    map[string]*sql.DB
+    config   *PoolConfig
+    maxPools int
+}
+
+func (pm *PoolManager) GetConnection(tenantID string) (*sql.DB, error) {
+    pm.mu.RLock()
+    if pool, ok := pm.pools[tenantID]; ok {
+        pm.mu.RUnlock()
+        return pool, nil
+    }
+    pm.mu.RUnlock()
+
+    // Create new pool for tenant
+    pm.mu.Lock()
+    defer pm.mu.Unlock()
+
+    // Double-check after acquiring write lock
+    if pool, ok := pm.pools[tenantID]; ok {
+        return pool, nil
+    }
+
+    pool, err := pm.createPool(tenantID)
+    if err != nil {
+        return nil, fmt.Errorf("create pool for tenant %s: %w", tenantID, err)
+    }
+    pm.pools[tenantID] = pool
+    return pool, nil
+}
+
+// Tenant context injection middleware
+func TenantMiddleware(next fiber.Handler) fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        claims := auth.GetClaims(c)
+        tenantID := claims["tenant_id"].(string)
+        if tenantID == "" {
+            return fiber.NewError(401, "missing tenant context")
+        }
+        ctx := context.WithValue(c.UserContext(), TenantKey, tenantID)
+        c.SetUserContext(ctx)
+        return next(c)
+    }
+}
+
+// Tenant-scoped query — ALWAYS filter by tenant
+func (r *Repo) FindByID(ctx context.Context, id uuid.UUID) (*Entity, error) {
+    tenantID := GetTenantID(ctx)  // From context, never from request
+    var entity Entity
+    err := r.db.WithContext(ctx).
+        Where("id = ? AND tenant_id = ?", id, tenantID).
+        First(&entity).Error
+    return &entity, err
+}
+```
+
+**Reference Implementation (BAD):**
+```go
+// BAD: Query without tenant filter — data leakage!
+func (r *Repo) FindByID(ctx context.Context, id uuid.UUID) (*Entity, error) {
+    var entity Entity
+    err := r.db.WithContext(ctx).Where("id = ?", id).First(&entity).Error
+    return &entity, err
+}
+
+// BAD: Tenant ID from request header (can be spoofed)
+func GetTenantID(c *fiber.Ctx) string {
+    return c.Get("X-Tenant-ID")  // User-controlled!
+}
+
+// BAD: No schema isolation — shared tables
+func (r *Repo) Save(ctx context.Context, entity *Entity) error {
+    return r.db.Create(entity).Error  // Which tenant's data?
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) Tenant ID extracted from JWT claims (not user-controlled headers/params) per multi-tenant.md
+2. (HARD GATE) All database queries include tenant filter — no query without tenant scope
+3. (HARD GATE) Tenant context middleware injects tenant into request context
+4. Pool Manager implementation for connection management
+5. Database schema isolation (schema-per-tenant or row-level filtering)
+6. Tenant-scoped cache keys (Redis keys include tenant prefix)
+7. No cross-tenant data leakage in list/search operations
+
+**Severity Ratings:**
+- CRITICAL: Queries without tenant filter — data leakage (HARD GATE violation per Ring standards)
+- CRITICAL: Tenant ID from user-controlled input (HARD GATE violation)
+- CRITICAL: Missing tenant context middleware (HARD GATE violation)
+- HIGH: No Pool Manager for connection management
+- HIGH: Cache keys not tenant-scoped
+- MEDIUM: Inconsistent tenant extraction across modules
+- LOW: Missing tenant validation in non-critical paths
+
+**Output Format:**
+```
+## Multi-Tenant Patterns Audit Findings
+
+### Summary
+- Multi-tenant detection: Yes/No/N/A
+- Tenant extraction: JWT / Header / Missing
+- Tenant middleware: Yes/No
+- Pool Manager: Yes/No
+- Queries with tenant filter: X/Y
+
+### Critical Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 34: License Headers Auditor
+
+```prompt
+**CONDITIONAL: Only run this auditor if LICENSE=true is set. If the project does not require license headers, skip this audit and report "N/A - License headers not required".**
+
+Audit license/copyright headers on source files for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: License header section from core.md section 7 (if exists), otherwise use organizational defaults}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/*.go` (check first 5 lines for copyright/license header)
+- Also check: `LICENSE`, `LICENSE.md`, `NOTICE` files in project root
+- Keywords: `Copyright`, `Licensed under`, `SPDX-License-Identifier`
+
+**Reference Implementation (GOOD):**
+```go
+// Copyright 2025 LerianStudio. All rights reserved.
+// Use of this source code is governed by the Apache License 2.0
+// that can be found in the LICENSE file.
+// SPDX-License-Identifier: Apache-2.0
+
+package domain
+
+import (
+    ...
+)
+```
+
+**Reference Implementation (BAD):**
+```go
+// BAD: No license header at all
+package domain
+
+import (
+    ...
+)
+
+// BAD: Outdated year
+// Copyright 2020 LerianStudio. All rights reserved.
+// (If current year is 2025+)
+
+// BAD: Inconsistent header format
+/* This file is part of Project X
+ * (c) Company Name
+ */
+package domain
+```
+
+**Check Against Ring Standards For:**
+1. LICENSE file exists in project root
+2. All .go files have copyright/license header comment in first 5 lines
+3. Consistent header format across all files
+4. Year in copyright is current or includes current year (e.g., "2024-2025")
+5. SPDX-License-Identifier present (preferred for machine-readability)
+6. License matches LICENSE file (e.g., Apache-2.0 header matches Apache-2.0 LICENSE)
+
+**Severity Ratings:**
+- HIGH: .go files missing license headers (if license headers are required)
+- MEDIUM: Inconsistent license header format across files
+- MEDIUM: License header does not match LICENSE file
+- LOW: Outdated year in copyright header
+- LOW: Missing SPDX identifier
+
+**Output Format:**
+```
+## License Headers Audit Findings
+
+### Summary
+- LICENSE file present: Yes/No (type: Apache-2.0/MIT/etc.)
+- Total .go files: X
+- Files with headers: Y/X
+- Consistent format: Yes/No
+- Year current: Yes/No
+
+### Files Missing Headers
+[file] - No license header found
+
+### Inconsistent Headers
+[file] - Header differs from standard format
+
+### Recommendations
+1. ...
+```
+```
+
 ---
 
 ## Consolidated Report Template
@@ -2281,7 +3341,18 @@ After all explorers complete, generate this report:
 
 **Date:** {YYYY-MM-DD}
 **Codebase:** {project-name}
-**Auditor:** Claude Code (Production Readiness Skill v2.0)
+**Auditor:** Claude Code (Production Readiness Skill v3.0)
+
+## Audit Configuration
+
+| Property | Value |
+|----------|-------|
+| **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
+| **Standards Loaded** | {list of loaded standards files} |
+| **Active Dimensions** | {32 base + N conditional} |
+| **Max Possible Score** | {dynamic_max} |
+| **Conditional: Multi-Tenant** | {Active / Inactive} |
+| **Conditional: License Headers** | {Active / Inactive} |
 
 ## Executive Summary
 
@@ -2294,7 +3365,10 @@ After all explorers complete, generate this report:
 | 3. Route Organization | X/10 | 0 | 0 | 0 | 0 |
 | 4. Bootstrap & Init | X/10 | 0 | 0 | 0 | 0 |
 | 5. Runtime Safety | X/10 | 0 | 0 | 0 | 0 |
-| **Category A Total** | **X/50** | **0** | **0** | **0** | **0** |
+| 28. Core Dependencies | X/10 | 0 | 0 | 0 | 0 |
+| 29. Naming Conventions | X/10 | 0 | 0 | 0 | 0 |
+| 30. Domain Modeling | X/10 | 0 | 0 | 0 | 0 |
+| **Category A Total** | **X/80** | **0** | **0** | **0** | **0** |
 
 ### Category B: Security & Access Control
 
@@ -2305,7 +3379,10 @@ After all explorers complete, generate this report:
 | 8. SQL Safety | X/10 | 0 | 0 | 0 | 0 |
 | 9. Input Validation | X/10 | 0 | 0 | 0 | 0 |
 | 10. Rate Limiting | X/10 | 0 | 0 | 0 | 0 |
-| **Category B Total** | **X/50** | **0** | **0** | **0** | **0** |
+| *33. Multi-Tenant** | *X/10* | *0* | *0* | *0* | *0* |
+| **Category B Total** | **X/50 (+10)** | **0** | **0** | **0** | **0** |
+
+*\*Dimension 33 included only if MULTITENANT=true*
 
 ### Category C: Operational Readiness
 
@@ -2330,7 +3407,8 @@ After all explorers complete, generate this report:
 | 21. Performance | X/10 | 0 | 0 | 0 | 0 |
 | 22. Concurrency | X/10 | 0 | 0 | 0 | 0 |
 | 23. Migrations | X/10 | 0 | 0 | 0 | 0 |
-| **Category D Total** | **X/80** | **0** | **0** | **0** | **0** |
+| 31. Linting & Quality | X/10 | 0 | 0 | 0 | 0 |
+| **Category D Total** | **X/90** | **0** | **0** | **0** | **0** |
 
 ### Category E: Infrastructure & Hardening
 
@@ -2338,15 +3416,19 @@ After all explorers complete, generate this report:
 |-----------|-------|----------|------|--------|-----|
 | 24. Container Security | X/10 | 0 | 0 | 0 | 0 |
 | 25. HTTP Hardening | X/10 | 0 | 0 | 0 | 0 |
-| 26. CI/CD & Licensing | X/10 | 0 | 0 | 0 | 0 |
+| 26. CI/CD Pipeline | X/10 | 0 | 0 | 0 | 0 |
 | 27. Async Reliability | X/10 | 0 | 0 | 0 | 0 |
-| **Category E Total** | **X/40** | **0** | **0** | **0** | **0** |
+| 32. Makefile & Tooling | X/10 | 0 | 0 | 0 | 0 |
+| *34. License Headers** | *X/10* | *0* | *0* | *0* | *0* |
+| **Category E Total** | **X/50 (+10)** | **0** | **0** | **0** | **0** |
+
+*\*Dimension 34 included only if LICENSE=true*
 
 ### Overall Score
 
 | Metric | Value |
 |--------|-------|
-| **Total Score** | **X/270** |
+| **Total Score** | **X/{dynamic_max}** |
 | **Percentage** | **X%** |
 | **Critical Issues** | **0** |
 | **High Issues** | **0** |
@@ -2357,12 +3439,53 @@ After all explorers complete, generate this report:
 
 | Score Range | Classification | Deployment Recommendation |
 |-------------|----------------|---------------------------|
-| 243-270 (90%+) | **Production Ready** | Clear to deploy |
-| 203-242 (75-89%) | **Ready with Minor Remediation** | Deploy after addressing HIGH issues |
-| 135-202 (50-74%) | **Needs Significant Work** | Do not deploy until CRITICAL/HIGH resolved |
-| Below 135 (<50%) | **Not Production Ready** | Major remediation required |
+| 90%+ | **Production Ready** | Clear to deploy |
+| 75-89% | **Ready with Minor Remediation** | Deploy after addressing HIGH issues |
+| 50-74% | **Needs Significant Work** | Do not deploy until CRITICAL/HIGH resolved |
+| Below 50% | **Not Production Ready** | Major remediation required |
 
 **Current Status:** {classification}
+
+## Standards Compliance Cross-Reference
+
+| Dimension | Standards Source | Section | Status |
+|-----------|----------------|---------|--------|
+| 1. Pagination | api-patterns.md | Pagination Patterns | {PASS/FAIL} |
+| 2. Error Framework | domain.md | Error Codes, Error Handling | {PASS/FAIL} |
+| 3. Route Organization | architecture.md | Architecture Patterns, Directory Structure | {PASS/FAIL} |
+| 4. Bootstrap | bootstrap.md | Bootstrap | {PASS/FAIL} |
+| 5. Runtime Safety | (generic) | — | {PASS/FAIL} |
+| 6. Auth Protection | security.md | Access Manager Integration | {PASS/FAIL} |
+| 7. IDOR Protection | (generic) | — | {PASS/FAIL} |
+| 8. SQL Safety | (generic) | — | {PASS/FAIL} |
+| 9. Input Validation | core.md | Frameworks & Libraries | {PASS/FAIL} |
+| 10. Rate Limiting | (generic) | — | {PASS/FAIL} |
+| 11. Telemetry | bootstrap.md + sre.md | Observability, OpenTelemetry | {PASS/FAIL} |
+| 12. Health Checks | sre.md | Health Checks | {PASS/FAIL} |
+| 13. Configuration | core.md | Configuration | {PASS/FAIL} |
+| 14. Connections | core.md | Core Dependency: lib-commons | {PASS/FAIL} |
+| 15. Logging | quality.md | Logging | {PASS/FAIL} |
+| 16. Idempotency | idempotency.md | Full module | {PASS/FAIL} |
+| 17. API Documentation | api-patterns.md | OpenAPI (Swaggo) | {PASS/FAIL} |
+| 18. Technical Debt | (generic) | — | {PASS/FAIL} |
+| 19. Testing | quality.md | Testing | {PASS/FAIL} |
+| 20. Dependencies | core.md | Frameworks & Libraries | {PASS/FAIL} |
+| 21. Performance | (generic) | — | {PASS/FAIL} |
+| 22. Concurrency | architecture.md | Concurrency Patterns | {PASS/FAIL} |
+| 23. Migrations | core.md | Database patterns | {PASS/FAIL} |
+| 24. Containers | devops.md | Containers | {PASS/FAIL} |
+| 25. HTTP Hardening | (generic) | — | {PASS/FAIL} |
+| 26. CI/CD | devops.md | CI section | {PASS/FAIL} |
+| 27. Async | messaging.md | RabbitMQ Worker Pattern | {PASS/FAIL} |
+| 28. Core Deps | core.md | lib-commons, Frameworks | {PASS/FAIL} |
+| 29. Naming | core.md + api-patterns.md | Naming conventions | {PASS/FAIL} |
+| 30. Domain Modeling | domain.md + domain-modeling.md | ToEntity, Always-Valid | {PASS/FAIL} |
+| 31. Linting | quality.md | Linting | {PASS/FAIL} |
+| 32. Makefile | devops.md | Makefile Standards | {PASS/FAIL} |
+| 33. Multi-Tenant* | multi-tenant.md | Full module | {PASS/FAIL} |
+| 34. License Headers* | core.md | License section | {PASS/FAIL} |
+
+*\*Conditional dimensions — only if detected*
 
 ## Critical Blockers (Must Fix Before Production)
 
@@ -2391,6 +3514,15 @@ After all explorers complete, generate this report:
 #### 5. Runtime Safety
 {Agent 5 output}
 
+#### 28. Core Dependencies & Frameworks
+{Agent 28 output}
+
+#### 29. Naming Conventions
+{Agent 29 output}
+
+#### 30. Domain Modeling
+{Agent 30 output}
+
 ### Category B: Security & Access Control
 
 #### 6. Auth Protection
@@ -2403,15 +3535,18 @@ After all explorers complete, generate this report:
 {Agent 8 output}
 
 #### 9. Input Validation
-{Agent 10 output}
+{Agent 9 output}
 
 #### 10. Rate Limiting
-{Agent 11 output}
+{Agent 10 output}
+
+#### 33. Multi-Tenant Patterns (if applicable)
+{Agent 33 output — or "Dimension not activated (no multi-tenant indicators detected)"}
 
 ### Category C: Operational Readiness
 
 #### 11. Telemetry & Observability
-{Agent 9 output}
+{Agent 11 output}
 
 #### 12. Health Checks
 {Agent 12 output}
@@ -2451,6 +3586,9 @@ After all explorers complete, generate this report:
 #### 23. Migration Safety
 {Agent 23 output}
 
+#### 31. Linting & Code Quality
+{Agent 31 output}
+
 ### Category E: Infrastructure & Hardening
 
 #### 24. Container Security
@@ -2459,16 +3597,23 @@ After all explorers complete, generate this report:
 #### 25. HTTP Hardening
 {Agent 25 output}
 
-#### 26. CI/CD & Licensing
+#### 26. CI/CD Pipeline
 {Agent 26 output}
 
 #### 27. Async Reliability
 {Agent 27 output}
 
+#### 32. Makefile & Dev Tooling
+{Agent 32 output}
+
+#### 34. License Headers (if applicable)
+{Agent 34 output — or "Dimension not activated (no LICENSE file detected)"}
+
 ## Recommended Remediation Order
 
 ### 1. Immediate (before any deployment)
 - {Critical security issues}
+- {Critical HARD GATE violations per Ring standards}
 - {Critical data integrity issues}
 - {Critical operational gaps}
 
@@ -2490,10 +3635,14 @@ After all explorers complete, generate this report:
 | Property | Value |
 |----------|-------|
 | Audit Duration | X minutes |
-| Explorers Launched | 27 |
+| Explorers Launched | {32 + conditional count} |
 | Files Examined | X |
 | Lines of Code | X |
-| Skill Version | 2.0 |
+| Skill Version | 3.0 |
+| Standards Source | Ring Development Standards (GitHub) |
+| Standards Files Loaded | {list} |
+| Stack Detected | {Go/TypeScript/Frontend/Mixed} |
+| Conditional Dimensions Active | {list or "None"} |
 ```
 
 ---
@@ -2504,16 +3653,16 @@ After all explorers complete, generate this report:
 
 | Score | Criteria |
 |-------|----------|
-| 10 | Exemplary - could be used as reference implementation |
-| 8-9 | Strong - minor improvements possible |
-| 6-7 | Adequate - meets basic requirements |
-| 4-5 | Concerning - multiple gaps identified |
-| 2-3 | Poor - significant remediation needed |
-| 0-1 | Critical - fundamentally broken or missing |
+| 10 | Exemplary - fully aligned with Ring standards, could serve as reference |
+| 8-9 | Strong - minor deviations from Ring standards |
+| 6-7 | Adequate - meets basic requirements but missing some Ring patterns |
+| 4-5 | Concerning - multiple gaps vs Ring standards |
+| 2-3 | Poor - significant non-compliance with Ring standards |
+| 0-1 | Critical - fundamentally misaligned or missing |
 
 ### Deductions Per Dimension
 
-- Each CRITICAL issue: -3 points
+- Each CRITICAL issue: -3 points (includes HARD GATE violations)
 - Each HIGH issue: -1.5 points
 - Each MEDIUM issue: -0.5 points
 - Each LOW issue: -0.25 points
@@ -2521,23 +3670,31 @@ After all explorers complete, generate this report:
 
 ### Category Weights
 
-| Category | Dimensions | Max Score |
-|----------|------------|-----------|
-| A: Code Structure | 5 | 50 |
-| B: Security | 5 | 50 |
-| C: Operations | 5 | 50 |
-| D: Quality | 8 | 80 |
-| E: Infrastructure | 4 | 40 |
-| **Total** | **27** | **270** |
+| Category | Dimensions | Always-Active | Max Score |
+|----------|------------|---------------|-----------|
+| A: Code Structure | 1-5, 28-30 | 8 | 80 |
+| B: Security | 6-10, (33) | 5 (+1 conditional) | 50 (+10) |
+| C: Operations | 11-15 | 5 | 50 |
+| D: Quality | 16-23, 31 | 9 | 90 |
+| E: Infrastructure | 24-27, 32, (34) | 5 (+1 conditional) | 50 (+10) |
+| **Total** | | **32 (+2 conditional)** | **320 (+20)** |
 
-### Overall Classification
+### Dynamic Max Calculation
+
+```
+dynamic_max = 320 + (MULTITENANT ? 10 : 0) + (LICENSE ? 10 : 0)
+```
+
+Possible values: 320, 330, or 340.
+
+### Overall Classification (Percentage-Based)
 
 | Score Range | Percentage | Classification |
 |-------------|------------|----------------|
-| 243-270 | 90%+ | Production Ready |
-| 203-242 | 75-89% | Ready with Minor Remediation |
-| 135-202 | 50-74% | Needs Significant Work |
-| 0-134 | <50% | Not Production Ready |
+| 90%+ of dynamic_max | 90%+ | Production Ready |
+| 75-89% of dynamic_max | 75-89% | Ready with Minor Remediation |
+| 50-74% of dynamic_max | 50-74% | Needs Significant Work |
+| Below 50% of dynamic_max | <50% | Not Production Ready |
 
 ---
 
@@ -2556,90 +3713,74 @@ When this skill is invoked, follow this exact protocol:
 ### Step 1: Initialize Todo List
 
 ```
-TodoWrite: Create todos for all 3 batches + consolidation
+TodoWrite: Create todos for stack detection, standards loading, all 4 batches + consolidation
 ```
 
-### Step 2: Launch Parallel Explorers (Batch 1)
+### Step 2: Detect Stack (Step 0)
 
-**CRITICAL**: Use a SINGLE response with 10 Task tool calls for Structure & Security dimensions.
+Use Glob and Grep to detect:
+- GO, TS_BACKEND, FRONTEND, DOCKER, MAKEFILE, LICENSE, MULTITENANT flags
 
-```
-// Batch 1: Agents 1-10
-Task(subagent_type="Explore", prompt="<Agent 1: Pagination Standards>")
-Task(subagent_type="Explore", prompt="<Agent 2: Error Framework>")
-Task(subagent_type="Explore", prompt="<Agent 3: Route Organization>")
-Task(subagent_type="Explore", prompt="<Agent 4: Bootstrap & Init>")
-Task(subagent_type="Explore", prompt="<Agent 5: Runtime Safety>")
-Task(subagent_type="Explore", prompt="<Agent 6: Auth Protection>")
-Task(subagent_type="Explore", prompt="<Agent 7: IDOR Protection>")
-Task(subagent_type="Explore", prompt="<Agent 8: SQL Safety>")
-Task(subagent_type="Explore", prompt="<Agent 9: Input Validation>")
-Task(subagent_type="Explore", prompt="<Agent 10: Rate Limiting>")
-```
+### Step 3: Load Standards (Step 0.5)
 
-### Step 3: Launch Parallel Explorers (Batch 2)
+Use WebFetch to load Ring standards based on detected stack. Store content for injection into explorer prompts.
 
-Launch next 10 agents for Operational & Quality dimensions:
+**If WebFetch fails for any module:** Note the failure and proceed with generic patterns for affected dimensions.
 
-```
-// Batch 2: Agents 11-20
-Task(subagent_type="Explore", prompt="<Agent 11: Telemetry & Observability>")
-Task(subagent_type="Explore", prompt="<Agent 12: Health Checks>")
-Task(subagent_type="Explore", prompt="<Agent 13: Configuration Management>")
-Task(subagent_type="Explore", prompt="<Agent 14: Connection Management>")
-Task(subagent_type="Explore", prompt="<Agent 15: Logging & PII Safety>")
-Task(subagent_type="Explore", prompt="<Agent 16: Idempotency>")
-Task(subagent_type="Explore", prompt="<Agent 17: API Documentation>")
-Task(subagent_type="Explore", prompt="<Agent 18: Technical Debt>")
-Task(subagent_type="Explore", prompt="<Agent 19: Testing Coverage>")
-Task(subagent_type="Explore", prompt="<Agent 20: Dependency Management>")
-```
+### Step 4: Initialize Report File
 
-### Step 4: Launch Parallel Explorers (Batch 3)
+Write the report header with Audit Configuration to `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md`
 
-Launch remaining 7 agents for Quality & Infrastructure dimensions:
+### Step 5: Launch Parallel Explorers (Batch 1)
 
-```
-// Batch 3: Agents 21-27
-Task(subagent_type="Explore", prompt="<Agent 21: Performance Patterns>")
-Task(subagent_type="Explore", prompt="<Agent 22: Concurrency Safety>")
-Task(subagent_type="Explore", prompt="<Agent 23: Migration Safety>")
-Task(subagent_type="Explore", prompt="<Agent 24: Container Security>")
-Task(subagent_type="Explore", prompt="<Agent 25: HTTP Hardening>")
-Task(subagent_type="Explore", prompt="<Agent 26: CI/CD & Licensing>")
-Task(subagent_type="Explore", prompt="<Agent 27: Async Reliability>")
-```
+**CRITICAL**: Use a SINGLE response with 10 Task tool calls for agents 1-10.
 
 Each Task call should include:
 - The full explorer prompt from the dimension
+- Injected Ring standards content between ---BEGIN STANDARDS--- / ---END STANDARDS--- markers
+- Detected stack information
 - Instruction to search the codebase thoroughly
-- Expected output format reminder
 
-### Step 5: Collect Results
+### Step 6: Launch Parallel Explorers (Batch 2)
 
-As each explorer completes, mark its todo as completed.
+Launch 10 agents (11-20) in a SINGLE response.
 
-### Step 6: Consolidate Report
+### Step 7: Launch Parallel Explorers (Batch 3)
 
-Once ALL 27 explorers complete:
+Launch 10 agents (21-30) in a SINGLE response.
+
+### Step 8: Launch Parallel Explorers (Batch 4)
+
+Launch agents 31-34 (conditionally for 33 and 34) in a SINGLE response.
+
+### Step 9: Collect Results
+
+As each explorer completes, mark its todo as completed and append to report.
+
+### Step 10: Consolidate Report
+
+Once ALL explorers complete:
 1. Calculate scores for each dimension (0-10 scale)
-2. Calculate category totals (A: /50, B: /50, C: /50, D: /80, E: /40)
-3. Calculate overall score (/270)
+2. Calculate category totals (A: /80, B: /50-60, C: /50, D: /90, E: /50-60)
+3. Calculate overall score (/{dynamic_max})
 4. Aggregate critical/high/medium/low counts
-5. Determine readiness classification
-6. Generate the consolidated report
+5. Determine readiness classification (percentage-based)
+6. Generate Standards Compliance Cross-Reference table
+7. Generate the consolidated report
 
-### Step 7: Write Report
+### Step 11: Write Report
 
 ```
-Write: docs/audits/production-readiness-{YYYY-MM-DD}.md
+Write: docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md
 ```
 
-### Step 8: Present Summary
+### Step 12: Present Summary
 
 Provide a verbal summary to the user including:
+- Detected stack and standards loaded
 - Overall score and classification
 - Number of critical/high issues
+- HARD GATE violations summary
 - Top 3 recommendations
 - Link to full report
 
@@ -2663,7 +3804,7 @@ Only audit specified modules.
 User: /production-readiness-audit --dimensions=security
 ```
 
-Run only security-related auditors (6, 7, 8).
+Run only security-related auditors (6, 7, 8, 9, 10, 33).
 
 ### Output Format
 
@@ -2673,6 +3814,14 @@ User: /production-readiness-audit --format=json
 
 Output structured JSON instead of markdown.
 
+### Standards Override
+
+```
+User: /production-readiness-audit --no-standards
+```
+
+Run without Ring standards injection (generic mode, equivalent to v2.0 behavior).
+
 ---
 
 ## Integration with CI/CD
@@ -2681,20 +3830,28 @@ This skill can be automated:
 
 1. Run audit on every release branch
 2. Block merges if CRITICAL issues exist
-3. Track debt trends over time
-4. Generate dashboards from JSON output
+3. Block merges if HARD GATE violations exist (Ring standards)
+4. Track debt trends over time
+5. Generate dashboards from JSON output
+6. Compare scores across audit runs to measure standards adoption
 
 ---
 
 ## Reference Patterns Source
 
-The reference implementations in this skill are derived from the Core two codebase, which serves as the organizational standard for:
+The reference implementations in this skill are derived from two sources:
 
+### Ring Development Standards (Primary - Source of Truth)
+Standards loaded at runtime via WebFetch from `dev-team/docs/standards/`:
+- **golang/*.md** — Go-specific standards (core, bootstrap, security, domain, API patterns, quality, architecture, messaging, domain-modeling, idempotency, multi-tenant)
+- **devops.md** — Container, Makefile, and infrastructure standards
+- **sre.md** — Observability and health check standards
+
+### Core two Codebase (Legacy Reference)
+Original reference implementations derived from the Core two codebase, which serves as the organizational standard for:
 - Hexagonal architecture per bounded context
 - lib-commons integration (telemetry, database, messaging)
 - lib-auth integration (JWT validation, tenant extraction)
-- pkg/assert and pkg/runtime usage patterns
-- GORM + raw SQL hybrid approach
 - Fiber HTTP framework conventions
 
-When auditing other projects, findings are compared against these established patterns
+When auditing projects, findings are compared against Ring standards as the authoritative reference. Core two patterns remain as supplementary examples.
