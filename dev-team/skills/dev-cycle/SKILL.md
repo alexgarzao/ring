@@ -93,7 +93,7 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 7 gates (Gate 0–5 with optional Gate 3.5 for integration testing): implementation → devops → ring:dev-sre → testing → review → validation. Tasks are loaded at initialization - no separate import gate.
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 7 gates (Gate 0–5 with optional Gate 3.5 for integration testing): implementation → devops → ring:sre → testing → review → validation. Tasks are loaded at initialization - no separate import gate.
 
 **Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 7 gates (Gate 0–5 with optional Gate 3.5)."
 
@@ -473,7 +473,7 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **all 7 gates** (implementation→devops→ring:dev-sre→testing→review→validation; Gate 3.5 optional when no external deps) before the next unit. Gate 3.5 may SKIP with documented reason.
+**Core Principle:** Each execution unit (task or subtask) passes through **all 7 gates** (implementation→devops→ring:sre→testing→review→validation; Gate 3.5 optional when no external deps) before the next unit. Gate 3.5 may SKIP with documented reason.
 
 **Flow:** Unit → Gate 0→1→2→3→3.5→4→5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
 
