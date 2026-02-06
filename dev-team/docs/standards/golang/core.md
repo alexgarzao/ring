@@ -1,6 +1,6 @@
 # Go Standards - Core Foundation
 
-> **Module:** core.md | **Sections:** §1-8 | **Parent:** [index.md](index.md)
+> **Module:** core.md | **Sections:** §1-9 | **Parent:** [index.md](index.md)
 
 This module covers the foundational requirements for all Go projects.
 

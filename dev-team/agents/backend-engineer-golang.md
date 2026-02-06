@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-06
 changelog:
-  - 1.6.0: Updated to 40 sections per standards-coverage-table.md; added explicit FOUR-FILE UPDATE RULE documentation for maintainers; references standards-coverage-table.md maintenance
+  - 1.6.0: Updated to 45 sections per standards-coverage-table.md; added explicit FOUR-FILE UPDATE RULE documentation for maintainers; references standards-coverage-table.md maintenance
   - 1.5.0: Added MANDATORY Post-Implementation Validation section - goimports + golangci-lint execution required
   - 1.4.0: Added HARD GATE requiring all sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.0: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -874,7 +874,7 @@ The Standards Compliance section exists to:
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md" for:**
-- Complete list of sections to check (40 sections)
+- Complete list of sections to check (45 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format
