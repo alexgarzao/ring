@@ -956,4 +956,3 @@ grep -rn "type.*Handler struct" internal/adapters/http/in --include="*.go" -A 10
 | "Public fields are easier to access" | Easier access = easier to corrupt. | **Use private fields + constructor** |
 
 ---
-

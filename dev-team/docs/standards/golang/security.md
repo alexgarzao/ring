@@ -621,11 +621,13 @@ logger.Infof("Service started on %s", cfg.ServerAddress)  // No secrets in this 
 | Postgres DSN | `postgres://user:pass@host/db` | `postgres://[^:]+:[^@]+@` |
 | MongoDB URI | `mongodb://user:pass@host` | `mongodb://[^:]+:[^@]+@` |
 | Redis URI | `redis://user:pass@host` | `redis://[^:]+:[^@]+@` |
-| API Keys | `sk_live_xxxxx`, `api_key=xxxxx` | `(sk_\|api[_-]?key)` |
+| API Keys | `sk_live_xxxxx`, `api_key=xxxxx` | `(sk_|api[_-]?key)` (use with `grep -E`) |
 | Bearer Tokens | `Authorization: Bearer xxx` | `Bearer\s+[A-Za-z0-9-_]+` |
 | AWS Credentials | `AKIA...`, `aws_secret_access_key` | `AKIA[A-Z0-9]{16}` |
 
 ### Detection Commands (MANDATORY)
+
+Use **extended regex** for the API Keys pattern: run `grep -E` with pattern `(sk_|api[_-]?key)`. For basic grep (no `-E`), escape alternation and quantifiers: `sk_\|api[_-]\?key`. Prefer `grep -E '(sk_|api[_-]?key)'` for clarity. See table above for the exact pattern and this section for which form to use.
 
 ```bash
 # MANDATORY: Run before every PR that touches config or logging

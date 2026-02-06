@@ -188,14 +188,15 @@ func TestIntegration_UserHandler_Create(t *testing.T) {
 ### Running Tests
 
 ```bash
-# Run only unit tests (default)
+# Run only unit tests (default; excludes files built with integration tag)
 go test ./...
 
-# Run only integration tests
+# Run only integration tests (files with //go:build integration)
 go test -tags=integration ./...
 
-# Run all tests
-go test -tags=integration ./...
+# Run all tests (unit + integration): same as above; -tags=integration includes
+# both unit tests and files built with the integration tag
+go test -tags=integration ./...   # runs unit tests plus integration-tagged tests
 ```
 
 ### Detection Command

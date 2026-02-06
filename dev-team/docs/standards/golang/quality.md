@@ -938,7 +938,7 @@ golangci-lint run --enable=mnd --disable-all ./...
 
 **Production Finding (HP-8):** Services start with invalid or missing configuration, causing runtime failures instead of fail-fast at startup.
 
-**⛔ HARD GATE:** All services MUST validate configuration at startup and panic if invalid. Silent failures are FORBIDDEN.
+**⛔ HARD GATE:** All services MUST validate configuration at startup and fail fast by returning an error if invalid. Silent failures and panic are FORBIDDEN.
 
 ### Why Startup Validation Is MANDATORY
 
@@ -1006,16 +1006,16 @@ func (c *Config) Validate() error {
     return nil
 }
 
-// InitServers MUST validate config and panic on failure
-func InitServers() *Service {
+// InitServers MUST validate config and return an error on failure (caller logs and exits non-zero)
+func InitServers() (*Service, error) {
     cfg := &Config{}
     if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
-        panic(fmt.Errorf("failed to load config: %w", err))
+        return nil, fmt.Errorf("failed to load config: %w", err)
     }
 
     // MANDATORY: Validate before any initialization
     if err := cfg.Validate(); err != nil {
-        panic(err)
+        return nil, err
     }
 
     // Continue with initialization only after validation passes
@@ -1023,6 +1023,20 @@ func InitServers() *Service {
     logger.Info("Configuration validated successfully")
 
     // ... rest of initialization
+    return &Service{...}, nil
+}
+```
+
+**Caller (e.g. main) MUST log and exit non-zero on error:**
+
+```go
+// cmd/server/main.go
+func main() {
+    svc, err := InitServers()
+    if err != nil {
+        log.Fatalf("startup failed: %v", err)  // or logger.Fatal; exit non-zero
+    }
+    // run svc...
 }
 ```
 
@@ -1037,23 +1051,22 @@ func InitServers() *Service {
     return &Service{cfg: cfg}
 }
 
-// ❌ FORBIDDEN: Validation that doesn't panic
+// ❌ FORBIDDEN: Validation that returns nil on invalid config (silent failure)
 func (c *Config) Validate() error {
     if c.DBHost == "" {
-        log.Printf("Warning: DB_HOST not set")  // WRONG: Should panic
+        log.Printf("Warning: DB_HOST not set")  // WRONG: Must return error
         return nil  // WRONG: Silent failure
     }
     return nil
 }
 
-// ❌ FORBIDDEN: Catching panic in caller
+// ❌ FORBIDDEN: Ignoring config error in caller (must log and exit non-zero)
 func main() {
-    defer func() {
-        if r := recover(); r != nil {
-            log.Printf("Recovered: %v", r)  // WRONG: Config panic should not be caught
-        }
-    }()
-    bootstrap.InitServers().Run()
+    svc, err := InitServers()
+    if err != nil {
+        return  // WRONG: Silent return - no log, no os.Exit(1). Use log.Fatalf or log.Printf + os.Exit(1).
+    }
+    svc.Run()
 }
 ```
 

@@ -12,7 +12,7 @@ This module covers RabbitMQ worker patterns for async message processing.
 |---|---------|-------------|
 | 1 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing with RabbitMQ |
 
-**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, **Exponential Backoff with Jitter (MANDATORY)**, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist.
+**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)**, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist.
 
 ---
 
@@ -226,6 +226,57 @@ func (mq *MultiQueueConsumer) handleWithRetry(ctx context.Context, body []byte) 
     }
 
     return fmt.Errorf("max retries exceeded: %w", lastErr)
+}
+```
+
+#### Error Classification (MANDATORY)
+
+`handleWithRetry` MUST use an `isRetryable(err error)` function to decide whether to retry or fail fast. Implement and use the following classification.
+
+**Non-retryable (return `false`):**
+
+| Category | Examples | Reason |
+|----------|----------|--------|
+| Context cancellation | `context.Canceled`, `context.DeadlineExceeded` | Retrying would ignore user/timeout intent |
+| Business / validation | `ErrInvalidInput`, `ErrDuplicateKey`, domain validation errors | Same input will fail again |
+| Authorization | Auth/permission errors | No point retrying without different credentials |
+
+**Retryable (return `true`):**
+
+| Category | Examples | Reason |
+|----------|----------|--------|
+| Transient network | `syscall.ECONNREFUSED`, `syscall.ETIMEDOUT`, `syscall.ECONNRESET` | Temporary connectivity issues |
+| Temporary downstream | Temporary 5xx responses, DB connection pool exhausted | May succeed on retry |
+| Unknown errors | Unclassified errors | Default to retry so transient issues can recover; use DLQ after max retries |
+
+**Required implementation:**
+
+```go
+// isRetryable classifies errors for handleWithRetry. Non-retryable errors fail fast; retryable errors use backoff.
+func isRetryable(err error) bool {
+    if err == nil {
+        return false
+    }
+    // Context cancellation: do not retry
+    if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+        return false
+    }
+    // Known non-retryable business/validation errors
+    if errors.Is(err, ErrInvalidInput) || errors.Is(err, ErrDuplicateKey) {
+        return false
+    }
+    // Add other sentinel business/auth errors your domain uses
+    // Transient network errors: retry
+    var errno syscall.Errno
+    if errors.As(err, &errno) {
+        switch errno {
+        case syscall.ECONNREFUSED, syscall.ETIMEDOUT, syscall.ECONNRESET:
+            return true
+        }
+    }
+    // Temporary 5xx / downstream unavailable: retry (if wrapped with 5xx or temporary marker)
+    // Default: unknown errors are retryable; DLQ handles repeated failures after MaxRetries
+    return true
 }
 ```
 
