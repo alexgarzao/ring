@@ -1,8 +1,20 @@
 # Go Standards - Quality
 
-> **Module:** quality.md | **Sections:** §14-16 | **Parent:** [index.md](index.md)
+> **Module:** quality.md | **Sections:** §18-22 | **Parent:** [index.md](index.md)
 
-This module covers testing, logging, and linting standards.
+This module covers testing, logging, linting, configuration validation, and container security standards.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Testing](#testing) | Table-driven tests, edge cases, benchmarks |
+| 2 | [Logging](#logging) | Structured logging with lib-commons |
+| 3 | [Linting](#linting) | Import ordering, magic numbers, golangci-lint |
+| 4 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
+| 5 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
 
 ---
 
@@ -831,6 +843,276 @@ golangci-lint run ./...
 # Run only magic number check
 golangci-lint run --enable=mnd --disable-all ./...
 ```
+
+---
+
+## Production Config Validation (MANDATORY)
+
+**Production Finding (HP-8):** Services start with invalid or missing configuration, causing runtime failures instead of fail-fast at startup.
+
+**⛔ HARD GATE:** All services MUST validate configuration at startup and panic if invalid. Silent failures are FORBIDDEN.
+
+### Why Startup Validation Is MANDATORY
+
+| Issue | Impact Without Validation |
+|-------|---------------------------|
+| Missing required field | Service starts but fails on first request |
+| Invalid format | Silent misbehavior (wrong DB, wrong endpoint) |
+| Wrong environment | Production config in dev, or vice versa |
+| Connection string typo | Service starts, fails on first DB call |
+
+### Validation Patterns (REQUIRED)
+
+```go
+// internal/bootstrap/config.go
+
+type Config struct {
+    // Required fields - MUST have validation
+    ServerAddress string `env:"SERVER_ADDRESS"`
+    DBHost        string `env:"DB_HOST"`
+    DBName        string `env:"DB_NAME"`
+    DBUser        string `env:"DB_USER"`
+    DBPassword    string `env:"DB_PASSWORD"`
+
+    // Optional with defaults
+    DBPort        string `env:"DB_PORT" default:"5432"`
+    LogLevel      string `env:"LOG_LEVEL" default:"info"`
+    MaxPoolSize   int    `env:"DB_MAX_POOL_SIZE" default:"50"`
+}
+
+// Validate checks all required fields and returns a detailed error
+func (c *Config) Validate() error {
+    var errs []string
+
+    // Required field validation
+    if c.ServerAddress == "" {
+        errs = append(errs, "SERVER_ADDRESS is required")
+    }
+    if c.DBHost == "" {
+        errs = append(errs, "DB_HOST is required")
+    }
+    if c.DBName == "" {
+        errs = append(errs, "DB_NAME is required")
+    }
+    if c.DBUser == "" {
+        errs = append(errs, "DB_USER is required")
+    }
+    if c.DBPassword == "" {
+        errs = append(errs, "DB_PASSWORD is required")
+    }
+
+    // Format validation
+    if c.MaxPoolSize < 1 || c.MaxPoolSize > 500 {
+        errs = append(errs, "DB_MAX_POOL_SIZE must be between 1 and 500")
+    }
+
+    validLogLevels := map[string]bool{"debug": true, "info": true, "warn": true, "error": true}
+    if !validLogLevels[c.LogLevel] {
+        errs = append(errs, "LOG_LEVEL must be one of: debug, info, warn, error")
+    }
+
+    if len(errs) > 0 {
+        return fmt.Errorf("configuration validation failed:\n- %s", strings.Join(errs, "\n- "))
+    }
+
+    return nil
+}
+
+// InitServers MUST validate config and panic on failure
+func InitServers() *Service {
+    cfg := &Config{}
+    if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        panic(fmt.Errorf("failed to load config: %w", err))
+    }
+
+    // MANDATORY: Validate before any initialization
+    if err := cfg.Validate(); err != nil {
+        panic(err)
+    }
+
+    // Continue with initialization only after validation passes
+    logger := libZap.InitializeLogger()
+    logger.Info("Configuration validated successfully")
+
+    // ... rest of initialization
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: No validation at startup
+func InitServers() *Service {
+    cfg := &Config{}
+    libCommons.SetConfigFromEnvVars(cfg)
+    // WRONG: No validation - silent failures later
+    return &Service{cfg: cfg}
+}
+
+// ❌ FORBIDDEN: Validation that doesn't panic
+func (c *Config) Validate() error {
+    if c.DBHost == "" {
+        log.Printf("Warning: DB_HOST not set")  // WRONG: Should panic
+        return nil  // WRONG: Silent failure
+    }
+    return nil
+}
+
+// ❌ FORBIDDEN: Catching panic in caller
+func main() {
+    defer func() {
+        if r := recover(); r != nil {
+            log.Printf("Recovered: %v", r)  // WRONG: Config panic should not be caught
+        }
+    }()
+    bootstrap.InitServers().Run()
+}
+```
+
+### Detection Commands
+
+```bash
+# Find config validation patterns
+grep -rn "func.*Validate\(\)" internal/bootstrap --include="*.go"
+
+# Check if InitServers has validation
+grep -A 20 "func InitServers" internal/bootstrap/config.go | grep -i "validate"
+
+# Expected: Validation exists and is called before other init
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Service will fail fast anyway" | Fails on first request, not startup. Incident already in progress. | **Validate at startup** |
+| "Defaults are safe" | Defaults can be insecure (debug mode in prod). Explicit > implicit. | **Validate explicitly** |
+| "Operator will notice logs" | Operators are busy. Startup panic is unmissable. | **Panic on invalid config** |
+| "Let Kubernetes restart it" | Restart loop wastes resources. Fail fast, once. | **Panic with clear message** |
+| "We have monitoring" | Monitoring catches symptoms, not causes. | **Validate at source** |
+
+---
+
+## Container Security (⚠️ CONDITIONAL)
+
+**⛔ CONDITIONAL:** This section applies ONLY if the service has a Dockerfile. If no Dockerfile exists, mark this section as N/A.
+
+**Detection Question:**
+
+```bash
+# Check if Dockerfile exists
+ls -la Dockerfile
+
+# If file exists: Apply this section
+# If file does not exist: Mark N/A
+```
+
+**Production Finding (P2-6):** Containers running as root and using untagged images (`latest`) cause security vulnerabilities and deployment inconsistencies.
+
+### Non-Root User (MANDATORY if Dockerfile exists)
+
+**⛔ HARD GATE:** Containers MUST NOT run as root. The `USER` directive is REQUIRED in all Dockerfiles.
+
+#### Why Non-Root Is Required
+
+| Risk | Running as Root | Running as Non-Root |
+|------|-----------------|---------------------|
+| Container escape | Full host access | Limited access |
+| File system access | Can write anywhere | Only permitted paths |
+| Kubernetes policy | PSP/PSA violations | Compliant |
+| Vulnerability exploitation | Elevated privileges | Contained damage |
+
+#### Required Pattern
+
+```dockerfile
+# ✅ CORRECT: Multi-stage build with non-root user
+FROM golang:1.24-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server ./cmd/server
+
+FROM alpine:3.19.1
+# Security: Create non-root user
+RUN addgroup -g 1000 appgroup && \
+    adduser -u 1000 -G appgroup -D appuser
+
+WORKDIR /app
+COPY --from=builder /app/server .
+
+# Security: Switch to non-root user
+USER appuser:appgroup
+
+EXPOSE 8080
+CMD ["./server"]
+```
+
+#### FORBIDDEN Pattern
+
+```dockerfile
+# ❌ FORBIDDEN: No USER directive (runs as root)
+FROM golang:1.24-alpine
+WORKDIR /app
+COPY . .
+RUN go build -o server ./cmd/server
+EXPOSE 8080
+CMD ["./server"]
+
+# ❌ FORBIDDEN: USER root
+FROM alpine:3.19
+USER root
+CMD ["./server"]
+```
+
+### Image Pinning (MANDATORY)
+
+**⛔ HARD GATE:** All base images MUST use specific version tags. The `:latest` tag is FORBIDDEN.
+
+| Tag Type | Example | Status |
+|----------|---------|--------|
+| Exact version | `golang:1.24.0-alpine3.19` | ✅ REQUIRED |
+| Minor version | `golang:1.24-alpine` | ⚠️ Acceptable |
+| Latest | `golang:latest` | ❌ FORBIDDEN |
+| None (implicit latest) | `FROM golang` | ❌ FORBIDDEN |
+
+#### Why Pinning Is Required
+
+| Problem with :latest | Impact |
+|---------------------|--------|
+| Non-reproducible builds | Works today, breaks tomorrow |
+| Security scan bypass | Different image in CI vs prod |
+| Debugging nightmare | "It worked on my machine" |
+| CVE tracking impossible | Which version has the vulnerability? |
+
+#### Detection Commands
+
+```bash
+# Find non-root user in Dockerfile
+grep -n "^USER" Dockerfile
+
+# Expected: USER directive exists and is NOT root
+
+# Find image tags
+grep -n "^FROM" Dockerfile
+
+# Expected: All FROM statements have explicit version tags (not :latest)
+
+# Check for :latest tag
+grep -n "FROM.*:latest\|FROM [a-z]*$" Dockerfile
+
+# Expected: 0 matches
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We trust our images" | Trust but verify. Least privilege always. | **Add USER directive** |
+| ":latest is convenient" | Convenience causes incidents. Pin versions. | **Use specific tags** |
+| "Kubernetes securityContext handles it" | Defense in depth. Image should be secure too. | **Add USER in Dockerfile** |
+| "We rebuild often" | Rebuild with same vulnerability. Pin to known-good. | **Pin to specific version** |
+| "It's just internal" | Internal ≠ exempt from security. | **Follow all security patterns** |
 
 ---
 
