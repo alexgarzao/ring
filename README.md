@@ -273,6 +273,9 @@ No "should work" → Only "does work" with proof
 - `ring:exploring-codebase` - Two-phase codebase exploration
 - `ring:doubt-triggered-questions` - Decision hierarchy for asking vs proceeding
 
+**Audit & Readiness (1):**
+- `ring:production-readiness-audit` - 27-dimension production readiness audit; runs 10 explorers per batch, appends incrementally to a single report; output: scored report (0–270) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
+
 ### Developer Skills (ring-dev-team plugin - 9 skills)
 
 **Code Development:**

@@ -139,7 +139,7 @@ Commands are invoked directly: `/command-name`.
 
 Skills (65) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
-Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, verification-before-completion, etc.
+Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (27-dimension audit, 10 explorers per batch, incremental report 0–270; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
 ### Skill Selection Criteria
 
