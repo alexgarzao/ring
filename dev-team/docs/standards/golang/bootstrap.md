@@ -1169,7 +1169,7 @@ grep -rn '"/health"' internal/adapters/http/in/routes*.go
 
 ## Rate Limiting (⚠️ CONDITIONAL)
 
-**⛔ CONDITIONAL:** This section applies ONLY if rate limiting is implemented at the service level. If rate limiting is handled by API Gateway or Istio, mark this section as N/A.
+**⛔ CONDITIONAL:** This section applies ONLY if rate limiting is implemented at the service-level. If rate limiting is handled by API Gateway or Istio, mark this section as N/A.
 
 **Detection Question:** Does this service implement rate limiting directly (not via infrastructure)?
 

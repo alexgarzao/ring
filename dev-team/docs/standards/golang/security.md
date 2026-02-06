@@ -675,9 +675,12 @@ for _, env := range os.Environ() {
 logger.Infof("Environment: %s, Server: %s", os.Getenv("ENV_NAME"), os.Getenv("SERVER_ADDRESS"))
 
 // ✅ CORRECT: Use structured config loading (lib-commons)
-cfg := &Config{}
-if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
-    panic(err)  // Never logs the env vars
+func loadConfig() (*Config, error) {
+    cfg := &Config{}
+    if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        return nil, fmt.Errorf("load config: %w", err)
+    }
+    return cfg, nil
 }
 ```
 
