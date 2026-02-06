@@ -286,7 +286,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 37 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)** |
 | 38 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **Constructor validation (MANDATORY)**, invariant protection, ToEntity/FromEntity integration, detection commands |
 | 39 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 40 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
+| 40 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **Tenant Isolation Verification (⚠️ CONDITIONAL)**: IDOR prevention, detection commands |
 
 **Module Loading Guide:**
 

@@ -679,7 +679,125 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized |
 | Connection error | 500 | `CONNECTION_ERROR` | Failed to get tenant connection |
 
-### Anti-Rationalization Table
+### Tenant Isolation Verification (⚠️ CONDITIONAL)
+
+**Production Finding (CB-3):** Multi-tenant applications MUST verify tenant isolation to prevent Insecure Direct Object Reference (IDOR) vulnerabilities.
+
+**⛔ CONDITIONAL:** This section applies ONLY if `MULTI_TENANT_ENABLED=true`. If single-tenant, mark as N/A.
+
+**Detection Question:** Is this a multi-tenant service?
+
+```bash
+# Check if multi-tenant mode is enabled
+grep -rn "MULTI_TENANT_ENABLED\|MultiTenantEnabled" internal/ --include="*.go"
+
+# If 0 matches OR always set to false: Mark N/A
+# If found AND can be true: Apply this section
+```
+
+#### Why Tenant Isolation Verification Is MANDATORY
+
+| Attack | Without Verification | With Verification |
+|--------|----------------------|-------------------|
+| IDOR (Insecure Direct Object Reference) | User from Tenant A accesses Tenant B data | Request rejected |
+| Data exfiltration | Cross-tenant data leakage | Isolated by design |
+| Privilege escalation | Admin in Tenant A becomes admin in Tenant B | Scoped to tenant |
+
+#### Tenant Verification Pattern (REQUIRED)
+
+Every repository operation that fetches data MUST verify the resource belongs to the requesting tenant.
+
+```go
+// internal/adapters/postgres/user_repository.go
+
+func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "repository.user.get_by_id")
+    defer span.End()
+
+    // Get tenant ID from context
+    tenantID := poolmanager.GetTenantID(ctx)
+    if tenantID == "" {
+        libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Missing tenant", ErrTenantRequired)
+        return nil, ErrTenantRequired
+    }
+
+    db, err := poolmanager.GetPostgresForTenant(ctx)
+    if err != nil {
+        return nil, err
+    }
+
+    // ✅ CORRECT: Query includes tenant_id in WHERE clause
+    query := `
+        SELECT id, name, email, tenant_id, created_at
+        FROM users
+        WHERE id = $1 AND tenant_id = $2
+    `
+
+    var user User
+    err = db.QueryRowContext(ctx, query, id, tenantID).Scan(
+        &user.ID, &user.Name, &user.Email, &user.TenantID, &user.CreatedAt,
+    )
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, ErrNotFound  // NOT ErrForbidden - don't reveal existence
+        }
+        return nil, err
+    }
+
+    return &user, nil
+}
+```
+
+#### FORBIDDEN Patterns (IDOR Vulnerabilities)
+
+```go
+// ❌ FORBIDDEN: Query without tenant verification
+query := `SELECT * FROM users WHERE id = $1`  // WRONG: No tenant_id check
+row := db.QueryRowContext(ctx, query, id)
+
+// ❌ FORBIDDEN: Post-query tenant check (IDOR vulnerability)
+user, err := r.GetByID(ctx, id)
+if user.TenantID != tenantID {  // WRONG: Data already fetched = leaked
+    return nil, ErrForbidden
+}
+
+// ❌ FORBIDDEN: Revealing resource existence to wrong tenant
+if user.TenantID != tenantID {
+    return nil, ErrForbidden  // WRONG: Reveals the resource exists
+}
+// ✅ CORRECT: Return ErrNotFound regardless of reason
+```
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR in multi-tenant services
+# Find queries without tenant_id in WHERE clause
+grep -rn "SELECT.*FROM.*WHERE" internal/adapters/postgres --include="*.go" | \
+  grep -v "tenant_id" | grep -v "_test.go"
+
+# Expected: All queries should include tenant_id (or have documented exception)
+# If matches found: Review each - must be public data or explicitly documented
+
+# Find post-query tenant checks (potential IDOR)
+grep -rn "TenantID.*!=" internal/ --include="*.go" | grep -v "_test.go"
+
+# Review each match - should be in validation, not post-fetch
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Database is per-tenant anyway" | Database-per-tenant doesn't prevent IDOR in shared tables. | **Add tenant_id to all queries** |
+| "Only admins access this endpoint" | Admins can be in wrong tenant. Verify anyway. | **Add tenant_id to all queries** |
+| "Post-query check is the same" | Post-query reveals data was fetched. Information leak. | **Filter in WHERE clause** |
+| "We trust authenticated users" | Authentication != Authorization. Tenant scope is authorization. | **Add tenant_id to all queries** |
+| "It's just metadata" | Metadata can reveal business information. | **Add tenant_id to all queries** |
+
+### Anti-Rationalization Table (General)
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
