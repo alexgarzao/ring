@@ -2,7 +2,7 @@
 name: ring:dev-cycle
 description: |
   Main orchestrator for the 6-gate development cycle system. Loads tasks/subtasks
-  from PM team output and executes through implementation → devops → SRE → testing → review → validation
+  from PM team output and executes through implementation → devops → ring:dev-sre → testing → review → validation
   gates (with optional Gate 3.5 for integration testing when dependencies exist), with state persistence and metrics collection.
 
 trigger: |
@@ -93,9 +93,9 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 6 quality gates: implementation → devops → SRE → testing → review → validation (Gate 0–5; optional Gate 3.5 for integration testing when the task has external dependencies). Tasks are loaded at initialization - no separate import gate.
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 7 gates (Gate 0–5 with optional Gate 3.5 for integration testing): implementation → devops → ring:dev-sre → testing → review → validation. Tasks are loaded at initialization - no separate import gate.
 
-**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 6 gates."
+**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 7 gates (Gate 0–5 with optional Gate 3.5)."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -311,7 +311,7 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 ### Cannot Be Overridden
 
 <cannot_skip>
-- All 6 gates must execute - Each gate catches different issues
+- All 7 gates must execute - Each gate catches different issues
 - Gates execute in order (0→1→2→3→3.5→4→5) - Dependencies exist between gates
 - Gate 3.5 may SKIP with documented reason - Only if no external dependencies
 - Gate 4 requires all 3 reviewers - Different review perspectives are complementary
@@ -454,7 +454,7 @@ Day 4: Production incident from Day 1 code
 |------|-------|---------|-------|
 | 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain |
 | 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer |
-| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre |
+| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:dev-sre |
 | 3 | ring:dev-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) |
 | 3.5 | ring:dev-integration-testing | Integration tests for external dependencies | ring:qa-analyst (test_mode: integration) |
 | 4 | ring:requesting-code-review | Parallel code review | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer (3x parallel) |
@@ -471,14 +471,14 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **all 6 gates** (implementation→devops→SRE→testing→review→validation; Gate 3.5 optional when no external deps) before the next unit. Gate 3.5 may SKIP with documented reason.
+**Core Principle:** Each execution unit (task or subtask) passes through **all 7 gates** (implementation→devops→ring:dev-sre→testing→review→validation; Gate 3.5 optional when no external deps) before the next unit. Gate 3.5 may SKIP with documented reason.
 
 **Flow:** Unit → Gate 0→1→2→3→3.5→4→5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
 
 | Scenario | Execution Unit | Gates Per Unit |
 |----------|----------------|----------------|
-| Task without subtasks | Task itself | 6 gates (Gate 3.5 conditional) |
-| Task with subtasks | Each subtask | 6 gates per subtask (Gate 3.5 conditional) |
+| Task without subtasks | Task itself | 7 gates (Gate 3.5 conditional) |
+| Task with subtasks | Each subtask | 7 gates per subtask (Gate 3.5 conditional) |
 
 ## Commit Timing
 

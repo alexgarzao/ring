@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-06
 changelog:
-  - 1.6.0: Updated to 40 sections per standards-coverage-table.md; FOUR-FILE UPDATE RULE explicitly includes standards-coverage-table.md
+  - 1.6.0: Updated to 40 sections per standards-coverage-table.md; added explicit FOUR-FILE UPDATE RULE documentation for maintainers; references standards-coverage-table.md maintenance
   - 1.5.0: Added MANDATORY Post-Implementation Validation section - goimports + golangci-lint execution required
   - 1.4.0: Added HARD GATE requiring all sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.0: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
