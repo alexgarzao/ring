@@ -273,7 +273,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 24 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
 | 25 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
 | 26 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
-| 27 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, magic numbers (mnd), golangci-lint |
+| 27 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, magic numbers (mnd) |
 | 28 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
 | 29 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
 | 30 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
