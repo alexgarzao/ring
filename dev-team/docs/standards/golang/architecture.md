@@ -169,6 +169,7 @@ package recovery
 
 import (
     "context"
+    "fmt"
     "runtime/debug"
 
     libCommons "github.com/LerianStudio/lib-commons/v2/commons"

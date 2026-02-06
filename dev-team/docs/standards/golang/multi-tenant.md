@@ -774,17 +774,26 @@ if user.TenantID != tenantID {
 
 ```bash
 # MANDATORY: Run before every PR in multi-tenant services
-# Find queries without tenant_id in WHERE clause
+# Find queries without tenant_id in WHERE clause (single-line SELECT...FROM)
 grep -rn "SELECT.*FROM.*WHERE" internal/adapters/postgres --include="*.go" | \
   grep -v "tenant_id" | grep -v "_test.go"
 
+# Find SELECTs that may lack WHERE (review multi-line queries)
+grep -rn "SELECT.*FROM" internal/adapters/postgres --include="*.go" | grep -v "WHERE" | grep -v "_test.go"
+
+# Capture multi-line SQL: call sites that may split queries across lines
+grep -rn "QueryRowContext\|QueryContext" internal/ --include="*.go" | grep -v "_test.go"
+# Review each match - ensure query text (literal or variable) includes tenant_id / WHERE
+
+# JOIN tenant filter: ensure tenant filtering in JOINs is present where needed
+grep -rn "JOIN.*tenant_id\|tenant_id.*=" internal/adapters/postgres --include="*.go" | grep -v "_test.go"
+
+# Find post-query tenant checks (potential IDOR) and .TenantID comparisons
+grep -rn "TenantID.*!=\|\.TenantID\s*==" internal/ --include="*.go" | grep -v "_test.go"
+
 # Expected: All queries should include tenant_id (or have documented exception)
 # If matches found: Review each - must be public data or explicitly documented
-
-# Find post-query tenant checks (potential IDOR)
-grep -rn "TenantID.*!=" internal/ --include="*.go" | grep -v "_test.go"
-
-# Review each match - should be in validation, not post-fetch
+# Review each post-fetch match - should be in validation, not post-fetch
 ```
 
 #### Anti-Rationalization Table

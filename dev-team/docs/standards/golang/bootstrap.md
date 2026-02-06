@@ -1069,13 +1069,16 @@ _ = app.Shutdown()  // WRONG: Errors must be logged
 
 ### Implementation Pattern (REQUIRED)
 
+**MANDATORY:** Use libHTTP response wrappers. Direct `c.JSON` / `c.Status(...).JSON` are FORBIDDEN (see table above).
+
 ```go
 // internal/adapters/http/in/routes.go
+// Ensure libHTTP is imported: libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"
 
 // Health check - always returns 200 if process is alive
 // Used by Kubernetes liveness probe
 f.Get("/health", func(c *fiber.Ctx) error {
-    return c.JSON(fiber.Map{"status": "ok"})
+    return libHTTP.OK(c, fiber.Map{"status": "ok"})
 })
 
 // Readiness check - returns 200 only if all dependencies are ready
@@ -1085,39 +1088,29 @@ f.Get("/ready", func(c *fiber.Ctx) error {
 
     // Check PostgreSQL
     if err := postgresConn.PingContext(ctx); err != nil {
-        return c.Status(503).JSON(fiber.Map{
-            "status": "not_ready",
-            "error":  "postgres: " + err.Error(),
-        })
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "postgres: "+err.Error())
     }
 
     // Check MongoDB (if used)
     if err := mongoConn.Ping(ctx, nil); err != nil {
-        return c.Status(503).JSON(fiber.Map{
-            "status": "not_ready",
-            "error":  "mongodb: " + err.Error(),
-        })
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "mongodb: "+err.Error())
     }
 
     // Check Redis (if used)
     if _, err := redisClient.Ping(ctx).Result(); err != nil {
-        return c.Status(503).JSON(fiber.Map{
-            "status": "not_ready",
-            "error":  "redis: " + err.Error(),
-        })
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "redis: "+err.Error())
     }
 
     // Check RabbitMQ (if used)
     if !rabbitConn.IsConnected() {
-        return c.Status(503).JSON(fiber.Map{
-            "status": "not_ready",
-            "error":  "rabbitmq: connection lost",
-        })
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "rabbitmq: connection lost")
     }
 
-    return c.JSON(fiber.Map{"status": "ready"})
+    return libHTTP.OK(c, fiber.Map{"status": "ready"})
 })
 ```
+
+If the project's libHTTP does not provide `ServiceUnavailable`, use the project's equivalent wrapper that returns 503 with the same error payload (e.g. a custom helper or domain error mapped to 503 in the error handler).
 
 ### Kubernetes Configuration (REQUIRED)
 
@@ -1208,12 +1201,12 @@ package middleware
 
 import (
     "context"
-    "fmt"
     "strconv"
     "time"
 
     "github.com/gofiber/fiber/v2"
     "github.com/redis/go-redis/v9"
+    libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"
 )
 
 type RateLimiter struct {
@@ -1259,10 +1252,7 @@ func (r *RateLimiter) Middleware() fiber.Handler {
             c.Set("X-RateLimit-Remaining", "0")
             c.Set("X-RateLimit-Reset", strconv.FormatInt(time.Now().Add(ttl).Unix(), 10))
 
-            return c.Status(429).JSON(fiber.Map{
-                "error": "rate limit exceeded",
-                "retry_after": int(ttl.Seconds()),
-            })
+            return libHTTP.TooManyRequests(c, "RATE_LIMIT_EXCEEDED", "Too Many Requests", "rate limit exceeded")
         }
 
         // Set rate limit headers
