@@ -191,7 +191,7 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 
 ### Validator Migration: v9 to v10 (MANDATORY)
 
-**Production Finding (HP-1):** Projects using `go-playground/validator/v9` have unmaintained dependencies with known security issues.
+Projects using `go-playground/validator/v9` have unmaintained dependencies with known security issues.
 
 **⛔ HARD GATE:** All projects MUST use `validator/v10`. Version v9 is FORBIDDEN and MUST be migrated.
 
@@ -967,17 +967,13 @@ done
 
 ## MongoDB Patterns (MANDATORY)
 
-**Production Findings:** Audit found 4 MongoDB-related issues:
-- HP-5: 2 MongoDB $regex injection vectors
-- P2-4: MongoDB MaxPoolSize not configured in manager
-- P3-2: Non-blocking MongoDB index creation not used
-- P3-6: Deprecated SetBackground calls in index creation
+Common MongoDB issues include $regex injection vectors, unconfigured MaxPoolSize, blocking index creation, and deprecated SetBackground calls.
 
 **⛔ HARD GATE:** All MongoDB operations MUST follow these patterns to prevent injection, ensure performance, and avoid deprecated APIs.
 
 ### Injection Prevention (CRITICAL)
 
-**Production Finding (HP-5):** `$regex` operators with unvalidated user input allow NoSQL injection.
+Using `$regex` operators with unvalidated user input allows NoSQL injection attacks.
 
 **⛔ FORBIDDEN: Unescaped $regex with User Input**
 
@@ -1032,7 +1028,7 @@ grep -rn '\$regex' internal/adapters/mongodb --include="*.go"
 
 ### Connection Pooling (MANDATORY)
 
-**Production Finding (P2-4):** MongoDB connection without MaxPoolSize causes connection exhaustion under load.
+MongoDB connections without MaxPoolSize configuration cause connection exhaustion under load.
 
 **⛔ FORBIDDEN: Default Pool Configuration**
 
@@ -1085,7 +1081,7 @@ grep -rn "mongo.Connect\|SetMaxPoolSize\|MaxPoolSize" internal/bootstrap --inclu
 
 ### Index Management (MANDATORY)
 
-**Production Finding (P3-2, P3-6):** Blocking index creation and deprecated SetBackground calls.
+Blocking index creation and deprecated SetBackground calls cause production issues.
 
 **⛔ FORBIDDEN: Blocking Index Creation and Deprecated APIs**
 

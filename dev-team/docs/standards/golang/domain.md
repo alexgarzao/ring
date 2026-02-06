@@ -397,8 +397,6 @@ func main() {
 
 ### panic() Detection Checklist (MANDATORY)
 
-**Production Finding:** Audit found 21 panic() calls in business logic. All were violations.
-
 **⛔ HARD GATE:** Zero panic() calls allowed in `internal/` and `pkg/` directories (except test files).
 
 | panic() Type | Where Found | Verdict | Action |
@@ -444,8 +442,6 @@ func parseURL(raw string) (*url.URL, error) {
 ```
 
 ### log.Fatal() Location Rules (MANDATORY)
-
-**Production Finding:** Audit found 5 log.Fatal() calls outside main(). All were violations.
 
 **⛔ HARD GATE:** `log.Fatal()` and `os.Exit()` are ONLY allowed in `main()` or immediate bootstrap failure.
 

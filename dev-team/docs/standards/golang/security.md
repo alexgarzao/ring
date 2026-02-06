@@ -551,9 +551,7 @@ For local development without license validation, you can omit the license clien
 
 ## Secret Redaction Patterns (MANDATORY)
 
-**Production Finding:** Audit found RabbitMQ credentials logged to stdout, exposing AMQP connection strings with usernames and passwords in CloudWatch logs.
-
-**⛔ HARD GATE:** Credentials, connection strings, API keys, and tokens MUST NOT appear in logs.
+**⛔ HARD GATE:** Credentials, connection strings, API keys, and tokens MUST NOT appear in logs. Exposing AMQP, database DSNs, or API credentials in logs creates security vulnerabilities.
 
 ### FORBIDDEN Patterns (CRITICAL)
 

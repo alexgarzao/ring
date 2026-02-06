@@ -125,10 +125,6 @@ func ReconstructRule(id uuid.UUID, name, expression string, createdAt time.Time)
 
 ### Constructor Validation Patterns (MANDATORY)
 
-**Production Findings:**
-- HP-7: Models lack constructors/mapping
-- P2-1: Domain model constructors and ToEntity/FromEntity
-
 **⛔ HARD GATE:** All domain entities MUST have validated constructors. Public struct initialization is FORBIDDEN.
 
 #### Constructor Naming Convention

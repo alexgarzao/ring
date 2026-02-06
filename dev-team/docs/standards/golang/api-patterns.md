@@ -481,7 +481,7 @@ Use when: Client needs total count for pagination UI (showing "Page 1 of 10")
 
 ## HTTP Status Code Consistency (MANDATORY)
 
-**Production Finding (P3-3):** Swagger annotations show inconsistent response codes - using 200 OK for resource creation instead of 201 Created.
+Swagger annotations with inconsistent response codes (using 200 OK for resource creation instead of 201 Created) break API contracts and client expectations.
 
 **⛔ HARD GATE:** HTTP status codes MUST match the operation semantics. Using incorrect status codes breaks API contracts and client expectations.
 
@@ -823,7 +823,7 @@ make generate-docs && git diff --exit-code api/
 
 ## Handler Constructor Pattern (MANDATORY)
 
-**Production Finding (P3-4):** Handlers with implicit dependencies make testing difficult and hide coupling. Direct struct initialization bypasses validation.
+Handlers with implicit dependencies make testing difficult and hide coupling. Direct struct initialization bypasses validation.
 
 **⛔ HARD GATE:** All HTTP handlers MUST use constructor functions for initialization. Direct struct initialization is FORBIDDEN.
 

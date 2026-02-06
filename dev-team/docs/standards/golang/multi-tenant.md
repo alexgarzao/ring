@@ -681,7 +681,7 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 
 ### Tenant Isolation Verification (⚠️ CONDITIONAL)
 
-**Production Finding (CB-3):** Multi-tenant applications MUST verify tenant isolation to prevent Insecure Direct Object Reference (IDOR) vulnerabilities.
+Multi-tenant applications MUST verify tenant isolation to prevent Insecure Direct Object Reference (IDOR) vulnerabilities.
 
 **⛔ CONDITIONAL:** This section applies ONLY if `MULTI_TENANT_ENABLED=true`. If single-tenant, mark as N/A.
 

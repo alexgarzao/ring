@@ -216,7 +216,7 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 
 ### Span Naming Conventions (MANDATORY)
 
-**Production Finding (P3-5):** Inconsistent span names make distributed tracing difficult to navigate. Non-standard naming creates fragmented dashboards and complicates debugging.
+Inconsistent span names make distributed tracing difficult to navigate. Non-standard naming creates fragmented dashboards and complicates debugging.
 
 **⛔ HARD GATE:** All spans MUST follow the `layer.domain.operation` naming convention. Non-compliant span names make trace analysis impossible.
 
@@ -920,9 +920,7 @@ func main() {
 
 ### Graceful Shutdown Patterns (MANDATORY)
 
-**Production Findings:**
-- HP-10: No cleanup/shutdown handlers found
-- P2-2: Graceful shutdown handlers missing
+Missing cleanup and shutdown handlers cause data loss, orphaned connections, and incomplete transactions.
 
 **⛔ HARD GATE:** All services MUST implement graceful shutdown. Abrupt termination causes data loss, orphaned connections, and incomplete transactions.
 
@@ -1051,7 +1049,7 @@ _ = app.Shutdown()  // WRONG: Errors must be logged
 
 ## Health Checks (MANDATORY)
 
-**Production Finding:** Audit found services missing `/ready` endpoint, causing Kubernetes to route traffic to unready pods.
+Services missing the `/ready` endpoint cause Kubernetes to route traffic to unready pods.
 
 **⛔ HARD GATE:** All services MUST implement both `/health` and `/ready` endpoints.
 

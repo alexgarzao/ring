@@ -787,7 +787,7 @@ Agent: "Linter shows magic number, but I'll leave it."
 
 ### .golangci.yml Requirement (MANDATORY)
 
-**Production Finding (HP-6):** Projects without `.golangci.yml` have inconsistent linting across environments, leading to CI failures and code review noise.
+Projects without `.golangci.yml` have inconsistent linting across environments, leading to CI failures and code review noise.
 
 **⛔ HARD GATE:** Every Go project MUST have a `.golangci.yml` file in the repository root. Missing this file is a BLOCKER for code review.
 
@@ -936,7 +936,7 @@ golangci-lint run --enable=mnd --disable-all ./...
 
 ## Production Config Validation (MANDATORY)
 
-**Production Finding (HP-8):** Services start with invalid or missing configuration, causing runtime failures instead of fail-fast at startup.
+Services that start with invalid or missing configuration cause runtime failures instead of fail-fast at startup.
 
 **⛔ HARD GATE:** All services MUST validate configuration at startup and fail fast by returning an error if invalid. Silent failures and panic are FORBIDDEN.
 
@@ -1108,7 +1108,7 @@ ls -la Dockerfile
 # If file does not exist: Mark N/A
 ```
 
-**Production Finding (P2-6):** Containers running as root and using untagged images (`latest`) cause security vulnerabilities and deployment inconsistencies.
+Containers running as root and using untagged images (`latest`) cause security vulnerabilities and deployment inconsistencies.
 
 ### Non-Root User (MANDATORY if Dockerfile exists)
 

@@ -127,7 +127,7 @@ startWorker():
 
 ### Exponential Backoff with Jitter (MANDATORY)
 
-**Production Finding (P2-5):** RabbitMQ retries without backoff cause message storms and connection exhaustion.
+RabbitMQ retries without backoff cause message storms and connection exhaustion.
 
 **⛔ HARD GATE:** All RabbitMQ consumers MUST implement exponential backoff with jitter for retry logic.
 

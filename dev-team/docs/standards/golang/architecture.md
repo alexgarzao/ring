@@ -147,9 +147,7 @@ func workerPool(ctx context.Context, jobs <-chan Job, results chan<- Result) {
 
 ## Goroutine Recovery Patterns (MANDATORY)
 
-**Production Findings:**
-- HP-9: Goroutine without recovery kills entire process
-- P2-3: Recovery middleware needed for all background goroutines
+Goroutines without recovery kill the entire process when they panic. Recovery middleware is needed for all background goroutines.
 
 **⛔ HARD GATE:** All goroutines started with `go` keyword MUST have panic recovery. Unrecovered panics in goroutines crash the entire process.
 
@@ -277,7 +275,7 @@ grep -rn "^\s*go func\|^\s*go [a-zA-Z]" internal/ pkg/ --include="*.go" | grep -
 
 ## N+1 Query Detection (MANDATORY)
 
-**Production Finding (P2-7):** N+1 queries cause database connection exhaustion and latency spikes under load.
+N+1 queries cause database connection exhaustion and latency spikes under load.
 
 **⛔ HARD GATE:** Queries inside loops are FORBIDDEN. MUST use batch loading, eager loading, or JOINs.
 
