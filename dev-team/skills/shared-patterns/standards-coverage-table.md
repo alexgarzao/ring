@@ -426,7 +426,13 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ### ring:qa-analyst → testing-integration.md (Integration Mode - Gate 3.5)
 
-**Note:** When `test_mode: integration`, ring:qa-analyst checks integration testing sections.
+**Mode Detection:** The `test_mode` parameter determines which sections `ring:qa-analyst` checks:
+- **Source:** `test_mode` is passed as input when invoking `Task(subagent_type="ring:qa-analyst", test_mode="...")`
+- **Values:** `unit` (default, Gate 3) or `integration` (Gate 3.5)
+- **Default:** When `test_mode` is absent, defaults to `unit`
+- **Gate 3.5 invocation:** `ring:dev-cycle` sets `test_mode: integration` when dispatching for Gate 3.5
+
+When `test_mode: integration`, `ring:qa-analyst` checks the integration testing sections below instead of unit testing sections.
 
 **For Go projects (Integration Mode):**
 | # | Section to Check | Anchor |

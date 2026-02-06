@@ -621,7 +621,7 @@ logger.Infof("Service started on %s", cfg.ServerAddress)  // No secrets in this 
 | MongoDB URI | `mongodb://user:pass@host` | `mongodb://[^:]+:[^@]+@` |
 | Redis URI | `redis://user:pass@host` | `redis://[^:]+:[^@]+@` |
 | API Keys | `sk_live_xxxxx`, `api_key=xxxxx` | `(sk_|api[_-]?key)` (use with `grep -E`) |
-| Bearer Tokens | `Authorization: Bearer xxx` | `Bearer\s+[A-Za-z0-9-_]+` |
+| Bearer Tokens | `Authorization: Bearer xxx` | `Bearer\s+[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+` |
 | AWS Credentials | `AKIA...`, `aws_secret_access_key` | `AKIA[A-Z0-9]{16}` |
 
 ### Detection Commands (MANDATORY)
