@@ -834,9 +834,9 @@ fi
 ### Required Format (Elastic License 2.0)
 
 ```go
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 package yourpackage
 ```
@@ -845,10 +845,9 @@ package yourpackage
 
 | Component | Value | Notes |
 |-----------|-------|-------|
-| Copyright holder | `Lerian Studio` | Fixed for all Lerian projects |
-| Year | Year of file creation | Use current year for new files |
+| Copyright holder | `Elasticsearch B.V.` | Fixed for all projects |
 | License reference | `Elastic License 2.0` | Or as specified in LICENSE file |
-| LICENSE location | `LICENSE file` | Always reference root LICENSE |
+| LICENSE location | Inline in header | No separate LICENSE file reference needed |
 
 ### Files That MUST Have Headers
 
@@ -871,9 +870,9 @@ package yourpackage
 ### Correct Examples
 
 ```go
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 package bootstrap
 
@@ -884,9 +883,9 @@ import (
 ```
 
 ```go
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 package bootstrap_test
 
@@ -903,17 +902,17 @@ package model
 
 import "time"
 
-// ❌ FORBIDDEN: Wrong format (missing "All rights reserved")
-// Copyright 2024 Lerian Studio
+// ❌ FORBIDDEN: Wrong format (missing full license text)
+// Copyright Elasticsearch B.V.
 // Licensed under Elastic License 2.0
 package model
 
 // ❌ FORBIDDEN: Header after package declaration
 package model
 
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 import "time"
 ```
