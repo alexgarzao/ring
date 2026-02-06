@@ -1,8 +1,21 @@
 # Go Standards - Domain Modeling
 
-> **Module:** domain-modeling.md | **Sections:** §21 | **Parent:** [index.md](index.md)
+> **Module:** domain-modeling.md | **Sections:** §1 | **Parent:** [index.md](index.md)
 
 This module covers Always-Valid Domain Model patterns.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Always-Valid Domain Model](#always-valid-domain-model-mandatory) | Domain entities with invariant protection |
+
+**Key Subsections:**
+- [Constructor Validation Patterns](#constructor-validation-patterns-mandatory) - NewEntity/NewEntityFromDTO/ReconstructEntity conventions
+- [ToEntity/FromEntity Integration](#toentityfromentity-integration-mandatory) - Layer separation patterns
+- [Integration with HTTP Layer](#integration-with-http-layer) - DTO to domain entity conversion
 
 ---
 

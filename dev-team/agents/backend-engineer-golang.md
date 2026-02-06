@@ -246,7 +246,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 - Domain Patterns (ToEntity/FromEntity, Error Codes)
 - Testing Patterns
 - RabbitMQ Workers (if applicable)
-- Always-Valid Domain Model (constructor validation, invariant protection)
+- Always-Valid Domain Model (Constructor Validation Patterns: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection)
 
 **If `**MODE: ANALYSIS only**` is not detected:** Standards Compliance output is optional.
 
