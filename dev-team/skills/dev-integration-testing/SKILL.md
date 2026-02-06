@@ -159,21 +159,26 @@ Ensure every integration scenario has at least one **integration test** proving 
 REQUIRED INPUT (from ring:dev-cycle orchestrator):
 <verify_before_proceed>
 - unit_id exists
-- integration_scenarios is not empty OR external_dependencies is not empty
 - language is valid (go|typescript)
 </verify_before_proceed>
 
-OPTIONAL INPUT:
+OPTIONAL INPUT (determines if Gate 3.5 runs or skips):
+- integration_scenarios: [list of scenarios] - if provided and non-empty, Gate 3.5 runs
+- external_dependencies: [list of deps] - if provided and non-empty, Gate 3.5 runs
 - gate3_handoff: [full Gate 3 output]
 - implementation_files: [files from Gate 0]
 
-if integration_scenarios is empty AND external_dependencies is empty:
-  -> Gate 3.5 SKIP (document reason: "No external dependencies")
-  -> Return skip result
+EXECUTION LOGIC:
+1. if any REQUIRED input is missing:
+   -> STOP and report: "Missing required input: [field]"
+   -> Return to orchestrator with error
 
-if any REQUIRED input is missing:
-  -> STOP and report: "Missing required input: [field]"
-  -> Return to orchestrator with error
+2. if integration_scenarios is empty AND external_dependencies is empty:
+   -> Gate 3.5 SKIP (document reason: "No integration scenarios or external dependencies")
+   -> Return skip result with status: "skipped"
+
+3. Otherwise:
+   -> Gate 3.5 REQUIRED - proceed to Step 2
 ```
 
 ## Step 2: Check If Integration Tests Needed
