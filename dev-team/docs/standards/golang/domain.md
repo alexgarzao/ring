@@ -385,11 +385,11 @@ func parseConfig(path string) (Config, error) {
     return config, nil
 }
 
-// ✅ CORRECT: main() handles fatal conditions
+// ✅ CORRECT: main() handles fatal conditions with log.Fatalf (NOT panic)
 func main() {
     config, err := parseConfig("config.yaml")
     if err != nil {
-        log.Fatalf("Cannot start: %v", err)  // OK in main()
+        log.Fatalf("Cannot start: %v", err)  // log.Fatalf is OK - logs and exits cleanly
     }
     // ...
 }
@@ -397,23 +397,24 @@ func main() {
 
 ### panic() Detection Checklist (MANDATORY)
 
-**⛔ HARD GATE:** Zero panic() calls allowed in `internal/` and `pkg/` directories (except test files).
+**⛔ HARD GATE:** Zero panic() calls allowed ANYWHERE in the codebase (except test files). This includes `cmd/`, `internal/`, and `pkg/` directories.
 
 | panic() Type | Where Found | Verdict | Action |
 |--------------|-------------|---------|--------|
-| Direct `panic(err)` | internal/service/ | ❌ FORBIDDEN | Convert to `return err` |
-| Direct `panic("message")` | internal/handler/ | ❌ FORBIDDEN | Convert to `return errors.New()` |
-| `panic(fmt.Sprintf(...))` | internal/adapters/ | ❌ FORBIDDEN | Convert to `return fmt.Errorf()` |
-| Must-functions `panicOnErr()` | internal/bootstrap/ | ⚠️ DANGEROUS | Remove helper, propagate errors |
+| Direct `panic(err)` | Any directory | ❌ FORBIDDEN | Convert to `return err` or `log.Fatalf()` |
+| Direct `panic("message")` | Any directory | ❌ FORBIDDEN | Convert to `return errors.New()` or `log.Fatalf()` |
+| `panic(fmt.Sprintf(...))` | Any directory | ❌ FORBIDDEN | Convert to `return fmt.Errorf()` or `log.Fatalf()` |
+| Must-functions `panicOnErr()` | Any directory | ❌ FORBIDDEN | Remove helper, propagate errors |
+| `panic()` in main() | cmd/*/main.go | ❌ FORBIDDEN | Use `log.Fatalf()` instead |
 
 **Detection Commands:**
 
 ```bash
-# MANDATORY: Run before every PR
-grep -rn "panic(" internal/ pkg/ --include="*.go" | grep -v "_test.go"
+# MANDATORY: Run before every PR - check ALL directories
+grep -rn "panic(" cmd/ internal/ pkg/ --include="*.go" | grep -v "_test.go"
 
 # Find must-functions (panic wrappers)
-grep -rn "func must\|panicOnErr\|panicIf" internal/ pkg/ --include="*.go"
+grep -rn "func must\|panicOnErr\|panicIf" . --include="*.go" | grep -v "_test.go" | grep -v vendor/
 
 # Expected result: 0 matches
 # If any match found: STOP. Fix before proceeding.

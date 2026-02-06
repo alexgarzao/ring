@@ -116,10 +116,14 @@ input_schema:
       description: "Existing test files for reference"
     - name: "integration_scenarios"
       type: "list[string]"
-      description: "Integration scenarios to test (required when test_mode=integration)"
+      description: "Integration scenarios to test"
+      required_when:
+        test_mode: "integration"
     - name: "external_dependencies"
       type: "list[string]"
-      description: "External services to test against (required when test_mode=integration)"
+      description: "External services to test against"
+      required_when:
+        test_mode: "integration"
 ---
 
 # QA (Quality Assurance Analyst)
