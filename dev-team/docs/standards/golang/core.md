@@ -12,7 +12,7 @@ This module covers the foundational requirements for all Go projects.
 |---|---------|-------------|
 | 1 | [Version](#version) | Go version requirements |
 | 2 | [Core Dependency: lib-commons](#core-dependency-lib-commons-mandatory) | Required lib-commons v2 integration |
-| 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions and library choices |
+| 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions, validator v10 migration |
 | 4 | [Configuration](#configuration) | Environment variable handling |
 | 5 | [Database Naming Convention (snake_case)](#database-naming-convention-snake-case-mandatory) | Table and column naming |
 | 6 | [Database Migrations](#database-migrations-mandatory) | golang-migrate requirement |
@@ -188,6 +188,99 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 | `mongo-driver` | v1.17.0 | MongoDB driver |
 | `go-redis/v9` | v9.7.0 | Redis client |
 | `validator/v10` | v10.26.0 | Input validation |
+
+### Validator Migration: v9 to v10 (MANDATORY)
+
+**Production Finding (HP-1):** Projects using `go-playground/validator/v9` have unmaintained dependencies with known security issues.
+
+**⛔ HARD GATE:** All projects MUST use `validator/v10`. Version v9 is FORBIDDEN and MUST be migrated.
+
+#### Why v10 Is MANDATORY
+
+| Issue | v9 | v10 |
+|-------|-----|-----|
+| **Maintenance** | ❌ Unmaintained since 2020 | ✅ Actively maintained |
+| **Security** | ❌ Known CVEs unpatched | ✅ Security patches applied |
+| **Features** | ❌ Missing modern validations | ✅ New validators, better errors |
+| **Go compatibility** | ❌ Issues with Go 1.18+ generics | ✅ Full Go 1.24 support |
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MUST: Check for v9 usage (should return 0 matches)
+grep -rn "go-playground/validator/v9" go.mod go.sum
+
+# If found: BLOCKER - Migrate to v10 before proceeding
+
+# Check current validator version
+grep "go-playground/validator" go.mod
+
+# Expected: github.com/go-playground/validator/v10 v10.x.x
+```
+
+#### Migration Steps
+
+**1. Update go.mod:**
+
+```bash
+# Remove v9
+go mod edit -droprequire github.com/go-playground/validator/v9
+
+# Add v10
+go get github.com/go-playground/validator/v10@latest
+```
+
+**2. Update imports in code:**
+
+```go
+// ❌ BEFORE: v9 import
+import "github.com/go-playground/validator/v9"
+
+// ✅ AFTER: v10 import
+import "github.com/go-playground/validator/v10"
+```
+
+**3. Handle API changes:**
+
+```go
+// ❌ v9: validator.New()
+v := validator.New()
+
+// ✅ v10: Same API, new features available
+v := validator.New(validator.WithRequiredStructEnabled())
+```
+
+**4. Update custom validators:**
+
+```go
+// ❌ v9: Old registration pattern
+v.RegisterValidation("custom", customValidator)
+
+// ✅ v10: Same pattern, use new error types
+v.RegisterValidation("custom", customValidator)
+// Access improved error details via v10.ValidationErrors
+```
+
+#### Common Migration Issues
+
+| Issue | Solution |
+|-------|----------|
+| `FieldError` type changed | Use `validator.ValidationErrors` type assertion |
+| `StructLevel` changes | Update to `validator.StructLevel` interface |
+| Tag format changes | Some tags renamed (check release notes) |
+| Custom validators | Re-register with v10 API |
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "v9 still works" | Works ≠ maintained. Security vulnerabilities accumulate. | **Migrate to v10** |
+| "Migration is risky" | Risk of not migrating is higher (security, compatibility). | **Migrate to v10** |
+| "We have custom validators" | Custom validators work with v10. API is compatible. | **Migrate to v10** |
+| "Dependencies use v9" | Update dependencies too. Transitive v9 is also vulnerable. | **Update all dependencies** |
+| "We'll migrate later" | Later = never. Migrate now while context is fresh. | **Migrate NOW** |
+
+---
 
 ### HTTP Framework
 
