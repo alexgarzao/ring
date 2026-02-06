@@ -40,19 +40,21 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 
 | # | Module | Sections | Lines | Description |
 |---|--------|----------|-------|-------------|
-| 1 | [core.md](core.md) | §1-8 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB |
-| 2 | [bootstrap.md](bootstrap.md) | §5-9 | ~1200 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting |
-| 3 | [security.md](security.md) | §9-11 | ~700 | Access Manager, License Manager, Secret Redaction |
-| 4 | [domain.md](domain.md) | §9-12 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
-| 5 | [api-patterns.md](api-patterns.md) | §17-21 | ~900 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo, Handler Constructor |
-| 6 | [quality.md](quality.md) | §18-22 | ~1050 | Testing, Logging, Linting, Config Validation, Container Security |
-| 7 | [architecture.md](architecture.md) | §23-27 | ~350 | Architecture, Directory, Concurrency, Goroutine Recovery, N+1 Detection |
-| 8 | [messaging.md](messaging.md) | §20 | ~220 | RabbitMQ Worker Pattern |
-| 9 | [domain-modeling.md](domain-modeling.md) | §21 | ~170 | Always-Valid Domain Model |
-| 10 | [idempotency.md](idempotency.md) | §22 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
-| 11 | [multi-tenant.md](multi-tenant.md) | §23 | ~460 | Multi-Tenant Patterns (Pool Manager, JWT) |
+| 1 | [core.md](core.md) | 9 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB, Dependency Management |
+| 2 | [bootstrap.md](bootstrap.md) | 6 | ~1200 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting, Connection Management |
+| 3 | [security.md](security.md) | 4 | ~700 | Access Manager, License Manager, Secret Redaction, SQL Safety |
+| 4 | [domain.md](domain.md) | 5 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
+| 5 | [api-patterns.md](api-patterns.md) | 6 | ~900 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo, Handler Constructor, Input Validation |
+| 6 | [quality.md](quality.md) | 5 | ~1050 | Testing, Logging, Linting, Config Validation, Container Security |
+| 7 | [architecture.md](architecture.md) | 6 | ~350 | Architecture, Directory, Concurrency, Goroutine Recovery, N+1 Detection, Performance |
+| 8 | [messaging.md](messaging.md) | 1 | ~220 | RabbitMQ Worker Pattern |
+| 9 | [domain-modeling.md](domain-modeling.md) | 1 | ~170 | Always-Valid Domain Model (Constructor Validation Patterns) |
+| 10 | [idempotency.md](idempotency.md) | 1 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
+| 11 | [multi-tenant.md](multi-tenant.md) | 1 | ~460 | Multi-Tenant Patterns (Pool Manager, JWT) |
 | 12 | [compliance.md](compliance.md) | Meta | ~125 | Standards Compliance Output Format, Checklist |
-| 13 | [testing-integration.md](testing-integration.md) | INT-1-15 | ~600 | Integration Testing Patterns |
+| 13 | [testing-integration.md](testing-integration.md) | 15 | ~600 | Integration Testing Patterns (INT-1 to INT-15) |
+
+**Total:** 45 main sections + 15 integration testing sections = 60 sections indexed in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md)
 
 ---
 

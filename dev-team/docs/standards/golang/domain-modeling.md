@@ -11,11 +11,9 @@ This module covers Always-Valid Domain Model patterns.
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [Always-Valid Domain Model](#always-valid-domain-model-mandatory) | Domain entities with invariant protection |
-
-**Key Subsections:**
-- [Constructor Validation Patterns](#constructor-validation-patterns-mandatory) - NewEntity/NewEntityFromDTO/ReconstructEntity conventions
-- [ToEntity/FromEntity Integration](#toentityfromentity-integration-mandatory) - Layer separation patterns
-- [Integration with HTTP Layer](#integration-with-http-layer) - DTO to domain entity conversion
+| 1.1 | [Constructor Validation Patterns](#constructor-validation-patterns-mandatory) | NewEntity/NewEntityFromDTO/ReconstructEntity conventions |
+| 1.2 | [ToEntity/FromEntity Integration](#toentityfromentity-integration-mandatory) | Layer separation patterns |
+| 1.3 | [Integration with HTTP Layer](#integration-with-http-layer) | DTO to domain entity conversion |
 
 ---
 

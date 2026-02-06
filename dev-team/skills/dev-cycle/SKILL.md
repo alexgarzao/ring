@@ -434,7 +434,7 @@ Day 4: Production incident from Day 1 code
 
 ## Gate Order Enforcement (HARD GATE)
 
-**Gates MUST execute in order: 0 → 1 → 2 → 3 [→ 3.5 if deps] → 4 → 5. Gate 3.5 may SKIP with documented reason.**
+**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5 (Gate 3.5 is conditional between 3 and 4). Up to 7 gates total: 6 mandatory gates plus optional Gate 3.5.**
 
 | Violation | Why It's WRONG | Consequence |
 |-----------|----------------|-------------|
@@ -473,7 +473,7 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **all 7 gates** (implementation→devops→ring:sre→testing→review→validation; Gate 3.5 optional when no external deps) before the next unit. Gate 3.5 may SKIP with documented reason.
+**Core Principle:** Each execution unit (task or subtask) passes through **up to 7 gates** (6 mandatory: implementation→devops→ring:sre→testing→review→validation, plus optional Gate 3.5 for integration testing) before the next unit. Gate 3.5 may SKIP with documented reason when no external dependencies exist.
 
 **Flow:** Unit → Gate 0→1→2→3→3.5→4→5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
 

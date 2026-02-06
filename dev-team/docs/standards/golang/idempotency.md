@@ -11,11 +11,14 @@ This module covers idempotency patterns for transaction APIs.
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [Idempotency Patterns (MANDATORY for Transaction APIs)](#idempotency-patterns-mandatory-for-transaction-apis) | Redis SetNX pattern for deduplication |
-
-**Key Subsections:**
-- [HTTP Headers](#http-headers-lib-commons-constants) - lib-commons constants for idempotency
-- [Implementation Pattern](#implementation-pattern-midaz-reference) - Handler, Command, Redis key format
-- [Which Endpoints Need Idempotency](#which-endpoints-need-idempotency) - Decision guide
+| 1.1 | [HTTP Headers](#http-headers-lib-commons-constants) | lib-commons constants for idempotency |
+| 1.2 | [Implementation Decisions](#implementation-decisions-ask-before-implementing) | Key scope configuration |
+| 1.3 | [Implementation Pattern](#implementation-pattern-midaz-reference) | Handler, Command, Redis key format |
+| 1.4 | [Flow Diagram](#flow-diagram) | Request flow visualization |
+| 1.5 | [Key Design Decisions](#key-design-decisions-midaz) | Architecture rationale |
+| 1.6 | [Which Endpoints Need Idempotency](#which-endpoints-need-idempotency) | Decision guide |
+| 1.7 | [Anti-Rationalization Table](#anti-rationalization-table) | Common excuses and required actions |
+| 1.8 | [Checklist](#checklist) | Pre-submission verification |
 
 ---
 
