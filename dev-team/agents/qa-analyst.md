@@ -445,6 +445,15 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 ### Output Format (Integration Mode)
 
 ```markdown
+## Standards Verification
+
+| Check | Status | Details |
+|-------|--------|---------|
+| PROJECT_RULES.md | Found | Path: docs/PROJECT_RULES.md |
+| Ring Standards | Loaded | golang.md (or typescript.md based on project) |
+
+*No precedence conflicts. Following Ring Standards.*
+
 ## VERDICT: PASS/FAIL
 
 ## Integration Testing Summary
