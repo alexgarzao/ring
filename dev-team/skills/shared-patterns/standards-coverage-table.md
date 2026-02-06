@@ -255,7 +255,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
 | 7 | License Headers | core.md | `#license-headers-conditional` | **CONDITIONAL** - If LICENSE file exists |
 | 8 | MongoDB Patterns | core.md | `#mongodb-patterns-mandatory` | **Injection prevention (CRITICAL)**, connection pooling, index management, deprecated API removal |
-| 9 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration |
+| 9 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration, **Span Naming Conventions (MANDATORY)**: layer.domain.operation pattern, detection commands |
 | 10 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
 | 11 | Graceful Shutdown Patterns | bootstrap.md | `#graceful-shutdown-patterns-mandatory` | **Signal handling (MANDATORY)**, shutdown order, resource cleanup, detection commands |
 | 12 | Health Checks | bootstrap.md | `#health-checks-mandatory` | **/health vs /ready (MANDATORY)**, Kubernetes probes, dependency checks |

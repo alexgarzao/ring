@@ -214,15 +214,93 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 
 ---
 
-### Span Naming Conventions
+### Span Naming Conventions (MANDATORY)
 
-| Layer | Pattern | Examples |
-|-------|---------|----------|
-| HTTP Handler | `handler.{resource}.{action}` | `handler.tenant.create`, `handler.agent.list` |
-| Service | `service.{domain}.{operation}` | `service.tenant.create`, `service.agent.register` |
-| Repository | `repository.{entity}.{operation}` | `repository.tenant.get_by_id`, `repository.agent.list` |
-| External Call | `external.{service}.{operation}` | `external.payment.process`, `external.auth.validate` |
-| Queue Consumer | `consumer.{queue}.{operation}` | `consumer.balance_create.process` |
+**Production Finding (P3-5):** Inconsistent span names make distributed tracing difficult to navigate. Non-standard naming creates fragmented dashboards and complicates debugging.
+
+**⛔ HARD GATE:** All spans MUST follow the `layer.domain.operation` naming convention. Non-compliant span names make trace analysis impossible.
+
+#### Naming Pattern
+
+```text
+{layer}.{domain}.{operation}
+
+Where:
+- layer: handler | service | repository | external | consumer
+- domain: resource or entity name (singular)
+- operation: action being performed (snake_case)
+```
+
+#### Span Name Reference Table
+
+| Layer | Pattern | Examples | When to Use |
+|-------|---------|----------|-------------|
+| HTTP Handler | `handler.{resource}.{action}` | `handler.tenant.create`, `handler.agent.list` | Complex handlers needing their own spans |
+| Service | `service.{domain}.{operation}` | `service.tenant.create`, `service.user.authenticate` | All service methods (MANDATORY) |
+| Repository | `repository.{entity}.{operation}` | `repository.tenant.get_by_id`, `repository.agent.find_all` | Complex database operations |
+| External Call | `external.{service}.{operation}` | `external.payment.process`, `external.auth.validate_token` | Outgoing HTTP/gRPC calls |
+| Queue Consumer | `consumer.{queue}.{operation}` | `consumer.balance_create.process`, `consumer.notification.send` | Message queue handlers |
+
+#### Operation Naming Rules
+
+| Operation Type | Naming Convention | Examples |
+|----------------|-------------------|----------|
+| Create | `create` | `service.tenant.create` |
+| Read single | `get_by_id`, `find_by_email` | `repository.user.get_by_id` |
+| Read multiple | `list`, `find_all`, `search` | `service.agent.list` |
+| Update | `update`, `patch` | `service.tenant.update` |
+| Delete | `delete`, `remove` | `repository.session.delete` |
+| Validation | `validate`, `verify` | `service.token.validate` |
+| Complex action | Descriptive snake_case | `service.user.reset_password` |
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Generic span names
+tracer.Start(ctx, "doStuff")           // WRONG: Non-descriptive
+tracer.Start(ctx, "process")           // WRONG: Too generic
+tracer.Start(ctx, "handler")           // WRONG: Missing domain and operation
+
+// ❌ FORBIDDEN: Inconsistent casing
+tracer.Start(ctx, "Service.Tenant.Create")  // WRONG: PascalCase
+tracer.Start(ctx, "service-tenant-create")  // WRONG: kebab-case
+
+// ❌ FORBIDDEN: Missing layer prefix
+tracer.Start(ctx, "create_tenant")     // WRONG: No layer prefix
+tracer.Start(ctx, "getTenantByID")     // WRONG: No layer, wrong casing
+
+// ✅ CORRECT: layer.domain.operation
+tracer.Start(ctx, "service.tenant.create")
+tracer.Start(ctx, "repository.tenant.get_by_id")
+tracer.Start(ctx, "handler.agent.register")
+```
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that modifies tracing
+# Find all span names in codebase
+grep -rn "tracer\.Start(ctx," internal/ --include="*.go" | grep -v "_test.go"
+
+# Check for non-compliant span names (missing dots)
+grep -rn 'tracer\.Start(ctx, "[^"]*")' internal/ --include="*.go" | grep -v '\."' | grep -v "_test.go"
+
+# List all unique span name patterns
+grep -oP 'tracer\.Start\(ctx, "\K[^"]+' internal/**/*.go | sort -u
+
+# Expected: All span names follow layer.domain.operation
+# If non-compliant patterns found: STOP. Fix before proceeding.
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Span name doesn't matter" | Span names are how you find traces. Bad names = unfindable traces. | **Use layer.domain.operation** |
+| "We have few traces" | Few now = many later. Establish patterns early. | **Use layer.domain.operation** |
+| "I'll use my own convention" | Inconsistent conventions fragment dashboards. | **Use layer.domain.operation** |
+| "It's just internal code" | Internal code still needs debugging. Traces are the debugger. | **Use layer.domain.operation** |
+| "Too verbose" | Verbosity enables filtering. `service.*` finds all service spans. | **Use layer.domain.operation** |
 
 ---
 
