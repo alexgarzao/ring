@@ -12,7 +12,7 @@ This module covers testing, logging, linting, configuration validation, and cont
 |---|---------|-------------|
 | 1 | [Testing](#testing) | Table-driven tests, edge cases, benchmarks |
 | 2 | [Logging](#logging) | Structured logging with lib-commons |
-| 3 | [Linting](#linting) | Import ordering, magic numbers, golangci-lint |
+| 3 | [Linting](#linting) | Import ordering, magic numbers, .golangci.yml requirement |
 | 4 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
 | 5 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
 
@@ -785,29 +785,111 @@ Agent: "Linter shows magic number, but I'll leave it."
 
 ---
 
-### golangci-lint Configuration
+### .golangci.yml Requirement (MANDATORY)
+
+**Production Finding (HP-6):** Projects without `.golangci.yml` have inconsistent linting across environments, leading to CI failures and code review noise.
+
+**⛔ HARD GATE:** Every Go project MUST have a `.golangci.yml` file in the repository root. Missing this file is a BLOCKER for code review.
+
+#### Why .golangci.yml Is MANDATORY
+
+| Issue | Without .golangci.yml |
+|-------|----------------------|
+| Inconsistent CI | Different linters in CI vs local dev |
+| Developer frustration | Code passes locally, fails in CI |
+| Security gaps | Security linters (gosec) might be skipped |
+| Code review noise | Reviewers catch lint issues instead of logic issues |
+
+#### Minimum Required Linters (MANDATORY)
+
+Every `.golangci.yml` MUST enable these linters:
+
+| Linter | Purpose | Category |
+|--------|---------|----------|
+| `gofmt` | Code formatting | Style |
+| `goimports` | Import organization | Style |
+| `govet` | Go vet analysis | Correctness |
+| `staticcheck` | Static analysis | Correctness |
+| `errcheck` | Error handling verification | Correctness |
+| `gosec` | Security vulnerability detection | Security |
+| `mnd` | Magic number detection | Quality |
+| `unused` | Unused code detection | Quality |
+| `ineffassign` | Unused assignment detection | Quality |
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MUST: Check if .golangci.yml exists
+ls -la .golangci.yml
+
+# Expected: File exists
+# If missing: BLOCKER - Create file before proceeding
+
+# Check minimum linters are enabled
+grep -E "gofmt|goimports|govet|staticcheck|errcheck|gosec" .golangci.yml
+
+# Expected: All linters mentioned in file
+```
+
+#### Pre-Commit Hook Integration (RECOMMENDED)
+
+```bash
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.64.5
+    hooks:
+      - id: golangci-lint
+        entry: golangci-lint run
+        types: [go]
+        pass_filenames: false
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I run golangci-lint locally" | Without config file, settings vary. | **Add .golangci.yml to repo** |
+| "CI has its own config" | Inconsistency causes surprises. Same config everywhere. | **Commit .golangci.yml** |
+| "Default linters are enough" | Defaults miss security (gosec) and quality (mnd). | **Enable minimum required linters** |
+| "Linting is optional" | Linting is MANDATORY for production code. | **Create .golangci.yml now** |
+| "We'll add it later" | Later = never. Add before first PR. | **Create .golangci.yml NOW** |
+
+---
+
+### golangci-lint Configuration Template
 
 ```yaml
-# .golangci.yml
+# .golangci.yml - Minimum required configuration
+run:
+  timeout: 5m
+  go: '1.24'
+
 linters:
+  disable-all: true
   enable:
-    - errcheck      # Check error handling
-    - govet         # Go vet
+    # MANDATORY linters (MUST be enabled)
+    - gofmt         # Code formatting
+    - goimports     # Import organization
+    - govet         # Go vet analysis
     - staticcheck   # Static analysis
+    - errcheck      # Error handling verification
+    - gosec         # Security vulnerability detection
+    - mnd           # Magic number detection
+    - unused        # Unused code detection
+    - ineffassign   # Unused assignment detection
+    # Recommended additional linters
     - gosimple      # Simplify code
-    - ineffassign   # Unused assignments
-    - unused        # Unused code
-    - gofmt         # Formatting
-    - goimports     # Import ordering
     - misspell      # Spelling
     - goconst       # Repeated strings
-    - gosec         # Security issues
     - nilerr        # Return nil with non-nil error
-    - mnd           # Magic number detector
+    - forbidigo     # Forbidden patterns
 
 linters-settings:
+  goimports:
+    local-prefixes: github.com/LerianStudio
+
   mnd:
-    # Checks to enable (default: argument,case,condition,operation,return,assign)
     checks:
       - argument
       - case
@@ -815,20 +897,26 @@ linters-settings:
       - operation
       - return
       - assign
-    # Ignored numbers (0, 1 are always allowed)
     ignored-numbers:
       - '0'
       - '1'
       - '-1'
-    # Ignored functions (regex patterns)
     ignored-functions:
       - '^math\.'
       - '^http\.Status'
       - '^strings\.(SplitN|SplitAfterN)'
-    # Ignored files
     ignored-files:
       - '_test\.go$'
+
+  forbidigo:
+    forbid:
+      - p: ^fmt\.Print.*$
+        msg: "FORBIDDEN: Use lib-commons logger"
+      - p: ^log\.(Print|Fatal|Panic).*$
+        msg: "FORBIDDEN: Use lib-commons logger"
 ```
+
+---
 
 ### Format Commands
 
