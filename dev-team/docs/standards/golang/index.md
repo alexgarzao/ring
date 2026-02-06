@@ -28,7 +28,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 
 | # | Module | Sections | Lines | Description |
 |---|--------|----------|-------|-------------|
-| 1 | [core.md](core.md) | §1-4 | ~225 | Version, lib-commons, Frameworks, Configuration |
+| 1 | [core.md](core.md) | §1-8 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB |
 | 2 | [bootstrap.md](bootstrap.md) | §5-8 | ~1050 | Observability, Bootstrap, Health Checks, Rate Limiting |
 | 3 | [security.md](security.md) | §9-11 | ~700 | Access Manager, License Manager, Secret Redaction |
 | 4 | [domain.md](domain.md) | §9-12 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
@@ -54,6 +54,10 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 2 | Core Dependency: lib-commons (MANDATORY) | [#core-dependency-lib-commons-mandatory](core.md#core-dependency-lib-commons-mandatory) |
 | 3 | Frameworks & Libraries | [#frameworks--libraries](core.md#frameworks--libraries) |
 | 4 | Configuration | [#configuration](core.md#configuration) |
+| 5 | Database Naming Convention (snake_case) (MANDATORY) | [#database-naming-convention-snake-case-mandatory](core.md#database-naming-convention-snake-case-mandatory) |
+| 6 | Database Migrations (MANDATORY) | [#database-migrations-mandatory](core.md#database-migrations-mandatory) |
+| 7 | License Headers (CONDITIONAL) | [#license-headers-conditional](core.md#license-headers-conditional) |
+| 8 | MongoDB Patterns (MANDATORY) | [#mongodb-patterns-mandatory](core.md#mongodb-patterns-mandatory) |
 
 ### Bootstrap & Observability (bootstrap.md)
 
