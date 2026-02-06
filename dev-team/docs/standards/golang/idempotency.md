@@ -1,8 +1,21 @@
 # Go Standards - Idempotency
 
-> **Module:** idempotency.md | **Sections:** §22 | **Parent:** [index.md](index.md)
+> **Module:** idempotency.md | **Sections:** §1 | **Parent:** [index.md](index.md)
 
 This module covers idempotency patterns for transaction APIs.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Idempotency Patterns (MANDATORY for Transaction APIs)](#idempotency-patterns-mandatory-for-transaction-apis) | Redis SetNX pattern for deduplication |
+
+**Key Subsections:**
+- [HTTP Headers](#http-headers-lib-commons-constants) - lib-commons constants for idempotency
+- [Implementation Pattern](#implementation-pattern-midaz-reference) - Handler, Command, Redis key format
+- [Which Endpoints Need Idempotency](#which-endpoints-need-idempotency) - Decision guide
 
 ---
 
