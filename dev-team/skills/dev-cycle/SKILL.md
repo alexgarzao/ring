@@ -1,9 +1,9 @@
 ---
 name: ring:dev-cycle
 description: |
-  Main orchestrator for the 7-gate development cycle system. Loads tasks/subtasks
-  from PM team output and executes through implementation, devops, SRE, unit testing,
-  integration testing, review, and validation gates with state persistence and metrics collection.
+  Main orchestrator for the 6-gate development cycle system. Loads tasks/subtasks
+  from PM team output and executes through implementation → devops → SRE → testing → review → validation
+  gates (with optional Gate 3.5 for integration testing when dependencies exist), with state persistence and metrics collection.
 
 trigger: |
   - Starting a new development cycle with a task file
@@ -25,7 +25,7 @@ sequence:
   before: [ring:dev-feedback-loop]
 
 related:
-  complementary: [ring:dev-implementation, ring:dev-devops, ring:dev-ring:sre, ring:dev-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop]
+  complementary: [ring:dev-implementation, ring:dev-devops, ring:dev-sre, ring:dev-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop]
 
 verification:
   automated:
@@ -93,9 +93,9 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 7 quality gates (Gate 0-5, with Gate 3.5 for integration testing). Tasks are loaded at initialization - no separate import gate.
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 6 quality gates: implementation → devops → SRE → testing → review → validation (Gate 0–5; optional Gate 3.5 for integration testing when the task has external dependencies). Tasks are loaded at initialization - no separate import gate.
 
-**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 7 gates."
+**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 6 gates."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -311,7 +311,7 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 ### Cannot Be Overridden
 
 <cannot_skip>
-- All 7 gates must execute - Each gate catches different issues
+- All 6 gates must execute - Each gate catches different issues
 - Gates execute in order (0→1→2→3→3.5→4→5) - Dependencies exist between gates
 - Gate 3.5 may SKIP with documented reason - Only if no external dependencies
 - Gate 4 requires all 3 reviewers - Different review perspectives are complementary
@@ -434,7 +434,7 @@ Day 4: Production incident from Day 1 code
 
 ## Gate Order Enforcement (HARD GATE)
 
-**Gates MUST execute in order: 0 → 1 → 2 → 3 → 3.5 → 4 → 5. Gate 3.5 may SKIP with documented reason.**
+**Gates MUST execute in order: 0 → 1 → 2 → 3 [→ 3.5 if deps] → 4 → 5. Gate 3.5 may SKIP with documented reason.**
 
 | Violation | Why It's WRONG | Consequence |
 |-----------|----------------|-------------|
@@ -471,14 +471,14 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **all 7 gates** (0→1→2→3→3.5→4→5) before the next unit. Gate 3.5 may SKIP with documented reason.
+**Core Principle:** Each execution unit (task or subtask) passes through **all 6 gates** (implementation→devops→SRE→testing→review→validation; Gate 3.5 optional when no external deps) before the next unit. Gate 3.5 may SKIP with documented reason.
 
 **Flow:** Unit → Gate 0→1→2→3→3.5→4→5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
 
 | Scenario | Execution Unit | Gates Per Unit |
 |----------|----------------|----------------|
-| Task without subtasks | Task itself | 7 gates (Gate 3.5 conditional) |
-| Task with subtasks | Each subtask | 7 gates per subtask (Gate 3.5 conditional) |
+| Task without subtasks | Task itself | 6 gates (Gate 3.5 conditional) |
+| Task with subtasks | Each subtask | 6 gates per subtask (Gate 3.5 conditional) |
 
 ## Commit Timing
 
@@ -639,7 +639,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             "gaps": []
           }
         },
-        "ring:sre": {
+        "sre": {
           "agent": "ring:sre",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
@@ -2040,9 +2040,9 @@ devops_input = {
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-ring:sre`
+**REQUIRED SUB-SKILL:** Use `ring:dev-sre`
 
-### Step 4.1: Prepare Input for ring:dev-ring:sre Skill
+### Step 4.1: Prepare Input for ring:dev-sre Skill
 
 ```text
 Gather from previous gates:
@@ -2064,14 +2064,14 @@ sre_input = {
 }
 ```
 
-### Step 4.2: Invoke ring:dev-ring:sre Skill
+### Step 4.2: Invoke ring:dev-sre Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-ring:sre skill with structured input:
+2. Invoke ring:dev-sre skill with structured input:
 
-   Skill("ring:dev-ring:sre") with input:
+   Skill("ring:dev-sre") with input:
      unit_id: sre_input.unit_id
      language: sre_input.language
      service_type: sre_input.service_type
@@ -2114,15 +2114,15 @@ sre_input = {
 ### Step 4.3: Gate 2 Complete
 
 ```text
-5. When ring:dev-ring:sre skill returns PASS:
+5. When ring:dev-sre skill returns PASS:
    
    Parse from skill output:
    - status: extract from "## Validation Result"
    - instrumentation_coverage: extract percentage from coverage table
    - iterations: extract from "Iterations:" line
    
-   - agent_outputs.ring:sre = {
-       skill: "ring:dev-ring:sre",
+   - agent_outputs.sre = {
+       skill: "ring:dev-sre",
        output: "[full skill output]",
        validation_result: "PASS",
        instrumentation_coverage: "[X%]",
@@ -2132,16 +2132,16 @@ sre_input = {
      }
 
 6. Update state:
-   - gate_progress.ring:sre.status = "completed"
-   - gate_progress.ring:sre.observability_validated = true
-   - gate_progress.ring:sre.instrumentation_coverage = "[X%]"
+   - gate_progress.sre.status = "completed"
+   - gate_progress.sre.observability_validated = true
+   - gate_progress.sre.instrumentation_coverage = "[X%]"
 
 7. Proceed to Gate 3
 ```
 
 ### Gate 2 Anti-Rationalization Table
 
-See [ring:dev-ring:sre/SKILL.md](../dev-ring:sre/SKILL.md) for complete anti-rationalization tables covering:
+See [ring:dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalization tables covering:
 - Observability deferral rationalizations
 - Instrumentation coverage rationalizations
 - Context propagation rationalizations
@@ -2150,9 +2150,9 @@ See [ring:dev-ring:sre/SKILL.md](../dev-ring:sre/SKILL.md) for complete anti-rat
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking ring:dev-ring:sre skill now." |
-| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. ring:dev-ring:sre skill handles fix dispatch and re-validation." |
-| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. ring:dev-ring:sre skill will not pass until met." |
+| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking ring:dev-sre skill now." |
+| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. ring:dev-sre skill handles fix dispatch and re-validation." |
+| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. ring:dev-sre skill will not pass until met." |
 
 ## Step 5: Gate 3 - Testing (Per Execution Unit)
 

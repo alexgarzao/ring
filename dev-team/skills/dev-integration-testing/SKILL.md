@@ -1,5 +1,11 @@
 ---
 name: ring:dev-integration-testing
+title: Development cycle integration testing (Gate 3.5)
+category: development-cycle
+tier: 1
+when_to_use: |
+  Use when the task has external dependencies (database, APIs, queues) and unit testing (Gate 3) is complete.
+  Do not use when the task has no external dependencies (Gate 3.5 can be skipped with documented reason).
 description: |
   Gate 3.5 of development cycle - ensures integration tests pass for all
   external dependency interactions using real containers via testcontainers.
