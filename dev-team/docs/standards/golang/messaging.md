@@ -12,7 +12,7 @@ This module covers RabbitMQ worker patterns for async message processing.
 |---|---------|-------------|
 | 1 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing with RabbitMQ |
 
-**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, Exponential Backoff with Jitter, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist.
+**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, **Exponential Backoff with Jitter (MANDATORY)**, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist.
 
 ---
 
@@ -125,17 +125,51 @@ startWorker():
 │   └── On error: log + msg.Nack(false, true)
 ```
 
-### Exponential Backoff with Jitter
+### Exponential Backoff with Jitter (MANDATORY)
+
+**Production Finding (P2-5):** RabbitMQ retries without backoff cause message storms and connection exhaustion.
+
+**⛔ HARD GATE:** All RabbitMQ consumers MUST implement exponential backoff with jitter for retry logic.
+
+#### Why Exponential Backoff Is MANDATORY
+
+| Issue | Without Backoff | With Backoff |
+|-------|-----------------|--------------|
+| Failing message | Immediate retry loop | Progressive delay |
+| Connection loss | Reconnect spam | Gradual recovery |
+| Downstream outage | Thundering herd | Distributed retry |
+| Resource usage | CPU spike, memory | Controlled load |
+
+#### Retry Constants (REQUIRED)
 
 ```go
 const (
-    MaxRetries     = 5
-    InitialBackoff = 500 * time.Millisecond
-    MaxBackoff     = 10 * time.Second
-    BackoffFactor  = 2.0
+    MaxRetries     = 5                        // Maximum retry attempts before DLQ
+    InitialBackoff = 500 * time.Millisecond   // First retry delay
+    MaxBackoff     = 30 * time.Second         // Cap to prevent excessive delays
+    BackoffFactor  = 2.0                      // Exponential multiplier
 )
+```
 
+#### Backoff Calculation Formula
+
+```text
+backoff = min(InitialBackoff * (BackoffFactor ^ attempt), MaxBackoff)
+
+Attempt | Base Backoff | With Full Jitter (0 to base)
+--------|--------------|-----------------------------
+1       | 500ms        | 0-500ms
+2       | 1s           | 0-1s
+3       | 2s           | 0-2s
+4       | 4s           | 0-4s
+5       | 8s           | 0-8s (capped at MaxBackoff if exceeded)
+```
+
+#### Full Jitter Implementation (REQUIRED)
+
+```go
 // Full jitter: random delay in [0, baseDelay]
+// Prevents thundering herd when multiple consumers retry simultaneously
 func FullJitter(baseDelay time.Duration) time.Duration {
     jitter := time.Duration(rand.Float64() * float64(baseDelay))
     if jitter > MaxBackoff {
@@ -143,7 +177,103 @@ func FullJitter(baseDelay time.Duration) time.Duration {
     }
     return jitter
 }
+
+// Calculate exponential backoff with jitter
+func CalculateBackoff(attempt int) time.Duration {
+    if attempt < 1 {
+        attempt = 1
+    }
+
+    base := InitialBackoff * time.Duration(math.Pow(BackoffFactor, float64(attempt-1)))
+    if base > MaxBackoff {
+        base = MaxBackoff
+    }
+
+    return FullJitter(base)
+}
 ```
+
+#### Retry Pattern in Handler
+
+```go
+func (mq *MultiQueueConsumer) handleWithRetry(ctx context.Context, body []byte) error {
+    var lastErr error
+
+    for attempt := 1; attempt <= MaxRetries; attempt++ {
+        err := mq.processMessage(ctx, body)
+        if err == nil {
+            return nil  // Success
+        }
+
+        lastErr = err
+
+        // Check if error is retryable
+        if !isRetryable(err) {
+            return fmt.Errorf("non-retryable error: %w", err)
+        }
+
+        // Calculate backoff with jitter
+        backoff := CalculateBackoff(attempt)
+        mq.logger.Warnf("Attempt %d/%d failed, retrying in %v: %v",
+            attempt, MaxRetries, backoff, err)
+
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+        case <-time.After(backoff):
+            // Continue to next attempt
+        }
+    }
+
+    return fmt.Errorf("max retries exceeded: %w", lastErr)
+}
+```
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that modifies RabbitMQ consumers
+grep -rn "Retry\|Backoff\|Jitter" internal/adapters/rabbitmq --include="*.go"
+
+# Expected: Backoff implementation found
+# If missing: BLOCKER - Add exponential backoff before proceeding
+
+# Check for immediate retry patterns (FORBIDDEN)
+grep -rn "Nack.*true" internal/adapters/rabbitmq --include="*.go"
+
+# Review each match - ensure backoff is applied before Nack with requeue
+```
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Immediate retry without backoff
+if err != nil {
+    msg.Nack(false, true)  // WRONG: Immediate requeue = message storm
+    return
+}
+
+// ❌ FORBIDDEN: Fixed delay retry
+time.Sleep(1 * time.Second)  // WRONG: No backoff = no load distribution
+msg.Nack(false, true)
+
+// ❌ FORBIDDEN: No retry limit
+for {  // WRONG: Infinite retry = stuck message
+    if err := process(); err == nil {
+        break
+    }
+}
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Messages are fast, no backoff needed" | Fast processing + failure = fast retry = storm. | **Add backoff** |
+| "Fixed delay is simpler" | Fixed delay = synchronized retries = thundering herd. | **Use jitter** |
+| "Downstream will recover" | Downstream under load + immediate retries = longer outage. | **Add backoff** |
+| "We handle few messages" | Few messages * fast retries = many retries. | **Add backoff** |
+| "Retry limit is business logic" | Retry limit is infrastructure protection. Always required. | **Add MaxRetries** |
 
 ### Producer Implementation
 
