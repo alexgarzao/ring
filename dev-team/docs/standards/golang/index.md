@@ -15,7 +15,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|---------|-------------|
 | 1 | [Quick Reference - Which File for What](#quick-reference---which-file-for-what) | Task-based file selection guide |
 | 2 | [Module Index](#module-index) | All 13 modules with section counts and descriptions |
-| 3 | [Section Index (Full)](#section-index-full) | Complete 45-section index with anchors |
+| 3 | [Section Index (Full)](#section-index-full) | Complete 60-section index with anchors |
 | 4 | [Dependency Graph](#dependency-graph) | Module dependency relationships |
 | 5 | [WebFetch URLs](#webfetch-urls) | Raw GitHub URLs for agent loading |
 

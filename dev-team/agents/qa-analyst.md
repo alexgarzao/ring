@@ -447,7 +447,9 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **When `test_mode: integration` is specified, this agent operates in Integration Mode.**
 
-### Standards Loading (Integration Mode)
+**⛔ HARD GATE:** Integration testing mode is currently **Go-only**. MUST verify `language: go` before proceeding. If `language: typescript`, report blocker: "Integration testing standards not yet available for TypeScript."
+
+### Standards Loading (Integration Mode - Go only)
 
 <fetch_required>
 https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-integration.md

@@ -17,8 +17,10 @@ This module covers idempotency patterns for transaction APIs.
 | 1.4 | [Flow Diagram](#flow-diagram) | Request flow visualization |
 | 1.5 | [Key Design Decisions](#key-design-decisions-midaz) | Architecture rationale |
 | 1.6 | [Which Endpoints Need Idempotency](#which-endpoints-need-idempotency) | Decision guide |
-| 1.7 | [Anti-Rationalization Table](#anti-rationalization-table) | Common excuses and required actions |
-| 1.8 | [Checklist](#checklist) | Pre-submission verification |
+
+**Meta-sections:**
+- [Anti-Rationalization Table](#anti-rationalization-table) - Common excuses and required actions
+- [Checklist](#checklist) - Pre-submission verification
 
 ---
 

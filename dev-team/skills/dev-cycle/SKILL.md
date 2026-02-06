@@ -311,9 +311,9 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 ### Cannot Be Overridden
 
 <cannot_skip>
-- All 7 gates must execute - Each gate catches different issues
-- Gates execute in order (0→1→2→3→3.5→4→5) - Dependencies exist between gates
-- Gate 3.5 may SKIP with documented reason - Only if no external dependencies
+- All 6 mandatory gates must execute (0→1→2→3→4→5) - Each gate catches different issues
+- Gate 3.5 is optional - May SKIP with documented reason when no external dependencies
+- Gates execute in order (0→1→2→3→[3.5 if deps]→4→5) - Dependencies exist between gates
 - Gate 4 requires all 3 reviewers - Different review perspectives are complementary
 - Coverage threshold ≥ 85% - Industry standard for quality code
 - PROJECT_RULES.md must exist - Cannot verify standards without target

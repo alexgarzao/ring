@@ -217,20 +217,19 @@ func (m *UserMapper) FromEntity(entity *domain.User) *UserModel {
 }
 
 // ToEntity - Database model → Domain entity (uses Reconstruct, not New)
-// MUST validate ID before reconstruction - corrupted data is a critical error
-func (m *UserMapper) ToEntity(model *UserModel) *domain.User {
+// MUST validate ID before reconstruction - return error for corrupted data
+func (m *UserMapper) ToEntity(model *UserModel) (*domain.User, error) {
     id, err := uuid.Parse(model.ID)
     if err != nil {
-        // Database contains corrupted ID - this is a data integrity issue
-        // Panic with clear message for immediate investigation
-        panic(fmt.Sprintf("corrupted user id in database: %s (parse error: %v)", model.ID, err))
+        // Database contains corrupted ID - return wrapped error
+        return nil, fmt.Errorf("corrupted user id %q: %w", model.ID, err)
     }
     return domain.ReconstructUser(
         id,
         model.Name,
         model.Email,
         model.CreatedAt,
-    )
+    ), nil
 }
 ```
 
