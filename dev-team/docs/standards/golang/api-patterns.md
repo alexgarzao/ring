@@ -1,8 +1,8 @@
 # Go Standards - API Patterns
 
-> **Module:** api-patterns.md | **Sections:** §17-19 | **Parent:** [index.md](index.md)
+> **Module:** api-patterns.md | **Sections:** §17-20 | **Parent:** [index.md](index.md)
 
-This module covers API naming conventions, pagination patterns, and OpenAPI documentation.
+This module covers API naming conventions, pagination patterns, HTTP status codes, and OpenAPI documentation.
 
 ---
 
@@ -12,7 +12,8 @@ This module covers API naming conventions, pagination patterns, and OpenAPI docu
 |---|---------|-------------|
 | 1 | [JSON Naming Convention (camelCase)](#json-naming-convention-camelcase-mandatory) | API response field naming |
 | 2 | [Pagination Patterns](#pagination-patterns) | Cursor-based and page-based pagination implementation |
-| 3 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
+| 3 | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory) | 201 for creation, 200 for update |
+| 4 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
 
 ---
 
@@ -474,6 +475,110 @@ Use when: Client needs total count for pagination UI (showing "Page 1 of 10")
 |----------|---------|-------------|
 | `MAX_PAGINATION_LIMIT` | 100 | Maximum allowed limit per request |
 | `MAX_PAGINATION_MONTH_DATE_RANGE` | 1 | Default date range in months |
+
+---
+
+## HTTP Status Code Consistency (MANDATORY)
+
+**Production Finding (P3-3):** Swagger annotations show inconsistent response codes - using 200 OK for resource creation instead of 201 Created.
+
+**⛔ HARD GATE:** HTTP status codes MUST match the operation semantics. Using incorrect status codes breaks API contracts and client expectations.
+
+### Status Code Rules
+
+| Operation | HTTP Method | ✅ Correct Status | ❌ Wrong Status | Description |
+|-----------|-------------|-------------------|-----------------|-------------|
+| Create resource | POST | `201 Created` | 200 OK | New resource created |
+| Update resource | PUT/PATCH | `200 OK` | 201 Created | Existing resource modified |
+| Delete resource | DELETE | `204 No Content` | 200 OK | Resource removed |
+| Get resource | GET | `200 OK` | - | Resource retrieved |
+| List resources | GET | `200 OK` | - | Collection retrieved |
+| Action endpoint | POST | `200 OK` or `202 Accepted` | 201 Created | Action performed (no resource created) |
+
+### Correct Swagger Annotations
+
+```go
+// ✅ CORRECT: 201 Created for POST that creates a resource
+// @Summary      Create a new user
+// @Success      201            {object}  mmodel.User  "Successfully created user"
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    // ... create user ...
+    return libHTTP.Created(c, user)  // Returns 201
+}
+
+// ✅ CORRECT: 200 OK for PUT that updates a resource
+// @Summary      Update user
+// @Success      200            {object}  mmodel.User  "Successfully updated user"
+// @Router       /v1/users/{id} [put]
+func (h *Handler) UpdateUser(c *fiber.Ctx) error {
+    // ... update user ...
+    return libHTTP.OK(c, user)  // Returns 200
+}
+
+// ✅ CORRECT: 204 No Content for DELETE
+// @Summary      Delete user
+// @Success      204            "Successfully deleted user"
+// @Router       /v1/users/{id} [delete]
+func (h *Handler) DeleteUser(c *fiber.Ctx) error {
+    // ... delete user ...
+    return libHTTP.NoContent(c)  // Returns 204
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: 200 OK for resource creation
+// @Summary      Create a new user
+// @Success      200            {object}  mmodel.User  "Successfully created user"  // WRONG: Should be 201
+// @Router       /v1/users [post]
+
+// ❌ FORBIDDEN: 201 Created for update
+// @Summary      Update user
+// @Success      201            {object}  mmodel.User  "Successfully updated user"  // WRONG: Should be 200
+// @Router       /v1/users/{id} [put]
+
+// ❌ FORBIDDEN: Mismatched annotation and implementation
+// @Success      201            {object}  mmodel.User
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    return libHTTP.OK(c, user)  // WRONG: Returns 200, annotation says 201
+}
+```
+
+### lib-commons Response Methods
+
+| Method | Status Code | Use For |
+|--------|-------------|---------|
+| `libHTTP.Created(c, data)` | 201 | POST creating a new resource |
+| `libHTTP.OK(c, data)` | 200 | GET, PUT, PATCH, action POSTs |
+| `libHTTP.NoContent(c)` | 204 | DELETE, successful operations without body |
+| `libHTTP.Accepted(c, data)` | 202 | Async operations (will be processed later) |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with API changes
+# Find 200 OK used for POST creation endpoints
+grep -B 10 "@Router.*\[post\]" internal/adapters/http/in/*.go | grep "@Success.*200"
+
+# Find 201 Created used for PUT/PATCH endpoints
+grep -B 10 "@Router.*\[put\|patch\]" internal/adapters/http/in/*.go | grep "@Success.*201"
+
+# Expected: Both commands return 0 matches
+# If matches found: Fix annotation to use correct status code
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "200 OK is simpler" | Clients expect 201 for creation. Breaking convention breaks clients. | **Use 201 for POST creation** |
+| "Both mean success" | Different semantics: 201 = created, 200 = retrieved/updated. | **Use correct code for operation** |
+| "Frontend ignores status" | Frontend SHOULD check status. API MUST be correct. | **Use correct status code** |
+| "OpenAPI just documents" | OpenAPI is a contract. Wrong docs = broken contract. | **Match annotation to implementation** |
+| "We've always used 200" | Legacy is not justification. Fix during maintenance. | **Correct when modifying endpoint** |
 
 ---
 

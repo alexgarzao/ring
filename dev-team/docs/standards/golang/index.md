@@ -32,7 +32,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 2 | [bootstrap.md](bootstrap.md) | §5-9 | ~1200 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting |
 | 3 | [security.md](security.md) | §9-11 | ~700 | Access Manager, License Manager, Secret Redaction |
 | 4 | [domain.md](domain.md) | §9-12 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
-| 5 | [api-patterns.md](api-patterns.md) | §13 | ~280 | Pagination Patterns (cursor and page-based) |
+| 5 | [api-patterns.md](api-patterns.md) | §17-20 | ~800 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo |
 | 6 | [quality.md](quality.md) | §18-22 | ~1050 | Testing, Logging, Linting, Config Validation, Container Security |
 | 7 | [architecture.md](architecture.md) | §23-27 | ~350 | Architecture, Directory, Concurrency, Goroutine Recovery, N+1 Detection |
 | 8 | [messaging.md](messaging.md) | §20 | ~220 | RabbitMQ Worker Pattern |
@@ -91,51 +91,54 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 17 | Pagination Patterns | [#pagination-patterns](api-patterns.md#pagination-patterns) |
+| 17 | JSON Naming Convention (camelCase) (MANDATORY) | [#json-naming-convention-camelcase-mandatory](api-patterns.md#json-naming-convention-camelcase-mandatory) |
+| 18 | Pagination Patterns | [#pagination-patterns](api-patterns.md#pagination-patterns) |
+| 19 | HTTP Status Code Consistency (MANDATORY) | [#http-status-code-consistency-mandatory](api-patterns.md#http-status-code-consistency-mandatory) |
+| 20 | OpenAPI Documentation (Swaggo) (MANDATORY) | [#openapi-documentation-swaggo-mandatory](api-patterns.md#openapi-documentation-swaggo-mandatory) |
 
 ### Quality (quality.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 18 | Testing | [#testing](quality.md#testing) |
-| 19 | Logging | [#logging](quality.md#logging) |
-| 20 | Linting | [#linting](quality.md#linting) |
-| 21 | Production Config Validation (MANDATORY) | [#production-config-validation-mandatory](quality.md#production-config-validation-mandatory) |
-| 22 | Container Security (CONDITIONAL) | [#container-security-conditional](quality.md#container-security-conditional) |
+| 21 | Testing | [#testing](quality.md#testing) |
+| 22 | Logging | [#logging](quality.md#logging) |
+| 23 | Linting | [#linting](quality.md#linting) |
+| 24 | Production Config Validation (MANDATORY) | [#production-config-validation-mandatory](quality.md#production-config-validation-mandatory) |
+| 25 | Container Security (CONDITIONAL) | [#container-security-conditional](quality.md#container-security-conditional) |
 
 ### Architecture (architecture.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 23 | Architecture Patterns | [#architecture-patterns](architecture.md#architecture-patterns) |
-| 24 | Directory Structure | [#directory-structure](architecture.md#directory-structure) |
-| 25 | Concurrency Patterns | [#concurrency-patterns](architecture.md#concurrency-patterns) |
-| 26 | Goroutine Recovery Patterns (MANDATORY) | [#goroutine-recovery-patterns-mandatory](architecture.md#goroutine-recovery-patterns-mandatory) |
-| 27 | N+1 Query Detection (MANDATORY) | [#n1-query-detection-mandatory](architecture.md#n1-query-detection-mandatory) |
+| 26 | Architecture Patterns | [#architecture-patterns](architecture.md#architecture-patterns) |
+| 27 | Directory Structure | [#directory-structure](architecture.md#directory-structure) |
+| 28 | Concurrency Patterns | [#concurrency-patterns](architecture.md#concurrency-patterns) |
+| 29 | Goroutine Recovery Patterns (MANDATORY) | [#goroutine-recovery-patterns-mandatory](architecture.md#goroutine-recovery-patterns-mandatory) |
+| 30 | N+1 Query Detection (MANDATORY) | [#n1-query-detection-mandatory](architecture.md#n1-query-detection-mandatory) |
 
 ### Messaging (messaging.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 28 | RabbitMQ Worker Pattern | [#rabbitmq-worker-pattern](messaging.md#rabbitmq-worker-pattern) |
+| 31 | RabbitMQ Worker Pattern | [#rabbitmq-worker-pattern](messaging.md#rabbitmq-worker-pattern) |
 
 ### Domain Modeling (domain-modeling.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 29 | Always-Valid Domain Model (MANDATORY) | [#always-valid-domain-model-mandatory](domain-modeling.md#always-valid-domain-model-mandatory) |
+| 32 | Always-Valid Domain Model (MANDATORY) | [#always-valid-domain-model-mandatory](domain-modeling.md#always-valid-domain-model-mandatory) |
 
 ### Idempotency (idempotency.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 30 | Idempotency Patterns (MANDATORY for Transaction APIs) | [#idempotency-patterns-mandatory-for-transaction-apis](idempotency.md#idempotency-patterns-mandatory-for-transaction-apis) |
+| 33 | Idempotency Patterns (MANDATORY for Transaction APIs) | [#idempotency-patterns-mandatory-for-transaction-apis](idempotency.md#idempotency-patterns-mandatory-for-transaction-apis) |
 
 ### Multi-Tenant (multi-tenant.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 31 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
+| 34 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
 
 ### Integration Testing (testing-integration.md)
 
