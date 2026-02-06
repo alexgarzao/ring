@@ -1,11 +1,12 @@
 ---
 name: ring:qa-analyst
-version: 1.5.0
+version: 1.5.1
 description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3) and integration (Gate 3.5) testing modes.
 type: specialist
 model: opus
-last_updated: 2026-02-05
+last_updated: 2026-02-06
 changelog:
+  - 1.5.1: Made output_schema mode-aware - unit-specific sections (Coverage Validation, Summary, Implementation, Files Changed, Testing, Test Execution Results) use required_when test_mode=unit; integration-specific sections (Integration Testing Summary, Scenario Coverage, Quality Gate Results) use required_when test_mode=integration
   - 1.5.0: Added integration testing mode (Gate 3.5) with test_mode parameter, testcontainers patterns, and integration-specific quality gates
   - 1.4.0: Added HARD GATE requiring all testing sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -31,27 +32,58 @@ output_schema:
       description: "PASS if coverage meets threshold and all tests pass; FAIL otherwise"
     - name: "Coverage Validation"
       pattern: "^## Coverage Validation"
-      required: true
-      description: "Threshold comparison showing actual vs required coverage"
+      required: false
+      required_when:
+        test_mode: "unit"
+      description: "Threshold comparison showing actual vs required coverage (unit mode only)"
     - name: "Summary"
       pattern: "^## Summary"
-      required: true
+      required: false
+      required_when:
+        test_mode: "unit"
+      description: "Unit test summary (unit mode only)"
     - name: "Implementation"
       pattern: "^## Implementation"
-      required: true
-      description: "Unit tests actually written and executed, with test output showing RED then GREEN"
+      required: false
+      required_when:
+        test_mode: "unit"
+      description: "Unit tests actually written and executed, with test output showing RED then GREEN (unit mode only)"
     - name: "Files Changed"
       pattern: "^## Files Changed"
-      required: true
-      description: "Test files created or modified"
+      required: false
+      required_when:
+        test_mode: "unit"
+      description: "Test files created or modified (unit mode only)"
     - name: "Testing"
       pattern: "^## Testing"
-      required: true
-      description: "Test results and coverage metrics"
+      required: false
+      required_when:
+        test_mode: "unit"
+      description: "Test results and coverage metrics (unit mode only)"
     - name: "Test Execution Results"
       pattern: "^### Test Execution"
-      required: true
-      description: "Actual test run output showing pass/fail for each test"
+      required: false
+      required_when:
+        test_mode: "unit"
+      description: "Actual test run output showing pass/fail for each test (unit mode only)"
+    - name: "Integration Testing Summary"
+      pattern: "^## Integration Testing Summary"
+      required: false
+      required_when:
+        test_mode: "integration"
+      description: "Integration test metrics (integration mode only)"
+    - name: "Scenario Coverage"
+      pattern: "^## Scenario Coverage"
+      required: false
+      required_when:
+        test_mode: "integration"
+      description: "Integration scenario coverage table (integration mode only)"
+    - name: "Quality Gate Results"
+      pattern: "^## Quality Gate Results"
+      required: false
+      required_when:
+        test_mode: "integration"
+      description: "Integration quality gate checks (integration mode only)"
     - name: "Next Steps"
       pattern: "^## Next Steps"
       required: true
