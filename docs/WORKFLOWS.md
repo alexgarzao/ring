@@ -196,9 +196,9 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ---
 
-## Development Cycle (6-gate)
+## Development Cycle (7-gate)
 
-The **ring:dev-cycle** skill orchestrates task execution through **6 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → testing (Gate 3) → review (Gate 4) → validation (Gate 5). Optional Gate 3.5 (integration testing) runs when the task has external dependencies. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
+The **ring:dev-cycle** skill orchestrates task execution through **7 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → testing (Gate 3) → integration-testing (Gate 3.5, optional) → review (Gate 4) → validation (Gate 5). Gate 3.5 runs when the task has external dependencies or integration scenarios. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
 
 ---
 
