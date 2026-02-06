@@ -261,7 +261,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 12 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
 | 13 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
 | 14 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
-| 15 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | Where exit/fatal/panic is allowed |
+| 15 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
 | 16 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
 | 17 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
 | 18 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
