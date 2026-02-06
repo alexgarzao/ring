@@ -2,7 +2,7 @@
 name: ring:dev-cycle
 description: |
   Main orchestrator for the 7-gate development cycle system. Loads tasks/subtasks
-  from PM team output and executes through implementation → devops → ring:dev-sre → testing → review → validation
+  from PM team output and executes through implementation → devops → ring:sre → testing → review → validation
   gates (with optional Gate 3.5 for integration testing when dependencies exist), with state persistence and metrics collection.
 
 trigger: |
