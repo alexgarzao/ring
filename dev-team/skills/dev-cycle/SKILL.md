@@ -456,9 +456,11 @@ Day 4: Production incident from Day 1 code
 | 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer |
 | 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:dev-sre |
 | 3 | ring:dev-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) |
-| 3.5 | ring:dev-integration-testing | Integration tests for external dependencies | ring:qa-analyst (test_mode: integration) |
+| 3.5 | ring:dev-integration-testing | Integration tests for external dependencies (optional — run only when external dependencies exist)<sup>†</sup> | ring:qa-analyst (test_mode: integration) |
 | 4 | ring:requesting-code-review | Parallel code review | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer (3x parallel) |
 | 5 | ring:dev-validation | Final acceptance validation | N/A (verification) |
+
+<sup>†</sup> **Gate 3.5 (ring:dev-integration-testing):** Optional/conditional. Run only when the task has external dependencies (database, API, queue, etc.). MAY SKIP when there are none; MUST document skip reason in state file.
 
 ## Integrated PM → Dev Workflow
 

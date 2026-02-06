@@ -28,6 +28,8 @@ This module covers integration testing patterns, testcontainers usage, property-
 | INT-14 | [Guardrails (11 Anti-Patterns)](#guardrails-11-anti-patterns-mandatory) | What not to do |
 | INT-15 | [Test Failure Analysis](#test-failure-analysis-no-greenwashing) | Root cause tracking |
 
+**Meta-sections (excluded from agent checks):** [Output Format (Integration Mode)](#output-format-integration-mode) | [Anti-Rationalization Table (Integration Testing)](#anti-rationalization-table-integration-testing)
+
 ---
 
 ## Test Pyramid

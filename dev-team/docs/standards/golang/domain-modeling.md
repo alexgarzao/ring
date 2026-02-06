@@ -141,9 +141,9 @@ func ReconstructRule(id uuid.UUID, name, expression string, createdAt time.Time)
 # MANDATORY: Run before every PR that modifies domain models
 # Find structs in domain packages without New* constructor
 # Explicitly check that find returns files before running the loop
-COUNT=$(find internal/domain pkg/mmodel -maxdepth 1 -name "*.go" 2>/dev/null | wc -l)
+COUNT=$(find internal/domain pkg/mmodel -name "*.go" 2>/dev/null | wc -l)
 if [ "$COUNT" -eq 0 ]; then
-  echo "ERROR: No .go files found in internal/domain or pkg/mmodel (maxdepth 1). Cannot run missing-constructor check." >&2
+  echo "ERROR: No .go files found in internal/domain or pkg/mmodel. Cannot run missing-constructor check." >&2
   exit 1
 fi
 while IFS= read -r -d '' f; do
@@ -153,7 +153,7 @@ while IFS= read -r -d '' f; do
       echo "MISSING CONSTRUCTOR: $f - $s"
     fi
   done
-done < <(find internal/domain pkg/mmodel -maxdepth 1 -name "*.go" -print0 2>/dev/null)
+done < <(find internal/domain pkg/mmodel -name "*.go" -print0 2>/dev/null)
 
 # Expected: All domain structs have New* constructor
 # If missing: BLOCKER - Add constructor before proceeding

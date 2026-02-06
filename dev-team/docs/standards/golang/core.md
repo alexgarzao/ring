@@ -18,6 +18,7 @@ This module covers the foundational requirements for all Go projects.
 | 6 | [Database Migrations](#database-migrations-mandatory) | golang-migrate requirement |
 | 7 | [License Headers](#license-headers-conditional) | Copyright headers in source files |
 | 8 | [MongoDB Patterns](#mongodb-patterns-mandatory) | Injection prevention, pooling, index management |
+| 9 | [Dependency Management](#dependency-management-mandatory) | Go modules, version pinning, security updates |
 
 ---
 
@@ -1205,6 +1206,123 @@ func connectMongoDB(cfg *Config, logger libLog.Logger) (*mongo.Client, error) {
     return client, nil
 }
 ```
+
+---
+
+## Dependency Management (MANDATORY)
+
+**⛔ HARD GATE:** All Go projects MUST use Go modules with explicit version pinning. Floating versions and vendoring without go.mod are FORBIDDEN.
+
+### go.mod Requirements (MANDATORY)
+
+```go
+// ✅ CORRECT: Explicit Go version and module path
+module github.com/LerianStudio/your-service
+
+go 1.24
+
+require (
+    github.com/LerianStudio/lib-commons/v2 v2.4.0
+    github.com/gofiber/fiber/v2 v2.52.0
+    github.com/jackc/pgx/v5 v5.5.0
+)
+```
+
+### Version Pinning Rules
+
+| Type | Pattern | Example | Required? |
+|------|---------|---------|-----------|
+| Direct dependencies | Exact version | `v2.4.0` | ✅ MANDATORY |
+| Indirect dependencies | Managed by go mod | `// indirect` | Auto-managed |
+| Pre-release | Explicit commit | `v0.0.0-20240101-abc123` | When needed |
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Latest/floating versions
+require (
+    github.com/some/package v0.0.0 // WRONG: Not a real version
+)
+
+// ❌ FORBIDDEN: Missing go.sum
+// go.sum MUST be committed to version control
+
+// ❌ FORBIDDEN: Replacing with local paths in committed go.mod
+replace github.com/LerianStudio/lib-commons => ../lib-commons // Development only
+```
+
+### Security Updates (MANDATORY)
+
+**Run weekly or before each release:**
+
+```bash
+# Check for vulnerabilities
+go list -m -json all | go run golang.org/x/vuln/cmd/govulncheck@latest
+
+# Update dependencies (review changes before committing)
+go get -u ./...
+go mod tidy
+
+# Verify no breaking changes
+go build ./...
+go test ./...
+```
+
+### Dependency Review Checklist
+
+```text
+Before adding a new dependency:
+
+[ ] Is it actively maintained? (commits within last 6 months)
+[ ] Does it have a license compatible with Apache 2.0?
+[ ] Is the version stable (not v0.x.x for production)?
+[ ] Does it duplicate functionality already in lib-commons?
+[ ] Is the transitive dependency count acceptable?
+
+If any checkbox fails → Reconsider or document exception.
+```
+
+### Private Modules (GOPRIVATE)
+
+```bash
+# For Lerian private repos
+export GOPRIVATE=github.com/LerianStudio/*
+
+# In ~/.gitconfig
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with dependency changes
+
+# Check for missing go.sum entries
+go mod verify
+
+# Check for unused dependencies
+go mod tidy -v
+
+# List outdated dependencies
+go list -m -u all
+
+# Scan for vulnerabilities
+govulncheck ./...
+
+# Expected: go.sum is complete, no vulnerabilities, no unused deps
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Latest is always best" | Latest can have breaking changes or new bugs. | **Pin explicit versions** |
+| "go.sum is auto-generated" | go.sum is a security artifact. Must be committed. | **Commit go.sum** |
+| "I'll update deps later" | Later = security vulnerabilities accumulate. | **Update regularly** |
+| "Small package, no license needed" | All OSS has licenses. Verify compatibility. | **Check license** |
+| "Vendor folder is safer" | Vendor without go.mod is unmaintainable. | **Use go.mod + go.sum** |
+| "Replace directive for debugging" | Replace directives break reproducible builds. | **Remove before commit** |
 
 ---
 

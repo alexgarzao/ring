@@ -15,6 +15,7 @@ This module covers architecture patterns, directory structure, concurrency, goro
 | 3 | [Concurrency Patterns](#concurrency-patterns) | Goroutines with context and channel patterns |
 | 4 | [Goroutine Recovery Patterns](#goroutine-recovery-patterns-mandatory) | Panic recovery for background goroutines |
 | 5 | [N+1 Query Detection](#n1-query-detection-mandatory) | Avoiding N+1 queries in collection processing |
+| 6 | [Performance Patterns](#performance-patterns-mandatory) | SELECT * avoidance, sync.Pool, memory optimization |
 
 ---
 
@@ -141,6 +142,119 @@ func workerPool(ctx context.Context, jobs <-chan Job, results chan<- Result) {
         }
     }
 }
+```
+
+### Concurrent Map Access (MANDATORY)
+
+**⛔ HARD GATE:** Go maps are NOT safe for concurrent access. Concurrent read/write causes runtime panic.
+
+```go
+// ❌ FORBIDDEN: Concurrent map access without synchronization
+var cache = make(map[string]Value)
+
+func Get(key string) Value {
+    return cache[key] // PANIC if concurrent write
+}
+
+func Set(key, value string) {
+    cache[key] = value // PANIC if concurrent read
+}
+```
+
+**Option 1: sync.RWMutex (RECOMMENDED for read-heavy workloads)**
+
+```go
+// ✅ CORRECT: Protected map with RWMutex
+type SafeCache struct {
+    mu    sync.RWMutex
+    cache map[string]Value
+}
+
+func NewSafeCache() *SafeCache {
+    return &SafeCache{
+        cache: make(map[string]Value),
+    }
+}
+
+func (c *SafeCache) Get(key string) (Value, bool) {
+    c.mu.RLock() // Read lock allows concurrent reads
+    defer c.mu.RUnlock()
+    val, ok := c.cache[key]
+    return val, ok
+}
+
+func (c *SafeCache) Set(key string, value Value) {
+    c.mu.Lock() // Write lock is exclusive
+    defer c.mu.Unlock()
+    c.cache[key] = value
+}
+```
+
+**Option 2: sync.Map (for specialized use cases)**
+
+```go
+// ✅ CORRECT: sync.Map for specific patterns
+// Use when: (1) keys are mostly written once, read many times
+//           (2) multiple goroutines read/write disjoint key sets
+var cache sync.Map
+
+func Get(key string) (Value, bool) {
+    val, ok := cache.Load(key)
+    if !ok {
+        return Value{}, false
+    }
+    return val.(Value), true
+}
+
+func Set(key string, value Value) {
+    cache.Store(key, value)
+}
+```
+
+**When to Use Which:**
+
+| Pattern | Use When | Avoid When |
+|---------|----------|------------|
+| `sync.RWMutex` | Read-heavy workloads, need iteration, clear map | Simple store/load only |
+| `sync.Map` | Write-once/read-many, disjoint goroutine keys | Need iteration, complex operations |
+
+### Loop Variable Capture (Go 1.22+ Behavior)
+
+**Note:** Go 1.22+ changed loop variable semantics. Each iteration creates a new variable.
+
+```go
+// Go 1.21 and earlier: REQUIRED explicit capture
+for _, item := range items {
+    item := item // REQUIRED: capture variable for goroutine
+    go func() {
+        process(item) // Without capture, all goroutines see last item
+    }()
+}
+
+// Go 1.22+: Automatic per-iteration variables (capture still works)
+for _, item := range items {
+    go func() {
+        process(item) // Safe: each iteration has its own `item`
+    }()
+}
+```
+
+**Best Practice:** Continue using explicit capture (`item := item`) for clarity and backward compatibility, even in Go 1.22+.
+
+### Detection Commands (Concurrency)
+
+```bash
+# Find maps that may need protection
+grep -rn "= make(map\|map\[" --include="*.go" | grep -v "_test.go" | head -20
+
+# Find goroutines without recovery wrapper
+grep -rn "go func()" --include="*.go" | grep -v "recovery.Go\|test"
+
+# Find sync.Map usage (review if appropriate)
+grep -rn "sync.Map" --include="*.go"
+
+# Find potential race conditions (requires race detector)
+go test -race ./...
 ```
 
 ---
@@ -401,6 +515,161 @@ grep -rn "for.*{" internal/adapters --include="*.go" -A 15 | grep -E "\.Query\(|
 | "Database handles it" | DB connection pool exhausts under load. | **Use batch/JOIN** |
 | "ORM optimizes it" | ORMs don't auto-optimize N+1. You must. | **Explicit batch/JOIN** |
 | "Caching helps" | Cache miss = N+1. Cold start = N+1. | **Use batch/JOIN** |
+
+---
+
+## Performance Patterns (MANDATORY)
+
+This section covers performance anti-patterns that cause production issues: excessive memory allocation, unbounded queries, and inefficient object reuse.
+
+### SELECT * Avoidance (MANDATORY)
+
+**⛔ HARD GATE:** Using `SELECT *` in production queries is FORBIDDEN. Always specify exact columns needed.
+
+```go
+// ❌ FORBIDDEN: SELECT * fetches all columns including BLOBs, unused fields
+query := "SELECT * FROM users WHERE id = $1"
+rows, _ := db.Query(ctx, query, id)
+
+// ❌ FORBIDDEN: ORM without field selection
+db.Find(&users) // Fetches all columns
+```
+
+```go
+// ✅ CORRECT: Explicit column selection
+query := "SELECT id, name, email, created_at FROM users WHERE id = $1"
+rows, _ := db.Query(ctx, query, id)
+
+// ✅ CORRECT: ORM with explicit fields
+db.Select("id", "name", "email", "created_at").Find(&users)
+
+// ✅ CORRECT: Squirrel query builder
+sq.Select("id", "name", "email", "created_at").
+    From("users").
+    Where(sq.Eq{"id": id})
+```
+
+**Why SELECT * Is Harmful:**
+
+| Problem | Impact |
+|---------|--------|
+| Fetches unused columns | Wasted memory and bandwidth |
+| Includes BLOB/TEXT | Large data transfer for small queries |
+| Schema changes break code | Adding column changes result set |
+| No query optimization | DB can't use covering indexes |
+
+### sync.Pool for Frequent Allocations
+
+**Use sync.Pool when:**
+- Creating many short-lived objects of the same type
+- Object creation is expensive (buffers, parsers)
+- High-throughput scenarios (HTTP handlers, message processing)
+
+```go
+// ✅ CORRECT: sync.Pool for buffer reuse
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func ProcessRequest(data []byte) []byte {
+    // Get buffer from pool
+    buf := bufferPool.Get().(*bytes.Buffer)
+    buf.Reset() // Always reset before use
+
+    // Use buffer
+    buf.Write(data)
+    result := processData(buf)
+
+    // Return to pool
+    bufferPool.Put(buf)
+
+    return result
+}
+```
+
+**sync.Pool Rules:**
+
+| Rule | Rationale |
+|------|-----------|
+| Always Reset() before use | Previous data may remain |
+| Don't store pointers to pooled objects | Object may be reused |
+| Don't assume object identity | Pool may return different object |
+| Put() after use, not in defer | Defer adds overhead in hot paths |
+
+### Memory Allocation Patterns
+
+```go
+// ❌ FORBIDDEN: Allocation in hot loop
+for _, item := range items {
+    buf := make([]byte, 1024) // New allocation each iteration
+    process(buf, item)
+}
+
+// ✅ CORRECT: Reuse allocation
+buf := make([]byte, 1024)
+for _, item := range items {
+    buf = buf[:0] // Reset slice, keep capacity
+    process(buf, item)
+}
+
+// ✅ CORRECT: Pre-allocate slices when size is known
+results := make([]Result, 0, len(items)) // Pre-allocate capacity
+for _, item := range items {
+    results = append(results, process(item))
+}
+```
+
+### String Concatenation
+
+```go
+// ❌ FORBIDDEN: String concatenation in loop (O(n²))
+var result string
+for _, s := range strings {
+    result += s // Creates new string each iteration
+}
+
+// ✅ CORRECT: strings.Builder (O(n))
+var builder strings.Builder
+builder.Grow(estimatedSize) // Pre-allocate if size known
+for _, s := range strings {
+    builder.WriteString(s)
+}
+result := builder.String()
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with query changes
+
+# Find SELECT * usage
+grep -rn "SELECT \*" --include="*.go" | grep -v "_test.go"
+
+# Find ORM queries without Select()
+grep -rn "\.Find(&\|\.First(&" --include="*.go" | grep -v "\.Select("
+
+# Find string concatenation in loops
+grep -rn "for.*{" --include="*.go" -A 5 | grep "+="
+
+# Find allocations in loops (review each)
+grep -rn "for.*{" --include="*.go" -A 5 | grep "make("
+
+# Expected: 0 SELECT * in production code
+# If found: Specify explicit columns
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "SELECT * is more flexible" | Flexibility = wasted resources + schema fragility. | **Specify columns** |
+| "Table only has few columns" | Few now = many later. Think ahead. | **Specify columns** |
+| "sync.Pool is premature optimization" | For hot paths, it's necessary optimization. | **Profile, then decide** |
+| "Allocations are cheap in Go" | Cheap ≠ free. GC pauses affect latency. | **Reuse when possible** |
+| "I'll optimize later" | Later = production incident. Design right first. | **Optimize during design** |
+| "Builder is verbose" | Verbose > quadratic complexity. | **Use strings.Builder** |
 
 ---
 

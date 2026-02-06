@@ -15,6 +15,7 @@ This module covers API naming conventions, pagination patterns, HTTP status code
 | 3 | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory) | 201 for creation, 200 for update |
 | 4 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
 | 5 | [Handler Constructor Pattern](#handler-constructor-pattern-mandatory) | Dependency injection via constructor |
+| 6 | [Input Validation](#input-validation-mandatory) | Request validation at API boundary |
 
 ---
 
@@ -564,8 +565,8 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 # Find 200 OK used for POST creation endpoints
 grep -B 10 "@Router.*\[post\]" internal/adapters/http/in/*.go | grep "@Success.*200"
 
-# Find 201 Created used for PUT/PATCH endpoints
-grep -B 10 "@Router.*\[put\|patch\]" internal/adapters/http/in/*.go | grep "@Success.*201"
+# Find 201 Created used for PUT/PATCH endpoints (use -E for alternation)
+grep -E -B 10 "@Router.*\[(put|patch)\]" internal/adapters/http/in/*.go | grep "@Success.*201"
 
 # Expected: Both commands return 0 matches
 # If matches found: Fix annotation to use correct status code
@@ -958,5 +959,216 @@ grep -rn "type.*Handler struct" internal/adapters/http/in --include="*.go" -A 10
 | "Tests can set fields directly" | Tests should use same constructor as production. | **Use constructor in tests too** |
 | "Handler is small, doesn't need it" | Consistency matters more than size. | **Use constructor for all handlers** |
 | "Public fields are easier to access" | Easier access = easier to corrupt. | **Use private fields + constructor** |
+
+---
+
+## Input Validation (MANDATORY)
+
+**⛔ HARD GATE:** All user input MUST be validated at the API boundary before processing. Trusting user input is FORBIDDEN.
+
+### Defense in Depth Principle
+
+Validate at EVERY layer where data enters the system:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ HTTP Request                                                     │
+│   ↓                                                              │
+│ [Layer 1: Handler] - Struct binding + validation tags            │
+│   ↓                                                              │
+│ [Layer 2: Use Case] - Business rule validation                   │
+│   ↓                                                              │
+│ [Layer 3: Domain] - Domain invariant validation                  │
+│   ↓                                                              │
+│ [Layer 4: Repository] - Database constraints                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Required Validation at Handler Layer
+
+**MANDATORY: Use go-playground/validator v10 with struct tags.**
+
+```go
+import (
+    "github.com/go-playground/validator/v10"
+)
+
+// ✅ CORRECT: Input struct with validation tags
+type CreateUserInput struct {
+    Email     string `json:"email" validate:"required,email,max=255"`
+    FirstName string `json:"firstName" validate:"required,min=1,max=100"`
+    LastName  string `json:"lastName" validate:"required,min=1,max=100"`
+    Age       int    `json:"age" validate:"omitempty,gte=0,lte=150"`
+    Role      string `json:"role" validate:"required,oneof=admin user guest"`
+    Phone     string `json:"phone" validate:"omitempty,e164"`
+}
+
+// Handler validates input before processing
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+
+    var input CreateUserInput
+    if err := c.BodyParser(&input); err != nil {
+        return libHTTP.WithError(c, ErrInvalidJSON)
+    }
+
+    // ✅ CORRECT: Validate before processing
+    if err := h.validator.Struct(input); err != nil {
+        return libHTTP.WithError(c, translateValidationError(err))
+    }
+
+    // Now input is validated, proceed with business logic
+    result, err := h.command.CreateUser(ctx, input)
+    // ...
+}
+```
+
+### Common Validation Tags Reference
+
+| Tag | Description | Example |
+|-----|-------------|---------|
+| `required` | Field must be present and non-zero | `validate:"required"` |
+| `email` | Valid email format | `validate:"email"` |
+| `uuid` | Valid UUID format | `validate:"uuid"` |
+| `min` | Minimum length (string) or value (number) | `validate:"min=1"` |
+| `max` | Maximum length (string) or value (number) | `validate:"max=255"` |
+| `gte` | Greater than or equal | `validate:"gte=0"` |
+| `lte` | Less than or equal | `validate:"lte=100"` |
+| `oneof` | Value must be one of listed | `validate:"oneof=active inactive"` |
+| `e164` | International phone format | `validate:"e164"` |
+| `url` | Valid URL format | `validate:"url"` |
+| `iso8601` | Valid ISO8601 date | `validate:"iso8601"` |
+
+### Validation Error Translation
+
+```go
+// ✅ CORRECT: Translate validation errors to user-friendly messages
+func translateValidationError(err error) error {
+    var validationErrors validator.ValidationErrors
+    if errors.As(err, &validationErrors) {
+        var errMessages []string
+        for _, e := range validationErrors {
+            errMessages = append(errMessages, formatFieldError(e))
+        }
+        return NewValidationError(errMessages)
+    }
+    return ErrInvalidInput
+}
+
+func formatFieldError(e validator.FieldError) string {
+    switch e.Tag() {
+    case "required":
+        return fmt.Sprintf("field '%s' is required", e.Field())
+    case "email":
+        return fmt.Sprintf("field '%s' must be a valid email", e.Field())
+    case "min":
+        return fmt.Sprintf("field '%s' must be at least %s characters", e.Field(), e.Param())
+    case "max":
+        return fmt.Sprintf("field '%s' must be at most %s characters", e.Field(), e.Param())
+    case "oneof":
+        return fmt.Sprintf("field '%s' must be one of: %s", e.Field(), e.Param())
+    default:
+        return fmt.Sprintf("field '%s' failed validation: %s", e.Field(), e.Tag())
+    }
+}
+```
+
+### UUID and Path Parameter Validation
+
+```go
+// ✅ CORRECT: Validate path parameters
+func (h *Handler) GetUser(c *fiber.Ctx) error {
+    userID := c.Params("id")
+
+    // Validate UUID format
+    if _, err := uuid.Parse(userID); err != nil {
+        return libHTTP.WithError(c, ErrInvalidUserID)
+    }
+
+    // Proceed with validated ID
+    user, err := h.query.GetUser(ctx, userID)
+    // ...
+}
+```
+
+### Query Parameter Validation
+
+```go
+// ✅ CORRECT: Validate query parameters with defaults
+func (h *Handler) ListUsers(c *fiber.Ctx) error {
+    // Use lib-commons validation
+    params, err := libHTTP.ValidateParameters(c.Queries())
+    if err != nil {
+        return libHTTP.WithError(c, err)
+    }
+
+    // params.Limit, params.Page are validated and have defaults
+    // ...
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Trusting input without validation
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    var input CreateUserInput
+    c.BodyParser(&input)
+    // WRONG: Using input directly without validation
+    h.command.CreateUser(ctx, input)
+}
+
+// ❌ FORBIDDEN: Validating only some fields
+type CreateUserInput struct {
+    Email string `json:"email" validate:"required,email"`
+    Name  string `json:"name"`  // WRONG: No validation on required field
+}
+
+// ❌ FORBIDDEN: Catching validation errors but not returning them
+if err := h.validator.Struct(input); err != nil {
+    log.Error(err)
+    // WRONG: Continuing despite validation failure
+}
+
+// ❌ FORBIDDEN: Manual validation when tags would suffice
+if input.Email == "" {
+    return ErrEmailRequired  // WRONG: Use validate:"required" tag
+}
+if len(input.Name) > 100 {
+    return ErrNameTooLong  // WRONG: Use validate:"max=100" tag
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with API changes
+
+# Find input structs without validation tags
+grep -rn "type.*Input struct" internal/adapters/http --include="*.go" -A 10 | \
+  grep -v "validate:" | grep "json:"
+
+# Find handlers that use BodyParser without validation
+grep -rn "BodyParser" internal/adapters/http --include="*.go" -A 5 | \
+  grep -v "validator\|Validate\|validate"
+
+# Find path parameter usage without UUID validation
+grep -rn 'Params("id")' internal/adapters/http --include="*.go" -A 3 | \
+  grep -v "uuid.Parse\|ValidateUUID"
+
+# Expected: 0 matches for unvalidated inputs
+# If matches found: Add validation before processing
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Frontend validates input" | Frontend can be bypassed. Server is last defense. | **Validate on server** |
+| "Input comes from trusted service" | Services can be compromised. Trust nothing. | **Validate all input** |
+| "Validation is expensive" | Invalid data processing is more expensive. Fail fast. | **Validate early** |
+| "Database will reject invalid data" | Database errors are cryptic. Validate for clear messages. | **Validate before DB** |
+| "Small internal API doesn't need it" | Internal APIs become external. Build right from start. | **Validate all APIs** |
+| "Manual validation is clearer" | Tags are declarative and consistent. Manual is error-prone. | **Use validation tags** |
 
 ---

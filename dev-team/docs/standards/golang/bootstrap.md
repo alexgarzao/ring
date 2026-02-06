@@ -15,6 +15,7 @@ This module covers application initialization, observability, graceful shutdown,
 | 3 | [Graceful Shutdown Patterns](#graceful-shutdown-patterns-mandatory) | Signal handling, resource cleanup |
 | 4 | [Health Checks](#health-checks-mandatory) | Liveness and readiness endpoints |
 | 5 | [Rate Limiting](#rate-limiting-conditional) | Service-level rate limiting (CONDITIONAL) |
+| 6 | [Connection Management](#connection-management-mandatory) | Database and external service connection handling |
 
 ---
 
@@ -1303,6 +1304,226 @@ grep -rn "Retry-After" internal/adapters/http --include="*.go"
 | "We trust our clients" | Clients can have bugs. Protect the system. | **Add rate limiting or document infrastructure** |
 | "Service is internal" | Internal services can still be DoS'd. | **Evaluate need, document decision** |
 | "Redis adds latency" | 1ms Redis check vs service overload recovery. | **Add rate limiting** |
+
+---
+
+## Connection Management (MANDATORY)
+
+**⛔ HARD GATE:** All external connections (database, Redis, RabbitMQ, HTTP clients) MUST have proper lifecycle management: pooling, timeouts, and cleanup on shutdown.
+
+### Database Connection Pooling (pgx)
+
+**MANDATORY: Use connection pool with explicit configuration.**
+
+```go
+// ✅ CORRECT: Explicit pool configuration
+import (
+    "github.com/jackc/pgx/v5/pgxpool"
+)
+
+func NewDatabasePool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+    config, err := pgxpool.ParseConfig(dsn)
+    if err != nil {
+        return nil, fmt.Errorf("parse database config: %w", err)
+    }
+
+    // Pool configuration (MANDATORY)
+    config.MaxConns = 25                      // Max connections in pool
+    config.MinConns = 5                       // Min connections to keep warm
+    config.MaxConnLifetime = 1 * time.Hour    // Max time a connection lives
+    config.MaxConnIdleTime = 30 * time.Minute // Max time idle before close
+    config.HealthCheckPeriod = 1 * time.Minute
+
+    pool, err := pgxpool.NewWithConfig(ctx, config)
+    if err != nil {
+        return nil, fmt.Errorf("create connection pool: %w", err)
+    }
+
+    // Verify connectivity at startup
+    if err := pool.Ping(ctx); err != nil {
+        pool.Close()
+        return nil, fmt.Errorf("database ping failed: %w", err)
+    }
+
+    return pool, nil
+}
+```
+
+### Connection Pool Guidelines
+
+| Parameter | Recommended Value | Rationale |
+|-----------|-------------------|-----------|
+| `MaxConns` | 20-50 | Prevent connection exhaustion |
+| `MinConns` | 5-10 | Keep warm connections ready |
+| `MaxConnLifetime` | 1 hour | Prevent stale connections |
+| `MaxConnIdleTime` | 30 minutes | Free unused resources |
+| `HealthCheckPeriod` | 1 minute | Detect dead connections |
+
+### HTTP Client Configuration (MANDATORY)
+
+```go
+// ✅ CORRECT: HTTP client with timeouts and connection reuse
+func NewHTTPClient() *http.Client {
+    transport := &http.Transport{
+        MaxIdleConns:        100,
+        MaxIdleConnsPerHost: 10,
+        IdleConnTimeout:     90 * time.Second,
+        DisableKeepAlives:   false, // Enable connection reuse
+    }
+
+    return &http.Client{
+        Transport: transport,
+        Timeout:   30 * time.Second, // Overall request timeout
+    }
+}
+```
+
+### Redis Connection Management
+
+```go
+// ✅ CORRECT: Redis client with pool settings
+import "github.com/redis/go-redis/v9"
+
+func NewRedisClient(addr string) *redis.Client {
+    return redis.NewClient(&redis.Options{
+        Addr:         addr,
+        PoolSize:     10,                  // Connection pool size
+        MinIdleConns: 3,                   // Min idle connections
+        PoolTimeout:  4 * time.Second,     // Wait for connection from pool
+        ReadTimeout:  3 * time.Second,
+        WriteTimeout: 3 * time.Second,
+    })
+}
+```
+
+### RabbitMQ Connection Recovery
+
+```go
+// ✅ CORRECT: RabbitMQ with automatic reconnection
+func (c *RabbitMQClient) Connect() error {
+    var err error
+    for i := 0; i < 5; i++ {
+        c.conn, err = amqp.Dial(c.uri)
+        if err == nil {
+            return nil
+        }
+        time.Sleep(time.Duration(i+1) * time.Second) // Exponential backoff
+    }
+    return fmt.Errorf("failed to connect to RabbitMQ after 5 attempts: %w", err)
+}
+
+// Channel recovery on error
+func (c *RabbitMQClient) ensureChannel() (*amqp.Channel, error) {
+    if c.channel != nil && !c.channel.IsClosed() {
+        return c.channel, nil
+    }
+
+    ch, err := c.conn.Channel()
+    if err != nil {
+        return nil, fmt.Errorf("create channel: %w", err)
+    }
+    c.channel = ch
+    return ch, nil
+}
+```
+
+### Graceful Shutdown Integration
+
+```go
+// ✅ CORRECT: Close connections in reverse order of initialization
+func (s *Service) Shutdown(ctx context.Context) error {
+    // 1. Stop accepting new requests
+    if err := s.httpServer.Shutdown(ctx); err != nil {
+        s.logger.Error("HTTP server shutdown error", zap.Error(err))
+    }
+
+    // 2. Close message queues
+    if s.rabbitMQ != nil {
+        if err := s.rabbitMQ.Close(); err != nil {
+            s.logger.Error("RabbitMQ close error", zap.Error(err))
+        }
+    }
+
+    // 3. Close caches
+    if s.redis != nil {
+        if err := s.redis.Close(); err != nil {
+            s.logger.Error("Redis close error", zap.Error(err))
+        }
+    }
+
+    // 4. Close database last
+    if s.db != nil {
+        s.db.Close()
+    }
+
+    // 5. Flush telemetry
+    if s.telemetry != nil {
+        if err := s.telemetry.Shutdown(ctx); err != nil {
+            s.logger.Error("Telemetry shutdown error", zap.Error(err))
+        }
+    }
+
+    return nil
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: No timeout on database connection
+pool, err := pgxpool.New(ctx, dsn) // WRONG: Uses defaults
+
+// ❌ FORBIDDEN: HTTP client without timeout
+client := &http.Client{} // WRONG: No timeout = can hang forever
+
+// ❌ FORBIDDEN: Single connection instead of pool
+conn, err := pgx.Connect(ctx, dsn) // WRONG: Single connection
+
+// ❌ FORBIDDEN: Not closing connections on shutdown
+func main() {
+    db, _ := pgxpool.New(ctx, dsn)
+    // WRONG: No defer db.Close() or shutdown handler
+}
+
+// ❌ FORBIDDEN: Creating new client per request
+func (h *Handler) GetUser(c *fiber.Ctx) error {
+    client := &http.Client{} // WRONG: Creates new client each request
+    client.Get(...)
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with connection changes
+
+# Find database connections without pool config
+grep -rn "pgxpool.New\|pgx.Connect" --include="*.go" | grep -v "pgxpool.NewWithConfig"
+
+# Find HTTP clients without timeout
+grep -rn "&http.Client{}" --include="*.go"
+
+# Find missing pool Close() calls
+grep -rn "pgxpool.New" --include="*.go" -l | xargs -I{} sh -c \
+  'grep -L "Close()" {} 2>/dev/null && echo "MISSING Close: {}"'
+
+# Find Redis clients without pool config
+grep -rn "redis.NewClient" --include="*.go" -A 5 | grep -v "PoolSize"
+
+# Expected: All connections use pooling with explicit config
+# If violations found: STOP. Fix before proceeding.
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Defaults are fine" | Defaults don't match production needs. Explicit is better. | **Configure pool explicitly** |
+| "Service doesn't get much traffic" | Low traffic ≠ no limits. Prevent resource leaks. | **Set connection limits** |
+| "Connection timeouts slow things down" | Timeouts prevent cascading failures. Essential. | **Set appropriate timeouts** |
+| "I'll close in main()" | Main may not run on panic/kill. Use defer/signal. | **Use graceful shutdown** |
+| "Single connection is simpler" | Single connection = bottleneck + no recovery. | **Use connection pool** |
+| "Client per request is clearer" | Client per request = socket exhaustion. | **Reuse HTTP clients** |
 
 ---
 
