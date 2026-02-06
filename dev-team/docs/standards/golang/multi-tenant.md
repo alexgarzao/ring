@@ -6,6 +6,15 @@ This module covers multi-tenant patterns with Pool Manager.
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Multi-Tenant Patterns (CONDITIONAL)](#multi-tenant-patterns-conditional) | Configuration, JWT extraction, context injection |
+| 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | IDOR prevention, tenant verification in queries |
+
+---
+
 ## Multi-Tenant Patterns (CONDITIONAL)
 
 **CONDITIONAL:** Only implement if `MULTI_TENANT_ENABLED=true` is required for your service.

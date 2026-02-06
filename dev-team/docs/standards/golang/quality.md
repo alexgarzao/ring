@@ -1032,9 +1032,11 @@ func InitServers() (*Service, error) {
 ```go
 // cmd/server/main.go
 func main() {
+    logger := libZap.InitializeLogger()
     svc, err := InitServers()
     if err != nil {
-        log.Fatalf("startup failed: %v", err)  // or logger.Fatal; exit non-zero
+        logger.Errorf("startup failed: %v", err)
+        os.Exit(1)
     }
     // run svc...
 }

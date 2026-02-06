@@ -253,6 +253,9 @@ func (mq *MultiQueueConsumer) handleWithRetry(ctx context.Context, body []byte) 
 
 ```go
 // isRetryable classifies errors for handleWithRetry. Non-retryable errors fail fast; retryable errors use backoff.
+// NOTE: ErrInvalidInput and ErrDuplicateKey below are placeholder sentinel errors for domain-specific validation/
+// business rules. Teams MUST define these in their codebase (or import from a shared package) and replace with
+// their project's own sentinel errors so readers aren't left searching for undefined symbols.
 func isRetryable(err error) bool {
     if err == nil {
         return false
@@ -261,7 +264,7 @@ func isRetryable(err error) bool {
     if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
         return false
     }
-    // Known non-retryable business/validation errors
+    // Known non-retryable business/validation errors (define ErrInvalidInput, ErrDuplicateKey in your project)
     if errors.Is(err, ErrInvalidInput) || errors.Is(err, ErrDuplicateKey) {
         return false
     }

@@ -849,23 +849,23 @@ type UserHandler struct {
 }
 
 // NewUserHandler creates a handler with validated dependencies
-// MANDATORY: Constructor validates all dependencies
-func NewUserHandler(cmd *command.UseCase, qry *query.UseCase, logger libLog.Logger) *UserHandler {
+// MANDATORY: Constructor validates all dependencies; returns error instead of panicking
+func NewUserHandler(cmd *command.UseCase, qry *query.UseCase, logger libLog.Logger) (*UserHandler, error) {
     if cmd == nil {
-        panic("command use case is required")  // Fail fast at startup, not request time
+        return nil, fmt.Errorf("command use case is required")
     }
     if qry == nil {
-        panic("query use case is required")
+        return nil, fmt.Errorf("query use case is required")
     }
     if logger == nil {
-        panic("logger is required")
+        return nil, fmt.Errorf("logger is required")
     }
 
     return &UserHandler{
         command: cmd,
         query:   qry,
         logger:  logger,
-    }
+    }, nil
 }
 
 // Handler methods use injected dependencies
@@ -880,16 +880,20 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 ```go
 // internal/bootstrap/config.go
 
-func InitServers() *Service {
+func InitServers() (*Service, error) {
     // ... initialize dependencies ...
 
-    // CORRECT: Use constructor
-    userHandler := httpin.NewUserHandler(commandUseCase, queryUseCase, logger)
+    // CORRECT: Use constructor and handle error
+    userHandler, err := httpin.NewUserHandler(commandUseCase, queryUseCase, logger)
+    if err != nil {
+        return nil, fmt.Errorf("create user handler: %w", err)
+    }
 
     // Pass handler to router
     httpApp := httpin.NewRouter(logger, telemetry, userHandler)
 
     // ...
+    return &Service{httpApp: httpApp}, nil
 }
 ```
 
