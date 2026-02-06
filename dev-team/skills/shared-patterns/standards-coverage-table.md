@@ -260,24 +260,25 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 11 | Rate Limiting | bootstrap.md | `#rate-limiting-conditional` | **⚠️ CONDITIONAL** - Service-level rate limiting (if not handled by infrastructure) |
 | 12 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
 | 13 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
-| 14 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
-| 15 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
-| 16 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
-| 17 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
-| 18 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
-| 19 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
-| 20 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
-| 21 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
-| 22 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
-| 23 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
-| 24 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, magic numbers (mnd), golangci-lint |
-| 25 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
-| 26 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
-| 27 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
-| 28 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
-| 29 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
-| 30 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 31 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
+| 14 | Secret Redaction Patterns | security.md | `#secret-redaction-patterns-mandatory` | **Credential leak prevention (MANDATORY)**, connection string redaction, detection commands |
+| 15 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
+| 16 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
+| 17 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
+| 18 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
+| 19 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
+| 20 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
+| 21 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
+| 22 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
+| 23 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
+| 24 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 25 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, magic numbers (mnd), golangci-lint |
+| 26 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 27 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 28 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
+| 29 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
+| 30 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
+| 31 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 32 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
 
 **Module Loading Guide:**
 

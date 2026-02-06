@@ -1,8 +1,18 @@
 # Go Standards - Security
 
-> **Module:** security.md | **Sections:** §7-8 | **Parent:** [index.md](index.md)
+> **Module:** security.md | **Sections:** §9-11 | **Parent:** [index.md](index.md)
 
-This module covers authentication and licensing.
+This module covers authentication, licensing, and secret protection.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Access Manager Integration](#access-manager-integration-mandatory) | lib-auth integration for authn/authz |
+| 2 | [License Manager Integration](#license-manager-integration-mandatory) | lib-license-go for license validation |
+| 3 | [Secret Redaction Patterns](#secret-redaction-patterns-mandatory) | Preventing credential leaks in logs |
 
 ---
 
@@ -536,6 +546,165 @@ For local development without license validation, you can omit the license clien
 1. Use a valid development license key
 2. Comment out the license middleware during local development
 3. Use the development license server: `IS_DEVELOPMENT=true`
+
+---
+
+## Secret Redaction Patterns (MANDATORY)
+
+**Production Finding:** Audit found RabbitMQ credentials logged to stdout, exposing AMQP connection strings with usernames and passwords in CloudWatch logs.
+
+**⛔ HARD GATE:** Credentials, connection strings, API keys, and tokens MUST NOT appear in logs.
+
+### FORBIDDEN Patterns (CRITICAL)
+
+```go
+// ❌ FORBIDDEN: Logging connection strings
+logger.Infof("Connecting to: %s", amqpURI)  // EXPOSES: amqp://user:password@host:5672
+
+// ❌ FORBIDDEN: Logging DSN/connection strings
+logger.Infof("Database: %s", databaseDSN)  // EXPOSES: postgres://user:password@host/db
+
+// ❌ FORBIDDEN: Logging environment variables with secrets
+for k, v := range os.Environ() {
+    logger.Infof("%s=%s", k, v)  // EXPOSES: DB_PASSWORD, API_KEY, etc.
+}
+
+// ❌ FORBIDDEN: Logging config struct with secrets
+logger.Infof("Config: %+v", cfg)  // EXPOSES: all fields including passwords
+
+// ❌ FORBIDDEN: Logging HTTP headers with auth
+logger.Infof("Headers: %v", req.Header)  // EXPOSES: Authorization header
+
+// ❌ FORBIDDEN: Using fmt.Printf for connection strings
+fmt.Printf("AMQP: %s\n", amqpURI)  // EXPOSES: credentials to stdout
+```
+
+### Correct Patterns (REQUIRED)
+
+```go
+// ✅ CORRECT: Redact connection strings before logging
+func redactConnectionString(uri string) string {
+    // amqp://user:password@host:5672 → amqp://***:***@host:5672
+    u, err := url.Parse(uri)
+    if err != nil {
+        return "[invalid-uri]"
+    }
+    if u.User != nil {
+        u.User = url.UserPassword("***", "***")
+    }
+    return u.String()
+}
+
+logger.Infof("Connecting to: %s", redactConnectionString(amqpURI))
+
+// ✅ CORRECT: Log only safe portions
+logger.Infof("Connecting to RabbitMQ at %s:%s", cfg.RabbitMQHost, cfg.RabbitMQPort)
+
+// ✅ CORRECT: Redact config before logging
+type SafeConfig struct {
+    Host     string `json:"host"`
+    Port     string `json:"port"`
+    Database string `json:"database"`
+    // Password omitted
+}
+logger.Infof("Config: %+v", SafeConfig{Host: cfg.Host, Port: cfg.Port, Database: cfg.Database})
+
+// ✅ CORRECT: Use lib-commons logger (automatically redacts sensitive patterns)
+logger.Infof("Service started on %s", cfg.ServerAddress)  // No secrets in this field
+```
+
+### Secrets that MUST NOT be Logged
+
+| Secret Type | Example Pattern | Detection Regex |
+|-------------|-----------------|-----------------|
+| AMQP URI | `amqp://user:pass@host` | `amqp://[^:]+:[^@]+@` |
+| Postgres DSN | `postgres://user:pass@host/db` | `postgres://[^:]+:[^@]+@` |
+| MongoDB URI | `mongodb://user:pass@host` | `mongodb://[^:]+:[^@]+@` |
+| Redis URI | `redis://user:pass@host` | `redis://[^:]+:[^@]+@` |
+| API Keys | `sk_live_xxxxx`, `api_key=xxxxx` | `(sk_\|api[_-]?key)` |
+| Bearer Tokens | `Authorization: Bearer xxx` | `Bearer\s+[A-Za-z0-9-_]+` |
+| AWS Credentials | `AKIA...`, `aws_secret_access_key` | `AKIA[A-Z0-9]{16}` |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that touches config or logging
+
+# Find direct connection string logging
+grep -rn "log.*amqp://\|fmt.Print.*amqp://\|logger.*amqp://" --include="*.go"
+grep -rn "log.*postgres://\|fmt.Print.*postgres://\|logger.*postgres://" --include="*.go"
+grep -rn "log.*mongodb://\|fmt.Print.*mongodb://\|logger.*mongodb://" --include="*.go"
+
+# Find password logging
+grep -rn "password.*log\|log.*password" --include="*.go" -i
+
+# Find config struct logging (review each match)
+grep -rn 'Infof.*%\+v.*cfg\|Printf.*%\+v.*config' --include="*.go"
+
+# Find environment variable dumps
+grep -rn "os.Environ\(\)" --include="*.go"
+
+# Expected: 0 matches for connection strings with credentials
+# If any match found: STOP. Fix before proceeding.
+```
+
+### lib-commons Logger Configuration
+
+When using lib-commons logger, configure secret redaction:
+
+```go
+// lib-commons/v2 automatically redacts certain patterns
+// But you MUST NOT pass secrets to the logger in the first place
+
+// ❌ Still FORBIDDEN even with lib-commons:
+logger.Infof("Config: %+v", cfg)  // May contain secrets
+
+// ✅ CORRECT: Only log safe fields
+logger.Infof("Server starting on %s", cfg.ServerAddress)
+```
+
+### Environment Variable Handling
+
+```go
+// ❌ FORBIDDEN: Iterating and logging all env vars
+for _, env := range os.Environ() {
+    log.Println(env)
+}
+
+// ✅ CORRECT: Log only specific, safe env vars
+logger.Infof("Environment: %s, Server: %s", os.Getenv("ENV_NAME"), os.Getenv("SERVER_ADDRESS"))
+
+// ✅ CORRECT: Use structured config loading (lib-commons)
+cfg := &Config{}
+if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+    panic(err)  // Never logs the env vars
+}
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We need connection strings for debugging" | Logs are stored and shared. Secrets leak to CloudWatch, Grafana, S3. | **Log redacted strings only** |
+| "Only developers see logs" | Logs go to centralized systems accessible by many. | **Redact all secrets** |
+| "It's just the dev environment" | Dev logs train bad habits. Same code goes to prod. | **Redact in all environments** |
+| "The password is rotated anyway" | Rotation doesn't help if old password is in logs. | **Never log secrets** |
+| "I'm just debugging locally" | Local debugging code gets committed. | **Remove debug logging before commit** |
+| "lib-commons handles it" | lib-commons can't redact what you pass to it. | **Don't pass secrets to logger** |
+
+### Verification Checklist (Before PR)
+
+```text
+Before submitting PR that adds logging:
+
+[ ] Did I search for connection string patterns in my changes?
+[ ] Did I verify no passwords are logged (even in debug statements)?
+[ ] Did I avoid logging entire config structs (%+v)?
+[ ] Did I avoid logging HTTP headers that may contain Authorization?
+[ ] Did I run the detection commands above?
+
+If any checkbox is unchecked → FIX before submitting.
+```
 
 ---
 

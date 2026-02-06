@@ -30,7 +30,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|--------|----------|-------|-------------|
 | 1 | [core.md](core.md) | §1-4 | ~225 | Version, lib-commons, Frameworks, Configuration |
 | 2 | [bootstrap.md](bootstrap.md) | §5-8 | ~1050 | Observability, Bootstrap, Health Checks, Rate Limiting |
-| 3 | [security.md](security.md) | §7-8 | ~530 | Access Manager, License Manager |
+| 3 | [security.md](security.md) | §9-11 | ~700 | Access Manager, License Manager, Secret Redaction |
 | 4 | [domain.md](domain.md) | §9-12 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Functions |
 | 5 | [api-patterns.md](api-patterns.md) | §13 | ~280 | Pagination Patterns (cursor and page-based) |
 | 6 | [quality.md](quality.md) | §14-16 | ~245 | Testing, Logging, Linting |
@@ -70,62 +70,63 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|---------|--------|
 | 9 | Access Manager Integration (MANDATORY) | [#access-manager-integration-mandatory](security.md#access-manager-integration-mandatory) |
 | 10 | License Manager Integration (MANDATORY) | [#license-manager-integration-mandatory](security.md#license-manager-integration-mandatory) |
+| 11 | Secret Redaction Patterns (MANDATORY) | [#secret-redaction-patterns-mandatory](security.md#secret-redaction-patterns-mandatory) |
 
 ### Domain Patterns (domain.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 11 | Data Transformation: ToEntity/FromEntity (MANDATORY) | [#data-transformation-toentityfromentity-mandatory](domain.md#data-transformation-toentityfromentity-mandatory) |
-| 12 | Error Codes Convention (MANDATORY) | [#error-codes-convention-mandatory](domain.md#error-codes-convention-mandatory) |
-| 13 | Error Handling | [#error-handling](domain.md#error-handling) |
-| 14 | Exit/Fatal Location Rules (MANDATORY) | [#exitfatal-location-rules-mandatory](domain.md#exitfatal-location-rules-mandatory) |
-| 15 | Function Design (MANDATORY) | [#function-design-mandatory](domain.md#function-design-mandatory) |
+| 12 | Data Transformation: ToEntity/FromEntity (MANDATORY) | [#data-transformation-toentityfromentity-mandatory](domain.md#data-transformation-toentityfromentity-mandatory) |
+| 13 | Error Codes Convention (MANDATORY) | [#error-codes-convention-mandatory](domain.md#error-codes-convention-mandatory) |
+| 14 | Error Handling | [#error-handling](domain.md#error-handling) |
+| 15 | Exit/Fatal Location Rules (MANDATORY) | [#exitfatal-location-rules-mandatory](domain.md#exitfatal-location-rules-mandatory) |
+| 16 | Function Design (MANDATORY) | [#function-design-mandatory](domain.md#function-design-mandatory) |
 
 ### API Patterns (api-patterns.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 16 | Pagination Patterns | [#pagination-patterns](api-patterns.md#pagination-patterns) |
+| 17 | Pagination Patterns | [#pagination-patterns](api-patterns.md#pagination-patterns) |
 
 ### Quality (quality.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 17 | Testing | [#testing](quality.md#testing) |
-| 18 | Logging | [#logging](quality.md#logging) |
-| 19 | Linting | [#linting](quality.md#linting) |
+| 18 | Testing | [#testing](quality.md#testing) |
+| 19 | Logging | [#logging](quality.md#logging) |
+| 20 | Linting | [#linting](quality.md#linting) |
 
 ### Architecture (architecture.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 20 | Architecture Patterns | [#architecture-patterns](architecture.md#architecture-patterns) |
-| 21 | Directory Structure | [#directory-structure](architecture.md#directory-structure) |
-| 22 | Concurrency Patterns | [#concurrency-patterns](architecture.md#concurrency-patterns) |
+| 21 | Architecture Patterns | [#architecture-patterns](architecture.md#architecture-patterns) |
+| 22 | Directory Structure | [#directory-structure](architecture.md#directory-structure) |
+| 23 | Concurrency Patterns | [#concurrency-patterns](architecture.md#concurrency-patterns) |
 
 ### Messaging (messaging.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 23 | RabbitMQ Worker Pattern | [#rabbitmq-worker-pattern](messaging.md#rabbitmq-worker-pattern) |
+| 24 | RabbitMQ Worker Pattern | [#rabbitmq-worker-pattern](messaging.md#rabbitmq-worker-pattern) |
 
 ### Domain Modeling (domain-modeling.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 24 | Always-Valid Domain Model (MANDATORY) | [#always-valid-domain-model-mandatory](domain-modeling.md#always-valid-domain-model-mandatory) |
+| 25 | Always-Valid Domain Model (MANDATORY) | [#always-valid-domain-model-mandatory](domain-modeling.md#always-valid-domain-model-mandatory) |
 
 ### Idempotency (idempotency.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 25 | Idempotency Patterns (MANDATORY for Transaction APIs) | [#idempotency-patterns-mandatory-for-transaction-apis](idempotency.md#idempotency-patterns-mandatory-for-transaction-apis) |
+| 26 | Idempotency Patterns (MANDATORY for Transaction APIs) | [#idempotency-patterns-mandatory-for-transaction-apis](idempotency.md#idempotency-patterns-mandatory-for-transaction-apis) |
 
 ### Multi-Tenant (multi-tenant.md)
 
 | # | Section | Anchor |
 |---|---------|--------|
-| 26 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
+| 27 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
 
 ### Integration Testing (testing-integration.md)
 
