@@ -9,7 +9,7 @@
     {
       "name": "ring-default",
       "description": "Core skills library for the Lerian Team: TDD, debugging, collaboration patterns, and proven techniques. Features parallel 3-reviewer code review system (Foundation, Correctness, Safety), systematic debugging, and workflow orchestration. 21 essential skills for software engineering excellence.",
-      "version": "1.2.4",
+      "version": "1.2.5",
       "source": "./default",
       "homepage": "https://github.com/lerianstudio/ring/tree/default",
       "repository": "https://github.com/lerianstudio/ring/tree/default",
@@ -30,7 +30,7 @@
     {
       "name": "ring-dev-team",
       "description": "7 specialized developer agents + 10 development skills + 5 slash commands: 6-gate development cycle (implementation->devops->SRE->testing->review->validation), integrated with PM team output. Go/TypeScript Backend specialists, DevOps Engineer, Frontend TypeScript specialist, Frontend Designer, QA Analyst, and SRE. Complete development team coverage with TDD, observability, and security best practices.",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "source": "./dev-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/dev-team",
       "repository": "https://github.com/lerianstudio/ring/tree/dev-team",
@@ -76,7 +76,7 @@
     {
       "name": "ring-pmo-team",
       "description": "PMO (Project Management Office) specialists for portfolio-level oversight: 5 agents (portfolio-manager, resource-planner, risk-analyst, governance-specialist, executive-reporter), 8 skills for portfolio planning, resource allocation, risk management, and executive reporting. Complements ring-pm-team (single feature) with portfolio-level coordination.",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "source": "./pmo-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pmo-team",
       "repository": "https://github.com/lerianstudio/ring/tree/pmo-team",
@@ -131,5 +131,5 @@
       ]
     }
   ],
-  "version": "0.217.0"
+  "version": "0.218.0"
 }
