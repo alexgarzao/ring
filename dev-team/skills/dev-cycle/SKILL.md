@@ -2,8 +2,9 @@
 name: ring:dev-cycle
 description: |
   Main orchestrator for the 10-gate development cycle system. Loads tasks/subtasks
-  from PM team output and executes through implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing → chaos testing → review → validation
+  from PM team output and executes through implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing (write) → chaos testing (write) → review → validation
   gates (Gates 0-9), with state persistence and metrics collection.
+  Gates 6-7 (integration/chaos) write and update test code per unit but only execute tests at end of cycle (deferred execution).
 
 trigger: |
   - Starting a new development cycle with a task file
@@ -93,9 +94,15 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 10 gates (Gate 0–9): implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing → chaos testing → review → validation. Tasks are loaded at initialization - no separate import gate.
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 10 gates (Gate 0–9) with **deferred execution** for infrastructure-dependent tests:
 
-**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9)."
+- **Gates 0-5, 8-9 (per unit):** Write code + run tests per task/subtask
+- **Gates 6-7 (per unit):** Write/update integration and chaos test code, verify compilation, but do **not execute** tests (no containers)
+- **Gates 6-7 (end of cycle):** Execute all integration and chaos tests once after all units complete
+
+This keeps test code current with each feature while avoiding redundant container spin-ups during development.
+
+**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -182,8 +189,8 @@ This is not negotiable:
 - Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
 - Gate 4: `Skill("ring:dev-fuzz-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="fuzz", ...)`
 - Gate 5: `Skill("ring:dev-property-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="property", ...)`
-- Gate 6: `Skill("ring:dev-integration-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="integration", ...)`
-- Gate 7: `Skill("ring:dev-chaos-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="chaos", ...)`
+- Gate 6: `Skill("ring:dev-integration-testing")` → per unit: write/update tests + compile check (no execution); end of cycle: execute
+- Gate 7: `Skill("ring:dev-chaos-testing")` → per unit: write/update tests + compile check (no execution); end of cycle: execute
 - Gate 8: `Skill("ring:requesting-code-review")` → then 5x `Task(...)` in parallel
 - Gate 9: `Skill("ring:dev-validation")` → N/A (verification only)
 </cannot_skip>
@@ -437,13 +444,17 @@ Day 4: Production incident from Day 1 code
 | "Can finish remaining in next cycle" | Gates don't carry over. Complete NOW. | **Finish current gate** |
 | "Core components done, optional can wait" | No component is optional within a gate. | **Complete all components** |
 | "Unit tests are enough, skip fuzz/property" | Each test type catches different bugs. All are MANDATORY. | **Execute all testing gates (3-7)** |
-| "No external dependencies, skip integration" | Integration testing is MANDATORY. Verify internal integration too. | **Execute Gate 6** |
+| "No external dependencies, skip integration" | Integration testing is MANDATORY. Write tests per unit, execute at end of cycle. | **Write Gate 6 tests per unit, execute at end** |
 
 ---
 
 ## Gate Order Enforcement (HARD GATE)
 
-**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9. All 10 gates are MANDATORY.**
+**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5 → 6(write) → 7(write) → 8 → 9. All 10 gates are MANDATORY.**
+
+**Deferred Execution Model for Gates 6-7:**
+- **Per unit:** Write/update test code + verify compilation (no container execution)
+- **End of cycle:** Execute all integration and chaos tests (containers spun up once)
 
 | Violation | Why It's WRONG | Consequence |
 |-----------|----------------|-------------|
@@ -462,20 +473,22 @@ Day 4: Production incident from Day 1 code
 
 ## The 10 Gates
 
-| Gate | Skill | Purpose | Agent | Standards Module |
-|------|-------|---------|-------|------------------|
-| 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain | core.md, domain.md |
-| 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer | devops.md |
-| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre | sre.md |
-| 3 | ring:dev-unit-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) | testing-unit.md |
-| 4 | ring:dev-fuzz-testing | Fuzz tests for edge cases and crashes | ring:qa-analyst (test_mode: fuzz) | testing-fuzz.md |
-| 5 | ring:dev-property-testing | Property-based tests for domain invariants | ring:qa-analyst (test_mode: property) | testing-property.md |
-| 6 | ring:dev-integration-testing | Integration tests with testcontainers | ring:qa-analyst (test_mode: integration) | testing-integration.md |
-| 7 | ring:dev-chaos-testing | Chaos tests for failure scenarios | ring:qa-analyst (test_mode: chaos) | testing-chaos.md |
-| 8 | ring:requesting-code-review | Parallel code review (5 reviewers) | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer | N/A |
-| 9 | ring:dev-validation | Final acceptance validation | N/A (verification) | N/A |
+| Gate | Skill | Purpose | Agent | Per Unit | Standards Module |
+|------|-------|---------|-------|----------|------------------|
+| 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain | Write + Run | core.md, domain.md |
+| 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer | Write + Run | devops.md |
+| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre | Write + Run | sre.md |
+| 3 | ring:dev-unit-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) | Write + Run | testing-unit.md |
+| 4 | ring:dev-fuzz-testing | Fuzz tests for edge cases and crashes | ring:qa-analyst (test_mode: fuzz) | Write + Run | testing-fuzz.md |
+| 5 | ring:dev-property-testing | Property-based tests for domain invariants | ring:qa-analyst (test_mode: property) | Write + Run | testing-property.md |
+| 6 | ring:dev-integration-testing | Integration tests with testcontainers | ring:qa-analyst (test_mode: integration) | **Write only** | testing-integration.md |
+| 7 | ring:dev-chaos-testing | Chaos tests for failure scenarios | ring:qa-analyst (test_mode: chaos) | **Write only** | testing-chaos.md |
+| 8 | ring:requesting-code-review | Parallel code review (5 reviewers) | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer | Run | N/A |
+| 9 | ring:dev-validation | Final acceptance validation | N/A (verification) | Run | N/A |
 
 **All gates are MANDATORY. No exceptions. No skip reasons.**
+
+**Gates 6-7 Deferred Execution:** Test code is written/updated per unit to stay current. Actual test execution (with containers) happens once at end of cycle.
 
 ## Integrated PM → Dev Workflow
 
@@ -488,14 +501,21 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **10 gates** (implementation→devops→SRE→unit→fuzz→property→integration→chaos→review→validation) before the next unit. All gates are MANDATORY.
+**Core Principle:** Each execution unit passes through all 10 gates. Gates 6-7 write test code per unit but defer execution to end of cycle.
 
-**Flow:** Unit → Gate 0→1→2→3→4→5→6→7→8→9 → 🔒 Unit Checkpoint (Step 11.1) → 🔒 Task Checkpoint (Step 11.2) → Next Unit
+**Per-Unit Flow:** Unit → Gate 0→1→2→3→4→5→6(write)→7(write)→8→9 → 🔒 Unit Checkpoint → 🔒 Task Checkpoint → Next Unit
+**End-of-Cycle Flow:** All units done → Gate 6(execute)→7(execute) → Final Commit → Feedback
 
-| Scenario | Execution Unit | Gates Per Unit |
-|----------|----------------|----------------|
-| Task without subtasks | Task itself | 10 gates (all MANDATORY) |
-| Task with subtasks | Each subtask | 10 gates per subtask (all MANDATORY) |
+| Scenario | Execution Unit | Gates Per Unit | End of Cycle |
+|----------|----------------|----------------|--------------|
+| Task without subtasks | Task itself | 10 gates (6-7 write only) | Gate 6-7 execute |
+| Task with subtasks | Each subtask | 10 gates per subtask (6-7 write only) | Gate 6-7 execute |
+
+**Why deferred execution for Gates 6-7:**
+- Integration tests require testcontainers (slow to spin up/tear down)
+- Chaos tests require Toxiproxy infrastructure
+- Running containers per subtask is wasteful when subsequent subtasks modify the same code
+- Test code stays current (written per unit), infrastructure cost is paid once
 
 ## Commit Timing
 
@@ -2345,11 +2365,13 @@ property_testing_input = {
 
 ---
 
-## Step 8: Gate 6 - Integration Testing (Per Execution Unit)
+## Step 8: Gate 6 - Integration Testing (Per Execution Unit — WRITE ONLY)
 
 **REQUIRED SUB-SKILL:** Use `ring:dev-integration-testing`
 
 **MANDATORY GATE:** All code MUST have integration tests using testcontainers.
+
+**⛔ DEFERRED EXECUTION:** Per unit, this gate writes/updates integration test code and verifies compilation. Tests are NOT executed here (no containers). Actual execution happens at end of cycle (Step 12.1).
 
 ### Step 8.1: Prepare Input for ring:dev-integration-testing Skill
 
@@ -2359,107 +2381,87 @@ Gather from previous gates:
 integration_testing_input = {
   // REQUIRED - from current execution unit
   unit_id: state.current_unit.id,
-  integration_scenarios: state.current_unit.integration_scenarios || [],  // list of scenarios
-  external_dependencies: state.current_unit.external_dependencies || [],  // postgres, redis, rabbitmq
-  language: state.current_unit.language,  // "go" | "typescript"
+  integration_scenarios: state.current_unit.integration_scenarios || [],
+  external_dependencies: state.current_unit.external_dependencies || [],
+  language: state.current_unit.language,
+  mode: "write_only",  // CRITICAL: write tests, verify compilation, do NOT execute
 
   // OPTIONAL - additional context
-  gate5_handoff: agent_outputs.property_testing,  // full Gate 5 output
+  gate5_handoff: agent_outputs.property_testing,
   implementation_files: agent_outputs.implementation.files_changed
 }
 ```
 
-### Step 8.2: Invoke ring:dev-integration-testing Skill
+### Step 8.2: Invoke ring:dev-integration-testing Skill (Write Mode)
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-integration-testing skill with structured input:
+2. REQUIRED: Invoke ring:dev-integration-testing skill with structured input:
 
    Skill("ring:dev-integration-testing") with input:
      unit_id: integration_testing_input.unit_id
      integration_scenarios: integration_testing_input.integration_scenarios
      external_dependencies: integration_testing_input.external_dependencies
      language: integration_testing_input.language
+     mode: "write_only"
      gate5_handoff: integration_testing_input.gate5_handoff
      implementation_files: integration_testing_input.implementation_files
 
-   The skill handles:
+   In write_only mode, the skill handles:
    - Dispatching ring:qa-analyst agent (test_mode: integration)
-   - Integration test creation using testcontainers
-   - Quality gate validation (build tags, no hardcoded ports, etc.)
-   - Scenario coverage verification
-   - Dispatching fixes to implementation agent if issues found
-   - Re-validation loop (max 3 iterations)
+   - Writing/updating integration test code for current unit's changes
+   - Verifying test compilation (go build ./... or tsc --noEmit)
+   - Verifying build tags (//go:build integration) present
+   - Verifying testcontainers imports present
+   - NOT spinning up containers or executing tests
 
-3. Parse skill output for results:
+3. REQUIRED: Parse skill output for results:
 
-   Expected output sections:
-   - "## Integration Testing Summary" → status, iterations
-   - "## Scenario Coverage" → IS-to-test mapping
-   - "## Quality Gate Results" → build tags, testcontainers, etc.
-   - "## Handoff to Next Gate" → ready_for_review: YES/NO
+   Expected output:
+   - "## Integration Test Code" → files written/updated
+   - "## Compilation Check" → PASS/FAIL
+   - "## Standards Compliance" → build tags, naming, testcontainers
 
-   if skill output contains "Status: PASS":
-     → Gate 6 PASSED. Proceed to Step 8.3.
+   if compilation PASS and standards met:
+     → Gate 6 (write) PASSED. Proceed to Step 8.3.
 
-   if skill output contains "Status: FAIL":
-     → Gate 6 BLOCKED.
-     → Skill already dispatched fixes to implementation agent
-     → Skill already re-ran tests
-     → If "ESCALATION" in output: STOP and report to user
+   if compilation FAIL:
+     → Gate 6 BLOCKED. Fix compilation errors before proceeding.
 
 4. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
 ```
 
-### Step 8.3: Gate 6 Complete
+### Step 8.3: Gate 6 (Write) Complete
 
 ```text
-5. When ring:dev-integration-testing skill returns PASS:
+5. Update state:
+   - gate_progress.integration_testing.write_status = "completed"
+   - gate_progress.integration_testing.execution_status = "deferred"  // Executed at end of cycle
+   - gate_progress.integration_testing.test_files = [list of test files written/updated]
+   - gate_progress.integration_testing.compilation_passed = true
 
-   Parse from skill output:
-   - scenarios_tested: extract count from "## Integration Testing Summary"
-   - tests_passed: extract from "## Integration Testing Summary"
-   - tests_failed: extract from "## Integration Testing Summary"
-   - iterations: extract from "Iterations:" line
-
-   - agent_outputs.integration_testing = {
-       skill: "ring:dev-integration-testing",
-       output: "[full skill output]",
-       verdict: "PASS",
-       scenarios_tested: [count],
-       tests_passed: [count],
-       tests_failed: 0,
-       flaky_tests_detected: 0,
-       iterations: [count],
-       timestamp: "[ISO timestamp]",
-       duration_ms: [execution time]
-     }
-
-6. Update state:
-   - gate_progress.integration_testing.status = "completed"
-   - gate_progress.integration_testing.scenarios_tested = [count]
-   - gate_progress.integration_testing.tests_passed = [count]
-
-7. Proceed to Gate 7 (Chaos Testing)
+6. Proceed to Gate 7 (Chaos Testing — Write Only)
 ```
 
 ### Gate 6 Pressure Resistance
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Unit tests cover integration" | "Unit tests mock dependencies. Integration tests verify real behavior. Both required." |
-| "Testcontainers is slow" | "Correctness > speed. Real dependencies catch real bugs." |
-| "CI doesn't have Docker" | "Docker is baseline infrastructure. Fix CI before skipping integration tests." |
-| "No time for integration" | "Integration bugs cost 10x more in production. Testing is non-negotiable." |
+| "Unit tests cover integration" | "Unit tests mock dependencies. Integration tests verify real behavior. Write the tests now, execute at end of cycle." |
+| "Skip writing, we'll add tests later" | "Test code MUST be written per unit to stay current. Only execution is deferred." |
+| "No external dependencies to test" | "Verify internal integration too. Write the tests, they'll execute at end of cycle." |
+| "Just run the tests now" | "Deferred execution avoids redundant container spin-ups. Tests execute once at end of cycle." |
 
 ---
 
-## Step 9: Gate 7 - Chaos Testing (Per Execution Unit)
+## Step 9: Gate 7 - Chaos Testing (Per Execution Unit — WRITE ONLY)
 
 **REQUIRED SUB-SKILL:** Use `ring:dev-chaos-testing`
 
 **MANDATORY GATE:** All external dependencies MUST have chaos tests for failure scenarios.
+
+**⛔ DEFERRED EXECUTION:** Per unit, this gate writes/updates chaos test code and verifies compilation. Tests are NOT executed here (no Toxiproxy). Actual execution happens at end of cycle (Step 12.1).
 
 ### Step 9.1: Prepare Input for ring:dev-chaos-testing Skill
 
@@ -2471,52 +2473,54 @@ chaos_testing_input = {
   unit_id: state.current_unit.id,
   external_dependencies: state.current_unit.external_dependencies || [],
   language: state.current_unit.language,
+  mode: "write_only",  // CRITICAL: write tests, verify compilation, do NOT execute
 
   // OPTIONAL - additional context
   gate6_handoff: agent_outputs.integration_testing
 }
 ```
 
-### Step 9.2: Invoke ring:dev-chaos-testing Skill
+### Step 9.2: Invoke ring:dev-chaos-testing Skill (Write Mode)
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-chaos-testing skill with structured input:
+2. REQUIRED: Invoke ring:dev-chaos-testing skill with structured input:
 
    Skill("ring:dev-chaos-testing") with input:
      unit_id: chaos_testing_input.unit_id
      external_dependencies: chaos_testing_input.external_dependencies
      language: chaos_testing_input.language
+     mode: "write_only"
      gate6_handoff: chaos_testing_input.gate6_handoff
 
-   The skill handles:
+   In write_only mode, the skill handles:
    - Dispatching ring:qa-analyst agent (test_mode: chaos)
-   - Toxiproxy setup and configuration
-   - Dual-gate pattern (CHAOS=1 + testing.Short())
-   - Failure scenario coverage (connection loss, latency, partition)
-   - Recovery verification
-   - Dispatching fixes if failures not handled gracefully
-   - Re-validation loop (max 3 iterations)
+   - Writing/updating chaos test code for current unit's dependencies
+   - Verifying test compilation
+   - Verifying dual-gate pattern (CHAOS=1 + testing.Short())
+   - Verifying Toxiproxy imports present
+   - NOT starting Toxiproxy or executing failure scenarios
 
 3. Parse skill output for results:
 
-   if skill output contains "Status: PASS":
-     → Gate 7 PASSED. Proceed to Gate 8.
+   if compilation PASS and standards met:
+     → Gate 7 (write) PASSED. Proceed to Gate 8.
 
-   if skill output contains "Status: FAIL":
-     → Gate 7 BLOCKED.
+   if compilation FAIL:
+     → Gate 7 BLOCKED. Fix compilation errors before proceeding.
 
 4. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
 ```
 
-### Step 9.3: Gate 7 Complete
+### Step 9.3: Gate 7 (Write) Complete
 
 ```text
 5. Update state:
-   - gate_progress.chaos_testing.status = "completed"
-   - gate_progress.chaos_testing.failure_scenarios_tested = [count]
-   - gate_progress.chaos_testing.recovery_verified = true
+   - gate_progress.chaos_testing.write_status = "completed"
+   - gate_progress.chaos_testing.execution_status = "deferred"  // Executed at end of cycle
+   - gate_progress.chaos_testing.test_files = [list of test files written/updated]
+   - gate_progress.chaos_testing.compilation_passed = true
 
 6. Proceed to Gate 8 (Review)
 ```
@@ -2525,10 +2529,10 @@ chaos_testing_input = {
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Chaos testing is overkill" | "Chaos tests verify graceful degradation. Production failures are inevitable." |
-| "Our infrastructure is reliable" | "All infrastructure fails. Chaos testing ensures your code handles it." |
-| "Toxiproxy setup is complex" | "One container, 20 minutes setup. Prevents production incidents." |
-| "No time for chaos testing" | "Chaos testing is MANDATORY. All external dependencies need failure tests." |
+| "Chaos testing is overkill" | "Chaos tests verify graceful degradation. Write them now, execute at end of cycle." |
+| "Skip writing, add later" | "Test code MUST be written per unit. Only execution is deferred to end of cycle." |
+| "Just run the chaos tests now" | "Deferred execution avoids redundant Toxiproxy spin-ups. Tests execute once at end of cycle." |
+| "No time for chaos testing" | "Writing chaos tests per unit takes minutes. Execution cost is paid once at end." |
 
 ---
 
@@ -2894,6 +2898,63 @@ After completing all subtasks of a task:
 **Note:** Tasks without subtasks execute both 7.1 and 7.2 in sequence.
 
 ## Step 12: Cycle Completion
+
+### Step 12.0: Deferred Test Execution (Gates 6-7)
+
+**⛔ MANDATORY: Execute integration and chaos tests before final commit.**
+
+All units have written/updated test code during their Gate 6-7 passes. Now execute all tests once.
+
+```text
+1. Record deferred execution start timestamp
+
+2. REQUIRED: Invoke ring:dev-integration-testing skill in EXECUTE mode:
+
+   Skill("ring:dev-integration-testing") with input:
+     mode: "execute"
+     all_test_files: [aggregate gate_progress.integration_testing.test_files from all units]
+     language: state.language
+
+   The skill handles:
+   - Spinning up testcontainers for all external dependencies
+   - Running ALL integration tests across all units
+   - Reporting pass/fail per test file
+   - If failures: dispatching fixes and re-running (max 3 iterations)
+
+3. REQUIRED: Invoke ring:dev-chaos-testing skill in EXECUTE mode:
+
+   Skill("ring:dev-chaos-testing") with input:
+     mode: "execute"
+     all_test_files: [aggregate gate_progress.chaos_testing.test_files from all units]
+     language: state.language
+
+   The skill handles:
+   - Starting Toxiproxy
+   - Running ALL chaos tests across all units
+   - Verifying recovery for all failure scenarios
+   - If failures: dispatching fixes and re-running (max 3 iterations)
+
+4. Update state:
+   - gate_progress.integration_testing.execution_status = "completed" (or "failed")
+   - gate_progress.chaos_testing.execution_status = "completed" (or "failed")
+
+5. if any test FAILS after 3 iterations:
+   → HARD BLOCK. Cannot complete cycle.
+   → Report failures to user.
+
+6. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
+```
+
+### Step 12.0 Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "All unit/fuzz/property tests passed, skip integration" | Different test types catch different bugs. All are MANDATORY. | **Execute deferred tests** |
+| "Tests were written, that's enough" | Written ≠ passing. Execution verifies real behavior. | **Execute deferred tests** |
+| "Containers are slow, let CI handle it" | CI is backup, not replacement. Verify locally first. | **Execute deferred tests** |
+| "One test failed but it's flaky" | Flaky = unreliable = fix it. No exceptions. | **Fix and re-run** |
+
+### Step 12.1: Final Commit
 
 0. **FINAL COMMIT CHECK (before completion):**
    - if `commit_timing == "at_end"`:
