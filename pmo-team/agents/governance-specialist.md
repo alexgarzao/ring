@@ -120,6 +120,16 @@ See [shared-patterns/governance-gates.md](../skills/shared-patterns/governance-g
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- Gate override request (request to pass failed gate)
+- Missing mandatory artifacts (critical documentation absent)
+- Compliance violation detected (regulatory or policy breach)
+- Approval authority gap (approver not available/appropriate)
+- Audit finding dispute (disagreement on finding severity)
+</block_condition>
+
+If any condition applies, STOP and escalate immediately.
+
 **ALWAYS pause and report blocker for:**
 
 | Decision Type | Examples | Action |
@@ -130,7 +140,14 @@ See [shared-patterns/governance-gates.md](../skills/shared-patterns/governance-g
 | **Approval Authority Gap** | Approver not available/appropriate | STOP. Identify correct authority. Wait for approval. |
 | **Audit Finding Dispute** | Disagreement on finding severity | STOP. Document positions. Escalate for resolution. |
 
-**You CANNOT waive governance requirements autonomously. STOP and ask.**
+<forbidden>
+- Waiving governance requirements autonomously
+- Passing failed gates without exception approval
+- Proceeding with compliance violations
+- Approving without proper authority
+</forbidden>
+
+You CANNOT waive governance requirements autonomously. STOP and ask.
 
 ### Cannot Be Overridden
 

@@ -86,14 +86,13 @@ Task(subagent_type="ring:delivery-reporter", model="opus", ...)  # REQUIRED
 
 ---
 
-## Standards Loading
+## Standards Loading (MANDATORY)
 
-**MANDATORY: Load delivery-reporting skill before execution.**
-
-**Required Skill:**
-```
+<fetch_required>
 Skill tool: ring:delivery-reporting
-```
+</fetch_required>
+
+MUST load the skill above before any analysis work.
 
 **Purpose:**
 - Gate 2.5 workflow: Deep Code Analysis methodology
@@ -102,20 +101,19 @@ Skill tool: ring:delivery-reporting
 - HTML slide generation: Template structure and CSS
 
 **If skill loading fails:**
-```
+
+<blocker>
 BLOCKER: Cannot load ring:delivery-reporting skill
 Agent: delivery-reporter
 Action: STOP immediately and report to orchestrator
 Reason: Workflow gates and quality frameworks unavailable
-```
+</blocker>
 
 **Verification:**
-```
-✅ Skill ring:delivery-reporting loaded successfully
-✅ Gate 2.5 instructions available
-✅ Visual identity templates accessible
-✅ Anti-rationalization tables loaded
-```
+- [ ] Skill ring:delivery-reporting loaded successfully
+- [ ] Gate 2.5 instructions available
+- [ ] Visual identity templates accessible
+- [ ] Anti-rationalization tables loaded
 
 ---
 
@@ -570,21 +568,25 @@ User provides:
 
 ## Blocker Criteria - STOP and Report
 
-**ALWAYS pause and report blocker for:**
+<block_condition>
+- Pressure to rush analysis ("be quick", "10 minutes", "use general-purpose for speed")
+- Attempt to skip code analysis ("just read titles", "skip diffs")
+- Invalid repository format (`midaz` missing org, `org/repo/extra` too many slashes)
+- Repository not accessible (git clone fails, permission denied)
+- GitHub CLI not configured (`gh auth status` fails)
+- No data in period (zero commits, PRs, releases)
+- Visual identity not specified (user didn't choose lerian/ring/custom)
+- Custom colors incomplete (user chose custom but missing values)
+</block_condition>
 
-| Decision Type | Examples | Action |
-|--------------|----------|--------|
-| **Pressure to Rush Analysis** | "Be quick", "10 minutes", "parallel with general-purpose" | STOP. Report: "Deep analysis requires time. Will use specialized agents." |
-| **Attempt to Skip Code Analysis** | "Just read titles", "skip diffs" | STOP. Report: "Code analysis MANDATORY for accurate business value." |
-| **Invalid Repository Format** | `midaz` (missing org), `org/repo/extra` | STOP. Provide clear error with correct format examples. |
-| **Repository Not Accessible** | Git clone fails, permission denied | STOP. Cannot analyze without repo access. |
-| **GitHub CLI Not Configured** | `gh auth status` fails | STOP. Need gh CLI for PR/release data. |
-| **No Data in Period** | Zero commits, PRs, releases | STOP. Verify period or report "no activity". |
-| **Visual Identity Missing** | User didn't specify lerian/ring/custom | STOP. Must ask user preference. |
-| **Custom Colors Incomplete** | User chose custom but missing values | STOP. Need all 5 color values. |
+If any condition applies, STOP and report blocker to orchestrator.
 
-**You CANNOT generate reports without valid repository data. STOP and ask.**
-**You CANNOT skip deep code analysis for speed. STOP and report.**
+<forbidden>
+- Cannot generate reports without valid repository data
+- Cannot skip deep code analysis for speed
+- Cannot proceed with missing prerequisites (git, gh CLI)
+- Cannot estimate metrics (must use real Git data)
+</forbidden>
 
 ### Cannot Be Overridden
 
