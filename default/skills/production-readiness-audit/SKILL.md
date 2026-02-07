@@ -28,7 +28,7 @@ Use this skill when:
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
-| 1 | **Pagination Standards** | Cursor vs offset pagination, limit validation, response structure |
+| 1 | **Pagination Standards** | Cursor-based pagination (MANDATORY), limit validation, response structure |
 | 2 | **Error Framework** | Domain errors, error codes convention, error handling, error propagation |
 | 3 | **Route Organization** | Hexagonal structure, handler construction, route registration |
 | 4 | **Bootstrap & Initialization** | Staged startup, cleanup handlers, graceful shutdown |
@@ -318,12 +318,12 @@ Audit pagination implementation across the codebase for production readiness.
 
 **Reference Implementation (GOOD):**
 ```go
-// Cursor-based pagination with proper validation
+// Cursor-based pagination with proper validation (camelCase JSON)
 type CursorResponse struct {
-    NextCursor string `json:"next_cursor,omitempty"`
-    PrevCursor string `json:"prev_cursor,omitempty"`
+    NextCursor string `json:"nextCursor,omitempty"`
+    PrevCursor string `json:"prevCursor,omitempty"`
     Limit      int    `json:"limit"`
-    HasMore    bool   `json:"has_more"`
+    HasMore    bool   `json:"hasMore"`
 }
 
 // Limit validation with ceiling
@@ -336,19 +336,21 @@ if limit < 1 {
 ```
 
 **Check Against Ring Standards For:**
-1. (HARD GATE) Consistent pagination response structure matching Ring standards across all list endpoints
-2. (HARD GATE) Maximum limit enforcement (typically 100-200) per api-patterns.md
-3. Cursor-based pagination for real-time data (preferred over offset)
-4. Proper error handling for invalid pagination params
-5. Default values when params missing
-6. Response field names match Ring API conventions (snake_case JSON)
+1. HARD GATE: Consistent pagination response structure matching Ring standards across all list endpoints
+2. HARD GATE: Maximum limit enforcement (typically 100-200) per api-patterns.md
+3. HARD GATE: Cursor-based pagination for all list endpoints. FORBIDDEN: offset pagination
+4. MUST: Proper error handling for invalid pagination params
+5. MUST: Default values when params missing
+6. MUST: Response field names match Ring API conventions (camelCase JSON)
 
 **Severity Ratings:**
 - CRITICAL: No limit validation (allows unlimited queries)
 - CRITICAL: HARD GATE violation per Ring standards — pagination response structure missing entirely
+- CRITICAL: Using offset pagination instead of cursor-based (HARD GATE violation)
 - HIGH: Inconsistent pagination structures across endpoints
-- MEDIUM: Using offset pagination for frequently-changing data
-- LOW: Missing cursor pagination where beneficial
+- HIGH: Missing cursor fields (nextCursor, prevCursor, hasMore)
+- MEDIUM: Cursor implementation incomplete (missing prevCursor for bidirectional navigation)
+- LOW: Missing pagination metadata (total count, page info)
 
 **Output Format:**
 ```
@@ -356,15 +358,16 @@ if limit < 1 {
 
 ### Summary
 - Total list endpoints: X
-- Using cursor pagination: Y
-- Using offset pagination: Z
+- Using cursor pagination: Y (REQUIRED: should equal X)
+- Using offset pagination: Z (CRITICAL: should be 0)
 - Missing limit validation: N
 
 ### Critical Issues
 [file:line] - Description
 
 ### Recommendations
-1. ...
+1. Migrate all offset pagination to cursor-based
+2. ...
 ```
 ```
 
@@ -2687,9 +2690,9 @@ Audit naming conventions across the codebase for production readiness.
 // Go struct with correct naming conventions
 type Account struct {
     ID          uuid.UUID `json:"id" gorm:"column:id"`
-    DisplayName string    `json:"display_name" gorm:"column:display_name"`  // camelCase JSON, snake_case DB
-    AccountType string    `json:"account_type" gorm:"column:account_type"`
-    CreatedAt   time.Time `json:"created_at" gorm:"column:created_at"`
+    DisplayName string    `json:"displayName" gorm:"column:display_name"`   // camelCase JSON, snake_case DB
+    AccountType string    `json:"accountType" gorm:"column:account_type"`   // camelCase JSON, snake_case DB
+    CreatedAt   time.Time `json:"createdAt" gorm:"column:created_at"`       // camelCase JSON, snake_case DB
 }
 
 // Query parameters use snake_case
@@ -2706,11 +2709,11 @@ type Account struct {
 
 **Reference Implementation (BAD):**
 ```go
-// BAD: Inconsistent JSON naming
+// BAD: Inconsistent JSON naming (using snake_case instead of camelCase)
 type Account struct {
     ID          uuid.UUID `json:"id"`
-    DisplayName string    `json:"displayName"`    // camelCase instead of snake_case
-    AccountType string    `json:"account_type"`   // snake_case — inconsistent with above!
+    DisplayName string    `json:"display_name"`   // snake_case — should be camelCase!
+    AccountType string    `json:"accountType"`    // camelCase — inconsistent with above!
     CreatedAt   time.Time `json:"CreatedAt"`      // PascalCase — wrong!
 }
 
@@ -2720,7 +2723,7 @@ type Account struct {
 
 **Check Against Ring Standards For:**
 1. snake_case for database column names in migrations and GORM tags
-2. snake_case for JSON response body fields (json:"field_name")
+2. camelCase for JSON response body fields (json:"fieldName")
 3. snake_case for query parameters
 4. PascalCase for Go exported types and functions
 5. camelCase for Go unexported fields and variables
@@ -2728,6 +2731,7 @@ type Account struct {
 
 **Severity Ratings:**
 - HIGH: Inconsistent JSON field naming across response DTOs (mix of conventions)
+- HIGH: JSON fields using snake_case instead of camelCase
 - MEDIUM: Query params not using snake_case
 - MEDIUM: Database columns not using snake_case
 - LOW: Minor naming inconsistencies within a single file
@@ -2738,20 +2742,20 @@ type Account struct {
 
 ### Summary
 - JSON fields audited: X
-- Using snake_case JSON: Y/X
+- Using camelCase JSON: Y/X (REQUIRED: should equal X)
 - DB columns using snake_case: Y/Z
 - Query params using snake_case: Y/Z
 - Naming convention violations: N
 
 ### Issues by Convention
 #### JSON Naming
-[file:line] - Field "displayName" should be "display_name"
+[file:line] - Field "display_name" should be "displayName" (camelCase)
 
 #### Database Naming
-[file:line] - Column "displayName" should be "display_name"
+[file:line] - Column "displayName" should be "display_name" (snake_case)
 
 #### Query Parameter Naming
-[file:line] - Param "accountType" should be "account_type"
+[file:line] - Param "accountType" should be "account_type" (snake_case)
 
 ### Recommendations
 1. ...
