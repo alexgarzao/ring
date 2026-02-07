@@ -202,8 +202,6 @@ async function processOrder(orderId) {
 
 #### API & Web Security
 - [ ] CSRF protection enabled
-- [ ] CORS configured restrictively (not `*` in production)
-- [ ] Rate limiting implemented
 - [ ] Security headers present (HSTS, X-Frame-Options, X-Content-Type-Options, CSP)
 - [ ] No information disclosure in error messages
 

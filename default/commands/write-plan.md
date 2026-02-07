@@ -16,7 +16,7 @@ Create a comprehensive implementation plan for a feature, with exact file paths,
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `feature-name` | Yes | Descriptive name for the feature (e.g., "user-authentication", "payment-webhooks", "api-rate-limiting") |
+| `feature-name` | Yes | Descriptive name for the feature (e.g., "user-authentication", "payment-webhooks", "email-notifications") |
 
 ## Examples
 

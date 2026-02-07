@@ -520,7 +520,6 @@ Login Request → AuthController → AuthService (validate credentials) → JwtS
 
 ### Related Areas to Explore
 - Session management: Currently stateless, consider `src/config/session.ts` if adding sessions
-- Rate limiting: `src/middleware/rate-limit.middleware.ts` protects auth endpoints
 
 ### Potential Concerns Noticed
 - Refresh tokens stored in localStorage (XSS risk) - consider httpOnly cookies
