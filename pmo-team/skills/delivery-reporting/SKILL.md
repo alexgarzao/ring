@@ -67,7 +67,7 @@ This skill provides a framework for:
 
 ## Visual Identity Options
 
-When generating delivery reports, MUST ask user for visual identity preference:
+MUST ask user for visual identity preference when generating delivery reports:
 
 ### Option 1: Lerian Studio (Default)
 

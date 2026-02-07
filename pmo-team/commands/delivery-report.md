@@ -393,7 +393,8 @@ Report MUST meet these standards:
 | Repositories | Expected Duration |
 |--------------|-------------------|
 | 1-2 repos | 5-10 minutes |
-| 3-5 repos | 10-20 minutes |
-| 6+ repos | 20-30 minutes |
+| 3-5 repos | 15-30 minutes |
+| 6-8 repos | 30-60 minutes |
+| 8+ repos | 40-80 minutes |
 
 **Large repository analysis takes time. Be patient and let agent complete full analysis.**
