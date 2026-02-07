@@ -336,12 +336,12 @@ if limit < 1 {
 ```
 
 **Check Against Ring Standards For:**
-1. (HARD GATE) Consistent pagination response structure matching Ring standards across all list endpoints
-2. (HARD GATE) Maximum limit enforcement (typically 100-200) per api-patterns.md
-3. (HARD GATE) Cursor-based pagination for all list endpoints (offset pagination is FORBIDDEN)
-4. Proper error handling for invalid pagination params
-5. Default values when params missing
-6. Response field names match Ring API conventions (camelCase JSON)
+1. HARD GATE: Consistent pagination response structure matching Ring standards across all list endpoints
+2. HARD GATE: Maximum limit enforcement (typically 100-200) per api-patterns.md
+3. HARD GATE: Cursor-based pagination for all list endpoints. FORBIDDEN: offset pagination
+4. MUST: Proper error handling for invalid pagination params
+5. MUST: Default values when params missing
+6. MUST: Response field names match Ring API conventions (camelCase JSON)
 
 **Severity Ratings:**
 - CRITICAL: No limit validation (allows unlimited queries)

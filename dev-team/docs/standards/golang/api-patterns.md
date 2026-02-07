@@ -96,7 +96,7 @@ GET /v1/users?limit=10&page=1&sort_order=asc&start_date=2024-01-01&end_date=2024
 GET /v1/users?limit=10&page=1&sortOrder=asc&startDate=2024-01-01&endDate=2024-12-31
 ```
 
-#### Response Body - Pagination Fields (snake_case)
+#### Response Body - Pagination Fields (camelCase)
 
 ```go
 // ✅ CORRECT: Pagination response fields use camelCase
@@ -222,9 +222,9 @@ grep -rn 'json:"nextCursor\|json:"prevCursor\|json:"hasMore' --include="*.go" ./
 |-----------|------|---------|-------------|
 | `cursor` | string | (none) | Base64-encoded cursor from previous response |
 | `limit` | int | 10 | Items per page (max: 100) |
-| `sortOrder` | string | "asc" | Sort direction: "asc" or "desc" |
-| `startDate` | datetime | (calculated) | Filter start date |
-| `endDate` | datetime | now | Filter end date |
+| `sort_order` | string | "asc" | Sort direction: "asc" or "desc" |
+| `start_date` | datetime | (calculated) | Filter start date |
+| `end_date` | datetime | now | Filter end date |
 
 ### Response Structure (camelCase JSON)
 
