@@ -84,7 +84,7 @@ Use this skill when:
 | 26 | **CI/CD Pipeline** | Pipeline definitions, automated tests, security scanning |
 | 27 | **Async Reliability** | DLQs, retry policies, consumer group usage, message durability |
 | 32 | **Makefile & Dev Tooling** | 17+ required Makefile commands, dev workflow automation |
-| 34 | **License Headers** *(CONDITIONAL)* | Copyright headers on all .go files — only if LICENSE file exists |
+| 34 | **License Headers** | Copyright headers on all .go files |
 
 ## Execution Protocol
 
@@ -101,7 +101,7 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:
 | 1 | 1-9 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR*, SQL, Input) *conditional on MULTITENANT |
 | 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Unit Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
-| 4 | 31-34 | Quality (Linting) + Infrastructure (Makefile, Multi-Tenant*, License*) (* = conditional) |
+| 4 | 31-34 | Quality (Linting) + Infrastructure (Makefile, Multi-Tenant*, License) (* = conditional) |
 | 5 | 35-38 + Summary | Quality (Fuzz Testing, Property Testing, Integration Testing, Chaos Testing) + Final Summary |
 
 ### Step 0: Stack Detection
@@ -117,7 +117,7 @@ Before running any explorers, detect the project stack to determine which Ring s
 | `**/package.json` + Express/Fastify deps | TS_BACKEND=true | (future enrichment) |
 | `**/Dockerfile*` exists | DOCKER=true | devops.md |
 | `**/Makefile` exists | MAKEFILE=true | devops.md → Makefile Standards |
-| `**/LICENSE*` exists | LICENSE=true | Activates dimension 34 |
+| `**/LICENSE*` exists | LICENSE=true | For reference in dimension 34 |
 | Multi-tenant indicators (`tenantId`, `tenant_id`, `pool_manager` in config/code) | MULTITENANT=true | multi-tenant.md |
 
 **Detection Logic:**
@@ -199,7 +199,6 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 | **Active Dimensions** | {36 base + N conditional} |
 | **Max Possible Score** | {360 + conditional points} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
-| **Conditional: License Headers** | {Active / Inactive} |
 
 ---
 ```
@@ -266,7 +265,6 @@ Task(subagent_type="Explore", prompt="<Agent 31: Linting & Code Quality>")
 Task(subagent_type="Explore", prompt="<Agent 32: Makefile & Dev Tooling>")
 # CONDITIONAL: Only if MULTITENANT=true
 Task(subagent_type="Explore", prompt="<Agent 33: Multi-Tenant Patterns>")
-# CONDITIONAL: Only if LICENSE=true
 Task(subagent_type="Explore", prompt="<Agent 34: License Headers>")
 ```
 
@@ -3193,9 +3191,7 @@ func (r *Repo) Save(ctx context.Context, entity *Entity) error {
 ### Agent 34: License Headers Auditor
 
 ```prompt
-**CONDITIONAL: Only run this auditor if LICENSE=true is set. If the project does not require license headers, skip this audit and report "N/A - License headers not required".**
-
-Audit license/copyright headers on source files for production readiness.
+Audit license/copyright headers on source files for production readiness. All source files MUST have proper license headers.
 
 **Detected Stack:** {DETECTED_STACK}
 
@@ -3697,7 +3693,6 @@ After all explorers complete, generate this report:
 | **Active Dimensions** | {36 base + N conditional} |
 | **Max Possible Score** | {dynamic_max} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
-| **Conditional: License Headers** | {Active / Inactive} |
 
 ## Executive Summary
 
@@ -3767,10 +3762,8 @@ After all explorers complete, generate this report:
 | 26. CI/CD Pipeline | X/10 | 0 | 0 | 0 | 0 |
 | 27. Async Reliability | X/10 | 0 | 0 | 0 | 0 |
 | 32. Makefile & Tooling | X/10 | 0 | 0 | 0 | 0 |
-| *34. License Headers** | *X/10* | *0* | *0* | *0* | *0* |
-| **Category E Total** | **X/50 (+10)** | **0** | **0** | **0** | **0** |
-
-*\*Dimension 34 included only if LICENSE=true*
+| 34. License Headers | X/10 | 0 | 0 | 0 | 0 |
+| **Category E Total** | **X/60** | **0** | **0** | **0** | **0** |
 
 ### Overall Score
 
