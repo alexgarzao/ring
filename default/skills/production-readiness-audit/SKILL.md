@@ -92,7 +92,7 @@ Use this skill when:
 
 ## Execution Protocol
 
-This skill runs **up to 41 explorer agents in 4 batches of up to 12**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 41 explorer agents in 4 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -102,8 +102,8 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:
 
 | Batch | Agents | Category Focus |
 |-------|--------|----------------|
-| 1 | 1-9 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input) |
-| 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
+| 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input) + Operations (Telemetry) |
+| 2 | 12-20 | Operations (Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
 | 4 | 31-42 + Summary | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant*, License*) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) + Final Summary (* = conditional) |
 
@@ -215,15 +215,15 @@ Task(subagent_type="Explore", prompt="<Agent 6: Auth Protection>")
 Task(subagent_type="Explore", prompt="<Agent 7: IDOR Protection>")
 Task(subagent_type="Explore", prompt="<Agent 8: SQL Safety>")
 Task(subagent_type="Explore", prompt="<Agent 9: Input Validation>")
+Task(subagent_type="Explore", prompt="<Agent 10: Telemetry & Observability>")
 ```
 
 **After completion:** Append results to the report file.
 
-### Step 3: Execute Batch 2 (Agents 11-20)
+### Step 3: Execute Batch 2 (Agents 12-20)
 
-Launch 10 explorers in parallel:
+Launch 9 explorers in parallel:
 ```
-Task(subagent_type="Explore", prompt="<Agent 11: Telemetry & Observability>")
 Task(subagent_type="Explore", prompt="<Agent 12: Health Checks>")
 Task(subagent_type="Explore", prompt="<Agent 13: Configuration Management>")
 Task(subagent_type="Explore", prompt="<Agent 14: Connection Management>")
