@@ -75,10 +75,9 @@ type UserResponse struct {
 ```go
 // ✅ CORRECT: All query params use snake_case
 type ListParams struct {
-    // Pagination
-    Limit     int    `query:"limit"`
-    Page      int    `query:"page"`
+    // Cursor-based pagination (MANDATORY - page/offset FORBIDDEN)
     Cursor    string `query:"cursor"`
+    Limit     int    `query:"limit"`
     SortOrder string `query:"sort_order"`
 
     // Filters
@@ -89,11 +88,15 @@ type ListParams struct {
 ```
 
 ```text
-✅ CORRECT (all query params snake_case):
-GET /v1/users?limit=10&page=1&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
+✅ CORRECT (cursor-based, all query params snake_case):
+GET /v1/users?limit=10&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
+GET /v1/users?cursor=eyJpZCI6IjEyMzQ1...&limit=10&sort_order=asc
+
+❌ WRONG (page-based pagination - FORBIDDEN):
+GET /v1/users?page=1&per_page=10&sort_order=asc
 
 ❌ WRONG (camelCase in query params):
-GET /v1/users?limit=10&page=1&sortOrder=asc&startDate=2024-01-01&endDate=2024-12-31
+GET /v1/users?cursor=xyz&limit=10&sortOrder=asc&startDate=2024-01-01
 ```
 
 #### Response Body - Pagination Fields (camelCase)
@@ -606,9 +609,9 @@ Required: true, false
 // Path parameter
 // @Param  id  path  string  true  "User ID (UUID format)"
 
-// Query parameter
-// @Param  page   query  int     false  "Page number (default: 1)"
-// @Param  limit  query  int     false  "Items per page (default: 10, max: 100)"
+// Query parameter (cursor-based pagination - page/offset FORBIDDEN)
+// @Param  cursor  query  string  false  "Base64-encoded cursor from previous response"
+// @Param  limit   query  int     false  "Items per page (default: 10, max: 100)"
 
 // Header parameter
 // @Param  Authorization  header  string  true   "Authorization Bearer Token"
@@ -999,7 +1002,7 @@ func (h *Handler) ListUsers(c *fiber.Ctx) error {
         return libHTTP.WithError(c, err)
     }
 
-    // params.Limit, params.Page are validated and have defaults
+    // params.Limit, params.Cursor, params.SortOrder are validated and have defaults
     // ...
 }
 ```
