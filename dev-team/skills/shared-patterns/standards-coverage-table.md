@@ -486,15 +486,15 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | # | Section to Check | Anchor |
 |---|------------------|--------|
 | INT-1 | Test Pyramid | `#test-pyramid` |
-| INT-2 | Decision Tree for Test Level | `#decision-tree-for-test-level` |
-| INT-3 | File Naming Convention (MANDATORY) | `#file-naming-convention-mandatory` |
-| INT-4 | Function Naming Convention (MANDATORY) | `#function-naming-convention-mandatory` |
-| INT-5 | Build Tags (MANDATORY) | `#build-tags-mandatory` |
-| INT-6 | Testcontainers Patterns (MANDATORY) | `#testcontainers-patterns-mandatory` |
-| INT-7 | Parallel Test Prohibition (MANDATORY) | `#parallel-test-prohibition-mandatory` |
-| INT-8 | Fixture Centralization (MANDATORY) | `#fixture-centralization-mandatory` |
-| INT-9 | Stub Centralization (MANDATORY) | `#stub-centralization-mandatory` |
-| INT-10 | Logger Testing | `#logger-testing` |
+| INT-2 | File Naming Convention (MANDATORY) | `#file-naming-convention-mandatory` |
+| INT-3 | Function Naming Convention (MANDATORY) | `#function-naming-convention-mandatory` |
+| INT-4 | Build Tags (MANDATORY) | `#build-tags-mandatory` |
+| INT-5 | Testcontainers Patterns (MANDATORY) | `#testcontainers-patterns-mandatory` |
+| INT-6 | Parallel Test Prohibition (MANDATORY) | `#parallel-test-prohibition-mandatory` |
+| INT-7 | Fixture Centralization (MANDATORY) | `#fixture-centralization-mandatory` |
+| INT-8 | Stub Centralization (MANDATORY) | `#stub-centralization-mandatory` |
+| INT-9 | Guardrails (11 Anti-Patterns) (MANDATORY) | `#guardrails-11-anti-patterns-mandatory` |
+| INT-10 | Test Failure Analysis (No Greenwashing) | `#test-failure-analysis-no-greenwashing` |
 
 **Integration Test Quality Gate Checks (Gate 6 Exit - all REQUIRED):**
 | # | Check | Detection |
