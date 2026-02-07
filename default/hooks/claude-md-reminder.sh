@@ -191,13 +191,8 @@ duplication_guard="${duplication_guard}</duplication-prevention-guard>\n"
 reminder="${reminder}${duplication_guard}"
 
 # Output hook response with injected context
-cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": "${reminder}"
-  }
-}
-EOF
+# Use printf with %s to prevent shell interpretation of special characters
+# (heredoc with ${reminder} would expand $(), backticks, and ! in file content)
+printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "UserPromptSubmit",\n    "additionalContext": "%s"\n  }\n}\n' "$reminder"
 
 exit 0
