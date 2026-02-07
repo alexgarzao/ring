@@ -45,7 +45,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | # | Module | Sections | Lines | Description |
 |---|--------|----------|-------|-------------|
 | 1 | [core.md](core.md) | 9 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB, Dependency Management |
-| 2 | [bootstrap.md](bootstrap.md) | 6 | ~1200 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting, Connection Management |
+| 2 | [bootstrap.md](bootstrap.md) | 5 | ~1050 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Connection Management |
 | 3 | [security.md](security.md) | 4 | ~700 | Access Manager, License Manager, Secret Redaction, SQL Safety |
 | 4 | [domain.md](domain.md) | 5 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
 | 5 | [api-patterns.md](api-patterns.md) | 6 | ~900 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo, Handler Constructor, Input Validation |
@@ -90,7 +90,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 2 | Bootstrap | [#bootstrap](bootstrap.md#bootstrap) |
 | 3 | Graceful Shutdown Patterns (MANDATORY) | [#graceful-shutdown-patterns-mandatory](bootstrap.md#graceful-shutdown-patterns-mandatory) |
 | 4 | Health Checks (MANDATORY) | [#health-checks-mandatory](bootstrap.md#health-checks-mandatory) |
-| 5 | Rate Limiting (CONDITIONAL) | [#rate-limiting-conditional](bootstrap.md#rate-limiting-conditional) |
+| 5 | Connection Management (MANDATORY) | [#connection-management-mandatory](bootstrap.md#connection-management-mandatory) |
 
 ### Security (security.md)
 

@@ -1,8 +1,8 @@
 # Go Standards - Bootstrap & Observability
 
-> **Module:** bootstrap.md | **Sections:** §5-9 | **Parent:** [index.md](index.md)
+> **Module:** bootstrap.md | **Sections:** 5 | **Parent:** [index.md](index.md)
 
-This module covers application initialization, observability, graceful shutdown, health checks, and rate limiting.
+This module covers application initialization, observability, graceful shutdown, health checks, and connection management.
 
 ---
 
@@ -14,8 +14,7 @@ This module covers application initialization, observability, graceful shutdown,
 | 2 | [Bootstrap](#bootstrap) | Application initialization pattern |
 | 3 | [Graceful Shutdown Patterns](#graceful-shutdown-patterns-mandatory) | Signal handling, resource cleanup |
 | 4 | [Health Checks](#health-checks-mandatory) | Liveness and readiness endpoints |
-| 5 | [Rate Limiting](#rate-limiting-conditional) | Service-level rate limiting (CONDITIONAL) |
-| 6 | [Connection Management](#connection-management-mandatory) | Database and external service connection handling |
+| 5 | [Connection Management](#connection-management-mandatory) | Database and external service connection handling |
 
 ---
 
@@ -1165,145 +1164,6 @@ grep -rn '"/health"' internal/adapters/http/in/routes*.go
 | "Service starts fast" | Cold starts vary. DB might be migrating. | **Add /ready with dependency checks** |
 | "Dependencies are always up" | Dependencies fail. Networks partition. | **Add /ready with dependency checks** |
 | "We'll add it later" | Later = incident. Add now. | **Add /ready before deployment** |
-
----
-
-## Rate Limiting (⚠️ CONDITIONAL)
-
-**⛔ CONDITIONAL:** This section applies ONLY if rate limiting is implemented at the service-level. If rate limiting is handled by API Gateway or Istio, mark this section as N/A.
-
-**Detection Question:** Does this service implement rate limiting directly (not via infrastructure)?
-
-```bash
-# Check if service implements rate limiting
-grep -rn "RateLimit\|rate\.Limiter\|ratelimit" internal/ --include="*.go"
-
-# If 0 matches AND rate limiting is handled by infrastructure: Mark N/A
-# If 0 matches AND rate limiting is NOT handled anywhere: Evaluate if needed
-# If matches found: Apply this section
-```
-
-### When Rate Limiting Is Needed
-
-| Scenario | Rate Limiting Required | Where |
-|----------|------------------------|-------|
-| Public API | Yes | API Gateway preferred, service fallback |
-| Internal service | Usually no | Infrastructure-level (Istio) |
-| Webhook receiver | Yes | Service-level (burst protection) |
-| Authentication endpoint | Yes | Service-level (brute force protection) |
-
-### Redis-Based Rate Limiting Pattern (REQUIRED if service-level)
-
-```go
-// internal/middleware/ratelimit.go
-package middleware
-
-import (
-    "context"
-    "strconv"
-    "time"
-
-    "github.com/gofiber/fiber/v2"
-    "github.com/redis/go-redis/v9"
-    libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"
-)
-
-type RateLimiter struct {
-    redis    *redis.Client
-    limit    int           // requests per window
-    window   time.Duration // window duration
-    keyPrefix string
-}
-
-func NewRateLimiter(redis *redis.Client, limit int, window time.Duration) *RateLimiter {
-    return &RateLimiter{
-        redis:     redis,
-        limit:     limit,
-        window:    window,
-        keyPrefix: "ratelimit:",
-    }
-}
-
-func (r *RateLimiter) Middleware() fiber.Handler {
-    return func(c *fiber.Ctx) error {
-        ctx := c.UserContext()
-
-        // Key: IP or API key or user ID
-        key := r.keyPrefix + c.IP()
-
-        // Increment counter
-        count, err := r.redis.Incr(ctx, key).Result()
-        if err != nil {
-            // Fail open on Redis error (log and continue)
-            return c.Next()
-        }
-
-        // Set expiry on first request
-        if count == 1 {
-            r.redis.Expire(ctx, key, r.window)
-        }
-
-        // Check limit
-        if count > int64(r.limit) {
-            ttl, _ := r.redis.TTL(ctx, key).Result()
-            c.Set("Retry-After", strconv.Itoa(int(ttl.Seconds())))
-            c.Set("X-RateLimit-Limit", strconv.Itoa(r.limit))
-            c.Set("X-RateLimit-Remaining", "0")
-            c.Set("X-RateLimit-Reset", strconv.FormatInt(time.Now().Add(ttl).Unix(), 10))
-
-            return libHTTP.TooManyRequests(c, "RATE_LIMIT_EXCEEDED", "Too Many Requests", "rate limit exceeded")
-        }
-
-        // Set rate limit headers
-        c.Set("X-RateLimit-Limit", strconv.Itoa(r.limit))
-        c.Set("X-RateLimit-Remaining", strconv.Itoa(r.limit - int(count)))
-
-        return c.Next()
-    }
-}
-```
-
-### Response Format (REQUIRED)
-
-**429 Too Many Requests Response:**
-
-```json
-{
-    "error": "rate limit exceeded",
-    "retry_after": 30
-}
-```
-
-**Required Headers:**
-
-| Header | Description | Example |
-|--------|-------------|---------|
-| `Retry-After` | Seconds until limit resets | `30` |
-| `X-RateLimit-Limit` | Requests allowed per window | `100` |
-| `X-RateLimit-Remaining` | Requests remaining | `0` |
-| `X-RateLimit-Reset` | Unix timestamp when limit resets | `1704067200` |
-
-### Detection Commands
-
-```bash
-# Find rate limiting implementation
-grep -rn "RateLimit\|rate\.Limiter" internal/adapters/http --include="*.go"
-
-# Check for 429 responses
-grep -rn "429\|TooManyRequests" internal/adapters/http --include="*.go"
-
-# Check for Retry-After header
-grep -rn "Retry-After" internal/adapters/http --include="*.go"
-```
-
-### Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "API Gateway handles it" | Valid if confirmed. Document the decision. | **Verify gateway config, mark N/A if confirmed** |
-| "We trust our clients" | Clients can have bugs. Protect the system. | **Add rate limiting or document infrastructure** |
-| "Service is internal" | Internal services can still be DoS'd. | **Evaluate need, document decision** |
-| "Redis adds latency" | 1ms Redis check vs service overload recovery. | **Add rate limiting** |
 
 ---
 
