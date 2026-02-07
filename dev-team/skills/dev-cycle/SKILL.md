@@ -102,7 +102,7 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 
 This keeps test code current with each feature while avoiding redundant container spin-ups during development.
 
-**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
+**MUST announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
