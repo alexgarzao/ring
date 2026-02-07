@@ -10,8 +10,8 @@ This module covers native Go fuzz testing patterns. Fuzz tests automatically gen
 
 ## Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
+| # | [Section Name](#anchor-link) | Description |
+|---|------------------------------|-------------|
 | 1 | [What Is Fuzz Testing](#what-is-fuzz-testing) | Purpose and when to use |
 | 2 | [Fuzz Function Pattern](#fuzz-function-pattern-mandatory) | Go 1.18+ native fuzz syntax |
 | 3 | [Seed Corpus](#seed-corpus-mandatory) | Initial test cases for fuzzer |

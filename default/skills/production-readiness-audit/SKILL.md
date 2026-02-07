@@ -1,5 +1,8 @@
 ---
 name: production-readiness-audit
+title: Production Readiness Audit
+category: operations
+tier: advanced
 description: Comprehensive Ring-standards-aligned 38-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, IDOR, SQL, validation, rate limiting, multi-tenant), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, unit-testing, fuzz-testing, property-testing, integration-testing, chaos-testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-380) with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
@@ -86,7 +89,7 @@ Use this skill when:
 
 ## Execution Protocol
 
-This skill runs **up to 38 explorer agents in 4 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 38 explorer agents in 5 batches (4 of up to 10 + 1 of 4)**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -99,7 +102,8 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:
 | 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input, Rate Limiting) |
 | 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Unit Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
-| 4 | 31-38 + Summary | Quality (Linting, Fuzz Testing, Property Testing, Integration Testing, Chaos Testing) + Infrastructure (Makefile, Multi-Tenant*, License*) + Final Summary (* = conditional) |
+| 4 | 31-34 | Quality (Linting) + Infrastructure (Makefile, Multi-Tenant*, License*) (* = conditional) |
+| 5 | 35-38 + Summary | Quality (Fuzz Testing, Property Testing, Integration Testing, Chaos Testing) + Final Summary |
 
 ### Step 0: Stack Detection
 

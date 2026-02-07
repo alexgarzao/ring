@@ -10,8 +10,8 @@ This module covers integration testing patterns with testcontainers for Go proje
 
 ## Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
+| # | [Section Name](#anchor-link) | Description |
+|---|------------------------------|-------------|
 | 1 | [Test Pyramid](#test-pyramid) | Unit > Integration > E2E ratio |
 | 2 | [File Naming Convention](#file-naming-convention-mandatory) | `*_integration_test.go` with build tags |
 | 3 | [Function Naming Convention](#function-naming-convention-mandatory) | `TestIntegration_{Component}_{Scenario}` |
