@@ -1,6 +1,6 @@
 # Go Standards - Unit Testing
 
-> **Module:** testing-unit.md | **Sections:** 10 | **Parent:** [index.md](index.md)
+> **Module:** testing-unit.md | **Sections:** 11 | **Parent:** [index.md](index.md)
 
 This module covers unit testing patterns for Go projects. Unit tests verify code behavior in isolation with mocked dependencies.
 
@@ -21,7 +21,8 @@ This module covers unit testing patterns for Go projects. Unit tests verify code
 | 7 | [Mock Generation](#mock-generation-mandatory) | GoMock patterns |
 | 8 | [Environment Variables in Tests](#environment-variables-in-tests-mandatory) | t.Setenv patterns |
 | 9 | [Shared Test Utilities](#shared-test-utilities-mandatory) | testutils import patterns |
-| 10 | [Unit Test Quality Gate](#unit-test-quality-gate-mandatory) | Checklist before completion |
+| 10 | [Unit Test Scope & Boundaries](#unit-test-scope--boundaries-mandatory) | What belongs in unit tests vs integration tests |
+| 11 | [Unit Test Quality Gate](#unit-test-quality-gate-mandatory) | Checklist before completion |
 
 **Meta-sections:** [Anti-Rationalization Table](#anti-rationalization-table-unit-testing)
 
@@ -606,6 +607,52 @@ func TestSomething(t *testing.T) {
 # Find local Ptr helpers (should return 0 matches)
 grep -rn "func Ptr\[" --include="*_test.go" ./internal ./pkg
 ```
+
+---
+
+## Unit Test Scope & Boundaries (MANDATORY)
+
+**HARD GATE:** Unit tests verify code behavior **in isolation**. All external dependencies MUST be mocked. Connecting to real databases, message queues, or external services in unit tests is FORBIDDEN.
+
+### What Belongs in Unit Tests
+
+| Allowed | Tool | Example |
+|---------|------|---------|
+| Mock repository interfaces | GoMock | `mockRepo.EXPECT().Create(gomock.Any(), gomock.Any())` |
+| Mock service interfaces | GoMock | `mockSvc.EXPECT().Process(gomock.Any())` |
+| Mock HTTP clients | GoMock | `mockClient.EXPECT().Get(gomock.Any())` |
+| In-memory data | Struct literals | `input := CreateRequest{Name: "test"}` |
+| Environment variables | t.Setenv | `t.Setenv("DB_HOST", "localhost")` |
+
+### What is FORBIDDEN in Unit Tests
+
+| FORBIDDEN | Why | Use Instead |
+|-----------|-----|-------------|
+| testcontainers | Spins up real containers — belongs in Gate 6 (integration) | GoMock interfaces |
+| Real PostgreSQL/MongoDB connections | Slow, flaky, not isolated | GoMock repository mocks |
+| Real Redis connections | External dependency | GoMock cache interface mocks |
+| Real RabbitMQ/Kafka | External dependency | GoMock publisher/consumer mocks |
+| `docker-compose` in test setup | Infrastructure dependency | GoMock all external interfaces |
+| HTTP calls to external APIs | Network dependency, flaky | GoMock HTTP client interface |
+
+### Boundary Rule
+
+```text
+Unit Test (Gate 3):     Code → Mock Interface → Assertion
+Integration Test (Gate 6): Code → testcontainers (real DB) → Assertion
+Chaos Test (Gate 7):    Code → Toxiproxy (failure injection) → Assertion
+```
+
+**If your test file imports `testcontainers-go` → it is NOT a unit test. Move it to `*_integration_test.go`.**
+
+### Anti-Rationalization: Scope Boundaries
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Testing with real DB is more realistic" | Realistic = integration test (Gate 6). Unit tests verify logic in isolation. | **Mock the repository interface with GoMock** |
+| "GoMock is too verbose for DB tests" | Verbose mocks = explicit contracts. Implicit DB = hidden coupling. | **Use GoMock, complexity is the point** |
+| "I need to verify SQL queries" | SQL verification belongs in integration tests with testcontainers. | **Unit test the service logic, integration test the queries** |
+| "testcontainers is fast enough" | Speed is irrelevant. Unit tests MUST be isolated. No containers. | **Mock all external dependencies** |
 
 ---
 

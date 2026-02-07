@@ -56,7 +56,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 10 | [idempotency.md](idempotency.md) | 1 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
 | 11 | [multi-tenant.md](multi-tenant.md) | 1 | ~460 | Multi-Tenant Patterns (Pool Manager, JWT) |
 | 12 | [compliance.md](compliance.md) | Meta | ~125 | Standards Compliance Output Format, Checklist |
-| 13 | [testing-unit.md](testing-unit.md) | 10 | ~550 | Unit Testing (Gate 3): Table-driven, t.Parallel, loop capture, assertions, mocks, t.Setenv, testutils |
+| 13 | [testing-unit.md](testing-unit.md) | 11 | ~600 | Unit Testing (Gate 3): Table-driven, t.Parallel, loop capture, assertions, mocks, t.Setenv, testutils, scope boundaries |
 | 14 | [testing-fuzz.md](testing-fuzz.md) | 5 | ~300 | Fuzz Testing (Gate 4): Native Go fuzz, seed corpus |
 | 15 | [testing-property.md](testing-property.md) | 5 | ~350 | Property-Based Testing (Gate 5): testing/quick.Check, invariants |
 | 16 | [testing-integration.md](testing-integration.md) | 10 | ~500 | Integration Testing (Gate 6): Testcontainers, fixtures, stubs |
@@ -179,7 +179,8 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 7 | Mock Generation (MANDATORY) | [#mock-generation-mandatory](testing-unit.md#mock-generation-mandatory) |
 | 8 | Environment Variables in Tests (MANDATORY) | [#environment-variables-in-tests-mandatory](testing-unit.md#environment-variables-in-tests-mandatory) |
 | 9 | Shared Test Utilities (MANDATORY) | [#shared-test-utilities-mandatory](testing-unit.md#shared-test-utilities-mandatory) |
-| 10 | Unit Test Quality Gate (MANDATORY) | [#unit-test-quality-gate-mandatory](testing-unit.md#unit-test-quality-gate-mandatory) |
+| 10 | Unit Test Scope & Boundaries (MANDATORY) | [#unit-test-scope--boundaries-mandatory](testing-unit.md#unit-test-scope--boundaries-mandatory) |
+| 11 | Unit Test Quality Gate (MANDATORY) | [#unit-test-quality-gate-mandatory](testing-unit.md#unit-test-quality-gate-mandatory) |
 
 ### Fuzz Testing (testing-fuzz.md) - Gate 4
 
