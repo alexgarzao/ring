@@ -113,8 +113,6 @@ This reviewer focuses on:
 
 ### 4. API & Web Security
 - [ ] CSRF protection enabled
-- [ ] CORS configured restrictively (not `*`)
-- [ ] Rate limiting implemented
 - [ ] Security headers present (HSTS, X-Frame-Options, CSP)
 - [ ] No information disclosure in errors
 

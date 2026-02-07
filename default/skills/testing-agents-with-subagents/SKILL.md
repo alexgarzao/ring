@@ -156,7 +156,7 @@ Write/update agent definition addressing specific failures documented in RED pha
 
 **RED Failure:** Agent marked hardcoded password as MEDIUM instead of CRITICAL
 
-**GREEN Fix:** Add severity calibration: CRITICAL (hardcoded secrets, SQL injection, auth bypass), HIGH (missing validation, error exposure), MEDIUM (rate limiting, verbose errors), LOW (headers, deps)
+**GREEN Fix:** Add severity calibration: CRITICAL (hardcoded secrets, SQL injection, auth bypass), HIGH (missing validation, error exposure), MEDIUM (verbose errors, missing security headers), LOW (headers, deps)
 
 ### Re-run Tests
 

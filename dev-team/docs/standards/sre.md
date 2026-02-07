@@ -71,7 +71,7 @@ This file defines the specific standards for Site Reliability Engineering and ob
 | Level | Usage | Examples |
 |-------|-------|----------|
 | **ERROR** | Failures requiring attention | Database connection failed, API error |
-| **WARN** | Potential issues | Retry attempt, rate limit approaching |
+| **WARN** | Potential issues | Retry attempt, connection pool low |
 | **INFO** | Normal operations | Request completed, user logged in |
 | **DEBUG** | Detailed debugging | Query parameters, internal state |
 | **TRACE** | Very detailed (rarely used) | Full request/response bodies |

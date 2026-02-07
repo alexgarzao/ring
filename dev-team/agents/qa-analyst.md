@@ -196,7 +196,6 @@ Invoke this agent when the task involves:
 - Request/response schema validation
 - Authentication and authorization testing
 - Error handling verification
-- Rate limiting and throttling tests
 - API versioning compatibility tests
 
 ### End-to-End Testing

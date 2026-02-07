@@ -751,7 +751,6 @@ Every BFF endpoint MUST document:
 | Response Types | Yes | Full TypeScript types |
 | Error Responses | Yes | All possible error codes |
 | Auth Requirements | Yes | Authentication needed |
-| Rate Limits | If applicable | Requests per minute/hour |
 | Caching | If applicable | Cache duration |
 
 ### Type Export Responsibilities
@@ -952,7 +951,6 @@ Coverage: 88.5%
 
 - Add caching layer for balance queries
 - Implement error handling middleware
-- Add request rate limiting
 ```
 
 ## What This Agent Does not Handle
