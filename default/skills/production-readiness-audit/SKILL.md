@@ -196,9 +196,11 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {35 base + N conditional} |
-| **Max Possible Score** | {350 + conditional points} |
+| **Active Dimensions** | {35 if single-tenant, 37 if multi-tenant} |
+| **Max Possible Score** | {350 if single-tenant, 370 if multi-tenant} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
+
+**⛔ SCORING RULE:** When **Multi-Tenant = Inactive**, dimensions 7 (IDOR) and 33 (Multi-Tenant) are **completely excluded** from scoring. They do NOT count as 0/10 - they simply don't exist for single-tenant projects. Max score is 350, not 370.
 
 ---
 ```
@@ -1213,10 +1215,6 @@ func (c *Config) Validate() error {
         if c.DBPassword == "" {
             return errors.New("POSTGRES_PASSWORD required in production")
         }
-        // No wildcard CORS in production
-        if c.CORSOrigins == "*" {
-            return errors.New("CORS_ALLOWED_ORIGINS cannot be * in production")
-        }
         // Require TLS for databases
         if c.PostgresSSLMode == "disable" {
             return errors.New("POSTGRES_SSLMODE cannot be disable in production")
@@ -1244,10 +1242,9 @@ func LoadConfig() (*Config, error) {
 3. Sensible defaults for non-production
 4. Auth required in production
 5. TLS/SSL required in production
-6. No wildcard CORS in production
-7. Default credentials rejected in production
-8. Secrets not logged during startup
-9. Config validation fails fast (at startup)
+6. Default credentials rejected in production
+7. Secrets not logged during startup
+8. Config validation fails fast (at startup)
 
 **Severity Ratings:**
 - CRITICAL: Hardcoded secrets in code (HARD GATE violation per Ring standards)
@@ -3690,9 +3687,11 @@ After all explorers complete, generate this report:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {35 base + N conditional} |
-| **Max Possible Score** | {dynamic_max} |
+| **Active Dimensions** | {35 if single-tenant, 37 if multi-tenant} |
+| **Max Possible Score** | {350 if single-tenant, 370 if multi-tenant} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
+
+**⛔ SCORING RULE:** When **Multi-Tenant = Inactive**, dimensions 7 (IDOR) and 33 (Multi-Tenant) are **completely excluded** from scoring. Do NOT include them as 0/10.
 
 ## Executive Summary
 
@@ -3715,13 +3714,17 @@ After all explorers complete, generate this report:
 | Dimension | Score | Critical | High | Medium | Low |
 |-----------|-------|----------|------|--------|-----|
 | 6. Auth Protection | X/10 | 0 | 0 | 0 | 0 |
-| *7. IDOR Protection* | *X/10* | *0* | *0* | *0* | *0* |
 | 8. SQL Safety | X/10 | 0 | 0 | 0 | 0 |
 | 9. Input Validation | X/10 | 0 | 0 | 0 | 0 |
-| *33. Multi-Tenant* | *X/10* | *0* | *0* | *0* | *0* |
-| **Category B Total** | **X/30 (+20)** | **0** | **0** | **0** | **0** |
+| **Category B Total** | **X/30** | **0** | **0** | **0** | **0** |
 
-*\*Dimensions 7 and 33 included only if MULTITENANT=true*
+**If MULTITENANT=true, add these rows (otherwise OMIT entirely - do NOT include in score):**
+
+| *7. IDOR Protection* | *X/10* | *0* | *0* | *0* | *0* |
+| *33. Multi-Tenant* | *X/10* | *0* | *0* | *0* | *0* |
+| **Conditional Total** | **X/20** | **0** | **0** | **0** | **0** |
+
+**⛔ CRITICAL: When MULTITENANT=false, dimensions 7 and 33 MUST be omitted from score calculation. Do NOT include them as 0/10 - they do not exist for single-tenant projects.**
 
 ### Category C: Operational Readiness
 
