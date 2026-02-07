@@ -120,7 +120,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 | Action | Tool | Purpose |
 |--------|------|---------|
-| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` or `docs/refactor/*/tasks.md` |
+| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` or `docs/ring:dev-refactor/*/tasks.md` |
 | Read state files | `Read` | Load/verify `docs/ring:dev-cycle/current-cycle.json` or `docs/ring:dev-refactor/current-cycle.json` |
 | Read PROJECT_RULES.md | `Read` | Load project-specific rules |
 | Write state files | `Write` | Persist cycle state to JSON |
@@ -160,7 +160,7 @@ This is not negotiable:
 │  CORRECT WORKFLOW ORDER                                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. Load task file (Read docs/pre-dev/*/tasks.md or docs/refactor/*/tasks.md) │
+│  1. Load task file (Read docs/pre-dev/*/tasks.md or docs/ring:dev-refactor/*/tasks.md) │
 │  2. Ask execution mode (AskUserQuestion)                        │
 │  3. Determine state path + Check/Load state (see State Path Selection) │
 │  4. WebFetch Ring Standards                                     │
@@ -559,13 +559,13 @@ The state file path depends on the **source of tasks**:
 
 | Task Source | State Path | Use Case |
 |-------------|------------|----------|
-| `docs/refactor/*/tasks.md` | `docs/ring:dev-refactor/current-cycle.json` | Refactoring existing code |
+| `docs/ring:dev-refactor/*/tasks.md` | `docs/ring:dev-refactor/current-cycle.json` | Refactoring existing code |
 | `docs/pre-dev/*/tasks.md` | `docs/ring:dev-cycle/current-cycle.json` | New feature development |
 | Any other path | `docs/ring:dev-cycle/current-cycle.json` | Default for manual tasks |
 
 **Detection Logic:**
 ```text
-if source_file contains "docs/refactor/" THEN
+if source_file contains "docs/ring:dev-refactor/" THEN
   state_path = "docs/ring:dev-refactor/current-cycle.json"
 else
   state_path = "docs/ring:dev-cycle/current-cycle.json"
@@ -1657,7 +1657,7 @@ Task tool:
 1. **Detect input:** File → Load directly | Directory → Load tasks.md + discover subtasks/
 2. **Build order:** Read tasks, check for subtasks (ST-XXX-01, 02...) or TDD autonomous mode
 3. **Determine state path:**
-   - if source_file contains `docs/refactor/` → `state_path = "docs/ring:dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
+   - if source_file contains `docs/ring:dev-refactor/` → `state_path = "docs/ring:dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
    - else → `state_path = "docs/ring:dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
 4. **Capture and validate custom prompt:** If `--prompt "..."` provided:
    - **Sanitize input:** Trim whitespace, strip control characters (except newlines)
