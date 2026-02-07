@@ -11,7 +11,7 @@ This module covers API naming conventions, pagination patterns, HTTP status code
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [JSON Naming Convention (camelCase)](#json-naming-convention-camelcase-mandatory) | API response field naming |
-| 2 | [Pagination Patterns](#pagination-patterns) | Cursor-based and page-based pagination implementation |
+| 2 | [Pagination Patterns](#pagination-patterns) | Cursor-based pagination (MANDATORY) |
 | 3 | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory) | 201 for creation, 200 for update |
 | 4 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
 | 5 | [Handler Constructor Pattern](#handler-constructor-pattern-mandatory) | Dependency injection via constructor |
@@ -21,18 +21,17 @@ This module covers API naming conventions, pagination patterns, HTTP status code
 
 ## JSON Naming Convention (camelCase) (MANDATORY)
 
-**HARD GATE:** all JSON data fields in API requests and responses MUST use `camelCase`.
-
-**EXCEPTION:** Pagination metadata fields use `snake_case` (see "Query Parameters vs Body Fields" below).
+**HARD GATE:** all JSON fields in API requests and responses MUST use `camelCase`. No exceptions.
 
 ### Rule
 
-| Layer | Format | Example | Exception |
-|-------|--------|---------|-----------|
-| **JSON data fields** | camelCase | `userId`, `createdAt`, `accountBalance` | - |
-| **Pagination metadata** | snake_case | `limit`, `next_cursor`, `prev_cursor` | Midaz standard |
-| **Go structs** | PascalCase | `UserID`, `CreatedAt`, `AccountBalance` | - |
-| **Database** | snake_case | `user_id`, `created_at`, `account_balance` | - |
+| Layer | Format | Example |
+|-------|--------|---------|
+| **JSON response fields** | camelCase | `userId`, `createdAt`, `accountBalance` |
+| **Pagination response fields** | camelCase | `nextCursor`, `prevCursor`, `hasMore` |
+| **Query parameters** | snake_case | `sort_order`, `start_date`, `end_date` |
+| **Go structs** | PascalCase | `UserID`, `CreatedAt`, `AccountBalance` |
+| **Database columns** | snake_case | `user_id`, `created_at`, `account_balance` |
 
 ### Implementation Pattern
 
@@ -76,10 +75,9 @@ type UserResponse struct {
 ```go
 // ✅ CORRECT: All query params use snake_case
 type ListParams struct {
-    // Pagination
-    Limit     int    `query:"limit"`
-    Page      int    `query:"page"`
+    // Cursor-based pagination (MANDATORY - page/offset FORBIDDEN)
     Cursor    string `query:"cursor"`
+    Limit     int    `query:"limit"`
     SortOrder string `query:"sort_order"`
 
     // Filters
@@ -90,23 +88,27 @@ type ListParams struct {
 ```
 
 ```text
-✅ CORRECT (all query params snake_case):
-GET /v1/users?limit=10&page=1&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
+✅ CORRECT (cursor-based, all query params snake_case):
+GET /v1/users?limit=10&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
+GET /v1/users?cursor=eyJpZCI6IjEyMzQ1...&limit=10&sort_order=asc
+
+❌ WRONG (page-based pagination - FORBIDDEN):
+GET /v1/users?page=1&per_page=10&sort_order=asc
 
 ❌ WRONG (camelCase in query params):
-GET /v1/users?limit=10&page=1&sortOrder=asc&startDate=2024-01-01&endDate=2024-12-31
+GET /v1/users?cursor=xyz&limit=10&sortOrder=asc&startDate=2024-01-01
 ```
 
-#### Response Body - Pagination Fields (snake_case)
+#### Response Body - Pagination Fields (camelCase)
 
 ```go
-// ✅ CORRECT: Pagination response fields use snake_case
+// ✅ CORRECT: Pagination response fields use camelCase
 type PaginatedResponse struct {
     Items      []interface{} `json:"items"`
     Limit      int           `json:"limit"`
-    Page       int           `json:"page"`
-    NextCursor string        `json:"next_cursor,omitempty"`
-    PrevCursor string        `json:"prev_cursor,omitempty"`
+    NextCursor string        `json:"nextCursor,omitempty"`
+    PrevCursor string        `json:"prevCursor,omitempty"`
+    HasMore    bool          `json:"hasMore"`
 }
 ```
 
@@ -127,7 +129,7 @@ type UserResponse struct {
 #### Complete List Response Example
 
 ```go
-// ✅ CORRECT: Full pattern - pagination (snake_case) + data (camelCase)
+// ✅ CORRECT: Full pattern - all response fields use camelCase
 type UserListResponse struct {
     // Data fields - camelCase
     Items []struct {
@@ -137,11 +139,11 @@ type UserListResponse struct {
         CreatedAt string `json:"createdAt"`      // camelCase
     } `json:"items"`
 
-    // Pagination fields - snake_case
+    // Pagination fields - camelCase
     Limit      int    `json:"limit"`
-    Page       int    `json:"page"`
-    NextCursor string `json:"next_cursor,omitempty"`
-    PrevCursor string `json:"prev_cursor,omitempty"`
+    NextCursor string `json:"nextCursor,omitempty"`
+    PrevCursor string `json:"prevCursor,omitempty"`
+    HasMore    bool   `json:"hasMore"`
 }
 ```
 
@@ -158,32 +160,37 @@ type UserListResponse struct {
 | Metadata | `parentId`, `organizationId`, `ledgerId` | `parent_id`, `organization_id` |
 | Names | `legalName`, `doingBusinessAs` | `legal_name`, `doing_business_as` |
 
-**Query Parameters & Pagination Response (snake_case):**
+**Query Parameters (snake_case):**
 
 | Concept | ✅ Correct (snake_case) | ❌ Wrong (camelCase) |
 |---------|-------------------------|---------------------|
-| Pagination | `limit`, `page`, `cursor`, `next_cursor`, `prev_cursor` | `nextCursor`, `prevCursor` |
 | Sorting | `sort_order`, `sort_by` | `sortOrder`, `sortBy` |
 | Date filters | `start_date`, `end_date` | `startDate`, `endDate` |
 | All query params | `snake_case` | `camelCase` |
 
+**Response Fields (camelCase) - Including Pagination:**
+
+| Concept | ✅ Correct (camelCase) | ❌ Wrong (snake_case) |
+|---------|------------------------|----------------------|
+| Pagination cursors | `nextCursor`, `prevCursor`, `hasMore` | `next_cursor`, `prev_cursor` |
+| All response fields | `camelCase` | `snake_case` |
+
 ### Detection Commands
 
 ```bash
-# Find snake_case in JSON body tags (exclude pagination response fields)
-# Should return 0 matches for data fields
-grep -rn 'json:"[a-z]*_[a-z]*' --include="*.go" ./internal | grep -v "next_cursor\|prev_cursor\|sort_order\|start_date\|end_date"
+# Find snake_case in JSON response tags (should return 0 matches)
+grep -rn 'json:"[a-z]*_[a-z]*' --include="*.go" ./internal
 
 # Check for common violations in body fields (these should NEVER be snake_case)
 grep -rn 'json:"created_at\|json:"updated_at\|json:"deleted_at' --include="*.go" ./internal
 grep -rn 'json:"first_name\|json:"last_name\|json:"legal_name' --include="*.go" ./internal
-grep -rn 'json:"[a-z]*_id"' --include="*.go" ./internal
+grep -rn 'json:"next_cursor\|json:"prev_cursor' --include="*.go" ./internal  # Should be camelCase
 
 # Verify query params ARE snake_case (check query tags)
 grep -rn 'query:"[a-zA-Z]*[A-Z]' --include="*.go" ./internal  # Should return 0 (no camelCase in query tags)
 
-# Verify pagination response fields ARE snake_case
-grep -rn 'json:"next_cursor\|json:"prev_cursor' --include="*.go" ./internal
+# Verify pagination response fields ARE camelCase
+grep -rn 'json:"nextCursor\|json:"prevCursor\|json:"hasMore' --include="*.go" ./internal
 ```
 
 ### Anti-Rationalization Table
@@ -202,39 +209,41 @@ grep -rn 'json:"next_cursor\|json:"prev_cursor' --include="*.go" ./internal
 
 ## Pagination Patterns
 
-Lerian Studio supports multiple pagination patterns. This section provides **implementation details** for each pattern.
+**⛔ HARD GATE:** All list endpoints MUST use **cursor-based pagination**. Offset/page-based pagination is FORBIDDEN due to performance and consistency issues with large datasets.
 
-> **Note**: The pagination strategy should be decided during the **TRD (Technical Requirements Document)** phase, not during implementation. See the `ring:pre-dev-trd-creation` skill for the decision workflow. If no TRD exists, consult with the user before implementing.
+### Why Cursor-Based Only
 
-### Quick Reference
+| Issue with Offset | Cursor Solution |
+|-------------------|-----------------|
+| `OFFSET 10000` scans 10k rows before returning | `WHERE id > cursor` uses index directly |
+| Data can skip/duplicate if records inserted during navigation | Consistent results regardless of insertions |
+| Performance degrades linearly with offset value | Constant performance regardless of position |
 
-| Pattern | Best For | Query Params | Response Fields |
-|---------|----------|--------------|-----------------|
-| Cursor-Based | High-volume data, real-time | `cursor`, `limit`, `sort_order` | `next_cursor`, `prev_cursor` |
-| Page-Based | Low-volume data | `page`, `limit`, `sort_order` | `page`, `limit` |
-| Page-Based + Total | UI needs "Page X of Y" | `page`, `limit`, `sort_order` | `page`, `limit`, `total` |
+### Query Parameters
 
-### Decision Guide (Reference Only)
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `cursor` | string | (none) | Base64-encoded cursor from previous response |
+| `limit` | int | 10 | Items per page (max: 100) |
+| `sort_order` | string | "asc" | Sort direction: "asc" or "desc" |
+| `start_date` | datetime | (calculated) | Filter start date |
+| `end_date` | datetime | now | Filter end date |
 
+### Response Structure (camelCase JSON)
+
+```json
+{
+  "items": [...],
+  "limit": 10,
+  "nextCursor": "eyJpZCI6IjEyMzQ1Njc4Li4uIiwicG9pbnRzX25leHQiOnRydWV9",
+  "prevCursor": "eyJpZCI6IjEyMzQ1Njc4Li4uIiwicG9pbnRzX25leHQiOmZhbHNlfQ==",
+  "hasMore": true
+}
 ```
-Is this a high-volume entity (>10k records typical)?
-├── YES → Use Cursor-Based Pagination
-└── no  → Use Page-Based Pagination
 
-Does the user need to jump to arbitrary pages?
-├── YES → Use Page-Based Pagination
-└── no  → Cursor-Based is fine
+### Use for All List Endpoints
 
-Does the UI need to show total count (e.g., "Page 1 of 10")?
-├── YES → Use Page-Based with Total Count
-└── no  → Standard Page-Based is sufficient
-```
-
----
-
-### Pattern 1: Cursor-Based Pagination (PREFERRED for high-volume)
-
-Use for: Transactions, Operations, Balances, Audit logs, Events
+Transactions, Operations, Balances, Audit logs, Events, Organizations, Ledgers, Assets, Portfolios, Accounts
 
 **Query Parameters:**
 
@@ -246,18 +255,7 @@ Use for: Transactions, Operations, Balances, Audit logs, Events
 | `start_date` | datetime | (calculated) | Filter start date |
 | `end_date` | datetime | now | Filter end date |
 
-**Response Structure:**
-
-```json
-{
-  "items": [...],
-  "limit": 10,
-  "next_cursor": "eyJpZCI6IjEyMzQ1Njc4Li4uIiwicG9pbnRzX25leHQiOnRydWV9",
-  "prev_cursor": "eyJpZCI6IjEyMzQ1Njc4Li4uIiwicG9pbnRzX25leHQiOmZhbHNlfQ=="
-}
-```
-
-**Handler Implementation:**
+### Handler Implementation
 
 ```go
 func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
@@ -359,104 +357,6 @@ func (r *Repository) FindAll(ctx context.Context, filter libHTTP.Pagination) ([]
     return items, cursor, nil
 }
 ```
-
----
-
-### Pattern 2: Page-Based (Offset) Pagination
-
-Use for: Organizations, Ledgers, Assets, Portfolios, Accounts
-
-**Query Parameters:**
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `page` | int | 1 | Page number (1-indexed) |
-| `limit` | int | 10 | Items per page (max: 100) |
-| `sort_order` | string | "asc" | Sort direction |
-| `start_date` | datetime | (calculated) | Filter start date |
-| `end_date` | datetime | now | Filter end date |
-
-**Response Structure:**
-
-```json
-{
-  "items": [...],
-  "page": 1,
-  "limit": 10
-}
-```
-
-**Handler Implementation:**
-
-```go
-func (h *Handler) GetAllOrganizations(c *fiber.Ctx) error {
-    ctx := c.UserContext()
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
-
-    ctx, span := tracer.Start(ctx, "handler.get_all_organizations")
-    defer span.End()
-
-    headerParams, err := libHTTP.ValidateParameters(c.Queries())
-    if err != nil {
-        return libHTTP.WithError(c, err)
-    }
-
-    // Build page-based pagination
-    pagination := libPostgres.Pagination{
-        Limit:     headerParams.Limit,
-        Page:      headerParams.Page,
-        SortOrder: headerParams.SortOrder,
-        StartDate: headerParams.StartDate,
-        EndDate:   headerParams.EndDate,
-    }
-
-    // Query with offset pagination (uses ToOffsetPagination())
-    items, err := h.Query.GetAllOrganizations(ctx, headerParams.ToOffsetPagination())
-    if err != nil {
-        return libHTTP.WithError(c, err)
-    }
-
-    pagination.SetItems(items)
-
-    return libHTTP.OK(c, pagination)
-}
-```
-
-**Repository Implementation:**
-
-```go
-func (r *Repository) FindAll(ctx context.Context, pagination http.Pagination) ([]Entity, error) {
-    offset := (pagination.Page - 1) * pagination.Limit
-
-    query := squirrel.Select("*").
-        From("table_name").
-        OrderBy("id " + pagination.SortOrder).
-        Limit(uint64(pagination.Limit)).
-        Offset(uint64(offset))
-
-    // Execute query...
-    return items, nil
-}
-```
-
----
-
-### Pattern 3: Page-Based with Total Count
-
-Use when: Client needs total count for pagination UI (showing "Page 1 of 10")
-
-**Response Structure:**
-
-```json
-{
-  "items": [...],
-  "page": 1,
-  "limit": 10,
-  "total": 100
-}
-```
-
-**Note:** Adds a COUNT query overhead. Only use if total is required.
 
 ---
 
@@ -709,9 +609,9 @@ Required: true, false
 // Path parameter
 // @Param  id  path  string  true  "User ID (UUID format)"
 
-// Query parameter
-// @Param  page   query  int     false  "Page number (default: 1)"
-// @Param  limit  query  int     false  "Items per page (default: 10, max: 100)"
+// Query parameter (cursor-based pagination - page/offset FORBIDDEN)
+// @Param  cursor  query  string  false  "Base64-encoded cursor from previous response"
+// @Param  limit   query  int     false  "Items per page (default: 10, max: 100)"
 
 // Header parameter
 // @Param  Authorization  header  string  true   "Authorization Bearer Token"
@@ -1102,7 +1002,7 @@ func (h *Handler) ListUsers(c *fiber.Ctx) error {
         return libHTTP.WithError(c, err)
     }
 
-    // params.Limit, params.Page are validated and have defaults
+    // params.Limit, params.Cursor, params.SortOrder are validated and have defaults
     // ...
 }
 ```

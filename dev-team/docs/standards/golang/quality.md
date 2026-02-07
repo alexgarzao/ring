@@ -1,6 +1,6 @@
 # Go Standards - Quality
 
-> **Module:** quality.md | **Sections:** 4 | **Parent:** [index.md](index.md)
+> **Module:** quality.md | **Sections:** 5 | **Parent:** [index.md](index.md)
 
 This module covers logging, linting, configuration validation, and container security standards.
 
@@ -20,8 +20,9 @@ This module covers logging, linting, configuration validation, and container sec
 |---|------------------------------|-------------|
 | 1 | [Logging](#logging) | Structured logging with lib-commons |
 | 2 | [Linting](#linting) | Import ordering, magic numbers, .golangci.yml requirement |
-| 3 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
-| 4 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
+| 3 | [Migration Guidance for Mandatory Linter Promotion](#migration-guidance-for-mandatory-linter-promotion) | Phased rollout and per-linter fix examples |
+| 4 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
+| 5 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
 
 ---
 
@@ -354,7 +355,7 @@ Projects without `.golangci.yml` have inconsistent linting across environments, 
 
 **⛔ HARD GATE:** Every Go project MUST have a `.golangci.yml` file in the repository root. Missing this file is a BLOCKER for code review.
 
-#### Minimum Required Linters (MANDATORY)
+#### Required Linters (MANDATORY - 14 total)
 
 Every `.golangci.yml` MUST enable these linters:
 
@@ -369,6 +370,11 @@ Every `.golangci.yml` MUST enable these linters:
 | `mnd` | Magic number detection | Quality |
 | `unused` | Unused code detection | Quality |
 | `ineffassign` | Unused assignment detection | Quality |
+| `gosimple` | Simplify code suggestions | Quality |
+| `misspell` | Spelling errors in comments/strings | Quality |
+| `goconst` | Repeated string literal detection | Quality |
+| `nilerr` | Return nil with non-nil error detection | Correctness |
+| `forbidigo` | Forbidden pattern enforcement | Security |
 
 #### Configuration Template
 
@@ -381,22 +387,21 @@ run:
 linters:
   disable-all: true
   enable:
-    # MANDATORY linters (MUST be enabled)
-    - gofmt         # Code formatting
-    - goimports     # Import organization
-    - govet         # Go vet analysis
-    - staticcheck   # Static analysis
-    - errcheck      # Error handling verification
-    - gosec         # Security vulnerability detection
-    - mnd           # Magic number detection
-    - unused        # Unused code detection
-    - ineffassign   # Unused assignment detection
-    # Recommended additional linters
-    - gosimple      # Simplify code
-    - misspell      # Spelling
-    - goconst       # Repeated strings
-    - nilerr        # Return nil with non-nil error
-    - forbidigo     # Forbidden patterns
+    # MANDATORY linters (all 14 MUST be enabled)
+    - gofmt         # Code formatting - enforces canonical Go style
+    - goimports     # Import organization - groups and sorts imports
+    - govet         # Go vet analysis - catches common mistakes (shadowing, printf)
+    - staticcheck   # Static analysis - advanced bug detection (SA* checks)
+    - errcheck      # Error handling verification - catches ignored errors
+    - gosec         # Security vulnerability detection - OWASP patterns
+    - mnd           # Magic number detection - enforces named constants
+    - unused        # Unused code detection - dead code removal
+    - ineffassign   # Unused assignment detection - assignments to never-read vars
+    - gosimple      # Simplify code - suggests simpler constructs (S1* checks)
+    - misspell      # Spelling errors - typos in comments/strings/identifiers
+    - goconst       # Repeated strings - extracts string literals to constants
+    - nilerr        # Return nil with non-nil error - catches "if err != nil { return nil }"
+    - forbidigo     # Forbidden patterns - blocks fmt.Print*, log.Fatal, panic
 
 linters-settings:
   goimports:
@@ -443,6 +448,164 @@ golangci-lint run ./...
 
 # Run only magic number check
 golangci-lint run --enable=mnd --disable-all ./...
+```
+
+---
+
+---
+
+## Migration Guidance for Mandatory Linter Promotion
+
+**Context:** All 14 linters are now MANDATORY. Projects previously using only the "9 core" linters must adopt the additional 5: `gosimple`, `misspell`, `goconst`, `nilerr`, `forbidigo`.
+
+#### Adoption Timeline
+
+| Phase | Duration | Action |
+|-------|----------|--------|
+| **Phase 1: Warning** | Week 1-2 | Enable linters, treat as warnings only |
+| **Phase 2: Blocking (New)** | Week 3-4 | Block CI for new violations only |
+| **Phase 3: Blocking (All)** | Week 5+ | Block CI for all violations |
+
+#### Phased Rollout Configuration
+
+```yaml
+# Phase 1: Enable as warnings (non-blocking)
+issues:
+  max-issues-per-linter: 0  # Show all issues
+  max-same-issues: 0
+  new-from-rev: ""          # Check all code
+  # Remove 'exclude' rules to see all issues
+
+# Phase 2: Block only new violations
+issues:
+  new-from-rev: HEAD~10     # Only fail on recent commits
+
+# Phase 3: Full enforcement (final state)
+issues:
+  new-from-rev: ""          # Check all code, fail on any violation
+```
+
+#### Common Violations and Fixes
+
+##### gosimple (Code Simplification)
+
+| S-Code | Common Pattern | Fix |
+|--------|----------------|-----|
+| S1000 | `select { case x := <-ch: ... }` | Use `x := <-ch` directly |
+| S1002 | `if b == true { ... }` | Use `if b { ... }` |
+| S1003 | `strings.Index(s, sub) != -1` | Use `strings.Contains(s, sub)` |
+| S1005 | `for i, _ := range slice` | Use `for i := range slice` |
+| S1011 | Loop with append to another slice | Use `append(slice1, slice2...)` |
+
+```go
+// ❌ gosimple S1003
+if strings.Index(name, "test") != -1 { ... }
+
+// ✅ Fixed
+if strings.Contains(name, "test") { ... }
+```
+
+##### misspell (Spelling Corrections)
+
+| Common Typo | Correction |
+|-------------|------------|
+| `occured` | `occurred` |
+| `recieved` | `received` |
+| `seperate` | `separate` |
+| `sucessful` | `successful` |
+| `definately` | `definitely` |
+
+```go
+// ❌ misspell
+// Sucessfully processed the recieved data
+func ProcessData() { ... }
+
+// ✅ Fixed
+// Successfully processed the received data
+func ProcessData() { ... }
+```
+
+##### goconst (Repeated String Literals)
+
+**Trigger:** String literal appears 3+ times in the same package.
+
+```go
+// ❌ goconst: "user_id" repeated 4 times
+query1 := db.Where("user_id = ?", id)
+query2 := db.Where("user_id = ?", id2)
+log.Info("fetching user_id", ...)
+validate("user_id", value)
+
+// ✅ Fixed: Extract to constant
+const fieldUserID = "user_id"
+
+query1 := db.Where(fieldUserID + " = ?", id)
+query2 := db.Where(fieldUserID + " = ?", id2)
+log.Info("fetching " + fieldUserID, ...)
+validate(fieldUserID, value)
+```
+
+##### nilerr (Nil Return with Non-Nil Error)
+
+**Trigger:** Returning `nil` in error path instead of the actual error.
+
+```go
+// ❌ nilerr: returning nil instead of err
+func GetUser(id string) (*User, error) {
+    user, err := repo.Find(id)
+    if err != nil {
+        return nil, nil  // WRONG: error is lost
+    }
+    return user, nil
+}
+
+// ✅ Fixed: Return the actual error
+func GetUser(id string) (*User, error) {
+    user, err := repo.Find(id)
+    if err != nil {
+        return nil, err  // CORRECT: error propagated
+    }
+    return user, nil
+}
+```
+
+##### forbidigo (Forbidden Patterns)
+
+**Trigger:** Usage of patterns blocked by `.golangci.yml` configuration.
+
+| Forbidden | Replacement |
+|-----------|-------------|
+| `fmt.Println()` | `logger.Info()` |
+| `fmt.Printf()` | `logger.Infof()` |
+| `log.Fatal()` | `return err` + graceful shutdown |
+| `log.Panic()` | `return err` + recovery middleware |
+| `panic()` | `return err` (except bootstrap) |
+
+```go
+// ❌ forbidigo: fmt.Println forbidden
+fmt.Println("Starting server on port", port)
+
+// ✅ Fixed: Use lib-commons logger
+logger.Infof("Starting server on port %d", port)
+```
+
+#### Batch Fix Commands
+
+```bash
+# Fix all gosimple issues automatically where possible
+golangci-lint run --fix --enable=gosimple --disable-all ./...
+
+# Fix all misspell issues automatically
+golangci-lint run --fix --enable=misspell --disable-all ./...
+
+# List all goconst violations (manual fix required)
+golangci-lint run --enable=goconst --disable-all ./...
+
+# List all nilerr violations (manual fix required)
+golangci-lint run --enable=nilerr --disable-all ./...
+
+# List all forbidigo violations (manual fix required)
+golangci-lint run --enable=forbidigo --disable-all ./...
 ```
 
 ---
