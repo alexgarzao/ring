@@ -3,13 +3,13 @@ name: production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
-description: Comprehensive Ring-standards-aligned 36-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, SQL, validation, IDOR* and multi-tenant* conditional), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, unit-testing, fuzz-testing, property-testing, integration-testing, chaos-testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report with severity ratings and standards cross-reference.
+description: Comprehensive Ring-standards-aligned 37-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, SQL, validation, IDOR* and multi-tenant* conditional), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, unit-testing, fuzz-testing, property-testing, integration-testing, chaos-testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **36 dimensions in 5 categories** (plus 2 conditional), aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in batches, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **35 dimensions in 5 categories** (plus 2 conditional), aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in batches, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -88,7 +88,7 @@ Use this skill when:
 
 ## Execution Protocol
 
-This skill runs **up to 36 explorer agents in 5 batches** (plus 2 conditional dimensions), writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 37 explorer agents in 5 batches** (35 base + 2 conditional), writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -196,8 +196,8 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {36 base + N conditional} |
-| **Max Possible Score** | {360 + conditional points} |
+| **Active Dimensions** | {35 base + N conditional} |
+| **Max Possible Score** | {350 + conditional points} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 
 ---
@@ -3690,7 +3690,7 @@ After all explorers complete, generate this report:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {36 base + N conditional} |
+| **Active Dimensions** | {35 base + N conditional} |
 | **Max Possible Score** | {dynamic_max} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 
@@ -3715,10 +3715,10 @@ After all explorers complete, generate this report:
 | Dimension | Score | Critical | High | Medium | Low |
 |-----------|-------|----------|------|--------|-----|
 | 6. Auth Protection | X/10 | 0 | 0 | 0 | 0 |
-| *7. IDOR Protection** | *X/10* | *0* | *0* | *0* | *0* |
+| *7. IDOR Protection* | *X/10* | *0* | *0* | *0* | *0* |
 | 8. SQL Safety | X/10 | 0 | 0 | 0 | 0 |
 | 9. Input Validation | X/10 | 0 | 0 | 0 | 0 |
-| *33. Multi-Tenant** | *X/10* | *0* | *0* | *0* | *0* |
+| *33. Multi-Tenant* | *X/10* | *0* | *0* | *0* | *0* |
 | **Category B Total** | **X/30 (+20)** | **0** | **0** | **0** | **0** |
 
 *\*Dimensions 7 and 33 included only if MULTITENANT=true*
@@ -4022,19 +4022,19 @@ After all explorers complete, generate this report:
 | Category | Dimensions | Always-Active | Max Score |
 |----------|------------|---------------|-----------|
 | A: Code Structure | 1-5, 28-30 | 8 | 80 |
-| B: Security | 6-10, (33) | 5 (+1 conditional) | 50 (+10) |
+| B: Security | 6, 7*, 8, 9, 33* | 3 (+2 conditional) | 30 (+20) |
 | C: Operations | 11-15 | 5 | 50 |
-| D: Quality | 16-23, 31 | 9 | 90 |
-| E: Infrastructure | 24-27, 32, (34) | 5 (+1 conditional) | 50 (+10) |
-| **Total** | | **32 (+2 conditional)** | **320 (+20)** |
+| D: Quality | 16-23, 31, 35-38 | 13 | 130 |
+| E: Infrastructure | 24-27, 32, 34 | 6 | 60 |
+| **Total** | | **35 (+2 conditional)** | **350 (+20)** |
 
 ### Dynamic Max Calculation
 
 ```
-dynamic_max = 320 + (MULTITENANT ? 10 : 0) + (LICENSE ? 10 : 0)
+dynamic_max = 350 + (MULTITENANT ? 20 : 0)
 ```
 
-Possible values: 360, 370, or 380.
+Possible values: 350 or 370.
 
 ### Overall Classification (Percentage-Based)
 

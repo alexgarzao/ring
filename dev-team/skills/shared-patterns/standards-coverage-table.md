@@ -253,7 +253,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 4 | Configuration | core.md | `#configuration` | Environment variable handling |
 | 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake-case-mandatory` | Table and column naming |
 | 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
-| 7 | License Headers | core.md | `#license-headers-conditional` | **CONDITIONAL** - If LICENSE file exists |
+| 7 | License Headers | core.md | `#license-headers-mandatory` | **MANDATORY** - All source files require license headers |
 | 8 | MongoDB Patterns | core.md | `#mongodb-patterns-mandatory` | **Injection prevention (CRITICAL)**, connection pooling, index management, deprecated API removal |
 | 9 | Dependency Management | core.md | `#dependency-management-mandatory` | **Version pinning (MANDATORY)**, go.sum, security updates, govulncheck, detection commands |
 | 10 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration, **Span Naming Conventions (MANDATORY)**: layer.domain.operation pattern, detection commands |
