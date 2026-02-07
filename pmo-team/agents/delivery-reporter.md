@@ -105,7 +105,7 @@ MUST load the skill above before any analysis work.
 <blocker>
 BLOCKER: Cannot load ring:delivery-reporting skill
 Agent: delivery-reporter
-Action: STOP immediately and report to orchestrator
+STOP: Immediately report to orchestrator
 Reason: Workflow gates and quality frameworks unavailable
 </blocker>
 
