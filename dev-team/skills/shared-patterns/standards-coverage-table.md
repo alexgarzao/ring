@@ -410,7 +410,8 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | UNIT-7 | Mock Generation (MANDATORY) | `#mock-generation-mandatory` |
 | UNIT-8 | Environment Variables in Tests (MANDATORY) | `#environment-variables-in-tests-mandatory` |
 | UNIT-9 | Shared Test Utilities (MANDATORY) | `#shared-test-utilities-mandatory` |
-| UNIT-10 | Unit Test Quality Gate (MANDATORY) | `#unit-test-quality-gate-mandatory` |
+| UNIT-10 | Unit Test Scope & Boundaries (MANDATORY) | `#unit-test-scope--boundaries-mandatory` |
+| UNIT-11 | Unit Test Quality Gate (MANDATORY) | `#unit-test-quality-gate-mandatory` |
 
 **For TypeScript projects (Unit Mode):**
 | # | Section to Check |
