@@ -24,18 +24,44 @@ related:
 
 Creating visual executive presentations that showcase squad deliveries and business value.
 
+## ⚠️ CRITICAL: Quality Over Speed
+
+**This skill prioritizes depth over velocity.**
+
+| Principle | Value |
+|-----------|-------|
+| **Analysis Approach** | Deep code analysis with specialized agents |
+| **Time Expectation** | 40-80 minutes for 8 repositories (5-10 min each) |
+| **Quality Standard** | Accurate business value from actual code, not titles |
+| **Agent Strategy** | Specialized agents (backend-engineer-golang, etc.) per repo type |
+
+**FORBIDDEN:**
+- ❌ Using `general-purpose` agent for parallel speed
+- ❌ Rushing analysis to meet arbitrary deadlines
+- ❌ Reading only PR titles without code analysis
+- ❌ Skipping Gate 2.5 (Deep Code Analysis)
+
+**REQUIRED:**
+- ✅ Sequential deep analysis per repository
+- ✅ Code reading with domain-specialized agents
+- ✅ Real data, never estimates
+- ✅ Business value extracted from actual code changes
+
+---
+
 ## Purpose
 
 This skill provides a framework for:
 - Squad delivery reports (engineering + product + design)
 - Visual HTML slide presentations
+- **Deep code analysis** using specialized agents
 - Business value extraction from Git repositories
 - Quarterly/monthly showcase of releases and features
 - Stakeholder-facing delivery summaries
 
 **Key Difference from `executive-reporting`:**
 - **executive-reporting**: Portfolio/project status (PMO focus, RAG/SPI/CPI metrics)
-- **delivery-reporting**: Squad deliveries (technical focus, releases/PRs/features)
+- **delivery-reporting**: Squad deliveries (technical focus, deep code analysis, releases/PRs/features)
 
 ---
 
@@ -146,6 +172,109 @@ git branch -r --sort=-committerdate  # Active branches
 
 ---
 
+### Gate 2.5: Deep Code Analysis (MANDATORY)
+
+**⚠️ CRITICAL: This gate CANNOT be skipped for speed.**
+
+**Objective:** Understand actual code changes and their impact using specialized agents
+
+**Core Principle: Quality Over Speed**
+
+| Priority | Value |
+|----------|-------|
+| **#1** | Deep understanding of changes |
+| **#2** | Accurate business value |
+| **#3** | Quality insights |
+| **Last** | Speed of execution |
+
+**FORBIDDEN:**
+- ❌ Using `general-purpose` agent for parallel speed
+- ❌ Reading only PR titles without code analysis
+- ❌ Skipping this gate to save time
+- ❌ Estimating impact without reading code
+
+**REQUIRED:**
+- ✅ Use specialized agents per repository type
+- ✅ Read actual code diffs of significant PRs
+- ✅ Analyze architectural decisions
+- ✅ Extract true business impact from code
+
+**Agent Selection Per Repository:**
+
+| Repository Type | Agent to Dispatch | Why |
+|----------------|-------------------|-----|
+| **Backend Go** | `ring:backend-engineer-golang` | Deep Go expertise, architectural analysis |
+| **Backend TypeScript** | `ring:backend-engineer-typescript` | TS/Node API analysis |
+| **Frontend React/Next** | `ring:frontend-engineer` | UI/UX impact analysis |
+| **Infrastructure** | `ring:devops-engineer` | Deployment, scaling impact |
+| **Tests** | `ring:qa-analyst` | Quality improvements analysis |
+| **Unknown/Mixed** | `ring:codebase-explorer` | Comprehensive exploration |
+
+**Analysis Workflow:**
+
+```markdown
+For each repository:
+
+1. **Identify Technology Stack**
+   - Read package.json, go.mod, requirements.txt
+   - Determine primary language
+
+2. **Dispatch Appropriate Specialized Agent**
+   Task(
+     subagent_type="ring:backend-engineer-golang",  # or appropriate
+     model="opus",
+     prompt="""
+     Analyze {repo_name} deliveries for period {start} to {end}.
+
+     PRs to analyze: {pr_list}
+
+     For each significant PR (>100 lines changed):
+     1. Read code diff
+     2. Identify technical changes
+     3. Assess architecture/design decisions
+     4. Extract business impact
+     5. Identify quality improvements
+
+     Provide business value statements suitable for executives.
+     Format: "What was built + Why it matters + Who benefits"
+     """
+   )
+
+3. **Aggregate Agent Insights**
+   - Collect business value statements from all agents
+   - Group by theme/product
+   - Prioritize by impact level
+
+4. **Verify Understanding**
+   - Spot-check agent analysis by reading key diffs
+   - Confirm business value accuracy
+   - Add missing context
+```
+
+**Time Expectations (NON-NEGOTIABLE):**
+- 1 repository = 5-10 minutes of deep analysis
+- 8 repositories = 40-80 minutes total
+- Quality cannot be rushed
+
+**Output:** `docs/pmo/delivery-reports/{date}/deep-code-analysis.md`
+
+**Quality Checklist:**
+- [ ] Specialized agent used for each repo type
+- [ ] Significant PRs analyzed with code reading
+- [ ] Business value extracted from code, not just titles
+- [ ] Agent insights aggregated and verified
+- [ ] No "too vague" statements (e.g., "various improvements")
+
+**If pressured to skip this gate:**
+```
+BLOCKER: Attempt to skip deep code analysis
+Reason: "Too many repos" / "Takes too long" / "Use general-purpose"
+Response: Deep analysis is MANDATORY. Quality over speed.
+Action: Will proceed with proper specialized agent analysis.
+```
+
+---
+
 ### Gate 3: Business Value Extraction
 
 **Objective:** Transform technical changes into business value statements
@@ -179,7 +308,7 @@ git branch -r --sort=-committerdate  # Active branches
 1. **Capa (Cover Slide)**
    - Title: "Entregas de Produtos [Squad/Company Name]"
    - Subtitle: "Resumo Executivo"
-   - Period: "DD/MM/YYYY - DD/MM/YYYY"
+   - Period: "DD a DD de MÊS de YYYY" (Portuguese format, e.g., "12 a 31 de Janeiro de 2026")
    - Key metrics: Novos Produtos, Releases, PRs, Commits
    - Agility metric: "Média de X releases por dia"
 
@@ -260,6 +389,11 @@ See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationaliz
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
+| "8 repos = use general-purpose for speed" | general-purpose lacks domain expertise. Shallow analysis. | **Use specialized agents per repo** |
+| "Too many repos, need to be fast" | Speed over quality produces meaningless insights. | **Take time for deep analysis** |
+| "PR titles are enough, skip code" | Titles don't reveal actual impact. Code does. | **Read code diffs with agents** |
+| "Parallel analysis for speed" | Parallel without depth = superficial understanding. | **Sequential deep analysis** |
+| "Skip Gate 2.5, too time-consuming" | Code analysis is the SOURCE of business value. | **Gate 2.5 MANDATORY** |
 | "Accept repo name without org" | Cannot clone without org/owner. Ambiguous. | **Validate format: org/repo or URL** |
 | "Git data is accurate enough" | Tags/PRs can be incomplete. Verify with gh CLI. | **Use both git and gh commands** |
 | "Skip business context, data speaks" | Data without context lacks meaning for executives. | **Always include business context** |
@@ -277,10 +411,15 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 
 | Pressure Type | Request | Agent Response |
 |---------------|---------|----------------|
-| "Inflate the numbers" | "Cannot misrepresent data. Will report accurate metrics with business context." |
-| "Make it more technical" | "Report is for executives. Will use business language with technical accuracy." |
-| "Skip the Git analysis, use estimates" | "Git data is the source of truth. Analysis is required for accuracy." |
-| "Use last month's template" | "Each period has unique deliveries. Will generate fresh analysis." |
+| **Speed Pressure** | "8 repos is a lot, just be quick" | "Quality over speed. Will use specialized agents for deep analysis. Time: 40-80 minutes." |
+| **Shortcut Pressure** | "Use general-purpose for parallel speed" | "general-purpose lacks expertise. Will use specialized agents sequentially for depth." |
+| **Surface Analysis** | "Just read PR titles, that's enough" | "Titles omit impact. Will analyze actual code with specialized agents." |
+| **Gate Skipping** | "Skip code analysis, save time" | "Code analysis is MANDATORY. Cannot skip Gate 2.5." |
+| **Deadline Pressure** | "We need this in 10 minutes" | "Deep analysis cannot be rushed. Will prioritize accuracy over arbitrary deadlines." |
+| **Data Manipulation** | "Inflate the numbers" | "Cannot misrepresent data. Will report accurate metrics with business context." |
+| **Obfuscation** | "Make it more technical" | "Report is for executives. Will use business language with technical accuracy." |
+| **Estimation** | "Skip the Git analysis, use estimates" | "Git data is the source of truth. Analysis is required for accuracy." |
+| **Template Reuse** | "Use last month's template" | "Each period has unique deliveries. Will generate fresh analysis." |
 
 ---
 
@@ -290,6 +429,10 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 
 | Situation | Required Action |
 |-----------|-----------------|
+| **Pressure to skip Gate 2.5** | STOP. Report: "Deep code analysis MANDATORY. Cannot skip for speed." |
+| **Request to use general-purpose** | STOP. Report: "Specialized agents required for quality. Will not compromise." |
+| **Unrealistic deadline (<30 min)** | STOP. Report: "8 repos require 40-80 min for proper analysis. Quality cannot be rushed." |
+| **Attempt to skip code reading** | STOP. Report: "Code analysis is source of business value. Titles insufficient." |
 | Git repository not accessible | STOP. Cannot analyze without repo access. Verify permissions. |
 | GitHub CLI not configured | STOP. Need gh auth for PR/release data. Setup required. |
 | Date range produces no data | STOP. Verify period is correct or report "no activity". |
