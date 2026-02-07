@@ -67,8 +67,14 @@ For full details: Skill tool with \"ring-tw-team:using-tw-team\"
     # Escape for JSON using shared utility
     context_escaped=$(json_escape "$context")
 
-    # Use printf %s to prevent shell interpretation of metacharacters in agent descriptions
-    printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$context_escaped"
+    cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "${context_escaped}"
+  }
+}
+EOF
   else
     # Fallback to static output if script fails
     cat <<'EOF'
