@@ -179,8 +179,8 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 7 | Mock Generation (MANDATORY) | [#mock-generation-mandatory](testing-unit.md#mock-generation-mandatory) |
 | 8 | Environment Variables in Tests (MANDATORY) | [#environment-variables-in-tests-mandatory](testing-unit.md#environment-variables-in-tests-mandatory) |
 | 9 | Shared Test Utilities (MANDATORY) | [#shared-test-utilities-mandatory](testing-unit.md#shared-test-utilities-mandatory) |
-| 10 | Unit Test Quality Gate (MANDATORY) | [#unit-test-quality-gate-mandatory](testing-unit.md#unit-test-quality-gate-mandatory) |
-| 11 | Unit Test Scope & Boundaries (MANDATORY) | [#unit-test-scope--boundaries-mandatory](testing-unit.md#unit-test-scope--boundaries-mandatory) |
+| 10 | Unit Test Scope & Boundaries (MANDATORY) | [#unit-test-scope--boundaries-mandatory](testing-unit.md#unit-test-scope--boundaries-mandatory) |
+| 11 | Unit Test Quality Gate (MANDATORY) | [#unit-test-quality-gate-mandatory](testing-unit.md#unit-test-quality-gate-mandatory) |
 
 ### Fuzz Testing (testing-fuzz.md) - Gate 4
 
