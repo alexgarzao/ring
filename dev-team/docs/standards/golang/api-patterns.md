@@ -1007,6 +1007,49 @@ func (h *Handler) ListUsers(c *fiber.Ctx) error {
 }
 ```
 
+### Numeric Query Parameter Errors (MANDATORY)
+
+**⛔ HARD GATE:** Numeric query parameters MUST be explicitly validated. Silent conversion failures (swallowed errors) cause unexpected behavior.
+
+```go
+// ❌ FORBIDDEN: Silent conversion failure (error swallowed)
+func (h *Handler) GetItems(c *fiber.Ctx) error {
+    limit := c.QueryInt("limit", 10)  // If "limit=abc", silently returns 10
+    // WRONG: Invalid input is silently accepted
+}
+
+// ✅ CORRECT: Explicit validation with error response
+func (h *Handler) GetItems(c *fiber.Ctx) error {
+    limitStr := c.Query("limit", "10")
+    limit, err := strconv.Atoi(limitStr)
+    if err != nil {
+        return libHTTP.WithError(c, ErrInvalidLimit)  // Return 400 Bad Request
+    }
+    if limit < 1 || limit > 100 {
+        return libHTTP.WithError(c, ErrLimitOutOfRange)
+    }
+    // ...
+}
+
+// ✅ PREFERRED: Use lib-commons ValidateParameters
+func (h *Handler) GetItems(c *fiber.Ctx) error {
+    params, err := libHTTP.ValidateParameters(c.Queries())
+    if err != nil {
+        return libHTTP.WithError(c, err)  // Handles all validation
+    }
+    // params.Limit is guaranteed valid
+}
+```
+
+**Detection Command:**
+
+```bash
+# Find silent numeric conversion (QueryInt, QueryFloat without error check)
+grep -rn "QueryInt\|QueryFloat" internal/adapters/http --include="*.go" | \
+  grep -v "ValidateParameters"
+# Expected: 0 matches (use ValidateParameters instead)
+```
+
 ### FORBIDDEN Patterns
 
 ```go

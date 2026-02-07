@@ -3,13 +3,13 @@ name: production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
-description: Comprehensive Ring-standards-aligned 38-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, IDOR, SQL, validation, rate limiting, multi-tenant), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, unit-testing, fuzz-testing, property-testing, integration-testing, chaos-testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-380) with severity ratings and standards cross-reference.
+description: Comprehensive Ring-standards-aligned 36-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, SQL, validation, IDOR* and multi-tenant* conditional), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, unit-testing, fuzz-testing, property-testing, integration-testing, chaos-testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **38 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **36 dimensions in 5 categories** (plus 2 conditional), aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in batches, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -37,16 +37,15 @@ Use this skill when:
 | 29 | **Naming Conventions** | snake_case DB, camelCase JSON body, snake_case query params |
 | 30 | **Domain Modeling** | ToEntity/FromEntity, always-valid constructors, private fields + getters |
 
-### Category B: Security & Access Control (5-6 dimensions)
+### Category B: Security & Access Control (4 dimensions + 2 conditional)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
 | 6 | **Auth Protection** | Route protection, JWT validation, tenant extraction, Access Manager |
-| 7 | **IDOR & Access Control** | Ownership verification, tenant isolation, resource authorization |
+| 7 | **IDOR & Access Control** *(CONDITIONAL)* | Ownership verification, tenant isolation — only if MULTITENANT=true |
 | 8 | **SQL Safety** | Parameterized queries, identifier escaping, injection prevention |
 | 9 | **Input Validation** | Request body validation, query params, VO validation |
-| 10 | **Rate Limiting** | Global/per-endpoint limits, tenant/user keying, abuse prevention |
-| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection — only if detected |
+| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection — only if MULTITENANT=true |
 
 ### Category C: Operational Readiness (5 dimensions)
 
@@ -81,7 +80,7 @@ Use this skill when:
 | # | Dimension | Focus Area |
 |---|-----------|------------|
 | 24 | **Container Security** | Dockerfile best practices, non-root user, multi-stage, image pinning |
-| 25 | **HTTP Hardening** | Security headers (HSTS, CSP), cookie attributes, CORS strictness |
+| 25 | **HTTP Hardening** | Security headers (X-Content-Type-Options, X-Frame-Options) per Ring standards |
 | 26 | **CI/CD Pipeline** | Pipeline definitions, automated tests, security scanning |
 | 27 | **Async Reliability** | DLQs, retry policies, consumer group usage, message durability |
 | 32 | **Makefile & Dev Tooling** | 17+ required Makefile commands, dev workflow automation |
@@ -89,7 +88,7 @@ Use this skill when:
 
 ## Execution Protocol
 
-This skill runs **up to 38 explorer agents in 5 batches (4 of up to 10 + 1 of 4)**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 36 explorer agents in 5 batches** (plus 2 conditional dimensions), writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -99,7 +98,7 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:
 
 | Batch | Agents | Category Focus |
 |-------|--------|----------------|
-| 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input, Rate Limiting) |
+| 1 | 1-9 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR*, SQL, Input) *conditional on MULTITENANT |
 | 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Unit Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
 | 4 | 31-34 | Quality (Linting) + Infrastructure (Makefile, Multi-Tenant*, License*) (* = conditional) |
@@ -215,10 +214,10 @@ Task(subagent_type="Explore", prompt="<Agent 3: Route Organization>")
 Task(subagent_type="Explore", prompt="<Agent 4: Bootstrap & Init>")
 Task(subagent_type="Explore", prompt="<Agent 5: Runtime Safety>")
 Task(subagent_type="Explore", prompt="<Agent 6: Auth Protection>")
-Task(subagent_type="Explore", prompt="<Agent 7: IDOR Protection>")
+# Only if MULTITENANT=true:
+Task(subagent_type="Explore", prompt="<Agent 7: IDOR Protection>")  # CONDITIONAL
 Task(subagent_type="Explore", prompt="<Agent 8: SQL Safety>")
 Task(subagent_type="Explore", prompt="<Agent 9: Input Validation>")
-Task(subagent_type="Explore", prompt="<Agent 10: Rate Limiting>")
 ```
 
 **After completion:** Append results to the report file.
@@ -755,12 +754,15 @@ func parseTokenClaims(tokenString string, secret []byte) (jwt.MapClaims, error) 
 ```
 ```
 
-### Agent 7: IDOR & Access Control Auditor
+### Agent 7: IDOR & Access Control Auditor (CONDITIONAL)
+
+**⚠️ CONDITIONAL: Only execute if MULTITENANT=true. Skip if MULTITENANT=false.**
 
 ```prompt
 Audit IDOR (Insecure Direct Object Reference) protection for production readiness.
 
 **Detected Stack:** {DETECTED_STACK}
+**Condition:** MULTITENANT=true (skip if false)
 
 **Search Patterns:**
 - Files: `**/verifier*.go`, `**/handlers.go`, `**/context.go`
@@ -1003,81 +1005,6 @@ amount := c.QueryInt("amount")  // Could be negative or huge
 - DTOs with validation tags: X/Y
 - BodyParser error handling: X/Y
 - Value objects with IsValid: X/Y
-
-### Critical Issues
-[file:line] - Description
-
-### Recommendations
-1. ...
-```
-```
-
-### Agent 10: Rate Limiting Auditor
-
-```prompt
-Audit rate limiting implementation for production readiness.
-
-**Detected Stack:** {DETECTED_STACK}
-
-**Search Patterns:**
-- Files: `**/fiber_server.go`, `**/middleware*.go`, `**/limiter*.go`
-- Keywords: `limiter.New`, `RateLimiter`, `Max:`, `Expiration:`, `KeyGenerator`
-
-**Reference Implementation (GOOD):**
-```go
-// Multi-level rate limiting
-app.Use(limiter.New(limiter.Config{
-    Max:        100,                    // 100 requests
-    Expiration: 60 * time.Second,       // per 60 seconds
-    KeyGenerator: func(c *fiber.Ctx) string {
-        ctx := c.UserContext()
-        // Priority: user > tenant > IP
-        if userID := getUserID(ctx); userID != "" {
-            return "user:" + userID
-        }
-        if tenantID := getTenantID(ctx); tenantID != "" {
-            return "tenant:" + tenantID + ":" + c.IP()
-        }
-        return "ip:" + c.IP()
-    },
-    LimitReached: func(c *fiber.Ctx) error {
-        return c.Status(429).JSON(fiber.Map{
-            "error": "rate limit exceeded",
-            "retry_after": 60,
-        })
-    },
-}))
-
-// Endpoint-specific limits for expensive operations
-exportGroup.Use(limiter.New(limiter.Config{
-    Max:        10,  // Tighter limit for exports
-    Expiration: 60 * time.Second,
-}))
-```
-
-**Check For:**
-1. Global rate limiter configured
-2. Limits are reasonable (not too high/low)
-3. Key generator uses authenticated identity when available
-4. 429 response includes retry-after info
-5. Expensive endpoints (exports, reports) have tighter limits
-6. Rate limit bypass for health checks
-
-**Severity Ratings:**
-- CRITICAL: No rate limiting at all
-- HIGH: Rate limiting uses only IP (easily bypassed)
-- HIGH: Export/report endpoints unprotected
-- MEDIUM: Missing retry-after in 429 response
-- LOW: Limits not tuned for production load
-
-**Output Format:**
-```
-## Rate Limiting Audit Findings
-
-### Summary
-- Global rate limiter: Yes/No
-- Key generator: IP-only / User-aware / Tenant-aware
-- Endpoint-specific limits: X endpoints
 
 ### Critical Issues
 [file:line] - Description
@@ -1754,7 +1681,6 @@ Audit technical debt indicators for production readiness.
 
 **Monitor (Medium Risk):**
 - Performance optimization TODOs
-- Missing rate limiting
 - Incomplete logging
 - "deprecated" usage without migration plan
 
@@ -2387,41 +2313,48 @@ Audit HTTP security headers and hardening configuration for production readiness
 
 **Detected Stack:** {DETECTED_STACK}
 
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: "HTTP Security Headers" section from security.md}
+---END STANDARDS---
+
 **Search Patterns:**
-- Files: `**/fiber_server.go`, `**/middleware*.go`, `**/cors.go`
-- Keywords: `Helmet`, `CORS`, `CSRF`, `Secure`, `HttpOnly`, `SameSite`
+- Files: `**/fiber_server.go`, `**/middleware*.go`, `**/security*.go`
+- Keywords: `X-Content-Type-Options`, `X-Frame-Options`, `Helmet`, `Secure`, `HttpOnly`, `SameSite`
 
 **Reference Implementation (GOOD):**
 ```go
-// Security headers
+// Security headers per Ring standards (security.md)
+func SecurityHeaders() fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        // MANDATORY per Ring standards
+        c.Set("X-Content-Type-Options", "nosniff")
+        c.Set("X-Frame-Options", "DENY")
+        return c.Next()
+    }
+}
+
+// Or using Helmet middleware
 app.Use(helmet.New(helmet.Config{
-    XSSProtection:             "1; mode=block",
-    ContentTypeNosniff:        "nosniff",
-    XFrameOptions:             "DENY",
+    ContentTypeNosniff:        "nosniff",      // MANDATORY per Ring standards
+    XFrameOptions:             "DENY",         // MANDATORY per Ring standards
     HSTSMaxAge:                31536000,
     HSTSExcludeSubdomains:     false,
-    HSTSPreloadEnabled:        true,
     ContentSecurityPolicy:     "default-src 'self'",
-}))
-
-// CORS configuration
-app.Use(cors.New(cors.Config{
-    AllowOrigins:     "https://app.example.com", // Specific origin
-    AllowMethods:     "GET,POST,PUT,DELETE",
-    AllowCredentials: true,
 }))
 ```
 
-**Check For:**
-1. HSTS enabled (Strict-Transport-Security)
-2. CSP configured (Content-Security-Policy)
-3. X-Frame-Options set to DENY or SAMEORIGIN
-4. CORS restricts origins (no `*` in production)
+**Check Against Ring Standards For:**
+1. HARD GATE: X-Content-Type-Options set to "nosniff" per security.md
+2. HARD GATE: X-Frame-Options set to "DENY" per security.md
+3. HSTS enabled (Strict-Transport-Security)
+4. CSP configured (Content-Security-Policy)
 5. Secure cookies (Secure, HttpOnly, SameSite=Strict/Lax)
 6. Server banner suppressed (Server: value removed)
 
 **Severity Ratings:**
-- CRITICAL: CORS `*` allowed with credentials
+- CRITICAL: Missing X-Content-Type-Options (HARD GATE per Ring standards)
+- CRITICAL: Missing X-Frame-Options (HARD GATE per Ring standards)
 - HIGH: Missing HSTS
 - MEDIUM: Missing CSP or overly permissive
 - LOW: Server banner exposed
@@ -2431,8 +2364,9 @@ app.Use(cors.New(cors.Config{
 ## HTTP Hardening Audit Findings
 
 ### Summary
+- X-Content-Type-Options: Present/Missing (Ring HARD GATE)
+- X-Frame-Options: Present/Missing (Ring HARD GATE)
 - HSTS enabled: Yes/No
-- CORS strictness: Strict/Permissive/Open
 - CSP configured: Yes/No
 
 ### Critical Issues
@@ -3786,14 +3720,13 @@ After all explorers complete, generate this report:
 | Dimension | Score | Critical | High | Medium | Low |
 |-----------|-------|----------|------|--------|-----|
 | 6. Auth Protection | X/10 | 0 | 0 | 0 | 0 |
-| 7. IDOR Protection | X/10 | 0 | 0 | 0 | 0 |
+| *7. IDOR Protection** | *X/10* | *0* | *0* | *0* | *0* |
 | 8. SQL Safety | X/10 | 0 | 0 | 0 | 0 |
 | 9. Input Validation | X/10 | 0 | 0 | 0 | 0 |
-| 10. Rate Limiting | X/10 | 0 | 0 | 0 | 0 |
 | *33. Multi-Tenant** | *X/10* | *0* | *0* | *0* | *0* |
-| **Category B Total** | **X/50 (+10)** | **0** | **0** | **0** | **0** |
+| **Category B Total** | **X/30 (+20)** | **0** | **0** | **0** | **0** |
 
-*\*Dimension 33 included only if MULTITENANT=true*
+*\*Dimensions 7 and 33 included only if MULTITENANT=true*
 
 ### Category C: Operational Readiness
 
@@ -3871,10 +3804,9 @@ After all explorers complete, generate this report:
 | 4. Bootstrap | bootstrap.md | Bootstrap | {PASS/FAIL} |
 | 5. Runtime Safety | (generic) | — | {PASS/FAIL} |
 | 6. Auth Protection | security.md | Access Manager Integration | {PASS/FAIL} |
-| 7. IDOR Protection | (generic) | — | {PASS/FAIL} |
-| 8. SQL Safety | (generic) | — | {PASS/FAIL} |
-| 9. Input Validation | core.md | Frameworks & Libraries | {PASS/FAIL} |
-| 10. Rate Limiting | (generic) | — | {PASS/FAIL} |
+| 7. IDOR Protection* | (generic) | — | {PASS/FAIL} |
+| 8. SQL Safety | security.md | SQL Safety | {PASS/FAIL} |
+| 9. Input Validation | api-patterns.md | Input Validation | {PASS/FAIL} |
 | 11. Telemetry | bootstrap.md + sre.md | Observability, OpenTelemetry | {PASS/FAIL} |
 | 12. Health Checks | sre.md | Health Checks | {PASS/FAIL} |
 | 13. Configuration | core.md | Configuration | {PASS/FAIL} |
@@ -3889,7 +3821,7 @@ After all explorers complete, generate this report:
 | 22. Concurrency | architecture.md | Concurrency Patterns | {PASS/FAIL} |
 | 23. Migrations | core.md | Database patterns | {PASS/FAIL} |
 | 24. Containers | devops.md | Containers | {PASS/FAIL} |
-| 25. HTTP Hardening | (generic) | — | {PASS/FAIL} |
+| 25. HTTP Hardening | security.md | HTTP Security Headers | {PASS/FAIL} |
 | 26. CI/CD | devops.md | CI section | {PASS/FAIL} |
 | 27. Async | messaging.md | RabbitMQ Worker Pattern | {PASS/FAIL} |
 | 28. Core Deps | core.md | lib-commons, Frameworks | {PASS/FAIL} |
@@ -3943,8 +3875,8 @@ After all explorers complete, generate this report:
 #### 6. Auth Protection
 {Agent 6 output}
 
-#### 7. IDOR & Access Control
-{Agent 7 output}
+#### 7. IDOR Protection (if applicable)
+{Agent 7 output — or "Dimension not activated (MULTITENANT=false)"}
 
 #### 8. SQL Safety
 {Agent 8 output}
@@ -3952,11 +3884,8 @@ After all explorers complete, generate this report:
 #### 9. Input Validation
 {Agent 9 output}
 
-#### 10. Rate Limiting
-{Agent 10 output}
-
 #### 33. Multi-Tenant Patterns (if applicable)
-{Agent 33 output — or "Dimension not activated (no multi-tenant indicators detected)"}
+{Agent 33 output — or "Dimension not activated (MULTITENANT=false)"}
 
 ### Category C: Operational Readiness
 
