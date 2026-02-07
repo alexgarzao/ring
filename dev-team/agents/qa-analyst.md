@@ -1,13 +1,13 @@
 ---
 name: ring:qa-analyst
 version: 1.5.1
-description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3) and integration (Gate 3.5) testing modes.
+description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), and chaos (Gate 7) testing modes.
 type: specialist
 model: opus
 last_updated: 2026-02-06
 changelog:
   - 1.5.1: Made output_schema mode-aware - unit-specific sections (Coverage Validation, Summary, Implementation, Files Changed, Testing, Test Execution Results) use required_when test_mode=unit; integration-specific sections (Integration Testing Summary, Scenario Coverage, Quality Gate Results) use required_when test_mode=integration
-  - 1.5.0: Added integration testing mode (Gate 3.5) with test_mode parameter, testcontainers patterns, and integration-specific quality gates
+  - 1.5.0: Added integration testing mode (Gate 6) with test_mode parameter, testcontainers patterns, and integration-specific quality gates
   - 1.4.0: Added HARD GATE requiring all testing sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.3.1: Added Anti-Hallucination Output Verification section (MANDATORY) - prevents false claims about test results and coverage metrics
@@ -138,7 +138,7 @@ input_schema:
       type: "enum"
       values: ["unit", "integration"]
       default: "unit"
-      description: "Testing mode - unit tests (Gate 3) or integration tests (Gate 3.5)"
+      description: "Testing mode - unit tests (Gate 3) or integration tests (Gate 6)"
   optional_context:
     - name: "implementation_files"
       type: "list[file_path]"
@@ -443,7 +443,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ---
 
-## Integration Testing Mode (Gate 3.5)
+## Integration Testing Mode (Gate 6)
 
 **When `test_mode: integration` is specified, this agent operates in Integration Mode.**
 
@@ -457,7 +457,7 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 
 ### Mode-Specific Requirements
 
-| Requirement | Unit Mode (Gate 3) | Integration Mode (Gate 3.5) |
+| Requirement | Unit Mode (Gate 3) | Integration Mode (Gate 6) |
 |-------------|-------------------|----------------------------|
 | Coverage threshold | 85% minimum | N/A (not measured) |
 | Build tag | None required | `//go:build integration` MANDATORY |

@@ -1,19 +1,19 @@
 ---
 name: ring:dev-integration-testing
-title: Development cycle integration testing (Gate 3.5)
+title: Development cycle integration testing (Gate 6)
 category: development-cycle
 tier: 1
 when_to_use: |
-  Use when the task has external dependencies (database, APIs, queues) and unit testing (Gate 3) is complete.
-  Do not use when the task has no external dependencies (Gate 3.5 can be skipped with documented reason).
+  Use after property-based testing (Gate 5) is complete.
+  MANDATORY for all development tasks - verifies real service integration.
 description: |
-  Gate 3.5 of development cycle - ensures integration tests pass for all
+  Gate 6 of development cycle - ensures integration tests pass for all
   external dependency interactions using real containers via testcontainers.
 
 trigger: |
-  - After unit testing complete (Gate 3)
-  - Task has external dependencies (database, APIs, queues)
-  - Need to verify real service integration
+  - After property-based testing complete (Gate 5)
+  - MANDATORY for all development tasks
+  - Verifies real service integration with testcontainers
 
 NOT_skip_when: |
   - "Unit tests cover it" - Unit tests mock. Integration tests verify real behavior.
@@ -21,8 +21,8 @@ NOT_skip_when: |
   - "CI doesn't support Docker" - Fix CI. Docker is baseline infrastructure.
 
 sequence:
-  after: [ring:dev-testing]
-  before: [ring:requesting-code-review]
+  after: [ring:dev-property-testing]
+  before: [ring:dev-chaos-testing]
 
 related:
   complementary: [ring:dev-cycle, ring:dev-testing, ring:qa-analyst]
@@ -124,10 +124,10 @@ examples:
       | No t.Parallel() | PASS |
 
       ## Handoff to Next Gate
-      - Ready for Gate 4 (Review): YES
+      - Ready for Gate 7 (Chaos Testing): YES
 ---
 
-# Dev Integration Testing (Gate 3.5)
+# Dev Integration Testing (Gate 6)
 
 ## Overview
 
@@ -162,9 +162,9 @@ REQUIRED INPUT (from ring:dev-cycle orchestrator):
 - language is valid (go|typescript)
 </verify_before_proceed>
 
-OPTIONAL INPUT (determines if Gate 3.5 runs or skips):
-- integration_scenarios: [list of scenarios] - if provided and non-empty, Gate 3.5 runs
-- external_dependencies: [list of deps] - if provided and non-empty, Gate 3.5 runs
+OPTIONAL INPUT (determines if Gate 6 runs or skips):
+- integration_scenarios: [list of scenarios] - if provided and non-empty, Gate 6 runs
+- external_dependencies: [list of deps] - if provided and non-empty, Gate 6 runs
 - gate3_handoff: [full Gate 3 output]
 - implementation_files: [files from Gate 0]
 
@@ -174,11 +174,11 @@ EXECUTION LOGIC:
    -> Return to orchestrator with error
 
 2. if integration_scenarios is empty AND external_dependencies is empty:
-   -> Gate 3.5 SKIP (document reason: "No integration scenarios or external dependencies")
+   -> Gate 6 SKIP (document reason: "No integration scenarios or external dependencies")
    -> Return skip result with status: "skipped"
 
 3. Otherwise:
-   -> Gate 3.5 REQUIRED - proceed to Step 2
+   -> Gate 6 REQUIRED - proceed to Step 2
 ```
 
 ## Step 2: Check If Integration Tests Needed
@@ -188,21 +188,21 @@ EXECUTION LOGIC:
 ```text
 1. Task has external_dependencies list?
    |
-   +-- YES -> Gate 3.5 REQUIRED
+   +-- YES -> Gate 6 REQUIRED
    |
    +-- NO -> Continue to #2
 
 2. Task has integration_scenarios?
    |
-   +-- YES -> Gate 3.5 REQUIRED
+   +-- YES -> Gate 6 REQUIRED
    |
    +-- NO -> Continue to #3
 
 3. Task acceptance criteria mention "integration", "database", "queue"?
    |
-   +-- YES -> Gate 3.5 REQUIRED
+   +-- YES -> Gate 6 REQUIRED
    |
-   +-- NO -> Gate 3.5 SKIP (with reason)
+   +-- NO -> Gate 6 SKIP (with reason)
 ```
 
 **If SKIP:**
@@ -210,7 +210,7 @@ EXECUTION LOGIC:
 Return:
   status: SKIP
   skip_reason: "No external dependencies or integration scenarios identified"
-  ready_for_gate4: YES
+  ready_for_gate7: YES
 ```
 
 ## Step 3: Initialize Testing State
@@ -449,7 +449,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
 
-### Gate 3.5-Specific Anti-Rationalizations
+### Gate 6-Specific Anti-Rationalizations
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
@@ -498,7 +498,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 ## Skip Conditions (Documented)
 
-**When Gate 3.5 can be skipped (MUST document reason):**
+**When Gate 6 can be skipped (MUST document reason):**
 
 | Condition | Skip Reason |
 |-----------|-------------|
@@ -507,7 +507,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Library/utility code | "Task is internal utility with no external calls" |
 | Already covered | "Integration tests exist and pass (verified)" |
 
-**When Gate 3.5 CANNOT be skipped:**
+**When Gate 6 CANNOT be skipped:**
 
 | Condition | Why Required |
 |-----------|--------------|

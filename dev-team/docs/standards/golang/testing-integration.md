@@ -1,10 +1,10 @@
 # Go Standards - Integration Testing
 
-> **Module:** testing-integration.md | **Sections:** INT-1 to INT-15 | **Parent:** [index.md](index.md)
+> **Module:** testing-integration.md | **Sections:** 10 | **Parent:** [index.md](index.md)
 
-This module covers integration testing patterns, testcontainers usage, property-based testing, chaos testing, and anti-patterns for Go projects.
+This module covers integration testing patterns with testcontainers for Go projects. Integration tests verify that components work correctly with real external dependencies.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` when `test_mode: integration` (Gate 3.5).
+> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 6 (Integration Testing).
 
 ---
 
@@ -12,23 +12,18 @@ This module covers integration testing patterns, testcontainers usage, property-
 
 | # | Section | Description |
 |---|---------|-------------|
-| INT-1 | [Test Pyramid](#test-pyramid) | Unit > Integration > E2E ratio |
-| INT-2 | [Decision Tree for Test Level](#decision-tree-for-test-level) | When to use integration tests |
-| INT-3 | [File Naming Convention](#file-naming-convention-mandatory) | `*_integration_test.go` with build tags |
-| INT-4 | [Function Naming Convention](#function-naming-convention-mandatory) | `TestIntegration_`, `TestProperty_`, `Fuzz` |
-| INT-5 | [Build Tags](#build-tags-mandatory) | `//go:build integration` |
-| INT-6 | [Testcontainers Patterns](#testcontainers-patterns-mandatory) | Container lifecycle management |
-| INT-7 | [Parallel Test Prohibition](#parallel-test-prohibition-mandatory) | No `t.Parallel()` for integration tests |
-| INT-8 | [Fixture Centralization](#fixture-centralization-mandatory) | `tests/utils/` organization |
-| INT-9 | [Stub Centralization](#stub-centralization-mandatory) | `tests/utils/stubs/` patterns |
-| INT-10 | [Property-Based Testing](#property-based-testing) | `testing/quick.Check` patterns |
-| INT-11 | [Native Fuzz Testing](#native-fuzz-testing) | `Fuzz*` functions (Go 1.18+) |
-| INT-12 | [Chaos Testing](#chaos-testing) | Toxiproxy patterns |
-| INT-13 | [Logger Testing](#logger-testing) | Capturing and asserting log output |
-| INT-14 | [Guardrails (11 Anti-Patterns)](#guardrails-11-anti-patterns-mandatory) | What not to do |
-| INT-15 | [Test Failure Analysis](#test-failure-analysis-no-greenwashing) | Root cause tracking |
+| 1 | [Test Pyramid](#test-pyramid) | Unit > Integration > E2E ratio |
+| 2 | [File Naming Convention](#file-naming-convention-mandatory) | `*_integration_test.go` with build tags |
+| 3 | [Function Naming Convention](#function-naming-convention-mandatory) | `TestIntegration_{Component}_{Scenario}` |
+| 4 | [Build Tags](#build-tags-mandatory) | `//go:build integration` |
+| 5 | [Testcontainers Patterns](#testcontainers-patterns-mandatory) | Container lifecycle management |
+| 6 | [Parallel Test Prohibition](#parallel-test-prohibition-mandatory) | No `t.Parallel()` for integration tests |
+| 7 | [Fixture Centralization](#fixture-centralization-mandatory) | `tests/utils/` organization |
+| 8 | [Stub Centralization](#stub-centralization-mandatory) | `tests/utils/stubs/` patterns |
+| 9 | [Guardrails (11 Anti-Patterns)](#guardrails-11-anti-patterns-mandatory) | What not to do |
+| 10 | [Test Failure Analysis](#test-failure-analysis-no-greenwashing) | Root cause tracking |
 
-**Meta-sections (excluded from agent checks):** [Output Format (Integration Mode)](#output-format-integration-mode) | [Anti-Rationalization Table (Integration Testing)](#anti-rationalization-table-integration-testing)
+**Meta-sections:** [Output Format](#output-format-gate-6---integration-testing) | [Anti-Rationalization Table](#anti-rationalization-table-integration-testing)
 
 ---
 
@@ -67,58 +62,25 @@ This module covers integration testing patterns, testcontainers usage, property-
 
 ---
 
-## Decision Tree for Test Level
-
-```text
-1. Does the code do real I/O? (network, file, DB, container)
-   |
-   +-- YES -> Integration test (*_integration_test.go, TestIntegration_)
-   |
-   +-- NO -> Continue to #2
-             |
-             2. Is this an HTTP handler?
-             |
-             +-- YES -> Component test (mock at repository level)
-             |
-             +-- NO -> Unit test (*_test.go)
-
-3. Test technique?
-   |
-   +-- Verifying properties with testing/quick.Check? -> TestProperty_ prefix
-   +-- Native Go fuzz (millions of iterations)? -> Fuzz prefix (unit only!)
-   +-- Standard test cases? -> Regular Test prefix
-```
-
-### Pre-Flight Checklist (MANDATORY Before Writing Any Test)
-
-- [ ] Searched for existing tests covering this scenario (avoid duplicates)
-- [ ] Confirmed test level matches I/O requirements (see Decision Tree)
-- [ ] File naming matches level (`*_test.go` vs `*_integration_test.go`)
-- [ ] Build tag present if integration (`//go:build integration`)
-- [ ] `t.Parallel()` planned for unit tests only (not integration)
-
----
-
 ## File Naming Convention (MANDATORY)
+
+**HARD GATE:** All integration test files MUST follow the naming convention.
 
 | Test Type | File Pattern | Build Tag |
 |-----------|--------------|-----------|
 | Unit | `*_test.go` | None |
 | Integration | `*_integration_test.go` | `//go:build integration` |
-| Benchmark | `*_benchmark_test.go` | None |
 
 ### Correct Pattern
 
 ```go
 // File: internal/adapters/postgres/user_integration_test.go
-
 //go:build integration
 
 package postgres_test
 
 import (
     "testing"
-    // ...
 )
 
 func TestIntegration_UserRepository_Create(t *testing.T) {
@@ -130,8 +92,7 @@ func TestIntegration_UserRepository_Create(t *testing.T) {
 
 ```go
 // File: internal/adapters/postgres/user_test.go  // WRONG: missing _integration suffix
-
-//go:build integration  // WRONG: build tag on non-integration file
+//go:build integration
 
 package postgres_test
 
@@ -144,28 +105,18 @@ func TestUserRepository_Create(t *testing.T) {  // WRONG: missing TestIntegratio
 
 ## Function Naming Convention (MANDATORY)
 
-| Level | Pattern | Example |
-|-------|---------|---------|
-| Unit | `Test{Unit}_{Scenario}` | `TestCreateAccount_NotFound` |
-| Integration | `TestIntegration_{Component}_{Scenario}` | `TestIntegration_BalanceRepo_Find` |
-| Benchmark | `Benchmark{Function}` | `BenchmarkOperateBalances` |
+**HARD GATE:** All integration test functions MUST follow the naming convention.
 
-### By Technique
-
-| Technique | Pattern | Applies To | Example |
-|-----------|---------|------------|---------|
-| Fuzz (Native Go) | `Fuzz{Subject}_{Field}` | Unit only | `FuzzCreateOrganization_LegalName` |
-| Property-Based | `TestProperty_{Subject}_{Scenario}` | Unit | `TestProperty_Organization_FieldLengths` |
-| Property-Based | `TestIntegration_Property_{Subject}_{Scenario}` | Integration | `TestIntegration_Property_Account_DuplicateAlias` |
-| Chaos | `TestIntegration_Chaos_{Component}_{Scenario}` | Integration only | `TestIntegration_Chaos_Redis_NetworkPartition` |
+| Test Type | Pattern | Example |
+|-----------|---------|---------|
+| Integration | `TestIntegration_{Component}_{Scenario}` | `TestIntegration_BalanceRepo_FindByAccount` |
 
 ### Naming Rules
 
-| Rule | Correct | Incorrect |
-|------|---------|-----------|
-| No "Success" suffix | `TestGetByID` (happy path) | `TestGetByIDSuccess` (redundant) |
-| Use `_Suffix` for variants | `TestGetByID_NotFound` | `TestGetByIDNotFound` |
-| Snake_case for table-driven | `{name: "not_found"}` | `{name: "NotFound"}` |
+| Rule | Example | Anti-Pattern |
+|------|---------|--------------|
+| No "Success" suffix | `TestIntegration_GetByID` (happy path) | `TestIntegration_GetByIDSuccess` (redundant) |
+| Use `_Suffix` for variants | `TestIntegration_GetByID_NotFound` | `TestIntegration_GetByIDNotFound` |
 
 ---
 
@@ -196,9 +147,8 @@ go test ./...
 # Run only integration tests (files with //go:build integration)
 go test -tags=integration ./...
 
-# Run all tests (unit + integration): same as above; -tags=integration includes
-# both unit tests and files built with the integration tag
-go test -tags=integration ./...   # runs unit tests plus integration-tagged tests
+# Run all tests (unit + integration)
+go test -tags=integration ./...
 ```
 
 ### Detection Command
@@ -214,7 +164,7 @@ find . -name "*_integration_test.go" -exec grep -L "//go:build integration" {} \
 
 **HARD GATE:** Integration tests MUST use testcontainers for external dependencies. Real production services are FORBIDDEN.
 
-### Container Setup Pattern
+### Basic Pattern
 
 ```go
 //go:build integration
@@ -224,7 +174,6 @@ package postgres_test
 import (
     "context"
     "testing"
-    "time"
 
     "github.com/stretchr/testify/require"
     "github.com/testcontainers/testcontainers-go"
@@ -235,49 +184,42 @@ import (
 func TestIntegration_UserRepository_Create(t *testing.T) {
     ctx := context.Background()
 
-    // Setup container with wait strategy
-    postgresC, err := postgres.Run(ctx,
-        "docker.io/postgres:16-alpine",
+    // Start container
+    container, err := postgres.Run(ctx,
+        "postgres:15-alpine",
         postgres.WithDatabase("test_db"),
         postgres.WithUsername("test"),
         postgres.WithPassword("test"),
         testcontainers.WithWaitStrategy(
             wait.ForLog("database system is ready to accept connections").
-                WithOccurrence(2).
-                WithStartupTimeout(30*time.Second),
+                WithOccurrence(2),
         ),
     )
     require.NoError(t, err)
+    defer container.Terminate(ctx)
 
-    // Automatic cleanup
-    t.Cleanup(func() {
-        if err := postgresC.Terminate(ctx); err != nil {
-            t.Logf("failed to terminate container: %v", err)
-        }
-    })
-
-    // Get dynamic connection string (not hardcoded port!)
-    connStr, err := postgresC.ConnectionString(ctx, "sslmode=disable")
+    // Get connection string
+    connStr, err := container.ConnectionString(ctx, "sslmode=disable")
     require.NoError(t, err)
 
     // Run test against real container
     repo := NewUserRepository(connStr)
-    // ...
+    user, err := repo.Create(ctx, &User{Name: "Test"})
+    require.NoError(t, err)
+    assert.NotEmpty(t, user.ID)
 }
 ```
 
-### Container Version Synchronization
-
-**Versions MUST match `infra/docker-compose` exactly.**
+### Why Testcontainers Over docker-compose
 
 | Service | docker-compose | Testcontainers |
-|---------|----------------|----------------|
-| PostgreSQL | `postgres:16-alpine` | `postgres:16-alpine` |
-| Redis | `redis:7-alpine` | `redis:7-alpine` |
-| MongoDB | `mongo:7.0` | `mongo:7.0` |
-| RabbitMQ | `rabbitmq:3.12-management` | `rabbitmq:3.12-management` |
+|---------|---------------|----------------|
+| Port | Fixed `:5432` (conflicts) | Dynamic (no conflicts) |
+| Lifecycle | Manual start/stop | Automatic per test |
+| Cleanup | Manual | Automatic via `t.Cleanup()` |
+| CI | Requires docker-compose | Works with just Docker |
 
-### Centralized Setup Helpers
+### Reusable Container Setup
 
 Use `tests/utils/` for reusable container setup:
 
@@ -286,17 +228,20 @@ Use `tests/utils/` for reusable container setup:
 package pgtestutil
 
 func SetupContainer(t *testing.T) *PostgresContainer {
+    t.Helper()
     ctx := context.Background()
 
-    postgresC, err := postgres.Run(ctx,
-        "docker.io/postgres:16-alpine",
-        // ... standard config
-    )
+    container, err := postgres.Run(ctx, "postgres:15-alpine", ...)
     require.NoError(t, err)
 
-    t.Cleanup(func() { postgresC.Terminate(ctx) })
+    t.Cleanup(func() {
+        container.Terminate(ctx)
+    })
 
-    return &PostgresContainer{Container: postgresC}
+    return &PostgresContainer{
+        Container: container,
+        DB:        connectToDB(container),
+    }
 }
 ```
 
@@ -305,8 +250,7 @@ Usage in tests:
 ```go
 func TestIntegration_UserRepository(t *testing.T) {
     container := pgtestutil.SetupContainer(t)  // cleanup is automatic
-
-    repo := NewUserRepository(container.ConnectionString())
+    repo := NewUserRepository(container.DB)
     // ...
 }
 ```
@@ -320,15 +264,10 @@ func TestIntegration_UserRepository(t *testing.T) {
 ### FORBIDDEN Pattern
 
 ```go
-//go:build integration
-
+// ❌ FORBIDDEN: t.Parallel() in integration tests
 func TestIntegration_UserCreate(t *testing.T) {
-    t.Parallel()  // FORBIDDEN: causes container flakiness
-    // ...
-}
-
-func TestIntegration_UserUpdate(t *testing.T) {
-    t.Parallel()  // FORBIDDEN: race condition with UserCreate
+    t.Parallel()  // WRONG: causes race conditions with shared DB
+    container := setupContainer(t)
     // ...
 }
 ```
@@ -336,15 +275,16 @@ func TestIntegration_UserUpdate(t *testing.T) {
 ### Correct Pattern
 
 ```go
-//go:build integration
-
+// ✅ CORRECT: Sequential integration tests
 func TestIntegration_UserCreate(t *testing.T) {
     // No t.Parallel() - tests run sequentially
+    container := setupContainer(t)
     // ...
 }
 
 func TestIntegration_UserUpdate(t *testing.T) {
-    // No t.Parallel() - waits for UserCreate to complete
+    // No t.Parallel()
+    container := setupContainer(t)
     // ...
 }
 ```
@@ -356,14 +296,14 @@ func TestIntegration_UserUpdate(t *testing.T) {
 grep -rn "t\.Parallel()" --include="*_integration_test.go" .
 ```
 
-### Why Sequential Execution
+### Why Parallel Is FORBIDDEN
 
-| Problem | Impact |
-|---------|--------|
+| Issue | Impact |
+|-------|--------|
 | Shared database state | Tests corrupt each other's data |
-| Container resource limits | Parallel access causes timeouts |
-| Determinism | Order-dependent results |
-| Debugging | Cannot reproduce failures |
+| Container lifecycle | Container may terminate while other test runs |
+| Non-deterministic failures | Flaky tests that pass/fail randomly |
+| Debug difficulty | Cannot reproduce issues |
 
 ---
 
@@ -371,25 +311,41 @@ grep -rn "t\.Parallel()" --include="*_integration_test.go" .
 
 **HARD GATE:** All entity fixtures MUST be centralized in `tests/utils/<infra>/fixtures.go`. Local `createTest*` helpers are FORBIDDEN.
 
-### Correct Pattern
+### Directory Structure
+
+```
+tests/
+└── utils/
+    ├── postgres/
+    │   ├── container.go      # SetupContainer
+    │   └── fixtures.go       # CreateTestAccount, CreateTestUser
+    ├── redis/
+    │   ├── container.go
+    │   └── fixtures.go
+    └── rabbitmq/
+        ├── container.go
+        └── fixtures.go
+```
+
+### Fixture Pattern
 
 ```go
 // tests/utils/postgres/fixtures.go
 package pgtestutil
 
 type AccountParams struct {
+    OrgID     string
+    LedgerID  string
     Name      string
     Alias     string
-    AssetCode string
-    Balance   decimal.Decimal
 }
 
 func DefaultAccountParams() AccountParams {
     return AccountParams{
-        Name:      "Test Account",
-        Alias:     "@test",
-        AssetCode: "USD",
-        Balance:   decimal.NewFromInt(1000),
+        OrgID:    uuid.NewString(),
+        LedgerID: uuid.NewString(),
+        Name:     "Test Account",
+        Alias:    "@test",
     }
 }
 
@@ -401,25 +357,14 @@ func CreateTestAccount(t *testing.T, db *sql.DB, orgID, ledgerID string, params 
         params = &p
     }
 
-    id := uuid.New().String()
+    id := uuid.NewString()
     _, err := db.Exec(`
-        INSERT INTO accounts (id, org_id, ledger_id, name, alias, asset_code, balance)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `, id, orgID, ledgerID, params.Name, params.Alias, params.AssetCode, params.Balance)
+        INSERT INTO accounts (id, org_id, ledger_id, name, alias)
+        VALUES ($1, $2, $3, $4, $5)
+    `, id, orgID, ledgerID, params.Name, params.Alias)
     require.NoError(t, err)
 
-    t.Cleanup(func() {
-        db.Exec("DELETE FROM accounts WHERE id = $1", id)
-    })
-
     return id
-}
-
-// Simple variant for common cases
-func CreateTestAccountSimple(t *testing.T, db *sql.DB, orgID, ledgerID, name string) string {
-    params := DefaultAccountParams()
-    params.Name = name
-    return CreateTestAccount(t, db, orgID, ledgerID, &params)
 }
 ```
 
@@ -429,22 +374,24 @@ func CreateTestAccountSimple(t *testing.T, db *sql.DB, orgID, ledgerID, name str
 func TestIntegration_AccountRepository_Find(t *testing.T) {
     container := pgtestutil.SetupContainer(t)
 
-    // Use centralized fixtures
+    orgID := uuid.NewString()
+    ledgerID := uuid.NewString()
     params := pgtestutil.DefaultAccountParams()
-    params.Alias = "@custom-alias"
+    params.Name = "Custom Name"
     accountID := pgtestutil.CreateTestAccount(t, container.DB, orgID, ledgerID, &params)
 
     // Test
+    repo := NewAccountRepository(container.DB)
     account, err := repo.Find(ctx, accountID)
     require.NoError(t, err)
-    assert.Equal(t, "@custom-alias", account.Alias)
+    assert.Equal(t, "Custom Name", account.Name)
 }
 ```
 
 ### FORBIDDEN Pattern
 
 ```go
-// Inside test file - FORBIDDEN
+// ❌ FORBIDDEN: Local helper inside test file
 func createTestAccount(name string) *mmodel.Account {
     return &mmodel.Account{Name: testutils.Ptr(name)}
 }
@@ -462,10 +409,10 @@ func TestIntegration_Something(t *testing.T) {
 
 ### Stubs vs Mocks
 
-| Type | Location | When to Use |
-|------|----------|-------------|
+| Type | Location | Use Case |
+|------|----------|----------|
+| **Mocks** | `internal/mocks/` (generated) | Unit tests - verify interactions |
 | **Stubs** | `tests/utils/stubs/` | Fixed behavior, dependency "just works" |
-| **Mocks** | Generated by gomock | Verify specific interactions |
 
 ### Stub Pattern
 
@@ -473,48 +420,24 @@ func TestIntegration_Something(t *testing.T) {
 // tests/utils/stubs/ports.go
 package stubs
 
-// BalancePortStub provides a simple stub that always succeeds
-type BalancePortStub struct {
-    CreateBalanceFunc func(ctx context.Context, balance *mmodel.Balance) (*mmodel.Balance, error)
+type StubLogger struct {
+    entries []LogEntry
 }
 
-func (s *BalancePortStub) CreateBalanceSync(ctx context.Context, balance *mmodel.Balance) (*mmodel.Balance, error) {
-    if s.CreateBalanceFunc != nil {
-        return s.CreateBalanceFunc(ctx, balance)
-    }
-    // Default: return the input with generated ID
-    balance.ID = uuid.New().String()
-    return balance, nil
+func NewStubLogger() *StubLogger {
+    return &StubLogger{}
 }
 
-// LoggerStub captures log messages for assertion
-type LoggerStub struct {
-    warnings []string
-    errors   []string
-    infos    []string
+func (l *StubLogger) Info(msg string, fields ...any) {
+    l.entries = append(l.entries, LogEntry{Level: "info", Msg: msg})
 }
 
-func (l *LoggerStub) Warnf(template string, args ...interface{}) {
-    l.warnings = append(l.warnings, fmt.Sprintf(template, args...))
+func (l *StubLogger) Error(msg string, fields ...any) {
+    l.entries = append(l.entries, LogEntry{Level: "error", Msg: msg})
 }
 
-func (l *LoggerStub) HasWarning(substring string) bool {
-    for _, w := range l.warnings {
-        if strings.Contains(w, substring) {
-            return true
-        }
-    }
-    return false
-}
-
-func (l *LoggerStub) WarningCount() int {
-    return len(l.warnings)
-}
-
-func (l *LoggerStub) Reset() {
-    l.warnings = nil
-    l.errors = nil
-    l.infos = nil
+func (l *StubLogger) GetEntries() []LogEntry {
+    return l.entries
 }
 ```
 
@@ -524,253 +447,17 @@ func (l *LoggerStub) Reset() {
 import "github.com/LerianStudio/midaz/v3/tests/utils/stubs"
 
 func TestUseCase_CreateAccount(t *testing.T) {
-    commandUC := &command.UseCase{
-        BalancePort: &stubs.BalancePortStub{},  // Stub: always succeeds
-    }
+    logger := stubs.NewStubLogger()
+    repo := mocks.NewMockAccountRepository(ctrl)
 
-    result, err := commandUC.CreateAccount(ctx, input)
-    require.NoError(t, err)
+    uc := NewCreateAccountUseCase(repo, logger)
+    // ...
+
+    // Verify logging if needed
+    entries := logger.GetEntries()
+    assert.Len(t, entries, 1)
 }
 ```
-
----
-
-## Property-Based Testing
-
-Property-based tests verify **invariant properties** hold across multiple inputs. Use `testing/quick.Check`.
-
-### Pattern
-
-```go
-import "testing/quick"
-
-func TestProperty_FullJitter_AlwaysPositive(t *testing.T) {
-    err := quick.Check(func(duration time.Duration) bool {
-        // PROPERTY: Jitter is always non-negative
-        return FullJitter(duration) >= 0
-    }, nil)
-    require.NoError(t, err)
-}
-
-func TestProperty_Organization_FieldLengths(t *testing.T) {
-    err := quick.Check(func(name string, code string) bool {
-        if len(name) > 256 || len(code) > 10 {
-            return true // Skip unrealistic inputs
-        }
-
-        org, err := NewOrganization(name, code)
-        if err != nil {
-            // PROPERTY: Validation errors are returned, never panic
-            return true
-        }
-
-        // PROPERTY: Valid organizations have non-empty ID
-        return org.ID != ""
-    }, nil)
-    require.NoError(t, err)
-}
-```
-
-### When to Use Property-Based vs Table-Driven
-
-| Use Property-Based When | Use Table-Driven When |
-|-------------------------|----------------------|
-| Testing invariants across many inputs | Testing specific known scenarios |
-| Verifying "never panics" guarantees | Testing error messages |
-| Mathematical properties | Testing specific edge cases |
-| Input validation exhaustiveness | Documenting expected behavior |
-
----
-
-## Native Fuzz Testing
-
-**Native fuzz tests MUST be unit-level only** - requires fast execution (millions of iterations).
-
-### Fuzz Function Pattern
-
-```go
-func FuzzCreateOrganization_LegalName(f *testing.F) {
-    // Seed corpus with edge cases
-    f.Add("Acme, Inc.")                // valid
-    f.Add("")                          // empty
-    f.Add("a]]]a")                     // unicode
-    f.Add("<script>alert(1)</script>") // XSS
-    f.Add(strings.Repeat("x", 1000))   // long
-
-    f.Fuzz(func(t *testing.T, name string) {
-        // Bound input length to prevent resource exhaustion
-        if len(name) > 512 {
-            name = name[:512]
-        }
-
-        // PROPERTY: No panic, no 5xx errors
-        result, err := ValidateOrganizationName(name)
-        if err == nil {
-            assert.NotEmpty(t, result)
-        }
-        // No panic = test passes
-    })
-}
-```
-
-### Supported Fuzz Input Types
-
-| Primitive Types | Numeric Types |
-|-----------------|---------------|
-| `string`, `[]byte`, `bool` | `int`, `int8`, `int16`, `int32`, `int64` |
-| | `uint`, `uint8`, `uint16`, `uint32`, `uint64` |
-| | `float32`, `float64` |
-
-For complex types, use `[]byte` + JSON:
-
-```go
-f.Fuzz(func(t *testing.T, data []byte) {
-    var input MyStruct
-    if json.Unmarshal(data, &input) != nil {
-        return // Skip invalid JSON
-    }
-    // Test with valid struct
-})
-```
-
-### Seed Corpus Categories
-
-| Category | Examples |
-|----------|----------|
-| Valid inputs | `"Acme, Inc."`, `"100.00"`, `"user@example.com"` |
-| Edge cases | `""`, `"a"`, max length strings |
-| Unicode/encoding | Greek, Japanese, emoji |
-| Invalid formats | `"{ invalid json }"`, `"not-a-number"` |
-| Security payloads | `"<script>"`, `"' OR 1=1"`, null bytes |
-| Boundary values | `"9223372036854775807"` (max int64) |
-
----
-
-## Chaos Testing
-
-Tests system behavior under failure conditions. **Integration only.**
-
-### Dual-Gate Pattern
-
-```go
-//go:build integration
-
-func TestIntegration_Chaos_Redis_ConnectionLoss(t *testing.T) {
-    // Gate 1: Chaos tests disabled by default
-    if os.Getenv("CHAOS") != "1" {
-        t.Skip("Chaos tests disabled (set CHAOS=1)")
-    }
-
-    // Gate 2: Skip in short mode
-    if testing.Short() {
-        t.Skip("Skipping chaos test in short mode")
-    }
-
-    // Setup
-    redisC := redistestutil.SetupContainer(t)
-    proxy := chaosutil.SetupToxiproxy(t, redisC)
-
-    // 1. Verify normal operation
-    client := redis.NewClient(proxy.ListenAddr())
-    err := client.Set(ctx, "key", "value", 0).Err()
-    require.NoError(t, err)
-
-    // 2. Inject failure
-    err = proxy.Disconnect()
-    require.NoError(t, err)
-
-    // 3. Verify expected failure behavior
-    err = client.Set(ctx, "key2", "value2", 0).Err()
-    require.Error(t, err) // Should fail gracefully
-
-    // 4. Restore
-    err = proxy.Reconnect()
-    require.NoError(t, err)
-
-    // 5. Verify recovery
-    err = client.Set(ctx, "key3", "value3", 0).Err()
-    require.NoError(t, err)
-}
-```
-
-### Chaos Test Infrastructure
-
-Location: `tests/utils/chaos/`
-
-```go
-// tests/utils/chaos/toxiproxy.go
-package chaosutil
-
-type ToxiproxyWrapper struct {
-    proxy *toxiproxy.Proxy
-}
-
-func (t *ToxiproxyWrapper) Disconnect() error {
-    return t.proxy.Disable()
-}
-
-func (t *ToxiproxyWrapper) Reconnect() error {
-    return t.proxy.Enable()
-}
-
-func (t *ToxiproxyWrapper) AddLatency(latency time.Duration) error {
-    _, err := t.proxy.AddToxic("latency", "latency", "", 1, toxiproxy.Attributes{
-        "latency": latency.Milliseconds(),
-    })
-    return err
-}
-```
-
-### Running Chaos Tests
-
-```bash
-# Run chaos tests
-CHAOS=1 go test -tags=integration -v ./tests/chaos/...
-
-# Skip chaos tests (default)
-go test -tags=integration ./...
-```
-
----
-
-## Logger Testing
-
-### Default: Use Real Logger
-
-Most tests don't need to verify log output:
-
-```go
-import libZap "github.com/LerianStudio/lib-commons/v2/commons/zap"
-
-func TestSomething(t *testing.T) {
-    logger := libZap.InitializeLogger()
-    // use logger in test setup
-}
-```
-
-### Exception: LoggerStub for Verification
-
-Use when verifying log messages is the test objective:
-
-```go
-import "github.com/LerianStudio/midaz/v3/tests/utils/stubs"
-
-func TestFunction_LogsDeprecationWarning(t *testing.T) {
-    logger := &stubs.LoggerStub{}
-
-    result := FunctionUnderTest(logger)
-
-    assert.True(t, logger.HasWarning("DEPRECATED"))
-    assert.Equal(t, 1, logger.WarningCount())
-}
-```
-
-| Scenario | Use |
-|----------|-----|
-| Logger is just a dependency | Real logger |
-| Verify warning/error was logged | `stubs.LoggerStub{}` |
-| Verify deprecation messages | `stubs.LoggerStub{}` |
-| Debugging test failures | Real logger |
 
 ---
 
@@ -778,26 +465,23 @@ func TestFunction_LogsDeprecationWarning(t *testing.T) {
 
 **HARD GATE:** Before completing any integration test, verify NONE of these anti-patterns exist.
 
-| # | Anti-Pattern | Detection | Why Wrong | Correct Pattern |
-|---|--------------|-----------|-----------|-----------------|
+| # | Anti-Pattern | Detection | Impact | Fix |
+|---|--------------|-----------|--------|-----|
 | 1 | **Hardcoded ports** | `grep -rn ":5432\|:6379\|:27017"` | Port conflicts in CI | Use testcontainers dynamic ports |
 | 2 | **Shared database state** | Tests depend on prior test data | Flaky tests | Each test creates own data |
-| 3 | **Missing cleanup** | No `t.Cleanup()` | Resource leaks | Always use `t.Cleanup()` |
-| 4 | **Sleep-based waits** | `grep "time.Sleep"` | Slow, unreliable | Use wait strategies |
-| 5 | **Production database** | env var pointing to real DB | Data corruption | Always use containers |
+| 3 | **time.Sleep for sync** | `grep "time.Sleep"` | Slow, unreliable | Use wait strategies |
+| 4 | **os.Setenv pollution** | `grep "os.Setenv"` | Env leaks between tests | Use `t.Setenv()` |
+| 5 | **Global test state** | Package-level variables | State leaks | Instance per test |
 | 6 | **Missing build tag** | `//go:build integration` absent | Tests run with unit tests | Always add build tag |
-| 7 | **t.Parallel() usage** | `grep "t.Parallel()"` | State conflicts | Remove all `t.Parallel()` calls from integration tests |
-| 8 | **Hardcoded credentials** | `"postgres:password@"` in code | Security risk | Use containers default creds |
+| 7 | **t.Parallel() usage** | `grep "t.Parallel()"` | State conflicts | Remove all `t.Parallel()` |
+| 8 | **Local fixtures** | `createTest*` in test files | Duplication | Use `tests/utils/` |
 | 9 | **Network-dependent tests** | Tests call external APIs | Flaky, slow | Mock or use testcontainers |
 | 10 | **Missing timeout** | No `context.WithTimeout` | Tests hang forever | Always set timeout |
-| 11 | **Greenwashing failures** | Ignoring intermittent failures | Hidden bugs | Track and fix all failures |
+| 11 | **Production credentials** | Real passwords in tests | Security risk | Use test-only credentials |
 
 ### Detection Script
 
 ```bash
-#!/bin/bash
-# detect-integration-antipatterns.sh
-
 echo "Checking for integration test anti-patterns..."
 
 # 1. Hardcoded ports
@@ -816,24 +500,10 @@ find . -name "*_integration_test.go" -exec grep -L "//go:build integration" {} \
 echo "4. time.Sleep usage:"
 grep -rn "time\.Sleep" --include="*_integration_test.go" . || echo "   None found"
 
-# 5. os.Setenv instead of t.Setenv
+# 5. os.Setenv usage
 echo "5. os.Setenv usage:"
 grep -rn "os\.Setenv" --include="*_integration_test.go" . || echo "   None found"
 ```
-
-### Additional Guardrails
-
-| # | Guardrail | Enforcement |
-|---|-----------|-------------|
-| 12 | **TestProperty_ prefix reserved** | Only for `testing/quick.Check` tests |
-| 13 | **Empty test templates** | No `// TODO: Add test cases` |
-| 14 | **Duplicate tests** | Consolidate into table-driven |
-| 15 | **Clean imports** | Remove unused imports after refactoring |
-| 16 | **Non-idiomatic string construction** | Use `fmt.Sprintf`, not `string(rune(...))` |
-| 17 | **Import alias consistency** | Use `testutils` alias consistently |
-| 18 | **Loop variable capture** | Capture `tc := tc` before subtest closure |
-| 19 | **Chaos test error handling** | Check errors from `proxy.Disconnect()/Reconnect()` |
-| 20 | **Shared test utilities** | Use `testutils.Ptr()`, not local helpers |
 
 ---
 
@@ -846,31 +516,30 @@ grep -rn "os\.Setenv" --include="*_integration_test.go" . || echo "   None found
 ```text
 Test failed -> Is the assertion correct?
               |
+              +-- YES -> Is app behavior correct?
+              |          |
               +-- NO (test bug) -> Fix the test, document why
-              |
-              +-- YES -> Is the implementation correct?
                          |
+                         +-- YES (wrong expectation) -> Fix test
                          +-- NO (app bug) -> Keep test RED, report bug
-                         |
-                         +-- UNCLEAR -> Investigate further
 ```
 
-### Rules
+### Response to Test Failure
 
-| Situation | Action |
-|-----------|--------|
+| Scenario | Correct Action |
+|----------|----------------|
 | Test is wrong | Fix test, explain the mistake |
 | App has bug | **Keep test failing**, document bug |
-| Unclear | Investigate more, ask if needed |
+| Environment issue | Fix environment, re-run |
 
-### Bug Report Format
+### Bug Report Format (When Keeping Test RED)
 
 ```markdown
 BUG IDENTIFIED (not test error):
-- Location: internal/services/command/create-account.go:45
-- Issue: Duplicate key error not mapped to EntityConflictError
-- Impact: API returns 500 instead of 409 for duplicate aliases
-
+- **Test:** TestIntegration_AccountRepository_FindByAlias
+- **Expected:** Account returned when alias exists
+- **Actual:** Returns nil without error
+- **Root cause:** Query missing WHERE clause for org_id
 -> Keeping test RED. Fix required in application code.
 ```
 
@@ -886,7 +555,7 @@ BUG IDENTIFIED (not test error):
 
 ---
 
-## Integration Test Quality Gate Checklist
+## Integration Test Quality Gate (MANDATORY)
 
 **Before marking integration tests complete:**
 
@@ -895,50 +564,43 @@ BUG IDENTIFIED (not test error):
 - [ ] All functions named `TestIntegration_*`
 - [ ] No `t.Parallel()` in any integration test
 - [ ] All containers use testcontainers (no production deps)
-- [ ] All containers have `t.Cleanup()` for termination
-- [ ] No hardcoded ports (use dynamic ports from containers)
-- [ ] No `time.Sleep()` (use wait strategies)
+- [ ] All containers cleaned up via `t.Cleanup()`
 - [ ] All fixtures from `tests/utils/`, no local helpers
 - [ ] All stubs from `tests/utils/stubs/`, no local mocks
-- [ ] Anti-pattern detection script passes
+- [ ] No hardcoded ports, no `time.Sleep`
 - [ ] Tests pass 3x consecutively (no flaky tests)
 
 ---
 
-## Output Format (Integration Mode)
-
-When `ring:qa-analyst` runs in integration mode, output:
+## Output Format (Gate 6 - Integration Testing)
 
 ```markdown
-## VERDICT: PASS/FAIL
-
 ## Integration Testing Summary
+
 | Metric | Value |
 |--------|-------|
-| Scenarios tested | X |
-| Tests written | Y |
+| External dependencies | X |
+| Integration tests written | Y |
 | Tests passed | Y |
 | Tests failed | 0 |
 | Flaky tests detected | 0 |
 
-## Scenario Coverage
-| Scenario | Test File | Tests | Status |
-|----------|-----------|-------|--------|
-| Database CRUD | user_integration_test.go | 5 | PASS |
-| Message Queue | queue_integration_test.go | 3 | PASS |
+### Tests by Component
 
-## Quality Gate Results
-| Check | Status | Evidence |
-|-------|--------|----------|
-| Build tags present | PASS | All files have //go:build integration |
-| No hardcoded ports | PASS | 0 matches |
+| Component | Test File | Tests | Status |
+|-----------|-----------|-------|--------|
+| UserRepository | user_integration_test.go | 5 | PASS |
+| AccountRepository | account_integration_test.go | 8 | PASS |
+| MessageQueue | queue_integration_test.go | 3 | PASS |
+
+### Standards Compliance
+
+| Standard | Status | Evidence |
+|----------|--------|----------|
 | Testcontainers used | PASS | postgres, redis containers |
-| No t.Parallel() | PASS | 0 matches |
-| Cleanup present | PASS | All containers have t.Cleanup() |
-| Anti-pattern scan | PASS | 0 violations |
-
-## Next Steps
-- Ready for Gate 4 (Review): YES
+| No t.Parallel() | PASS | grep returns 0 matches |
+| Build tags | PASS | All files have //go:build integration |
+| Fixture centralization | PASS | tests/utils/postgres/fixtures.go |
 ```
 
 ---
@@ -950,8 +612,9 @@ When `ring:qa-analyst` runs in integration mode, output:
 | "Unit tests cover this" | Unit tests mock dependencies | **Write integration tests** |
 | "Testcontainers is slow" | Speed < correctness | **Use testcontainers** |
 | "Database tests are fragile" | Fragile = poorly written | **Fix test isolation** |
-| "CI doesn't have Docker" | CI without Docker = broken CI | **Enable Docker in CI** |
+| "docker-compose is easier" | Easier now, port conflicts later | **Use testcontainers** |
 | "No time for integration tests" | Integration bugs cost 10x more | **Write integration tests** |
 | "t.Parallel() makes tests faster" | Faster but flaky | **Remove t.Parallel()** |
 | "Local helpers are convenient" | Convenience causes duplication | **Use tests/utils/** |
-| "This failure is intermittent" | Intermittent = broken | **Fix root cause** |
+
+---

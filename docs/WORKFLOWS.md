@@ -196,9 +196,9 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ---
 
-## Development Cycle (7-gate)
+## Development Cycle (10-gate)
 
-The **ring:dev-cycle** skill orchestrates task execution through **7 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → testing (Gate 3) → integration-testing (Gate 3.5, optional) → review (Gate 4) → validation (Gate 5). Gate 3.5 runs when the task has external dependencies or integration scenarios. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
+The **ring:dev-cycle** skill orchestrates task execution through **10 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → unit-testing (Gate 3) → fuzz-testing (Gate 4) → property-testing (Gate 5) → integration-testing (Gate 6) → chaos-testing (Gate 7) → review (Gate 8) → validation (Gate 9). All gates are MANDATORY. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
 
 ---
 
@@ -218,13 +218,15 @@ review3 = Task("ring:security-reviewer")       # 20 min
 Task.parallel([
     ("ring:code-reviewer", prompt),
     ("ring:business-logic-reviewer", prompt),
-    ("ring:security-reviewer", prompt)
-])  # Single message, 3 tool calls
+    ("ring:security-reviewer", prompt),
+    ("ring:nil-safety-reviewer", prompt),
+    ("ring:test-reviewer", prompt)
+])  # Single message, 5 tool calls
 ```
 
 ### Key rule
 
-Always dispatch all 3 reviewers in a single message with multiple Task tool calls.
+Always dispatch all 5 reviewers in a single message with multiple Task tool calls.
 
 ---
 

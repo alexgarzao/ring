@@ -998,11 +998,11 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 If user approved execution, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle`
 2. Pass tasks file path: `docs/refactor/{timestamp}/tasks.md`
-3. Wait for ring:dev-cycle to complete all 6 gates
+3. Wait for ring:dev-cycle to complete all 10 gates
 
 **Skipping this step = SKILL FAILURE.**
 
-ring:dev-cycle executes each REFACTOR-XXX task through 6-gate process.
+ring:dev-cycle executes each REFACTOR-XXX task through 10-gate process.
 
 **TodoWrite:** Mark "Handoff to ring:dev-cycle" as `completed`
 

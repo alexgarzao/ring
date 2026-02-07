@@ -393,17 +393,23 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → golang.md or typescript.md (Unit Mode - Gate 3)
+### ring:qa-analyst → testing-unit.md (Unit Mode - Gate 3)
 
-**Note:** ring:qa-analyst checks testing-related sections based on project language and test mode.
+**Mode Detection:** `test_mode: unit` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="unit")`
 
 **For Go projects (Unit Mode):**
-| # | Section to Check |
-|---|------------------|
-| 1 | Testing Patterns (MANDATORY) |
-| 2 | Edge Case Coverage (MANDATORY) |
-| 3 | Test Naming Convention (MANDATORY) |
-| 4 | Linting (MANDATORY) |
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| UNIT-1 | Table-Driven Tests (MANDATORY) | `#table-driven-tests-mandatory` |
+| UNIT-2 | Test Naming Convention (MANDATORY) | `#test-naming-convention-mandatory` |
+| UNIT-3 | Parallel Test Execution (MANDATORY) | `#parallel-test-execution-mandatory` |
+| UNIT-4 | Loop Variable Capture (MANDATORY) | `#loop-variable-capture-mandatory` |
+| UNIT-5 | Edge Case Coverage (MANDATORY) | `#edge-case-coverage-mandatory` |
+| UNIT-6 | Assertion Requirements (MANDATORY) | `#assertion-requirements-mandatory` |
+| UNIT-7 | Mock Generation (MANDATORY) | `#mock-generation-mandatory` |
+| UNIT-8 | Environment Variables in Tests (MANDATORY) | `#environment-variables-in-tests-mandatory` |
+| UNIT-9 | Shared Test Utilities (MANDATORY) | `#shared-test-utilities-mandatory` |
+| UNIT-10 | Unit Test Quality Gate (MANDATORY) | `#unit-test-quality-gate-mandatory` |
 
 **For TypeScript projects (Unit Mode):**
 | # | Section to Check |
@@ -412,27 +418,69 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 2 | Edge Case Coverage (MANDATORY) |
 | 3 | Type Safety Rules (MANDATORY) |
 
-**Test Quality Gate Checks (Gate 3 Exit - all REQUIRED):**
+**Unit Test Quality Gate Checks (Gate 3 Exit - all REQUIRED):**
 | # | Check | Detection |
 |---|-------|-----------|
-| 1 | Skipped tests | `grep -rn "\.skip\|\.todo\|xit"` = 0 |
-| 2 | Assertion-less tests | All tests have expect/assert |
-| 3 | Shared state | No beforeAll DB/state mutation |
-| 4 | Edge cases | ≥2 per acceptance criterion |
-| 5 | TDD evidence | RED phase captured |
-| 6 | Test isolation | No order dependency |
+| 1 | Table-driven pattern | All tests use `tests := []struct` pattern |
+| 2 | t.Parallel() | `grep "t.Parallel()"` at function and subtest level |
+| 3 | Loop variable capture | `tt := tt` before each `t.Run()` |
+| 4 | Strong error assertions | No empty `errContains` fields |
+| 5 | Response type verification | `assert.IsType()` for success cases |
+| 6 | GoMock usage | No hand-written mocks |
+| 7 | t.Setenv | No `os.Setenv` in test files |
+| 8 | Shared utilities | No local `Ptr` or duplicate helpers |
+| 9 | Edge cases | ≥3 per acceptance criterion |
+| 10 | No flaky tests | 3x consecutive pass |
 
 ---
 
-### ring:qa-analyst → testing-integration.md (Integration Mode - Gate 3.5)
+### ring:qa-analyst → testing-fuzz.md (Fuzz Mode - Gate 4)
 
-**Mode Detection:** The `test_mode` parameter determines which sections `ring:qa-analyst` checks:
-- **Source:** `test_mode` is passed as input when invoking `Task(subagent_type="ring:qa-analyst", test_mode="...")`
-- **Values:** `unit` (default, Gate 3) or `integration` (Gate 3.5)
-- **Default:** When `test_mode` is absent, defaults to `unit`
-- **Gate 3.5 invocation:** `ring:dev-cycle` sets `test_mode: integration` when dispatching for Gate 3.5
+**Mode Detection:** `test_mode: fuzz` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="fuzz")`
 
-When `test_mode: integration`, `ring:qa-analyst` checks the integration testing sections below instead of unit testing sections.
+**For Go projects (Fuzz Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| FUZZ-1 | What Is Fuzz Testing | `#what-is-fuzz-testing` |
+| FUZZ-2 | Fuzz Function Pattern (MANDATORY) | `#fuzz-function-pattern-mandatory` |
+| FUZZ-3 | Seed Corpus (MANDATORY) | `#seed-corpus-mandatory` |
+| FUZZ-4 | Input Types | `#input-types` |
+| FUZZ-5 | Fuzz Test Quality Gate (MANDATORY) | `#fuzz-test-quality-gate-mandatory` |
+
+**Fuzz Test Quality Gate Checks (Gate 4 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Naming convention | `func FuzzXxx(f *testing.F)` format |
+| 2 | Seed corpus | `f.Add()` with ≥5 entries |
+| 3 | Test passes | `go test -fuzz=. -fuzztime=30s` |
+
+---
+
+### ring:qa-analyst → testing-property.md (Property Mode - Gate 5)
+
+**Mode Detection:** `test_mode: property` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="property")`
+
+**For Go projects (Property Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| PROP-1 | What Is Property-Based Testing | `#what-is-property-based-testing` |
+| PROP-2 | Property Function Pattern (MANDATORY) | `#property-function-pattern-mandatory` |
+| PROP-3 | Common Properties | `#common-properties` |
+| PROP-4 | Integration with Unit Tests | `#integration-with-unit-tests` |
+| PROP-5 | Property Test Quality Gate (MANDATORY) | `#property-test-quality-gate-mandatory` |
+
+**Property Test Quality Gate Checks (Gate 5 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Naming convention | `TestProperty_{Subject}_{Property}` format |
+| 2 | quick.Check usage | `testing/quick.Check` imported and used |
+| 3 | Domain invariants | At least 1 property per domain entity |
+
+---
+
+### ring:qa-analyst → testing-integration.md (Integration Mode - Gate 6)
+
+**Mode Detection:** `test_mode: integration` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="integration")`
 
 **For Go projects (Integration Mode):**
 | # | Section to Check | Anchor |
@@ -446,14 +494,9 @@ When `test_mode: integration`, `ring:qa-analyst` checks the integration testing 
 | INT-7 | Parallel Test Prohibition (MANDATORY) | `#parallel-test-prohibition-mandatory` |
 | INT-8 | Fixture Centralization (MANDATORY) | `#fixture-centralization-mandatory` |
 | INT-9 | Stub Centralization (MANDATORY) | `#stub-centralization-mandatory` |
-| INT-10 | Property-Based Testing | `#property-based-testing` |
-| INT-11 | Native Fuzz Testing | `#native-fuzz-testing` |
-| INT-12 | Chaos Testing | `#chaos-testing` |
-| INT-13 | Logger Testing | `#logger-testing` |
-| INT-14 | Guardrails (11 Anti-Patterns) (MANDATORY) | `#guardrails-11-anti-patterns-mandatory` |
-| INT-15 | Test Failure Analysis | `#test-failure-analysis-no-greenwashing` |
+| INT-10 | Logger Testing | `#logger-testing` |
 
-**Integration Test Quality Gate Checks (Gate 3.5 Exit - all REQUIRED):**
+**Integration Test Quality Gate Checks (Gate 6 Exit - all REQUIRED):**
 | # | Check | Detection |
 |---|-------|-----------|
 | 1 | Build tag present | `//go:build integration` at top of file |
@@ -461,8 +504,31 @@ When `test_mode: integration`, `ring:qa-analyst` checks the integration testing 
 | 3 | Testcontainers used | import check for testcontainers |
 | 4 | No t.Parallel() | `grep "t.Parallel()"` in integration tests = 0 |
 | 5 | Cleanup present | `t.Cleanup()` for all containers |
-| 6 | Anti-pattern scan | Detection script passes |
-| 7 | No flaky tests | 3x consecutive pass |
+| 6 | No flaky tests | 3x consecutive pass |
+
+---
+
+### ring:qa-analyst → testing-chaos.md (Chaos Mode - Gate 7)
+
+**Mode Detection:** `test_mode: chaos` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="chaos")`
+
+**For Go projects (Chaos Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| CHAOS-1 | What Is Chaos Testing | `#what-is-chaos-testing` |
+| CHAOS-2 | Chaos Test Pattern (MANDATORY) | `#chaos-test-pattern-mandatory` |
+| CHAOS-3 | Failure Scenarios | `#failure-scenarios` |
+| CHAOS-4 | Infrastructure Setup | `#infrastructure-setup` |
+| CHAOS-5 | Chaos Test Quality Gate (MANDATORY) | `#chaos-test-quality-gate-mandatory` |
+
+**Chaos Test Quality Gate Checks (Gate 7 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Dual-gate pattern | `CHAOS=1` env check + `testing.Short()` |
+| 2 | Naming convention | `TestIntegration_Chaos_{Component}_{Scenario}` |
+| 3 | 5-phase structure | Normal → Inject → Verify → Restore → Recovery |
+| 4 | Toxiproxy usage | `tests/utils/chaos/` infrastructure |
+| 5 | All deps covered | Chaos test for each external dependency |
 
 ---
 

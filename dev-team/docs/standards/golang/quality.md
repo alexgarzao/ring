@@ -1,8 +1,16 @@
 # Go Standards - Quality
 
-> **Module:** quality.md | **Sections:** §18-22 | **Parent:** [index.md](index.md)
+> **Module:** quality.md | **Sections:** 4 | **Parent:** [index.md](index.md)
 
-This module covers testing, logging, linting, configuration validation, and container security standards.
+This module covers logging, linting, configuration validation, and container security standards.
+
+> **Note:** Testing standards have been moved to dedicated modules:
+> - [testing-unit.md](testing-unit.md) - Unit testing patterns (Gate 3)
+> - [testing-fuzz.md](testing-fuzz.md) - Fuzz testing patterns (Gate 4)
+> - [testing-property.md](testing-property.md) - Property-based testing patterns (Gate 5)
+> - [testing-integration.md](testing-integration.md) - Integration testing patterns (Gate 6)
+> - [testing-chaos.md](testing-chaos.md) - Chaos testing patterns (Gate 7)
+> - [testing-benchmark.md](testing-benchmark.md) - Benchmark testing patterns (optional)
 
 ---
 
@@ -10,332 +18,10 @@ This module covers testing, logging, linting, configuration validation, and cont
 
 | # | Section | Description |
 |---|---------|-------------|
-| 1 | [Testing](#testing) | Table-driven tests, edge cases, benchmarks |
-| 2 | [Logging](#logging) | Structured logging with lib-commons |
-| 3 | [Linting](#linting) | Import ordering, magic numbers, .golangci.yml requirement |
-| 4 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
-| 5 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
-
----
-
-## Testing
-
-### Table-Driven Tests (MANDATORY)
-
-```go
-func TestCreateUser(t *testing.T) {
-    tests := []struct {
-        name    string
-        input   CreateUserInput
-        want    *User
-        wantErr error
-    }{
-        {
-            name:  "valid user",
-            input: CreateUserInput{Name: "John", Email: "john@example.com"},
-            want:  &User{Name: "John", Email: "john@example.com"},
-        },
-        {
-            name:    "invalid email",
-            input:   CreateUserInput{Name: "John", Email: "invalid"},
-            wantErr: ErrInvalidEmail,
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            got, err := CreateUser(tt.input)
-
-            if tt.wantErr != nil {
-                require.ErrorIs(t, err, tt.wantErr)
-                return
-            }
-
-            require.NoError(t, err)
-            assert.Equal(t, tt.want.Name, got.Name)
-        })
-    }
-}
-```
-
-### Test Naming Convention
-
-```text
-Test{Unit}_{Scenario}_{ExpectedResult}
-
-Examples:
-- TestOrderService_CreateOrder_WithValidItems_ReturnsOrder
-- TestOrderService_CreateOrder_WithEmptyItems_ReturnsError
-- TestMoney_Add_SameCurrency_ReturnsSum
-```
-
-### Edge Case Coverage (MANDATORY)
-
-**Every acceptance criterion MUST have edge case tests beyond the happy path.**
-
-| AC Type | Required Edge Cases | Minimum Count |
-|---------|---------------------|---------------|
-| Input validation | nil, empty string, boundary values, invalid format, special chars, max length | 3+ |
-| CRUD operations | not found, duplicate key, concurrent modification, large payload | 3+ |
-| Business logic | zero value, negative numbers, overflow, boundary conditions, invalid state | 3+ |
-| Error handling | context timeout, connection refused, invalid response, retry exhausted | 2+ |
-| Authentication | expired token, invalid signature, missing claims, revoked token | 2+ |
-
-**Table-Driven Edge Cases Pattern:**
-
-```go
-func TestUserService_CreateUser(t *testing.T) {
-    tests := []struct {
-        name    string
-        input   CreateUserInput
-        wantErr error
-    }{
-        // Happy path
-        {name: "valid user", input: validInput(), wantErr: nil},
-        
-        // Edge cases (MANDATORY - minimum 3)
-        {name: "nil input", input: CreateUserInput{}, wantErr: ErrInvalidInput},
-        {name: "empty email", input: CreateUserInput{Name: "John", Email: ""}, wantErr: ErrEmailRequired},
-        {name: "invalid email format", input: CreateUserInput{Name: "John", Email: "invalid"}, wantErr: ErrInvalidEmail},
-        {name: "email too long", input: CreateUserInput{Name: "John", Email: strings.Repeat("a", 256) + "@test.com"}, wantErr: ErrEmailTooLong},
-        {name: "name with special chars", input: CreateUserInput{Name: "<script>", Email: "test@test.com"}, wantErr: ErrInvalidName},
-    }
-    // ... test execution
-}
-```
-
-**Anti-Pattern (FORBIDDEN):**
-
-```go
-// ❌ WRONG: Only happy path
-func TestUserService_CreateUser(t *testing.T) {
-    result, err := service.CreateUser(validInput())
-    require.NoError(t, err)  // No edge cases = incomplete test
-}
-```
-
-### Mock Generation (GoMock - MANDATORY)
-
-```go
-// GoMock is the MANDATORY mock framework for all Go projects
-//go:generate mockgen -source=repository.go -destination=mocks/mock_repository.go -package=mocks
-
-// For interface in external package:
-//go:generate mockgen -destination=mocks/mock_service.go -package=mocks github.com/example/pkg Service
-```
-
-### Benchmark Tests (b.Loop - MANDATORY for Go 1.24+)
-
-**HARD GATE:** All benchmark tests MUST use `b.Loop()` instead of manual `for i := 0; i < b.N; i++` loops.
-
-#### Why b.Loop Is MANDATORY
-
-| Benefit | Explanation |
-|---------|-------------|
-| **Cleaner syntax** | `for b.Loop()` vs `for i := 0; i < b.N; i++` |
-| **Compiler optimization** | Better optimizations with `b.Loop()` |
-| **Official pattern** | Go 1.24+ standard |
-| **Prevents errors** | No off-by-one errors with b.N |
-
-#### Correct Pattern (REQUIRED - Go 1.24+)
-
-```go
-// ✅ CORRECT: Use b.Loop() (Go 1.24+)
-func BenchmarkCreateUser(b *testing.B) {
-    svc := setupService()
-
-    for b.Loop() {
-        _, err := svc.CreateUser(context.Background(), validInput)
-        if err != nil {
-            b.Fatal(err)
-        }
-    }
-}
-
-// ✅ CORRECT: With setup/teardown
-func BenchmarkProcessOrder(b *testing.B) {
-    b.ResetTimer()
-
-    for b.Loop() {
-        result := ProcessOrder(order)
-        _ = result
-    }
-}
-
-// ✅ CORRECT: With sub-benchmarks
-func BenchmarkEncryption(b *testing.B) {
-    b.Run("AES256", func(b *testing.B) {
-        for b.Loop() {
-            Encrypt(data, key)
-        }
-    })
-
-    b.Run("RSA2048", func(b *testing.B) {
-        for b.Loop() {
-            EncryptRSA(data, key)
-        }
-    })
-}
-```
-
-#### FORBIDDEN Pattern (Deprecated)
-
-```go
-// ❌ FORBIDDEN: Manual for loop (deprecated in Go 1.24+)
-func BenchmarkOldPattern(b *testing.B) {
-    for i := 0; i < b.N; i++ {  // WRONG: use b.Loop() instead
-        DoSomething()
-    }
-}
-
-// ❌ FORBIDDEN: Using loop variable unnecessarily
-func BenchmarkOldPattern(b *testing.B) {
-    for n := 0; n < b.N; n++ {  // WRONG: n is unused
-        DoSomething()
-    }
-}
-```
-
-#### Detection Command
-
-```bash
-# Find old-style benchmarks (should return 0 matches)
-grep -rn "for.*<.*b\.N" --include="*_test.go" ./internal ./pkg
-
-# Should use b.Loop() instead
-```
-
-#### Migration Example
-
-```go
-// Before (Go < 1.24)
-func BenchmarkOld(b *testing.B) {
-    for i := 0; i < b.N; i++ {
-        Calculate()
-    }
-}
-
-// After (Go 1.24+)
-func BenchmarkNew(b *testing.B) {
-    for b.Loop() {
-        Calculate()
-    }
-}
-```
-
-#### Anti-Rationalization Table
-
-| Rationalization | Why it's wrong | Required Action |
-|-----------------|----------------|-----------------|
-| "The old pattern still works" | Deprecated. Use modern Go patterns. | **Use b.Loop()** |
-| "I'm used to the for loop" | Familiarity ≠ best practice. Adapt. | **Use b.Loop()** |
-| "It's just benchmarks" | Standards apply to all test code. | **Use b.Loop()** |
-| "We're on Go 1.23" | Upgrade to Go 1.24+ (minimum version requirement). | **Upgrade + use b.Loop()** |
-
-### Environment Variables in Tests (t.Setenv - MANDATORY)
-
-**HARD GATE:** Integration tests that modify environment variables MUST use `t.Setenv()` instead of `os.Setenv()`.
-
-#### Why t.Setenv Is MANDATORY
-
-| Feature | `os.Setenv()` | `t.Setenv()` |
-|---------|---------------|--------------|
-| Auto-cleanup | ❌ No - leaks to other tests | ✅ Yes - restored after test |
-| Test isolation | ❌ Breaks parallel tests | ✅ Safe for parallel tests |
-| Subtest scoping | ❌ Affects all subtests | ✅ Scoped to current test/subtest |
-| t.Parallel() compatible | ❌ Race conditions | ✅ Safe |
-
-#### Correct Pattern (REQUIRED)
-
-```go
-func TestConfig_LoadFromEnv(t *testing.T) {
-    // ✅ CORRECT: t.Setenv auto-cleans after test
-    t.Setenv("DB_HOST", "localhost")
-    t.Setenv("DB_PORT", "5432")
-    t.Setenv("DB_NAME", "test_db")
-
-    cfg, err := LoadConfig()
-    require.NoError(t, err)
-    assert.Equal(t, "localhost", cfg.DBHost)
-    assert.Equal(t, "5432", cfg.DBPort)
-}
-
-func TestConfig_WithSubtests(t *testing.T) {
-    t.Run("production config", func(t *testing.T) {
-        // ✅ Scoped to this subtest only
-        t.Setenv("ENV", "production")
-        t.Setenv("LOG_LEVEL", "info")
-
-        cfg := LoadConfig()
-        assert.Equal(t, "production", cfg.Env)
-    })
-
-    t.Run("development config", func(t *testing.T) {
-        // ✅ Previous subtest's env vars are already cleaned up
-        t.Setenv("ENV", "development")
-        t.Setenv("LOG_LEVEL", "debug")
-
-        cfg := LoadConfig()
-        assert.Equal(t, "development", cfg.Env)
-    })
-}
-
-func TestConfig_Parallel(t *testing.T) {
-    t.Run("test1", func(t *testing.T) {
-        t.Parallel()
-        t.Setenv("API_KEY", "key1")  // ✅ Safe with t.Parallel()
-        // ...
-    })
-
-    t.Run("test2", func(t *testing.T) {
-        t.Parallel()
-        t.Setenv("API_KEY", "key2")  // ✅ Isolated from test1
-        // ...
-    })
-}
-```
-
-#### FORBIDDEN Pattern
-
-```go
-// ❌ FORBIDDEN: os.Setenv in tests
-func TestConfig_LoadFromEnv(t *testing.T) {
-    os.Setenv("DB_HOST", "localhost")     // WRONG: leaks to other tests
-    os.Setenv("DB_PORT", "5432")          // WRONG: not cleaned up
-    defer os.Unsetenv("DB_HOST")          // WRONG: manual cleanup is error-prone
-    defer os.Unsetenv("DB_PORT")          // WRONG: forgotten if test panics
-
-    cfg, err := LoadConfig()
-    // ...
-}
-
-// ❌ FORBIDDEN: os.Setenv with manual cleanup
-func TestConfig_Manual(t *testing.T) {
-    originalHost := os.Getenv("DB_HOST")
-    os.Setenv("DB_HOST", "test-host")
-    defer os.Setenv("DB_HOST", originalHost)  // WRONG: verbose, error-prone
-    // ...
-}
-```
-
-#### Detection Command
-
-```bash
-# Find os.Setenv in test files (should return 0 matches)
-grep -rn "os\.Setenv" --include="*_test.go" ./internal ./pkg ./cmd
-
-# If matches found → Replace with t.Setenv
-```
-
-#### Anti-Rationalization Table
-
-| Rationalization | Why it's wrong | Required Action |
-|-----------------|----------------|-----------------|
-| "I use defer os.Unsetenv" | Defer doesn't run if test panics. t.Setenv always cleans up. | **Use t.Setenv** |
-| "Tests run sequentially anyway" | Today yes, tomorrow parallel. Write tests correctly from start. | **Use t.Setenv** |
-| "It's just one env var" | One var can break other tests. No exceptions. | **Use t.Setenv** |
-| "t.Setenv didn't exist before" | It exists since Go 1.17. Use it. | **Use t.Setenv** |
-| "I restore the original value" | Verbose, error-prone, unnecessary. t.Setenv handles it. | **Use t.Setenv** |
+| 1 | [Logging](#logging) | Structured logging with lib-commons |
+| 2 | [Linting](#linting) | Import ordering, magic numbers, .golangci.yml requirement |
+| 3 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
+| 4 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
 
 ---
 
@@ -387,7 +73,7 @@ fmt.Println("Starting server...")
 // ✅ REQUIRED: lib-commons logger
 logger.Info("Starting server")
 
-// ❌ FORBIDDEN: fmt.Printf  
+// ❌ FORBIDDEN: fmt.Printf
 fmt.Printf("Processing user: %s\n", userID)
 
 // ✅ REQUIRED: lib-commons logger
@@ -556,43 +242,6 @@ goimports -w ./internal ./cmd ./pkg
 | After modifying imports | Run `goimports -w {file}` |
 | Before completing task | Run `goimports -w ./internal ./cmd ./pkg` |
 
-**Why agents must run this:**
-- Generated code may have imports in wrong order
-- IDE auto-formatting not available in agent context
-- Prevents linter failures in CI/CD
-- Ensures clean code review (no import noise)
-
-#### golangci-lint Configuration
-
-```yaml
-# .golangci.yml
-linters:
-  enable:
-    - goimports
-    - gci
-
-linters-settings:
-  goimports:
-    local-prefixes: github.com/LerianStudio,github.com/your-org
-
-  gci:
-    sections:
-      - standard                          # Standard library
-      - default                           # Third-party
-      - prefix(github.com/LerianStudio)   # Lerian packages
-      - prefix(github.com/your-org)       # Project packages
-    skip-generated: true
-```
-
-#### Anti-Rationalization Table
-
-| Rationalization | Why it's wrong | Required Action |
-|-----------------|----------------|-----------------|
-| "goimports will fix it" | CI may not have --fix. Code review sees the mess. | **Fix before commit** |
-| "Import order doesn't affect runtime" | Readability and maintainability matter. | **Follow the standard** |
-| "I'll fix it later" | Later = never. Fix now. | **Run goimports before commit** |
-| "My IDE doesn't auto-sort" | Configure your IDE or run goimports manually. | **Set up tooling** |
-
 ---
 
 ### Magic Numbers (FORBIDDEN)
@@ -631,14 +280,6 @@ func ProcessOrder(order Order) error {
     time.Sleep(5 * time.Second)       // Why 5 seconds?
     return nil
 }
-
-// ❌ FORBIDDEN: Magic numbers in conditions
-if retries > 3 {                      // What does 3 represent?
-    return ErrMaxRetriesExceeded
-}
-
-// ❌ FORBIDDEN: Magic numbers in slices
-data := make([]byte, 4096)            // Why 4096?
 ```
 
 #### Correct Patterns (REQUIRED)
@@ -663,14 +304,6 @@ func ProcessOrder(order Order) error {
     time.Sleep(RetryDelaySeconds * time.Second)
     return nil
 }
-
-// ✅ CORRECT: Constants in conditions
-if retries > MaxRetryAttempts {
-    return ErrMaxRetriesExceeded
-}
-
-// ✅ CORRECT: Named buffer size
-data := make([]byte, DefaultBufferSize)
 ```
 
 #### Constant Naming Convention
@@ -682,16 +315,6 @@ data := make([]byte, DefaultBufferSize)
 | Default values | `Default` | `DefaultTimeout`, `DefaultPageSize` |
 | Size/capacity | Size/Capacity | `BufferSize`, `PoolCapacity` |
 | Duration | `*Duration` or `*Seconds` | `TimeoutDuration`, `RetryDelaySeconds` |
-
-#### Detection
-
-```bash
-# Find potential magic numbers (review each)
-grep -rn "[^a-zA-Z0-9_][0-9]\{2,\}[^a-zA-Z0-9_]" --include="*.go" ./internal ./pkg | grep -v "_test.go"
-
-# golangci-lint with mnd linter (automated)
-golangci-lint run --enable=mnd ./...
-```
 
 ---
 
@@ -723,66 +346,6 @@ golangci-lint run ./internal ./cmd ./pkg
 golangci-lint run ./internal ./cmd ./pkg  # Should output: no issues found
 ```
 
-#### Benefits of Running During Development
-
-| Benefit | Explanation |
-|---------|-------------|
-| **Early detection** | Find issues immediately, not in CI |
-| **Faster iteration** | Fix while context is fresh |
-| **Clean commits** | No linter noise in code review |
-| **CI/CD success** | Passes automated checks first time |
-
-#### Example Workflow
-
-```bash
-# Agent generates UserService.go
-# Step 1: Fix imports
-goimports -w internal/service/user_service.go
-
-# Step 2: Run linter
-golangci-lint run internal/service/user_service.go
-# Output: internal/service/user_service.go:15:2: var unusedVar is unused (unused)
-
-# Step 3: Fix violation
-# (Agent removes unusedVar)
-
-# Step 4: Re-run linter
-golangci-lint run internal/service/user_service.go
-# Output: (no issues found)
-
-# ✅ Task complete - code is clean
-```
-
-#### FORBIDDEN Patterns
-
-```go
-// ❌ FORBIDDEN: Completing task with linter violations
-Agent: "I've generated UserService.go. Task complete."
-// WRONG: Didn't run golangci-lint
-
-// ❌ FORBIDDEN: Ignoring linter output
-golangci-lint run ./...
-# Output: 15 issues found
-Agent: "Minor linter issues, skipping."
-// WRONG: Must fix ALL issues
-
-// ❌ FORBIDDEN: Running linter but not fixing
-golangci-lint run ./...
-# Output: magic number detected
-Agent: "Linter shows magic number, but I'll leave it."
-// WRONG: Must fix before completing
-```
-
-#### Anti-Rationalization Table
-
-| Rationalization | Why it's wrong | Required Action |
-|-----------------|----------------|-----------------|
-| "CI will catch it" | CI is too late. Fix during development. | **Run linter now** |
-| "It's just a warning" | Warnings become errors. Fix them. | **Fix all issues** |
-| "I'll fix in next PR" | Next PR = never. Fix now. | **Fix before completing** |
-| "Linter is too strict" | Standards exist for a reason. Follow them. | **Fix violations** |
-| "It's a false positive" | Rare. Investigate before assuming. | **Fix or use //nolint with reason** |
-
 ---
 
 ### .golangci.yml Requirement (MANDATORY)
@@ -790,15 +353,6 @@ Agent: "Linter shows magic number, but I'll leave it."
 Projects without `.golangci.yml` have inconsistent linting across environments, leading to CI failures and code review noise.
 
 **⛔ HARD GATE:** Every Go project MUST have a `.golangci.yml` file in the repository root. Missing this file is a BLOCKER for code review.
-
-#### Why .golangci.yml Is MANDATORY
-
-| Issue | Without .golangci.yml |
-|-------|----------------------|
-| Inconsistent CI | Different linters in CI vs local dev |
-| Developer frustration | Code passes locally, fails in CI |
-| Security gaps | Security linters (gosec) might be skipped |
-| Code review noise | Reviewers catch lint issues instead of logic issues |
 
 #### Minimum Required Linters (MANDATORY)
 
@@ -816,48 +370,7 @@ Every `.golangci.yml` MUST enable these linters:
 | `unused` | Unused code detection | Quality |
 | `ineffassign` | Unused assignment detection | Quality |
 
-#### Detection Commands (MANDATORY)
-
-```bash
-# MUST: Check if .golangci.yml exists
-ls -la .golangci.yml
-
-# Expected: File exists
-# If missing: BLOCKER - Create file before proceeding
-
-# Check minimum linters are enabled
-grep -E "gofmt|goimports|govet|staticcheck|errcheck|gosec" .golangci.yml
-
-# Expected: All linters mentioned in file
-```
-
-#### Pre-Commit Hook Integration (RECOMMENDED)
-
-```bash
-# .pre-commit-config.yaml
-repos:
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v1.64.5
-    hooks:
-      - id: golangci-lint
-        entry: golangci-lint run
-        types: [go]
-        pass_filenames: false
-```
-
-#### Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "I run golangci-lint locally" | Without config file, settings vary. | **Add .golangci.yml to repo** |
-| "CI has its own config" | Inconsistency causes surprises. Same config everywhere. | **Commit .golangci.yml** |
-| "Default linters are enough" | Defaults miss security (gosec) and quality (mnd). | **Enable minimum required linters** |
-| "Linting is optional" | Linting is MANDATORY for production code. | **Create .golangci.yml now** |
-| "We'll add it later" | Later = never. Add before first PR. | **Create .golangci.yml NOW** |
-
----
-
-### golangci-lint Configuration Template
+#### Configuration Template
 
 ```yaml
 # .golangci.yml - Minimum required configuration
@@ -1061,38 +574,7 @@ func (c *Config) Validate() error {
     }
     return nil
 }
-
-// ❌ FORBIDDEN: Ignoring config error in caller (must log and exit non-zero)
-func main() {
-    svc, err := InitServers()
-    if err != nil {
-        return  // WRONG: Silent return - no log, no os.Exit(1). Use log.Fatalf or log.Printf + os.Exit(1).
-    }
-    svc.Run()
-}
 ```
-
-### Detection Commands
-
-```bash
-# Find config validation patterns
-grep -rn "func.*Validate\(\)" internal/bootstrap --include="*.go"
-
-# Check if InitServers has validation
-grep -A 20 "func InitServers" internal/bootstrap/config.go | grep -i "validate"
-
-# Expected: Validation exists and is called before other init
-```
-
-### Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Service will fail fast anyway" | Fails on first request, not startup. Incident already in progress. | **Validate at startup** |
-| "Defaults are safe" | Defaults can be insecure (debug mode in prod). Explicit > implicit. | **Validate explicitly** |
-| "Operator will notice logs" | Operators are busy. Startup panic is unmissable. | **Panic on invalid config** |
-| "Let Kubernetes restart it" | Restart loop wastes resources. Fail fast, once. | **Panic with clear message** |
-| "We have monitoring" | Monitoring catches symptoms, not causes. | **Validate at source** |
 
 ---
 
@@ -1218,4 +700,3 @@ grep -n "FROM.*:latest\|FROM [a-z]*$" Dockerfile
 | "It's just internal" | Internal ≠ exempt from security. | **Follow all security patterns** |
 
 ---
-

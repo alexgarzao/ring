@@ -17,10 +17,10 @@ NOT_skip_when: |
 
 sequence:
   after: [ring:dev-devops]
-  before: [ring:dev-testing]
+  before: [ring:dev-unit-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-devops, ring:dev-testing]
+  complementary: [ring:dev-cycle, ring:dev-devops, ring:dev-unit-testing]
 
 input_schema:
   required:
