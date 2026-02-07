@@ -1,0 +1,441 @@
+---
+name: ring:pre-dev-delivery-planning
+description: |
+  Gate 9 (Full Track) / Gate 4 (Small Track): Delivery roadmap and timeline planning.
+  Transforms tasks into realistic delivery schedule with critical path analysis,
+  resource allocation, and delivery breakdown. MANDATORY gate for both workflows.
+
+trigger: |
+  - Tasks passed Gate 7 validation (Full Track) OR Gate 3 (Small Track)
+  - Need realistic delivery timeline with dates
+  - Ready to convert tasks into delivery schedule
+  - Team composition known or determinable
+
+skip_when: |
+  - Tasks not validated → complete task breakdown first
+  - Proof-of-concept without delivery commitment
+  - Research/exploration work without delivery deadline
+
+sequence:
+  after: [ring:pre-dev-task-breakdown, ring:pre-dev-subtask-creation]
+  before: [ring:executing-plans, ring:dev-cycle]
+---
+
+# Delivery Planning - Realistic Roadmap with Critical Path
+
+## Foundational Principle
+
+**Every roadmap must be grounded in reality, not optimism.**
+
+Creating unrealistic timelines creates:
+- Broken promises to stakeholders
+- Team burnout from impossible deadlines
+- Loss of credibility when dates slip
+- Hidden dependencies discovered during execution
+
+**Roadmaps answer**: When will working software be delivered to users?
+**Roadmaps never answer**: How fast could we go if everything goes perfectly (that's fantasy).
+
+## Mandatory Workflow
+
+| Phase | Activities |
+|-------|------------|
+| **1. Input Gathering** | Load tasks.md, ask user for start date + team composition + delivery cadence + period configuration + velocity multiplier |
+| **2. Dependency Analysis** | Build dependency graph, identify critical path, find parallelization opportunities |
+| **3. Capacity Planning** | Calculate team velocity (custom multiplier), allocate resources, identify bottlenecks |
+| **4. Delivery Breakdown** | Group tasks by cadence (sprint/cycle/continuous), calculate period boundaries, identify spill overs, map parallel streams |
+| **5. Risk Analysis** | Identify critical dependencies, flag high-risk milestones, define contingencies |
+| **6. Gate Validation** | Verify all tasks scheduled, critical path correct, resources realistic, dates achievable, period boundaries respected |
+
+## Explicit Rules
+
+### ✅ DO Include in Roadmap
+
+Start/end dates (YYYY-MM-DD format), team composition (N devs, roles), velocity multiplier (custom or default), critical path (longest dependency chain), parallel streams (independent task groups), delivery goals (what ships each period), period boundaries (sprint/cycle start/end dates), spill over identification (tasks crossing period boundaries), resource allocation (who works on what), risk milestones (high-impact dependencies), contingency buffer (10-20% for unknowns), Definition of Done per delivery period
+
+### ❌ NEVER Include in Roadmap
+
+Best-case scenarios ("if everything goes perfectly"), optimistic estimates ("assuming no blockers"), undefined capacity ("we'll figure it out"), missing dependencies ("tasks are independent"), unrealistic parallelization ("everyone works on everything"), no buffer time ("ship on last day"), vague milestones ("feature mostly done"), assumed availability ("team always at 100%"), fixed cadence without asking user, period boundaries ignored (tasks don't respect sprint/cycle limits)
+
+## Rationalization Table
+
+| Excuse | Reality | Required Action |
+|--------|---------|-----------------|
+| "Team composition doesn't matter, estimate anyway" | Capacity = reality. Without team size, timeline is fantasy. | **STOP. Ask user for team composition.** |
+| "Dependencies are obvious, skip the graph" | Obvious to you ≠ validated. Hidden deps surface during execution. | **MUST build dependency graph. Verify critical path.** |
+| "Parallel streams will emerge naturally" | Natural emergence = chaos. Define streams upfront. | **MUST identify independent task groups explicitly.** |
+| "Default velocity multiplier is fine for everyone" | Teams vary. AI adoption varies. Experience varies. | **MUST ask user: use default or custom velocity.** |
+| "Assume sprint cadence, everyone uses sprints" | Cadence = team culture. Scrum ≠ Kanban ≠ Shape Up. | **MUST ask user for their delivery cadence.** |
+| "Period start date doesn't matter" | Period boundaries determine task allocation. Without start, can't calculate fit. | **MUST ask period start date if sprint/cycle chosen.** |
+| "Tasks will fit naturally into periods" | Tasks don't respect arbitrary boundaries. Calculate fit explicitly. | **MUST check if task fits period, identify spill overs.** |
+| "Buffer is pessimistic, ship dates tight" | Tight dates = guaranteed slippage. Buffer absorbs reality. | **MUST add 10-20% contingency buffer.** |
+| "User knows priorities, skip asking" | Assumptions break. Priorities affect sequencing. | **ASK user for priority if ambiguous.** |
+| "Critical path is longest task" | Critical path = longest dependency chain, not task. | **MUST trace full dependency chains.** |
+| "Resource allocation will sort itself out" | Sorting out = thrashing. Allocate explicitly. | **MUST assign tasks to roles upfront.** |
+| "Risk analysis is overkill for small features" | Small features have risks too. Identify them. | **MUST flag high-risk dependencies.** |
+| "Delivery goals are just task lists" | Task lists ≠ goals. Goals define what ships. | **MUST define measurable delivery outcomes.** |
+
+## Red Flags - STOP
+
+If you catch yourself doing any of these, **STOP and ask the user**:
+
+- Estimating without knowing team size
+- Assuming all developers are equally skilled
+- Ignoring task dependencies when building timeline
+- Using fixed cadence without asking (sprint/cycle/continuous)
+- Missing period start date when user chose sprint/cycle
+- Missing period duration when user chose sprint/cycle
+- Scheduling tasks without checking blockers
+- Assuming 100% capacity (no meetings, no interruptions)
+- Using velocity multiplier without offering customization
+- Using round numbers for dates ("exactly 4 weeks")
+- Missing contingency buffer
+- Not checking if tasks fit within period boundaries
+- No clear definition of "done" per delivery period
+- Ambiguous priorities (which task first if both ready?)
+
+**When you catch yourself**: Use AskUserQuestion to resolve ambiguity with the user.
+
+## Mandatory User Questions
+
+**Use AskUserQuestion tool to gather these REQUIRED inputs:**
+
+### Question 1: Start Date
+- **Header:** "Start Date"
+- **Question:** "When will the team start working on this feature?"
+- **Format:** YYYY-MM-DD (e.g., 2026-03-01)
+- **Why:** Determines all subsequent dates in the roadmap
+
+### Question 2: Team Composition
+- **Header:** "Team Size"
+- **Question:** "How many developers will work on this feature?"
+- **Options:**
+  - "1 developer (solo)" - Single developer
+  - "2 developers (pair)" - Small team
+  - "3-4 developers (squad)" - Full squad
+  - "5+ developers (large team)" - Large team
+- **Why:** Determines parallelization capacity and resource allocation
+
+### Question 3: Delivery Cadence
+- **Header:** "Delivery Cadence"
+- **Question:** "How does your team organize delivery cycles?"
+- **Options:**
+  - "Sprints (1-2 weeks)" - Scrum-style fixed iterations
+  - "Cycles (1-3 months)" - Shape Up style longer cycles
+  - "Continuous (no fixed intervals)" - Kanban-style continuous delivery
+- **Why:** Determines how to group tasks and define delivery milestones
+
+### Question 4 (CONDITIONAL): Sprint/Cycle Configuration
+- **When to ask:** If user chose "Sprints" or "Cycles" in Question 3
+- **Part A - Duration:**
+  - **Header:** "Period Duration"
+  - **Question (if Sprints):** "What is your sprint duration?"
+    - Options: "1 week", "2 weeks"
+  - **Question (if Cycles):** "What is your cycle duration?"
+    - Options: "1 month (4 weeks)", "2 months (8 weeks)", "3 months (12 weeks)"
+  - **Why:** Determines period boundaries for task allocation
+- **Part B - Start Date:**
+  - **Header:** "Period Start"
+  - **Question (if Sprints):** "When does Sprint 1 start?" (format: YYYY-MM-DD)
+  - **Question (if Cycles):** "When does Cycle 1 start?" (format: YYYY-MM-DD)
+  - **Why:** Establishes period boundaries to check if tasks fit completely or spill over
+- **Note:** If user chose "Continuous", skip this question (no fixed periods)
+
+### Question 5: Development Mode & Velocity
+- **Header:** "Development Velocity"
+- **Question:** "Will the team use AI-assisted development (ring:dev-cycle)?"
+- **Options:**
+  - "Yes - AI-assisted (default 0.6x multiplier)" - Use default 0.6x (40% faster)
+  - "Yes - AI-assisted (custom multiplier)" - User specifies custom AI multiplier
+  - "No - Traditional (default 1.0x multiplier)" - Use default 1.0x (baseline)
+  - "No - Traditional (custom multiplier)" - User specifies custom traditional multiplier
+- **Follow-up (if custom chosen):** "What is your team's velocity multiplier based on historical data?"
+  - Format: Decimal number (e.g., 0.5, 0.7, 1.2)
+  - Example: "0.7 means 0.7 days per story point"
+- **Why:**
+  - AI-assisted dev with automated gates (TDD, review, SRE) reduces bugs and rework
+  - Default multipliers are guidelines, teams vary based on experience/infrastructure
+  - Historical data provides most accurate estimates
+- **Note:** ring:dev-cycle includes TDD, automated review, and SRE validation
+
+**Default Multipliers:**
+| Mode | Default | Meaning |
+|------|---------|---------|
+| AI-assisted (ring:dev-cycle) | 0.6x | 40% faster (1 point = 0.6 days) |
+| Traditional development | 1.0x | Baseline (1 point = 1.0 day) |
+
+### Question 6 (CONDITIONAL): Priority Clarification
+- **When to ask:** If multiple tasks have same dependencies and could start simultaneously
+- **Header:** "Task Priority"
+- **Question:** "Tasks T-XXX and T-YYY are both ready. Which should start first?"
+- **Options:** [List the competing tasks with their descriptions]
+- **Why:** Prevents arbitrary sequencing decisions
+
+### Question 7 (CONDITIONAL): Capacity Confirmation
+- **When to ask:** If team size seems insufficient for parallelization opportunities
+- **Header:** "Capacity Constraint"
+- **Question:** "Critical path is X weeks, but with N more devs we could parallelize and finish in Y weeks. Do you want to:"
+- **Options:**
+  - "Keep current team (X weeks)" - Accept longer timeline
+  - "Add resources (Y weeks)" - Shorten timeline with more people
+- **Why:** User decides cost vs. speed tradeoff
+
+## Gate 9/4 Validation Checklist
+
+| Category | Requirements |
+|----------|--------------|
+| **Input Completeness** | Start date confirmed; team composition known; delivery cadence selected; period configuration set (if sprint/cycle); velocity multiplier validated (default or custom); all tasks loaded from tasks.md |
+| **Dependency Analysis** | Dependency graph built; critical path identified; parallel streams defined; no circular dependencies |
+| **Capacity Planning** | Velocity calculated (custom or default multiplier); resources allocated to tasks; bottlenecks identified; realistic capacity (70-80% utilization) |
+| **Delivery Breakdown** | Periods match chosen cadence; period boundaries calculated (if sprint/cycle); tasks allocated to periods; spill overs identified; delivery goals measurable; parallel streams mapped; handoffs minimized |
+| **Risk Management** | High-risk dependencies flagged; contingency buffer added (10-20%); mitigation strategies defined; spill over risks documented |
+| **Timeline Realism** | No best-case assumptions; critical path validated; dates achievable with given capacity; period boundaries respected; user approved |
+
+**Gate Result:** ✅ PASS → Ready for execution | ⚠️ CONDITIONAL (adjust capacity/dates) | ❌ FAIL (unrealistic, rework)
+
+## Velocity Calibration
+
+| Development Mode | Default Multiplier | Custom Range | Rationale |
+|------------------|-------------------|--------------|-----------|
+| **AI-Assisted (ring:dev-cycle)** | 0.6x (40% faster) | 0.4x - 0.8x | Automated gates (TDD, review, SRE), fewer bugs, less rework |
+| **Traditional Development** | 1.0x (baseline) | 0.8x - 1.2x | Manual testing, manual review, manual deployment |
+
+**How to Calculate Custom Multiplier:**
+```
+Look at past completed tasks:
+- Traditional: Task was 10 story points, took 12 developer-days → 1.2 days/point (1.2x multiplier)
+- AI-assisted: Task was 10 story points, took 5 developer-days → 0.5 days/point (0.5x multiplier)
+
+Use historical data, not assumptions.
+```
+
+**Capacity Utilization:**
+- **Realistic:** 70-80% (accounts for meetings, context switching, interruptions)
+- **Optimistic (FORBIDDEN):** 100% (assumes no meetings, no bugs, no blockers)
+
+**Example Calculation:**
+```
+Task: T-001 (Large, 13 story points)
+Team: 2 developers
+Velocity multiplier: 0.7x (custom, AI-assisted team with moderate experience)
+Capacity utilization: 75%
+
+Calculation:
+13 points × 0.7 day/point = 9.1 developer-days
+9.1 dev-days ÷ 2 devs ÷ 0.75 capacity = 6.1 calendar days (~1.5 weeks)
+```
+
+## Period Boundary Calculation
+
+**For Sprints/Cycles:**
+
+1. **Define period boundaries:**
+   ```
+   Sprint 1: Start date to (Start date + Duration)
+   Sprint 2: (Sprint 1 End + 1 day) to (Sprint 1 End + Duration + 1 day)
+   ...
+   ```
+
+2. **Check task fit:**
+   ```
+   Task T-001:
+     Start: 2026-03-01 (based on dependencies)
+     Duration: 10 calendar days
+     End: 2026-03-10
+
+   Sprint 1: 2026-03-01 to 2026-03-14 (2 weeks)
+
+   Fit check: T-001 end (2026-03-10) <= Sprint 1 end (2026-03-14)
+   Result: ✅ Fits completely in Sprint 1
+   ```
+
+3. **Identify spill overs:**
+   ```
+   Task T-002:
+     Start: 2026-03-10 (depends on T-001)
+     Duration: 12 calendar days
+     End: 2026-03-22
+
+   Sprint 1: 2026-03-01 to 2026-03-14
+   Sprint 2: 2026-03-15 to 2026-03-28
+
+   Fit check: T-002 end (2026-03-22) > Sprint 1 end (2026-03-14)
+   Result: ⚠️ Spill over (starts Sprint 1, ends Sprint 2)
+
+   Allocation:
+     - Sprint 1: 4 days of work (2026-03-10 to 2026-03-14)
+     - Sprint 2: 8 days of work (2026-03-15 to 2026-03-22)
+   ```
+
+**For Continuous Delivery:**
+- No period boundaries to check
+- Tasks scheduled based purely on dependencies and capacity
+- Milestones defined by task completion, not time boxes
+
+## Critical Path Analysis
+
+**Definition:** The longest chain of dependent tasks from start to finish.
+
+**How to Calculate:**
+1. Build dependency graph from tasks.md
+2. For each task, calculate: Earliest Start Date (ESD) based on dependencies
+3. For each task, calculate: Latest Start Date (LSD) without delaying project
+4. Tasks where ESD = LSD are on critical path (zero slack)
+5. Sum durations of critical path tasks = minimum project duration
+
+**Example:**
+```
+Dependency Chain:
+T-001 (Foundation, 2 weeks)
+  → T-002 (API Layer, 1 week)
+  → T-007 (Integration, 2 weeks)
+
+Critical Path Duration: 2 + 1 + 2 = 5 weeks (minimum possible)
+
+Parallel Stream (not on critical path):
+T-005 (Frontend, 2 weeks) - can run parallel to T-001/T-002
+```
+
+## Parallelization Analysis
+
+**Identify Independent Streams:**
+1. Tasks with no shared dependencies can run in parallel
+2. Tasks requiring different skill sets can run in parallel
+3. Tasks on different components can run in parallel
+
+**Constraints:**
+- Team size limits parallel streams (2 devs = max 2 parallel tasks)
+- Skill requirements limit parallelization (backend vs. frontend)
+- Integration points require synchronization (streams merge)
+
+**Example:**
+```
+Stream A (Backend):  T-001 → T-002 → T-007
+Stream B (Frontend): T-005 → T-006 (runs parallel to A)
+Stream C (Infra):    T-009 (blocks both A and B, must run first)
+
+With 3 devs: Can run A, B, C in parallel (optimal)
+With 2 devs: Must sequence B after A (sub-optimal)
+With 1 dev:  Fully sequential (slowest)
+```
+
+## Roadmap Template Structure
+
+**Output to:** `docs/pre-dev/{feature-name}/delivery-roadmap.md`
+
+(Template details continue as previously defined with all sections: Executive Summary, Delivery Breakdown, Critical Path Analysis, Resource Allocation, Risk Milestones, Gantt Timeline, Assumptions and Constraints)
+
+## Common Violations
+
+| Violation | Wrong | Correct |
+|-----------|-------|---------|
+| **Optimistic Timelines** | "5-week critical path, let's commit to 4 weeks" (no buffer) | "5-week critical path + 10% buffer = 5.5 weeks commitment" |
+| **Ignoring Dependencies** | "All tasks 2 weeks, finish in 2 weeks" (assumes parallelization) | "Critical path 5 weeks (T-001→T-002→T-007), other tasks parallel" |
+| **100% Capacity** | "2 devs × 2 weeks × 5 days = 20 dev-days" (unrealistic) | "2 devs × 2 weeks × 5 days × 0.75 capacity = 15 dev-days" |
+| **Fixed Cadence Assumption** | "Everyone works in 2-week sprints" | "Ask user: sprint/cycle/continuous delivery?" |
+| **Ignoring Period Boundaries** | "Task T-002 starts in Sprint 1, wherever it ends is fine" | "T-002 starts Sprint 1, ends Sprint 2 → spill over, track explicitly" |
+| **Default Velocity Always** | "Use 0.6x for AI teams always" | "Ask user: default (0.6x) or custom based on history?" |
+
+## Confidence Scoring
+
+| Factor | Points | Criteria |
+|--------|--------|----------|
+| **Dependency Clarity** | 0-30 | All dependencies mapped: 30, Most clear: 20, Ambiguous: 10 |
+| **Capacity Realism** | 0-25 | Realistic utilization (70-80%): 25, Optimistic (90%+): 10, Undefined: 0 |
+| **Critical Path Validated** | 0-25 | Full dependency graph: 25, Partial: 15, Assumptions: 5 |
+| **Risk Mitigation** | 0-20 | All high-risk flagged + mitigations: 20, Some identified: 10, None: 0 |
+
+**Total Score Interpretation:**
+- **80-100 points:** HIGH confidence - Roadmap is realistic and achievable
+- **50-79 points:** MEDIUM confidence - Some assumptions, monitor closely
+- **0-49 points:** LOW confidence - Significant unknowns, high risk of slippage
+
+**Action Based on Score:**
+- HIGH (80+): Proceed with execution, communicate dates to stakeholders
+- MEDIUM (50-79): Present roadmap with caveats, identify assumptions to validate early
+- LOW (<50): DO NOT commit to dates, resolve unknowns first via AskUserQuestion
+
+## Output & After Approval
+
+**Output to:** `docs/pre-dev/{feature-name}/delivery-roadmap.md`
+
+**After user approves roadmap:**
+
+1. ✅ Roadmap becomes execution baseline
+2. 📊 Track progress against delivery goals (not individual subtasks)
+3. 🚨 Flag slippage early (daily standup: on track vs. critical path?)
+4. 🔄 Re-plan if major assumptions break (scope change, resource loss, dependency block)
+5. 📈 Update roadmap when tasks complete (mark done, adjust future periods)
+6. ⚠️ Monitor spill overs (if sprint/cycle): communicate impact to stakeholders
+
+**Integration with dev-team:**
+- Use `/ring:worktree` to create isolated workspace
+- Use `/ring:dev-cycle` to execute tasks with AI-assisted gates
+- Use roadmap to prioritize which tasks to pull next
+
+## Pressure Resistance Scenarios
+
+### Scenario 1: User Pushes for Faster Timeline
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Can't we finish in 3 weeks instead of 5?" | "Critical path is 5 weeks (T-001→T-002→T-007). To compress:<br>1. Add more developers (parallelization)<br>2. Cut scope (remove tasks)<br>3. Reduce quality (skip gates - NOT RECOMMENDED)<br><br>Which option aligns with your goals?" |
+
+### Scenario 2: User Provides Incomplete Team Info
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just estimate with 'a team'" | "Cannot create realistic roadmap without team size. Timeline varies dramatically:<br>- 1 dev: 8 weeks sequential<br>- 2 devs: 5 weeks (some parallelization)<br>- 4 devs: 4 weeks (max parallelization)<br><br>How many developers will work on this?" |
+
+### Scenario 3: User Wants Default Velocity Without Validation
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just use the default, I don't have historical data" | "Understood. Using default multipliers:<br>- AI-assisted: 0.6x (40% faster)<br>- Traditional: 1.0x (baseline)<br><br>Note: These are industry averages. Your team's actual velocity may vary. Recommend tracking actuals and updating multiplier after first period." |
+
+### Scenario 4: User Disagrees with Critical Path
+
+| User Says | Your Response |
+|-----------|---------------|
+| "T-005 should be on critical path, not T-001" | "Let me verify the dependency chain:<br><br>T-001 (Foundation) blocks:<br>  → T-002 (API Layer)<br>  → T-007 (Integration)<br><br>T-005 (Frontend) has no blockers, can run parallel.<br><br>Critical path = longest dependency chain. If T-005 should block something, please clarify the dependency." |
+
+### Scenario 5: User Uncertain About Cadence
+
+| User Says | Your Response |
+|-----------|---------------|
+| "I don't know, what do you recommend?" | "Cannot recommend without context. Cadence depends on:<br>- Team culture (Scrum/Kanban/Shape Up)<br>- Release process (deploy daily vs. every 2 weeks)<br>- Stakeholder expectations (regular demos vs. continuous feedback)<br><br>How does your team currently organize work?" |
+
+### Scenario 6: User Concerned About Spill Overs
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Too many spill overs, this looks bad" | "Spill overs are reality, not failure. They occur when:<br>- Task duration doesn't align with period length<br>- Dependencies cause mid-period starts<br><br>Options to reduce spill overs:<br>1. Adjust period duration (e.g., 1 week → 2 weeks)<br>2. Switch to continuous delivery (no fixed periods)<br>3. Accept spill overs and communicate transparently<br><br>Which approach fits your team culture?" |
+
+## The Bottom Line
+
+**If you created a roadmap without asking about team composition, delivery cadence, period configuration, or velocity multiplier, delete it and start over.**
+
+Roadmaps are not educated guesses. Roadmaps are calculated schedules based on:
+- Validated dependency chains (critical path analysis)
+- Realistic team capacity (size × utilization × custom velocity)
+- Explicit parallelization opportunities (independent task streams)
+- Risk-adjusted timelines (contingency buffer for unknowns)
+- Team-specific delivery rhythm (sprint/cycle/continuous)
+- Period boundary awareness (tasks fit or spill over)
+
+"We'll figure it out as we go" is not a roadmap. It's hope.
+
+**Questions that must be answered before committing dates:**
+1. When do we start? (start date)
+2. Who is working on this? (team composition)
+3. How do they work? (AI-assisted or traditional, default or custom velocity)
+4. What rhythm do they follow? (sprint/cycle/continuous)
+5. When do periods start? (if sprint/cycle: period start date + duration)
+6. What must happen first? (critical path)
+7. What can happen in parallel? (parallelization)
+8. Where are the risks? (high-impact dependencies)
+9. Which tasks cross period boundaries? (spill overs)
+
+If any question is unanswered, **STOP and ask the user.**
+
+**Deliver realistic roadmaps. Respect team capacity. Respect period boundaries. Build trust through accuracy.**

@@ -1,8 +1,8 @@
 ---
 name: ring:using-pm-team
 description: |
-  10 pre-dev workflow skills + 3 research agents organized into Small Track (4 gates, <2 days) and
-  Large Track (9 gates, 2+ days) for systematic feature planning with research-first approach.
+  11 pre-dev workflow skills + 3 research agents organized into Small Track (5 gates, <2 days) and
+  Large Track (10 gates, 2+ days) for systematic feature planning with research-first approach.
 
 trigger: |
   - Starting any feature implementation
@@ -17,7 +17,7 @@ skip_when: |
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring:gate-name"` or via slash commands.
+The ring-pm-team plugin provides 11 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring:gate-name"` or via slash commands.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
@@ -36,7 +36,7 @@ Pre-dev workflow ensures:
 
 ## Two Tracks: Choose Your Path
 
-### Small Track (4 Gates) – <2 Day Features
+### Small Track (5 Gates) – <2 Day Features
 
 **Use when ALL criteria met:**
 - ✅ Implementation <2 days
@@ -52,10 +52,11 @@ Pre-dev workflow ensures:
 | 1 | ring:pre-dev-prd-creation | PRD.md |
 | 2 | ring:pre-dev-trd-creation | TRD.md |
 | 3 | ring:pre-dev-task-breakdown | tasks.md |
+| 4 | ring:pre-dev-delivery-planning | delivery-roadmap.md |
 
-**Planning time:** 45-75 minutes
+**Planning time:** 60-90 minutes
 
-### Large Track (9 Gates) – ≥2 Day Features
+### Large Track (10 Gates) – ≥2 Day Features
 
 **Use when ANY criteria met:**
 - ❌ Implementation ≥2 days
@@ -76,8 +77,9 @@ Pre-dev workflow ensures:
 | 6 | ring:pre-dev-dependency-map | dependencies.md |
 | 7 | ring:pre-dev-task-breakdown | tasks.md |
 | 8 | ring:pre-dev-subtask-creation | subtasks/ |
+| 9 | ring:pre-dev-delivery-planning | delivery-roadmap.md |
 
-**Planning time:** 2.5-4.5 hours
+**Planning time:** 2.5-5 hours
 
 ## Gate Summaries
 
@@ -92,6 +94,7 @@ Pre-dev workflow ensures:
 | 6 | ring:pre-dev-dependency-map | Explicit tech choices, versions, licenses (Large only) |
 | 7 | ring:pre-dev-task-breakdown | Value-driven tasks with success criteria |
 | 8 | ring:pre-dev-subtask-creation | Zero-context 2-5 min implementation steps (Large only) |
+| 9 | ring:pre-dev-delivery-planning | Delivery roadmap with timeline, critical path, resource allocation (MANDATORY for both tracks) |
 
 ## Research Agents (Gate 0)
 
