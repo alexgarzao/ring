@@ -230,7 +230,7 @@ All workflows converge to the 10-gate development cycle:
 |----------|-------------|--------|------|
 | **New Feature** | `/ring:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md` | → `/ring:dev-cycle tasks.md` |
 | **Direct Tasks** | `/ring:dev-cycle tasks.md` | — | Execute 6 gates directly |
-| **Refactoring** | `/ring:dev-refactor` | `docs/refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
+| **Refactoring** | `/ring:dev-refactor` | `docs/ring:dev-refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
 
 **6-Gate Development Cycle:**
 

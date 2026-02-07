@@ -140,7 +140,7 @@ Task tool:
 
 **Success:** 200 (GET/PUT), 201 (POST), 204 (DELETE)
 
-**Errors:** 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 409 (Conflict), 422 (Invalid), 429 (Rate Limited), 500 (Server Error)
+**Errors:** 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 409 (Conflict), 422 (Invalid), 500 (Server Error)
 
 ## Proceed
 

@@ -61,7 +61,7 @@ logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
 // CORRECT: Log with context correlation
 logger.Infof("Processing entity: %s", entityID)
-logger.Warnf("Rate limit approaching: %d/%d", current, limit)
+logger.Warnf("Connection pool low: %d/%d", current, limit)
 logger.Errorf("Failed to save entity: %v", err)
 ```
 
