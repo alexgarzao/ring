@@ -279,19 +279,20 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 30 | Input Validation | api-patterns.md | `#input-validation-mandatory` | **Defense in depth (MANDATORY)**, validator v10 tags, error translation, detection commands |
 | 31 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
 | 32 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
-| 33 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, magic numbers (mnd) |
-| 34 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
-| 35 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
-| 36 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
-| 37 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
-| 38 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
-| 39 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
-| 40 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
-| 41 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
-| 42 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
-| 43 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **Constructor Validation Patterns (MANDATORY)**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
-| 44 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 45 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **Tenant Isolation Verification (⚠️ CONDITIONAL)**: IDOR prevention, detection commands |
+| 33 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, **14 mandatory linters**, magic numbers (mnd) |
+| 34 | Migration Guidance for Mandatory Linter Promotion | quality.md | `#migration-guidance-for-mandatory-linter-promotion` | **Phased rollout (MANDATORY)**, per-linter common violations, batch fix commands |
+| 35 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
+| 36 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
+| 37 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 38 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 39 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
+| 40 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
+| 41 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
+| 42 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
+| 43 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
+| 44 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **Constructor Validation Patterns (MANDATORY)**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
+| 45 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 46 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **Tenant Isolation Verification (⚠️ CONDITIONAL)**: IDOR prevention, detection commands |
 
 **Module Loading Guide:**
 
