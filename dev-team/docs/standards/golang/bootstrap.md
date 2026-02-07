@@ -398,7 +398,6 @@ import (
     libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"
     "github.com/gofiber/contrib/otelfiber/v2"
     "github.com/gofiber/fiber/v2"
-    "github.com/gofiber/fiber/v2/middleware/cors"
     "github.com/gofiber/fiber/v2/middleware/recover"
 )
 
@@ -426,9 +425,8 @@ func NewRouter(lg libLog.Logger, tl *libOpentelemetry.Telemetry, ...) *fiber.App
     // Middleware setup - ORDER MATTERS
     f.Use(tlMid.WithTelemetry(tl))                                    // 1. Must be first - injects tracer+logger into context
     f.Use(recover.New())                                              // 2. Panic recovery
-    f.Use(cors.New())                                                 // 3. CORS
-    f.Use(otelfiber.Middleware(otelfiber.WithNext(skipTelemetryPaths))) // 4. OpenTelemetry metrics
-    f.Use(libHTTP.WithHTTPLogging(libHTTP.WithCustomLogger(lg)))      // 5. HTTP logging
+    f.Use(otelfiber.Middleware(otelfiber.WithNext(skipTelemetryPaths))) // 3. OpenTelemetry metrics
+    f.Use(libHTTP.WithHTTPLogging(libHTTP.WithCustomLogger(lg)))      // 4. HTTP logging
 
     // ... define routes ...
 
