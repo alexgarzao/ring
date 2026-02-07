@@ -96,7 +96,9 @@ This skill runs **up to 41 explorer agents in 4 batches of up to 10**, writing r
 
 ### Output File
 
-All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md`
+All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md`
+
+**Timestamp format:** `YYYY-MM-DDTHH:MM:SS` using local time (e.g., `2026-02-07T20:45:30`). MUST use local time from system clock, not UTC.
 
 ### Batch Execution Schedule
 
@@ -178,12 +180,11 @@ Each explorer prompt receives relevant standards content between `---BEGIN STAND
 ### Step 1: Initialize Report File
 
 ```markdown
-Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
+Write to docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md:
 
 # Production Readiness Audit Report
 
-**Date:** {YYYY-MM-DD}
-**Hour:** {hh:mm}
+**Date:** {YYYY-MM-DDTHH:MM:SS}
 **Codebase:** {project-name}
 **Auditor:** Claude Code (Production Readiness Skill v3.0)
 **Status:** In Progress...
@@ -5379,7 +5380,7 @@ After all explorers complete, generate this report:
 > **THOROUGH AUDIT** — This report provides exhaustive findings across all audited dimensions.
 > every issue is documented with file location, evidence, impact analysis, and remediation guidance.
 
-**Date:** {YYYY-MM-DD}
+**Date:** {YYYY-MM-DDTHH:MM:SS}
 **Codebase:** {project-name}
 **Auditor:** Claude Code (Production Readiness Skill v3.0)
 **Report Type:** Thorough
@@ -6139,7 +6140,7 @@ Use WebFetch to load Ring standards based on detected stack. Store content for i
 
 ### Step 4: Initialize Report File
 
-Write the report header with Audit Configuration to `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md`
+Write the report header with Audit Configuration to `docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md`
 
 ### Step 5: Launch Parallel Explorers (Batch 1)
 
@@ -6181,7 +6182,7 @@ Once ALL explorers complete:
 ### Step 11: Write Report
 
 ```
-Write: docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md
+Write: docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md
 ```
 
 ### Step 12: Present Summary
