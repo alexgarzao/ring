@@ -200,7 +200,7 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 | **Max Possible Score** | {350 if single-tenant, 370 if multi-tenant} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 
-**⛔ SCORING RULE:** When **Multi-Tenant = Inactive**, dimensions 7 (IDOR) and 33 (Multi-Tenant) are **completely excluded** from scoring. They do NOT count as 0/10 - they simply don't exist for single-tenant projects. Max score is 350, not 370.
+**⛔ MUST exclude dimensions 7 (IDOR) and 33 (Multi-Tenant) from scoring when multi-tenant = inactive; do not count as 0/10 — they do not exist for single-tenant projects. Max score is 350, not 370.**
 
 ---
 ```
@@ -3691,7 +3691,7 @@ After all explorers complete, generate this report:
 | **Max Possible Score** | {350 if single-tenant, 370 if multi-tenant} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 
-**⛔ SCORING RULE:** When **Multi-Tenant = Inactive**, dimensions 7 (IDOR) and 33 (Multi-Tenant) are **completely excluded** from scoring. Do NOT include them as 0/10.
+**⛔ MUST exclude dimensions 7 (IDOR) and 33 (Multi-Tenant) from scoring when multi-tenant = inactive; do not include them as 0/10.**
 
 ## Executive Summary
 
@@ -3718,13 +3718,13 @@ After all explorers complete, generate this report:
 | 9. Input Validation | X/10 | 0 | 0 | 0 | 0 |
 | **Category B Total** | **X/30** | **0** | **0** | **0** | **0** |
 
-**If MULTITENANT=true, add these rows (otherwise OMIT entirely - do NOT include in score):**
+**MUST add these rows only if multitenant=true (otherwise omit entirely — do not include in score):**
 
 | *7. IDOR Protection* | *X/10* | *0* | *0* | *0* | *0* |
 | *33. Multi-Tenant* | *X/10* | *0* | *0* | *0* | *0* |
 | **Conditional Total** | **X/20** | **0** | **0** | **0** | **0** |
 
-**⛔ CRITICAL: When MULTITENANT=false, dimensions 7 and 33 MUST be omitted from score calculation. Do NOT include them as 0/10 - they do not exist for single-tenant projects.**
+**⛔ MUST omit dimensions 7 and 33 from score calculation when multitenant=false; do not include them as 0/10 — they only apply if multitenant=true.**
 
 ### Category C: Operational Readiness
 
