@@ -6,7 +6,7 @@ type: specialist
 model: opus
 last_updated: 2026-02-04
 changelog:
-  - 1.4.0: Added HARD GATE requiring all 7 sections from standards-coverage-table.md - no cherry-picking allowed
+  - 1.4.0: Added HARD GATE requiring all 8 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
   - 1.3.2: Added Pre-Submission Self-Check section (MANDATORY) to prevent AI slop in infrastructure code
   - 1.3.1: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
@@ -396,7 +396,7 @@ When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you M
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md" for:**
-- Complete list of sections to check (7 sections)
+- Complete list of sections to check (8 sections)
 - Section names (MUST use EXACT names from table)
 - Subsections per section (all REQUIRED)
 - Output table format

@@ -1,8 +1,19 @@
 # Go Standards - Domain Modeling
 
-> **Module:** domain-modeling.md | **Sections:** §21 | **Parent:** [index.md](index.md)
+> **Module:** domain-modeling.md | **Sections:** §1-4 | **Parent:** [index.md](index.md)
 
 This module covers Always-Valid Domain Model patterns.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Always-Valid Domain Model](#always-valid-domain-model-mandatory) | Domain entities with invariant protection |
+| 2 | [Constructor Validation Patterns](#constructor-validation-patterns-mandatory) | NewEntity/NewEntityFromDTO/ReconstructEntity conventions |
+| 3 | [ToEntity/FromEntity Integration](#toentityfromentity-integration-mandatory) | Layer separation patterns |
+| 4 | [Integration with HTTP Layer](#integration-with-http-layer) | DTO to domain entity conversion |
 
 ---
 
@@ -122,6 +133,109 @@ func ReconstructRule(id uuid.UUID, name, expression string, createdAt time.Time)
 ```
 
 **Note:** `Reconstruct*` functions skip validation because data is from trusted storage (already validated at creation).
+
+### Constructor Validation Patterns (MANDATORY)
+
+**⛔ HARD GATE:** All domain entities MUST have validated constructors. Public struct initialization is FORBIDDEN.
+
+#### Constructor Naming Convention
+
+| Type | Constructor Name | Returns |
+|------|------------------|---------|
+| New entity | `NewEntity(...)` | `(*Entity, error)` |
+| From DTO | `NewEntityFromDTO(dto)` | `(*Entity, error)` |
+| Reconstruction | `ReconstructEntity(...)` | `*Entity` (no error) |
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that modifies domain models
+# Find structs in domain packages without New* constructor
+# Explicitly check that find returns files before running the loop
+COUNT=$(find internal/domain pkg/mmodel -name "*.go" 2>/dev/null | wc -l)
+if [ "$COUNT" -eq 0 ]; then
+  echo "ERROR: No .go files found in internal/domain or pkg/mmodel. Cannot run missing-constructor check." >&2
+  exit 1
+fi
+while IFS= read -r -d '' f; do
+  structs=$(grep -E "^type [A-Z][a-zA-Z]+ struct" "$f" | awk '{print $2}')
+  for s in $structs; do
+    if ! grep -q "func New${s}" "$f" 2>/dev/null; then
+      echo "MISSING CONSTRUCTOR: $f - $s"
+    fi
+  done
+done < <(find internal/domain pkg/mmodel -name "*.go" -print0 2>/dev/null)
+
+# Expected: All domain structs have New* constructor
+# If missing: BLOCKER - Add constructor before proceeding
+```
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Direct struct initialization in service layer
+func (s *Service) CreateUser(name, email string) (*domain.User, error) {
+    return &domain.User{  // WRONG: Bypasses constructor validation
+        ID:    uuid.New(),
+        Name:  name,
+        Email: email,
+    }, nil
+}
+
+// ❌ FORBIDDEN: Constructor without validation
+func NewUser(name, email string) *User {
+    return &User{  // WRONG: No validation, no error return
+        ID:    uuid.New(),
+        Name:  name,
+        Email: email,
+    }
+}
+
+// ❌ FORBIDDEN: Public fields allowing direct assignment
+type User struct {
+    ID    uuid.UUID  // WRONG: Public field
+    Name  string     // WRONG: Can be assigned directly
+    Email string     // WRONG: No validation enforced
+}
+```
+
+### ToEntity/FromEntity Integration (MANDATORY)
+
+Domain entities MUST integrate with ToEntity/FromEntity patterns for layer separation.
+
+```go
+// internal/adapters/postgres/user_mapper.go
+
+// FromEntity - Domain entity → Database model
+func (m *UserMapper) FromEntity(entity *domain.User) *UserModel {
+    return &UserModel{
+        ID:        entity.ID().String(),
+        Name:      entity.Name(),
+        Email:     entity.Email(),
+        CreatedAt: entity.CreatedAt(),
+    }
+}
+
+// ToEntity - Database model → Domain entity (uses Reconstruct, not New)
+// MUST validate ID before reconstruction - return error for corrupted data
+func (m *UserMapper) ToEntity(model *UserModel) (*domain.User, error) {
+    id, err := uuid.Parse(model.ID)
+    if err != nil {
+        // Database contains corrupted ID - return wrapped error
+        return nil, fmt.Errorf("corrupted user id %q: %w", model.ID, err)
+    }
+    return domain.ReconstructUser(
+        id,
+        model.Name,
+        model.Email,
+        model.CreatedAt,
+    ), nil
+}
+```
+
+**See [domain.md - ToEntity/FromEntity](domain.md#data-transformation-toentityfromentity-mandatory)** for complete patterns.
+
+---
 
 ### Integration with HTTP Layer
 

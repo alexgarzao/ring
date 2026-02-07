@@ -1,9 +1,9 @@
 ---
 name: ring:dev-cycle
 description: |
-  Main orchestrator for the 6-gate development cycle system. Loads tasks/subtasks
-  from PM team output and executes through implementation, devops, SRE, testing, review,
-  and validation gates with state persistence and metrics collection.
+  Main orchestrator for the 10-gate development cycle system. Loads tasks/subtasks
+  from PM team output and executes through implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing → chaos testing → review → validation
+  gates (Gates 0-9), with state persistence and metrics collection.
 
 trigger: |
   - Starting a new development cycle with a task file
@@ -25,7 +25,7 @@ sequence:
   before: [ring:dev-feedback-loop]
 
 related:
-  complementary: [ring:dev-implementation, ring:dev-devops, ring:dev-ring:sre, ring:dev-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop]
+  complementary: [ring:dev-implementation, ring:dev-devops, ring:dev-sre, ring:dev-unit-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop]
 
 verification:
   automated:
@@ -45,7 +45,7 @@ examples:
     expected_flow: |
       1. Load tasks with subtasks from tasks.md
       2. Ask user for checkpoint mode (per-task/per-gate/continuous)
-      3. Execute Gate 0-5 for each task sequentially
+      3. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each task sequentially
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
     invocation: "/ring:dev-cycle --resume"
@@ -55,7 +55,7 @@ examples:
     expected_flow: |
       1. Execute Gate 0, pause for approval
       2. User approves, execute Gate 1, pause
-      3. Continue until all gates complete
+      3. Continue until all 10 gates complete
   - name: "Execute with custom context for agents"
     invocation: "/ring:dev-cycle tasks.md --prompt \"Focus on error handling. Use existing UserRepository.\""
     expected_flow: |
@@ -69,7 +69,7 @@ examples:
       2. Dispatch ring:codebase-explorer to analyze project
       3. Generate tasks internally from prompt + codebase analysis
       4. Present generated tasks for user confirmation
-      5. Execute Gate 0-5 for each generated task
+      5. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each generated task
 ---
 
 # Development Cycle Orchestrator
@@ -93,9 +93,9 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 6 quality gates. Tasks are loaded at initialization - no separate import gate.
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 10 gates (Gate 0–9): implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing → chaos testing → review → validation. Tasks are loaded at initialization - no separate import gate.
 
-**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 6 gates."
+**Announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9)."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -178,10 +178,14 @@ This is not negotiable:
 <cannot_skip>
 - Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
-- Gate 2: `Skill("ring:dev-ring:sre")` → then `Task(subagent_type="ring:sre", ...)`
-- Gate 3: `Skill("ring:dev-testing")` → then `Task(subagent_type="ring:qa-analyst", ...)`
-- Gate 4: `Skill("ring:requesting-code-review")` → then 3x `Task(...)` in parallel
-- Gate 5: `Skill("ring:dev-validation")` → N/A (verification only)
+- Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
+- Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
+- Gate 4: `Skill("ring:dev-fuzz-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="fuzz", ...)`
+- Gate 5: `Skill("ring:dev-property-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="property", ...)`
+- Gate 6: `Skill("ring:dev-integration-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="integration", ...)`
+- Gate 7: `Skill("ring:dev-chaos-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="chaos", ...)`
+- Gate 8: `Skill("ring:requesting-code-review")` → then 5x `Task(...)` in parallel
+- Gate 9: `Skill("ring:dev-validation")` → N/A (verification only)
 </cannot_skip>
 
 Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
@@ -310,9 +314,10 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 ### Cannot Be Overridden
 
 <cannot_skip>
-- All 6 gates must execute - Each gate catches different issues
-- Gates execute in order (0→5) - Dependencies exist between gates
-- Gate 4 requires all 3 reviewers - Different review perspectives are complementary
+- All 10 gates must execute (0→1→2→3→4→5→6→7→8→9) - Each gate catches different issues
+- All testing gates (3-7) are MANDATORY - Comprehensive test coverage ensures quality
+- Gates execute in order (0→1→2→3→4→5→6→7→8→9) - Dependencies exist between gates
+- Gate 8 requires all 5 reviewers - Different review perspectives are complementary
 - Coverage threshold ≥ 85% - Industry standard for quality code
 - PROJECT_RULES.md must exist - Cannot verify standards without target
 </cannot_skip>
@@ -343,7 +348,7 @@ Report all severities. Let user prioritize.
 | "Request exception for business reasons" | Reviewers know business context. Verdict is final. | **Fix the issue, re-run reviewers** |
 
 **Severity mapping is absolute:**
-- CRITICAL/HIGH/MEDIUM → Fix NOW, re-run all 3 reviewers
+- CRITICAL/HIGH/MEDIUM → Fix NOW, re-run all 5 reviewers
 - LOW → Add TODO(review): comment
 - Cosmetic → Add FIXME(nitpick): comment
 
@@ -413,46 +418,64 @@ Day 4: Production incident from Day 1 code
 | 0 | Both 0.1 and 0.2 complete | 0.1 done without 0.2 = FAIL |
 | 1 | Dockerfile + docker-compose + .env.example | Missing any = FAIL |
 | 2 | Structured JSON logs with trace correlation | Partial structured logs = FAIL |
-| 3 | Coverage ≥ 85% + all AC tested | 84% = FAIL |
-| 4 | **all 3 reviewers PASS** | 2/3 reviewers = FAIL |
-| 5 | Explicit "APPROVED" from user | "Looks good" = not approved |
+| 3 | Unit test coverage ≥ 85% + all AC tested | 84% = FAIL |
+| 4 | Fuzz tests with seed corpus ≥ 5 entries | Missing corpus = FAIL |
+| 5 | Property-based tests for domain invariants | Missing property tests = FAIL |
+| 6 | Integration tests with testcontainers | No testcontainers = FAIL |
+| 7 | Chaos tests for failure scenarios | Missing chaos tests = FAIL |
+| 8 | **All 5 reviewers PASS** | 4/5 reviewers = FAIL |
+| 9 | Explicit "APPROVED" from user | "Looks good" = not approved |
 
-**CRITICAL for Gate 4:** Running 2 of 3 reviewers is not a partial pass - it's a FAIL. Re-run all 3 reviewers.
+**CRITICAL for Gate 8:** Running 4 of 5 reviewers is not a partial pass - it's a FAIL. Re-run all 5 reviewers.
 
 **Anti-Rationalization for Partial Gates:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "2 of 3 reviewers passed" | Gate 4 requires all 3. 2/3 = 0/3. | **Re-run all 3 reviewers** |
+| "4 of 5 reviewers passed" | Gate 8 requires all 5. 4/5 = 0/5. | **Re-run all 5 reviewers** |
 | "Gate mostly complete" | Mostly ≠ complete. Binary: done or not done. | **Complete all components** |
 | "Can finish remaining in next cycle" | Gates don't carry over. Complete NOW. | **Finish current gate** |
 | "Core components done, optional can wait" | No component is optional within a gate. | **Complete all components** |
+| "Unit tests are enough, skip fuzz/property" | Each test type catches different bugs. All are MANDATORY. | **Execute all testing gates (3-7)** |
+| "No external dependencies, skip integration" | Integration testing is MANDATORY. Verify internal integration too. | **Execute Gate 6** |
 
 ---
 
 ## Gate Order Enforcement (HARD GATE)
 
-**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5. No exceptions.**
+**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9. All 10 gates are MANDATORY.**
 
 | Violation | Why It's WRONG | Consequence |
 |-----------|----------------|-------------|
 | Skip Gate 1 (DevOps) | "No infra changes" | Code without container = works on my machine only |
 | Skip Gate 2 (SRE) | "Observability later" | Blind production = debugging nightmare |
+| Skip Gate 4 (Fuzz) | "Unit tests are enough" | Edge cases and crashes not discovered |
+| Skip Gate 5 (Property) | "Too complex" | Domain invariant violations not detected |
+| Skip Gate 6 (Integration) | "No external dependencies" | Internal integration bugs surface in production |
+| Skip Gate 7 (Chaos) | "Infra is reliable" | System fails under real-world conditions |
 | Reorder Gates | "Review before test" | Reviewing untested code wastes reviewer time |
-| Parallel Gates | "Run 2 and 3 together" | Dependencies exist. Order is intentional. |
+| Parallel Gates | "Run 3 and 4 together" | Dependencies exist. Order is intentional. |
+
+**All testing gates (3-7) are MANDATORY. No exceptions. No skip reasons.**
 
 **Gates are not parallelizable across different gates. Sequential execution is MANDATORY.**
 
-## The 6 Gates
+## The 10 Gates
 
-| Gate | Skill | Purpose | Agent |
-|------|-------|---------|-------|
-| 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain |
-| 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer |
-| 2 | ring:dev-ring:sre | Observability (health, logging, tracing) | ring:sre |
-| 3 | ring:dev-testing | Unit tests for acceptance criteria | ring:qa-analyst |
-| 4 | ring:requesting-code-review | Parallel code review | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer (3x parallel) |
-| 5 | ring:dev-validation | Final acceptance validation | N/A (verification) |
+| Gate | Skill | Purpose | Agent | Standards Module |
+|------|-------|---------|-------|------------------|
+| 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain | core.md, domain.md |
+| 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer | devops.md |
+| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre | sre.md |
+| 3 | ring:dev-unit-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) | testing-unit.md |
+| 4 | ring:dev-fuzz-testing | Fuzz tests for edge cases and crashes | ring:qa-analyst (test_mode: fuzz) | testing-fuzz.md |
+| 5 | ring:dev-property-testing | Property-based tests for domain invariants | ring:qa-analyst (test_mode: property) | testing-property.md |
+| 6 | ring:dev-integration-testing | Integration tests with testcontainers | ring:qa-analyst (test_mode: integration) | testing-integration.md |
+| 7 | ring:dev-chaos-testing | Chaos tests for failure scenarios | ring:qa-analyst (test_mode: chaos) | testing-chaos.md |
+| 8 | ring:requesting-code-review | Parallel code review (5 reviewers) | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer | N/A |
+| 9 | ring:dev-validation | Final acceptance validation | N/A (verification) | N/A |
+
+**All gates are MANDATORY. No exceptions. No skip reasons.**
 
 ## Integrated PM → Dev Workflow
 
@@ -465,14 +488,14 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit (task or subtask) passes through **all 6 gates** before the next unit.
+**Core Principle:** Each execution unit (task or subtask) passes through **10 gates** (implementation→devops→SRE→unit→fuzz→property→integration→chaos→review→validation) before the next unit. All gates are MANDATORY.
 
-**Flow:** Unit → Gate 0-5 → 🔒 Unit Checkpoint (Step 7.1) → 🔒 Task Checkpoint (Step 7.2) → Next Unit
+**Flow:** Unit → Gate 0→1→2→3→4→5→6→7→8→9 → 🔒 Unit Checkpoint (Step 11.1) → 🔒 Task Checkpoint (Step 11.2) → Next Unit
 
 | Scenario | Execution Unit | Gates Per Unit |
 |----------|----------------|----------------|
-| Task without subtasks | Task itself | 6 gates |
-| Task with subtasks | Each subtask | 6 gates per subtask |
+| Task without subtasks | Task itself | 10 gates (all MANDATORY) |
+| Task with subtasks | Each subtask | 10 gates per subtask (all MANDATORY) |
 
 ## Commit Timing
 
@@ -480,7 +503,7 @@ Day 4: Production incident from Day 1 code
 
 | Option | When Commit Happens | Use Case |
 |--------|---------------------|----------|
-| **(a) Per subtask** | After each subtask passes Gate 5 | Fine-grained history, easy rollback per subtask |
+| **(a) Per subtask** | After each subtask passes Gate 9 | Fine-grained history, easy rollback per subtask |
 | **(b) Per task** | After all subtasks of a task complete | Logical grouping, one commit per feature chunk |
 | **(c) At the end** | After entire cycle completes | Single commit with all changes, clean history |
 
@@ -588,8 +611,18 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "devops": {"status": "pending"},
-        "ring:sre": {"status": "pending"},
-        "testing": {"status": "pending"},
+        "sre": {"status": "pending"},
+        "unit_testing": {"status": "pending"},
+        "fuzz_testing": {"status": "pending"},
+        "property_testing": {"status": "pending"},
+        "integration_testing": {
+          "status": "pending|in_progress|completed",
+          "scenarios_tested": 0,
+          "tests_passed": 0,
+          "tests_failed": 0,
+          "flaky_tests_detected": 0
+        },
+        "chaos_testing": {"status": "pending"},
         "review": {"status": "pending"},
         "validation": {"status": "pending"}
       },
@@ -625,7 +658,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             "gaps": []
           }
         },
-        "ring:sre": {
+        "sre": {
           "agent": "ring:sre",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
@@ -641,8 +674,9 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             "gaps": []
           }
         },
-        "testing": {
+        "unit_testing": {
           "agent": "ring:qa-analyst",
+          "test_mode": "unit",
           "output": "## Summary\n...",
           "verdict": "PASS",
           "coverage_actual": 87.5,
@@ -655,6 +689,78 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           "standards_compliance": {
             "total_sections": 6,
             "compliant": 6,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
+        "fuzz_testing": {
+          "agent": "ring:qa-analyst",
+          "test_mode": "fuzz",
+          "output": "## Summary\n...",
+          "verdict": "PASS",
+          "corpus_entries": 5,
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "standards_compliance": {
+            "total_sections": 5,
+            "compliant": 5,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
+        "property_testing": {
+          "agent": "ring:qa-analyst",
+          "test_mode": "property",
+          "output": "## Summary\n...",
+          "verdict": "PASS",
+          "properties_tested": 3,
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "standards_compliance": {
+            "total_sections": 5,
+            "compliant": 5,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
+        "integration_testing": {
+          "agent": "ring:qa-analyst",
+          "test_mode": "integration",
+          "output": "## Summary\n...",
+          "verdict": "PASS",
+          "scenarios_tested": 5,
+          "tests_passed": 5,
+          "tests_failed": 0,
+          "flaky_tests_detected": 0,
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "standards_compliance": {
+            "total_sections": 10,
+            "compliant": 10,
+            "not_applicable": 0,
+            "non_compliant": 0,
+            "gaps": []
+          }
+        },
+        "chaos_testing": {
+          "agent": "ring:qa-analyst",
+          "test_mode": "chaos",
+          "output": "## Summary\n...",
+          "verdict": "PASS",
+          "failure_scenarios_tested": 4,
+          "recovery_verified": true,
+          "iterations": 1,
+          "timestamp": "ISO timestamp",
+          "duration_ms": 0,
+          "standards_compliance": {
+            "total_sections": 5,
+            "compliant": 5,
             "not_applicable": 0,
             "non_compliant": 0,
             "gaps": []
@@ -802,8 +908,12 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
 | Gate 0 (Implementation) | `standards_compliance` (total, compliant, gaps[]) |
 | Gate 1 (DevOps) | `standards_compliance` + `verification_errors[]` |
 | Gate 2 (SRE) | `standards_compliance` + `validation_errors[]` |
-| Gate 3 (Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
-| Gate 4 (Review) | `standards_compliance` per reviewer + `issues[]` per reviewer |
+| Gate 3 (Unit Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
+| Gate 4 (Fuzz Testing) | `standards_compliance` + `corpus_entries` |
+| Gate 5 (Property Testing) | `standards_compliance` + `properties_tested` |
+| Gate 6 (Integration Testing) | `standards_compliance` + `scenarios_tested` + `tests_passed` + `tests_failed` + `flaky_tests_detected` |
+| Gate 7 (Chaos Testing) | `standards_compliance` + `failure_scenarios_tested` + `recovery_verified` |
+| Gate 8 (Review) | `standards_compliance` per reviewer + `issues[]` per reviewer |
 
 **All gates track `standards_compliance`:**
 - `total_sections`: Count from agent's standards file (via standards-coverage-table.md)
@@ -847,12 +957,16 @@ Read tool:
 | Gate 0.1 (TDD-RED) | `tdd_red.status`, `tdd_red.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | `tdd_green.status`, `implementation.status` | ✅ YES |
 | Gate 1 (DevOps) | `devops.status`, `agent_outputs.devops` | ✅ YES |
-| Gate 2 (SRE) | `ring:sre.status`, `agent_outputs.ring:sre` | ✅ YES |
-| Gate 3 (Testing) | `testing.status`, `agent_outputs.testing` | ✅ YES |
-| Gate 4 (Review) | `review.status`, `agent_outputs.review` | ✅ YES |
-| Gate 5 (Validation) | `validation.status`, task `status` | ✅ YES |
-| Step 7.1 (Unit Approval) | `status = "paused_for_approval"` | ✅ YES |
-| Step 7.2 (Task Approval) | `status = "paused_for_task_approval"` | ✅ YES |
+| Gate 2 (SRE) | `sre.status`, `agent_outputs.sre` | ✅ YES |
+| Gate 3 (Unit Testing) | `unit_testing.status`, `agent_outputs.unit_testing` | ✅ YES |
+| Gate 4 (Fuzz Testing) | `fuzz_testing.status`, `agent_outputs.fuzz_testing` | ✅ YES |
+| Gate 5 (Property Testing) | `property_testing.status`, `agent_outputs.property_testing` | ✅ YES |
+| Gate 6 (Integration Testing) | `integration_testing.status`, `agent_outputs.integration_testing` | ✅ YES |
+| Gate 7 (Chaos Testing) | `chaos_testing.status`, `agent_outputs.chaos_testing` | ✅ YES |
+| Gate 8 (Review) | `review.status`, `agent_outputs.review` | ✅ YES |
+| Gate 9 (Validation) | `validation.status`, task `status` | ✅ YES |
+| Step 11.1 (Unit Approval) | `status = "paused_for_approval"` | ✅ YES |
+| Step 11.2 (Task Approval) | `status = "paused_for_task_approval"` | ✅ YES |
 
 ### Anti-Rationalization for State Persistence
 
@@ -1551,9 +1665,9 @@ Task tool:
 
 | Status | Action |
 |--------|--------|
-| `paused_for_approval` | Re-present Step 7.1 checkpoint |
+| `paused_for_approval` | Re-present Step 11.1 checkpoint |
 | `paused_for_testing` | Ask if testing complete → continue or keep paused |
-| `paused_for_task_approval` | Re-present Step 7.2 checkpoint |
+| `paused_for_task_approval` | Re-present Step 11.2 checkpoint |
 | `paused_for_integration_testing` | Ask if integration testing complete |
 | `paused` (generic) | Ask user to confirm resume |
 | `in_progress` | Resume from current gate |
@@ -2002,9 +2116,9 @@ devops_input = {
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-ring:sre`
+**REQUIRED SUB-SKILL:** Use `ring:dev-sre`
 
-### Step 4.1: Prepare Input for ring:dev-ring:sre Skill
+### Step 4.1: Prepare Input for ring:dev-sre Skill
 
 ```text
 Gather from previous gates:
@@ -2026,14 +2140,14 @@ sre_input = {
 }
 ```
 
-### Step 4.2: Invoke ring:dev-ring:sre Skill
+### Step 4.2: Invoke ring:dev-sre Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-ring:sre skill with structured input:
+2. Invoke ring:dev-sre skill with structured input:
 
-   Skill("ring:dev-ring:sre") with input:
+   Skill("ring:dev-sre") with input:
      unit_id: sre_input.unit_id
      language: sre_input.language
      service_type: sre_input.service_type
@@ -2076,15 +2190,15 @@ sre_input = {
 ### Step 4.3: Gate 2 Complete
 
 ```text
-5. When ring:dev-ring:sre skill returns PASS:
+5. When ring:dev-sre skill returns PASS:
    
    Parse from skill output:
    - status: extract from "## Validation Result"
    - instrumentation_coverage: extract percentage from coverage table
    - iterations: extract from "Iterations:" line
    
-   - agent_outputs.ring:sre = {
-       skill: "ring:dev-ring:sre",
+   - agent_outputs.sre = {
+       skill: "ring:dev-sre",
        output: "[full skill output]",
        validation_result: "PASS",
        instrumentation_coverage: "[X%]",
@@ -2094,16 +2208,16 @@ sre_input = {
      }
 
 6. Update state:
-   - gate_progress.ring:sre.status = "completed"
-   - gate_progress.ring:sre.observability_validated = true
-   - gate_progress.ring:sre.instrumentation_coverage = "[X%]"
+   - gate_progress.sre.status = "completed"
+   - gate_progress.sre.observability_validated = true
+   - gate_progress.sre.instrumentation_coverage = "[X%]"
 
 7. Proceed to Gate 3
 ```
 
 ### Gate 2 Anti-Rationalization Table
 
-See [ring:dev-ring:sre/SKILL.md](../dev-ring:sre/SKILL.md) for complete anti-rationalization tables covering:
+See [ring:dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalization tables covering:
 - Observability deferral rationalizations
 - Instrumentation coverage rationalizations
 - Context propagation rationalizations
@@ -2112,15 +2226,15 @@ See [ring:dev-ring:sre/SKILL.md](../dev-ring:sre/SKILL.md) for complete anti-rat
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking ring:dev-ring:sre skill now." |
-| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. ring:dev-ring:sre skill handles fix dispatch and re-validation." |
-| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. ring:dev-ring:sre skill will not pass until met." |
+| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking ring:dev-sre skill now." |
+| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. ring:dev-sre skill handles fix dispatch and re-validation." |
+| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. ring:dev-sre skill will not pass until met." |
 
-## Step 5: Gate 3 - Testing (Per Execution Unit)
+## Step 5: Gate 3 - Unit Testing (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-testing`
+**REQUIRED SUB-SKILL:** Use `ring:dev-unit-testing`
 
-### Step 5.1: Prepare Input for ring:dev-testing Skill
+### Step 5.1: Prepare Input for ring:dev-unit-testing Skill
 
 ```text
 Gather from previous gates:
@@ -2139,14 +2253,14 @@ testing_input = {
 }
 ```
 
-### Step 5.2: Invoke ring:dev-testing Skill
+### Step 5.2: Invoke ring:dev-unit-testing Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-testing skill with structured input:
+2. Invoke ring:dev-unit-testing skill with structured input:
 
-   Skill("ring:dev-testing") with input:
+   Skill("ring:dev-unit-testing") with input:
      unit_id: testing_input.unit_id
      acceptance_criteria: testing_input.acceptance_criteria
      implementation_files: testing_input.implementation_files
@@ -2171,10 +2285,10 @@ testing_input = {
    - "## Traceability Matrix" → AC-to-test mapping
    - "## Handoff to Next Gate" → ready_for_review: YES/no
    
-   if skill output contains "Status: PASS" and "Ready for Gate 4: YES":
+   if skill output contains "Status: PASS" and "Ready for Next Gate: YES":
      → Gate 3 PASSED. Proceed to Step 5.3.
-   
-   if skill output contains "Status: FAIL" or "Ready for Gate 4: no":
+
+   if skill output contains "Status: FAIL" or "Ready for Next Gate: NO":
      → Gate 3 BLOCKED.
      → Skill already dispatched fixes to implementation agent
      → Skill already re-ran coverage check
@@ -2187,7 +2301,7 @@ testing_input = {
 ### Step 5.3: Gate 3 Complete
 
 ```text
-5. When ring:dev-testing skill returns PASS:
+5. When ring:dev-unit-testing skill returns PASS:
    
    Parse from skill output:
    - coverage_actual: extract percentage from "## Coverage Report"
@@ -2196,7 +2310,7 @@ testing_input = {
    - iterations: extract from "Iterations:" line
    
    - agent_outputs.testing = {
-       skill: "ring:dev-testing",
+       skill: "ring:dev-unit-testing",
        output: "[full skill output]",
        verdict: "PASS",
        coverage_actual: [X%],
@@ -2240,7 +2354,7 @@ testing_input = {
    - gate_progress.testing.status = "completed"
    - gate_progress.testing.coverage = [coverage_actual]
 
-7. Proceed to Gate 4
+7. Proceed to Gate 4 (Fuzz Testing)
 ```
 
 ### Gate 3 Thresholds
@@ -2253,15 +2367,338 @@ testing_input = {
 
 | User Says | Your Response |
 |-----------|---------------|
-| "84% is close enough" | "85% is Ring minimum. ring:dev-testing skill enforces this." |
-| "Skip testing, deadline" | "Testing is MANDATORY. ring:dev-testing skill handles iterations." |
-| "Manual testing covers it" | "Gate 3 requires executable unit tests. Invoking ring:dev-testing now." |
+| "84% is close enough" | "85% is Ring minimum. ring:dev-unit-testing skill enforces this." |
+| "Skip testing, deadline" | "Testing is MANDATORY. ring:dev-unit-testing skill handles iterations." |
+| "Manual testing covers it" | "Gate 3 requires executable unit tests. Invoking ring:dev-unit-testing now." |
 
-## Step 6: Gate 4 - Review (Per Execution Unit)
+## Step 6: Gate 4 - Fuzz Testing (Per Execution Unit)
+
+**REQUIRED SUB-SKILL:** Use `ring:dev-fuzz-testing`
+
+**MANDATORY GATE:** All code paths MUST have fuzz tests to discover edge cases and crashes.
+
+### Step 6.1: Prepare Input for ring:dev-fuzz-testing Skill
+
+```text
+Gather from previous gates:
+
+fuzz_testing_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  implementation_files: agent_outputs.implementation.files_changed,
+  language: state.current_unit.language,  // "go" | "typescript"
+
+  // OPTIONAL - additional context
+  gate3_handoff: agent_outputs.unit_testing  // full Gate 3 output
+}
+```
+
+### Step 6.2: Invoke ring:dev-fuzz-testing Skill
+
+```text
+1. Record gate start timestamp
+
+2. Invoke ring:dev-fuzz-testing skill with structured input:
+
+   Skill("ring:dev-fuzz-testing") with input:
+     unit_id: fuzz_testing_input.unit_id
+     implementation_files: fuzz_testing_input.implementation_files
+     language: fuzz_testing_input.language
+     gate3_handoff: fuzz_testing_input.gate3_handoff
+
+   The skill handles:
+   - Dispatching ring:qa-analyst agent (test_mode: fuzz)
+   - Fuzz function creation (FuzzXxx naming)
+   - Seed corpus generation (minimum 5 entries)
+   - f.Add() pattern validation
+   - Dispatching fixes if crashes found
+   - Re-validation loop (max 3 iterations)
+
+3. Parse skill output for results:
+
+   if skill output contains "Status: PASS":
+     → Gate 4 PASSED. Proceed to Gate 5.
+
+   if skill output contains "Status: FAIL":
+     → Gate 4 BLOCKED.
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 6.3: Gate 4 Complete
+
+```text
+5. Update state:
+   - gate_progress.fuzz_testing.status = "completed"
+   - gate_progress.fuzz_testing.corpus_entries = [count]
+
+6. Proceed to Gate 5 (Property Testing)
+```
+
+---
+
+## Step 7: Gate 5 - Property-Based Testing (Per Execution Unit)
+
+**REQUIRED SUB-SKILL:** Use `ring:dev-property-testing`
+
+**MANDATORY GATE:** Domain invariants MUST be verified with property-based tests.
+
+### Step 7.1: Prepare Input for ring:dev-property-testing Skill
+
+```text
+Gather from previous gates:
+
+property_testing_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  implementation_files: agent_outputs.implementation.files_changed,
+  language: state.current_unit.language,
+
+  // Domain invariants from requirements
+  domain_invariants: state.current_unit.domain_invariants || []
+}
+```
+
+### Step 7.2: Invoke ring:dev-property-testing Skill
+
+```text
+1. Record gate start timestamp
+
+2. Invoke ring:dev-property-testing skill with structured input:
+
+   Skill("ring:dev-property-testing") with input:
+     unit_id: property_testing_input.unit_id
+     implementation_files: property_testing_input.implementation_files
+     language: property_testing_input.language
+     domain_invariants: property_testing_input.domain_invariants
+
+   The skill handles:
+   - Dispatching ring:qa-analyst agent (test_mode: property)
+   - Property function creation (TestProperty_* naming)
+   - quick.Check pattern validation
+   - Invariant verification
+   - Dispatching fixes if properties fail
+   - Re-validation loop (max 3 iterations)
+
+3. Parse skill output for results:
+
+   if skill output contains "Status: PASS":
+     → Gate 5 PASSED. Proceed to Gate 6.
+
+   if skill output contains "Status: FAIL":
+     → Gate 5 BLOCKED.
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 7.3: Gate 5 Complete
+
+```text
+5. Update state:
+   - gate_progress.property_testing.status = "completed"
+   - gate_progress.property_testing.properties_tested = [count]
+
+6. Proceed to Gate 6 (Integration Testing)
+```
+
+---
+
+## Step 8: Gate 6 - Integration Testing (Per Execution Unit)
+
+**REQUIRED SUB-SKILL:** Use `ring:dev-integration-testing`
+
+**MANDATORY GATE:** All code MUST have integration tests using testcontainers.
+
+### Step 8.1: Prepare Input for ring:dev-integration-testing Skill
+
+```text
+Gather from previous gates:
+
+integration_testing_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  integration_scenarios: state.current_unit.integration_scenarios || [],  // list of scenarios
+  external_dependencies: state.current_unit.external_dependencies || [],  // postgres, redis, rabbitmq
+  language: state.current_unit.language,  // "go" | "typescript"
+
+  // OPTIONAL - additional context
+  gate5_handoff: agent_outputs.property_testing,  // full Gate 5 output
+  implementation_files: agent_outputs.implementation.files_changed
+}
+```
+
+### Step 8.2: Invoke ring:dev-integration-testing Skill
+
+```text
+1. Record gate start timestamp
+
+2. Invoke ring:dev-integration-testing skill with structured input:
+
+   Skill("ring:dev-integration-testing") with input:
+     unit_id: integration_testing_input.unit_id
+     integration_scenarios: integration_testing_input.integration_scenarios
+     external_dependencies: integration_testing_input.external_dependencies
+     language: integration_testing_input.language
+     gate5_handoff: integration_testing_input.gate5_handoff
+     implementation_files: integration_testing_input.implementation_files
+
+   The skill handles:
+   - Dispatching ring:qa-analyst agent (test_mode: integration)
+   - Integration test creation using testcontainers
+   - Quality gate validation (build tags, no hardcoded ports, etc.)
+   - Scenario coverage verification
+   - Dispatching fixes to implementation agent if issues found
+   - Re-validation loop (max 3 iterations)
+
+3. Parse skill output for results:
+
+   Expected output sections:
+   - "## Integration Testing Summary" → status, iterations
+   - "## Scenario Coverage" → IS-to-test mapping
+   - "## Quality Gate Results" → build tags, testcontainers, etc.
+   - "## Handoff to Next Gate" → ready_for_review: YES/NO
+
+   if skill output contains "Status: PASS":
+     → Gate 6 PASSED. Proceed to Step 8.3.
+
+   if skill output contains "Status: FAIL":
+     → Gate 6 BLOCKED.
+     → Skill already dispatched fixes to implementation agent
+     → Skill already re-ran tests
+     → If "ESCALATION" in output: STOP and report to user
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 8.3: Gate 6 Complete
+
+```text
+5. When ring:dev-integration-testing skill returns PASS:
+
+   Parse from skill output:
+   - scenarios_tested: extract count from "## Integration Testing Summary"
+   - tests_passed: extract from "## Integration Testing Summary"
+   - tests_failed: extract from "## Integration Testing Summary"
+   - iterations: extract from "Iterations:" line
+
+   - agent_outputs.integration_testing = {
+       skill: "ring:dev-integration-testing",
+       output: "[full skill output]",
+       verdict: "PASS",
+       scenarios_tested: [count],
+       tests_passed: [count],
+       tests_failed: 0,
+       flaky_tests_detected: 0,
+       iterations: [count],
+       timestamp: "[ISO timestamp]",
+       duration_ms: [execution time]
+     }
+
+6. Update state:
+   - gate_progress.integration_testing.status = "completed"
+   - gate_progress.integration_testing.scenarios_tested = [count]
+   - gate_progress.integration_testing.tests_passed = [count]
+
+7. Proceed to Gate 7 (Chaos Testing)
+```
+
+### Gate 6 Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Unit tests cover integration" | "Unit tests mock dependencies. Integration tests verify real behavior. Both required." |
+| "Testcontainers is slow" | "Correctness > speed. Real dependencies catch real bugs." |
+| "CI doesn't have Docker" | "Docker is baseline infrastructure. Fix CI before skipping integration tests." |
+| "No time for integration" | "Integration bugs cost 10x more in production. Testing is non-negotiable." |
+
+---
+
+## Step 9: Gate 7 - Chaos Testing (Per Execution Unit)
+
+**REQUIRED SUB-SKILL:** Use `ring:dev-chaos-testing`
+
+**MANDATORY GATE:** All external dependencies MUST have chaos tests for failure scenarios.
+
+### Step 9.1: Prepare Input for ring:dev-chaos-testing Skill
+
+```text
+Gather from previous gates:
+
+chaos_testing_input = {
+  // REQUIRED - from current execution unit
+  unit_id: state.current_unit.id,
+  external_dependencies: state.current_unit.external_dependencies || [],
+  language: state.current_unit.language,
+
+  // OPTIONAL - additional context
+  gate6_handoff: agent_outputs.integration_testing
+}
+```
+
+### Step 9.2: Invoke ring:dev-chaos-testing Skill
+
+```text
+1. Record gate start timestamp
+
+2. Invoke ring:dev-chaos-testing skill with structured input:
+
+   Skill("ring:dev-chaos-testing") with input:
+     unit_id: chaos_testing_input.unit_id
+     external_dependencies: chaos_testing_input.external_dependencies
+     language: chaos_testing_input.language
+     gate6_handoff: chaos_testing_input.gate6_handoff
+
+   The skill handles:
+   - Dispatching ring:qa-analyst agent (test_mode: chaos)
+   - Toxiproxy setup and configuration
+   - Dual-gate pattern (CHAOS=1 + testing.Short())
+   - Failure scenario coverage (connection loss, latency, partition)
+   - Recovery verification
+   - Dispatching fixes if failures not handled gracefully
+   - Re-validation loop (max 3 iterations)
+
+3. Parse skill output for results:
+
+   if skill output contains "Status: PASS":
+     → Gate 7 PASSED. Proceed to Gate 8.
+
+   if skill output contains "Status: FAIL":
+     → Gate 7 BLOCKED.
+
+4. **⛔ SAVE STATE TO FILE (MANDATORY):**
+   Write tool → [state.state_path]
+```
+
+### Step 9.3: Gate 7 Complete
+
+```text
+5. Update state:
+   - gate_progress.chaos_testing.status = "completed"
+   - gate_progress.chaos_testing.failure_scenarios_tested = [count]
+   - gate_progress.chaos_testing.recovery_verified = true
+
+6. Proceed to Gate 8 (Review)
+```
+
+### Gate 7 Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Chaos testing is overkill" | "Chaos tests verify graceful degradation. Production failures are inevitable." |
+| "Our infrastructure is reliable" | "All infrastructure fails. Chaos testing ensures your code handles it." |
+| "Toxiproxy setup is complex" | "One container, 20 minutes setup. Prevents production incidents." |
+| "No time for chaos testing" | "Chaos testing is MANDATORY. All external dependencies need failure tests." |
+
+---
+
+## Step 10: Gate 8 - Review (Per Execution Unit)
 
 **REQUIRED SUB-SKILL:** Use `ring:requesting-code-review`
 
-### Step 6.1: Prepare Input for ring:requesting-code-review Skill
+### Step 10.1: Prepare Input for ring:requesting-code-review Skill
 
 ```text
 Gather from previous gates:
@@ -2280,7 +2717,7 @@ review_input = {
 }
 ```
 
-### Step 6.2: Invoke ring:requesting-code-review Skill
+### Step 10.2: Invoke ring:requesting-code-review Skill
 
 ```text
 1. Record gate start timestamp
@@ -2297,10 +2734,11 @@ review_input = {
      gate0_handoff: review_input.gate0_handoff
 
    The skill handles:
-   - Dispatching all 3 reviewers in PARALLEL (single message with 3 Task calls)
+   - Dispatching all 5 reviewers in PARALLEL (single message with 5 Task calls)
+   - ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer
    - Aggregating issues by severity (CRITICAL/HIGH/MEDIUM/LOW/COSMETIC)
    - Dispatching fixes to implementation agent for blocking issues
-   - Re-running all 3 reviewers after fixes
+   - Re-running all 5 reviewers after fixes
    - Iteration tracking (max 3 attempts)
    - Adding TODO/FIXME comments for non-blocking issues
 
@@ -2309,41 +2747,41 @@ review_input = {
    Expected output sections:
    - "## Review Summary" → status, iterations
    - "## Issues by Severity" → counts per severity level
-   - "## Reviewer Verdicts" → ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer
-   - "## Handoff to Next Gate" → ready_for_validation: YES/no
-   
-   if skill output contains "Status: PASS" and "Ready for Gate 5: YES":
-     → Gate 4 PASSED. Proceed to Step 6.3.
-   
-   if skill output contains "Status: FAIL" or "Ready for Gate 5: no":
-     → Gate 4 BLOCKED.
+   - "## Reviewer Verdicts" → all 5 reviewers
+   - "## Handoff to Next Gate" → ready_for_validation: YES/NO
+
+   if skill output contains "Status: PASS" and "Ready for Gate 9: YES":
+     → Gate 8 PASSED. Proceed to Step 10.3.
+
+   if skill output contains "Status: FAIL" or "Ready for Gate 9: NO":
+     → Gate 8 BLOCKED.
      → Skill already dispatched fixes to implementation agent
-     → Skill already re-ran all 3 reviewers
+     → Skill already re-ran all 5 reviewers
      → If "ESCALATION" in output: STOP and report to user
 
 4. **⛔ SAVE STATE TO FILE (MANDATORY):**
    Write tool → [state.state_path]
 ```
 
-### Step 6.3: Gate 4 Complete
+### Step 10.3: Gate 8 Complete
 
 ```text
 5. When ring:requesting-code-review skill returns PASS:
-   
+
    Parse from skill output:
-   - reviewers_passed: extract from "## Reviewer Verdicts" (should be "3/3")
+   - reviewers_passed: extract from "## Reviewer Verdicts" (should be "5/5")
    - issues_critical: extract count from "## Issues by Severity"
    - issues_high: extract count from "## Issues by Severity"
    - issues_medium: extract count from "## Issues by Severity"
    - iterations: extract from "Iterations:" line
-   
+
    - agent_outputs.review = {
        skill: "ring:requesting-code-review",
        output: "[full skill output]",
        iterations: [count],
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time],
-       reviewers_passed: "3/3",
+       reviewers_passed: "5/5",
        code_reviewer: {
          verdict: "PASS",
          issues_count: N,
@@ -2355,6 +2793,16 @@ review_input = {
          issues: []
        },
        security_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       nil_safety_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       test_reviewer: {
          verdict: "PASS",
          issues_count: N,
          issues: []
@@ -2386,35 +2834,37 @@ review_input = {
 
 6. Update state:
    - gate_progress.review.status = "completed"
-   - gate_progress.review.reviewers_passed = "3/3"
+   - gate_progress.review.reviewers_passed = "5/5"
 
-7. Proceed to Gate 5
+7. Proceed to Gate 9
 ```
 
-### Gate 4 Anti-Rationalization Table
+### Gate 8 Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Only 1 MEDIUM issue, can proceed" | MEDIUM = MUST FIX. Quantity is irrelevant. | **Fix the issue, re-run all reviewers** |
-| "Issue is cosmetic, not really MEDIUM" | Reviewer decided severity. Accept their judgment. | **Fix the issue, re-run all reviewers** |
-| "Will fix in next sprint" | Deferred fixes = technical debt = production bugs. | **Fix NOW before Gate 5** |
-| "User approved, can skip fix" | User approval ≠ reviewer override. Fixes are mandatory. | **Fix the issue, re-run all reviewers** |
+| "Only 1 MEDIUM issue, can proceed" | MEDIUM = MUST FIX. Quantity is irrelevant. | **Fix the issue, re-run all 5 reviewers** |
+| "Issue is cosmetic, not really MEDIUM" | Reviewer decided severity. Accept their judgment. | **Fix the issue, re-run all 5 reviewers** |
+| "Will fix in next sprint" | Deferred fixes = technical debt = production bugs. | **Fix NOW before Gate 9** |
+| "User approved, can skip fix" | User approval ≠ reviewer override. Fixes are mandatory. | **Fix the issue, re-run all 5 reviewers** |
 | "Same issue keeps appearing, skip it" | Recurring issue = fix is wrong. Debug properly. | **Root cause analysis, then fix** |
-| "Only security reviewer found it" | One reviewer = valid finding. All findings matter. | **Fix the issue, re-run all reviewers** |
+| "Only one reviewer found it" | One reviewer = valid finding. All findings matter. | **Fix the issue, re-run all 5 reviewers** |
 | "Iteration limit reached, just proceed" | Limit = escalate, not bypass. Quality is non-negotiable. | **Escalate to user, DO NOT proceed** |
-| "Tests pass, review issues don't matter" | Tests ≠ review. Different quality dimensions. | **Fix the issue, re-run all reviewers** |
+| "Tests pass, review issues don't matter" | Tests ≠ review. Different quality dimensions. | **Fix the issue, re-run all 5 reviewers** |
 
-### Gate 4 Pressure Resistance
+### Gate 8 Pressure Resistance
 
 | User Says | Your Response |
 |-----------|---------------|
 | "Just skip this MEDIUM issue" | "MEDIUM severity issues are blocking by definition. I MUST dispatch a fix to the appropriate agent before proceeding. This protects code quality." |
-| "I'll fix it later, let's continue" | "Gate 4 is a HARD GATE. All CRITICAL/HIGH/MEDIUM issues must be resolved NOW. I'm dispatching the fix to [agent] and will re-run reviewers after." |
+| "I'll fix it later, let's continue" | "Gate 8 is a HARD GATE. All CRITICAL/HIGH/MEDIUM issues must be resolved NOW. I'm dispatching the fix to [agent] and will re-run all 5 reviewers after." |
 | "We're running out of time" | "Proceeding with known issues creates larger problems later. The fix dispatch is automated and typically takes 2-5 minutes. Quality gates exist to save time overall." |
 | "Override the gate, I approve" | "User approval cannot override reviewer findings. The gate ensures code quality. I'll dispatch the fix now." |
 | "It's just a style issue" | "If it's truly cosmetic, reviewers would mark it COSMETIC (non-blocking). MEDIUM means it affects maintainability or correctness. Fixing now." |
 
-## Step 7: Gate 5 - Validation (Per Execution Unit)
+---
+
+## Step 11: Gate 9 - Validation (Per Execution Unit)
 
 ```text
 For current execution unit:
@@ -2444,10 +2894,10 @@ For current execution unit:
        timestamp: "[ISO timestamp]",
        criteria_results: [{criterion, status}]
      }
-   - Proceed to Step 7.1 (Execution Unit Approval)
+   - Proceed to Step 11.1 (Execution Unit Approval)
 ```
 
-## Step 7.1: Execution Unit Approval (Conditional)
+## Step 11.1: Execution Unit Approval (Conditional)
 
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` → Execute | `manual_per_task` / `automatic` → Skip
 
@@ -2458,17 +2908,17 @@ For current execution unit:
    - else: Skip commit (will happen at task or cycle end)
 
 1. Set `status = "paused_for_approval"`, save state
-2. Present summary: Unit ID, Parent Task, Gates 0-5 status, Criteria X/X, Duration, Files Changed, Commit Status
+2. Present summary: Unit ID, Parent Task, Gates 0-9 status, Criteria X/X, Duration, Files Changed, Commit Status
 3. **AskUserQuestion:** "Ready to proceed?" Options: (a) Continue (b) Test First (c) Stop Here
 4. **Handle response:**
 
 | Response | Action |
 |----------|--------|
-| Continue | Set in_progress, move to next unit (or Step 7.2 if last) |
+| Continue | Set in_progress, move to next unit (or Step 11.2 if last) |
 | Test First | Set `paused_for_testing`, STOP, output resume command |
 | Stop Here | Set `paused`, STOP, output resume command |
 
-## Step 7.2: Task Approval Checkpoint (Conditional)
+## Step 11.2: Task Approval Checkpoint (Conditional)
 
 **Checkpoint depends on `execution_mode`:** `manual_per_subtask` / `manual_per_task` → Execute | `automatic` → Skip
 
@@ -2606,7 +3056,7 @@ After completing all subtasks of a task:
 
 **Note:** Tasks without subtasks execute both 7.1 and 7.2 in sequence.
 
-## Step 8: Cycle Completion
+## Step 12: Cycle Completion
 
 0. **FINAL COMMIT CHECK (before completion):**
    - if `commit_timing == "at_end"`:

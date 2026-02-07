@@ -1,8 +1,8 @@
 # Go Standards - API Patterns
 
-> **Module:** api-patterns.md | **Sections:** §17-19 | **Parent:** [index.md](index.md)
+> **Module:** api-patterns.md | **Sections:** §17-21 | **Parent:** [index.md](index.md)
 
-This module covers API naming conventions, pagination patterns, and OpenAPI documentation.
+This module covers API naming conventions, pagination patterns, HTTP status codes, OpenAPI documentation, and handler initialization patterns.
 
 ---
 
@@ -12,7 +12,10 @@ This module covers API naming conventions, pagination patterns, and OpenAPI docu
 |---|---------|-------------|
 | 1 | [JSON Naming Convention (camelCase)](#json-naming-convention-camelcase-mandatory) | API response field naming |
 | 2 | [Pagination Patterns](#pagination-patterns) | Cursor-based and page-based pagination implementation |
-| 3 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
+| 3 | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory) | 201 for creation, 200 for update |
+| 4 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
+| 5 | [Handler Constructor Pattern](#handler-constructor-pattern-mandatory) | Dependency injection via constructor |
+| 6 | [Input Validation](#input-validation-mandatory) | Request validation at API boundary |
 
 ---
 
@@ -477,6 +480,110 @@ Use when: Client needs total count for pagination UI (showing "Page 1 of 10")
 
 ---
 
+## HTTP Status Code Consistency (MANDATORY)
+
+Swagger annotations with inconsistent response codes (using 200 OK for resource creation instead of 201 Created) break API contracts and client expectations.
+
+**⛔ HARD GATE:** HTTP status codes MUST match the operation semantics. Using incorrect status codes breaks API contracts and client expectations.
+
+### Status Code Rules
+
+| Operation | HTTP Method | ✅ Correct Status | ❌ Wrong Status | Description |
+|-----------|-------------|-------------------|-----------------|-------------|
+| Create resource | POST | `201 Created` | 200 OK | New resource created |
+| Update resource | PUT/PATCH | `200 OK` | 201 Created | Existing resource modified |
+| Delete resource | DELETE | `204 No Content` | 200 OK | Resource removed |
+| Get resource | GET | `200 OK` | - | Resource retrieved |
+| List resources | GET | `200 OK` | - | Collection retrieved |
+| Action endpoint | POST | `200 OK` or `202 Accepted` | 201 Created | Action performed (no resource created) |
+
+### Correct Swagger Annotations
+
+```go
+// ✅ CORRECT: 201 Created for POST that creates a resource
+// @Summary      Create a new user
+// @Success      201            {object}  mmodel.User  "Successfully created user"
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    // ... create user ...
+    return libHTTP.Created(c, user)  // Returns 201
+}
+
+// ✅ CORRECT: 200 OK for PUT that updates a resource
+// @Summary      Update user
+// @Success      200            {object}  mmodel.User  "Successfully updated user"
+// @Router       /v1/users/{id} [put]
+func (h *Handler) UpdateUser(c *fiber.Ctx) error {
+    // ... update user ...
+    return libHTTP.OK(c, user)  // Returns 200
+}
+
+// ✅ CORRECT: 204 No Content for DELETE
+// @Summary      Delete user
+// @Success      204            "Successfully deleted user"
+// @Router       /v1/users/{id} [delete]
+func (h *Handler) DeleteUser(c *fiber.Ctx) error {
+    // ... delete user ...
+    return libHTTP.NoContent(c)  // Returns 204
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: 200 OK for resource creation
+// @Summary      Create a new user
+// @Success      200            {object}  mmodel.User  "Successfully created user"  // WRONG: Should be 201
+// @Router       /v1/users [post]
+
+// ❌ FORBIDDEN: 201 Created for update
+// @Summary      Update user
+// @Success      201            {object}  mmodel.User  "Successfully updated user"  // WRONG: Should be 200
+// @Router       /v1/users/{id} [put]
+
+// ❌ FORBIDDEN: Mismatched annotation and implementation
+// @Success      201            {object}  mmodel.User
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    return libHTTP.OK(c, user)  // WRONG: Returns 200, annotation says 201
+}
+```
+
+### lib-commons Response Methods
+
+| Method | Status Code | Use For |
+|--------|-------------|---------|
+| `libHTTP.Created(c, data)` | 201 | POST creating a new resource |
+| `libHTTP.OK(c, data)` | 200 | GET, PUT, PATCH, action POSTs |
+| `libHTTP.NoContent(c)` | 204 | DELETE, successful operations without body |
+| `libHTTP.Accepted(c, data)` | 202 | Async operations (will be processed later) |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with API changes
+# Find 200 OK used for POST creation endpoints
+grep -B 10 "@Router.*\[post\]" internal/adapters/http/in/*.go | grep "@Success.*200"
+
+# Find 201 Created used for PUT/PATCH endpoints (use -E for alternation)
+grep -E -B 10 "@Router.*\[(put|patch)\]" internal/adapters/http/in/*.go | grep "@Success.*201"
+
+# Expected: Both commands return 0 matches
+# If matches found: Fix annotation to use correct status code
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "200 OK is simpler" | Clients expect 201 for creation. Breaking convention breaks clients. | **Use 201 for POST creation** |
+| "Both mean success" | Different semantics: 201 = created, 200 = retrieved/updated. | **Use correct code for operation** |
+| "Frontend ignores status" | Frontend SHOULD check status. API MUST be correct. | **Use correct status code** |
+| "OpenAPI just documents" | OpenAPI is a contract. Wrong docs = broken contract. | **Match annotation to implementation** |
+| "We've always used 200" | Legacy is not justification. Fix during maintenance. | **Correct when modifying endpoint** |
+
+---
+
 ## OpenAPI Documentation (Swaggo) (MANDATORY)
 
 **HARD GATE:** All API documentation MUST be generated from code annotations using swaggo. Editing generated files directly is FORBIDDEN.
@@ -715,3 +822,353 @@ make generate-docs && git diff --exit-code api/
 
 ---
 
+## Handler Constructor Pattern (MANDATORY)
+
+Handlers with implicit dependencies make testing difficult and hide coupling. Direct struct initialization bypasses validation.
+
+**⛔ HARD GATE:** All HTTP handlers MUST use constructor functions for initialization. Direct struct initialization is FORBIDDEN.
+
+### Why Constructor Pattern Is MANDATORY
+
+| Problem | Without Constructor | With Constructor |
+|---------|---------------------|------------------|
+| Dependency visibility | Hidden in struct | Explicit in signature |
+| Nil checks | Scattered in methods | Single place in constructor |
+| Testing | Mock injection difficult | Clean dependency injection |
+| Compilation safety | Runtime nil panics | Compile-time errors |
+
+### Handler Constructor Pattern
+
+```go
+// internal/adapters/http/in/user_handler.go
+
+// Handler struct holds dependencies (private fields)
+type UserHandler struct {
+    command *command.UseCase
+    query   *query.UseCase
+    logger  libLog.Logger
+}
+
+// NewUserHandler creates a handler with validated dependencies
+// MANDATORY: Constructor validates all dependencies; returns error instead of panicking
+func NewUserHandler(cmd *command.UseCase, qry *query.UseCase, logger libLog.Logger) (*UserHandler, error) {
+    if cmd == nil {
+        return nil, fmt.Errorf("command use case is required")
+    }
+    if qry == nil {
+        return nil, fmt.Errorf("query use case is required")
+    }
+    if logger == nil {
+        return nil, fmt.Errorf("logger is required")
+    }
+
+    return &UserHandler{
+        command: cmd,
+        query:   qry,
+        logger:  logger,
+    }, nil
+}
+
+// Handler methods use injected dependencies
+func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
+    // h.command, h.query, h.logger are guaranteed non-nil
+    // ...
+}
+```
+
+### Bootstrap Integration (REQUIRED)
+
+```go
+// internal/bootstrap/config.go
+
+func InitServers() (*Service, error) {
+    // ... initialize dependencies ...
+
+    // CORRECT: Use constructor and handle error
+    userHandler, err := httpin.NewUserHandler(commandUseCase, queryUseCase, logger)
+    if err != nil {
+        return nil, fmt.Errorf("create user handler: %w", err)
+    }
+
+    // Pass handler to router
+    httpApp := httpin.NewRouter(logger, telemetry, userHandler)
+
+    // ...
+    return &Service{httpApp: httpApp}, nil
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Direct struct initialization
+userHandler := &httpin.UserHandler{
+    Command: commandUseCase,  // No validation
+    Query:   queryUseCase,
+    Logger:  logger,
+}
+
+// ❌ FORBIDDEN: Public fields allowing direct access
+type UserHandler struct {
+    Command *command.UseCase  // WRONG: Public field
+    Query   *query.UseCase    // WRONG: Public field
+}
+
+// ❌ FORBIDDEN: Constructor without validation
+func NewUserHandler(cmd *command.UseCase) *UserHandler {
+    return &UserHandler{command: cmd}  // WRONG: No nil check
+}
+
+// ❌ FORBIDDEN: Lazy initialization in handler methods
+func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
+    if h.command == nil {  // WRONG: Should fail at startup, not request time
+        return errors.New("not initialized")
+    }
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that adds/modifies handlers
+# Find handlers without constructor functions
+for f in internal/adapters/http/in/*_handler.go; do
+  handler=$(basename "$f" .go | sed 's/_handler//')
+  if ! grep -q "func New.*Handler" "$f" 2>/dev/null; then
+    echo "MISSING CONSTRUCTOR: $f"
+  fi
+done
+
+# Find direct struct initialization of handlers (potential violation)
+grep -rn "&.*Handler{" internal/bootstrap --include="*.go" | grep -v "New.*Handler"
+
+# Find handlers with public fields (violation)
+grep -rn "type.*Handler struct" internal/adapters/http/in --include="*.go" -A 10 | \
+  grep -E "^\s+[A-Z][a-zA-Z]*\s+\*?[a-zA-Z]+"
+
+# Expected: All handlers have New* constructor, no direct initialization, no public fields
+# If any violation found: STOP. Fix before proceeding.
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Direct initialization is simpler" | Simplicity now = nil panics later. | **Use constructor** |
+| "I'll add validation later" | Later = production incident. Fail fast at startup. | **Add validation in constructor** |
+| "Tests can set fields directly" | Tests should use same constructor as production. | **Use constructor in tests too** |
+| "Handler is small, doesn't need it" | Consistency matters more than size. | **Use constructor for all handlers** |
+| "Public fields are easier to access" | Easier access = easier to corrupt. | **Use private fields + constructor** |
+
+---
+
+## Input Validation (MANDATORY)
+
+**⛔ HARD GATE:** All user input MUST be validated at the API boundary before processing. Trusting user input is FORBIDDEN.
+
+### Defense in Depth Principle
+
+Validate at EVERY layer where data enters the system:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ HTTP Request                                                     │
+│   ↓                                                              │
+│ [Layer 1: Handler] - Struct binding + validation tags            │
+│   ↓                                                              │
+│ [Layer 2: Use Case] - Business rule validation                   │
+│   ↓                                                              │
+│ [Layer 3: Domain] - Domain invariant validation                  │
+│   ↓                                                              │
+│ [Layer 4: Repository] - Database constraints                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Required Validation at Handler Layer
+
+**MANDATORY: Use go-playground/validator v10 with struct tags.**
+
+```go
+import (
+    "github.com/go-playground/validator/v10"
+)
+
+// ✅ CORRECT: Input struct with validation tags
+type CreateUserInput struct {
+    Email     string `json:"email" validate:"required,email,max=255"`
+    FirstName string `json:"firstName" validate:"required,min=1,max=100"`
+    LastName  string `json:"lastName" validate:"required,min=1,max=100"`
+    Age       int    `json:"age" validate:"omitempty,gte=0,lte=150"`
+    Role      string `json:"role" validate:"required,oneof=admin user guest"`
+    Phone     string `json:"phone" validate:"omitempty,e164"`
+}
+
+// Handler validates input before processing
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+
+    var input CreateUserInput
+    if err := c.BodyParser(&input); err != nil {
+        return libHTTP.WithError(c, ErrInvalidJSON)
+    }
+
+    // ✅ CORRECT: Validate before processing
+    if err := h.validator.Struct(input); err != nil {
+        return libHTTP.WithError(c, translateValidationError(err))
+    }
+
+    // Now input is validated, proceed with business logic
+    result, err := h.command.CreateUser(ctx, input)
+    // ...
+}
+```
+
+### Common Validation Tags Reference
+
+| Tag | Description | Example |
+|-----|-------------|---------|
+| `required` | Field must be present and non-zero | `validate:"required"` |
+| `email` | Valid email format | `validate:"email"` |
+| `uuid` | Valid UUID format | `validate:"uuid"` |
+| `min` | Minimum length (string) or value (number) | `validate:"min=1"` |
+| `max` | Maximum length (string) or value (number) | `validate:"max=255"` |
+| `gte` | Greater than or equal | `validate:"gte=0"` |
+| `lte` | Less than or equal | `validate:"lte=100"` |
+| `oneof` | Value must be one of listed | `validate:"oneof=active inactive"` |
+| `e164` | International phone format | `validate:"e164"` |
+| `url` | Valid URL format | `validate:"url"` |
+| `iso8601` | Valid ISO8601 date | `validate:"iso8601"` |
+
+### Validation Error Translation
+
+```go
+// ✅ CORRECT: Translate validation errors to user-friendly messages
+func translateValidationError(err error) error {
+    var validationErrors validator.ValidationErrors
+    if errors.As(err, &validationErrors) {
+        var errMessages []string
+        for _, e := range validationErrors {
+            errMessages = append(errMessages, formatFieldError(e))
+        }
+        return NewValidationError(errMessages)
+    }
+    return ErrInvalidInput
+}
+
+func formatFieldError(e validator.FieldError) string {
+    switch e.Tag() {
+    case "required":
+        return fmt.Sprintf("field '%s' is required", e.Field())
+    case "email":
+        return fmt.Sprintf("field '%s' must be a valid email", e.Field())
+    case "min":
+        return fmt.Sprintf("field '%s' must be at least %s characters", e.Field(), e.Param())
+    case "max":
+        return fmt.Sprintf("field '%s' must be at most %s characters", e.Field(), e.Param())
+    case "oneof":
+        return fmt.Sprintf("field '%s' must be one of: %s", e.Field(), e.Param())
+    default:
+        return fmt.Sprintf("field '%s' failed validation: %s", e.Field(), e.Tag())
+    }
+}
+```
+
+### UUID and Path Parameter Validation
+
+```go
+// ✅ CORRECT: Validate path parameters
+func (h *Handler) GetUser(c *fiber.Ctx) error {
+    userID := c.Params("id")
+
+    // Validate UUID format
+    if _, err := uuid.Parse(userID); err != nil {
+        return libHTTP.WithError(c, ErrInvalidUserID)
+    }
+
+    // Proceed with validated ID
+    user, err := h.query.GetUser(ctx, userID)
+    // ...
+}
+```
+
+### Query Parameter Validation
+
+```go
+// ✅ CORRECT: Validate query parameters with defaults
+func (h *Handler) ListUsers(c *fiber.Ctx) error {
+    // Use lib-commons validation
+    params, err := libHTTP.ValidateParameters(c.Queries())
+    if err != nil {
+        return libHTTP.WithError(c, err)
+    }
+
+    // params.Limit, params.Page are validated and have defaults
+    // ...
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Trusting input without validation
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    var input CreateUserInput
+    c.BodyParser(&input)
+    // WRONG: Using input directly without validation
+    h.command.CreateUser(ctx, input)
+}
+
+// ❌ FORBIDDEN: Validating only some fields
+type CreateUserInput struct {
+    Email string `json:"email" validate:"required,email"`
+    Name  string `json:"name"`  // WRONG: No validation on required field
+}
+
+// ❌ FORBIDDEN: Catching validation errors but not returning them
+if err := h.validator.Struct(input); err != nil {
+    log.Error(err)
+    // WRONG: Continuing despite validation failure
+}
+
+// ❌ FORBIDDEN: Manual validation when tags would suffice
+if input.Email == "" {
+    return ErrEmailRequired  // WRONG: Use validate:"required" tag
+}
+if len(input.Name) > 100 {
+    return ErrNameTooLong  // WRONG: Use validate:"max=100" tag
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with API changes
+
+# Find input structs without validation tags
+grep -rn "type.*Input struct" internal/adapters/http --include="*.go" -A 10 | \
+  grep -v "validate:" | grep "json:"
+
+# Find handlers that use BodyParser without validation
+grep -rn "BodyParser" internal/adapters/http --include="*.go" -A 5 | \
+  grep -v "validator\|Validate\|validate"
+
+# Find path parameter usage without UUID validation
+grep -rn 'Params("id")' internal/adapters/http --include="*.go" -A 3 | \
+  grep -v "uuid.Parse\|ValidateUUID"
+
+# Expected: 0 matches for unvalidated inputs
+# If matches found: Add validation before processing
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Frontend validates input" | Frontend can be bypassed. Server is last defense. | **Validate on server** |
+| "Input comes from trusted service" | Services can be compromised. Trust nothing. | **Validate all input** |
+| "Validation is expensive" | Invalid data processing is more expensive. Fail fast. | **Validate early** |
+| "Database will reject invalid data" | Database errors are cryptic. Validate for clear messages. | **Validate before DB** |
+| "Small internal API doesn't need it" | Internal APIs become external. Build right from start. | **Validate all APIs** |
+| "Manual validation is clearer" | Tags are declarative and consistent. Manual is error-prone. | **Use validation tags** |
+
+---

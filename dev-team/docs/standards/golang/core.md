@@ -1,6 +1,6 @@
 # Go Standards - Core Foundation
 
-> **Module:** core.md | **Sections:** §1-7 | **Parent:** [index.md](index.md)
+> **Module:** core.md | **Sections:** §1-9 | **Parent:** [index.md](index.md)
 
 This module covers the foundational requirements for all Go projects.
 
@@ -12,11 +12,13 @@ This module covers the foundational requirements for all Go projects.
 |---|---------|-------------|
 | 1 | [Version](#version) | Go version requirements |
 | 2 | [Core Dependency: lib-commons](#core-dependency-lib-commons-mandatory) | Required lib-commons v2 integration |
-| 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions and library choices |
+| 3 | [Frameworks & Libraries](#frameworks--libraries) | Required versions, validator v10 migration |
 | 4 | [Configuration](#configuration) | Environment variable handling |
 | 5 | [Database Naming Convention (snake_case)](#database-naming-convention-snake-case-mandatory) | Table and column naming |
 | 6 | [Database Migrations](#database-migrations-mandatory) | golang-migrate requirement |
 | 7 | [License Headers](#license-headers-conditional) | Copyright headers in source files |
+| 8 | [MongoDB Patterns](#mongodb-patterns-mandatory) | Injection prevention, pooling, index management |
+| 9 | [Dependency Management](#dependency-management-mandatory) | Go modules, version pinning, security updates |
 
 ---
 
@@ -187,6 +189,99 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 | `mongo-driver` | v1.17.0 | MongoDB driver |
 | `go-redis/v9` | v9.7.0 | Redis client |
 | `validator/v10` | v10.26.0 | Input validation |
+
+### Validator Migration: v9 to v10 (MANDATORY)
+
+Projects using `go-playground/validator/v9` have unmaintained dependencies with known security issues.
+
+**⛔ HARD GATE:** All projects MUST use `validator/v10`. Version v9 is FORBIDDEN and MUST be migrated.
+
+#### Why v10 Is MANDATORY
+
+| Issue | v9 | v10 |
+|-------|-----|-----|
+| **Maintenance** | ❌ Unmaintained since 2020 | ✅ Actively maintained |
+| **Security** | ❌ Known CVEs unpatched | ✅ Security patches applied |
+| **Features** | ❌ Missing modern validations | ✅ New validators, better errors |
+| **Go compatibility** | ❌ Issues with Go 1.18+ generics | ✅ Full Go 1.24 support |
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MUST: Check for v9 usage (should return 0 matches)
+grep -rn "go-playground/validator/v9" go.mod go.sum
+
+# If found: BLOCKER - Migrate to v10 before proceeding
+
+# Check current validator version
+grep "go-playground/validator" go.mod
+
+# Expected: github.com/go-playground/validator/v10 v10.x.x
+```
+
+#### Migration Steps
+
+**1. Update go.mod:**
+
+```bash
+# Remove v9
+go mod edit -droprequire github.com/go-playground/validator/v9
+
+# Add v10
+go get github.com/go-playground/validator/v10@latest
+```
+
+**2. Update imports in code:**
+
+```go
+// ❌ BEFORE: v9 import
+import "github.com/go-playground/validator/v9"
+
+// ✅ AFTER: v10 import
+import "github.com/go-playground/validator/v10"
+```
+
+**3. Handle API changes:**
+
+```go
+// ❌ v9: validator.New()
+v := validator.New()
+
+// ✅ v10: Same API, new features available
+v := validator.New(validator.WithRequiredStructEnabled())
+```
+
+**4. Update custom validators:**
+
+```go
+// ❌ v9: Old registration pattern
+v.RegisterValidation("custom", customValidator)
+
+// ✅ v10: Same pattern, use new error types
+v.RegisterValidation("custom", customValidator)
+// Access improved error details via v10.ValidationErrors
+```
+
+#### Common Migration Issues
+
+| Issue | Solution |
+|-------|----------|
+| `FieldError` type changed | Use `validator.ValidationErrors` type assertion |
+| `StructLevel` changes | Update to `validator.StructLevel` interface |
+| Tag format changes | Some tags renamed (check release notes) |
+| Custom validators | Re-register with v10 API |
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "v9 still works" | Works ≠ maintained. Security vulnerabilities accumulate. | **Migrate to v10** |
+| "Migration is risky" | Risk of not migrating is higher (security, compatibility). | **Migrate to v10** |
+| "We have custom validators" | Custom validators work with v10. API is compatible. | **Migrate to v10** |
+| "Dependencies use v9" | Update dependencies too. Transitive v9 is also vulnerable. | **Update all dependencies** |
+| "We'll migrate later" | Later = never. Migrate now while context is fresh. | **Migrate NOW** |
+
+---
 
 ### HTTP Framework
 
@@ -740,9 +835,9 @@ fi
 ### Required Format (Elastic License 2.0)
 
 ```go
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 package yourpackage
 ```
@@ -751,10 +846,9 @@ package yourpackage
 
 | Component | Value | Notes |
 |-----------|-------|-------|
-| Copyright holder | `Lerian Studio` | Fixed for all Lerian projects |
-| Year | Year of file creation | Use current year for new files |
+| Copyright holder | `Elasticsearch B.V.` | Fixed for all projects |
 | License reference | `Elastic License 2.0` | Or as specified in LICENSE file |
-| LICENSE location | `LICENSE file` | Always reference root LICENSE |
+| LICENSE location | Inline in header | No separate LICENSE file reference needed |
 
 ### Files That MUST Have Headers
 
@@ -777,9 +871,9 @@ package yourpackage
 ### Correct Examples
 
 ```go
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 package bootstrap
 
@@ -790,9 +884,9 @@ import (
 ```
 
 ```go
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 package bootstrap_test
 
@@ -809,17 +903,17 @@ package model
 
 import "time"
 
-// ❌ FORBIDDEN: Wrong format (missing "All rights reserved")
-// Copyright 2024 Lerian Studio
+// ❌ FORBIDDEN: Wrong format (missing full license text)
+// Copyright Elasticsearch B.V.
 // Licensed under Elastic License 2.0
 package model
 
 // ❌ FORBIDDEN: Header after package declaration
 package model
 
-// Copyright (c) 2024 Lerian Studio. All rights reserved.
-// Use of this source code is governed by the Elastic License 2.0
-// that can be found in the LICENSE file.
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License 2.0;
+// you may not use this file except in compliance with the Elastic License 2.0.
 
 import "time"
 ```
@@ -869,3 +963,366 @@ done
 | "I'll add them later" | Later = never. Add headers when creating files. | **Add header immediately** |
 | "The LICENSE file is enough" | Per-file headers provide clear attribution in copies. | **Add header to all files** |
 | "Generated files are excluded" | Only truly auto-generated (protobuf, mocks). Hand-written = header required. | **Check if truly generated** |
+
+---
+
+## MongoDB Patterns (MANDATORY)
+
+Common MongoDB issues include $regex injection vectors, unconfigured MaxPoolSize, blocking index creation, and deprecated SetBackground calls.
+
+**⛔ HARD GATE:** All MongoDB operations MUST follow these patterns to prevent injection, ensure performance, and avoid deprecated APIs.
+
+### Injection Prevention (CRITICAL)
+
+Using `$regex` operators with unvalidated user input allows NoSQL injection attacks.
+
+**⛔ FORBIDDEN: Unescaped $regex with User Input**
+
+```go
+// ❌ FORBIDDEN: User input directly in $regex
+filter := bson.M{
+    "name": bson.M{"$regex": userInput},  // INJECTION VECTOR
+}
+cursor, _ := collection.Find(ctx, filter)
+
+// Attack example: userInput = ".*" returns all documents
+// Attack example: userInput = "admin|" matches "admin" or empty
+```
+
+**✅ CORRECT: Use $eq or Escape Special Characters**
+
+```go
+// ✅ CORRECT: Use $eq for exact matches (preferred)
+filter := bson.M{
+    "name": bson.M{"$eq": userInput},
+}
+
+// ✅ CORRECT: Use $text search (requires text index)
+filter := bson.M{
+    "$text": bson.M{"$search": userInput},
+}
+
+// ✅ CORRECT: Escape regex special characters if $regex is required
+import "regexp"
+
+func escapeRegex(s string) string {
+    return regexp.QuoteMeta(s)
+}
+
+filter := bson.M{
+    "name": bson.M{
+        "$regex":   "^" + escapeRegex(userInput),  // Escaped
+        "$options": "i",
+    },
+}
+```
+
+**Detection Commands:**
+
+```bash
+# MANDATORY: Run before every PR that touches MongoDB code
+grep -rn '\$regex' internal/adapters/mongodb --include="*.go"
+
+# Review each match - if userInput is used without escaping: VIOLATION
+# Expected: All $regex uses have escapeRegex() or validated input
+```
+
+### Connection Pooling (MANDATORY)
+
+MongoDB connections without MaxPoolSize configuration cause connection exhaustion under load.
+
+**⛔ FORBIDDEN: Default Pool Configuration**
+
+```go
+// ❌ FORBIDDEN: No MaxPoolSize configured
+client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+
+// ❌ FORBIDDEN: MaxPoolSize too high or too low
+opts := options.Client().SetMaxPoolSize(1000)  // Too high - memory issues
+opts := options.Client().SetMaxPoolSize(1)     // Too low - contention
+```
+
+**✅ CORRECT: Configure Pool Size Based on Load**
+
+```go
+// ✅ CORRECT: Configure MaxPoolSize in connection options
+clientOpts := options.Client().
+    ApplyURI(mongoURI).
+    SetMaxPoolSize(uint64(cfg.MongoMaxPoolSize)).  // From environment
+    SetMinPoolSize(10).                             // Maintain baseline
+    SetMaxConnIdleTime(30 * time.Second)           // Release idle connections
+
+client, err := mongo.Connect(ctx, clientOpts)
+if err != nil {
+    return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+}
+
+// ✅ CORRECT: Verify connection
+if err := client.Ping(ctx, nil); err != nil {
+    return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+}
+```
+
+**Pool Size Guidelines:**
+
+| Workload | MaxPoolSize | MinPoolSize | Rationale |
+|----------|-------------|-------------|-----------|
+| Low (< 100 RPS) | 50 | 5 | Conservative, low memory |
+| Medium (100-500 RPS) | 100 | 10 | Balanced |
+| High (> 500 RPS) | 200 | 20 | High throughput |
+
+**Detection Commands:**
+
+```bash
+# Find MongoDB connection setup
+grep -rn "mongo.Connect\|SetMaxPoolSize\|MaxPoolSize" internal/bootstrap --include="*.go"
+
+# Expected: MaxPoolSize is set via configuration, not hardcoded or missing
+```
+
+### Index Management (MANDATORY)
+
+Blocking index creation and deprecated SetBackground calls cause production issues.
+
+**⛔ FORBIDDEN: Blocking Index Creation and Deprecated APIs**
+
+```go
+// ❌ FORBIDDEN: SetBackground (deprecated in MongoDB 4.2+)
+indexModel := mongo.IndexModel{
+    Keys: bson.D{{Key: "email", Value: 1}},
+}
+opts := options.CreateIndexes().SetBackground(true)  // DEPRECATED
+collection.Indexes().CreateOne(ctx, indexModel, opts)
+
+// ❌ FORBIDDEN: Blocking index creation on large collections
+// (No background/non-blocking option specified)
+collection.Indexes().CreateOne(ctx, indexModel)  // BLOCKS WRITES
+```
+
+**✅ CORRECT: Use CreateIndexes with Batch Operations**
+
+```go
+// ✅ CORRECT: Use CreateIndexes (plural) for batch index creation
+// MongoDB 4.2+ creates indexes in background automatically for replica sets
+indexModels := []mongo.IndexModel{
+    {
+        Keys:    bson.D{{Key: "email", Value: 1}},
+        Options: options.Index().SetUnique(true),
+    },
+    {
+        Keys:    bson.D{{Key: "created_at", Value: -1}},
+        Options: options.Index().SetName("idx_created_at_desc"),
+    },
+}
+
+// CreateIndexes (not CreateIndex) is non-blocking on replica sets
+names, err := collection.Indexes().CreateMany(ctx, indexModels)
+if err != nil {
+    return fmt.Errorf("failed to create indexes: %w", err)
+}
+logger.Infof("Created indexes: %v", names)
+```
+
+**Index Creation Best Practices:**
+
+| Method | Blocking? | Use Case |
+|--------|-----------|----------|
+| `CreateMany()` | No (replica sets) | Production - multiple indexes |
+| `CreateOne()` | No (replica sets) | Production - single index |
+| SetBackground(true) | N/A - DEPRECATED | **NEVER USE** |
+
+**Detection Commands:**
+
+```bash
+# Find deprecated SetBackground usage
+grep -rn "SetBackground" internal/adapters/mongodb --include="*.go"
+
+# Expected: 0 matches (SetBackground is deprecated)
+
+# Find index creation patterns
+grep -rn "CreateIndex\|CreateMany\|CreateOne" internal/adapters/mongodb --include="*.go"
+
+# Review: Ensure no blocking operations on large collections
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "$regex is convenient for search" | $regex with user input = injection. Use $text or escape. | **Use $eq or escape input** |
+| "Default pool size works fine" | Works until load spikes. Then connections exhaust. | **Configure MaxPoolSize** |
+| "We have few documents, blocking is OK" | Few now = many later. Non-blocking is always safer. | **Use CreateMany** |
+| "SetBackground still works" | Deprecated = will be removed. Code breaks on upgrade. | **Remove SetBackground** |
+| "MongoDB handles injection" | MongoDB executes operators. $regex is an operator. | **Escape or avoid $regex** |
+| "Connection pool is internal detail" | Internal detail that causes production outages. | **Configure explicitly** |
+
+### Complete MongoDB Connection Example
+
+```go
+// internal/bootstrap/config.go
+
+type Config struct {
+    // MongoDB
+    MongoURI          string `env:"MONGO_URI" default:"mongodb"`
+    MongoDBHost       string `env:"MONGO_HOST"`
+    MongoDBName       string `env:"MONGO_NAME"`
+    MongoDBUser       string `env:"MONGO_USER"`
+    MongoDBPassword   string `env:"MONGO_PASSWORD"`
+    MongoDBPort       string `env:"MONGO_PORT"`
+    MongoDBParameters string `env:"MONGO_PARAMETERS"`
+    MongoMaxPoolSize  int    `env:"MONGO_MAX_POOL_SIZE" default:"100"`
+    MongoMinPoolSize  int    `env:"MONGO_MIN_POOL_SIZE" default:"10"`
+}
+
+func connectMongoDB(cfg *Config, logger libLog.Logger) (*mongo.Client, error) {
+    // Build connection string
+    mongoSource := fmt.Sprintf("%s://%s:%s@%s:%s/",
+        cfg.MongoURI, cfg.MongoDBUser, cfg.MongoDBPassword,
+        cfg.MongoDBHost, cfg.MongoDBPort)
+
+    if cfg.MongoDBParameters != "" {
+        mongoSource += "?" + cfg.MongoDBParameters
+    }
+
+    // Configure client options
+    clientOpts := options.Client().
+        ApplyURI(mongoSource).
+        SetMaxPoolSize(uint64(cfg.MongoMaxPoolSize)).
+        SetMinPoolSize(uint64(cfg.MongoMinPoolSize)).
+        SetMaxConnIdleTime(30 * time.Second)
+
+    // Connect
+    client, err := mongo.Connect(context.Background(), clientOpts)
+    if err != nil {
+        return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+    }
+
+    // Verify connection
+    if err := client.Ping(context.Background(), nil); err != nil {
+        return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+    }
+
+    logger.Infof("Connected to MongoDB at %s:%s", cfg.MongoDBHost, cfg.MongoDBPort)
+    return client, nil
+}
+```
+
+---
+
+## Dependency Management (MANDATORY)
+
+**⛔ HARD GATE:** All Go projects MUST use Go modules with explicit version pinning. Floating versions and vendoring without go.mod are FORBIDDEN.
+
+### go.mod Requirements (MANDATORY)
+
+```go
+// ✅ CORRECT: Explicit Go version and module path
+module github.com/LerianStudio/your-service
+
+go 1.24
+
+require (
+    github.com/LerianStudio/lib-commons/v2 v2.4.0
+    github.com/gofiber/fiber/v2 v2.52.0
+    github.com/jackc/pgx/v5 v5.5.0
+)
+```
+
+### Version Pinning Rules
+
+| Type | Pattern | Example | Required? |
+|------|---------|---------|-----------|
+| Direct dependencies | Exact version | `v2.4.0` | ✅ MANDATORY |
+| Indirect dependencies | Managed by go mod | `// indirect` | Auto-managed |
+| Pre-release | Explicit commit | `v0.0.0-20240101-abc123` | When needed |
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Latest/floating versions
+require (
+    github.com/some/package v0.0.0 // WRONG: Not a real version
+)
+
+// ❌ FORBIDDEN: Missing go.sum
+// go.sum MUST be committed to version control
+
+// ❌ FORBIDDEN: Replacing with local paths in committed go.mod
+replace github.com/LerianStudio/lib-commons => ../lib-commons // Development only
+```
+
+### Security Updates (MANDATORY)
+
+**Run weekly or before each release:**
+
+```bash
+# Check for vulnerabilities
+go list -m -json all | go run golang.org/x/vuln/cmd/govulncheck@latest
+
+# Update dependencies (review changes before committing)
+go get -u ./...
+go mod tidy
+
+# Verify no breaking changes
+go build ./...
+go test ./...
+```
+
+### Dependency Review Checklist
+
+```text
+Before adding a new dependency:
+
+[ ] Is it actively maintained? (commits within last 6 months)
+[ ] Does it have a license compatible with Apache 2.0?
+[ ] Is the version stable (not v0.x.x for production)?
+[ ] Does it duplicate functionality already in lib-commons?
+[ ] Is the transitive dependency count acceptable?
+
+If any checkbox fails → Reconsider or document exception.
+```
+
+### Private Modules (GOPRIVATE)
+
+```bash
+# For Lerian private repos
+export GOPRIVATE=github.com/LerianStudio/*
+
+# In ~/.gitconfig
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with dependency changes
+
+# Check for missing go.sum entries
+go mod verify
+
+# Check for unused dependencies
+go mod tidy -v
+
+# List outdated dependencies
+go list -m -u all
+
+# Scan for vulnerabilities
+govulncheck ./...
+
+# Expected: go.sum is complete, no vulnerabilities, no unused deps
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Latest is always best" | Latest can have breaking changes or new bugs. | **Pin explicit versions** |
+| "go.sum is auto-generated" | go.sum is a security artifact. Must be committed. | **Commit go.sum** |
+| "I'll update deps later" | Later = security vulnerabilities accumulate. | **Update regularly** |
+| "Small package, no license needed" | All OSS has licenses. Verify compatibility. | **Check license** |
+| "Vendor folder is safer" | Vendor without go.mod is unmaintainable. | **Use go.mod + go.sum** |
+| "Replace directive for debugging" | Replace directives break reproducible builds. | **Remove before commit** |
+
+---
+

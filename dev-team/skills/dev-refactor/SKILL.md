@@ -386,7 +386,7 @@ Task tool 3:
   description: "DevOps analysis"
   prompt: |
     **MODE: ANALYSIS only**
-    Check all 7 sections per shared-patterns/standards-coverage-table.md → "ring:devops-engineer"
+    Check all 8 sections per shared-patterns/standards-coverage-table.md → "ring:devops-engineer"
     ⛔ "Containers" means BOTH Dockerfile and Docker Compose
     ⛔ "Makefile Standards" means all required commands: build, lint, test, cover, up, down, etc.
     Input: codebase-report.md, PROJECT_RULES.md
@@ -998,11 +998,11 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 If user approved execution, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle`
 2. Pass tasks file path: `docs/refactor/{timestamp}/tasks.md`
-3. Wait for ring:dev-cycle to complete all 6 gates
+3. Wait for ring:dev-cycle to complete all 10 gates
 
 **Skipping this step = SKILL FAILURE.**
 
-ring:dev-cycle executes each REFACTOR-XXX task through 6-gate process.
+ring:dev-cycle executes each REFACTOR-XXX task through 10-gate process.
 
 **TodoWrite:** Mark "Handoff to ring:dev-cycle" as `completed`
 

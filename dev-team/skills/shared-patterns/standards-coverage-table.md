@@ -249,33 +249,49 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 |---|------------------|------|--------|-----------------|
 | 1 | Version | core.md | `#version` | Go 1.24+ |
 | 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | **HARD GATE:** No duplicate utils/helpers - use lib-commons |
-| 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock |
+| 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock, **validator v10 migration (MANDATORY)** |
 | 4 | Configuration | core.md | `#configuration` | Environment variable handling |
 | 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake-case-mandatory` | Table and column naming |
 | 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
 | 7 | License Headers | core.md | `#license-headers-conditional` | **CONDITIONAL** - If LICENSE file exists |
-| 8 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration |
-| 9 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
-| 10 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
-| 11 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
-| 12 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
-| 13 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
-| 14 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
-| 15 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | Where exit/fatal/panic is allowed |
-| 16 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
-| 17 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
-| 18 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
-| 19 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
-| 20 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
-| 21 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
-| 22 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, magic numbers (mnd), golangci-lint |
-| 23 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
-| 24 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
-| 25 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup |
-| 26 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing |
-| 27 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection |
-| 28 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 29 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing |
+| 8 | MongoDB Patterns | core.md | `#mongodb-patterns-mandatory` | **Injection prevention (CRITICAL)**, connection pooling, index management, deprecated API removal |
+| 9 | Dependency Management | core.md | `#dependency-management-mandatory` | **Version pinning (MANDATORY)**, go.sum, security updates, govulncheck, detection commands |
+| 10 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration, **Span Naming Conventions (MANDATORY)**: layer.domain.operation pattern, detection commands |
+| 11 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
+| 12 | Graceful Shutdown Patterns | bootstrap.md | `#graceful-shutdown-patterns-mandatory` | **Signal handling (MANDATORY)**, shutdown order, resource cleanup, detection commands |
+| 13 | Health Checks | bootstrap.md | `#health-checks-mandatory` | **/health vs /ready (MANDATORY)**, Kubernetes probes, dependency checks |
+| 14 | Rate Limiting | bootstrap.md | `#rate-limiting-conditional` | **⚠️ CONDITIONAL** - Service-level rate limiting (if not handled by infrastructure) |
+| 15 | Connection Management | bootstrap.md | `#connection-management-mandatory` | **Pool configuration (MANDATORY)**, timeouts, graceful shutdown, detection commands |
+| 16 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
+| 17 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
+| 18 | Secret Redaction Patterns | security.md | `#secret-redaction-patterns-mandatory` | **Credential leak prevention (MANDATORY)**, connection string redaction, detection commands |
+| 19 | SQL Safety | security.md | `#sql-safety-mandatory` | **Parameterized queries (MANDATORY)**, SQL injection prevention, whitelist pattern, detection commands |
+| 20 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
+| 21 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
+| 22 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
+| 23 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
+| 24 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
+| 25 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
+| 26 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | Cursor and page-based |
+| 27 | HTTP Status Code Consistency | api-patterns.md | `#http-status-code-consistency-mandatory` | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands |
+| 28 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
+| 29 | Handler Constructor Pattern | api-patterns.md | `#handler-constructor-pattern-mandatory` | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands |
+| 30 | Input Validation | api-patterns.md | `#input-validation-mandatory` | **Defense in depth (MANDATORY)**, validator v10 tags, error translation, detection commands |
+| 31 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
+| 32 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 33 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, magic numbers (mnd) |
+| 34 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
+| 35 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
+| 36 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 37 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 38 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
+| 39 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
+| 40 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
+| 41 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
+| 42 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
+| 43 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **Constructor Validation Patterns (MANDATORY)**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
+| 44 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 45 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **Tenant Isolation Verification (⚠️ CONDITIONAL)**: IDOR prevention, detection commands |
 
 **Module Loading Guide:**
 
@@ -356,6 +372,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 5 | Observability (MANDATORY) | Logging (Structured JSON), Tracing (OpenTelemetry) |
 | 6 | Security (MANDATORY) | Secrets management, Network policies |
 | 7 | Makefile Standards (MANDATORY) | Required commands (build, lint, test, cover, up, down, etc.), Component delegation pattern |
+| 8 | CI/CD Pipeline (MANDATORY) | Pipeline stages (lint, test, security, build), branch protection, required checks |
 
 **⛔ HARD GATE:** When checking "Containers", you MUST verify BOTH Dockerfile and Docker Compose patterns. Checking only one = INCOMPLETE.
 
@@ -376,34 +393,142 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → golang.md or typescript.md
+### ring:qa-analyst → testing-unit.md (Unit Mode - Gate 3)
 
-**Note:** ring:qa-analyst checks testing-related sections based on project language.
+**Mode Detection:** `test_mode: unit` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="unit")`
 
-**For Go projects:**
-| # | Section to Check |
-|---|------------------|
-| 1 | Testing Patterns (MANDATORY) |
-| 2 | Edge Case Coverage (MANDATORY) |
-| 3 | Test Naming Convention (MANDATORY) |
-| 4 | Linting (MANDATORY) |
+**For Go projects (Unit Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| UNIT-1 | Table-Driven Tests (MANDATORY) | `#table-driven-tests-mandatory` |
+| UNIT-2 | Test Naming Convention (MANDATORY) | `#test-naming-convention-mandatory` |
+| UNIT-3 | Parallel Test Execution (MANDATORY) | `#parallel-test-execution-mandatory` |
+| UNIT-4 | Loop Variable Capture (MANDATORY) | `#loop-variable-capture-mandatory` |
+| UNIT-5 | Edge Case Coverage (MANDATORY) | `#edge-case-coverage-mandatory` |
+| UNIT-6 | Assertion Requirements (MANDATORY) | `#assertion-requirements-mandatory` |
+| UNIT-7 | Mock Generation (MANDATORY) | `#mock-generation-mandatory` |
+| UNIT-8 | Environment Variables in Tests (MANDATORY) | `#environment-variables-in-tests-mandatory` |
+| UNIT-9 | Shared Test Utilities (MANDATORY) | `#shared-test-utilities-mandatory` |
+| UNIT-10 | Unit Test Quality Gate (MANDATORY) | `#unit-test-quality-gate-mandatory` |
 
-**For TypeScript projects:**
+**For TypeScript projects (Unit Mode):**
 | # | Section to Check |
 |---|------------------|
 | 1 | Testing Patterns (MANDATORY) |
 | 2 | Edge Case Coverage (MANDATORY) |
 | 3 | Type Safety Rules (MANDATORY) |
 
-**Test Quality Gate Checks (Gate 3 Exit - all REQUIRED):**
+**Unit Test Quality Gate Checks (Gate 3 Exit - all REQUIRED):**
 | # | Check | Detection |
 |---|-------|-----------|
-| 1 | Skipped tests | `grep -rn "\.skip\|\.todo\|xit"` = 0 |
-| 2 | Assertion-less tests | All tests have expect/assert |
-| 3 | Shared state | No beforeAll DB/state mutation |
-| 4 | Edge cases | ≥2 per acceptance criterion |
-| 5 | TDD evidence | RED phase captured |
-| 6 | Test isolation | No order dependency |
+| 1 | Table-driven pattern | All tests use `tests := []struct` pattern |
+| 2 | t.Parallel() | `grep "t.Parallel()"` at function and subtest level |
+| 3 | Loop variable capture | `tt := tt` before each `t.Run()` |
+| 4 | Strong error assertions | No empty `errContains` fields |
+| 5 | Response type verification | `assert.IsType()` for success cases |
+| 6 | GoMock usage | No hand-written mocks |
+| 7 | t.Setenv | No `os.Setenv` in test files |
+| 8 | Shared utilities | No local `Ptr` or duplicate helpers |
+| 9 | Edge cases | ≥3 per acceptance criterion |
+| 10 | No flaky tests | 3x consecutive pass |
+
+---
+
+### ring:qa-analyst → testing-fuzz.md (Fuzz Mode - Gate 4)
+
+**Mode Detection:** `test_mode: fuzz` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="fuzz")`
+
+**For Go projects (Fuzz Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| FUZZ-1 | What Is Fuzz Testing | `#what-is-fuzz-testing` |
+| FUZZ-2 | Fuzz Function Pattern (MANDATORY) | `#fuzz-function-pattern-mandatory` |
+| FUZZ-3 | Seed Corpus (MANDATORY) | `#seed-corpus-mandatory` |
+| FUZZ-4 | Input Types | `#input-types` |
+| FUZZ-5 | Fuzz Test Quality Gate (MANDATORY) | `#fuzz-test-quality-gate-mandatory` |
+
+**Fuzz Test Quality Gate Checks (Gate 4 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Naming convention | `func FuzzXxx(f *testing.F)` format |
+| 2 | Seed corpus | `f.Add()` with ≥5 entries |
+| 3 | Test passes | `go test -fuzz=. -fuzztime=30s` |
+
+---
+
+### ring:qa-analyst → testing-property.md (Property Mode - Gate 5)
+
+**Mode Detection:** `test_mode: property` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="property")`
+
+**For Go projects (Property Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| PROP-1 | What Is Property-Based Testing | `#what-is-property-based-testing` |
+| PROP-2 | Property Function Pattern (MANDATORY) | `#property-function-pattern-mandatory` |
+| PROP-3 | Common Properties | `#common-properties` |
+| PROP-4 | Integration with Unit Tests | `#integration-with-unit-tests` |
+| PROP-5 | Property Test Quality Gate (MANDATORY) | `#property-test-quality-gate-mandatory` |
+
+**Property Test Quality Gate Checks (Gate 5 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Naming convention | `TestProperty_{Subject}_{Property}` format |
+| 2 | quick.Check usage | `testing/quick.Check` imported and used |
+| 3 | Domain invariants | At least 1 property per domain entity |
+
+---
+
+### ring:qa-analyst → testing-integration.md (Integration Mode - Gate 6)
+
+**Mode Detection:** `test_mode: integration` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="integration")`
+
+**For Go projects (Integration Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| INT-1 | Test Pyramid | `#test-pyramid` |
+| INT-2 | File Naming Convention (MANDATORY) | `#file-naming-convention-mandatory` |
+| INT-3 | Function Naming Convention (MANDATORY) | `#function-naming-convention-mandatory` |
+| INT-4 | Build Tags (MANDATORY) | `#build-tags-mandatory` |
+| INT-5 | Testcontainers Patterns (MANDATORY) | `#testcontainers-patterns-mandatory` |
+| INT-6 | Parallel Test Prohibition (MANDATORY) | `#parallel-test-prohibition-mandatory` |
+| INT-7 | Fixture Centralization (MANDATORY) | `#fixture-centralization-mandatory` |
+| INT-8 | Stub Centralization (MANDATORY) | `#stub-centralization-mandatory` |
+| INT-9 | Guardrails (11 Anti-Patterns) (MANDATORY) | `#guardrails-11-anti-patterns-mandatory` |
+| INT-10 | Test Failure Analysis (No Greenwashing) | `#test-failure-analysis-no-greenwashing` |
+
+**Integration Test Quality Gate Checks (Gate 6 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Build tag present | `//go:build integration` at top of file |
+| 2 | No hardcoded ports | `grep ":5432\|:6379"` = 0 |
+| 3 | Testcontainers used | import check for testcontainers |
+| 4 | No t.Parallel() | `grep "t.Parallel()"` in integration tests = 0 |
+| 5 | Cleanup present | `t.Cleanup()` for all containers |
+| 6 | No flaky tests | 3x consecutive pass |
+
+---
+
+### ring:qa-analyst → testing-chaos.md (Chaos Mode - Gate 7)
+
+**Mode Detection:** `test_mode: chaos` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="chaos")`
+
+**For Go projects (Chaos Mode):**
+| # | Section to Check | Anchor |
+|---|------------------|--------|
+| CHAOS-1 | What Is Chaos Testing | `#what-is-chaos-testing` |
+| CHAOS-2 | Chaos Test Pattern (MANDATORY) | `#chaos-test-pattern-mandatory` |
+| CHAOS-3 | Failure Scenarios | `#failure-scenarios` |
+| CHAOS-4 | Infrastructure Setup | `#infrastructure-setup` |
+| CHAOS-5 | Chaos Test Quality Gate (MANDATORY) | `#chaos-test-quality-gate-mandatory` |
+
+**Chaos Test Quality Gate Checks (Gate 7 Exit - all REQUIRED):**
+| # | Check | Detection |
+|---|-------|-----------|
+| 1 | Dual-gate pattern | `CHAOS=1` env check + `testing.Short()` |
+| 2 | Naming convention | `TestIntegration_Chaos_{Component}_{Scenario}` |
+| 3 | 5-phase structure | Normal → Inject → Verify → Restore → Recovery |
+| 4 | Toxiproxy usage | `tests/utils/chaos/` infrastructure |
+| 5 | All deps covered | Chaos test for each external dependency |
 
 ---
 
