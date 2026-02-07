@@ -1,5 +1,5 @@
 ---
-name: portfolio-review
+name: ring:portfolio-review
 description: Conduct a comprehensive portfolio review across multiple projects
 argument-hint: "[scope] [options]"
 ---
