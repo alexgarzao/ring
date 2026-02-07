@@ -121,7 +121,7 @@ If you catch yourself doing any of these, **STOP and ask the user**:
 - **Question:** "How does your team organize delivery cycles?"
 - **Options:**
   - "Sprints (1-2 weeks)" - Scrum-style fixed iterations
-  - "Cycles (1-3 months)" - Shape Up style longer cycles
+  - "Cycles (1-3 months)" - Shape Up-style longer cycles
   - "Continuous (no fixed intervals)" - Kanban-style continuous delivery
 - **Why:** Determines how to group tasks and define delivery milestones
 
@@ -323,7 +323,229 @@ With 1 dev:  Fully sequential (slowest)
 
 **Output to:** `docs/pre-dev/{feature-name}/delivery-roadmap.md`
 
-(Template details continue as previously defined with all sections: Executive Summary, Delivery Breakdown, Critical Path Analysis, Resource Allocation, Risk Milestones, Gantt Timeline, Assumptions and Constraints)
+### Section 1: Executive Summary
+```markdown
+# Delivery Roadmap: {Feature Name}
+
+## Executive Summary
+
+| Metric | Value |
+|--------|-------|
+| **Start Date** | YYYY-MM-DD |
+| **End Date** | YYYY-MM-DD |
+| **Total Duration** | X weeks |
+| **Critical Path** | T-001 → T-003 → T-007 (Y weeks) |
+| **Parallel Streams** | N streams identified |
+| **Team Composition** | N developers (roles) |
+| **Development Mode** | AI-assisted / Traditional |
+| **Velocity Multiplier** | Xx (e.g., 0.7x = 0.7 days per story point) |
+| **Multiplier Source** | Default / Custom (user-validated) |
+| **Delivery Cadence** | Sprints (1-2w) / Cycles (1-3m) / Continuous |
+| **Period Duration** | {X} weeks/months (if sprint/cycle) |
+| **First Period Starts** | YYYY-MM-DD (if sprint/cycle) |
+| **Capacity Utilization** | 75% (realistic) |
+| **Contingency Buffer** | Z% (A days) |
+| **Confidence Level** | High / Medium / Low |
+```
+
+### Section 2: Delivery Breakdown (Adaptive Based on Cadence)
+
+**If user chose "Sprints (1-2 weeks)":**
+```markdown
+## Sprint Breakdown
+
+### Sprint 1: {Sprint Goal} (2026-03-01 to 2026-03-14)
+**Deliverable:** {What ships to users}
+
+| Task | Type | Effort | Start | End | Fits Sprint? | Dependencies | Assignee | Status |
+|------|------|--------|-------|-----|--------------|--------------|----------|--------|
+| T-001 | Foundation | L (13pts) | 03-01 | 03-10 | ✅ Complete | - | Backend | 🟢 Ready |
+| T-002 | Feature | M (8pts) | 03-10 | 03-22 | ⚠️ Spill over | T-001 | Backend | ⏸️ Blocked |
+| T-005 | Feature | M (8pts) | 03-01 | 03-05 | ✅ Complete | - | Frontend | 🟢 Ready |
+
+**Sprint 1 Scope:**
+- Complete tasks: T-001, T-005
+- Partial tasks: T-002 (4 days in Sprint 1, 8 days in Sprint 2)
+
+**Parallel Streams:**
+- Stream A: T-001 (Backend, Dev 1)
+- Stream B: T-005 (Frontend, Dev 2)
+
+**Definition of Done:**
+- [ ] T-001 and T-005 fully deployed to staging
+- [ ] T-002 progressed 4/12 days (33% complete)
+- [ ] Code reviewed and merged
+- [ ] Sprint demo shows T-001 + T-005 working
+```
+
+**If user chose "Cycles (1-3 months)":**
+```markdown
+## Cycle Breakdown
+
+### Cycle 1: {Cycle Goal} (2026-03-01 to 2026-04-30, 8 weeks)
+**Deliverable:** {What ships to users}
+
+| Task | Type | Effort | Start | End | Fits Cycle? | Dependencies | Assignee | Status |
+|------|------|--------|-------|-----|-------------|--------------|----------|--------|
+| T-001 | Foundation | L (13pts) | 03-01 | 03-15 | ✅ Complete | - | Backend | 🟢 Ready |
+| T-002 | Feature | M (8pts) | 03-15 | 03-25 | ✅ Complete | T-001 | Backend | ⏸️ Blocked |
+| T-005 | Feature | M (8pts) | 03-01 | 03-10 | ✅ Complete | - | Frontend | 🟢 Ready |
+
+**Cycle 1 Scope:**
+- Complete tasks: T-001, T-002, T-005, T-006, T-007
+- All features integrated and deployed
+
+**Parallel Streams:**
+- Stream A: T-001 → T-002 → T-003 (Backend)
+- Stream B: T-005 → T-006 (Frontend, parallel)
+
+**Definition of Done:**
+- [ ] All cycle tasks completed
+- [ ] Integration testing passed
+- [ ] Deployed to production
+- [ ] User feedback collected
+- [ ] Post-cycle retrospective completed
+```
+
+**If user chose "Continuous (no fixed intervals)":**
+```markdown
+## Delivery Milestones
+
+### Milestone 1: {Milestone Goal} (Week 2, 2026-03-10)
+**Deliverable:** {What ships to users}
+
+| Task | Type | Effort | Start | End | Dependencies | Assignee | Status |
+|------|------|--------|-------|-----|--------------|----------|--------|
+| T-001 | Foundation | L (13pts) | 03-01 | 03-10 | - | Backend | 🟢 Ready |
+
+**Completion Criteria:**
+- [ ] Task T-001 deployed to production
+- [ ] Monitoring configured
+- [ ] User acceptance confirmed
+- [ ] No blockers for T-002
+
+### Milestone 2: {Milestone Goal} (Week 4, 2026-03-25)
+**Deliverable:** {What ships to users}
+
+| Task | Type | Effort | Start | End | Dependencies | Assignee | Status |
+|------|------|--------|-------|-----|--------------|----------|--------|
+| T-002 | Feature | M (8pts) | 03-10 | 03-18 | T-001 | Backend | ⏸️ Blocked |
+| T-005 | Feature | M (8pts) | 03-01 | 03-08 | - | Frontend | 🟢 Ready |
+
+**Completion Criteria:**
+- [ ] Tasks T-002 and T-005 deployed
+- [ ] Integration verified
+- [ ] No regressions detected
+- [ ] Performance SLAs met
+```
+
+### Section 3: Critical Path Analysis
+```markdown
+## Critical Path Analysis
+
+**Path:** T-001 → T-002 → T-007
+
+| Task | Duration | Cumulative | Slack | On Critical Path? |
+|------|----------|------------|-------|-------------------|
+| T-001 | 2 weeks | 2 weeks | 0 days | ✅ Yes |
+| T-002 | 1.5 weeks | 3.5 weeks | 0 days | ✅ Yes |
+| T-007 | 2 weeks | 5.5 weeks | 0 days | ✅ Yes |
+| T-005 | 1 week | 1 week | 2 weeks | ❌ No (parallel) |
+
+**Minimum Project Duration:** 5.5 weeks (critical path)
+**With Parallelization:** 5.5 weeks (no impact, T-005 has slack)
+**Risk:** Any delay on critical path tasks delays entire project
+
+**Spill Over Impact (for Sprint/Cycle cadences):**
+- T-002 spills from Sprint 1 to Sprint 2 (4 days + 8 days)
+- This affects Sprint 1 velocity reporting (partial completion)
+```
+
+### Section 4: Resource Allocation
+```markdown
+## Resource Allocation
+
+| Role | Count | Utilization | Assigned Tasks |
+|------|-------|-------------|----------------|
+| Backend Engineer | 2 | 75% | T-001, T-002, T-003, T-007 |
+| Frontend Engineer | 1 | 70% | T-005, T-006 |
+| DevOps Engineer | 1 | 50% (part-time) | T-009 (infra setup) |
+| QA Analyst | 1 | 60% (from Week 3) | Testing from Week 3 onwards |
+
+**Bottlenecks:**
+- Backend heavy: 4 tasks require backend skills (T-001, T-002, T-003, T-007)
+- Frontend light: 2 tasks require frontend skills (T-005, T-006)
+
+**Recommendations:**
+- Consider cross-training if backend becomes bottleneck
+- QA can start test planning during Week 1-2
+- Frontend can assist with integration testing during T-007
+```
+
+### Section 5: Risk Milestones
+```markdown
+## Risk Milestones
+
+| Milestone | Date | Risk Level | Impact | Mitigation |
+|-----------|------|------------|--------|------------|
+| Database Foundation (T-001) | Week 2 | 🔴 HIGH | Blocks T-002, T-003, T-007 (entire backend) | Start T-001 immediately, daily progress checks |
+| API Integration (T-007) | Week 5.5 | 🟡 MEDIUM | Blocks deployment, but frontend can continue | Buffer time added, fallback: mock API |
+| Sprint 1 Spill Over (T-002) | Sprint 1 end | 🟡 MEDIUM | Affects Sprint 1 velocity, team morale | Communicate spill over upfront, adjust Sprint 2 capacity |
+| External Dependency (T-009) | Week 1 | 🟡 MEDIUM | Blocks deployment setup | Contact vendor early, have backup provider |
+
+**Contingency Plan:**
+- If T-001 slips by >2 days → Escalate to stakeholders, consider adding resource
+- If T-007 blocked → Deploy frontend with mock backend, continue integration in next period
+- If spill overs accumulate → Re-plan delivery cadence (extend sprint/cycle duration)
+```
+
+### Section 6: Gantt-Style Timeline
+```markdown
+## Timeline Visualization
+
+\`\`\`
+Week 1-2:  [████████ T-001: Foundation ████████]
+           [██ T-005: Frontend ██][T-006]
+
+Week 3-4:  [████ T-002 (cont.) ████][████ T-003: Logic ████]
+           [██ T-006: UI ██][── idle──]
+
+Week 5-6:  [████████ T-007: Integration ████████]
+           [████ T-008: Polish ████][── idle──]
+
+Period Boundaries (if Sprint/Cycle):
+  Sprint 1: Week 1-2 (ends 2026-03-14)
+  Sprint 2: Week 3-4 (ends 2026-03-28)
+  Sprint 3: Week 5-6 (ends 2026-04-11)
+
+Legend:
+  [████] = Active work
+  [──] = Idle/Buffer
+  ⚠️ = Spill over (task crosses period boundary)
+\`\`\`
+```
+
+### Section 7: Assumptions and Constraints
+```markdown
+## Assumptions
+
+1. **Team Availability:** All developers available full-time (no vacations, no split focus)
+2. **Dependency Resolution:** All external dependencies (APIs, credentials) available on time
+3. **Scope Stability:** No scope changes during execution (new requirements = new planning)
+4. **Infrastructure Ready:** Development/staging environments available Day 1
+5. **Capacity Utilization:** 75% realistic capacity (25% for meetings, context switching)
+6. **Velocity Accuracy:** Custom multiplier ({X}x) validated against historical team data OR using default multiplier ({default}x)
+7. **Period Boundaries:** Sprint/Cycle boundaries do not shift (dates fixed)
+
+## Constraints
+
+1. **Team Size:** N developers (cannot increase mid-project without re-planning)
+2. **Fixed Scope:** All tasks from tasks.md must be completed (no cutting features)
+3. **Quality Gates:** All ring:dev-cycle gates must pass (cannot skip review/testing)
+4. **Critical Path:** Cannot compress critical path without adding resources or cutting scope
+5. **Delivery Cadence:** {Sprint/Cycle/Continuous} rhythm cannot change mid-project
+6. **Spill Over Management:** Tasks crossing period boundaries must be tracked explicitly
+```
 
 ## Common Violations
 
