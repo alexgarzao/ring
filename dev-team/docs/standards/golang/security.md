@@ -1,6 +1,6 @@
 # Go Standards - Security
 
-> **Module:** security.md | **Sections:** §9-11 | **Parent:** [index.md](index.md)
+> **Module:** security.md | **Sections:** 5 | **Parent:** [index.md](index.md)
 
 This module covers authentication, licensing, and secret protection.
 
@@ -14,6 +14,7 @@ This module covers authentication, licensing, and secret protection.
 | 2 | [License Manager Integration](#license-manager-integration-mandatory) | lib-license-go for license validation |
 | 3 | [Secret Redaction Patterns](#secret-redaction-patterns-mandatory) | Preventing credential leaks in logs |
 | 4 | [SQL Safety](#sql-safety-mandatory) | SQL injection prevention and parameterized queries |
+| 5 | [HTTP Security Headers](#http-security-headers-mandatory) | X-Content-Type-Options, X-Frame-Options |
 
 ---
 
@@ -856,6 +857,79 @@ Before submitting PR that touches database queries:
 
 If any checkbox is unchecked → FIX before submitting.
 ```
+
+---
+
+## HTTP Security Headers (MANDATORY)
+
+**⛔ HARD GATE:** All HTTP services MUST set security headers to prevent common web vulnerabilities. Missing headers expose the application to clickjacking, MIME sniffing, and other attacks.
+
+### Required Headers
+
+| Header | Required Value | Purpose |
+|--------|----------------|---------|
+| `X-Content-Type-Options` | `nosniff` | Prevents MIME type sniffing attacks |
+| `X-Frame-Options` | `DENY` | Prevents clickjacking via iframe embedding |
+
+### Implementation Pattern (Fiber)
+
+```go
+// internal/adapters/http/in/middleware.go
+
+func SecurityHeaders() fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        // MANDATORY: Prevent MIME sniffing
+        c.Set("X-Content-Type-Options", "nosniff")
+
+        // MANDATORY: Prevent clickjacking
+        c.Set("X-Frame-Options", "DENY")
+
+        return c.Next()
+    }
+}
+
+// Apply in router setup
+func NewRouter(app *fiber.App) {
+    app.Use(SecurityHeaders())
+    // ... other middleware and routes
+}
+```
+
+### Alternative: lib-commons Integration
+
+If using lib-commons server setup, headers can be configured at server level:
+
+```go
+// bootstrap/fiber.server.go
+serverConfig := libServer.Config{
+    // ... other config
+    SecurityHeaders: libServer.SecurityHeaders{
+        XContentTypeOptions: "nosniff",
+        XFrameOptions:       "DENY",
+    },
+}
+```
+
+### Detection Commands
+
+```bash
+# Find if security headers are set
+grep -rn "X-Content-Type-Options\|X-Frame-Options" --include="*.go" ./internal
+
+# Verify middleware registration
+grep -rn "SecurityHeaders\|security.*middleware" --include="*.go" ./internal
+
+# Expected: At least one match for each header
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We're behind a reverse proxy" | Defense in depth. App should protect itself. | **Add headers** |
+| "It's just an internal API" | Internal APIs can be accessed by compromised services. | **Add headers** |
+| "Headers don't affect JSON APIs" | MIME sniffing affects all responses. Clickjacking targets browsers. | **Add headers** |
+| "We'll add it later" | Later = security incident. Add now. | **Add headers immediately** |
 
 ---
 
