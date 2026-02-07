@@ -136,9 +136,9 @@ input_schema:
       description: "List of acceptance criteria to verify"
     - name: "test_mode"
       type: "enum"
-      values: ["unit", "integration"]
+      values: ["unit", "fuzz", "property", "integration", "chaos"]
       default: "unit"
-      description: "Testing mode - unit tests (Gate 3) or integration tests (Gate 6)"
+      description: "Testing mode - unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), chaos (Gate 7)"
   optional_context:
     - name: "implementation_files"
       type: "list[file_path]"
@@ -520,7 +520,7 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 | Anti-pattern scan | PASS | 0 violations |
 
 ## Next Steps
-- Ready for Gate 4 (Review): YES
+- Ready for Gate 7 (Chaos Testing): YES
 ```
 
 ### Integration Mode Anti-Rationalization

@@ -402,7 +402,7 @@ Generate skill output:
 - Tests passed: [tests_passed]
 - Tests failed: 0
 - Flaky tests: 0
-- Ready for Gate 4 (Review): YES
+- Ready for Gate 7 (Chaos Testing): YES
 ```
 
 ## Step 8: Escalate - Max Iterations Reached
@@ -491,7 +491,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 ## Handoff to Next Gate
 - Integration testing status: [COMPLETE|FAILED|SKIPPED]
-- Ready for Gate 4: [YES|NO]
+- Ready for Gate 7: [YES|NO]
 ```
 
 ---

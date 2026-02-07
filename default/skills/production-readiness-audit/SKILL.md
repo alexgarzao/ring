@@ -1,12 +1,12 @@
 ---
 name: production-readiness-audit
-description: Comprehensive Ring-standards-aligned 34-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, IDOR, SQL, validation, rate limiting, multi-tenant), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-340) with severity ratings and standards cross-reference.
+description: Comprehensive Ring-standards-aligned 38-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling), Security (auth, IDOR, SQL, validation, rate limiting, multi-tenant), Operations (telemetry, health, config, connections, logging), Quality (idempotency, docs, debt, unit-testing, fuzz-testing, property-testing, integration-testing, chaos-testing, dependencies, performance, concurrency, migrations, linting), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-380) with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **34 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **38 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -55,19 +55,23 @@ Use this skill when:
 | 14 | **Connection Management** | DB/Redis pool settings, timeouts, replica support |
 | 15 | **Logging & PII Safety** | Structured logging, sensitive data protection, log levels |
 
-### Category D: Quality & Maintainability (9 dimensions)
+### Category D: Quality & Maintainability (13 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
 | 16 | **Idempotency** | Idempotency keys, retry safety, duplicate prevention |
 | 17 | **API Documentation** | Swaggo/OpenAPI annotations, response schemas, examples |
 | 18 | **Technical Debt** | TODOs, FIXMEs, deprecated code, incomplete implementations |
-| 19 | **Testing Coverage** | Co-located tests, mockgen, table-driven tests, integration tests |
+| 19 | **Unit Testing** | Table-driven tests, t.Parallel, loop capture, assertions, GoMock, t.Setenv |
 | 20 | **Dependency Management** | Pinned versions, CVE scanning, deprecated packages |
 | 21 | **Performance Patterns** | N+1 queries, SELECT *, slice pre-allocation, batching |
 | 22 | **Concurrency Safety** | Race conditions, goroutine leaks, mutex usage, worker pools |
 | 23 | **Migration Safety** | Up/down pairs, CONCURRENTLY indexes, NOT NULL defaults |
 | 31 | **Linting & Code Quality** | Import ordering (3 groups), magic numbers, golangci-lint config |
+| 35 | **Fuzz Testing** | Native Go fuzz (Fuzz prefix), seed corpus, input bounding |
+| 36 | **Property-Based Testing** | testing/quick.Check, domain invariants, TestProperty_ prefix |
+| 37 | **Integration Testing** | Testcontainers, build tags, fixture/stub centralization, no t.Parallel |
+| 38 | **Chaos Testing** | Toxiproxy, dual-gate (CHAOS=1), failure injection, recovery verification |
 
 ### Category E: Infrastructure & Hardening (5-6 dimensions)
 
@@ -82,7 +86,7 @@ Use this skill when:
 
 ## Execution Protocol
 
-This skill runs **up to 34 explorer agents in 4 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 38 explorer agents in 4 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -93,9 +97,9 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DD}-{hh:
 | Batch | Agents | Category Focus |
 |-------|--------|----------------|
 | 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input, Rate Limiting) |
-| 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
+| 2 | 11-20 | Operations (Telemetry, Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Unit Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
-| 4 | 31-34 + Summary | Quality (Linting) + Infrastructure (Makefile, Multi-Tenant*, License*) + Final Summary (* = conditional) |
+| 4 | 31-38 + Summary | Quality (Linting, Fuzz Testing, Property Testing, Integration Testing, Chaos Testing) + Infrastructure (Makefile, Multi-Tenant*, License*) + Final Summary (* = conditional) |
 
 ### Step 0: Stack Detection
 
@@ -146,6 +150,11 @@ If **GO=true**, WebFetch these and store content:
 | messaging.md | `standards_messaging` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/messaging.md` |
 | domain-modeling.md | `standards_dm` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain-modeling.md` |
 | idempotency.md | `standards_idempotency` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/idempotency.md` |
+| testing-unit.md | `standards_testing_unit` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-unit.md` |
+| testing-fuzz.md | `standards_testing_fuzz` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-fuzz.md` |
+| testing-property.md | `standards_testing_property` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-property.md` |
+| testing-integration.md | `standards_testing_integration` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-integration.md` |
+| testing-chaos.md | `standards_testing_chaos` | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-chaos.md` |
 
 If **MULTITENANT=true**, also WebFetch:
 
@@ -184,8 +193,8 @@ Write to docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {32 base + N conditional} |
-| **Max Possible Score** | {320 + conditional points} |
+| **Active Dimensions** | {36 base + N conditional} |
+| **Max Possible Score** | {360 + conditional points} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 | **Conditional: License Headers** | {Active / Inactive} |
 
@@ -222,7 +231,7 @@ Task(subagent_type="Explore", prompt="<Agent 15: Logging & PII Safety>")
 Task(subagent_type="Explore", prompt="<Agent 16: Idempotency>")
 Task(subagent_type="Explore", prompt="<Agent 17: API Documentation>")
 Task(subagent_type="Explore", prompt="<Agent 18: Technical Debt>")
-Task(subagent_type="Explore", prompt="<Agent 19: Testing Coverage>")
+Task(subagent_type="Explore", prompt="<Agent 19: Unit Testing>")
 Task(subagent_type="Explore", prompt="<Agent 20: Dependency Management>")
 ```
 
@@ -260,7 +269,19 @@ Task(subagent_type="Explore", prompt="<Agent 34: License Headers>")
 
 **After completion:** Append results to the report file.
 
-### Step 6: Finalize Report
+### Step 6: Execute Batch 5 (Agents 35-38 - Advanced Testing)
+
+Launch 4 testing auditors in parallel:
+```
+Task(subagent_type="Explore", prompt="<Agent 35: Fuzz Testing>")
+Task(subagent_type="Explore", prompt="<Agent 36: Property-Based Testing>")
+Task(subagent_type="Explore", prompt="<Agent 37: Integration Testing>")
+Task(subagent_type="Explore", prompt="<Agent 38: Chaos Testing>")
+```
+
+**After completion:** Append results to the report file.
+
+### Step 7: Finalize Report
 
 1. Read the complete report file
 2. Calculate scores for each dimension
@@ -1764,109 +1785,96 @@ Audit technical debt indicators for production readiness.
 ```
 ```
 
-### Agent 19: Testing Coverage Auditor
+### Agent 19: Unit Testing Auditor
 
 ```prompt
-Audit test coverage and testing patterns for production readiness.
+Audit unit testing patterns for production readiness against Ring testing-unit.md standards.
 
 **Detected Stack:** {DETECTED_STACK}
 
 **Ring Standards (Source of Truth):**
 ---BEGIN STANDARDS---
-{INJECTED: "Testing" section from quality.md}
+{INJECTED: standards_testing_unit from testing-unit.md}
 ---END STANDARDS---
 
 **Search Patterns:**
-- Files: `**/*_test.go`, `**/mocks/**/*.go`, `tests/**/*.go`
-- Keywords: `func Test`, `t.Run`, `mock.Mock`, `assert.`, `require.`
-- Standards-specific: `mockgen`, `testify`, `testcontainers`
+- Files: `**/*_test.go` (excluding `*_integration_test.go`)
+- Keywords: `func Test`, `t.Run`, `t.Parallel`, `gomock`, `assert.`, `require.`
+- Anti-patterns: `os.Setenv`, hand-written mocks, missing `tt := tt`
 
 **Reference Implementation (GOOD):**
 ```go
-// Co-located test file
-// file: handler_test.go (next to handler.go)
-
 func TestHandler_Create(t *testing.T) {
-    // Arrange
+    t.Parallel()  // REQUIRED at function level
+
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
 
     mockRepo := mocks.NewMockRepository(ctrl)
     mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return(nil)
 
-    handler := NewHandler(mockRepo)
-
-    // Act
-    result, err := handler.Create(ctx, input)
-
-    // Assert
-    require.NoError(t, err)
-    assert.Equal(t, expected, result)
-}
-
-// Table-driven tests for multiple cases
-func TestValidation(t *testing.T) {
     tests := []struct {
         name    string
-        input   string
+        input   CreateInput
         wantErr bool
+        errContains string  // REQUIRED: never empty for error cases
     }{
-        {"valid input", "test", false},
-        {"empty input", "", true},
-        {"too long", strings.Repeat("a", 300), true},
+        {name: "valid input", input: validInput()},
+        {name: "empty name", input: emptyName(), wantErr: true, errContains: "name required"},
     }
 
     for _, tt := range tests {
+        tt := tt  // REQUIRED: capture loop variable
         t.Run(tt.name, func(t *testing.T) {
-            err := Validate(tt.input)
+            t.Parallel()  // REQUIRED at subtest level
+            result, err := handler.Create(ctx, tt.input)
             if tt.wantErr {
-                assert.Error(t, err)
-            } else {
-                assert.NoError(t, err)
+                require.Error(t, err)
+                assert.Contains(t, err.Error(), tt.errContains)
+                return
             }
+            require.NoError(t, err)
+            assert.IsType(t, &Response{}, result)  // REQUIRED: verify response type
         })
     }
-}
-
-// Integration test with testcontainers
-func TestIntegration_CreateResource(t *testing.T) {
-    if testing.Short() {
-        t.Skip("skipping integration test")
-    }
-    // Setup container...
 }
 ```
 
 **Check Against Ring Standards For:**
-1. (HARD GATE) Test files co-located with source (*_test.go) per quality.md testing section
-2. (HARD GATE) Mocks generated via mockgen (not hand-written) per Ring standards
-3. (HARD GATE) Assertions use testify (assert/require) per Ring standards
-4. Table-driven tests for multiple cases
-5. Integration tests in separate directory or with build tags
-6. Test helpers/fixtures organized
-7. Parallel tests where appropriate (t.Parallel())
-8. Test cleanup with t.Cleanup() or defer
+1. (HARD GATE) Table-driven tests for all test functions
+2. (HARD GATE) t.Parallel() at function AND subtest levels
+3. (HARD GATE) Loop variable capture (`tt := tt`) before t.Run
+4. (HARD GATE) GoMock for mocks (no hand-written mocks)
+5. (HARD GATE) t.Setenv() instead of os.Setenv()
+6. (HARD GATE) Strong error assertions (errContains never empty)
+7. (HARD GATE) Response type verification (assert.IsType)
+8. Test naming convention: Test{Unit}_{Scenario}
+9. Shared utilities from tests/utils/ (no local Ptr helpers)
+10. Edge case coverage (3+ per acceptance criterion)
 
 **Severity Ratings:**
-- HIGH: Critical paths without tests (HARD GATE violation per Ring standards)
-- HIGH: Hand-written mocks (should use mockgen per Ring standards)
-- MEDIUM: Missing table-driven tests for validators
-- MEDIUM: No integration tests
-- LOW: Tests not running in parallel
-- LOW: Missing edge case coverage
+- CRITICAL: Missing t.Parallel() (slows CI, hides race conditions)
+- CRITICAL: Missing loop variable capture (causes flaky tests)
+- HIGH: Hand-written mocks (should use GoMock)
+- HIGH: Empty errContains (weak assertion)
+- HIGH: os.Setenv usage (breaks test isolation)
+- MEDIUM: Missing table-driven tests
+- MEDIUM: Response type not verified
+- LOW: Missing edge cases
 
 **Output Format:**
 ```
-## Testing Coverage Audit Findings
+## Unit Testing Audit Findings
 
 ### Summary
-- Test files found: X
-- Modules with tests: X/Y
-- Mock generation: mockgen / hand-written
-- Integration tests: Yes/No
+- Unit test files found: X
+- Tests with t.Parallel(): X/Y
+- Loop variable capture: X/Y
+- GoMock usage: Yes/No
+- t.Setenv compliance: Yes/No
 
 ### Critical Issues
-[file:line] - Description
+[file:line] - Description (Ring standard reference)
 
 ### Recommendations
 1. ...
@@ -3330,6 +3338,401 @@ package domain
 ```
 ```
 
+### Agent 35: Fuzz Testing Auditor
+
+```prompt
+Audit fuzz testing implementation for production readiness against Ring testing-fuzz.md standards.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: standards_testing_fuzz from testing-fuzz.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/*_test.go` (excluding `*_integration_test.go`)
+- Keywords: `func Fuzz`, `*testing.F`, `f.Add`, `f.Fuzz`
+- Anti-patterns: Empty seed corpus, missing input bounds
+
+**Reference Implementation (GOOD):**
+```go
+func FuzzCreateOrganization_LegalName(f *testing.F) {
+    // REQUIRED: Comprehensive seed corpus (5+ seeds)
+    f.Add("Acme, Inc.")                // valid
+    f.Add("")                          // empty
+    f.Add("日本語")                     // unicode
+    f.Add("<script>alert(1)</script>") // XSS attempt
+    f.Add(strings.Repeat("x", 1000))   // long string
+
+    f.Fuzz(func(t *testing.T, name string) {
+        // REQUIRED: Bound input to prevent resource exhaustion
+        if len(name) > 512 {
+            name = name[:512]
+        }
+
+        // PROPERTY: No panic, returns error gracefully
+        result, err := ValidateOrganizationName(name)
+        if err == nil {
+            assert.NotEmpty(t, result)
+        }
+    })
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) All input validation functions have fuzz tests
+2. (HARD GATE) All parsers have fuzz tests
+3. (HARD GATE) Naming convention: `Fuzz{Subject}_{Field}`
+4. (HARD GATE) Seed corpus with 5+ seeds (valid, empty, boundary, unicode, security)
+5. (HARD GATE) Input bounding to prevent resource exhaustion
+6. Go 1.18+ native fuzz syntax (`*testing.F`)
+7. No empty seed corpus
+8. Fuzz tests run without panic
+
+**Severity Ratings:**
+- CRITICAL: Input validation without fuzz tests (security risk)
+- CRITICAL: Empty seed corpus (ineffective fuzzing)
+- HIGH: Missing input bounds (resource exhaustion)
+- HIGH: Parser without fuzz tests
+- MEDIUM: Insufficient seed corpus (<5 seeds)
+- MEDIUM: Wrong naming convention
+- LOW: Missing security payloads in seed corpus
+
+**Output Format:**
+```
+## Fuzz Testing Audit Findings
+
+### Summary
+- Validation functions found: X
+- Parsers found: Y
+- Fuzz tests written: Z
+- Seed corpus coverage: X/Y (avg seeds per test)
+
+### Critical Issues
+[file:line] - Description (Ring standard reference)
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 36: Property-Based Testing Auditor
+
+```prompt
+Audit property-based testing implementation for production readiness against Ring testing-property.md standards.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: standards_testing_property from testing-property.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/*_test.go`
+- Keywords: `testing/quick`, `quick.Check`, `TestProperty_`, `property :=`
+- Domain patterns: `Add`, `Equals`, `Marshal`, `Unmarshal`, `Normalize`
+
+**Reference Implementation (GOOD):**
+```go
+import "testing/quick"
+
+func TestProperty_Money_AdditionCommutative(t *testing.T) {
+    property := func(a, b int64) bool {
+        m1 := NewMoney(a, "USD")
+        m2 := NewMoney(b, "USD")
+        // PROPERTY: a + b == b + a
+        return m1.Add(m2).Equals(m2.Add(m1))
+    }
+
+    err := quick.Check(property, nil)
+    require.NoError(t, err)
+}
+
+func TestProperty_User_JSONRoundtrip(t *testing.T) {
+    property := func(name string, age uint8) bool {
+        original := User{Name: name, Age: int(age)}
+        data, err := json.Marshal(original)
+        if err != nil {
+            return true // Skip invalid inputs
+        }
+        var decoded User
+        if json.Unmarshal(data, &decoded) != nil {
+            return true
+        }
+        // PROPERTY: Unmarshal(Marshal(x)) == x
+        return original.Name == decoded.Name && original.Age == decoded.Age
+    }
+
+    require.NoError(t, quick.Check(property, nil))
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) All domain invariants have property tests
+2. (HARD GATE) Naming convention: `TestProperty_{Subject}_{Property}`
+3. (HARD GATE) Using `testing/quick.Check` for property tests
+4. Mathematical operations tested for commutativity/associativity
+5. Serialization tested for roundtrip property
+6. Normalization functions tested for idempotency
+7. No hardcoded iterations (use default or configure `MaxCount`)
+
+**Common Properties to Test:**
+- Commutativity: `a + b == b + a`
+- Roundtrip: `Unmarshal(Marshal(x)) == x`
+- Idempotency: `f(f(x)) == f(x)`
+- Non-negative: `Jitter(x) >= 0`
+- Invariant preservation: `Balance >= 0 after debit`
+
+**Severity Ratings:**
+- CRITICAL: Domain invariants without property tests
+- HIGH: Missing roundtrip tests for serialization
+- HIGH: Not using testing/quick.Check
+- MEDIUM: Wrong naming convention
+- MEDIUM: Missing commutativity/associativity tests
+- LOW: Missing idempotency tests for normalization
+
+**Output Format:**
+```
+## Property-Based Testing Audit Findings
+
+### Summary
+- Domain entities found: X
+- Properties identified: Y
+- Property tests written: Z
+- Iterations per property: 100 (default)
+
+### Critical Issues
+[file:line] - Description (Ring standard reference)
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 37: Integration Testing Auditor
+
+```prompt
+Audit integration testing implementation for production readiness against Ring testing-integration.md standards.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: standards_testing_integration from testing-integration.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/*_integration_test.go`, `**/*_test.go` (with integration behavior)
+- Keywords: `testcontainers`, `TestIntegration_`, `//go:build integration`
+- Anti-patterns: `t.Parallel()` in integration tests, `os.Setenv`, hardcoded ports
+
+**Reference Implementation (GOOD):**
+```go
+//go:build integration
+
+package postgres_test
+
+import (
+    "testing"
+    "github.com/testcontainers/testcontainers-go/modules/postgres"
+)
+
+func TestIntegration_UserRepository_Create(t *testing.T) {
+    // NO t.Parallel() - integration tests run sequentially
+    ctx := context.Background()
+
+    // Use testcontainers, not production deps
+    container, err := postgres.Run(ctx, "postgres:15-alpine", ...)
+    require.NoError(t, err)
+    defer container.Terminate(ctx)
+
+    // Get dynamic connection string (no hardcoded ports)
+    connStr, err := container.ConnectionString(ctx, "sslmode=disable")
+    require.NoError(t, err)
+
+    // Use centralized fixtures
+    repo := NewUserRepository(connStr)
+    userID := pgtestutil.CreateTestUser(t, container.DB, nil)
+
+    // Test
+    user, err := repo.Find(ctx, userID)
+    require.NoError(t, err)
+    assert.NotEmpty(t, user.ID)
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) All files named `*_integration_test.go`
+2. (HARD GATE) All files have `//go:build integration` tag
+3. (HARD GATE) All functions named `TestIntegration_{Component}_{Scenario}`
+4. (HARD GATE) No `t.Parallel()` in integration tests
+5. (HARD GATE) Testcontainers for external dependencies
+6. (HARD GATE) Fixtures from `tests/utils/`, no local helpers
+7. No hardcoded ports (`:5432`, `:6379`, `:27017`)
+8. No `os.Setenv` (use `t.Setenv`)
+9. No `time.Sleep` (use wait strategies)
+10. Cleanup via `t.Cleanup()` or `defer`
+
+**11 Anti-Patterns to Detect:**
+1. Hardcoded ports
+2. Shared database state
+3. time.Sleep for sync
+4. os.Setenv pollution
+5. Global test state
+6. Missing build tag
+7. t.Parallel() usage
+8. Local fixtures
+9. Network-dependent tests
+10. Missing timeout
+11. Production credentials
+
+**Severity Ratings:**
+- CRITICAL: Missing build tag (runs with unit tests)
+- CRITICAL: t.Parallel() in integration tests (race conditions)
+- HIGH: Hardcoded ports (CI conflicts)
+- HIGH: Local fixtures (duplication)
+- HIGH: No testcontainers (production deps)
+- MEDIUM: Missing function naming convention
+- MEDIUM: os.Setenv usage
+- LOW: time.Sleep usage
+
+**Output Format:**
+```
+## Integration Testing Audit Findings
+
+### Summary
+- External dependencies: X
+- Integration test files: Y
+- Build tags present: Y/Y
+- t.Parallel() violations: 0
+- Testcontainers usage: Yes/No
+
+### Anti-Pattern Detection
+| Anti-Pattern | Found | Files |
+|--------------|-------|-------|
+| t.Parallel() | 0 | - |
+| Hardcoded ports | 0 | - |
+| Missing build tag | 0 | - |
+
+### Critical Issues
+[file:line] - Description (Ring standard reference)
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 38: Chaos Testing Auditor
+
+```prompt
+Audit chaos testing implementation for production readiness against Ring testing-chaos.md standards.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: standards_testing_chaos from testing-chaos.md}
+---END STANDARDS---
+
+**Search Patterns:**
+- Files: `**/*_integration_test.go`, `**/chaos/*.go`
+- Keywords: `Chaos`, `Toxiproxy`, `CHAOS=1`, `proxy.Disconnect`, `proxy.AddLatency`
+- Infrastructure: `tests/utils/chaos/`
+
+**Reference Implementation (GOOD):**
+```go
+//go:build integration
+
+func TestIntegration_Chaos_Redis_ConnectionLoss(t *testing.T) {
+    // REQUIRED: Gate 1 - Chaos tests disabled by default
+    if os.Getenv("CHAOS") != "1" {
+        t.Skip("Chaos tests disabled (set CHAOS=1)")
+    }
+
+    // REQUIRED: Gate 2 - Skip in short mode
+    if testing.Short() {
+        t.Skip("Skipping chaos test in short mode")
+    }
+
+    ctx := context.Background()
+    redisC := redistestutil.SetupContainer(t)
+    proxy := chaosutil.SetupToxiproxy(t, redisC)
+
+    client := redis.NewClient(&redis.Options{Addr: proxy.ListenAddr()})
+
+    // Phase 1: Verify normal operation
+    err := client.Set(ctx, "key", "value", 0).Err()
+    require.NoError(t, err, "normal operation should work")
+
+    // Phase 2: Inject failure
+    err = proxy.Disconnect()
+    require.NoError(t, err)
+
+    // Phase 3: Verify expected failure behavior
+    err = client.Set(ctx, "key2", "value2", time.Second).Err()
+    require.Error(t, err, "operation should fail when disconnected")
+
+    // Phase 4: Restore connection
+    err = proxy.Reconnect()
+    require.NoError(t, err)
+
+    // Phase 5: Verify recovery
+    err = client.Set(ctx, "key3", "value3", 0).Err()
+    require.NoError(t, err, "operation should work after recovery")
+}
+```
+
+**Check Against Ring Standards For:**
+1. (HARD GATE) All external dependencies have chaos tests
+2. (HARD GATE) Dual-gate pattern (`CHAOS=1` + `testing.Short()`)
+3. (HARD GATE) Naming convention: `TestIntegration_Chaos_{Component}_{Scenario}`
+4. (HARD GATE) 5-phase structure: Normal → Inject → Verify → Restore → Recovery
+5. Toxiproxy infrastructure in `tests/utils/chaos/`
+6. Connection loss scenarios tested
+7. High latency scenarios tested
+8. Recovery verification after fault removal
+
+**Failure Scenarios to Test:**
+- Connection loss (database, cache, queue)
+- High latency (timeout behavior)
+- Network partition (intermittent failures)
+- Slow close (connection pool exhaustion)
+
+**Severity Ratings:**
+- CRITICAL: External dependency without chaos tests
+- CRITICAL: Missing dual-gate pattern (accidental CI runs)
+- HIGH: Missing recovery verification
+- HIGH: No Toxiproxy infrastructure
+- MEDIUM: Incomplete 5-phase structure
+- MEDIUM: Wrong naming convention
+- LOW: Missing latency/partition scenarios
+
+**Output Format:**
+```
+## Chaos Testing Audit Findings
+
+### Summary
+- External dependencies: X
+- Chaos tests written: Y
+- Dual-gate compliance: Y/Y
+- Failure scenarios: Z
+
+### Chaos Tests by Component
+| Component | Scenario | Test Function | 5-Phase | Status |
+|-----------|----------|---------------|---------|--------|
+| PostgreSQL | Connection loss | TestIntegration_Chaos_Postgres_ConnectionLoss | Yes | PASS |
+| Redis | High latency | TestIntegration_Chaos_Redis_HighLatency | Yes | PASS |
+
+### Critical Issues
+[file:line] - Description (Ring standard reference)
+
+### Recommendations
+1. ...
+```
+```
+
 ---
 
 ## Consolidated Report Template
@@ -3349,7 +3752,7 @@ After all explorers complete, generate this report:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {32 base + N conditional} |
+| **Active Dimensions** | {36 base + N conditional} |
 | **Max Possible Score** | {dynamic_max} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 | **Conditional: License Headers** | {Active / Inactive} |
@@ -3402,13 +3805,17 @@ After all explorers complete, generate this report:
 | 16. Idempotency | X/10 | 0 | 0 | 0 | 0 |
 | 17. API Documentation | X/10 | 0 | 0 | 0 | 0 |
 | 18. Technical Debt | X/10 | 0 | 0 | 0 | 0 |
-| 19. Testing Coverage | X/10 | 0 | 0 | 0 | 0 |
+| 19. Unit Testing | X/10 | 0 | 0 | 0 | 0 |
 | 20. Dependency Mgmt | X/10 | 0 | 0 | 0 | 0 |
 | 21. Performance | X/10 | 0 | 0 | 0 | 0 |
 | 22. Concurrency | X/10 | 0 | 0 | 0 | 0 |
 | 23. Migrations | X/10 | 0 | 0 | 0 | 0 |
 | 31. Linting & Quality | X/10 | 0 | 0 | 0 | 0 |
-| **Category D Total** | **X/90** | **0** | **0** | **0** | **0** |
+| 35. Fuzz Testing | X/10 | 0 | 0 | 0 | 0 |
+| 36. Property-Based Testing | X/10 | 0 | 0 | 0 | 0 |
+| 37. Integration Testing | X/10 | 0 | 0 | 0 | 0 |
+| 38. Chaos Testing | X/10 | 0 | 0 | 0 | 0 |
+| **Category D Total** | **X/130** | **0** | **0** | **0** | **0** |
 
 ### Category E: Infrastructure & Hardening
 
@@ -3571,7 +3978,7 @@ After all explorers complete, generate this report:
 #### 18. Technical Debt
 {Agent 18 output}
 
-#### 19. Testing Coverage
+#### 19. Unit Testing
 {Agent 19 output}
 
 #### 20. Dependency Management
@@ -3588,6 +3995,18 @@ After all explorers complete, generate this report:
 
 #### 31. Linting & Code Quality
 {Agent 31 output}
+
+#### 35. Fuzz Testing
+{Agent 35 output}
+
+#### 36. Property-Based Testing
+{Agent 36 output}
+
+#### 37. Integration Testing
+{Agent 37 output}
+
+#### 38. Chaos Testing
+{Agent 38 output}
 
 ### Category E: Infrastructure & Hardening
 
@@ -3685,7 +4104,7 @@ After all explorers complete, generate this report:
 dynamic_max = 320 + (MULTITENANT ? 10 : 0) + (LICENSE ? 10 : 0)
 ```
 
-Possible values: 320, 330, or 340.
+Possible values: 360, 370, or 380.
 
 ### Overall Classification (Percentage-Based)
 
@@ -3753,22 +4172,26 @@ Launch 10 agents (21-30) in a SINGLE response.
 
 Launch agents 31-34 (conditionally for 33 and 34) in a SINGLE response.
 
-### Step 9: Collect Results
+### Step 9: Launch Parallel Explorers (Batch 5 - Advanced Testing)
+
+Launch agents 35-38 (Fuzz Testing, Property-Based Testing, Integration Testing, Chaos Testing) in a SINGLE response.
+
+### Step 10: Collect Results
 
 As each explorer completes, mark its todo as completed and append to report.
 
-### Step 10: Consolidate Report
+### Step 11: Consolidate Report
 
 Once ALL explorers complete:
 1. Calculate scores for each dimension (0-10 scale)
-2. Calculate category totals (A: /80, B: /50-60, C: /50, D: /90, E: /50-60)
+2. Calculate category totals (A: /80, B: /50-60, C: /50, D: /130, E: /50-60)
 3. Calculate overall score (/{dynamic_max})
 4. Aggregate critical/high/medium/low counts
 5. Determine readiness classification (percentage-based)
 6. Generate Standards Compliance Cross-Reference table
 7. Generate the consolidated report
 
-### Step 11: Write Report
+### Step 12: Write Report
 
 ```
 Write: docs/audits/production-readiness-{YYYY-MM-DD}-{hh:mm}.md

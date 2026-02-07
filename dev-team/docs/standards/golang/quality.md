@@ -16,8 +16,8 @@ This module covers logging, linting, configuration validation, and container sec
 
 ## Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
+| # | [Section Name](#anchor-link) | Description |
+|---|------------------------------|-------------|
 | 1 | [Logging](#logging) | Structured logging with lib-commons |
 | 2 | [Linting](#linting) | Import ordering, magic numbers, .golangci.yml requirement |
 | 3 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |

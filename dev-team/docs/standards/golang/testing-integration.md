@@ -470,7 +470,7 @@ func TestUseCase_CreateAccount(t *testing.T) {
 | 1 | **Hardcoded ports** | `grep -rn ":5432\|:6379\|:27017"` | Port conflicts in CI | Use testcontainers dynamic ports |
 | 2 | **Shared database state** | Tests depend on prior test data | Flaky tests | Each test creates own data |
 | 3 | **time.Sleep for sync** | `grep "time.Sleep"` | Slow, unreliable | Use wait strategies |
-| 4 | **os.Setenv pollution** | `grep "os.Setenv"` | Env leaks between tests | Use `t.Setenv()` |
+| 4 | **os.Setenv pollution** | `grep "os.Setenv"` | Env leaks between tests | Replace with `t.Setenv()` |
 | 5 | **Global test state** | Package-level variables | State leaks | Instance per test |
 | 6 | **Missing build tag** | `//go:build integration` absent | Tests run with unit tests | Always add build tag |
 | 7 | **t.Parallel() usage** | `grep "t.Parallel()"` | State conflicts | Remove all `t.Parallel()` |
