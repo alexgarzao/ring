@@ -574,7 +574,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Core plugin: `default/` (25 skills, 7 agents, 12 commands)
 - Developer agents: `dev-team/` (9 skills, 9 agents, 5 commands)
 - Product planning: `pm-team/` (10 skills, 3 agents, 2 commands)
-- PMO specialists: `pmo-team/` (8 skills, 5 agents, 3 commands)
+- PMO specialists: `pmo-team/` (9 skills, 6 agents, 4 commands)
 - FinOps regulatory: `finops-team/` (7 skills, 3 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)
 - Current git branch: `main`

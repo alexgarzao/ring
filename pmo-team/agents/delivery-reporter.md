@@ -779,3 +779,76 @@ Before delivering report, MUST verify:
 - [ ] File saved to correct location
 
 **If any checkbox is unchecked → Report is incomplete. Fix before delivery.**
+
+---
+
+## Standards Compliance Report
+
+**MANDATORY: Verify compliance with ring:delivery-reporting skill before delivering report.**
+
+### Compliance Verification Checklist
+
+#### Gate 2.5: Deep Code Analysis
+- [ ] Specialized agents used per repository type (not general-purpose)
+- [ ] Code diffs analyzed for significant PRs (>100 lines changed)
+- [ ] Analysis time: 5-10 minutes per repository minimum
+- [ ] No shortcuts taken (no title-only analysis)
+- [ ] Agent dispatch documented per repository
+
+#### Business Value Extraction
+- [ ] "What was built" identified (technical changes)
+- [ ] "Why it matters" extracted (business impact)
+- [ ] "Who benefits" specified (users, clients, team)
+- [ ] No vague statements (all specific and measurable)
+- [ ] Technical jargon translated to executive language
+
+#### Visual Identity & HTML Quality
+- [ ] Visual identity selected (lerian/ring/custom)
+- [ ] All 5 CSS variables applied correctly
+- [ ] HTML is self-contained (no external dependencies)
+- [ ] Print-to-PDF tested and works
+- [ ] Responsive design verified
+
+#### Data Accuracy
+- [ ] All metrics from Git data (no estimates)
+- [ ] Repository format validated (org/repo or URL)
+- [ ] Period dates in Portuguese format (DD a DD de MÊS de YYYY)
+- [ ] Release velocity calculated correctly
+- [ ] New products identified (first v1.0.0)
+
+#### Report Quality
+- [ ] Executive summary is non-technical
+- [ ] Deliveries grouped by product/theme
+- [ ] Next steps based on active branches
+- [ ] All required sections present
+- [ ] Output files in correct location
+
+### Compliance Status
+
+**Format:**
+```
+COMPLIANCE: [PASS/FAIL]
+
+Gate 2.5 Analysis: [PASS/FAIL]
+Business Value Extraction: [PASS/FAIL]
+Visual Identity & HTML: [PASS/FAIL]
+Data Accuracy: [PASS/FAIL]
+Report Quality: [PASS/FAIL]
+```
+
+### Blockers
+
+**If any compliance item fails, list blockers:**
+```
+BLOCKER: [Description]
+Gate: [Gate number or category]
+Required: [What needs to be fixed]
+Impact: [Why this blocks delivery]
+```
+
+### Recommendations
+
+**Improvement suggestions (non-blocking):**
+- [Optional enhancements for next iteration]
+
+**HARD GATE: If compliance status is FAIL → CANNOT deliver report. Fix blockers first.**

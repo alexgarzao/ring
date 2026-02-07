@@ -79,7 +79,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 | "Executive reports are just summaries" | Executive reporting requires right abstraction level, action focus. MUST dispatch executive-reporter. |
 
 **Self-sufficiency bias check:** If you're tempted to perform PMO tasks directly, ask:
-1. Is there a specialist for this? (Check the 5 specialists below)
+1. Is there a specialist for this? (Check the 6 specialists below)
 2. Would a specialist apply portfolio-level frameworks I might miss?
 3. Am I avoiding dispatch because it feels like "overhead"?
 
@@ -249,7 +249,7 @@ Remember:
 
 ## Available in This Plugin
 
-**Agents:** See "5 PMO Specialists" table above.
+**Agents:** See "6 PMO Specialists" table above.
 
 **Skills:**
 - `using-pmo-team` (this) - Introduction and dispatch guide
