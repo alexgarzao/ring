@@ -16,7 +16,7 @@ This module covers the foundational requirements for all Go projects.
 | 4 | [Configuration](#configuration) | Environment variable handling |
 | 5 | [Database Naming Convention (snake_case)](#database-naming-convention-snake-case-mandatory) | Table and column naming |
 | 6 | [Database Migrations](#database-migrations-mandatory) | golang-migrate requirement |
-| 7 | [License Headers](#license-headers-conditional) | Copyright headers in source files |
+| 7 | [License Headers](#license-headers-mandatory) | Copyright headers in source files |
 | 8 | [MongoDB Patterns](#mongodb-patterns-mandatory) | Injection prevention, pooling, index management |
 | 9 | [Dependency Management](#dependency-management-mandatory) | Go modules, version pinning, security updates |
 
@@ -819,18 +819,18 @@ grep -rn "CREATE TABLE\|ALTER TABLE\|DROP TABLE" --include="*.go" ./internal
 
 ---
 
-## License Headers (CONDITIONAL)
+## License Headers (MANDATORY)
 
-**CONDITION:** If the project has a `LICENSE` file in the root directory, all `.go` source files MUST include a license header.
+**⛔ HARD GATE:** All `.go` source files MUST include a license header. Missing license headers indicate incomplete compliance and must be fixed before production deployment.
 
-### Detection Rule
+### Why License Headers Are MANDATORY
 
-```bash
-# Check if LICENSE file exists
-if [ -f "LICENSE" ]; then
-    # License headers are REQUIRED for all .go files
-fi
-```
+| Without Headers | With Headers |
+|-----------------|--------------|
+| IP ownership unclear | Clear copyright attribution |
+| Legal exposure in copies | Protected when code is shared |
+| Compliance audit failures | Audit-ready codebase |
+| Inconsistent attribution | Uniform legal protection |
 
 ### Required Format (Elastic License 2.0)
 
