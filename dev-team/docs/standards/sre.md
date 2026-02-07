@@ -341,7 +341,6 @@ func NewRouter(lg libLog.Logger, tl *libOpentelemetry.Telemetry, ...) *fiber.App
 
     // MUST be first middleware - injects tracer+logger into context
     f.Use(tlMid.WithTelemetry(tl))
-    f.Use(cors.New())
     f.Use(libHTTP.WithHTTPLogging(libHTTP.WithCustomLogger(lg)))
 
     // ... define routes ...
@@ -566,7 +565,6 @@ export function createRouter(
     // Create logging middleware - injects logger into request
     const logMid = createLoggingMiddleware(logger);
     app.use(logMid);
-    app.use(cors());
     app.use(express.json());
 
     // ... define routes ...

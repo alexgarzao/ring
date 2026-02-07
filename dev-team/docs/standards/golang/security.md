@@ -139,7 +139,6 @@ func NewRouter(
     tlMid := libHTTP.NewTelemetryMiddleware(tl)
     f.Use(tlMid.WithTelemetry(tl))
     f.Use(recover.New())
-    f.Use(cors.New())
 
     // Protected routes with authorization
     f.Post("/v1/resources", auth.Authorize(applicationName, "resources", "post"), handler.Create)
@@ -415,7 +414,6 @@ func NewRoutes(lg log.Logger, tl *opentelemetry.Telemetry, handler *YourHandler,
 
     // Other middleware
     f.Use(tlMid.WithTelemetry(tl))
-    f.Use(cors.New())
     f.Use(libHTTP.WithHTTPLogging(libHTTP.WithCustomLogger(lg)))
 
     // Routes
