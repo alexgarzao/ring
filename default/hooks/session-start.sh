@@ -165,13 +165,7 @@ doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
 additional_context="<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
 
 # Build JSON output
-cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "${additional_context}"
-  }
-}
-EOF
+# Use printf %s to prevent shell interpretation of metacharacters in content
+printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$additional_context"
 
 exit 0
