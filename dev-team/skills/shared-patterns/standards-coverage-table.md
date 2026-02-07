@@ -411,6 +411,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | UNIT-8 | Environment Variables in Tests (MANDATORY) | `#environment-variables-in-tests-mandatory` |
 | UNIT-9 | Shared Test Utilities (MANDATORY) | `#shared-test-utilities-mandatory` |
 | UNIT-10 | Unit Test Quality Gate (MANDATORY) | `#unit-test-quality-gate-mandatory` |
+| UNIT-11 | Unit Test Scope & Boundaries (MANDATORY) | `#unit-test-scope--boundaries-mandatory` |
 
 **For TypeScript projects (Unit Mode):**
 | # | Section to Check |
