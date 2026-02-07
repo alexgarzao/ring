@@ -1,5 +1,5 @@
 ---
-name: production-readiness-audit
+name: ring:production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
@@ -3737,7 +3737,7 @@ Audit nil/null pointer safety and dereference risks across the codebase for prod
 | Array.find() unchecked | MEDIUM | Returns `undefined` if not found — must check before use |
 | Map.get() unchecked | MEDIUM | Returns `undefined` if key missing — must check before use |
 | Optional chaining misuse | MEDIUM | `a?.b.c` — protects `a` but not `b`. Should be `a?.b?.c` |
-| Non-null assertion abuse | MEDIUM | Excessive `!` operator bypasses TypeScript's null checks |
+| Non-null assertion abuse | MEDIUM | Excessive non-null assertion operator (!) bypasses TypeScript's null checks |
 
 **Tracing Methodology (MANDATORY — do not skip):**
 1. **Identify nil sources**: Function returns that can be nil/null, map lookups, type assertions, interface values, external API responses
@@ -3838,7 +3838,7 @@ const { name, email } = await findUser(id); // throws if null
 9. (MEDIUM) API responses use initialized slices/maps (Go: `make()`, not `var`)
 10. (MEDIUM) Optional chaining covers full property chain (TypeScript)
 11. (MEDIUM) `Array.find()` and `Map.get()` results are checked before use (TypeScript)
-12. (LOW) Non-null assertion operator (`!`) is used sparingly with justification (TypeScript)
+12. (LOW) Non-null assertion operator (!) is used sparingly with justification (TypeScript)
 
 **Severity Ratings:**
 - CRITICAL: Type assertion without ok (panics), nil map write (panics), nil receiver call (panics), nil channel (deadlocks), nil function call (panics)
