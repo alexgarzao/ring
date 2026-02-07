@@ -53,7 +53,7 @@
     },
     {
       "name": "ring-pm-team",
-      "description": "Product team pre-development workflow: 10 skills + 3 research agents. 9-gate planning system with research-first approach (Gate 0) before PRD creation. Includes parallel research agents (repo-research-analyst, best-practices-researcher, framework-docs-researcher) and full planning gates (PRD, feature map, TRD, API, data model, dependencies, tasks, subtasks).",
+      "description": "Product team pre-development workflow: 11 skills + 3 research agents. 10-gate planning system with research-first approach (Gate 0) before PRD creation. Includes parallel research agents (repo-research-analyst, best-practices-researcher, framework-docs-researcher) and full planning gates (PRD, feature map, TRD, API, data model, dependencies, tasks, subtasks, delivery roadmap).",
       "version": "0.11.2",
       "source": "./pm-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pm-team",

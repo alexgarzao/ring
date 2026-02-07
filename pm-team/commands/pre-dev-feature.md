@@ -54,7 +54,7 @@ Use the AskUserQuestion tool to gather:
 
 **Why auto-detection?** Access Manager and License Manager are project-level infrastructure decisions, not feature-level. Once integrated, all features in the project inherit them.
 
-After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 4-gate workflow:
+After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 5-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>

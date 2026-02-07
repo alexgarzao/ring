@@ -410,7 +410,7 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 67 skills (25 + 9 + 11 + 9 + 6 + 7) across 6 plugins**
+**Total: 67 skills (25 + 9 + 11 + 8 + 7 + 7) across 6 plugins**
 **Total: 30 agents (7 + 9 + 3 + 5 + 3 + 3) across 6 plugins**
 **Total: 25 commands (12 + 5 + 2 + 3 + 0 + 3) across 6 plugins**
 
