@@ -18,7 +18,7 @@ This module covers native Go fuzz testing patterns. Fuzz tests automatically gen
 | 4 | [Input Types](#input-types) | Supported fuzz input types |
 | 5 | [Fuzz Test Quality Gate](#fuzz-test-quality-gate-mandatory) | Checklist before completion |
 
-**Meta-sections:** [Anti-Rationalization Table](#anti-rationalization-table-fuzz-testing)
+**Meta-sections:** [Output Format (Gate 4 - Fuzz Testing)](#output-format-gate-4---fuzz-testing), [Anti-Rationalization Table](#anti-rationalization-table-fuzz-testing)
 
 ---
 
