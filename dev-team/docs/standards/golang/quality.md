@@ -354,7 +354,7 @@ Projects without `.golangci.yml` have inconsistent linting across environments, 
 
 **⛔ HARD GATE:** Every Go project MUST have a `.golangci.yml` file in the repository root. Missing this file is a BLOCKER for code review.
 
-#### Minimum Required Linters (MANDATORY)
+#### Required Linters (MANDATORY - 14 total)
 
 Every `.golangci.yml` MUST enable these linters:
 
@@ -369,6 +369,11 @@ Every `.golangci.yml` MUST enable these linters:
 | `mnd` | Magic number detection | Quality |
 | `unused` | Unused code detection | Quality |
 | `ineffassign` | Unused assignment detection | Quality |
+| `gosimple` | Simplify code suggestions | Quality |
+| `misspell` | Spelling errors in comments/strings | Quality |
+| `goconst` | Repeated string literal detection | Quality |
+| `nilerr` | Return nil with non-nil error detection | Correctness |
+| `forbidigo` | Forbidden pattern enforcement | Security |
 
 #### Configuration Template
 
@@ -381,7 +386,7 @@ run:
 linters:
   disable-all: true
   enable:
-    # MANDATORY linters (MUST be enabled)
+    # MANDATORY linters (all 14 MUST be enabled)
     - gofmt         # Code formatting
     - goimports     # Import organization
     - govet         # Go vet analysis
@@ -391,9 +396,8 @@ linters:
     - mnd           # Magic number detection
     - unused        # Unused code detection
     - ineffassign   # Unused assignment detection
-    # Recommended additional linters
     - gosimple      # Simplify code
-    - misspell      # Spelling
+    - misspell      # Spelling errors
     - goconst       # Repeated strings
     - nilerr        # Return nil with non-nil error
     - forbidigo     # Forbidden patterns
