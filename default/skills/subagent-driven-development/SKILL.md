@@ -102,7 +102,7 @@ After final review passes:
 
 **Task 1:** Implement → All 3 reviewers PASS → Mark complete.
 
-**Task 2:** Implement → Review finds: Critical (hardcoded secret), High (missing password reset, no rate limiting), Low (extract token logic) → Dispatch fix subagent → Re-run reviewers → All PASS → Add TODO for Low → Mark complete.
+**Task 2:** Implement → Review finds: Critical (hardcoded secret), High (missing password reset, missing input validation), Low (extract token logic) → Dispatch fix subagent → Re-run reviewers → All PASS → Add TODO for Low → Mark complete.
 
 **Final:** All 3 reviewers PASS entire implementation → Done.
 

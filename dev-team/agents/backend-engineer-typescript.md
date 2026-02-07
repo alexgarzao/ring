@@ -207,7 +207,6 @@ Invoke this agent when the task involves:
 - Worker threads for CPU-intensive operations
 - Stream processing for large datasets
 - Circuit breaker patterns with typed states
-- Rate limiting with typed quota tracking
 - Graceful shutdown with cleanup handlers
 
 ### Serverless (AWS Lambda, Vercel, Cloudflare Workers)
@@ -1100,7 +1099,6 @@ Coverage: 89.2%
 
 - Add password hashing integration
 - Implement email verification flow
-- Add rate limiting to registration endpoint
 ```
 
 ## What This Agent Does not Handle

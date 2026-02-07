@@ -271,7 +271,7 @@ From the diff, identify:
 | **Messaging** | Topics, payloads, headers, idempotency, ordering |
 | **Config/Env** | New vars, changed defaults |
 | **Auth** | Permissions, roles, tokens |
-| **Performance** | Rate-limits, timeouts, retries |
+| **Performance** | Timeouts, retries, connection pools |
 | **Dependencies** | Bumps with runtime behavior impact |
 | **Observability** | Logging, metrics, tracing changes |
 | **Operations** | Scripts, cron, job schedules |
