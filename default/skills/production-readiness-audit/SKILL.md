@@ -383,17 +383,16 @@ Audit error handling framework usage for production readiness.
 ---END STANDARDS---
 
 **Search Patterns:**
-- Files: `**/assert*.go`, `**/error*.go`, `**/handlers.go`
-- Keywords: `assert.New`, `AssertionError`, `ErrRepo`, `errors.Is`, `errors.As`
+- Files: `**/error*.go`, `**/handlers.go`
+- Keywords: `ErrRepo`, `errors.Is`, `errors.As`, `errors.New`
 - Also search: `panic(`, `log.Fatal`
 - Standards-specific: `ErrCode`, `DomainError`, `ErrorResponse`
 
 **Reference Implementation (GOOD):**
 ```go
-// Using pkg/assert for validation
-asserter := assert.New(ctx, logger, "module", "operation")
-if err := asserter.NotNil(ctx, config, "config required"); err != nil {
-    return fmt.Errorf("validation: %w", err)
+// Validate with explicit checks and return errors (no panic)
+if config == nil {
+    return fmt.Errorf("validation: config required")
 }
 
 // Domain error types
@@ -412,7 +411,7 @@ if errors.Is(err, domain.ErrNotFound) {
 ```go
 // Direct panic in production code
 if config == nil {
-    panic("config is nil")  // BAD: Use assert or return error
+    panic("config is nil")  // BAD: Return error instead
 }
 
 // Swallowing errors
@@ -423,7 +422,7 @@ return errors.New("error")  // BAD: Not descriptive
 ```
 
 **Check Against Ring Standards For:**
-1. (HARD GATE) pkg/assert used instead of panic for validation per Ring standards
+1. (HARD GATE) Explicit nil checks with error returns instead of panic for validation per Ring standards
 2. (HARD GATE) Named error variables (sentinel errors) per module following Ring error codes convention
 3. (HARD GATE) No panic() in non-test production code
 4. Proper error wrapping with %w
@@ -444,7 +443,7 @@ return errors.New("error")  // BAD: Not descriptive
 ## Error Framework Audit Findings
 
 ### Summary
-- Modules using pkg/assert: X
+- Nil checks with error returns: X
 - Panic calls in production: Y
 - Swallowed errors: Z
 
@@ -2842,7 +2841,6 @@ import (
     "go.opentelemetry.io/otel"
 
     "github.com/company/project/internal/domain"
-    "github.com/company/project/pkg/assert"
 )
 
 // Named constants instead of magic numbers
