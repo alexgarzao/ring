@@ -20,7 +20,7 @@ sequence:
   before: [ring:dev-ring:sre]
 
 related:
-  complementary: [ring:dev-implementation, ring:dev-testing]
+  complementary: [ring:dev-implementation, ring:dev-unit-testing]
 
 input_schema:
   required:

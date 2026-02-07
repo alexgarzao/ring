@@ -144,12 +144,16 @@ jq '.custom_prompt' docs/ring:dev-cycle/current-cycle.json  # View
 |------|-------|-------------|
 | 0 | `ring:dev-implementation` | Implement code (TDD) |
 | 1 | `ring:dev-devops` | Create Docker/compose |
-| 2 | `ring:dev-ring:sre` | Observability (health checks, logging, tracing) |
-| 3 | `ring:dev-testing` | Write and run tests |
-| 4 | `ring:requesting-code-review` | Code review (3 reviewers in parallel) |
-| 5 | `ring:dev-validation` | Final validation |
+| 2 | `ring:dev-sre` | Observability (health checks, logging, tracing) |
+| 3 | `ring:dev-unit-testing` | Unit tests with 85%+ coverage |
+| 4 | `ring:dev-fuzz-testing` | Fuzz tests for edge cases |
+| 5 | `ring:dev-property-testing` | Property-based tests for invariants |
+| 6 | `ring:dev-integration-testing` | Integration tests with testcontainers |
+| 7 | `ring:dev-chaos-testing` | Chaos tests for failure scenarios |
+| 8 | `ring:requesting-code-review` | Code review (5 reviewers in parallel) |
+| 9 | `ring:dev-validation` | Final validation |
 
-**Note:** Tasks are loaded at initialization, not as a separate gate.
+**Note:** Tasks are loaded at initialization, not as a separate gate. All 10 gates are MANDATORY.
 
 After all tasks: `ring:dev-feedback-loop` generates metrics report.
 
@@ -176,7 +180,7 @@ After all tasks: `ring:dev-feedback-loop` generates metrics report.
 Use Skill tool: ring:dev-cycle
 ```
 
-The skill contains the complete 6-gate workflow with:
+The skill contains the complete 10-gate workflow with:
 - Anti-rationalization tables
 - Pressure resistance scenarios
 - TDD sub-phases (Gate 0.1 RED → Gate 0.2 GREEN)

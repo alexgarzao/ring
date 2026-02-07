@@ -45,6 +45,10 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
 
+### Production Readiness Audit (ring-default)
+
+The **production-readiness-audit** skill (`ring:production-readiness-audit`) evaluates codebase production readiness across **27 dimensions** in 5 categories. **Invocation:** use the Skill tool or the `/ring:production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** 27-dimension scored report (0–270) with severity ratings and standards cross-reference. Implementation details: [default/skills/production-readiness-audit/SKILL.md](../default/skills/production-readiness-audit/SKILL.md).
+
 ### For Product/Team-Specific Skills
 
 1. Create plugin directory:
@@ -192,6 +196,12 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ---
 
+## Development Cycle (10-gate)
+
+The **ring:dev-cycle** skill orchestrates task execution through **10 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → unit-testing (Gate 3) → fuzz-testing (Gate 4) → property-testing (Gate 5) → integration-testing (Gate 6) → chaos-testing (Gate 7) → review (Gate 8) → validation (Gate 9). All gates are MANDATORY. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
+
+---
+
 ## Parallel Code Review
 
 ### Instead of sequential (60 min)
@@ -208,13 +218,15 @@ review3 = Task("ring:security-reviewer")       # 20 min
 Task.parallel([
     ("ring:code-reviewer", prompt),
     ("ring:business-logic-reviewer", prompt),
-    ("ring:security-reviewer", prompt)
-])  # Single message, 3 tool calls
+    ("ring:security-reviewer", prompt),
+    ("ring:nil-safety-reviewer", prompt),
+    ("ring:test-reviewer", prompt)
+])  # Single message, 5 tool calls
 ```
 
 ### Key rule
 
-Always dispatch all 3 reviewers in a single message with multiple Task tool calls.
+Always dispatch all 5 reviewers in a single message with multiple Task tool calls.
 
 ---
 

@@ -1,8 +1,21 @@
 # Go Standards - Bootstrap & Observability
 
-> **Module:** bootstrap.md | **Sections:** §5-6 | **Parent:** [index.md](index.md)
+> **Module:** bootstrap.md | **Sections:** §5-9 | **Parent:** [index.md](index.md)
 
-This module covers application initialization and observability.
+This module covers application initialization, observability, graceful shutdown, health checks, and rate limiting.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Observability](#observability) | OpenTelemetry integration, distributed tracing |
+| 2 | [Bootstrap](#bootstrap) | Application initialization pattern |
+| 3 | [Graceful Shutdown Patterns](#graceful-shutdown-patterns-mandatory) | Signal handling, resource cleanup |
+| 4 | [Health Checks](#health-checks-mandatory) | Liveness and readiness endpoints |
+| 5 | [Rate Limiting](#rate-limiting-conditional) | Service-level rate limiting (CONDITIONAL) |
+| 6 | [Connection Management](#connection-management-mandatory) | Database and external service connection handling |
 
 ---
 
@@ -202,15 +215,93 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 
 ---
 
-### Span Naming Conventions
+### Span Naming Conventions (MANDATORY)
 
-| Layer | Pattern | Examples |
-|-------|---------|----------|
-| HTTP Handler | `handler.{resource}.{action}` | `handler.tenant.create`, `handler.agent.list` |
-| Service | `service.{domain}.{operation}` | `service.tenant.create`, `service.agent.register` |
-| Repository | `repository.{entity}.{operation}` | `repository.tenant.get_by_id`, `repository.agent.list` |
-| External Call | `external.{service}.{operation}` | `external.payment.process`, `external.auth.validate` |
-| Queue Consumer | `consumer.{queue}.{operation}` | `consumer.balance_create.process` |
+Inconsistent span names make distributed tracing difficult to navigate. Non-standard naming creates fragmented dashboards and complicates debugging.
+
+**⛔ HARD GATE:** All spans MUST follow the `layer.domain.operation` naming convention. Non-compliant span names make trace analysis impossible.
+
+#### Naming Pattern
+
+```text
+{layer}.{domain}.{operation}
+
+Where:
+- layer: handler | service | repository | external | consumer
+- domain: resource or entity name (singular)
+- operation: action being performed (snake_case)
+```
+
+#### Span Name Reference Table
+
+| Layer | Pattern | Examples | When to Use |
+|-------|---------|----------|-------------|
+| HTTP Handler | `handler.{resource}.{action}` | `handler.tenant.create`, `handler.agent.list` | Complex handlers needing their own spans |
+| Service | `service.{domain}.{operation}` | `service.tenant.create`, `service.user.authenticate` | All service methods (MANDATORY) |
+| Repository | `repository.{entity}.{operation}` | `repository.tenant.get_by_id`, `repository.agent.find_all` | Complex database operations |
+| External Call | `external.{service}.{operation}` | `external.payment.process`, `external.auth.validate_token` | Outgoing HTTP/gRPC calls |
+| Queue Consumer | `consumer.{queue}.{operation}` | `consumer.balance_create.process`, `consumer.notification.send` | Message queue handlers |
+
+#### Operation Naming Rules
+
+| Operation Type | Naming Convention | Examples |
+|----------------|-------------------|----------|
+| Create | `create` | `service.tenant.create` |
+| Read single | `get_by_id`, `find_by_email` | `repository.user.get_by_id` |
+| Read multiple | `list`, `find_all`, `search` | `service.agent.list` |
+| Update | `update`, `patch` | `service.tenant.update` |
+| Delete | `delete`, `remove` | `repository.session.delete` |
+| Validation | `validate`, `verify` | `service.token.validate` |
+| Complex action | Descriptive snake_case | `service.user.reset_password` |
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Generic span names
+tracer.Start(ctx, "doStuff")           // WRONG: Non-descriptive
+tracer.Start(ctx, "process")           // WRONG: Too generic
+tracer.Start(ctx, "handler")           // WRONG: Missing domain and operation
+
+// ❌ FORBIDDEN: Inconsistent casing
+tracer.Start(ctx, "Service.Tenant.Create")  // WRONG: PascalCase
+tracer.Start(ctx, "service-tenant-create")  // WRONG: kebab-case
+
+// ❌ FORBIDDEN: Missing layer prefix
+tracer.Start(ctx, "create_tenant")     // WRONG: No layer prefix
+tracer.Start(ctx, "getTenantByID")     // WRONG: No layer, wrong casing
+
+// ✅ CORRECT: layer.domain.operation
+tracer.Start(ctx, "service.tenant.create")
+tracer.Start(ctx, "repository.tenant.get_by_id")
+tracer.Start(ctx, "handler.agent.register")
+```
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that modifies tracing
+# Find all span names in codebase
+grep -rn "tracer\.Start(ctx," internal/ --include="*.go" | grep -v "_test.go"
+
+# Check for non-compliant span names (missing dots)
+grep -rn 'tracer\.Start(ctx, "[^"]*")' internal/ --include="*.go" | grep -v '\."' | grep -v "_test.go"
+
+# List all unique span name patterns
+grep -oP 'tracer\.Start\(ctx, "\K[^"]+' internal/**/*.go | sort -u
+
+# Expected: All span names follow layer.domain.operation
+# If non-compliant patterns found: STOP. Fix before proceeding.
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Span name doesn't matter" | Span names are how you find traces. Bad names = unfindable traces. | **Use layer.domain.operation** |
+| "We have few traces" | Few now = many later. Establish patterns early. | **Use layer.domain.operation** |
+| "I'll use my own convention" | Inconsistent conventions fragment dashboards. | **Use layer.domain.operation** |
+| "It's just internal code" | Internal code still needs debugging. Traces are the debugger. | **Use layer.domain.operation** |
+| "Too verbose" | Verbosity enables filtering. `service.*` finds all service spans. | **Use layer.domain.operation** |
 
 ---
 
@@ -825,6 +916,614 @@ func main() {
 ```
 
 **That's it.** All complexity is encapsulated in bootstrap.
+
+---
+
+### Graceful Shutdown Patterns (MANDATORY)
+
+Missing cleanup and shutdown handlers cause data loss, orphaned connections, and incomplete transactions.
+
+**⛔ HARD GATE:** All services MUST implement graceful shutdown. Abrupt termination causes data loss, orphaned connections, and incomplete transactions.
+
+### Why Graceful Shutdown Is MANDATORY
+
+| Scenario | Without Graceful Shutdown | With Graceful Shutdown |
+|----------|---------------------------|------------------------|
+| SIGTERM received | Process killed immediately | In-flight requests complete |
+| Deployment rollout | Requests fail mid-processing | Zero downtime |
+| DB connection | Connection pool leaked | Connections properly closed |
+| Telemetry | Spans never exported | Spans flushed to collector |
+| RabbitMQ | Messages not acknowledged | Messages processed or requeued |
+
+### Signal Handling (REQUIRED)
+
+The `libCommonsServer.ServerManager` handles these signals automatically:
+
+| Signal | Source | Action |
+|--------|--------|--------|
+| `SIGTERM` | Kubernetes pod termination | Graceful shutdown initiated |
+| `SIGINT` | Ctrl+C (local dev) | Graceful shutdown initiated |
+
+### Shutdown Order (MANDATORY)
+
+Resources MUST be cleaned up in reverse initialization order:
+
+```text
+Shutdown Order (reverse of initialization):
+1. Stop accepting new requests (HTTP server)
+2. Wait for in-flight requests to complete (grace period)
+3. Close message queue consumers (RabbitMQ)
+4. Flush telemetry spans to collector
+5. Close database connections (PostgreSQL, MongoDB)
+6. Close cache connections (Redis)
+7. Exit process
+```
+
+### Implementation Pattern (REQUIRED)
+
+```go
+// bootstrap/fiber.server.go
+func (s *Server) Run(l *libCommons.Launcher) error {
+    // ServerManager handles all shutdown logic:
+    // - Signal trapping (SIGINT, SIGTERM)
+    // - HTTP server shutdown with grace period
+    // - Telemetry flush
+    // - Connection cleanup
+    libCommonsServer.NewServerManager(nil, &s.telemetry, s.logger).
+        WithHTTPServer(s.app, s.serverAddress).
+        StartWithGracefulShutdown()
+
+    return nil
+}
+```
+
+### Multiple Servers Pattern (gRPC + HTTP + Worker)
+
+```go
+// bootstrap/service.go
+func (app *Service) Run() {
+    libCommons.NewLauncher(
+        libCommons.WithLogger(app.Logger),
+        // All servers shut down gracefully in parallel
+        libCommons.RunApp("HTTP Server", app.HTTPServer),
+        libCommons.RunApp("gRPC Server", app.GRPCServer),
+        libCommons.RunApp("RabbitMQ Consumer", app.Consumer),
+    ).Run()
+}
+```
+
+### Shutdown Timeout Configuration
+
+```go
+// Default timeout is 30 seconds
+// For custom timeout, configure in ServerManager:
+libCommonsServer.NewServerManager(nil, &s.telemetry, s.logger).
+    WithHTTPServer(s.app, s.serverAddress).
+    WithShutdownTimeout(60 * time.Second).  // Custom timeout
+    StartWithGracefulShutdown()
+```
+
+| Environment | Recommended Timeout | Rationale |
+|-------------|---------------------|-----------|
+| Development | 5s | Fast iteration |
+| Production | 30-60s | Allow long requests to complete |
+| Batch processing | 120s+ | Allow batch jobs to complete |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR
+# Check for graceful shutdown implementation
+grep -rn "StartWithGracefulShutdown\|ServerManager" internal/bootstrap cmd/ --include="*.go"
+
+# Check for signal handling (if not using ServerManager)
+grep -rn "signal.Notify\|syscall.SIGTERM" internal/bootstrap cmd/ --include="*.go"
+
+# Expected: At least one pattern must match
+# If neither matches: STOP. Add graceful shutdown before proceeding.
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Direct Listen without graceful shutdown
+app.Listen(":8080")  // WRONG: No signal handling
+
+// ❌ FORBIDDEN: os.Exit without cleanup
+os.Exit(1)  // WRONG: Skips cleanup
+
+// ❌ FORBIDDEN: Ignoring shutdown errors
+_ = app.Shutdown()  // WRONG: Errors must be logged
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Kubernetes restarts pods anyway" | Restart != graceful. In-flight requests fail. | **Use ServerManager graceful shutdown** |
+| "Requests are fast" | Some requests are slow. DB transactions need completion. | **Use ServerManager graceful shutdown** |
+| "We don't have long-running requests" | Telemetry still needs flushing. | **Use ServerManager graceful shutdown** |
+| "lib-commons handles it" | Only if you call StartWithGracefulShutdown(). | **Verify implementation** |
+| "Process cleanup is automatic" | Connection pools and goroutines need explicit cleanup. | **Use ServerManager graceful shutdown** |
+
+---
+
+## Health Checks (MANDATORY)
+
+Services missing the `/ready` endpoint cause Kubernetes to route traffic to unready pods.
+
+**⛔ HARD GATE:** All services MUST implement both `/health` and `/ready` endpoints.
+
+### Endpoint Distinction (MANDATORY)
+
+| Endpoint | Purpose | When Returns 503 | Kubernetes Use |
+|----------|---------|------------------|----------------|
+| `/health` | Liveness check | Process is deadlocked | `livenessProbe` - restarts pod |
+| `/ready` | Readiness check | Dependencies unavailable | `readinessProbe` - removes from service |
+
+**Why Both Are Required:**
+- `/health` without `/ready`: Traffic routes to pods with dead DB connections
+- `/ready` without `/health`: Deadlocked pods never restart
+- Missing both: Kubernetes blindly routes traffic, causes cascading failures
+
+### Implementation Pattern (REQUIRED)
+
+**MANDATORY:** Use libHTTP response wrappers. Direct `c.JSON` / `c.Status(...).JSON` are FORBIDDEN (see table above).
+
+```go
+// internal/adapters/http/in/routes.go
+// Ensure libHTTP is imported: libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"
+
+// Health check - always returns 200 if process is alive
+// Used by Kubernetes liveness probe
+f.Get("/health", func(c *fiber.Ctx) error {
+    return libHTTP.OK(c, fiber.Map{"status": "ok"})
+})
+
+// Readiness check - returns 200 only if all dependencies are ready
+// Used by Kubernetes readiness probe
+f.Get("/ready", func(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+
+    // Check PostgreSQL
+    if err := postgresConn.PingContext(ctx); err != nil {
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "postgres: "+err.Error())
+    }
+
+    // Check MongoDB (if used)
+    if err := mongoConn.Ping(ctx, nil); err != nil {
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "mongodb: "+err.Error())
+    }
+
+    // Check Redis (if used)
+    if _, err := redisClient.Ping(ctx).Result(); err != nil {
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "redis: "+err.Error())
+    }
+
+    // Check RabbitMQ (if used)
+    if !rabbitConn.IsConnected() {
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "rabbitmq: connection lost")
+    }
+
+    return libHTTP.OK(c, fiber.Map{"status": "ready"})
+})
+```
+
+If the project's libHTTP does not provide `ServiceUnavailable`, use the project's equivalent wrapper that returns 503 with the same error payload (e.g. a custom helper or domain error mapped to 503 in the error handler).
+
+### Kubernetes Configuration (REQUIRED)
+
+```yaml
+# deployment.yaml
+spec:
+  containers:
+    - name: your-service
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        failureThreshold: 3
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR
+grep -rn '"/ready"' internal/adapters/http/in/routes*.go
+
+# Check for health endpoint
+grep -rn '"/health"' internal/adapters/http/in/routes*.go
+
+# Expected: Both patterns must match
+# If either missing: STOP. Add endpoint before proceeding.
+```
+
+### Dependency Check Patterns
+
+| Dependency | Check Method | Timeout |
+|------------|--------------|---------|
+| PostgreSQL | `db.PingContext(ctx)` | 2s |
+| MongoDB | `client.Ping(ctx, nil)` | 2s |
+| Redis | `client.Ping(ctx).Result()` | 1s |
+| RabbitMQ | `conn.IsConnected()` | N/A (cached state) |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "/health is enough" | /health doesn't check dependencies. Unready pods receive traffic. | **Add /ready with dependency checks** |
+| "Kubernetes checks TCP port" | TCP != application ready. DB might be dead. | **Add /ready with dependency checks** |
+| "Service starts fast" | Cold starts vary. DB might be migrating. | **Add /ready with dependency checks** |
+| "Dependencies are always up" | Dependencies fail. Networks partition. | **Add /ready with dependency checks** |
+| "We'll add it later" | Later = incident. Add now. | **Add /ready before deployment** |
+
+---
+
+## Rate Limiting (⚠️ CONDITIONAL)
+
+**⛔ CONDITIONAL:** This section applies ONLY if rate limiting is implemented at the service-level. If rate limiting is handled by API Gateway or Istio, mark this section as N/A.
+
+**Detection Question:** Does this service implement rate limiting directly (not via infrastructure)?
+
+```bash
+# Check if service implements rate limiting
+grep -rn "RateLimit\|rate\.Limiter\|ratelimit" internal/ --include="*.go"
+
+# If 0 matches AND rate limiting is handled by infrastructure: Mark N/A
+# If 0 matches AND rate limiting is NOT handled anywhere: Evaluate if needed
+# If matches found: Apply this section
+```
+
+### When Rate Limiting Is Needed
+
+| Scenario | Rate Limiting Required | Where |
+|----------|------------------------|-------|
+| Public API | Yes | API Gateway preferred, service fallback |
+| Internal service | Usually no | Infrastructure-level (Istio) |
+| Webhook receiver | Yes | Service-level (burst protection) |
+| Authentication endpoint | Yes | Service-level (brute force protection) |
+
+### Redis-Based Rate Limiting Pattern (REQUIRED if service-level)
+
+```go
+// internal/middleware/ratelimit.go
+package middleware
+
+import (
+    "context"
+    "strconv"
+    "time"
+
+    "github.com/gofiber/fiber/v2"
+    "github.com/redis/go-redis/v9"
+    libHTTP "github.com/LerianStudio/lib-commons/v2/commons/net/http"
+)
+
+type RateLimiter struct {
+    redis    *redis.Client
+    limit    int           // requests per window
+    window   time.Duration // window duration
+    keyPrefix string
+}
+
+func NewRateLimiter(redis *redis.Client, limit int, window time.Duration) *RateLimiter {
+    return &RateLimiter{
+        redis:     redis,
+        limit:     limit,
+        window:    window,
+        keyPrefix: "ratelimit:",
+    }
+}
+
+func (r *RateLimiter) Middleware() fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        ctx := c.UserContext()
+
+        // Key: IP or API key or user ID
+        key := r.keyPrefix + c.IP()
+
+        // Increment counter
+        count, err := r.redis.Incr(ctx, key).Result()
+        if err != nil {
+            // Fail open on Redis error (log and continue)
+            return c.Next()
+        }
+
+        // Set expiry on first request
+        if count == 1 {
+            r.redis.Expire(ctx, key, r.window)
+        }
+
+        // Check limit
+        if count > int64(r.limit) {
+            ttl, _ := r.redis.TTL(ctx, key).Result()
+            c.Set("Retry-After", strconv.Itoa(int(ttl.Seconds())))
+            c.Set("X-RateLimit-Limit", strconv.Itoa(r.limit))
+            c.Set("X-RateLimit-Remaining", "0")
+            c.Set("X-RateLimit-Reset", strconv.FormatInt(time.Now().Add(ttl).Unix(), 10))
+
+            return libHTTP.TooManyRequests(c, "RATE_LIMIT_EXCEEDED", "Too Many Requests", "rate limit exceeded")
+        }
+
+        // Set rate limit headers
+        c.Set("X-RateLimit-Limit", strconv.Itoa(r.limit))
+        c.Set("X-RateLimit-Remaining", strconv.Itoa(r.limit - int(count)))
+
+        return c.Next()
+    }
+}
+```
+
+### Response Format (REQUIRED)
+
+**429 Too Many Requests Response:**
+
+```json
+{
+    "error": "rate limit exceeded",
+    "retry_after": 30
+}
+```
+
+**Required Headers:**
+
+| Header | Description | Example |
+|--------|-------------|---------|
+| `Retry-After` | Seconds until limit resets | `30` |
+| `X-RateLimit-Limit` | Requests allowed per window | `100` |
+| `X-RateLimit-Remaining` | Requests remaining | `0` |
+| `X-RateLimit-Reset` | Unix timestamp when limit resets | `1704067200` |
+
+### Detection Commands
+
+```bash
+# Find rate limiting implementation
+grep -rn "RateLimit\|rate\.Limiter" internal/adapters/http --include="*.go"
+
+# Check for 429 responses
+grep -rn "429\|TooManyRequests" internal/adapters/http --include="*.go"
+
+# Check for Retry-After header
+grep -rn "Retry-After" internal/adapters/http --include="*.go"
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "API Gateway handles it" | Valid if confirmed. Document the decision. | **Verify gateway config, mark N/A if confirmed** |
+| "We trust our clients" | Clients can have bugs. Protect the system. | **Add rate limiting or document infrastructure** |
+| "Service is internal" | Internal services can still be DoS'd. | **Evaluate need, document decision** |
+| "Redis adds latency" | 1ms Redis check vs service overload recovery. | **Add rate limiting** |
+
+---
+
+## Connection Management (MANDATORY)
+
+**⛔ HARD GATE:** All external connections (database, Redis, RabbitMQ, HTTP clients) MUST have proper lifecycle management: pooling, timeouts, and cleanup on shutdown.
+
+### Database Connection Pooling (pgx)
+
+**MANDATORY: Use connection pool with explicit configuration.**
+
+```go
+// ✅ CORRECT: Explicit pool configuration
+import (
+    "github.com/jackc/pgx/v5/pgxpool"
+)
+
+func NewDatabasePool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+    config, err := pgxpool.ParseConfig(dsn)
+    if err != nil {
+        return nil, fmt.Errorf("parse database config: %w", err)
+    }
+
+    // Pool configuration (MANDATORY)
+    config.MaxConns = 25                      // Max connections in pool
+    config.MinConns = 5                       // Min connections to keep warm
+    config.MaxConnLifetime = 1 * time.Hour    // Max time a connection lives
+    config.MaxConnIdleTime = 30 * time.Minute // Max time idle before close
+    config.HealthCheckPeriod = 1 * time.Minute
+
+    pool, err := pgxpool.NewWithConfig(ctx, config)
+    if err != nil {
+        return nil, fmt.Errorf("create connection pool: %w", err)
+    }
+
+    // Verify connectivity at startup
+    if err := pool.Ping(ctx); err != nil {
+        pool.Close()
+        return nil, fmt.Errorf("database ping failed: %w", err)
+    }
+
+    return pool, nil
+}
+```
+
+### Connection Pool Guidelines
+
+| Parameter | Recommended Value | Rationale |
+|-----------|-------------------|-----------|
+| `MaxConns` | 20-50 | Prevent connection exhaustion |
+| `MinConns` | 5-10 | Keep warm connections ready |
+| `MaxConnLifetime` | 1 hour | Prevent stale connections |
+| `MaxConnIdleTime` | 30 minutes | Free unused resources |
+| `HealthCheckPeriod` | 1 minute | Detect dead connections |
+
+### HTTP Client Configuration (MANDATORY)
+
+```go
+// ✅ CORRECT: HTTP client with timeouts and connection reuse
+func NewHTTPClient() *http.Client {
+    transport := &http.Transport{
+        MaxIdleConns:        100,
+        MaxIdleConnsPerHost: 10,
+        IdleConnTimeout:     90 * time.Second,
+        DisableKeepAlives:   false, // Enable connection reuse
+    }
+
+    return &http.Client{
+        Transport: transport,
+        Timeout:   30 * time.Second, // Overall request timeout
+    }
+}
+```
+
+### Redis Connection Management
+
+```go
+// ✅ CORRECT: Redis client with pool settings
+import "github.com/redis/go-redis/v9"
+
+func NewRedisClient(addr string) *redis.Client {
+    return redis.NewClient(&redis.Options{
+        Addr:         addr,
+        PoolSize:     10,                  // Connection pool size
+        MinIdleConns: 3,                   // Min idle connections
+        PoolTimeout:  4 * time.Second,     // Wait for connection from pool
+        ReadTimeout:  3 * time.Second,
+        WriteTimeout: 3 * time.Second,
+    })
+}
+```
+
+### RabbitMQ Connection Recovery
+
+```go
+// ✅ CORRECT: RabbitMQ with automatic reconnection
+func (c *RabbitMQClient) Connect() error {
+    var err error
+    for i := 0; i < 5; i++ {
+        c.conn, err = amqp.Dial(c.uri)
+        if err == nil {
+            return nil
+        }
+        time.Sleep(time.Duration(i+1) * time.Second) // Exponential backoff
+    }
+    return fmt.Errorf("failed to connect to RabbitMQ after 5 attempts: %w", err)
+}
+
+// Channel recovery on error
+func (c *RabbitMQClient) ensureChannel() (*amqp.Channel, error) {
+    if c.channel != nil && !c.channel.IsClosed() {
+        return c.channel, nil
+    }
+
+    ch, err := c.conn.Channel()
+    if err != nil {
+        return nil, fmt.Errorf("create channel: %w", err)
+    }
+    c.channel = ch
+    return ch, nil
+}
+```
+
+### Graceful Shutdown Integration
+
+```go
+// ✅ CORRECT: Close connections in reverse order of initialization
+func (s *Service) Shutdown(ctx context.Context) error {
+    // 1. Stop accepting new requests
+    if err := s.httpServer.Shutdown(ctx); err != nil {
+        s.logger.Error("HTTP server shutdown error", zap.Error(err))
+    }
+
+    // 2. Close message queues
+    if s.rabbitMQ != nil {
+        if err := s.rabbitMQ.Close(); err != nil {
+            s.logger.Error("RabbitMQ close error", zap.Error(err))
+        }
+    }
+
+    // 3. Close caches
+    if s.redis != nil {
+        if err := s.redis.Close(); err != nil {
+            s.logger.Error("Redis close error", zap.Error(err))
+        }
+    }
+
+    // 4. Close database last
+    if s.db != nil {
+        s.db.Close()
+    }
+
+    // 5. Flush telemetry
+    if s.telemetry != nil {
+        if err := s.telemetry.Shutdown(ctx); err != nil {
+            s.logger.Error("Telemetry shutdown error", zap.Error(err))
+        }
+    }
+
+    return nil
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: No timeout on database connection
+pool, err := pgxpool.New(ctx, dsn) // WRONG: Uses defaults
+
+// ❌ FORBIDDEN: HTTP client without timeout
+client := &http.Client{} // WRONG: No timeout = can hang forever
+
+// ❌ FORBIDDEN: Single connection instead of pool
+conn, err := pgx.Connect(ctx, dsn) // WRONG: Single connection
+
+// ❌ FORBIDDEN: Not closing connections on shutdown
+func main() {
+    db, _ := pgxpool.New(ctx, dsn)
+    // WRONG: No defer db.Close() or shutdown handler
+}
+
+// ❌ FORBIDDEN: Creating new client per request
+func (h *Handler) GetUser(c *fiber.Ctx) error {
+    client := &http.Client{} // WRONG: Creates new client each request
+    client.Get(...)
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with connection changes
+
+# Find database connections without pool config
+grep -rn "pgxpool.New\|pgx.Connect" --include="*.go" | grep -v "pgxpool.NewWithConfig"
+
+# Find HTTP clients without timeout
+grep -rn "&http.Client{}" --include="*.go"
+
+# Find missing pool Close() calls
+grep -rn "pgxpool.New" --include="*.go" -l | xargs -I{} sh -c \
+  'grep -L "Close()" {} 2>/dev/null && echo "MISSING Close: {}"'
+
+# Find Redis clients without pool config
+grep -rn "redis.NewClient" --include="*.go" -A 5 | grep -v "PoolSize"
+
+# Expected: All connections use pooling with explicit config
+# If violations found: STOP. Fix before proceeding.
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Defaults are fine" | Defaults don't match production needs. Explicit is better. | **Configure pool explicitly** |
+| "Service doesn't get much traffic" | Low traffic ≠ no limits. Prevent resource leaks. | **Set connection limits** |
+| "Connection timeouts slow things down" | Timeouts prevent cascading failures. Essential. | **Set appropriate timeouts** |
+| "I'll close in main()" | Main may not run on panic/kill. Use defer/signal. | **Use graceful shutdown** |
+| "Single connection is simpler" | Single connection = bottleneck + no recovery. | **Use connection pool** |
+| "Client per request is clearer" | Client per request = socket exhaustion. | **Reuse HTTP clients** |
 
 ---
 

@@ -385,27 +385,133 @@ func parseConfig(path string) (Config, error) {
     return config, nil
 }
 
-// ✅ CORRECT: main() handles fatal conditions
+// ✅ CORRECT: main() handles fatal conditions with log.Fatalf (NOT panic)
 func main() {
     config, err := parseConfig("config.yaml")
     if err != nil {
-        log.Fatalf("Cannot start: %v", err)  // OK in main()
+        log.Fatalf("Cannot start: %v", err)  // log.Fatalf is OK - logs and exits cleanly
     }
     // ...
 }
 ```
 
-### Detection Commands
+### panic() Detection Checklist (MANDATORY)
+
+**⛔ HARD GATE:** Zero panic() calls allowed ANYWHERE in the codebase (except test files). This includes `cmd/`, `internal/`, and `pkg/` directories.
+
+| panic() Type | Where Found | Verdict | Action |
+|--------------|-------------|---------|--------|
+| Direct `panic(err)` | Any directory | ❌ FORBIDDEN | Convert to `return err` or `log.Fatalf()` |
+| Direct `panic("message")` | Any directory | ❌ FORBIDDEN | Convert to `return errors.New()` or `log.Fatalf()` |
+| `panic(fmt.Sprintf(...))` | Any directory | ❌ FORBIDDEN | Convert to `return fmt.Errorf()` or `log.Fatalf()` |
+| Must-functions `panicOnErr()` | Any directory | ❌ FORBIDDEN | Remove helper, propagate errors |
+| `panic()` in main() | cmd/*/main.go | ❌ FORBIDDEN | Use `log.Fatalf()` instead |
+
+**Detection Commands:**
 
 ```bash
-# Find fatal/exit calls outside main.go
-grep -rn "log.Fatal\|os.Exit" --include="*.go" ./internal ./pkg
+# MANDATORY: Run before every PR - check ALL directories
+grep -rn "panic(" cmd/ internal/ pkg/ --include="*.go" | grep -v "_test.go"
 
-# Find panic calls (review each - some may be acceptable)
-grep -rn "panic(" --include="*.go" ./internal ./pkg
+# Find must-functions (panic wrappers)
+grep -rn "func must\|panicOnErr\|panicIf" . --include="*.go" | grep -v "_test.go" | grep -v vendor/
 
-# Expected: Zero matches in internal/pkg directories
+# Expected result: 0 matches
+# If any match found: STOP. Fix before proceeding.
 ```
+
+**✅ CORRECT Alternative:**
+
+```go
+// ❌ FORBIDDEN: must-function pattern
+func mustParseURL(raw string) *url.URL {
+    u, err := url.Parse(raw)
+    if err != nil {
+        panic(err)  // WRONG
+    }
+    return u
+}
+
+// ✅ CORRECT: Return error
+func parseURL(raw string) (*url.URL, error) {
+    u, err := url.Parse(raw)
+    if err != nil {
+        return nil, fmt.Errorf("invalid URL %q: %w", raw, err)
+    }
+    return u, nil
+}
+```
+
+### log.Fatal() Location Rules (MANDATORY)
+
+**⛔ HARD GATE:** `log.Fatal()` and `os.Exit()` are ONLY allowed in `main()` or immediate bootstrap failure.
+
+| Call Type | Location | Verdict | Why |
+|-----------|----------|---------|-----|
+| `log.Fatal()` | `main.go:main()` | ✅ Allowed | Process startup failure |
+| `log.Fatal()` | `cmd/*/main.go` | ✅ Allowed | CLI entry point |
+| `log.Fatal()` | `internal/service/*.go` | ❌ FORBIDDEN | Service cannot decide process fate |
+| `log.Fatal()` | `internal/bootstrap/*.go` | ⚠️ Review | Only for truly unrecoverable (missing DB) |
+| `os.Exit()` | Anywhere except main() | ❌ FORBIDDEN | Prevents cleanup, loses telemetry |
+
+**Detection Commands:**
+
+```bash
+# MANDATORY: Run before every PR
+grep -rn "log\.Fatal" internal/ pkg/ --include="*.go" | grep -v "_test.go"
+
+# Check os.Exit usage
+grep -rn "os\.Exit" internal/ pkg/ --include="*.go" | grep -v "_test.go"
+
+# Expected result: 0 matches in internal/pkg
+# If any match found: STOP. Fix before proceeding.
+```
+
+**✅ CORRECT Alternative:**
+
+```go
+// ❌ FORBIDDEN: log.Fatal in internal function
+func connectDB(dsn string) *sql.DB {
+    db, err := sql.Open("postgres", dsn)
+    if err != nil {
+        log.Fatal(err)  // WRONG: caller cannot handle
+    }
+    return db
+}
+
+// ✅ CORRECT: Return error to caller
+func connectDB(dsn string) (*sql.DB, error) {
+    db, err := sql.Open("postgres", dsn)
+    if err != nil {
+        return nil, fmt.Errorf("failed to connect to database: %w", err)
+    }
+    if err := db.Ping(); err != nil {
+        return nil, fmt.Errorf("database ping failed: %w", err)
+    }
+    return db, nil
+}
+
+// ✅ CORRECT: main() decides process fate
+func main() {
+    db, err := connectDB(os.Getenv("DATABASE_URL"))
+    if err != nil {
+        log.Fatalf("Cannot start: %v", err)  // OK in main()
+    }
+    defer db.Close()
+    // ...
+}
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "This error is truly fatal" | You don't decide. Let main() decide. | **Return error, let caller handle** |
+| "panic() is for programmer errors" | Production has no programmer errors. All are runtime. | **Return error, no panic()** |
+| "Must-functions are convenient" | Convenience crashes production. | **Remove must-functions, propagate errors** |
+| "log.Fatal is cleaner than error handling" | Clean code that crashes is not clean. | **Return error, handle in main()** |
+| "This will never fail in production" | Never = always in production. | **Return error anyway** |
+| "Tests use panic, why not production?" | Tests fail fast. Production must recover. | **Different rules for test vs production** |
 
 ---
 

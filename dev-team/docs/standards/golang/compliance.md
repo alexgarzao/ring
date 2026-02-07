@@ -6,6 +6,15 @@ This module covers standards compliance output format and self-verification chec
 
 ---
 
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| Meta | [Standards Compliance Output Format](#standards-compliance-output-format) | Output format for compliance reports |
+| Meta | [Checklist](#checklist) | Self-verification checklist before submitting |
+
+---
+
 ## Standards Compliance Output Format
 
 When producing a Standards Compliance report (used by ring:dev-refactor workflow), follow these output formats:

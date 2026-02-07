@@ -77,10 +77,10 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 <cannot_skip>
 - Dispatch to specialist (standards loading required)
-- 6-gate development cycle (quality gates)
+- 10-gate development cycle (quality gates)
 - Parallel reviewer dispatch (not sequential)
 - TDD in Gate 0 (test-first)
-- User approval in Gate 5
+- User approval in Gate 9
 </cannot_skip>
 
 **These requirements are NON-NEGOTIABLE:**
@@ -88,10 +88,10 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Requirement | Why It Cannot Be Waived |
 |-------------|------------------------|
 | **Dispatch to specialist** | Specialists have standards loading, you don't |
-| **6-gate development cycle** | Gates prevent quality regressions |
+| **10-gate development cycle** | Gates prevent quality regressions |
 | **Parallel reviewer dispatch** | Sequential review = 3x slower, same cost |
 | **TDD in Gate 0** | Test-first ensures testability |
-| **User approval in Gate 5** | Only users can approve completion |
+| **User approval in Gate 9** | Only users can approve completion |
 
 **User cannot override these. Time pressure cannot override these. "Simple task" cannot override these.**
 
@@ -214,7 +214,7 @@ Remember:
 
 **Agents:** See "7 Developer Specialists" table above.
 
-**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (6-gate workflow), `ring:dev-refactor` (codebase analysis)
+**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate workflow), `ring:dev-refactor` (codebase analysis)
 
 **Commands:** `/ring:dev-cycle` (execute tasks), `/ring:dev-refactor` (analyze codebase)
 
@@ -224,7 +224,7 @@ Remember:
 
 ## Development Workflows
 
-All workflows converge to the 6-gate development cycle:
+All workflows converge to the 10-gate development cycle:
 
 | Workflow | Entry Point | Output | Then |
 |----------|-------------|--------|------|
@@ -243,7 +243,7 @@ All workflows converge to the 6-gate development cycle:
 | **4: Review** | 3 reviewers IN PARALLEL | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer` |
 | **5: Validation** | User approval: APPROVED/REJECTED | User decision |
 
-**Key Principle:** All development follows the same 6-gate process.
+**Key Principle:** All development follows the same 10-gate process.
 
 ---
 
