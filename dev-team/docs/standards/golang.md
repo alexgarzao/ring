@@ -31,7 +31,7 @@
 |--------|----------|-------------|
 | [index.md](golang/index.md) | - | Master TOC and routing guide |
 | [core.md](golang/core.md) | 9 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License Headers, MongoDB, Dependency Management |
-| [bootstrap.md](golang/bootstrap.md) | 6 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Rate Limiting, Connection Management |
+| [bootstrap.md](golang/bootstrap.md) | 5 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Connection Management |
 | [security.md](golang/security.md) | 4 | Access Manager, License Manager, Secret Redaction, SQL Safety |
 | [domain.md](golang/domain.md) | 5 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
 | [api-patterns.md](golang/api-patterns.md) | 6 | JSON Naming, Pagination, HTTP Status, OpenAPI/Swaggo, Handler Constructor, Input Validation |
