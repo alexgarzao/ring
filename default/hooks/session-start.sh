@@ -9,6 +9,14 @@ set -euo pipefail
 # This is the user's project directory (where Claude Code was launched)
 ORIGINAL_CWD="$PWD"
 
+# Diagnostic logging (temporary)
+DIAG_LOG="/tmp/ring-session-start.log"
+echo "=== $(date -u '+%Y-%m-%dT%H:%M:%SZ') ===" >> "$DIAG_LOG"
+echo "PWD=$PWD" >> "$DIAG_LOG"
+echo "ORIGINAL_CWD=$ORIGINAL_CWD" >> "$DIAG_LOG"
+echo "CLAUDE_PROJECT_DIR=${CLAUDE_PROJECT_DIR:-<not set>}" >> "$DIAG_LOG"
+echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-<not set>}" >> "$DIAG_LOG"
+
 # Validate CLAUDE_PLUGIN_ROOT is set and reasonable (when used via hooks)
 # Note: This script can run standalone via SCRIPT_DIR detection or via CLAUDE_PLUGIN_ROOT
 if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
@@ -177,6 +185,9 @@ debug_log "Escaped: overview=${#overview_escaped}c rules=${#critical_rules_escap
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git -C "$ORIGINAL_CWD" rev-parse --show-toplevel 2>/dev/null || echo "$ORIGINAL_CWD")}"
 PENDING_FILE="${PROJECT_DIR}/docs/handoffs/.pending"
 debug_log "PROJECT_DIR=$PROJECT_DIR PENDING_FILE=$PENDING_FILE"
+echo "PROJECT_DIR=$PROJECT_DIR" >> "$DIAG_LOG"
+echo "PENDING_FILE=$PENDING_FILE" >> "$DIAG_LOG"
+echo "PENDING_EXISTS=$(test -f "$PENDING_FILE" && echo 'YES' || echo 'NO')" >> "$DIAG_LOG"
 handoff_section=""
 user_message=""
 
@@ -191,6 +202,10 @@ if [[ -f "$PENDING_FILE" ]]; then
     if [[ -f "$handoff_path" ]]; then
         age_seconds=$(( current_time - handoff_timestamp ))
         age_threshold=3600  # 1 hour
+        echo "HANDOFF_DETECTED=YES" >> "$DIAG_LOG"
+        echo "handoff_path=$handoff_path" >> "$DIAG_LOG"
+        echo "handoff_timestamp=$handoff_timestamp" >> "$DIAG_LOG"
+        echo "age_seconds=$age_seconds" >> "$DIAG_LOG"
         debug_log "Handoff detected: path=$handoff_path age=${age_seconds:-N/A}s"
 
         if (( age_seconds < age_threshold )); then
@@ -214,6 +229,9 @@ if [[ -f "$PENDING_FILE" ]]; then
     fi
 fi
 
+echo "handoff_section_length=${#handoff_section}" >> "$DIAG_LOG"
+echo "user_message_set=${user_message:+YES}" >> "$DIAG_LOG"
+
 # Build additionalContext
 additional_context="<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
 
@@ -223,6 +241,9 @@ if [[ -n "$handoff_section" ]]; then
 fi
 
 debug_log "Output: handoff=${#handoff_section}c context=${#additional_context}c msg='${user_message:-none}'"
+
+echo "OUTPUT_LENGTH=${#additional_context}" >> "$DIAG_LOG"
+echo "=== END ===" >> "$DIAG_LOG"
 
 # Build JSON output using printf to avoid heredoc variable expansion issues
 if [[ -n "$user_message" ]]; then
