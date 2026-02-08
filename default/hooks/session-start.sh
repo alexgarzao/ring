@@ -18,6 +18,10 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+# Debug logging (enable with RING_DEBUG=true)
+debug_log() { [[ "${RING_DEBUG:-false}" == "true" ]] && echo "[$(date '+%H:%M:%S')] $*" >> /tmp/ring-hook-debug.log || true; }
+debug_log "Hook started: PLUGIN_ROOT=$PLUGIN_ROOT CLAUDE_PROJECT_DIR=${CLAUDE_PROJECT_DIR:-unset}"
+
 # Auto-install PyYAML if Python is available but PyYAML is not
 # Set RING_AUTO_INSTALL_DEPS=false to disable automatic dependency installation
 if [[ "${RING_AUTO_INSTALL_DEPS:-true}" == "true" ]]; then
@@ -131,6 +135,7 @@ generate_skills_overview() {
 }
 
 skills_overview=$(generate_skills_overview || echo "Error generating skills quick reference")
+debug_log "Skills overview generated: ${#skills_overview} chars"
 
 # Source shared JSON escaping utility
 SHARED_LIB="${PLUGIN_ROOT}/../shared/lib"
@@ -160,12 +165,14 @@ fi
 overview_escaped=$(json_escape "$skills_overview")
 critical_rules_escaped=$(json_escape "$CRITICAL_RULES")
 doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
+debug_log "Escaped: overview=${#overview_escaped}c rules=${#critical_rules_escaped}c doubt=${#doubt_questions_escaped}c"
 
 # Handoff auto-resume detection
 # Check for pending handoff created by /ring:create-handoff
 # The .pending file contains: line1=path, line2=unix_timestamp
-PROJECT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")}"
 PENDING_FILE="${PROJECT_DIR}/docs/handoffs/.pending"
+debug_log "PROJECT_DIR=$PROJECT_DIR PENDING_FILE=$PENDING_FILE"
 handoff_section=""
 user_message=""
 
@@ -180,6 +187,7 @@ if [[ -f "$PENDING_FILE" ]]; then
     if [[ -f "$handoff_path" ]]; then
         age_seconds=$(( current_time - handoff_timestamp ))
         age_threshold=3600  # 1 hour
+        debug_log "Handoff detected: path=$handoff_path age=${age_seconds:-N/A}s"
 
         if (( age_seconds < age_threshold )); then
             # Recent handoff (< 1 hour): auto-load full content
@@ -210,27 +218,15 @@ if [[ -n "$handoff_section" ]]; then
     additional_context="${additional_context}\n\n${handoff_section}"
 fi
 
-# Build JSON output (with optional userMessage for handoff notifications)
+debug_log "Output: handoff=${#handoff_section}c context=${#additional_context}c msg='${user_message:-none}'"
+
+# Build JSON output using printf to avoid heredoc variable expansion issues
 if [[ -n "$user_message" ]]; then
     user_message_escaped=$(json_escape "$user_message")
-    cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "userMessage": "${user_message_escaped}",
-    "additionalContext": "${additional_context}"
-  }
-}
-EOF
+    printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "userMessage": "%s",\n    "additionalContext": "%s"\n  }\n}\n' "$user_message_escaped" "$additional_context"
 else
-    cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "${additional_context}"
-  }
-}
-EOF
+    printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$additional_context"
 fi
+debug_log "Hook complete, exit 0"
 
 exit 0
