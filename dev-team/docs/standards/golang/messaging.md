@@ -443,17 +443,21 @@ Both layers use the same exponential backoff with full jitter strategy defined i
 The consumer MUST run an infinite goroutine per queue that automatically restarts on any channel closure.
 
 ```go
-func (cr *ConsumerRoutes) RunConsumers() error {
+func (cr *ConsumerRoutes) RunConsumers(ctx context.Context) error {
     for queueName, handler := range cr.routes {
         go func(queueName string, handler QueueHandlerFunc) {
-            backoff := InitialBackoff
+            attempt := 0
 
             for {
+                attempt++
+
                 // 1. Ensure channel is open (with retries)
                 if err := cr.conn.EnsureChannel(); err != nil {
-                    sleepDuration := FullJitter(backoff)
-                    time.Sleep(sleepDuration)
-                    backoff = NextBackoff(backoff)
+                    select {
+                    case <-ctx.Done():
+                        return
+                    case <-time.After(CalculateBackoff(attempt)):
+                    }
                     continue
                 }
 
@@ -461,6 +465,11 @@ func (cr *ConsumerRoutes) RunConsumers() error {
                 if err := cr.conn.Channel.Qos(
                     cr.NumbersOfPrefetch, 0, false,
                 ); err != nil {
+                    select {
+                    case <-ctx.Done():
+                        return
+                    case <-time.After(CalculateBackoff(attempt)):
+                    }
                     continue
                 }
 
@@ -475,10 +484,15 @@ func (cr *ConsumerRoutes) RunConsumers() error {
                     nil,   // args
                 )
                 if err != nil {
+                    select {
+                    case <-ctx.Done():
+                        return
+                    case <-time.After(CalculateBackoff(attempt)):
+                    }
                     continue
                 }
 
-                backoff = InitialBackoff // Reset on success
+                attempt = 0 // Reset on success
 
                 // 4. Monitor channel closure (KEY MECHANISM)
                 notifyClose := make(chan *amqp.Error, 1)
@@ -489,9 +503,14 @@ func (cr *ConsumerRoutes) RunConsumers() error {
                     go cr.startWorker(i, queueName, handler, messages)
                 }
 
-                // 6. Block until channel closes
-                if errClose := <-notifyClose; errClose != nil {
-                    cr.Logger.Warnf("[Consumer %s] channel closed: %v", queueName, errClose)
+                // 6. Block until channel closes or context cancels
+                select {
+                case errClose := <-notifyClose:
+                    if errClose != nil {
+                        cr.Logger.Warnf("[Consumer %s] channel closed: %v", queueName, errClose)
+                    }
+                case <-ctx.Done():
+                    return
                 }
 
                 // Loop restarts automatically
@@ -505,10 +524,11 @@ func (cr *ConsumerRoutes) RunConsumers() error {
 #### How It Works
 
 1. `EnsureChannel()` creates a new AMQP channel if the current one is nil or closed
-2. If channel creation fails, sleep with jittered backoff and retry
-3. Once consuming starts, `NotifyClose` blocks until the channel dies
-4. When the channel dies (broker restart, network failure), the loop restarts
-5. Backoff resets to `InitialBackoff` on every successful connection
+2. If channel creation, Qos, or Consume fails, wait with `CalculateBackoff(attempt)` and retry
+3. All waits honor `ctx.Done()` so the goroutine exits cleanly on shutdown
+4. Once consuming starts, `NotifyClose` blocks until the channel dies
+5. When the channel dies (broker restart, network failure), the loop restarts
+6. Attempt counter resets to 0 on every successful connection
 
 ### Producer Per-Publish Retry (MANDATORY)
 
@@ -518,14 +538,14 @@ The producer MUST call `EnsureChannel()` before every publish and retry with exp
 func (p *ProducerRepository) PublishWithRetry(
     ctx context.Context, exchange, routingKey string, message []byte,
 ) error {
-    backoff := InitialBackoff
-
-    for attempt := 0; attempt <= MaxRetries; attempt++ {
+    for attempt := 1; attempt <= MaxRetries; attempt++ {
         // 1. Ensure channel is available
         if err := p.conn.EnsureChannel(); err != nil {
-            sleepDuration := FullJitter(backoff)
-            time.Sleep(sleepDuration)
-            backoff = NextBackoff(backoff)
+            select {
+            case <-ctx.Done():
+                return ctx.Err()
+            case <-time.After(CalculateBackoff(attempt)):
+            }
             continue
         }
 
@@ -559,9 +579,11 @@ func (p *ProducerRepository) PublishWithRetry(
             return fmt.Errorf("publish failed after %d retries: %w", MaxRetries, err)
         }
 
-        sleepDuration := FullJitter(backoff)
-        time.Sleep(sleepDuration)
-        backoff = NextBackoff(backoff)
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+        case <-time.After(CalculateBackoff(attempt)):
+        }
     }
 
     return fmt.Errorf("publish failed: exhausted retries")
