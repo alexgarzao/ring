@@ -9,13 +9,14 @@ set -euo pipefail
 # This is the user's project directory (where Claude Code was launched)
 ORIGINAL_CWD="$PWD"
 
-# Diagnostic logging (temporary)
-DIAG_LOG="/tmp/ring-session-start.log"
-echo "=== $(date -u '+%Y-%m-%dT%H:%M:%SZ') ===" >> "$DIAG_LOG"
-echo "PWD=$PWD" >> "$DIAG_LOG"
-echo "ORIGINAL_CWD=$ORIGINAL_CWD" >> "$DIAG_LOG"
-echo "CLAUDE_PROJECT_DIR=${CLAUDE_PROJECT_DIR:-<not set>}" >> "$DIAG_LOG"
-echo "CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-<not set>}" >> "$DIAG_LOG"
+# Determine plugin root directory BEFORE any cd operations
+# Uses BASH_SOURCE which is always the script's own path regardless of cwd
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Debug logging (enable with RING_DEBUG=true)
+debug_log() { [[ "${RING_DEBUG:-false}" == "true" ]] && echo "[$(date '+%H:%M:%S')] $*" >> /tmp/ring-hook-debug.log || true; }
+debug_log "Hook started: PWD=$PWD ORIGINAL_CWD=$ORIGINAL_CWD PLUGIN_ROOT=$PLUGIN_ROOT CLAUDE_PROJECT_DIR=${CLAUDE_PROJECT_DIR:-unset} CLAUDE_PLUGIN_ROOT=${CLAUDE_PLUGIN_ROOT:-<not set>}"
 
 # Validate CLAUDE_PLUGIN_ROOT is set and reasonable (when used via hooks)
 # Note: This script can run standalone via SCRIPT_DIR detection or via CLAUDE_PLUGIN_ROOT
@@ -25,14 +26,6 @@ if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
         exit 1
     fi
 fi
-
-# Determine plugin root directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-
-# Debug logging (enable with RING_DEBUG=true)
-debug_log() { [[ "${RING_DEBUG:-false}" == "true" ]] && echo "[$(date '+%H:%M:%S')] $*" >> /tmp/ring-hook-debug.log || true; }
-debug_log "Hook started: PLUGIN_ROOT=$PLUGIN_ROOT CLAUDE_PROJECT_DIR=${CLAUDE_PROJECT_DIR:-unset}"
 
 # Auto-install PyYAML if Python is available but PyYAML is not
 # Set RING_AUTO_INSTALL_DEPS=false to disable automatic dependency installation
@@ -77,7 +70,7 @@ DO NOT read/edit >3 files directly. This is a PROHIBITION.
 **If you think "this task is small" or "I can handle 5 files":**
 WRONG. Count > 3 = agent. No exceptions. Task size is irrelevant.
 
-**Full rules:** Use Skill tool with "ring-default:using-ring" if needed.
+**Full rules:** Use Skill tool with "ring:using-ring" if needed.
 '
 
 # Doubt-triggered questions pattern - when agents should ask vs proceed
@@ -141,7 +134,7 @@ generate_skills_overview() {
     echo "**Note:** Neither Python nor bash fallback available."
     echo "Skills are still accessible via the Skill tool."
     echo ""
-    echo "Run: \`Skill tool: ring-default:using-ring\` to see available workflows."
+    echo "Run: \`Skill tool: ring:using-ring\` to see available workflows."
     echo ""
     echo "To fix: Install Python 3.x or ensure generate-skills-ref.sh is executable."
 }
@@ -156,18 +149,24 @@ if [[ -f "${SHARED_LIB}/json-escape.sh" ]]; then
     source "${SHARED_LIB}/json-escape.sh"
 else
     # Fallback: define json_escape locally if shared lib not found
+    # Mirrors shared/lib/json-escape.sh implementation
     json_escape() {
         local input="$1"
         if command -v jq &>/dev/null; then
             printf '%s' "$input" | jq -Rs . | sed 's/^"//;s/"$//'
         else
-            # Fallback sed-based escaping (handles common cases)
-            printf '%s' "$input" | sed \
-                -e 's/\\/\\\\/g' \
-                -e 's/"/\\"/g' \
-                -e 's/\t/\\t/g' \
-                -e 's/\r/\\r/g' \
-                -e ':a;N;$!ba;s/\n/\\n/g'
+            # Cross-platform fallback using awk (works on both BSD and GNU)
+            printf '%s' "$input" | awk '
+                BEGIN { ORS="" }
+                {
+                    gsub(/\\/, "\\\\")
+                    gsub(/"/, "\\\"")
+                    gsub(/\t/, "\\t")
+                    gsub(/\r/, "\\r")
+                    if (NR > 1) printf "\\n"
+                    print
+                }
+            '
         fi
     }
 fi
@@ -184,12 +183,12 @@ debug_log "Escaped: overview=${#overview_escaped}c rules=${#critical_rules_escap
 # The .pending file contains: line1=path, line2=unix_timestamp
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git -C "$ORIGINAL_CWD" rev-parse --show-toplevel 2>/dev/null || echo "$ORIGINAL_CWD")}"
 PENDING_FILE="${PROJECT_DIR}/docs/handoffs/.pending"
-debug_log "PROJECT_DIR=$PROJECT_DIR PENDING_FILE=$PENDING_FILE"
-echo "PROJECT_DIR=$PROJECT_DIR" >> "$DIAG_LOG"
-echo "PENDING_FILE=$PENDING_FILE" >> "$DIAG_LOG"
-echo "PENDING_EXISTS=$(test -f "$PENDING_FILE" && echo 'YES' || echo 'NO')" >> "$DIAG_LOG"
+debug_log "PROJECT_DIR=$PROJECT_DIR PENDING_FILE=$PENDING_FILE PENDING_EXISTS=$(test -f "$PENDING_FILE" && echo 'YES' || echo 'NO')"
 handoff_section=""
 user_message=""
+
+# Maximum handoff content size to embed (50KB)
+HANDOFF_MAX_BYTES=51200
 
 if [[ -f "$PENDING_FILE" ]]; then
     handoff_path=$(head -1 "$PENDING_FILE")
@@ -199,18 +198,25 @@ if [[ -f "$PENDING_FILE" ]]; then
     # Always clean up the pending file to avoid stale breadcrumbs
     rm -f "$PENDING_FILE"
 
-    if [[ -f "$handoff_path" ]]; then
+    # Validate timestamp is numeric before arithmetic
+    if [[ ! "$handoff_timestamp" =~ ^[0-9]+$ ]]; then
+        debug_log "Invalid handoff timestamp (non-numeric), skipping: $handoff_timestamp"
+    elif [[ -f "$handoff_path" ]]; then
         age_seconds=$(( current_time - handoff_timestamp ))
         age_threshold=3600  # 1 hour
-        echo "HANDOFF_DETECTED=YES" >> "$DIAG_LOG"
-        echo "handoff_path=$handoff_path" >> "$DIAG_LOG"
-        echo "handoff_timestamp=$handoff_timestamp" >> "$DIAG_LOG"
-        echo "age_seconds=$age_seconds" >> "$DIAG_LOG"
-        debug_log "Handoff detected: path=$handoff_path age=${age_seconds:-N/A}s"
+        debug_log "Handoff detected: path=$handoff_path timestamp=$handoff_timestamp age=${age_seconds}s"
 
         if (( age_seconds < age_threshold )); then
             # Recent handoff (< 1 hour): auto-load full content
-            handoff_content=$(cat "$handoff_path")
+            handoff_size=$(wc -c < "$handoff_path" 2>/dev/null || echo 0)
+            if (( handoff_size > HANDOFF_MAX_BYTES )); then
+                # Truncate oversized handoffs to avoid memory/context pressure
+                handoff_content=$(head -c "$HANDOFF_MAX_BYTES" "$handoff_path")
+                handoff_content="${handoff_content}\n\n[TRUNCATED: File was ${handoff_size} bytes, showing first ${HANDOFF_MAX_BYTES}. Use Read tool on ${handoff_path} for full content.]"
+                debug_log "Handoff truncated: ${handoff_size} bytes > ${HANDOFF_MAX_BYTES} limit"
+            else
+                handoff_content=$(cat "$handoff_path")
+            fi
             handoff_escaped=$(json_escape "$handoff_content")
             handoff_section="<ring-handoff-resume>\\nAuto-resumed from: ${handoff_path}\\n\\n${handoff_escaped}\\n\\nMUST present the handoff context to the user using the resume-handoff response template:\\n1. Summarize what was being worked on\\n2. List key decisions already made\\n3. Show current state\\n4. Propose next action from Next Steps\\n5. Ask for confirmation before proceeding\\n</ring-handoff-resume>"
             user_message="Handoff auto-loaded from \`${handoff_path}\`. Context restored."
@@ -229,8 +235,7 @@ if [[ -f "$PENDING_FILE" ]]; then
     fi
 fi
 
-echo "handoff_section_length=${#handoff_section}" >> "$DIAG_LOG"
-echo "user_message_set=${user_message:+YES}" >> "$DIAG_LOG"
+debug_log "Handoff result: section_length=${#handoff_section} user_message_set=${user_message:+YES}"
 
 # Build additionalContext
 additional_context="<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
@@ -241,9 +246,6 @@ if [[ -n "$handoff_section" ]]; then
 fi
 
 debug_log "Output: handoff=${#handoff_section}c context=${#additional_context}c msg='${user_message:-none}'"
-
-echo "OUTPUT_LENGTH=${#additional_context}" >> "$DIAG_LOG"
-echo "=== END ===" >> "$DIAG_LOG"
 
 # Build JSON output using printf to avoid heredoc variable expansion issues
 if [[ -n "$user_message" ]]; then
