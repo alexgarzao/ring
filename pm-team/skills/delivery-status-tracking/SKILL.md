@@ -492,7 +492,7 @@ else:
 5. 📅 Schedule next status check (weekly/sprint end)
 
 **Integration:**
-- Use with `/ring:delivery-planning` (create roadmap first)
+- Use with `ring:pre-dev-delivery-planning` (create roadmap first)
 - Run periodically during execution (weekly checkpoints)
 - Compare multiple status reports to see trends
 

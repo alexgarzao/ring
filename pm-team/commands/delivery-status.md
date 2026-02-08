@@ -111,4 +111,4 @@ The skill contains:
 - Completion calculation (scope-based via agents)
 - Report generation (markdown with evidence)
 
-**Do NOT skip semantic analysis for speed.** Accuracy > velocity.
+Do not skip semantic analysis for speed. Accuracy > velocity.

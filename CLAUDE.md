@@ -412,7 +412,7 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Total: 68 skills (25 + 9 + 12 + 8 + 7 + 7) across 6 plugins**
 **Total: 30 agents (7 + 9 + 3 + 5 + 3 + 3) across 6 plugins**
-**Total: 27 commands (12 + 5 + 3 + 3 + 0 + 3) across 6 plugins**
+**Total: 26 commands (12 + 5 + 3 + 3 + 0 + 3) across 6 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
