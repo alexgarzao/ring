@@ -114,8 +114,8 @@ Pre-dev workflow ensures:
 ### Via Slash Commands
 
 ```
-/ring:pre-dev-feature logout-button    # Small track (4 gates)
-/ring:pre-dev-full payment-system      # Large track (9 gates)
+/ring:pre-dev-feature logout-button    # Small track (5 gates)
+/ring:pre-dev-full payment-system      # Large track (10 gates)
 ```
 
 ### Via Skills (Manual)
