@@ -1,8 +1,8 @@
 ---
 name: ring:using-pm-team
 description: |
-  10 pre-dev workflow skills + 3 research agents organized into Small Track (4 gates, <2 days) and
-  Large Track (9 gates, 2+ days) for systematic feature planning with research-first approach.
+  12 product management skills + 3 research agents: pre-dev workflows (Small: 4 gates, Large: 9 gates)
+  with research-first approach, plus delivery status tracking for evidence-based progress reporting.
 
 trigger: |
   - Starting any feature implementation
@@ -17,7 +17,7 @@ skip_when: |
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 10 pre-development planning skills and 3 research agents. Use them via `Skill tool: "ring:gate-name"` or via slash commands.
+The ring-pm-team plugin provides 12 product management skills and 3 research agents. Use them via `Skill tool: "ring:skill-name"` or via slash commands.
 
 **Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
@@ -105,6 +105,29 @@ Pre-dev workflow ensures:
 - **greenfield**: Web research primary (new capability)
 - **modification**: Codebase research primary (extending existing)
 - **integration**: All agents equally weighted (connecting systems)
+
+## Delivery Status Tracking (Post-Planning)
+
+After planning and during execution, track progress:
+
+| Skill | Command | Purpose |
+|-------|---------|---------|
+| `ring:delivery-status-tracking` | `/ring:delivery-status` | Evidence-based progress analysis against delivery roadmap |
+
+**What it does:**
+- Scans repository (ALL branches, commits, PRs, releases)
+- Matches work to tasks (pattern + semantic analysis)
+- Calculates % completion via specialized agents
+- Identifies delays, blockers, critical path issues
+- Extracts insights (velocity, quality trends, patterns)
+
+**When to use:**
+- Weekly checkpoints during execution
+- Sprint/cycle end retrospectives
+- Before stakeholder status meetings
+- When roadmap shows signs of deviation
+
+**Output:** `docs/pre-dev/{feature}/delivery-status-{date}.md`
 
 ## Using Pre-Dev Workflow
 
