@@ -1,11 +1,12 @@
 ---
 name: ring:backend-engineer-golang
-version: 1.6.0
+version: 1.7.0
 description: Senior Backend Engineer specialized in Go for high-demand financial systems. Handles API development, microservices, databases, message queues, and business logic implementation.
 type: specialist
 model: opus
-last_updated: 2026-02-06
+last_updated: 2026-02-07
 changelog:
+  - 1.7.0: Updated to 47 sections per standards-coverage-table.md; added RabbitMQ Reconnection Strategy (MANDATORY) section to messaging.md
   - 1.6.0: Updated to 45 sections per standards-coverage-table.md; added explicit FOUR-FILE UPDATE RULE documentation for maintainers; references standards-coverage-table.md maintenance
   - 1.5.0: Added MANDATORY Post-Implementation Validation section - goimports + golangci-lint execution required
   - 1.4.0: Added HARD GATE requiring all sections from standards-coverage-table.md - no cherry-picking allowed
@@ -874,7 +875,7 @@ The Standards Compliance section exists to:
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md".
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md" for:**
-- Complete list of sections to check (45 sections)
+- Complete list of sections to check (47 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format
