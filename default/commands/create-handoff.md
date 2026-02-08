@@ -153,7 +153,8 @@ This prevents the ephemeral breadcrumb from being committed.
 
 ### Basic Usage
 ```
-User: /ring:create-handoffAssistant: I'll create a handoff document for the current session.
+User: /ring:create-handoff
+Assistant: I'll create a handoff document for the current session.
 [Creates docs/handoffs/current-session/2025-12-27_15-45-00_session.md with filled template]
 ```
 
