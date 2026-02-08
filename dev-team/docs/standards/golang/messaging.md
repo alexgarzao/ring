@@ -1,8 +1,8 @@
 # Go Standards - Messaging
 
-> **Module:** messaging.md | **Sections:** §20 | **Parent:** [index.md](index.md)
+> **Module:** messaging.md | **Sections:** §21 | **Parent:** [index.md](index.md)
 
-This module covers RabbitMQ worker patterns for async message processing.
+This module covers RabbitMQ worker patterns for async message processing and reconnection strategies.
 
 ---
 
@@ -11,8 +11,9 @@ This module covers RabbitMQ worker patterns for async message processing.
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [RabbitMQ Worker Pattern](#rabbitmq-worker-pattern) | Async message processing with RabbitMQ |
+| 2 | [RabbitMQ Reconnection Strategy (MANDATORY)](#rabbitmq-reconnection-strategy-mandatory) | Two-layer reconnection for consumer and producer resilience |
 
-**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)**, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist.
+**Subsections:** Application Types, Architecture Overview, Core Components, Worker Configuration, Handler Registration, Handler Implementation, Message Acknowledgment, Worker Lifecycle, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)**, Producer Implementation, Message Format, Service Bootstrap, Directory Structure, Worker Checklist, **Consumer Reconnection Loop (MANDATORY)**, **Producer Per-Publish Retry (MANDATORY)**, **Health Check Integration (MANDATORY)**, **Deadlock Prevention (MANDATORY)**.
 
 ---
 
@@ -419,6 +420,285 @@ func (s *Service) Run() {
 - [ ] Exponential backoff for connection recovery
 - [ ] Graceful shutdown respects context cancellation
 - [ ] Separate credentials for consumer vs producer
+
+---
+
+## RabbitMQ Reconnection Strategy (MANDATORY)
+
+Services that use RabbitMQ MUST implement automatic reconnection at both the consumer and producer layers. Without reconnection, a broker restart or network partition leaves the service permanently disconnected.
+
+**⛔ HARD GATE:** All RabbitMQ services MUST implement two-layer reconnection using `EnsureChannel()` from lib-commons.
+
+### Reconnection Architecture
+
+| Layer | Mechanism | Trigger |
+|-------|-----------|---------|
+| **Consumer** | Infinite loop + `NotifyClose` channel | Channel closure detected automatically |
+| **Producer** | `EnsureChannel()` + retry loop per publish | Connection failure on publish attempt |
+
+Both layers use the same exponential backoff with full jitter strategy defined in [Exponential Backoff with Jitter](#exponential-backoff-with-jitter-mandatory).
+
+### Consumer Reconnection Loop (MANDATORY)
+
+The consumer MUST run an infinite goroutine per queue that automatically restarts on any channel closure.
+
+```go
+func (cr *ConsumerRoutes) RunConsumers() error {
+    for queueName, handler := range cr.routes {
+        go func(queueName string, handler QueueHandlerFunc) {
+            backoff := InitialBackoff
+
+            for {
+                // 1. Ensure channel is open (with retries)
+                if err := cr.conn.EnsureChannel(); err != nil {
+                    sleepDuration := FullJitter(backoff)
+                    time.Sleep(sleepDuration)
+                    backoff = NextBackoff(backoff)
+                    continue
+                }
+
+                // 2. Set QoS
+                if err := cr.conn.Channel.Qos(
+                    cr.NumbersOfPrefetch, 0, false,
+                ); err != nil {
+                    continue
+                }
+
+                // 3. Start consuming
+                messages, err := cr.conn.Channel.Consume(
+                    queueName,
+                    "",    // consumer tag (auto-generated)
+                    false, // auto-ack
+                    false, // exclusive
+                    false, // no-local
+                    false, // no-wait
+                    nil,   // args
+                )
+                if err != nil {
+                    continue
+                }
+
+                backoff = InitialBackoff // Reset on success
+
+                // 4. Monitor channel closure (KEY MECHANISM)
+                notifyClose := make(chan *amqp.Error, 1)
+                cr.conn.Channel.NotifyClose(notifyClose)
+
+                // 5. Start workers
+                for i := 0; i < cr.NumbersOfWorkers; i++ {
+                    go cr.startWorker(i, queueName, handler, messages)
+                }
+
+                // 6. Block until channel closes
+                if errClose := <-notifyClose; errClose != nil {
+                    cr.Logger.Warnf("[Consumer %s] channel closed: %v", queueName, errClose)
+                }
+
+                // Loop restarts automatically
+            }
+        }(queueName, handler)
+    }
+    return nil
+}
+```
+
+#### How It Works
+
+1. `EnsureChannel()` creates a new AMQP channel if the current one is nil or closed
+2. If channel creation fails, sleep with jittered backoff and retry
+3. Once consuming starts, `NotifyClose` blocks until the channel dies
+4. When the channel dies (broker restart, network failure), the loop restarts
+5. Backoff resets to `InitialBackoff` on every successful connection
+
+### Producer Per-Publish Retry (MANDATORY)
+
+The producer MUST call `EnsureChannel()` before every publish and retry with exponential backoff on failure.
+
+```go
+func (p *ProducerRepository) PublishWithRetry(
+    ctx context.Context, exchange, routingKey string, message []byte,
+) error {
+    backoff := InitialBackoff
+
+    for attempt := 0; attempt <= MaxRetries; attempt++ {
+        // 1. Ensure channel is available
+        if err := p.conn.EnsureChannel(); err != nil {
+            sleepDuration := FullJitter(backoff)
+            time.Sleep(sleepDuration)
+            backoff = NextBackoff(backoff)
+            continue
+        }
+
+        // 2. Build headers with trace propagation
+        headers := amqp.Table{
+            "HeaderID": GetRequestID(ctx),
+        }
+        InjectTraceHeaders(ctx, &headers)
+
+        // 3. Attempt publish
+        err := p.conn.Channel.Publish(
+            exchange,
+            routingKey,
+            false, // mandatory
+            false, // immediate
+            amqp.Publishing{
+                ContentType:  "application/json",
+                DeliveryMode: amqp.Persistent,
+                Headers:      headers,
+                Body:         message,
+            },
+        )
+
+        // 4. Success - return immediately
+        if err == nil {
+            return nil
+        }
+
+        // 5. Failure - backoff and retry
+        if attempt == MaxRetries {
+            return fmt.Errorf("publish failed after %d retries: %w", MaxRetries, err)
+        }
+
+        sleepDuration := FullJitter(backoff)
+        time.Sleep(sleepDuration)
+        backoff = NextBackoff(backoff)
+    }
+
+    return fmt.Errorf("publish failed: exhausted retries")
+}
+```
+
+#### Key Detail: `EnsureChannel()`
+
+This is the critical function from `lib-commons`. It:
+
+- Checks if the current channel is nil or closed
+- If so, calls `GetNewConnect()` to re-establish the AMQP connection
+- Creates a new channel on the fresh connection
+- Updates `conn.Connected` to `true` (which makes `/ready` return 200)
+
+### Health Check Integration (MANDATORY)
+
+Health checks MUST delegate to `lib-commons` `RabbitMQConnection.HealthCheck()`:
+
+```go
+func (p *ProducerRepository) CheckRabbitMQHealth() bool {
+    return p.conn.HealthCheck()
+}
+```
+
+`HealthCheck()` verifies:
+
+- `conn.Connected == true`
+- `conn.Connection != nil`
+- `!conn.Connection.IsClosed()`
+
+A background goroutine MUST periodically call `EnsureChannel()` to keep the health status accurate. Without this, the service enters a deadlock state where `/ready` reports unhealthy but nothing triggers reconnection (see [Deadlock Prevention](#deadlock-prevention-mandatory)).
+
+### Deadlock Prevention (MANDATORY)
+
+**⛔ HARD GATE:** Producer-only services and services with separate consumer/producer connections MUST implement background periodic reconnection.
+
+#### The Deadlock Scenario
+
+When the broker restarts or a network partition occurs, services without active background reconnection enter a deadlock:
+
+```text
+1. Broker restarts → connection dies
+2. /ready returns 503 (connection is closed)
+3. No background process calls EnsureChannel() to reconnect
+4. Connection only recovers when a publish is attempted
+5. No publish happens because upstream sees 503 from /ready
+6. Deadlock: nothing triggers reconnection
+```
+
+Consumer-based services with the background loop from [Consumer Reconnection Loop](#consumer-reconnection-loop-mandatory) naturally recover because the consumer loop calls `EnsureChannel()` continuously.
+
+#### The Fix: Background Periodic Reconnection (REQUIRED)
+
+Add a background goroutine during service bootstrap that periodically calls `EnsureChannel()`:
+
+```go
+func startReconnectionMonitor(conn *libRabbitmq.RabbitMQConnection, interval time.Duration) {
+    go func() {
+        ticker := time.NewTicker(interval)
+        defer ticker.Stop()
+
+        for range ticker.C {
+            if err := conn.EnsureChannel(); err != nil {
+                log.Warnf("background reconnection attempt failed: %v", err)
+            }
+        }
+    }()
+}
+```
+
+Call in service bootstrap:
+
+```go
+// REQUIRED: Prevents deadlock after broker restart
+startReconnectionMonitor(rabbitMQConnection, 10*time.Second)
+```
+
+#### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Verify reconnection pattern exists
+grep -rn "EnsureChannel" internal/adapters/rabbitmq --include="*.go"
+
+# Expected: EnsureChannel called in both consumer and producer
+# If missing in producer: BLOCKER - Add EnsureChannel + retry before publish
+
+# Check for background reconnection monitor
+grep -rn "startReconnectionMonitor\|NewTicker.*EnsureChannel" internal/ --include="*.go"
+
+# Expected: Background monitor present in bootstrap
+# If missing: BLOCKER for producer-only services - Add periodic EnsureChannel
+```
+
+#### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Single publish attempt without retry
+func (p *Producer) Publish(ctx context.Context, msg []byte) error {
+    return p.conn.Channel.Publish(...)  // WRONG: No EnsureChannel, no retry
+}
+
+// ❌ FORBIDDEN: EnsureChannel without retry loop
+func (p *Producer) Publish(ctx context.Context, msg []byte) error {
+    p.conn.EnsureChannel()  // WRONG: If EnsureChannel fails, publish fails permanently
+    return p.conn.Channel.Publish(...)
+}
+
+// ❌ FORBIDDEN: No background reconnection in producer-only service
+func main() {
+    conn := rabbitmq.NewConnection(...)
+    producer := rabbitmq.NewProducer(conn)
+    // WRONG: No startReconnectionMonitor → deadlock after broker restart
+    server.Start()
+}
+```
+
+#### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Consumer reconnects, producer is fine" | Consumer and producer may use separate connections. Producer needs its own reconnection. | **Add EnsureChannel + retry to producer** |
+| "Broker rarely restarts" | Rare ≠ never. When it happens, service is stuck until pod restart. | **Add reconnection to both layers** |
+| "Kubernetes will restart the pod" | Pod restart = downtime + message loss. Self-healing is faster and lossless. | **Add background reconnection** |
+| "Health check will catch it" | Health check reports the problem but does not fix it. That's the deadlock. | **Add startReconnectionMonitor** |
+| "We only have a consumer, no producer" | Consumer loop handles itself. But verify NotifyClose is used, not just range. | **Verify NotifyClose pattern** |
+| "Single EnsureChannel before publish is enough" | If EnsureChannel fails, publish fails permanently with no retry. | **Wrap in retry loop with backoff** |
+
+### Reconnection Checklist
+
+- [ ] Consumer uses infinite loop with `EnsureChannel()` + `NotifyClose`
+- [ ] Consumer resets backoff to `InitialBackoff` on successful connection
+- [ ] Producer calls `EnsureChannel()` before every publish
+- [ ] Producer wraps publish in retry loop with exponential backoff
+- [ ] Health check delegates to `lib-commons` `HealthCheck()`
+- [ ] Background `startReconnectionMonitor` present for producer-only services
+- [ ] Backoff uses `FullJitter` to prevent thundering herd
 
 ---
 
