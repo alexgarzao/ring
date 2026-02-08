@@ -5,6 +5,10 @@
 
 set -euo pipefail
 
+# Capture original working directory BEFORE any cd operations
+# This is the user's project directory (where Claude Code was launched)
+ORIGINAL_CWD="$PWD"
+
 # Validate CLAUDE_PLUGIN_ROOT is set and reasonable (when used via hooks)
 # Note: This script can run standalone via SCRIPT_DIR detection or via CLAUDE_PLUGIN_ROOT
 if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
@@ -170,7 +174,7 @@ debug_log "Escaped: overview=${#overview_escaped}c rules=${#critical_rules_escap
 # Handoff auto-resume detection
 # Check for pending handoff created by /ring:create-handoff
 # The .pending file contains: line1=path, line2=unix_timestamp
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")}"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git -C "$ORIGINAL_CWD" rev-parse --show-toplevel 2>/dev/null || echo "$ORIGINAL_CWD")}"
 PENDING_FILE="${PROJECT_DIR}/docs/handoffs/.pending"
 debug_log "PROJECT_DIR=$PROJECT_DIR PENDING_FILE=$PENDING_FILE"
 handoff_section=""
