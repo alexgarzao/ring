@@ -100,7 +100,8 @@ Should I proceed with this, or would you like to adjust the approach?
 
 ### Basic Resume
 ```
-User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.mdAssistant: 
+User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
+Assistant: 
 
 ## Resuming: auth-refactor
 
