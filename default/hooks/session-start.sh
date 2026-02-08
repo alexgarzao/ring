@@ -161,11 +161,69 @@ overview_escaped=$(json_escape "$skills_overview")
 critical_rules_escaped=$(json_escape "$CRITICAL_RULES")
 doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
 
+# Handoff auto-resume detection
+# Check for pending handoff created by /ring:create-handoff
+# The .pending file contains: line1=path, line2=unix_timestamp
+PROJECT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+PENDING_FILE="${PROJECT_DIR}/docs/handoffs/.pending"
+handoff_section=""
+user_message=""
+
+if [[ -f "$PENDING_FILE" ]]; then
+    handoff_path=$(head -1 "$PENDING_FILE")
+    handoff_timestamp=$(sed -n '2p' "$PENDING_FILE")
+    current_time=$(date +%s)
+
+    # Always clean up the pending file to avoid stale breadcrumbs
+    rm -f "$PENDING_FILE"
+
+    if [[ -f "$handoff_path" ]]; then
+        age_seconds=$(( current_time - handoff_timestamp ))
+        age_threshold=3600  # 1 hour
+
+        if (( age_seconds < age_threshold )); then
+            # Recent handoff (< 1 hour): auto-load full content
+            handoff_content=$(cat "$handoff_path")
+            handoff_escaped=$(json_escape "$handoff_content")
+            handoff_section="<ring-handoff-resume>\\nAuto-resumed from: ${handoff_path}\\n\\n${handoff_escaped}\\n\\nMUST present the handoff context to the user using the resume-handoff response template:\\n1. Summarize what was being worked on\\n2. List key decisions already made\\n3. Show current state\\n4. Propose next action from Next Steps\\n5. Ask for confirmation before proceeding\\n</ring-handoff-resume>"
+            user_message="Handoff auto-loaded from \`${handoff_path}\`. Context restored."
+        else
+            # Stale handoff (>= 1 hour): ask user before loading
+            age_hours=$(( age_seconds / 3600 ))
+            age_minutes_remainder=$(( (age_seconds % 3600) / 60 ))
+            if (( age_hours > 0 )); then
+                age_display="${age_hours}h ${age_minutes_remainder}m ago"
+            else
+                age_display="$(( age_seconds / 60 ))m ago"
+            fi
+            handoff_section="<ring-handoff-pending>\\nA pending handoff was found at: ${handoff_path}\\nCreated: ${age_display}\\nDo NOT auto-load the content. Ask the user if they want to resume from this handoff.\\nIf yes, use the Read tool to load the file and present context per the resume-handoff response template.\\nIf no, proceed normally.\\n</ring-handoff-pending>"
+            user_message="Found a pending handoff (created ${age_display}): \`${handoff_path}\`. Would you like to resume from it?"
+        fi
+    fi
+fi
+
 # Build additionalContext
 additional_context="<ring-critical-rules>\n${critical_rules_escaped}\n</ring-critical-rules>\n\n<ring-doubt-questions>\n${doubt_questions_escaped}\n</ring-doubt-questions>\n\n<ring-skills-system>\n${overview_escaped}\n</ring-skills-system>"
 
-# Build JSON output
-cat <<EOF
+# Append handoff section if present
+if [[ -n "$handoff_section" ]]; then
+    additional_context="${additional_context}\n\n${handoff_section}"
+fi
+
+# Build JSON output (with optional userMessage for handoff notifications)
+if [[ -n "$user_message" ]]; then
+    user_message_escaped=$(json_escape "$user_message")
+    cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "userMessage": "${user_message_escaped}",
+    "additionalContext": "${additional_context}"
+  }
+}
+EOF
+else
+    cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
@@ -173,5 +231,6 @@ cat <<EOF
   }
 }
 EOF
+fi
 
 exit 0
