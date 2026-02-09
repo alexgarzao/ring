@@ -8,16 +8,16 @@ arguments:
     required: true
 ---
 
-# /ring:resume-handoff Command
+# /ring-resume-handoff Command
 
 Resumes work from a previously created handoff document.
 
-> **Note:** If you just ran `/ring:create-handoff` followed by `/clear`, the handoff is **automatically loaded** - you don't need this command. Use this command to manually resume from **older handoffs** or **specific handoff files**.
+> **Note:** If you just ran `/ring-create-handoff` followed by `/clear`, the handoff is **automatically loaded** - you don't need this command. Use this command to manually resume from **older handoffs** or **specific handoff files**.
 
 ## Usage
 
 ```
-/ring:resume-handoff <path-to-handoff.md>
+/ring-resume-handoff <path-to-handoff.md>
 ```
 
 ## Arguments
@@ -39,7 +39,7 @@ Resumes work from a previously created handoff document.
 ### Automatic Resume (Default)
 ```
 # Previous session
-User: /ring:create-handoff auth-refactor "OAuth integration"
+User: /ring-create-handoff auth-refactor "OAuth integration"
 Assistant: [Creates handoff file + breadcrumb]
 
 # Clear context (handoff auto-loads if < 1 hour old)
@@ -50,7 +50,7 @@ Assistant: [Automatically detects handoff, presents context, continues work]
 ### Manual Resume (Older Handoffs)
 ```
 # Resume from a specific older handoff
-User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
+User: /ring-resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
 Assistant: [Reads handoff, acknowledges context, continues work]
 ```
 
@@ -100,7 +100,7 @@ Should I proceed with this, or would you like to adjust the approach?
 
 ### Basic Resume
 ```
-User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
+User: /ring-resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
 Assistant: 
 
 ## Resuming: auth-refactor
@@ -137,7 +137,7 @@ Should I proceed with this, or would you like to adjust the approach?
 | Error | Cause | Resolution |
 |-------|-------|------------|
 | File not found | Invalid path | Check the path and try again |
-| Invalid format | Not a handoff file | Ensure file was created with /ring:create-handoff |
+| Invalid format | Not a handoff file | Ensure file was created with /ring-create-handoff |
 | Missing sections | Incomplete handoff | Review handoff file and add missing sections |
 
 ## Tips
@@ -146,4 +146,4 @@ Should I proceed with this, or would you like to adjust the approach?
 - **Be specific**: The more detail in the handoff, the better the resumption
 - **Check Next Steps**: Ensure the Next Steps section is actionable
 - **Review before clearing**: Verify the handoff captures everything important
-- **Auto-resume works automatically**: After `/ring:create-handoff` + `/clear`, the handoff loads automatically within 1 hour. Beyond 1 hour, you'll be prompted. Use this command only for older or specific handoffs.
+- **Auto-resume works automatically**: After `/ring-create-handoff` + `/clear`, the handoff loads automatically within 1 hour. Beyond 1 hour, you'll be prompted. Use this command only for older or specific handoffs.

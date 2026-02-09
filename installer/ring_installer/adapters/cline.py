@@ -380,14 +380,14 @@ class ClineAdapter(PlatformAdapter):
 
         # Transform Ring tool references to Cline prompt references
         result = re.sub(
-            r'`ring:([^`]+)`',
+            r'`ring-([^`]+)`',
             lambda m: f'@{self._format_prompt_reference(m.group(1))}',
             result
         )
 
         # Transform agent references
         result = re.sub(
-            r'"ring:([^"]+)"',
+            r'"ring-([^"]+)"',
             lambda m: f'"@{self._format_prompt_reference(m.group(1))}"',
             result
         )
@@ -405,7 +405,7 @@ class ClineAdapter(PlatformAdapter):
             Cline prompt reference format
         """
         # Convert kebab-case to path-like format
-        # ring:code-reviewer -> code-reviewer
+        # ring-code-reviewer -> code-reviewer
         return name.lower().replace("_", "-")
 
     def generate_prompt_index(self, prompts: List[Dict[str, str]]) -> str:

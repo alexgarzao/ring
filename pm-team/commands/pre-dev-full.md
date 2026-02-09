@@ -14,7 +14,7 @@ I'm running the **Full Track** pre-development workflow (9 gates) for your featu
 - ❌ Use new architecture patterns
 - ❌ Require team collaboration
 
-**If feature is simple (<2 days, existing patterns), use `/ring:pre-dev-feature` instead.**
+**If feature is simple (<2 days, existing patterns), use `/ring-pre-dev-feature` instead.**
 
 ## Document Organization
 
@@ -62,7 +62,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 0: Research Phase (NEW)
 
-**Skill:** ring:pre-dev-research
+**Skill:** ring-pre-dev-research
 
 1. Determine research mode by asking user or inferring from context:
    - **greenfield**: New capability, no existing patterns
@@ -70,9 +70,9 @@ mkdir -p docs/pre-dev/<feature-name>
    - **integration**: Connecting external systems
 
 2. Dispatch 3 research agents in PARALLEL:
-   - ring:repo-research-analyst (codebase patterns, file:line refs)
-   - ring:best-practices-researcher (web search, Context7)
-   - ring:framework-docs-researcher (tech stack, versions)
+   - ring-repo-research-analyst (codebase patterns, file:line refs)
+   - ring-best-practices-researcher (web search, Context7)
+   - ring-framework-docs-researcher (tech stack, versions)
 
 3. Aggregate findings into research document
 4. Save to: `docs/pre-dev/<feature-name>/research.md`
@@ -89,7 +89,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 1: PRD Creation
 
-**Skill:** ring:pre-dev-prd-creation
+**Skill:** ring-pre-dev-prd-creation
 
 1. Ask user to describe the feature (problem, users, business value)
 2. Create PRD document with:
@@ -110,7 +110,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 2: Feature Map Creation
 
-**Skill:** ring:pre-dev-feature-map
+**Skill:** ring-pre-dev-feature-map
 
 1. Load PRD from `docs/pre-dev/<feature-name>/prd.md`
 2. Create feature map document with:
@@ -130,7 +130,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 3: TRD Creation
 
-**Skill:** ring:pre-dev-trd-creation
+**Skill:** ring-pre-dev-trd-creation
 
 1. Load PRD from `docs/pre-dev/<feature-name>/prd.md`
 2. Load Feature Map from `docs/pre-dev/<feature-name>/feature-map.md`
@@ -155,7 +155,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 4: API Design
 
-**Skill:** ring:pre-dev-api-design
+**Skill:** ring-pre-dev-api-design
 
 1. **Phase 0:** Ask user for API naming standards (URL/file/none)
 2. If provided: Load and extract to `api-standards-ref.md`
@@ -179,7 +179,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 5: Data Model
 
-**Skill:** ring:pre-dev-data-model
+**Skill:** ring-pre-dev-data-model
 
 1. **Phase 0:** Determine database field naming strategy
    - Check if Gate 4 API standards exist
@@ -207,7 +207,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 6: Dependency Map
 
-**Skill:** ring:pre-dev-dependency-map
+**Skill:** ring-pre-dev-dependency-map
 
 1. Load previous artifacts
 2. Create dependency map document with:
@@ -227,7 +227,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 7: Task Breakdown
 
-**Skill:** ring:pre-dev-task-breakdown
+**Skill:** ring-pre-dev-task-breakdown
 
 1. Load all previous artifacts (PRD, Feature Map, TRD, API Design, Data Model, Dependency Map)
 2. Create task breakdown document with:
@@ -248,7 +248,7 @@ mkdir -p docs/pre-dev/<feature-name>
 
 ## Gate 8: Subtask Creation
 
-**Skill:** ring:pre-dev-subtask-creation
+**Skill:** ring-pre-dev-subtask-creation
 
 1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md`
 2. Create subtask breakdown document with:
@@ -290,8 +290,8 @@ Planning time: 2-4 hours (comprehensive)
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
+2. Use /ring-worktree to create isolated workspace
+3. Use /ring-write-plan to create implementation plan
 4. Execute the plan
 ```
 
@@ -315,15 +315,15 @@ Next steps:
 
 | Gate | Skill | Purpose |
 |------|-------|---------|
-| 0 | `ring:pre-dev-research` | Domain/technical research |
-| 1 | `ring:pre-dev-prd-creation` | Product requirements |
-| 2 | `ring:pre-dev-feature-map` | Feature scope |
-| 3 | `ring:pre-dev-trd-creation` | Technical requirements |
-| 4 | `ring:pre-dev-api-design` | API contracts |
-| 5 | `ring:pre-dev-data-model` | Data architecture |
-| 6 | `ring:pre-dev-dependency-map` | Technology selection |
-| 7 | `ring:pre-dev-task-breakdown` | Task decomposition |
-| 8 | `ring:pre-dev-subtask-creation` | Implementation steps |
+| 0 | `ring-pre-dev-research` | Domain/technical research |
+| 1 | `ring-pre-dev-prd-creation` | Product requirements |
+| 2 | `ring-pre-dev-feature-map` | Feature scope |
+| 3 | `ring-pre-dev-trd-creation` | Technical requirements |
+| 4 | `ring-pre-dev-api-design` | API contracts |
+| 5 | `ring-pre-dev-data-model` | Data architecture |
+| 6 | `ring-pre-dev-dependency-map` | Technology selection |
+| 7 | `ring-pre-dev-task-breakdown` | Task decomposition |
+| 8 | `ring-pre-dev-subtask-creation` | Implementation steps |
 
 ### Execution Pattern
 

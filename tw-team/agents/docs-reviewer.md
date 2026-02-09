@@ -329,9 +329,9 @@ When reviewing documentation:
 
 ## What This Agent Does NOT Handle
 
-- Writing new documentation (use `ring:functional-writer` or `ring:api-writer`)
+- Writing new documentation (use `ring-functional-writer` or `ring-api-writer`)
 - Technical implementation (use `*` agents)
-- Code review (use `ring:code-reviewer`)
+- Code review (use `ring-code-reviewer`)
 
 ## Output Expectations
 

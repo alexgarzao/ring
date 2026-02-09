@@ -4,7 +4,7 @@
 
 This module covers property-based testing patterns. Property-based tests verify that **invariants always hold** across many generated inputs.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 5 (Property-Based Testing).
+> **Gate Reference:** This module is loaded by `ring-qa-analyst` at Gate 5 (Property-Based Testing).
 
 ---
 

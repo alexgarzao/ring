@@ -33,7 +33,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `ring:devops-engineer`, `ring:qa-analyst`, `ring:sre`, `finops-automation`
+**Used by:** `ring-backend-engineer-golang`, `ring-backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `ring-devops-engineer`, `ring-qa-analyst`, `ring-sre`, `finops-automation`
 
 ---
 
@@ -59,7 +59,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `ring:frontend-designer`, `finops-analyzer`
+**Used by:** `ring-frontend-designer`, `finops-analyzer`
 
 ---
 
@@ -91,11 +91,11 @@ output_schema:
       required: true
 ```
 
-**Used by:** `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`
+**Used by:** `ring-code-reviewer`, `ring-business-logic-reviewer`, `ring-security-reviewer`
 
-**Note:** `ring:business-logic-reviewer` and `ring:security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
-- `ring:business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
-- `ring:security-reviewer` adds: "OWASP Top 10 Coverage", "Compliance Status"
+**Note:** `ring-business-logic-reviewer` and `ring-security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
+- `ring-business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
+- `ring-security-reviewer` adds: "OWASP Top 10 Coverage", "Compliance Status"
 
 ---
 
@@ -124,7 +124,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `ring:codebase-explorer`
+**Used by:** `ring-codebase-explorer`
 
 ---
 
@@ -153,7 +153,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `ring:write-plan`
+**Used by:** `ring-write-plan`
 
 ---
 
@@ -168,8 +168,8 @@ All ring-dev-team agents include this in their `output_schema`:
 ```yaml
 - name: "Standards Compliance"
   pattern: "^## Standards Compliance"
-  required: false  # In schema, but MANDATORY when invoked from ring:dev-refactor
-  description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill."
+  required: false  # In schema, but MANDATORY when invoked from ring-dev-refactor
+  description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring-dev-refactor skill."
 ```
 
 ### Conditional Requirement: `invoked_from_dev_refactor`
@@ -177,11 +177,11 @@ All ring-dev-team agents include this in their `output_schema`:
 | Context | Standards Compliance Required | Enforcement |
 |---------|------------------------------|-------------|
 | Direct agent invocation | Optional | Agent may include if relevant |
-| Via `ring:dev-cycle` | Optional | Agent may include if relevant |
-| Via `ring:dev-refactor` | **MANDATORY** | Prompt includes `MODE: ANALYSIS ONLY` |
+| Via `ring-dev-cycle` | Optional | Agent may include if relevant |
+| Via `ring-dev-refactor` | **MANDATORY** | Prompt includes `MODE: ANALYSIS ONLY` |
 
 **How It's Triggered:**
-1. User invokes `/ring:dev-refactor` command
+1. User invokes `/ring-dev-refactor` command
 2. The skill dispatches agents with prompts starting with `**MODE: ANALYSIS ONLY**`
 3. This prompt pattern signals to agents that Standards Compliance output is MANDATORY
 4. Agents load Ring standards via WebFetch and produce comparison tables
@@ -204,13 +204,13 @@ All ring-dev-team agents support Standards Compliance:
 
 | Agent | Standards Source | Categories Checked |
 |-------|------------------|-------------------|
-| `ring:backend-engineer-golang` | `golang.md` | lib-commons, Error Handling, Logging, Config |
-| `ring:backend-engineer-typescript` | `typescript.md` | Type Safety, Error Handling, Validation |
-| `ring:devops-engineer` | `devops.md` | Dockerfile, docker-compose, CI/CD |
+| `ring-backend-engineer-golang` | `golang.md` | lib-commons, Error Handling, Logging, Config |
+| `ring-backend-engineer-typescript` | `typescript.md` | Type Safety, Error Handling, Validation |
+| `ring-devops-engineer` | `devops.md` | Dockerfile, docker-compose, CI/CD |
 | `frontend-bff-engineer-typescript` | `frontend.md` | Component patterns, State management |
-| `ring:frontend-designer` | `frontend.md` | Accessibility, Design patterns |
-| `ring:qa-analyst` | `qa.md` | Test coverage, Test patterns |
-| `ring:sre` | `sre.md` | Health endpoints, Logging, Tracing |
+| `ring-frontend-designer` | `frontend.md` | Accessibility, Design patterns |
+| `ring-qa-analyst` | `qa.md` | Test coverage, Test patterns |
+| `ring-sre` | `sre.md` | Health endpoints, Logging, Tracing |
 
 ### Output Format Examples
 

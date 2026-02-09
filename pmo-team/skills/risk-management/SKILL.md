@@ -1,5 +1,5 @@
 ---
-name: ring:risk-management
+name: ring-risk-management
 description: |
   Portfolio-level risk management skill for identifying, assessing, and mitigating
   risks across multiple projects. Maintains RAID logs and tracks risk responses.
@@ -13,7 +13,7 @@ trigger: |
 skip_when: |
   - Single project risk → handle in project scope
   - Financial risk only → use ring-finops-team
-  - Technical risk in code → use ring:qa-analyst
+  - Technical risk in code → use ring-qa-analyst
 
 related:
   complementary: [portfolio-planning, project-health-check]

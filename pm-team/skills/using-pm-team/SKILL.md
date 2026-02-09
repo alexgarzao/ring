@@ -1,5 +1,5 @@
 ---
-name: ring:using-pm-team
+name: ring-using-pm-team
 description: |
   12 product management skills + 3 research agents: pre-dev workflows (Small: 4 gates, Large: 9 gates)
   with research-first approach, plus delivery status tracking for evidence-based progress reporting.
@@ -10,16 +10,16 @@ trigger: |
   - User requests "plan a feature"
 
 skip_when: |
-  - Quick exploratory work → ring:brainstorming may suffice
+  - Quick exploratory work → ring-brainstorming may suffice
   - Bug fix with known solution → direct implementation
   - Trivial change (<1 hour) → skip formal planning
 ---
 
 # Using Ring Team-Product: Pre-Dev Workflow
 
-The ring-pm-team plugin provides 12 product management skills and 3 research agents. Use them via `Skill tool: "ring:skill-name"` or via slash commands.
+The ring-pm-team plugin provides 12 product management skills and 3 research agents. Use them via `Skill tool: "ring-skill-name"` or via slash commands.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
 ## Pre-Dev Philosophy
 
@@ -48,10 +48,10 @@ Pre-dev workflow ensures:
 
 | Gate | Skill | Output |
 |------|-------|--------|
-| 0 | ring:pre-dev-research | research.md |
-| 1 | ring:pre-dev-prd-creation | PRD.md |
-| 2 | ring:pre-dev-trd-creation | TRD.md |
-| 3 | ring:pre-dev-task-breakdown | tasks.md |
+| 0 | ring-pre-dev-research | research.md |
+| 1 | ring-pre-dev-prd-creation | PRD.md |
+| 2 | ring-pre-dev-trd-creation | TRD.md |
+| 3 | ring-pre-dev-task-breakdown | tasks.md |
 
 **Planning time:** 45-75 minutes
 
@@ -67,15 +67,15 @@ Pre-dev workflow ensures:
 
 | Gate | Skill | Output |
 |------|-------|--------|
-| 0 | ring:pre-dev-research | research.md |
-| 1 | ring:pre-dev-prd-creation | PRD.md |
-| 2 | ring:pre-dev-feature-map | feature-map.md |
-| 3 | ring:pre-dev-trd-creation | TRD.md |
-| 4 | ring:pre-dev-api-design | API.md |
-| 5 | ring:pre-dev-data-model | data-model.md |
-| 6 | ring:pre-dev-dependency-map | dependencies.md |
-| 7 | ring:pre-dev-task-breakdown | tasks.md |
-| 8 | ring:pre-dev-subtask-creation | subtasks/ |
+| 0 | ring-pre-dev-research | research.md |
+| 1 | ring-pre-dev-prd-creation | PRD.md |
+| 2 | ring-pre-dev-feature-map | feature-map.md |
+| 3 | ring-pre-dev-trd-creation | TRD.md |
+| 4 | ring-pre-dev-api-design | API.md |
+| 5 | ring-pre-dev-data-model | data-model.md |
+| 6 | ring-pre-dev-dependency-map | dependencies.md |
+| 7 | ring-pre-dev-task-breakdown | tasks.md |
+| 8 | ring-pre-dev-subtask-creation | subtasks/ |
 
 **Planning time:** 2.5-4.5 hours
 
@@ -83,23 +83,23 @@ Pre-dev workflow ensures:
 
 | Gate | Skill | What It Does |
 |------|-------|--------------|
-| 0 | ring:pre-dev-research | Parallel research: codebase patterns, best practices, framework docs |
-| 1 | ring:pre-dev-prd-creation | Business requirements (WHAT/WHY), user stories, success metrics |
-| 2 | ring:pre-dev-feature-map | Feature relationships, dependencies, deployment order (Large only) |
-| 3 | ring:pre-dev-trd-creation | Technical architecture, technology-agnostic patterns |
-| 4 | ring:pre-dev-api-design | API contracts, operations, error handling (Large only) |
-| 5 | ring:pre-dev-data-model | Entities, relationships, ownership (Large only) |
-| 6 | ring:pre-dev-dependency-map | Explicit tech choices, versions, licenses (Large only) |
-| 7 | ring:pre-dev-task-breakdown | Value-driven tasks with success criteria |
-| 8 | ring:pre-dev-subtask-creation | Zero-context 2-5 min implementation steps (Large only) |
+| 0 | ring-pre-dev-research | Parallel research: codebase patterns, best practices, framework docs |
+| 1 | ring-pre-dev-prd-creation | Business requirements (WHAT/WHY), user stories, success metrics |
+| 2 | ring-pre-dev-feature-map | Feature relationships, dependencies, deployment order (Large only) |
+| 3 | ring-pre-dev-trd-creation | Technical architecture, technology-agnostic patterns |
+| 4 | ring-pre-dev-api-design | API contracts, operations, error handling (Large only) |
+| 5 | ring-pre-dev-data-model | Entities, relationships, ownership (Large only) |
+| 6 | ring-pre-dev-dependency-map | Explicit tech choices, versions, licenses (Large only) |
+| 7 | ring-pre-dev-task-breakdown | Value-driven tasks with success criteria |
+| 8 | ring-pre-dev-subtask-creation | Zero-context 2-5 min implementation steps (Large only) |
 
 ## Research Agents (Gate 0)
 
 | Agent | Focus |
 |-------|-------|
-| `ring:repo-research-analyst` | Codebase patterns, docs/solutions/ knowledge base |
-| `ring:best-practices-researcher` | Web search, Context7 for best practices |
-| `ring:framework-docs-researcher` | Tech stack versions, official patterns |
+| `ring-repo-research-analyst` | Codebase patterns, docs/solutions/ knowledge base |
+| `ring-best-practices-researcher` | Web search, Context7 for best practices |
+| `ring-framework-docs-researcher` | Tech stack versions, official patterns |
 
 **Research Modes:**
 - **greenfield**: Web research primary (new capability)
@@ -112,7 +112,7 @@ After planning and during execution, track progress:
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| `ring:delivery-status-tracking` | `/ring:delivery-status` | Evidence-based progress analysis against delivery roadmap |
+| `ring-delivery-status-tracking` | `/ring-delivery-status` | Evidence-based progress analysis against delivery roadmap |
 
 **What it does:**
 - Scans repository (ALL branches, commits, PRs, releases)
@@ -134,16 +134,16 @@ After planning and during execution, track progress:
 ### Via Slash Commands
 
 ```
-/ring:pre-dev-feature logout-button    # Small track (4 gates)
-/ring:pre-dev-full payment-system      # Large track (9 gates)
+/ring-pre-dev-feature logout-button    # Small track (4 gates)
+/ring-pre-dev-full payment-system      # Large track (9 gates)
 ```
 
 ### Via Skills (Manual)
 
 ```
-Skill tool: "ring:pre-dev-prd-creation"
+Skill tool: "ring-pre-dev-prd-creation"
 (Review output)
-Skill tool: "ring:pre-dev-trd-creation"
+Skill tool: "ring-pre-dev-trd-creation"
 (Review output)
 ```
 
@@ -172,16 +172,16 @@ docs/pre-dev/{feature}/
 
 | Plugin | Use For |
 |--------|---------|
-| ring:using-ring (default) | ORCHESTRATOR principle for ALL tasks |
-| ring:using-dev-team | Developer specialists for reviewing designs |
-| ring:using-finops-team | Regulatory compliance planning |
-| ring:using-tw-team | Documentation for features |
+| ring-using-ring (default) | ORCHESTRATOR principle for ALL tasks |
+| ring-using-dev-team | Developer specialists for reviewing designs |
+| ring-using-finops-team | Regulatory compliance planning |
+| ring-using-tw-team | Documentation for features |
 
 **Combined with:**
-- `ring:execute-plan` – Run tasks in batches
-- `ring:write-plan` – Generate plan from scratch
+- `ring-execute-plan` – Run tasks in batches
+- `ring-write-plan` – Generate plan from scratch
 - `*-engineer` – Specialist review of design
-- `ring:requesting-code-review` – Post-implementation review
+- `ring-requesting-code-review` – Post-implementation review
 
 ## ORCHESTRATOR Principle
 
@@ -191,7 +191,7 @@ docs/pre-dev/{feature}/
 - **Use agents for specialist review** – Dispatch engineers to review TRD
 
 ### Good (ORCHESTRATOR):
-> "I need to plan payment system. Let me run /ring:pre-dev-full, then dispatch ring:backend-engineer-golang to review the architecture."
+> "I need to plan payment system. Let me run /ring-pre-dev-full, then dispatch ring-backend-engineer-golang to review the architecture."
 
 ### Bad (OPERATOR):
 > "I'll start coding and plan as I go."

@@ -161,7 +161,7 @@ generate_markdown() {
     echo "## Usage"
     echo ""
     echo "To use a skill: Use the Skill tool with skill name"
-    echo "Example: \`ring:brainstorming\`"
+    echo "Example: \`ring-brainstorming\`"
 
     # Output stats to stderr (like Python version)
     echo "" >&2

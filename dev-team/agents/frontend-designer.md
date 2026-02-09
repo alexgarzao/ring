@@ -813,7 +813,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:frontend-designer → frontend.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-frontend-designer → frontend.md" for:**
 - Complete list of sections to check (13 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
@@ -866,7 +866,7 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 |------|-------------|
 | **all sections apply** | CANNOT produce designs that violate any section |
 | **No cherry-picking** | MUST inform designs with all Frontend sections |
-| **Coverage table is authoritative** | See `ring:frontend-designer → frontend.md` section for full list |
+| **Coverage table is authoritative** | See `ring-frontend-designer → frontend.md` section for full list |
 
 **Anti-Rationalization:**
 
@@ -1165,7 +1165,7 @@ If any condition is true, STOP immediately and ask user for clarification.
 ### Color Tokens
 - Error: `destructive` (#ef4444)
 - Success: `success` (#22c55e)
-- Focus ring: `ring` (2px offset)
+- Focus ring- `ring` (2px offset)
 
 ### Typography
 - Labels: `text-sm font-medium`
@@ -1200,8 +1200,8 @@ If any condition is true, STOP immediately and ask user for clarification.
 **This agent does not write code.** For implementation, hand off specifications to:
 - `frontend-bff-engineer-typescript` - BFF layer for frontend
 - `frontend-bff-engineer-typescript` - BFF layer implementation (API Routes)
-- `ring:backend-engineer-golang` - Backend API development (Go)
-- `ring:backend-engineer-typescript` - Backend API development (TypeScript)
-- `ring:devops-engineer` - Docker/CI-CD configuration
-- `ring:qa-analyst` - Testing strategy and QA automation
-- `ring:sre` - Performance optimization and monitoring
+- `ring-backend-engineer-golang` - Backend API development (Go)
+- `ring-backend-engineer-typescript` - Backend API development (TypeScript)
+- `ring-devops-engineer` - Docker/CI-CD configuration
+- `ring-qa-analyst` - Testing strategy and QA automation
+- `ring-sre` - Performance optimization and monitoring

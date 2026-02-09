@@ -1,5 +1,5 @@
 ---
-name: ring:dev-property-testing
+name: ring-dev-property-testing
 title: Development cycle property-based testing (Gate 5)
 category: development-cycle
 tier: 1
@@ -21,11 +21,11 @@ NOT_skip_when: |
   - "Too abstract" - Properties are concrete: "balance never negative", "IDs always unique".
 
 sequence:
-  after: [ring:dev-fuzz-testing]
-  before: [ring:dev-integration-testing]
+  after: [ring-dev-fuzz-testing]
+  before: [ring-dev-integration-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-fuzz-testing, ring:qa-analyst]
+  complementary: [ring-dev-cycle, ring-dev-fuzz-testing, ring-qa-analyst]
 
 input_schema:
   required:
@@ -167,7 +167,7 @@ if any REQUIRED input is missing:
 
 ```text
 Task tool:
-  subagent_type: "ring:qa-analyst"
+  subagent_type: "ring-qa-analyst"
   model: "opus"
   prompt: |
     **MODE:** PROPERTY-BASED TESTING (Gate 5)

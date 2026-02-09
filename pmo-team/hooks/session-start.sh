@@ -64,11 +64,11 @@ ${agents_table}
 | \`ring-pmo-team\` | Portfolio governance | Multi-project, resources, executive reporting |
 
 **Commands:**
-- \`/ring-pmo-team:portfolio-review\` - Full portfolio health review
-- \`/ring-pmo-team:executive-summary\` - Generate executive report
-- \`/ring-pmo-team:dependency-analysis\` - Cross-project dependencies
+- \`/ring-pmo-team-portfolio-review\` - Full portfolio health review
+- \`/ring-pmo-team-executive-summary\` - Generate executive report
+- \`/ring-pmo-team-dependency-analysis\` - Cross-project dependencies
 
-For full details: Skill tool with \"ring-pmo-team:using-pmo-team\"
+For full details: Skill tool with \"ring-pmo-team-using-pmo-team\"
 </ring-pmo-team-system>"
 
     # Escape for JSON using shared utility
@@ -98,7 +98,7 @@ else
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-pmo-team-system>\n**PMO Specialists Available**\n\n5 specialists for portfolio-level management:\n- portfolio-manager\n- resource-planner\n- governance-specialist\n- risk-analyst\n- executive-reporter\n\nFor full list: Skill tool with \"ring-pmo-team:using-pmo-team\"\n</ring-pmo-team-system>"
+    "additionalContext": "<ring-pmo-team-system>\n**PMO Specialists Available**\n\n5 specialists for portfolio-level management:\n- portfolio-manager\n- resource-planner\n- governance-specialist\n- risk-analyst\n- executive-reporter\n\nFor full list: Skill tool with \"ring-pmo-team-using-pmo-team\"\n</ring-pmo-team-system>"
   }
 }
 EOF

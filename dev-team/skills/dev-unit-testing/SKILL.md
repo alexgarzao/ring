@@ -1,5 +1,5 @@
 ---
-name: ring:dev-unit-testing
+name: ring-dev-unit-testing
 description: |
   Gate 3 of development cycle - ensures unit test coverage meets threshold (85%+)
   for all acceptance criteria using TDD methodology.
@@ -15,11 +15,11 @@ NOT_skip_when: |
   - "Coverage is close to 85%" → Close enough is not passing. Meet exact threshold.
 
 sequence:
-  after: [ring:dev-implementation, ring:dev-devops, ring:dev-ring:sre]
-  before: [ring:requesting-code-review]
+  after: [ring-dev-implementation, ring-dev-devops, ring-dev-sre]
+  before: [ring-requesting-code-review]
 
 related:
-  complementary: [ring:test-driven-development, ring:qa-analyst]
+  complementary: [ring-test-driven-development, ring-qa-analyst]
 
 input_schema:
   required:
@@ -150,7 +150,7 @@ Ensure every acceptance criterion has at least one **unit test** proving it work
 ## Step 1: Validate Input
 
 ```text
-REQUIRED INPUT (from ring:dev-cycle orchestrator):
+REQUIRED INPUT (from ring-dev-cycle orchestrator):
 <verify_before_proceed>
 - unit_id exists
 - acceptance_criteria is not empty
@@ -195,13 +195,13 @@ testing_state = {
 
 ## Step 3: Dispatch QA Analyst Agent
 
-<dispatch_required agent="ring:qa-analyst">
+<dispatch_required agent="ring-qa-analyst">
 Write unit tests for all acceptance criteria with 85%+ coverage.
 </dispatch_required>
 
 ```yaml
 Task:
-  subagent_type: "ring:qa-analyst"
+  subagent_type: "ring-qa-analyst"
   description: "Write unit tests for [unit_id]"
   prompt: |
     ⛔ WRITE UNIT TESTS for All Acceptance Criteria
@@ -327,7 +327,7 @@ if verdict == "FAIL" or coverage_actual < coverage_threshold:
 
 ```yaml
 Task:
-  subagent_type: "[implementation_agent from Gate 0]"  # e.g., "ring:backend-engineer-golang"
+  subagent_type: "[implementation_agent from Gate 0]"  # e.g., "ring-backend-engineer-golang"
   description: "Add tests to meet coverage threshold for [unit_id]"
   prompt: |
     ⛔ COVERAGE BELOW THRESHOLD - Add More Tests

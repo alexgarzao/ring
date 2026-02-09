@@ -11,7 +11,7 @@ trigger: |
   - Budget planning for infrastructure
 
 skip_when: |
-  - Application performance optimization -> use ring-dev-team specialists
+  - Application performance optimization -> use ring:dev-team specialists
   - Cost-only analysis -> use ops-cost-optimization skill
   - One-time resource adjustment -> standard change management
 
@@ -296,7 +296,7 @@ For capacity planning tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring:infrastructure-architect"
+  subagent_type: "ring-infrastructure-architect"
   model: "opus"
   prompt: |
     CAPACITY PLANNING: [scope]
@@ -309,7 +309,7 @@ For cost analysis of capacity options:
 
 ```
 Task tool:
-  subagent_type: "ring:cloud-cost-optimizer"
+  subagent_type: "ring-cloud-cost-optimizer"
   model: "opus"
   prompt: |
     CAPACITY OPTIONS: [options to evaluate]

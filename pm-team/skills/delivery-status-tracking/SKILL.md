@@ -1,23 +1,23 @@
 ---
-name: ring:delivery-status-tracking
+name: ring-delivery-status-tracking
 description: |
   Delivery status tracking and progress reporting. Analyzes repository against
   delivery roadmap to calculate actual vs planned progress, identify delays,
   and provide insights on velocity and risk trends.
 
 trigger: |
-  - Delivery roadmap exists (from ring:pre-dev-delivery-planning)
+  - Delivery roadmap exists (from ring-pre-dev-delivery-planning)
   - Need to check progress against plan
   - Stakeholders requesting status update
   - Regular checkpoint (weekly/sprint end)
 
 skip_when: |
-  - No delivery roadmap → create one first with ring:pre-dev-delivery-planning
+  - No delivery roadmap → create one first with ring-pre-dev-delivery-planning
   - Planning phase only → execute tasks first
   - No repository activity → nothing to analyze
 
 sequence:
-  after: [ring:pre-dev-delivery-planning, ring:executing-plans, ring:dev-cycle]
+  after: [ring-pre-dev-delivery-planning, ring-executing-plans, ring-dev-cycle]
   before: []
 ---
 
@@ -187,9 +187,9 @@ done
 If pattern matching finds <50% of expected work:
 
 1. Detect project type:
-   - go.mod → ring:backend-engineer-golang
-   - package.json + React → ring:frontend-engineer
-   - Mixed → ring:codebase-explorer
+   - go.mod → ring-backend-engineer-golang
+   - package.json + React → ring-frontend-engineer
+   - Mixed → ring-codebase-explorer
 
 2. Dispatch agent with task scope:
    Prompt: "Analyze repository and find code implementing:
@@ -380,10 +380,10 @@ Parallel Stream:
    - Both? → Full-stack
 
 2. Dispatch appropriate agents:
-   - Go → ring:backend-engineer-golang
-   - TypeScript Backend → ring:backend-engineer-typescript
-   - Frontend → ring:frontend-engineer
-   - Unknown/Mixed → ring:codebase-explorer
+   - Go → ring-backend-engineer-golang
+   - TypeScript Backend → ring-backend-engineer-typescript
+   - Frontend → ring-frontend-engineer
+   - Unknown/Mixed → ring-codebase-explorer
 ```
 
 ### Agent Analysis Prompt Template
@@ -492,7 +492,7 @@ else:
 5. 📅 Schedule next status check (weekly/sprint end)
 
 **Integration:**
-- Use with `ring:pre-dev-delivery-planning` (create roadmap first)
+- Use with `ring-pre-dev-delivery-planning` (create roadmap first)
 - Run periodically during execution (weekly checkpoints)
 - Compare multiple status reports to see trends
 

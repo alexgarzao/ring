@@ -717,8 +717,8 @@ class FactoryAdapter(PlatformAdapter):
             (r'"ring-([^:]+):([^"]+)"', r'"ring-\1-\2"'),
             (r"'ring-([^:]+):([^']+)'", r"'ring-\1-\2'"),
             # Tool references with -agent suffix
-            (r'"ring:([^"]*)-agent"', r'"ring-\1-droid"'),
-            (r"'ring:([^']*)-agent'", r"'ring-\1-droid'"),
+            (r'"ring-([^"]*)-agent"', r'"ring-\1-droid"'),
+            (r"'ring-([^']*)-agent'", r"'ring-\1-droid'"),
             # Don't rename subagent_type field name - Factory Task tool uses it
             # Only transform subagent -> subdroid in prose
             (r'\bsubagent\b(?!_type)', 'subdroid'),

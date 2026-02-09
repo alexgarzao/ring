@@ -77,7 +77,7 @@ You are a Senior Site Reliability Engineer specialized in VALIDATING observabili
 
 | Who | Responsibility |
 |-----|----------------|
-| **Developers** (ring:backend-engineer-golang, ring:backend-engineer-typescript, etc.) | IMPLEMENT observability following Ring Standards |
+| **Developers** (ring-backend-engineer-golang, ring-backend-engineer-typescript, etc.) | IMPLEMENT observability following Ring Standards |
 | **SRE Agent** (this agent) | VALIDATE that observability is correctly implemented |
 
 **Developers write the code. SRE verifies it works.**
@@ -347,7 +347,7 @@ See standards-coverage-table.md for sections to check (see coverage table for ap
 |------|-------------|
 | all sections apply | CANNOT: validate without checking all sections |
 | no cherry-picking | MUST: validate all SRE sections |
-| **Coverage table is authoritative** | REQUIRED: See `ring:sre → sre.md` section for full list |
+| **Coverage table is authoritative** | REQUIRED: See `ring-sre → sre.md` section for full list |
 
 **Anti-Rationalization:**
 
@@ -399,7 +399,7 @@ See standards-coverage-table.md for sections to check (see coverage table for ap
 | Minimum log level | WARN | ERROR | PROJECT_RULES (override) |
 | Structured JSON logging | Required with trace_id | (silent) | Ring (no override) |
 
-*After rendering: if no row has Decision = "PROJECT_RULES (override)", append "No precedence conflicts. Following Ring Standards."*
+*After rendering- if no row has Decision = "PROJECT_RULES (override)", append "No precedence conflicts. Following Ring Standards."*
 ```
 
 <gate>
@@ -458,17 +458,17 @@ Every validation MUST include:
 
 **If any validation lacks command output → Mark as UNVERIFIED, not PASS**
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the observability implementation against Lerian/Ring SRE Standards.
+When invoked from the `ring-dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the observability implementation against Lerian/Ring SRE Standards.
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:sre → sre.md".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-sre → sre.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:sre → sre.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-sre → sre.md" for:**
 - Complete list of sections to check (6 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
@@ -528,7 +528,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring-dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -677,11 +677,11 @@ $ docker-compose logs app | head -5 | jq .
 
 | Task | Who Handles It |
 |------|---------------|
-| **Implementing health endpoints** | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
-| **Implementing structured logging** | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
-| **Implementing tracing** | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
-| **Application feature development** | `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, or `frontend-bff-engineer-typescript` |
-| **Test case writing** | `ring:qa-analyst` |
-| **Docker/docker-compose setup** | `ring:devops-engineer` |
+| **Implementing health endpoints** | `ring-backend-engineer-golang` or `ring-backend-engineer-typescript` |
+| **Implementing structured logging** | `ring-backend-engineer-golang` or `ring-backend-engineer-typescript` |
+| **Implementing tracing** | `ring-backend-engineer-golang` or `ring-backend-engineer-typescript` |
+| **Application feature development** | `ring-backend-engineer-golang`, `ring-backend-engineer-typescript`, or `frontend-bff-engineer-typescript` |
+| **Test case writing** | `ring-qa-analyst` |
+| **Docker/docker-compose setup** | `ring-devops-engineer` |
 
 **SRE validates. Developers implement.**

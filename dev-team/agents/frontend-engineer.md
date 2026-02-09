@@ -185,7 +185,7 @@ All sections are mandatory—see standards-coverage-table.md for the authoritati
 |------|-------------|
 | **All sections apply** | You CANNOT generate code that violates any section |
 | **No cherry-picking** | All Frontend sections MUST be followed |
-| **Coverage table is authoritative** | See `ring:frontend-engineer → frontend.md` section for full list |
+| **Coverage table is authoritative** | See `ring-frontend-engineer → frontend.md` section for full list |
 
 **Anti-Rationalization:**
 
@@ -633,7 +633,7 @@ You have deep expertise in accessibility. Apply WCAG 2.1 AA standards.
 
 ## Receiving Handoff from Frontend Designer
 
-**When receiving a Handoff Contract from `ring:frontend-designer`, follow this process:**
+**When receiving a Handoff Contract from `ring-frontend-designer`, follow this process:**
 
 ### Step 1: Validate Handoff Contract
 
@@ -957,17 +957,17 @@ Before marking implementation complete, you MUST verify:
 
 **⛔ If any checkbox is unchecked → Fix before submission. Self-check is MANDATORY.**
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
+When invoked from the `ring-dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the frontend implementation against Lerian/Ring Frontend Standards.
 
 ### Sections to Check (MANDATORY)
 
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "frontend.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:frontend-engineer → frontend.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-frontend-engineer → frontend.md" for:**
 - Complete list of sections to check (13 sections)
 - Section names (MUST use EXACT names from table)
 - Output table format
@@ -1021,14 +1021,14 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring-dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ## What This Agent Does not Handle
 
 - **BFF/API Routes development** → use `frontend-bff-engineer-typescript`
 - **Backend API development** → use `backend-engineer-*`
-- **Docker/CI-CD configuration** → use `ring:devops-engineer`
-- **Server infrastructure and monitoring** → use `ring:sre`
-- **API contract testing and load testing** → use `ring:qa-analyst`
+- **Docker/CI-CD configuration** → use `ring-devops-engineer`
+- **Server infrastructure and monitoring** → use `ring-sre`
+- **API contract testing and load testing** → use `ring-qa-analyst`
 - **Database design and migrations** → use `backend-engineer-*`
-- **Design specifications and visual design** → use `ring:frontend-designer`
+- **Design specifications and visual design** → use `ring-frontend-designer`

@@ -316,7 +316,7 @@ class CursorAdapter(PlatformAdapter):
             result = result.replace(old, new)
 
         # Remove Ring-specific tool references that don't apply
-        result = re.sub(r'`ring:[^`]+`', lambda m: self._transform_ring_reference(m.group(0)), result)
+        result = re.sub(r'`ring-[^`]+`', lambda m: self._transform_ring_reference(m.group(0)), result)
 
         return result
 
@@ -325,13 +325,13 @@ class CursorAdapter(PlatformAdapter):
         Transform a Ring tool reference to Cursor format.
 
         Args:
-            ref: Ring reference like `ring:skill-name`
+            ref: Ring reference like `ring-skill-name`
 
         Returns:
             Cursor-friendly reference
         """
         # Extract the name from the reference
-        match = re.match(r'`ring:([^`]+)`', ref)
+        match = re.match(r'`ring-([^`]+)`', ref)
         if match:
             name = match.group(1)
             # Convert to readable format

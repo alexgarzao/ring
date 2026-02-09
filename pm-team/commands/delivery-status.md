@@ -38,10 +38,10 @@ This command will ask you for:
 2. **Semantic analysis** (accurate): Specialized agents compare scope vs code
 
 ### Specialized Agent Dispatch
-- **Go projects** → `ring:backend-engineer-golang`
-- **Frontend projects** → `ring:frontend-engineer`
+- **Go projects** → `ring-backend-engineer-golang`
+- **Frontend projects** → `ring-frontend-engineer`
 - **Full-stack** → Multiple agents per task type
-- **Unknown** → `ring:codebase-explorer`
+- **Unknown** → `ring-codebase-explorer`
 
 ## Output
 
@@ -58,14 +58,14 @@ This command will ask you for:
 
 **Basic usage:**
 ```
-/ring:delivery-status
+/ring-delivery-status
 → Prompts for repository, roadmap, tasks
 → Analyzes and generates status report
 ```
 
 **With feature name:**
 ```
-/ring:delivery-status auth-system
+/ring-delivery-status auth-system
 → Auto-finds docs/pre-dev/auth-system/delivery-roadmap.md
 → Auto-finds docs/pre-dev/auth-system/tasks.md
 → Prompts only for repository
@@ -73,7 +73,7 @@ This command will ask you for:
 
 **With custom date:**
 ```
-/ring:delivery-status
+/ring-delivery-status
 → Prompts for inputs
 → Asks for date: "15/03/2026" (Brazilian) or "2026-03-15" (ISO)
 → Calculates variance as of that date
@@ -101,7 +101,7 @@ This command will ask you for:
 
 **This command orchestrates the delivery status tracking skill.**
 
-Use Skill tool: `ring:delivery-status-tracking`
+Use Skill tool: `ring-delivery-status-tracking`
 
 The skill contains:
 - Input gathering workflow (flexible sources)

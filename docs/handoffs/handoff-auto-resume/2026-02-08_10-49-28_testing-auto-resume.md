@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implemented the handoff auto-resume feature for Ring. This feature eliminates the need to manually run `/ring:resume-handoff` after `/clear` - the SessionStart hook now auto-detects a pending handoff and injects it into the new session context.
+Implemented the handoff auto-resume feature for Ring. This feature eliminates the need to manually run `/ring-resume-handoff` after `/clear` - the SessionStart hook now auto-detects a pending handoff and injects it into the new session context.
 
 ## Current State
 

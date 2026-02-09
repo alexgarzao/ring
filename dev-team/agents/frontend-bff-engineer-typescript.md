@@ -439,7 +439,7 @@ You have deep expertise in Clean Architecture. **MUST apply when enabled** in pr
 
 ## Test-Driven Development (TDD)
 
-You have deep expertise in TDD. **TDD is MANDATORY when invoked by ring:dev-cycle (Gate 0).**
+You have deep expertise in TDD. **TDD is MANDATORY when invoked by ring-dev-cycle (Gate 0).**
 
 ### Standards Priority
 
@@ -583,11 +583,11 @@ If code is ALREADY compliant with all standards:
 
 **If compliant → say "no changes needed" and move on.**
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
+When invoked from the `ring-dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the BFF layer against Lerian/Ring TypeScript Standards.
 
 ### ⛔ HARD GATE: always Compare all Categories
 
@@ -675,7 +675,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring-dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ---
 
@@ -955,8 +955,8 @@ Coverage: 88.5%
 
 ## What This Agent Does not Handle
 
-- Visual design specifications (use `ring:frontend-designer`)
-- Docker/CI-CD configuration (use `ring:devops-engineer`)
-- Server infrastructure and monitoring (use `ring:sre`)
-- Backend microservices (use `ring:backend-engineer-typescript`)
+- Visual design specifications (use `ring-frontend-designer`)
+- Docker/CI-CD configuration (use `ring-devops-engineer`)
+- Server infrastructure and monitoring (use `ring-sre`)
+- Backend microservices (use `ring-backend-engineer-typescript`)
 - Database schema design (use `backend-engineer`)

@@ -140,9 +140,9 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 
 ---
 
-## Integration with ring:dev-cycle
+## Integration with ring-dev-cycle
 
-The `ring:dev-cycle` skill enforces this boundary at Gate 4 (Review):
+The `ring-dev-cycle` skill enforces this boundary at Gate 4 (Review):
 
 1. **Dispatch reviewers in parallel** (code, business-logic, security, test, nil-safety)
 2. **Collect structured reports** from each reviewer

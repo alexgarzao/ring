@@ -1,5 +1,5 @@
 ---
-name: ring:production-readiness-audit
+name: ring-production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
@@ -3158,7 +3158,7 @@ Audit linting configuration and code quality patterns for production readiness.
 
 **Reference Implementation (GOOD):**
 ```go
-// Import ordering: 3 groups (stdlib, external, internal)
+// Import ordering- 3 groups (stdlib, external, internal)
 import (
     "context"
     "fmt"
@@ -3610,7 +3610,7 @@ Audit nil/null pointer safety and dereference risks across the codebase for prod
 
 **Ring Standards (Source of Truth):**
 ---BEGIN STANDARDS---
-{INJECTED: Nil safety patterns — no dedicated standards file; patterns derived from ring:nil-safety-reviewer agent}
+{INJECTED: Nil safety patterns — no dedicated standards file; patterns derived from ring-nil-safety-reviewer agent}
 ---END STANDARDS---
 
 **Search Patterns:**
@@ -3795,7 +3795,7 @@ Audit resilience patterns (circuit breakers, retries, timeouts, bulkheads) acros
 
 **Ring Standards (Source of Truth):**
 ---BEGIN STANDARDS---
-{INJECTED: Resilience patterns — no dedicated standards file; patterns derived from industry best practices and ring:production-readiness standards}
+{INJECTED: Resilience patterns — no dedicated standards file; patterns derived from industry best practices and ring-production-readiness standards}
 ---END STANDARDS---
 
 **Search Patterns:**
@@ -4221,7 +4221,7 @@ Audit API versioning strategy, backward compatibility practices, and deprecation
 
 **Ring Standards (Source of Truth):**
 ---BEGIN STANDARDS---
-{INJECTED: API versioning patterns — no dedicated standards file; patterns derived from REST API design best practices and ring:production-readiness standards}
+{INJECTED: API versioning patterns — no dedicated standards file; patterns derived from REST API design best practices and ring-production-readiness standards}
 ---END STANDARDS---
 
 **Search Patterns:**

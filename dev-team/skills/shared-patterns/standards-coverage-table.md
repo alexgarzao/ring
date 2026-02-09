@@ -241,7 +241,7 @@ Standards files may contain these meta-sections that are not counted in section 
 
 These sections describe HOW to use the standards, not WHAT the standards are.
 
-### ring:backend-engineer-golang → golang/
+### ring-backend-engineer-golang → golang/
 
 **Modular Structure:** Standards are split into focused modules. Load index.md first, then required modules.
 
@@ -310,7 +310,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:backend-engineer-typescript → typescript.md
+### ring-backend-engineer-typescript → typescript.md
 
 | # | Section to Check | Anchor | Key Subsections |
 |---|------------------|--------|-----------------|
@@ -333,11 +333,11 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ### frontend-bff-engineer-typescript → typescript.md
 
-**Same sections as ring:backend-engineer-typescript (14 sections).** See above.
+**Same sections as ring-backend-engineer-typescript (14 sections).** See above.
 
 ---
 
-### ring:frontend-engineer → frontend.md
+### ring-frontend-engineer → frontend.md
 
 | # | Section to Check | Anchor |
 |---|------------------|--------|
@@ -357,13 +357,13 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:frontend-designer → frontend.md
+### ring-frontend-designer → frontend.md
 
-**Same sections as ring:frontend-engineer (13 sections).** See above.
+**Same sections as ring-frontend-engineer (13 sections).** See above.
 
 ---
 
-### ring:devops-engineer → devops.md
+### ring-devops-engineer → devops.md
 
 | # | Section to Check | Subsections (all REQUIRED) |
 |---|------------------|---------------------------|
@@ -382,7 +382,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:sre → sre.md
+### ring-sre → sre.md
 
 | # | Section to Check | Anchor |
 |---|------------------|--------|
@@ -395,9 +395,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → testing-unit.md (Unit Mode - Gate 3)
+### ring-qa-analyst → testing-unit.md (Unit Mode - Gate 3)
 
-**Mode Detection:** `test_mode: unit` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="unit")`
+**Mode Detection:** `test_mode: unit` passed when invoking `Task(subagent_type="ring-qa-analyst", test_mode="unit")`
 
 **For Go projects (Unit Mode):**
 | # | Section to Check | Anchor |
@@ -437,9 +437,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → testing-fuzz.md (Fuzz Mode - Gate 4)
+### ring-qa-analyst → testing-fuzz.md (Fuzz Mode - Gate 4)
 
-**Mode Detection:** `test_mode: fuzz` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="fuzz")`
+**Mode Detection:** `test_mode: fuzz` passed when invoking `Task(subagent_type="ring-qa-analyst", test_mode="fuzz")`
 
 **For Go projects (Fuzz Mode):**
 | # | Section to Check | Anchor |
@@ -459,9 +459,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → testing-property.md (Property Mode - Gate 5)
+### ring-qa-analyst → testing-property.md (Property Mode - Gate 5)
 
-**Mode Detection:** `test_mode: property` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="property")`
+**Mode Detection:** `test_mode: property` passed when invoking `Task(subagent_type="ring-qa-analyst", test_mode="property")`
 
 **For Go projects (Property Mode):**
 | # | Section to Check | Anchor |
@@ -481,9 +481,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → testing-integration.md (Integration Mode - Gate 6)
+### ring-qa-analyst → testing-integration.md (Integration Mode - Gate 6)
 
-**Mode Detection:** `test_mode: integration` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="integration")`
+**Mode Detection:** `test_mode: integration` passed when invoking `Task(subagent_type="ring-qa-analyst", test_mode="integration")`
 
 **For Go projects (Integration Mode):**
 | # | Section to Check | Anchor |
@@ -511,9 +511,9 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### ring:qa-analyst → testing-chaos.md (Chaos Mode - Gate 7)
+### ring-qa-analyst → testing-chaos.md (Chaos Mode - Gate 7)
 
-**Mode Detection:** `test_mode: chaos` passed when invoking `Task(subagent_type="ring:qa-analyst", test_mode="chaos")`
+**Mode Detection:** `test_mode: chaos` passed when invoking `Task(subagent_type="ring-qa-analyst", test_mode="chaos")`
 
 **For Go projects (Chaos Mode):**
 | # | Section to Check | Anchor |

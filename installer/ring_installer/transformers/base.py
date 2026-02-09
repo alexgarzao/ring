@@ -225,9 +225,9 @@ class BaseTransformer(ABC):
         for old, new in self.CURSOR_REPLACEMENTS:
             result = result.replace(old, new)
 
-        # Transform ring: references
+        # Transform ring- references
         result = re.sub(
-            r'`ring:([^`]+)`',
+            r'`ring-([^`]+)`',
             lambda m: f"**{self.to_title_case(m.group(1))}**",
             result
         )
@@ -250,15 +250,15 @@ class BaseTransformer(ABC):
         for old, new in self.CLINE_REPLACEMENTS:
             result = result.replace(old, new)
 
-        # Transform ring: references to @ format
+        # Transform ring- references to @ format
         result = re.sub(
-            r'`ring:([^`]+)`',
+            r'`ring-([^`]+)`',
             lambda m: f"@{m.group(1).lower().replace('_', '-')}",
             result
         )
 
         result = re.sub(
-            r'"ring:([^"]+)"',
+            r'"ring-([^"]+)"',
             lambda m: f'"@{m.group(1).lower().replace("_", "-")}"',
             result
         )

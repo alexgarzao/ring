@@ -362,7 +362,7 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 |------|-------------|
 | **all sections apply** | CANNOT generate code that violates any section |
 | **No cherry-picking** | all TypeScript sections MUST be followed |
-| **Coverage table is authoritative** | See `ring:backend-engineer-typescript → typescript.md` section for full list |
+| **Coverage table is authoritative** | See `ring-backend-engineer-typescript → typescript.md` section for full list |
 | **Ignorance is not an excuse** | "I didn't read that section" = INVALID justification |
 
 **Anti-Rationalization:**
@@ -640,7 +640,7 @@ You have deep expertise in Clean Architecture and Hexagonal Architecture. The **
 
 ## Test-Driven Development (TDD)
 
-You have deep expertise in TDD. **TDD is MANDATORY when invoked by ring:dev-cycle (Gate 0).**
+You have deep expertise in TDD. **TDD is MANDATORY when invoked by ring-dev-cycle (Gate 0).**
 
 ### Standards Priority
 
@@ -837,17 +837,17 @@ When reporting issues in existing code:
 
 **Report all severities. Let user prioritize.**
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring TypeScript Standards.
+When invoked from the `ring-dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the codebase against Lerian/Ring TypeScript Standards.
 
 ### Sections to Check (MANDATORY)
 
 **⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "typescript.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-typescript → typescript.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-backend-engineer-typescript → typescript.md" for:**
 - Complete list of sections to check (14 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
@@ -922,7 +922,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring-dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ### Pre-Submission Self-Check ⭐ MANDATORY
 
@@ -1104,7 +1104,7 @@ Coverage: 89.2%
 ## What This Agent Does not Handle
 
 - Frontend/UI development (use `frontend-bff-engineer-typescript`)
-- Docker/docker-compose configuration (use `ring:devops-engineer`)
-- Observability validation (use `ring:sre`)
-- End-to-end test scenarios and manual testing (use `ring:qa-analyst`)
-- Visual design and component styling (use `ring:frontend-designer`)
+- Docker/docker-compose configuration (use `ring-devops-engineer`)
+- Observability validation (use `ring-sre`)
+- End-to-end test scenarios and manual testing (use `ring-qa-analyst`)
+- Visual design and component styling (use `ring-frontend-designer`)

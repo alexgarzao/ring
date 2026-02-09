@@ -48,13 +48,13 @@ Gather the required context first:
 - BASE_SHA: Base commit for comparison (if applicable)
 - HEAD_SHA: Head commit for comparison (if applicable)
 - DESCRIPTION: Additional context about the changes
-- LANGUAGES: Go, TypeScript, or both (for ring:nil-safety-reviewer)
+- LANGUAGES: Go, TypeScript, or both (for ring-nil-safety-reviewer)
 
 Then dispatch all 5 reviewers:
 
 ```
-Task tool #1 (ring:code-reviewer):
-  subagent_type: "ring:code-reviewer"
+Task tool #1 (ring-code-reviewer):
+  subagent_type: "ring-code-reviewer"
   model: "opus"
   description: "Review code quality and architecture"
   prompt: |
@@ -64,30 +64,30 @@ Task tool #1 (ring:code-reviewer):
     HEAD_SHA: [head commit if applicable]
     DESCRIPTION: [additional context]
 
-Task tool #2 (ring:business-logic-reviewer):
-  subagent_type: "ring:business-logic-reviewer"
+Task tool #2 (ring-business-logic-reviewer):
+  subagent_type: "ring-business-logic-reviewer"
   model: "opus"
   description: "Review business logic correctness"
   prompt: |
     [Same parameters as above]
 
-Task tool #3 (ring:security-reviewer):
-  subagent_type: "ring:security-reviewer"
+Task tool #3 (ring-security-reviewer):
+  subagent_type: "ring-security-reviewer"
   model: "opus"
   description: "Review security vulnerabilities"
   prompt: |
     [Same parameters as above]
 
-Task tool #4 (ring:test-reviewer):
-  subagent_type: "ring:test-reviewer"
+Task tool #4 (ring-test-reviewer):
+  subagent_type: "ring-test-reviewer"
   model: "opus"
   description: "Review test quality and coverage"
   prompt: |
     [Same parameters as above]
     Focus: Edge cases, error paths, test independence, assertion quality.
 
-Task tool #5 (ring:nil-safety-reviewer):
-  subagent_type: "ring:nil-safety-reviewer"
+Task tool #5 (ring-nil-safety-reviewer):
+  subagent_type: "ring-nil-safety-reviewer"
   model: "opus"
   description: "Review nil/null pointer safety"
   prompt: |
@@ -115,9 +115,9 @@ When aggregating findings, detect and flag conflicting recommendations between r
 | Conflict Type | Resolution | Priority |
 |--------------|------------|----------|
 | Security vs Performance | Security recommendation wins | CRITICAL |
-| More tests vs Over-testing | Defer to ring:test-reviewer for test scope | MEDIUM |
-| More mocks vs Less mocks | Evaluate based on ring:test-reviewer guidance | MEDIUM |
-| Refactor vs Keep simple | Defer to ring:code-reviewer for architecture decisions | MEDIUM |
+| More tests vs Over-testing | Defer to ring-test-reviewer for test scope | MEDIUM |
+| More mocks vs Less mocks | Evaluate based on ring-test-reviewer guidance | MEDIUM |
+| Refactor vs Keep simple | Defer to ring-code-reviewer for architecture decisions | MEDIUM |
 
 **Flagging Conflicts:**
 When reviewers provide contradictory guidance:
@@ -129,8 +129,8 @@ When reviewers provide contradictory guidance:
 **Example:**
 ```
 ⚠️ Conflict Detected:
-- ring:test-reviewer: "Add more mock isolation for external services"
-- ring:code-reviewer: "Current mocking approach is sufficient"
+- ring-test-reviewer: "Add more mock isolation for external services"
+- ring-code-reviewer: "Current mocking approach is sufficient"
 - Resolution: User decision required - see both perspectives above
 ```
 
@@ -359,7 +359,7 @@ Signs that a reviewer produced incomplete output:
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: ring:requesting-code-review
+Use Skill tool: ring-requesting-code-review
 ```
 
 The skill contains the complete workflow with:

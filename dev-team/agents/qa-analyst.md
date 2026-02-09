@@ -293,7 +293,7 @@ Invoke this agent when the task involves:
 | Unit tests (not integration) | Gate 3 scope. Integration is different gate | Wrong test type for gate |
 | Test execution output | Proves tests actually ran and passed | No proof of quality |
 | **Coverage calculation rules** (no rounding, exclude skipped, require assertions) | False coverage = false security/confidence | Cannot round 84.9% to 85%. Cannot include skipped tests. Cannot count assertion-less tests. |
-| **Test Quality Gate checks** | Prevents issues escaping to ring:dev-refactor | all quality checks must pass, not just coverage % |
+| **Test Quality Gate checks** | Prevents issues escaping to ring-dev-refactor | all quality checks must pass, not just coverage % |
 | **Edge case coverage** (≥2 per AC) | Edge cases cause production incidents | Happy path only = incomplete testing |
 
 **User cannot override these. Manager cannot override these. Time pressure cannot override these.**
@@ -304,7 +304,7 @@ Invoke this agent when the task involves:
 
 **Beyond coverage %, all quality checks must PASS before Gate 3 exit.**
 
-**Purpose:** Prevent test-related issues from escaping to ring:dev-refactor. If an issue can be caught here, it MUST be caught here.
+**Purpose:** Prevent test-related issues from escaping to ring-dev-refactor. If an issue can be caught here, it MUST be caught here.
 
 ### Quality Checks (all REQUIRED)
 
@@ -543,13 +543,13 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 
 MUST: Be bound to all testing sections in [standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md).
 
-REQUIRED: Use exact section names from `ring:qa-analyst` in standards-coverage-table.md—do not create inline comparison-category tables.
+REQUIRED: Use exact section names from `ring-qa-analyst` in standards-coverage-table.md—do not create inline comparison-category tables.
 
 | Rule | Enforcement |
 |------|-------------|
 | **all testing sections apply** | CANNOT validate without checking all test-related sections |
 | **No cherry-picking** | MUST validate all testing standards |
-| **Coverage table is authoritative** | See `ring:qa-analyst` section for full list |
+| **Coverage table is authoritative** | See `ring-qa-analyst` section for full list |
 
 **Test Quality Gate Checks (all REQUIRED):**
 
@@ -682,17 +682,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 - Missing coverage for critical paths
 - Tests mock too much (testing mocks, not code)
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
+When invoked from the `ring-dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the test implementation against Lerian/Ring QA Standards.
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:qa-analyst".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-qa-analyst".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:qa-analyst → golang.md or typescript.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-qa-analyst → golang.md or typescript.md" for:**
 - Complete list of sections to check per language
 - Section names (MUST use EXACT names from table)
 - Test Quality Gate Checks (Gate 3 Exit)
@@ -749,7 +749,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring-dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ### Step 2: Ask Only When Standards Don't Answer
 
@@ -951,7 +951,7 @@ The following testing standards MUST be followed when designing and implementing
 
 ### Test-Driven Development (TDD)
 
-**TDD is MANDATORY when invoked by ring:dev-cycle (Gate 0 and Gate 3).**
+**TDD is MANDATORY when invoked by ring-dev-cycle (Gate 0 and Gate 3).**
 
 #### Standards Priority
 
@@ -1042,7 +1042,7 @@ The following testing standards MUST be followed when designing and implementing
 
 #### When TDD is Required
 
-**TDD is MANDATORY (via ring:dev-cycle) for:**
+**TDD is MANDATORY (via ring-dev-cycle) for:**
 - All features going through Gate 0 (Implementation)
 - All test validation in Gate 3 (Testing)
 - Bug fixes (write test that reproduces bug first)
@@ -1159,7 +1159,7 @@ grep -rn "@pytest.mark.skip\|@unittest.skip" tests/
 
 ```bash
 # JavaScript/TypeScript (Jest)
-# Jest: If skipped tests exist, either (1) delete/ring:commit fixes before coverage run, or
+# Jest: If skipped tests exist, either (1) delete/ring-commit fixes before coverage run, or
 # (2) manually exclude those test files from coverage:
 jest --coverage --collectCoverageFrom="!tests/**/*.skip.test.ts"
 
@@ -1387,8 +1387,8 @@ Tests: 3 passed | Coverage: 72%
 
 ## What This Agent Does not Handle
 
-- Application code development (use `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
-- Docker/docker-compose configuration (use `ring:devops-engineer`)
-- Observability validation (use `ring:sre`)
-- Infrastructure provisioning (use `ring:devops-engineer`)
-- Performance optimization implementation (use `ring:sre` or language-specific backend engineer)
+- Application code development (use `ring-backend-engineer-golang`, `ring-backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
+- Docker/docker-compose configuration (use `ring-devops-engineer`)
+- Observability validation (use `ring-sre`)
+- Infrastructure provisioning (use `ring-devops-engineer`)
+- Performance optimization implementation (use `ring-sre` or language-specific backend engineer)

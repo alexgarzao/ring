@@ -1,5 +1,5 @@
 ---
-name: ring:using-pmo-team
+name: ring-using-pmo-team
 description: |
   5 specialist PMO agents for portfolio management, resource planning, governance,
   risk analysis, and executive reporting. Dispatch when you need portfolio-level oversight.
@@ -18,16 +18,16 @@ skip_when: |
   - Technical writing → use ring-tw-team
 
 related:
-  similar: [ring:using-ring, ring:using-pm-team]
+  similar: [ring-using-ring, ring-using-pm-team]
 ---
 
 # Using Ring PMO Team
 
-The ring-pmo-team plugin provides 5 specialized PMO agents for portfolio-level management. Use them via `Task tool with subagent_type: "ring:agent-name"`.
+The ring-pmo-team plugin provides 5 specialized PMO agents for portfolio-level management. Use them via `Task tool with subagent_type: "ring-agent-name"`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces pmo-team-specific agents.
+See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring-using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces pmo-team-specific agents.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
+**Remember:** Follow the **ORCHESTRATOR principle** from `ring-using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
 
 ---
 
@@ -154,7 +154,7 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 **Emergency Dispatch Template:**
 ```
 Task tool:
-  subagent_type: "ring:portfolio-manager"
+  subagent_type: "ring-portfolio-manager"
   model: "opus"
   prompt: "URGENT: [context]. [specific request]"
 ```
@@ -180,7 +180,7 @@ Task tool:
 **Dispatch template:**
 ```
 Task tool:
-  subagent_type: "ring:{agent-name}"
+  subagent_type: "ring-{agent-name}"
   model: "opus"
   prompt: "{Your specific request with context}"
 ```
@@ -218,14 +218,14 @@ If you need multiple specialists (e.g., portfolio-manager + risk-analyst), dispa
 
 ```
 CORRECT:
-Task #1: ring:portfolio-manager
-Task #2: ring:risk-analyst
+Task #1: ring-portfolio-manager
+Task #2: ring-risk-analyst
 (Both run in parallel)
 
 WRONG:
-Task #1: ring:portfolio-manager
+Task #1: ring-portfolio-manager
 (Wait for response)
-Task #2: ring:risk-analyst
+Task #2: ring-risk-analyst
 (Sequential = 2x slower)
 ```
 
@@ -239,7 +239,7 @@ Remember:
 - **Combine with other plugins** - PMO + PM + Dev = complete delivery lifecycle
 
 ### Good Example (ORCHESTRATOR):
-> "I need portfolio status. Let me dispatch `ring:portfolio-manager` to analyze."
+> "I need portfolio status. Let me dispatch `ring-portfolio-manager` to analyze."
 
 ### Bad Example (OPERATOR):
 > "I'll manually review each project and create a summary myself."

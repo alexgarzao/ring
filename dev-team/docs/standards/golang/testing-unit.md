@@ -4,7 +4,7 @@
 
 This module covers unit testing patterns for Go projects. Unit tests verify code behavior in isolation with mocked dependencies.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 3 (Unit Testing).
+> **Gate Reference:** This module is loaded by `ring-qa-analyst` at Gate 3 (Unit Testing).
 
 ---
 

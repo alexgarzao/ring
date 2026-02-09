@@ -773,7 +773,7 @@ Monthly data volume = TPS × 86,400 × 30 × 15KB ÷ 1,000,000 = [X,XXX] GB
 
 ```
 Task tool:
-  subagent_type: "ring:infrastructure-cost-estimator"
+  subagent_type: "ring-infrastructure-cost-estimator"
   model: "opus"
   prompt: |
     Calculate infrastructure costs and profitability.
