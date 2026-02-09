@@ -3,13 +3,13 @@ name: ring:production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
-description: Comprehensive Ring-standards-aligned 43-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-440) with severity ratings and standards cross-reference.
+description: Comprehensive Ring-standards-aligned 44-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-440) with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **43 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **44 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -40,7 +40,7 @@ Use this skill when:
 | 38 | **API Versioning** | Versioning strategy, backward compatibility, deprecation, sunset headers |
 | 42 | **Resource Leak Prevention** | Unclosed handles, connection leaks, context propagation, defer ordering |
 
-### Category B: Security & Access Control (9-10 dimensions)
+### Category B: Security & Access Control (9 base + 1 conditional dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
@@ -81,7 +81,7 @@ Use this skill when:
 | 31 | **Linting & Code Quality** | Import ordering (3 groups), magic numbers, golangci-lint config |
 | 40 | **Caching Patterns** | Cache invalidation, TTL management, stampede prevention, tenant-scoped keys |
 
-### Category E: Infrastructure & Hardening (5-6 dimensions)
+### Category E: Infrastructure & Hardening (5 base + 1 conditional dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
@@ -94,7 +94,7 @@ Use this skill when:
 
 ## Execution Protocol
 
-This skill runs **up to 43 explorer agents in 5 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 44 explorer agents in 5 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -109,8 +109,8 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DDTHH:MM
 | 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input) + Operations (Telemetry) |
 | 2 | 12-20 | Operations (Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
-| 4 | 31-42 | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant*, License*) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) (* = conditional) |
-| 5 | 43-44 + Summary | Security (Rate Limiting, CORS Configuration) + Final Summary |
+| 4 | 31-42 | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant\*, License\*) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) (\* = conditional) |
+| 5 | 43-44 + Summary | Security (Rate Limiting, CORS Configuration) + Final Summary (44 total dimensions) |
 
 ### Step 0: Stack Detection
 
@@ -198,8 +198,8 @@ Write to docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {42 base + N conditional} |
-| **Max Possible Score** | {400 + conditional points} |
+| **Active Dimensions** | {42 base + N conditional (max 44)} |
+| **Max Possible Score** | {420 + conditional points} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 | **Conditional: License Headers** | {Active / Inactive} |
 
@@ -5433,7 +5433,7 @@ Audit rate limiting implementation across the codebase for production readiness.
 | No 429 response with Retry-After | MEDIUM | Rate limit exceeded but no `Retry-After` header in response |
 | No graceful degradation | HIGH | Redis unavailable causes request failures instead of fallback to in-memory |
 
-**Three-Tier Strategy Verification (MANDATORY — do not skip):**
+**Three-tier Strategy Verification (MANDATORY — do not skip):**
 1. **Global tier**: Verify a general rate limiter exists on all protected routes (default: 100 req/60s)
 2. **Export tier**: Verify resource-intensive endpoints (exports, bulk ops) have a stricter limiter (default: 10 req/60s)
 3. **Dispatch tier**: Verify external integration endpoints (webhooks, external calls) have their own limiter (default: 50 req/60s)
@@ -5737,7 +5737,7 @@ After all explorers complete, generate this report:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {42 base + N conditional} |
+| **Active Dimensions** | {42 base + N conditional (max 44)} |
 | **Max Possible Score** | {dynamic_max} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
 | **Conditional: License Headers** | {Active / Inactive} |
@@ -6428,7 +6428,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 | C: Operations | 11-15, 36, 39 | 7 | 70 |
 | D: Quality | 16-23, 31, 40 | 10 | 100 |
 | E: Infrastructure | 24-27, 32, (34) | 5 (+1 conditional) | 50 (+10) |
-| **Total** | | **42 (+2 conditional)** | **420 (+20)** |
+| **Total** | | **42 base (+2 conditional = 44)** | **420 (+20)** |
 
 ### Dynamic Max Calculation
 
