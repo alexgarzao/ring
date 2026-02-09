@@ -3,7 +3,7 @@ name: ring:production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
-description: Comprehensive Ring-standards-aligned 44-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-440) with severity ratings and standards cross-reference.
+description: Comprehensive Ring-standards-aligned 44-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-430, max 440 with multi-tenant) with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
@@ -40,7 +40,7 @@ Use this skill when:
 | 38 | **API Versioning** | Versioning strategy, backward compatibility, deprecation, sunset headers |
 | 42 | **Resource Leak Prevention** | Unclosed handles, connection leaks, context propagation, defer ordering |
 
-### Category B: Security & Access Control (9 base + 1 conditional dimensions)
+### Category B: Security & Access Control (9 base + 1 conditional)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
@@ -52,7 +52,7 @@ Use this skill when:
 | 41 | **Data Encryption at Rest** | Field-level encryption, key management, password hashing, encrypted backups |
 | 43 | **Rate Limiting** | Three-tier strategy (Global/Export/Dispatch), Redis-backed storage, key generation, production safety |
 | 44 | **CORS Configuration** | Origin validation, middleware ordering, production wildcard prohibition, Helmet integration |
-| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection — only if detected |
+| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection |
 
 ### Category C: Operational Readiness (7 dimensions)
 
@@ -81,7 +81,7 @@ Use this skill when:
 | 31 | **Linting & Code Quality** | Import ordering (3 groups), magic numbers, golangci-lint config |
 | 40 | **Caching Patterns** | Cache invalidation, TTL management, stampede prevention, tenant-scoped keys |
 
-### Category E: Infrastructure & Hardening (5 base + 1 conditional dimensions)
+### Category E: Infrastructure & Hardening (6 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
@@ -90,7 +90,7 @@ Use this skill when:
 | 26 | **CI/CD Pipeline** | Pipeline definitions, automated tests, security scanning |
 | 27 | **Async Reliability** | DLQs, retry policies, consumer group usage, message durability |
 | 32 | **Makefile & Dev Tooling** | 17+ required Makefile commands, dev workflow automation |
-| 34 | **License Headers** *(CONDITIONAL)* | Copyright headers on all .go files — only if LICENSE file exists |
+| 34 | **License Headers** | Copyright headers on all .go files |
 
 ## Execution Protocol
 
@@ -109,8 +109,8 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DDTHH:MM
 | 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input) + Operations (Telemetry) |
 | 2 | 12-20 | Operations (Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
-| 4 | 31-42 | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant\*, License\*) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) (\* = conditional) |
-| 5 | 43-44 + Summary | Security (Rate Limiting, CORS Configuration) + Final Summary (44 total dimensions) |
+| 4 | 31-42 | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant*, License) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) |
+| 5 | 43-44 + Summary | Security (Rate Limiting, CORS Configuration) + Final Summary (43 base + 1 conditional) |
 
 ### Step 0: Stack Detection
 
@@ -139,7 +139,7 @@ Glob("**/LICENSE*") → if found: LICENSE=true
 Grep("MULTI_TENANT") → if found in env/config files: MULTI_TENANT=true
 ```
 
-**Stack determines which standards are loaded in Step 0.5 and which conditional dimensions are activated.**
+**Stack determines which standards are loaded in Step 0.5.**
 
 ### Step 0.5: Load Ring Standards
 
@@ -198,11 +198,9 @@ Write to docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {42 base + N conditional (max 44)} |
-| **Max Possible Score** | {420 + conditional points} |
+| **Active Dimensions** | {43 base + 1 conditional (max 44)} |
+| **Max Possible Score** | {dynamic_max: 430 or 440} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
-| **Conditional: License Headers** | {Active / Inactive} |
-
 ---
 ```
 
@@ -261,13 +259,12 @@ Task(subagent_type="Explore", prompt="<Agent 30: Domain Modeling>")
 
 ### Step 5: Execute Batch 4 (Agents 31-42)
 
-Launch remaining and conditional explorers:
+Launch remaining explorers:
 ```
 Task(subagent_type="Explore", prompt="<Agent 31: Linting & Code Quality>")
 Task(subagent_type="Explore", prompt="<Agent 32: Makefile & Dev Tooling>")
 # CONDITIONAL: Only if MULTI_TENANT=true
 Task(subagent_type="Explore", prompt="<Agent 33: Multi-Tenant Patterns>")
-# CONDITIONAL: Only if LICENSE=true
 Task(subagent_type="Explore", prompt="<Agent 34: License Headers>")
 Task(subagent_type="Explore", prompt="<Agent 35: Nil/Null Safety>")
 Task(subagent_type="Explore", prompt="<Agent 36: Resilience Patterns>")
@@ -3412,12 +3409,12 @@ check: ## Run all checks (lint + test + cover)
 ```
 ```
 
-### Agent 33: Multi-Tenant Patterns Auditor
+### Agent 33: Multi-Tenant Patterns Auditor *(CONDITIONAL)*
 
 ```prompt
-**CONDITIONAL: Only run this auditor if MULTI_TENANT=true is set. If the project does not use multi-tenancy, skip this audit and report "N/A - Single-tenant project".**
+CONDITIONAL: Only run this agent if MULTI_TENANT=true was detected during stack detection. If the project does not use multi-tenancy (no tenant config, no pool manager, no tenant middleware), SKIP this agent entirely and report: "Dimension 33 skipped — single-tenant project (no multi-tenant indicators detected)."
 
-Audit multi-tenant architecture patterns for production readiness.
+If multi-tenant IS detected, audit multi-tenant architecture patterns for production readiness.
 
 **Detected Stack:** {DETECTED_STACK}
 
@@ -3551,9 +3548,7 @@ func (r *Repo) Save(ctx context.Context, entity *Entity) error {
 ### Agent 34: License Headers Auditor
 
 ```prompt
-**CONDITIONAL: Only run this auditor if LICENSE=true is set. If the project does not require license headers, skip this audit and report "N/A - License headers not required".**
-
-Audit license/copyright headers on source files for production readiness.
+Audit license/copyright headers on source files for production readiness. If no LICENSE file exists in the project root, report all items as "N/A — No LICENSE file detected" with evidence.
 
 **Detected Stack:** {DETECTED_STACK}
 
@@ -5737,10 +5732,9 @@ After all explorers complete, generate this report:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {42 base + N conditional (max 44)} |
-| **Max Possible Score** | {dynamic_max} |
+| **Active Dimensions** | {43 base + 1 conditional (max 44)} |
+| **Max Possible Score** | {dynamic_max: 430 or 440} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
-| **Conditional: License Headers** | {Active / Inactive} |
 
 ---
 
@@ -5752,7 +5746,7 @@ After all explorers complete, generate this report:
 | **B: Security & Access Control** | {x}/{90 or 100} | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
 | **C: Operational Readiness** | {x}/70 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
 | **D: Quality & Maintainability** | {x}/100 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
-| **E: Infrastructure & Hardening** | {x}/{50 or 60} | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
+| **E: Infrastructure & Hardening** | {x}/60 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
 | **TOTAL** | **{x}/{dynamic_max}** | **{pct}%** | **{n}** | **{n}** | **{n}** | **{n}** | — |
 
 Category status: PASS (>=70%), NEEDS WORK (40-69%), FAIL (<40%)
@@ -5776,7 +5770,7 @@ Category status: PASS (>=70%), NEEDS WORK (40-69%), FAIL (<40%)
 | 14 | Connections | {x}/10 | {icon} | 31 | Linting & Quality | {x}/10 | {icon} |
 | 15 | Logging & PII | {x}/10 | {icon} | 32 | Makefile & Tooling | {x}/10 | {icon} |
 | 16 | Idempotency | {x}/10 | {icon} | 33* | Multi-Tenant | {x}/10 | {icon} |
-| 17 | API Documentation | {x}/10 | {icon} | 34* | License Headers | {x}/10 | {icon} |
+| 17 | API Documentation | {x}/10 | {icon} | 34 | License Headers | {x}/10 | {icon} |
 | 35 | Nil/Null Safety | {x}/10 | {icon} | 36 | Resilience Patterns | {x}/10 | {icon} |
 | 37 | Secret Scanning | {x}/10 | {icon} | 38 | API Versioning | {x}/10 | {icon} |
 | 39 | Graceful Degradation | {x}/10 | {icon} | 40 | Caching Patterns | {x}/10 | {icon} |
@@ -5784,7 +5778,7 @@ Category status: PASS (>=70%), NEEDS WORK (40-69%), FAIL (<40%)
 | 43 | Rate Limiting | {x}/10 | {icon} | 44 | CORS Configuration | {x}/10 | {icon} |
 
 Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
-*Conditional dimensions — only if detected
+*33 = conditional dimension (Multi-Tenant) — included only if multi-tenant indicators detected*
 
 ---
 
@@ -6083,9 +6077,9 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-#### Dimension 33: Multi-Tenant Patterns (Conditional)
+#### Dimension 33: Multi-Tenant Patterns *(CONDITIONAL)*
 
-{If MULTI_TENANT=false: "**Dimension not activated** — No multi-tenant indicators detected in this codebase. Skipped."}
+{If MULTI_TENANT=false: "**Dimension not activated** — No multi-tenant indicators detected in this codebase. Score excluded from total."}
 
 {If MULTI_TENANT=true: SAME structure as Dimension 1}
 
@@ -6201,7 +6195,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-### Category E: Infrastructure & Hardening ({x}/{50 or 60})
+### Category E: Infrastructure & Hardening ({x}/60)
 
 ---
 
@@ -6235,11 +6229,9 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-#### Dimension 34: License Headers (Conditional)
+#### Dimension 34: License Headers
 
-{If LICENSE=false: "**Dimension not activated** — No LICENSE file detected in project root. Skipped."}
-
-{If LICENSE=true: SAME structure as Dimension 1}
+{SAME structure as Dimension 1 — if no LICENSE file exists, all items reported as N/A with evidence}
 
 ---
 
@@ -6288,10 +6280,10 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 | 42 | Resource Leaks | (generic) | Resource Lifecycle | {PASS/FAIL} | {x}/10 |
 | 43 | Rate Limiting | security.md | Rate Limiting | {PASS/FAIL} | {x}/10 |
 | 44 | CORS Configuration | security.md | CORS Configuration | {PASS/FAIL} | {x}/10 |
-| 33* | Multi-Tenant Patterns | multi-tenant.md | Full module | {PASS/FAIL/N/A} | {x}/10 |
-| 34* | License Headers | core.md | License section | {PASS/FAIL/N/A} | {x}/10 |
+| 33 | Multi-Tenant Patterns | multi-tenant.md | Full module | {PASS/FAIL/N/A} | {x}/10 |
+| 34 | License Headers | core.md | License section | {PASS/FAIL/N/A} | {x}/10 |
 
-*Conditional dimensions — only if detected*
+*Dimension 33 is conditional — excluded from scoring when MULTI_TENANT=false*
 
 ---
 
@@ -6385,7 +6377,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 |----------|-------|
 | **Audit Date** | {YYYY-MM-DD HH:MM} |
 | **Audit Duration** | {X} minutes |
-| **Explorers Launched** | {42 + conditional count} |
+| **Explorers Launched** | {43 or 44} |
 | **Files Examined** | {X} |
 | **Lines of Code** | {X} |
 | **Skill Version** | 3.0 |
@@ -6393,7 +6385,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 | **Standards Source** | Ring Development Standards (GitHub) |
 | **Standards Files Loaded** | {list} |
 | **Stack Detected** | {Go / TypeScript / Frontend / Mixed} |
-| **Conditional Dimensions Active** | {list or "None"} |
+| **Dimensions** | {43 + conditional count} |
 ```
 
 ---
@@ -6421,22 +6413,16 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ### Category Weights
 
-| Category | Dimensions | Always-Active | Max Score |
-|----------|------------|---------------|-----------|
+| Category | Dimensions | Count | Max Score |
+|----------|------------|-------|-----------|
 | A: Code Structure | 1-5, 28-30, 35, 38, 42 | 11 | 110 |
-| B: Security | 6-9, 37, 41, 43, 44, (33) | 9 (+1 conditional) | 90 (+10) |
+| B: Security | 6-9, 33*, 37, 41, 43, 44 | 9 (+1c) | 90 (+10c) |
 | C: Operations | 11-15, 36, 39 | 7 | 70 |
 | D: Quality | 16-23, 31, 40 | 10 | 100 |
-| E: Infrastructure | 24-27, 32, (34) | 5 (+1 conditional) | 50 (+10) |
-| **Total** | | **42 base (+2 conditional = 44)** | **420 (+20)** |
+| E: Infrastructure | 24-27, 32, 34 | 6 | 60 |
+| **Total** | | **43 (+1c = 44)** | **430 (+10c = 440)** |
 
-### Dynamic Max Calculation
-
-```
-dynamic_max = 420 + (MULTI_TENANT ? 10 : 0) + (LICENSE ? 10 : 0)
-```
-
-Possible values: 420, 430, or 440.
+*c = conditional (Multi-Tenant). dynamic_max = 430 + (10 if MULTI_TENANT=true)*
 
 ### Overall Classification (Percentage-Based)
 
@@ -6502,7 +6488,7 @@ Launch 10 agents (21-30) in a SINGLE response.
 
 ### Step 8: Launch Parallel Explorers (Batch 4)
 
-Launch agents 31-42 (conditionally for 33 and 34) in a SINGLE response.
+Launch agents 31-42 in a SINGLE response. Note: Agent 33 (Multi-Tenant) is CONDITIONAL — only include if MULTI_TENANT=true was detected in Step 2.
 
 ### Step 9: Launch Parallel Explorers (Batch 5)
 
@@ -6516,7 +6502,7 @@ As each explorer completes, mark its todo as completed and append to report.
 
 Once ALL explorers complete:
 1. Calculate scores for each dimension (0-10 scale)
-2. Calculate category totals (A: /110, B: /90-100, C: /70, D: /100, E: /50-60)
+2. Calculate category totals (A: /110, B: /90-100, C: /70, D: /100, E: /60)
 3. Calculate overall score (/{dynamic_max})
 4. Aggregate critical/high/medium/low counts
 5. Determine readiness classification (percentage-based)
