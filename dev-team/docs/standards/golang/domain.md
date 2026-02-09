@@ -314,6 +314,108 @@ return nil, nil // SUSPICIOUS - check if error is possible
 
 ---
 
+## Exit/Fatal Location Rules (MANDATORY)
+
+**HARD GATE:** `panic()`, `log.Fatal()`, and `os.Exit()` MUST only be used in strictly defined locations. Using them in business logic is FORBIDDEN.
+
+### panic() Detection Checklist (MANDATORY)
+
+**MUST scan entire codebase for `panic()` calls. Every occurrence MUST be justified or removed.**
+
+| Location | Allowed? | Reason |
+|----------|----------|--------|
+| `main()` initialization | Conditional | Only if unrecoverable (e.g., missing critical config) |
+| Test helpers (`t.Fatal`) | Yes | Tests are allowed to panic |
+| Goroutine recovery (`defer recover()`) | Yes | Recovery wrapper pattern |
+| Business logic / services | **FORBIDDEN** | MUST return error instead |
+| HTTP handlers | **FORBIDDEN** | MUST return error response |
+| Repository / adapter layer | **FORBIDDEN** | MUST return error instead |
+
+**Detection Commands:**
+
+```bash
+# Find all panic() calls in non-test files
+grep -rn "panic(" --include="*.go" --exclude="*_test.go" .
+
+# Find all panic() calls (including tests, for audit)
+grep -rn "panic(" --include="*.go" .
+```
+
+### log.Fatal() Location Rules (MANDATORY)
+
+`log.Fatal()` calls `os.Exit(1)` internally, bypassing deferred functions. It MUST only appear in `main()` or initialization code.
+
+| Location | Allowed? | Reason |
+|----------|----------|--------|
+| `main()` before server start | Yes | Application cannot start |
+| `init()` functions | Conditional | Only for truly fatal config issues |
+| Service/handler/repo code | **FORBIDDEN** | MUST return error to caller |
+| Goroutines | **FORBIDDEN** | Kills entire process, skips defer |
+
+**Correct Pattern:**
+
+```go
+// ✅ ALLOWED: main() initialization failure
+func main() {
+    cfg, err := config.Load()
+    if err != nil {
+        log.Fatal("failed to load config: ", err)
+    }
+    // ... start server
+}
+
+// ✅ CORRECT: Service returns error (caller decides)
+func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) (*User, error) {
+    if input.Email == "" {
+        return nil, ErrInvalidEmail  // Return error, don't panic/fatal
+    }
+    // ...
+}
+```
+
+**FORBIDDEN Pattern:**
+
+```go
+// ❌ FORBIDDEN: log.Fatal in service code
+func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) (*User, error) {
+    user, err := s.repo.Save(ctx, input)
+    if err != nil {
+        log.Fatal("failed to save user: ", err)  // KILLS process, skips defer
+    }
+    return user, nil
+}
+
+// ❌ FORBIDDEN: panic in handler
+func (h *UserHandler) Create(c *fiber.Ctx) error {
+    if c.Body() == nil {
+        panic("empty body")  // Crashes server
+    }
+    // ...
+}
+```
+
+**Detection Commands:**
+
+```bash
+# Find log.Fatal outside main.go
+grep -rn "log.Fatal" --include="*.go" --exclude="main.go" .
+
+# Find os.Exit outside main.go and test files
+grep -rn "os.Exit" --include="*.go" --exclude="main.go" --exclude="*_test.go" .
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "panic simplifies error handling" | panic crashes the process. Errors are recoverable, panics are not. | **Return error instead** |
+| "log.Fatal ensures we notice failures" | log.Fatal skips deferred cleanup (DB connections, file handles). | **Return error to caller** |
+| "It's only called during startup" | If it's not in main(), a future refactor may call it at runtime. | **Move to main() or return error** |
+| "The goroutine recovery will catch it" | Recovery only works in the same goroutine. Cross-goroutine panics kill the process. | **Return error instead** |
+| "This error should never happen" | "Should never" ≠ "will never". Handle it gracefully. | **Return error with context** |
+
+---
+
 ## Function Design (MANDATORY)
 
 **Single Responsibility Principle (SRP):** Each function MUST have exactly ONE responsibility.

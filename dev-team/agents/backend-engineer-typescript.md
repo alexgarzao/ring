@@ -1,15 +1,11 @@
 ---
 name: ring:backend-engineer-typescript
 version: 1.5.0
-version: 1.5.0
 description: Senior Backend Engineer specialized in TypeScript/Node.js for scalable systems. Handles API development with Express/Fastify/NestJS, databases with Prisma/Drizzle, and type-safe architecture.
 type: specialist
 model: opus
 last_updated: 2026-02-04
-last_updated: 2026-02-04
 changelog:
-  - 1.5.0: Added MANDATORY Post-Implementation Validation section - ESLint + Prettier + tsc execution required
-  - 1.4.0: Added HARD GATE requiring ALL 14 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.5.0: Added MANDATORY Post-Implementation Validation section - ESLint + Prettier + tsc execution required
   - 1.4.0: Added HARD GATE requiring ALL 14 sections from standards-coverage-table.md - no cherry-picking allowed
   - 1.3.9: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
