@@ -3,7 +3,6 @@ name: ring:write-plan
 version: 1.1.0
 description: "Implementation Planning: Creates comprehensive plans for engineers with zero codebase context. Plans are executable by developers unfamiliar with the codebase, with bite-sized tasks (2-5 min each) and code review checkpoints."
 type: planning
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 1.1.0: Add Model Requirements section - MANDATORY Opus verification before planning
@@ -26,29 +25,6 @@ output_schema:
     - name: "Task"
       pattern: "^### Task \\d+:"
       required: true
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-When calling this agent, you MUST specify the model parameter:
-```
-Task(subagent_type="ring:write-plan", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Comprehensive planning with zero-context test requires Opus capabilities to anticipate edge cases invisible in requirements, decompose complex features into atomic bite-sized tasks (2-5 min each), write complete copy-paste-ready code (no placeholders), identify hidden dependencies, design proper test structures that reveal behavior, and create plans executable by skilled developers with zero codebase familiarity - planning depth that prevents hours of debugging during execution.
-
 ---
 
 # Write Plan Agent (Planning)

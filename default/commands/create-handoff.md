@@ -13,7 +13,7 @@ arguments:
 
 # /ring:create-handoff Command
 
-Creates a comprehensive handoff document that captures the current session's context, progress, decisions, and next steps. Use this before running `/clear` to preserve session state for later resumption via `/ring:resume-handoff`.
+Creates a comprehensive handoff document that captures the current session's context, progress, decisions, and next steps. After creating the handoff, simply run `/clear` - the handoff will be **automatically loaded** in the new session (no need to run `/ring:resume-handoff` manually).
 
 ## Usage
 
@@ -53,7 +53,9 @@ Example: `docs/handoffs/auth-refactor/2025-12-27_15-45-00_oauth-integration.md`
 
 1. **Create handoff**: `/ring:create-handoff auth-refactor "OAuth integration complete"`
 2. **Clear context**: Run `/clear` to reset conversation
-3. **Resume later**: `/ring:resume-handoff docs/handoffs/auth-refactor/...`
+3. **Auto-resume**: The handoff is automatically loaded in the new session
+
+> **Note:** If more than 1 hour passes between creating the handoff and running `/clear`, you'll be asked whether to resume instead of auto-loading. For manual resume of older handoffs, use `/ring:resume-handoff <path>`.
 
 ## Handoff Template
 
@@ -117,11 +119,42 @@ When invoked, create a file with this structure:
 {Any additional context the next session needs - gotchas, environment setup, etc.}
 ```
 
+## Auto-Resume Breadcrumb
+
+After creating the handoff file, you MUST also write the breadcrumb file for auto-resume:
+
+**File:** `docs/handoffs/.pending`
+
+**Content (exactly 2 lines):**
+```
+{absolute-path-to-the-handoff-file}
+{unix-timestamp-in-seconds}
+```
+
+**Example:**
+```
+/Users/dev/project/docs/handoffs/auth-refactor/2025-12-27_15-45-00_oauth-integration.md
+1735311900
+```
+
+**How to generate the timestamp:** Use Bash tool with `date +%s` to get the current Unix timestamp.
+
+**How to get the absolute path:** Use Bash tool with `realpath` or `pwd` to construct the full path.
+
+**IMPORTANT:** The `.pending` file MUST be written AFTER the handoff file is created. This breadcrumb enables the SessionStart hook to auto-detect and load the handoff when the user runs `/clear`.
+
+Also ensure `docs/handoffs/.gitignore` exists with:
+```
+.pending
+```
+This prevents the ephemeral breadcrumb from being committed.
+
 ## Examples
 
 ### Basic Usage
 ```
-User: /ring:create-handoffAssistant: I'll create a handoff document for the current session.
+User: /ring:create-handoff
+Assistant: I'll create a handoff document for the current session.
 [Creates docs/handoffs/current-session/2025-12-27_15-45-00_session.md with filled template]
 ```
 

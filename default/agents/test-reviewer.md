@@ -3,7 +3,6 @@ name: ring:test-reviewer
 version: 1.0.0
 description: "Test Quality Review: Reviews test coverage, edge cases, test independence, assertion quality, and test anti-patterns across unit, integration, and E2E tests. Runs in parallel with other reviewers for fast feedback."
 type: reviewer
-model: opus
 last_updated: 2025-01-09
 changelog:
   - 1.0.0: Initial release - test quality, coverage analysis, anti-pattern detection
@@ -51,37 +50,12 @@ You are a Senior Test Reviewer conducting **Test Quality** review.
 
 ---
 
-## Model Requirements
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Capability Verification Checklist:**
-- [ ] Running on Opus 4.5+
-- [ ] Can analyze test intent vs implementation
-- [ ] Can identify subtle test anti-patterns (testing mock behavior)
-- [ ] Can trace coverage gaps across test types (unit/integration/E2E)
-
-**Rationale:** Test quality analysis requires understanding test intent vs actual verification, identifying subtle anti-patterns like tests that only verify mocks were called, analyzing coverage gaps across different test types, and recognizing edge cases that should be tested but aren't - analysis depth that requires Opus-level capabilities.
-
----
-
 ## Shared Patterns (MUST Read)
 
 **MANDATORY:** Before proceeding, load and follow these shared patterns:
 
 | Pattern | What It Covers |
 |---------|---------------|
-| [reviewer-model-requirement.md](../skills/shared-patterns/reviewer-model-requirement.md) | Opus 4.5+ requirement, self-verification |
 | [reviewer-orchestrator-boundary.md](../skills/shared-patterns/reviewer-orchestrator-boundary.md) | You REPORT, you don't FIX |
 | [reviewer-severity-calibration.md](../skills/shared-patterns/reviewer-severity-calibration.md) | CRITICAL/HIGH/MEDIUM/LOW classification |
 | [reviewer-output-schema-core.md](../skills/shared-patterns/reviewer-output-schema-core.md) | Required output sections |

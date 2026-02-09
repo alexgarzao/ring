@@ -10,7 +10,9 @@ arguments:
 
 # /ring:resume-handoff Command
 
-Resumes work from a previously created handoff document. Use this after running `/clear` to restore context from a handoff file created with `/ring:create-handoff`.
+Resumes work from a previously created handoff document.
+
+> **Note:** If you just ran `/ring:create-handoff` followed by `/clear`, the handoff is **automatically loaded** - you don't need this command. Use this command to manually resume from **older handoffs** or **specific handoff files**.
 
 ## Usage
 
@@ -34,15 +36,20 @@ Resumes work from a previously created handoff document. Use this after running 
 
 ## Workflow
 
+### Automatic Resume (Default)
 ```
 # Previous session
 User: /ring:create-handoff auth-refactor "OAuth integration"
-Assistant: [Creates handoff file]
+Assistant: [Creates handoff file + breadcrumb]
 
-# Clear context
+# Clear context (handoff auto-loads if < 1 hour old)
 User: /clear
+Assistant: [Automatically detects handoff, presents context, continues work]
+```
 
-# New session - resume from handoff
+### Manual Resume (Older Handoffs)
+```
+# Resume from a specific older handoff
 User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
 Assistant: [Reads handoff, acknowledges context, continues work]
 ```
@@ -93,7 +100,8 @@ Should I proceed with this, or would you like to adjust the approach?
 
 ### Basic Resume
 ```
-User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.mdAssistant: 
+User: /ring:resume-handoff docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md
+Assistant: 
 
 ## Resuming: auth-refactor
 
@@ -138,3 +146,4 @@ Should I proceed with this, or would you like to adjust the approach?
 - **Be specific**: The more detail in the handoff, the better the resumption
 - **Check Next Steps**: Ensure the Next Steps section is actionable
 - **Review before clearing**: Verify the handoff captures everything important
+- **Auto-resume works automatically**: After `/ring:create-handoff` + `/clear`, the handoff loads automatically within 1 hour. Beyond 1 hour, you'll be prompted. Use this command only for older or specific handoffs.

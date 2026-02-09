@@ -1,5 +1,5 @@
 ---
-name: executive-summary
+name: ring:executive-summary
 description: Generate an executive summary of portfolio status for leadership
 argument-hint: "[type] [options]"
 ---

@@ -105,11 +105,11 @@ Read plan file, create TodoWrite with all tasks.
 
 **CRITICAL: Single message with 3 Task tool calls** - all reviewers execute simultaneously.
 
-| Reviewer | Model | Context |
-|----------|-------|---------|
-| `ring:code-reviewer` | opus | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
-| `ring:business-logic-reviewer` | opus | Same context |
-| `ring:security-reviewer` | opus | Same context |
+| Reviewer | Context |
+|----------|---------|
+| `ring:code-reviewer` | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
+| `ring:business-logic-reviewer` | Same context |
+| `ring:security-reviewer` | Same context |
 
 **Each returns:** Strengths, Issues (Critical/High/Medium/Low/Cosmetic), Assessment (PASS/FAIL)
 
@@ -148,7 +148,7 @@ After final review passes:
 
 **Task 1:** Implement → All 3 reviewers PASS → Mark complete.
 
-**Task 2:** Implement → Review finds: Critical (hardcoded secret), High (missing password reset, no rate limiting), Low (extract token logic) → Dispatch fix subagent → Re-run reviewers → All PASS → Add TODO for Low → Mark complete.
+**Task 2:** Implement → Review finds: Critical (hardcoded secret), High (missing password reset, missing input validation), Low (extract token logic) → Dispatch fix subagent → Re-run reviewers → All PASS → Add TODO for Low → Mark complete.
 
 **Final:** All 3 reviewers PASS entire implementation → Done.
 
@@ -175,7 +175,6 @@ After final review passes:
 
 **Always:**
 - Launch all 3 reviewers in single message with 3 Task calls
-- Specify `model: "opus"` for each reviewer
 - Wait for all reviewers before aggregating findings
 - Fix Critical/High/Medium immediately
 - Add TODO for Low, FIXME for Cosmetic

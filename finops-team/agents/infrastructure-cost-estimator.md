@@ -3,7 +3,6 @@ name: ring:infrastructure-cost-estimator
 version: 7.0.0
 description: Infrastructure Cost Calculator with per-component sharing model, environment-specific calculations (Homolog vs Production), dynamic Helm chart data from LerianStudio/helm, TPS capacity analysis, networking architecture, and service-component dependency mapping. RECEIVES complete data (read at runtime from LerianStudio/helm) and CALCULATES detailed cost attribution, capacity planning, and profitability.
 type: calculator
-model: opus
 last_updated: 2025-01-28
 changelog:
   - 7.0.0: Added Service Component Dependencies section showing which services use which components, Access Manager as ALWAYS SHARED platform component
@@ -99,21 +98,6 @@ input_schema:
         enable_pitr: "boolean - Enable Point-in-Time Recovery for production (default: true)"
         s3_glacier_archive: "boolean - Archive old backups to Glacier (default: false)"
   note: "ALL data is provided by the orchestrating skill. Agent does NOT ask questions. Skill READS actual resource configs from LerianStudio/helm at runtime and passes them to agent. If helm data unavailable, use Midaz defaults. Production = Multi-AZ by default. Homolog = Single-AZ, no replicas. Backup costs differ significantly: Homolog uses minimal/free tier, Production uses full backup policy."
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
 ---
 
 # Infrastructure Cost Estimator

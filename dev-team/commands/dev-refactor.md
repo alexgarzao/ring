@@ -132,12 +132,14 @@ When analyzing services for instrumentation compliance, verify:
 
 ## Output
 
-**Analysis Report** (`docs/refactor/{timestamp}/analysis-report.md`):
+**Timestamp format:** `{timestamp}` = `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`)
+
+**Analysis Report** (`docs/ring:dev-refactor/{timestamp}/analysis-report.md`):
 - Summary table with issue counts by severity
 - Detailed findings grouped by dimension
 - Specific file locations and line numbers
 
-**Tasks File** (`docs/refactor/{timestamp}/tasks.md`):
+**Tasks File** (`docs/ring:dev-refactor/{timestamp}/tasks.md`):
 - Grouped refactoring tasks (REFACTOR-001, REFACTOR-002, etc.)
 - Same format as PM Team output
 - Compatible with ring:dev-cycle execution
@@ -229,6 +231,6 @@ See skill `ring:dev-refactor` for full details. Key rules:
 - **All agents dispatch in parallel** - Single message, multiple Task calls
 - **Specify model: "opus"** - All agents need opus for comprehensive analysis
 - **MODE: ANALYSIS only** - Agents analyze, they DO NOT implement
-- **Save artifacts** to `docs/refactor/{timestamp}/`
+- **Save artifacts** to `docs/ring:dev-refactor/{timestamp}/`
 - **Get user approval** before executing ring:dev-cycle
-- **Handoff**: `/ring:dev-cycle docs/refactor/{timestamp}/tasks.md`
+- **Handoff**: `/ring:dev-cycle docs/ring:dev-refactor/{timestamp}/tasks.md`

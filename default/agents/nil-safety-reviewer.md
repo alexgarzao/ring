@@ -3,7 +3,6 @@ name: ring:nil-safety-reviewer
 version: 1.0.0
 description: "Nil/Null Safety Review: Traces nil/null pointer risks from git diff changes through the codebase. Identifies missing guards, unsafe dereferences, panic paths, and API response consistency in Go and TypeScript. Runs in parallel with other reviewers."
 type: reviewer
-model: opus
 last_updated: 2025-01-09
 changelog:
   - 1.0.0: Initial release - Go and TypeScript nil/null safety analysis
@@ -52,37 +51,12 @@ You are a Senior Nil-Safety Reviewer conducting **Pointer Safety** review.
 
 ---
 
-## Model Requirements
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Capability Verification Checklist:**
-- [ ] Running on Opus 4.5+
-- [ ] Can trace multi-step nil flows across function boundaries
-- [ ] Can analyze cross-file dependencies and call chains
-- [ ] Can identify subtle nil propagation patterns
-
-**Rationale:** Nil-safety analysis requires tracing values through complex call chains, understanding Go interface semantics (nil concrete vs nil interface), TypeScript type narrowing, and identifying subtle propagation patterns where nil at source causes panic far downstream - analysis depth that requires Opus-level capabilities.
-
----
-
 ## Shared Patterns (MUST Read)
 
 **MANDATORY:** Before proceeding, load and follow these shared patterns:
 
 | Pattern | What It Covers |
 |---------|---------------|
-| [reviewer-model-requirement.md](../skills/shared-patterns/reviewer-model-requirement.md) | Opus 4.5+ requirement, self-verification |
 | [reviewer-orchestrator-boundary.md](../skills/shared-patterns/reviewer-orchestrator-boundary.md) | You REPORT, you don't FIX |
 | [reviewer-severity-calibration.md](../skills/shared-patterns/reviewer-severity-calibration.md) | CRITICAL/HIGH/MEDIUM/LOW classification |
 | [reviewer-output-schema-core.md](../skills/shared-patterns/reviewer-output-schema-core.md) | Required output sections |

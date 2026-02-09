@@ -1,5 +1,5 @@
 ---
-name: dependency-analysis
+name: ring:dependency-analysis
 description: Analyze cross-project dependencies across the portfolio
 argument-hint: "[scope] [options]"
 ---

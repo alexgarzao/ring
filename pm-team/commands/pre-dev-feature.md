@@ -27,7 +27,7 @@ Use the AskUserQuestion tool to gather:
 **Question 1:** "What is the name of your feature?"
 - Header: "Feature Name"
 - This will be used for the directory name
-- Use kebab-case (e.g., "user-logout", "email-validation", "rate-limiting")
+- Use kebab-case (e.g., "user-logout", "email-validation", "payment-webhooks")
 
 ---
 

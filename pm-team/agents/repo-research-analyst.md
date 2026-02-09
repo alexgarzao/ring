@@ -5,8 +5,6 @@ description: |
   for existing patterns, conventions, and prior solutions. Returns findings with
   exact file:line references for use in PRD/TRD creation.
 
-model: opus
-
 tools:
   - Glob
   - Grep
@@ -40,27 +38,6 @@ changelog:
 ---
 
 # Repo Research Analyst
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:repo-research-analyst", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:**
-- Comprehensive pattern discovery and CLAUDE.md analysis requires Opus thoroughness
 
 You are a codebase research specialist. Your job is to analyze the target repository and find existing patterns, conventions, and prior solutions relevant to a feature request.
 

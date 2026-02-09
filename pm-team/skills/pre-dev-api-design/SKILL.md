@@ -158,13 +158,13 @@ Proceed with standard naming conventions:
 |-------|------------|
 | **0. API Standards Discovery** | Check for organizational field naming standards (data dictionary); load from URL or file if provided; extract field conventions, types, validation patterns; save to `api-standards-ref.md` for reference throughout gate |
 | **1. Contract Analysis** | Load approved TRD (Gate 3), Feature Map (Gate 2), PRD (Gate 1); identify integration points from TRD component diagram; extract data flows |
-| **2. Contract Definition** | Per interface: define operations, specify inputs/outputs, define errors, document events, set constraints (validation, rate limits), version contracts; **apply standards from Phase 0 if available** |
+| **2. Contract Definition** | Per interface: define operations, specify inputs/outputs, define errors, document events, set constraints (validation), version contracts; **apply standards from Phase 0 if available** |
 | **3. Gate 4 Validation** | Verify all checkboxes in validation checklist before proceeding to Data Modeling |
 
 ## Explicit Rules
 
 ### ✅ DO Include
-Operation names/descriptions, input parameters (name, type, required/optional, constraints), output structure (fields, types, nullable), error codes/descriptions, event types/payloads, validation rules, rate limits/quotas, idempotency requirements, auth/authz needs (abstract), versioning strategy
+Operation names/descriptions, input parameters (name, type, required/optional, constraints), output structure (fields, types, nullable), error codes/descriptions, event types/payloads, validation rules, idempotency requirements, auth/authz needs (abstract), versioning strategy
 
 ### ❌ NEVER Include
 HTTP verbs (GET/POST/PUT), gRPC/GraphQL/WebSocket details, URL paths/routes, serialization formats (JSON/Protobuf), framework code, database queries, infrastructure, specific auth libraries
@@ -221,7 +221,7 @@ If you catch yourself writing any of these in API Design, **STOP**:
 | **Data Specification** | All inputs typed and documented; required vs optional explicit; outputs complete; null/empty cases handled |
 | **Error Handling** | All scenarios identified; error codes/types defined; actionable messages; retry/recovery documented |
 | **Event Contracts** | All events named/described; payloads specified; ordering/delivery semantics documented; versioning defined |
-| **Constraints & Policies** | Validation rules explicit; rate limits defined; timeouts specified; backward compatibility exists |
+| **Constraints & Policies** | Validation rules explicit; timeouts specified; backward compatibility exists |
 | **Technology Agnostic** | No protocol specifics; no serialization formats; no framework names; implementable in any protocol |
 
 **Gate Result:** ✅ PASS (all checked) → Data Modeling | ⚠️ CONDITIONAL (remove protocol details) | ❌ FAIL (incomplete)
@@ -269,7 +269,6 @@ Output to (path depends on topology.structure):
 | **External System Contracts** | Operations exposed to us, operations we expose, per-operation details |
 | **Custom Type Definitions** | Per type: base type, format, constraints, example |
 | **Naming Conventions** | Operations (verb+noun), parameters (camelCase), events (past tense), errors (noun+condition) |
-| **Rate Limiting & Quotas** | Per-operation limits table, quota policies, exceeded limit behavior |
 | **Backward Compatibility** | Breaking vs non-breaking changes, deprecation timeline |
 | **Testing Contracts** | Contract testing strategy, example test scenarios |
 | **Gate 4 Validation** | Date, validator, checklist, approval status |

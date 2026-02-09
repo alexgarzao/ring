@@ -7,7 +7,6 @@ description: |
   suggestions. This agent possesses deep knowledge of prompt engineering, agent architecture patterns,
   and behavioral analysis to ensure continuous improvement of all agents in the system.
 type: analyst
-model: opus
 last_updated: 2025-12-14
 changelog:
   - 2.0.1: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
@@ -52,28 +51,6 @@ input_schema:
     - name: "previous_feedback"
       type: "file_path"
       description: "Previous feedback files to check for patterns"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:prompt-quality-reviewer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Deep prompt analysis + behavioral scoring requires Opus-level reasoning for pattern detection across multiple agent executions, root cause diagnosis, and precise improvement generation.
-
 ---
 
 # Prompt Quality Reviewer

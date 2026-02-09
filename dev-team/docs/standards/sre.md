@@ -71,7 +71,7 @@ This file defines the specific standards for Site Reliability Engineering and ob
 | Level | Usage | Examples |
 |-------|-------|----------|
 | **ERROR** | Failures requiring attention | Database connection failed, API error |
-| **WARN** | Potential issues | Retry attempt, rate limit approaching |
+| **WARN** | Potential issues | Retry attempt, connection pool low |
 | **INFO** | Normal operations | Request completed, user logged in |
 | **DEBUG** | Detailed debugging | Query parameters, internal state |
 | **TRACE** | Very detailed (rarely used) | Full request/response bodies |
@@ -341,7 +341,6 @@ func NewRouter(lg libLog.Logger, tl *libOpentelemetry.Telemetry, ...) *fiber.App
 
     // MUST be first middleware - injects tracer+logger into context
     f.Use(tlMid.WithTelemetry(tl))
-    f.Use(cors.New())
     f.Use(libHTTP.WithHTTPLogging(libHTTP.WithCustomLogger(lg)))
 
     // ... define routes ...
@@ -566,7 +565,6 @@ export function createRouter(
     // Create logging middleware - injects logger into request
     const logMid = createLoggingMiddleware(logger);
     app.use(logMid);
-    app.use(cors());
     app.use(express.json());
 
     // ... define routes ...

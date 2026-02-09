@@ -1,8 +1,20 @@
 # Go Standards - Security
 
-> **Module:** security.md | **Sections:** §7-8 | **Parent:** [index.md](index.md)
+> **Module:** security.md | **Sections:** 5 | **Parent:** [index.md](index.md)
 
-This module covers authentication and licensing.
+This module covers authentication, licensing, and secret protection.
+
+---
+
+## Table of Contents
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [Access Manager Integration](#access-manager-integration-mandatory) | lib-auth integration for authn/authz |
+| 2 | [License Manager Integration](#license-manager-integration-mandatory) | lib-license-go for license validation |
+| 3 | [Secret Redaction Patterns](#secret-redaction-patterns-mandatory) | Preventing credential leaks in logs |
+| 4 | [SQL Safety](#sql-safety-mandatory) | SQL injection prevention and parameterized queries |
+| 5 | [HTTP Security Headers](#http-security-headers-mandatory) | X-Content-Type-Options, X-Frame-Options |
 
 ---
 
@@ -127,7 +139,6 @@ func NewRouter(
     tlMid := libHTTP.NewTelemetryMiddleware(tl)
     f.Use(tlMid.WithTelemetry(tl))
     f.Use(recover.New())
-    f.Use(cors.New())
 
     // Protected routes with authorization
     f.Post("/v1/resources", auth.Authorize(applicationName, "resources", "post"), handler.Create)
@@ -403,7 +414,6 @@ func NewRoutes(lg log.Logger, tl *opentelemetry.Telemetry, handler *YourHandler,
 
     // Other middleware
     f.Use(tlMid.WithTelemetry(tl))
-    f.Use(cors.New())
     f.Use(libHTTP.WithHTTPLogging(libHTTP.WithCustomLogger(lg)))
 
     // Routes
@@ -536,6 +546,388 @@ For local development without license validation, you can omit the license clien
 1. Use a valid development license key
 2. Comment out the license middleware during local development
 3. Use the development license server: `IS_DEVELOPMENT=true`
+
+---
+
+## Secret Redaction Patterns (MANDATORY)
+
+**⛔ HARD GATE:** Credentials, connection strings, API keys, and tokens MUST NOT appear in logs. Exposing AMQP, database DSNs, or API credentials in logs creates security vulnerabilities.
+
+### FORBIDDEN Patterns (CRITICAL)
+
+```go
+// ❌ FORBIDDEN: Logging connection strings
+logger.Infof("Connecting to: %s", amqpURI)  // EXPOSES: amqp://user:password@host:5672
+
+// ❌ FORBIDDEN: Logging DSN/connection strings
+logger.Infof("Database: %s", databaseDSN)  // EXPOSES: postgres://user:password@host/db
+
+// ❌ FORBIDDEN: Logging environment variables with secrets
+for k, v := range os.Environ() {
+    logger.Infof("%s=%s", k, v)  // EXPOSES: DB_PASSWORD, API_KEY, etc.
+}
+
+// ❌ FORBIDDEN: Logging config struct with secrets
+logger.Infof("Config: %+v", cfg)  // EXPOSES: all fields including passwords
+
+// ❌ FORBIDDEN: Logging HTTP headers with auth
+logger.Infof("Headers: %v", req.Header)  // EXPOSES: Authorization header
+
+// ❌ FORBIDDEN: Using fmt.Printf for connection strings
+fmt.Printf("AMQP: %s\n", amqpURI)  // EXPOSES: credentials to stdout
+```
+
+### Correct Patterns (REQUIRED)
+
+```go
+// ✅ CORRECT: Redact connection strings before logging
+func redactConnectionString(uri string) string {
+    // amqp://user:password@host:5672 → amqp://***:***@host:5672
+    u, err := url.Parse(uri)
+    if err != nil {
+        return "[invalid-uri]"
+    }
+    if u.User != nil {
+        u.User = url.UserPassword("***", "***")
+    }
+    return u.String()
+}
+
+logger.Infof("Connecting to: %s", redactConnectionString(amqpURI))
+
+// ✅ CORRECT: Log only safe portions
+logger.Infof("Connecting to RabbitMQ at %s:%s", cfg.RabbitMQHost, cfg.RabbitMQPort)
+
+// ✅ CORRECT: Redact config before logging
+type SafeConfig struct {
+    Host     string `json:"host"`
+    Port     string `json:"port"`
+    Database string `json:"database"`
+    // Password omitted
+}
+logger.Infof("Config: %+v", SafeConfig{Host: cfg.Host, Port: cfg.Port, Database: cfg.Database})
+
+// ✅ CORRECT: Use lib-commons logger (automatically redacts sensitive patterns)
+logger.Infof("Service started on %s", cfg.ServerAddress)  // No secrets in this field
+```
+
+### Secrets that MUST NOT be Logged
+
+| Secret Type | Example Pattern | Detection Regex |
+|-------------|-----------------|-----------------|
+| AMQP URI | `amqp://user:pass@host` | `amqp://[^:]+:[^@]+@` |
+| Postgres DSN | `postgres://user:pass@host/db` | `postgres://[^:]+:[^@]+@` |
+| MongoDB URI | `mongodb://user:pass@host` | `mongodb://[^:]+:[^@]+@` |
+| Redis URI | `redis://user:pass@host` | `redis://[^:]+:[^@]+@` |
+| API Keys | `sk_live_xxxxx`, `api_key=xxxxx` | `(sk_|api[_-]?key)` (use with `grep -E`) |
+| Bearer Tokens | `Authorization: Bearer xxx` | `Bearer\s+[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+` |
+| AWS Credentials | `AKIA...`, `aws_secret_access_key` | `AKIA[A-Z0-9]{16}` |
+
+### Detection Commands (MANDATORY)
+
+Use **extended regex** for the API Keys pattern: run `grep -E` with pattern `(sk_|api[_-]?key)`. For basic grep (no `-E`), escape alternation and quantifiers: `sk_\|api[_-]\?key`. Prefer `grep -E '(sk_|api[_-]?key)'` for clarity. See table above for the exact pattern and this section for which form to use.
+
+```bash
+# MANDATORY: Run before every PR that touches config or logging
+
+# Find direct connection string logging
+grep -rn "log.*amqp://\|fmt.Print.*amqp://\|logger.*amqp://" --include="*.go"
+grep -rn "log.*postgres://\|fmt.Print.*postgres://\|logger.*postgres://" --include="*.go"
+grep -rn "log.*mongodb://\|fmt.Print.*mongodb://\|logger.*mongodb://" --include="*.go"
+
+# Find password logging
+grep -rn "password.*log\|log.*password" --include="*.go" -i
+
+# Find config struct logging (review each match)
+grep -rn 'Infof.*%\+v.*cfg\|Printf.*%\+v.*config' --include="*.go"
+
+# Find environment variable dumps
+grep -rn "os.Environ\(\)" --include="*.go"
+
+# Expected: 0 matches for connection strings with credentials
+# If any match found: STOP. Fix before proceeding.
+```
+
+### lib-commons Logger Configuration
+
+When using lib-commons logger, configure secret redaction:
+
+```go
+// lib-commons/v2 automatically redacts certain patterns
+// But you MUST NOT pass secrets to the logger in the first place
+
+// ❌ Still FORBIDDEN even with lib-commons:
+logger.Infof("Config: %+v", cfg)  // May contain secrets
+
+// ✅ CORRECT: Only log safe fields
+logger.Infof("Server starting on %s", cfg.ServerAddress)
+```
+
+### Environment Variable Handling
+
+```go
+// ❌ FORBIDDEN: Iterating and logging all env vars
+for _, env := range os.Environ() {
+    log.Println(env)
+}
+
+// ✅ CORRECT: Log only specific, safe env vars
+logger.Infof("Environment: %s, Server: %s", os.Getenv("ENV_NAME"), os.Getenv("SERVER_ADDRESS"))
+
+// ✅ CORRECT: Use structured config loading (lib-commons)
+func loadConfig() (*Config, error) {
+    cfg := &Config{}
+    if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        return nil, fmt.Errorf("load config: %w", err)
+    }
+    return cfg, nil
+}
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We need connection strings for debugging" | Logs are stored and shared. Secrets leak to CloudWatch, Grafana, S3. | **Log redacted strings only** |
+| "Only developers see logs" | Logs go to centralized systems accessible by many. | **Redact all secrets** |
+| "It's just the dev environment" | Dev logs train bad habits. Same code goes to prod. | **Redact in all environments** |
+| "The password is rotated anyway" | Rotation doesn't help if old password is in logs. | **Never log secrets** |
+| "I'm just debugging locally" | Local debugging code gets committed. | **Remove debug logging before commit** |
+| "lib-commons handles it" | lib-commons can't redact what you pass to it. | **Don't pass secrets to logger** |
+
+### Verification Checklist (Before PR)
+
+```text
+Before submitting PR that adds logging:
+
+[ ] Did I search for connection string patterns in my changes?
+[ ] Did I verify no passwords are logged (even in debug statements)?
+[ ] Did I avoid logging entire config structs (%+v)?
+[ ] Did I avoid logging HTTP headers that may contain Authorization?
+[ ] Did I run the detection commands above?
+
+If any checkbox is unchecked → FIX before submitting.
+```
+
+---
+
+## SQL Safety (MANDATORY)
+
+**⛔ HARD GATE:** All database queries MUST use parameterized queries. String concatenation in SQL is FORBIDDEN and creates injection vulnerabilities.
+
+### FORBIDDEN Patterns (CRITICAL)
+
+```go
+// ❌ FORBIDDEN: String concatenation in SQL
+query := "SELECT * FROM users WHERE id = '" + userID + "'"
+query := fmt.Sprintf("SELECT * FROM users WHERE email = '%s'", email)
+query := "DELETE FROM orders WHERE status = " + status
+
+// ❌ FORBIDDEN: Building WHERE clauses with user input
+whereClause := "name LIKE '%" + searchTerm + "%'"
+query := "SELECT * FROM products WHERE " + whereClause
+
+// ❌ FORBIDDEN: Dynamic table/column names from user input
+tableName := req.Query("table")
+query := fmt.Sprintf("SELECT * FROM %s", tableName)
+
+// ❌ FORBIDDEN: Raw queries with string interpolation
+db.Raw("SELECT * FROM users WHERE role = '" + role + "'")
+```
+
+### Correct Patterns (REQUIRED)
+
+```go
+// ✅ CORRECT: Parameterized queries with pgx
+row := conn.QueryRow(ctx,
+    "SELECT id, name, email FROM users WHERE id = $1",
+    userID,
+)
+
+// ✅ CORRECT: Multiple parameters
+rows, err := conn.Query(ctx,
+    "SELECT * FROM orders WHERE user_id = $1 AND status = $2 AND created_at > $3",
+    userID, status, startDate,
+)
+
+// ✅ CORRECT: IN clause with pgx.Array
+rows, err := conn.Query(ctx,
+    "SELECT * FROM products WHERE id = ANY($1)",
+    pgx.Array(productIDs),
+)
+
+// ✅ CORRECT: LIKE with parameterized pattern
+searchPattern := "%" + sanitizeSearchTerm(term) + "%"
+rows, err := conn.Query(ctx,
+    "SELECT * FROM products WHERE name ILIKE $1",
+    searchPattern,
+)
+
+// ✅ CORRECT: Using query builders (squirrel)
+query, args, err := sq.Select("id", "name").
+    From("users").
+    Where(sq.Eq{"status": status}).
+    Where(sq.Like{"email": "%" + domain}).
+    ToSql()
+rows, err := conn.Query(ctx, query, args...)
+
+// ✅ CORRECT: Dynamic columns with whitelist
+allowedColumns := map[string]bool{"name": true, "email": true, "created_at": true}
+if !allowedColumns[sortColumn] {
+    sortColumn = "created_at" // Default to safe column
+}
+query := fmt.Sprintf("SELECT * FROM users ORDER BY %s", sortColumn)
+```
+
+### pgx Parameterization Reference
+
+| Pattern | Syntax | Example |
+|---------|--------|---------|
+| Single value | `$1` | `WHERE id = $1` |
+| Multiple values | `$1, $2, $3` | `WHERE a = $1 AND b = $2` |
+| Array/IN clause | `ANY($1)` with `pgx.Array()` | `WHERE id = ANY($1)` |
+| NULL check | `$1 IS NULL OR col = $1` | Optional filters |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that touches database code
+
+# Find string concatenation in SQL contexts
+grep -rn 'Sprintf.*SELECT\|Sprintf.*INSERT\|Sprintf.*UPDATE\|Sprintf.*DELETE' --include="*.go"
+grep -rn 'SELECT.*" \+ \|INSERT.*" \+ \|UPDATE.*" \+ \|DELETE.*" \+ ' --include="*.go"
+
+# Find Raw() with string interpolation
+grep -rn 'Raw(".*" \+\|Raw(fmt.Sprintf' --include="*.go"
+
+# Find fmt in SQL files
+grep -rn 'fmt.Sprintf.*FROM\|fmt.Sprintf.*WHERE' --include="*.go"
+
+# Expected: 0 matches
+# If any match found: STOP. Fix before proceeding.
+```
+
+### Whitelist Pattern for Dynamic Identifiers
+
+```go
+// When table/column names must be dynamic (e.g., multi-tenant schemas)
+// ALWAYS use explicit whitelists
+
+var allowedTables = map[string]bool{
+    "users":    true,
+    "orders":   true,
+    "products": true,
+}
+
+func queryTable(ctx context.Context, conn *pgx.Conn, table string, id string) (*Row, error) {
+    // ✅ CORRECT: Whitelist validation before any SQL
+    if !allowedTables[table] {
+        return nil, fmt.Errorf("invalid table: %s", table)
+    }
+
+    // Table name is safe (from whitelist), ID is parameterized
+    query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", table)
+    return conn.QueryRow(ctx, query, id), nil
+}
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Input is validated elsewhere" | Defense in depth. SQL injection at query level is catastrophic. | **Always parameterize** |
+| "Only internal services call this" | Internal services can be compromised. Assume hostile input. | **Always parameterize** |
+| "The value is a UUID/integer" | Type coercion can fail. Attacker controls types. | **Always parameterize** |
+| "Performance is better with string concat" | False. Prepared statements are often faster. Security > micro-optimization. | **Always parameterize** |
+| "It's just a read query" | SQL injection enables data exfiltration, not just writes. | **Always parameterize** |
+| "Query builder handles it" | Verify the builder parameterizes. Some don't. | **Check generated SQL** |
+
+### Verification Checklist (Before PR)
+
+```text
+Before submitting PR that touches database queries:
+
+[ ] Did I use parameterized queries for all user input?
+[ ] Did I run the detection commands above?
+[ ] Did I whitelist any dynamic table/column names?
+[ ] Did I avoid string concatenation in SQL strings?
+[ ] Did I verify query builders generate parameterized output?
+
+If any checkbox is unchecked → FIX before submitting.
+```
+
+---
+
+## HTTP Security Headers (MANDATORY)
+
+**⛔ HARD GATE:** All HTTP services MUST set security headers to prevent common web vulnerabilities. Missing headers expose the application to clickjacking, MIME sniffing, and other attacks.
+
+### Required Headers
+
+| Header | Required Value | Purpose |
+|--------|----------------|---------|
+| `X-Content-Type-Options` | `nosniff` | Prevents MIME type sniffing attacks |
+| `X-Frame-Options` | `DENY` | Prevents clickjacking via iframe embedding |
+
+### Implementation Pattern (Fiber)
+
+```go
+// internal/adapters/http/in/middleware.go
+
+func SecurityHeaders() fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        // MANDATORY: Prevent MIME sniffing
+        c.Set("X-Content-Type-Options", "nosniff")
+
+        // MANDATORY: Prevent clickjacking
+        c.Set("X-Frame-Options", "DENY")
+
+        return c.Next()
+    }
+}
+
+// Apply in router setup
+func NewRouter(app *fiber.App) {
+    app.Use(SecurityHeaders())
+    // ... other middleware and routes
+}
+```
+
+### Alternative: lib-commons Integration
+
+If using lib-commons server setup, headers can be configured at server level:
+
+```go
+// bootstrap/fiber.server.go
+serverConfig := libServer.Config{
+    // ... other config
+    SecurityHeaders: libServer.SecurityHeaders{
+        XContentTypeOptions: "nosniff",
+        XFrameOptions:       "DENY",
+    },
+}
+```
+
+### Detection Commands
+
+```bash
+# Find if security headers are set
+grep -rn "X-Content-Type-Options\|X-Frame-Options" --include="*.go" ./internal
+
+# Verify middleware registration
+grep -rn "SecurityHeaders\|security.*middleware" --include="*.go" ./internal
+
+# Expected: At least one match for each header
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We're behind a reverse proxy" | Defense in depth. App should protect itself. | **Add headers** |
+| "It's just an internal API" | Internal APIs can be accessed by compromised services. | **Add headers** |
+| "Headers don't affect JSON APIs" | MIME sniffing affects all responses. Clickjacking targets browsers. | **Add headers** |
+| "We'll add it later" | Later = security incident. Add now. | **Add headers immediately** |
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: ring:dev-ring:sre
+name: ring:dev-sre
 description: |
   Gate 2 of the development cycle. VALIDATES that observability was correctly implemented
   by developers. Does not implement observability code - only validates it.
@@ -17,10 +17,10 @@ NOT_skip_when: |
 
 sequence:
   after: [ring:dev-devops]
-  before: [ring:dev-testing]
+  before: [ring:dev-unit-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-devops, ring:dev-testing]
+  complementary: [ring:dev-cycle, ring:dev-devops, ring:dev-unit-testing]
 
 input_schema:
   required:
@@ -192,14 +192,13 @@ validation_state = {
 
 ## Step 3: Dispatch SRE Agent for Validation
 
-<dispatch_required agent="ring:sre" model="opus">
+<dispatch_required agent="ring:sre">
 Validate observability implementation for unit_id.
 </dispatch_required>
 
 ```yaml
 Task:
   subagent_type: "ring:sre"
-  model: "opus"
   description: "Validate observability for [unit_id]"
   prompt: |
     ⛔ VALIDATE Observability Implementation
@@ -368,7 +367,6 @@ if validation_state.iteration >= validation_state.max_iterations:
 ```yaml
 Task:
   subagent_type: "[implementation_agent from input]"  # e.g., "ring:backend-engineer-golang"
-  model: "opus"
   description: "Fix observability issues for [unit_id]"
   prompt: |
     ⛔ FIX REQUIRED - Observability Issues Found
