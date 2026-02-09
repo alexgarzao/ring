@@ -8,14 +8,14 @@ This module covers API naming conventions, pagination patterns, HTTP status code
 
 ## Table of Contents
 
-| #   | Section                                                                           | Description                            |
-| --- | --------------------------------------------------------------------------------- | -------------------------------------- |
-| 1   | [JSON Naming Convention (camelCase)](#json-naming-convention-camelcase-mandatory) | API response field naming              |
-| 2   | [Pagination Patterns](#pagination-patterns)                                       | Cursor-based pagination (MANDATORY)    |
-| 3   | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory)           | 201 for creation, 200 for update       |
-| 4   | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory)         | Swagger annotations as source of truth |
-| 5   | [Handler Constructor Pattern](#handler-constructor-pattern-mandatory)             | Dependency injection via constructor   |
-| 6   | [Input Validation](#input-validation-mandatory)                                   | Request validation at API boundary     |
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | [JSON Naming Convention (camelCase)](#json-naming-convention-camelcase-mandatory) | API response field naming |
+| 2 | [Pagination Patterns](#pagination-patterns) | Offset & cursor pagination strategies |
+| 3 | [HTTP Status Code Consistency](#http-status-code-consistency-mandatory) | 201 for creation, 200 for update |
+| 4 | [OpenAPI Documentation (Swaggo)](#openapi-documentation-swaggo-mandatory) | Swagger annotations as source of truth |
+| 5 | [Handler Constructor Pattern](#handler-constructor-pattern-mandatory) | Dependency injection via constructor |
+| 6 | [Input Validation](#input-validation-mandatory) | Request validation at API boundary |
 
 ---
 
@@ -75,8 +75,9 @@ type UserResponse struct {
 ```go
 // ✅ CORRECT: All query params use snake_case
 type ListParams struct {
-    // Cursor-based pagination (MANDATORY - page/offset FORBIDDEN)
+    // Pagination: cursor for high-volume, page for admin entities
     Cursor    string `query:"cursor"`
+    Page      int    `query:"page"`
     Limit     int    `query:"limit"`
     SortOrder string `query:"sort_order"`
 
@@ -88,15 +89,15 @@ type ListParams struct {
 ```
 
 ```text
-✅ CORRECT (cursor-based, all query params snake_case):
-GET /v1/users?limit=10&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
-GET /v1/users?cursor=eyJpZCI6IjEyMzQ1...&limit=10&sort_order=asc
+✅ CORRECT (offset-based, all query params snake_case):
+GET /v1/organizations?limit=10&page=1&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
 
-❌ WRONG (page-based pagination - FORBIDDEN):
-GET /v1/users?page=1&per_page=10&sort_order=asc
+✅ CORRECT (cursor-based, all query params snake_case):
+GET /v1/transactions?limit=10&sort_order=asc&start_date=2024-01-01&end_date=2024-12-31
+GET /v1/transactions?cursor=eyJpZCI6IjEyMzQ1...&limit=10&sort_order=asc
 
 ❌ WRONG (camelCase in query params):
-GET /v1/users?cursor=xyz&limit=10&sortOrder=asc&startDate=2024-01-01
+GET /v1/transactions?cursor=xyz&limit=10&sortOrder=asc&startDate=2024-01-01
 ```
 
 #### Response Body - Pagination Fields (camelCase)
@@ -209,9 +210,21 @@ grep -rn 'json:"nextCursor\|json:"prevCursor\|json:"hasMore' --include="*.go" ./
 
 ## Pagination Patterns
 
-**⛔ HARD GATE:** All list endpoints MUST use **cursor-based pagination**. Offset/page-based pagination is FORBIDDEN due to performance and consistency issues with large datasets.
+Core one uses **two pagination strategies** depending on the entity type. Both are valid and supported by the shared infrastructure in lib-commons.
 
-### Why Cursor-Based Only
+### When to Use Each Strategy
+
+| Use Cursor When | Use Offset When |
+|-----------------|-----------------|
+| High-volume data (transactions, operations, balances) | Low-volume admin entities (organizations, ledgers, accounts) |
+| Real-time data with frequent inserts | Stable datasets with rare inserts |
+| Performance at scale matters | Simplicity is preferred |
+| Client doesn't need page numbers | Client needs numbered pages |
+
+| Strategy | Core one Entities | Return Type |
+|----------|---------------|-------------|
+| **Offset** | Organizations, Ledgers, Assets, Portfolios, Accounts, Products, Segments | `([]*Entity, error)` |
+| **Cursor** (preferred for high-volume) | Transactions, Operations, Balances, Audit logs, Events | `([]*Entity, CursorPagination, error)` |
 
 | Issue with Offset                                             | Cursor Solution                             |
 | ------------------------------------------------------------- | ------------------------------------------- |
@@ -219,7 +232,7 @@ grep -rn 'json:"nextCursor\|json:"prevCursor\|json:"hasMore' --include="*.go" ./
 | Data can skip/duplicate if records inserted during navigation | Consistent results regardless of insertions |
 | Performance degrades linearly with offset value               | Constant performance regardless of position |
 
-### Query Parameters
+Both strategies share these common query parameters:
 
 | Parameter    | Type     | Default      | Description                                  |
 | ------------ | -------- | ------------ | -------------------------------------------- |
@@ -229,23 +242,135 @@ grep -rn 'json:"nextCursor\|json:"prevCursor\|json:"hasMore' --include="*.go" ./
 | `start_date` | datetime | (calculated) | Filter start date                            |
 | `end_date`   | datetime | now          | Filter end date                              |
 
-### Response Structure (camelCase JSON)
+**Strategy-specific parameters:**
+
+| Parameter | Strategy | Type | Description |
+|-----------|----------|------|-------------|
+| `page` | Offset | int | Page number (1-based) |
+| `cursor` | Cursor | string | Base64-encoded cursor from previous response |
+
+### Shared Infrastructure
+
+**Query Parameter Parsing** (from `pkg/net/http/httputils.go`):
+
+```go
+// QueryHeader — unified query parsing with both Page and Cursor fields
+type QueryHeader struct {
+    Limit     int
+    Page      int       // Used by offset strategy
+    Cursor    string    // Used by cursor strategy
+    SortOrder string
+    StartDate time.Time
+    EndDate   time.Time
+}
+
+// ValidateParameters — parses query params, enforces MAX_PAGINATION_LIMIT
+func ValidateParameters(queries map[string]string) (*QueryHeader, error)
+```
+
+**Pagination Response** (from `lib-commons/commons/postgres/pagination.go`):
+
+```go
+// Pagination — unified response envelope
+type Pagination struct {
+    Items     any    `json:"items"`
+    Limit     int    `json:"limit"`
+    Page      int    `json:"page,omitempty"`                  // Offset mode
+    NextCursor string `json:"nextCursor,omitempty"`           // Cursor mode
+    PrevCursor string `json:"prevCursor,omitempty"`           // Cursor mode
+}
+
+// SetItems — sets the items collection
+func (p *Pagination) SetItems(items any)
+
+// SetCursor — sets next/prev cursors (cursor mode only)
+func (p *Pagination) SetCursor(next, prev string)
+```
+
+The `omitempty` tags ensure only strategy-relevant fields appear in responses.
+
+### Strategy 1: Offset-Based Pagination
+
+Used for onboarding entities (organizations, ledgers, accounts, etc.) where datasets are small and page numbers are useful.
+
+**Handler Pattern:**
+
+```go
+func (h *Handler) GetAllOrganizations(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "handler.get_all_organizations")
+    defer span.End()
+
+    headerParams, err := libHTTP.ValidateParameters(c.Queries())
+    if err != nil {
+        libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Invalid parameters", err)
+        return libHTTP.WithError(c, err)
+    }
+
+    // Build pagination request (offset-based — Page is set)
+    pagination := libPostgres.Pagination{
+        Limit:     headerParams.Limit,
+        Page:      headerParams.Page,      // <-- Page field enables offset mode
+        SortOrder: headerParams.SortOrder,
+        StartDate: headerParams.StartDate,
+        EndDate:   headerParams.EndDate,
+    }
+
+    items, err := h.Query.GetAllOrganizations(ctx, *headerParams)
+    if err != nil {
+        libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Query failed", err)
+        return libHTTP.WithError(c, err)
+    }
+
+    pagination.SetItems(items)
+
+    return libHTTP.OK(c, pagination)
+}
+```
+
+**Repository Pattern:**
+
+```go
+func (r *Repository) FindAll(ctx context.Context, filter libHTTP.QueryHeader) ([]*Entity, error) {
+    ctx, span := tracer.Start(ctx, "postgres.find_all_organizations")
+    defer span.End()
+
+    findAll := squirrel.Select(columns...).
+        From(r.tableName).
+        Where(squirrel.Eq{"deleted_at": nil}).
+        Where(squirrel.GtOrEq{"created_at": filter.StartDate}).
+        Where(squirrel.LtOrEq{"created_at": filter.EndDate}).
+        OrderBy("id " + strings.ToUpper(filter.SortOrder)).
+        Limit(libCommons.SafeIntToUint64(filter.Limit)).
+        Offset(libCommons.SafeIntToUint64((filter.Page - 1) * filter.Limit)).
+        PlaceholderFormat(squirrel.Dollar)
+
+    rows, err := findAll.RunWith(db).QueryContext(ctx)
+    // ... scan rows into items ...
+
+    return items, nil
+}
+```
+
+**Key formula:** `OFFSET = (Page - 1) * Limit`
+
+**Response JSON:**
 
 ```json
 {
   "items": [...],
-  "limit": 10,
-  "nextCursor": "eyJpZCI6IjEyMzQ1Njc4Li4uIiwicG9pbnRzX25leHQiOnRydWV9",
-  "prevCursor": "eyJpZCI6IjEyMzQ1Njc4Li4uIiwicG9pbnRzX25leHQiOmZhbHNlfQ==",
-  "hasMore": true
+  "page": 2,
+  "limit": 10
 }
 ```
 
-### Use for All List Endpoints
+### Strategy 2: Cursor-Based Pagination (Preferred for High-Volume)
 
-Transactions, Operations, Balances, Audit logs, Events, Organizations, Ledgers, Assets, Portfolios, Accounts
+Used for transaction entities (transactions, operations, balances) where performance at scale and consistency during inserts matter.
 
-**Query Parameters:**
+**Cursor Struct and Encoding** (from `lib-commons/commons/net/http/cursor.go`):
 
 | Parameter    | Type     | Default      | Description                                  |
 | ------------ | -------- | ------------ | -------------------------------------------- |
@@ -255,7 +380,19 @@ Transactions, Operations, Balances, Audit logs, Events, Organizations, Ledgers, 
 | `start_date` | datetime | (calculated) | Filter start date                            |
 | `end_date`   | datetime | now          | Filter end date                              |
 
-### Handler Implementation
+// ApplyCursorPagination — adds WHERE + ORDER BY + LIMIT to squirrel query
+func ApplyCursorPagination(query squirrel.SelectBuilder, cursor Cursor, sortOrder string, limit int) (squirrel.SelectBuilder, string)
+
+// PaginateRecords — trims to limit, reverses if backward navigation
+func PaginateRecords[T any](isFirstPage, hasPagination, pointsNext bool, items []T, limit int, orderUsed string) []T
+
+// CalculateCursor — generates next/prev cursor strings
+func CalculateCursor(isFirstPage, hasPagination, pointsNext bool, firstID, lastID string) (CursorPagination, error)
+```
+
+**N+1 fetch pattern:** query `limit + 1` rows to detect whether a next page exists.
+
+**Handler Pattern:**
 
 ```go
 func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
@@ -265,14 +402,13 @@ func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
     ctx, span := tracer.Start(ctx, "handler.get_all_transactions")
     defer span.End()
 
-    // Parse and validate query parameters
     headerParams, err := libHTTP.ValidateParameters(c.Queries())
     if err != nil {
         libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Invalid parameters", err)
         return libHTTP.WithError(c, err)
     }
 
-    // Build pagination request (cursor-based)
+    // Build pagination request (cursor-based — no Page field)
     pagination := libPostgres.Pagination{
         Limit:     headerParams.Limit,
         SortOrder: headerParams.SortOrder,
@@ -280,14 +416,13 @@ func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
         EndDate:   headerParams.EndDate,
     }
 
-    // Query with cursor pagination
+    // Query returns items + cursor (3 return values)
     items, cursor, err := h.Query.GetAllTransactions(ctx, orgID, ledgerID, *headerParams)
     if err != nil {
         libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Query failed", err)
         return libHTTP.WithError(c, err)
     }
 
-    // Set response with cursor
     pagination.SetItems(items)
     pagination.SetCursor(cursor.Next, cursor.Prev)
 
@@ -295,13 +430,11 @@ func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
 }
 ```
 
-**Repository Implementation:**
+**Repository Pattern:**
 
 ```go
-func (r *Repository) FindAll(ctx context.Context, filter libHTTP.Pagination) ([]Entity, libHTTP.CursorPagination, error) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
-
-    ctx, span := tracer.Start(ctx, "postgres.find_all")
+func (r *Repository) FindAll(ctx context.Context, filter libHTTP.QueryHeader) ([]*Entity, libHTTP.CursorPagination, error) {
+    ctx, span := tracer.Start(ctx, "postgres.find_all_transactions")
     defer span.End()
 
     // Decode cursor if provided
@@ -314,7 +447,7 @@ func (r *Repository) FindAll(ctx context.Context, filter libHTTP.Pagination) ([]
     }
 
     // Build query with cursor pagination
-    query := squirrel.Select("*").From("table_name")
+    query := squirrel.Select(columns...).From(r.tableName)
     query, orderUsed := libHTTP.ApplyCursorPagination(
         query,
         decodedCursor,
@@ -322,14 +455,13 @@ func (r *Repository) FindAll(ctx context.Context, filter libHTTP.Pagination) ([]
         filter.Limit,
     )
 
-    // Execute query...
     rows, err := query.RunWith(db).QueryContext(ctx)
     // ... scan rows into items ...
 
-    // Check if there are more items
+    // Check if there are more items (N+1 pattern)
     hasPagination := len(items) > filter.Limit
 
-    // Paginate records (trim to limit, handle direction)
+    // Trim to limit, handle backward navigation
     items = libHTTP.PaginateRecords(
         isFirstPage,
         hasPagination,
@@ -358,18 +490,32 @@ func (r *Repository) FindAll(ctx context.Context, filter libHTTP.Pagination) ([]
 }
 ```
 
----
+**Response JSON:**
+
+```json
+{
+  "items": [...],
+  "limit": 10,
+  "nextCursor": "eyJpZCI6Ii4uLiIsInBvaW50c19uZXh0Ijp0cnVlfQ==",
+  "prevCursor": "eyJpZCI6Ii4uLiIsInBvaW50c19uZXh0IjpmYWxzZX0="
+}
+```
+
+**Backward pagination:** client sends `prevCursor` value as the `cursor` query param. The `PointsNext: false` flag causes `ApplyCursorPagination` to reverse the query direction, and `PaginateRecords` reverses the result set back to the expected order.
 
 ### Shared Utilities from lib-commons
 
-| Utility                 | Package                        | Purpose                        |
-| ----------------------- | ------------------------------ | ------------------------------ |
-| `Pagination` struct     | `lib-commons/commons/postgres` | Unified response structure     |
-| `Cursor` struct         | `lib-commons/commons/net/http` | Cursor encoding                |
-| `DecodeCursor`          | `lib-commons/commons/net/http` | Parse cursor from request      |
-| `ApplyCursorPagination` | `lib-commons/commons/net/http` | Add cursor to SQL query        |
-| `PaginateRecords`       | `lib-commons/commons/net/http` | Trim results, handle direction |
-| `CalculateCursor`       | `lib-commons/commons/net/http` | Generate next/prev cursors     |
+| Utility | Package | Purpose |
+|---------|---------|---------|
+| `Pagination` struct | `lib-commons/commons/postgres` | Unified response envelope with `page` (omitempty) + `nextCursor`/`prevCursor` (omitempty) |
+| `QueryHeader` struct | `pkg/net/http` | Unified query parsing with both `Page` and `Cursor` fields |
+| `ValidateParameters` | `pkg/net/http` | Parses query params, enforces `MAX_PAGINATION_LIMIT` |
+| `Cursor` struct | `lib-commons/commons/net/http` | Cursor encoding (ID + direction) |
+| `DecodeCursor` | `lib-commons/commons/net/http` | Parse cursor from request |
+| `ApplyCursorPagination` | `lib-commons/commons/net/http` | Add cursor WHERE/ORDER BY/LIMIT to squirrel query |
+| `PaginateRecords` | `lib-commons/commons/net/http` | Trim results to limit, handle backward direction |
+| `CalculateCursor` | `lib-commons/commons/net/http` | Generate next/prev cursor strings |
+| `SafeIntToUint64` | `lib-commons/commons` | Safe int→uint64 conversion for OFFSET/LIMIT |
 
 ### Environment Variables
 
@@ -617,6 +763,50 @@ make generate-docs && git diff --exit-code api/
 | "Only public APIs need docs"           | All APIs need docs for internal developers too.  | **Document all endpoints**              |
 | "CodeRabbit can fix the YAML directly" | YAML is generated. Fix the source (annotations). | **Edit handler annotations**            |
 
+### Detection Commands
+
+```bash
+# Identify which strategy an endpoint uses
+# Offset mode: handler sets Page field, repo returns ([]*Entity, error)
+grep -rn "Page:.*headerParams.Page" internal/adapters/http --include="*.go"
+
+# Cursor mode: handler calls SetCursor, repo returns CursorPagination
+grep -rn "SetCursor" internal/adapters/http --include="*.go"
+
+# Verify MAX_PAGINATION_LIMIT is enforced (ValidateParameters usage)
+grep -rn "ValidateParameters" internal/adapters/http --include="*.go"
+
+# Find endpoints missing pagination validation
+grep -rn "func.*Handler.*GetAll\|func.*Handler.*List" internal/adapters/http --include="*.go" | \
+  while read line; do
+    file=$(echo "$line" | cut -d: -f1)
+    if ! grep -q "ValidateParameters" "$file"; then
+      echo "MISSING ValidateParameters: $file"
+    fi
+  done
+```
+
+### FORBIDDEN Patterns
+
+| Pattern | Why It's Wrong |
+|---------|---------------|
+| Mixing both strategies in the same endpoint | Each endpoint MUST use one strategy consistently |
+| Missing `MAX_PAGINATION_LIMIT` enforcement | MUST use `ValidateParameters` which enforces the limit |
+| Offset on high-volume tables (>100K rows) without justification | Use cursor for transaction-class entities |
+| Returning `page` and `nextCursor` in the same response | `omitempty` tags handle this — don't override |
+| Hardcoding limit values instead of using `ValidateParameters` | Centralized validation prevents inconsistencies |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "All endpoints should use cursor" | Core one uses offset for onboarding entities — both are valid | **Match strategy to entity type** |
+| "Offset is always bad" | Offset is fine for low-volume admin entities | **Use offset for organizations, ledgers, accounts** |
+| "Cursor is overkill for small tables" | Transaction tables grow fast — cursor prevents future problems | **Use cursor for transactions, operations, balances** |
+| "I'll add pagination later" | Unpaginated list endpoints are a production risk | **Add pagination from the start** |
+| "ValidateParameters is optional" | Skipping it bypasses limit enforcement | **MUST use ValidateParameters** |
+| "Page numbers are better UX" | For high-volume data, cursor is more reliable | **Choose strategy based on entity type, not preference** |
+
 ---
 
 ## HTTP Status Code Consistency (MANDATORY)
@@ -849,8 +1039,9 @@ Required: true, false
 // Path parameter
 // @Param  id  path  string  true  "User ID (UUID format)"
 
-// Query parameter (cursor-based pagination - page/offset FORBIDDEN)
-// @Param  cursor  query  string  false  "Base64-encoded cursor from previous response"
+// Query parameter (pagination - cursor or page depending on entity type)
+// @Param  cursor  query  string  false  "Base64-encoded cursor from previous response (cursor mode)"
+// @Param  page    query  int     false  "Page number, 1-based (offset mode)"
 // @Param  limit   query  int     false  "Items per page (default: 10, max: 100)"
 
 // Header parameter

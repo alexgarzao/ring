@@ -3,13 +3,13 @@ name: ring:production-readiness-audit
 title: Production Readiness Audit
 category: operations
 tier: advanced
-description: Comprehensive Ring-standards-aligned 41-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-410) with severity ratings and standards cross-reference.
+description: Comprehensive Ring-standards-aligned 44-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-430, max 440 with multi-tenant) with severity ratings and standards cross-reference.
 allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 ---
 
 # Production Readiness Audit
 
-A comprehensive, multi-agent audit system that evaluates codebase production readiness across **41 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
+A comprehensive, multi-agent audit system that evaluates codebase production readiness across **44 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
 
@@ -40,7 +40,7 @@ Use this skill when:
 | 38 | **API Versioning** | Versioning strategy, backward compatibility, deprecation, sunset headers |
 | 42 | **Resource Leak Prevention** | Unclosed handles, connection leaks, context propagation, defer ordering |
 
-### Category B: Security & Access Control (7-8 dimensions)
+### Category B: Security & Access Control (9 base + 1 conditional)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
@@ -50,7 +50,9 @@ Use this skill when:
 | 9 | **Input Validation** | Request body validation, query params, VO validation |
 | 37 | **Secret Scanning** | Hardcoded credentials, API keys, private keys, connection strings |
 | 41 | **Data Encryption at Rest** | Field-level encryption, key management, password hashing, encrypted backups |
-| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection — only if detected |
+| 43 | **Rate Limiting** | Three-tier strategy (Global/Export/Dispatch), Redis-backed storage, key generation, production safety |
+| 44 | **CORS Configuration** | Origin validation, middleware ordering, production wildcard prohibition, Helmet integration |
+| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection |
 
 ### Category C: Operational Readiness (7 dimensions)
 
@@ -79,7 +81,7 @@ Use this skill when:
 | 31 | **Linting & Code Quality** | Import ordering (3 groups), magic numbers, golangci-lint config |
 | 40 | **Caching Patterns** | Cache invalidation, TTL management, stampede prevention, tenant-scoped keys |
 
-### Category E: Infrastructure & Hardening (5-6 dimensions)
+### Category E: Infrastructure & Hardening (6 dimensions)
 
 | # | Dimension | Focus Area |
 |---|-----------|------------|
@@ -88,11 +90,11 @@ Use this skill when:
 | 26 | **CI/CD Pipeline** | Pipeline definitions, automated tests, security scanning |
 | 27 | **Async Reliability** | DLQs, retry policies, consumer group usage, message durability |
 | 32 | **Makefile & Dev Tooling** | 17+ required Makefile commands, dev workflow automation |
-| 34 | **License Headers** *(CONDITIONAL)* | Copyright headers on all .go files — only if LICENSE file exists |
+| 34 | **License Headers** | Copyright headers on all .go files |
 
 ## Execution Protocol
 
-This skill runs **up to 41 explorer agents in 4 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
+This skill runs **up to 44 explorer agents in 5 batches of up to 10**, writing results incrementally to a single report file. Before dispatch, it detects the project stack and loads Ring standards as the source of truth.
 
 ### Output File
 
@@ -107,7 +109,8 @@ All results are appended to: `docs/audits/production-readiness-{YYYY-MM-DDTHH:MM
 | 1 | 1-10 | Structure (Pagination, Errors, Routes, Bootstrap, Runtime) + Security (Auth, IDOR, SQL, Input) + Operations (Telemetry) |
 | 2 | 12-20 | Operations (Health, Config, Connections, Logging) + Quality (Idempotency, API Docs, Tech Debt, Testing, Dependencies) |
 | 3 | 21-30 | Quality (Performance, Concurrency, Migrations) + Infrastructure (Containers, Hardening, CI/CD, Async) + Structure (Core Deps, Naming, Domain Modeling) |
-| 4 | 31-42 + Summary | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant*, License*) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) + Final Summary (* = conditional) |
+| 4 | 31-42 | Quality (Linting, Caching) + Infrastructure (Makefile, Multi-Tenant*, License) + New Dimensions (Resilience, Secret Scanning, API Versioning, Graceful Degradation, Data Encryption, Resource Leaks) |
+| 5 | 43-44 + Summary | Security (Rate Limiting, CORS Configuration) + Final Summary (43 base + 1 conditional) |
 
 ### Step 0: Stack Detection
 
@@ -136,7 +139,7 @@ Glob("**/LICENSE*") → if found: LICENSE=true
 Grep("MULTI_TENANT") → if found in env/config files: MULTI_TENANT=true
 ```
 
-**Stack determines which standards are loaded in Step 0.5 and which conditional dimensions are activated.**
+**Stack determines which standards are loaded in Step 0.5.**
 
 ### Step 0.5: Load Ring Standards
 
@@ -195,11 +198,9 @@ Write to docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {40 base + N conditional} |
-| **Max Possible Score** | {400 + conditional points} |
+| **Active Dimensions** | {43 base + 1 conditional (max 44)} |
+| **Max Possible Score** | {dynamic_max: 430 or 440} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
-| **Conditional: License Headers** | {Active / Inactive} |
-
 ---
 ```
 
@@ -256,15 +257,14 @@ Task(subagent_type="Explore", prompt="<Agent 30: Domain Modeling>")
 
 **After completion:** Append results to the report file.
 
-### Step 5: Execute Batch 4 (Agents 31-42 + Summary)
+### Step 5: Execute Batch 4 (Agents 31-42)
 
-Launch remaining and conditional explorers:
+Launch remaining explorers:
 ```
 Task(subagent_type="Explore", prompt="<Agent 31: Linting & Code Quality>")
 Task(subagent_type="Explore", prompt="<Agent 32: Makefile & Dev Tooling>")
 # CONDITIONAL: Only if MULTI_TENANT=true
 Task(subagent_type="Explore", prompt="<Agent 33: Multi-Tenant Patterns>")
-# CONDITIONAL: Only if LICENSE=true
 Task(subagent_type="Explore", prompt="<Agent 34: License Headers>")
 Task(subagent_type="Explore", prompt="<Agent 35: Nil/Null Safety>")
 Task(subagent_type="Explore", prompt="<Agent 36: Resilience Patterns>")
@@ -278,7 +278,17 @@ Task(subagent_type="Explore", prompt="<Agent 42: Resource Leak Prevention>")
 
 **After completion:** Append results to the report file.
 
-### Step 6: Finalize Report
+### Step 6: Execute Batch 5 (Agents 43-44 + Summary)
+
+Launch security middleware explorers:
+```
+Task(subagent_type="Explore", prompt="<Agent 43: Rate Limiting>")
+Task(subagent_type="Explore", prompt="<Agent 44: CORS Configuration>")
+```
+
+**After completion:** Append results to the report file.
+
+### Step 7: Finalize Report
 
 1. Read the complete report file
 2. Calculate scores for each dimension
@@ -304,44 +314,63 @@ Audit pagination implementation across the codebase for production readiness.
 {INJECTED: "Pagination Patterns" section from api-patterns.md}
 ---END STANDARDS---
 
+**Key Concept: Core one uses TWO valid pagination strategies:**
+- **Offset** for low-volume admin entities (organizations, ledgers, accounts, assets, portfolios, products, segments)
+- **Cursor** for high-volume transaction entities (transactions, operations, balances, audit logs, events)
+
 **Search Patterns:**
-- Files: `**/pagination*.go`, `**/handlers.go`, `**/dto.go`
-- Keywords: `limit`, `offset`, `cursor`, `NextCursor`, `PrevCursor`, `HasMore`
-- Standards-specific: `CursorPagination`, `PaginationResponse`, `maxLimit`
+- Files: `**/pagination*.go`, `**/handlers.go`, `**/dto.go`, `**/httputils.go`, `**/cursor.go`
+- Keywords: `limit`, `offset`, `cursor`, `Page`, `NextCursor`, `PrevCursor`, `SetCursor`, `SetItems`
+- Standards-specific: `CursorPagination`, `Pagination`, `ValidateParameters`, `QueryHeader`, `MAX_PAGINATION_LIMIT`
 
-**Reference Implementation (GOOD):**
+**Reference Implementations (GOOD):**
+
+Offset mode (admin entities):
 ```go
-// Cursor-based pagination with proper validation
-type CursorResponse struct {
-    NextCursor string `json:"next_cursor,omitempty"`
-    PrevCursor string `json:"prev_cursor,omitempty"`
-    Limit      int    `json:"limit"`
-    HasMore    bool   `json:"has_more"`
+// Handler sets Page field — indicates offset mode
+pagination := libPostgres.Pagination{
+    Limit:     headerParams.Limit,
+    Page:      headerParams.Page,
+    SortOrder: headerParams.SortOrder,
 }
+items, err := h.Query.GetAllOrganizations(ctx, *headerParams)
+pagination.SetItems(items)
+return libHTTP.OK(c, pagination)
 
-// Limit validation with ceiling
-if limit > maxLimit {
-    limit = maxLimit // Auto-cap, don't error
+// Repository uses OFFSET = (Page - 1) * Limit
+query.Limit(filter.Limit).Offset((filter.Page - 1) * filter.Limit)
+```
+
+Cursor mode (transaction entities):
+```go
+// Handler does NOT set Page — indicates cursor mode
+pagination := libPostgres.Pagination{
+    Limit:     headerParams.Limit,
+    SortOrder: headerParams.SortOrder,
 }
-if limit < 1 {
-    return ErrLimitMustBePositive
-}
+items, cursor, err := h.Query.GetAllTransactions(ctx, orgID, ledgerID, *headerParams)
+pagination.SetItems(items)
+pagination.SetCursor(cursor.Next, cursor.Prev)
+return libHTTP.OK(c, pagination)
 ```
 
 **Check Against Ring Standards For:**
 1. (HARD GATE) Consistent pagination response structure matching Ring standards across all list endpoints
-2. (HARD GATE) Maximum limit enforcement (typically 100-200) per api-patterns.md
-3. Cursor-based pagination for real-time data (preferred over offset)
-4. Proper error handling for invalid pagination params
-5. Default values when params missing
-6. Response field names match Ring API conventions (snake_case JSON)
+2. (HARD GATE) Maximum limit enforcement via `ValidateParameters` (MAX_PAGINATION_LIMIT, default 100)
+3. Correct strategy per entity type: offset for admin entities, cursor for transaction entities
+4. No mixing of both strategies in the same endpoint (page + cursor in same response is FORBIDDEN)
+5. Proper error handling for invalid pagination params
+6. Default values when params missing
+7. Response field names match Ring API conventions (camelCase JSON)
 
 **Severity Ratings:**
 - CRITICAL: No limit validation (allows unlimited queries)
 - CRITICAL: HARD GATE violation per Ring standards — pagination response structure missing entirely
 - HIGH: Inconsistent pagination structures across endpoints
-- MEDIUM: Using offset pagination for frequently-changing data
-- LOW: Missing cursor pagination where beneficial
+- HIGH: Missing `ValidateParameters` call on list endpoints
+- MEDIUM: Using offset pagination on high-volume transaction tables
+- MEDIUM: Mixing both strategies in the same endpoint
+- LOW: Using cursor where offset would suffice for admin entities
 
 **Output Format:**
 ```
@@ -351,7 +380,12 @@ if limit < 1 {
 - Total list endpoints: X
 - Using cursor pagination: Y
 - Using offset pagination: Z
+- Missing pagination entirely: W
 - Missing limit validation: N
+
+### Strategy Mapping
+| Endpoint | Entity Type | Expected Strategy | Actual Strategy | Match |
+|----------|-------------|-------------------|-----------------|-------|
 
 ### Critical Issues
 [file:line] - Description
@@ -3375,12 +3409,12 @@ check: ## Run all checks (lint + test + cover)
 ```
 ```
 
-### Agent 33: Multi-Tenant Patterns Auditor
+### Agent 33: Multi-Tenant Patterns Auditor *(CONDITIONAL)*
 
 ```prompt
-**CONDITIONAL: Only run this auditor if MULTI_TENANT=true is set. If the project does not use multi-tenancy, skip this audit and report "N/A - Single-tenant project".**
+CONDITIONAL: Only run this agent if MULTI_TENANT=true was detected during stack detection. If the project does not use multi-tenancy (no tenant config, no pool manager, no tenant middleware), SKIP this agent entirely and report: "Dimension 33 skipped — single-tenant project (no multi-tenant indicators detected)."
 
-Audit multi-tenant architecture patterns for production readiness.
+If multi-tenant IS detected, audit multi-tenant architecture patterns for production readiness.
 
 **Detected Stack:** {DETECTED_STACK}
 
@@ -3514,9 +3548,7 @@ func (r *Repo) Save(ctx context.Context, entity *Entity) error {
 ### Agent 34: License Headers Auditor
 
 ```prompt
-**CONDITIONAL: Only run this auditor if LICENSE=true is set. If the project does not require license headers, skip this audit and report "N/A - License headers not required".**
-
-Audit license/copyright headers on source files for production readiness.
+Audit license/copyright headers on source files for production readiness. If no LICENSE file exists in the project root, report all items as "N/A — No LICENSE file detected" with evidence.
 
 **Detected Stack:** {DETECTED_STACK}
 
@@ -5364,6 +5396,294 @@ async function fetchData(url: string): Promise<Response> {
 ```
 ```
 
+### Agent 43: Rate Limiting Auditor
+
+```prompt
+Audit rate limiting implementation across the codebase for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: security.md § Rate Limiting (MANDATORY)}
+---END STANDARDS---
+
+**Search Patterns:**
+- Go files: `**/*.go` — search for rate limiting middleware, limiter configuration, Redis storage for rate limits
+- Config files: `**/*.env*`, `**/docker-compose*`, `**/config*.go` — search for RATE_LIMIT env vars
+- Middleware files: `**/middleware/**`, `**/bootstrap/**` — search for limiter registration
+- Keywords (Go): `limiter`, `ratelimit`, `rate_limit`, `RateLimit`, `RATE_LIMIT`, `fiber/middleware/limiter`, `MaxRequests`, `Expiration`, `KeyGenerator`, `LimitReached`, `429`, `Retry-After`
+- Keywords (Config): `RATE_LIMIT_ENABLED`, `RATE_LIMIT_MAX`, `RATE_LIMIT_EXPIRY_SEC`, `EXPORT_RATE_LIMIT`, `DISPATCH_RATE_LIMIT`
+
+**Rate Limiting Patterns to Check:**
+
+| Pattern | Risk Level | What to Look For |
+|---------|:----------:|------------------|
+| No rate limiting at all | CRITICAL | No limiter middleware registered on any route |
+| Single-tier only | HIGH | Only global rate limit, no export/dispatch tiers |
+| In-memory storage only | HIGH | `fiber.Storage` not backed by Redis — rate limits not shared across instances |
+| Hardcoded limits | MEDIUM | Rate limit values hardcoded in code instead of env vars |
+| No key generation strategy | HIGH | Default key generator (IP only) — no UserID or TenantID+IP |
+| Rate limiting disabled in production | CRITICAL | `RATE_LIMIT_ENABLED=false` with no production override |
+| No 429 response with Retry-After | MEDIUM | Rate limit exceeded but no `Retry-After` header in response |
+| No graceful degradation | HIGH | Redis unavailable causes request failures instead of fallback to in-memory |
+
+**Three-tier Strategy Verification (MANDATORY — do not skip):**
+1. **Global tier**: Verify a general rate limiter exists on all protected routes (default: 100 req/60s)
+2. **Export tier**: Verify resource-intensive endpoints (exports, bulk ops) have a stricter limiter (default: 10 req/60s)
+3. **Dispatch tier**: Verify external integration endpoints (webhooks, external calls) have their own limiter (default: 50 req/60s)
+
+**Redis Storage Verification (MANDATORY — do not skip):**
+1. **Storage implementation**: Verify rate limiter uses Redis-backed storage implementing `fiber.Storage` interface
+2. **Key prefix**: Verify rate limit keys use `ratelimit:` prefix for namespace isolation
+3. **Sentinel errors**: Verify Redis operations use sentinel errors (not `fmt.Errorf`)
+4. **Graceful degradation**: Verify fallback behavior when Redis is unavailable
+
+**Production Safety Verification (MANDATORY — do not skip):**
+1. **Force-enable in production**: Verify rate limiting cannot be disabled when `ENV_NAME=production`
+2. **Key generation**: Verify key generator uses UserID > TenantID+IP > IP priority
+3. **Configuration via env vars**: Verify all limits are configurable via environment variables
+
+**Reference Implementation (GOOD — Go):**
+```go
+// GOOD: Three-tier rate limiting with Redis storage
+rateLimitStorage := ratelimit.NewRedisStorage(redisConn)
+
+// Global limiter
+app.Use(limiter.New(limiter.Config{
+    Max:        cfg.RateLimit.Max,
+    Expiration: time.Duration(cfg.RateLimit.ExpirySec) * time.Second,
+    Storage:    rateLimitStorage,
+    KeyGenerator: func(c *fiber.Ctx) string {
+        // UserID > TenantID+IP > IP
+        if uid := c.Locals("userID"); uid != nil {
+            return fmt.Sprintf("user:%v", uid)
+        }
+        if tid := c.Locals("tenantID"); tid != nil {
+            return fmt.Sprintf("tenant:%v:ip:%s", tid, c.IP())
+        }
+        return c.IP()
+    },
+}))
+```
+
+**Reference Implementation (BAD — Go):**
+```go
+// BAD: No rate limiting at all — DoS vulnerable
+app.Get("/api/v1/exports", exportHandler)
+
+// BAD: Hardcoded limits, no Redis storage
+app.Use(limiter.New(limiter.Config{
+    Max:        100,           // hardcoded
+    Expiration: time.Minute,   // hardcoded
+    // No Storage — in-memory only, not shared across instances
+}))
+
+// BAD: Rate limiting can be disabled in production
+if cfg.RateLimit.Enabled {
+    app.Use(rateLimiter)
+}
+```
+
+**Check Against Standards For:**
+1. (CRITICAL) Rate limiting middleware exists and is registered on protected routes
+2. (CRITICAL) Rate limiting cannot be disabled in production environment
+3. (HIGH) Three-tier strategy implemented (Global, Export, Dispatch)
+4. (HIGH) Redis-backed distributed storage (not in-memory only)
+5. (HIGH) Key generation uses UserID > TenantID+IP > IP priority
+6. (HIGH) Graceful degradation when Redis is unavailable
+7. (MEDIUM) All rate limit values configurable via environment variables
+8. (MEDIUM) 429 response includes `Retry-After` header
+9. (MEDIUM) Sentinel errors used in Redis storage operations
+10. (LOW) Rate limit key prefix isolates namespace (`ratelimit:`)
+
+**Severity Ratings:**
+- CRITICAL: No rate limiting middleware at all, rate limiting disabled in production
+- HIGH: Single-tier only (no export/dispatch tiers), in-memory storage only (not distributed), no key generation strategy (IP only), no graceful degradation on Redis failure
+- MEDIUM: Hardcoded rate limit values (not configurable), no Retry-After header, fmt.Errorf instead of sentinel errors
+- LOW: Missing key prefix, rate limit logging not structured, no rate limit metrics/observability
+
+**Output Format:**
+```
+## Rate Limiting Audit Findings
+
+### Summary
+- Rate limiting middleware: {Present / Absent}
+- Tiers implemented: {Global, Export, Dispatch / Global only / None}
+- Storage backend: {Redis / In-memory / None}
+- Key generation: {UserID+TenantID+IP / IP only / Default}
+- Production safety: {Force-enabled / Disableable / Not configured}
+- Graceful degradation: {Yes / No}
+
+### Critical Issues
+[file:line] - Description
+
+### High Issues
+[file:line] - Description
+
+### Medium Issues
+[file:line] - Description
+
+### Low Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
+### Agent 44: CORS Configuration Auditor
+
+```prompt
+Audit CORS (Cross-Origin Resource Sharing) configuration across the codebase for production readiness.
+
+**Detected Stack:** {DETECTED_STACK}
+
+**Ring Standards (Source of Truth):**
+---BEGIN STANDARDS---
+{INJECTED: security.md § CORS Configuration (MANDATORY)}
+---END STANDARDS---
+
+**Search Patterns:**
+- Go files: `**/*.go` — search for CORS middleware configuration, origin validation, preflight handling
+- Config files: `**/*.env*`, `**/docker-compose*`, `**/config*.go` — search for CORS env vars
+- Middleware files: `**/middleware/**`, `**/bootstrap/**` — search for CORS and Helmet middleware registration
+- Keywords (Go): `cors`, `CORS`, `AllowOrigins`, `AllowMethods`, `AllowHeaders`, `fiber/middleware/cors`, `helmet`, `Helmet`, `HSTS`, `HSTSMaxAge`, `ContentSecurityPolicy`, `XFrameOptions`, `PermissionPolicy`
+- Keywords (Config): `CORS_ALLOWED_ORIGINS`, `CORS_ALLOWED_METHODS`, `CORS_ALLOWED_HEADERS`, `TLS_TERMINATED_UPSTREAM`, `SERVER_TLS_CERT_FILE`
+
+**CORS Patterns to Check:**
+
+| Pattern | Risk Level | What to Look For |
+|---------|:----------:|------------------|
+| No CORS middleware at all | CRITICAL | No `cors.New()` or equivalent middleware registered |
+| Wildcard origins in production | CRITICAL | `AllowOrigins: "*"` when `ENV_NAME=production` |
+| Empty origins in production | CRITICAL | `CORS_ALLOWED_ORIGINS` not set in production |
+| Hardcoded origins | HIGH | Origins in code instead of env var configuration |
+| CORS after business logic | HIGH | CORS middleware placed after auth/handler — preflight fails |
+| No production validation | HIGH | No check for wildcard/empty origins in production |
+| Origin reflection without validation | CRITICAL | `AllowOriginsFunc` that returns true for all origins |
+| No Helmet integration | MEDIUM | CORS configured but no Helmet security headers |
+| HSTS not enabled with TLS | HIGH | TLS configured but `HSTSMaxAge` not set |
+
+**Middleware Ordering Verification (MANDATORY — do not skip):**
+Verify CORS is placed in the correct position in the middleware chain:
+```
+Recover → Request ID → CORS → Helmet (Security Headers) → Telemetry → Rate Limiter → Handler
+```
+
+**Production Validation Verification (MANDATORY — do not skip):**
+1. **No wildcard origins**: Verify `*` is rejected when `ENV_NAME=production`
+2. **No empty origins**: Verify empty `CORS_ALLOWED_ORIGINS` is rejected in production
+3. **HTTPS origins**: Verify production origins use `https://` (not `http://`)
+4. **Sentinel errors**: Verify validation uses sentinel errors (not `fmt.Errorf`)
+
+**Helmet Integration Verification (MANDATORY — do not skip):**
+1. **Security headers present**: Verify Helmet middleware is registered
+2. **HSTS conditional**: Verify HSTS is enabled only when TLS is configured (cert file or TLSTerminatedUpstream)
+3. **CSP configured**: Verify Content-Security-Policy header is set
+4. **Cross-origin policies**: Verify CrossOriginEmbedderPolicy, CrossOriginOpenerPolicy, CrossOriginResourcePolicy
+
+**Reference Implementation (GOOD — Go):**
+```go
+// GOOD: Configuration-driven CORS with production validation
+app.Use(cors.New(cors.Config{
+    AllowOrigins: cfg.Server.CORSAllowedOrigins,  // From env vars
+    AllowMethods: cfg.Server.CORSAllowedMethods,
+    AllowHeaders: cfg.Server.CORSAllowedHeaders,
+}))
+
+// GOOD: Production validation with sentinel errors
+var (
+    ErrCORSOriginsEmpty    = errors.New("CORS_ALLOWED_ORIGINS must be set in production")
+    ErrCORSOriginsWildcard = errors.New("CORS_ALLOWED_ORIGINS must not contain wildcard (*) in production")
+)
+
+func validateProductionConfig(cfg *Config) error {
+    if cfg.App.EnvName != "production" {
+        return nil
+    }
+    origins := strings.TrimSpace(cfg.Server.CORSAllowedOrigins)
+    if origins == "" {
+        return ErrCORSOriginsEmpty
+    }
+    if strings.Contains(origins, "*") {
+        return ErrCORSOriginsWildcard
+    }
+    return nil
+}
+```
+
+**Reference Implementation (BAD — Go):**
+```go
+// BAD: Wildcard origins — allows any site to make requests
+cors.Config{AllowOrigins: "*"}
+
+// BAD: Hardcoded origins
+cors.Config{AllowOrigins: "https://app.example.com"}
+
+// BAD: No CORS middleware at all
+
+// BAD: CORS after business logic — preflight fails
+app.Use(authMiddleware)
+app.Use(rateLimiter)
+app.Use(cors.New(corsCfg))  // Too late
+
+// BAD: Origin reflection without validation
+cors.Config{
+    AllowOriginsFunc: func(origin string) bool {
+        return true  // Effectively same as wildcard
+    },
+}
+```
+
+**Check Against Standards For:**
+1. (CRITICAL) CORS middleware is registered on the HTTP server
+2. (CRITICAL) Wildcard origins (`*`) are not used in production
+3. (CRITICAL) Empty origins are rejected in production
+4. (CRITICAL) No origin reflection function that accepts all origins
+5. (HIGH) Origins are configuration-driven via env vars (not hardcoded)
+6. (HIGH) CORS is placed before Helmet and business logic in middleware chain
+7. (HIGH) Production validation exists with sentinel errors
+8. (HIGH) HSTS is enabled when TLS is configured
+9. (MEDIUM) Helmet middleware is registered with security headers (CSP, X-Frame-Options, etc.)
+10. (MEDIUM) Cross-origin policies are set (Embedder, Opener, Resource)
+11. (LOW) Production origins use HTTPS (not HTTP)
+
+**Severity Ratings:**
+- CRITICAL: No CORS middleware, wildcard origins in production, empty origins in production, origin reflection accepting all
+- HIGH: Hardcoded origins, CORS placed after business logic, no production validation, HSTS not enabled with TLS
+- MEDIUM: No Helmet security headers, missing cross-origin policies, no CSP header
+- LOW: HTTP origins in production, missing PermissionPolicy, verbose CORS error messages
+
+**Output Format:**
+```
+## CORS Configuration Audit Findings
+
+### Summary
+- CORS middleware: {Present / Absent}
+- Allowed origins source: {Env var / Hardcoded / Wildcard / Not configured}
+- Production validation: {Present with sentinel errors / Present without sentinel errors / Absent}
+- Middleware ordering: {Correct / Incorrect — position: {actual position}}
+- Helmet integration: {Present / Absent}
+- HSTS: {Enabled / Disabled / N/A (no TLS)}
+
+### Critical Issues
+[file:line] - Description
+
+### High Issues
+[file:line] - Description
+
+### Medium Issues
+[file:line] - Description
+
+### Low Issues
+[file:line] - Description
+
+### Recommendations
+1. ...
+```
+```
+
 ---
 
 ## Consolidated Report Template (Thorough)
@@ -5412,10 +5732,9 @@ After all explorers complete, generate this report:
 |----------|-------|
 | **Detected Stack** | {Go / TypeScript / Frontend / Mixed} |
 | **Standards Loaded** | {list of loaded standards files} |
-| **Active Dimensions** | {40 base + N conditional} |
-| **Max Possible Score** | {dynamic_max} |
+| **Active Dimensions** | {43 base + 1 conditional (max 44)} |
+| **Max Possible Score** | {dynamic_max: 430 or 440} |
 | **Conditional: Multi-Tenant** | {Active / Inactive} |
-| **Conditional: License Headers** | {Active / Inactive} |
 
 ---
 
@@ -5424,10 +5743,10 @@ After all explorers complete, generate this report:
 | Category | Score | % | Critical | High | Medium | Low | Status |
 |:---------|------:|--:|:--------:|:----:|:------:|:---:|:------:|
 | **A: Code Structure & Patterns** | {x}/110 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
-| **B: Security & Access Control** | {x}/{70 or 80} | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
+| **B: Security & Access Control** | {x}/{90 or 100} | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
 | **C: Operational Readiness** | {x}/70 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
 | **D: Quality & Maintainability** | {x}/100 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
-| **E: Infrastructure & Hardening** | {x}/{50 or 60} | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
+| **E: Infrastructure & Hardening** | {x}/60 | {pct}% | {n} | {n} | {n} | {n} | {PASS/NEEDS WORK/FAIL} |
 | **TOTAL** | **{x}/{dynamic_max}** | **{pct}%** | **{n}** | **{n}** | **{n}** | **{n}** | — |
 
 Category status: PASS (>=70%), NEEDS WORK (40-69%), FAIL (<40%)
@@ -5451,14 +5770,15 @@ Category status: PASS (>=70%), NEEDS WORK (40-69%), FAIL (<40%)
 | 14 | Connections | {x}/10 | {icon} | 31 | Linting & Quality | {x}/10 | {icon} |
 | 15 | Logging & PII | {x}/10 | {icon} | 32 | Makefile & Tooling | {x}/10 | {icon} |
 | 16 | Idempotency | {x}/10 | {icon} | 33* | Multi-Tenant | {x}/10 | {icon} |
-| 17 | API Documentation | {x}/10 | {icon} | 34* | License Headers | {x}/10 | {icon} |
+| 17 | API Documentation | {x}/10 | {icon} | 34 | License Headers | {x}/10 | {icon} |
 | 35 | Nil/Null Safety | {x}/10 | {icon} | 36 | Resilience Patterns | {x}/10 | {icon} |
 | 37 | Secret Scanning | {x}/10 | {icon} | 38 | API Versioning | {x}/10 | {icon} |
 | 39 | Graceful Degradation | {x}/10 | {icon} | 40 | Caching Patterns | {x}/10 | {icon} |
 | 41 | Data Encryption | {x}/10 | {icon} | 42 | Resource Leaks | {x}/10 | {icon} |
+| 43 | Rate Limiting | {x}/10 | {icon} | 44 | CORS Configuration | {x}/10 | {icon} |
 
 Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
-*Conditional dimensions — only if detected
+*33 = conditional dimension (Multi-Tenant) — included only if multi-tenant indicators detected*
 
 ---
 
@@ -5705,7 +6025,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-### Category B: Security & Access Control ({x}/{70 or 80})
+### Category B: Security & Access Control ({x}/{90 or 100})
 
 ---
 
@@ -5745,9 +6065,21 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-#### Dimension 33: Multi-Tenant Patterns (Conditional)
+#### Dimension 43: Rate Limiting
 
-{If MULTI_TENANT=false: "**Dimension not activated** — No multi-tenant indicators detected in this codebase. Skipped."}
+{SAME structure as Dimension 1}
+
+---
+
+#### Dimension 44: CORS Configuration
+
+{SAME structure as Dimension 1}
+
+---
+
+#### Dimension 33: Multi-Tenant Patterns *(CONDITIONAL)*
+
+{If MULTI_TENANT=false: "**Dimension not activated** — No multi-tenant indicators detected in this codebase. Score excluded from total."}
 
 {If MULTI_TENANT=true: SAME structure as Dimension 1}
 
@@ -5863,7 +6195,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-### Category E: Infrastructure & Hardening ({x}/{50 or 60})
+### Category E: Infrastructure & Hardening ({x}/60)
 
 ---
 
@@ -5897,11 +6229,9 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ---
 
-#### Dimension 34: License Headers (Conditional)
+#### Dimension 34: License Headers
 
-{If LICENSE=false: "**Dimension not activated** — No LICENSE file detected in project root. Skipped."}
-
-{If LICENSE=true: SAME structure as Dimension 1}
+{SAME structure as Dimension 1 — if no LICENSE file exists, all items reported as N/A with evidence}
 
 ---
 
@@ -5948,10 +6278,12 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 | 40 | Caching Patterns | (generic) | Cache Management | {PASS/FAIL} | {x}/10 |
 | 41 | Data Encryption | security.md | Encryption at Rest | {PASS/FAIL} | {x}/10 |
 | 42 | Resource Leaks | (generic) | Resource Lifecycle | {PASS/FAIL} | {x}/10 |
-| 33* | Multi-Tenant Patterns | multi-tenant.md | Full module | {PASS/FAIL/N/A} | {x}/10 |
-| 34* | License Headers | core.md | License section | {PASS/FAIL/N/A} | {x}/10 |
+| 43 | Rate Limiting | security.md | Rate Limiting | {PASS/FAIL} | {x}/10 |
+| 44 | CORS Configuration | security.md | CORS Configuration | {PASS/FAIL} | {x}/10 |
+| 33 | Multi-Tenant Patterns | multi-tenant.md | Full module | {PASS/FAIL/N/A} | {x}/10 |
+| 34 | License Headers | core.md | License section | {PASS/FAIL/N/A} | {x}/10 |
 
-*Conditional dimensions — only if detected*
+*Dimension 33 is conditional — excluded from scoring when MULTI_TENANT=false*
 
 ---
 
@@ -6045,7 +6377,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 |----------|-------|
 | **Audit Date** | {YYYY-MM-DD HH:MM} |
 | **Audit Duration** | {X} minutes |
-| **Explorers Launched** | {40 + conditional count} |
+| **Explorers Launched** | {43 or 44} |
 | **Files Examined** | {X} |
 | **Lines of Code** | {X} |
 | **Skill Version** | 3.0 |
@@ -6053,7 +6385,7 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 | **Standards Source** | Ring Development Standards (GitHub) |
 | **Standards Files Loaded** | {list} |
 | **Stack Detected** | {Go / TypeScript / Frontend / Mixed} |
-| **Conditional Dimensions Active** | {list or "None"} |
+| **Dimensions** | {43 + conditional count} |
 ```
 
 ---
@@ -6081,22 +6413,16 @@ Status icons: PASS (>=7), WARN (4-6), FAIL (<4), N/A (conditional not active)
 
 ### Category Weights
 
-| Category | Dimensions | Always-Active | Max Score |
-|----------|------------|---------------|-----------|
+| Category | Dimensions | Count | Max Score |
+|----------|------------|-------|-----------|
 | A: Code Structure | 1-5, 28-30, 35, 38, 42 | 11 | 110 |
-| B: Security | 6-10, 37, 41, (33) | 7 (+1 conditional) | 70 (+10) |
+| B: Security | 6-9, 33*, 37, 41, 43, 44 | 9 (+1c) | 90 (+10c) |
 | C: Operations | 11-15, 36, 39 | 7 | 70 |
 | D: Quality | 16-23, 31, 40 | 10 | 100 |
-| E: Infrastructure | 24-27, 32, (34) | 5 (+1 conditional) | 50 (+10) |
-| **Total** | | **40 (+2 conditional)** | **400 (+20)** |
+| E: Infrastructure | 24-27, 32, 34 | 6 | 60 |
+| **Total** | | **43 (+1c = 44)** | **430 (+10c = 440)** |
 
-### Dynamic Max Calculation
-
-```
-dynamic_max = 400 + (MULTI_TENANT ? 10 : 0) + (LICENSE ? 10 : 0)
-```
-
-Possible values: 400, 410, or 420.
+*c = conditional (Multi-Tenant). dynamic_max = 430 + (10 if MULTI_TENANT=true)*
 
 ### Overall Classification (Percentage-Based)
 
@@ -6124,7 +6450,7 @@ When this skill is invoked, follow this exact protocol:
 ### Step 1: Initialize Todo List
 
 ```
-TodoWrite: Create todos for stack detection, standards loading, all 4 batches + consolidation
+TodoWrite: Create todos for stack detection, standards loading, all 5 batches + consolidation
 ```
 
 ### Step 2: Detect Stack (Step 0)
@@ -6162,30 +6488,34 @@ Launch 10 agents (21-30) in a SINGLE response.
 
 ### Step 8: Launch Parallel Explorers (Batch 4)
 
-Launch agents 31-42 (conditionally for 33 and 34) in a SINGLE response.
+Launch agents 31-42 in a SINGLE response. Note: Agent 33 (Multi-Tenant) is CONDITIONAL — only include if MULTI_TENANT=true was detected in Step 2.
 
-### Step 9: Collect Results
+### Step 9: Launch Parallel Explorers (Batch 5)
+
+Launch agents 43-44 in a SINGLE response.
+
+### Step 10: Collect Results
 
 As each explorer completes, mark its todo as completed and append to report.
 
-### Step 10: Consolidate Report
+### Step 11: Consolidate Report
 
 Once ALL explorers complete:
 1. Calculate scores for each dimension (0-10 scale)
-2. Calculate category totals (A: /110, B: /70-80, C: /70, D: /100, E: /50-60)
+2. Calculate category totals (A: /110, B: /90-100, C: /70, D: /100, E: /60)
 3. Calculate overall score (/{dynamic_max})
 4. Aggregate critical/high/medium/low counts
 5. Determine readiness classification (percentage-based)
 6. Generate Standards Compliance Cross-Reference table
 7. Generate the consolidated report
 
-### Step 11: Write Report
+### Step 12: Write Report
 
 ```
 Write: docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md
 ```
 
-### Step 12: Present Summary
+### Step 13: Present Summary
 
 Provide a verbal summary to the user including:
 - Detected stack and standards loaded
@@ -6215,7 +6545,7 @@ Only audit specified modules.
 User: /production-readiness-audit --dimensions=security
 ```
 
-Run only security-related auditors (6, 7, 8, 9, 10, 33).
+Run only security-related auditors (6, 7, 8, 9, 37, 41, 43, 44, 33).
 
 ### Output Format
 

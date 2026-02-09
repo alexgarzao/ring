@@ -253,68 +253,72 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 **Modular Structure:** Standards are split into focused modules. Load index.md first, then required modules.
 
-| #   | Section to Check                                  | File               | Anchor                                                 | Key Subsections                                                                                                                                                                     |
-| --- | ------------------------------------------------- | ------------------ | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Version                                           | core.md            | `#version`                                             | Go 1.24+                                                                                                                                                                            |
-| 2   | Core Dependency: lib-commons                      | core.md            | `#core-dependency-lib-commons-mandatory`               | **HARD GATE:** No duplicate utils/helpers - use lib-commons                                                                                                                         |
-| 3   | Frameworks & Libraries                            | core.md            | `#frameworks--libraries`                               | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock, **validator v10 migration (MANDATORY)**                                                                      |
-| 4   | Configuration                                     | core.md            | `#configuration`                                       | Environment variable handling                                                                                                                                                       |
-| 5   | Database Naming Convention (snake_case)           | core.md            | `#database-naming-convention-snake-case-mandatory`     | Table and column naming                                                                                                                                                             |
-| 6   | Database Migrations                               | core.md            | `#database-migrations-mandatory`                       | golang-migrate requirement                                                                                                                                                          |
-| 7   | License Headers                                   | core.md            | `#license-headers-mandatory`                           | **MANDATORY** - All source files require license headers                                                                                                                            |
-| 8   | MongoDB Patterns                                  | core.md            | `#mongodb-patterns-mandatory`                          | **Injection prevention (CRITICAL)**, connection pooling, index management, deprecated API removal                                                                                   |
-| 9   | Dependency Management                             | core.md            | `#dependency-management-mandatory`                     | **Version pinning (MANDATORY)**, go.sum, security updates, govulncheck, detection commands                                                                                          |
-| 10  | Observability                                     | bootstrap.md       | `#observability`                                       | OpenTelemetry integration, **Span Naming Conventions (MANDATORY)**: layer.domain.operation pattern, detection commands                                                              |
-| 11  | Bootstrap                                         | bootstrap.md       | `#bootstrap`                                           | Application initialization                                                                                                                                                          |
-| 12  | Graceful Shutdown Patterns                        | bootstrap.md       | `#graceful-shutdown-patterns-mandatory`                | **Signal handling (MANDATORY)**, shutdown order, resource cleanup, detection commands                                                                                               |
-| 13  | Health Checks                                     | bootstrap.md       | `#health-checks-mandatory`                             | **/health vs /ready (MANDATORY)**, Kubernetes probes, dependency checks                                                                                                             |
-| 14  | Connection Management                             | bootstrap.md       | `#connection-management-mandatory`                     | **Pool configuration (MANDATORY)**, timeouts, graceful shutdown, detection commands                                                                                                 |
-| 15  | Access Manager Integration                        | security.md        | `#access-manager-integration-mandatory`                | **CONDITIONAL** - Check if project has auth                                                                                                                                         |
-| 16  | License Manager Integration                       | security.md        | `#license-manager-integration-mandatory`               | **CONDITIONAL** - Check if project is licensed                                                                                                                                      |
-| 17  | Secret Redaction Patterns                         | security.md        | `#secret-redaction-patterns-mandatory`                 | **Credential leak prevention (MANDATORY)**, connection string redaction, detection commands                                                                                         |
-| 18  | SQL Safety                                        | security.md        | `#sql-safety-mandatory`                                | **Parameterized queries (MANDATORY)**, SQL injection prevention, whitelist pattern, detection commands                                                                              |
-| 19  | HTTP Security Headers                             | security.md        | `#http-security-headers-mandatory`                     | **X-Content-Type-Options: nosniff (MANDATORY)**, **X-Frame-Options: DENY (MANDATORY)**                                                                                              |
-| 20  | Data Transformation                               | domain.md          | `#data-transformation-toentityfromentity-mandatory`    | ToEntity/FromEntity patterns                                                                                                                                                        |
-| 21  | Error Codes Convention                            | domain.md          | `#error-codes-convention-mandatory`                    | Service-prefixed codes                                                                                                                                                              |
-| 22  | Error Handling                                    | domain.md          | `#error-handling`                                      | **Sentinel errors (MANDATORY)**, error wrapping                                                                                                                                     |
-| 23  | Exit/Fatal Location Rules                         | domain.md          | `#exitfatal-location-rules-mandatory`                  | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table                                                                 |
-| 24  | Function Design                                   | domain.md          | `#function-design-mandatory`                           | Single responsibility                                                                                                                                                               |
-| 25  | JSON Naming Convention (camelCase)                | api-patterns.md    | `#json-naming-convention-camelcase-mandatory`          | API response field naming                                                                                                                                                           |
-| 26  | Pagination Patterns                               | api-patterns.md    | `#pagination-patterns`                                 | **Cursor-based (MANDATORY)**, limit validation, response structure                                                                                                                  |
-| 27  | HTTP Status Code Consistency                      | api-patterns.md    | `#http-status-code-consistency-mandatory`              | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands                                                                                  |
-| 28  | OpenAPI Documentation (Swaggo)                    | api-patterns.md    | `#openapi-documentation-swaggo-mandatory`              | Annotations as source of truth                                                                                                                                                      |
-| 29  | Handler Constructor Pattern                       | api-patterns.md    | `#handler-constructor-pattern-mandatory`               | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands                                                                                     |
-| 30  | Input Validation                                  | api-patterns.md    | `#input-validation-mandatory`                          | **Defense in depth (MANDATORY)**, validator v10 tags, **numeric query param validation**, error translation                                                                         |
-| 31  | Testing                                           | quality.md         | `#testing`                                             | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)**                                                                                                    |
-| 32  | Logging                                           | quality.md         | `#logging`                                             | Structured logging with lib-commons                                                                                                                                                 |
-| 33  | Linting                                           | quality.md         | `#linting`                                             | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, **14 mandatory linters**, magic numbers (mnd)              |
-| 34  | Migration Guidance for Mandatory Linter Promotion | quality.md         | `#migration-guidance-for-mandatory-linter-promotion`   | **Phased rollout (MANDATORY)**, per-linter common violations, batch fix commands                                                                                                    |
-| 35  | Production Config Validation                      | quality.md         | `#production-config-validation-mandatory`              | **Startup validation (MANDATORY)**, fail-fast, detailed error messages                                                                                                              |
-| 36  | Container Security                                | quality.md         | `#container-security-conditional`                      | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists)                                                                                                            |
-| 37  | Architecture Patterns                             | architecture.md    | `#architecture-patterns`                               | Hexagonal architecture                                                                                                                                                              |
-| 38  | Directory Structure                               | architecture.md    | `#directory-structure`                                 | Lerian pattern                                                                                                                                                                      |
-| 39  | Concurrency Patterns                              | architecture.md    | `#concurrency-patterns`                                | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands                                                                                |
-| 40  | Goroutine Recovery Patterns                       | architecture.md    | `#goroutine-recovery-patterns-mandatory`               | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands                                                                                                                |
-| 41  | N+1 Query Detection                               | architecture.md    | `#n1-query-detection-mandatory`                        | **Batch loading (MANDATORY)**, JOIN patterns, detection commands                                                                                                                    |
-| 42  | Performance Patterns                              | architecture.md    | `#performance-patterns-mandatory`                      | **SELECT \* avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands                                                                                               |
-| 43  | RabbitMQ Worker Pattern                           | messaging.md       | `#rabbitmq-worker-pattern`                             | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)**                                                                     |
-| 44  | RabbitMQ Reconnection Strategy                    | messaging.md       | `#rabbitmq-reconnection-strategy-mandatory`            | **MANDATORY: Consumer Reconnection Loop**, **MANDATORY: Producer Per-Publish Retry**, **MANDATORY: Health Check Integration**, **MANDATORY: Deadlock Prevention**                   |
-| 45  | Always-Valid Domain Model                         | domain-modeling.md | `#always-valid-domain-model-mandatory`                 | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
-| 46  | Idempotency Patterns                              | idempotency.md     | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching                                                                                                                                           |
-| 47  | Multi-Tenant Patterns                             | multi-tenant.md    | `#multi-tenant-patterns-conditional`                   | Pool Manager, JWT tenant extraction, context injection, testing, **⚠️ CONDITIONAL: Tenant Isolation Verification**: IDOR prevention, detection commands                             |
+| # | Section to Check | File | Anchor | Key Subsections |
+|---|------------------|------|--------|-----------------|
+| 1 | Version | core.md | `#version` | Go 1.24+ |
+| 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | **HARD GATE:** No duplicate utils/helpers - use lib-commons |
+| 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v2, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock, **validator v10 migration (MANDATORY)** |
+| 4 | Configuration | core.md | `#configuration` | Environment variable handling |
+| 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake-case-mandatory` | Table and column naming |
+| 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
+| 7 | License Headers | core.md | `#license-headers-mandatory` | **MANDATORY** - All source files require license headers |
+| 8 | MongoDB Patterns | core.md | `#mongodb-patterns-mandatory` | **Injection prevention (CRITICAL)**, connection pooling, index management, deprecated API removal |
+| 9 | Dependency Management | core.md | `#dependency-management-mandatory` | **Version pinning (MANDATORY)**, go.sum, security updates, govulncheck, detection commands |
+| 10 | Observability | bootstrap.md | `#observability` | OpenTelemetry integration, **Span Naming Conventions (MANDATORY)**: layer.domain.operation pattern, detection commands |
+| 11 | Bootstrap | bootstrap.md | `#bootstrap` | Application initialization |
+| 12 | Graceful Shutdown Patterns | bootstrap.md | `#graceful-shutdown-patterns-mandatory` | **Signal handling (MANDATORY)**, shutdown order, resource cleanup, detection commands |
+| 13 | Health Checks | bootstrap.md | `#health-checks-mandatory` | **/health vs /ready (MANDATORY)**, Kubernetes probes, dependency checks |
+| 14 | Connection Management | bootstrap.md | `#connection-management-mandatory` | **Pool configuration (MANDATORY)**, timeouts, graceful shutdown, detection commands |
+| 15 | Access Manager Integration | security.md | `#access-manager-integration-mandatory` | **CONDITIONAL** - Check if project has auth |
+| 16 | License Manager Integration | security.md | `#license-manager-integration-mandatory` | **CONDITIONAL** - Check if project is licensed |
+| 17 | Secret Redaction Patterns | security.md | `#secret-redaction-patterns-mandatory` | **Credential leak prevention (MANDATORY)**, connection string redaction, detection commands |
+| 18 | SQL Safety | security.md | `#sql-safety-mandatory` | **Parameterized queries (MANDATORY)**, SQL injection prevention, whitelist pattern, detection commands |
+| 19 | HTTP Security Headers | security.md | `#http-security-headers-mandatory` | **X-Content-Type-Options: nosniff (MANDATORY)**, **X-Frame-Options: DENY (MANDATORY)** |
+| 20 | Data Transformation | domain.md | `#data-transformation-toentityfromentity-mandatory` | ToEntity/FromEntity patterns |
+| 21 | Error Codes Convention | domain.md | `#error-codes-convention-mandatory` | Service-prefixed codes |
+| 22 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
+| 23 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
+| 24 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
+| 25 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
+| 26 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | **Offset & cursor strategies**, limit validation, response structure, lib-commons utilities |
+| 27 | HTTP Status Code Consistency | api-patterns.md | `#http-status-code-consistency-mandatory` | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands |
+| 28 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
+| 29 | Handler Constructor Pattern | api-patterns.md | `#handler-constructor-pattern-mandatory` | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands |
+| 30 | Input Validation | api-patterns.md | `#input-validation-mandatory` | **Defense in depth (MANDATORY)**, validator v10 tags, **numeric query param validation**, error translation |
+| 31 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
+| 32 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 33 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, **14 mandatory linters**, magic numbers (mnd) |
+| 34 | Migration Guidance for Mandatory Linter Promotion | quality.md | `#migration-guidance-for-mandatory-linter-promotion` | **Phased rollout (MANDATORY)**, per-linter common violations, batch fix commands |
+| 35 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
+| 36 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
+| 37 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 38 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 39 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
+| 40 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
+| 41 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
+| 42 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
+| 43 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
+| 44 | RabbitMQ Reconnection Strategy | messaging.md | `#rabbitmq-reconnection-strategy-mandatory` | **MANDATORY: Consumer Reconnection Loop**, **MANDATORY: Producer Per-Publish Retry**, **MANDATORY: Health Check Integration**, **MANDATORY: Deadlock Prevention** |
+| 45 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
+| 46 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 47 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **⚠️ CONDITIONAL: Tenant Isolation Verification**: IDOR prevention, detection commands |
+| 48 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, Redis-backed storage (in-memory fallback on Redis outage), key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
+| 49 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
 
 **Module Loading Guide:**
 
-| Task Type             | Required Modules                                |
-| --------------------- | ----------------------------------------------- |
-| New feature (full)    | core.md → bootstrap.md → domain.md → quality.md |
-| Auth implementation   | core.md → security.md                           |
-| Add tracing           | bootstrap.md                                    |
-| Testing               | quality.md                                      |
-| API endpoints         | api-patterns.md (pagination + swaggo)           |
-| Idempotency           | idempotency.md + domain.md                      |
-| Multi-tenant          | multi-tenant.md + bootstrap.md                  |
-| Full compliance check | all modules                                     |
+| Task Type | Required Modules |
+|-----------|------------------|
+| New feature (full) | core.md → bootstrap.md → domain.md → quality.md |
+| Auth implementation | core.md → security.md |
+| Rate limiting | security.md |
+| CORS configuration | security.md |
+| Add tracing | bootstrap.md |
+| Testing | quality.md |
+| API endpoints | api-patterns.md (pagination + swaggo) |
+| Idempotency | idempotency.md + domain.md |
+| Multi-tenant | multi-tenant.md + bootstrap.md |
+| Full compliance check | all modules |
 
 ---
 

@@ -27,6 +27,8 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |------|------------------|
 | **New feature (full)** | core.md → bootstrap.md → domain.md → quality.md |
 | **Auth implementation** | core.md → security.md |
+| **Rate limiting** | security.md |
+| **CORS configuration** | security.md |
 | **Add tracing/observability** | bootstrap.md |
 | **Unit testing (Gate 3)** | testing-unit.md |
 | **Fuzz testing (Gate 4)** | testing-fuzz.md |
@@ -46,7 +48,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|--------|----------|-------|-------------|
 | 1 | [core.md](core.md) | 9 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB, Dependency Management |
 | 2 | [bootstrap.md](bootstrap.md) | 5 | ~1050 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Connection Management |
-| 3 | [security.md](security.md) | 4 | ~700 | Access Manager, License Manager, Secret Redaction, SQL Safety |
+| 3 | [security.md](security.md) | 7 | ~1300 | Access Manager, License Manager, Secret Redaction, SQL Safety, HTTP Security Headers, Rate Limiting, CORS Configuration |
 | 4 | [domain.md](domain.md) | 5 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
 | 5 | [api-patterns.md](api-patterns.md) | 6 | ~900 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo, Handler Constructor, Input Validation |
 | 6 | [quality.md](quality.md) | 4 | ~900 | Logging, Linting, Config Validation, Container Security |
@@ -99,6 +101,10 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 1 | Access Manager Integration (MANDATORY) | [#access-manager-integration-mandatory](security.md#access-manager-integration-mandatory) |
 | 2 | License Manager Integration (MANDATORY) | [#license-manager-integration-mandatory](security.md#license-manager-integration-mandatory) |
 | 3 | Secret Redaction Patterns (MANDATORY) | [#secret-redaction-patterns-mandatory](security.md#secret-redaction-patterns-mandatory) |
+| 4 | SQL Safety (MANDATORY) | [#sql-safety-mandatory](security.md#sql-safety-mandatory) |
+| 5 | HTTP Security Headers (MANDATORY) | [#http-security-headers-mandatory](security.md#http-security-headers-mandatory) |
+| 6 | Rate Limiting (MANDATORY) | [#rate-limiting-mandatory](security.md#rate-limiting-mandatory) |
+| 7 | CORS Configuration (MANDATORY) | [#cors-configuration-mandatory](security.md#cors-configuration-mandatory) |
 
 ### Domain Patterns (domain.md)
 
@@ -115,7 +121,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | # | Section | Anchor |
 |---|---------|--------|
 | 1 | JSON Naming Convention (camelCase) (MANDATORY) | [#json-naming-convention-camelcase-mandatory](api-patterns.md#json-naming-convention-camelcase-mandatory) |
-| 2 | Pagination Patterns | [#pagination-patterns](api-patterns.md#pagination-patterns) |
+| 2 | Pagination Patterns (Offset & Cursor) | [#pagination-patterns](api-patterns.md#pagination-patterns) |
 | 3 | HTTP Status Code Consistency (MANDATORY) | [#http-status-code-consistency-mandatory](api-patterns.md#http-status-code-consistency-mandatory) |
 | 4 | OpenAPI Documentation (Swaggo) (MANDATORY) | [#openapi-documentation-swaggo-mandatory](api-patterns.md#openapi-documentation-swaggo-mandatory) |
 | 5 | Handler Constructor Pattern (MANDATORY) | [#handler-constructor-pattern-mandatory](api-patterns.md#handler-constructor-pattern-mandatory) |
