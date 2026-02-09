@@ -1,8 +1,8 @@
 ---
 name: ring:using-pmo-team
 description: |
-  5 specialist PMO agents for portfolio management, resource planning, governance,
-  risk analysis, and executive reporting. Dispatch when you need portfolio-level oversight.
+  6 specialist PMO agents for portfolio management, resource planning, governance,
+  risk analysis, executive reporting, and delivery reporting. Dispatch when you need portfolio-level oversight.
 
 trigger: |
   - Need portfolio-level view across multiple projects
@@ -23,7 +23,7 @@ related:
 
 # Using Ring PMO Team
 
-The ring-pmo-team plugin provides 5 specialized PMO agents for portfolio-level management. Use them via `Task tool with subagent_type: "ring:agent-name"`.
+The ring-pmo-team plugin provides 6 specialized PMO agents for portfolio-level management. Use them via `Task tool with subagent_type: "ring:agent-name"`.
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces pmo-team-specific agents.
 
@@ -79,7 +79,7 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 | "Executive reports are just summaries" | Executive reporting requires right abstraction level, action focus. MUST dispatch executive-reporter. |
 
 **Self-sufficiency bias check:** If you're tempted to perform PMO tasks directly, ask:
-1. Is there a specialist for this? (Check the 5 specialists below)
+1. Is there a specialist for this? (Check the 6 specialists below)
 2. Would a specialist apply portfolio-level frameworks I might miss?
 3. Am I avoiding dispatch because it feels like "overhead"?
 
@@ -167,7 +167,7 @@ Task tool:
 
 ---
 
-## 5 PMO Specialists
+## 6 PMO Specialists
 
 | Agent | Specializations | Use When |
 |-------|-----------------|----------|
@@ -175,7 +175,8 @@ Task tool:
 | **`resource-planner`** | Capacity planning, skills matrix, allocation optimization, conflict resolution | Resource allocation, capacity planning, team assignments |
 | **`governance-specialist`** | Gate reviews, compliance, process adherence, audit readiness | Gate approvals, process compliance, governance audits |
 | **`risk-analyst`** | RAID logs, risk aggregation, mitigation planning, portfolio risk | Risk assessments, RAID management, mitigation strategies |
-| **`executive-reporter`** | Dashboards, status summaries, escalation reports, board packages | Executive updates, board reports, stakeholder communication |
+| **`executive-reporter`** | Portfolio status dashboards, project summaries, board packages (PMO focus) | Portfolio/project status reports, board communications |
+| **`delivery-reporter`** | Git analysis, squad delivery showcases, visual HTML presentations (engineering focus) | Squad delivery reports, release summaries, client showcases |
 
 **Dispatch template:**
 ```
@@ -248,7 +249,7 @@ Remember:
 
 ## Available in This Plugin
 
-**Agents:** See "5 PMO Specialists" table above.
+**Agents:** See "6 PMO Specialists" table above.
 
 **Skills:**
 - `using-pmo-team` (this) - Introduction and dispatch guide
@@ -257,12 +258,14 @@ Remember:
 - `risk-management` - Portfolio risk management
 - `project-health-check` - Individual project health assessment
 - `dependency-mapping` - Cross-project dependency analysis
-- `executive-reporting` - Executive communication and reporting
+- `executive-reporting` - Executive communication for portfolio/project status (PMO focus)
+- `delivery-reporting` - Visual executive presentations of squad deliveries from Git analysis (engineering focus)
 - `pmo-retrospective` - Portfolio retrospectives and lessons learned
 
 **Commands:**
 - `/portfolio-review` - Conduct portfolio review
-- `/executive-summary` - Generate executive summary
+- `/executive-summary` - Generate executive summary (PMO/project status)
+- `/delivery-report` - Generate visual delivery report from Git repositories (squad deliveries)
 - `/dependency-analysis` - Analyze cross-project dependencies
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-pmo-team plugin.
@@ -274,8 +277,35 @@ Remember:
 | Workflow | Entry Point | Output |
 |----------|-------------|--------|
 | **Portfolio Review** | `/portfolio-review` | `docs/pmo/{date}/portfolio-status.md` |
-| **Executive Report** | `/executive-summary` | `docs/pmo/{date}/executive-summary.md` |
+| **Executive Report (PMO)** | `/executive-summary` | `docs/pmo/{date}/executive-summary.md` |
+| **Delivery Report (Squad)** | `/delivery-report` | `docs/pmo/delivery-reports/{date}/delivery-report-{date}.html` |
 | **Dependency Analysis** | `/dependency-analysis` | `docs/pmo/{date}/dependency-map.md` |
+
+### Report Type Selection Guide
+
+**Two types of executive reports available:**
+
+| Aspect | `/executive-summary` | `/delivery-report` |
+|--------|---------------------|-------------------|
+| **Focus** | Portfolio/project status (PMO view) | Squad deliveries (eng+product view) |
+| **Data Source** | PMO data (RAG status, SPI, CPI) | Git repositories (tags, PRs, commits) |
+| **Output Format** | Markdown dashboard | Visual HTML slides |
+| **Metrics** | Projects on track, budget, resources | Releases, PRs, commits, velocity |
+| **Audience** | Portfolio executives, board | Engineering/product executives |
+| **Update** | "How is the portfolio doing?" | "What did the squad deliver?" |
+| **Agent** | `ring:executive-reporter` | `ring:delivery-reporter` |
+
+**Use `/executive-summary` for:**
+- Portfolio health dashboards
+- Project status updates (RAG, SPI, CPI)
+- Board packages with governance focus
+- Resource and budget tracking
+
+**Use `/delivery-report` for:**
+- Squad delivery showcases
+- Engineering/product presentations
+- Quarterly release summaries
+- Client-facing delivery reports
 
 ---
 

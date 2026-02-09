@@ -65,7 +65,8 @@ ${agents_table}
 
 **Commands:**
 - \`/ring-pmo-team:portfolio-review\` - Full portfolio health review
-- \`/ring-pmo-team:executive-summary\` - Generate executive report
+- \`/ring-pmo-team:executive-summary\` - Portfolio/project status report (PMO focus)
+- \`/ring-pmo-team:delivery-report\` - Squad delivery report from Git analysis (engineering focus)
 - \`/ring-pmo-team:dependency-analysis\` - Cross-project dependencies
 
 For full details: Skill tool with \"ring-pmo-team:using-pmo-team\"
@@ -98,7 +99,7 @@ else
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "<ring-pmo-team-system>\n**PMO Specialists Available**\n\n5 specialists for portfolio-level management:\n- portfolio-manager\n- resource-planner\n- governance-specialist\n- risk-analyst\n- executive-reporter\n\nFor full list: Skill tool with \"ring-pmo-team:using-pmo-team\"\n</ring-pmo-team-system>"
+    "additionalContext": "<ring-pmo-team-system>\n**PMO Specialists Available**\n\n6 specialists for portfolio-level management:\n- portfolio-manager\n- resource-planner\n- governance-specialist\n- risk-analyst\n- executive-reporter\n- delivery-reporter\n\nFor full list: Skill tool with \"ring-pmo-team:using-pmo-team\"\n</ring-pmo-team-system>"
   }
 }
 EOF

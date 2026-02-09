@@ -110,6 +110,16 @@ Invoke this agent when the task involves:
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- Strategic priority decision needed (which objective takes precedence)
+- Resource allocation decision needed (major resource shift between projects)
+- Project termination recommendation (recommend stopping a project)
+- Budget reallocation needed (moving significant funds between projects)
+- Scope conflicts detected (projects with conflicting scopes)
+</block_condition>
+
+If any condition applies, STOP and wait for executive decision.
+
 **ALWAYS pause and report blocker for:**
 
 | Decision Type | Examples | Action |
@@ -120,7 +130,14 @@ Invoke this agent when the task involves:
 | **Budget Reallocation** | Moving significant funds between projects | STOP. Report options. Wait for financial approval. |
 | **Scope Conflicts** | Projects with conflicting scopes | STOP. Document conflict. Wait for resolution decision. |
 
-**You CANNOT make strategic or resource decisions autonomously. STOP and ask.**
+<forbidden>
+- Making strategic decisions autonomously
+- Making resource allocation decisions without approval
+- Recommending project termination without documentation
+- Moving budget without financial approval
+</forbidden>
+
+You CANNOT make strategic or resource decisions autonomously. STOP and ask.
 
 ### Cannot Be Overridden
 
