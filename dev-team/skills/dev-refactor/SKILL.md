@@ -126,9 +126,9 @@ TodoWrite:
     - content: "Generate findings.md"
       status: "pending"
       activeForm: "Generating findings.md"
-    - content: "Group findings into REFACTOR-XXX tasks"
+    - content: "Map findings 1:1 to REFACTOR-XXX tasks"
       status: "pending"
-      activeForm: "Grouping findings into tasks"
+      activeForm: "Mapping findings to tasks (1:1)"
     - content: "Generate tasks.md"
       status: "pending"
       activeForm: "Generating tasks.md"
@@ -231,7 +231,7 @@ Extract project-specific conventions for agent context.
 
 ### ⛔ MANDATORY: Use Task Tool with ring:codebase-explorer
 
-<dispatch_required agent="ring:codebase-explorer" model="opus">
+<dispatch_required agent="ring:codebase-explorer">
 Generate a comprehensive codebase report describing WHAT EXISTS.
 
 Include:
@@ -288,14 +288,16 @@ Any of these = IMMEDIATE SKILL FAILURE.
 ### REQUIRED Action for Step 3
 
 ```
-✅ Task(subagent_type="ring:codebase-explorer", model="opus", ...)
+✅ Task(subagent_type="ring:codebase-explorer", ...)
 ```
+
+**Timestamp format:** `{timestamp}` = `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`). Generate once at start, reuse for all artifacts.
 
 **After Task completes, save with Write tool:**
 
 ```
 Write tool:
-  file_path: "docs/refactor/{timestamp}/codebase-report.md"
+  file_path: "docs/ring:dev-refactor/{timestamp}/codebase-report.md"
   content: [Task output]
 ```
 
@@ -312,7 +314,7 @@ Write tool:
 **BEFORE dispatching any specialist agent, verify:**
 
 ```
-Check 1: Does docs/refactor/{timestamp}/codebase-report.md exist?
+Check 1: Does docs/ring:dev-refactor/{timestamp}/codebase-report.md exist?
   - YES → Continue to dispatch agents
   - no  → STOP. Go back to Step 3.
 
@@ -339,7 +341,7 @@ Check 2: Was codebase-report.md created by ring:codebase-explorer?
 
 ### For Go projects:
 
-<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -347,7 +349,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 1:
   subagent_type: "ring:backend-engineer-golang"
-  model: "opus"
   description: "Go standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -366,7 +367,7 @@ Task tool 1:
     Input:
     - Ring Standards: Load via WebFetch (golang.md)
     - Section Index: See shared-patterns/standards-coverage-table.md → "ring:backend-engineer-golang"
-    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -375,7 +376,6 @@ Task tool 1:
 
 Task tool 2:
   subagent_type: "ring:qa-analyst"
-  model: "opus"
   description: "Test coverage analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -385,11 +385,10 @@ Task tool 2:
 
 Task tool 3:
   subagent_type: "ring:devops-engineer"
-  model: "opus"
   description: "DevOps analysis"
   prompt: |
     **MODE: ANALYSIS only**
-    Check all 7 sections per shared-patterns/standards-coverage-table.md → "ring:devops-engineer"
+    Check all 8 sections per shared-patterns/standards-coverage-table.md → "ring:devops-engineer"
     ⛔ "Containers" means BOTH Dockerfile and Docker Compose
     ⛔ "Makefile Standards" means all required commands: build, lint, test, cover, up, down, etc.
     Input: codebase-report.md, PROJECT_RULES.md
@@ -397,7 +396,6 @@ Task tool 3:
 
 Task tool 4:
   subagent_type: "ring:sre"
-  model: "opus"
   description: "Observability analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -408,7 +406,7 @@ Task tool 4:
 
 ### For TypeScript Backend projects:
 
-<parallel_dispatch agents="ring:backend-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="ring:backend-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -416,7 +414,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 1:
   subagent_type: "ring:backend-engineer-typescript"
-  model: "opus"
   description: "TypeScript backend standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -435,7 +432,7 @@ Task tool 1:
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
     - Section Index: See shared-patterns/standards-coverage-table.md → "ring:backend-engineer-typescript"
-    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -445,7 +442,7 @@ Task tool 1:
 
 ### For Frontend projects (React/Next.js):
 
-<parallel_dispatch agents="ring:frontend-engineer, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="ring:frontend-engineer, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -453,7 +450,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 5:
   subagent_type: "ring:frontend-engineer"
-  model: "opus"
   description: "Frontend standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -463,7 +459,7 @@ Task tool 5:
     Input:
     - Ring Standards: Load via WebFetch (frontend.md)
     - Section Index: See shared-patterns/standards-coverage-table.md → "ring:frontend-engineer"
-    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -473,7 +469,7 @@ Task tool 5:
 
 ### For BFF (Backend-for-Frontend) projects:
 
-<parallel_dispatch agents="frontend-bff-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre" model="opus">
+<parallel_dispatch agents="frontend-bff-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
@@ -481,7 +477,6 @@ Input: codebase-report.md, PROJECT_RULES.md
 ```yaml
 Task tool 6:
   subagent_type: "ring:frontend-bff-engineer-typescript"
-  model: "opus"
   description: "BFF TypeScript standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -500,7 +495,7 @@ Task tool 6:
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
     - Section Index: See shared-patterns/standards-coverage-table.md → "frontend-bff-engineer-typescript"
-    - Codebase Report: docs/refactor/{timestamp}/codebase-report.md
+    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -532,7 +527,7 @@ Task tool 6:
 After all parallel agent tasks complete, save each agent's output to a separate file:
 
 ```
-docs/refactor/{timestamp}/reports/
+docs/ring:dev-refactor/{timestamp}/reports/
 ├── ring:backend-engineer-golang-report.md     (if Go project)
 ├── ring:backend-engineer-typescript-report.md (if TypeScript Backend)
 ├── ring:frontend-engineer-report.md           (if Frontend)
@@ -598,7 +593,7 @@ docs/refactor/{timestamp}/reports/
 
 ```
 Write tool:
-  file_path: "docs/refactor/{timestamp}/reports/{agent-name}-report.md"
+  file_path: "docs/ring:dev-refactor/{timestamp}/reports/{agent-name}-report.md"
   content: [Agent Task output formatted per template above]
 ```
 
@@ -760,7 +755,7 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 | "Standard URL is obvious, skip it" | Agents and humans need direct links. Nothing is obvious. | **Include full URL for every standard** |
 | "Why This Matters is redundant" | It explains business impact. Standards alone don't convey urgency. | **Write Problem/Standard/Impact for all** |
 | "Some findings are self-explanatory" | Self-explanatory to you ≠ clear to implementer. | **Complete all sections without exception** |
-| "I'll group small findings together" | Grouping happens in Step 6 (tasks). findings.md = atomic issues. | **One finding = one FINDING-XXX entry** |
+| "I'll group small findings together" | Each finding = one task in Step 6. findings.md = atomic issues. | **One finding = one FINDING-XXX entry** |
 
 **Use Write tool to create findings.md:**
 
@@ -829,28 +824,42 @@ If counts don't match → STOP. Go back to Step 4.1. Map missing issues.
 
 ---
 
-## Step 6: Group Findings into Tasks
+## Step 6: Map Findings to Tasks (1:1)
 
-**TodoWrite:** Mark "Group findings into REFACTOR-XXX tasks" as `in_progress`
+**TodoWrite:** Mark "Map findings 1:1 to REFACTOR-XXX tasks" as `in_progress`
 
-**⛔ HARD GATE: Every FINDING-XXX MUST appear in at least one REFACTOR-XXX task.**
+**⛔ HARD GATE: One FINDING-XXX = One REFACTOR-XXX task. No grouping.**
 
-Group related findings by:
-1. Module/bounded context (same file/package = same task)
-2. Dependency order (foundational changes first)
-3. Severity (critical first)
+Each finding becomes its own task. This prevents findings from being lost inside grouped tasks.
+
+**1:1 Mapping Rule:**
+- FINDING-001 → REFACTOR-001
+- FINDING-002 → REFACTOR-002
+- FINDING-NNN → REFACTOR-NNN
+
+**Ordering:** Sort tasks by severity (Critical first), then by dependency order.
 
 **Mapping Verification:**
 ```
 Before proceeding to Step 7, verify:
-- Total findings in findings.md: X
-- Total findings referenced in tasks: X (MUST MATCH)
-- Orphan findings (not in any task): 0 (MUST BE ZERO)
+- Total FINDING-XXX in findings.md: X
+- Total REFACTOR-XXX in tasks.md: X (MUST MATCH exactly)
+- Orphan findings (not mapped): 0 (MUST BE ZERO)
+- Grouped tasks (multiple findings): 0 (MUST BE ZERO)
 ```
 
-**If any finding is not mapped to a task → STOP. Add missing findings to tasks.**
+**If counts don't match → STOP. Every finding MUST have its own task.**
 
-**TodoWrite:** Mark "Group findings into REFACTOR-XXX tasks" as `completed`
+### Anti-Rationalization Table for Step 6
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "These findings are in the same file, I'll group them" | Grouping hides findings. One fix may be done, others forgotten. | **One finding = One task. No exceptions.** |
+| "Grouping reduces task count and is easier to manage" | Fewer tasks = less visibility. Each finding needs independent tracking. | **Create one REFACTOR-XXX per FINDING-XXX** |
+| "These are related and should be fixed together" | Related ≠ same task. Dev-cycle can execute them sequentially. | **Separate tasks, use Dependencies field to link** |
+| "Too many tasks will overwhelm the developer" | Missing fixes overwhelms production. Completeness > convenience. | **Create all tasks. Priority handles ordering.** |
+
+**TodoWrite:** Mark "Map findings 1:1 to REFACTOR-XXX tasks" as `completed`
 
 ---
 
@@ -866,16 +875,16 @@ Before proceeding to Step 7, verify:
 **Source:** findings.md
 **Total Tasks:** {count}
 
-## ⛔ Mandatory Gap Verification
+## ⛔ Mandatory 1:1 Mapping Verification
 
-**all findings from findings.md MUST be addressed in tasks below.**
+**Every FINDING-XXX has exactly one REFACTOR-XXX. No grouping.**
 
 | Metric | Count |
 |--------|-------|
 | Total FINDING-XXX in findings.md | {X} |
-| Total FINDING-XXX referenced in tasks | {X} |
-| Orphan findings (not in any task) | 0 (REQUIRED) |
-| **All findings mapped?** | ✅ YES (REQUIRED) |
+| Total REFACTOR-XXX in tasks.md | {X} |
+| **Counts match exactly?** | ✅ YES (REQUIRED) |
+| Grouped tasks (multiple findings) | 0 (REQUIRED) |
 
 **Priority affects execution order, not whether to include:**
 - Critical/High tasks: Execute first
@@ -884,34 +893,34 @@ Before proceeding to Step 7, verify:
 
 ---
 
-## REFACTOR-001: {Task Name}
+## REFACTOR-001: {Finding Pattern Name}
 
-**Priority:** Critical | High | Medium | Low (all ARE MANDATORY)
+**Finding:** FINDING-001
+**Severity:** Critical | High | Medium | Low (all ARE MANDATORY)
+**Category:** {lib-commons | architecture | testing | devops}
+**Agent:** {agent-name}
 **Effort:** {hours}h
-**Dependencies:** {other tasks or none}
+**Dependencies:** {other REFACTOR-XXX tasks or none}
 
-### Findings Addressed
-| Finding | Pattern | Severity | File:Line |
-|---------|---------|----------|-----------|
-| FINDING-001 | {name} | Critical | src/handler.go:45 |
-| FINDING-003 | {name} | High | src/service.go:112 |
+### Current Code
+```{lang}
+// file: {path}:{lines}
+{actual code from FINDING-001}
+```
 
-### Ring Standards to Follow
+### Ring Standard Reference
 | Standard File | Section | URL |
 |---------------|---------|-----|
-| golang.md | Error Handling | [Link](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md) |
-| sre.md | Structured Logging | [Link](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md) |
+| {file}.md | {section} | [Link](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/{file}.md) |
 
 ### Required Actions
-1. [ ] {action from FINDING-001 - specific change to make}
-2. [ ] {action from FINDING-001 - pattern to implement}
-3. [ ] {action from FINDING-003 - specific change to make}
+1. [ ] {action 1 - specific change to make}
+2. [ ] {action 2 - pattern to implement}
 
 ### Acceptance Criteria
 - [ ] Code follows {standard}.md → {section} pattern
 - [ ] No {anti-pattern} usage remains
 - [ ] Tests pass after refactoring
-- [ ] {additional criteria from findings}
 ```
 
 **TodoWrite:** Mark "Generate tasks.md" as `completed`
@@ -952,7 +961,7 @@ CANNOT proceed without explicit user selection.
 **TodoWrite:** Mark "Save all artifacts" as `in_progress`
 
 ```
-docs/refactor/{timestamp}/
+docs/ring:dev-refactor/{timestamp}/
 ├── codebase-report.md  (Step 3)
 ├── reports/            (Step 4.5)
 │   ├── ring:backend-engineer-golang-report.md
@@ -981,14 +990,14 @@ Skill tool:
 **⛔ CRITICAL: Pass tasks file path in context:**
 
 After invoking the skill, provide:
-- Tasks file: `docs/refactor/{timestamp}/tasks.md`
+- Tasks file: `docs/ring:dev-refactor/{timestamp}/tasks.md`
 
 ```yaml
 Context for ring:dev-cycle:
-  tasks-file: "docs/refactor/{timestamp}/tasks.md"
+  tasks-file: "docs/ring:dev-refactor/{timestamp}/tasks.md"
 ```
 
-Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
+Where `{timestamp}` format is `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`). Use the same timestamp across all artifacts in a single run.
 
 ### Anti-Rationalization: Skill Invocation
 
@@ -1004,12 +1013,12 @@ Where `{timestamp}` is the same timestamp used in Step 9 artifacts.
 
 If user approved execution, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle`
-2. Pass tasks file path: `docs/refactor/{timestamp}/tasks.md`
-3. Wait for ring:dev-cycle to complete all 6 gates
+2. Pass tasks file path: `docs/ring:dev-refactor/{timestamp}/tasks.md`
+3. Wait for ring:dev-cycle to complete all 10 gates
 
 **Skipping this step = SKILL FAILURE.**
 
-ring:dev-cycle executes each REFACTOR-XXX task through 6-gate process.
+ring:dev-cycle executes each REFACTOR-XXX task through 10-gate process.
 
 **TodoWrite:** Mark "Handoff to ring:dev-cycle" as `completed`
 
@@ -1031,7 +1040,7 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 | Agents Dispatched | N |
 | Findings Generated | N |
 | Tasks Created | N |
-| Artifacts Location | docs/refactors/{date}/ |
+| Artifacts Location | docs/ring:dev-refactor/{date}/ |
 
 ## Output Schema
 

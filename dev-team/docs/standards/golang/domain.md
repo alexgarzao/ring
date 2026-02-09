@@ -8,13 +8,13 @@ This module covers data transformation, error handling, and function design.
 
 ## Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
-| 1 | [Data Transformation: ToEntity/FromEntity](#data-transformation-toentityfromentity-mandatory) | Database model to domain entity conversion |
-| 2 | [Error Codes Convention](#error-codes-convention-mandatory) | Service-prefixed error codes |
-| 3 | [Error Handling](#error-handling) | Error wrapping and checking rules |
-| 4 | [Exit/Fatal Location Rules](#exitfatal-location-rules-mandatory) | Where exit/fatal/panic is allowed |
-| 5 | [Function Design](#function-design-mandatory) | Single responsibility principle |
+| #   | Section                                                                                       | Description                                |
+| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 1   | [Data Transformation: ToEntity/FromEntity](#data-transformation-toentityfromentity-mandatory) | Database model to domain entity conversion |
+| 2   | [Error Codes Convention](#error-codes-convention-mandatory)                                   | Service-prefixed error codes               |
+| 3   | [Error Handling](#error-handling)                                                             | Error wrapping and checking rules          |
+| 4   | [Exit/Fatal Location Rules](#exitfatal-location-rules-mandatory)                              | Where exit/fatal/panic is allowed          |
+| 5   | [Function Design](#function-design-mandatory)                                                 | Single responsibility principle            |
 
 ---
 
@@ -85,12 +85,12 @@ Each service **MUST** define error codes with a service-specific prefix.
 
 ### Service Prefixes
 
-| Service | Prefix | Example |
-|---------|--------|---------|
-| Lerian | LRN | LRN-0001 |
-| Plugin-Fees | FEE | FEE-0001 |
-| Plugin-Auth | AUT | AUT-0001 |
-| Platform | PLT | PLT-0001 |
+| Service     | Prefix | Example  |
+| ----------- | ------ | -------- |
+| Lerian      | LRN    | LRN-0001 |
+| Plugin-Fees | FEE    | FEE-0001 |
+| Plugin-Auth | AUT    | AUT-0001 |
+| Platform    | PLT    | PLT-0001 |
 
 ### Error Code Structure
 
@@ -155,13 +155,13 @@ func ValidateBusinessError(err *BusinessError, entityType string, args ...any) e
 
 #### Why Sentinel Errors Are MANDATORY
 
-| Benefit | Explanation |
-|---------|-------------|
+| Benefit           | Explanation                                                        |
+| ----------------- | ------------------------------------------------------------------ |
 | **Comparability** | Callers can use `errors.Is(err, ErrNotFound)` for precise handling |
-| **Documentation** | All possible errors are visible in one place |
-| **Type safety** | IDE autocomplete, refactoring support |
-| **Testing** | Tests can assert exact error types |
-| **API contracts** | Errors are part of the public API |
+| **Documentation** | All possible errors are visible in one place                       |
+| **Type safety**   | IDE autocomplete, refactoring support                              |
+| **Testing**       | Tests can assert exact error types                                 |
+| **API contracts** | Errors are part of the public API                                  |
 
 #### Correct Pattern (REQUIRED)
 
@@ -272,13 +272,13 @@ return fmt.Errorf("unexpected response from API: status=%d, body=%s", status, bo
 
 #### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "The error message is descriptive enough" | Descriptive ≠ comparable. Callers cannot use `errors.Is()`. | **Define sentinel error** |
-| "No one needs to check this specific error" | You don't know future callers. Make errors checkable. | **Define sentinel error** |
-| "It's just a validation error" | Validation errors are domain errors. Define them. | **Define sentinel error** |
-| "I'm wrapping with context anyway" | Wrap sentinels: `fmt.Errorf("context: %w", ErrNotFound)` | **Define sentinel, then wrap** |
-| "Too many error variables" | Explicit > implicit. All errors documented in one place. | **Define all sentinels** |
+| Rationalization                             | Why It's WRONG                                              | Required Action                |
+| ------------------------------------------- | ----------------------------------------------------------- | ------------------------------ |
+| "The error message is descriptive enough"   | Descriptive ≠ comparable. Callers cannot use `errors.Is()`. | **Define sentinel error**      |
+| "No one needs to check this specific error" | You don't know future callers. Make errors checkable.       | **Define sentinel error**      |
+| "It's just a validation error"              | Validation errors are domain errors. Define them.           | **Define sentinel error**      |
+| "I'm wrapping with context anyway"          | Wrap sentinels: `fmt.Errorf("context: %w", ErrNotFound)`    | **Define sentinel, then wrap** |
+| "Too many error variables"                  | Explicit > implicit. All errors documented in one place.    | **Define all sentinels**       |
 
 ### Error Wrapping Rules
 
@@ -314,113 +314,18 @@ return nil, nil // SUSPICIOUS - check if error is possible
 
 ---
 
-## Exit/Fatal Location Rules (MANDATORY)
-
-**HARD GATE:** Internal functions MUST return errors. They CANNOT terminate the program.
-
-### Where Exit/Fatal Is Allowed
-
-| Location | `log.Fatal` / `os.Exit` | `panic` | `return error` |
-|----------|-------------------------|---------|----------------|
-| `main()` | ✅ Acceptable | ✅ Last resort | N/A |
-| Bootstrap/init | ❌ FORBIDDEN | ⚠️ Only unrecoverable | ✅ Preferred |
-| Internal functions | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-| Validation functions | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-| Handlers/Services | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-| Repository/Adapters | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-
-### Why This Matters
-
-- `log.Fatal()` and `os.Exit()` terminate immediately without cleanup
-- Callers cannot handle the error or provide user feedback
-- Telemetry/tracing data is lost (no flush)
-- Graceful shutdown hooks don't run
-- Tests cannot capture the error condition
-
-### Anti-Patterns (FORBIDDEN)
-
-```go
-// ❌ FORBIDDEN: fatal inside validation function
-func validateJSON(data []byte) {
-    if !json.Valid(data) {
-        log.Fatal("invalid JSON")  // WRONG: kills the process
-    }
-}
-
-// ❌ FORBIDDEN: panic inside internal function
-func parseConfig(path string) Config {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        panic(err)  // WRONG: caller cannot recover
-    }
-    // ...
-}
-
-// ❌ FORBIDDEN: os.Exit inside service layer
-func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) {
-    if input.Email == "" {
-        os.Exit(1)  // WRONG: catastrophic for a validation error
-    }
-}
-```
-
-### Correct Patterns (REQUIRED)
-
-```go
-// ✅ CORRECT: validation returns error
-func validateJSON(data []byte) error {
-    if !json.Valid(data) {
-        return errors.New("invalid JSON format")
-    }
-    return nil
-}
-
-// ✅ CORRECT: internal function returns error
-func parseConfig(path string) (Config, error) {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        return Config{}, fmt.Errorf("failed to read config %s: %w", path, err)
-    }
-    // ...
-    return config, nil
-}
-
-// ✅ CORRECT: main() handles fatal conditions
-func main() {
-    config, err := parseConfig("config.yaml")
-    if err != nil {
-        log.Fatalf("Cannot start: %v", err)  // OK in main()
-    }
-    // ...
-}
-```
-
-### Detection Commands
-
-```bash
-# Find fatal/exit calls outside main.go
-grep -rn "log.Fatal\|os.Exit" --include="*.go" ./internal ./pkg
-
-# Find panic calls (review each - some may be acceptable)
-grep -rn "panic(" --include="*.go" ./internal ./pkg
-
-# Expected: Zero matches in internal/pkg directories
-```
-
----
-
 ## Function Design (MANDATORY)
 
 **Single Responsibility Principle (SRP):** Each function MUST have exactly ONE responsibility.
 
 ### Rules
 
-| Rule | Description |
-|------|-------------|
-| **One responsibility per function** | A function should do ONE thing and do it well |
-| **Max 20-30 lines** | If longer, break into smaller functions |
-| **One level of abstraction** | Don't mix high-level and low-level operations |
-| **Descriptive names** | Function name should describe its single responsibility |
+| Rule                                | Description                                             |
+| ----------------------------------- | ------------------------------------------------------- |
+| **One responsibility per function** | A function should do ONE thing and do it well           |
+| **Max 20-30 lines**                 | If longer, break into smaller functions                 |
+| **One level of abstraction**        | Don't mix high-level and low-level operations           |
+| **Descriptive names**               | Function name should describe its single responsibility |
 
 ### Examples
 
@@ -485,13 +390,12 @@ func applyDiscount(total float64, couponCode string) float64 {
 
 ### Signs a Function Has Multiple Responsibilities
 
-| Sign | Action |
-|------|--------|
-| Multiple `// section` comments | Split at comment boundaries |
-| "and" in function name | Split into separate functions |
-| More than 3 parameters | Consider parameter object or splitting |
-| Nested conditionals > 2 levels | Extract inner logic to functions |
-| Function does validation and processing | Separate validation function |
+| Sign                                    | Action                                 |
+| --------------------------------------- | -------------------------------------- |
+| Multiple `// section` comments          | Split at comment boundaries            |
+| "and" in function name                  | Split into separate functions          |
+| More than 3 parameters                  | Consider parameter object or splitting |
+| Nested conditionals > 2 levels          | Extract inner logic to functions       |
+| Function does validation and processing | Separate validation function           |
 
 ---
-

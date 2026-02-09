@@ -11,28 +11,30 @@ This file defines the specific standards for DevOps, SRE, and infrastructure.
 
 ## Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
-| 1 | [Cloud Provider](#cloud-provider) | AWS, GCP, Azure services |
-| 2 | [Infrastructure as Code](#infrastructure-as-code) | Terraform patterns and best practices |
-| 3 | [Containers](#containers) | Dockerfile, Docker Compose, .env |
-| 4 | [Helm](#helm) | Chart structure and configuration |
-| 5 | [Observability](#observability) | Logging and tracing standards |
-| 6 | [Security](#security) | Secrets management, network policies |
-| 7 | [Makefile Standards](#makefile-standards) | Required commands and patterns |
+| #   | Section                                           | Description                                        |
+| --- | ------------------------------------------------- | -------------------------------------------------- |
+| 1   | [Cloud Provider](#cloud-provider)                 | AWS, GCP, Azure services                           |
+| 2   | [Infrastructure as Code](#infrastructure-as-code) | Terraform patterns and best practices              |
+| 3   | [Containers](#containers)                         | Dockerfile, Docker Compose, .env                   |
+| 4   | [Helm](#helm)                                     | Chart structure and configuration                  |
+| 5   | [Observability](#observability)                   | Logging and tracing standards                      |
+| 6   | [Security](#security)                             | Secrets management, network policies               |
+| 7   | [Makefile Standards](#makefile-standards)         | Required commands and patterns                     |
+| 8   | [CI/CD Pipeline](#cicd-pipeline-mandatory)        | GitHub Actions, required stages, branch protection |
 
 **Meta-sections (not checked by agents):**
+
 - [Checklist](#checklist) - Self-verification before deploying
 
 ---
 
 ## Cloud Provider
 
-| Provider | Primary Services |
-|----------|-----------------|
-| AWS | EKS, RDS, S3, Lambda, SQS |
-| GCP | GKE, Cloud SQL, Cloud Storage |
-| Azure | AKS, Azure SQL, Blob Storage |
+| Provider | Primary Services              |
+| -------- | ----------------------------- |
+| AWS      | EKS, RDS, S3, Lambda, SQS     |
+| GCP      | GKE, Cloud SQL, Cloud Storage |
+| Azure    | AKS, Azure SQL, Blob Storage  |
 
 ---
 
@@ -199,13 +201,13 @@ ENTRYPOINT ["/server"]
 
 ### Image Guidelines
 
-| Guideline | Reason |
-|-----------|--------|
-| Use multi-stage builds | Smaller images |
-| Use distroless/alpine | Minimal attack surface |
-| Run as non-root | Security |
-| Pin versions | Reproducibility |
-| Use .dockerignore | Smaller context |
+| Guideline              | Reason                 |
+| ---------------------- | ---------------------- |
+| Use multi-stage builds | Smaller images         |
+| Use distroless/alpine  | Minimal attack surface |
+| Run as non-root        | Security               |
+| Pin versions           | Reproducibility        |
+| Use .dockerignore      | Smaller context        |
 
 ### Docker Compose (Local Dev)
 
@@ -275,12 +277,12 @@ REDIS_PORT=6379
 ENABLE_TELEMETRY=false
 ```
 
-| Guideline | Reason |
-|-----------|--------|
-| Use `env_file` directive | Centralized configuration |
+| Guideline                  | Reason                             |
+| -------------------------- | ---------------------------------- |
+| Use `env_file` directive   | Centralized configuration          |
 | Add `.env` to `.gitignore` | Prevent secrets in version control |
-| Provide `.env.example` | Document required variables |
-| Use consistent naming | Match application config struct |
+| Provide `.env.example`     | Document required variables        |
+| Use consistent naming      | Match application config struct    |
 
 ---
 
@@ -363,7 +365,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
 
 postgresql:
-  enabled: false  # Use external database
+  enabled: false # Use external database
 ```
 
 ---
@@ -484,36 +486,36 @@ All projects **MUST** include a Makefile with standardized commands for consiste
 
 ### Required Commands
 
-| Command | Purpose | Category |
-|---------|---------|----------|
-| `make build` | Build all components | Core |
-| `make lint` | Run linters (golangci-lint) | Code Quality |
-| `make test` | Run all tests | Testing |
-| `make cover` | Generate test coverage report | Testing |
-| `make test-unit` | Run unit tests only | Testing |
-| `make up` | Start all services with Docker Compose | Docker |
-| `make down` | Stop all services | Docker |
-| `make start` | Start existing containers | Docker |
-| `make stop` | Stop running containers | Docker |
-| `make restart` | Restart all containers | Docker |
-| `make rebuild-up` | Rebuild and restart services | Docker |
-| `make set-env` | Copy .env.example to .env | Setup |
-| `make dev-setup` | Install development tools (swag, golangci-lint, etc.) | Setup |
-| `make generate-docs` | Generate API documentation (Swagger) | Documentation |
-| `make migrate-up` | Apply all pending database migrations | Database |
-| `make migrate-down` | Rollback last migration | Database |
-| `make migrate-create` | Create new migration file | Database |
-| `make migrate-version` | Show current migration version | Database |
+| Command                | Purpose                                               | Category      |
+| ---------------------- | ----------------------------------------------------- | ------------- |
+| `make build`           | Build all components                                  | Core          |
+| `make lint`            | Run linters (golangci-lint)                           | Code Quality  |
+| `make test`            | Run all tests                                         | Testing       |
+| `make cover`           | Generate test coverage report                         | Testing       |
+| `make test-unit`       | Run unit tests only                                   | Testing       |
+| `make up`              | Start all services with Docker Compose                | Docker        |
+| `make down`            | Stop all services                                     | Docker        |
+| `make start`           | Start existing containers                             | Docker        |
+| `make stop`            | Stop running containers                               | Docker        |
+| `make restart`         | Restart all containers                                | Docker        |
+| `make rebuild-up`      | Rebuild and restart services                          | Docker        |
+| `make set-env`         | Copy .env.example to .env                             | Setup         |
+| `make dev-setup`       | Install development tools (swag, golangci-lint, etc.) | Setup         |
+| `make generate-docs`   | Generate API documentation (Swagger)                  | Documentation |
+| `make migrate-up`      | Apply all pending database migrations                 | Database      |
+| `make migrate-down`    | Rollback last migration                               | Database      |
+| `make migrate-create`  | Create new migration file                             | Database      |
+| `make migrate-version` | Show current migration version                        | Database      |
 
 ### Component Delegation Pattern (Monorepo)
 
 For monorepo projects with multiple components:
 
-| Command | Purpose |
-|---------|---------|
-| `make infra COMMAND=<cmd>` | Run command in infra component |
-| `make onboarding COMMAND=<cmd>` | Run command in onboarding component |
-| `make all-components COMMAND=<cmd>` | Run command across all components |
+| Command                             | Purpose                             |
+| ----------------------------------- | ----------------------------------- |
+| `make infra COMMAND=<cmd>`          | Run command in infra component      |
+| `make onboarding COMMAND=<cmd>`     | Run command in onboarding component |
+| `make all-components COMMAND=<cmd>` | Run command across all components   |
 
 ### Root Makefile Example
 
@@ -805,12 +807,12 @@ serve-docs: ## Serve Swagger UI locally (requires swagger-ui)
 
 **Command parameters:**
 
-| Flag | Purpose |
-|------|---------|
+| Flag                 | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
 | `-g cmd/app/main.go` | Entry point file with API metadata annotations |
-| `-o api` | Output directory for generated files |
-| `--parseDependency` | Parse external dependencies for models |
-| `--parseInternal` | Parse internal packages for types |
+| `-o api`             | Output directory for generated files           |
+| `--parseDependency`  | Parse external dependencies for models         |
+| `--parseInternal`    | Parse internal packages for types              |
 
 **Generated files:**
 
@@ -884,12 +886,12 @@ check-tools: ## Verify all required tools are installed
 
 **Required tools:**
 
-| Tool | Purpose | Installation |
-|------|---------|--------------|
-| `golangci-lint` | Code linting | `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest` |
-| `swag` | Swagger generation | `go install github.com/swaggo/swag/cmd/swag@latest` |
-| `migrate` | Database migrations | `go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest` |
-| `mockgen` | Mock generation | `go install go.uber.org/mock/mockgen@latest` |
+| Tool            | Purpose             | Installation                                                                          |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| `golangci-lint` | Code linting        | `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`               |
+| `swag`          | Swagger generation  | `go install github.com/swaggo/swag/cmd/swag@latest`                                   |
+| `migrate`       | Database migrations | `go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest` |
+| `mockgen`       | Mock generation     | `go install go.uber.org/mock/mockgen@latest`                                          |
 
 ### Generate Mocks Command (MANDATORY)
 
@@ -910,6 +912,114 @@ generate-mocks: ## Generate mock files using mockgen
 	@go generate ./...
 	@echo "[ok] Mocks generated"
 ```
+
+---
+
+## CI/CD Pipeline (MANDATORY)
+
+This section covers CI/CD pipeline patterns and automation requirements.
+
+### CI Pipeline Stages (MANDATORY)
+
+All services MUST have CI pipelines with these stages:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Run tests
+        run: make test
+      - name: Check coverage
+        run: make cover
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test, security]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t ${{ github.repository }}:${{ github.sha }} .
+```
+
+### Required CI Stages
+
+| Stage       | Purpose                | Failure Action           |
+| ----------- | ---------------------- | ------------------------ |
+| lint        | Code quality           | Block merge              |
+| test        | Unit tests + coverage  | Block merge              |
+| security    | Vulnerability scan     | Block merge              |
+| build       | Docker image creation  | Block merge              |
+| deploy (CD) | Environment deployment | Manual approval for prod |
+
+### Branch Protection (REQUIRED)
+
+```yaml
+# Settings → Branches → Branch protection rules → main
+
+Required checks:
+  - lint
+  - test
+  - security
+  - build
+
+Settings:
+  - Require a pull request before merging: ✅
+  - Require approvals: 1
+  - Dismiss stale approvals: ✅
+  - Require status checks to pass: ✅
+  - Require branches to be up to date: ✅
+```
+
+### Detection Commands
+
+```bash
+# Find projects without CI config
+find . -name "go.mod" -exec dirname {} \; | while read dir; do
+  if [ ! -f "$dir/.github/workflows/ci.yml" ] && [ ! -f "$dir/.gitlab-ci.yml" ]; then
+    echo "MISSING CI: $dir"
+  fi
+done
+```
+
+### Anti-Rationalization Table
+
+| Rationalization             | Why It's WRONG                                          | Required Action                |
+| --------------------------- | ------------------------------------------------------- | ------------------------------ |
+| "Local tests are enough"    | Local ≠ CI environment. CI catches env-specific issues. | **Add CI pipeline**            |
+| "Security scan is slow"     | Slow scan > production vulnerability.                   | **Include govulncheck**        |
+| "We'll add CI later"        | Later = technical debt. Start with CI.                  | **Add CI on project creation** |
+| "Manual deployment is fine" | Manual = error-prone + no audit trail.                  | **Automate deployments**       |
 
 ---
 

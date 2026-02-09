@@ -34,22 +34,23 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 ## Blocker Criteria - STOP and Report
 
 <block_condition>
+
 - Technology Stack decision needed (Go vs TypeScript)
 - Architecture decision needed (monolith vs microservices)
 - Infrastructure decision needed (cloud provider)
 - Testing strategy decision needed (unit vs E2E)
-</block_condition>
+  </block_condition>
 
 If any condition applies, STOP and ask user.
 
 **always pause and report blocker for:**
 
-| Decision Type | Examples | Action |
-|--------------|----------|--------|
-| **Technology Stack** | Go vs TypeScript for new service | STOP. Check existing patterns. Ask user. |
-| **Architecture** | Monolith vs microservices | STOP. This is a business decision. Ask user. |
-| **Infrastructure** | Cloud provider choice | STOP. Check existing infrastructure. Ask user. |
-| **Testing Strategy** | Unit vs E2E vs both | STOP. Check QA requirements. Ask user. |
+| Decision Type        | Examples                         | Action                                         |
+| -------------------- | -------------------------------- | ---------------------------------------------- |
+| **Technology Stack** | Go vs TypeScript for new service | STOP. Check existing patterns. Ask user.       |
+| **Architecture**     | Monolith vs microservices        | STOP. This is a business decision. Ask user.   |
+| **Infrastructure**   | Cloud provider choice            | STOP. Check existing infrastructure. Ask user. |
+| **Testing Strategy** | Unit vs E2E vs both              | STOP. Check QA requirements. Ask user.         |
 
 **You CANNOT make technology decisions autonomously. STOP and ask.**
 
@@ -60,6 +61,7 @@ If any condition applies, STOP and ask user.
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section).
 
 **Self-sufficiency bias check:** If you're tempted to implement directly, ask:
+
 1. Is there a specialist for this? (Check the 10 specialists below)
 2. Would a specialist follow standards I might miss?
 3. Am I avoiding dispatch because it feels like "overhead"?
@@ -77,22 +79,23 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 ### Cannot Be Overridden
 
 <cannot_skip>
+
 - Dispatch to specialist (standards loading required)
-- 6-gate development cycle (quality gates)
+- 10-gate development cycle (quality gates)
 - Parallel reviewer dispatch (not sequential)
 - TDD in Gate 0 (test-first)
-- User approval in Gate 5
-</cannot_skip>
+- User approval in Gate 9
+  </cannot_skip>
 
 **These requirements are NON-NEGOTIABLE:**
 
-| Requirement | Why It Cannot Be Waived |
-|-------------|------------------------|
-| **Dispatch to specialist** | Specialists have standards loading, you don't |
-| **6-gate development cycle** | Gates prevent quality regressions |
-| **Parallel reviewer dispatch** | Sequential review = 3x slower, same cost |
-| **TDD in Gate 0** | Test-first ensures testability |
-| **User approval in Gate 5** | Only users can approve completion |
+| Requirement                    | Why It Cannot Be Waived                       |
+| ------------------------------ | --------------------------------------------- |
+| **Dispatch to specialist**     | Specialists have standards loading, you don't |
+| **10-gate development cycle**  | Gates prevent quality regressions             |
+| **Parallel reviewer dispatch** | Sequential review = 3x slower, same cost      |
+| **TDD in Gate 0**              | Test-first ensures testability                |
+| **User approval in Gate 9**    | Only users can approve completion             |
 
 **User cannot override these. Time pressure cannot override these. "Simple task" cannot override these.**
 
@@ -103,6 +106,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios and Emergency Response).
 
 **Critical Reminder:**
+
 - **Urgency ≠ Permission to bypass** - Emergencies require MORE care, not less
 - **Authority ≠ Permission to bypass** - Ring standards override human preferences
 - **Sunk Cost ≠ Permission to bypass** - Wrong approach stays wrong at 80% completion
@@ -114,6 +118,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) → Emergency Response section for the complete protocol.
 
 **Emergency Dispatch Template:**
+
 ```
 Task tool:
   subagent_type: "ring:backend-engineer-golang"
@@ -133,22 +138,23 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 ## 8 Developer Specialists
 
-<dispatch_required agent="{specialist}" model="opus">
+<dispatch_required agent="{specialist}">
 Use Task tool to dispatch appropriate specialist based on technology need.
 </dispatch_required>
 
-| Agent | Specializations | Use When |
-|-------|-----------------|----------|
-| **`ring:backend-engineer-golang`** | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency issues |
-| **`ring:backend-engineer-typescript`** | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest | TS backends, JS→TS migration, NestJS design, full-stack TS |
-| **`ring:devops-engineer`** | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC provisioning, Helm charts |
-| **`ring:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration |
-| **`ring:frontend-designer`** | Bold typography, color systems, animations, unexpected layouts, textures/gradients | Landing pages, portfolios, distinctive dashboards, design systems |
-| **`ring:ui-engineer`** | Wireframe-to-code, Design System compliance, UX criteria satisfaction, UI states implementation | Implementing from product-designer specs (ux-criteria.md, user-flows.md, wireframes/) |
-| **`ring:qa-analyst`** | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance | Test planning, E2E suites, coverage gaps, quality gates |
-| **`ring:sre`** | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoint verification |
+| Agent                                       | Specializations                                                                                      | Use When                                                                              |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **`ring:backend-engineer-golang`**          | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency                  | Go services, DB optimization, auth/authz, concurrency issues                          |
+| **`ring:backend-engineer-typescript`**      | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest              | TS backends, JS→TS migration, NestJS design, full-stack TS                            |
+| **`ring:devops-engineer`**                  | Docker/Compose, Terraform/Helm, cloud infra, secrets management                                      | Containerization, local dev setup, IaC provisioning, Helm charts                      |
+| **`ring:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration                         |
+| **`ring:frontend-designer`**                | Bold typography, color systems, animations, unexpected layouts, textures/gradients                   | Landing pages, portfolios, distinctive dashboards, design systems                     |
+| **`ring:ui-engineer`**                      | Wireframe-to-code, Design System compliance, UX criteria satisfaction, UI states implementation      | Implementing from product-designer specs (ux-criteria.md, user-flows.md, wireframes/) |
+| **`ring:qa-analyst`**                       | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance                   | Test planning, E2E suites, coverage gaps, quality gates                               |
+| **`ring:sre`**                              | Structured logging, tracing, health checks, observability                                            | Logging validation, tracing setup, health endpoint verification                       |
 
 **Dispatch template:**
+
 ```
 Task tool:
   subagent_type: "ring:{agent-name}"
@@ -157,6 +163,7 @@ Task tool:
 ```
 
 **Frontend Agent Selection:**
+
 - `ring:frontend-designer` = visual aesthetics, design specifications (no code)
 - `ring:frontend-bff-engineer-typescript` = business logic/architecture, BFF layer
 - `ring:ui-engineer` = implementing UI from product-designer specs (ux-criteria.md, user-flows.md, wireframes/)
@@ -169,12 +176,14 @@ Use `ring:ui-engineer` when product-designer outputs exist in `docs/pre-dev/{fea
 ## When to Use Developer Specialists vs General Review
 
 ### Use Developer Specialists for:
+
 - ✅ **Deep technical expertise needed** – Architecture decisions, complex implementations
 - ✅ **Technology-specific guidance** – "How do I optimize this Go service?"
 - ✅ **Specialized domains** – Infrastructure, SRE, testing strategy
 - ✅ **Building from scratch** – New service, new pipeline, new testing framework
 
 ### Use General Review Agents for:
+
 - ✅ **Code quality assessment** – Architecture, patterns, maintainability
 - ✅ **Correctness & edge cases** – Business logic verification
 - ✅ **Security review** – OWASP, auth, validation
@@ -206,14 +215,17 @@ Task #2: ring:devops-engineer
 ## ORCHESTRATOR Principle
 
 Remember:
+
 - **You're the orchestrator** – Dispatch specialists, don't implement directly
 - **Don't read specialist docs yourself** – Dispatch to specialist, they know their domain
 - **Combine with ring:using-ring principle** – Skills + Specialists = complete workflow
 
 ### Good Example (ORCHESTRATOR):
+
 > "I need a Go service. Let me dispatch `ring:backend-engineer-golang` to design it."
 
 ### Bad Example (OPERATOR):
+
 > "I'll manually read Go best practices and design the service myself."
 
 ---
@@ -222,7 +234,7 @@ Remember:
 
 **Agents:** See "7 Developer Specialists" table above.
 
-**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (6-gate workflow), `ring:dev-refactor` (codebase analysis)
+**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate workflow), `ring:dev-refactor` (codebase analysis)
 
 **Commands:** `/ring:dev-cycle` (execute tasks), `/ring:dev-refactor` (analyze codebase)
 
@@ -232,30 +244,36 @@ Remember:
 
 ## Development Workflows
 
-All workflows converge to the 6-gate development cycle:
+All workflows converge to the 10-gate development cycle:
 
-| Workflow | Entry Point | Output | Then |
-|----------|-------------|--------|------|
-| **New Feature** | `/ring:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md` | → `/ring:dev-cycle tasks.md` |
-| **Direct Tasks** | `/ring:dev-cycle tasks.md` | — | Execute 6 gates directly |
-| **Refactoring** | `/ring:dev-refactor` | `docs/refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
+| Workflow         | Entry Point                           | Output                                        | Then                         |
+| ---------------- | ------------------------------------- | --------------------------------------------- | ---------------------------- |
+| **New Feature**  | `/ring:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md`             | → `/ring:dev-cycle tasks.md` |
+| **Direct Tasks** | `/ring:dev-cycle tasks.md`            | —                                             | Execute 6 gates directly     |
+| **Refactoring**  | `/ring:dev-refactor`                  | `docs/ring:dev-refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
 
 **6-Gate Development Cycle:**
 
-| Gate | Focus | Agent(s) |
-|------|-------|----------|
-| **0: Implementation** | TDD: RED→GREEN→REFACTOR | `ring:backend-engineer-*`, `ring:frontend-bff-engineer-typescript`, `ring:ui-engineer` |
-| **1: DevOps** | Dockerfile, docker-compose, .env | `ring:devops-engineer` |
-| **2: SRE** | Health checks, logging, tracing | `ring:sre` |
-| **3: Testing** | Unit tests, coverage ≥85% | `ring:qa-analyst` |
-| **4: Review** | 3 reviewers IN PARALLEL | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer` |
-| **5: Validation** | User approval: APPROVED/REJECTED | User decision |
+| Gate                  | Focus                            | Agent(s)                                                                               |
+| --------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
+| **0: Implementation** | TDD: RED→GREEN→REFACTOR          | `ring:backend-engineer-*`, `ring:frontend-bff-engineer-typescript`, `ring:ui-engineer` |
+| **1: DevOps**         | Dockerfile, docker-compose, .env | `ring:devops-engineer`                                                                 |
+| **2: SRE**            | Health checks, logging, tracing  | `ring:sre`                                                                             |
+| **3: Testing**        | Unit tests, coverage ≥85%        | `ring:qa-analyst`                                                                      |
+| **4: Review**         | 3 reviewers IN PARALLEL          | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`         |
+| **5: Validation**     | User approval: APPROVED/REJECTED | User decision                                                                          |
 
 **Gate 0 Agent Selection for Frontend:**
+
 - If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ui-engineer`
 - Otherwise → use `frontend-bff-engineer-typescript`
 
-**Key Principle:** All development follows the same 6-gate process.
+**Gate 0 Agent Selection for Frontend:**
+
+- If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ui-engineer`
+- Otherwise → use `frontend-bff-engineer-typescript`
+
+**Key Principle:** All development follows the same 10-gate process.
 
 ---
 
@@ -266,6 +284,7 @@ All workflows converge to the 6-gate development cycle:
 - **ring:using-finops-team** – Financial/regulatory agents
 
 Dispatch based on your need:
+
 - General code review → default plugin agents
 - Specific domain expertise → ring-dev-team agents
 - Feature planning → ring-pm-team agents

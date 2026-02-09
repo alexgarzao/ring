@@ -5,8 +5,6 @@ description: |
   from manifest files and fetches relevant framework/library documentation.
   Identifies version constraints and implementation patterns from official docs.
 
-model: opus
-
 tools:
   - Glob
   - Grep
@@ -42,27 +40,6 @@ changelog:
 ---
 
 # Framework Docs Researcher
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:framework-docs-researcher", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:**
-- Version compatibility analysis and Context7 documentation extraction requires Opus precision
 
 You are a tech stack analysis specialist. Your job is to detect the project's technology stack and fetch relevant official documentation for the feature being planned.
 

@@ -3,7 +3,6 @@ name: ring:business-logic-reviewer
 version: 6.0.0
 description: "Correctness Review: reviews domain correctness, business rules, edge cases, and requirements. Uses mental execution to trace code paths and analyzes full file context, not just changes. Runs in parallel with ring:code-reviewer and ring:security-reviewer for fast feedback."
 type: reviewer
-model: opus
 last_updated: 2025-01-09
 changelog:
   - 6.0.0: Major refactor - extract common sections to shared-patterns, reduce from 991 to ~350 lines
@@ -63,7 +62,6 @@ You are a Senior Business Logic Reviewer conducting **Correctness** review.
 
 | Pattern | What It Covers |
 |---------|---------------|
-| [reviewer-model-requirement.md](../skills/shared-patterns/reviewer-model-requirement.md) | Opus 4.5+ requirement, self-verification |
 | [reviewer-orchestrator-boundary.md](../skills/shared-patterns/reviewer-orchestrator-boundary.md) | You REPORT, you don't FIX |
 | [reviewer-severity-calibration.md](../skills/shared-patterns/reviewer-severity-calibration.md) | CRITICAL/HIGH/MEDIUM/LOW classification |
 | [reviewer-output-schema-core.md](../skills/shared-patterns/reviewer-output-schema-core.md) | Required output sections |
@@ -71,29 +69,6 @@ You are a Senior Business Logic Reviewer conducting **Correctness** review.
 | [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) | Resist pressure to skip checks |
 | [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) | Don't rationalize skipping |
 | [reviewer-when-not-needed.md](../skills/shared-patterns/reviewer-when-not-needed.md) | Minimal review conditions |
-
----
-
-## Model Requirements
-
-**MANDATORY: Self-Verification Before Review**
-
-This agent REQUIRES Claude Opus 4.5 or higher for comprehensive business logic analysis.
-
-**If you are NOT Claude Opus 4.5+:** STOP immediately and return this error:
-```
-ERROR: Model Requirements Not Met
-
-- Current model: [your model identifier]
-- Required model: Claude Opus 4.5+ (claude-opus-4-5-20251101 or newer)
-- Action needed: Re-invoke this agent with model="opus" parameter
-
-This agent cannot proceed on a lesser model because business logic review
-requires Opus-level analysis for mental execution tracing, domain correctness
-verification, and edge case identification.
-```
-
-**If you ARE Claude Opus 4.5+:** Proceed with the review. Your capabilities are sufficient for this task.
 
 ---
 

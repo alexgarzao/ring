@@ -9,11 +9,13 @@ This document contains detailed workflow instructions for adding skills, agents,
 ### For Core Ring Skills
 
 1. Create directory:
+
    ```bash
    mkdir default/skills/your-skill-name/
    ```
 
 2. Write `default/skills/your-skill-name/SKILL.md` with frontmatter:
+
    ```yaml
    ---
    name: your-skill-name
@@ -29,30 +31,37 @@ This document contains detailed workflow instructions for adding skills, agents,
      - Another exclusion
 
    sequence:
-     after: [prerequisite-skill]   # Optional: ordering
+     after: [prerequisite-skill] # Optional: ordering
      before: [following-skill]
 
    related:
-     similar: [differentiate-from]      # Optional: disambiguation
+     similar: [differentiate-from] # Optional: disambiguation
      complementary: [pairs-well-with]
    ---
    ```
 
 3. Test with:
+
    ```
    Skill tool: "ring:testing-skills-with-subagents"
    ```
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
 
+### Production Readiness Audit (ring-default)
+
+The **production-readiness-audit** skill (`ring:production-readiness-audit`) evaluates codebase production readiness across **27 dimensions** in 5 categories. **Invocation:** use the Skill tool or the `/ring:production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** 27-dimension scored report (0–270) with severity ratings and standards cross-reference. Implementation details: [default/skills/production-readiness-audit/SKILL.md](../default/skills/production-readiness-audit/SKILL.md).
+
 ### For Product/Team-Specific Skills
 
 1. Create plugin directory:
+
    ```bash
    mkdir -p product-xyz/{skills,agents,commands,hooks}
    ```
 
 2. Add to `.claude-plugin/marketplace.json`:
+
    ```json
    {
      "name": "ring-product-xyz",
@@ -71,16 +80,20 @@ This document contains detailed workflow instructions for adding skills, agents,
 1. Edit `default/hooks/hooks.json` for trigger configuration
 
 2. Scripts in `default/hooks/`:
+
    - `session-start.sh` - Runs on startup
    - `claude-md-bootstrap.sh` - CLAUDE.md context
 
 3. Test hook output:
+
    ```bash
    bash default/hooks/session-start.sh
    ```
+
    Must output JSON with `additionalContext` field
 
 4. SessionStart hooks run on:
+
    - `startup|resume`
    - `clear|compact`
 
@@ -88,16 +101,18 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 ---
 
-## Plugin-Specific Using-* Skills
+## Plugin-Specific Using-\* Skills
 
 Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introduce available agents and capabilities:
 
 ### Default Plugin
+
 - `ring:using-ring` → ORCHESTRATOR principle, mandatory workflow
 - Always injected, always mandatory
 - Located: `default/skills/using-ring/SKILL.md`
 
 ### Ring Dev Team Plugin
+
 - `ring:using-dev-team` → 10 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
@@ -114,12 +129,14 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - ring:ui-engineer
 
 ### Ring PM Team Plugin
+
 - `ring:using-pm-team` → Pre-dev workflow skills (8 gates)
 - Auto-loads when ring-pm-team plugin is enabled
 - Located: `pm-team/skills/using-pm-team/SKILL.md`
 - Skills: 8 pre-dev gates for feature planning
 
 ### Ring TW Team Plugin
+
 - `using-tw-team` → 3 technical writing agents for documentation
 - Auto-loads when ring-tw-team plugin is enabled
 - Located: `tw-team/skills/using-tw-team/SKILL.md`
@@ -130,15 +147,17 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 - Commands: write-guide, write-api, review-docs
 
 ### Ring FinOps Team Plugin
-- `using-finops-team` → 3 FinOps agents for Brazilian compliance
+
+- `using-finops-team` → 3 FinOps agents for Brazilian compliance and cost estimation
 - Auto-loads when ring-finops-team plugin is enabled
 - Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents (invoke as `ring:{agent-name}`):
-  - ring:finops-analyzer (compliance analysis)
-  - ring:finops-automation (template generation)
-  - ring:infrastructure-cost-estimator (cost estimation)
+- Agents (invoke as `{agent-name}`):
+  - finops-analyzer (compliance analysis)
+  - infrastructure-cost-estimator (cost estimation)
+  - finops-automation (template generation)
 
 ### Hook Configuration
+
 - Each plugin has: `{plugin}/hooks/hooks.json` + `{plugin}/hooks/session-start.sh`
 - SessionStart hook executes, outputs additionalContext with skill reference
 - Only plugins in marketplace.json get loaded (conditional)
@@ -152,6 +171,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 2. Reference in `default/skills/requesting-code-review/SKILL.md:85`
 
 3. Dispatch via Task tool:
+
    ```
    subagent_type="ring:your-reviewer"
    ```
@@ -195,6 +215,12 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ---
 
+## Development Cycle (10-gate)
+
+The **ring:dev-cycle** skill orchestrates task execution through **10 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → unit-testing (Gate 3) → fuzz-testing (Gate 4) → property-testing (Gate 5) → integration-testing (Gate 6) → chaos-testing (Gate 7) → review (Gate 8) → validation (Gate 9). All gates are MANDATORY. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
+
+---
+
 ## Parallel Code Review
 
 ### Instead of sequential (60 min)
@@ -211,13 +237,15 @@ review3 = Task("ring:security-reviewer")       # 20 min
 Task.parallel([
     ("ring:code-reviewer", prompt),
     ("ring:business-logic-reviewer", prompt),
-    ("ring:security-reviewer", prompt)
-])  # Single message, 3 tool calls
+    ("ring:security-reviewer", prompt),
+    ("ring:nil-safety-reviewer", prompt),
+    ("ring:test-reviewer", prompt)
+])  # Single message, 5 tool calls
 ```
 
 ### Key rule
 
-Always dispatch all 3 reviewers in a single message with multiple Task tool calls.
+Always dispatch all 5 reviewers in a single message with multiple Task tool calls.
 
 ---
 

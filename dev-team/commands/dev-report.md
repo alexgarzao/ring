@@ -78,7 +78,7 @@ Top Issues:
 2. Gate 6 (review): Security findings in 2 tasks
 
 Recommendations:
-→ Skill ring:dev-testing: Add test planning phase
+→ Skill ring:dev-unit-testing: Add test planning phase
 → Agent backend-*: Reinforce input validation
 
 Full report: docs/dev-team/feedback/cycle-2024-01-15.md

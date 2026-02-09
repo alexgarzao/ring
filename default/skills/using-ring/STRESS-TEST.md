@@ -314,12 +314,12 @@ Result: Works but violates Opus default requirement
 TodoWrite:
 1. "Orchestration decision: Explore agent with Opus for authentication architecture"
 
-Action: Task tool with Explore agent, model="opus"
+Action: Task tool with Explore agent
 ```
 
 **Verification Checklist:**
 - ☐ TodoWrite includes "with Opus"
-- ☐ Task tool call specifies model="opus"
+- ☐ Task tool call uses appropriate agent
 - ☐ Did not default to Haiku
 - ☐ No user specification of different model
 
