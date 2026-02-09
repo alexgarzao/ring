@@ -403,7 +403,7 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 **Active Plugins:**
 - **ring-default**: 25 core skills, 12 slash commands, 7 specialized agents
 - **ring-dev-team**: 9 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
-- **ring-pm-team**: 12 product management skills, 3 research agents, 3 slash commands
+- **ring-pm-team**: 12 product management skills, 3 research agents, 3 slash commands (includes delivery planning + status tracking)
 - **ring-pmo-team**: 8 PMO skills, 3 slash commands, 5 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter)
 - **ring-finops-team**: 7 regulatory skills, 3 FinOps agents (Analyzer, Automation, Infrastructure Cost Estimator)
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
@@ -461,8 +461,8 @@ Skill tool: "ring:using-ring"               # Load mandatory workflows
 # Slash commands
 /ring:codereview          # Dispatch 3 parallel reviewers
 /ring:brainstorm          # Socratic design refinement
-/ring:pre-dev-feature     # <2 day features (4 gates)
-/ring:pre-dev-full        # ≥2 day features (9 gates)
+/ring:pre-dev-feature     # <2 day features (5 gates)
+/ring:pre-dev-full        # ≥2 day features (10 gates)
 /ring:dev-cycle           # 7-gate development cycle (with optional Gate 3.5 for integration-testing)
 /ring:execute-plan        # Batch execution with checkpoints
 /ring:worktree            # Create isolated development branch
@@ -482,8 +482,8 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
 | Code review | `/ring:codereview` dispatches 3 parallel reviewers |
-| Pre-dev (small) | `/ring:pre-dev-feature` → 4-gate workflow |
-| Pre-dev (large) | `/ring:pre-dev-full` → 9-gate workflow |
+| Pre-dev (small) | `/ring:pre-dev-feature` → 5-gate workflow |
+| Pre-dev (large) | `/ring:pre-dev-full` → 10-gate workflow |
 | Dev cycle (7 gates) | `/ring:dev-cycle [tasks-file]` → implementation→devops→SRE→testing→(optional: integration-testing)→review→validation (see [dev-team/skills/dev-cycle/SKILL.md](dev-team/skills/dev-cycle/SKILL.md)) |
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.

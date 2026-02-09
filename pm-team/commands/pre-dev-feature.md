@@ -1,10 +1,10 @@
 ---
 name: ring:pre-dev-feature
-description: Lightweight 4-gate pre-dev workflow for small features (<2 days)
+description: Lightweight 5-gate pre-dev workflow for small features (<2 days)
 argument-hint: "[feature-name]"
 ---
 
-I'm running the **Small Track** pre-development workflow (4 gates) for your feature.
+I'm running the **Small Track** pre-development workflow (5 gates) for your feature.
 
 **This track is for features that:**
 - ✅ Take <2 days to implement
@@ -54,7 +54,7 @@ Use the AskUserQuestion tool to gather:
 
 **Why auto-detection?** Access Manager and License Manager are project-level infrastructure decisions, not feature-level. Once integrated, all features in the project inherit them.
 
-After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 4-gate workflow:
+After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 5-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>
@@ -145,18 +145,48 @@ Even small features benefit from quick research:
 - [ ] Dependencies are clear
 - [ ] Testing approach defined
 
+## Gate 4: Delivery Planning (MANDATORY)
+
+**Skill:** ring:pre-dev-delivery-planning
+
+1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md`
+2. Ask user for delivery inputs:
+   - Start date (when team begins work)
+   - Team composition (how many developers)
+   - Delivery cadence (sprint/cycle/continuous)
+   - Period configuration (if sprint/cycle: duration + start date)
+   - Velocity multiplier (AI-assisted or traditional, default or custom)
+3. Analyze dependencies and critical path
+4. Calculate realistic timeline with period boundaries
+5. Identify parallelization opportunities and resource allocation
+6. Create delivery roadmap with Gantt-style timeline
+7. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+8. Run Gate 4 validation checklist
+9. Get human approval
+
+**Gate 4 Pass Criteria:**
+- [ ] All tasks scheduled with realistic dates
+- [ ] Critical path identified and validated
+- [ ] Team capacity realistic (70-80% utilization)
+- [ ] Period boundaries respected (if sprint/cycle)
+- [ ] Spill overs identified and documented
+- [ ] Parallel streams defined
+- [ ] Risk milestones flagged
+- [ ] Contingency buffer added (10-20%)
+
 ## After Completion
 
 Report to human:
 
 ```
-✅ Small Track (4 gates) complete for <feature-name>
+✅ Small Track (5 gates) complete for <feature-name>
 
 Artifacts created:
 - docs/pre-dev/<feature-name>/research.md (Gate 0)
 - docs/pre-dev/<feature-name>/prd.md (Gate 1)
 - docs/pre-dev/<feature-name>/trd.md (Gate 2)
 - docs/pre-dev/<feature-name>/tasks.md (Gate 3)
+- docs/pre-dev/<feature-name>/delivery-roadmap.md (Gate 4) ← NEW
 
 Skipped from full workflow:
 - Feature Map (features simple enough to map directly)
@@ -167,25 +197,28 @@ Skipped from full workflow:
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
-4. Execute the plan
+2. Use delivery-roadmap.md to communicate timelines to stakeholders
+3. Use /ring:worktree to create isolated workspace
+4. Use /ring:write-plan to create implementation plan
+5. Execute the plan
 ```
 
 ## Remember
 
 - This is the **Small Track** - lightweight and fast
 - **Gate 0 (Research) checks for existing patterns** even for small features
+- **Gate 4 (Delivery Planning) is MANDATORY** - creates realistic roadmap with timeline
 - If feature grows during planning, switch to `/ring:pre-dev-full`
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate
 - Technology decisions happen later in Dependency Map (not in this track)
+- Delivery roadmap (WHEN/WHO) complements write-plan (HOW)
 
 ---
 
 ## MANDATORY: Skills Orchestration
 
-**This command orchestrates multiple skills in a 4-gate workflow.**
+**This command orchestrates multiple skills in a 5-gate workflow.**
 
 ### Gate Sequence
 
@@ -195,6 +228,7 @@ Next steps:
 | 1 | `ring:pre-dev-prd-creation` | Product requirements |
 | 2 | `ring:pre-dev-trd-creation` | Technical requirements |
 | 3 | `ring:pre-dev-task-breakdown` | Task decomposition |
+| 4 | `ring:pre-dev-delivery-planning` | Delivery roadmap |
 
 ### Execution Pattern
 

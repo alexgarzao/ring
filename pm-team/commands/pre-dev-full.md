@@ -1,10 +1,10 @@
 ---
 name: ring:pre-dev-full
-description: Complete 9-gate pre-dev workflow for large features (≥2 days)
+description: Complete 10-gate pre-dev workflow for large features (≥2 days)
 argument-hint: "[feature-name]"
 ---
 
-I'm running the **Full Track** pre-development workflow (9 gates) for your feature.
+I'm running the **Full Track** pre-development workflow (10 gates) for your feature.
 
 **This track is for features that have ANY of:**
 - ❌ Take ≥2 days to implement
@@ -54,7 +54,7 @@ Use the AskUserQuestion tool to gather:
 
 **Why auto-detection?** Access Manager and License Manager are project-level infrastructure decisions, not feature-level. Once integrated, all features in the project inherit them.
 
-After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 9-gate workflow:
+After getting the feature name (and auth/license requirements if applicable), create the directory structure and run the 10-gate workflow:
 
 ```bash
 mkdir -p docs/pre-dev/<feature-name>
@@ -266,12 +266,41 @@ mkdir -p docs/pre-dev/<feature-name>
 - [ ] Complete code provided
 - [ ] Zero-context test passes
 
+## Gate 9: Delivery Planning (MANDATORY)
+
+**Skill:** ring:pre-dev-delivery-planning
+
+1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md`
+2. Ask user for delivery inputs:
+   - Start date (when team begins work)
+   - Team composition (how many developers)
+   - Delivery cadence (sprint/cycle/continuous)
+   - Period configuration (if sprint/cycle: duration + start date)
+   - Velocity multiplier (AI-assisted or traditional, default or custom)
+3. Analyze dependencies and critical path
+4. Calculate realistic timeline with period boundaries
+5. Identify parallelization opportunities and resource allocation
+6. Create delivery roadmap with Gantt-style timeline
+7. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+8. Run Gate 9 validation checklist
+9. Get human approval
+
+**Gate 9 Pass Criteria:**
+- [ ] All tasks scheduled with realistic dates
+- [ ] Critical path identified and validated
+- [ ] Team capacity realistic (70-80% utilization)
+- [ ] Period boundaries respected (if sprint/cycle)
+- [ ] Spill overs identified and documented
+- [ ] Parallel streams defined
+- [ ] Risk milestones flagged
+- [ ] Contingency buffer added (10-20%)
+
 ## After Completion
 
 Report to human:
 
 ```
-✅ Full Track (9 gates) complete for <feature-name>
+✅ Full Track (10 gates) complete for <feature-name>
 
 Artifacts created:
 - docs/pre-dev/<feature-name>/research.md (Gate 0)
@@ -285,31 +314,35 @@ Artifacts created:
 - docs/pre-dev/<feature-name>/dependency-map.md (Gate 6)
 - docs/pre-dev/<feature-name>/tasks.md (Gate 7)
 - docs/pre-dev/<feature-name>/subtasks.md (Gate 8)
+- docs/pre-dev/<feature-name>/delivery-roadmap.md (Gate 9) ← NEW
 
 Planning time: 2-4 hours (comprehensive)
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
-4. Execute the plan
+2. Use delivery-roadmap.md to communicate timelines to stakeholders
+3. Use /ring:worktree to create isolated workspace
+4. Use /ring:write-plan to create implementation plan
+5. Execute the plan
 ```
 
 ## Remember
 
 - This is the **Full Track** - comprehensive and thorough
-- All 9 gates provide maximum planning depth
+- All 10 gates provide maximum planning depth
 - **Gate 0 (Research) runs 3 agents in parallel** for codebase, best practices, and framework docs
 - Technology decisions happen at Gate 6 (Dependency Map)
+- **Gate 9 (Delivery Planning) is MANDATORY** - creates realistic roadmap with timeline
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate before proceeding
 - Planning investment (2-4 hours) pays off during implementation
+- Delivery roadmap (WHEN/WHO) complements write-plan (HOW)
 
 ---
 
 ## MANDATORY: Skills Orchestration
 
-**This command orchestrates multiple skills in a 9-gate workflow.**
+**This command orchestrates multiple skills in a 10-gate workflow.**
 
 ### Gate Sequence
 
@@ -324,6 +357,7 @@ Next steps:
 | 6 | `ring:pre-dev-dependency-map` | Technology selection |
 | 7 | `ring:pre-dev-task-breakdown` | Task decomposition |
 | 8 | `ring:pre-dev-subtask-creation` | Implementation steps |
+| 9 | `ring:pre-dev-delivery-planning` | Delivery roadmap |
 
 ### Execution Pattern
 

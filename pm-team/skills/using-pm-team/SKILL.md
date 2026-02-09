@@ -1,7 +1,7 @@
 ---
 name: ring:using-pm-team
 description: |
-  12 product management skills + 3 research agents: pre-dev workflows (Small: 4 gates, Large: 9 gates)
+  12 product management skills + 3 research agents: pre-dev workflows (Small: 5 gates, Large: 10 gates)
   with research-first approach, plus delivery status tracking for evidence-based progress reporting.
 
 trigger: |
@@ -15,7 +15,7 @@ skip_when: |
   - Trivial change (<1 hour) → skip formal planning
 ---
 
-# Using Ring Team-Product: Pre-Dev Workflow
+# Using Ring Team-Product: Pre-Dev Workflow & Delivery Tracking
 
 The ring-pm-team plugin provides 12 product management skills and 3 research agents. Use them via `Skill tool: "ring:skill-name"` or via slash commands.
 
@@ -36,7 +36,7 @@ Pre-dev workflow ensures:
 
 ## Two Tracks: Choose Your Path
 
-### Small Track (4 Gates) – <2 Day Features
+### Small Track (5 Gates) – <2 Day Features
 
 **Use when ALL criteria met:**
 - ✅ Implementation <2 days
@@ -52,10 +52,11 @@ Pre-dev workflow ensures:
 | 1 | ring:pre-dev-prd-creation | PRD.md |
 | 2 | ring:pre-dev-trd-creation | TRD.md |
 | 3 | ring:pre-dev-task-breakdown | tasks.md |
+| 4 | ring:pre-dev-delivery-planning | delivery-roadmap.md |
 
-**Planning time:** 45-75 minutes
+**Planning time:** 60-90 minutes
 
-### Large Track (9 Gates) – ≥2 Day Features
+### Large Track (10 Gates) – ≥2 Day Features
 
 **Use when ANY criteria met:**
 - ❌ Implementation ≥2 days
@@ -76,8 +77,9 @@ Pre-dev workflow ensures:
 | 6 | ring:pre-dev-dependency-map | dependencies.md |
 | 7 | ring:pre-dev-task-breakdown | tasks.md |
 | 8 | ring:pre-dev-subtask-creation | subtasks/ |
+| 9 | ring:pre-dev-delivery-planning | delivery-roadmap.md |
 
-**Planning time:** 2.5-4.5 hours
+**Planning time:** 2.5-5 hours
 
 ## Gate Summaries
 
@@ -92,6 +94,7 @@ Pre-dev workflow ensures:
 | 6 | ring:pre-dev-dependency-map | Explicit tech choices, versions, licenses (Large only) |
 | 7 | ring:pre-dev-task-breakdown | Value-driven tasks with success criteria |
 | 8 | ring:pre-dev-subtask-creation | Zero-context 2-5 min implementation steps (Large only) |
+| 9 | ring:pre-dev-delivery-planning | Delivery roadmap with timeline, critical path, resource allocation (MANDATORY for both tracks) |
 
 ## Research Agents (Gate 0)
 
@@ -134,8 +137,8 @@ After planning and during execution, track progress:
 ### Via Slash Commands
 
 ```
-/ring:pre-dev-feature logout-button    # Small track (4 gates)
-/ring:pre-dev-full payment-system      # Large track (9 gates)
+/ring:pre-dev-feature logout-button    # Small track (5 gates)
+/ring:pre-dev-full payment-system      # Large track (10 gates)
 ```
 
 ### Via Skills (Manual)
