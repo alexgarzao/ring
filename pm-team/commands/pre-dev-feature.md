@@ -306,10 +306,10 @@ Even small features benefit from quick research:
 
 1. Determine research mode (usually **modification** for small features)
 2. Dispatch 4 research agents in PARALLEL (quick mode):
-   - repo-research-analyst (codebase patterns)
-   - best-practices-researcher (external best practices)
-   - framework-docs-researcher (tech stack docs)
-   - product-designer (UX research, mode: ux-research)
+   - ring:repo-research-analyst (codebase patterns)
+   - ring:best-practices-researcher (external best practices)
+   - ring:framework-docs-researcher (tech stack docs)
+   - ring:product-designer (UX research, mode: ux-research)
 3. Save to: `docs/pre-dev/<feature-name>/research.md`
 4. Get human approval before proceeding
 

@@ -76,9 +76,9 @@ Ring solves this by:
 
 **FinOps Agents (ring-finops-team plugin):**
 
-- `finops-analyzer` - Financial operations analysis
-- `finops-automation` - FinOps template creation and automation
-- `infrastructure-cost-estimator` - Infrastructure cost estimation and analysis
+- `ring:finops-analyzer` - Financial operations analysis
+- `ring:finops-automation` - FinOps template creation and automation
+- `ring:infrastructure-cost-estimator` - Infrastructure cost estimation and analysis
 
 **PMO Agents (ring-pmo-team plugin):**
 
@@ -307,8 +307,8 @@ No "should work" → Only "does work" with proof
 
 - `ring:using-ring` - Mandatory skill discovery
 - `ring:writing-skills` - TDD for documentation
-- `testing-skills-with-subagents` - Skill validation
-- `testing-agents-with-subagents` - Subagent-specific testing
+- `ring:testing-skills-with-subagents` - Skill validation
+- `ring:testing-agents-with-subagents` - Subagent-specific testing
 
 **Session & Learning (2):**
 
@@ -357,28 +357,28 @@ No "should work" → Only "does work" with proof
 
 **Documentation Creation:**
 
-- `using-tw-team` - Introduction to technical writing specialists
-- `writing-functional-docs` - Patterns for guides, tutorials, conceptual docs
-- `writing-api-docs` - API reference documentation patterns
-- `documentation-structure` - Document hierarchy and organization
-- `voice-and-tone` - Voice and tone guidelines (assertive, encouraging, human)
-- `documentation-review` - Quality checklist and review process
-- `api-field-descriptions` - Field description patterns by type
+- `ring:using-tw-team` - Introduction to technical writing specialists
+- `ring:writing-functional-docs` - Patterns for guides, tutorials, conceptual docs
+- `ring:writing-api-docs` - API reference documentation patterns
+- `ring:documentation-structure` - Document hierarchy and organization
+- `ring:voice-and-tone` - Voice and tone guidelines (assertive, encouraging, human)
+- `ring:documentation-review` - Quality checklist and review process
+- `ring:api-field-descriptions` - Field description patterns by type
 
 ### FinOps & Regulatory Skills (ring-finops-team plugin - 7 skills)
 
 **Regulatory Templates (6):**
 
-- `using-finops-team` - Introduction to FinOps team workflow
-- `regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
-- `regulatory-templates-setup` - Template selection initialization
-- `regulatory-templates-gate1` - Compliance analysis and field mapping
-- `regulatory-templates-gate2` - Field mapping validation
-- `regulatory-templates-gate3` - Template file generation
+- `ring:using-finops-team` - Introduction to FinOps team workflow
+- `ring:regulatory-templates` - Brazilian regulatory orchestration (BACEN, RFB)
+- `ring:regulatory-templates-setup` - Template selection initialization
+- `ring:regulatory-templates-gate1` - Compliance analysis and field mapping
+- `ring:regulatory-templates-gate2` - Field mapping validation
+- `ring:regulatory-templates-gate3` - Template file generation
 
 **Cost Estimation (1):**
 
-- `infrastructure-cost-estimation` - Infrastructure cost estimation and analysis
+- `ring:infrastructure-cost-estimation` - Infrastructure cost estimation and analysis
 
 ### PMO Skills (ring-pmo-team plugin - 8 skills)
 
