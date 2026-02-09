@@ -939,9 +939,9 @@ grep -rn "SecurityHeaders\|security.*middleware" --include="*.go" ./internal
 
 ### Why Rate Limiting Matters
 
-Without rate limiting, a single client can exhaust server resources, degrade performance for all users, and create cascading failures. Rate limiting is a fundamental security control that MUST be present before any service goes to production.
+Without rate limiting, a single-client can exhaust server resources, degrade performance for all users, and create cascading failures. Rate limiting is a fundamental security control that MUST be present before any service goes to production.
 
-### Three-Tier Rate Limiting Strategy
+### Three-tier Rate Limiting Strategy
 
 Services MUST implement tiered rate limiting based on endpoint sensitivity:
 
@@ -1373,9 +1373,11 @@ func enforceProductionDefaults(cfg *Config, logger log.Logger) {
 | Scenario | Behavior |
 |----------|----------|
 | Redis available | Distributed rate limiting across all instances |
-| Redis unavailable | Falls back to in-memory (per-instance) limiting |
+| Redis unavailable (temporary) | Falls back to in-memory (per-instance) limiting with warning log |
 | Rate limit disabled (non-prod) | No-op middleware, all requests pass through |
 | Rate limit disabled (production) | Force-enabled, cannot be disabled |
+
+> **Note:** In-memory fallback during temporary Redis outage is acceptable to prevent total service unavailability. This is distinct from deploying without Redis storage entirely (which is FORBIDDEN in production — see below). The fallback MUST log a warning so operators are alerted to restore Redis connectivity.
 
 ### Error Response Format
 
@@ -1396,8 +1398,9 @@ With headers:
 ### FORBIDDEN Patterns
 
 ```go
-// ❌ FORBIDDEN: Rate limiting without Redis storage in production
-limiter.New(limiter.Config{Max: 100})  // In-memory only = no distribution
+// ❌ FORBIDDEN: Deploying rate limiting without Redis storage configured in production
+// (In-memory fallback during temporary Redis outage is acceptable — see Graceful Degradation)
+limiter.New(limiter.Config{Max: 100})  // No Storage field = permanent in-memory only = no distribution
 
 // ❌ FORBIDDEN: Using IP-only keys for authenticated endpoints
 KeyGenerator: func(c *fiber.Ctx) string {

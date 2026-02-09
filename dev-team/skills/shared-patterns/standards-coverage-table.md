@@ -294,7 +294,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 45 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
 | 46 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
 | 47 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **⚠️ CONDITIONAL: Tenant Isolation Verification**: IDOR prevention, detection commands |
-| 48 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, Redis-backed storage, key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
+| 48 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, Redis-backed storage (in-memory fallback on Redis outage), key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
 | 49 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
 
 **Module Loading Guide:**
