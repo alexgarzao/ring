@@ -5,6 +5,7 @@
 This module covers logging, linting, configuration validation, and container security standards.
 
 > **Note:** Testing standards have been moved to dedicated modules:
+>
 > - [testing-unit.md](testing-unit.md) - Unit testing patterns (Gate 3)
 > - [testing-fuzz.md](testing-fuzz.md) - Fuzz testing patterns (Gate 4)
 > - [testing-property.md](testing-property.md) - Property-based testing patterns (Gate 5)
@@ -16,13 +17,13 @@ This module covers logging, linting, configuration validation, and container sec
 
 ## Table of Contents
 
-| # | [Section Name](#anchor-link) | Description |
-|---|------------------------------|-------------|
-| 1 | [Logging](#logging) | Structured logging with lib-commons |
-| 2 | [Linting](#linting) | Import ordering, magic numbers, .golangci.yml requirement |
-| 3 | [Migration Guidance for Mandatory Linter Promotion](#migration-guidance-for-mandatory-linter-promotion) | Phased rollout and per-linter fix examples |
-| 4 | [Production Config Validation](#production-config-validation-mandatory) | Startup validation and fail-fast |
-| 5 | [Container Security](#container-security-conditional) | Non-root user, image pinning |
+| #   | [Section Name](#anchor-link)                                                                            | Description                                               |
+| --- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1   | [Logging](#logging)                                                                                     | Structured logging with lib-commons                       |
+| 2   | [Linting](#linting)                                                                                     | Import ordering, magic numbers, .golangci.yml requirement |
+| 3   | [Migration Guidance for Mandatory Linter Promotion](#migration-guidance-for-mandatory-linter-promotion) | Phased rollout and per-linter fix examples                |
+| 4   | [Production Config Validation](#production-config-validation-mandatory)                                 | Startup validation and fail-fast                          |
+| 5   | [Container Security](#container-security-conditional)                                                   | Non-root user, image pinning                              |
 
 ---
 
@@ -32,14 +33,14 @@ This module covers logging, linting, configuration validation, and container sec
 
 ### FORBIDDEN Logging Patterns (CRITICAL - Automatic FAIL)
 
-| Pattern | Why FORBIDDEN | Detection Command |
-|---------|---------------|-------------------|
-| `fmt.Println()` | No structure, no trace correlation, unsearchable | `grep -rn "fmt.Println" --include="*.go"` |
-| `fmt.Printf()` | No structure, no trace correlation, unsearchable | `grep -rn "fmt.Printf" --include="*.go"` |
-| `log.Println()` | Standard library logger lacks trace correlation | `grep -rn "log.Println" --include="*.go"` |
-| `log.Printf()` | Standard library logger lacks trace correlation | `grep -rn "log.Printf" --include="*.go"` |
-| `log.Fatal()` | Exits without graceful shutdown, breaks telemetry flush | `grep -rn "log.Fatal" --include="*.go"` |
-| `println()` | Built-in, no structure, debugging only | `grep -rn "println(" --include="*.go"` |
+| Pattern         | Why FORBIDDEN                                           | Detection Command                         |
+| --------------- | ------------------------------------------------------- | ----------------------------------------- |
+| `fmt.Println()` | No structure, no trace correlation, unsearchable        | `grep -rn "fmt.Println" --include="*.go"` |
+| `fmt.Printf()`  | No structure, no trace correlation, unsearchable        | `grep -rn "fmt.Printf" --include="*.go"`  |
+| `log.Println()` | Standard library logger lacks trace correlation         | `grep -rn "log.Println" --include="*.go"` |
+| `log.Printf()`  | Standard library logger lacks trace correlation         | `grep -rn "log.Printf" --include="*.go"`  |
+| `log.Fatal()`   | Exits without graceful shutdown, breaks telemetry flush | `grep -rn "log.Fatal" --include="*.go"`   |
+| `println()`     | Built-in, no structure, debugging only                  | `grep -rn "println(" --include="*.go"`    |
 
 **If any of these patterns are found in production code → REVIEW FAILS. no EXCEPTIONS.**
 
@@ -130,278 +131,31 @@ linters:
 
 ## Linting
 
-### Import Ordering (MANDATORY)
-
-**HARD GATE:** All Go files MUST follow the standard import ordering. Unordered imports trigger linter warnings and CodeRabbit violations.
-
-#### Import Order (3 Groups)
-
-```go
-import (
-    // Group 1: Standard library
-    "context"
-    "fmt"
-    "time"
-
-    // Group 2: Third-party packages
-    "github.com/gofiber/fiber/v2"
-    "go.uber.org/zap"
-
-    // Group 3: Local/project packages
-    libCommons "github.com/LerianStudio/lib-commons/v2/commons"
-    libLog "github.com/LerianStudio/lib-commons/v2/commons/log"
-    "github.com/your-org/your-service/internal/domain"
-)
-```
-
-#### Rules
-
-| Rule | Description |
-|------|-------------|
-| **Group 1 first** | Standard library (`fmt`, `context`, `time`, etc.) |
-| **Group 2 second** | Third-party packages (external dependencies) |
-| **Group 3 third** | Local packages (your project's internal packages) |
-| **Blank line between groups** | Each group separated by one blank line |
-| **Alphabetical within group** | Imports sorted alphabetically within each group |
-| **lib-commons in Group 3** | lib-commons is a Lerian package, goes in local group |
-
-#### Correct Pattern
-
-```go
-// ✅ CORRECT: Proper import ordering
-import (
-    // Standard library
-    "context"
-    "errors"
-    "fmt"
-    "time"
-
-    // Third-party
-    "github.com/gofiber/fiber/v2"
-    "github.com/google/uuid"
-    "go.opentelemetry.io/otel/trace"
-
-    // Local/Lerian packages
-    libCommons "github.com/LerianStudio/lib-commons/v2/commons"
-    libLog "github.com/LerianStudio/lib-commons/v2/commons/log"
-    libOpentelemetry "github.com/LerianStudio/lib-commons/v2/commons/opentelemetry"
-    "github.com/your-org/your-service/internal/domain"
-    "github.com/your-org/your-service/internal/repository"
-)
-```
-
-#### FORBIDDEN Patterns
-
-```go
-// ❌ FORBIDDEN: Mixed groups without separation
-import (
-    "context"
-    "github.com/gofiber/fiber/v2"
-    "fmt"
-    "github.com/your-org/your-service/internal/domain"
-    "time"
-)
-
-// ❌ FORBIDDEN: Wrong order (third-party before stdlib)
-import (
-    "github.com/gofiber/fiber/v2"
-    "context"
-    "fmt"
-)
-
-// ❌ FORBIDDEN: No blank lines between groups
-import (
-    "context"
-    "fmt"
-    "github.com/gofiber/fiber/v2"
-    "github.com/your-org/your-service/internal/domain"
-)
-```
-
-#### Automatic Fixing
-
-```bash
-# Fix import ordering automatically
-goimports -w .
-
-# Or use golangci-lint with goimports
-golangci-lint run --fix ./...
-```
-
-#### Agent Execution (MANDATORY)
-
-**HARD GATE:** MUST run `goimports` after generating or modifying Go files to ensure correct import ordering.
-
-```bash
-# Agent MUST execute after code generation:
-goimports -w ./internal ./cmd ./pkg
-```
-
-| When | Agent Action |
-|------|--------------|
-| After creating new file | Run `goimports -w {file}` |
-| After modifying imports | Run `goimports -w {file}` |
-| Before completing task | Run `goimports -w ./internal ./cmd ./pkg` |
-
----
-
-### Magic Numbers (FORBIDDEN)
-
-**HARD GATE:** Code with literal numeric values (magic numbers) is FORBIDDEN. All numbers MUST be declared as named constants.
-
-#### Why Magic Numbers Are FORBIDDEN
-
-| Problem | Impact |
-|---------|--------|
-| **No semantic meaning** | `if attempts > 3` - What does 3 mean? Max retries? |
-| **Maintenance nightmare** | Same number in 10 places → change requires finding all |
-| **No IDE support** | Cannot "Find References" on a literal `3` |
-| **Silent bugs** | Two unrelated `3`s changed together accidentally |
-
-#### Allowed Exceptions
-
-| Value | Allowed Where | Reason |
-|-------|---------------|--------|
-| `0` | Zero initialization | Universal zero value |
-| `1` | Increment/decrement | Mathematical identity |
-| `-1` | Not found indicators | Common convention |
-| Test data | `_test.go` files only | Test cases use arbitrary values |
-
-#### Anti-Patterns (FORBIDDEN)
-
-```go
-// ❌ FORBIDDEN: Magic numbers without context
-func ProcessOrder(order Order) error {
-    if order.Total > 10000 {          // What is 10000?
-        return ErrAmountTooHigh
-    }
-    if len(order.Items) > 50 {        // Why 50?
-        return ErrTooManyItems
-    }
-    time.Sleep(5 * time.Second)       // Why 5 seconds?
-    return nil
-}
-```
-
-#### Correct Patterns (REQUIRED)
-
-```go
-// ✅ CORRECT: Named constants with semantic meaning
-const (
-    MaxOrderAmount     = 10000        // BRL - business rule limit
-    MaxItemsPerOrder   = 50           // Performance constraint
-    RetryDelaySeconds  = 5            // Backoff between retries
-    MaxRetryAttempts   = 3            // Circuit breaker threshold
-    DefaultBufferSize  = 4096         // 4KB buffer for file I/O
-)
-
-func ProcessOrder(order Order) error {
-    if order.Total > MaxOrderAmount {
-        return ErrAmountTooHigh
-    }
-    if len(order.Items) > MaxItemsPerOrder {
-        return ErrTooManyItems
-    }
-    time.Sleep(RetryDelaySeconds * time.Second)
-    return nil
-}
-```
-
-#### Constant Naming Convention
-
-| Type | Prefix | Example |
-|------|--------|---------|
-| Maximum limits | `Max` | `MaxRetries`, `MaxConnections` |
-| Minimum limits | `Min` | `MinPasswordLength` |
-| Default values | `Default` | `DefaultTimeout`, `DefaultPageSize` |
-| Size/capacity | Size/Capacity | `BufferSize`, `PoolCapacity` |
-| Duration | `*Duration` or `*Seconds` | `TimeoutDuration`, `RetryDelaySeconds` |
-
----
-
-### Post-Implementation Linting (MANDATORY)
-
-**HARD GATE:** After ANY code generation, modification, or refactoring, agents MUST run `golangci-lint` to catch violations before completing the task.
-
-#### When to Run
-
-| Trigger | Command | Why |
-|---------|---------|-----|
-| After creating new files | `golangci-lint run {path}` | Catch violations immediately |
-| After modifying code | `golangci-lint run {path}` | Validate changes |
-| After refactoring | `golangci-lint run ./...` | Full project scan |
-| Before completing task | `golangci-lint run ./...` | Final validation |
-| Before commit | `golangci-lint run ./...` | Pre-commit check |
-
-#### Agent Execution Pattern
-
-```bash
-# 1. After code generation/modification
-goimports -w ./internal ./cmd ./pkg
-
-# 2. Run linter
-golangci-lint run ./internal ./cmd ./pkg
-
-# 3. If violations found → Fix them
-# 4. Re-run until clean
-golangci-lint run ./internal ./cmd ./pkg  # Should output: no issues found
-```
-
----
-
-### .golangci.yml Requirement (MANDATORY)
-
-Projects without `.golangci.yml` have inconsistent linting across environments, leading to CI failures and code review noise.
-
-**⛔ HARD GATE:** Every Go project MUST have a `.golangci.yml` file in the repository root. Missing this file is a BLOCKER for code review.
-
-#### Required Linters (MANDATORY - 14 total)
-
-Every `.golangci.yml` MUST enable these linters:
-
-| Linter | Purpose | Category |
-|--------|---------|----------|
-| `gofmt` | Code formatting | Style |
-| `goimports` | Import organization | Style |
-| `govet` | Go vet analysis | Correctness |
-| `staticcheck` | Static analysis | Correctness |
-| `errcheck` | Error handling verification | Correctness |
-| `gosec` | Security vulnerability detection | Security |
-| `mnd` | Magic number detection | Quality |
-| `unused` | Unused code detection | Quality |
-| `ineffassign` | Unused assignment detection | Quality |
-| `gosimple` | Simplify code suggestions | Quality |
-| `misspell` | Spelling errors in comments/strings | Quality |
-| `goconst` | Repeated string literal detection | Quality |
-| `nilerr` | Return nil with non-nil error detection | Correctness |
-| `forbidigo` | Forbidden pattern enforcement | Security |
-
-#### Configuration Template
+### golangci-lint Configuration
 
 ```yaml
 # .golangci.yml - Minimum required configuration
 run:
   timeout: 5m
-  go: '1.24'
+  go: "1.24"
 
 linters:
-  disable-all: true
   enable:
     # MANDATORY linters (all 14 MUST be enabled)
-    - gofmt         # Code formatting - enforces canonical Go style
-    - goimports     # Import organization - groups and sorts imports
-    - govet         # Go vet analysis - catches common mistakes (shadowing, printf)
-    - staticcheck   # Static analysis - advanced bug detection (SA* checks)
-    - errcheck      # Error handling verification - catches ignored errors
-    - gosec         # Security vulnerability detection - OWASP patterns
-    - mnd           # Magic number detection - enforces named constants
-    - unused        # Unused code detection - dead code removal
-    - ineffassign   # Unused assignment detection - assignments to never-read vars
-    - gosimple      # Simplify code - suggests simpler constructs (S1* checks)
-    - misspell      # Spelling errors - typos in comments/strings/identifiers
-    - goconst       # Repeated strings - extracts string literals to constants
-    - nilerr        # Return nil with non-nil error - catches "if err != nil { return nil }"
-    - forbidigo     # Forbidden patterns - blocks fmt.Print*, log.Fatal, panic
+    - gofmt # Code formatting - enforces canonical Go style
+    - goimports # Import organization - groups and sorts imports
+    - govet # Go vet analysis - catches common mistakes (shadowing, printf)
+    - staticcheck # Static analysis - advanced bug detection (SA* checks)
+    - errcheck # Error handling verification - catches ignored errors
+    - gosec # Security vulnerability detection - OWASP patterns
+    - mnd # Magic number detection - enforces named constants
+    - unused # Unused code detection - dead code removal
+    - ineffassign # Unused assignment detection - assignments to never-read vars
+    - gosimple # Simplify code - suggests simpler constructs (S1* checks)
+    - misspell # Spelling errors - typos in comments/strings/identifiers
+    - goconst # Repeated strings - extracts string literals to constants
+    - nilerr # Return nil with non-nil error - catches "if err != nil { return nil }"
+    - forbidigo # Forbidden patterns - blocks fmt.Print*, log.Fatal, panic
 
 linters-settings:
   goimports:
@@ -416,9 +170,9 @@ linters-settings:
       - return
       - assign
     ignored-numbers:
-      - '0'
-      - '1'
-      - '-1'
+      - "0"
+      - "1"
+      - "-1"
     ignored-functions:
       - '^math\.'
       - '^http\.Status'
@@ -460,11 +214,11 @@ golangci-lint run --enable=mnd --disable-all ./...
 
 #### Adoption Timeline
 
-| Phase | Duration | Action |
-|-------|----------|--------|
-| **Phase 1: Warning** | Week 1-2 | Enable linters, treat as warnings only |
-| **Phase 2: Blocking (New)** | Week 3-4 | Block CI for new violations only |
-| **Phase 3: Blocking (All)** | Week 5+ | Block CI for all violations |
+| Phase                       | Duration | Action                                 |
+| --------------------------- | -------- | -------------------------------------- |
+| **Phase 1: Warning**        | Week 1-2 | Enable linters, treat as warnings only |
+| **Phase 2: Blocking (New)** | Week 3-4 | Block CI for new violations only       |
+| **Phase 3: Blocking (All)** | Week 5+  | Block CI for all violations            |
 
 #### Phased Rollout Configuration
 
@@ -489,13 +243,13 @@ issues:
 
 ##### gosimple (Code Simplification)
 
-| S-Code | Common Pattern | Fix |
-|--------|----------------|-----|
-| S1000 | `select { case x := <-ch: ... }` | Use `x := <-ch` directly |
-| S1002 | `if b == true { ... }` | Use `if b { ... }` |
-| S1003 | `strings.Index(s, sub) != -1` | Use `strings.Contains(s, sub)` |
-| S1005 | `for i, _ := range slice` | Use `for i := range slice` |
-| S1011 | Loop with append to another slice | Use `append(slice1, slice2...)` |
+| S-Code | Common Pattern                    | Fix                             |
+| ------ | --------------------------------- | ------------------------------- |
+| S1000  | `select { case x := <-ch: ... }`  | Use `x := <-ch` directly        |
+| S1002  | `if b == true { ... }`            | Use `if b { ... }`              |
+| S1003  | `strings.Index(s, sub) != -1`     | Use `strings.Contains(s, sub)`  |
+| S1005  | `for i, _ := range slice`         | Use `for i := range slice`      |
+| S1011  | Loop with append to another slice | Use `append(slice1, slice2...)` |
 
 ```go
 // ❌ gosimple S1003
@@ -507,12 +261,12 @@ if strings.Contains(name, "test") { ... }
 
 ##### misspell (Spelling Corrections)
 
-| Common Typo | Correction |
-|-------------|------------|
-| `occured` | `occurred` |
-| `recieved` | `received` |
-| `seperate` | `separate` |
-| `sucessful` | `successful` |
+| Common Typo  | Correction   |
+| ------------ | ------------ |
+| `occured`    | `occurred`   |
+| `recieved`   | `received`   |
+| `seperate`   | `separate`   |
+| `sucessful`  | `successful` |
 | `definately` | `definitely` |
 
 ```go
@@ -573,13 +327,13 @@ func GetUser(id string) (*User, error) {
 
 **Trigger:** Usage of patterns blocked by `.golangci.yml` configuration.
 
-| Forbidden | Replacement |
-|-----------|-------------|
-| `fmt.Println()` | `logger.Info()` |
-| `fmt.Printf()` | `logger.Infof()` |
-| `log.Fatal()` | `return err` + graceful shutdown |
-| `log.Panic()` | `return err` + recovery middleware |
-| `panic()` | `return err` (except bootstrap) |
+| Forbidden       | Replacement                        |
+| --------------- | ---------------------------------- |
+| `fmt.Println()` | `logger.Info()`                    |
+| `fmt.Printf()`  | `logger.Infof()`                   |
+| `log.Fatal()`   | `return err` + graceful shutdown   |
+| `log.Panic()`   | `return err` + recovery middleware |
+| `panic()`       | `return err` (except bootstrap)    |
 
 ```go
 // ❌ forbidigo: fmt.Println forbidden
@@ -618,12 +372,12 @@ Services that start with invalid or missing configuration cause runtime failures
 
 ### Why Startup Validation Is MANDATORY
 
-| Issue | Impact Without Validation |
-|-------|---------------------------|
-| Missing required field | Service starts but fails on first request |
-| Invalid format | Silent misbehavior (wrong DB, wrong endpoint) |
-| Wrong environment | Production config in dev, or vice versa |
-| Connection string typo | Service starts, fails on first DB call |
+| Issue                  | Impact Without Validation                     |
+| ---------------------- | --------------------------------------------- |
+| Missing required field | Service starts but fails on first request     |
+| Invalid format         | Silent misbehavior (wrong DB, wrong endpoint) |
+| Wrong environment      | Production config in dev, or vice versa       |
+| Connection string typo | Service starts, fails on first DB call        |
 
 ### Validation Patterns (REQUIRED)
 
@@ -763,12 +517,12 @@ Containers running as root and using untagged images (`latest`) cause security v
 
 #### Why Non-Root Is Required
 
-| Risk | Running as Root | Running as Non-Root |
-|------|-----------------|---------------------|
-| Container escape | Full host access | Limited access |
-| File system access | Can write anywhere | Only permitted paths |
-| Kubernetes policy | PSP/PSA violations | Compliant |
-| Vulnerability exploitation | Elevated privileges | Contained damage |
+| Risk                       | Running as Root     | Running as Non-Root  |
+| -------------------------- | ------------------- | -------------------- |
+| Container escape           | Full host access    | Limited access       |
+| File system access         | Can write anywhere  | Only permitted paths |
+| Kubernetes policy          | PSP/PSA violations  | Compliant            |
+| Vulnerability exploitation | Elevated privileges | Contained damage     |
 
 #### Required Pattern
 
@@ -817,20 +571,20 @@ CMD ["./server"]
 
 **⛔ HARD GATE:** All base images MUST use specific version tags. The `:latest` tag is FORBIDDEN.
 
-| Tag Type | Example | Status |
-|----------|---------|--------|
-| Exact version | `golang:1.24.0-alpine3.19` | ✅ REQUIRED |
-| Minor version | `golang:1.24-alpine` | ⚠️ Acceptable |
-| Latest | `golang:latest` | ❌ FORBIDDEN |
-| None (implicit latest) | `FROM golang` | ❌ FORBIDDEN |
+| Tag Type               | Example                    | Status        |
+| ---------------------- | -------------------------- | ------------- |
+| Exact version          | `golang:1.24.0-alpine3.19` | ✅ REQUIRED   |
+| Minor version          | `golang:1.24-alpine`       | ⚠️ Acceptable |
+| Latest                 | `golang:latest`            | ❌ FORBIDDEN  |
+| None (implicit latest) | `FROM golang`              | ❌ FORBIDDEN  |
 
 #### Why Pinning Is Required
 
-| Problem with :latest | Impact |
-|---------------------|--------|
-| Non-reproducible builds | Works today, breaks tomorrow |
-| Security scan bypass | Different image in CI vs prod |
-| Debugging nightmare | "It worked on my machine" |
+| Problem with :latest    | Impact                               |
+| ----------------------- | ------------------------------------ |
+| Non-reproducible builds | Works today, breaks tomorrow         |
+| Security scan bypass    | Different image in CI vs prod        |
+| Debugging nightmare     | "It worked on my machine"            |
 | CVE tracking impossible | Which version has the vulnerability? |
 
 #### Detection Commands
@@ -854,12 +608,12 @@ grep -n "FROM.*:latest\|FROM [a-z]*$" Dockerfile
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "We trust our images" | Trust but verify. Least privilege always. | **Add USER directive** |
-| ":latest is convenient" | Convenience causes incidents. Pin versions. | **Use specific tags** |
-| "Kubernetes securityContext handles it" | Defense in depth. Image should be secure too. | **Add USER in Dockerfile** |
-| "We rebuild often" | Rebuild with same vulnerability. Pin to known-good. | **Pin to specific version** |
-| "It's just internal" | Internal ≠ exempt from security. | **Follow all security patterns** |
+| Rationalization                         | Why It's WRONG                                      | Required Action                  |
+| --------------------------------------- | --------------------------------------------------- | -------------------------------- |
+| "We trust our images"                   | Trust but verify. Least privilege always.           | **Add USER directive**           |
+| ":latest is convenient"                 | Convenience causes incidents. Pin versions.         | **Use specific tags**            |
+| "Kubernetes securityContext handles it" | Defense in depth. Image should be secure too.       | **Add USER in Dockerfile**       |
+| "We rebuild often"                      | Rebuild with same vulnerability. Pin to known-good. | **Pin to specific version**      |
+| "It's just internal"                    | Internal ≠ exempt from security.                    | **Follow all security patterns** |
 
 ---

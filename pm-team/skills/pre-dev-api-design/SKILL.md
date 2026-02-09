@@ -228,7 +228,9 @@ If you catch yourself writing any of these in API Design, **STOP**:
 
 ## Contract Template Structure
 
-Output to `docs/pre-dev/{feature-name}/api-design.md` with these sections:
+Output to (path depends on topology.structure):
+- **single-repo:** `docs/pre-dev/{feature-name}/api-design.md`
+- **monorepo/multi-repo:** `{backend.path}/docs/pre-dev/{feature-name}/api-design.md`
 
 | Section | Content |
 |---------|---------|
@@ -289,6 +291,155 @@ Output to `docs/pre-dev/{feature-name}/api-design.md` with these sections:
 | Error Handling | 0-20 | All scenarios: 20, Common cases: 12, Minimal: 5 |
 
 **Action:** 80+ autonomous generation | 50-79 present options | <50 ask clarifying questions
+
+---
+
+## Document Placement
+
+**api-design.md is a backend document** - it defines API contracts implemented by backend services.
+
+| Structure | api-design.md Location |
+|-----------|------------------------|
+| single-repo | `docs/pre-dev/{feature}/api-design.md` |
+| monorepo | `{backend.path}/docs/pre-dev/{feature}/api-design.md` |
+| multi-repo | `{backend.path}/docs/pre-dev/{feature}/api-design.md` |
+
+**Why backend path?** API contracts are:
+- Implemented by backend engineers
+- Referenced during backend code review
+- Versioned with backend code
+
+**Directory creation for multi-module:**
+```bash
+# Read topology from research.md frontmatter
+backend_path="${topology_modules_backend_path:-"."}"
+mkdir -p "${backend_path}/docs/pre-dev/{feature}"
+```
+
+---
+
+## BFF Contract Design (Frontend-only and Fullstack with BFF)
+
+**⛔ HARD GATE:** If `api_pattern: bff` (from research.md), this section is MANDATORY.
+
+### When This Applies
+
+Check research.md frontmatter:
+```yaml
+topology:
+  scope: frontend-only | fullstack
+  api_pattern: bff  # ← This triggers BFF contract design
+```
+
+### Phase 3: BFF Contract Definition
+
+**After backend contracts (Phase 2), define BFF-to-Frontend contracts:**
+
+| Step | Activity |
+|------|----------|
+| 1 | Identify all frontend components that need data |
+| 2 | Map component data needs to backend APIs |
+| 3 | Define BFF aggregation operations |
+| 4 | Specify BFF response contracts (frontend-optimized shapes) |
+| 5 | Document error normalization strategy |
+
+### BFF Contract Template
+
+**Add to api-design.md under `## BFF Contracts` section:**
+
+```markdown
+## BFF Contracts
+
+### Overview
+- **Pattern:** BFF (Backend-for-Frontend)
+- **Purpose:** [Aggregation | Transformation | Security | All]
+- **Frontend Framework:** [Next.js | React | Vue | etc.]
+
+### BFF Operations
+
+#### Operation: Get{Feature}Data
+
+**Purpose:** Aggregate data for {feature} component
+
+**Frontend Consumer:** `{ComponentName}.tsx`
+
+**Backend APIs Consumed:**
+| API | Operation | Purpose |
+|-----|-----------|---------|
+| User Service | GetUser | User profile data |
+| Order Service | ListOrders | Recent orders |
+
+**Input Contract:**
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| userId | Identifier | Yes | Valid UUID | Target user |
+| limit | Integer | No | 1-100, default 10 | Max orders |
+
+**Output Contract (Frontend-Optimized):**
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| user | UserSummary | No | Simplified user object |
+| user.id | Identifier | No | User ID |
+| user.displayName | String | No | Formatted name |
+| recentOrders | OrderSummary[] | No | Last N orders |
+| recentOrders[].id | Identifier | No | Order ID |
+| recentOrders[].total | FormattedCurrency | No | Display-ready total |
+
+**Error Normalization:**
+| Backend Error | BFF Error Code | Frontend Action |
+|---------------|----------------|-----------------|
+| User 404 | USER_NOT_FOUND | Redirect to error page |
+| Orders 500 | ORDERS_UNAVAILABLE | Show partial data |
+| Auth 401 | SESSION_EXPIRED | Trigger re-auth |
+```
+
+### Type Transformation Rules
+
+**BFF MUST transform backend types to frontend-optimized types:**
+
+| Backend Type | Frontend Type | Transformation |
+|--------------|---------------|----------------|
+| ISO8601 string | RelativeTime | "2 hours ago" |
+| Decimal amount | FormattedCurrency | "$1,234.56" |
+| Full entity | Summary object | Select display fields |
+| Nested IDs | Resolved names | Join data |
+
+### Frontend-only Specific Requirements
+
+**If `topology.scope: frontend-only`:**
+
+The BFF consumes EXISTING backend APIs (documented in PRD Data Sources).
+
+**MUST verify:**
+1. All PRD Data Sources are covered by BFF operations
+2. All API gaps identified in PRD have corresponding BFF operations
+3. BFF operations match frontend component data needs
+
+```markdown
+### PRD Data Source Coverage
+
+| PRD Data Source | Covered by BFF Operation | Notes |
+|-----------------|-------------------------|-------|
+| User API | GetDashboardData | User summary included |
+| Orders API | GetDashboardData | Recent orders included |
+| Reports API | GenerateReport | New BFF operation |
+```
+
+### Gate 4 Validation Addition for BFF
+
+| Category | Requirements |
+|----------|--------------|
+| **BFF Completeness** | All frontend components have data contracts; all backend APIs mapped to BFF operations; error normalization defined; type transformations documented |
+
+### Rationalization Table for BFF Contracts
+
+| Excuse | Reality |
+|--------|---------|
+| "BFF is just a proxy" | Proxies still transform errors and aggregate. Document contracts. |
+| "Frontend types are implementation" | Types define component contracts. Design them here. |
+| "We'll figure out transformations later" | Later = bugs. Define transformations upfront. |
+| "Backend contract = frontend contract" | Backend serves multiple clients. Frontend needs optimized shapes. |
+| "BFF contracts are obvious from UI" | Obvious to you ≠ documented. Write explicit contracts. |
 
 ## After Approval
 

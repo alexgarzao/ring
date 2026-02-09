@@ -25,13 +25,13 @@ This module covers API naming conventions, pagination patterns, HTTP status code
 
 ### Rule
 
-| Layer | Format | Example |
-|-------|--------|---------|
-| **JSON response fields** | camelCase | `userId`, `createdAt`, `accountBalance` |
-| **Pagination response fields** | camelCase | `nextCursor`, `prevCursor`, `hasMore` |
-| **Query parameters** | snake_case | `sort_order`, `start_date`, `end_date` |
-| **Go structs** | PascalCase | `UserID`, `CreatedAt`, `AccountBalance` |
-| **Database columns** | snake_case | `user_id`, `created_at`, `account_balance` |
+| Layer                          | Format     | Example                                    |
+| ------------------------------ | ---------- | ------------------------------------------ |
+| **JSON response fields**       | camelCase  | `userId`, `createdAt`, `accountBalance`    |
+| **Pagination response fields** | camelCase  | `nextCursor`, `prevCursor`, `hasMore`      |
+| **Query parameters**           | snake_case | `sort_order`, `start_date`, `end_date`     |
+| **Go structs**                 | PascalCase | `UserID`, `CreatedAt`, `AccountBalance`    |
+| **Database columns**           | snake_case | `user_id`, `created_at`, `account_balance` |
 
 ### Implementation Pattern
 
@@ -63,10 +63,10 @@ type UserResponse struct {
 
 **HARD GATE:** Query parameters and body fields use different conventions.
 
-| Location | Convention | Examples |
-|----------|------------|----------|
-| **Query parameters** | `snake_case` | `?limit=10&sort_order=asc&start_date=2024-01-01` |
-| **Request/Response body** | `camelCase` | `{"firstName": "John", "createdAt": "..."}` |
+| Location                  | Convention   | Examples                                         |
+| ------------------------- | ------------ | ------------------------------------------------ |
+| **Query parameters**      | `snake_case` | `?limit=10&sort_order=asc&start_date=2024-01-01` |
+| **Request/Response body** | `camelCase`  | `{"firstName": "John", "createdAt": "..."}`      |
 
 > **Source:** This pattern matches the Midaz API standard (verified via Apidog).
 
@@ -152,29 +152,29 @@ type UserListResponse struct {
 
 **Body Fields (camelCase):**
 
-| Concept | ✅ Correct (camelCase) | ❌ Wrong (snake_case) |
-|---------|------------------------|----------------------|
-| Identifier | `id`, `userId`, `accountId` | `user_id`, `account_id` |
-| Timestamps | `createdAt`, `updatedAt`, `deletedAt` | `created_at`, `updated_at` |
-| Status | `isActive`, `isDeleted`, `isVerified` | `is_active`, `is_deleted` |
-| Amounts | `totalAmount`, `accountBalance` | `total_amount`, `account_balance` |
-| Metadata | `parentId`, `organizationId`, `ledgerId` | `parent_id`, `organization_id` |
-| Names | `legalName`, `doingBusinessAs` | `legal_name`, `doing_business_as` |
+| Concept    | ✅ Correct (camelCase)                   | ❌ Wrong (snake_case)             |
+| ---------- | ---------------------------------------- | --------------------------------- |
+| Identifier | `id`, `userId`, `accountId`              | `user_id`, `account_id`           |
+| Timestamps | `createdAt`, `updatedAt`, `deletedAt`    | `created_at`, `updated_at`        |
+| Status     | `isActive`, `isDeleted`, `isVerified`    | `is_active`, `is_deleted`         |
+| Amounts    | `totalAmount`, `accountBalance`          | `total_amount`, `account_balance` |
+| Metadata   | `parentId`, `organizationId`, `ledgerId` | `parent_id`, `organization_id`    |
+| Names      | `legalName`, `doingBusinessAs`           | `legal_name`, `doing_business_as` |
 
 **Query Parameters (snake_case):**
 
-| Concept | ✅ Correct (snake_case) | ❌ Wrong (camelCase) |
-|---------|-------------------------|---------------------|
-| Sorting | `sort_order`, `sort_by` | `sortOrder`, `sortBy` |
-| Date filters | `start_date`, `end_date` | `startDate`, `endDate` |
-| All query params | `snake_case` | `camelCase` |
+| Concept          | ✅ Correct (snake_case)  | ❌ Wrong (camelCase)   |
+| ---------------- | ------------------------ | ---------------------- |
+| Sorting          | `sort_order`, `sort_by`  | `sortOrder`, `sortBy`  |
+| Date filters     | `start_date`, `end_date` | `startDate`, `endDate` |
+| All query params | `snake_case`             | `camelCase`            |
 
 **Response Fields (camelCase) - Including Pagination:**
 
-| Concept | ✅ Correct (camelCase) | ❌ Wrong (snake_case) |
-|---------|------------------------|----------------------|
-| Pagination cursors | `nextCursor`, `prevCursor`, `hasMore` | `next_cursor`, `prev_cursor` |
-| All response fields | `camelCase` | `snake_case` |
+| Concept             | ✅ Correct (camelCase)                | ❌ Wrong (snake_case)        |
+| ------------------- | ------------------------------------- | ---------------------------- |
+| Pagination cursors  | `nextCursor`, `prevCursor`, `hasMore` | `next_cursor`, `prev_cursor` |
+| All response fields | `camelCase`                           | `snake_case`                 |
 
 ### Detection Commands
 
@@ -196,15 +196,15 @@ grep -rn 'json:"nextCursor\|json:"prevCursor\|json:"hasMore' --include="*.go" ./
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why it's wrong | Required Action |
-|-----------------|----------------|-----------------|
-| "Database uses snake_case" | DB ≠ API body. Each layer has its convention. | **Use camelCase in JSON body tags** |
-| "It's more readable" | Consistency > personal preference. | **Follow the standard** |
-| "Existing API uses snake_case in body" | New code must comply. Migrate old APIs. | **Use camelCase for body fields** |
-| "OpenAPI spec shows snake_case" | Fix the struct tag, regenerate spec. | **Fix source, run generate-docs** |
-| "Query params should match body fields" | No. Query params = snake_case, body = camelCase. Different rules. | **Follow location-based convention** |
-| "startDate is cleaner than start_date" | Midaz standard uses snake_case for query params. Follow the standard. | **Use snake_case for query params** |
-| "Why two different conventions?" | Industry pattern: URLs use snake_case, JSON uses camelCase. Midaz follows this. | **Accept the dual convention** |
+| Rationalization                         | Why it's wrong                                                                  | Required Action                      |
+| --------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------ |
+| "Database uses snake_case"              | DB ≠ API body. Each layer has its convention.                                   | **Use camelCase in JSON body tags**  |
+| "It's more readable"                    | Consistency > personal preference.                                              | **Follow the standard**              |
+| "Existing API uses snake_case in body"  | New code must comply. Migrate old APIs.                                         | **Use camelCase for body fields**    |
+| "OpenAPI spec shows snake_case"         | Fix the struct tag, regenerate spec.                                            | **Fix source, run generate-docs**    |
+| "Query params should match body fields" | No. Query params = snake_case, body = camelCase. Different rules.               | **Follow location-based convention** |
+| "startDate is cleaner than start_date"  | Midaz standard uses snake_case for query params. Follow the standard.           | **Use snake_case for query params**  |
+| "Why two different conventions?"        | Industry pattern: URLs use snake_case, JSON uses camelCase. Midaz follows this. | **Accept the dual convention**       |
 
 ---
 
@@ -226,16 +226,21 @@ Midaz uses **two pagination strategies** depending on the entity type. Both are 
 | **Offset** | Organizations, Ledgers, Assets, Portfolios, Accounts, Products, Segments | `([]*Entity, error)` |
 | **Cursor** (preferred for high-volume) | Transactions, Operations, Balances, Audit logs, Events | `([]*Entity, CursorPagination, error)` |
 
-### Shared Query Parameters
+| Issue with Offset                                             | Cursor Solution                             |
+| ------------------------------------------------------------- | ------------------------------------------- |
+| `OFFSET 10000` scans 10k rows before returning                | `WHERE id > cursor` uses index directly     |
+| Data can skip/duplicate if records inserted during navigation | Consistent results regardless of insertions |
+| Performance degrades linearly with offset value               | Constant performance regardless of position |
 
 Both strategies share these common query parameters:
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `limit` | int | 10 | Items per page (max: `MAX_PAGINATION_LIMIT`, default 100) |
-| `sort_order` | string | "asc" | Sort direction: "asc" or "desc" |
-| `start_date` | datetime | (calculated) | Filter start date |
-| `end_date` | datetime | now | Filter end date |
+| Parameter    | Type     | Default      | Description                                  |
+| ------------ | -------- | ------------ | -------------------------------------------- |
+| `cursor`     | string   | (none)       | Base64-encoded cursor from previous response |
+| `limit`      | int      | 10           | Items per page (max: 100)                    |
+| `sort_order` | string   | "asc"        | Sort direction: "asc" or "desc"              |
+| `start_date` | datetime | (calculated) | Filter start date                            |
+| `end_date`   | datetime | now          | Filter end date                              |
 
 **Strategy-specific parameters:**
 
@@ -367,15 +372,13 @@ Used for transaction entities (transactions, operations, balances) where perform
 
 **Cursor Struct and Encoding** (from `lib-commons/commons/net/http/cursor.go`):
 
-```go
-// Cursor — base64-encoded JSON with ID and direction
-type Cursor struct {
-    ID         string `json:"id"`
-    PointsNext bool   `json:"points_next"`
-}
-
-// DecodeCursor — decodes base64 cursor string
-func DecodeCursor(encodedCursor string) (Cursor, error)
+| Parameter    | Type     | Default      | Description                                  |
+| ------------ | -------- | ------------ | -------------------------------------------- |
+| `cursor`     | string   | (none)       | Base64-encoded cursor from previous response |
+| `limit`      | int      | 10           | Items per page (max: 100)                    |
+| `sort_order` | string   | "asc"        | Sort direction: "asc" or "desc"              |
+| `start_date` | datetime | (calculated) | Filter start date                            |
+| `end_date`   | datetime | now          | Filter end date                              |
 
 // ApplyCursorPagination — adds WHERE + ORDER BY + LIMIT to squirrel query
 func ApplyCursorPagination(query squirrel.SelectBuilder, cursor Cursor, sortOrder string, limit int) (squirrel.SelectBuilder, string)
@@ -516,158 +519,10 @@ func (r *Repository) FindAll(ctx context.Context, filter libHTTP.QueryHeader) ([
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MAX_PAGINATION_LIMIT` | 100 | Maximum allowed limit per request |
-| `MAX_PAGINATION_MONTH_DATE_RANGE` | 1 | Default date range in months |
-
-### Detection Commands
-
-```bash
-# Identify which strategy an endpoint uses
-# Offset mode: handler sets Page field, repo returns ([]*Entity, error)
-grep -rn "Page:.*headerParams.Page" internal/adapters/http --include="*.go"
-
-# Cursor mode: handler calls SetCursor, repo returns CursorPagination
-grep -rn "SetCursor" internal/adapters/http --include="*.go"
-
-# Verify MAX_PAGINATION_LIMIT is enforced (ValidateParameters usage)
-grep -rn "ValidateParameters" internal/adapters/http --include="*.go"
-
-# Find endpoints missing pagination validation
-grep -rn "func.*Handler.*GetAll\|func.*Handler.*List" internal/adapters/http --include="*.go" | \
-  while read line; do
-    file=$(echo "$line" | cut -d: -f1)
-    if ! grep -q "ValidateParameters" "$file"; then
-      echo "MISSING ValidateParameters: $file"
-    fi
-  done
-```
-
-### FORBIDDEN Patterns
-
-| Pattern | Why It's Wrong |
-|---------|---------------|
-| Mixing both strategies in the same endpoint | Each endpoint MUST use one strategy consistently |
-| Missing `MAX_PAGINATION_LIMIT` enforcement | MUST use `ValidateParameters` which enforces the limit |
-| Offset on high-volume tables (>100K rows) without justification | Use cursor for transaction-class entities |
-| Returning `page` and `nextCursor` in the same response | `omitempty` tags handle this — don't override |
-| Hardcoding limit values instead of using `ValidateParameters` | Centralized validation prevents inconsistencies |
-
-### Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "All endpoints should use cursor" | Midaz uses offset for onboarding entities — both are valid | **Match strategy to entity type** |
-| "Offset is always bad" | Offset is fine for low-volume admin entities | **Use offset for organizations, ledgers, accounts** |
-| "Cursor is overkill for small tables" | Transaction tables grow fast — cursor prevents future problems | **Use cursor for transactions, operations, balances** |
-| "I'll add pagination later" | Unpaginated list endpoints are a production risk | **Add pagination from the start** |
-| "ValidateParameters is optional" | Skipping it bypasses limit enforcement | **MUST use ValidateParameters** |
-| "Page numbers are better UX" | For high-volume data, cursor is more reliable | **Choose strategy based on entity type, not preference** |
-
----
-
-## HTTP Status Code Consistency (MANDATORY)
-
-Swagger annotations with inconsistent response codes (using 200 OK for resource creation instead of 201 Created) break API contracts and client expectations.
-
-**⛔ HARD GATE:** HTTP status codes MUST match the operation semantics. Using incorrect status codes breaks API contracts and client expectations.
-
-### Status Code Rules
-
-| Operation | HTTP Method | ✅ Correct Status | ❌ Wrong Status | Description |
-|-----------|-------------|-------------------|-----------------|-------------|
-| Create resource | POST | `201 Created` | 200 OK | New resource created |
-| Update resource | PUT/PATCH | `200 OK` | 201 Created | Existing resource modified |
-| Delete resource | DELETE | `204 No Content` | 200 OK | Resource removed |
-| Get resource | GET | `200 OK` | - | Resource retrieved |
-| List resources | GET | `200 OK` | - | Collection retrieved |
-| Action endpoint | POST | `200 OK` or `202 Accepted` | 201 Created | Action performed (no resource created) |
-
-### Correct Swagger Annotations
-
-```go
-// ✅ CORRECT: 201 Created for POST that creates a resource
-// @Summary      Create a new user
-// @Success      201            {object}  mmodel.User  "Successfully created user"
-// @Router       /v1/users [post]
-func (h *Handler) CreateUser(c *fiber.Ctx) error {
-    // ... create user ...
-    return libHTTP.Created(c, user)  // Returns 201
-}
-
-// ✅ CORRECT: 200 OK for PUT that updates a resource
-// @Summary      Update user
-// @Success      200            {object}  mmodel.User  "Successfully updated user"
-// @Router       /v1/users/{id} [put]
-func (h *Handler) UpdateUser(c *fiber.Ctx) error {
-    // ... update user ...
-    return libHTTP.OK(c, user)  // Returns 200
-}
-
-// ✅ CORRECT: 204 No Content for DELETE
-// @Summary      Delete user
-// @Success      204            "Successfully deleted user"
-// @Router       /v1/users/{id} [delete]
-func (h *Handler) DeleteUser(c *fiber.Ctx) error {
-    // ... delete user ...
-    return libHTTP.NoContent(c)  // Returns 204
-}
-```
-
-### FORBIDDEN Patterns
-
-```go
-// ❌ FORBIDDEN: 200 OK for resource creation
-// @Summary      Create a new user
-// @Success      200            {object}  mmodel.User  "Successfully created user"  // WRONG: Should be 201
-// @Router       /v1/users [post]
-
-// ❌ FORBIDDEN: 201 Created for update
-// @Summary      Update user
-// @Success      201            {object}  mmodel.User  "Successfully updated user"  // WRONG: Should be 200
-// @Router       /v1/users/{id} [put]
-
-// ❌ FORBIDDEN: Mismatched annotation and implementation
-// @Success      201            {object}  mmodel.User
-// @Router       /v1/users [post]
-func (h *Handler) CreateUser(c *fiber.Ctx) error {
-    return libHTTP.OK(c, user)  // WRONG: Returns 200, annotation says 201
-}
-```
-
-### lib-commons Response Methods
-
-| Method | Status Code | Use For |
-|--------|-------------|---------|
-| `libHTTP.Created(c, data)` | 201 | POST creating a new resource |
-| `libHTTP.OK(c, data)` | 200 | GET, PUT, PATCH, action POSTs |
-| `libHTTP.NoContent(c)` | 204 | DELETE, successful operations without body |
-| `libHTTP.Accepted(c, data)` | 202 | Async operations (will be processed later) |
-
-### Detection Commands (MANDATORY)
-
-```bash
-# MANDATORY: Run before every PR with API changes
-# Find 200 OK used for POST creation endpoints
-grep -B 10 "@Router.*\[post\]" internal/adapters/http/in/*.go | grep "@Success.*200"
-
-# Find 201 Created used for PUT/PATCH endpoints (use -E for alternation)
-grep -E -B 10 "@Router.*\[(put|patch)\]" internal/adapters/http/in/*.go | grep "@Success.*201"
-
-# Expected: Both commands return 0 matches
-# If matches found: Fix annotation to use correct status code
-```
-
-### Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "200 OK is simpler" | Clients expect 201 for creation. Breaking convention breaks clients. | **Use 201 for POST creation** |
-| "Both mean success" | Different semantics: 201 = created, 200 = retrieved/updated. | **Use correct code for operation** |
-| "Frontend ignores status" | Frontend SHOULD check status. API MUST be correct. | **Use correct status code** |
-| "OpenAPI just documents" | OpenAPI is a contract. Wrong docs = broken contract. | **Match annotation to implementation** |
-| "We've always used 200" | Legacy is not justification. Fix during maintenance. | **Correct when modifying endpoint** |
+| Variable                          | Default | Description                       |
+| --------------------------------- | ------- | --------------------------------- |
+| `MAX_PAGINATION_LIMIT`            | 100     | Maximum allowed limit per request |
+| `MAX_PAGINATION_MONTH_DATE_RANGE` | 1       | Default date range in months      |
 
 ---
 
@@ -677,18 +532,18 @@ grep -E -B 10 "@Router.*\[(put|patch)\]" internal/adapters/http/in/*.go | grep "
 
 ### Source of Truth
 
-| Source | Editable | Purpose |
-|--------|----------|---------|
-| **Handler annotations** (`@Summary`, `@Param`, etc.) | ✅ YES | Define endpoint documentation |
-| **main.go annotations** (`@title`, `@version`, etc.) | ✅ YES | Define API metadata |
-| `api/swagger.json` | ❌ NO | **GENERATED** - Do not edit |
-| `api/swagger.yaml` | ❌ NO | **GENERATED** - Do not edit |
-| `api/docs.go` | ❌ NO | **GENERATED** - Do not edit |
+| Source                                               | Editable | Purpose                       |
+| ---------------------------------------------------- | -------- | ----------------------------- |
+| **Handler annotations** (`@Summary`, `@Param`, etc.) | ✅ YES   | Define endpoint documentation |
+| **main.go annotations** (`@title`, `@version`, etc.) | ✅ YES   | Define API metadata           |
+| `api/swagger.json`                                   | ❌ NO    | **GENERATED** - Do not edit   |
+| `api/swagger.yaml`                                   | ❌ NO    | **GENERATED** - Do not edit   |
+| `api/docs.go`                                        | ❌ NO    | **GENERATED** - Do not edit   |
 
 ### Required Tool
 
-| Tool | Installation | Purpose |
-|------|--------------|---------|
+| Tool          | Installation                                        | Purpose                                 |
+| ------------- | --------------------------------------------------- | --------------------------------------- |
 | `swaggo/swag` | `go install github.com/swaggo/swag/cmd/swag@latest` | Generate OpenAPI specs from annotations |
 
 ### FORBIDDEN: Editing Generated Files
@@ -698,7 +553,7 @@ grep -E -B 10 "@Router.*\[(put|patch)\]" internal/adapters/http/in/*.go | grep "
 paths:
   /v1/users:
     get:
-      summary: "Get all users"  # DON'T edit here!
+      summary: "Get all users" # DON'T edit here!
 ```
 
 ```go
@@ -711,6 +566,7 @@ func (h *Handler) GetAllUsers(c *fiber.Ctx) error {
 ```
 
 **Why this matters:**
+
 - Generated files are overwritten on each `swag init`
 - Manual edits are lost and cause confusion
 - Annotations are version-controlled with the code
@@ -742,7 +598,7 @@ func main() {
 
 ### Handler Annotations (Complete Reference)
 
-MUST: every handler function has swaggo annotations:
+Every handler function MUST have swaggo annotations:
 
 ```go
 // CreateUser creates a new user
@@ -768,17 +624,17 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 
 ### Annotation Reference Table
 
-| Annotation | Required | Description | Example |
-|------------|----------|-------------|---------|
-| `@Summary` | ✅ | Short description (shown in list) | `@Summary Create a new user` |
-| `@Description` | ✅ | Detailed description | `@Description Create a new user with validation` |
-| `@Tags` | ✅ | Group endpoints by resource | `@Tags Users` |
-| `@Accept` | For POST/PUT/PATCH | Request content type | `@Accept json` |
-| `@Produce` | ✅ | Response content type | `@Produce json` |
-| `@Param` | Per parameter | Define each parameter | See below |
-| `@Success` | ✅ | Success response | `@Success 200 {object} User` |
-| `@Failure` | ✅ | Error responses (all expected) | `@Failure 400 {object} Error` |
-| `@Router` | ✅ | Endpoint path and method | `@Router /v1/users [get]` |
+| Annotation     | Required           | Description                       | Example                                          |
+| -------------- | ------------------ | --------------------------------- | ------------------------------------------------ |
+| `@Summary`     | ✅                 | Short description (shown in list) | `@Summary Create a new user`                     |
+| `@Description` | ✅                 | Detailed description              | `@Description Create a new user with validation` |
+| `@Tags`        | ✅                 | Group endpoints by resource       | `@Tags Users`                                    |
+| `@Accept`      | For POST/PUT/PATCH | Request content type              | `@Accept json`                                   |
+| `@Produce`     | ✅                 | Response content type             | `@Produce json`                                  |
+| `@Param`       | Per parameter      | Define each parameter             | See below                                        |
+| `@Success`     | ✅                 | Success response                  | `@Success 200 {object} User`                     |
+| `@Failure`     | ✅                 | Error responses (all expected)    | `@Failure 400 {object} Error`                    |
+| `@Router`      | ✅                 | Endpoint path and method          | `@Router /v1/users [get]`                        |
 
 ### @Param Syntax
 
@@ -796,10 +652,9 @@ Required: true, false
 // Path parameter
 // @Param  id  path  string  true  "User ID (UUID format)"
 
-// Query parameter (pagination - cursor or page depending on entity type)
-// @Param  cursor  query  string  false  "Base64-encoded cursor from previous response (cursor mode)"
-// @Param  page    query  int     false  "Page number, 1-based (offset mode)"
-// @Param  limit   query  int     false  "Items per page (default: 10, max: 100)"
+// Query parameter
+// @Param  page   query  int     false  "Page number (default: 1)"
+// @Param  limit  query  int     false  "Items per page (default: 10, max: 100)"
 
 // Header parameter
 // @Param  Authorization  header  string  true   "Authorization Bearer Token"
@@ -811,16 +666,16 @@ Required: true, false
 
 ### Required Failure Responses
 
-MUST document these failure responses for every endpoint:
+Every endpoint MUST document these failure responses:
 
-| Status | When | Annotation |
-|--------|------|------------|
-| 400 | Invalid input/validation | `@Failure 400 {object} mmodel.Error "Invalid input"` |
-| 401 | Missing/invalid auth | `@Failure 401 {object} mmodel.Error "Unauthorized"` |
-| 403 | Insufficient permissions | `@Failure 403 {object} mmodel.Error "Forbidden"` |
-| 404 | Resource not found (for GET/PUT/DELETE by ID) | `@Failure 404 {object} mmodel.Error "Not found"` |
-| 409 | Conflict (for POST creating duplicates) | `@Failure 409 {object} mmodel.Error "Conflict"` |
-| 500 | Internal error | `@Failure 500 {object} mmodel.Error "Internal error"` |
+| Status | When                                          | Annotation                                            |
+| ------ | --------------------------------------------- | ----------------------------------------------------- |
+| 400    | Invalid input/validation                      | `@Failure 400 {object} mmodel.Error "Invalid input"`  |
+| 401    | Missing/invalid auth                          | `@Failure 401 {object} mmodel.Error "Unauthorized"`   |
+| 403    | Insufficient permissions                      | `@Failure 403 {object} mmodel.Error "Forbidden"`      |
+| 404    | Resource not found (for GET/PUT/DELETE by ID) | `@Failure 404 {object} mmodel.Error "Not found"`      |
+| 409    | Conflict (for POST creating duplicates)       | `@Failure 409 {object} mmodel.Error "Conflict"`       |
+| 500    | Internal error                                | `@Failure 500 {object} mmodel.Error "Internal error"` |
 
 ### Generation Command
 
@@ -828,19 +683,19 @@ MUST document these failure responses for every endpoint:
 
 **Quick reference:**
 
-| Command | Purpose |
-|---------|---------|
+| Command              | Purpose                           |
+| -------------------- | --------------------------------- |
 | `make generate-docs` | Generate Swagger from annotations |
-| `make dev-setup` | Install swag and other tools |
+| `make dev-setup`     | Install swag and other tools      |
 
 **swag init parameters:**
 
-| Flag | Purpose |
-|------|---------|
-| `-g cmd/app/main.go` | Entry point with API metadata |
-| `-o api` | Output directory |
-| `--parseDependency` | Parse external dependencies for models |
-| `--parseInternal` | Parse internal packages |
+| Flag                 | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `-g cmd/app/main.go` | Entry point with API metadata          |
+| `-o api`             | Output directory                       |
+| `--parseDependency`  | Parse external dependencies for models |
+| `--parseInternal`    | Parse internal packages                |
 
 ### Generated Files Structure
 
@@ -900,13 +755,401 @@ make generate-docs && git diff --exit-code api/
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why it's wrong | Required Action |
+| Rationalization                        | Why it's wrong                                   | Required Action                         |
+| -------------------------------------- | ------------------------------------------------ | --------------------------------------- |
+| "Editing YAML is faster"               | Edits are lost on next generation. Causes drift. | **Edit annotations, run generate-docs** |
+| "The annotation is verbose"            | Verbosity ensures complete documentation.        | **Write complete annotations**          |
+| "I'll add annotations later"           | Later = never. Undocumented APIs are incomplete. | **Add annotations with the handler**    |
+| "Only public APIs need docs"           | All APIs need docs for internal developers too.  | **Document all endpoints**              |
+| "CodeRabbit can fix the YAML directly" | YAML is generated. Fix the source (annotations). | **Edit handler annotations**            |
+
+### Detection Commands
+
+```bash
+# Identify which strategy an endpoint uses
+# Offset mode: handler sets Page field, repo returns ([]*Entity, error)
+grep -rn "Page:.*headerParams.Page" internal/adapters/http --include="*.go"
+
+# Cursor mode: handler calls SetCursor, repo returns CursorPagination
+grep -rn "SetCursor" internal/adapters/http --include="*.go"
+
+# Verify MAX_PAGINATION_LIMIT is enforced (ValidateParameters usage)
+grep -rn "ValidateParameters" internal/adapters/http --include="*.go"
+
+# Find endpoints missing pagination validation
+grep -rn "func.*Handler.*GetAll\|func.*Handler.*List" internal/adapters/http --include="*.go" | \
+  while read line; do
+    file=$(echo "$line" | cut -d: -f1)
+    if ! grep -q "ValidateParameters" "$file"; then
+      echo "MISSING ValidateParameters: $file"
+    fi
+  done
+```
+
+### FORBIDDEN Patterns
+
+| Pattern | Why It's Wrong |
+|---------|---------------|
+| Mixing both strategies in the same endpoint | Each endpoint MUST use one strategy consistently |
+| Missing `MAX_PAGINATION_LIMIT` enforcement | MUST use `ValidateParameters` which enforces the limit |
+| Offset on high-volume tables (>100K rows) without justification | Use cursor for transaction-class entities |
+| Returning `page` and `nextCursor` in the same response | `omitempty` tags handle this — don't override |
+| Hardcoding limit values instead of using `ValidateParameters` | Centralized validation prevents inconsistencies |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Editing YAML is faster" | Edits are lost on next generation. Causes drift. | **Edit annotations, run generate-docs** |
-| "The annotation is verbose" | Verbosity ensures complete documentation. | **Write complete annotations** |
-| "I'll add annotations later" | Later = never. Undocumented APIs are incomplete. | **Add annotations with the handler** |
-| "Only public APIs need docs" | All APIs need docs for internal developers too. | **Document all endpoints** |
-| "CodeRabbit can fix the YAML directly" | YAML is generated. Fix the source (annotations). | **Edit handler annotations** |
+| "All endpoints should use cursor" | Midaz uses offset for onboarding entities — both are valid | **Match strategy to entity type** |
+| "Offset is always bad" | Offset is fine for low-volume admin entities | **Use offset for organizations, ledgers, accounts** |
+| "Cursor is overkill for small tables" | Transaction tables grow fast — cursor prevents future problems | **Use cursor for transactions, operations, balances** |
+| "I'll add pagination later" | Unpaginated list endpoints are a production risk | **Add pagination from the start** |
+| "ValidateParameters is optional" | Skipping it bypasses limit enforcement | **MUST use ValidateParameters** |
+| "Page numbers are better UX" | For high-volume data, cursor is more reliable | **Choose strategy based on entity type, not preference** |
+
+---
+
+## HTTP Status Code Consistency (MANDATORY)
+
+Swagger annotations with inconsistent response codes (using 200 OK for resource creation instead of 201 Created) break API contracts and client expectations.
+
+**⛔ HARD GATE:** HTTP status codes MUST match the operation semantics. Using incorrect status codes breaks API contracts and client expectations.
+
+### Status Code Rules
+
+| Operation       | HTTP Method | ✅ Correct Status          | ❌ Wrong Status | Description                            |
+| --------------- | ----------- | -------------------------- | --------------- | -------------------------------------- |
+| Create resource | POST        | `201 Created`              | 200 OK          | New resource created                   |
+| Update resource | PUT/PATCH   | `200 OK`                   | 201 Created     | Existing resource modified             |
+| Delete resource | DELETE      | `204 No Content`           | 200 OK          | Resource removed                       |
+| Get resource    | GET         | `200 OK`                   | -               | Resource retrieved                     |
+| List resources  | GET         | `200 OK`                   | -               | Collection retrieved                   |
+| Action endpoint | POST        | `200 OK` or `202 Accepted` | 201 Created     | Action performed (no resource created) |
+
+### Correct Swagger Annotations
+
+```go
+// ✅ CORRECT: 201 Created for POST that creates a resource
+// @Summary      Create a new user
+// @Success      201            {object}  mmodel.User  "Successfully created user"
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    // ... create user ...
+    return libHTTP.Created(c, user)  // Returns 201
+}
+
+// ✅ CORRECT: 200 OK for PUT that updates a resource
+// @Summary      Update user
+// @Success      200            {object}  mmodel.User  "Successfully updated user"
+// @Router       /v1/users/{id} [put]
+func (h *Handler) UpdateUser(c *fiber.Ctx) error {
+    // ... update user ...
+    return libHTTP.OK(c, user)  // Returns 200
+}
+
+// ✅ CORRECT: 204 No Content for DELETE
+// @Summary      Delete user
+// @Success      204            "Successfully deleted user"
+// @Router       /v1/users/{id} [delete]
+func (h *Handler) DeleteUser(c *fiber.Ctx) error {
+    // ... delete user ...
+    return libHTTP.NoContent(c)  // Returns 204
+}
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: 200 OK for resource creation
+// @Summary      Create a new user
+// @Success      200            {object}  mmodel.User  "Successfully created user"  // WRONG: Should be 201
+// @Router       /v1/users [post]
+
+// ❌ FORBIDDEN: 201 Created for update
+// @Summary      Update user
+// @Success      201            {object}  mmodel.User  "Successfully updated user"  // WRONG: Should be 200
+// @Router       /v1/users/{id} [put]
+
+// ❌ FORBIDDEN: Mismatched annotation and implementation
+// @Success      201            {object}  mmodel.User
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    return libHTTP.OK(c, user)  // WRONG: Returns 200, annotation says 201
+}
+```
+
+### lib-commons Response Methods
+
+| Method                      | Status Code | Use For                                    |
+| --------------------------- | ----------- | ------------------------------------------ |
+| `libHTTP.Created(c, data)`  | 201         | POST creating a new resource               |
+| `libHTTP.OK(c, data)`       | 200         | GET, PUT, PATCH, action POSTs              |
+| `libHTTP.NoContent(c)`      | 204         | DELETE, successful operations without body |
+| `libHTTP.Accepted(c, data)` | 202         | Async operations (will be processed later) |
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR with API changes
+# Find 200 OK used for POST creation endpoints
+grep -B 10 "@Router.*\[post\]" internal/adapters/http/in/*.go | grep "@Success.*200"
+
+# Find 201 Created used for PUT/PATCH endpoints (use -E for alternation)
+grep -E -B 10 "@Router.*\[(put|patch)\]" internal/adapters/http/in/*.go | grep "@Success.*201"
+
+# Expected: Both commands return 0 matches
+# If matches found: Fix annotation to use correct status code
+```
+
+### Anti-Rationalization Table
+
+| Rationalization           | Why It's WRONG                                                       | Required Action                        |
+| ------------------------- | -------------------------------------------------------------------- | -------------------------------------- |
+| "200 OK is simpler"       | Clients expect 201 for creation. Breaking convention breaks clients. | **Use 201 for POST creation**          |
+| "Both mean success"       | Different semantics: 201 = created, 200 = retrieved/updated.         | **Use correct code for operation**     |
+| "Frontend ignores status" | Frontend SHOULD check status. API MUST be correct.                   | **Use correct status code**            |
+| "OpenAPI just documents"  | OpenAPI is a contract. Wrong docs = broken contract.                 | **Match annotation to implementation** |
+| "We've always used 200"   | Legacy is not justification. Fix during maintenance.                 | **Correct when modifying endpoint**    |
+
+---
+
+## OpenAPI Documentation (Swaggo) (MANDATORY)
+
+**HARD GATE:** All API documentation MUST be generated from code annotations using swaggo. Editing generated files directly is FORBIDDEN.
+
+### Source of Truth
+
+| Source                                               | Editable | Purpose                       |
+| ---------------------------------------------------- | -------- | ----------------------------- |
+| **Handler annotations** (`@Summary`, `@Param`, etc.) | ✅ YES   | Define endpoint documentation |
+| **main.go annotations** (`@title`, `@version`, etc.) | ✅ YES   | Define API metadata           |
+| `api/swagger.json`                                   | ❌ NO    | **GENERATED** - Do not edit   |
+| `api/swagger.yaml`                                   | ❌ NO    | **GENERATED** - Do not edit   |
+| `api/docs.go`                                        | ❌ NO    | **GENERATED** - Do not edit   |
+
+### Required Tool
+
+| Tool          | Installation                                        | Purpose                                 |
+| ------------- | --------------------------------------------------- | --------------------------------------- |
+| `swaggo/swag` | `go install github.com/swaggo/swag/cmd/swag@latest` | Generate OpenAPI specs from annotations |
+
+### FORBIDDEN: Editing Generated Files
+
+```yaml
+# ❌ FORBIDDEN: Directly editing api/swagger.yaml
+paths:
+  /v1/users:
+    get:
+      summary: "Get all users" # DON'T edit here!
+```
+
+```go
+// ✅ CORRECT: Edit the annotation in the handler
+// @Summary      Get all users
+// @Description  Retrieve a paginated list of all users
+// @Tags         Users
+// @Router       /v1/users [get]
+func (h *Handler) GetAllUsers(c *fiber.Ctx) error {
+```
+
+**Why this matters:**
+
+- Generated files are overwritten on each `swag init`
+- Manual edits are lost and cause confusion
+- Annotations are version-controlled with the code
+- Single source of truth prevents drift
+
+### API Metadata (main.go)
+
+Add these annotations above your `main()` function:
+
+```go
+// @title           Service Name API
+// @version         v1.0.0
+// @description     Brief description of this service API.
+
+// @termsOfService  http://swagger.io/terms/
+// @contact.name    Discord community
+// @contact.url     https://discord.gg/DnhqKwkGv3
+
+// @license.name    Apache 2.0
+// @license.url     http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host            localhost:3000
+// @BasePath        /
+
+func main() {
+    // ...
+}
+```
+
+### Handler Annotations (Complete Reference)
+
+MUST: every handler function has swaggo annotations:
+
+```go
+// CreateUser creates a new user
+// @Summary      Create a new user
+// @Description  Create a new user with the provided information
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        Authorization  header    string                 true  "Authorization Bearer Token"
+// @Param        X-Request-Id   header    string                 false "Request ID for tracing"
+// @Param        user           body      mmodel.CreateUserInput true  "User creation payload"
+// @Success      201            {object}  mmodel.User            "Successfully created user"
+// @Failure      400            {object}  mmodel.Error           "Invalid input, validation errors"
+// @Failure      401            {object}  mmodel.Error           "Unauthorized access"
+// @Failure      403            {object}  mmodel.Error           "Forbidden access"
+// @Failure      409            {object}  mmodel.Error           "Conflict: User already exists"
+// @Failure      500            {object}  mmodel.Error           "Internal server error"
+// @Router       /v1/users [post]
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
+    // implementation
+}
+```
+
+### Annotation Reference Table
+
+| Annotation     | Required           | Description                       | Example                                          |
+| -------------- | ------------------ | --------------------------------- | ------------------------------------------------ |
+| `@Summary`     | ✅                 | Short description (shown in list) | `@Summary Create a new user`                     |
+| `@Description` | ✅                 | Detailed description              | `@Description Create a new user with validation` |
+| `@Tags`        | ✅                 | Group endpoints by resource       | `@Tags Users`                                    |
+| `@Accept`      | For POST/PUT/PATCH | Request content type              | `@Accept json`                                   |
+| `@Produce`     | ✅                 | Response content type             | `@Produce json`                                  |
+| `@Param`       | Per parameter      | Define each parameter             | See below                                        |
+| `@Success`     | ✅                 | Success response                  | `@Success 200 {object} User`                     |
+| `@Failure`     | ✅                 | Error responses (all expected)    | `@Failure 400 {object} Error`                    |
+| `@Router`      | ✅                 | Endpoint path and method          | `@Router /v1/users [get]`                        |
+
+### @Param Syntax
+
+```text
+@Param  name  location  type  required  "description"
+
+Locations: path, query, header, body, formData
+Types: string, int, bool, object (for body)
+Required: true, false
+```
+
+**Examples:**
+
+```go
+// Path parameter
+// @Param  id  path  string  true  "User ID (UUID format)"
+
+// Query parameter (pagination - cursor or page depending on entity type)
+// @Param  cursor  query  string  false  "Base64-encoded cursor from previous response (cursor mode)"
+// @Param  page    query  int     false  "Page number, 1-based (offset mode)"
+// @Param  limit   query  int     false  "Items per page (default: 10, max: 100)"
+
+// Header parameter
+// @Param  Authorization  header  string  true   "Authorization Bearer Token"
+// @Param  X-Request-Id   header  string  false  "Request ID for tracing"
+
+// Body parameter
+// @Param  user  body  mmodel.CreateUserInput  true  "User creation payload"
+```
+
+### Required Failure Responses
+
+MUST document these failure responses for every endpoint:
+
+| Status | When                                          | Annotation                                            |
+| ------ | --------------------------------------------- | ----------------------------------------------------- |
+| 400    | Invalid input/validation                      | `@Failure 400 {object} mmodel.Error "Invalid input"`  |
+| 401    | Missing/invalid auth                          | `@Failure 401 {object} mmodel.Error "Unauthorized"`   |
+| 403    | Insufficient permissions                      | `@Failure 403 {object} mmodel.Error "Forbidden"`      |
+| 404    | Resource not found (for GET/PUT/DELETE by ID) | `@Failure 404 {object} mmodel.Error "Not found"`      |
+| 409    | Conflict (for POST creating duplicates)       | `@Failure 409 {object} mmodel.Error "Conflict"`       |
+| 500    | Internal error                                | `@Failure 500 {object} mmodel.Error "Internal error"` |
+
+### Generation Command
+
+**See [devops.md - Documentation Commands](../devops.md#documentation-commands-mandatory)** for the complete Makefile implementation.
+
+**Quick reference:**
+
+| Command              | Purpose                           |
+| -------------------- | --------------------------------- |
+| `make generate-docs` | Generate Swagger from annotations |
+| `make dev-setup`     | Install swag and other tools      |
+
+**swag init parameters:**
+
+| Flag                 | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `-g cmd/app/main.go` | Entry point with API metadata          |
+| `-o api`             | Output directory                       |
+| `--parseDependency`  | Parse external dependencies for models |
+| `--parseInternal`    | Parse internal packages                |
+
+### Generated Files Structure
+
+```text
+/api
+  docs.go         # Go code for embedding (GENERATED)
+  swagger.json    # OpenAPI spec in JSON (GENERATED)
+  swagger.yaml    # OpenAPI spec in YAML (GENERATED)
+```
+
+### Workflow for OpenAPI Changes
+
+```text
+1. Receive CodeRabbit issue about OpenAPI spec
+2. Identify which handler needs the change
+3. Edit the ANNOTATION in the handler Go file
+4. Run: make generate-docs
+5. Commit BOTH: handler change + regenerated api/ files
+6. Verify the spec change in swagger.yaml
+```
+
+### Anti-Patterns (FORBIDDEN)
+
+```go
+// ❌ FORBIDDEN: Handler without annotations
+func (h *Handler) GetUser(c *fiber.Ctx) error {
+    // No swaggo annotations = undocumented endpoint
+}
+
+// ❌ FORBIDDEN: Missing required failure responses
+// @Success 200 {object} User
+// @Router  /v1/users/{id} [get]
+// Missing: @Failure 400, 401, 403, 404, 500
+
+// ❌ FORBIDDEN: Vague descriptions
+// @Summary Get user
+// @Description Get user
+// Should be: @Description Retrieve a user by their unique identifier (UUID)
+```
+
+### Detection Commands
+
+```bash
+# Find handlers without @Router annotation (undocumented)
+grep -rn "func.*Handler.*fiber.Ctx" --include="*.go" ./internal/adapters/http | \
+  while read line; do
+    file=$(echo "$line" | cut -d: -f1)
+    linenum=$(echo "$line" | cut -d: -f2)
+    if ! head -n "$linenum" "$file" | tail -20 | grep -q "@Router"; then
+      echo "Missing @Router: $line"
+    fi
+  done
+
+# Verify api/ files are in sync (should show no diff after generate-docs)
+make generate-docs && git diff --exit-code api/
+```
+
+### Anti-Rationalization Table
+
+| Rationalization                        | Why it's wrong                                   | Required Action                         |
+| -------------------------------------- | ------------------------------------------------ | --------------------------------------- |
+| "Editing YAML is faster"               | Edits are lost on next generation. Causes drift. | **Edit annotations, run generate-docs** |
+| "The annotation is verbose"            | Verbosity ensures complete documentation.        | **Write complete annotations**          |
+| "I'll add annotations later"           | Later = never. Undocumented APIs are incomplete. | **Add annotations with the handler**    |
+| "Only public APIs need docs"           | All APIs need docs for internal developers too.  | **Document all endpoints**              |
+| "CodeRabbit can fix the YAML directly" | YAML is generated. Fix the source (annotations). | **Edit handler annotations**            |
 
 ---
 
@@ -918,12 +1161,12 @@ Handlers with implicit dependencies make testing difficult and hide coupling. Di
 
 ### Why Constructor Pattern Is MANDATORY
 
-| Problem | Without Constructor | With Constructor |
-|---------|---------------------|------------------|
-| Dependency visibility | Hidden in struct | Explicit in signature |
-| Nil checks | Scattered in methods | Single place in constructor |
-| Testing | Mock injection difficult | Clean dependency injection |
-| Compilation safety | Runtime nil panics | Compile-time errors |
+| Problem               | Without Constructor      | With Constructor            |
+| --------------------- | ------------------------ | --------------------------- |
+| Dependency visibility | Hidden in struct         | Explicit in signature       |
+| Nil checks            | Scattered in methods     | Single place in constructor |
+| Testing               | Mock injection difficult | Clean dependency injection  |
+| Compilation safety    | Runtime nil panics       | Compile-time errors         |
 
 ### Handler Constructor Pattern
 
@@ -1040,13 +1283,13 @@ grep -rn "type.*Handler struct" internal/adapters/http/in --include="*.go" -A 10
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Direct initialization is simpler" | Simplicity now = nil panics later. | **Use constructor** |
-| "I'll add validation later" | Later = production incident. Fail fast at startup. | **Add validation in constructor** |
-| "Tests can set fields directly" | Tests should use same constructor as production. | **Use constructor in tests too** |
-| "Handler is small, doesn't need it" | Consistency matters more than size. | **Use constructor for all handlers** |
-| "Public fields are easier to access" | Easier access = easier to corrupt. | **Use private fields + constructor** |
+| Rationalization                      | Why It's WRONG                                     | Required Action                      |
+| ------------------------------------ | -------------------------------------------------- | ------------------------------------ |
+| "Direct initialization is simpler"   | Simplicity now = nil panics later.                 | **Use constructor**                  |
+| "I'll add validation later"          | Later = production incident. Fail fast at startup. | **Add validation in constructor**    |
+| "Tests can set fields directly"      | Tests should use same constructor as production.   | **Use constructor in tests too**     |
+| "Handler is small, doesn't need it"  | Consistency matters more than size.                | **Use constructor for all handlers** |
+| "Public fields are easier to access" | Easier access = easier to corrupt.                 | **Use private fields + constructor** |
 
 ---
 
@@ -1113,19 +1356,19 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 
 ### Common Validation Tags Reference
 
-| Tag | Description | Example |
-|-----|-------------|---------|
-| `required` | Field must be present and non-zero | `validate:"required"` |
-| `email` | Valid email format | `validate:"email"` |
-| `uuid` | Valid UUID format | `validate:"uuid"` |
-| `min` | Minimum length (string) or value (number) | `validate:"min=1"` |
-| `max` | Maximum length (string) or value (number) | `validate:"max=255"` |
-| `gte` | Greater than or equal | `validate:"gte=0"` |
-| `lte` | Less than or equal | `validate:"lte=100"` |
-| `oneof` | Value must be one of listed | `validate:"oneof=active inactive"` |
-| `e164` | International phone format | `validate:"e164"` |
-| `url` | Valid URL format | `validate:"url"` |
-| `iso8601` | Valid ISO8601 date | `validate:"iso8601"` |
+| Tag        | Description                               | Example                            |
+| ---------- | ----------------------------------------- | ---------------------------------- |
+| `required` | Field must be present and non-zero        | `validate:"required"`              |
+| `email`    | Valid email format                        | `validate:"email"`                 |
+| `uuid`     | Valid UUID format                         | `validate:"uuid"`                  |
+| `min`      | Minimum length (string) or value (number) | `validate:"min=1"`                 |
+| `max`      | Maximum length (string) or value (number) | `validate:"max=255"`               |
+| `gte`      | Greater than or equal                     | `validate:"gte=0"`                 |
+| `lte`      | Less than or equal                        | `validate:"lte=100"`               |
+| `oneof`    | Value must be one of listed               | `validate:"oneof=active inactive"` |
+| `e164`     | International phone format                | `validate:"e164"`                  |
+| `url`      | Valid URL format                          | `validate:"url"`                   |
+| `iso8601`  | Valid ISO8601 date                        | `validate:"iso8601"`               |
 
 ### Validation Error Translation
 
@@ -1293,13 +1536,13 @@ grep -rn 'Params("id")' internal/adapters/http --include="*.go" -A 3 | \
 
 ### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Frontend validates input" | Frontend can be bypassed. Server is last defense. | **Validate on server** |
-| "Input comes from trusted service" | Services can be compromised. Trust nothing. | **Validate all input** |
-| "Validation is expensive" | Invalid data processing is more expensive. Fail fast. | **Validate early** |
-| "Database will reject invalid data" | Database errors are cryptic. Validate for clear messages. | **Validate before DB** |
-| "Small internal API doesn't need it" | Internal APIs become external. Build right from start. | **Validate all APIs** |
-| "Manual validation is clearer" | Tags are declarative and consistent. Manual is error-prone. | **Use validation tags** |
+| Rationalization                      | Why It's WRONG                                              | Required Action         |
+| ------------------------------------ | ----------------------------------------------------------- | ----------------------- |
+| "Frontend validates input"           | Frontend can be bypassed. Server is last defense.           | **Validate on server**  |
+| "Input comes from trusted service"   | Services can be compromised. Trust nothing.                 | **Validate all input**  |
+| "Validation is expensive"            | Invalid data processing is more expensive. Fail fast.       | **Validate early**      |
+| "Database will reject invalid data"  | Database errors are cryptic. Validate for clear messages.   | **Validate before DB**  |
+| "Small internal API doesn't need it" | Internal APIs become external. Build right from start.      | **Validate all APIs**   |
+| "Manual validation is clearer"       | Tags are declarative and consistent. Manual is error-prone. | **Use validation tags** |
 
 ---

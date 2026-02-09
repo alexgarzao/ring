@@ -96,6 +96,10 @@ agent_selection:
     - pattern: "*.tsx"
       keywords: ["react", "next", "frontend", "component", "page"]
       agent: "frontend-bff-engineer-typescript"
+    - pattern: "*.tsx"
+      keywords: ["ux-criteria", "wireframe", "user-flow", "design-spec", "product-designer"]
+      precondition: "docs/pre-dev/{feature}/ux-criteria.md exists"
+      agent: "ui-engineer"
     - pattern: "*.css|*.scss"
       keywords: ["design", "visual", "aesthetic", "styling", "ui"]
       agent: "ring:frontend-designer"
@@ -564,12 +568,16 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 ## Agent Selection Guide
 
-| Language | Service Type | Agent |
-|----------|--------------|-------|
-| Go | API, Worker, Batch, CLI | `ring:backend-engineer-golang` |
-| TypeScript | API, Worker | `ring:backend-engineer-typescript` |
-| TypeScript | Frontend, BFF | `frontend-bff-engineer-typescript` |
-| React/CSS | Design, Styling | `ring:frontend-designer` |
+| Language | Service Type | Condition | Agent |
+|----------|--------------|-----------|-------|
+| Go | API, Worker, Batch, CLI | - | `ring:backend-engineer-golang` |
+| TypeScript | API, Worker | - | `ring:backend-engineer-typescript` |
+| TypeScript | Frontend, BFF | No product-designer outputs | `ring:frontend-bff-engineer-typescript` |
+| TypeScript | Frontend | ux-criteria.md exists | `ring:ui-engineer` |
+| React/CSS | Design, Styling | - | `ring:frontend-designer` |
+
+**ui-engineer Selection:**
+When implementing frontend features with product-designer outputs (ux-criteria.md, user-flows.md, wireframes/), use `ring:ui-engineer` instead of `ring:frontend-bff-engineer-typescript`. The ui-engineer specializes in translating design specifications into production code while ensuring all UX criteria are satisfied.
 
 ---
 

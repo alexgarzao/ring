@@ -8,13 +8,13 @@ This module covers data transformation, error handling, and function design.
 
 ## Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
-| 1 | [Data Transformation: ToEntity/FromEntity](#data-transformation-toentityfromentity-mandatory) | Database model to domain entity conversion |
-| 2 | [Error Codes Convention](#error-codes-convention-mandatory) | Service-prefixed error codes |
-| 3 | [Error Handling](#error-handling) | Error wrapping and checking rules |
-| 4 | [Exit/Fatal Location Rules](#exitfatal-location-rules-mandatory) | Where exit/fatal/panic is allowed |
-| 5 | [Function Design](#function-design-mandatory) | Single responsibility principle |
+| #   | Section                                                                                       | Description                                |
+| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 1   | [Data Transformation: ToEntity/FromEntity](#data-transformation-toentityfromentity-mandatory) | Database model to domain entity conversion |
+| 2   | [Error Codes Convention](#error-codes-convention-mandatory)                                   | Service-prefixed error codes               |
+| 3   | [Error Handling](#error-handling)                                                             | Error wrapping and checking rules          |
+| 4   | [Exit/Fatal Location Rules](#exitfatal-location-rules-mandatory)                              | Where exit/fatal/panic is allowed          |
+| 5   | [Function Design](#function-design-mandatory)                                                 | Single responsibility principle            |
 
 ---
 
@@ -85,12 +85,12 @@ Each service **MUST** define error codes with a service-specific prefix.
 
 ### Service Prefixes
 
-| Service | Prefix | Example |
-|---------|--------|---------|
-| Lerian | LRN | LRN-0001 |
-| Plugin-Fees | FEE | FEE-0001 |
-| Plugin-Auth | AUT | AUT-0001 |
-| Platform | PLT | PLT-0001 |
+| Service     | Prefix | Example  |
+| ----------- | ------ | -------- |
+| Lerian      | LRN    | LRN-0001 |
+| Plugin-Fees | FEE    | FEE-0001 |
+| Plugin-Auth | AUT    | AUT-0001 |
+| Platform    | PLT    | PLT-0001 |
 
 ### Error Code Structure
 
@@ -155,13 +155,13 @@ func ValidateBusinessError(err *BusinessError, entityType string, args ...any) e
 
 #### Why Sentinel Errors Are MANDATORY
 
-| Benefit | Explanation |
-|---------|-------------|
+| Benefit           | Explanation                                                        |
+| ----------------- | ------------------------------------------------------------------ |
 | **Comparability** | Callers can use `errors.Is(err, ErrNotFound)` for precise handling |
-| **Documentation** | All possible errors are visible in one place |
-| **Type safety** | IDE autocomplete, refactoring support |
-| **Testing** | Tests can assert exact error types |
-| **API contracts** | Errors are part of the public API |
+| **Documentation** | All possible errors are visible in one place                       |
+| **Type safety**   | IDE autocomplete, refactoring support                              |
+| **Testing**       | Tests can assert exact error types                                 |
+| **API contracts** | Errors are part of the public API                                  |
 
 #### Correct Pattern (REQUIRED)
 
@@ -272,13 +272,13 @@ return fmt.Errorf("unexpected response from API: status=%d, body=%s", status, bo
 
 #### Anti-Rationalization Table
 
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "The error message is descriptive enough" | Descriptive ≠ comparable. Callers cannot use `errors.Is()`. | **Define sentinel error** |
-| "No one needs to check this specific error" | You don't know future callers. Make errors checkable. | **Define sentinel error** |
-| "It's just a validation error" | Validation errors are domain errors. Define them. | **Define sentinel error** |
-| "I'm wrapping with context anyway" | Wrap sentinels: `fmt.Errorf("context: %w", ErrNotFound)` | **Define sentinel, then wrap** |
-| "Too many error variables" | Explicit > implicit. All errors documented in one place. | **Define all sentinels** |
+| Rationalization                             | Why It's WRONG                                              | Required Action                |
+| ------------------------------------------- | ----------------------------------------------------------- | ------------------------------ |
+| "The error message is descriptive enough"   | Descriptive ≠ comparable. Callers cannot use `errors.Is()`. | **Define sentinel error**      |
+| "No one needs to check this specific error" | You don't know future callers. Make errors checkable.       | **Define sentinel error**      |
+| "It's just a validation error"              | Validation errors are domain errors. Define them.           | **Define sentinel error**      |
+| "I'm wrapping with context anyway"          | Wrap sentinels: `fmt.Errorf("context: %w", ErrNotFound)`    | **Define sentinel, then wrap** |
+| "Too many error variables"                  | Explicit > implicit. All errors documented in one place.    | **Define all sentinels**       |
 
 ### Error Wrapping Rules
 
@@ -316,202 +316,103 @@ return nil, nil // SUSPICIOUS - check if error is possible
 
 ## Exit/Fatal Location Rules (MANDATORY)
 
-**HARD GATE:** Internal functions MUST return errors. They CANNOT terminate the program.
-
-### Where Exit/Fatal Is Allowed
-
-| Location | `log.Fatal` / `os.Exit` | `panic` | `return error` |
-|----------|-------------------------|---------|----------------|
-| `main()` | ✅ Acceptable | ✅ Last resort | N/A |
-| Bootstrap/init | ❌ FORBIDDEN | ⚠️ Only unrecoverable | ✅ Preferred |
-| Internal functions | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-| Validation functions | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-| Handlers/Services | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-| Repository/Adapters | ❌ FORBIDDEN | ❌ FORBIDDEN | ✅ MANDATORY |
-
-### Why This Matters
-
-- `log.Fatal()` and `os.Exit()` terminate immediately without cleanup
-- Callers cannot handle the error or provide user feedback
-- Telemetry/tracing data is lost (no flush)
-- Graceful shutdown hooks don't run
-- Tests cannot capture the error condition
-
-### Anti-Patterns (FORBIDDEN)
-
-```go
-// ❌ FORBIDDEN: fatal inside validation function
-func validateJSON(data []byte) {
-    if !json.Valid(data) {
-        log.Fatal("invalid JSON")  // WRONG: kills the process
-    }
-}
-
-// ❌ FORBIDDEN: panic inside internal function
-func parseConfig(path string) Config {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        panic(err)  // WRONG: caller cannot recover
-    }
-    // ...
-}
-
-// ❌ FORBIDDEN: os.Exit inside service layer
-func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) {
-    if input.Email == "" {
-        os.Exit(1)  // WRONG: catastrophic for a validation error
-    }
-}
-```
-
-### Correct Patterns (REQUIRED)
-
-```go
-// ✅ CORRECT: validation returns error
-func validateJSON(data []byte) error {
-    if !json.Valid(data) {
-        return errors.New("invalid JSON format")
-    }
-    return nil
-}
-
-// ✅ CORRECT: internal function returns error
-func parseConfig(path string) (Config, error) {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        return Config{}, fmt.Errorf("failed to read config %s: %w", path, err)
-    }
-    // ...
-    return config, nil
-}
-
-// ✅ CORRECT: main() handles fatal conditions with log.Fatalf (NOT panic)
-func main() {
-    config, err := parseConfig("config.yaml")
-    if err != nil {
-        log.Fatalf("Cannot start: %v", err)  // log.Fatalf is OK - logs and exits cleanly
-    }
-    // ...
-}
-```
+**HARD GATE:** `panic()`, `log.Fatal()`, and `os.Exit()` MUST only be used in strictly defined locations. Using them in business logic is FORBIDDEN.
 
 ### panic() Detection Checklist (MANDATORY)
 
-**⛔ HARD GATE:** Zero panic() calls allowed ANYWHERE in the codebase (except test files). This includes `cmd/`, `internal/`, and `pkg/` directories.
+**MUST scan entire codebase for `panic()` calls. Every occurrence MUST be justified or removed.**
 
-| panic() Type | Where Found | Verdict | Action |
-|--------------|-------------|---------|--------|
-| Direct `panic(err)` | Any directory | ❌ FORBIDDEN | Convert to `return err` or `log.Fatalf()` |
-| Direct `panic("message")` | Any directory | ❌ FORBIDDEN | Convert to `return errors.New()` or `log.Fatalf()` |
-| `panic(fmt.Sprintf(...))` | Any directory | ❌ FORBIDDEN | Convert to `return fmt.Errorf()` or `log.Fatalf()` |
-| Must-functions `panicOnErr()` | Any directory | ❌ FORBIDDEN | Remove helper, propagate errors |
-| `panic()` in main() | cmd/*/main.go | ❌ FORBIDDEN | Use `log.Fatalf()` instead |
+| Location | Allowed? | Reason |
+|----------|----------|--------|
+| `main()` initialization | Conditional | Only if unrecoverable (e.g., missing critical config) |
+| Test helpers (`t.Fatal`) | Yes | Tests are allowed to panic |
+| Goroutine recovery (`defer recover()`) | Yes | Recovery wrapper pattern |
+| Business logic / services | **FORBIDDEN** | MUST return error instead |
+| HTTP handlers | **FORBIDDEN** | MUST return error response |
+| Repository / adapter layer | **FORBIDDEN** | MUST return error instead |
 
 **Detection Commands:**
 
 ```bash
-# MANDATORY: Run before every PR - check ALL directories
-grep -rn "panic(" cmd/ internal/ pkg/ --include="*.go" | grep -v "_test.go"
+# Find all panic() calls in non-test files
+grep -rn "panic(" --include="*.go" --exclude="*_test.go" .
 
-# Find must-functions (panic wrappers)
-grep -rn "func must\|panicOnErr\|panicIf" . --include="*.go" | grep -v "_test.go" | grep -v vendor/
-
-# Expected result: 0 matches
-# If any match found: STOP. Fix before proceeding.
-```
-
-**✅ CORRECT Alternative:**
-
-```go
-// ❌ FORBIDDEN: must-function pattern
-func mustParseURL(raw string) *url.URL {
-    u, err := url.Parse(raw)
-    if err != nil {
-        panic(err)  // WRONG
-    }
-    return u
-}
-
-// ✅ CORRECT: Return error
-func parseURL(raw string) (*url.URL, error) {
-    u, err := url.Parse(raw)
-    if err != nil {
-        return nil, fmt.Errorf("invalid URL %q: %w", raw, err)
-    }
-    return u, nil
-}
+# Find all panic() calls (including tests, for audit)
+grep -rn "panic(" --include="*.go" .
 ```
 
 ### log.Fatal() Location Rules (MANDATORY)
 
-**⛔ HARD GATE:** `log.Fatal()` and `os.Exit()` are ONLY allowed in `main()` or immediate bootstrap failure.
+`log.Fatal()` calls `os.Exit(1)` internally, bypassing deferred functions. It MUST only appear in `main()` or initialization code.
 
-| Call Type | Location | Verdict | Why |
-|-----------|----------|---------|-----|
-| `log.Fatal()` | `main.go:main()` | ✅ Allowed | Process startup failure |
-| `log.Fatal()` | `cmd/*/main.go` | ✅ Allowed | CLI entry point |
-| `log.Fatal()` | `internal/service/*.go` | ❌ FORBIDDEN | Service cannot decide process fate |
-| `log.Fatal()` | `internal/bootstrap/*.go` | ⚠️ Review | Only for truly unrecoverable (missing DB) |
-| `os.Exit()` | Anywhere except main() | ❌ FORBIDDEN | Prevents cleanup, loses telemetry |
+| Location | Allowed? | Reason |
+|----------|----------|--------|
+| `main()` before server start | Yes | Application cannot start |
+| `init()` functions | Conditional | Only for truly fatal config issues |
+| Service/handler/repo code | **FORBIDDEN** | MUST return error to caller |
+| Goroutines | **FORBIDDEN** | Kills entire process, skips defer |
+
+**Correct Pattern:**
+
+```go
+// ✅ ALLOWED: main() initialization failure
+func main() {
+    cfg, err := config.Load()
+    if err != nil {
+        log.Fatal("failed to load config: ", err)
+    }
+    // ... start server
+}
+
+// ✅ CORRECT: Service returns error (caller decides)
+func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) (*User, error) {
+    if input.Email == "" {
+        return nil, ErrInvalidEmail  // Return error, don't panic/fatal
+    }
+    // ...
+}
+```
+
+**FORBIDDEN Pattern:**
+
+```go
+// ❌ FORBIDDEN: log.Fatal in service code
+func (s *UserService) CreateUser(ctx context.Context, input CreateUserInput) (*User, error) {
+    user, err := s.repo.Save(ctx, input)
+    if err != nil {
+        log.Fatal("failed to save user: ", err)  // KILLS process, skips defer
+    }
+    return user, nil
+}
+
+// ❌ FORBIDDEN: panic in handler
+func (h *UserHandler) Create(c *fiber.Ctx) error {
+    if c.Body() == nil {
+        panic("empty body")  // Crashes server
+    }
+    // ...
+}
+```
 
 **Detection Commands:**
 
 ```bash
-# MANDATORY: Run before every PR
-grep -rn "log\.Fatal" internal/ pkg/ --include="*.go" | grep -v "_test.go"
+# Find log.Fatal outside main.go
+grep -rn "log.Fatal" --include="*.go" --exclude="main.go" .
 
-# Check os.Exit usage
-grep -rn "os\.Exit" internal/ pkg/ --include="*.go" | grep -v "_test.go"
-
-# Expected result: 0 matches in internal/pkg
-# If any match found: STOP. Fix before proceeding.
-```
-
-**✅ CORRECT Alternative:**
-
-```go
-// ❌ FORBIDDEN: log.Fatal in internal function
-func connectDB(dsn string) *sql.DB {
-    db, err := sql.Open("postgres", dsn)
-    if err != nil {
-        log.Fatal(err)  // WRONG: caller cannot handle
-    }
-    return db
-}
-
-// ✅ CORRECT: Return error to caller
-func connectDB(dsn string) (*sql.DB, error) {
-    db, err := sql.Open("postgres", dsn)
-    if err != nil {
-        return nil, fmt.Errorf("failed to connect to database: %w", err)
-    }
-    if err := db.Ping(); err != nil {
-        return nil, fmt.Errorf("database ping failed: %w", err)
-    }
-    return db, nil
-}
-
-// ✅ CORRECT: main() decides process fate
-func main() {
-    db, err := connectDB(os.Getenv("DATABASE_URL"))
-    if err != nil {
-        log.Fatalf("Cannot start: %v", err)  // OK in main()
-    }
-    defer db.Close()
-    // ...
-}
+# Find os.Exit outside main.go and test files
+grep -rn "os.Exit" --include="*.go" --exclude="main.go" --exclude="*_test.go" .
 ```
 
 ### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "This error is truly fatal" | You don't decide. Let main() decide. | **Return error, let caller handle** |
-| "panic() is for programmer errors" | Production has no programmer errors. All are runtime. | **Return error, no panic()** |
-| "Must-functions are convenient" | Convenience crashes production. | **Remove must-functions, propagate errors** |
-| "log.Fatal is cleaner than error handling" | Clean code that crashes is not clean. | **Return error, handle in main()** |
-| "This will never fail in production" | Never = always in production. | **Return error anyway** |
-| "Tests use panic, why not production?" | Tests fail fast. Production must recover. | **Different rules for test vs production** |
+| "panic simplifies error handling" | panic crashes the process. Errors are recoverable, panics are not. | **Return error instead** |
+| "log.Fatal ensures we notice failures" | log.Fatal skips deferred cleanup (DB connections, file handles). | **Return error to caller** |
+| "It's only called during startup" | If it's not in main(), a future refactor may call it at runtime. | **Move to main() or return error** |
+| "The goroutine recovery will catch it" | Recovery only works in the same goroutine. Cross-goroutine panics kill the process. | **Return error instead** |
+| "This error should never happen" | "Should never" ≠ "will never". Handle it gracefully. | **Return error with context** |
 
 ---
 
@@ -521,12 +422,12 @@ func main() {
 
 ### Rules
 
-| Rule | Description |
-|------|-------------|
-| **One responsibility per function** | A function should do ONE thing and do it well |
-| **Max 20-30 lines** | If longer, break into smaller functions |
-| **One level of abstraction** | Don't mix high-level and low-level operations |
-| **Descriptive names** | Function name should describe its single responsibility |
+| Rule                                | Description                                             |
+| ----------------------------------- | ------------------------------------------------------- |
+| **One responsibility per function** | A function should do ONE thing and do it well           |
+| **Max 20-30 lines**                 | If longer, break into smaller functions                 |
+| **One level of abstraction**        | Don't mix high-level and low-level operations           |
+| **Descriptive names**               | Function name should describe its single responsibility |
 
 ### Examples
 
@@ -591,13 +492,12 @@ func applyDiscount(total float64, couponCode string) float64 {
 
 ### Signs a Function Has Multiple Responsibilities
 
-| Sign | Action |
-|------|--------|
-| Multiple `// section` comments | Split at comment boundaries |
-| "and" in function name | Split into separate functions |
-| More than 3 parameters | Consider parameter object or splitting |
-| Nested conditionals > 2 levels | Extract inner logic to functions |
-| Function does validation and processing | Separate validation function |
+| Sign                                    | Action                                 |
+| --------------------------------------- | -------------------------------------- |
+| Multiple `// section` comments          | Split at comment boundaries            |
+| "and" in function name                  | Split into separate functions          |
+| More than 3 parameters                  | Consider parameter object or splitting |
+| Nested conditionals > 2 levels          | Extract inner logic to functions       |
+| Function does validation and processing | Separate validation function           |
 
 ---
-

@@ -70,23 +70,25 @@ ring/                                  # Monorepo root
 
 ### Active Plugins
 
-*Versions managed in `.claude-plugin/marketplace.json`*
+_Versions managed in `.claude-plugin/marketplace.json`_
 
-| Plugin | Description | Components |
-|--------|-------------|------------|
-| **ring-default** | Core skills library | 25 skills, 7 agents, 12 commands |
-| **ring-dev-team** | Developer agents | 9 skills, 9 agents, 5 commands |
-| **ring-finops-team** | FinOps regulatory compliance | 7 skills, 3 agents |
-| **ring-pm-team** | Product planning workflows | 10 skills, 3 agents, 2 commands |
-| **ring-pmo-team** | PMO portfolio management specialists | 8 skills, 5 agents, 3 commands |
-| **ring-tw-team** | Technical writing specialists | 7 skills, 3 agents, 3 commands |
+| Plugin               | Description                          | Components                       |
+| -------------------- | ------------------------------------ | -------------------------------- |
+| **ring-default**     | Core skills library                  | 25 skills, 7 agents, 12 commands |
+| **ring-dev-team**    | Developer agents                     | 9 skills, 9 agents, 5 commands   |
+| **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
+| **ring-pm-team**     | Product planning workflows           | 10 skills, 4 agents, 2 commands  |
+| **ring-pmo-team**    | PMO portfolio management specialists | 8 skills, 5 agents, 3 commands   |
+| **ring-tw-team**     | Technical writing specialists        | 7 skills, 3 agents, 3 commands   |
 
 ## Component Hierarchy
 
 ### 1. Skills (`skills/`)
+
 **Purpose:** Core instruction sets that define workflows and best practices
 
 **Structure:**
+
 ```
 skills/
 ├── {skill-name}/
@@ -99,15 +101,18 @@ skills/
 ```
 
 **Key Characteristics:**
+
 - Self-contained directories with `SKILL.md` files
 - YAML frontmatter: `name`, `description`, `when_to_use`
 - Invoked via Claude's `Skill` tool
 - Can reference shared patterns for common behaviors
 
 ### 2. Agents (`agents/`)
+
 **Purpose:** Specialized agents that analyze code/designs or provide domain expertise using AI models
 
 **Structure (ring-default plugin):**
+
 ```
 default/agents/
 ├── ring:code-reviewer.md           # Foundation review (architecture, patterns)
@@ -120,6 +125,7 @@ default/agents/
 ```
 
 **Structure (ring-dev-team plugin):**
+
 ```
 dev-team/agents/
 ├── ring:backend-engineer-golang.md     # Go backend specialist for financial systems
@@ -134,6 +140,7 @@ dev-team/agents/
 ```
 
 **Structure (ring-pmo-team plugin):**
+
 ```
 pmo-team/agents/
 ├── portfolio-manager.md          # Portfolio-level planning and coordination
@@ -144,6 +151,7 @@ pmo-team/agents/
 ```
 
 **Key Characteristics:**
+
 - Invoked via Claude's `Task` tool with `subagent_type`
 - Must specify model (typically "opus" for comprehensive analysis)
 - Review agents run in parallel (3 reviewers dispatch simultaneously via `/ring:codereview` command)
@@ -159,17 +167,17 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 ```yaml
 - name: "Standards Compliance"
   pattern: "^## Standards Compliance"
-  required: false  # In schema, but MANDATORY when invoked from ring:dev-refactor
+  required: false # In schema, but MANDATORY when invoked from ring:dev-refactor
   description: "MANDATORY when invoked from ring:dev-refactor skill"
 ```
 
 **Conditional Requirement: `invoked_from_dev_refactor`**
 
-| Invocation Context | Standards Compliance | Detection Mechanism |
-|--------------------|---------------------|---------------------|
-| Direct agent call | Optional | N/A |
-| Via `ring:dev-cycle` skill | Optional | N/A |
-| Via `ring:dev-refactor` skill | **MANDATORY** | Prompt contains `**MODE: ANALYSIS ONLY**` |
+| Invocation Context            | Standards Compliance | Detection Mechanism                       |
+| ----------------------------- | -------------------- | ----------------------------------------- |
+| Direct agent call             | Optional             | N/A                                       |
+| Via `ring:dev-cycle` skill    | Optional             | N/A                                       |
+| Via `ring:dev-refactor` skill | **MANDATORY**        | Prompt contains `**MODE: ANALYSIS ONLY**` |
 
 **How Enforcement Works:**
 
@@ -189,6 +197,7 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 ```
 
 **Affected Agents:**
+
 - `ring:backend-engineer-golang` → loads `golang.md`
 - `ring:backend-engineer-typescript` → loads `typescript.md`
 - `ring:devops-engineer` → loads `devops.md`
@@ -198,19 +207,23 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 - `ring:sre` → loads `sre.md`
 
 **Output Format (when non-compliant):**
+
 ```markdown
 ## Standards Compliance
 
 ### Lerian/Ring Standards Comparison
-| Category | Current Pattern | Expected Pattern | Status | File/Location |
-|----------|----------------|------------------|--------|---------------|
-| Logging | fmt.Println | lib-commons/zap | ⚠️ Non-Compliant | service/*.go |
+
+| Category | Current Pattern | Expected Pattern | Status           | File/Location |
+| -------- | --------------- | ---------------- | ---------------- | ------------- |
+| Logging  | fmt.Println     | lib-commons/zap  | ⚠️ Non-Compliant | service/\*.go |
 
 ### Compliance Summary
+
 - Total Violations: N
 - Critical: N, High: N, Medium: N, Low: N
 
 ### Required Changes for Compliance
+
 1. **Category Migration**
    - Replace: `current pattern`
    - With: `expected pattern`
@@ -218,14 +231,17 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 ```
 
 **Cross-References:**
+
 - CLAUDE.md: Standards Compliance (Conditional Output Section)
 - `dev-team/skills/dev-refactor/SKILL.md`: HARD GATES defining requirement
 - `dev-team/hooks/session-start.sh`: Injects guidance at session start
 
 ### 3. Commands (`commands/`)
+
 **Purpose:** Slash commands that provide shortcuts to skills/workflows
 
 **Structure:**
+
 ```
 default/commands/
 ├── brainstorm.md       # /ring:brainstorm - Socratic design refinement
@@ -243,15 +259,18 @@ pm-team/commands/
 ```
 
 **Key Characteristics:**
+
 - Simple `.md` files with YAML frontmatter
 - Invoked via `/{command}` syntax
 - Typically reference a corresponding skill
 - Expand into full skill/agent invocation
 
 ### 4. Hooks (`hooks/`)
+
 **Purpose:** Session lifecycle management and automatic initialization
 
 **Structure:**
+
 ```
 default/hooks/
 ├── hooks.json              # Hook configuration (SessionStart, UserPromptSubmit)
@@ -261,6 +280,7 @@ default/hooks/
 ```
 
 **Key Characteristics:**
+
 - Triggers on SessionStart events (startup|resume, clear|compact)
 - Triggers on UserPromptSubmit for reminders
 - Injects skills context into Claude's memory
@@ -268,9 +288,11 @@ default/hooks/
 - Ensures mandatory workflows are loaded
 
 ### 5. Plugin Configuration (`.claude-plugin/`)
+
 **Purpose:** Integration metadata for Claude Code marketplace
 
 **Structure:**
+
 ```
 .claude-plugin/
 └── marketplace.json    # Multi-plugin registry
@@ -282,6 +304,7 @@ default/hooks/
 ```
 
 **marketplace.json Schema:**
+
 ```json
 {
   "name": "ring",
@@ -402,16 +425,19 @@ sequenceDiagram
 Ring leverages four primary Claude Code tools:
 
 1. **Skill Tool**
+
    - Invokes skills by name: `skill: "ring:test-driven-development"`
    - Skills expand into full instructions within conversation
    - Skill content becomes part of Claude's working context
 
 2. **Task Tool**
+
    - Dispatches agents to subagent instances: `Task(subagent_type="ring:code-reviewer")`
    - Enables parallel execution (multiple Tasks in one message)
    - Returns structured reports from independent analysis
 
 3. **TodoWrite Tool**
+
    - Tracks multi-step workflows: `TodoWrite(todos=[...])`
    - Integrates with skills via shared patterns
    - Provides progress visibility to users
@@ -429,6 +455,7 @@ At session start, Ring injects two critical pieces of context:
 2. **ring:using-ring Skill** - Mandatory workflow that enforces skill checking
 
 This context becomes part of Claude's memory for the entire session, ensuring:
+
 - Claude knows which skills are available
 - Mandatory workflows are enforced
 - Skills are checked before any task
@@ -491,20 +518,24 @@ Complex Skill → TodoWrite tracking
 ### Skills ↔ Agents
 
 **Difference:**
+
 - **Skills:** Instructions executed by current Claude instance
 - **Agents:** Specialized reviewers executed by separate Claude instances
 
 **Interaction:**
+
 - Skills can invoke agents (e.g., ring:requesting-code-review skill dispatches review agents)
 - Agents don't typically invoke skills (they're independent analyzers)
 
 ### Skills ↔ Commands
 
 **Relationship:** One-to-one or one-to-many mapping
+
 - Most commands map directly to a single skill
 - Some commands (like review) orchestrate multiple components
 
 **Example Mappings:**
+
 - `/ring:brainstorm` → `ring:brainstorming` skill
 - `/ring:write-plan` → `ring:writing-plans` skill
 - `/ring:codereview` → dispatches 3 parallel review agents (`ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`)
@@ -512,23 +543,28 @@ Complex Skill → TodoWrite tracking
 ### Skills ↔ Shared Patterns
 
 **Relationship:** Inheritance/composition
+
 - Skills reference shared patterns for common behaviors
 - Patterns provide reusable workflows (state tracking, failure recovery)
 
 **Example:**
+
 ```markdown
 # In a skill:
+
 See `skills/shared-patterns/todowrite-integration.md` for tracking setup
 ```
 
 ### Hooks ↔ Skills
 
 **Relationship:** Initialization and context loading
+
 - Hooks load skill metadata at session start
 - generate-skills-ref.py scans all SKILL.md frontmatter
 - session-start.sh injects ring:using-ring skill content
 
 **Data Flow:**
+
 ```
 SKILL.md frontmatter → generate-skills-ref.py → formatted overview → session context
 ```
@@ -536,6 +572,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ### Agents ↔ Models
 
 **Relationship:** Model requirement specification
+
 - Agents specify required AI model in frontmatter
 - Review agents typically require "opus" for comprehensive analysis
 - Model choice affects depth and quality of analysis
@@ -543,6 +580,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ### TodoWrite ↔ Skills
 
 **Relationship:** Progress tracking integration
+
 - Multi-step skills create TodoWrite items
 - Each phase updates todo status (pending → in_progress → completed)
 - Provides user visibility into workflow progress
@@ -550,26 +588,31 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ## Key Architectural Decisions
 
 ### 1. Parallel vs Sequential Reviews
+
 **Decision:** Reviews run in parallel, not sequentially
 **Rationale:** 3x faster feedback, comprehensive coverage, easier prioritization
 **Implementation:** Single message with multiple Task calls
 
 ### 2. Session Context Injection
+
 **Decision:** Load all skills metadata at session start
 **Rationale:** Ensures Claude always knows available capabilities
 **Trade-off:** Larger initial context vs. consistent skill awareness
 
 ### 3. Mandatory Workflows
+
 **Decision:** Some skills (ring:using-ring) are non-negotiable
 **Rationale:** Prevents common failures, enforces best practices
 **Enforcement:** Loaded automatically, contains strict instructions
 
 ### 4. Skill vs Agent Separation
+
 **Decision:** Skills for workflows, agents for analysis
 **Rationale:** Different execution models (local vs. subagent)
 **Benefit:** Clear separation of concerns
 
 ### 5. Frontmatter-Driven Discovery
+
 **Decision:** All metadata in YAML frontmatter
 **Rationale:** Single source of truth, easy parsing, consistent structure
 **Usage:** Auto-generation of documentation, skill matching
@@ -577,11 +620,13 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ## Extension Points
 
 ### Adding New Skills
+
 1. Create `skills/{name}/SKILL.md` with frontmatter
 2. Skills auto-discovered by generate-skills-ref.py
 3. Available immediately after session restart
 
 ### Adding New Agents
+
 1. Create `{plugin}/agents/{name}.md` with model specification
 2. Include YAML frontmatter: `name`, `description`, `model`, `version`
 3. Invoke via Task tool with `subagent_type="ring:{name}"`
@@ -589,16 +634,19 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 5. Developer agents provide domain expertise via direct Task invocation
 
 ### Adding New Commands
+
 1. Create `commands/{name}.md`
 2. Reference skill or agent to invoke
 3. Available via `/{name}`
 
 ### Adding Shared Patterns
+
 1. Create `skills/shared-patterns/{pattern}.md`
 2. Reference from skills that need the pattern
 3. Maintains consistency across skills
 
 ### Adding New Plugins
+
 1. Create plugin directory: `mkdir -p {plugin-name}/{skills,agents,commands,hooks,lib}`
 2. Register in `.claude-plugin/marketplace.json`:
    ```json
@@ -616,16 +664,19 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ## Performance Considerations
 
 ### Parallel Execution Benefits
+
 - **3x faster reviews** - All reviewers run simultaneously
 - **No blocking** - Independent agents don't wait for each other
 - **Better resource utilization** - Multiple Claude instances work concurrently
 
 ### Context Management
+
 - **Session start overhead** - One-time loading of skills context
 - **Skill invocation** - Skills expand inline, no additional calls
 - **Agent invocation** - Separate instances, clean context per agent
 
 ### Optimization Strategies
+
 1. **Selective agent usage** - Only invoke relevant reviewers
 2. **Skill caching** - Skills loaded once per session
 3. **Parallel by default** - Never chain reviewers sequentially
@@ -634,6 +685,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ## Common Patterns and Anti-Patterns
 
 ### Patterns to Follow
+
 ✅ Check for relevant skills before any task
 ✅ Run reviewers in parallel for speed
 ✅ Use TodoWrite for multi-step workflows
@@ -641,6 +693,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ✅ Specify models explicitly for agents
 
 ### Anti-Patterns to Avoid
+
 ❌ Skipping skill checks (violates ring:using-ring)
 ❌ Running reviewers sequentially (3x slower)
 ❌ Implementing without tests (violates TDD)
@@ -650,21 +703,25 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ## Troubleshooting Guide
 
 ### Skills Not Loading
+
 1. Check hooks/hooks.json configuration
 2. Verify session-start.sh is executable
 3. Ensure SKILL.md has valid frontmatter
 
 ### Parallel Reviews Not Working
+
 1. Ensure all Task calls in single message
 2. Verify model specification (opus required)
 3. Check agent names match exactly
 
 ### Commands Not Recognized
+
 1. Verify command file exists in commands/
 2. Check command name matches file name
 3. Ensure proper frontmatter in command file
 
 ### Context Overflow
+
 1. Consider selective skill loading
 2. Use focused agent invocations
 3. Clear completed todos regularly
@@ -672,6 +729,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ## Summary
 
 Ring's architecture is designed for:
+
 - **Modularity** - Independent, composable components across multiple plugins
 - **Performance** - Parallel execution wherever possible (3x faster reviews)
 - **Reliability** - Mandatory workflows prevent failures
@@ -681,31 +739,31 @@ Ring's architecture is designed for:
 
 ### Current State
 
-*Component counts reflect current state; plugin versions managed in `.claude-plugin/marketplace.json`*
+_Component counts reflect current state; plugin versions managed in `.claude-plugin/marketplace.json`_
 
-| Component | Count | Location |
-|-----------|-------|----------|
-| Active Plugins | 6 | All plugin directories |
-| Skills (ring-default) | 25 | `default/skills/` |
-| Skills (ring-dev-team) | 9 | `dev-team/skills/` |
-| Skills (ring-finops-team) | 7 | `finops-team/skills/` |
-| Skills (ring-pm-team) | 10 | `pm-team/skills/` |
-| Skills (ring-pmo-team) | 8 | `pmo-team/skills/` |
-| Skills (ring-tw-team) | 7 | `tw-team/skills/` |
-| **Total Skills** | **66** | **All plugins** |
-| Agents (ring-default) | 7 | `default/agents/` |
-| Agents (ring-dev-team) | 9 | `dev-team/agents/` |
-| Agents (ring-finops-team) | 3 | `finops-team/agents/` |
-| Agents (ring-pm-team) | 3 | `pm-team/agents/` |
-| Agents (ring-pmo-team) | 5 | `pmo-team/agents/` |
-| Agents (ring-tw-team) | 3 | `tw-team/agents/` |
-| **Total Agents** | **30** | **All plugins** |
-| Commands (ring-default) | 12 | `default/commands/` |
-| Commands (ring-dev-team) | 5 | `dev-team/commands/` |
-| Commands (ring-pm-team) | 2 | `pm-team/commands/` |
-| Commands (ring-pmo-team) | 3 | `pmo-team/commands/` |
-| Commands (ring-tw-team) | 3 | `tw-team/commands/` |
-| **Total Commands** | **25** | **All plugins** |
-| Hooks | Per plugin | `{plugin}/hooks/` |
+| Component                 | Count      | Location               |
+| ------------------------- | ---------- | ---------------------- |
+| Active Plugins            | 6          | All plugin directories |
+| Skills (ring-default)     | 25         | `default/skills/`      |
+| Skills (ring-dev-team)    | 9          | `dev-team/skills/`     |
+| Skills (ring-finops-team) | 7          | `finops-team/skills/`  |
+| Skills (ring-pm-team)     | 10         | `pm-team/skills/`      |
+| Skills (ring-pmo-team)    | 8          | `pmo-team/skills/`     |
+| Skills (ring-tw-team)     | 7          | `tw-team/skills/`      |
+| **Total Skills**          | **66**     | **All plugins**        |
+| Agents (ring-default)     | 7          | `default/agents/`      |
+| Agents (ring-dev-team)    | 10         | `dev-team/agents/`     |
+| Agents (ring-finops-team) | 3          | `finops-team/agents/`  |
+| Agents (ring-pm-team)     | 4          | `pm-team/agents/`      |
+| Agents (ring-pmo-team)    | 5          | `pmo-team/agents/`     |
+| Agents (ring-tw-team)     | 3          | `tw-team/agents/`      |
+| **Total Agents**          | **32**     | **All plugins**        |
+| Commands (ring-default)   | 12         | `default/commands/`    |
+| Commands (ring-dev-team)  | 5          | `dev-team/commands/`   |
+| Commands (ring-pm-team)   | 2          | `pm-team/commands/`    |
+| Commands (ring-pmo-team)  | 3          | `pmo-team/commands/`   |
+| Commands (ring-tw-team)   | 3          | `tw-team/commands/`    |
+| **Total Commands**        | **25**     | **All plugins**        |
+| Hooks                     | Per plugin | `{plugin}/hooks/`      |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.
