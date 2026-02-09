@@ -1,6 +1,6 @@
 # Go Standards - Security
 
-> **Module:** security.md | **Sections:** 5 | **Parent:** [index.md](index.md)
+> **Module:** security.md | **Sections:** 7 | **Parent:** [index.md](index.md)
 
 This module covers authentication, licensing, and secret protection.
 
@@ -15,6 +15,8 @@ This module covers authentication, licensing, and secret protection.
 | 3 | [Secret Redaction Patterns](#secret-redaction-patterns-mandatory) | Preventing credential leaks in logs |
 | 4 | [SQL Safety](#sql-safety-mandatory) | SQL injection prevention and parameterized queries |
 | 5 | [HTTP Security Headers](#http-security-headers-mandatory) | X-Content-Type-Options, X-Frame-Options |
+| 6 | [Rate Limiting](#rate-limiting-mandatory) | Three-tier rate limiting with Redis-backed storage |
+| 7 | [CORS Configuration](#cors-configuration-mandatory) | Cross-Origin Resource Sharing setup and production validation |
 
 ---
 
@@ -928,6 +930,799 @@ grep -rn "SecurityHeaders\|security.*middleware" --include="*.go" ./internal
 | "It's just an internal API" | Internal APIs can be accessed by compromised services. | **Add headers** |
 | "Headers don't affect JSON APIs" | MIME sniffing affects all responses. Clickjacking targets browsers. | **Add headers** |
 | "We'll add it later" | Later = security incident. Add now. | **Add headers immediately** |
+
+---
+
+## Rate Limiting (MANDATORY)
+
+**⛔ HARD GATE:** All public APIs MUST implement rate limiting to prevent abuse, protect against DoS attacks, and ensure fair resource allocation across tenants.
+
+### Why Rate Limiting Matters
+
+Without rate limiting, a single client can exhaust server resources, degrade performance for all users, and create cascading failures. Rate limiting is a fundamental security control that MUST be present before any service goes to production.
+
+### Three-Tier Rate Limiting Strategy
+
+Services MUST implement tiered rate limiting based on endpoint sensitivity:
+
+| Tier | Purpose | Default Limit | Applied To |
+|------|---------|---------------|------------|
+| **Global** | General API protection | 100 req/60s | All protected routes |
+| **Export** | Resource-intensive operations | 10 req/60s | Report exports, bulk operations |
+| **Dispatch** | External integration protection | 50 req/60s | Webhook dispatch, external calls |
+
+### Required Environment Variables
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `RATE_LIMIT_ENABLED` | bool | `true` | Enable/disable rate limiting |
+| `RATE_LIMIT_MAX` | int | `100` | Global max requests per window |
+| `RATE_LIMIT_EXPIRY_SEC` | int | `60` | Global window duration in seconds |
+| `EXPORT_RATE_LIMIT_MAX` | int | `10` | Export max requests per window |
+| `EXPORT_RATE_LIMIT_EXPIRY_SEC` | int | `60` | Export window duration in seconds |
+| `DISPATCH_RATE_LIMIT_MAX` | int | `50` | Dispatch max requests per window |
+| `DISPATCH_RATE_LIMIT_EXPIRY_SEC` | int | `60` | Dispatch window duration in seconds |
+
+### Configuration Struct
+
+```go
+// internal/bootstrap/config.go
+
+type RateLimitConfig struct {
+    Enabled           bool `env:"RATE_LIMIT_ENABLED"             envDefault:"true"`
+    Max               int  `env:"RATE_LIMIT_MAX"                 envDefault:"100"`
+    ExpirySec         int  `env:"RATE_LIMIT_EXPIRY_SEC"          envDefault:"60"`
+    ExportMax         int  `env:"EXPORT_RATE_LIMIT_MAX"          envDefault:"10"`
+    ExportExpirySec   int  `env:"EXPORT_RATE_LIMIT_EXPIRY_SEC"   envDefault:"60"`
+    DispatchMax       int  `env:"DISPATCH_RATE_LIMIT_MAX"        envDefault:"50"`
+    DispatchExpirySec int  `env:"DISPATCH_RATE_LIMIT_EXPIRY_SEC" envDefault:"60"`
+}
+```
+
+### Redis-Backed Distributed Storage
+
+Rate limiting MUST use Redis for distributed state across multiple instances. The storage layer implements Fiber's `fiber.Storage` interface:
+
+```go
+// pkg/http/ratelimit/redis_storage.go
+
+package ratelimit
+
+import (
+    "context"
+    "errors"
+    "time"
+
+    "github.com/redis/go-redis/v9"
+
+    libRedis "github.com/LerianStudio/lib-commons/v2/commons/redis"
+)
+
+const (
+    keyPrefix     = "ratelimit:"
+    scanBatchSize = 100
+)
+
+// Sentinel errors for rate limit storage operations.
+var (
+    ErrRedisClientUnavailable = errors.New("redis client unavailable")
+    ErrRedisGet               = errors.New("redis get failed")
+    ErrRedisSet               = errors.New("redis set failed")
+    ErrRedisDelete            = errors.New("redis delete failed")
+    ErrRedisScan              = errors.New("redis scan failed")
+    ErrRedisBatchDelete       = errors.New("redis batch delete failed")
+)
+
+// RedisStorage implements fiber.Storage interface using lib-commons Redis connection.
+// This enables distributed rate limiting across multiple application instances.
+type RedisStorage struct {
+    conn *libRedis.RedisConnection
+}
+
+// NewRedisStorage creates a new Redis-backed storage for Fiber rate limiting.
+// Returns nil if the Redis connection is nil.
+func NewRedisStorage(conn *libRedis.RedisConnection) *RedisStorage {
+    if conn == nil {
+        return nil
+    }
+
+    return &RedisStorage{conn: conn}
+}
+
+// Get retrieves the value for the given key.
+// Returns nil, nil when the key does not exist.
+func (storage *RedisStorage) Get(key string) ([]byte, error) {
+    if storage == nil || storage.conn == nil {
+        return nil, nil
+    }
+
+    ctx := context.Background()
+
+    client, err := storage.conn.GetClient(ctx)
+    if err != nil {
+        return nil, ErrRedisClientUnavailable
+    }
+
+    val, err := client.Get(ctx, keyPrefix+key).Bytes()
+    if errors.Is(err, redis.Nil) {
+        return nil, nil
+    }
+
+    if err != nil {
+        return nil, ErrRedisGet
+    }
+
+    return val, nil
+}
+
+// Set stores the given value for the given key with an expiration.
+// 0 expiration means no expiration. Empty key or value will be ignored.
+func (storage *RedisStorage) Set(key string, val []byte, exp time.Duration) error {
+    if storage == nil || storage.conn == nil {
+        return nil
+    }
+
+    if key == "" || len(val) == 0 {
+        return nil
+    }
+
+    ctx := context.Background()
+
+    client, err := storage.conn.GetClient(ctx)
+    if err != nil {
+        return ErrRedisClientUnavailable
+    }
+
+    if err := client.Set(ctx, keyPrefix+key, val, exp).Err(); err != nil {
+        return ErrRedisSet
+    }
+
+    return nil
+}
+
+// Delete removes the value for the given key.
+// Returns no error if the key does not exist.
+func (storage *RedisStorage) Delete(key string) error {
+    if storage == nil || storage.conn == nil {
+        return nil
+    }
+
+    ctx := context.Background()
+
+    client, err := storage.conn.GetClient(ctx)
+    if err != nil {
+        return ErrRedisClientUnavailable
+    }
+
+    if err := client.Del(ctx, keyPrefix+key).Err(); err != nil {
+        return ErrRedisDelete
+    }
+
+    return nil
+}
+
+// Reset clears all rate limit keys from the storage.
+// This uses SCAN to find and delete keys with the rate limit prefix.
+func (storage *RedisStorage) Reset() error {
+    if storage == nil || storage.conn == nil {
+        return nil
+    }
+
+    ctx := context.Background()
+
+    client, err := storage.conn.GetClient(ctx)
+    if err != nil {
+        return ErrRedisClientUnavailable
+    }
+
+    var cursor uint64
+
+    for {
+        keys, nextCursor, err := client.Scan(ctx, cursor, keyPrefix+"*", scanBatchSize).Result()
+        if err != nil {
+            return ErrRedisScan
+        }
+
+        if len(keys) > 0 {
+            if err := client.Del(ctx, keys...).Err(); err != nil {
+                return ErrRedisBatchDelete
+            }
+        }
+
+        cursor = nextCursor
+        if cursor == 0 {
+            break
+        }
+    }
+
+    return nil
+}
+
+// Close is a no-op as the Redis connection is managed by the application lifecycle.
+func (*RedisStorage) Close() error {
+    return nil
+}
+```
+
+### Key Generation Pattern (MANDATORY)
+
+Rate limiter keys MUST follow this priority to ensure per-user fairness:
+
+```text
+Priority: UserID → (TenantID + IP) → IP
+
+Example Keys:
+- "user-123"                              (authenticated user)
+- "tenant-456:192.168.1.1"               (tenant with IP fallback)
+- "192.168.1.1"                          (unauthenticated, IP only)
+- "export:user-123"                      (export tier)
+- "dispatch:tenant-456:192.168.1.1"      (dispatch tier)
+```
+
+### Implementation Pattern (Fiber)
+
+```go
+// internal/bootstrap/fiber_server.go
+
+import (
+    "strconv"
+    "time"
+
+    "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/limiter"
+)
+
+// NewRateLimiter creates a rate limiter middleware that uses UserID/TenantID from context.
+// This middleware MUST be applied AFTER auth middleware to access user context.
+// Order: Auth → RateLimiter → Handlers
+// If storage is provided, uses it for distributed rate limiting across multiple instances.
+// Returns a no-op middleware if rate limiting is disabled via RateLimitEnabled config.
+func NewRateLimiter(cfg *Config, storage fiber.Storage) fiber.Handler {
+    if !cfg.RateLimit.Enabled {
+        return func(c *fiber.Ctx) error {
+            return c.Next()
+        }
+    }
+
+    limiterCfg := limiter.Config{
+        Max:        cfg.RateLimit.Max,
+        Expiration: time.Duration(cfg.RateLimit.ExpirySec) * time.Second,
+        KeyGenerator: func(fiberCtx *fiber.Ctx) string {
+            ctx := fiberCtx.UserContext()
+            if ctx != nil {
+                if userID, ok := ctx.Value(auth.UserIDKey).(string); ok && userID != "" {
+                    return userID
+                }
+
+                if tenantID, ok := ctx.Value(auth.TenantIDKey).(string); ok && tenantID != "" {
+                    return tenantID + ":" + fiberCtx.IP()
+                }
+            }
+
+            return fiberCtx.IP()
+        },
+        LimitReached: func(fiberCtx *fiber.Ctx) error {
+            fiberCtx.Set("Retry-After", strconv.Itoa(cfg.RateLimit.ExpirySec))
+
+            return sharedhttp.WriteError(
+                fiberCtx,
+                fiber.StatusTooManyRequests,
+                "rate_limit_exceeded",
+                "rate limit exceeded",
+            )
+        },
+    }
+
+    if storage != nil {
+        limiterCfg.Storage = storage
+    }
+
+    return limiter.New(limiterCfg)
+}
+
+// NewExportRateLimiter creates a rate limiter middleware for export endpoints.
+// It applies stricter limits than the global rate limiter to protect resource-intensive
+// report generation operations.
+// If storage is provided, uses it for distributed rate limiting across multiple instances.
+// Returns a no-op middleware if rate limiting is disabled via RateLimitEnabled config.
+func NewExportRateLimiter(cfg *Config, storage fiber.Storage) fiber.Handler {
+    if !cfg.RateLimit.Enabled {
+        return func(c *fiber.Ctx) error {
+            return c.Next()
+        }
+    }
+
+    limiterCfg := limiter.Config{
+        Max:        cfg.RateLimit.ExportMax,
+        Expiration: time.Duration(cfg.RateLimit.ExportExpirySec) * time.Second,
+        KeyGenerator: func(fiberCtx *fiber.Ctx) string {
+            ctx := fiberCtx.UserContext()
+            if ctx != nil {
+                if userID, ok := ctx.Value(auth.UserIDKey).(string); ok && userID != "" {
+                    return "export:" + userID
+                }
+
+                if tenantID, ok := ctx.Value(auth.TenantIDKey).(string); ok && tenantID != "" {
+                    return "export:" + tenantID + ":" + fiberCtx.IP()
+                }
+            }
+
+            return "export:" + fiberCtx.IP()
+        },
+        LimitReached: func(fiberCtx *fiber.Ctx) error {
+            fiberCtx.Set("Retry-After", strconv.Itoa(cfg.RateLimit.ExportExpirySec))
+
+            return sharedhttp.WriteError(
+                fiberCtx,
+                fiber.StatusTooManyRequests,
+                "export_rate_limit_exceeded",
+                "too many export requests, please try again later",
+            )
+        },
+    }
+
+    if storage != nil {
+        limiterCfg.Storage = storage
+    }
+
+    return limiter.New(limiterCfg)
+}
+
+// NewDispatchRateLimiter creates a rate limiter middleware for exception dispatch endpoints.
+// It applies moderate limits to protect external system integrations from overload.
+// If storage is provided, uses it for distributed rate limiting across multiple instances.
+// Returns a no-op middleware if rate limiting is disabled via RateLimitEnabled config.
+func NewDispatchRateLimiter(cfg *Config, storage fiber.Storage) fiber.Handler {
+    if !cfg.RateLimit.Enabled {
+        return func(c *fiber.Ctx) error {
+            return c.Next()
+        }
+    }
+
+    limiterCfg := limiter.Config{
+        Max:        cfg.RateLimit.DispatchMax,
+        Expiration: time.Duration(cfg.RateLimit.DispatchExpirySec) * time.Second,
+        KeyGenerator: func(fiberCtx *fiber.Ctx) string {
+            ctx := fiberCtx.UserContext()
+            if ctx != nil {
+                if userID, ok := ctx.Value(auth.UserIDKey).(string); ok && userID != "" {
+                    return "dispatch:" + userID
+                }
+
+                if tenantID, ok := ctx.Value(auth.TenantIDKey).(string); ok && tenantID != "" {
+                    return "dispatch:" + tenantID + ":" + fiberCtx.IP()
+                }
+            }
+
+            return "dispatch:" + fiberCtx.IP()
+        },
+        LimitReached: func(fiberCtx *fiber.Ctx) error {
+            fiberCtx.Set("Retry-After", strconv.Itoa(cfg.RateLimit.DispatchExpirySec))
+
+            return sharedhttp.WriteError(
+                fiberCtx,
+                fiber.StatusTooManyRequests,
+                "dispatch_rate_limit_exceeded",
+                "too many dispatch requests, please try again later",
+            )
+        },
+    }
+
+    if storage != nil {
+        limiterCfg.Storage = storage
+    }
+
+    return limiter.New(limiterCfg)
+}
+```
+
+### Bootstrap Integration
+
+```go
+// internal/bootstrap/init.go
+
+// Create Redis storage for distributed rate limiting
+rateLimitStorage := ratelimit.NewRedisStorage(redisConnection)
+
+// Create rate limiters
+globalLimiter := NewRateLimiter(cfg, rateLimitStorage)
+exportLimiter := NewExportRateLimiter(cfg, rateLimitStorage)
+dispatchLimiter := NewDispatchRateLimiter(cfg, rateLimitStorage)
+
+// Apply global limiter to all protected routes
+protected := func(resource, action string) fiber.Router {
+    return auth.ProtectedGroupWithMiddleware(
+        app, authClient, tenantExtractor,
+        resource, action,
+        idempotencyMiddleware,
+        globalLimiter,
+    )
+}
+
+// Apply tier-specific limiters to specific routes
+exportRoutes.Use(exportLimiter)
+dispatchRoutes.Use(dispatchLimiter)
+```
+
+### Middleware Ordering
+
+```text
+Auth → TenantExtraction → Idempotency → Rate Limiter → Handler
+```
+
+Rate limiter MUST be placed AFTER auth middleware so that user/tenant context is available for key generation.
+
+### Production Safety (MANDATORY)
+
+**⛔ HARD GATE:** Rate limiting CANNOT be disabled in production. The bootstrap MUST enforce this:
+
+```go
+// internal/bootstrap/config.go
+
+func enforceProductionDefaults(cfg *Config, logger log.Logger) {
+    if cfg.App.EnvName == "production" && !cfg.RateLimit.Enabled {
+        logger.Warnf("SECURITY: RATE_LIMIT_ENABLED=false is not allowed in production. "+
+            "Forcing rate limiting to enabled. env=%s", cfg.App.EnvName)
+        cfg.RateLimit.Enabled = true
+    }
+}
+```
+
+### Graceful Degradation
+
+| Scenario | Behavior |
+|----------|----------|
+| Redis available | Distributed rate limiting across all instances |
+| Redis unavailable | Falls back to in-memory (per-instance) limiting |
+| Rate limit disabled (non-prod) | No-op middleware, all requests pass through |
+| Rate limit disabled (production) | Force-enabled, cannot be disabled |
+
+### Error Response Format
+
+All rate limit violations MUST return:
+
+```json
+{
+  "code": "429",
+  "title": "rate_limit_exceeded",
+  "message": "rate limit exceeded"
+}
+```
+
+With headers:
+- **Status:** `429 Too Many Requests`
+- **Retry-After:** `<seconds>` (window duration)
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Rate limiting without Redis storage in production
+limiter.New(limiter.Config{Max: 100})  // In-memory only = no distribution
+
+// ❌ FORBIDDEN: Using IP-only keys for authenticated endpoints
+KeyGenerator: func(c *fiber.Ctx) string {
+    return c.IP()  // Ignores user/tenant context
+}
+
+// ❌ FORBIDDEN: Hardcoded rate limits (must be configurable)
+limiter.Config{Max: 100, Expiration: time.Minute}  // Use config struct
+
+// ❌ FORBIDDEN: Rate limiter before auth middleware
+app.Use(rateLimiter)  // Before auth = no user context for keys
+app.Use(authMiddleware)
+
+// ❌ FORBIDDEN: Missing Retry-After header
+LimitReached: func(c *fiber.Ctx) error {
+    return c.SendStatus(429)  // Missing Retry-After header
+}
+
+// ❌ FORBIDDEN: Allowing rate limit disable in production
+if !cfg.RateLimit.Enabled {
+    return  // Must force-enable in production
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that touches middleware or routing
+
+# Find rate limiter registration
+grep -rn "limiter.New\|NewRateLimiter" --include="*.go" ./internal
+# Expected: At least one match per tier (global, export, dispatch)
+
+# Verify production enforcement exists
+grep -rn "RATE_LIMIT_ENABLED.*production\|Forcing rate limiting" --include="*.go" ./internal
+# Expected: At least 1 match
+
+# Find rate limiter without storage (in-memory only)
+grep -rn "limiter.New" --include="*.go" ./internal | grep -v "Storage"
+# Expected: 0 matches (all limiters must use storage)
+
+# Find KeyGenerator that only uses IP
+grep -A 3 "KeyGenerator" --include="*.go" ./internal | grep "return.*IP()" | grep -v "tenantID\|userID"
+# Expected: 0 matches (must use user/tenant context)
+
+# Find missing Retry-After header
+grep -A 5 "LimitReached" --include="*.go" ./internal | grep -v "Retry-After"
+# Review matches: all LimitReached handlers must set Retry-After
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We're behind a load balancer with rate limiting" | Defense in depth. App-level limits protect per-user fairness. | **Implement app-level rate limiting** |
+| "Rate limiting slows development" | Rate limiting prevents cascade failures. Configure generous limits for dev. | **Configure appropriate limits per environment** |
+| "We don't need rate limiting yet" | By the time you need it, you're already under attack. | **Implement before production** |
+| "In-memory rate limiting is sufficient" | In-memory = per-instance only. Multi-instance deployments bypass limits. | **Use Redis-backed storage** |
+| "IP-based limiting is enough" | Multiple users share IPs (NAT, VPN). Users behind same IP get unfairly limited. | **Use UserID/TenantID key priority** |
+| "Rate limiting can be disabled for trusted clients" | Trusted clients can be compromised. Limits protect the service. | **Apply to all clients** |
+
+### Verification Checklist (Before PR)
+
+```text
+Before submitting PR that adds rate limiting:
+
+[ ] Did I implement all three tiers (global, export, dispatch)?
+[ ] Did I use Redis-backed storage?
+[ ] Did I implement key generation with UserID > TenantID+IP > IP priority?
+[ ] Did I enforce rate limiting in production (cannot be disabled)?
+[ ] Did I include Retry-After header in 429 responses?
+[ ] Did I place rate limiter AFTER auth middleware?
+[ ] Did I run the detection commands above?
+
+If any checkbox is unchecked → FIX before submitting.
+```
+
+---
+
+## CORS Configuration (MANDATORY)
+
+**⛔ HARD GATE:** All HTTP services MUST configure CORS to control cross-origin access. Wildcard origins are FORBIDDEN in production.
+
+### Why CORS Configuration Matters
+
+Without proper CORS configuration, browsers block legitimate cross-origin requests (breaking frontends), or worse, overly permissive CORS allows malicious sites to make authenticated requests on behalf of users. CORS MUST be explicitly configured, not left to defaults.
+
+### Required Environment Variables
+
+| Variable | Type | Default | Production Rule |
+|----------|------|---------|-----------------|
+| `CORS_ALLOWED_ORIGINS` | string | `http://localhost:3000` | MUST be explicit (no `*`) |
+| `CORS_ALLOWED_METHODS` | string | `GET,POST,PUT,PATCH,DELETE,OPTIONS` | — |
+| `CORS_ALLOWED_HEADERS` | string | `Origin,Content-Type,Accept,Authorization,X-Request-ID` | — |
+
+### Configuration Struct
+
+```go
+// internal/bootstrap/config.go
+
+// ServerConfig configures the HTTP server and middleware.
+type ServerConfig struct {
+    Address               string `env:"SERVER_ADDRESS"          envDefault:":8080"`
+    BodyLimitBytes        int    `env:"HTTP_BODY_LIMIT_BYTES"   envDefault:"104857600"`
+    CORSAllowedOrigins    string `env:"CORS_ALLOWED_ORIGINS"    envDefault:"http://localhost:3000"`
+    CORSAllowedMethods    string `env:"CORS_ALLOWED_METHODS"    envDefault:"GET,POST,PUT,PATCH,DELETE,OPTIONS"`
+    CORSAllowedHeaders    string `env:"CORS_ALLOWED_HEADERS"    envDefault:"Origin,Content-Type,Accept,Authorization,X-Request-ID"`
+    TLSCertFile           string `env:"SERVER_TLS_CERT_FILE"`
+    TLSKeyFile            string `env:"SERVER_TLS_KEY_FILE"`
+    TLSTerminatedUpstream bool   `env:"TLS_TERMINATED_UPSTREAM" envDefault:"false"`
+}
+```
+
+### Implementation Pattern (Fiber)
+
+```go
+// internal/bootstrap/fiber_server.go
+
+import (
+    "github.com/gofiber/fiber/v2/middleware/cors"
+)
+
+// Apply CORS middleware globally (must be early in middleware chain)
+app.Use(cors.New(cors.Config{
+    AllowOrigins: cfg.Server.CORSAllowedOrigins,
+    AllowMethods: cfg.Server.CORSAllowedMethods,
+    AllowHeaders: cfg.Server.CORSAllowedHeaders,
+}))
+```
+
+### Middleware Ordering (MANDATORY)
+
+CORS MUST be placed early in the middleware chain, before security headers and business logic:
+
+```text
+Recover → Request ID → CORS → Helmet (Security Headers) → Telemetry → Rate Limiter → Handler
+```
+
+**Why before Helmet:** CORS preflight (OPTIONS) must be handled before other middleware adds headers or rejects the request.
+
+### Production Validation (MANDATORY)
+
+**⛔ HARD GATE:** Production MUST reject wildcard and empty CORS origins:
+
+```go
+// internal/bootstrap/config.go
+
+// Sentinel errors for CORS production validation.
+var (
+    ErrCORSOriginsEmpty    = errors.New("CORS_ALLOWED_ORIGINS must be set in production")
+    ErrCORSOriginsWildcard = errors.New("CORS_ALLOWED_ORIGINS must not contain wildcard (*) in production")
+)
+
+func validateProductionConfig(cfg *Config) error {
+    if cfg.App.EnvName != "production" {
+        return nil
+    }
+
+    origins := strings.TrimSpace(cfg.Server.CORSAllowedOrigins)
+
+    // MANDATORY: Origins must not be empty
+    if origins == "" {
+        return ErrCORSOriginsEmpty
+    }
+
+    // MANDATORY: Wildcard is forbidden
+    if strings.Contains(origins, "*") {
+        return ErrCORSOriginsWildcard
+    }
+
+    return nil
+}
+```
+
+### Production Safety Rules
+
+| Rule | Enforcement |
+|------|-------------|
+| No wildcard origins in production | `*` is FORBIDDEN; must list explicit origins |
+| No empty origins in production | MUST specify at least one origin |
+| Origins must use HTTPS in production | `http://` origins are only for development |
+| Multiple origins are comma-separated | `https://app.example.com,https://admin.example.com` |
+
+### Integration with Helmet Security Headers
+
+CORS middleware works alongside Helmet for comprehensive cross-origin protection:
+
+```go
+// internal/bootstrap/fiber_server.go
+
+import (
+    "github.com/gofiber/fiber/v2/middleware/helmet"
+)
+
+helmetCfg := helmet.Config{
+    XSSProtection:             "1; mode=block",
+    ContentTypeNosniff:        "nosniff",
+    XFrameOptions:             "DENY",
+    ReferrerPolicy:            "strict-origin-when-cross-origin",
+    CrossOriginEmbedderPolicy: "require-corp",
+    CrossOriginOpenerPolicy:   "same-origin",
+    CrossOriginResourcePolicy: "same-origin",
+    PermissionPolicy:          "geolocation=(), microphone=(), camera=()",
+    ContentSecurityPolicy:     "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; " +
+        "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; " +
+        "form-action 'self'; object-src 'none'",
+}
+
+// Enable HSTS when TLS is configured
+if strings.TrimSpace(cfg.Server.TLSCertFile) != "" || cfg.Server.TLSTerminatedUpstream {
+    helmetCfg.HSTSMaxAge = 31536000
+    helmetCfg.HSTSPreloadEnabled = true
+    helmetCfg.HSTSExcludeSubdomains = false
+}
+
+app.Use(helmet.New(helmetCfg))
+```
+
+| Header | Purpose | Set By |
+|--------|---------|--------|
+| `Access-Control-Allow-Origin` | Allowed origins | CORS middleware |
+| `Access-Control-Allow-Methods` | Allowed methods | CORS middleware |
+| `Access-Control-Allow-Headers` | Allowed headers | CORS middleware |
+| `Cross-Origin-Embedder-Policy` | Embedding policy | Helmet middleware |
+| `Cross-Origin-Opener-Policy` | Window opener policy | Helmet middleware |
+| `Cross-Origin-Resource-Policy` | Resource access policy | Helmet middleware |
+
+### Configuration Examples
+
+```bash
+# Development
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+CORS_ALLOWED_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+CORS_ALLOWED_HEADERS=Origin,Content-Type,Accept,Authorization,X-Request-ID
+
+# Production (explicit origins, HTTPS only)
+CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
+CORS_ALLOWED_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+CORS_ALLOWED_HEADERS=Origin,Content-Type,Accept,Authorization,X-Request-ID
+```
+
+### FORBIDDEN Patterns
+
+```go
+// ❌ FORBIDDEN: Wildcard origins in production
+cors.Config{AllowOrigins: "*"}
+
+// ❌ FORBIDDEN: Hardcoded origins (must use config)
+cors.Config{AllowOrigins: "https://app.example.com"}
+
+// ❌ FORBIDDEN: No CORS middleware at all
+// (browsers will block cross-origin requests)
+
+// ❌ FORBIDDEN: CORS after business logic middleware
+app.Use(authMiddleware)
+app.Use(rateLimiter)
+app.Use(cors.New(corsCfg))  // Too late - preflight fails
+
+// ❌ FORBIDDEN: Reflecting request Origin without validation
+cors.Config{
+    AllowOriginsFunc: func(origin string) bool {
+        return true  // Effectively same as wildcard
+    },
+}
+
+// ✅ CORRECT: Configuration-driven, validated
+cors.Config{
+    AllowOrigins: cfg.Server.CORSAllowedOrigins,  // From env vars
+    AllowMethods: cfg.Server.CORSAllowedMethods,
+    AllowHeaders: cfg.Server.CORSAllowedHeaders,
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR that touches middleware or server setup
+
+# Find CORS middleware registration
+grep -rn "cors.New\|cors.Config" --include="*.go" ./internal
+# Expected: At least 1 match
+
+# Check for wildcard origins in code
+grep -rn 'AllowOrigins.*"\*"' --include="*.go" ./internal
+# Expected: 0 matches
+
+# Verify CORS config comes from environment
+grep -rn "CORS_ALLOWED" --include="*.go" ./internal
+# Expected: At least 3 matches (Origins, Methods, Headers)
+
+# Find production validation for CORS
+grep -rn "CORS.*production\|wildcard.*CORS\|CORS.*wildcard" --include="*.go" ./internal
+# Expected: At least 1 match
+
+# Verify middleware ordering (CORS before helmet)
+grep -n "cors.New\|helmet.New\|limiter.New" --include="*.go" ./internal/bootstrap/fiber_server.go
+# Expected: cors line number < helmet line number < limiter line number
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We don't have a frontend yet" | CORS must be configured before any client integrates. Retrofit is harder. | **Configure CORS from the start** |
+| "Wildcard is easier for development" | Wildcard in dev trains bad habits. Use `localhost:3000` default. | **Use explicit origins even in dev** |
+| "Reverse proxy handles CORS" | Defense in depth. App must protect itself regardless of proxy. | **Configure CORS at app level** |
+| "We only have one frontend" | More frontends will come. Configuration is easy to update. | **Use env var configuration** |
+| "CORS doesn't affect API-to-API calls" | Correct, but browsers enforce CORS. Any browser-based client needs it. | **Configure for browser clients** |
+| "We'll validate origins later" | Later = production with wildcard. Validate from day one. | **Add production validation immediately** |
+
+### Verification Checklist (Before PR)
+
+```text
+Before submitting PR that configures CORS:
+
+[ ] Did I use environment variables for all CORS settings?
+[ ] Did I add production validation (no wildcard, no empty)?
+[ ] Did I place CORS middleware early in the chain (before helmet)?
+[ ] Did I include all required headers (Origin, Content-Type, Accept, Authorization, X-Request-ID)?
+[ ] Did I test with both development and production configurations?
+[ ] Did I run the detection commands above?
+
+If any checkbox is unchecked → FIX before submitting.
+```
 
 ---
 
