@@ -106,7 +106,6 @@ API reference documentation describes what each endpoint does, its parameters, r
 | 404 | NOT_FOUND | Resource doesn't exist | Verify resource ID |
 | 409 | CONFLICT | Resource already exists | Use different identifier |
 | 422 | UNPROCESSABLE_ENTITY | Business rule violation | Check constraints |
-| 429 | TOO_MANY_REQUESTS | Rate limit exceeded | Retry after delay |
 | 500 | INTERNAL_ERROR | Server error | Retry or contact support |
 
 ---
@@ -115,7 +114,7 @@ API reference documentation describes what each endpoint does, its parameters, r
 
 **Success:** 200 (GET/PUT/PATCH), 201 (POST creates), 204 (DELETE)
 
-**Client errors:** 400 (malformed), 401 (no auth), 403 (no permission), 404 (not found), 409 (conflict), 422 (invalid semantics), 429 (rate limit)
+**Client errors:** 400 (malformed), 401 (no auth), 403 (no permission), 404 (not found), 409 (conflict), 422 (invalid semantics)
 
 **Server errors:** 500 (internal)
 

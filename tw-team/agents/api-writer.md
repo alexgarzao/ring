@@ -308,7 +308,6 @@ Brief description of what this endpoint does.
 | 404 Not Found | Resource doesn't exist |
 | 409 Conflict | Resource state conflict |
 | 422 Unprocessable Entity | Invalid semantics |
-| 429 Too Many Requests | Rate limit exceeded |
 | 500 Internal Server Error | Server error |
 
 ## Example Quality Standards
