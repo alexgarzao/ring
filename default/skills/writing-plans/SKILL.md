@@ -104,9 +104,9 @@ Each task MUST include:
 
 | Target | When | Agent |
 |--------|------|-------|
-| `backend` | API endpoints, services, data layer, CLI | `backend-engineer-{golang,typescript}` |
+| `backend` | API endpoints, services, data layer, CLI | `ring:backend-engineer-{golang,typescript}` |
 | `frontend` | UI components, pages, BFF routes | See [Frontend Tasks (api_pattern aware)](#frontend-tasks-api_pattern-aware) |
-| `shared` | CI/CD, configs, docs, cross-module | `devops-engineer` or `general-purpose` |
+| `shared` | CI/CD, configs, docs, cross-module | `ring:devops-engineer` or `ring:general-purpose` |
 
 **Working Directory Resolution:**
 
@@ -122,8 +122,8 @@ Each task MUST include:
 
 | Task Type | Agent |
 |-----------|-------|
-| Go backend API/services | `backend-engineer-golang` |
-| TypeScript backend API/services | `backend-engineer-typescript` |
+| Go backend API/services | `ring:backend-engineer-golang` |
+| TypeScript backend API/services | `ring:backend-engineer-typescript` |
 
 ### Frontend Tasks (api_pattern aware)
 
@@ -131,14 +131,14 @@ Each task MUST include:
 
 | API Pattern | Task Type | Agent |
 |-------------|-----------|-------|
-| `direct` | UI components, pages, forms | `frontend-engineer` |
-| `direct` | Server Actions, data fetching | `frontend-engineer` |
-| `direct` | Server Components with data loading | `frontend-engineer` |
-| `bff` | API routes (`/api/*`) | `frontend-bff-engineer-typescript` |
-| `bff` | Data aggregation, transformation | `frontend-bff-engineer-typescript` |
-| `bff` | External service integration | `frontend-bff-engineer-typescript` |
-| `bff` | UI components, pages, forms | `frontend-engineer` |
-| `other` | Depends on pattern | Ask user or use frontend-engineer default |
+| `direct` | UI components, pages, forms | `ring:frontend-engineer` |
+| `direct` | Server Actions, data fetching | `ring:frontend-engineer` |
+| `direct` | Server Components with data loading | `ring:frontend-engineer` |
+| `bff` | API routes (`/api/*`) | `ring:frontend-bff-engineer-typescript` |
+| `bff` | Data aggregation, transformation | `ring:frontend-bff-engineer-typescript` |
+| `bff` | External service integration | `ring:frontend-bff-engineer-typescript` |
+| `bff` | UI components, pages, forms | `ring:frontend-engineer` |
+| `other` | Depends on pattern | Ask user or use `ring:frontend-engineer` default |
 
 ### Decision Logic for Frontend Tasks
 
@@ -147,15 +147,15 @@ def get_frontend_agent(task, topology):
     api_pattern = topology.get('api_pattern', 'direct')
 
     if api_pattern == 'direct':
-        return 'frontend-engineer'
+        return 'ring:frontend-engineer'
 
     if api_pattern == 'bff':
         if is_bff_task(task):  # API routes, aggregation, transformation
-            return 'frontend-bff-engineer-typescript'
+            return 'ring:frontend-bff-engineer-typescript'
         else:  # UI components, pages
-            return 'frontend-engineer'
+            return 'ring:frontend-engineer'
 
-    return 'frontend-engineer'  # Default for 'other'
+    return 'ring:frontend-engineer'  # Default for 'other'
 
 def is_bff_task(task):
     bff_indicators = [
@@ -174,7 +174,7 @@ def is_bff_task(task):
 | Infra/CI/CD | `ring:devops-engineer` |
 | Testing | `ring:qa-analyst` |
 | Reliability | `ring:sre` |
-| Fallback | `general-purpose` (built-in, no prefix) |
+| Fallback | `ring:general-purpose` |
 
 ### Task Format with api_pattern
 

@@ -142,7 +142,7 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 ### Step 3: Execute Batch
 **Default: First 3 tasks**
 
-**Agent Selection:** Backend Go → `ring:backend-engineer-golang` | Backend TS → `ring:backend-engineer-typescript` | Frontend → `frontend-bff-engineer-typescript` | Infra → `ring:devops-engineer` | Testing → `ring:qa-analyst` | Reliability → `ring:sre`
+**Agent Selection:** Backend Go → `ring:backend-engineer-golang` | Backend TS → `ring:backend-engineer-typescript` | Frontend → `ring:frontend-bff-engineer-typescript` | Infra → `ring:devops-engineer` | Testing → `ring:qa-analyst` | Reliability → `ring:sre`
 
 For each task: Check context switch (Step 2.5) → Mark in_progress → Dispatch to agent with working_directory → Follow plan steps exactly → Run verifications → Mark completed
 
