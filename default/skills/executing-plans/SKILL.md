@@ -75,12 +75,76 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
 
 **If you catch yourself thinking any of these → STOP → Use AskUserQuestion anyway.**
 
+### Step 2.5: Context Switching for Multi-Module Plans
+
+**If plan has tasks with `target:` and `working_directory:` fields:**
+
+1. **Track current module:**
+   ```
+   current_module = None
+   current_directory = "."
+   ```
+
+2. **Before each task, check for context switch:**
+   ```
+   IF task.target != current_module AND current_module != None:
+     # Prompt user for confirmation
+     AskUserQuestion:
+       question: "Switching to {task.target} module at {task.working_directory}. Continue?"
+       header: "Context"
+       options:
+         - label: "Continue"
+           description: "Switch to {task.target} and execute task"
+         - label: "Skip task"
+           description: "Skip this task and continue with next"
+         - label: "Stop"
+           description: "Stop execution for manual review"
+
+     IF answer == "Continue":
+       current_module = task.target
+       current_directory = task.working_directory
+     ELIF answer == "Skip":
+       Mark task as skipped → proceed to next
+     ELSE:
+       Stop execution → report progress
+   ```
+
+3. **Load module-specific PROJECT_RULES.md:**
+   ```
+   IF {task.working_directory}/PROJECT_RULES.md exists:
+     Instruct agent to read module-specific rules
+     Module rules override root rules
+   ```
+
+4. **Pass working directory to agent:**
+   ```
+   Task(
+     subagent_type=task.agent,
+     model="opus",
+     prompt="Working directory: {task.working_directory}
+
+     Before executing, cd to the working directory:
+     cd {task.working_directory}
+
+     If PROJECT_RULES.md exists in this directory, read and follow it.
+
+     {task.prompt}"
+   )
+   ```
+
+**Optimization:** To minimize context switches, batch tasks by module when possible:
+- Original: [backend, frontend, backend, frontend]
+- Optimized: [backend, backend, frontend, frontend]
+- **Only reorder if no dependencies between modules**
+
+---
+
 ### Step 3: Execute Batch
 **Default: First 3 tasks**
 
-**Agent Selection:** Backend Go → `ring:backend-engineer-golang` | Backend TS → `ring:backend-engineer-typescript` | Frontend → `frontend-bff-engineer-typescript` | Infra → `ring:devops-engineer` | Testing → `ring:qa-analyst` | Reliability → `ring:sre`
+**Agent Selection:** Backend Go → `ring:backend-engineer-golang` | Backend TS → `ring:backend-engineer-typescript` | Frontend → `ring:frontend-bff-engineer-typescript` | Infra → `ring:devops-engineer` | Testing → `ring:qa-analyst` | Reliability → `ring:sre`
 
-For each task: Mark in_progress → Dispatch to agent → Follow plan steps exactly → Run verifications → Mark completed
+For each task: Check context switch (Step 2.5) → Mark in_progress → Dispatch to agent with working_directory → Follow plan steps exactly → Run verifications → Mark completed
 
 ### Step 4: Run Code Review
 **After each batch, REQUIRED:** Use ring:requesting-code-review (all 3 reviewers in parallel)

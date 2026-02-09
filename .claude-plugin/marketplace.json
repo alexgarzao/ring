@@ -97,8 +97,8 @@
       "version": "0.9.3",
       "description": "FinOps and Brazilian regulatory compliance skills for financial systems",
       "source": "./finops-team",
-      "homepage": "https://github.com/lerianstudio/ring/tree/tw-team",
-      "repository": "https://github.com/lerianstudio/ring/tree/tw-team",
+      "homepage": "https://github.com/lerianstudio/ring/tree/finops-team",
+      "repository": "https://github.com/lerianstudio/ring/tree/finops-team",
       "license": "MIT",
       "keywords": [
         "finops",
