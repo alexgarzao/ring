@@ -1,6 +1,6 @@
 ---
 name: ring:pre-dev-feature
-description: Lightweight 4-gate pre-dev workflow for small features (<2 days)
+description: Lightweight 5-gate pre-dev workflow for small features (<2 days)
 argument-hint: "[feature-name]"
 ---
 
@@ -449,6 +449,35 @@ Even small features benefit from quick research:
 - [ ] Dependencies are clear
 - [ ] Testing approach defined
 
+## Gate 4: Delivery Planning (MANDATORY)
+
+**Skill:** ring:pre-dev-delivery-planning
+
+1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md`
+2. Ask user for delivery inputs:
+   - Start date (when team begins work)
+   - Team composition (how many developers)
+   - Delivery cadence (sprint/cycle/continuous)
+   - Period configuration (if sprint/cycle: duration + start date)
+   - Velocity multiplier (AI-assisted or traditional, default or custom)
+3. Analyze dependencies and critical path
+4. Calculate realistic timeline with period boundaries
+5. Identify parallelization opportunities and resource allocation
+6. Create delivery roadmap with Gantt-style timeline
+7. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+8. Run Gate 4 validation checklist
+9. Get human approval
+
+**Gate 4 Pass Criteria:**
+- [ ] All tasks scheduled with realistic dates
+- [ ] Critical path identified and validated
+- [ ] Team capacity realistic (70-80% utilization)
+- [ ] Period boundaries respected (if sprint/cycle)
+- [ ] Spill overs identified and documented
+- [ ] Parallel streams defined
+- [ ] Risk milestones flagged
+- [ ] Contingency buffer added (10-20%)
+
 ## After Completion
 
 Report to human:
@@ -492,9 +521,10 @@ Skipped from full workflow:
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
-4. Execute the plan
+2. Use delivery-roadmap.md to communicate timelines to stakeholders
+3. Use /ring:worktree to create isolated workspace
+4. Use /ring:write-plan to create implementation plan
+5. Execute the plan
 ```
 
 ## Remember
@@ -502,16 +532,18 @@ Next steps:
 - This is the **Small Track** - lightweight and fast (5 gates)
 - **Gate 0 (Research) checks for existing patterns** even for small features
 - **Gate 1.5 (Design Validation) ensures UI specs are complete** before technical work
+- **Gate 4 (Delivery Planning) is MANDATORY** - creates realistic roadmap with timeline
 - If feature grows during planning, switch to `/ring:pre-dev-full`
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate
 - Technology decisions happen later in Dependency Map (not in this track)
+- Delivery roadmap (WHEN/WHO) complements write-plan (HOW)
 
 ---
 
 ## MANDATORY: Skills Orchestration
 
-**This command orchestrates multiple skills in a 4-gate workflow.**
+**This command orchestrates multiple skills in a 5-gate workflow.**
 
 ### Gate Sequence
 
@@ -522,6 +554,7 @@ Next steps:
 | 1.5 | `ring:pre-dev-design-validation` | Verify UX specs complete (if UI) | design-validation.md |
 | 2 | `ring:pre-dev-trd-creation` | Technical requirements | trd.md |
 | 3 | `ring:pre-dev-task-breakdown` | Task decomposition | tasks.md |
+| 4 | `ring:pre-dev-delivery-planning` | Delivery roadmap |
 
 ### Execution Pattern
 

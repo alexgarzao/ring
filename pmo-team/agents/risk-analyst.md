@@ -119,6 +119,16 @@ See [shared-patterns/pmo-metrics.md](../skills/shared-patterns/pmo-metrics.md) f
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- Critical risk acceptance needed (accepting a critical risk)
+- Mitigation budget needed (mitigation requires unbudgeted funds)
+- Risk transfer decision needed (insurance or contract decision)
+- Correlated critical risks detected (multiple critical risks connected)
+- Risk tolerance breach detected (risk exceeds organizational tolerance)
+</block_condition>
+
+If any condition applies, STOP and escalate immediately.
+
 **ALWAYS pause and report blocker for:**
 
 | Decision Type | Examples | Action |
@@ -129,7 +139,14 @@ See [shared-patterns/pmo-metrics.md](../skills/shared-patterns/pmo-metrics.md) f
 | **Correlated Critical Risks** | Multiple critical risks connected | STOP. Report compound exposure. Wait for strategic decision. |
 | **Risk Tolerance Breach** | Risk exceeds organizational tolerance | STOP. Immediate escalation required. |
 
-**You CANNOT accept critical risks or approve risk tolerance breaches autonomously. STOP and ask.**
+<forbidden>
+- Accepting critical risks autonomously
+- Approving risk tolerance breaches without escalation
+- Committing to mitigation budget without approval
+- Deciding risk transfer strategy without legal/financial input
+</forbidden>
+
+You CANNOT accept critical risks or approve risk tolerance breaches autonomously. STOP and ask.
 
 ### Cannot Be Overridden
 

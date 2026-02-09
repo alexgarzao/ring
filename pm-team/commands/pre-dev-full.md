@@ -1,6 +1,6 @@
 ---
 name: ring:pre-dev-full
-description: Complete 9-gate pre-dev workflow for large features (≥2 days)
+description: Complete 10-gate pre-dev workflow for large features (≥2 days)
 argument-hint: "[feature-name]"
 ---
 
@@ -561,6 +561,35 @@ mkdir -p docs/pre-dev/<feature-name>
 - [ ] Complete code provided
 - [ ] Zero-context test passes
 
+## Gate 9: Delivery Planning (MANDATORY)
+
+**Skill:** ring:pre-dev-delivery-planning
+
+1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md`
+2. Ask user for delivery inputs:
+   - Start date (when team begins work)
+   - Team composition (how many developers)
+   - Delivery cadence (sprint/cycle/continuous)
+   - Period configuration (if sprint/cycle: duration + start date)
+   - Velocity multiplier (AI-assisted or traditional, default or custom)
+3. Analyze dependencies and critical path
+4. Calculate realistic timeline with period boundaries
+5. Identify parallelization opportunities and resource allocation
+6. Create delivery roadmap with Gantt-style timeline
+7. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+8. Run Gate 9 validation checklist
+9. Get human approval
+
+**Gate 9 Pass Criteria:**
+- [ ] All tasks scheduled with realistic dates
+- [ ] Critical path identified and validated
+- [ ] Team capacity realistic (70-80% utilization)
+- [ ] Period boundaries respected (if sprint/cycle)
+- [ ] Spill overs identified and documented
+- [ ] Parallel streams defined
+- [ ] Risk milestones flagged
+- [ ] Contingency buffer added (10-20%)
+
 ## After Completion
 
 Report to human:
@@ -586,6 +615,7 @@ Artifacts created (paths depend on topology.structure):
 - dependency-map.md (Gate 6)
 - tasks.md (Gate 7)
 - subtasks.md (Gate 8)
+- docs/pre-dev/<feature-name>/delivery-roadmap.md (Gate 9) ← NEW
 
 **For monorepo (distributed by module):**
 *Root (shared):* research.md, prd.md, feature-map.md, trd.md, tasks.md (index)
@@ -601,9 +631,10 @@ Planning time: 2.5-4.5 hours (comprehensive with UX design)
 
 Next steps:
 1. Review artifacts in docs/pre-dev/<feature-name>/
-2. Use /ring:worktree to create isolated workspace
-3. Use /ring:write-plan to create implementation plan
-4. Execute the plan (ui-engineer will use user-flows.md and wireframes/)
+2. Use delivery-roadmap.md to communicate timelines to stakeholders
+3. Use /ring:worktree to create isolated workspace
+4. Use /ring:write-plan to create implementation plan
+5. Execute the plan (ui-engineer will use user-flows.md and wireframes/)
 ```
 
 ## Remember
@@ -615,9 +646,11 @@ Next steps:
 - **Gate 2 creates user-flows.md and wireframes/** with detailed UX design
 - **Gate 2.5 (Design Validation) ensures UI specs are complete** before technical work
 - Technology decisions happen at Gate 6 (Dependency Map)
+- **Gate 9 (Delivery Planning) is MANDATORY** - creates realistic roadmap with timeline
 - All documents saved to `docs/pre-dev/<feature-name>/`
 - Get human approval at each gate before proceeding
 - Planning investment (2.5-4.5 hours) pays off during implementation
+- Delivery roadmap (WHEN/WHO) complements write-plan (HOW)
 
 ---
 
@@ -639,6 +672,7 @@ Next steps:
 | 6 | `ring:pre-dev-dependency-map` | Technology selection | dependency-map.md |
 | 7 | `ring:pre-dev-task-breakdown` | Task decomposition | tasks.md |
 | 8 | `ring:pre-dev-subtask-creation` | Implementation steps | subtasks.md |
+| 9 | `ring:pre-dev-delivery-planning` | Delivery roadmap |
 
 ### Execution Pattern
 

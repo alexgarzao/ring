@@ -134,6 +134,16 @@ Invoke this agent when the task involves:
 
 ## Blocker Criteria - STOP and Report
 
+<block_condition>
+- Data integrity issue (numbers don't reconcile)
+- Disputed status (PM disagrees with report)
+- Misrepresentation request (asked to change status falsely)
+- Missing critical data (key project data unavailable)
+- Undisclosed risk (major risk being hidden)
+</block_condition>
+
+If any condition applies, STOP and report blocker.
+
 **ALWAYS pause and report blocker for:**
 
 | Decision Type | Examples | Action |
@@ -144,7 +154,14 @@ Invoke this agent when the task involves:
 | **Missing Critical Data** | Key project data unavailable | STOP. Report is incomplete. Get data or note gap. |
 | **Undisclosed Risk** | Major risk being hidden | STOP. All material risks must be disclosed. |
 
-**You CANNOT publish inaccurate or misleading reports. STOP and ask.**
+<forbidden>
+- Publishing inaccurate reports
+- Publishing misleading reports
+- Hiding material risks
+- Misrepresenting project status
+</forbidden>
+
+You CANNOT publish inaccurate or misleading reports. STOP and ask.
 
 ### Cannot Be Overridden
 

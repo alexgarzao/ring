@@ -207,9 +207,9 @@ If `topology.structure` is `monorepo` or `multi-repo`:
 
 ## Integration with Pre-Dev Workflow
 
-**ring:pre-dev-full (9-gate):** Gate 0 Research → Gate 1 PRD (reads research.md) → ... → Gate 3 TRD (reads research.md)
+**ring:pre-dev-full (10-gate):** Gate 0 Research → Gate 1 PRD (reads research.md) → ... → Gate 3 TRD (reads research.md)
 
-**ring:pre-dev-feature (4-gate):** Gate 0 Research → Gate 1 PRD → Gate 2 TRD → Gate 3 Tasks
+**ring:pre-dev-feature (5-gate):** Gate 0 Research → Gate 1 PRD → Gate 2 TRD → Gate 3 Tasks
 
 ## Research Document Usage
 
