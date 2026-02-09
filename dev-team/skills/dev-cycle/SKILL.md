@@ -1,5 +1,5 @@
 ---
-name: ring:dev-cycle
+name: ring-dev-cycle
 description: |
   Main orchestrator for the 10-gate development cycle system. Loads tasks/subtasks
   from PM team output and executes through implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing (write) → chaos testing (write) → review → validation
@@ -23,17 +23,17 @@ NOT_skip_when: |
   - "Already did N gates" → Sunk cost is irrelevant. Complete all gates.
 
 sequence:
-  before: [ring:dev-feedback-loop]
+  before: [ring-dev-feedback-loop]
 
 related:
-  complementary: [ring:dev-implementation, ring:dev-devops, ring:dev-sre, ring:dev-unit-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop]
+  complementary: [ring-dev-implementation, ring-dev-devops, ring-dev-sre, ring-dev-unit-testing, ring-requesting-code-review, ring-dev-validation, ring-dev-feedback-loop]
 
 verification:
   automated:
-    - command: "test -f docs/ring:dev-cycle/current-cycle.json || test -f docs/ring:dev-refactor/current-cycle.json"
-      description: "State file exists (ring:dev-cycle or ring:dev-refactor)"
+    - command: "test -f docs/ring-dev-cycle/current-cycle.json || test -f docs/ring-dev-refactor/current-cycle.json"
+      description: "State file exists (ring-dev-cycle or ring-dev-refactor)"
       success_pattern: "exit 0"
-    - command: "cat docs/ring:dev-cycle/current-cycle.json 2>/dev/null || cat docs/ring:dev-refactor/current-cycle.json | jq '.current_gate'"
+    - command: "cat docs/ring-dev-cycle/current-cycle.json 2>/dev/null || cat docs/ring-dev-refactor/current-cycle.json | jq '.current_gate'"
       description: "Current gate is valid"
       success_pattern: "[0-5]"
   manual:
@@ -42,32 +42,32 @@ verification:
 
 examples:
   - name: "New feature from PM workflow"
-    invocation: "/ring:dev-cycle docs/pre-dev/auth/tasks.md"
+    invocation: "/ring-dev-cycle docs/pre-dev/auth/tasks.md"
     expected_flow: |
       1. Load tasks with subtasks from tasks.md
       2. Ask user for checkpoint mode (per-task/per-gate/continuous)
       3. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each task sequentially
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
-    invocation: "/ring:dev-cycle --resume"
+    invocation: "/ring-dev-cycle --resume"
     expected_state: "Continues from last saved gate in current-cycle.json"
   - name: "Execute with per-gate checkpoints"
-    invocation: "/ring:dev-cycle tasks.md --checkpoint per-gate"
+    invocation: "/ring-dev-cycle tasks.md --checkpoint per-gate"
     expected_flow: |
       1. Execute Gate 0, pause for approval
       2. User approves, execute Gate 1, pause
       3. Continue until all 10 gates complete
   - name: "Execute with custom context for agents"
-    invocation: "/ring:dev-cycle tasks.md --prompt \"Focus on error handling. Use existing UserRepository.\""
+    invocation: "/ring-dev-cycle tasks.md --prompt \"Focus on error handling. Use existing UserRepository.\""
     expected_flow: |
       1. Load tasks and store custom_prompt in state
       2. All agent dispatches include custom prompt as context
       3. Custom context visible in execution report
   - name: "Prompt-only mode (no tasks file)"
-    invocation: "/ring:dev-cycle --prompt \"Implement multi-tenant support with organization_id in all entities\""
+    invocation: "/ring-dev-cycle --prompt \"Implement multi-tenant support with organization_id in all entities\""
     expected_flow: |
       1. Detect prompt-only mode (no task file provided)
-      2. Dispatch ring:codebase-explorer to analyze project
+      2. Dispatch ring-codebase-explorer to analyze project
       3. Generate tasks internally from prompt + codebase analysis
       4. Present generated tasks for user confirmation
       5. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each generated task
@@ -102,7 +102,7 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 
 This keeps test code current with each feature while avoiding redundant container spin-ups during development.
 
-**MUST announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
+**MUST announce at start:** "I'm using the ring-dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -120,8 +120,8 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 
 | Action | Tool | Purpose |
 |--------|------|---------|
-| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` or `docs/ring:dev-refactor/*/tasks.md` |
-| Read state files | `Read` | Load/verify `docs/ring:dev-cycle/current-cycle.json` or `docs/ring:dev-refactor/current-cycle.json` |
+| Read task files | `Read` | Load task definitions from `docs/pre-dev/*/tasks.md` or `docs/ring-dev-refactor/*/tasks.md` |
+| Read state files | `Read` | Load/verify `docs/ring-dev-cycle/current-cycle.json` or `docs/ring-dev-refactor/current-cycle.json` |
 | Read PROJECT_RULES.md | `Read` | Load project-specific rules |
 | Write state files | `Write` | Persist cycle state to JSON |
 | Track progress | `TodoWrite` | Maintain task list |
@@ -136,7 +136,7 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 - Write source code (`Write`/`Create` on `*.go`, `*.ts`) - Agent writes code, not orchestrator
 - Edit source code (`Edit` on `*.go`, `*.ts`, `*.tsx`) - Agent edits code, not orchestrator
 - Run tests (`Execute` with `go test`, `npm test`) - Agent runs tests in TDD cycle
-- Analyze code (Direct pattern analysis) - `ring:codebase-explorer` analyzes
+- Analyze code (Direct pattern analysis) - `ring-codebase-explorer` analyzes
 - Make architectural decisions (Choosing patterns/libraries) - User decides, agent implements
 </forbidden>
 
@@ -160,7 +160,7 @@ This is not negotiable:
 │  CORRECT WORKFLOW ORDER                                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. Load task file (Read docs/pre-dev/*/tasks.md or docs/ring:dev-refactor/*/tasks.md) │
+│  1. Load task file (Read docs/pre-dev/*/tasks.md or docs/ring-dev-refactor/*/tasks.md) │
 │  2. Ask execution mode (AskUserQuestion)                        │
 │  3. Determine state path + Check/Load state (see State Path Selection) │
 │  4. WebFetch Ring Standards                                     │
@@ -183,16 +183,16 @@ This is not negotiable:
 **Before dispatching any agent, you MUST load the corresponding sub-skill first.**
 
 <cannot_skip>
-- Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
-- Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
-- Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
-- Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
-- Gate 4: `Skill("ring:dev-fuzz-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="fuzz", ...)`
-- Gate 5: `Skill("ring:dev-property-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="property", ...)`
-- Gate 6: `Skill("ring:dev-integration-testing")` → per unit: write/update tests + compile check (no execution); end of cycle: execute
-- Gate 7: `Skill("ring:dev-chaos-testing")` → per unit: write/update tests + compile check (no execution); end of cycle: execute
-- Gate 8: `Skill("ring:requesting-code-review")` → then 5x `Task(...)` in parallel
-- Gate 9: `Skill("ring:dev-validation")` → N/A (verification only)
+- Gate 0: `Skill("ring-dev-implementation")` → then `Task(subagent_type="ring-backend-engineer-*", ...)`
+- Gate 1: `Skill("ring-dev-devops")` → then `Task(subagent_type="ring-devops-engineer", ...)`
+- Gate 2: `Skill("ring-dev-sre")` → then `Task(subagent_type="ring-sre", ...)`
+- Gate 3: `Skill("ring-dev-unit-testing")` → then `Task(subagent_type="ring-qa-analyst", test_mode="unit", ...)`
+- Gate 4: `Skill("ring-dev-fuzz-testing")` → then `Task(subagent_type="ring-qa-analyst", test_mode="fuzz", ...)`
+- Gate 5: `Skill("ring-dev-property-testing")` → then `Task(subagent_type="ring-qa-analyst", test_mode="property", ...)`
+- Gate 6: `Skill("ring-dev-integration-testing")` → per unit: write/update tests + compile check (no execution); end of cycle: execute
+- Gate 7: `Skill("ring-dev-chaos-testing")` → per unit: write/update tests + compile check (no execution); end of cycle: execute
+- Gate 8: `Skill("ring-requesting-code-review")` → then 5x `Task(...)` in parallel
+- Gate 9: `Skill("ring-dev-validation")` → N/A (verification only)
 </cannot_skip>
 
 Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
@@ -214,7 +214,7 @@ Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 
 ```yaml
 Task tool:
-  subagent_type: "ring:backend-engineer-golang"
+  subagent_type: "ring-backend-engineer-golang"
   model: "opus"
   prompt: |
     **CUSTOM CONTEXT (from user):**
@@ -475,16 +475,16 @@ Day 4: Production incident from Day 1 code
 
 | Gate | Skill | Purpose | Agent | Per Unit | Standards Module |
 |------|-------|---------|-------|----------|------------------|
-| 0 | ring:dev-implementation | Write code following TDD | Based on task language/domain | Write + Run | core.md, domain.md |
-| 1 | ring:dev-devops | Infrastructure and deployment | ring:devops-engineer | Write + Run | devops.md |
-| 2 | ring:dev-sre | Observability (health, logging, tracing) | ring:sre | Write + Run | sre.md |
-| 3 | ring:dev-unit-testing | Unit tests for acceptance criteria | ring:qa-analyst (test_mode: unit) | Write + Run | testing-unit.md |
-| 4 | ring:dev-fuzz-testing | Fuzz tests for edge cases and crashes | ring:qa-analyst (test_mode: fuzz) | Write + Run | testing-fuzz.md |
-| 5 | ring:dev-property-testing | Property-based tests for domain invariants | ring:qa-analyst (test_mode: property) | Write + Run | testing-property.md |
-| 6 | ring:dev-integration-testing | Integration tests with testcontainers | ring:qa-analyst (test_mode: integration) | **Write only** | testing-integration.md |
-| 7 | ring:dev-chaos-testing | Chaos tests for failure scenarios | ring:qa-analyst (test_mode: chaos) | **Write only** | testing-chaos.md |
-| 8 | ring:requesting-code-review | Parallel code review (5 reviewers) | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer | Run | N/A |
-| 9 | ring:dev-validation | Final acceptance validation | N/A (verification) | Run | N/A |
+| 0 | ring-dev-implementation | Write code following TDD | Based on task language/domain | Write + Run | core.md, domain.md |
+| 1 | ring-dev-devops | Infrastructure and deployment | ring-devops-engineer | Write + Run | devops.md |
+| 2 | ring-dev-sre | Observability (health, logging, tracing) | ring-sre | Write + Run | sre.md |
+| 3 | ring-dev-unit-testing | Unit tests for acceptance criteria | ring-qa-analyst (test_mode: unit) | Write + Run | testing-unit.md |
+| 4 | ring-dev-fuzz-testing | Fuzz tests for edge cases and crashes | ring-qa-analyst (test_mode: fuzz) | Write + Run | testing-fuzz.md |
+| 5 | ring-dev-property-testing | Property-based tests for domain invariants | ring-qa-analyst (test_mode: property) | Write + Run | testing-property.md |
+| 6 | ring-dev-integration-testing | Integration tests with testcontainers | ring-qa-analyst (test_mode: integration) | **Write only** | testing-integration.md |
+| 7 | ring-dev-chaos-testing | Chaos tests for failure scenarios | ring-qa-analyst (test_mode: chaos) | **Write only** | testing-chaos.md |
+| 8 | ring-requesting-code-review | Parallel code review (5 reviewers) | ring-code-reviewer, ring-business-logic-reviewer, ring-security-reviewer, ring-nil-safety-reviewer, ring-test-reviewer | Run | N/A |
+| 9 | ring-dev-validation | Final acceptance validation | N/A (verification) | Run | N/A |
 
 **All gates are MANDATORY. No exceptions. No skip reasons.**
 
@@ -492,7 +492,7 @@ Day 4: Production incident from Day 1 code
 
 ## Integrated PM → Dev Workflow
 
-**PM Team Output** → **Dev Team Execution** (`/ring:dev-cycle`)
+**PM Team Output** → **Dev Team Execution** (`/ring-dev-cycle`)
 
 | Input Type | Path | Structure |
 |------------|------|-----------|
@@ -559,23 +559,23 @@ The state file path depends on the **source of tasks**:
 
 | Task Source | State Path | Use Case |
 |-------------|------------|----------|
-| `docs/ring:dev-refactor/*/tasks.md` | `docs/ring:dev-refactor/current-cycle.json` | Refactoring existing code |
-| `docs/pre-dev/*/tasks.md` | `docs/ring:dev-cycle/current-cycle.json` | New feature development |
-| Any other path | `docs/ring:dev-cycle/current-cycle.json` | Default for manual tasks |
+| `docs/ring-dev-refactor/*/tasks.md` | `docs/ring-dev-refactor/current-cycle.json` | Refactoring existing code |
+| `docs/pre-dev/*/tasks.md` | `docs/ring-dev-cycle/current-cycle.json` | New feature development |
+| Any other path | `docs/ring-dev-cycle/current-cycle.json` | Default for manual tasks |
 
 **Detection Logic:**
 ```text
-if source_file contains "docs/ring:dev-refactor/" THEN
-  state_path = "docs/ring:dev-refactor/current-cycle.json"
+if source_file contains "docs/ring-dev-refactor/" THEN
+  state_path = "docs/ring-dev-refactor/current-cycle.json"
 else
-  state_path = "docs/ring:dev-cycle/current-cycle.json"
+  state_path = "docs/ring-dev-cycle/current-cycle.json"
 ```
 
 **Store state_path in the state object itself** so resume knows where to look.
 
 ### State File Structure
 
-State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.json` or `docs/ring:dev-refactor/current-cycle.json`):
+State is persisted to `{state_path}` (either `docs/ring-dev-cycle/current-cycle.json` or `docs/ring-dev-refactor/current-cycle.json`):
 
 ```json
 {
@@ -584,7 +584,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
   "started_at": "ISO timestamp",
   "updated_at": "ISO timestamp",
   "source_file": "path/to/tasks.md",
-  "state_path": "docs/ring:dev-cycle/current-cycle.json | docs/ring:dev-refactor/current-cycle.json",
+  "state_path": "docs/ring-dev-cycle/current-cycle.json | docs/ring-dev-refactor/current-cycle.json",
   "cycle_type": "feature | refactor",
   "execution_mode": "manual_per_subtask|manual_per_task|automatic",
   "commit_timing": "per_subtask|per_task|at_end",
@@ -649,7 +649,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
       "artifacts": {},
       "agent_outputs": {
         "implementation": {
-          "agent": "ring:backend-engineer-golang",
+          "agent": "ring-backend-engineer-golang",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
           "duration_ms": 0,
@@ -663,7 +663,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "devops": {
-          "agent": "ring:devops-engineer",
+          "agent": "ring-devops-engineer",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
           "duration_ms": 0,
@@ -679,7 +679,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "sre": {
-          "agent": "ring:sre",
+          "agent": "ring-sre",
           "output": "## Summary\n...",
           "timestamp": "ISO timestamp",
           "duration_ms": 0,
@@ -695,7 +695,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "unit_testing": {
-          "agent": "ring:qa-analyst",
+          "agent": "ring-qa-analyst",
           "test_mode": "unit",
           "output": "## Summary\n...",
           "verdict": "PASS",
@@ -715,7 +715,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "fuzz_testing": {
-          "agent": "ring:qa-analyst",
+          "agent": "ring-qa-analyst",
           "test_mode": "fuzz",
           "output": "## Summary\n...",
           "verdict": "PASS",
@@ -732,7 +732,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "property_testing": {
-          "agent": "ring:qa-analyst",
+          "agent": "ring-qa-analyst",
           "test_mode": "property",
           "output": "## Summary\n...",
           "verdict": "PASS",
@@ -749,7 +749,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "integration_testing": {
-          "agent": "ring:qa-analyst",
+          "agent": "ring-qa-analyst",
           "test_mode": "integration",
           "output": "## Summary\n...",
           "verdict": "PASS",
@@ -769,7 +769,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         },
         "chaos_testing": {
-          "agent": "ring:qa-analyst",
+          "agent": "ring-qa-analyst",
           "test_mode": "chaos",
           "output": "## Summary\n...",
           "verdict": "PASS",
@@ -791,7 +791,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           "timestamp": "ISO timestamp",
           "duration_ms": 0,
           "code_reviewer": {
-            "agent": "ring:code-reviewer",
+            "agent": "ring-code-reviewer",
             "output": "...",
             "verdict": "PASS",
             "timestamp": "...",
@@ -805,7 +805,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             }
           },
           "business_logic_reviewer": {
-            "agent": "ring:business-logic-reviewer",
+            "agent": "ring-business-logic-reviewer",
             "output": "...",
             "verdict": "PASS",
             "timestamp": "...",
@@ -819,7 +819,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             }
           },
           "security_reviewer": {
-            "agent": "ring:security-reviewer",
+            "agent": "ring-security-reviewer",
             "output": "...",
             "verdict": "PASS",
             "timestamp": "...",
@@ -851,7 +851,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
 
 ### Structured Error/Issue Schemas
 
-**These schemas enable `ring:dev-feedback-loop` to analyze issues without parsing raw output.**
+**These schemas enable `ring-dev-feedback-loop` to analyze issues without parsing raw output.**
 
 #### Standards Compliance Gap Schema
 
@@ -1024,7 +1024,7 @@ After each gate, the state file MUST reflect:
 │  └── no → ASK: "Is this a LEGACY project (created without PM workflow)?"   │
 │       │                                                                     │
 │       ├── YES (legacy project) → LEGACY PROJECT ANALYSIS:                   │
-│       │   Step 1: Dispatch ring:codebase-explorer (technical info only)          │
+│       │   Step 1: Dispatch ring-codebase-explorer (technical info only)          │
 │       │   Step 2: Ask 3 questions (what agent can't determine):             │
 │       │     1. What do you need help with?                                  │
 │       │     2. Any external APIs not visible in code?                       │
@@ -1043,7 +1043,7 @@ After each gate, the state file MUST reflect:
 │           │                                                                 │
 │           └── no (no PM docs) → ⛔ HARD BLOCK:                              │
 │               "PM documents are REQUIRED for new projects.                  │
-│                Run /ring:pre-dev-full or /ring:pre-dev-feature first."               │
+│                Run /ring-pre-dev-full or /ring-pre-dev-feature first."               │
 │               → STOP (cycle cannot proceed)                                 │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1111,7 +1111,7 @@ For legacy projects, analyze codebase for TECHNICAL information only:
 │ Since this is a legacy project, I'll analyze the codebase       │
 │ for TECHNICAL information (not business rules).                 │
 │                                                                 │
-│ Step 1: Automated analysis (ring:codebase-explorer)                  │
+│ Step 1: Automated analysis (ring-codebase-explorer)                  │
 │ Step 2: Ask for project-specific tech not in Ring Standards     │
 │ Step 3: Generate PROJECT_RULES.md (deduplicated)                │
 │                                                                 │
@@ -1122,11 +1122,11 @@ For legacy projects, analyze codebase for TECHNICAL information only:
 
 #### Step 0.2.1a: Automated Codebase Analysis (MANDATORY)
 
-**⛔ You MUST use the Task tool to dispatch ring:codebase-explorer. This is not implicit.**
+**⛔ You MUST use the Task tool to dispatch ring-codebase-explorer. This is not implicit.**
 
 #### Dispatch Agent
 
-Dispatch ring:codebase-explorer to analyze the legacy project for TECHNICAL information:
+Dispatch ring-codebase-explorer to analyze the legacy project for TECHNICAL information:
 
 ```text
 Action: Use Task tool with EXACTLY these parameters:
@@ -1139,7 +1139,7 @@ Action: Use Task tool with EXACTLY these parameters:
 ```yaml
 # Agent 1: Codebase Explorer - Technical Analysis
 Task tool:
-  subagent_type: "ring:codebase-explorer"
+  subagent_type: "ring-codebase-explorer"
   model: "opus"
   description: "Analyze legacy project for PROJECT_RULES.md"
   prompt: |
@@ -1192,7 +1192,7 @@ Task tool:
 #### Verification (MANDATORY)
 
 After agent completes, confirm:
-- [ ] `ring:codebase-explorer` returned "## Technical Analysis (Legacy Project)" section
+- [ ] `ring-codebase-explorer` returned "## Technical Analysis (Legacy Project)" section
 - [ ] Output contains non-empty content for: Tech Stack, External Integrations, Configuration
 
 **If agent failed or returned empty output → Re-dispatch. Cannot proceed without technical analysis.**
@@ -1255,7 +1255,7 @@ Create tool:
     
     ## Tech Stack (Not in Ring Standards)
     
-    [From ring:codebase-explorer: Technologies not covered by Ring Standards]
+    [From ring-codebase-explorer: Technologies not covered by Ring Standards]
     [e.g., specific message broker, specific cache, DB if not PostgreSQL]
     
     | Technology | Purpose | Notes |
@@ -1264,7 +1264,7 @@ Create tool:
     
     ## Non-Standard Directory Structure
     
-    [From ring:codebase-explorer: Directories that deviate from Ring's standard API structure]
+    [From ring-codebase-explorer: Directories that deviate from Ring's standard API structure]
     [e.g., workers/, consumers/, polling/]
     
     | Directory | Purpose | Pattern |
@@ -1273,7 +1273,7 @@ Create tool:
     
     ## External Integrations
     
-    [From ring:codebase-explorer: Third-party services specific to this project]
+    [From ring-codebase-explorer: Third-party services specific to this project]
     
     | Service | Purpose | Docs |
     |---------|---------|------|
@@ -1281,7 +1281,7 @@ Create tool:
     
     ## Environment Configuration
     
-    [From ring:codebase-explorer: Project-specific env vars not covered by Ring]
+    [From ring-codebase-explorer: Project-specific env vars not covered by Ring]
     
     | Variable | Purpose | Example |
     |----------|---------|---------|
@@ -1298,7 +1298,7 @@ Create tool:
     ---
     
     *Generated: [ISO timestamp]*
-    *Source: Legacy project analysis (ring:codebase-explorer)*
+    *Source: Legacy project analysis (ring-codebase-explorer)*
     *Ring Standards Version: [version from WebFetch]*
 ```
 
@@ -1310,7 +1310,7 @@ Create tool:
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │ I analyzed your codebase using:                                 │
-│   • ring:codebase-explorer (technical patterns, stack, structure)    │
+│   • ring-codebase-explorer (technical patterns, stack, structure)    │
 │                                                                 │
 │ Combined with your input on:                                    │
 │   • Current development goal                                    │
@@ -1354,7 +1354,7 @@ For NEW projects (not legacy), ask about PM documents:
 │ Do you have any of these PM documents?                          │
 │   • PRD (Product Requirements Document)                         │
 │   • TRD (Technical Requirements Document)                       │
-│   • Feature Map (from ring:pre-dev-feature-map skill)                │
+│   • Feature Map (from ring-pre-dev-feature-map skill)                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -1392,8 +1392,8 @@ docs/pre-dev/{feature-name}/
 
 #### Common Patterns
 
-- `/ring:pre-dev-full` output: `docs/pre-dev/{feature}/prd.md`, `trd.md`, `feature-map.md`
-- `/ring:pre-dev-feature` output: `docs/pre-dev/{feature}/prd.md`, `feature-map.md`
+- `/ring-pre-dev-full` output: `docs/pre-dev/{feature}/prd.md`, `trd.md`, `feature-map.md`
+- `/ring-pre-dev-feature` output: `docs/pre-dev/{feature}/prd.md`, `feature-map.md`
 - Custom locations: User may have docs in different paths (e.g., `requirements/`, `specs/`)
 
 #### Then
@@ -1558,15 +1558,15 @@ Present to user for review, then proceed to Step 1.
 │ You MUST create PRD, TRD, and/or Feature Map documents first    │
 │ using PM team skills:                                           │
 │                                                                 │
-│   /ring:pre-dev-full     → For features ≥2 days (9 gates)           │
-│   /ring:pre-dev-feature  → For features <2 days (4 gates)           │
+│   /ring-pre-dev-full     → For features ≥2 days (9 gates)           │
+│   /ring-pre-dev-feature  → For features <2 days (4 gates)           │
 │                                                                 │
 │ These commands will guide you through creating:                 │
 │   • PRD (Product Requirements Document)                         │
 │   • TRD (Technical Requirements Document)                       │
 │   • Feature Map (technology choices, feature relationships)     │
 │                                                                 │
-│ After completing pre-dev workflow, run /ring:dev-cycle again.        │
+│ After completing pre-dev workflow, run /ring-dev-cycle again.        │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -1579,7 +1579,7 @@ STOP EXECUTION. Do not proceed to Step 1.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Skip PM docs, I'll add them later" | Later = never. No PM docs = no project context = agents guessing. | **Run /ring:pre-dev-full or /ring:pre-dev-feature NOW** |
+| "Skip PM docs, I'll add them later" | Later = never. No PM docs = no project context = agents guessing. | **Run /ring-pre-dev-full or /ring-pre-dev-feature NOW** |
 | "Project is simple, doesn't need PM docs" | Simple projects still need domain context defined upfront. | **Create PM documents first** |
 | "I know what I want to build" | Your knowledge ≠ documented knowledge agents can use. | **Document in PRD/TRD/Feature Map** |
 | "PM workflow takes too long" | PM workflow takes 30-60 min. Rework from unclear requirements takes days. | **Invest time upfront** |
@@ -1591,12 +1591,12 @@ STOP EXECUTION. Do not proceed to Step 1.
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Just skip this, I'll create PM docs later" | "PM documents are REQUIRED for new projects. Without them, agents cannot understand your project's domain context or technical requirements. Run `/ring:pre-dev-full` or `/ring:pre-dev-feature` first." |
+| "Just skip this, I'll create PM docs later" | "PM documents are REQUIRED for new projects. Without them, agents cannot understand your project's domain context or technical requirements. Run `/ring-pre-dev-full` or `/ring-pre-dev-feature` first." |
 | "I don't need formal documents" | "PM documents are the source of truth for PROJECT_RULES.md. Development cannot start without documented requirements." |
-| "This is just a quick prototype" | "Even prototypes need clear requirements. `/ring:pre-dev-feature` takes ~30 minutes and prevents hours of rework." |
+| "This is just a quick prototype" | "Even prototypes need clear requirements. `/ring-pre-dev-feature` takes ~30 minutes and prevents hours of rework." |
 | "I already explained what I want verbally" | "Verbal explanations cannot be used by agents. Requirements MUST be documented in PRD/TRD/Feature Map files." |
-| "It's a legacy project but skip the questions" | "The legacy analysis (ring:codebase-explorer + 3 questions) is the only way I can understand your project. It takes ~5 minutes and enables me to help you effectively." |
-| "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with: Tech Stack (not in Ring), External Integrations, Domain Terminology. Do not duplicate Ring Standards content. Then run `/ring:dev-cycle` again." |
+| "It's a legacy project but skip the questions" | "The legacy analysis (ring-codebase-explorer + 3 questions) is the only way I can understand your project. It takes ~5 minutes and enables me to help you effectively." |
+| "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with: Tech Stack (not in Ring), External Integrations, Domain Terminology. Do not duplicate Ring Standards content. Then run `/ring-dev-cycle` again." |
 
 ---
 
@@ -1606,16 +1606,16 @@ STOP EXECUTION. Do not proceed to Step 1.
 
 **Input:** `--prompt "..."` without a task file path
 
-When `--prompt` is provided without a tasks file, ring:dev-cycle generates tasks internally:
+When `--prompt` is provided without a tasks file, ring-dev-cycle generates tasks internally:
 
 1. **Detect prompt-only mode:** No task file argument AND `--prompt` provided
 2. **Analyze prompt:** Extract intent, scope, and requirements from the prompt
-3. **Explore codebase:** Dispatch `ring:codebase-explorer` to understand project structure
+3. **Explore codebase:** Dispatch `ring-codebase-explorer` to understand project structure
 4. **Generate tasks:** Create task structure internally based on prompt + codebase analysis
 
 ```yaml
 Task tool:
-  subagent_type: "ring:codebase-explorer"
+  subagent_type: "ring-codebase-explorer"
   model: "opus"
   prompt: |
     Analyze this codebase to support the following implementation request:
@@ -1628,23 +1628,23 @@ Task tool:
     3. Acceptance criteria for each task
     4. Files that will need modification
     
-    Output as structured task list compatible with ring:dev-cycle.
+    Output as structured task list compatible with ring-dev-cycle.
 ```
 
 5. **Present generated tasks:** Show user the auto-generated task breakdown
 6. **Confirm with user:** "I generated X tasks from your prompt. Proceed?"
 7. **Set state:**
-   - `state_path = "docs/ring:dev-cycle/current-cycle.json"`
+   - `state_path = "docs/ring-dev-cycle/current-cycle.json"`
    - `cycle_type = "prompt"`
    - `source_prompt = "[user's prompt]"`
-   - Generate `tasks` array from ring:codebase-explorer output
+   - Generate `tasks` array from ring-codebase-explorer output
 8. **Continue to execution mode selection** (Step 1 substeps 7-9)
 
 **Anti-Rationalization for Prompt-Only Mode:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Skip codebase exploration, I understand the prompt" | Prompt understanding ≠ codebase understanding. Explorer provides context. | **Always run ring:codebase-explorer** |
+| "Skip codebase exploration, I understand the prompt" | Prompt understanding ≠ codebase understanding. Explorer provides context. | **Always run ring-codebase-explorer** |
 | "Generate minimal tasks to go faster" | Minimal tasks = missed requirements. Comprehensive breakdown prevents rework. | **Generate complete task breakdown** |
 | "User knows what they want, skip confirmation" | User intent ≠ generated tasks. Confirmation prevents wrong implementation. | **Always confirm generated tasks** |
 
@@ -1657,8 +1657,8 @@ Task tool:
 1. **Detect input:** File → Load directly | Directory → Load tasks.md + discover subtasks/
 2. **Build order:** Read tasks, check for subtasks (ST-XXX-01, 02...) or TDD autonomous mode
 3. **Determine state path:**
-   - if source_file contains `docs/ring:dev-refactor/` → `state_path = "docs/ring:dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
-   - else → `state_path = "docs/ring:dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
+   - if source_file contains `docs/ring-dev-refactor/` → `state_path = "docs/ring-dev-refactor/current-cycle.json"`, `cycle_type = "refactor"`
+   - else → `state_path = "docs/ring-dev-cycle/current-cycle.json"`, `cycle_type = "feature"`
 4. **Capture and validate custom prompt:** If `--prompt "..."` provided:
    - **Sanitize input:** Trim whitespace, strip control characters (except newlines)
    - **Store validated value:** Set `custom_prompt` field (empty string if not provided)
@@ -1676,8 +1676,8 @@ Task tool:
 ### Resume Cycle (--resume flag)
 
 1. **Find existing state file:**
-   - Check `docs/ring:dev-cycle/current-cycle.json` first
-   - If not found, check `docs/ring:dev-refactor/current-cycle.json`
+   - Check `docs/ring-dev-cycle/current-cycle.json` first
+   - If not found, check `docs/ring-dev-refactor/current-cycle.json`
    - If neither exists → Error: "No cycle to resume"
 2. Load found state file, validate (state_path is stored in the state object)
 3. Display: cycle started, tasks completed/total, current task/subtask/gate, paused reason
@@ -1694,7 +1694,7 @@ Task tool:
 
 ## Input Validation
 
-Task files are generated by `/pre-dev-*` or `/ring:dev-refactor`, which handle content validation. The ring:dev-cycle performs basic format checks:
+Task files are generated by `/pre-dev-*` or `/ring-dev-refactor`, which handle content validation. The ring-dev-cycle performs basic format checks:
 
 ### Format Checks
 
@@ -1707,18 +1707,18 @@ Task files are generated by `/pre-dev-*` or `/ring:dev-refactor`, which handle c
 
 ## Step 2: Gate 0 - Implementation (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring:dev-implementation
+**REQUIRED SUB-SKILL:** Use ring-dev-implementation
 
 **Execution Unit:** Task (if no subtasks) or Subtask (if task has subtasks)
 
-### ⛔ MANDATORY: Invoke ring:dev-implementation Skill (not inline execution)
+### ⛔ MANDATORY: Invoke ring-dev-implementation Skill (not inline execution)
 
 See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared-orchestrator-principle.md) for full details.
 
 **⛔ FORBIDDEN: Executing TDD-RED/GREEN logic directly from this step.**
-MUST invoke the ring:dev-implementation skill via the Skill tool; it handles all TDD phases, agent selection, agent dispatch, standards verification, and fix iteration.
+MUST invoke the ring-dev-implementation skill via the Skill tool; it handles all TDD phases, agent selection, agent dispatch, standards verification, and fix iteration.
 
-### Step 2.1: Prepare Input for ring:dev-implementation Skill
+### Step 2.1: Prepare Input for ring-dev-implementation Skill
 
 ```text
 Gather from current execution unit:
@@ -1739,14 +1739,14 @@ implementation_input = {
 }
 ```
 
-### Step 2.2: Invoke ring:dev-implementation Skill
+### Step 2.2: Invoke ring-dev-implementation Skill
 
 ```text
 1. Record gate start timestamp
 
-2. REQUIRED: Invoke ring:dev-implementation skill with structured input:
+2. REQUIRED: Invoke ring-dev-implementation skill with structured input:
 
-   Skill("ring:dev-implementation") with input:
+   Skill("ring-dev-implementation") with input:
      unit_id: implementation_input.unit_id
      requirements: implementation_input.requirements
      language: implementation_input.language
@@ -1786,7 +1786,7 @@ implementation_input = {
 ### Step 2.3: Gate 0 Complete
 
 ```text
-5. When ring:dev-implementation skill returns PASS:
+5. When ring-dev-implementation skill returns PASS:
 
    REQUIRED: Parse from skill output:
    - agent_used: extract from "## Implementation Summary"
@@ -1796,7 +1796,7 @@ implementation_input = {
    - standards_compliance: extract from Standards Coverage Table
 
    - agent_outputs.implementation = {
-       skill: "ring:dev-implementation",
+       skill: "ring-dev-implementation",
        agent: "[agent used by skill]",
        output: "[full skill output]",
        timestamp: "[ISO timestamp]",
@@ -1823,7 +1823,7 @@ implementation_input = {
    ┌─────────────────────────────────────────────────┐
    │ ✓ GATE 0 COMPLETE                              │
    ├─────────────────────────────────────────────────┤
-   │ Skill: ring:dev-implementation                  │
+   │ Skill: ring-dev-implementation                  │
    │ Agent: [agent_used]                             │
    │ TDD-RED:   FAIL captured ✓                     │
    │ TDD-GREEN: PASS verified ✓                     │
@@ -1842,27 +1842,27 @@ implementation_input = {
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I can run TDD-RED/GREEN directly from here" | Inline TDD = skipping the skill. Skill has iteration logic and validation. | **Invoke Skill("ring:dev-implementation")** |
-| "I already know which agent to dispatch" | Agent selection is the SKILL's job, not the orchestrator's. | **Invoke Skill("ring:dev-implementation")** |
-| "The TDD steps are documented here, I'll follow them" | These steps are REFERENCE, not EXECUTABLE. The skill is executable. | **Invoke Skill("ring:dev-implementation")** |
-| "Skill adds overhead for simple tasks" | Overhead = compliance checks. Simple ≠ exempt. | **Invoke Skill("ring:dev-implementation")** |
-| "I'll dispatch the agent and verify output myself" | Self-verification skips the skill's re-dispatch loop. | **Invoke Skill("ring:dev-implementation")** |
-| "Agent already did TDD internally" | Internal ≠ verified by skill. Skill validates output structure. | **Invoke Skill("ring:dev-implementation")** |
+| "I can run TDD-RED/GREEN directly from here" | Inline TDD = skipping the skill. Skill has iteration logic and validation. | **Invoke Skill("ring-dev-implementation")** |
+| "I already know which agent to dispatch" | Agent selection is the SKILL's job, not the orchestrator's. | **Invoke Skill("ring-dev-implementation")** |
+| "The TDD steps are documented here, I'll follow them" | These steps are REFERENCE, not EXECUTABLE. The skill is executable. | **Invoke Skill("ring-dev-implementation")** |
+| "Skill adds overhead for simple tasks" | Overhead = compliance checks. Simple ≠ exempt. | **Invoke Skill("ring-dev-implementation")** |
+| "I'll dispatch the agent and verify output myself" | Self-verification skips the skill's re-dispatch loop. | **Invoke Skill("ring-dev-implementation")** |
+| "Agent already did TDD internally" | Internal ≠ verified by skill. Skill validates output structure. | **Invoke Skill("ring-dev-implementation")** |
 
 ## Step 3: Gate 1 - DevOps (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring:dev-devops
+**REQUIRED SUB-SKILL:** Use ring-dev-devops
 
 ### ⛔ HARD GATE: Required Artifacts MUST Be Created
 
 **Gate 1 is a BLOCKING gate.** DevOps agent MUST create all required artifacts. If any artifact is missing:
 - You CANNOT proceed to Gate 2
-- You MUST re-dispatch to ring:devops-engineer to create missing artifacts
+- You MUST re-dispatch to ring-devops-engineer to create missing artifacts
 - You MUST verify all artifacts exist before proceeding
 
 ### Required Artifacts
 
-**See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md" for all required sections.**
+**See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-devops-engineer → devops.md" for all required sections.**
 
 **Key artifacts from devops.md:**
 - Containers (Dockerfile + Docker Compose)
@@ -1870,7 +1870,7 @@ implementation_input = {
 - Infrastructure as Code (if applicable)
 - Helm charts (if K8s deployment)
 
-### Step 3.1: Prepare Input for ring:dev-devops Skill
+### Step 3.1: Prepare Input for ring-dev-devops Skill
 
 ```text
 Gather from previous gates:
@@ -1894,14 +1894,14 @@ devops_input = {
 }
 ```
 
-### Step 3.2: Invoke ring:dev-devops Skill
+### Step 3.2: Invoke ring-dev-devops Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-devops skill with structured input:
+2. Invoke ring-dev-devops skill with structured input:
 
-   Skill("ring:dev-devops") with input:
+   Skill("ring-dev-devops") with input:
      unit_id: devops_input.unit_id
      language: devops_input.language
      service_type: devops_input.service_type
@@ -1914,7 +1914,7 @@ devops_input = {
      existing_compose: devops_input.existing_compose
 
    The skill handles:
-   - Dispatching ring:devops-engineer agent
+   - Dispatching ring-devops-engineer agent
    - Dockerfile creation/update
    - docker-compose.yml configuration
    - .env.example documentation
@@ -1934,7 +1934,7 @@ devops_input = {
    
    if skill output contains "Status: FAIL" or "Ready for Gate 2: no":
      → Gate 1 BLOCKED.
-     → Skill already dispatched fixes to ring:devops-engineer
+     → Skill already dispatched fixes to ring-devops-engineer
      → Skill already re-ran verification
      → If "ESCALATION" in output: STOP and report to user
 
@@ -1944,7 +1944,7 @@ devops_input = {
 ### Step 3.3: Gate 1 Complete
 
 ```text
-5. When ring:dev-devops skill returns PASS:
+5. When ring-dev-devops skill returns PASS:
    
    Parse from skill output:
    - status: extract from "## DevOps Summary"
@@ -1953,7 +1953,7 @@ devops_input = {
    - verification_passed: extract from "## Verification Results"
    
    - agent_outputs.devops = {
-       skill: "ring:dev-devops",
+       skill: "ring-dev-devops",
        output: "[full skill output]",
        artifacts_created: ["Dockerfile", "docker-compose.yml", ".env.example"],
        verification_passed: true,
@@ -1980,9 +1980,9 @@ devops_input = {
 
 ## Step 4: Gate 2 - SRE (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-sre`
+**REQUIRED SUB-SKILL:** Use `ring-dev-sre`
 
-### Step 4.1: Prepare Input for ring:dev-sre Skill
+### Step 4.1: Prepare Input for ring-dev-sre Skill
 
 ```text
 Gather from previous gates:
@@ -1994,7 +1994,7 @@ sre_input = {
   // REQUIRED - from Gate 0 context
   language: state.current_unit.language,  // "go" | "typescript" | "python"
   service_type: state.current_unit.service_type,  // "api" | "worker" | "batch" | "cli"
-  implementation_agent: agent_outputs.implementation.agent,  // e.g., "ring:backend-engineer-golang"
+  implementation_agent: agent_outputs.implementation.agent,  // e.g., "ring-backend-engineer-golang"
   implementation_files: agent_outputs.implementation.files_changed,  // list of files from Gate 0
   
   // OPTIONAL - additional context
@@ -2004,14 +2004,14 @@ sre_input = {
 }
 ```
 
-### Step 4.2: Invoke ring:dev-sre Skill
+### Step 4.2: Invoke ring-dev-sre Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-sre skill with structured input:
+2. Invoke ring-dev-sre skill with structured input:
 
-   Skill("ring:dev-sre") with input:
+   Skill("ring-dev-sre") with input:
      unit_id: sre_input.unit_id
      language: sre_input.language
      service_type: sre_input.service_type
@@ -2053,7 +2053,7 @@ sre_input = {
 ### Step 4.3: Gate 2 Complete
 
 ```text
-5. When ring:dev-sre skill returns PASS:
+5. When ring-dev-sre skill returns PASS:
    
    Parse from skill output:
    - status: extract from "## Validation Result"
@@ -2061,7 +2061,7 @@ sre_input = {
    - iterations: extract from "Iterations:" line
    
    - agent_outputs.sre = {
-       skill: "ring:dev-sre",
+       skill: "ring-dev-sre",
        output: "[full skill output]",
        validation_result: "PASS",
        instrumentation_coverage: "[X%]",
@@ -2080,7 +2080,7 @@ sre_input = {
 
 ### Gate 2 Anti-Rationalization Table
 
-See [ring:dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalization tables covering:
+See [ring-dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalization tables covering-
 - Observability deferral rationalizations
 - Instrumentation coverage rationalizations
 - Context propagation rationalizations
@@ -2089,15 +2089,15 @@ See [ring:dev-sre/SKILL.md](../dev-sre/SKILL.md) for complete anti-rationalizati
 
 | User Says | Your Response |
 |-----------|---------------|
-| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking ring:dev-sre skill now." |
-| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. ring:dev-sre skill handles fix dispatch and re-validation." |
-| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. ring:dev-sre skill will not pass until met." |
+| "Skip SRE validation, we'll add observability later" | "Observability is MANDATORY for Gate 2. Invoking ring-dev-sre skill now." |
+| "SRE found issues but let's continue" | "Gate 2 is a HARD GATE. ring-dev-sre skill handles fix dispatch and re-validation." |
+| "Instrumentation coverage is low but code works" | "90%+ instrumentation coverage is REQUIRED. ring-dev-sre skill will not pass until met." |
 
 ## Step 5: Gate 3 - Unit Testing (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-unit-testing`
+**REQUIRED SUB-SKILL:** Use `ring-dev-unit-testing`
 
-### Step 5.1: Prepare Input for ring:dev-unit-testing Skill
+### Step 5.1: Prepare Input for ring-dev-unit-testing Skill
 
 ```text
 Gather from previous gates:
@@ -2116,14 +2116,14 @@ testing_input = {
 }
 ```
 
-### Step 5.2: Invoke ring:dev-unit-testing Skill
+### Step 5.2: Invoke ring-dev-unit-testing Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-unit-testing skill with structured input:
+2. Invoke ring-dev-unit-testing skill with structured input:
 
-   Skill("ring:dev-unit-testing") with input:
+   Skill("ring-dev-unit-testing") with input:
      unit_id: testing_input.unit_id
      acceptance_criteria: testing_input.acceptance_criteria
      implementation_files: testing_input.implementation_files
@@ -2133,7 +2133,7 @@ testing_input = {
      existing_tests: testing_input.existing_tests
 
    The skill handles:
-   - Dispatching ring:qa-analyst agent
+   - Dispatching ring-qa-analyst agent
    - Test creation following TDD methodology
    - Coverage measurement and validation (85%+ required)
    - Traceability matrix (AC → Test mapping)
@@ -2163,7 +2163,7 @@ testing_input = {
 ### Step 5.3: Gate 3 Complete
 
 ```text
-5. When ring:dev-unit-testing skill returns PASS:
+5. When ring-dev-unit-testing skill returns PASS:
    
    Parse from skill output:
    - coverage_actual: extract percentage from "## Coverage Report"
@@ -2172,7 +2172,7 @@ testing_input = {
    - iterations: extract from "Iterations:" line
    
    - agent_outputs.testing = {
-       skill: "ring:dev-unit-testing",
+       skill: "ring-dev-unit-testing",
        output: "[full skill output]",
        verdict: "PASS",
        coverage_actual: [X%],
@@ -2229,17 +2229,17 @@ testing_input = {
 
 | User Says | Your Response |
 |-----------|---------------|
-| "84% is close enough" | "85% is Ring minimum. ring:dev-unit-testing skill enforces this." |
-| "Skip testing, deadline" | "Testing is MANDATORY. ring:dev-unit-testing skill handles iterations." |
-| "Manual testing covers it" | "Gate 3 requires executable unit tests. Invoking ring:dev-unit-testing now." |
+| "84% is close enough" | "85% is Ring minimum. ring-dev-unit-testing skill enforces this." |
+| "Skip testing, deadline" | "Testing is MANDATORY. ring-dev-unit-testing skill handles iterations." |
+| "Manual testing covers it" | "Gate 3 requires executable unit tests. Invoking ring-dev-unit-testing now." |
 
 ## Step 6: Gate 4 - Fuzz Testing (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-fuzz-testing`
+**REQUIRED SUB-SKILL:** Use `ring-dev-fuzz-testing`
 
 **MANDATORY GATE:** All code paths MUST have fuzz tests to discover edge cases and crashes.
 
-### Step 6.1: Prepare Input for ring:dev-fuzz-testing Skill
+### Step 6.1: Prepare Input for ring-dev-fuzz-testing Skill
 
 ```text
 Gather from previous gates:
@@ -2255,21 +2255,21 @@ fuzz_testing_input = {
 }
 ```
 
-### Step 6.2: Invoke ring:dev-fuzz-testing Skill
+### Step 6.2: Invoke ring-dev-fuzz-testing Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-fuzz-testing skill with structured input:
+2. Invoke ring-dev-fuzz-testing skill with structured input:
 
-   Skill("ring:dev-fuzz-testing") with input:
+   Skill("ring-dev-fuzz-testing") with input:
      unit_id: fuzz_testing_input.unit_id
      implementation_files: fuzz_testing_input.implementation_files
      language: fuzz_testing_input.language
      gate3_handoff: fuzz_testing_input.gate3_handoff
 
    The skill handles:
-   - Dispatching ring:qa-analyst agent (test_mode: fuzz)
+   - Dispatching ring-qa-analyst agent (test_mode: fuzz)
    - Fuzz function creation (FuzzXxx naming)
    - Seed corpus generation (minimum 5 entries)
    - f.Add() pattern validation
@@ -2301,11 +2301,11 @@ fuzz_testing_input = {
 
 ## Step 7: Gate 5 - Property-Based Testing (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-property-testing`
+**REQUIRED SUB-SKILL:** Use `ring-dev-property-testing`
 
 **MANDATORY GATE:** Domain invariants MUST be verified with property-based tests.
 
-### Step 7.1: Prepare Input for ring:dev-property-testing Skill
+### Step 7.1: Prepare Input for ring-dev-property-testing Skill
 
 ```text
 Gather from previous gates:
@@ -2321,21 +2321,21 @@ property_testing_input = {
 }
 ```
 
-### Step 7.2: Invoke ring:dev-property-testing Skill
+### Step 7.2: Invoke ring-dev-property-testing Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:dev-property-testing skill with structured input:
+2. Invoke ring-dev-property-testing skill with structured input:
 
-   Skill("ring:dev-property-testing") with input:
+   Skill("ring-dev-property-testing") with input:
      unit_id: property_testing_input.unit_id
      implementation_files: property_testing_input.implementation_files
      language: property_testing_input.language
      domain_invariants: property_testing_input.domain_invariants
 
    The skill handles:
-   - Dispatching ring:qa-analyst agent (test_mode: property)
+   - Dispatching ring-qa-analyst agent (test_mode: property)
    - Property function creation (TestProperty_* naming)
    - quick.Check pattern validation
    - Invariant verification
@@ -2367,13 +2367,13 @@ property_testing_input = {
 
 ## Step 8: Gate 6 - Integration Testing (Per Execution Unit — WRITE ONLY)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-integration-testing`
+**REQUIRED SUB-SKILL:** Use `ring-dev-integration-testing`
 
 **MANDATORY GATE:** All code MUST have integration tests using testcontainers.
 
 **⛔ DEFERRED EXECUTION:** Per unit, this gate writes/updates integration test code and verifies compilation. Tests are NOT executed here (no containers). Actual execution happens at end of cycle (Step 12.1).
 
-### Step 8.1: Prepare Input for ring:dev-integration-testing Skill
+### Step 8.1: Prepare Input for ring-dev-integration-testing Skill
 
 ```text
 Gather from previous gates:
@@ -2392,14 +2392,14 @@ integration_testing_input = {
 }
 ```
 
-### Step 8.2: Invoke ring:dev-integration-testing Skill (Write Mode)
+### Step 8.2: Invoke ring-dev-integration-testing Skill (Write Mode)
 
 ```text
 1. Record gate start timestamp
 
-2. REQUIRED: Invoke ring:dev-integration-testing skill with structured input:
+2. REQUIRED: Invoke ring-dev-integration-testing skill with structured input:
 
-   Skill("ring:dev-integration-testing") with input:
+   Skill("ring-dev-integration-testing") with input:
      unit_id: integration_testing_input.unit_id
      integration_scenarios: integration_testing_input.integration_scenarios
      external_dependencies: integration_testing_input.external_dependencies
@@ -2409,7 +2409,7 @@ integration_testing_input = {
      implementation_files: integration_testing_input.implementation_files
 
    In write_only mode, the skill handles:
-   - Dispatching ring:qa-analyst agent (test_mode: integration)
+   - Dispatching ring-qa-analyst agent (test_mode: integration)
    - Writing/updating integration test code for current unit's changes
    - Verifying test compilation (go build ./... or tsc --noEmit)
    - Verifying build tags (//go:build integration) present
@@ -2457,13 +2457,13 @@ integration_testing_input = {
 
 ## Step 9: Gate 7 - Chaos Testing (Per Execution Unit — WRITE ONLY)
 
-**REQUIRED SUB-SKILL:** Use `ring:dev-chaos-testing`
+**REQUIRED SUB-SKILL:** Use `ring-dev-chaos-testing`
 
 **MANDATORY GATE:** All external dependencies MUST have chaos tests for failure scenarios.
 
 **⛔ DEFERRED EXECUTION:** Per unit, this gate writes/updates chaos test code and verifies compilation. Tests are NOT executed here (no Toxiproxy). Actual execution happens at end of cycle (Step 12.1).
 
-### Step 9.1: Prepare Input for ring:dev-chaos-testing Skill
+### Step 9.1: Prepare Input for ring-dev-chaos-testing Skill
 
 ```text
 Gather from previous gates:
@@ -2480,14 +2480,14 @@ chaos_testing_input = {
 }
 ```
 
-### Step 9.2: Invoke ring:dev-chaos-testing Skill (Write Mode)
+### Step 9.2: Invoke ring-dev-chaos-testing Skill (Write Mode)
 
 ```text
 1. Record gate start timestamp
 
-2. REQUIRED: Invoke ring:dev-chaos-testing skill with structured input:
+2. REQUIRED: Invoke ring-dev-chaos-testing skill with structured input:
 
-   Skill("ring:dev-chaos-testing") with input:
+   Skill("ring-dev-chaos-testing") with input:
      unit_id: chaos_testing_input.unit_id
      external_dependencies: chaos_testing_input.external_dependencies
      language: chaos_testing_input.language
@@ -2495,7 +2495,7 @@ chaos_testing_input = {
      gate6_handoff: chaos_testing_input.gate6_handoff
 
    In write_only mode, the skill handles:
-   - Dispatching ring:qa-analyst agent (test_mode: chaos)
+   - Dispatching ring-qa-analyst agent (test_mode: chaos)
    - Writing/updating chaos test code for current unit's dependencies
    - Verifying test compilation
    - Verifying dual-gate pattern (CHAOS=1 + testing.Short())
@@ -2538,9 +2538,9 @@ chaos_testing_input = {
 
 ## Step 10: Gate 8 - Review (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use `ring:requesting-code-review`
+**REQUIRED SUB-SKILL:** Use `ring-requesting-code-review`
 
-### Step 10.1: Prepare Input for ring:requesting-code-review Skill
+### Step 10.1: Prepare Input for ring-requesting-code-review Skill
 
 ```text
 Gather from previous gates:
@@ -2559,14 +2559,14 @@ review_input = {
 }
 ```
 
-### Step 10.2: Invoke ring:requesting-code-review Skill
+### Step 10.2: Invoke ring-requesting-code-review Skill
 
 ```text
 1. Record gate start timestamp
 
-2. Invoke ring:requesting-code-review skill with structured input:
+2. Invoke ring-requesting-code-review skill with structured input:
 
-   Skill("ring:requesting-code-review") with input:
+   Skill("ring-requesting-code-review") with input:
      unit_id: review_input.unit_id
      base_sha: review_input.base_sha
      head_sha: review_input.head_sha
@@ -2577,7 +2577,7 @@ review_input = {
 
    The skill handles:
    - Dispatching all 5 reviewers in PARALLEL (single message with 5 Task calls)
-   - ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer
+   - ring-code-reviewer, ring-business-logic-reviewer, ring-security-reviewer, ring-nil-safety-reviewer, ring-test-reviewer
    - Aggregating issues by severity (CRITICAL/HIGH/MEDIUM/LOW/COSMETIC)
    - Dispatching fixes to implementation agent for blocking issues
    - Re-running all 5 reviewers after fixes
@@ -2607,7 +2607,7 @@ review_input = {
 ### Step 10.3: Gate 8 Complete
 
 ```text
-5. When ring:requesting-code-review skill returns PASS:
+5. When ring-requesting-code-review skill returns PASS:
 
    Parse from skill output:
    - reviewers_passed: extract from "## Reviewer Verdicts" (should be "5/5")
@@ -2617,7 +2617,7 @@ review_input = {
    - iterations: extract from "Iterations:" line
 
    - agent_outputs.review = {
-       skill: "ring:requesting-code-review",
+       skill: "ring-requesting-code-review",
        output: "[full skill output]",
        iterations: [count],
        timestamp: "[ISO timestamp]",
@@ -2744,7 +2744,7 @@ For current execution unit:
 
 0. **COMMIT CHECK (before checkpoint):**
    - if `commit_timing == "per_subtask"`:
-     - Execute `/ring:commit` command with message: `feat({unit_id}): {unit_title}`
+     - Execute `/ring-commit` command with message: `feat({unit_id}): {unit_title}`
      - Include all changed files from this subtask
    - else: Skip commit (will happen at task or cycle end)
 
@@ -2765,7 +2765,7 @@ For current execution unit:
 
 0. **COMMIT CHECK (before task checkpoint):**
    - if `commit_timing == "per_task"`:
-     - Execute `/ring:commit` command with message: `feat({task_id}): {task_title}`
+     - Execute `/ring-commit` command with message: `feat({task_id}): {task_title}`
      - Include all changed files from this task (all subtasks combined)
    - else if `commit_timing == "per_subtask"`: Already committed per subtask
    - else: Skip commit (will happen at cycle end)
@@ -2784,14 +2784,14 @@ After completing all subtasks of a task:
 
 1. Set task status = "completed"
 
-2. **⛔ MANDATORY: Run ring:dev-feedback-loop skill**
+2. **⛔ MANDATORY: Run ring-dev-feedback-loop skill**
 
    ```yaml
    Skill tool:
-     skill: "ring:dev-feedback-loop"
+     skill: "ring-dev-feedback-loop"
    ```
 
-   **Note:** ring:dev-feedback-loop manages its own TodoWrite tracking internally.
+   **Note:** ring-dev-feedback-loop manages its own TodoWrite tracking internally.
    
    The skill will:
    - Add its own todo item for tracking
@@ -2840,9 +2840,9 @@ After completing all subtasks of a task:
    │ Assertiveness Score: XX% (Rating)               │
    │                                                  │
    │ Prompt Quality by Agent:                        │
-   │   ring:backend-engineer-golang: 90% (Excellent)     │
-   │   ring:qa-analyst: 75% (Acceptable)                 │
-   │   ring:code-reviewer: 88% (Good)               │
+   │   ring-backend-engineer-golang: 90% (Excellent)     │
+   │   ring-qa-analyst: 75% (Acceptable)                 │
+   │   ring-code-reviewer: 88% (Good)               │
    │                                                  │
    │ Improvements Suggested: N                       │
    │ Feedback Location:                              │
@@ -2883,7 +2883,7 @@ After completing all subtasks of a task:
      - Save state
      - Output: "Cycle paused for integration testing.
                 Test task [task_id] integration and run:
-                /ring:dev-cycle --resume
+                /ring-dev-cycle --resume
                 when ready to continue."
      - STOP execution
 
@@ -2891,7 +2891,7 @@ After completing all subtasks of a task:
      - Set status = "paused"
      - Save state
      - Output: "Cycle paused after task [task_id]. Resume with:
-                /ring:dev-cycle --resume"
+                /ring-dev-cycle --resume"
      - STOP execution
 ```
 
@@ -2908,9 +2908,9 @@ All units have written/updated test code during their Gate 6-7 passes. Now execu
 ```text
 1. Record deferred execution start timestamp
 
-2. REQUIRED: Invoke ring:dev-integration-testing skill in EXECUTE mode:
+2. REQUIRED: Invoke ring-dev-integration-testing skill in EXECUTE mode:
 
-   Skill("ring:dev-integration-testing") with input:
+   Skill("ring-dev-integration-testing") with input:
      mode: "execute"
      all_test_files: [aggregate gate_progress.integration_testing.test_files from all units]
      language: state.language
@@ -2921,9 +2921,9 @@ All units have written/updated test code during their Gate 6-7 passes. Now execu
    - Reporting pass/fail per test file
    - If failures: dispatching fixes and re-running (max 3 iterations)
 
-3. REQUIRED: Invoke ring:dev-chaos-testing skill in EXECUTE mode:
+3. REQUIRED: Invoke ring-dev-chaos-testing skill in EXECUTE mode:
 
-   Skill("ring:dev-chaos-testing") with input:
+   Skill("ring-dev-chaos-testing") with input:
      mode: "execute"
      all_test_files: [aggregate gate_progress.chaos_testing.test_files from all units]
      language: state.language
@@ -2958,7 +2958,7 @@ All units have written/updated test code during their Gate 6-7 passes. Now execu
 
 0. **FINAL COMMIT CHECK (before completion):**
    - if `commit_timing == "at_end"`:
-     - Execute `/ring:commit` command with message: `feat({cycle_id}): complete dev cycle for {feature_name}`
+     - Execute `/ring-commit` command with message: `feat({cycle_id}): complete dev cycle for {feature_name}`
      - Include all changed files from the entire cycle
    - else: Already committed per subtask or per task
 
@@ -2966,14 +2966,14 @@ All units have written/updated test code during their Gate 6-7 passes. Now execu
 2. **Update state:** `status = "completed"`, `completed_at = timestamp`
 3. **Generate report:** Task | Subtasks | Duration | Review Iterations | Status | Commit Status
 
-4. **⛔ MANDATORY: Run ring:dev-feedback-loop skill for cycle metrics**
+4. **⛔ MANDATORY: Run ring-dev-feedback-loop skill for cycle metrics**
 
    ```yaml
    Skill tool:
-     skill: "ring:dev-feedback-loop"
+     skill: "ring-dev-feedback-loop"
    ```
 
-   **Note:** ring:dev-feedback-loop manages its own TodoWrite tracking internally.
+   **Note:** ring-dev-feedback-loop manages its own TodoWrite tracking internally.
 
    **After feedback-loop completes, update state:**
    - Set `feedback_loop_completed = true` at cycle level in state file
@@ -2992,18 +2992,18 @@ All units have written/updated test code during their Gate 6-7 passes. Now execu
 
 ```bash
 # Full PM workflow then dev execution
-/ring:pre-dev-full my-feature
-/ring:dev-cycle docs/pre-dev/my-feature/
+/ring-pre-dev-full my-feature
+/ring-dev-cycle docs/pre-dev/my-feature/
 
 # Simple PM workflow then dev execution
-/ring:pre-dev-feature my-feature
-/ring:dev-cycle docs/pre-dev/my-feature/tasks.md
+/ring-pre-dev-feature my-feature
+/ring-dev-cycle docs/pre-dev/my-feature/tasks.md
 
 # Manual task file
-/ring:dev-cycle docs/tasks/sprint-001.md
+/ring-dev-cycle docs/tasks/sprint-001.md
 
 # Resume interrupted cycle
-/ring:dev-cycle --resume
+/ring-dev-cycle --resume
 ```
 
 ## Error Recovery
@@ -3042,4 +3042,4 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 | Validation | - | pending |
 
 ### State File Location
-`docs/ring:dev-cycle/current-cycle.json` (feature) or `docs/ring:dev-refactor/current-cycle.json` (refactor)
+`docs/ring-dev-cycle/current-cycle.json` (feature) or `docs/ring-dev-refactor/current-cycle.json` (refactor)

@@ -138,9 +138,9 @@ class CursorRulesGenerator(BaseTransformer):
 
     def _transform_content(self, content: str) -> str:
         """Transform content for Cursor compatibility."""
-        # Use base class method with additional ring: prefix removal
+        # Use base class method with additional ring- prefix removal
         result = self.transform_body_for_cursor(content)
-        result = result.replace("ring:", "")  # Remove ring: prefix
+        result = result.replace("ring-", "")  # Remove ring- prefix
         return result
 
 
@@ -257,7 +257,7 @@ class CursorRulesTransformer(BaseTransformer):
             result = result.replace(old, new)
 
         result = re.sub(
-            r'`ring:([^`]+)`',
+            r'`ring-([^`]+)`',
             lambda m: f"**{self.to_title_case(m.group(1))}**",
             result
         )

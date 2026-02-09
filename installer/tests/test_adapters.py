@@ -299,7 +299,7 @@ class TestFactoryAdapter:
 
         # Check terminology changes
         # The word "agent" in the content should be replaced with "droid"
-        # (except in ring: references which use a different pattern)
+        # (except in ring- references which use a different pattern)
         assert "Droid" in result or "droid" in result
 
     def test_transform_agent_frontmatter_preserves_subagent_type(self, adapter, minimal_agent_content):
@@ -385,8 +385,8 @@ Use this agent for review.
         assert result == "test-skill.md"
 
     def test_replace_ring_references(self, adapter):
-        """FactoryAdapter should replace ring:*-agent references with hyphenated droid names."""
-        content = 'Use "ring:code-agent" for analysis.'
+        """FactoryAdapter should replace ring-*-agent references with hyphenated droid names."""
+        content = 'Use "ring-code-agent" for analysis.'
         result = adapter.transform_skill(content)
 
         # Factory uses hyphens, not colons in droid names
@@ -817,11 +817,11 @@ class TestClineAdapter:
         assert mapping["skills"]["target_dir"] == "prompts/skills"
 
     def test_transform_replaces_ring_references(self, adapter):
-        """ClineAdapter should convert ring: references to @ format."""
-        content = "Use `ring:helper-skill` for context."
+        """ClineAdapter should convert ring- references to @ format."""
+        content = "Use `ring-helper-skill` for context."
         result = adapter.transform_skill(content)
 
-        # ring: references should become @ references
+        # ring- references should become @ references
         assert "@helper-skill" in result or "@" in result
 
     def test_transform_replaces_ring_terminology(self, adapter):

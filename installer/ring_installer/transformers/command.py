@@ -153,9 +153,9 @@ class CommandTransformer(BaseTransformer):
         # Add the body content
         parts.append("## Instructions")
         parts.append("")
-        # Command transformer needs to remove /ring: prefix for Cursor
+        # Command transformer needs to remove /ring- prefix for Cursor
         transformed_body = self.transform_body_for_cursor(body)
-        transformed_body = transformed_body.replace("/ring:", "/")
+        transformed_body = transformed_body.replace("/ring-", "/")
         parts.append(transformed_body)
 
         return TransformResult(content="\n".join(parts), success=True)
@@ -220,9 +220,9 @@ class CommandTransformer(BaseTransformer):
         # Instructions
         parts.append("## Steps")
         parts.append("")
-        # Command transformer needs to replace /ring: with @ for Cline
+        # Command transformer needs to replace /ring- with @ for Cline
         transformed_body = self.transform_body_for_cline(body)
-        transformed_body = transformed_body.replace("/ring:", "@")
+        transformed_body = transformed_body.replace("/ring-", "@")
         parts.append(transformed_body)
 
         return TransformResult(content="\n".join(parts), success=True)
@@ -257,7 +257,7 @@ class CommandTransformer(BaseTransformer):
             (r'\bAGENTS\b', 'DROIDS'),
             (r'\bsubagent\b', 'subdroid'),
             (r'\bSubagent\b', 'Subdroid'),
-            (r'"ring:([^"]*)-agent"', r'"ring:\1-droid"'),
+            (r'"ring-([^"]*)-agent"', r'"ring-\1-droid"'),
         ]
 
         result = text

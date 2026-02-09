@@ -13,7 +13,7 @@ trigger: |
 skip_when: |
   - Capacity planning focus -> use ops-capacity-planning
   - One-time cost question -> direct query
-  - Application performance -> use ring-dev-team specialists
+  - Application performance -> use ring:dev-team specialists
 
 related:
   similar: [ops-capacity-planning]
@@ -355,7 +355,7 @@ For cost optimization tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring:cloud-cost-optimizer"
+  subagent_type: "ring-cloud-cost-optimizer"
   model: "opus"
   prompt: |
     COST ANALYSIS REQUEST

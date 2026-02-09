@@ -1,6 +1,6 @@
 ---
-name: ring:dev-refactor
-description: Analyzes codebase against standards and generates refactoring tasks for ring:dev-cycle.
+name: ring-dev-refactor
+description: Analyzes codebase against standards and generates refactoring tasks for ring-dev-cycle.
 trigger: |
   - User wants to refactor existing project to follow standards
   - Legacy codebase needs modernization
@@ -8,13 +8,13 @@ trigger: |
 
 skip_when: |
   - Greenfield project → Use /pre-dev-* instead
-  - Single file fix → Use ring:dev-cycle directly
+  - Single file fix → Use ring-dev-cycle directly
 
 ---
 
 # Dev Refactor Skill
 
-Analyzes existing codebase against Ring/Lerian standards and generates refactoring tasks compatible with ring:dev-cycle.
+Analyzes existing codebase against Ring/Lerian standards and generates refactoring tasks compatible with ring-dev-cycle.
 
 ---
 
@@ -111,7 +111,7 @@ TodoWrite:
     - content: "Read PROJECT_RULES.md for context"
       status: "pending"
       activeForm: "Reading PROJECT_RULES.md"
-    - content: "Generate codebase report via ring:codebase-explorer"
+    - content: "Generate codebase report via ring-codebase-explorer"
       status: "pending"
       activeForm: "Generating codebase report"
     - content: "Dispatch specialist agents in parallel"
@@ -138,9 +138,9 @@ TodoWrite:
     - content: "Save all artifacts"
       status: "pending"
       activeForm: "Saving artifacts"
-    - content: "Handoff to ring:dev-cycle"
+    - content: "Handoff to ring-dev-cycle"
       status: "pending"
-      activeForm: "Handing off to ring:dev-cycle"
+      activeForm: "Handing off to ring-dev-cycle"
 ```
 
 **This is NON-NEGOTIABLE. Do not skip creating the todo list.**
@@ -194,9 +194,9 @@ Check for manifest files and frontend indicators:
 
 | File/Pattern | Stack | Agent |
 |--------------|-------|-------|
-| `go.mod` | Go Backend | ring:backend-engineer-golang |
-| `package.json` + `src/` (no React) | TypeScript Backend | ring:backend-engineer-typescript |
-| `package.json` + React/Next.js | Frontend | ring:frontend-engineer |
+| `go.mod` | Go Backend | ring-backend-engineer-golang |
+| `package.json` + `src/` (no React) | TypeScript Backend | ring-backend-engineer-typescript |
+| `package.json` + React/Next.js | Frontend | ring-frontend-engineer |
 | `package.json` + BFF pattern | TypeScript BFF | frontend-bff-engineer-typescript |
 
 **Detection Logic:**
@@ -227,11 +227,11 @@ Extract project-specific conventions for agent context.
 
 ## Step 3: Generate Codebase Report
 
-**TodoWrite:** Mark "Generate codebase report via ring:codebase-explorer" as `in_progress`
+**TodoWrite:** Mark "Generate codebase report via ring-codebase-explorer" as `in_progress`
 
-### ⛔ MANDATORY: Use Task Tool with ring:codebase-explorer
+### ⛔ MANDATORY: Use Task Tool with ring-codebase-explorer
 
-<dispatch_required agent="ring:codebase-explorer">
+<dispatch_required agent="ring-codebase-explorer">
 Generate a comprehensive codebase report describing WHAT EXISTS.
 
 Include:
@@ -266,11 +266,11 @@ Do not complete without outputting full report in the format above.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "I'll use Bash find/ls to quickly explore" | Bash cannot analyze patterns, just lists files. ring:codebase-explorer provides architectural analysis. | **Use Task with subagent_type="ring:codebase-explorer"** |
-| "The Explore agent is faster" | "Explore" subagent_type ≠ "ring:codebase-explorer". Different agents. | **Use exact string: "ring:codebase-explorer"** |
-| "I already know the structure from find output" | Knowing file paths ≠ understanding architecture. Agent provides analysis. | **Use Task with subagent_type="ring:codebase-explorer"** |
-| "This is a small codebase, Bash is enough" | Size is irrelevant. The agent provides standardized output format required by Step 4. | **Use Task with subagent_type="ring:codebase-explorer"** |
-| "I'll explore manually then dispatch agents" | Manual exploration skips the codebase-report.md artifact required for Step 4 gate. | **Use Task with subagent_type="ring:codebase-explorer"** |
+| "I'll use Bash find/ls to quickly explore" | Bash cannot analyze patterns, just lists files. ring-codebase-explorer provides architectural analysis. | **Use Task with subagent_type="ring-codebase-explorer"** |
+| "The Explore agent is faster" | "Explore" subagent_type ≠ "ring-codebase-explorer". Different agents. | **Use exact string- "ring-codebase-explorer"** |
+| "I already know the structure from find output" | Knowing file paths ≠ understanding architecture. Agent provides analysis. | **Use Task with subagent_type="ring-codebase-explorer"** |
+| "This is a small codebase, Bash is enough" | Size is irrelevant. The agent provides standardized output format required by Step 4. | **Use Task with subagent_type="ring-codebase-explorer"** |
+| "I'll explore manually then dispatch agents" | Manual exploration skips the codebase-report.md artifact required for Step 4 gate. | **Use Task with subagent_type="ring-codebase-explorer"** |
 
 ### FORBIDDEN Actions for Step 3
 
@@ -288,7 +288,7 @@ Any of these = IMMEDIATE SKILL FAILURE.
 ### REQUIRED Action for Step 3
 
 ```
-✅ Task(subagent_type="ring:codebase-explorer", ...)
+✅ Task(subagent_type="ring-codebase-explorer", ...)
 ```
 
 **Timestamp format:** `{timestamp}` = `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`). Generate once at start, reuse for all artifacts.
@@ -297,11 +297,11 @@ Any of these = IMMEDIATE SKILL FAILURE.
 
 ```
 Write tool:
-  file_path: "docs/ring:dev-refactor/{timestamp}/codebase-report.md"
+  file_path: "docs/ring-dev-refactor/{timestamp}/codebase-report.md"
   content: [Task output]
 ```
 
-**TodoWrite:** Mark "Generate codebase report via ring:codebase-explorer" as `completed`
+**TodoWrite:** Mark "Generate codebase report via ring-codebase-explorer" as `completed`
 
 ---
 
@@ -314,11 +314,11 @@ Write tool:
 **BEFORE dispatching any specialist agent, verify:**
 
 ```
-Check 1: Does docs/ring:dev-refactor/{timestamp}/codebase-report.md exist?
+Check 1: Does docs/ring-dev-refactor/{timestamp}/codebase-report.md exist?
   - YES → Continue to dispatch agents
   - no  → STOP. Go back to Step 3.
 
-Check 2: Was codebase-report.md created by ring:codebase-explorer?
+Check 2: Was codebase-report.md created by ring-codebase-explorer?
   - YES → Continue
   - no (created by Bash output) → DELETE IT. Go back to Step 3. Use correct agent.
 ```
@@ -341,14 +341,14 @@ Check 2: Was codebase-report.md created by ring:codebase-explorer?
 
 ### For Go projects:
 
-<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre">
+<parallel_dispatch agents="ring-backend-engineer-golang, ring-qa-analyst, ring-devops-engineer, ring-sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
 
 ```yaml
 Task tool 1:
-  subagent_type: "ring:backend-engineer-golang"
+  subagent_type: "ring-backend-engineer-golang"
   description: "Go standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -366,8 +366,8 @@ Task tool 1:
 
     Input:
     - Ring Standards: Load via WebFetch (golang.md)
-    - Section Index: See shared-patterns/standards-coverage-table.md → "ring:backend-engineer-golang"
-    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
+    - Section Index: See shared-patterns/standards-coverage-table.md → "ring-backend-engineer-golang"
+    - Codebase Report: docs/ring-dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -375,45 +375,45 @@ Task tool 1:
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 
 Task tool 2:
-  subagent_type: "ring:qa-analyst"
+  subagent_type: "ring-qa-analyst"
   description: "Test coverage analysis"
   prompt: |
     **MODE: ANALYSIS only**
-    Check all testing sections per shared-patterns/standards-coverage-table.md → "ring:qa-analyst"
+    Check all testing sections per shared-patterns/standards-coverage-table.md → "ring-qa-analyst"
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 3:
-  subagent_type: "ring:devops-engineer"
+  subagent_type: "ring-devops-engineer"
   description: "DevOps analysis"
   prompt: |
     **MODE: ANALYSIS only**
-    Check all 8 sections per shared-patterns/standards-coverage-table.md → "ring:devops-engineer"
+    Check all 8 sections per shared-patterns/standards-coverage-table.md → "ring-devops-engineer"
     ⛔ "Containers" means BOTH Dockerfile and Docker Compose
     ⛔ "Makefile Standards" means all required commands: build, lint, test, cover, up, down, etc.
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 
 Task tool 4:
-  subagent_type: "ring:sre"
+  subagent_type: "ring-sre"
   description: "Observability analysis"
   prompt: |
     **MODE: ANALYSIS only**
-    Check all 6 sections per shared-patterns/standards-coverage-table.md → "ring:sre"
+    Check all 6 sections per shared-patterns/standards-coverage-table.md → "ring-sre"
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
 ```
 
 ### For TypeScript Backend projects:
 
-<parallel_dispatch agents="ring:backend-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
+<parallel_dispatch agents="ring-backend-engineer-typescript, ring-qa-analyst, ring-devops-engineer, ring-sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
 
 ```yaml
 Task tool 1:
-  subagent_type: "ring:backend-engineer-typescript"
+  subagent_type: "ring-backend-engineer-typescript"
   description: "TypeScript backend standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -431,8 +431,8 @@ Task tool 1:
 
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
-    - Section Index: See shared-patterns/standards-coverage-table.md → "ring:backend-engineer-typescript"
-    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
+    - Section Index: See shared-patterns/standards-coverage-table.md → "ring-backend-engineer-typescript"
+    - Codebase Report: docs/ring-dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -442,14 +442,14 @@ Task tool 1:
 
 ### For Frontend projects (React/Next.js):
 
-<parallel_dispatch agents="ring:frontend-engineer, ring:qa-analyst, ring:devops-engineer, ring:sre">
+<parallel_dispatch agents="ring-frontend-engineer, ring-qa-analyst, ring-devops-engineer, ring-sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
 
 ```yaml
 Task tool 5:
-  subagent_type: "ring:frontend-engineer"
+  subagent_type: "ring-frontend-engineer"
   description: "Frontend standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -458,8 +458,8 @@ Task tool 5:
 
     Input:
     - Ring Standards: Load via WebFetch (frontend.md)
-    - Section Index: See shared-patterns/standards-coverage-table.md → "ring:frontend-engineer"
-    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
+    - Section Index: See shared-patterns/standards-coverage-table.md → "ring-frontend-engineer"
+    - Codebase Report: docs/ring-dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -469,14 +469,14 @@ Task tool 5:
 
 ### For BFF (Backend-for-Frontend) projects:
 
-<parallel_dispatch agents="frontend-bff-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
+<parallel_dispatch agents="frontend-bff-engineer-typescript, ring-qa-analyst, ring-devops-engineer, ring-sre">
 All four agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
 
 ```yaml
 Task tool 6:
-  subagent_type: "ring:frontend-bff-engineer-typescript"
+  subagent_type: "ring-frontend-bff-engineer-typescript"
   description: "BFF TypeScript standards analysis"
   prompt: |
     **MODE: ANALYSIS only**
@@ -495,7 +495,7 @@ Task tool 6:
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)
     - Section Index: See shared-patterns/standards-coverage-table.md → "frontend-bff-engineer-typescript"
-    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
+    - Codebase Report: docs/ring-dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
     Output:
@@ -527,14 +527,14 @@ Task tool 6:
 After all parallel agent tasks complete, save each agent's output to a separate file:
 
 ```
-docs/ring:dev-refactor/{timestamp}/reports/
-├── ring:backend-engineer-golang-report.md     (if Go project)
-├── ring:backend-engineer-typescript-report.md (if TypeScript Backend)
-├── ring:frontend-engineer-report.md           (if Frontend)
+docs/ring-dev-refactor/{timestamp}/reports/
+├── ring-backend-engineer-golang-report.md     (if Go project)
+├── ring-backend-engineer-typescript-report.md (if TypeScript Backend)
+├── ring-frontend-engineer-report.md           (if Frontend)
 ├── frontend-bff-engineer-report.md       (if BFF)
-├── ring:qa-analyst-report.md                  (always)
-├── ring:devops-engineer-report.md             (always)
-└── ring:sre-report.md                         (always)
+├── ring-qa-analyst-report.md                  (always)
+├── ring-devops-engineer-report.md             (always)
+└── ring-sre-report.md                         (always)
 ```
 
 ### Report File Format
@@ -565,20 +565,20 @@ docs/ring:dev-refactor/{timestamp}/reports/
 - **Low:** {count}
 
 ---
-*Report generated by ring:dev-refactor skill*
+*Report generated by ring-dev-refactor skill*
 ```
 
 ### Agent Report Mapping
 
 | Agent Dispatched | Report File Name |
 |------------------|------------------|
-| ring:backend-engineer-golang | `ring:backend-engineer-golang-report.md` |
-| ring:backend-engineer-typescript | `ring:backend-engineer-typescript-report.md` |
-| ring:frontend-engineer | `ring:frontend-engineer-report.md` |
+| ring-backend-engineer-golang | `ring-backend-engineer-golang-report.md` |
+| ring-backend-engineer-typescript | `ring-backend-engineer-typescript-report.md` |
+| ring-frontend-engineer | `ring-frontend-engineer-report.md` |
 | frontend-bff-engineer-typescript | `frontend-bff-engineer-report.md` |
-| ring:qa-analyst | `ring:qa-analyst-report.md` |
-| ring:devops-engineer | `ring:devops-engineer-report.md` |
-| ring:sre | `ring:sre-report.md` |
+| ring-qa-analyst | `ring-qa-analyst-report.md` |
+| ring-devops-engineer | `ring-devops-engineer-report.md` |
+| ring-sre | `ring-sre-report.md` |
 
 ### Anti-Rationalization Table for Step 4.5
 
@@ -593,7 +593,7 @@ docs/ring:dev-refactor/{timestamp}/reports/
 
 ```
 Write tool:
-  file_path: "docs/ring:dev-refactor/{timestamp}/reports/{agent-name}-report.md"
+  file_path: "docs/ring-dev-refactor/{timestamp}/reports/{agent-name}-report.md"
   content: [Agent Task output formatted per template above]
 ```
 
@@ -837,7 +837,7 @@ Each finding becomes its own task. This prevents findings from being lost inside
 - FINDING-002 → REFACTOR-002
 - FINDING-NNN → REFACTOR-NNN
 
-**Ordering:** Sort tasks by severity (Critical first), then by dependency order.
+**Ordering-** Sort tasks by severity (Critical first), then by dependency order.
 
 **Mapping Verification:**
 ```
@@ -943,7 +943,7 @@ AskUserQuestion:
       header: "Approval"
       options:
         - label: "Approve all"
-          description: "Proceed to ring:dev-cycle execution"
+          description: "Proceed to ring-dev-cycle execution"
         - label: "Critical only"
           description: "Execute only Critical/High tasks"
         - label: "Cancel"
@@ -961,13 +961,13 @@ CANNOT proceed without explicit user selection.
 **TodoWrite:** Mark "Save all artifacts" as `in_progress`
 
 ```
-docs/ring:dev-refactor/{timestamp}/
+docs/ring-dev-refactor/{timestamp}/
 ├── codebase-report.md  (Step 3)
 ├── reports/            (Step 4.5)
-│   ├── ring:backend-engineer-golang-report.md
-│   ├── ring:qa-analyst-report.md
-│   ├── ring:devops-engineer-report.md
-│   └── ring:sre-report.md
+│   ├── ring-backend-engineer-golang-report.md
+│   ├── ring-qa-analyst-report.md
+│   ├── ring-devops-engineer-report.md
+│   └── ring-sre-report.md
 ├── findings.md         (Step 5)
 └── tasks.md           (Step 7)
 ```
@@ -976,25 +976,25 @@ docs/ring:dev-refactor/{timestamp}/
 
 ---
 
-## Step 10: Handoff to ring:dev-cycle
+## Step 10: Handoff to ring-dev-cycle
 
-**TodoWrite:** Mark "Handoff to ring:dev-cycle" as `in_progress`
+**TodoWrite:** Mark "Handoff to ring-dev-cycle" as `in_progress`
 
-**If user approved, use Skill tool to invoke ring:dev-cycle directly:**
+**If user approved, use Skill tool to invoke ring-dev-cycle directly:**
 
 ```yaml
 Skill tool:
-  skill: "ring:dev-cycle"
+  skill: "ring-dev-cycle"
 ```
 
 **⛔ CRITICAL: Pass tasks file path in context:**
 
 After invoking the skill, provide:
-- Tasks file: `docs/ring:dev-refactor/{timestamp}/tasks.md`
+- Tasks file: `docs/ring-dev-refactor/{timestamp}/tasks.md`
 
 ```yaml
-Context for ring:dev-cycle:
-  tasks-file: "docs/ring:dev-refactor/{timestamp}/tasks.md"
+Context for ring-dev-cycle:
+  tasks-file: "docs/ring-dev-refactor/{timestamp}/tasks.md"
 ```
 
 Where `{timestamp}` format is `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`). Use the same timestamp across all artifacts in a single run.
@@ -1004,23 +1004,23 @@ Where `{timestamp}` format is `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "SlashCommand is equivalent to Skill tool" | SlashCommand is a hint; Skill tool guarantees skill loading | **Use Skill tool, not SlashCommand** |
-| "User can run /ring:dev-cycle manually" | Manual run risks skill not being loaded | **Invoke Skill tool directly** |
-| "ring:dev-cycle will auto-discover tasks" | Explicit path ensures correct file is used | **Pass explicit tasks path** |
-| "User approved, I can skip ring:dev-cycle" | Approval = permission to proceed, not skip execution | **Invoke Skill tool** |
+| "User can run /ring-dev-cycle manually" | Manual run risks skill not being loaded | **Invoke Skill tool directly** |
+| "ring-dev-cycle will auto-discover tasks" | Explicit path ensures correct file is used | **Pass explicit tasks path** |
+| "User approved, I can skip ring-dev-cycle" | Approval = permission to proceed, not skip execution | **Invoke Skill tool** |
 | "Tasks are saved, job is done" | Saved tasks without execution = incomplete workflow | **Invoke Skill tool** |
 
-**⛔ HARD GATE: You CANNOT complete ring:dev-refactor without invoking `Skill tool: ring:dev-cycle`.**
+**⛔ HARD GATE: You CANNOT complete ring-dev-refactor without invoking `Skill tool: ring-dev-cycle`.**
 
 If user approved execution, you MUST:
-1. Invoke `Skill tool: ring:dev-cycle`
-2. Pass tasks file path: `docs/ring:dev-refactor/{timestamp}/tasks.md`
-3. Wait for ring:dev-cycle to complete all 10 gates
+1. Invoke `Skill tool: ring-dev-cycle`
+2. Pass tasks file path: `docs/ring-dev-refactor/{timestamp}/tasks.md`
+3. Wait for ring-dev-cycle to complete all 10 gates
 
 **Skipping this step = SKILL FAILURE.**
 
-ring:dev-cycle executes each REFACTOR-XXX task through 10-gate process.
+ring-dev-cycle executes each REFACTOR-XXX task through 10-gate process.
 
-**TodoWrite:** Mark "Handoff to ring:dev-cycle" as `completed`
+**TodoWrite:** Mark "Handoff to ring-dev-cycle" as `completed`
 
 ---
 
@@ -1040,7 +1040,7 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 | Agents Dispatched | N |
 | Findings Generated | N |
 | Tasks Created | N |
-| Artifacts Location | docs/ring:dev-refactor/{date}/ |
+| Artifacts Location | docs/ring-dev-refactor/{date}/ |
 
 ## Output Schema
 

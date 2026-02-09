@@ -290,8 +290,8 @@ class AgentTransformer(BaseTransformer):
             (r'\bsubagent\b', 'subdroid'),
             (r'\bSubagent\b', 'Subdroid'),
             (r'\bsubagent_type\b', 'subdroid_type'),
-            (r'"ring:([^"]*)-agent"', r'"ring:\1-droid"'),
-            (r"'ring:([^']*)-agent'", r"'ring:\1-droid'"),
+            (r'"ring-([^"]*)-agent"', r'"ring-\1-droid"'),
+            (r"'ring-([^']*)-agent'", r"'ring-\1-droid'"),
         ]
 
         result = text

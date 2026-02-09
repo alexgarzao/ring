@@ -11,14 +11,14 @@ arguments:
     required: false
 ---
 
-# /ring:create-handoff Command
+# /ring-create-handoff Command
 
-Creates a comprehensive handoff document that captures the current session's context, progress, decisions, and next steps. After creating the handoff, simply run `/clear` - the handoff will be **automatically loaded** in the new session (no need to run `/ring:resume-handoff` manually).
+Creates a comprehensive handoff document that captures the current session's context, progress, decisions, and next steps. After creating the handoff, simply run `/clear` - the handoff will be **automatically loaded** in the new session (no need to run `/ring-resume-handoff` manually).
 
 ## Usage
 
 ```
-/ring:create-handoff [session-name] [description]
+/ring-create-handoff [session-name] [description]
 ```
 
 ## Arguments
@@ -51,11 +51,11 @@ Example: `docs/handoffs/auth-refactor/2025-12-27_15-45-00_oauth-integration.md`
 
 ## Workflow
 
-1. **Create handoff**: `/ring:create-handoff auth-refactor "OAuth integration complete"`
+1. **Create handoff**: `/ring-create-handoff auth-refactor "OAuth integration complete"`
 2. **Clear context**: Run `/clear` to reset conversation
 3. **Auto-resume**: The handoff is automatically loaded in the new session
 
-> **Note:** If more than 1 hour passes between creating the handoff and running `/clear`, you'll be asked whether to resume instead of auto-loading. For manual resume of older handoffs, use `/ring:resume-handoff <path>`.
+> **Note:** If more than 1 hour passes between creating the handoff and running `/clear`, you'll be asked whether to resume instead of auto-loading. For manual resume of older handoffs, use `/ring-resume-handoff <path>`.
 
 ## Handoff Template
 
@@ -153,14 +153,14 @@ This prevents the ephemeral breadcrumb from being committed.
 
 ### Basic Usage
 ```
-User: /ring:create-handoff
+User: /ring-create-handoff
 Assistant: I'll create a handoff document for the current session.
 [Creates docs/handoffs/current-session/2025-12-27_15-45-00_session.md with filled template]
 ```
 
 ### With Session Name
 ```
-User: /ring:create-handoff auth-refactor "OAuth provider integration"
+User: /ring-create-handoff auth-refactor "OAuth provider integration"
 Assistant: I'll create a handoff document for the auth-refactor session.
 [Creates docs/handoffs/auth-refactor/2025-12-27_15-45-00_session.md with filled template]
 

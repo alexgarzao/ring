@@ -1,5 +1,5 @@
 ---
-name: ring:dev-integration-testing
+name: ring-dev-integration-testing
 title: Development cycle integration testing (Gate 6)
 category: development-cycle
 tier: 1
@@ -21,11 +21,11 @@ NOT_skip_when: |
   - "CI doesn't support Docker" - Fix CI. Docker is baseline infrastructure.
 
 sequence:
-  after: [ring:dev-property-testing]
-  before: [ring:dev-chaos-testing]
+  after: [ring-dev-property-testing]
+  before: [ring-dev-chaos-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-testing, ring:qa-analyst]
+  complementary: [ring-dev-cycle, ring-dev-testing, ring-qa-analyst]
 
 input_schema:
   required:
@@ -156,7 +156,7 @@ Ensure every integration scenario has at least one **integration test** proving 
 ## Step 1: Validate Input
 
 ```text
-REQUIRED INPUT (from ring:dev-cycle orchestrator):
+REQUIRED INPUT (from ring-dev-cycle orchestrator):
 <verify_before_proceed>
 - unit_id exists
 - language is valid (go|typescript)
@@ -231,13 +231,13 @@ integration_state = {
 
 ## Step 4: Dispatch QA Analyst Agent (Integration Mode)
 
-<dispatch_required agent="ring:qa-analyst">
+<dispatch_required agent="ring-qa-analyst">
 Write integration tests for all scenarios using testcontainers.
 </dispatch_required>
 
 ```yaml
 Task:
-  subagent_type: "ring:qa-analyst"
+  subagent_type: "ring-qa-analyst"
   description: "Integration testing for [unit_id]"
   prompt: |
     **test_mode: integration**

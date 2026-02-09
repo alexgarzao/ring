@@ -1,5 +1,5 @@
 ---
-name: ring:dev-implementation
+name: ring-dev-implementation
 description: |
   Gate 0 of the development cycle. Executes code implementation using the appropriate
   specialized agent based on task content and project language. Handles TDD workflow
@@ -17,10 +17,10 @@ NOT_skip_when: |
   - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
 
 sequence:
-  before: [ring:dev-devops]
+  before: [ring-dev-devops]
 
 related:
-  complementary: [ring:dev-cycle, ring:test-driven-development, ring:requesting-code-review]
+  complementary: [ring-dev-cycle, ring-test-driven-development, ring-requesting-code-review]
 
 input_schema:
   required:
@@ -89,16 +89,16 @@ agent_selection:
   criteria:
     - pattern: "*.go"
       keywords: ["go.mod", "golang", "Go"]
-      agent: "ring:backend-engineer-golang"
+      agent: "ring-backend-engineer-golang"
     - pattern: "*.ts"
       keywords: ["express", "fastify", "nestjs", "backend", "api", "server"]
-      agent: "ring:backend-engineer-typescript"
+      agent: "ring-backend-engineer-typescript"
     - pattern: "*.tsx"
       keywords: ["react", "next", "frontend", "component", "page"]
       agent: "frontend-bff-engineer-typescript"
     - pattern: "*.css|*.scss"
       keywords: ["design", "visual", "aesthetic", "styling", "ui"]
-      agent: "ring:frontend-designer"
+      agent: "ring-frontend-designer"
   fallback: "ASK_USER"
 
 verification:
@@ -123,7 +123,7 @@ examples:
     expected_output: |
       ## Implementation Summary
       **Status:** PASS
-      **Agent:** ring:backend-engineer-golang
+      **Agent:** ring-backend-engineer-golang
       
       ## TDD Results
       | Phase | Status | Output |
@@ -172,7 +172,7 @@ This skill executes the implementation phase of the development cycle:
 </verify_before_proceed>
 
 ```text
-REQUIRED INPUT (from ring:dev-cycle orchestrator):
+REQUIRED INPUT (from ring-dev-cycle orchestrator):
 - unit_id: [task/subtask being implemented]
 - requirements: [acceptance criteria or task description]
 - language: [go|typescript|python]
@@ -208,8 +208,8 @@ If condition is true, STOP and return error to orchestrator.
    
    | Language | Service Type | Agent |
    |----------|--------------|-------|
-   | go | api, worker, batch, cli | ring:backend-engineer-golang |
-   | typescript | api, worker | ring:backend-engineer-typescript |
+   | go | api, worker, batch, cli | ring-backend-engineer-golang |
+   | typescript | api, worker | ring-backend-engineer-typescript |
    | typescript | frontend, bff | frontend-bff-engineer-typescript |
    
    Store: selected_agent = [agent name]
@@ -245,7 +245,7 @@ Write failing test for unit_id following TDD-RED methodology.
 
 ```yaml
 Task:
-  subagent_type: "[selected_agent]"  # e.g., "ring:backend-engineer-golang"
+  subagent_type: "[selected_agent]"  # e.g., "ring-backend-engineer-golang"
   description: "TDD-RED: Write failing test for [unit_id]"
   prompt: |
     ⛔ TDD-RED PHASE: Write a FAILING Test
@@ -566,10 +566,10 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 | Language | Service Type | Agent |
 |----------|--------------|-------|
-| Go | API, Worker, Batch, CLI | `ring:backend-engineer-golang` |
-| TypeScript | API, Worker | `ring:backend-engineer-typescript` |
+| Go | API, Worker, Batch, CLI | `ring-backend-engineer-golang` |
+| TypeScript | API, Worker | `ring-backend-engineer-typescript` |
 | TypeScript | Frontend, BFF | `frontend-bff-engineer-typescript` |
-| React/CSS | Design, Styling | `ring:frontend-designer` |
+| React/CSS | Design, Styling | `ring-frontend-designer` |
 
 ---
 

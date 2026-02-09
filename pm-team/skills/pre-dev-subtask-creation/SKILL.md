@@ -1,5 +1,5 @@
 ---
-name: ring:pre-dev-subtask-creation
+name: ring-pre-dev-subtask-creation
 description: |
   Gate 8: Zero-context implementation steps - 2-5 minute atomic subtasks with
   complete code, exact commands, TDD pattern. Large Track only.
@@ -16,8 +16,8 @@ skip_when: |
   - Tasks not validated → complete Gate 7 first
 
 sequence:
-  after: [ring:pre-dev-task-breakdown]
-  before: [ring:executing-plans, ring:subagent-driven-development]
+  after: [ring-pre-dev-task-breakdown]
+  before: [ring-executing-plans, ring-subagent-driven-development]
 ---
 
 # Subtask Creation - Bite-Sized, Zero-Context Steps
@@ -53,7 +53,7 @@ Requiring context creates bottlenecks, onboarding friction, and integration fail
 | Field | Content |
 |-------|---------|
 | Title | `# ST-[task-id]-[number]: [Subtask Name]` |
-| Agent Note | `> **For Agents:** REQUIRED SUB-SKILL: Use ring:executing-plans` |
+| Agent Note | `> **For Agents:** REQUIRED SUB-SKILL: Use ring-executing-plans` |
 | Goal | One sentence describing what this builds |
 | Prerequisites | Verification commands with expected output |
 | Files | Create: `exact/path`, Modify: `exact/path:lines`, Test: `tests/path` |
@@ -171,8 +171,8 @@ If you catch yourself writing any of these in a subtask, **STOP and rewrite**:
 After creating subtasks, offer execution choice:
 
 **"Subtasks complete. Two execution options:**
-1. **Subagent-Driven** - Fresh subagent per subtask, review between, fast iteration → Use `ring:subagent-driven-development`
-2. **Parallel Session** - New session with ring:executing-plans, batch with checkpoints → Use `ring:executing-plans`
+1. **Subagent-Driven** - Fresh subagent per subtask, review between, fast iteration → Use `ring-subagent-driven-development`
+2. **Parallel Session** - New session with ring-executing-plans, batch with checkpoints → Use `ring-executing-plans`
 
 **Which approach?"**
 

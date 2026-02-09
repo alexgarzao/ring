@@ -1,5 +1,5 @@
 ---
-name: ring:using-ring
+name: ring-using-ring
 description: |
   Mandatory orchestrator protocol - establishes ORCHESTRATOR principle (dispatch agents,
   don't operate directly) and skill discovery workflow for every conversation.
@@ -187,7 +187,7 @@ You don't read files, run grep chains, or manually explore – you **dispatch ag
 
 **Exceptions to default agents:**
 1. User explicitly provides a file path AND explicitly requests you read it (e.g., "read src/foo.ts")
-2. **A skill has its own specialized agents** - Some skills (e.g., `ring:dev-refactor`) define their own agents that MUST be used instead of Explore/Plan/general-purpose. When a skill specifies "OVERRIDE" or "FORBIDDEN agents", follow the skill's agent requirements, not the defaults above.
+2. **A skill has its own specialized agents** - Some skills (e.g., `ring-dev-refactor`) define their own agents that MUST be used instead of Explore/Plan/general-purpose. When a skill specifies "OVERRIDE" or "FORBIDDEN agents", follow the skill's agent requirements, not the defaults above.
 
 **All these are STILL orchestration tasks:**
 - ❌ "I need to understand the codebase structure first" → Explore agent
@@ -207,7 +207,7 @@ You are breaking ORCHESTRATOR. Use an agent instead.
 
 **Built-in (Opus):** `Explore` (navigation), `Plan` (implementation), `general-purpose` (research), `claude-code-guide` (docs).
 
-**Ring:** `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:write-plan`.
+**Ring:** `ring-code-reviewer`, `ring-business-logic-reviewer`, `ring-security-reviewer`, `ring-write-plan`.
 
 ### Decision: Which Agent?
 
@@ -217,7 +217,7 @@ You are breaking ORCHESTRATOR. Use an agent instead.
 | Plan implementation, break down features | **Plan** |
 | Multi-step research, complex investigation | **general-purpose** |
 | Code review | ALL THREE in parallel (code, business-logic, security reviewers) |
-| Implementation plan document | ring:write-plan |
+| Implementation plan document | ring-write-plan |
 | Claude Code questions | claude-code-guide |
 | User explicitly said "read [file]" | Direct (ONLY exception) |
 
@@ -251,7 +251,7 @@ When dispatching code reviewers, **single message with 3 Task calls:**
 
 ## Announcing Skill Usage
 
-- **Always announce meta-skills:** brainstorming, ring:writing-plans, systematic-debugging (methodology change)
+- **Always announce meta-skills:** brainstorming, ring-writing-plans, systematic-debugging (methodology change)
 - **Skip when obvious:** User says "write tests first" → no need to announce TDD
 
 ## Required Patterns

@@ -1,5 +1,5 @@
 ---
-name: ring:dev-fuzz-testing
+name: ring-dev-fuzz-testing
 title: Development cycle fuzz testing (Gate 4)
 category: development-cycle
 tier: 1
@@ -21,11 +21,11 @@ NOT_skip_when: |
   - "Code is simple" - Simple code can still crash on unexpected input.
 
 sequence:
-  after: [ring:dev-unit-testing]
-  before: [ring:dev-property-testing]
+  after: [ring-dev-unit-testing]
+  before: [ring-dev-property-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-unit-testing, ring:qa-analyst]
+  complementary: [ring-dev-cycle, ring-dev-unit-testing, ring-qa-analyst]
 
 input_schema:
   required:
@@ -163,7 +163,7 @@ if language != "go":
 
 ```text
 Task tool:
-  subagent_type: "ring:qa-analyst"
+  subagent_type: "ring-qa-analyst"
   model: "opus"
   prompt: |
     **MODE:** FUZZ TESTING (Gate 4)

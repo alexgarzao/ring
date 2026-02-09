@@ -40,14 +40,14 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 3. Test with:
    ```
-   Skill tool: "ring:testing-skills-with-subagents"
+   Skill tool: "ring-testing-skills-with-subagents"
    ```
 
 4. Skill auto-loads next SessionStart via `default/hooks/generate-skills-ref.py`
 
 ### Production Readiness Audit (ring-default)
 
-The **production-readiness-audit** skill (`ring:production-readiness-audit`) evaluates codebase production readiness across **27 dimensions** in 5 categories. **Invocation:** use the Skill tool or the `/ring:production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** 27-dimension scored report (0–270) with severity ratings and standards cross-reference. Implementation details: [default/skills/production-readiness-audit/SKILL.md](../default/skills/production-readiness-audit/SKILL.md).
+The **production-readiness-audit** skill (`ring-production-readiness-audit`) evaluates codebase production readiness across **27 dimensions** in 5 categories. **Invocation:** use the Skill tool or the `/ring-production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** 27-dimension scored report (0–270) with severity ratings and standards cross-reference. Implementation details: [default/skills/production-readiness-audit/SKILL.md](../default/skills/production-readiness-audit/SKILL.md).
 
 ### For Product/Team-Specific Skills
 
@@ -97,25 +97,25 @@ The **production-readiness-audit** skill (`ring:production-readiness-audit`) eva
 Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introduce available agents and capabilities:
 
 ### Default Plugin
-- `ring:using-ring` → ORCHESTRATOR principle, mandatory workflow
+- `ring-using-ring` → ORCHESTRATOR principle, mandatory workflow
 - Always injected, always mandatory
 - Located: `default/skills/using-ring/SKILL.md`
 
 ### Ring Dev Team Plugin
-- `ring:using-dev-team` → 7 specialist developer agents
+- `ring-using-dev-team` → 7 specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
 - Agents (invoke as `{agent-name}`):
-  - ring:backend-engineer-golang
-  - ring:backend-engineer-typescript
-  - ring:devops-engineer
-  - ring:frontend-bff-engineer-typescript
-  - ring:frontend-designer
-  - ring:qa-analyst
-  - ring:sre
+  - ring-backend-engineer-golang
+  - ring-backend-engineer-typescript
+  - ring-devops-engineer
+  - ring-frontend-bff-engineer-typescript
+  - ring-frontend-designer
+  - ring-qa-analyst
+  - ring-sre
 
 ### Ring PM Team Plugin
-- `ring:using-pm-team` → Pre-dev workflow skills (8 gates)
+- `ring-using-pm-team` → Pre-dev workflow skills (8 gates)
 - Auto-loads when ring-pm-team plugin is enabled
 - Located: `pm-team/skills/using-pm-team/SKILL.md`
 - Skills: 8 pre-dev gates for feature planning
@@ -154,7 +154,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 3. Dispatch via Task tool:
    ```
-   subagent_type="ring:your-reviewer"
+   subagent_type="ring-your-reviewer"
    ```
 
 4. **MUST run in parallel** with other reviewers (single message, multiple Tasks)
@@ -163,7 +163,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Pre-Dev Workflow
 
-### Simple Features (<2 days): `/ring:pre-dev-feature`
+### Simple Features (<2 days): `/ring-pre-dev-feature`
 
 ```
 ├── Gate 0: pm-team/skills/pre-dev-research
@@ -176,7 +176,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
     └── Output: docs/pre-dev/feature/tasks.md
 ```
 
-### Complex Features (≥2 days): `/ring:pre-dev-full`
+### Complex Features (≥2 days): `/ring-pre-dev-full`
 
 ```
 ├── Gate 0: Research Phase
@@ -198,7 +198,7 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Development Cycle (10-gate)
 
-The **ring:dev-cycle** skill orchestrates task execution through **10 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → unit-testing (Gate 3) → fuzz-testing (Gate 4) → property-testing (Gate 5) → integration-testing (Gate 6) → chaos-testing (Gate 7) → review (Gate 8) → validation (Gate 9). All gates are MANDATORY. Invoke with `/ring:dev-cycle [tasks-file]` or Skill tool `ring:dev-cycle`. State is persisted to `docs/ring:dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
+The **ring-dev-cycle** skill orchestrates task execution through **10 gates**: implementation (Gate 0) → devops (Gate 1) → SRE (Gate 2) → unit-testing (Gate 3) → fuzz-testing (Gate 4) → property-testing (Gate 5) → integration-testing (Gate 6) → chaos-testing (Gate 7) → review (Gate 8) → validation (Gate 9). All gates are MANDATORY. Invoke with `/ring-dev-cycle [tasks-file]` or Skill tool `ring-dev-cycle`. State is persisted to `docs/ring-dev-cycle/current-cycle.json`. See [dev-team/skills/dev-cycle/SKILL.md](../dev-team/skills/dev-cycle/SKILL.md) for full protocol.
 
 ---
 
@@ -207,20 +207,20 @@ The **ring:dev-cycle** skill orchestrates task execution through **10 gates**: i
 ### Instead of sequential (60 min)
 
 ```python
-review1 = Task("ring:code-reviewer")           # 20 min
-review2 = Task("ring:business-logic-reviewer") # 20 min
-review3 = Task("ring:security-reviewer")       # 20 min
+review1 = Task("ring-code-reviewer")           # 20 min
+review2 = Task("ring-business-logic-reviewer") # 20 min
+review3 = Task("ring-security-reviewer")       # 20 min
 ```
 
 ### Run parallel (20 min total)
 
 ```python
 Task.parallel([
-    ("ring:code-reviewer", prompt),
-    ("ring:business-logic-reviewer", prompt),
-    ("ring:security-reviewer", prompt),
-    ("ring:nil-safety-reviewer", prompt),
-    ("ring:test-reviewer", prompt)
+    ("ring-code-reviewer", prompt),
+    ("ring-business-logic-reviewer", prompt),
+    ("ring-security-reviewer", prompt),
+    ("ring-nil-safety-reviewer", prompt),
+    ("ring-test-reviewer", prompt)
 ])  # Single message, 5 tool calls
 ```
 

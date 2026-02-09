@@ -691,7 +691,7 @@ Status: ✅ OK (plenty of headroom)
                               ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │ Step 5: Skill Dispatches Agent with ALL Data                     │
-│ Task(subagent_type="ring:infrastructure-cost-estimator",         │
+│ Task(subagent_type="ring-infrastructure-cost-estimator",         │
 │      prompt="ALL DATA PROVIDED...")                              │
 │ Includes: Actual values from LerianStudio/helm, Environments     │
 └──────────────────────────────────────────────────────────────────┘
@@ -758,7 +758,7 @@ If any NO → Ask user first, then dispatch.
 
 ```yaml
 Task tool:
-  subagent_type: "ring:infrastructure-cost-estimator"
+  subagent_type: "ring-infrastructure-cost-estimator"
   model: "opus"
   prompt: |
     Calculate infrastructure costs and profitability.

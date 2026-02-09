@@ -245,7 +245,7 @@ See standards-coverage-table.md for the authoritative list of sections to check.
 |------|-------------|
 | **All sections apply** | You CANNOT generate infra that violates any section |
 | **No cherry-picking** | All DevOps sections MUST be followed |
-| **Coverage table is authoritative** | See `ring:devops-engineer → devops.md` section for full list |
+| **Coverage table is authoritative** | See `ring-devops-engineer → devops.md` section for full list |
 | **Subsections are INCLUDED** | Containers = Dockerfile + Docker Compose (both REQUIRED) |
 
 **Anti-Rationalization:**
@@ -385,17 +385,17 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **If compliant → say "no changes needed" and move on.**
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+## Standards Compliance Report (MANDATORY when invoked from ring-dev-refactor)
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the infrastructure against Lerian/Ring DevOps Standards.
+When invoked from the `ring-dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the infrastructure against Lerian/Ring DevOps Standards.
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md".
+**⛔ HARD GATE:** You MUST check all sections defined in [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-devops-engineer → devops.md".
 
-**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:devops-engineer → devops.md" for:**
+**→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring-devops-engineer → devops.md" for:**
 - Complete list of sections to check (8 sections)
 - Section names (MUST use EXACT names from table)
 - Subsections per section (all REQUIRED)
@@ -477,7 +477,7 @@ No migration actions required.
    - Files affected: [list]
 ```
 
-**IMPORTANT:** Do not skip this section. If invoked from ring:dev-refactor, Standards Compliance is MANDATORY in your output.
+**IMPORTANT:** Do not skip this section. If invoked from ring-dev-refactor, Standards Compliance is MANDATORY in your output.
 
 ---
 
@@ -715,8 +715,8 @@ Stopping app_postgres_1 ... done
 
 ## What This Agent Does not Handle
 
-- Application code development (use `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
-- Production monitoring and incident response (use `ring:sre`)
-- Test case design and execution (use `ring:qa-analyst`)
-- Application performance optimization (use `ring:sre`)
-- Business logic implementation (use `ring:backend-engineer-golang`)
+- Application code development (use `ring-backend-engineer-golang`, `ring-backend-engineer-typescript`, or `frontend-bff-engineer-typescript`)
+- Production monitoring and incident response (use `ring-sre`)
+- Test case design and execution (use `ring-qa-analyst`)
+- Application performance optimization (use `ring-sre`)
+- Business logic implementation (use `ring-backend-engineer-golang`)

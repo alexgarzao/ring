@@ -4,7 +4,7 @@
 
 This module covers native Go fuzz testing patterns. Fuzz tests automatically generate random inputs to find bugs that manual testing misses.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 4 (Fuzz Testing).
+> **Gate Reference:** This module is loaded by `ring-qa-analyst` at Gate 4 (Fuzz Testing).
 
 ---
 

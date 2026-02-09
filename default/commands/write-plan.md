@@ -9,7 +9,7 @@ Create a comprehensive implementation plan for a feature, with exact file paths,
 ## Usage
 
 ```
-/ring:write-plan [feature-name]
+/ring-write-plan [feature-name]
 ```
 
 ## Arguments
@@ -22,19 +22,19 @@ Create a comprehensive implementation plan for a feature, with exact file paths,
 
 ### Create a Feature Plan
 ```
-/ring:write-plan oauth2-integration
+/ring-write-plan oauth2-integration
 ```
 Creates a detailed plan for implementing OAuth2 authentication.
 
 ### Create an API Plan
 ```
-/ring:write-plan rest-api-versioning
+/ring-write-plan rest-api-versioning
 ```
 Plans the implementation of API versioning with migration path.
 
 ### Create a Refactoring Plan
 ```
-/ring:write-plan database-connection-pooling
+/ring-write-plan database-connection-pooling
 ```
 Creates a step-by-step plan for implementing connection pooling.
 
@@ -85,42 +85,42 @@ Plans specify recommended agents for execution:
 
 | Task Type | Recommended Agent |
 |-----------|-------------------|
-| Backend (Go) | `ring:backend-engineer-golang` |
-| Backend (TypeScript) | `ring:backend-engineer-typescript` |
+| Backend (Go) | `ring-backend-engineer-golang` |
+| Backend (TypeScript) | `ring-backend-engineer-typescript` |
 | Frontend (BFF/API Routes) | `frontend-bff-engineer-typescript` |
-| Infrastructure | `ring:devops-engineer` |
-| Testing | `ring:qa-analyst` |
-| Reliability | `ring:sre` |
+| Infrastructure | `ring-devops-engineer` |
+| Testing | `ring-qa-analyst` |
+| Reliability | `ring-sre` |
 | Fallback | `general-purpose` (built-in) |
 
 ## Related Commands/Skills
 
 | Command/Skill | Relationship |
 |---------------|--------------|
-| `/ring:brainstorm` | Use first if design is not yet validated |
-| `/ring:execute-plan` | Use after to execute the created plan |
-| `ring:brainstorming` | Design validation before planning |
-| `ring:executing-plans` | Batch execution with review checkpoints |
-| `ring:subagent-driven-development` | Alternative execution for current session |
+| `/ring-brainstorm` | Use first if design is not yet validated |
+| `/ring-execute-plan` | Use after to execute the created plan |
+| `ring-brainstorming` | Design validation before planning |
+| `ring-executing-plans` | Batch execution with review checkpoints |
+| `ring-subagent-driven-development` | Alternative execution for current session |
 
 ## Troubleshooting
 
 ### "Design not validated"
-Planning requires a validated design. Use `/ring:brainstorm` first to refine your concept before creating the implementation plan.
+Planning requires a validated design. Use `/ring-brainstorm` first to refine your concept before creating the implementation plan.
 
 ### "Plan is too vague"
 If the generated plan contains phrases like "implement the logic" or "add appropriate handling", the plan doesn't meet quality standards. Request revision with specific code examples.
 
 ### "Worktree not set up"
-This command is best run in a dedicated worktree created by the ring:brainstorming skill. You can still run it in main, but isolation is recommended.
+This command is best run in a dedicated worktree created by the ring-brainstorming skill. You can still run it in main, but isolation is recommended.
 
 ### "Agent selection unavailable"
 If `ring-dev-team` plugin is not installed, execution falls back to `general-purpose` agents automatically. Plans remain valid regardless.
 
 ### When NOT to use this command
-- Design is not validated - use `/ring:brainstorm` first
+- Design is not validated - use `/ring-brainstorm` first
 - Requirements still unclear - use pre-dev PRD/TRD workflow first
-- Already have a plan - use `/ring:execute-plan` instead
+- Already have a plan - use `/ring-execute-plan` instead
 
 ---
 
@@ -129,7 +129,7 @@ If `ring-dev-team` plugin is not installed, execution falls back to `general-pur
 **This command MUST load the skill for complete workflow execution.**
 
 ```
-Use Skill tool: ring:writing-plans
+Use Skill tool: ring-writing-plans
 ```
 
 The skill contains the complete workflow with:

@@ -1,5 +1,5 @@
 ---
-name: ring:dev-chaos-testing
+name: ring-dev-chaos-testing
 title: Development cycle chaos testing (Gate 7)
 category: development-cycle
 tier: 1
@@ -21,11 +21,11 @@ NOT_skip_when: |
   - "Toxiproxy is complex" - One container, 20 minutes setup. Prevents production incidents.
 
 sequence:
-  after: [ring:dev-integration-testing]
-  before: [ring:requesting-code-review]
+  after: [ring-dev-integration-testing]
+  before: [ring-requesting-code-review]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-integration-testing, ring:qa-analyst]
+  complementary: [ring-dev-cycle, ring-dev-integration-testing, ring-qa-analyst]
 
 input_schema:
   required:
@@ -168,7 +168,7 @@ if external_dependencies is empty:
 
 ```text
 Task tool:
-  subagent_type: "ring:qa-analyst"
+  subagent_type: "ring-qa-analyst"
   model: "opus"
   prompt: |
     **MODE:** CHAOS TESTING (Gate 7)

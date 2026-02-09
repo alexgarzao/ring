@@ -11,7 +11,7 @@ trigger: |
   - Team onboarding to platform
 
 skip_when: |
-  - Application development -> use ring-dev-team specialists
+  - Application development -> use ring:dev-team specialists
   - Existing service configuration changes -> standard change management
   - Non-platform infrastructure -> use ops-infrastructure-architect
 
@@ -458,7 +458,7 @@ For platform onboarding tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring:platform-engineer"
+  subagent_type: "ring-platform-engineer"
   model: "opus"
   prompt: |
     SERVICE ONBOARDING REQUEST

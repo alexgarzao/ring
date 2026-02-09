@@ -715,7 +715,7 @@ const handleClick = useCallback((id: string) => {
 
 ## Standards Compliance Categories
 
-**When invoked from ring:dev-refactor, check all categories:**
+**When invoked from ring-dev-refactor, check all categories:**
 
 | Category | Ring Standard | What to Verify |
 |----------|--------------|----------------|

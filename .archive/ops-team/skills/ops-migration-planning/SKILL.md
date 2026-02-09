@@ -11,8 +11,8 @@ trigger: |
   - Data center consolidation/exit
 
 skip_when: |
-  - Application refactoring -> use ring-dev-team specialists
-  - Database schema migrations -> use ring-dev-team specialists
+  - Application refactoring -> use ring:dev-team specialists
+  - Database schema migrations -> use ring:dev-team specialists
   - Simple resource moves -> standard change management
 
 related:
@@ -465,7 +465,7 @@ For migration planning tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring:infrastructure-architect"
+  subagent_type: "ring-infrastructure-architect"
   model: "opus"
   prompt: |
     MIGRATION PLANNING REQUEST
@@ -481,7 +481,7 @@ For platform preparation:
 
 ```
 Task tool:
-  subagent_type: "ring:platform-engineer"
+  subagent_type: "ring-platform-engineer"
   model: "opus"
   prompt: |
     MIGRATION ENVIRONMENT PREPARATION

@@ -12,7 +12,7 @@ trigger: |
 
 skip_when: |
   - Day-to-day backup operations -> standard procedures
-  - Application-level redundancy -> use ring-dev-team specialists
+  - Application-level redundancy -> use ring:dev-team specialists
   - Single-instance failure recovery -> standard runbooks
 
 related:
@@ -371,7 +371,7 @@ For DR planning tasks, dispatch:
 
 ```
 Task tool:
-  subagent_type: "ring:infrastructure-architect"
+  subagent_type: "ring-infrastructure-architect"
   model: "opus"
   prompt: |
     DR PLANNING REQUEST

@@ -68,7 +68,7 @@ Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
 
 **Orchestrator Requirement:**
 ```
-Task(subagent_type="ring:ui-engineer", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring-ui-engineer", model="opus", ...)  # REQUIRED
 ```
 
 **Rationale:** Design System compliance + UX criteria verification requires Opus-level reasoning for comprehensive pattern matching, accessibility validation, and wireframe-to-code translation.
@@ -143,7 +143,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 |------|-------------|
 | **ALL sections apply** | You CANNOT generate code that violates ANY section |
 | **No cherry-picking** | All 13 Frontend sections MUST be followed |
-| **Coverage table is authoritative** | See `ring:ui-engineer → frontend.md` section for full list |
+| **Coverage table is authoritative** | See `ring-ui-engineer → frontend.md` section for full list |
 | **Product Designer compliance** | MUST also validate against UX criteria outputs |
 
 **The 13 sections you MUST follow:**
@@ -154,7 +154,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | 8-10 | Component Patterns, Accessibility, Performance | ✅ |
 | 11-13 | Directory Structure, Forbidden Patterns, Standards Categories | ✅ |
 
-**Additional ring:ui-engineer requirements (from coverage table):**
+**Additional ring-ui-engineer requirements (from coverage table):**
 
 | # | Check | Source | MANDATORY |
 |---|-------|--------|-----------|

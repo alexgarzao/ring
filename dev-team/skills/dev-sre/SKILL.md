@@ -1,5 +1,5 @@
 ---
-name: ring:dev-sre
+name: ring-dev-sre
 description: |
   Gate 2 of the development cycle. VALIDATES that observability was correctly implemented
   by developers. Does not implement observability code - only validates it.
@@ -16,11 +16,11 @@ NOT_skip_when: |
   - "MVP doesn't need observability" → MVP without observability = blind MVP. No exceptions.
 
 sequence:
-  after: [ring:dev-devops]
-  before: [ring:dev-unit-testing]
+  after: [ring-dev-devops]
+  before: [ring-dev-unit-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-devops, ring:dev-unit-testing]
+  complementary: [ring-dev-cycle, ring-dev-devops, ring-dev-unit-testing]
 
 input_schema:
   required:
@@ -37,7 +37,7 @@ input_schema:
       description: "Type of service being validated"
     - name: implementation_agent
       type: string
-      description: "Agent that performed Gate 0 (e.g., ring:backend-engineer-golang)"
+      description: "Agent that performed Gate 0 (e.g., ring-backend-engineer-golang)"
     - name: implementation_files
       type: array
       items: string
@@ -100,7 +100,7 @@ examples:
       unit_id: "task-001"
       language: "go"
       service_type: "api"
-      implementation_agent: "ring:backend-engineer-golang"
+      implementation_agent: "ring-backend-engineer-golang"
       implementation_files: ["internal/handler/user.go", "internal/service/user.go"]
     expected_output: |
       ## Validation Result
@@ -161,7 +161,7 @@ This skill VALIDATES that observability was correctly implemented by developers:
 </verify_before_proceed>
 
 ```text
-REQUIRED INPUT (from ring:dev-cycle orchestrator):
+REQUIRED INPUT (from ring-dev-cycle orchestrator):
 - unit_id: [task/subtask being validated]
 - language: [go|typescript|python]
 - service_type: [api|worker|batch|cli|library]
@@ -192,13 +192,13 @@ validation_state = {
 
 ## Step 3: Dispatch SRE Agent for Validation
 
-<dispatch_required agent="ring:sre">
+<dispatch_required agent="ring-sre">
 Validate observability implementation for unit_id.
 </dispatch_required>
 
 ```yaml
 Task:
-  subagent_type: "ring:sre"
+  subagent_type: "ring-sre"
   description: "Validate observability for [unit_id]"
   prompt: |
     ⛔ VALIDATE Observability Implementation
@@ -366,7 +366,7 @@ if validation_state.iteration >= validation_state.max_iterations:
 
 ```yaml
 Task:
-  subagent_type: "[implementation_agent from input]"  # e.g., "ring:backend-engineer-golang"
+  subagent_type: "[implementation_agent from input]"  # e.g., "ring-backend-engineer-golang"
   description: "Fix observability issues for [unit_id]"
   prompt: |
     ⛔ FIX REQUIRED - Observability Issues Found

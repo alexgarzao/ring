@@ -1,5 +1,5 @@
 ---
-name: ring:release-guide-info
+name: ring-release-guide-info
 version: 1.2.0
 description: |
   Generate Ops Update Guide from Git Diff. Produces internal Operations-facing
@@ -770,6 +770,6 @@ Output:
 
 **Via slash command:**
 ```
-User: /ring:release-guide <base-ref> <target-ref>
+User: /ring-release-guide <base-ref> <target-ref>
 Assistant: [Executes skill with BASE_REF and TARGET_REF]
 ```

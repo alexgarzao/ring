@@ -1,5 +1,5 @@
 ---
-name: ring:project-health-check
+name: ring-project-health-check
 description: |
   Individual project health assessment skill for evaluating project status across
   multiple dimensions. Provides early warning of troubled projects.

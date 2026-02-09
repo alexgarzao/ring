@@ -70,7 +70,7 @@ DO NOT read/edit >3 files directly. This is a PROHIBITION.
 **If you think "this task is small" or "I can handle 5 files":**
 WRONG. Count > 3 = agent. No exceptions. Task size is irrelevant.
 
-**Full rules:** Use Skill tool with "ring:using-ring" if needed.
+**Full rules:** Use Skill tool with "ring-using-ring" if needed.
 '
 
 # Doubt-triggered questions pattern - when agents should ask vs proceed
@@ -134,7 +134,7 @@ generate_skills_overview() {
     echo "**Note:** Neither Python nor bash fallback available."
     echo "Skills are still accessible via the Skill tool."
     echo ""
-    echo "Run: \`Skill tool: ring:using-ring\` to see available workflows."
+    echo "Run: \`Skill tool: ring-using-ring\` to see available workflows."
     echo ""
     echo "To fix: Install Python 3.x or ensure generate-skills-ref.sh is executable."
 }
@@ -179,7 +179,7 @@ doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")
 debug_log "Escaped: overview=${#overview_escaped}c rules=${#critical_rules_escaped}c doubt=${#doubt_questions_escaped}c"
 
 # Handoff auto-resume detection
-# Check for pending handoff created by /ring:create-handoff
+# Check for pending handoff created by /ring-create-handoff
 # The .pending file contains: line1=path, line2=unix_timestamp
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git -C "$ORIGINAL_CWD" rev-parse --show-toplevel 2>/dev/null || echo "$ORIGINAL_CWD")}"
 PENDING_FILE="${PROJECT_DIR}/docs/handoffs/.pending"

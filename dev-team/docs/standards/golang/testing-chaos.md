@@ -4,7 +4,7 @@
 
 This module covers chaos testing patterns. Chaos tests verify system behavior under failure conditions like network partitions, latency, and connection loss.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 7 (Chaos Testing).
+> **Gate Reference:** This module is loaded by `ring-qa-analyst` at Gate 7 (Chaos Testing).
 
 ---
 

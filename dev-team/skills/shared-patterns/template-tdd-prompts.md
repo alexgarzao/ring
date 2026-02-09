@@ -1,6 +1,6 @@
 # TDD Prompt Templates
 
-Canonical source for TDD dispatch prompts used by ring:dev-cycle and ring:dev-implementation skills.
+Canonical source for TDD dispatch prompts used by ring-dev-cycle and ring-dev-implementation skills.
 
 ## Standards Loading (MANDATORY - Before TDD)
 
@@ -100,8 +100,8 @@ Example failure output:
 
 **⛔ HARD GATE: You MUST implement all sections listed in [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/shared-patterns/standards-coverage-table.md).**
 
-- **Go projects:** See `ring:backend-engineer-golang → golang.md` section index (20 sections)
-- **TypeScript projects:** See `ring:backend-engineer-typescript → typescript.md` section index (13 sections)
+- **Go projects:** See `ring-backend-engineer-golang → golang.md` section index (20 sections)
+- **TypeScript projects:** See `ring-backend-engineer-typescript → typescript.md` section index (13 sections)
 
 **You CANNOT skip any section. Mark N/A only with explicit justification.**
 
