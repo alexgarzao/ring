@@ -272,7 +272,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 23 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
 | 24 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
 | 25 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
-| 26 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | **Cursor-based (MANDATORY)**, limit validation, response structure |
+| 26 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | **Offset & cursor strategies**, limit validation, response structure, lib-commons utilities |
 | 27 | HTTP Status Code Consistency | api-patterns.md | `#http-status-code-consistency-mandatory` | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands |
 | 28 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
 | 29 | Handler Constructor Pattern | api-patterns.md | `#handler-constructor-pattern-mandatory` | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands |
@@ -294,6 +294,8 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 45 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
 | 46 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
 | 47 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **⚠️ CONDITIONAL: Tenant Isolation Verification**: IDOR prevention, detection commands |
+| 48 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, Redis-backed storage, key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
+| 49 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
 
 **Module Loading Guide:**
 
@@ -301,6 +303,8 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 |-----------|------------------|
 | New feature (full) | core.md → bootstrap.md → domain.md → quality.md |
 | Auth implementation | core.md → security.md |
+| Rate limiting | security.md |
+| CORS configuration | security.md |
 | Add tracing | bootstrap.md |
 | Testing | quality.md |
 | API endpoints | api-patterns.md (pagination + swaggo) |
