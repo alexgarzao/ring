@@ -66,6 +66,93 @@ Implementation details (file paths, code examples), step-by-step instructions (t
 - **Integration**: Connects to external systems
 - **Polish**: Optimizes or enhances (nice-to-have)
 
+## AI-Assisted Time Estimation
+
+**Baseline: AI Agent via ring:dev-cycle (Lerian Standard)**
+
+After defining task scope and success criteria, the system automatically estimates implementation time.
+
+### Estimation Process
+
+1. **Tech Stack Detection:** Identify project type from TRD
+   - Go project → dispatch ring:backend-engineer-golang
+   - TypeScript Backend → dispatch ring:backend-engineer-typescript
+   - React/Next.js → dispatch ring:frontend-engineer
+   - Mixed/Unknown → dispatch ring:codebase-explorer
+
+2. **Scope Analysis:** Specialized agent analyzes:
+   - Technical components (endpoints, schemas, services)
+   - Complexity level (CRUD vs custom algorithms)
+   - Available libraries (lib-commons, frameworks)
+   - Test requirements (coverage %, test types)
+   - Documentation requirements
+
+3. **Time Calculation:** Agent estimates per scope item
+   - Database schema + migrations
+   - Repository/data layer
+   - Business logic layer
+   - API handlers/controllers
+   - Validation logic
+   - Error handling
+   - Unit tests (TDD)
+   - Integration tests
+   - Documentation
+
+4. **Output:** Total in AI-agent-hours
+
+### Estimation Baseline
+
+**What "AI-agent-hours" means:**
+- Time for Claude Sonnet 4.5 to implement via ring:dev-cycle
+- Includes: TDD, automated code review, SRE validation, DevOps setup
+- Execution: Fully automated through dev-team gates
+- Quality: Production-ready (all gates passed)
+
+**Does NOT include (added later via multiplier):**
+- Human code review and validation
+- Requested adjustments and refactoring
+- Manual exploratory testing
+- Stakeholder feedback cycles
+- Deployment validation
+
+### Confidence Levels
+
+| Level | Criteria | Example |
+|-------|----------|---------|
+| **High** | Standard patterns, libs available, clear scope | CRUD API with lib-commons |
+| **Medium** | Some custom logic, partial lib support | Payment integration |
+| **Low** | Novel algorithms, no lib support, vague scope | ML feature, R&D work |
+
+### Example Output
+
+```markdown
+**Effort Estimate:**
+- **Baseline:** AI Agent via ring:dev-cycle
+- **AI Estimate:** 4.5 AI-agent-hours
+- **Estimation Method:** ring:backend-engineer-golang analysis
+- **Confidence:** High (standard CRUD, lib-commons available)
+
+**Breakdown:**
+- Database schema + migrations: 0.5h
+- Repository layer (CRUD): 0.5h
+- Service layer (business logic): 0.5h
+- HTTP handlers (4 endpoints): 1.0h
+- Input validation: 0.3h
+- Error handling: 0.2h
+- Unit tests (TDD, 85% coverage): 0.8h
+- Integration tests: 0.5h
+- OpenAPI documentation: 0.2h
+**Total: 4.5 AI-agent-hours**
+
+**Assumptions:**
+- lib-commons/http, lib-commons/postgres, lib-commons/validator available
+- Standard CRUD patterns (no complex algorithms)
+- PostgreSQL database configured
+- ring:dev-cycle will execute implementation
+
+**Team Type:** Backend Engineer (Go)
+```
+
 ## Rationalization Table
 
 | Excuse | Reality |
@@ -80,6 +167,12 @@ Implementation details (file paths, code examples), step-by-step instructions (t
 | "Risks aren't relevant at task level" | Risks compound across tasks. Identify them early. |
 | "DoD is the same for all tasks" | Different tasks need different criteria. Specify. |
 | "We can combine multiple features" | Combining hides value delivery. Keep tasks focused. |
+| "Skip AI estimation, use story points" | Story points are abstract, AI hours are concrete | **MUST run AI estimation for all tasks** |
+| "Manual estimate is faster" | Fast ≠ accurate. AI analyzes full scope consistently | **MUST use AI analysis, not guesses** |
+| "AI estimate too low, inflate it" | Inflation happens in multiplier (Gate 9), not here | **MUST report AI estimate as-is** |
+| "Confidence is always High" | Confidence reflects scope clarity and complexity | **MUST assess confidence honestly** |
+| "Skip breakdown, just give total" | Breakdown enables validation and learning | **MUST provide detailed breakdown** |
+| "AI can't estimate this, too complex" | Complex = lower confidence, not impossible | **MUST attempt estimate, flag low confidence** |
 
 ## Red Flags - STOP
 
@@ -357,7 +450,7 @@ Output to `docs/pre-dev/{feature-name}/tasks.md`. Each task includes:
 | **User/Technical Value** | What users can do; what this enables |
 | **Technical Components** | From TRD, From Dependencies |
 | **Dependencies** | Blocks (T-AAA), Requires (T-BBB), Optional (T-CCC) |
-| **Effort Estimate** | Size (S/M/L/XL), Points, Duration, Team type |
+| **Effort Estimate** | AI Estimate: X AI-agent-hours, Confidence: [High/Medium/Low], Estimation Method: [Agent Name], Team type |
 | **Risks** | Per risk: Impact, Probability, Mitigation, Fallback |
 | **Testing Strategy** | Unit, Integration, E2E, Performance, Security |
 | **Definition of Done** | Code reviewed, tests passing, docs updated, security clean, performance met, deployed to staging, PO acceptance, monitoring configured |

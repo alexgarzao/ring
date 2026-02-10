@@ -141,28 +141,57 @@ If you catch yourself doing any of these, **STOP and ask the user**:
   - **Why:** Establishes period boundaries to check if tasks fit completely or spill over
 - **Note:** If user chose "Continuous", skip this question (no fixed periods)
 
-### Question 5: Development Mode & Velocity
-- **Header:** "Development Velocity"
-- **Question:** "Will the team use AI-assisted development (ring:dev-cycle)?"
-- **Options:**
-  - "Yes - AI-assisted (default 0.6x multiplier)" - Use default 0.6x (40% faster)
-  - "Yes - AI-assisted (custom multiplier)" - User specifies custom AI multiplier
-  - "No - Traditional (default 1.0x multiplier)" - Use default 1.0x (baseline)
-  - "No - Traditional (custom multiplier)" - User specifies custom traditional multiplier
-- **Follow-up (if custom chosen):** "What is your team's velocity multiplier based on historical data?"
-  - Format: Decimal number (e.g., 0.5, 0.7, 1.2)
-  - Example: "0.7 means 0.7 days per story point"
-- **Why:**
-  - AI-assisted dev with automated gates (TDD, review, SRE) reduces bugs and rework
-  - Default multipliers are guidelines, teams vary based on experience/infrastructure
-  - Historical data provides most accurate estimates
-- **Note:** ring:dev-cycle includes TDD, automated review, and SRE validation
+### Question 5: Human Validation Overhead
 
-**Default Multipliers:**
-| Mode | Default | Meaning |
-|------|---------|---------|
-| AI-assisted (ring:dev-cycle) | 0.6x | 40% faster (1 point = 0.6 days) |
-| Traditional development | 1.0x | Baseline (1 point = 1.0 day) |
+**Context:**
+- Baseline: AI Agent implements via ring:dev-cycle
+- AI handles: coding, TDD, automated review, SRE validation, DevOps
+- AI Estimate: X AI-agent-hours (from tasks.md)
+
+**Question:** "What overhead for human validation and adjustments?"
+
+**Options:**
+
+1. **"1.2x - Minimal validation (20% overhead)"**
+   - AI generates consistently high-quality code
+   - Quick review, minimal adjustments
+   - Example: 4h AI → 4.8h adjusted → 5.3h calendar
+
+2. **"1.5x - Standard validation (50% overhead)"** ← RECOMENDADO
+   - Normal review process with some adjustments
+   - Re-run tests after changes
+   - Standard manual QA
+   - Example: 4h AI → 6h adjusted → 6.67h calendar
+
+3. **"2.0x - Deep validation (100% overhead)"**
+   - Critical review with multiple rounds
+   - Significant refactoring requested
+   - Extensive manual testing
+   - Example: 4h AI → 8h adjusted → 8.89h calendar
+
+4. **"2.5x - Heavy rework (150% overhead)"**
+   - AI code needs major changes
+   - Multiple iteration cycles
+   - Complex stakeholder feedback
+   - Example: 4h AI → 10h adjusted → 11.11h calendar
+
+5. **"Custom multiplier"**
+   - Specify value based on historical data
+   - Example: 1.7x, 1.8x, etc.
+
+**Multiplier accounts for:**
+- Human code review time (validation, not execution)
+- Requested adjustments and refactoring
+- Manual exploratory testing
+- Stakeholder demos and feedback
+- Documentation review
+- Deployment validation
+
+**Historical data (update after tasks):**
+After completing tasks, track actual multipliers:
+- Task T-001: Planned 1.5x, Actual 1.6x (close)
+- Task T-002: Planned 1.5x, Actual 2.1x (underestimated)
+- Average: 1.7x → Adjust future estimates
 
 ### Question 6 (CONDITIONAL): Priority Clarification
 - **When to ask:** If multiple tasks have same dependencies and could start simultaneously
@@ -193,37 +222,90 @@ If you catch yourself doing any of these, **STOP and ask the user**:
 
 **Gate Result:** ✅ PASS → Ready for execution | ⚠️ CONDITIONAL (adjust capacity/dates) | ❌ FAIL (unrealistic, rework)
 
-## Velocity Calibration
+## Velocity Calibration (Lerian Standard)
 
-| Development Mode | Default Multiplier | Custom Range | Rationale |
-|------------------|-------------------|--------------|-----------|
-| **AI-Assisted (ring:dev-cycle)** | 0.6x (40% faster) | 0.4x - 0.8x | Automated gates (TDD, review, SRE), fewer bugs, less rework |
-| **Traditional Development** | 1.0x (baseline) | 0.8x - 1.2x | Manual testing, manual review, manual deployment |
+**Baseline:** AI Agent via ring:dev-cycle
+**Capacity:** 90% (hardcoded)
+**Multiplier:** User-defined (human validation overhead)
 
-**How to Calculate Custom Multiplier:**
+### Calculation Formula
+
 ```
-Look at past completed tasks:
-- Traditional: Task was 10 story points, took 12 developer-days → 1.2 days/point (1.2x multiplier)
-- AI-assisted: Task was 10 story points, took 5 developer-days → 0.5 days/point (0.5x multiplier)
+adjusted_hours = ai_estimate × multiplier
+calendar_hours = adjusted_hours ÷ 0.90
+calendar_days = calendar_hours ÷ 8 ÷ team_size
 
-Use historical data, not assumptions.
+Where:
+- ai_estimate = from tasks.md (AI-agent-hours)
+- multiplier = human validation overhead (typically 1.2x - 2.0x)
+- 0.90 = capacity utilization (90%)
+- 8 = hours per working day
+- team_size = number of developers
 ```
 
-**Capacity Utilization:**
-- **Realistic:** 70-80% (accounts for meetings, context switching, interruptions)
-- **Optimistic (FORBIDDEN):** 100% (assumes no meetings, no bugs, no blockers)
+### Capacity Utilization: 90% (Fixed)
 
-**Example Calculation:**
-```
-Task: T-001 (Large, 13 story points)
-Team: 2 developers
-Velocity multiplier: 0.7x (custom, AI-assisted team with moderate experience)
-Capacity utilization: 75%
+**Why 90%?**
+AI Agent via ring:dev-cycle has minimal but real overhead:
 
-Calculation:
-13 points × 0.7 day/point = 9.1 developer-days
-9.1 dev-days ÷ 2 devs ÷ 0.75 capacity = 6.1 calendar days (~1.5 weeks)
+| Overhead Type | Impact |
+|---------------|--------|
+| API rate limits and latency | ~4% |
+| Context loading (files, docs) | ~2% |
+| Tool execution (compile, test) | ~3% |
+| Error recovery (retry failed commands) | ~1% |
+| **Total Overhead** | **~10%** |
+| **Effective Capacity** | **90%** |
+
+**Contrast with human capacity:**
+- Human developer: ~75% (25% lost to meetings, context switching, breaks)
+- AI Agent: 90% (10% lost to technical overhead)
+
+### Multiplier: Human Validation Overhead
+
+**User selects multiplier to account for:**
+- ✅ Human code review and validation time
+- ✅ Requested adjustments and refactoring
+- ✅ Re-running tests after changes
+- ✅ Manual exploratory testing (beyond automated)
+- ✅ Stakeholder demos and feedback cycles
+- ✅ Deployment validation and monitoring setup
+- ✅ Integration issues found in staging/production
+
+**Does NOT account for (already done by AI):**
+- ❌ Initial code implementation
+- ❌ Unit/integration test writing (TDD)
+- ❌ Automated code review (ring:code-reviewer)
+- ❌ SRE validation (ring:sre)
+- ❌ DevOps setup (ring:devops-engineer)
+
+### Example Calculation
+
+**Task T-001: "User Management CRUD API"**
+
 ```
+Step 1: AI Estimation (Gate 7)
+AI Estimate: 4.5 AI-agent-hours
+
+Step 2: Apply Multiplier (Gate 9)
+User selects: 1.5x (standard validation)
+Adjusted Hours: 4.5h × 1.5 = 6.75h
+
+Step 3: Apply Capacity (hardcoded)
+Calendar Hours: 6.75h ÷ 0.90 = 7.5h
+
+Step 4: Convert to Days
+Calendar Days: 7.5h ÷ 8h/day = 0.94 developer-days
+
+Step 5: Account for Team Size
+With 1 dev: 0.94 ÷ 1 = 0.94 calendar days ≈ 1 dia
+With 2 devs: 0.94 ÷ 2 = 0.47 calendar days ≈ 0.5 dia (4 horas)
+```
+
+**Breakdown of 7.5h total:**
+- AI implementation: 4.5h (60%)
+- Human validation: 2.25h (30%) ← multiplier overhead
+- Technical overhead: 0.75h (10%) ← capacity overhead
 
 ## Period Boundary Calculation
 
@@ -337,13 +419,14 @@ With 1 dev:  Fully sequential (slowest)
 | **Critical Path** | T-001 → T-003 → T-007 (Y weeks) |
 | **Parallel Streams** | N streams identified |
 | **Team Composition** | N developers (roles) |
-| **Development Mode** | AI-assisted / Traditional |
-| **Velocity Multiplier** | Xx (e.g., 0.7x = 0.7 days per story point) |
-| **Multiplier Source** | Default / Custom (user-validated) |
+| **Development Mode** | AI Agent via ring:dev-cycle |
+| **Human Validation Multiplier** | Xx (e.g., 1.5x = 50% overhead for validation) |
+| **Multiplier Source** | Default (1.5x) / Custom (user-validated) |
+| **Capacity Utilization** | 90% (AI Agent standard) |
+| **Formula** | ai_estimate × multiplier ÷ 0.90 |
 | **Delivery Cadence** | Sprints (1-2w) / Cycles (1-3m) / Continuous |
 | **Period Duration** | {X} weeks/months (if sprint/cycle) |
 | **First Period Starts** | YYYY-MM-DD (if sprint/cycle) |
-| **Capacity Utilization** | 75% (realistic) |
 | **Contingency Buffer** | Z% (A days) |
 | **Confidence Level** | High / Medium / Low |
 ```
@@ -533,9 +616,10 @@ Legend:
 2. **Dependency Resolution:** All external dependencies (APIs, credentials) available on time
 3. **Scope Stability:** No scope changes during execution (new requirements = new planning)
 4. **Infrastructure Ready:** Development/staging environments available Day 1
-5. **Capacity Utilization:** 75% realistic capacity (25% for meetings, context switching)
-6. **Velocity Accuracy:** Custom multiplier ({X}x) validated against historical team data OR using default multiplier ({default}x)
+5. **Capacity Utilization:** 90% (AI Agent via ring:dev-cycle, 10% overhead for API/technical)
+6. **Multiplier Accuracy:** Custom multiplier ({X}x) validated against historical validation overhead OR using default multiplier (1.5x)
 7. **Period Boundaries:** Sprint/Cycle boundaries do not shift (dates fixed)
+8. **Baseline Execution:** All implementation via ring:dev-cycle (AI Agent with automated gates)
 
 ## Constraints
 
