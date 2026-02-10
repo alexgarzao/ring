@@ -1,3 +1,15 @@
+---
+title: AI Agent Baseline Definition
+description: |
+  Canonical source for AI-agent-hours definition across pm-team skills.
+  Defines baseline execution model, capacity utilization, and usage patterns.
+category: shared-pattern
+tags: [ai-estimation, baseline, capacity, calibration]
+referenced_by:
+  - ring:pre-dev-task-breakdown (Gate 7)
+  - ring:pre-dev-delivery-planning (Gate 9)
+---
+
 # AI Agent Baseline Definition
 
 **Canonical source for AI-agent-hours definition across pm-team skills.**

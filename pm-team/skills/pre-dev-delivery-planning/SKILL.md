@@ -630,7 +630,7 @@ Legend:
 | **100% Capacity** | "2 devs × 2 weeks × 5 days = 20 dev-days" (unrealistic) | "2 devs × 2 weeks × 5 days × 0.75 capacity = 15 dev-days" |
 | **Fixed Cadence Assumption** | "Everyone works in 2-week sprints" | "Ask user: sprint/cycle/continuous delivery?" |
 | **Ignoring Period Boundaries** | "Task T-002 starts in Sprint 1, wherever it ends is fine" | "T-002 starts Sprint 1, ends Sprint 2 → spill over, track explicitly" |
-| **Default Velocity Always** | "Use 0.6x for AI teams always" | "Ask user: default (0.6x) or custom based on history?" |
+| **Default Multiplier Always** | "Use 1.5x always" | "Ask user: default (1.5x) or custom based on historical validation overhead?" |
 
 ## Confidence Scoring
 
