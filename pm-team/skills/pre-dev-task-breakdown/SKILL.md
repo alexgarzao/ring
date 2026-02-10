@@ -40,25 +40,27 @@ Creating technical-only or oversized tasks creates:
 | Phase | Activities |
 |-------|------------|
 | **1. Task Identification** | Load PRD (Gate 1, required), TRD (Gate 3, required); optional: Feature Map, API Design, Data Model, Dependency Map; identify value streams |
-| **2. Decomposition** | Per component/feature: define deliverable, set success criteria, map dependencies, estimate effort (S/M/L/XL max=2 weeks), plan testing, identify risks |
+| **2. Decomposition** | Per component/feature: define deliverable, set success criteria, map dependencies, estimate effort via AI analysis (max 16 AI-agent-hours), plan testing, identify risks |
 | **3. Gate 7 Validation** | All TRD components covered; every task delivers working software; measurable success criteria; correct dependencies; no task >2 weeks; testing strategy defined; risks with mitigations; delivery sequence optimizes value |
 
 ## Explicit Rules
 
 ### ✅ DO Include in Tasks
-Task ID, title, type (Foundation/Feature/Integration/Polish), deliverable (what ships), user value (what users can do), technical value (what it enables), success criteria (testable/measurable), dependencies (blocks/requires/optional), effort estimate (S/M/L/XL with points), testing strategy, risk identification with mitigations, Definition of Done checklist
+Task ID, title, type (Foundation/Feature/Integration/Polish), deliverable (what ships), user value (what users can do), technical value (what it enables), success criteria (testable/measurable), dependencies (blocks/requires/optional), effort estimate (AI-agent-hours with confidence), testing strategy, risk identification with mitigations, Definition of Done checklist
 
 ### ❌ NEVER Include in Tasks
 Implementation details (file paths, code examples), step-by-step instructions (those go in subtasks), technical-only tasks with no user value, tasks exceeding 2 weeks (break them down), vague success criteria ("improve performance"), missing dependency information, undefined testing approach
 
 ### Task Sizing Rules
 
-| Size | Points | Duration | Scope |
-|------|--------|----------|-------|
-| Small (S) | 1-3 | 1-3 days | Single component |
-| Medium (M) | 5-8 | 3-5 days | Few dependencies |
-| Large (L) | 13 | 1-2 weeks | Multiple components |
-| XL (>2 weeks) | BREAK IT DOWN | Too large | Not atomic |
+| Size | AI-agent-hours | Calendar Duration* | Scope |
+|------|----------------|-------------------|-------|
+| Small (S) | 1-4h | 1-2 days | Single component |
+| Medium (M) | 4-8h | 2-4 days | Few dependencies |
+| Large (L) | 8-16h | 1-2 weeks | Multiple components |
+| XL (>16h) | BREAK IT DOWN | Too large | Not atomic |
+
+*Calendar duration assumes 1.5x multiplier (standard validation) and 1 developer
 
 ### Value Delivery Rules
 - **Foundation**: Enables other work (database setup, core services)
