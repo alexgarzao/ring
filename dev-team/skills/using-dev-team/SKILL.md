@@ -260,7 +260,7 @@ All workflows converge to the 10-gate development cycle:
 | **1: DevOps**         | Dockerfile, docker-compose, .env | `ring:devops-engineer`                                                                 |
 | **2: SRE**            | Health checks, logging, tracing  | `ring:sre`                                                                             |
 | **3: Testing**        | Unit tests, coverage ≥85%        | `ring:qa-analyst`                                                                      |
-| **4: Review**         | 3 reviewers IN PARALLEL          | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`         |
+| **4: Review**         | 5 reviewers IN PARALLEL          | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:nil-safety-reviewer` |
 | **5: Validation**     | User approval: APPROVED/REJECTED | User decision                                                                          |
 
 **Gate 0 Agent Selection for Frontend:**

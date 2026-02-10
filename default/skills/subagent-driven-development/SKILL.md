@@ -103,23 +103,25 @@ Read plan file, create TodoWrite with all tasks.
 
 ### 3. Review Subagent's Work (Parallel Execution)
 
-**CRITICAL: Single message with 3 Task tool calls** - all reviewers execute simultaneously.
+**CRITICAL: Single message with 5 Task tool calls** - all reviewers execute simultaneously.
 
 | Reviewer | Context |
 |----------|---------|
 | `ring:code-reviewer` | WHAT_WAS_IMPLEMENTED, PLAN, BASE_SHA, HEAD_SHA |
 | `ring:business-logic-reviewer` | Same context |
 | `ring:security-reviewer` | Same context |
+| `ring:test-reviewer` | Same context |
+| `ring:nil-safety-reviewer` | Same context |
 
 **Each returns:** Strengths, Issues (Critical/High/Medium/Low/Cosmetic), Assessment (PASS/FAIL)
 
 ### 4. Aggregate and Handle Review Feedback
 
-**Aggregate** all issues by severity across all 3 reviewers.
+**Aggregate** all issues by severity across all 5 reviewers.
 
 | Severity | Action |
 |----------|--------|
-| **Critical/High/Medium** | Dispatch fix subagent → Re-run all 3 reviewers → Repeat until clear |
+| **Critical/High/Medium** | Dispatch fix subagent → Re-run all 5 reviewers → Repeat until clear |
 | **Low** | Add `# TODO(review): [issue] - reviewer, date, Severity: Low` |
 | **Cosmetic** | Add `# FIXME(nitpick): [issue] - reviewer, date, Severity: Cosmetic` |
 
@@ -135,7 +137,7 @@ After all Critical/High/Medium issues resolved for current task:
 
 ### 6. Final Review (After All Tasks)
 
-**Same pattern as Step 3** but reviewing entire implementation (all tasks, full BASE_SHA→HEAD_SHA range). Aggregate, fix, re-run until all 3 PASS.
+**Same pattern as Step 3** but reviewing entire implementation (all tasks, full BASE_SHA→HEAD_SHA range). Aggregate, fix, re-run until all 5 PASS.
 
 ### 7. Complete Development
 
@@ -146,13 +148,13 @@ After final review passes:
 
 ## Example Workflow
 
-**Task 1:** Implement → All 3 reviewers PASS → Mark complete.
+**Task 1:** Implement → All 5 reviewers PASS → Mark complete.
 
 **Task 2:** Implement → Review finds: Critical (hardcoded secret), High (missing password reset, missing input validation), Low (extract token logic) → Dispatch fix subagent → Re-run reviewers → All PASS → Add TODO for Low → Mark complete.
 
-**Final:** All 3 reviewers PASS entire implementation → Done.
+**Final:** All 5 reviewers PASS entire implementation → Done.
 
-**Why parallel:** 3x faster, all feedback at once, TODO/FIXME tracks tech debt.
+**Why parallel:** 5x faster, all feedback at once, TODO/FIXME tracks tech debt.
 
 ## Advantages
 
@@ -168,17 +170,17 @@ After final review passes:
 **Never:**
 - Skip code review between tasks
 - Proceed with unfixed Critical/High/Medium issues
-- Dispatch reviewers sequentially (use parallel - 3x faster!)
+- Dispatch reviewers sequentially (use parallel - 5x faster!)
 - Dispatch multiple implementation subagents in parallel (conflicts)
 - Implement without reading plan task
 - Forget to add TODO/FIXME comments for Low/Cosmetic issues
 
 **Always:**
-- Launch all 3 reviewers in single message with 3 Task calls
+- Launch all 5 reviewers in single message with 5 Task calls
 - Wait for all reviewers before aggregating findings
 - Fix Critical/High/Medium immediately
 - Add TODO for Low, FIXME for Cosmetic
-- Re-run all 3 reviewers after fixes
+- Re-run all 5 reviewers after fixes
 
 **If subagent fails task:**
 - Dispatch fix subagent with specific instructions

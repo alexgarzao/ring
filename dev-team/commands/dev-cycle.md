@@ -88,7 +88,7 @@ CANNOT override CRITICAL gates. Provides custom context to agents.
 
 CRITICAL: Gates 3, 4, 5 enforce mandatory requirements:
 - MUST enforce 85% coverage (Gate 3 Testing)
-- MUST dispatch all 3 reviewers (Gate 4 Review)
+- MUST dispatch all 5 reviewers (Gate 4 Review)
 - MUST require user approval (Gate 5 Validation)
 
 **Conflict Detection:**
@@ -232,6 +232,6 @@ See skill `ring:dev-cycle` for full details. Key rules:
 
 - **all 6 gates execute** - Checkpoints affect pauses, not gates
 - **Gates execute in order** - 0 → 1 → 2 → 3 → 4 → 5
-- **Gate 4 requires all 3 reviewers** - 2/3 = FAIL
+- **Gate 4 requires all 5 reviewers** - 4/5 = FAIL
 - **Coverage threshold** - 85% minimum, no exceptions
 - **State persisted** - Can resume with `--resume` after any interruption

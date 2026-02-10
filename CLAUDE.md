@@ -53,7 +53,8 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 2. **Update TOC** - Add section to the `## Table of Contents` at the top of the same file
 3. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
 4. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (not inline categories)
-5. **All files in same commit** - Never update one without the others
+
+**All files in same commit** - Never update one without the others.
 
 **⛔ TOC MAINTENANCE RULE:**
 Every standards file has a `## Table of Contents` section that MUST stay in sync:
@@ -334,7 +335,7 @@ Use these sparingly and only at the **beginning** of instructions:
 Examples:
 - MUST dispatch agent before proceeding to next gate
 - STOP and report if PROJECT_RULES.md is missing
-- HARD GATE: All 3 reviewers must pass before Gate 5
+- HARD GATE: All 5 reviewers must pass before Gate 5
 - FORBIDDEN: Reading source code directly as orchestrator
 ```
 
@@ -425,17 +426,17 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 **Active Plugins:**
 
 - **ring-default**: 25 core skills, 12 slash commands, 7 specialized agents
-- **ring-dev-team**: 9 development skills, 5 slash commands, 9 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, QA, SRE)
-- **ring-pm-team**: 12 product management skills, 3 research agents, 3 slash commands (includes delivery planning + status tracking)
-- **ring-pmo-team**: 8 PMO skills, 3 slash commands, 5 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter)
+- **ring-dev-team**: 13 development skills, 5 slash commands, 10 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, Frontend Engineer, QA, SRE, UI Engineer, Prompt Quality Reviewer)
+- **ring-pm-team**: 13 product management skills, 4 research agents, 3 slash commands (includes delivery planning + status tracking + Product Designer)
+- **ring-pmo-team**: 9 PMO skills, 4 slash commands, 6 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter, Delivery Reporter)
 - **ring-finops-team**: 7 regulatory skills, 3 FinOps agents (Analyzer, Automation, Infrastructure Cost Estimator)
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 68 skills (25 + 9 + 12 + 8 + 7 + 7) across 6 plugins**
-**Total: 30 agents (7 + 10 + 4 + 5 + 3 + 3) across 6 plugins**
-**Total: 26 commands (12 + 5 + 5 + 3 + 0 + 3) across 6 plugins**
+**Total: 74 skills (25 + 13 + 13 + 9 + 7 + 7) across 6 plugins**
+**Total: 33 agents (7 + 10 + 4 + 6 + 3 + 3) across 6 plugins**
+**Total: 27 commands (12 + 5 + 3 + 4 + 0 + 3) across 6 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -456,9 +457,9 @@ See [README.md](README.md#installation) for detailed installation instructions.
 | Plugin           | Path           | Contents                         |
 | ---------------- | -------------- | -------------------------------- |
 | ring-default     | `default/`     | 25 skills, 7 agents, 12 commands |
-| ring-dev-team    | `dev-team/`    | 9 skills, 10 agents, 5 commands  |
-| ring-pm-team     | `pm-team/`     | 12 skills, 4 agents, 3 commands  |
-| ring-pmo-team    | `pmo-team/`    | 8 skills, 5 agents, 3 commands   |
+| ring-dev-team    | `dev-team/`    | 13 skills, 10 agents, 5 commands |
+| ring-pm-team     | `pm-team/`     | 13 skills, 4 agents, 3 commands  |
+| ring-pmo-team    | `pmo-team/`    | 9 skills, 6 agents, 4 commands   |
 | ring-finops-team | `finops-team/` | 7 skills, 3 agents               |
 | ring-tw-team     | `tw-team/`     | 7 skills, 3 agents, 3 commands   |
 
@@ -482,11 +483,11 @@ Skill tool: "ring:systematic-debugging"     # Debug with 4-phase analysis
 Skill tool: "ring:using-ring"               # Load mandatory workflows
 
 # Slash commands
-/ring:codereview          # Dispatch 3 parallel reviewers
+/ring:codereview          # Dispatch 5 parallel reviewers
 /ring:brainstorm          # Socratic design refinement
 /ring:pre-dev-feature     # <2 day features (5 gates)
 /ring:pre-dev-full        # ≥2 day features (10 gates)
-/ring:dev-cycle           # 7-gate development cycle (with optional Gate 3.5 for integration-testing)
+/ring:dev-cycle           # 10-gate development cycle
 /ring:execute-plan        # Batch execution with checkpoints
 /ring:worktree            # Create isolated development branch
 
@@ -504,10 +505,10 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter |
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
-| Code review | `/ring:codereview` dispatches 3 parallel reviewers |
+| Code review | `/ring:codereview` dispatches 5 parallel reviewers |
 | Pre-dev (small) | `/ring:pre-dev-feature` → 5-gate workflow |
 | Pre-dev (large) | `/ring:pre-dev-full` → 10-gate workflow |
-| Dev cycle (7 gates) | `/ring:dev-cycle [tasks-file]` → implementation→devops→SRE→testing→(optional: integration-testing)→review→validation (see [dev-team/skills/dev-cycle/SKILL.md](dev-team/skills/dev-cycle/SKILL.md)) |
+| Dev cycle (10 gates) | `/ring:dev-cycle [tasks-file]` → implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation (see [dev-team/skills/dev-cycle/SKILL.md](dev-team/skills/dev-cycle/SKILL.md)) |
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
@@ -522,24 +523,18 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 - **Hook Scripts**: Must output JSON with success/error fields
 - **Shared Patterns**: Reference via `default/skills/shared-patterns/*.md`
 - **Documentation**: Artifacts in `docs/pre-dev/{feature}/*.md`
-- **Monorepo Layout**: Each plugin (`default/`, `team-*/`, `dev-team/`) is self-contained
+- **Monorepo Layout**: Each plugin (`default/`, `{name}-team/`) is self-contained
 
 ### Naming Conventions
 
 - Skills: `kebab-case` matching directory name
-- Agents: `{domain}-reviewer.md` format
+- Agents: `ring:{domain}.md` or `ring:{domain}-reviewer.md` format
 - Commands: `/{action}` format (e.g., `/ring:brainstorm`, `/ring:pre-dev-feature`)
 - Hooks: `{event}-{purpose}.sh` format
 
 #### Agent/Skill/Command Invocation
 
-- **always use the unified ring: namespace**: `ring:{component}`
-- **Examples:**
-  - ✅ Correct: `ring:code-reviewer`
-  - ✅ Correct: `ring:backend-engineer-golang`
-  - ❌ Wrong: `<missing ring prefix>` (FORBIDDEN: omitting the `ring:` prefix)
-  - ❌ Wrong: `ring-default:ring:code-reviewer` (deprecated plugin-specific prefix)
-- **Rationale:** Unified namespace simplifies invocation; plugin routing is handled internally
+See [Unified Ring Namespace](#4-unified-ring-namespace-always) above for invocation format. Always use `ring:{component}` (e.g., `ring:code-reviewer`, `ring:backend-engineer-golang`).
 
 ---
 
@@ -559,14 +554,14 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 
 ## Compliance Rules
 
-```bash
+```text
 # TDD compliance (default/skills/test-driven-development/SKILL.md)
 - Test file must exist before implementation
 - Test must produce failure output (RED)
 - Only then write implementation (GREEN)
 
 # Review compliance (default/skills/requesting-code-review/SKILL.md)
-- All 3 reviewers must pass
+- All 5 reviewers must pass
 - Critical findings = immediate fix required
 - Re-run all reviewers after fixes
 
@@ -600,9 +595,9 @@ The system loads at SessionStart (from `default/` plugin):
 - Active plugins: 6 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-pmo-team`, `ring-finops-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
 - Core plugin: `default/` (25 skills, 7 agents, 12 commands)
-- Developer agents: `dev-team/` (9 skills, 10 agents, 5 commands)
-- Product planning: `pm-team/` (12 skills, 4 agents, 3 commands)
-- PMO specialists: `pmo-team/` (8 skills, 5 agents, 3 commands)
+- Developer agents: `dev-team/` (13 skills, 10 agents, 5 commands)
+- Product planning: `pm-team/` (13 skills, 4 agents, 3 commands)
+- PMO specialists: `pmo-team/` (9 skills, 6 agents, 4 commands)
 - FinOps regulatory: `finops-team/` (7 skills, 3 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)
 - Current git branch: `main`

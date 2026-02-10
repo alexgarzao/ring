@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 66 skills, 32 agents, and 25 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 74 skills, 33 agents, and 27 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,15 +13,15 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(25)   │  │  Skills(9)    │  │  Skills(10)   │  │  team         │      │
-│  │  Agents(7)    │  │  Agents(9)    │  │  Agents(3)    │  │  Skills(6)    │      │
-│  │  Cmds(12)     │  │  Cmds(5)      │  │  Cmds(2)      │  │  Agents(2)    │      │
+│  │  Skills(25)   │  │  Skills(13)   │  │  Skills(13)   │  │  team         │      │
+│  │  Agents(7)    │  │  Agents(10)   │  │  Agents(4)    │  │  Skills(7)    │      │
+│  │  Cmds(12)     │  │  Cmds(5)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐                                            │
 │  │ ring-tw-team  │  │ ring-pmo-team │                                            │
-│  │  Skills(7)    │  │  Skills(8)    │                                            │
-│  │  Agents(3)    │  │  Agents(5)    │                                            │
-│  │  Cmds(3)      │  │  Cmds(3)      │                                            │
+│  │  Skills(7)    │  │  Skills(9)    │                                            │
+│  │  Agents(3)    │  │  Agents(6)    │                                            │
+│  │  Cmds(3)      │  │  Cmds(4)      │                                            │
 │  └───────────────┘  └───────────────┘                                            │
 └────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -86,17 +86,18 @@ Commands are invoked directly: `/command-name`.
 | `/ring:explore-codebase [path]` | Autonomous two-phase codebase exploration   | `/ring:explore-codebase payment/`                  |
 | `/ring:interview-me [topic]`    | Proactive requirements gathering interview  | `/ring:interview-me auth-system`                   |
 | `/ring:release-guide`           | Generate step-by-step release instructions  | `/ring:release-guide`                              |
-| `/ring:pre-dev-feature [name]`  | Plan simple features (<2 days) – 3 gates    | `/ring:pre-dev-feature logout-button`              |
-| `/ring:pre-dev-full [name]`     | Plan complex features (≥2 days) – 8 gates   | `/ring:pre-dev-full payment-system`                |
+| `/ring:pre-dev-feature [name]`  | Plan simple features (<2 days) – 5 gates    | `/ring:pre-dev-feature logout-button`              |
+| `/ring:pre-dev-full [name]`     | Plan complex features (≥2 days) – 10 gates  | `/ring:pre-dev-full payment-system`                |
 | `/ring:worktree [branch-name]`  | Create isolated git workspace               | `/ring:worktree auth-system`                       |
 | `/ring:write-plan [feature]`    | Generate detailed task breakdown            | `/ring:write-plan dashboard-redesign`              |
 | `/ring:execute-plan [path]`     | Execute plan in batches with checkpoints    | `/ring:execute-plan docs/pre-dev/feature/tasks.md` |
+| `/ring:delivery-status`         | Show delivery status and tracking           | `/ring:delivery-status`                            |
 
 ### Code & Integration Workflows
 
 | Command                             | Use Case                                       | Example                                              |
 | ----------------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| `/ring:codereview [files-or-paths]` | Dispatch 3 parallel code reviewers             | `/ring:codereview src/auth/`                         |
+| `/ring:codereview [files-or-paths]` | Dispatch 5 parallel code reviewers             | `/ring:codereview src/auth/`                         |
 | `/ring:commit [message]`            | Create git commit with AI trailers             | `/ring:commit "fix(auth): improve token validation"` |
 | `/ring:lint [path]`                 | Run lint and dispatch agents to fix all issues | `/ring:lint src/`                                    |
 
@@ -111,7 +112,7 @@ Commands are invoked directly: `/command-name`.
 
 | Command                     | Use Case                           | Example                                 |
 | --------------------------- | ---------------------------------- | --------------------------------------- |
-| `/ring:dev-cycle [task]`    | Start 6-gate development workflow  | `/ring:dev-cycle "implement user auth"` |
+| `/ring:dev-cycle [task]`    | Start 10-gate development workflow | `/ring:dev-cycle "implement user auth"` |
 | `/ring:dev-refactor [path]` | Analyze codebase against standards | `/ring:dev-refactor src/`               |
 | `/ring:dev-status`          | Show current gate progress         | `/ring:dev-status`                      |
 | `/ring:dev-report`          | Generate development cycle report  | `/ring:dev-report`                      |
@@ -132,12 +133,13 @@ Commands are invoked directly: `/command-name`.
 | `/ring:portfolio-review [scope]`    | Comprehensive portfolio review   | `/ring:portfolio-review Q1-2025`           |
 | `/ring:dependency-analysis [scope]` | Cross-project dependency mapping | `/ring:dependency-analysis payment-system` |
 | `/ring:executive-summary [scope]`   | Executive status summary         | `/ring:executive-summary board-meeting`    |
+| `/ring:delivery-report [scope]`     | Generate delivery status report  | `/ring:delivery-report Q1-2025`            |
 
 ---
 
 ## 💡 About Skills
 
-Skills (65) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (74) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
 
 Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (27-dimension audit, 10 explorers per batch, incremental report 0–270; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
@@ -202,6 +204,7 @@ Use when you need expert depth in specific domains:
 | `ring:prompt-quality-reviewer`          | AI prompt quality review     | Prompt engineering, clarity, effectiveness         |
 | `ring:qa-analyst`                       | Quality assurance            | Test strategy, automation, coverage                |
 | `ring:sre`                              | Site reliability & ops       | Monitoring, alerting, incident response, SLOs      |
+| `ring:ui-engineer`                      | UI component specialist      | Design systems, accessibility, React               |
 
 **Standards Compliance Output:** All ring-dev-team agents include a `## Standards Compliance` output section with conditional requirement:
 
@@ -239,38 +242,40 @@ For best practices research and repository analysis:
 | `ring:best-practices-researcher` | Best practices research          | Industry patterns, framework standards  |
 | `ring:framework-docs-researcher` | Framework documentation research | Official docs, API references, examples |
 | `ring:repo-research-analyst`     | Repository analysis              | Codebase patterns, structure analysis   |
+| `ring:product-designer`          | Product design and UX research   | UX specifications, user validation, design review |
 
 ### Technical Writing (ring-tw-team)
 
 For documentation creation and review:
 
-| Agent               | Purpose                      | Use For                              |
-| ------------------- | ---------------------------- | ------------------------------------ |
-| `functional-writer` | Functional documentation     | Guides, tutorials, conceptual docs   |
-| `api-writer`        | API reference documentation  | Endpoints, schemas, examples         |
-| `docs-reviewer`     | Documentation quality review | Voice, tone, structure, completeness |
+| Agent                    | Purpose                      | Use For                              |
+| ------------------------ | ---------------------------- | ------------------------------------ |
+| `ring:functional-writer` | Functional documentation     | Guides, tutorials, conceptual docs   |
+| `ring:api-writer`        | API reference documentation  | Endpoints, schemas, examples         |
+| `ring:docs-reviewer`     | Documentation quality review | Voice, tone, structure, completeness |
 
 ### Regulatory & FinOps (ring-finops-team)
 
 For Brazilian financial compliance workflows and cost analysis:
 
-| Agent                           | Purpose                        | Use For                                         |
-| ------------------------------- | ------------------------------ | ----------------------------------------------- |
-| `finops-analyzer`               | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
-| `finops-automation`             | Template generation            | Create .tpl files (Gate 3)                      |
-| `infrastructure-cost-estimator` | Cost estimation and analysis   | Infrastructure cost planning and optimization   |
+| Agent                                | Purpose                        | Use For                                         |
+| ------------------------------------ | ------------------------------ | ----------------------------------------------- |
+| `ring:finops-analyzer`               | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
+| `ring:finops-automation`             | Template generation            | Create .tpl files (Gate 3)                      |
+| `ring:infrastructure-cost-estimator` | Cost estimation and analysis   | Infrastructure cost planning and optimization   |
 
 ### PMO Specialists (ring-pmo-team)
 
 For portfolio-level project management and oversight:
 
-| Agent                   | Purpose                   | Use For                                         |
-| ----------------------- | ------------------------- | ----------------------------------------------- |
-| `portfolio-manager`     | Portfolio-level planning  | Multi-project coordination, strategic alignment |
-| `resource-planner`      | Capacity planning         | Resource allocation, conflict resolution        |
-| `risk-analyst`          | Portfolio risk management | Risk identification, mitigation planning        |
-| `governance-specialist` | Process compliance        | Gate reviews, audit readiness                   |
-| `executive-reporter`    | Executive communications  | Dashboards, board packages, status summaries    |
+| Agent                        | Purpose                   | Use For                                         |
+| ---------------------------- | ------------------------- | ----------------------------------------------- |
+| `ring:portfolio-manager`     | Portfolio-level planning  | Multi-project coordination, strategic alignment |
+| `ring:resource-planner`      | Capacity planning         | Resource allocation, conflict resolution        |
+| `ring:risk-analyst`          | Portfolio risk management | Risk identification, mitigation planning        |
+| `ring:governance-specialist` | Process compliance        | Gate reviews, audit readiness                   |
+| `ring:executive-reporter`    | Executive communications  | Dashboards, board packages, status summaries    |
+| `ring:delivery-reporter`     | Delivery reporting        | Delivery status reports and tracking            |
 
 ---
 
@@ -282,7 +287,7 @@ For portfolio-level project management and oversight:
 2. **Plan** → `/ring:pre-dev-feature feature-name` (or `ring:pre-dev-full` if complex)
 3. **Isolate** → `/ring:worktree feature-branch`
 4. **Implement** → Use `ring:test-driven-development` skill
-5. **Review** → `/ring:codereview src/` (dispatches 3 reviewers)
+5. **Review** → `/ring:codereview src/` (dispatches 5 reviewers)
 6. **Commit** → `/ring:commit "message"`
 
 ### Bug Investigation
@@ -339,7 +344,7 @@ These enforce quality standards:
 
 | Need                              | Agent to Use                                |
 | --------------------------------- | ------------------------------------------- |
-| General code quality review       | 3 parallel reviewers via `/ring:codereview` |
+| General code quality review       | 5 parallel reviewers via `/ring:codereview` |
 | Implementation planning           | `ring:write-plan`                           |
 | Deep codebase analysis            | `ring:codebase-explorer`                    |
 | Go backend expertise              | `ring:backend-engineer-golang`              |
@@ -348,23 +353,26 @@ These enforce quality standards:
 | React/Next.js frontend & BFF      | `ring:frontend-bff-engineer-typescript`     |
 | General frontend development      | `ring:frontend-engineer`                    |
 | Visual design & aesthetics        | `ring:frontend-designer`                    |
+| UI component development          | `ring:ui-engineer`                          |
 | AI prompt quality review          | `ring:prompt-quality-reviewer`              |
 | Quality assurance & testing       | `ring:qa-analyst`                           |
 | Site reliability & operations     | `ring:sre`                                  |
 | Best practices research           | `ring:best-practices-researcher`            |
 | Framework documentation research  | `ring:framework-docs-researcher`            |
 | Repository analysis               | `ring:repo-research-analyst`                |
-| Functional documentation (guides) | `functional-writer`                         |
-| API reference documentation       | `api-writer`                                |
-| Documentation quality review      | `docs-reviewer`                             |
-| Regulatory compliance analysis    | `finops-analyzer`                           |
-| Regulatory template generation    | `finops-automation`                         |
-| Infrastructure cost estimation    | `infrastructure-cost-estimator`             |
-| Portfolio-level planning          | `portfolio-manager`                         |
-| Resource capacity planning        | `resource-planner`                          |
-| Portfolio risk assessment         | `risk-analyst`                              |
-| Governance and compliance         | `governance-specialist`                     |
-| Executive reporting               | `executive-reporter`                        |
+| Product design & UX research      | `ring:product-designer`                     |
+| Functional documentation (guides) | `ring:functional-writer`                    |
+| API reference documentation       | `ring:api-writer`                           |
+| Documentation quality review      | `ring:docs-reviewer`                        |
+| Regulatory compliance analysis    | `ring:finops-analyzer`                      |
+| Regulatory template generation    | `ring:finops-automation`                    |
+| Infrastructure cost estimation    | `ring:infrastructure-cost-estimator`        |
+| Portfolio-level planning          | `ring:portfolio-manager`                    |
+| Resource capacity planning        | `ring:resource-planner`                     |
+| Portfolio risk assessment         | `ring:risk-analyst`                         |
+| Governance and compliance         | `ring:governance-specialist`                |
+| Executive reporting               | `ring:executive-reporter`                   |
+| Delivery status reporting         | `ring:delivery-reporter`                    |
 
 ---
 
@@ -373,7 +381,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 66 skills are auto-discovered and available
+2. All 74 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
@@ -392,11 +400,13 @@ Returns structured output per agent's output_schema
 ### Parallel Review Pattern
 
 ```
-Single message with 3 Task calls (not sequential):
+Single message with 5 Task calls (not sequential):
 
 Task #1: ring:code-reviewer
 Task #2: ring:business-logic-reviewer
 Task #3: ring:security-reviewer
+Task #4: ring:test-reviewer
+Task #5: ring:nil-safety-reviewer
     ↓
 All run in parallel (saves ~15 minutes vs sequential)
     ↓

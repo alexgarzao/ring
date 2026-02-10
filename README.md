@@ -17,8 +17,8 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 66 specialized skills** (25 core + 9 dev-team + 10 product planning + 7 FinOps regulatory + 7 technical writing + 8 PMO)
-- **32 specialized agents** - 7 review/planning + 10 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 5 PMO
+- **Providing 74 specialized skills** (25 core + 13 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
+- **33 specialized agents** - 7 review/planning + 10 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -87,6 +87,7 @@ Ring solves this by:
 - `ring:risk-analyst` - Portfolio risk identification and mitigation planning
 - `ring:governance-specialist` - Gate reviews and process compliance
 - `ring:executive-reporter` - Executive dashboards and stakeholder communications
+- `ring:delivery-reporter` - Delivery status reporting and tracking
 
 _Plugin versions are managed in `.claude-plugin/marketplace.json`_
 
@@ -236,7 +237,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 - ring:test-driven-development (RED-GREEN-REFACTOR cycle)
 - ring:systematic-debugging (4-phase root cause analysis)
 - ring:verification-before-completion (Evidence before claims)
-... and 47 more skills
+... and 70 more skills
 ```
 
 ## 🎯 Core Skills
@@ -275,7 +276,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 66 Skills (Across 6 Plugins)
+## 📚 All 74 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 25 skills)
 
@@ -295,7 +296,7 @@ No "should work" → Only "does work" with proof
 - `ring:interviewing-user` - Proactive requirements gathering through structured interview
 - `ring:writing-plans` - Zero-context implementation plans
 - `ring:executing-plans` - Batch execution with checkpoints
-- `ring:requesting-code-review` - **Parallel 3-reviewer dispatch** with severity-based handling
+- `ring:requesting-code-review` - **Parallel 5-reviewer dispatch** with severity-based handling
 - `ring:receiving-code-review` - Responding to feedback
 - `ring:dispatching-parallel-agents` - Concurrent workflows
 - `ring:subagent-driven-development` - Fast iteration with **parallel reviews**
@@ -313,31 +314,41 @@ No "should work" → Only "does work" with proof
 **Session & Learning (2):**
 
 - `ring:exploring-codebase` - Two-phase codebase exploration
-- `ring:doubt-triggered-questions` - Decision hierarchy for asking vs proceeding
+- `ring:release-guide-info` - Generate Ops Update Guide from git diff analysis
 
 **Audit & Readiness (1):**
 
 - `ring:production-readiness-audit` - 27-dimension production readiness audit; runs 10 explorers per batch, appends incrementally to a single report; output: scored report (0–270) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
 
-### Developer Skills (ring-dev-team plugin - 9 skills)
+### Developer Skills (ring-dev-team plugin - 13 skills)
 
 **Code Development:**
 
 - `ring:using-dev-team` - Introduction to developer specialist agents
 - `ring:dev-refactor` - Codebase analysis against standards
-- `ring:dev-cycle` - 6-gate development workflow orchestrator
+- `ring:dev-cycle` - 10-gate development workflow orchestrator
 
-**6-Gate Workflow Skills:**
+**10-Gate Workflow Skills:**
 
 - `ring:dev-implementation` - Gate 0: TDD implementation
 - `ring:dev-devops` - Gate 1: DevOps setup (Docker, compose)
-- `ring:dev-sre` - Gate 2: Observability setup
-- `ring:dev-testing` - Gate 3: Test coverage
-- `ring:requesting-code-review` - Gate 4: Parallel code review (3 reviewers)
-- `ring:dev-validation` - Gate 5: User approval
+- `ring:dev-sre` - Gate 2: Observability validation
+
+**Advanced Testing Gates (5):**
+
+- `ring:dev-unit-testing` - Gate 3: Unit test coverage (85%+ threshold)
+- `ring:dev-fuzz-testing` - Gate 4: Fuzz testing with seed corpus for edge case discovery
+- `ring:dev-property-testing` - Gate 5: Property-based tests for domain invariants
+- `ring:dev-integration-testing` - Gate 6: Integration tests with real containers via testcontainers
+- `ring:dev-chaos-testing` - Gate 7: Chaos tests using Toxiproxy for graceful degradation
+
+**Review & Validation:**
+
+- `ring:requesting-code-review` - Gate 8: Parallel code review (5 reviewers)
+- `ring:dev-validation` - Gate 9: User approval
 - `ring:dev-feedback-loop` - Assertiveness scoring and metrics
 
-### Product Planning Skills (ring-pm-team plugin - 10 skills)
+### Product Planning Skills (ring-pm-team plugin - 13 skills)
 
 **Pre-Development Workflow (includes ring:using-pm-team + 9 gates):**
 
@@ -352,6 +363,12 @@ No "should work" → Only "does work" with proof
 6. `ring:pre-dev-dependency-map` - Technology selection
 7. `ring:pre-dev-task-breakdown` - Work increments
 8. `ring:pre-dev-subtask-creation` - Atomic units
+
+**Additional Planning Skills:**
+
+- `ring:pre-dev-design-validation` - Gate 1.5/2.5: Design validation for UI features
+- `ring:pre-dev-delivery-planning` - Gate 4 (Small) / Gate 9 (Large): Delivery roadmap and timeline
+- `ring:delivery-status-tracking` - Delivery progress tracking against roadmap
 
 ### Technical Writing Skills (ring-tw-team plugin - 7 skills)
 
@@ -380,7 +397,7 @@ No "should work" → Only "does work" with proof
 
 - `ring:infrastructure-cost-estimation` - Infrastructure cost estimation and analysis
 
-### PMO Skills (ring-pmo-team plugin - 8 skills)
+### PMO Skills (ring-pmo-team plugin - 9 skills)
 
 **Portfolio Management:**
 
@@ -392,14 +409,15 @@ No "should work" → Only "does work" with proof
 - `ring:project-health-check` - Individual project health assessment
 - `ring:pmo-retrospective` - Portfolio lessons learned and process improvements
 - `ring:executive-reporting` - Executive dashboards and board packages
+- `ring:delivery-reporting` - Delivery status reports and executive communications
 
 ## 🎮 Interactive Commands
 
-Ring provides 25 slash commands across 6 plugins for common workflows.
+Ring provides 27 slash commands across 6 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
-- `/ring:codereview [files-or-paths]` - Dispatch 3 parallel code reviewers for comprehensive review
+- `/ring:codereview [files-or-paths]` - Dispatch 5 parallel code reviewers for comprehensive review
 - `/ring:commit [message]` - Create git commit with AI identification via Git trailers
 - `/ring:worktree [branch-name]` - Create isolated git workspace for parallel development
 - `/ring:brainstorm [topic]` - Interactive design refinement using Socratic method
@@ -414,12 +432,13 @@ Ring provides 25 slash commands across 6 plugins for common workflows.
 
 ### Product Planning (ring-pm-team)
 
-- `/ring:pre-dev-feature [feature-name]` - Lightweight 4-gate pre-dev workflow for small features (<2 days)
-- `/ring:pre-dev-full [feature-name]` - Complete 9-gate pre-dev workflow for large features (>=2 days)
+- `/ring:pre-dev-feature [feature-name]` - 5-gate pre-dev workflow for small features (<2 days)
+- `/ring:pre-dev-full [feature-name]` - 10-gate pre-dev workflow for large features (>=2 days)
+- `/ring:delivery-status [scope]` - Track delivery progress against roadmap
 
 ### Development Cycle (ring-dev-team)
 
-- `/ring:dev-cycle [task]` - Start 6-gate development workflow (implementation→devops→SRE→testing→review→validation)
+- `/ring:dev-cycle [task]` - Start 10-gate development workflow (implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation)
 - `/ring:dev-refactor [path]` - Analyze codebase against standards
 - `/ring:dev-status` - Show current gate progress
 - `/ring:dev-report` - Generate development cycle report
@@ -436,6 +455,7 @@ Ring provides 25 slash commands across 6 plugins for common workflows.
 - `/ring:portfolio-review [scope]` - Conduct comprehensive portfolio review across projects
 - `/ring:dependency-analysis [scope]` - Analyze cross-project dependencies
 - `/ring:executive-summary [scope]` - Generate executive summary for leadership
+- `/ring:delivery-report [scope]` - Generate delivery status report
 
 ## 💡 Usage Examples
 
@@ -473,16 +493,19 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
         ... [Through all 8 gates]
 ```
 
-### Code Review (Parallel, 3x Faster!)
+### Code Review (Parallel, 5 Reviewers!)
 
 ```
 User: "Review my authentication implementation"
-Claude: Dispatching all 3 reviewers in parallel...
-        [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer simultaneously]
+Claude: Dispatching all 5 reviewers in parallel...
+        [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer,
+         ring:test-reviewer, ring:nil-safety-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).
         Security reviewer: FAIL. JWT secret hardcoded (CRITICAL severity).
+        Test reviewer: PASS. Good coverage, assertions well-structured.
+        Nil-safety reviewer: PASS. No unguarded nil dereferences found.
 
         Aggregating issues by severity:
         - CRITICAL: JWT secret hardcoded in auth.ts:42
@@ -491,13 +514,13 @@ Claude: Dispatching all 3 reviewers in parallel...
         Dispatching fix subagent to address Critical/High issues...
         [Fixes applied]
 
-        Re-running all 3 reviewers in parallel...
+        Re-running all 5 reviewers in parallel...
         All reviewers: PASS. Ready for production.
 ```
 
 **Key benefits:**
 
-- **3x faster** - All reviewers run simultaneously (not sequential)
+- **All reviewers run simultaneously** (not sequential)
 - **Comprehensive** - Get all feedback at once, easier to prioritize
 - **Tech debt tracking** - Low/Cosmetic issues tracked with TODO/FIXME comments in code
 - **Model-specific** - All reviewers run on Opus for deep analysis
@@ -529,8 +552,8 @@ ring/                                  # Monorepo root
 │   │   ├── ring:write-plan.md           # Implementation planning
 │   │   └── ring:codebase-explorer.md    # Deep architecture analysis (Opus)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team)
-│   └── agents/                      # 9 specialized developer agents
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 13 skills, 10 agents, 5 commands
+│   └── agents/                      # 10 specialized developer agents
 │       ├── ring:backend-engineer-golang.md  # Go backend specialist
 │       ├── ring:backend-engineer-typescript.md # TypeScript/Node.js backend specialist
 │       ├── ring:devops-engineer.md          # DevOps infrastructure
@@ -539,9 +562,10 @@ ring/                                  # Monorepo root
 │       ├── ring:frontend-engineer.md        # Senior Frontend Engineer (React/Next.js)
 │       ├── prompt-quality-reviewer.md       # Agent Quality Analyst
 │       ├── qa-analyst.md                    # Quality assurance
-│       └── sre.md                      # Site reliability engineer
+│       ├── sre.md                           # Site reliability engineer
+│       └── ui-engineer.md                   # UI component specialist
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
-│   └── skills/                      # 10 pre-dev workflow skills
+│   └── skills/                      # 13 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── finops-team/                     # FinOps Regulatory plugin (ring-finops-team)
 │   ├── skills/                      # 7 regulatory skills
@@ -549,14 +573,15 @@ ring/                                  # Monorepo root
 │   ├── docs/regulatory/             # Regulatory templates and dictionaries
 │   └── hooks/                       # SessionStart hook
 ├── pmo-team/                         # PMO Specialists plugin (ring-pmo-team)
-│   ├── agents/                       # 5 PMO specialist agents
+│   ├── agents/                       # 6 PMO specialist agents
 │   │   ├── portfolio-manager.md
 │   │   ├── resource-planner.md
 │   │   ├── risk-analyst.md
 │   │   ├── governance-specialist.md
-│   │   └── executive-reporter.md
-│   ├── skills/                       # 8 PMO skills
-│   ├── commands/                     # 3 PMO commands
+│   │   ├── executive-reporter.md
+│   │   └── delivery-reporter.md
+│   ├── skills/                       # 9 PMO skills
+│   ├── commands/                     # 4 PMO commands
 │   └── hooks/                        # SessionStart hook
 └── tw-team/                         # Technical Writing plugin (ring-tw-team)
     ├── skills/                      # 7 documentation skills
@@ -667,6 +692,7 @@ ring/                                  # Monorepo root
 - **Skills Quick Reference** - Auto-generated at session start from skill frontmatter
 - [CLAUDE.md](CLAUDE.md) - Repository guide for Claude Code
 - [MANUAL.md](MANUAL.md) - Quick reference for all commands, agents, and workflows
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Architecture diagrams and component relationships
 - [Design Documents](docs/plans/) - Implementation plans and architecture decisions
 - **Platform Guides:**
   - [Claude Code](docs/platforms/claude-code.md) - Native format setup

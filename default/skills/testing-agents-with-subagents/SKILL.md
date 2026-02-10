@@ -211,7 +211,7 @@ For each edge case failure, add explicit handling to agent definition:
 - Context comments: Consider but don't use to dismiss issues
 ## Testing Parallel Agent Workflows
 
-When agents run in parallel (like 3 reviewers), test combined workflow:
+When agents run in parallel (like 5 reviewers), test combined workflow:
 - **Parallel Consistency**: Same input to all reviewers → check findings overlap appropriately, no contradictions
 - **Aggregation Testing**: Same issue found by multiple reviewers → severity should be consistent; fix misalignments
 
