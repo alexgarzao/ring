@@ -68,7 +68,7 @@ Implementation details (file paths, code examples), step-by-step instructions (t
 
 ## AI-Assisted Time Estimation
 
-**Baseline: AI Agent via ring:dev-cycle (Lerian Standard)**
+**See [shared-patterns/ai-agent-baseline.md](../shared-patterns/ai-agent-baseline.md) for baseline definition.**
 
 After defining task scope and success criteria, the system automatically estimates implementation time.
 
@@ -100,20 +100,7 @@ After defining task scope and success criteria, the system automatically estimat
 
 4. **Output:** Total in AI-agent-hours
 
-### Estimation Baseline
-
-**What "AI-agent-hours" means:**
-- Time for Claude Sonnet 4.5 to implement via ring:dev-cycle
-- Includes: TDD, automated code review, SRE validation, DevOps setup
-- Execution: Fully automated through dev-team gates
-- Quality: Production-ready (all gates passed)
-
-**Does NOT include (added later via multiplier):**
-- Human code review and validation
-- Requested adjustments and refactoring
-- Manual exploratory testing
-- Stakeholder feedback cycles
-- Deployment validation
+**For detailed baseline definition and capacity explanation, see [shared-patterns/ai-agent-baseline.md](../shared-patterns/ai-agent-baseline.md).**
 
 ### Confidence Levels
 
@@ -454,6 +441,72 @@ Output to `docs/pre-dev/{feature-name}/tasks.md`. Each task includes:
 | **Risks** | Per risk: Impact, Probability, Mitigation, Fallback |
 | **Testing Strategy** | Unit, Integration, E2E, Performance, Security |
 | **Definition of Done** | Code reviewed, tests passing, docs updated, security clean, performance met, deployed to staging, PO acceptance, monitoring configured |
+
+### AI Estimation Fallback Procedure
+
+**When AI estimation fails or is unavailable:**
+
+#### Failure Conditions
+
+AI estimation is considered failed when:
+- ❌ Agent unreachable (API timeout >30s)
+- ❌ API errors (rate limit exceeded, 500 errors)
+- ❌ Service outage (Claude API down)
+- ❌ Invalid response (no estimate returned)
+- ❌ Scope too ambiguous (agent returns Low confidence with no estimate)
+
+#### Escalation Path
+
+1. **Immediate (0-5 min):** Retry once with exponential backoff
+2. **Short-term (5-15 min):** Switch to backup agent if available
+3. **Medium-term (15-30 min):** Notify PM team lead via Slack
+4. **Long-term (30+ min):** Use manual estimation override (see below)
+
+#### Manual Estimation Override
+
+**Who can approve:** PM Team Lead or designated backup
+
+**Required evidence for override:**
+- Similar historical task with actual time data
+- Expert estimation from technical lead (with rationale)
+- Decomposed scope with per-component estimates
+- Documentation of estimation method used
+
+**How to record:**
+```markdown
+**Effort Estimate:**
+- AI Estimate: [FAILED - API unavailable]
+- Manual Override: X hours (approved by: [Name], date: YYYY-MM-DD)
+- Estimation Method: Historical comparison with Task T-XXX
+- Confidence: Medium (manual estimation, subject to higher variance)
+- Evidence: [Link to similar task or rationale document]
+```
+
+#### Temporary Capacity Adjustments
+
+**When manual estimation is used:**
+- Apply **1.3x multiplier** to manual estimates (30% buffer for estimation uncertainty)
+- Mark task with **"Estimation Pending"** flag in roadmap
+- Schedule **re-estimation** when AI service restored
+- Track variance post-completion to calibrate manual estimates
+
+**Example:**
+```
+Manual estimate: 6 hours
+Adjusted estimate: 6h × 1.3 = 7.8 hours
+Confidence: Medium → Low (due to estimation method)
+Re-estimation scheduled: [Date when AI available]
+```
+
+#### Confidence Flag Requirements
+
+**Align with rationalization table:**
+- ✅ Manual estimates MUST be marked with confidence level
+- ✅ Include rationale for estimation method
+- ✅ Link to historical data or expert judgment
+- ✅ Document who approved and when
+- ❌ NEVER mark manual estimates as "High" confidence
+- ❌ NEVER skip variance tracking for manual estimates
 
 ## Common Violations
 
