@@ -157,7 +157,7 @@ If you catch yourself doing any of these, **STOP and ask the user**:
    - Quick review, minimal adjustments
    - Example: 4h AI → 4.8h adjusted → 5.3h calendar
 
-2. **"1.5x - Standard validation (50% overhead)"** ← RECOMENDADO
+2. **"1.5x - Standard validation (50% overhead)"** ← RECOMMENDED
    - Normal review process with some adjustments
    - Re-run tests after changes
    - Standard manual QA
@@ -224,6 +224,8 @@ After completing tasks, track actual multipliers:
 
 ## Velocity Calibration (Lerian Standard)
 
+**See [shared-patterns/ai-agent-baseline.md](../shared-patterns/ai-agent-baseline.md) for baseline definition.**
+
 **Baseline:** AI Agent via ring:dev-cycle
 **Capacity:** 90% (hardcoded)
 **Multiplier:** User-defined (human validation overhead)
@@ -245,21 +247,9 @@ Where:
 
 ### Capacity Utilization: 90% (Fixed)
 
-**Why 90%?**
-AI Agent via ring:dev-cycle has minimal but real overhead:
+**See [shared-patterns/ai-agent-baseline.md](../shared-patterns/ai-agent-baseline.md#capacity-90-fixed) for detailed capacity breakdown.**
 
-| Overhead Type | Impact |
-|---------------|--------|
-| API rate limits and latency | ~4% |
-| Context loading (files, docs) | ~2% |
-| Tool execution (compile, test) | ~3% |
-| Error recovery (retry failed commands) | ~1% |
-| **Total Overhead** | **~10%** |
-| **Effective Capacity** | **90%** |
-
-**Contrast with human capacity:**
-- Human developer: ~75% (25% lost to meetings, context switching, breaks)
-- AI Agent: 90% (10% lost to technical overhead)
+**Summary:** AI Agent has 90% capacity (10% overhead from API limits, context loading, tool execution).
 
 ### Multiplier: Human Validation Overhead
 
@@ -298,8 +288,8 @@ Step 4: Convert to Days
 Calendar Days: 7.5h ÷ 8h/day = 0.94 developer-days
 
 Step 5: Account for Team Size
-With 1 dev: 0.94 ÷ 1 = 0.94 calendar days ≈ 1 dia
-With 2 devs: 0.94 ÷ 2 = 0.47 calendar days ≈ 0.5 dia (4 horas)
+With 1 dev: 0.94 ÷ 1 = 0.94 calendar days ≈ 1 day
+With 2 devs: 0.94 ÷ 2 = 0.47 calendar days ≈ 0.5 day (4 hours)
 ```
 
 **Breakdown of 7.5h total:**
