@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/ring-banner.png" alt="Ring by Lerian" width="100%" />
+</p>
+
 # 💍 The Ring - Skills Library for AI Agents
 
 **Proven engineering practices, enforced through skills.**

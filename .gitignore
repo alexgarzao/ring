@@ -30,4 +30,6 @@ scripts/codereview/bin/
 scripts/codereview/coverage.*
 scripts/codereview/*-test
 
+.codegraph/
+
 node_modules/
