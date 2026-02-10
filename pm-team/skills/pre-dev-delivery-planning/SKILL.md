@@ -239,7 +239,7 @@ calendar_days = calendar_hours ÷ 8 ÷ team_size
 
 Where:
 - ai_estimate = from tasks.md (AI-agent-hours)
-- multiplier = human validation overhead (typically 1.2x - 2.0x)
+- multiplier = human validation overhead (typically 1.2x - 2.5x)
 - 0.90 = capacity utilization (90%)
 - 8 = hours per working day
 - team_size = number of developers
