@@ -60,7 +60,7 @@ Implementation details (file paths, code examples), step-by-step instructions (t
 | Large (L) | 8-16h | 1-2 weeks | Multiple components |
 | XL (>16h) | BREAK IT DOWN | Too large | Not atomic |
 
-*Calendar duration assumes 1.5x multiplier (standard validation) and 1 developer
+*Calendar duration assumes 1.5x multiplier (standard validation), 90% capacity, and 1 developer
 
 ### Value Delivery Rules
 - **Foundation**: Enables other work (database setup, core services)
