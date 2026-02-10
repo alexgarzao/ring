@@ -265,7 +265,11 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 ---
 
-## Anti-Rationalization Table
+## Standards Compliance Report
+
+**MANDATORY:** Every nil-safety review MUST produce a Standards Compliance Report as part of its output.
+
+### Anti-Rationalization Table
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
 
