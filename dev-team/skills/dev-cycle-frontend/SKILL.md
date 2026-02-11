@@ -14,7 +14,7 @@ prerequisite: |
   - Tasks file exists with structured subtasks
   - Not already in a specific gate skill execution
 
-NOT_skip_when: |
+skip_when: |
   - "Task is simple" → Simple ≠ risk-free. Execute gates.
   - "Tests already pass" → Tests ≠ review. Different concerns.
   - "Backend already tested this" → Frontend has different quality concerns.
@@ -164,8 +164,14 @@ This is not negotiable:
 
 Before any gate execution, detect the project's UI library configuration:
 
-```bash
-grep -q "@lerianstudio/sindarian-ui" package.json && echo "sindarian-ui" || echo "fallback-only"
+```text
+Read tool: package.json
+
+Parse the JSON content:
+  - If "dependencies" or "devDependencies" contains "@lerianstudio/sindarian-ui"
+    → ui_library_mode = "sindarian-ui"
+  - Otherwise
+    → ui_library_mode = "fallback-only"
 ```
 
 Store result in state file under `ui_library_mode`.

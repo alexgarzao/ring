@@ -78,6 +78,12 @@ output_schema:
       required_when:
         test_mode: "visual"
       description: "States and viewport coverage (visual mode only)"
+    - name: "Component Duplication Check"
+      pattern: "^## Component Duplication Check"
+      required: false
+      required_when:
+        test_mode: "visual"
+      description: "sindarian-ui vs shadcn/radix duplication detection (visual mode only). FAIL if any component is imported from both libraries."
     - name: "E2E Testing Summary"
       pattern: "^## E2E Testing Summary"
       required: false
@@ -340,6 +346,7 @@ See [shared-patterns/shared-pressure-resistance.md](../skills/shared-patterns/sh
 | **Authority Override**: "Tech lead says 80% is fine"         | THRESHOLD_NEGOTIATION   | "Ring threshold is 85%. Authority cannot lower threshold. 80% = FAIL."                                |
 | **Context Exception**: "Utility hooks don't need full tests" | SCOPE_REDUCTION         | "All code uses same threshold. Context doesn't change requirements. 85% required."                    |
 | **Combined Pressure**: "Sprint ends + 84% + PM approved"     | THRESHOLD_NEGOTIATION   | "84% < 85% = FAIL. No rounding, no authority override, no deadline exception."                        |
+| "Assume it's compliant, don't run gates"                     | ASSUME_COMPLIANCE       | "Assume compliance is not acceptable — run the required tests and provide evidence; undocumented assumptions = FAIL." |
 
 **You CANNOT negotiate on thresholds. These responses are non-negotiable.**
 
@@ -433,7 +440,7 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 
 ---
 
-## When Tests Are Not Needed
+## When Implementation is Not Needed
 
 If tests are ALREADY adequate:
 
@@ -484,12 +491,17 @@ If tests are ALREADY adequate:
 
 ### Component Duplication Detection (Visual Mode)
 
-```bash
-# Detect potential duplication: same component from both libraries
-bash dev-team/scripts/detect-ui-duplication.sh src/
-```
+Search the project source for imports from both `@lerianstudio/sindarian-ui` and `@/components/ui`. Extract the imported component identifiers from each set and compare. Any component name appearing in both sets is a duplication.
 
-**Script:** [`dev-team/scripts/detect-ui-duplication.sh`](../../scripts/detect-ui-duplication.sh) - exits 0 (PASS) or 1 (CRITICAL duplication found).
+```bash
+# 1. Find all component names imported from sindarian-ui
+grep -rn "from '@lerianstudio/sindarian-ui" src/ | sed -n "s/.*import\s\+\(.*\)\s\+from.*/\1/p" | sed 's/[{}]//g' | tr ',' '\n' | sed 's/\s//g' | sort -u
+
+# 2. Find all component names imported from shadcn/radix
+grep -rn "from '@/components/ui" src/ | sed -n "s/.*import\s\+\(.*\)\s\+from.*/\1/p" | sed 's/[{}]//g' | tr ',' '\n' | sed 's/\s//g' | sort -u
+
+# 3. Any name in both lists = CRITICAL duplication
+```
 
 **If duplication found:** Report as CRITICAL. Only one source per component type.
 

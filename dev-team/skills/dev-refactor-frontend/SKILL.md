@@ -21,11 +21,11 @@ related:
   complementary: [ring:dev-refactor, ring:dev-cycle-frontend, ring:using-dev-team]
 
 input_schema:
-  required:
+  required: []
+  optional:
     - name: project_path
       type: string
       description: "Path to frontend project root (default: current directory)"
-  optional:
     - name: prompt
       type: string
       description: "Direct instruction for refactoring focus"

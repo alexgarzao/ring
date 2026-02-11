@@ -15,7 +15,7 @@ trigger: |
   - MANDATORY for all frontend development tasks
   - Catches visual regressions before review
 
-NOT_skip_when: |
+skip_when: |
   - "Snapshots are brittle" - Brittle snapshots catch unintended changes.
   - "We test visually in the browser" - Manual testing doesn't catch regressions.
   - "Only default state matters" - Users see error, loading, and empty states too.
@@ -102,6 +102,11 @@ examples:
       |-----------|--------|-----------|------------|--------|
       | TransactionList | 4/4 | 3/3 | Long text | PASS |
 
+      ## Component Duplication Check
+      | Component in components/ui/ | In sindarian-ui? | Status |
+      |-----------------------------|------------------|--------|
+      | _No duplications found_ | - | PASS |
+
       ## Handoff to Next Gate
       - Ready for Gate 5 (E2E Testing): YES
 ---
@@ -182,6 +187,7 @@ Task tool:
     **Output Sections Required:**
     - ## Visual Testing Summary
     - ## Snapshot Coverage
+    - ## Component Duplication Check
     - ## Handoff to Next Gate
 ```
 
