@@ -53,6 +53,9 @@ output_schema:
     - name: "Snapshot Coverage"
       pattern: "^## Snapshot Coverage"
       required: true
+    - name: "Component Duplication Check"
+      pattern: "^## Component Duplication Check"
+      required: true
     - name: "Handoff to Next Gate"
       pattern: "^## Handoff to Next Gate"
       required: true

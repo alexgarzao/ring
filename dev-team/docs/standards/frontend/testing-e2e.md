@@ -290,7 +290,7 @@ for (const viewport of VIEWPORTS) {
 
 ## Selector Strategy (MANDATORY)
 
-**HARD GATE:** All E2E selectors MUST use `data-testid` or semantic roles. CSS class selectors are FORBIDDEN.
+**HARD GATE:** All E2E selectors MUST use `data-testid` or semantic roles. CSS class selectors are FORBIDDEN except for layout containers where no semantic role applies.
 
 ### Selector Priority
 
@@ -391,7 +391,7 @@ await page.locator('text=Submit').click(); // Use getByRole instead
 | "We only need Chromium" | Users use Firefox and Safari too. Cross-browser bugs are common. | **Test all 3 browsers** |
 | "Mobile is just a smaller screen" | Navigation, layout, and interactions change. | **Test all viewports** |
 | "Happy path is enough" | Users encounter errors. Error handling MUST be tested. | **Add error path tests** |
-| "CSS selectors are fine" | CSS classes change with refactors. Semantic selectors are stable. | **Use roles and testids** |
+| "CSS selectors are fine" | CSS classes change with refactors. Semantic selectors are stable. | **Use roles and test IDs** |
 | "Product-designer flows are just suggestions" | Flows define acceptance criteria. MUST cover all. | **Test all flows** |
 
 ---

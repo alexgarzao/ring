@@ -292,13 +292,22 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 
 **Mode-specific standards (load based on test_mode):**
 
-| Mode          | Additional Standards to Load                                                                                            |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| unit          | frontend.md only                                                                                                        |
-| accessibility | frontend.md § Accessibility                                                                                             |
-| visual        | frontend.md § Component Structure, § Styling Standards                                                                  |
-| e2e           | frontend.md § E2E Testing                                                                                               |
-| performance   | frontend.md § Performance Patterns                                                                                      |
+| Mode          | Additional Standards to Load (WebFetch)                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| unit          | frontend.md only                                                                                                         |
+| accessibility | frontend.md § Accessibility + `frontend/testing-accessibility.md`                                                        |
+| visual        | frontend.md § Component Structure, § Styling Standards + `frontend/testing-visual.md`                                    |
+| e2e           | frontend.md § E2E Testing + `frontend/testing-e2e.md`                                                                    |
+| performance   | frontend.md § Performance Patterns + `frontend/testing-performance.md`                                                   |
+
+**Mode-specific WebFetch URLs:**
+
+| Mode          | URL                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| accessibility | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-accessibility.md`     |
+| visual        | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-visual.md`            |
+| e2e           | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-e2e.md`               |
+| performance   | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-performance.md`       |
 
 WebFetch the URL above before any testing work.
 
@@ -477,10 +486,10 @@ If tests are ALREADY adequate:
 
 ```bash
 # Detect potential duplication: same component from both libraries
-grep -rn "from '@lerianstudio/sindarian-ui'" src/ | awk -F'/' '{print $NF}' | sort > /tmp/sindarian-components.txt
-grep -rn "from '@/components/ui'" src/ | awk -F'/' '{print $NF}' | sort > /tmp/shadcn-components.txt
-comm -12 /tmp/sindarian-components.txt /tmp/shadcn-components.txt
+bash dev-team/scripts/detect-ui-duplication.sh src/
 ```
+
+**Script:** [`dev-team/scripts/detect-ui-duplication.sh`](../../scripts/detect-ui-duplication.sh) - exits 0 (PASS) or 1 (CRITICAL duplication found).
 
 **If duplication found:** Report as CRITICAL. Only one source per component type.
 
