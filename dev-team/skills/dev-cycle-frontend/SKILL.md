@@ -421,6 +421,37 @@ No negotiation. No exceptions. No "special cases".
 
 **UI library mode (detected in Step 0) MUST be passed to the agent as context.**
 
+### Gate 0: Frontend TDD Policy
+
+**TDD (RED→GREEN) applies to behavioral logic. Visual/presentational components use test-after.**
+
+| Component Layer | TDD Required? | Where Tests Are Created | Rationale |
+|-----------------|---------------|-------------------------|-----------|
+| Custom hooks | YES - TDD RED→GREEN | Gate 0 (implementation) | Test defines the hook contract before code |
+| Form validation | YES - TDD RED→GREEN | Gate 0 (implementation) | Test defines validation rules before code |
+| State management | YES - TDD RED→GREEN | Gate 0 (implementation) | Test defines state transitions before code |
+| Conditional rendering | YES - TDD RED→GREEN | Gate 0 (implementation) | Test defines when elements show/hide |
+| API integration / data fetching | YES - TDD RED→GREEN | Gate 0 (implementation) | Test defines expected request/response |
+| Layout / styling | NO - test-after | Gate 4 (visual testing) | Visual output is exploratory; snapshot locks it |
+| Animations / transitions | NO - test-after | Gate 4 (visual testing) | Motion is iterative; test captures final state |
+| Static presentational components | NO - test-after | Gate 4 (visual testing) | No logic to drive with RED phase |
+
+**Rules:**
+1. **Behavioral components** in Gate 0 MUST produce TDD RED failure output before implementation
+2. **Visual/presentational components** in Gate 0 are implemented without RED phase; Gate 4 creates their snapshot tests
+3. **Mixed components** (behavior + visual): TDD for the behavioral part, test-after for the visual part
+4. Gate 3 (Unit Testing) coverage threshold (85%) still applies to ALL component types - the distinction is only about WHEN tests are written, not WHETHER
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "This hook is simple, skip TDD" | Simple hooks still need contract verification. | **TDD RED→GREEN for all hooks** |
+| "Form validation is visual" | Validation rules are logic, not presentation. | **TDD RED→GREEN for validation** |
+| "This component has onClick, skip TDD" | Event handlers contain logic. TDD for the handler behavior. | **TDD RED→GREEN for behavioral logic** |
+| "Layout needs TDD too" | Snapshot test written before layout exists is meaningless. | **Test-after in Gate 4** |
+| "Skip all tests, Gate 4 handles it" | Gate 4 covers visual snapshots only. Behavioral tests are Gate 0+3. | **TDD for behavior in Gate 0** |
+
 ### Gate 7: Code Review Adaptation (5 Reviewers)
 
 For the frontend cycle, the 5 parallel reviewers are:
@@ -454,9 +485,9 @@ Task 5: { subagent_type: "ring:frontend-engineer", prompt: "REVIEW MODE: Review 
 
 | Gate | Components Required | Partial = FAIL |
 |------|---------------------|----------------|
-| 0.1 | TDD-RED: Failing test written + failure output captured | Test exists but no failure output = FAIL |
-| 0.2 | TDD-GREEN: Implementation passes test | Code exists but test fails = FAIL |
-| 0 | Both 0.1 and 0.2 complete | 0.1 done without 0.2 = FAIL |
+| 0.1 | TDD-RED: Failing test written + failure output captured (behavioral components only - see [Frontend TDD Policy](#gate-0-frontend-tdd-policy)) | Test exists but no failure output = FAIL. Visual-only components skip to 0.2 |
+| 0.2 | TDD-GREEN: Implementation passes test (behavioral) OR implementation complete (visual) | Code exists but test fails = FAIL |
+| 0 | Both 0.1 and 0.2 complete (behavioral) OR 0.2 complete (visual - snapshots deferred to Gate 4) | 0.1 done without 0.2 = FAIL |
 | 1 | Dockerfile + docker-compose/nginx + .env.example | Missing any = FAIL |
 | 2 | 0 WCAG AA violations + keyboard navigation tested + screen reader tested | Any violation = FAIL |
 | 3 | Unit test coverage >= 85% + all AC tested | 84% = FAIL |

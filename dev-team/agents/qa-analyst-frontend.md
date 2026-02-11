@@ -518,7 +518,7 @@ bash dev-team/scripts/detect-ui-duplication.sh src/
 | Mocking             | MSW for API calls, vi.mock() for modules                 |
 | File naming         | `*.test.tsx` or `*.test.ts`                              |
 | Test structure      | describe/it with AAA pattern                             |
-| TDD RED phase       | MANDATORY: test MUST fail before implementation          |
+| TDD RED phase       | MANDATORY for behavioral components (hooks, forms, state, conditional rendering, API). Visual-only components skip RED phase → snapshots in Gate 4 |
 
 ### Test Quality Gate (MANDATORY - Gate 3 Exit)
 
@@ -531,7 +531,7 @@ bash dev-team/scripts/detect-ui-duplication.sh src/
 | **Shared state**         | Check `beforeAll`/`afterAll` for state mutation     | No shared mutable state | Isolate tests with fixtures    |
 | **Naming convention**    | Pattern: `describe('Component')/it('should...')`    | 100% compliant          | Rename non-compliant tests     |
 | **Edge cases**           | Count edge case tests per AC                        | >= 2 edge cases per AC  | Add missing edge cases         |
-| **TDD evidence**         | Failure output captured before GREEN                | RED before GREEN        | Document RED phase             |
+| **TDD evidence**         | Failure output captured before GREEN (behavioral components only) | RED before GREEN for hooks, forms, state, conditional rendering, API | Document RED phase or mark "visual-only → Gate 4" |
 | **Test isolation**       | No execution order dependency                       | Tests pass in any order | Remove inter-test dependencies |
 | **User events**          | Uses `@testing-library/user-event`, not `fireEvent` | 100% compliant          | Replace fireEvent with userEvent |
 
