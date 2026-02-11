@@ -3096,3 +3096,61 @@ Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns
 
 ### State File Location
 `docs/ring:dev-cycle/current-cycle.json` (feature) or `docs/ring:dev-refactor/current-cycle.json` (refactor)
+
+---
+
+## Frontend Handoff
+
+When the backend dev cycle completes, it produces a handoff file for the frontend dev cycle (`ring:dev-cycle-frontend`). This enables the frontend cycle to verify E2E tests exercise the correct API endpoints and use the right type contracts.
+
+### Handoff File
+
+**Path:** `docs/ring:dev-cycle/handoff-frontend.json`
+
+**Generated:** Automatically after Gate 9 (Validation) passes for all tasks.
+
+### Handoff Schema
+
+```json
+{
+  "cycle_id": "string",
+  "generated_at": "ISO-8601",
+  "endpoints": [
+    {
+      "method": "GET|POST|PUT|PATCH|DELETE",
+      "path": "/api/v1/resource",
+      "request_schema": "object or null",
+      "response_schema": "object",
+      "status_codes": [200, 400, 404, 500],
+      "auth_required": true
+    }
+  ],
+  "types_exported": [
+    {
+      "name": "ResourceDTO",
+      "file": "src/types/resource.ts",
+      "fields": ["id", "name", "createdAt"]
+    }
+  ],
+  "contracts": [
+    {
+      "consumer": "frontend",
+      "provider": "backend",
+      "endpoint": "/api/v1/resource",
+      "format": "JSON"
+    }
+  ]
+}
+```
+
+### How Frontend Cycle Uses the Handoff
+
+| Frontend Gate | Handoff Usage |
+|---------------|---------------|
+| Gate 0 (Implementation) | Import types from `types_exported`, call `endpoints` |
+| Gate 5 (E2E Testing) | Verify all `endpoints` are exercised in E2E tests |
+| Gate 6 (Performance) | Measure response times against `endpoints` |
+
+### When No Handoff Exists
+
+If `docs/ring:dev-cycle/handoff-frontend.json` does not exist, the frontend cycle proceeds without it. The frontend engineer defines API contracts inline based on `PROJECT_RULES.md` or user input. This is common for greenfield frontend-only projects.

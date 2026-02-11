@@ -10,11 +10,15 @@ trigger: |
   - Tasks loaded at initialization
   - Ready to write code
 
-NOT_skip_when: |
-  - "Code already exists" → DELETE it. TDD is test-first.
-  - "Simple feature" → Simple ≠ exempt. TDD for all.
-  - "Time pressure" → TDD saves time. No shortcuts.
-  - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
+tdd_policy:
+  anti_patterns: |
+    - "Code already exists" → DELETE it. TDD is test-first.
+    - "Simple feature" → Simple ≠ exempt. TDD for all behavioral components.
+    - "Time pressure" → TDD saves time. No shortcuts.
+    - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
+  exempt_when: |
+    - Visual/presentational components (layout, styling, animations, static display) are exempt from TDD-RED and deferred to Gate 4 snapshots.
+    - Behavioral components (hooks, forms, state, conditional rendering, API) still require TDD.
 
 sequence:
   before: [ring:dev-devops]
@@ -266,6 +270,15 @@ Task:
     ## Ring Standards Reference
     For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+
+    ## Frontend TDD Policy (React/Next.js only)
+    If the component is purely visual/presentational (layout, styling, animations,
+    static display with no behavioral logic), TDD-RED is NOT required.
+    Instead, implement the component directly and defer testing to Gate 4 (Visual
+    Testing / Snapshots). Report: "Visual-only component → TDD-RED skipped, Gate 4 snapshots apply."
+
+    Behavioral components (custom hooks, form validation, state management,
+    conditional rendering, API integration) MUST follow TDD-RED below.
 
     ## Your Task
     1. Write a test that captures the expected behavior
