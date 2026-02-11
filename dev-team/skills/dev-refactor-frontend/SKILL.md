@@ -64,7 +64,20 @@ Analyzes existing frontend codebase against Ring/Lerian standards and generates 
 
 ## Standards Loading (MANDATORY)
 
-**Before any step execution, you MUST load Ring standards:**
+**Before any step execution, you MUST load Ring standards.**
+
+### Standards Source Resolution
+
+```text
+if standards_path is provided:
+  → Read tool: {standards_path}
+  → If file not found or empty: STOP and report blocker
+  → Use loaded content as frontend standards
+else:
+  → WebFetch the default Ring standards (see URLs below)
+```
+
+**Default URLs (used when `standards_path` is not provided):**
 
 <fetch_required>
 https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
@@ -74,9 +87,9 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 Fetch URLs above and extract: Agent Modification Verification requirements, Anti-Rationalization Tables requirements, Critical Rules, and Frontend Standards.
 
 <block_condition>
-- WebFetch fails or returns empty
+- standards_path provided but file not found or empty
+- standards_path not provided AND WebFetch fails or returns empty
 - CLAUDE.md not accessible
-- frontend.md not accessible
 </block_condition>
 
 If any condition is true, STOP and report blocker. Cannot proceed without Ring standards.
@@ -202,6 +215,27 @@ TodoWrite:
 ```
 
 **This is NON-NEGOTIABLE. Do not skip creating the todo list.**
+
+---
+
+## Input Flags: Early Exit Check
+
+```text
+if dry_run == true:
+  → Execute Step 1 (Validate PROJECT_RULES.md) and Step 1b (Detect Frontend Stack)
+  → Output dry-run summary:
+      - Project path: {project_path or current directory}
+      - Standards source: {standards_path or "Ring defaults via WebFetch"}
+      - Frontend stack detected: {React/Next.js version}
+      - UI library mode: {sindarian-ui / fallback-only}
+      - Agents that would be dispatched: {list of 5-7 agents}
+      - Conditional agents: {BFF if detected, UI Engineer if ux-criteria.md exists}
+      - Artifact path: docs/ring:dev-refactor-frontend/{timestamp}/
+  → Mark all remaining todos as `completed` (skipped - dry run)
+  → TERMINATE with "Dry run complete. Re-run without --dry-run to execute."
+```
+
+**If `dry_run` is not true, continue to next section.**
 
 ---
 
@@ -1051,6 +1085,22 @@ Before proceeding to Step 7, verify:
 
 **TodoWrite:** Mark "Get user approval" as `in_progress`
 
+### Auto-Resolution via Input Flags
+
+```text
+if analyze_only == true:
+  → Auto-select "Cancel" (analysis complete, skip execution)
+  → Output: "analyze_only=true — analysis artifacts saved, skipping ring:dev-cycle-frontend."
+  → Skip to Step 9 (Save Artifacts), then TERMINATE after Step 9.
+
+if critical_only == true:
+  → Auto-select "Critical only" (no user prompt needed)
+  → Output: "critical_only=true — auto-selecting Critical/High tasks only."
+  → Continue to Step 9, then Step 10 with Critical/High tasks.
+```
+
+### Interactive Approval (when no auto-resolution flags are set)
+
 <user_decision>
 MUST wait for explicit user response before proceeding.
 Options: Approve all | Critical only | Cancel
@@ -1070,7 +1120,7 @@ AskUserQuestion:
           description: "Keep analysis, skip execution"
 ```
 
-CANNOT proceed without explicit user selection.
+CANNOT proceed without explicit user selection (or an auto-resolution flag).
 
 **TodoWrite:** Mark "Get user approval" as `completed`
 
@@ -1103,7 +1153,26 @@ docs/ring:dev-refactor-frontend/{timestamp}/
 
 **TodoWrite:** Mark "Handoff to ring:dev-cycle-frontend" as `in_progress`
 
-**If user approved, use Skill tool to invoke ring:dev-cycle-frontend directly:**
+### Skip Conditions
+
+```text
+if analyze_only == true:
+  → Output: "analyze_only=true — skipping handoff. Artifacts saved at docs/ring:dev-refactor-frontend/{timestamp}/."
+  → Mark todo as `completed`
+  → TERMINATE.
+
+if dry_run == true:
+  → This step is unreachable (dry_run exits after Step 1b).
+
+if user selected "Cancel" in Step 8:
+  → Output: "User cancelled execution. Artifacts saved at docs/ring:dev-refactor-frontend/{timestamp}/."
+  → Mark todo as `completed`
+  → TERMINATE.
+```
+
+### Execution (when user approved or critical_only resolved)
+
+**Use Skill tool to invoke ring:dev-cycle-frontend directly:**
 
 ```yaml
 Skill tool:
@@ -1131,15 +1200,16 @@ Where `{timestamp}` format is `YYYY-MM-DDTHH:MM:SS`. Use the same timestamp acro
 | "ring:dev-cycle-frontend will auto-discover tasks" | Explicit path ensures correct file is used | **Pass explicit tasks path** |
 | "User approved, I can skip ring:dev-cycle-frontend" | Approval = permission to proceed, not skip execution | **Invoke Skill tool** |
 | "Tasks are saved, job is done" | Saved tasks without execution = incomplete workflow | **Invoke Skill tool** |
+| "analyze_only was not set but I'll skip anyway" | Only analyze_only, dry_run, or user "Cancel" can skip this step | **Invoke Skill tool** |
 
-**HARD GATE: You CANNOT complete ring:dev-refactor-frontend without invoking `Skill tool: ring:dev-cycle-frontend`.**
+**HARD GATE: When execution is approved (user selected "Approve all" or "Critical only", or critical_only auto-resolved), you CANNOT complete ring:dev-refactor-frontend without invoking `Skill tool: ring:dev-cycle-frontend`.**
 
-If user approved execution, you MUST:
+If execution is approved, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle-frontend`
 2. Pass tasks file path: `docs/ring:dev-refactor-frontend/{timestamp}/tasks.md`
 3. Wait for ring:dev-cycle-frontend to complete all 9 gates
 
-**Skipping this step = SKILL FAILURE.**
+**Skipping this step when execution is approved = SKILL FAILURE.**
 
 ring:dev-cycle-frontend executes each REFACTOR-XXX task through the 9-gate frontend process.
 
