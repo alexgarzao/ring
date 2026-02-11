@@ -1,15 +1,16 @@
 ---
 name: ring:using-dev-team
 description: |
-  8 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
-  design, UI implementation, QA, and SRE. Dispatch when you need deep technology expertise.
+  9 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
+  design, UI implementation, QA (backend + frontend), and SRE. Dispatch when you need deep technology expertise.
 
 trigger: |
   - Need deep expertise for specific technology (Go, TypeScript)
   - Building infrastructure/CI-CD → ring:devops-engineer
   - Frontend with design focus → ring:frontend-designer
   - Frontend from product-designer specs → ring:ui-engineer
-  - Test strategy needed → ring:qa-analyst
+  - Backend test strategy → ring:qa-analyst
+  - Frontend test strategy → ring:qa-analyst-frontend
   - Reliability/monitoring → ring:sre
 
 skip_when: |
@@ -23,7 +24,7 @@ related:
 
 # Using Ring Developer Specialists
 
-The ring-dev-team plugin provides 8 specialized developer agents. Use them via `Task tool with subagent_type:`.
+The ring-dev-team plugin provides 9 specialized developer agents. Use them via `Task tool with subagent_type:`.
 
 See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
 
@@ -62,7 +63,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 **Self-sufficiency bias check:** If you're tempted to implement directly, ask:
 
-1. Is there a specialist for this? (Check the 10 specialists below)
+1. Is there a specialist for this? (Check the 9 specialists below)
 2. Would a specialist follow standards I might miss?
 3. Am I avoiding dispatch because it feels like "overhead"?
 
@@ -136,7 +137,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 
 ---
 
-## 8 Developer Specialists
+## 9 Developer Specialists
 
 <dispatch_required agent="{specialist}">
 Use Task tool to dispatch appropriate specialist based on technology need.
@@ -150,7 +151,8 @@ Use Task tool to dispatch appropriate specialist based on technology need.
 | **`ring:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration                         |
 | **`ring:frontend-designer`**                | Bold typography, color systems, animations, unexpected layouts, textures/gradients                   | Landing pages, portfolios, distinctive dashboards, design systems                     |
 | **`ring:ui-engineer`**                      | Wireframe-to-code, Design System compliance, UX criteria satisfaction, UI states implementation      | Implementing from product-designer specs (ux-criteria.md, user-flows.md, wireframes/) |
-| **`ring:qa-analyst`**                       | Test strategy, Cypress/Playwright E2E, coverage analysis, API testing, performance                   | Test planning, E2E suites, coverage gaps, quality gates                               |
+| **`ring:qa-analyst`**                       | Test strategy, coverage analysis, API testing, fuzz/property/integration/chaos testing (Go)          | Backend test planning, coverage gaps, quality gates (Go-focused)                      |
+| **`ring:qa-analyst-frontend`**              | Vitest, Testing Library, axe-core, Playwright, Lighthouse, Core Web Vitals, snapshot testing         | Frontend test planning, accessibility, visual, E2E, performance testing               |
 | **`ring:sre`**                              | Structured logging, tracing, health checks, observability                                            | Logging validation, tracing setup, health endpoint verification                       |
 
 **Dispatch template:**
@@ -232,11 +234,11 @@ Remember:
 
 ## Available in This Plugin
 
-**Agents:** See "7 Developer Specialists" table above.
+**Agents:** See "9 Developer Specialists" table above.
 
-**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate workflow), `ring:dev-refactor` (codebase analysis)
+**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate backend workflow), `ring:dev-cycle-frontend` (9-gate frontend workflow), `ring:dev-refactor` (codebase analysis)
 
-**Commands:** `/ring:dev-cycle` (execute tasks), `/ring:dev-refactor` (analyze codebase)
+**Commands:** `/ring:dev-cycle` (backend tasks), `/ring:dev-cycle-frontend` (frontend tasks), `/ring:dev-refactor` (analyze codebase), `/ring:dev-status`, `/ring:dev-cancel`, `/ring:dev-report`
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-dev-team plugin.
 
@@ -265,15 +267,34 @@ All workflows converge to the 10-gate development cycle:
 
 **Gate 0 Agent Selection for Frontend:**
 
-- If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ui-engineer`
-- Otherwise → use `frontend-bff-engineer-typescript`
+- If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ring:ui-engineer`
+- Otherwise → use `ring:frontend-bff-engineer-typescript`
 
-**Gate 0 Agent Selection for Frontend:**
+**Key Principle:** Backend follows the 10-gate process. Frontend follows the 9-gate process.
 
-- If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ui-engineer`
-- Otherwise → use `frontend-bff-engineer-typescript`
+### Frontend Development Cycle (9 Gates)
 
-**Key Principle:** All development follows the same 10-gate process.
+**Use `/ring:dev-cycle-frontend` for frontend-specific development:**
+
+| Gate                      | Focus                                | Agent(s)                        |
+| ------------------------- | ------------------------------------ | ------------------------------- |
+| **0: Implementation**     | TDD: RED→GREEN→REFACTOR              | `ring:frontend-engineer`, `ring:ui-engineer`, `ring:frontend-bff-engineer-typescript` |
+| **1: DevOps**             | Dockerfile, docker-compose, .env     | `ring:devops-engineer`          |
+| **2: Accessibility**      | WCAG 2.1 AA, axe-core, keyboard nav | `ring:qa-analyst-frontend`      |
+| **3: Unit Testing**       | Vitest + Testing Library, ≥85%       | `ring:qa-analyst-frontend`      |
+| **4: Visual Testing**     | Snapshots, states, responsive        | `ring:qa-analyst-frontend`      |
+| **5: E2E Testing**        | Playwright, cross-browser, user flows| `ring:qa-analyst-frontend`      |
+| **6: Performance**        | Core Web Vitals, Lighthouse > 90     | `ring:qa-analyst-frontend`      |
+| **7: Review**             | 5 reviewers IN PARALLEL              | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:frontend-engineer` |
+| **8: Validation**         | User approval: APPROVED/REJECTED     | User decision                   |
+
+**Backend → Frontend Handoff:**
+When backend dev cycle completes, it produces a handoff with endpoints, types, and contracts. The frontend dev cycle consumes this handoff to verify E2E tests exercise the correct API endpoints.
+
+| Step | Command | Output |
+|------|---------|--------|
+| 1. Backend | `/ring:dev-cycle tasks.md` | Backend code + handoff (endpoints, contracts) |
+| 2. Frontend | `/ring:dev-cycle-frontend tasks-frontend.md` | Frontend code consuming backend endpoints |
 
 ---
 
