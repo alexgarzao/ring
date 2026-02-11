@@ -146,12 +146,60 @@ https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards
 
 ---
 
+## Step 0: Detect External Dependencies (Auto-Detection)
+
+**MANDATORY:** When `external_dependencies` is empty or not provided, scan the codebase to detect them automatically before validation.
+
+```text
+if external_dependencies is empty or not provided:
+
+  detected_dependencies = []
+
+  1. Scan docker-compose.yml / docker-compose.yaml for service images:
+     - Grep tool: pattern "postgres" in docker-compose* files → add "postgres"
+     - Grep tool: pattern "mongo" in docker-compose* files → add "mongodb"
+     - Grep tool: pattern "valkey" in docker-compose* files → add "valkey"
+     - Grep tool: pattern "redis" in docker-compose* files → add "redis"
+     - Grep tool: pattern "rabbitmq" in docker-compose* files → add "rabbitmq"
+
+  2. Scan dependency manifests:
+     if language == "go":
+       - Grep tool: pattern "github.com/lib/pq" in go.mod → add "postgres"
+       - Grep tool: pattern "github.com/jackc/pgx" in go.mod → add "postgres"
+       - Grep tool: pattern "go.mongodb.org/mongo-driver" in go.mod → add "mongodb"
+       - Grep tool: pattern "github.com/redis/go-redis" in go.mod → add "redis"
+       - Grep tool: pattern "github.com/valkey-io/valkey-go" in go.mod → add "valkey"
+       - Grep tool: pattern "github.com/rabbitmq/amqp091-go" in go.mod → add "rabbitmq"
+
+     if language == "typescript":
+       - Grep tool: pattern "\"pg\"" in package.json → add "postgres"
+       - Grep tool: pattern "@prisma/client" in package.json → add "postgres"
+       - Grep tool: pattern "\"mongodb\"" in package.json → add "mongodb"
+       - Grep tool: pattern "\"mongoose\"" in package.json → add "mongodb"
+       - Grep tool: pattern "\"redis\"" in package.json → add "redis"
+       - Grep tool: pattern "\"ioredis\"" in package.json → add "redis"
+       - Grep tool: pattern "@valkey" in package.json → add "valkey"
+       - Grep tool: pattern "\"amqplib\"" in package.json → add "rabbitmq"
+       - Grep tool: pattern "amqp-connection-manager" in package.json → add "rabbitmq"
+
+  3. Deduplicate detected_dependencies
+  4. Set external_dependencies = detected_dependencies
+
+  Log: "Auto-detected external dependencies: [detected_dependencies]"
+```
+
+<auto_detect_reason>
+PM team task files often omit external_dependencies. If the codebase uses postgres, mongodb, valkey, or rabbitmq, these are external dependencies that MUST have chaos tests. Auto-detection prevents silent skips.
+</auto_detect_reason>
+
+---
+
 ## Step 1: Validate Input
 
 ```text
 REQUIRED INPUT:
 - unit_id: [task/subtask being tested]
-- external_dependencies: [postgres, redis, rabbitmq, etc.]
+- external_dependencies: [postgres, mongodb, valkey, redis, rabbitmq, etc.] (from input OR auto-detected in Step 0)
 - language: [go|typescript]
 
 OPTIONAL INPUT:
@@ -160,8 +208,8 @@ OPTIONAL INPUT:
 if any REQUIRED input is missing:
   → STOP and report: "Missing required input: [field]"
 
-if external_dependencies is empty:
-  → STOP and report: "No external dependencies found - chaos testing requires dependencies"
+if external_dependencies is empty (AFTER auto-detection in Step 0):
+  → STOP and report: "No external dependencies found after codebase scan - chaos testing requires dependencies"
 ```
 
 ## Step 2: Dispatch QA Analyst Agent (Chaos Mode)
@@ -234,6 +282,8 @@ if "Status: FAIL" in output:
 | Dependency | Required Scenarios |
 |------------|-------------------|
 | PostgreSQL | Connection Loss, High Latency, Network Partition |
+| MongoDB | Connection Loss, High Latency, Network Partition |
+| Valkey | Connection Loss, High Latency, Timeout |
 | Redis | Connection Loss, High Latency, Timeout |
 | RabbitMQ | Connection Loss, Network Partition, Slow Consumer |
 | HTTP APIs | Timeout, 5xx Errors, Connection Refused |

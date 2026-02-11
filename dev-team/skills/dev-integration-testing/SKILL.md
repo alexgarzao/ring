@@ -153,6 +153,54 @@ Ensure every integration scenario has at least one **integration test** proving 
 
 ---
 
+## Step 0: Detect External Dependencies (Auto-Detection)
+
+**MANDATORY:** When `external_dependencies` is empty or not provided, scan the codebase to detect them automatically before validation.
+
+```text
+if external_dependencies is empty or not provided:
+
+  detected_dependencies = []
+
+  1. Scan docker-compose.yml / docker-compose.yaml for service images:
+     - Grep tool: pattern "postgres" in docker-compose* files → add "postgres"
+     - Grep tool: pattern "mongo" in docker-compose* files → add "mongodb"
+     - Grep tool: pattern "valkey" in docker-compose* files → add "valkey"
+     - Grep tool: pattern "redis" in docker-compose* files → add "redis"
+     - Grep tool: pattern "rabbitmq" in docker-compose* files → add "rabbitmq"
+
+  2. Scan dependency manifests:
+     if language == "go":
+       - Grep tool: pattern "github.com/lib/pq" in go.mod → add "postgres"
+       - Grep tool: pattern "github.com/jackc/pgx" in go.mod → add "postgres"
+       - Grep tool: pattern "go.mongodb.org/mongo-driver" in go.mod → add "mongodb"
+       - Grep tool: pattern "github.com/redis/go-redis" in go.mod → add "redis"
+       - Grep tool: pattern "github.com/valkey-io/valkey-go" in go.mod → add "valkey"
+       - Grep tool: pattern "github.com/rabbitmq/amqp091-go" in go.mod → add "rabbitmq"
+
+     if language == "typescript":
+       - Grep tool: pattern "\"pg\"" in package.json → add "postgres"
+       - Grep tool: pattern "@prisma/client" in package.json → add "postgres"
+       - Grep tool: pattern "\"mongodb\"" in package.json → add "mongodb"
+       - Grep tool: pattern "\"mongoose\"" in package.json → add "mongodb"
+       - Grep tool: pattern "\"redis\"" in package.json → add "redis"
+       - Grep tool: pattern "\"ioredis\"" in package.json → add "redis"
+       - Grep tool: pattern "@valkey" in package.json → add "valkey"
+       - Grep tool: pattern "\"amqplib\"" in package.json → add "rabbitmq"
+       - Grep tool: pattern "amqp-connection-manager" in package.json → add "rabbitmq"
+
+  3. Deduplicate detected_dependencies
+  4. Set external_dependencies = detected_dependencies
+
+  Log: "Auto-detected external dependencies: [detected_dependencies]"
+```
+
+<auto_detect_reason>
+PM team task files often omit external_dependencies. If the codebase uses postgres, mongodb, valkey, or rabbitmq, these are external dependencies that MUST have integration tests. Auto-detection prevents silent skips.
+</auto_detect_reason>
+
+---
+
 ## Step 1: Validate Input
 
 ```text
@@ -164,7 +212,7 @@ REQUIRED INPUT (from ring:dev-cycle orchestrator):
 
 OPTIONAL INPUT (determines if Gate 6 runs or skips):
 - integration_scenarios: [list of scenarios] - if provided and non-empty, Gate 6 runs
-- external_dependencies: [list of deps] - if provided and non-empty, Gate 6 runs
+- external_dependencies: [list of deps] (from input OR auto-detected in Step 0) - if non-empty, Gate 6 runs
 - gate3_handoff: [full Gate 3 output]
 - implementation_files: [files from Gate 0]
 
@@ -173,8 +221,8 @@ EXECUTION LOGIC:
    -> STOP and report: "Missing required input: [field]"
    -> Return to orchestrator with error
 
-2. if integration_scenarios is empty AND external_dependencies is empty:
-   -> Gate 6 SKIP (document reason: "No integration scenarios or external dependencies")
+2. if integration_scenarios is empty AND external_dependencies is empty (AFTER auto-detection in Step 0):
+   -> Gate 6 SKIP (document reason: "No integration scenarios or external dependencies found after codebase scan")
    -> Return skip result with status: "skipped"
 
 3. Otherwise:
@@ -186,7 +234,7 @@ EXECUTION LOGIC:
 **Decision Tree:**
 
 ```text
-1. Task has external_dependencies list?
+1. Task has external_dependencies list (from input or auto-detected)?
    |
    +-- YES -> Gate 6 REQUIRED
    |
@@ -209,7 +257,7 @@ EXECUTION LOGIC:
 ```text
 Return:
   status: SKIP
-  skip_reason: "No external dependencies or integration scenarios identified"
+  skip_reason: "No external dependencies (after codebase scan) or integration scenarios identified"
   ready_for_gate7: YES
 ```
 
