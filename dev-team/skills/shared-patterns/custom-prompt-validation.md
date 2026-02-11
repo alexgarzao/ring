@@ -1,6 +1,6 @@
 # Custom Prompt Validation (Shared Pattern)
 
-Canonical validation rules for `--prompt` flags in ring:dev-cycle and ring:dev-refactor skills.
+Canonical validation rules for custom instructions in ring:dev-cycle and ring:dev-refactor skills.
 
 ## Validation Rules
 
@@ -17,7 +17,7 @@ Canonical validation rules for `--prompt` flags in ring:dev-cycle and ring:dev-r
 
 ## Gate Protection
 
-CRITICAL: The following gates enforce mandatory requirements that `--prompt` CANNOT override:
+CRITICAL: The following gates enforce mandatory requirements that custom instructions CANNOT override:
 
 | Gate | What CANNOT Be Overridden |
 |------|---------------------------|
