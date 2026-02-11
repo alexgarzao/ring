@@ -549,7 +549,7 @@ mkdir -p docs/pre-dev/<feature-name>
 **Gate 7 Pass Criteria:**
 - [ ] Every task delivers user value
 - [ ] No task larger than 16 AI-agent-hours
-- [ ] All tasks have AI estimates with confidence levels (minimum: Medium/67%+)
+- [ ] All tasks have AI estimates with confidence levels (minimum: ≥67% High or ≥34% Medium with reviewer approval)
 - [ ] Dependencies are clear
 - [ ] Testing approach defined
 
