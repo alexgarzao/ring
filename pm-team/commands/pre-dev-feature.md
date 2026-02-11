@@ -488,7 +488,7 @@ Even small features benefit from quick research:
 - [ ] Parallel streams defined
 - [ ] Risk milestones flagged
 - [ ] Contingency buffer added (10-20%)
-- [ ] Formula used: ai_estimate × multiplier ÷ 0.90
+- [ ] Formula used: (ai_estimate × multiplier ÷ 0.90) ÷ 8 ÷ team_size = calendar_days
 
 ## After Completion
 

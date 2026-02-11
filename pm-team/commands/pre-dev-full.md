@@ -600,7 +600,7 @@ mkdir -p docs/pre-dev/<feature-name>
 - [ ] Parallel streams defined
 - [ ] Risk milestones flagged
 - [ ] Contingency buffer added (10-20%)
-- [ ] Formula applied: ai_estimate × multiplier ÷ 0.90
+- [ ] Formula applied: (ai_estimate × multiplier ÷ 0.90) ÷ 8 ÷ team_size = calendar_days
 
 ## After Completion
 
