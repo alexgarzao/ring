@@ -567,10 +567,22 @@ mkdir -p docs/pre-dev/<feature-name>
 
 **Example conversion (AI-agent-hours → calendar time):**
 ```
-AI estimate: 8 AI-agent-hours (Medium confidence, 55%)
-× 1.5 multiplier (human validation) = 12h adjusted
-÷ 0.90 capacity = 13.33h calendar
-÷ 8 hours/day = 1.67 developer-days ≈ 2 calendar days (1 dev)
+Given:
+- ai_estimate = 8 AI-agent-hours (Medium confidence, 55%)
+- multiplier = 1.5 (human validation)
+- capacity = 0.90 (90% available)
+- team_size = 1 developer
+
+Step-by-step calculation:
+Step 1: ai_estimate × multiplier = 8h × 1.5 = 12h adjusted
+Step 2: adjusted ÷ capacity = 12h ÷ 0.90 = 13.33h calendar
+Step 3: calendar ÷ 8h/day = 13.33h ÷ 8 = 1.67 developer-days
+Step 4: developer-days ÷ team_size = 1.67 ÷ 1 = 1.67 calendar days ≈ 2 days
+
+Formula:
+  (ai_estimate × multiplier ÷ capacity) ÷ 8 ÷ team_size
+  = (8 × 1.5 ÷ 0.90) ÷ 8 ÷ 1
+  = 1.67 calendar days
 ```
 
 ## Gate 8: Subtask Creation
