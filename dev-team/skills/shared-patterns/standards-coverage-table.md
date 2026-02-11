@@ -615,6 +615,34 @@ In addition to the standard Coverage Table, ring:ui-engineer MUST output:
 
 ---
 
+### ring:qa-analyst-frontend → frontend/testing-*.md
+
+**Mode Detection:** `test_mode` parameter determines which standards to load.
+
+| # | Section to Check | Mode | File |
+|---|------------------|------|------|
+| ACC-1 | axe-core Integration | accessibility | testing-accessibility.md |
+| ACC-2 | Semantic HTML Verification | accessibility | testing-accessibility.md |
+| ACC-3 | Keyboard Navigation | accessibility | testing-accessibility.md |
+| ACC-4 | Focus Management | accessibility | testing-accessibility.md |
+| ACC-5 | Color Contrast | accessibility | testing-accessibility.md |
+| VIS-1 | Snapshot Testing Patterns | visual | testing-visual.md |
+| VIS-2 | States Coverage | visual | testing-visual.md |
+| VIS-3 | Responsive Snapshots | visual | testing-visual.md |
+| VIS-4 | Component Duplication Check | visual | testing-visual.md |
+| E2E-1 | User Flow Consumption | e2e | testing-e2e.md |
+| E2E-2 | Error Path Testing | e2e | testing-e2e.md |
+| E2E-3 | Cross-Browser Testing | e2e | testing-e2e.md |
+| E2E-4 | Responsive E2E | e2e | testing-e2e.md |
+| E2E-5 | Selector Strategy | e2e | testing-e2e.md |
+| PERF-1 | Core Web Vitals | performance | testing-performance.md |
+| PERF-2 | Lighthouse Score | performance | testing-performance.md |
+| PERF-3 | Bundle Analysis | performance | testing-performance.md |
+| PERF-4 | Server Component Audit | performance | testing-performance.md |
+| PERF-5 | Anti-Pattern Detection | performance | testing-performance.md |
+
+---
+
 ## Maintenance Instructions
 
 **When you add/modify a section in a standards file:**
