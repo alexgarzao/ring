@@ -236,9 +236,9 @@ Remember:
 
 **Agents:** See "9 Developer Specialists" table above.
 
-**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate backend workflow), `ring:dev-cycle-frontend` (9-gate frontend workflow), `ring:dev-refactor` (codebase analysis)
+**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate backend workflow), `ring:dev-cycle-frontend` (9-gate frontend workflow), `ring:dev-refactor` (backend/general codebase analysis), `ring:dev-refactor-frontend` (frontend codebase analysis)
 
-**Commands:** `/ring:dev-cycle` (backend tasks), `/ring:dev-cycle-frontend` (frontend tasks), `/ring:dev-refactor` (analyze codebase), `/ring:dev-status`, `/ring:dev-cancel`, `/ring:dev-report`
+**Commands:** `/ring:dev-cycle` (backend tasks), `/ring:dev-cycle-frontend` (frontend tasks), `/ring:dev-refactor` (analyze backend/general codebase), `/ring:dev-refactor-frontend` (analyze frontend codebase), `/ring:dev-status`, `/ring:dev-cancel`, `/ring:dev-report`
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-dev-team plugin.
 
@@ -253,6 +253,7 @@ All workflows converge to the 10-gate development cycle:
 | **New Feature**  | `/ring:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md`             | → `/ring:dev-cycle tasks.md` |
 | **Direct Tasks** | `/ring:dev-cycle tasks.md`            | —                                             | Execute 6 gates directly     |
 | **Refactoring**  | `/ring:dev-refactor`                  | `docs/ring:dev-refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
+| **Frontend Refactoring** | `/ring:dev-refactor-frontend` | `docs/ring:dev-refactor-frontend/{timestamp}/tasks.md` | → `/ring:dev-cycle-frontend tasks.md` |
 
 **6-Gate Development Cycle:**
 
