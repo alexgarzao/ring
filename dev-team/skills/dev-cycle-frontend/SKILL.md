@@ -240,7 +240,7 @@ Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 5. Update state                   <- Record results
 ```
 
-### Custom Prompt Injection (--prompt flag)
+### Custom Instructions (Optional Second Argument)
 
 **Validation:** See [shared-patterns/custom-prompt-validation.md](../shared-patterns/custom-prompt-validation.md) for max length (500 chars), sanitization rules, gate protection, and conflict handling.
 
@@ -622,7 +622,7 @@ State is persisted to `docs/ring:dev-cycle-frontend/current-cycle.json`:
     "type": "string",
     "optional": true,
     "max_length": 500,
-    "description": "User-provided context for agents (from --prompt flag). Max 500 characters.",
+    "description": "User-provided context for agents (from second positional argument). Max 500 characters.",
     "validation": "Max 500 chars (truncated with warning if exceeded); whitespace trimmed; control chars stripped (except newlines)."
   },
   "status": "in_progress|completed|failed|paused|paused_for_approval|paused_for_task_approval",
@@ -967,13 +967,17 @@ Check: Does docs/PROJECT_RULES.md exist?
 
 ### New Cycle (with task file path)
 
-**Input:** `path/to/tasks-frontend.md` or `path/to/pre-dev/{feature}/` with optional `--prompt "..."`
+**Input:** `path/to/tasks-frontend.md` or `path/to/pre-dev/{feature}/` with optional second argument for custom instructions
+
+**Examples:**
+- `/ring:dev-cycle-frontend tasks.md`
+- `/ring:dev-cycle-frontend tasks.md "Use shadcn/ui components"`
 
 1. **Detect input:** File -> Load directly | Directory -> Load tasks-frontend.md + discover subtasks/
 2. **Build order:** Read tasks, check for subtasks (ST-XXX-01, 02...)
 3. **Detect UI library mode** (Step 0 above)
 4. **Load backend handoff** if `docs/ring:dev-cycle/handoff-frontend.json` exists
-5. **Capture and validate custom prompt:** If `--prompt "..."` provided
+5. **Capture and validate custom instructions:** If second argument provided
 6. **Initialize state:** Generate cycle_id, create state file, set indices to 0
 7. **Display plan:** "Loaded X tasks with Y subtasks. UI mode: {mode}. Backend handoff: {loaded/not found}."
 8. **ASK EXECUTION MODE (MANDATORY - AskUserQuestion):**
