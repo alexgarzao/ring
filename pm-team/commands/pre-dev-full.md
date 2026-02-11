@@ -526,10 +526,15 @@ mkdir -p docs/pre-dev/<feature-name>
 
 1. Load all previous artifacts (PRD, Feature Map, TRD, API Design, Data Model, Dependency Map)
 2. Run AI-assisted time estimation:
-   - Auto-detect tech stack from TRD and Dependency Map
-   - Dispatch specialized agent (ring:backend-engineer-golang, ring:frontend-engineer, etc.)
+   - Auto-detect tech stack from Dependency Map (if available) OR repository files (go.mod, package.json, etc.)
+   - Dispatch specialized agent based on detected stack:
+     - Go (go.mod detected) → ring:backend-engineer-golang
+     - TypeScript/Node (package.json + backend) → ring:backend-engineer-typescript
+     - React/Next.js (package.json + frontend) → ring:frontend-engineer
+     - Mixed/Unknown → ring:codebase-explorer
    - Agent analyzes scope and estimates AI-agent-hours per task
-   - Output includes: AI estimate, confidence level, detailed breakdown
+   - Output includes: AI estimate (hours), confidence level (High/Medium/Low), detailed breakdown
+   - **AI-agent-hours definition:** Time for Claude Sonnet 4.5 to implement via ring:dev-cycle (includes TDD, automated review, SRE validation, DevOps setup)
 3. Create task breakdown document with:
    - Value-driven decomposition
    - Each task delivers working software
@@ -544,9 +549,29 @@ mkdir -p docs/pre-dev/<feature-name>
 **Gate 7 Pass Criteria:**
 - [ ] Every task delivers user value
 - [ ] No task larger than 16 AI-agent-hours
-- [ ] All tasks have AI estimates with confidence levels
+- [ ] All tasks have AI estimates with confidence levels (minimum: Medium/67%+)
 - [ ] Dependencies are clear
 - [ ] Testing approach defined
+
+**Confidence Level Definition:**
+
+| Level | Numeric Range | Meaning | Pass Threshold |
+|-------|---------------|---------|----------------|
+| **High** | 67-100% (0.67-1.0) | Clear scope, standard patterns, libs available | ✅ Pass |
+| **Medium** | 34-66% (0.34-0.66) | Some custom logic, partial lib support | ✅ Pass (borderline) |
+| **Low** | 0-33% (0.0-0.33) | Novel algorithms, vague scope, no lib support | ⚠️ Requires review |
+
+**Gate 7 minimum threshold:** Tasks must have confidence ≥ 67% (High) or ≥ 34% (Medium with reviewer approval).
+
+**Borderline cases (Medium confidence):** PM Lead must review and approve before proceeding.
+
+**Example conversion (AI-agent-hours → calendar time):**
+```
+AI estimate: 8 AI-agent-hours (Medium confidence, 55%)
+× 1.5 multiplier (human validation) = 12h adjusted
+÷ 0.90 capacity = 13.33h calendar
+÷ 8 hours/day = 1.67 developer-days ≈ 2 calendar days (1 dev)
+```
 
 ## Gate 8: Subtask Creation
 
@@ -581,7 +606,8 @@ mkdir -p docs/pre-dev/<feature-name>
    - Human validation multiplier (1.2x-2.5x, default 1.5x or custom)
 3. Apply AI-based time calculation:
    - Formula: `(ai_estimate × multiplier ÷ 0.90) ÷ 8 ÷ team_size = calendar_days`
-   - Capacity: 90% hardcoded (AI Agent overhead)
+   - Capacity: 90% available capacity (10% overhead for API limits, context loading, tool execution)
+   - Note: 0.90 in formula = available capacity factor, not overhead percentage
    - Multiplier represents human validation overhead
 4. Analyze dependencies and critical path
 5. Calculate realistic timeline with period boundaries

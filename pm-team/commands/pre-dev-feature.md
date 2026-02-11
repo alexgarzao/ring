@@ -434,10 +434,15 @@ Even small features benefit from quick research:
 2. Load TRD from `docs/pre-dev/<feature-name>/trd.md`
 3. Note: No Feature Map, API Design, Data Model, or Dependency Map exist (small track)
 4. Run AI-assisted time estimation:
-   - Auto-detect tech stack from TRD
-   - Dispatch specialized agent (ring:backend-engineer-golang, ring:frontend-engineer, etc.)
+   - Auto-detect tech stack from repository files (go.mod, package.json, pyproject.toml, etc.)
+   - Note: Small Track has no Dependency Map, so inspect repo directly
+   - Dispatch specialized agent based on detected stack:
+     - Go (go.mod detected) → ring:backend-engineer-golang
+     - TypeScript/Node (package.json + backend) → ring:backend-engineer-typescript
+     - React/Next.js (package.json + frontend) → ring:frontend-engineer
+     - Mixed/Unknown → ring:codebase-explorer
    - Agent analyzes scope and estimates AI-agent-hours per task
-   - Output includes: AI estimate, confidence level, detailed breakdown
+   - Output includes: AI estimate (hours), confidence level (High/Medium/Low), detailed breakdown
 5. Create task breakdown document with:
    - Value-driven decomposition
    - Each task delivers working software
@@ -469,7 +474,8 @@ Even small features benefit from quick research:
    - Human validation multiplier (1.2x-2.5x, default 1.5x or custom)
 3. Apply AI-based time calculation:
    - Formula: `(ai_estimate × multiplier ÷ 0.90) ÷ 8 ÷ team_size = calendar_days`
-   - Capacity: 90% hardcoded (AI Agent overhead)
+   - Capacity: 90% available capacity (10% overhead for API limits, context loading, tool execution)
+   - Note: 0.90 in formula = available capacity factor, not overhead percentage
    - Multiplier represents human validation overhead
 4. Analyze dependencies and critical path
 5. Calculate realistic timeline with period boundaries
