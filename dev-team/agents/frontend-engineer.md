@@ -219,32 +219,36 @@ When `api-design.md` exists:
 
 ```bash
 # Check package.json for sindarian-ui
-grep -q "@anthropic/sindarian-ui" package.json && echo "sindarian-ui" || echo "vanilla"
+grep -q "@lerianstudio/sindarian-ui" package.json && echo "sindarian-ui" || echo "fallback-only"
 ```
+
+### UI Library Strategy
+
+**`@lerianstudio/sindarian-ui@1.0.0-beta.34`** is the PRIMARY UI library. For components not available in sindarian-ui, use shadcn/ui + Radix as FALLBACK (placed in project `components/ui/`). Both coexist.
 
 ### Mode Indicators
 
-| Mode             | Detection Pattern                                     | Implementation Approach                              |
-| ---------------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| **sindarian-ui** | `@anthropic/sindarian-ui` in dependencies             | Use sindarian-ui FormField, Input, Select components |
-| **Vanilla**      | No sindarian packages, has `shadcn/ui` or `@radix-ui` | Use shadcn/ui Form or custom Radix wrappers          |
+| Mode             | Detection Pattern                                      | Implementation Approach                              |
+| ---------------- | ------------------------------------------------------ | ---------------------------------------------------- |
+| **sindarian-ui** (primary) | `@lerianstudio/sindarian-ui` in dependencies  | Use sindarian-ui FormField, Input, Select components |
+| **shadcn/radix** (fallback) | Components not available in sindarian-ui      | Place in project `components/ui/` using shadcn/ui + Radix primitives |
 
 ### Mode-Specific Requirements
 
-| Aspect      | sindarian-ui Mode                     | Vanilla Mode                          |
-| ----------- | ------------------------------------- | ------------------------------------- |
-| Form Fields | Import from `@anthropic/sindarian-ui` | Import from `@/components/ui/form`    |
-| Tooltips    | Use `FormTooltip` component           | Use Radix Tooltip with custom wrapper |
-| Page Layout | Use `PageRoot`, `PageView`            | Use custom layout components          |
-| Toast       | Use sindarian toast                   | Use sonner or shadcn toast            |
+| Aspect      | sindarian-ui (primary)                    | shadcn/radix (fallback)               |
+| ----------- | ----------------------------------------- | ------------------------------------- |
+| Form Fields | Import from `@lerianstudio/sindarian-ui`  | Import from `@/components/ui/form`    |
+| Tooltips    | Use `FormTooltip` component               | Use Radix Tooltip with custom wrapper |
+| Page Layout | Use `PageRoot`, `PageView`                | Use custom layout components          |
+| Toast       | Use sindarian toast                       | Use sonner or shadcn toast            |
 
 ### Anti-Rationalization
 
-| Rationalization                      | Why It's WRONG                    | Required Action                  |
-| ------------------------------------ | --------------------------------- | -------------------------------- |
-| "I'll use sindarian-ui, it's better" | Project may not have it installed | **Detect mode first**            |
-| "Both modes are similar enough"      | Import paths and APIs differ      | **Follow detected mode exactly** |
-| "I'll mix components from both"      | Inconsistent UX and bundle bloat  | **Use one mode only**            |
+| Rationalization                                 | Why It's WRONG                                          | Required Action                            |
+| ----------------------------------------------- | ------------------------------------------------------- | ------------------------------------------ |
+| "I'll use sindarian-ui, it's better"            | Project may not have it installed                        | **Detect mode first**                      |
+| "Both modes are similar enough"                 | Import paths and APIs differ                             | **Follow detected mode exactly**           |
+| "I'll recreate a sindarian-ui component in shadcn" | Duplicating available components causes drift and bloat | **Check sindarian-ui first, fallback only if missing** |
 
 ---
 
@@ -971,7 +975,7 @@ See [shared-patterns/shared-anti-rationalization.md](../skills/shared-patterns/s
 | "Just use `<Input />` directly, no need for wrappers" | "Cannot proceed. Field abstraction layer is MANDATORY. I'll use InputField wrapper with proper label, error, and accessibility."   |
 | "Skip the ErrorBoundary, the app won't crash"         | "Cannot proceed. ErrorBoundary is MANDATORY for production apps. I'll implement proper error handling with recovery."              |
 | "We don't need pagination hooks, just use state"      | "Cannot proceed. Pagination hooks (usePagination/useCursorPagination) are MANDATORY for lists. I'll implement the proper pattern." |
-| "Mix sindarian-ui with shadcn, use best of both"      | "Cannot proceed. Only one UI library mode per project. I'll detect and follow the project's established mode."                     |
+| "Recreate this sindarian-ui component in shadcn"      | "Cannot proceed. MUST check sindarian-ui first. Only use shadcn/radix as fallback for components not available in sindarian-ui."    |
 
 **You are not being difficult. You are protecting code quality and user experience.**
 
