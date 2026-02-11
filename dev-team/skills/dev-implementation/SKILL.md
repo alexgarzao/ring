@@ -10,12 +10,15 @@ trigger: |
   - Tasks loaded at initialization
   - Ready to write code
 
-skip_when: |
-  - "Code already exists" → DELETE it. TDD is test-first.
-  - "Simple feature" → Simple ≠ exempt. TDD for all behavioral components.
-  - "Time pressure" → TDD saves time. No shortcuts.
-  - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
-  - "Visual-only component" → Visual/presentational components (layout, styling, animations, static display) are exempt from TDD-RED and deferred to Gate 4 snapshots. Behavioral components (hooks, forms, state, conditional rendering, API) still require TDD.
+tdd_policy:
+  anti_patterns: |
+    - "Code already exists" → DELETE it. TDD is test-first.
+    - "Simple feature" → Simple ≠ exempt. TDD for all behavioral components.
+    - "Time pressure" → TDD saves time. No shortcuts.
+    - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
+  exempt_when: |
+    - Visual/presentational components (layout, styling, animations, static display) are exempt from TDD-RED and deferred to Gate 4 snapshots.
+    - Behavioral components (hooks, forms, state, conditional rendering, API) still require TDD.
 
 sequence:
   before: [ring:dev-devops]
