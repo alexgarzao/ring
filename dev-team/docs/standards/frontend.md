@@ -757,8 +757,8 @@ const handleClick = useCallback((id: string) => {
 
 | Mode | Detection | Components |
 |------|-----------|------------|
-| **sindarian-ui** | `@anthropic/sindarian-ui` in package.json | FormField, FormItem, FormLabel, FormControl, FormMessage, FormTooltip |
-| **Vanilla** | No sindarian packages | shadcn/ui Form or custom wrappers over Radix primitives |
+| **sindarian-ui** (primary) | `@lerianstudio/sindarian-ui` in package.json | FormField, FormItem, FormLabel, FormControl, FormMessage, FormTooltip |
+| **shadcn/radix** (fallback) | Components not available in sindarian-ui | Place in project `components/ui/` using shadcn/ui + Radix primitives |
 
 ### Field Wrapper Components (MANDATORY)
 
@@ -785,7 +785,7 @@ import {
     FormMessage,
     FormTooltip,
     Input,
-} from '@anthropic/sindarian-ui';
+} from '@lerianstudio/sindarian-ui';
 import { useFormContext } from 'react-hook-form';
 
 interface InputFieldProps {

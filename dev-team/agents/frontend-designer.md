@@ -785,13 +785,13 @@ When ambiguity exists, present options with trade-offs:
 
 ```bash
 # Check package.json for sindarian-ui
-grep -q "@anthropic/sindarian-ui" package.json && echo "sindarian-ui" || echo "vanilla"
+grep -q "@lerianstudio/sindarian-ui" package.json && echo "sindarian-ui" || echo "fallback-only"
 ```
 
-| Mode             | Detection                                             | What to Specify in Handoff                                   |
-| ---------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
-| **sindarian-ui** | `@anthropic/sindarian-ui` in dependencies             | Use sindarian-ui component names (FormField, PageRoot, etc.) |
-| **Vanilla**      | No sindarian packages, has `shadcn/ui` or `@radix-ui` | Use shadcn/ui or Radix component names                       |
+| Mode             | Detection                                              | What to Specify in Handoff                                   |
+| ---------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| **sindarian-ui** (primary) | `@lerianstudio/sindarian-ui` in dependencies  | Use sindarian-ui component names (FormField, PageRoot, etc.) |
+| **shadcn/radix** (fallback) | Components not available in sindarian-ui      | Use shadcn/ui or Radix for missing components only           |
 
 **⛔ MANDATORY:** Include "UI Library Mode" row in handoff Overview section:
 
