@@ -433,19 +433,26 @@ Even small features benefit from quick research:
 1. Load PRD from `docs/pre-dev/<feature-name>/prd.md`
 2. Load TRD from `docs/pre-dev/<feature-name>/trd.md`
 3. Note: No Feature Map, API Design, Data Model, or Dependency Map exist (small track)
-4. Create task breakdown document with:
+4. Run AI-assisted time estimation:
+   - Auto-detect tech stack from TRD
+   - Dispatch specialized agent (ring:backend-engineer-golang, ring:frontend-engineer, etc.)
+   - Agent analyzes scope and estimates AI-agent-hours per task
+   - Output includes: AI estimate, confidence level, detailed breakdown
+5. Create task breakdown document with:
    - Value-driven decomposition
    - Each task delivers working software
-   - Maximum task size: 2 weeks
+   - AI-agent-hours estimates (not story points)
+   - Maximum task size: 16 AI-agent-hours
    - Dependencies mapped
    - Testing strategy per task
-5. Save to: `docs/pre-dev/<feature-name>/tasks.md`
-6. Run Gate 3 validation checklist
-7. Get human approval
+6. Save to: `docs/pre-dev/<feature-name>/tasks.md`
+7. Run Gate 3 validation checklist
+8. Get human approval
 
 **Gate 3 Pass Criteria:**
 - [ ] Every task delivers user value
-- [ ] No task larger than 2 weeks
+- [ ] No task larger than 16 AI-agent-hours
+- [ ] All tasks have AI estimates with confidence levels
 - [ ] Dependencies are clear
 - [ ] Testing approach defined
 
@@ -453,30 +460,35 @@ Even small features benefit from quick research:
 
 **Skill:** ring:pre-dev-delivery-planning
 
-1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md`
+1. Load tasks from `docs/pre-dev/<feature-name>/tasks.md` (with AI-agent-hours estimates)
 2. Ask user for delivery inputs:
    - Start date (when team begins work)
    - Team composition (how many developers)
    - Delivery cadence (sprint/cycle/continuous)
    - Period configuration (if sprint/cycle: duration + start date)
-   - Velocity multiplier (AI-assisted or traditional, default or custom)
-3. Analyze dependencies and critical path
-4. Calculate realistic timeline with period boundaries
-5. Identify parallelization opportunities and resource allocation
-6. Create delivery roadmap with Gantt-style timeline
-7. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
-8. Run Gate 4 validation checklist
-9. Get human approval
+   - Human validation multiplier (1.2x-2.5x, default 1.5x or custom)
+3. Apply AI-based time calculation:
+   - Formula: `(ai_estimate × multiplier ÷ 0.90) ÷ 8 ÷ team_size = calendar_days`
+   - Capacity: 90% hardcoded (AI Agent overhead)
+   - Multiplier represents human validation overhead
+4. Analyze dependencies and critical path
+5. Calculate realistic timeline with period boundaries
+6. Identify parallelization opportunities and resource allocation
+7. Create delivery roadmap with Gantt-style timeline
+8. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+9. Run Gate 4 validation checklist
+10. Get human approval
 
 **Gate 4 Pass Criteria:**
 - [ ] All tasks scheduled with realistic dates
 - [ ] Critical path identified and validated
-- [ ] Team capacity realistic (70-80% utilization)
+- [ ] Team capacity: 90% (AI Agent standard)
 - [ ] Period boundaries respected (if sprint/cycle)
 - [ ] Spill overs identified and documented
 - [ ] Parallel streams defined
 - [ ] Risk milestones flagged
 - [ ] Contingency buffer added (10-20%)
+- [ ] Formula used: ai_estimate × multiplier ÷ 0.90
 
 ## After Completion
 
