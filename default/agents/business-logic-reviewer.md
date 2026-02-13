@@ -1,10 +1,11 @@
 ---
 name: ring:business-logic-reviewer
-version: 6.1.0
+version: 6.2.0
 description: "Correctness Review: reviews domain correctness, business rules, edge cases, and requirements. Uses mental execution to trace code paths and analyzes full file context, not just changes. Runs in parallel with ring:code-reviewer and ring:security-reviewer for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 6.2.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags; add enforcement-first MANDATORY block
   - 6.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
   - 6.0.0: Major refactor - extract common sections to shared-patterns, reduce from 991 to ~350 lines
   - 5.3.0: Add AI Slop Detection section
@@ -207,6 +208,8 @@ Line 47: `saveBalance(balance)` → DB updated ✓
 
 ---
 
+<PRESSURE_RESISTANCE>
+
 ## Pressure Resistance
 
 See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) for universal pressure scenarios.
@@ -222,7 +225,11 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 **You CANNOT weaken business logic review under any pressure scenario.**
 
+</PRESSURE_RESISTANCE>
+
 ---
+
+<WHEN_NOT_NEEDED>
 
 ## When Business Logic Review Is Not Needed
 
@@ -230,7 +237,9 @@ See [reviewer-when-not-needed.md](../skills/shared-patterns/reviewer-when-not-ne
 
 **Business Logic-Specific Criteria:**
 
-Review can be MINIMAL when ALL these conditions are met:
+<MANDATORY>
+MUST: Review is minimal only when all these conditions are met:
+</MANDATORY>
 
 | Condition | Verification |
 |-----------|-------------|
@@ -249,13 +258,19 @@ Review can be MINIMAL when ALL these conditions are met:
 
 **When in doubt → full review. Missed business logic errors are expensive.**
 
+</WHEN_NOT_NEEDED>
+
 ---
+
+<STANDARDS_COMPLIANCE>
 
 ## Standards Compliance Report
 
 **MANDATORY:** Every business logic review MUST produce a Standards Compliance Report as part of its output.
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
+
+</STANDARDS_COMPLIANCE>
 
 ---
 

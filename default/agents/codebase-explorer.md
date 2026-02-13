@@ -1,10 +1,11 @@
 ---
 name: ring:codebase-explorer
-version: 1.4.0
+version: 1.5.0
 description: "Deep codebase exploration agent for architecture understanding, pattern discovery, and comprehensive code analysis. Uses Opus for thorough analysis vs built-in Explore's Haiku speed-focus."
 type: exploration
 last_updated: 2026-02-12
 changelog:
+  - 1.5.0: Update Standards Compliance Report with MUST prefix and required semantic tag
   - 1.4.0: Add Standards Compliance Report section (N/A) for CLAUDE.md compliance
   - 1.3.0: Add Model Requirements section - MANDATORY Opus verification before exploration
   - 1.2.0: CLAUDE.md compliance - Added 7 mandatory sections (Standards Loading, Blocker Criteria, Cannot Be Overridden, Severity Calibration, Pressure Resistance, Anti-Rationalization Table, When Exploration is Not Needed)
@@ -593,7 +594,11 @@ Login Request → AuthController → AuthService (validate credentials) → JwtS
 
 **N/A for exploration agents.**
 
-**Rationale:** The ring:codebase-explorer agent does not produce standards compliance output. Its role is codebase discovery and architectural analysis, not standards validation. When exploration is preparation for standards enforcement, findings are passed to the appropriate engineer or reviewer agent.
+<required>
+MUST: When exploration is preparation for standards enforcement, findings are passed to the appropriate engineer or reviewer agent.
+</required>
+
+**Rationale:** The ring:codebase-explorer agent does not produce standards compliance output. Its role is codebase discovery and architectural analysis, not standards validation.
 
 ---
 

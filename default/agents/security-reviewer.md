@@ -1,10 +1,11 @@
 ---
 name: ring:security-reviewer
-version: 4.1.0
+version: 4.2.0
 description: "Safety Review: Reviews vulnerabilities, authentication, input validation, and OWASP risks. Runs in parallel with ring:code-reviewer and ring:business-logic-reviewer for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 4.2.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags; add enforcement-first MANDATORY block
   - 4.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
   - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 1045 to ~400 lines
   - 3.3.0: Add Slopsquatting & AI Dependency Hallucination detection
@@ -181,6 +182,8 @@ These security issues CANNOT be waived:
 
 ---
 
+<PRESSURE_RESISTANCE>
+
 ## Pressure Resistance
 
 See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) for universal pressure scenarios.
@@ -196,7 +199,11 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 **You CANNOT weaken security review under any pressure scenario.**
 
+</PRESSURE_RESISTANCE>
+
 ---
+
+<WHEN_NOT_NEEDED>
 
 ## When Security Review Is Not Needed
 
@@ -204,7 +211,9 @@ See [reviewer-when-not-needed.md](../skills/shared-patterns/reviewer-when-not-ne
 
 **Security Review-Specific Criteria:**
 
-Review can be MINIMAL when ALL these conditions are met:
+<MANDATORY>
+MUST: Review is minimal only when all these conditions are met:
+</MANDATORY>
 
 | Condition | Verification |
 |-----------|-------------|
@@ -223,13 +232,19 @@ Review can be MINIMAL when ALL these conditions are met:
 
 **When in doubt → full review. Missed security issues cause breaches.**
 
+</WHEN_NOT_NEEDED>
+
 ---
+
+<STANDARDS_COMPLIANCE>
 
 ## Standards Compliance Report
 
 **MANDATORY:** Every security review MUST produce a Standards Compliance Report as part of its output.
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
+
+</STANDARDS_COMPLIANCE>
 
 ---
 

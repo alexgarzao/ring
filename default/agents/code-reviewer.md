@@ -1,10 +1,11 @@
 ---
 name: ring:code-reviewer
-version: 4.1.0
+version: 4.2.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, and ring:nil-safety-reviewer for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 4.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
   - 4.1.0: Add Non-Negotiables, Pressure Resistance, When Not Needed, Standards Compliance Report for CLAUDE.md compliance
   - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 931 to ~300 lines
   - 3.3.0: Add AI Slop Detection section
@@ -220,7 +221,9 @@ See [reviewer-when-not-needed.md](../skills/shared-patterns/reviewer-when-not-ne
 
 **Code Review-Specific Criteria:**
 
-Review can be MINIMAL when ALL these conditions are met:
+<MANDATORY>
+MUST: Review is minimal only when all these conditions are met:
+</MANDATORY>
 
 | Condition | Verification |
 |-----------|-------------|
