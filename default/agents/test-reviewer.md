@@ -1,10 +1,11 @@
 ---
 name: ring:test-reviewer
-version: 1.2.0
+version: 1.3.0
 description: "Test Quality Review: Reviews test coverage, edge cases, test independence, assertion quality, and test anti-patterns across unit, integration, and E2E tests. Runs in parallel with other reviewers for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 1.3.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags
   - 1.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
   - 1.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
   - 1.0.0: Initial release - test quality, coverage analysis, anti-pattern detection
@@ -427,6 +428,8 @@ func TestCacheGetMissReturnsDefault(t *testing.T) {
 
 ---
 
+<PRESSURE_RESISTANCE>
+
 ## Pressure Resistance
 
 See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) for universal pressure scenarios.
@@ -442,7 +445,11 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 **You CANNOT weaken test review under any pressure scenario.**
 
+</PRESSURE_RESISTANCE>
+
 ---
+
+<WHEN_NOT_NEEDED>
 
 ## When Test Review Is Not Needed
 
@@ -471,13 +478,19 @@ MUST: Review is minimal only when all these conditions are met:
 
 **When in doubt → full review. Poor test quality gives false confidence.**
 
+</WHEN_NOT_NEEDED>
+
 ---
+
+<STANDARDS_COMPLIANCE>
 
 ## Standards Compliance Report
 
 **MANDATORY:** Every test review MUST produce a Standards Compliance Report as part of its output.
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
+
+</STANDARDS_COMPLIANCE>
 
 ---
 
