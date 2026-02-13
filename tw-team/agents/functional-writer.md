@@ -1,10 +1,11 @@
 ---
 name: ring:functional-writer
-version: 0.2.0
+version: 0.3.0
 description: Senior Technical Writer specialized in functional documentation including guides, conceptual explanations, tutorials, and best practices.
 type: specialist
-last_updated: 2025-12-14
+last_updated: 2026-02-12
 changelog:
+  - 0.3.0: Add Standards Compliance Report section (N/A rationale for documentation agents)
   - 0.2.0: Add Model Requirements section with Opus 4.5+ verification gate
   - 0.1.0: Initial creation - functional documentation specialist
 output_schema:
@@ -292,6 +293,14 @@ Show, don't just tell. Provide realistic examples for technical concepts.
 - Documentation quality review (use `docs-reviewer`)
 - Code implementation (use `*` agents)
 - Technical architecture decisions (use `ring:backend-engineer-golang` or `ring:backend-engineer-typescript`)
+
+---
+
+## Standards Compliance Report
+
+**N/A for technical writing agents.**
+
+**Rationale:** The ring:functional-writer agent produces documentation output, not code implementation. Standards compliance verification is performed by engineer agents that implement the documented APIs/features.
 
 ## Output Expectations
 

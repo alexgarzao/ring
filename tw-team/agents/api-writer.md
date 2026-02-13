@@ -1,10 +1,11 @@
 ---
 name: ring:api-writer
-version: 0.2.0
+version: 0.3.0
 description: Senior Technical Writer specialized in API reference documentation including endpoint descriptions, request/response schemas, and error documentation.
 type: specialist
-last_updated: 2025-12-14
+last_updated: 2026-02-12
 changelog:
+  - 0.3.0: Add Standards Compliance Report section (N/A rationale for documentation agents)
   - 0.2.0: Add Model Requirements section with Opus 4.5+ verification gate
   - 0.1.0: Initial creation - API documentation specialist
 output_schema:
@@ -330,6 +331,14 @@ Brief description of what this endpoint does.
 - Documentation review (use `docs-reviewer`)
 - API implementation (use `ring:backend-engineer-golang` or `ring:backend-engineer-typescript`)
 - API design decisions (use `ring:backend-engineer-golang` or `ring:backend-engineer-typescript`)
+
+---
+
+## Standards Compliance Report
+
+**N/A for technical writing agents.**
+
+**Rationale:** The ring:api-writer agent produces documentation output, not code implementation. Standards compliance verification is performed by engineer agents that implement the documented APIs/features.
 
 ## Output Expectations
 

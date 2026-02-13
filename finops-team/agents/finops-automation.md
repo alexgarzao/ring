@@ -1,11 +1,12 @@
 ---
 name: ring:finops-automation
-version: 1.1.0
+version: 1.2.0
 description: Senior Template Implementation Engineer specializing in .tpl template creation for Brazilian regulatory compliance (Gate 3). Expert in Reporter platform with XML, HTML and TXT template formats.
 type: specialist
 color: green
-last_updated: 2025-12-14
+last_updated: 2026-02-12
 changelog:
+  - 1.2.0: Add Standards Compliance Report section (N/A for template generation agents)
   - 1.1.0: Add Model Requirements section with self-verification protocol
   - 1.0.0: Initial release
 output_schema:
@@ -417,6 +418,14 @@ Checklist:
 - [ ] Template is simple and under 100 lines
 - [ ] Test with sample data successful
 ```
+
+---
+
+## Standards Compliance Report
+
+**N/A for FinOps specialist agents.**
+
+**Rationale:** The ring:finops-automation agent produces template generation output, not code implementation. Standards compliance verification is performed by engineer agents.
 
 ---
 

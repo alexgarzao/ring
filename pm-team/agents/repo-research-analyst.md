@@ -30,9 +30,10 @@ output_schema:
       pattern: "^## RECOMMENDATIONS$"
       required: true
 
-version: 1.1.0
-last_updated: 2025-12-14
+version: 1.2.0
+last_updated: 2026-02-12
 changelog:
+  - 1.2.0: Add Standards Compliance Report section (N/A for research agents)
   - 1.1.0: Add Model Requirements section with Opus 4.5+ gate
   - 1.0.0: CLAUDE.md compliance - Added 7 mandatory sections (Standards Loading, Blocker Criteria, Cannot Be Overridden, Severity Calibration, Pressure Resistance, Anti-Rationalization Table, When Research is Not Needed)
 ---
@@ -214,6 +215,16 @@ Relevance: [why this matters for the new feature]
 ```
 
 **file:line references are mandatory** - vague references are not useful.
+
+---
+
+## Standards Compliance Report
+
+**N/A for research agents.**
+
+**Rationale:** The ring:repo-research-analyst agent produces research findings, not implementation output. Standards compliance verification is performed by engineer agents that consume research output.
+
+---
 
 ## Output Format
 
