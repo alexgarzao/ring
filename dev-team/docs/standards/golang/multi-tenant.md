@@ -2,7 +2,7 @@
 
 > **Module:** multi-tenant.md | **Sections:** §23 | **Parent:** [index.md](index.md)
 
-This module covers multi-tenant patterns with Pool Manager.
+This module covers multi-tenant patterns with Tenant Manager.
 
 ---
 
@@ -25,20 +25,20 @@ This module covers multi-tenant patterns with Pool Manager.
 |----------|------|---------------|
 | Single customer deployment | Single-tenant | `MULTI_TENANT_ENABLED=false` (default) |
 | SaaS with shared infrastructure | Multi-tenant | `MULTI_TENANT_ENABLED=true` |
-| Multiple isolated databases per customer | Multi-tenant | Requires Pool Manager |
+| Multiple isolated databases per customer | Multi-tenant | Requires Tenant Manager |
 
 ### Environment Variables
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
-| `POOL_MANAGER_URL` | Pool Manager service URL | - | If multi-tenant |
+| `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
 | `MULTI_TENANT_CACHE_TTL` | Tenant configuration cache duration | `24h` | No |
 
 **Example `.env` for multi-tenant:**
 ```bash
 MULTI_TENANT_ENABLED=true
-POOL_MANAGER_URL=http://pool-manager:4003
+MULTI_TENANT_URL=http://dispatch layer:4003
 MULTI_TENANT_CACHE_TTL=24h
 ```
 
@@ -49,7 +49,7 @@ MULTI_TENANT_CACHE_TTL=24h
 type Config struct {
     // Multi-Tenant Configuration
     MultiTenantEnabled  bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
-    PoolManagerURL      string `env:"POOL_MANAGER_URL"`
+    MultiTenantURL      string `env:"MULTI_TENANT_URL"`
     MultiTenantCacheTTL string `env:"MULTI_TENANT_CACHE_TTL" default:"24h"`
 
     // Prefixed DB vars (unified deployment)
@@ -134,12 +134,12 @@ func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
     }
 
     // Inject tenant ID into context
-    ctx = poolmanager.ContextWithTenantID(ctx, tenantID)
+    ctx = tenantmanager.ContextWithTenantID(ctx, tenantID)
 
     // Get tenant-specific database connection
     conn, err := m.pool.GetConnection(ctx, tenantID)
     if err != nil {
-        if errors.Is(err, poolmanager.ErrTenantNotFound) {
+        if errors.Is(err, tenantmanager.ErrTenantNotFound) {
             return libHTTP.NotFound(c, "TENANT_NOT_FOUND", "Not Found", "tenant not found")
         }
         return libHTTP.InternalServerError(c, "CONNECTION_ERROR", "Internal Server Error",
@@ -153,7 +153,7 @@ func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
     }
 
     // Inject connection into context
-    ctx = poolmanager.ContextWithPGConnection(ctx, db)
+    ctx = tenantmanager.ContextWithPGConnection(ctx, db)
     c.SetUserContext(ctx)
 
     return c.Next()
@@ -181,7 +181,7 @@ func (r *Repository) Create(ctx context.Context, entity *Entity) (*Entity, error
     defer span.End()
 
     // Get tenant-specific connection from context
-    db, err := poolmanager.GetPostgresForTenant(ctx)
+    db, err := tenantmanager.GetPostgresForTenant(ctx)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
         logger.Errorf("Failed to get database connection: %v", err)
@@ -207,7 +207,7 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
     defer span.End()
 
     // Tenant-aware key prefixing (adds {tenantId}: prefix if multi-tenant)
-    key = poolmanager.GetKeyFromContext(ctx, key)
+    key = tenantmanager.GetKeyFromContext(ctx, key)
 
     rds, err := r.conn.GetClient(ctx)
     if err != nil {
@@ -224,7 +224,7 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
 // internal/adapters/rabbitmq/producer.go
 type ProducerRepository struct {
     conn            *libRabbitmq.RabbitMQConnection
-    rabbitMQPool    *poolmanager.RabbitMQPool
+    rabbitMQManager    *tenantmanager.RabbitMQManager
     multiTenantMode bool
 }
 
@@ -237,16 +237,16 @@ func NewProducer(conn *libRabbitmq.RabbitMQConnection) *ProducerRepository {
 }
 
 // Multi-tenant constructor
-func NewProducerMultiTenant(pool *poolmanager.RabbitMQPool) *ProducerRepository {
+func NewProducerMultiTenant(pool *tenantmanager.RabbitMQManager) *ProducerRepository {
     return &ProducerRepository{
-        rabbitMQPool:    pool,
+        rabbitMQManager:    pool,
         multiTenantMode: true,
     }
 }
 
 func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, message []byte) error {
     // Inject tenant ID header
-    tenantID := poolmanager.GetTenantID(ctx)
+    tenantID := tenantmanager.GetTenantID(ctx)
     headers := amqp.Table{}
     if tenantID != "" {
         headers["X-Tenant-ID"] = tenantID
@@ -254,7 +254,7 @@ func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, 
 
     if p.multiTenantMode {
         // Get tenant-specific channel
-        channel, err := p.rabbitMQPool.GetChannel(ctx, tenantID)
+        channel, err := p.rabbitMQManager.GetChannel(ctx, tenantID)
         if err != nil {
             return err
         }
@@ -287,7 +287,7 @@ func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection strin
     defer span.End()
 
     // Get tenant-specific database from context
-    tenantDB, err := poolmanager.GetMongoForTenant(ctx)
+    tenantDB, err := tenantmanager.GetMongoForTenant(ctx)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
         return err
@@ -316,7 +316,7 @@ func (r *MetadataMongoDBRepository) FindByEntity(ctx context.Context, collection
     ctx, span := tracer.Start(ctx, "mongodb.find_by_entity")
     defer span.End()
 
-    tenantDB, err := poolmanager.GetMongoForTenant(ctx)
+    tenantDB, err := tenantmanager.GetMongoForTenant(ctx)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database", err)
         return nil, err
@@ -336,23 +336,23 @@ func (r *MetadataMongoDBRepository) FindByEntity(ctx context.Context, collection
 }
 ```
 
-### MongoDB Pool Initialization
+### MongoDB Manager Initialization
 
 ```go
 // internal/bootstrap/config.go
-func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
-    poolManagerClient := poolmanager.NewClient(cfg.PoolManagerURL, logger)
+func initMultiTenantManagers(cfg *Config, logger libLog.Logger) *MultiTenantManagers {
+    tenantManagerClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger)
 
-    // Create MongoDB pool with module-specific credentials
-    mongoPool := poolmanager.NewMongoPool(poolManagerClient, serviceName,
-        poolmanager.WithMongoModule("transaction"),
-        poolmanager.WithMongoLogger(logger),
+    // Create MongoDB manager with module-specific credentials
+    mongoManager := tenantmanager.NewMongoManager(tenantManagerClient, serviceName,
+        tenantmanager.WithMongoModule("transaction"),
+        tenantmanager.WithMongoLogger(logger),
     )
-    logger.Info("Created MongoDB connection pool for multi-tenant mode")
+    logger.Info("Created MongoDB connection manager for multi-tenant mode")
 
-    return &MultiTenantPools{
-        MongoPool: mongoPool,
-        // ... other pools
+    return &MultiTenantManagers{
+        MongoManager: mongoManager,
+        // ... other managers
     }
 }
 ```
@@ -364,16 +364,16 @@ func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
 func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
     // ... tenant extraction code ...
 
-    // Inject MongoDB if pool configured
-    if m.mongoPool != nil {
-        mongoDB, err := m.mongoPool.GetDatabaseForTenant(ctx, tenantID)
+    // Inject MongoDB if manager configured
+    if m.mongoManager != nil {
+        mongoDB, err := m.mongoManager.GetDatabaseForTenant(ctx, tenantID)
         if err != nil {
             logger.Errorf("Failed to get MongoDB connection for tenant %s: %v", tenantID, err)
             return libHTTP.InternalServerError(c, "TENANT_MONGO_ERROR", "Internal Server Error",
                 "failed to resolve tenant MongoDB connection")
         }
 
-        ctx = poolmanager.ContextWithTenantMongo(ctx, mongoDB)
+        ctx = tenantmanager.ContextWithTenantMongo(ctx, mongoDB)
         logger.Infof("Set MongoDB connection for tenant: %s (db: %s)", tenantID, mongoDB.Name())
     }
 
@@ -388,13 +388,13 @@ func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
 // internal/bootstrap/rabbitmq_consumer.go
 func (c *MultiTenantConsumer) injectTenantDBConnections(ctx context.Context, tenantID string, logger libLog.Logger) (context.Context, error) {
     // Inject MongoDB connection (optional - service may not use MongoDB)
-    if c.mongoPool != nil {
-        mongoDB, err := c.mongoPool.GetDatabaseForTenant(ctx, tenantID)
+    if c.mongoManager != nil {
+        mongoDB, err := c.mongoManager.GetDatabaseForTenant(ctx, tenantID)
         if err != nil {
             // MongoDB is optional for some services - warn but don't fail
             logger.Warnf("Failed to get MongoDB for tenant %s: %v (continuing without MongoDB)", tenantID, err)
         } else {
-            ctx = poolmanager.ContextWithTenantMongo(ctx, mongoDB)
+            ctx = tenantmanager.ContextWithTenantMongo(ctx, mongoDB)
             logger.Infof("Injected MongoDB connection for tenant: %s", tenantID)
         }
     }
@@ -411,10 +411,10 @@ func InitService(cfg *Config) (*Service, error) {
     var producer rabbitmq.ProducerRepository
 
     if cfg.MultiTenantEnabled {
-        // Multi-tenant mode: use pool manager
-        poolClient := poolmanager.NewClient(cfg.PoolManagerURL, logger)
-        rabbitPool := poolmanager.NewRabbitMQPool(poolClient, serviceName, logger)
-        producer = rabbitmq.NewProducerMultiTenant(rabbitPool)
+        // Multi-tenant mode: use tenant manager
+        tenantClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger)
+        rabbitManager := tenantmanager.NewRabbitMQManager(tenantClient, serviceName, logger)
+        producer = rabbitmq.NewProducerMultiTenant(rabbitManager)
     } else {
         // Single-tenant mode: use static connection
         conn, err := libRabbitmq.NewRabbitMQConnection(cfg.RabbitMQURL)
@@ -437,11 +437,11 @@ func InitService(cfg *Config) (*Service, error) {
 func TestUserService_Create_WithTenantContext(t *testing.T) {
     // Setup tenant context
     tenantID := "tenant-123"
-    ctx := poolmanager.ContextWithTenantID(context.Background(), tenantID)
+    ctx := tenantmanager.ContextWithTenantID(context.Background(), tenantID)
 
     // Mock database connection
     mockDB := setupMockDB(t)
-    ctx = poolmanager.ContextWithPGConnection(ctx, mockDB)
+    ctx = tenantmanager.ContextWithPGConnection(ctx, mockDB)
 
     // Create service with mock dependencies
     repo := repository.NewUserRepository()
@@ -485,8 +485,8 @@ func TestRepository_Create_TenantIsolation(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             // Inject tenant-specific context
-            ctx := poolmanager.ContextWithTenantID(context.Background(), tt.tenantID)
-            ctx = poolmanager.ContextWithPGConnection(ctx, mockDB)
+            ctx := tenantmanager.ContextWithTenantID(context.Background(), tt.tenantID)
+            ctx = tenantmanager.ContextWithPGConnection(ctx, mockDB)
 
             _, err := repo.Create(ctx, tt.input)
 
@@ -535,19 +535,19 @@ func TestMultiTenant_EndToEnd(t *testing.T) {
     t.Setenv("DB_PASSWORD", "test")
     t.Setenv("DB_NAME", "tenant_test")
     t.Setenv("MULTI_TENANT_ENABLED", "true")
-    t.Setenv("POOL_MANAGER_URL", "http://mock-pool-manager:4003")
+    t.Setenv("MULTI_TENANT_URL", "http://mock-dispatch layer:4003")
 
     // Initialize service
     cfg := &Config{}
     require.NoError(t, libCommons.SetConfigFromEnvVars(cfg))
 
-    // Create Pool Manager mock
-    poolMock := setupMockPoolManager(t, cfg.PoolManagerURL)
-    defer poolMock.Close()
+    // Create Tenant Manager mock
+    tenantMock := setupMockTenantManager(t, cfg.MultiTenantURL)
+    defer tenantMock.Close()
 
     // Test tenant-specific database access
     tenantID := "tenant-123"
-    ctx = poolmanager.ContextWithTenantID(ctx, tenantID)
+    ctx = tenantmanager.ContextWithTenantID(ctx, tenantID)
 
     // ... test multi-tenant operations
 }
@@ -581,7 +581,7 @@ func TestMiddleware_WithTenantDB_ErrorCases(t *testing.T) {
             expectedCode:   "TENANT_ID_REQUIRED",
         },
         {
-            name: "tenant not found in Pool Manager",
+            name: "tenant not found in Tenant Manager",
             setupContext: func(c *fiber.Ctx) {
                 token := createJWT(map[string]interface{}{"tenantId": "unknown-tenant"})
                 c.Request().Header.Set("Authorization", "Bearer "+token)
@@ -640,7 +640,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 
         // Assert tenant context injected
         require.NoError(t, err)
-        extractedTenant := poolmanager.GetTenantID(ctx)
+        extractedTenant := tenantmanager.GetTenantID(ctx)
         assert.Equal(t, tenantID, extractedTenant)
     })
 }
@@ -652,7 +652,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
     t.Run("prefixes keys with tenant ID", func(t *testing.T) {
         tenantID := "tenant-789"
-        ctx := poolmanager.ContextWithTenantID(context.Background(), tenantID)
+        ctx := tenantmanager.ContextWithTenantID(context.Background(), tenantID)
 
         repo := NewRedisRepository(redisConn)
 
@@ -662,7 +662,7 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 
         // Verify key was prefixed
         // Expected key: {tenant-789}:user:session
-        key := poolmanager.GetKeyFromContext(ctx, "user:session")
+        key := tenantmanager.GetKeyFromContext(ctx, "user:session")
         assert.Equal(t, "{tenant-789}:user:session", key)
     })
 
@@ -673,7 +673,7 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
         repo := NewRedisRepository(redisConn)
 
         // Key should NOT be prefixed
-        key := poolmanager.GetKeyFromContext(ctx, "user:session")
+        key := tenantmanager.GetKeyFromContext(ctx, "user:session")
         assert.Equal(t, "user:session", key)
     })
 }
@@ -684,7 +684,7 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Error | HTTP Status | Code | When |
 |-------|-------------|------|------|
 | Missing tenantId claim | 401 | `TENANT_ID_REQUIRED` | JWT doesn't have tenantId |
-| Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Pool Manager |
+| Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Tenant Manager |
 | Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized |
 | Connection error | 500 | `CONNECTION_ERROR` | Failed to get tenant connection |
 
@@ -726,13 +726,13 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
     defer span.End()
 
     // Get tenant ID from context
-    tenantID := poolmanager.GetTenantID(ctx)
+    tenantID := tenantmanager.GetTenantID(ctx)
     if tenantID == "" {
         libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Missing tenant", ErrTenantRequired)
         return nil, ErrTenantRequired
     }
 
-    db, err := poolmanager.GetPostgresForTenant(ctx)
+    db, err := tenantmanager.GetPostgresForTenant(ctx)
     if err != nil {
         return nil, err
     }
@@ -820,7 +820,7 @@ grep -rn "TenantID.*!=\|\.TenantID\s*==" internal/ --include="*.go" | grep -v "_
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
-| "Pool Manager adds complexity" | Complexity is in connection management anyway. Pool Manager standardizes it. | **Use Pool Manager for multi-tenant** |
+| "Tenant Manager adds complexity" | Complexity is in connection management anyway. Tenant Manager standardizes it. | **Use Tenant Manager for multi-tenant** |
 | "JWT parsing is expensive" | Parse once in middleware, use from context everywhere. | **Extract tenant once, propagate via context** |
 | "We'll add tenant isolation later" | Retrofitting tenant isolation is a rewrite. | **Build tenant-aware from the start** |
 
@@ -828,19 +828,19 @@ grep -rn "TenantID.*!=\|\.TenantID\s*==" internal/ --include="*.go" | grep -v "_
 
 **Environment Variables:**
 - [ ] `MULTI_TENANT_ENABLED` in config struct (default: `false`)
-- [ ] `POOL_MANAGER_URL` in config struct (required if multi-tenant)
+- [ ] `MULTI_TENANT_URL` in config struct (required if multi-tenant)
 - [ ] `MULTI_TENANT_CACHE_TTL` in config struct (default: `24h`)
 
 **Middleware & Context:**
 - [ ] JWT tenant extraction middleware (claim key: `tenantId`)
-- [ ] `poolmanager.ContextWithTenantID()` in middleware
+- [ ] `tenantmanager.ContextWithTenantID()` in middleware
 - [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
 
 **Repositories:**
-- [ ] `poolmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
-- [ ] `poolmanager.GetKeyFromContext(ctx, key)` for Redis keys
-- [ ] `poolmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
-- [ ] `poolmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
+- [ ] `tenantmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
+- [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for Redis keys
+- [ ] `tenantmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
+- [ ] `tenantmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
@@ -849,7 +849,7 @@ grep -rn "TenantID.*!=\|\.TenantID\s*==" internal/ --include="*.go" | grep -v "_
 - [ ] Proper error codes for tenant-related failures
 
 **Testing:**
-- [ ] Unit tests with mock tenant context (`poolmanager.ContextWithTenantID`)
+- [ ] Unit tests with mock tenant context (`tenantmanager.ContextWithTenantID`)
 - [ ] Tenant isolation tests (verify data separation between tenants)
 - [ ] Error case tests (missing tenant, invalid tenant, tenant not found)
 - [ ] Integration tests with testcontainers

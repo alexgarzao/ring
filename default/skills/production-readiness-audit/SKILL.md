@@ -52,7 +52,7 @@ Use this skill when:
 | 41 | **Data Encryption at Rest** | Field-level encryption, key management, password hashing, encrypted backups |
 | 43 | **Rate Limiting** | Three-tier strategy (Global/Export/Dispatch), Redis-backed storage, key generation, production safety |
 | 44 | **CORS Configuration** | Origin validation, middleware ordering, production wildcard prohibition, Helmet integration |
-| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Pool Manager, JWT tenantId, context injection |
+| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Tenant Manager, JWT tenantId, context injection |
 
 ### Category C: Operational Readiness (7 dimensions)
 
@@ -3425,26 +3425,26 @@ If multi-tenant IS detected, audit multi-tenant architecture patterns for produc
 
 **Search Patterns:**
 - Files: `**/tenant*.go`, `**/pool*.go`, `**/middleware*.go`, `**/context*.go`
-- Keywords: `tenantID`, `PoolManager`, `TenantContext`, `schema`, `search_path`
+- Keywords: `tenantID`, `TenantManager`, `TenantContext`, `schema`, `search_path`
 - Also search: `**/jwt*.go`, `**/auth*.go` for tenant extraction
 
 **Reference Implementation (GOOD):**
 ```go
-// Pool Manager for tenant connection management
-type PoolManager struct {
+// Tenant Manager for tenant connection management
+type TenantManager struct {
     mu       sync.RWMutex
     pools    map[string]*sql.DB
     config   *PoolConfig
     maxPools int
 }
 
-func (pm *PoolManager) GetConnection(tenantID string) (*sql.DB, error) {
-    pm.mu.RLock()
-    if pool, ok := pm.pools[tenantID]; ok {
-        pm.mu.RUnlock()
+func (tm *TenantManager) GetConnection(tenantID string) (*sql.DB, error) {
+    tm.mu.RLock()
+    if pool, ok := tm.pools[tenantID]; ok {
+        tm.mu.RUnlock()
         return pool, nil
     }
-    pm.mu.RUnlock()
+    tm.mu.RUnlock()
 
     // Create new pool for tenant
     pm.mu.Lock()
@@ -3512,7 +3512,7 @@ func (r *Repo) Save(ctx context.Context, entity *Entity) error {
 1. (HARD GATE) Tenant ID extracted from JWT claims (not user-controlled headers/params) per multi-tenant.md
 2. (HARD GATE) All database queries include tenant filter — no query without tenant scope
 3. (HARD GATE) Tenant context middleware injects tenant into request context
-4. Pool Manager implementation for connection management
+4. Tenant Manager implementation for connection management
 5. Database schema isolation (schema-per-tenant or row-level filtering)
 6. Tenant-scoped cache keys (Redis keys include tenant prefix)
 7. No cross-tenant data leakage in list/search operations
@@ -3521,7 +3521,7 @@ func (r *Repo) Save(ctx context.Context, entity *Entity) error {
 - CRITICAL: Queries without tenant filter — data leakage (HARD GATE violation per Ring standards)
 - CRITICAL: Tenant ID from user-controlled input (HARD GATE violation)
 - CRITICAL: Missing tenant context middleware (HARD GATE violation)
-- HIGH: No Pool Manager for connection management
+- HIGH: No Tenant Manager for connection management
 - HIGH: Cache keys not tenant-scoped
 - MEDIUM: Inconsistent tenant extraction across modules
 - LOW: Missing tenant validation in non-critical paths
@@ -3534,7 +3534,7 @@ func (r *Repo) Save(ctx context.Context, entity *Entity) error {
 - Multi-tenant detection: Yes/No/N/A
 - Tenant extraction: JWT / Header / Missing
 - Tenant middleware: Yes/No
-- Pool Manager: Yes/No
+- Tenant Manager: Yes/No
 - Queries with tenant filter: X/Y
 
 ### Critical Issues
