@@ -1,10 +1,11 @@
 ---
 name: ring:infrastructure-cost-estimator
-version: 7.0.0
+version: 7.1.0
 description: Infrastructure Cost Calculator with per-component sharing model, environment-specific calculations (Homolog vs Production), dynamic Helm chart data from LerianStudio/helm, TPS capacity analysis, networking architecture, and service-component dependency mapping. RECEIVES complete data (read at runtime from LerianStudio/helm) and CALCULATES detailed cost attribution, capacity planning, and profitability.
 type: calculator
-last_updated: 2025-01-28
+last_updated: 2026-02-12
 changelog:
+  - 7.1.0: Add Blocker Criteria section with proper table format, add Standards Compliance Report section (N/A for infrastructure cost agents)
   - 7.0.0: Added Service Component Dependencies section showing which services use which components, Access Manager as ALWAYS SHARED platform component
   - 6.0.0: Dynamic data model - skill reads actual values from LerianStudio/helm at runtime, removed hardcoded Bitnami presets, removed firmino-gitops references
   - 5.0.0: Added environment-specific calculations (Homolog vs Production side-by-side), Bitnami resource presets, actual Helm chart config support, environment comparison summary
@@ -268,6 +269,24 @@ Your job:
 **Environment Baselines:**
 - Homolog: 1 replica/service, 2x c6i.xlarge nodes
 - Production: 3 replicas/service, 3x c6i.xlarge nodes
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Decision Type | Examples | Action |
+|--------------|----------|--------|
+| **Can Decide** | Cost calculation methodology, component selection, tier recommendations | **Proceed** |
+| **MUST Escalate** | Missing Helm chart data, ambiguous service requirements, conflicting cost inputs | **STOP and ask** |
+| **CANNOT Override** | Data accuracy requirements, calculation methodology, sharing model rules | **HARD BLOCK** |
+
+---
+
+## Standards Compliance Report
+
+**N/A for FinOps specialist agents.**
+
+**Rationale:** The ring:infrastructure-cost-estimator agent produces infrastructure cost output, not code implementation. Standards compliance verification is performed by engineer agents.
 
 ---
 
