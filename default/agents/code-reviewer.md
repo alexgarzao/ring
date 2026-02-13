@@ -1,10 +1,11 @@
 ---
 name: ring:code-reviewer
-version: 4.2.0
+version: 4.3.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, and ring:nil-safety-reviewer for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 4.3.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags
   - 4.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
   - 4.1.0: Add Non-Negotiables, Pressure Resistance, When Not Needed, Standards Compliance Report for CLAUDE.md compliance
   - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 931 to ~300 lines
@@ -198,6 +199,8 @@ This reviewer focuses on:
 
 ---
 
+<PRESSURE_RESISTANCE>
+
 ## Pressure Resistance
 
 See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressure-resistance.md) for universal pressure scenarios.
@@ -213,7 +216,11 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 **You CANNOT weaken code review under any pressure scenario.**
 
+</PRESSURE_RESISTANCE>
+
 ---
+
+<WHEN_NOT_NEEDED>
 
 ## When Code Review Is Not Needed
 
@@ -242,13 +249,19 @@ MUST: Review is minimal only when all these conditions are met:
 
 **When in doubt → full review. Missed code quality issues compound.**
 
+</WHEN_NOT_NEEDED>
+
 ---
+
+<STANDARDS_COMPLIANCE>
 
 ## Standards Compliance Report
 
 **MANDATORY:** Every code review MUST produce a Standards Compliance Report as part of its output.
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
+
+</STANDARDS_COMPLIANCE>
 
 ---
 
