@@ -24,17 +24,17 @@ When creating or modifying any agent in `*/agents/*.md`:
 - Agents **FOLLOW** gates, they DO NOT **SKIP** gates
 - Agents **ASK** when uncertain, they DO NOT **GUESS**
 
-### 3. Anti-Patterns (never Do These)
+### 3. Anti-Patterns (MUST NOT do these)
 
-1. **never skip ring:using-ring** - It's mandatory, not optional
-2. **never run reviewers sequentially** - Always dispatch in parallel
-3. **never skip TDD's RED phase** - Test must fail before implementation
-4. **never ignore skill when applicable** - "Simple task" is not an excuse
-5. **never use panic() in Go** - Error handling required
-6. **never commit manually** - Always use `/ring:commit` command
-7. **never assume compliance** - VERIFY with evidence
+1. **MUST NOT skip ring:using-ring** - It's mandatory, not optional
+2. **MUST NOT run reviewers sequentially** - dispatch in parallel
+3. **MUST NOT skip TDD's RED phase** - Test must fail before implementation
+4. **MUST NOT ignore skill when applicable** - "Simple task" is not an excuse
+5. **MUST NOT use panic() in Go** - Error handling required
+6. **MUST NOT commit manually** - use `/ring:commit` command
+7. **MUST NOT assume compliance** - VERIFY with evidence
 
-### 4. Unified Ring Namespace (always)
+### 4. Unified Ring Namespace (MANDATORY)
 
 All Ring components use the unified `ring:` prefix. Plugin differentiation is handled internally.
 
@@ -43,7 +43,7 @@ All Ring components use the unified `ring:` prefix. Plugin differentiation is ha
 - ❌ `<missing ring prefix>` (FORBIDDEN: omitting the `ring:` prefix)
 - ❌ `ring-default:ring:code-reviewer` (deprecated plugin-specific prefix)
 
-### 5. Standards-Agent Synchronization (always CHECK)
+### 5. Standards-Agent Synchronization (MUST CHECK)
 
 When modifying standards files (`dev-team/docs/standards/*.md`):
 
@@ -54,7 +54,7 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 3. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
 4. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (not inline categories)
 
-**All files in same commit** - Never update one without the others.
+**All files in same commit** - MUST NOT update one without the others.
 
 **⛔ TOC MAINTENANCE RULE:**
 Every standards file has a `## Table of Contents` section that MUST stay in sync:
@@ -106,24 +106,26 @@ If any checkbox is no → Fix before committing.
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
 
-**Quick Reference - Section Counts (MUST match standards-coverage-table.md):**
+**Quick Reference - Section Counts:**
 
-| Agent                                   | Standards File             | Section Count      |
-| --------------------------------------- | -------------------------- | ------------------ |
-| `ring:backend-engineer-golang`          | golang.md                  | See coverage table |
-| `ring:backend-engineer-typescript`      | typescript.md              | See coverage table |
-| `ring:frontend-bff-engineer-typescript` | typescript.md              | See coverage table |
-| `ring:frontend-engineer`                | frontend.md                | See coverage table |
-| `ring:frontend-designer`                | frontend.md                | See coverage table |
-| `ring:devops-engineer`                  | devops.md                  | See coverage table |
-| `ring:sre`                              | sre.md                     | See coverage table |
-| `ring:qa-analyst`                       | golang.md or typescript.md | See coverage table |
+MUST match `dev-team/skills/shared-patterns/standards-coverage-table.md`. See the coverage table for current counts per agent.
 
-**⛔ If section counts in skills don't match this table → Update the skill.**
+| Agent                                   | Standards File             |
+| --------------------------------------- | -------------------------- |
+| `ring:backend-engineer-golang`          | golang.md                  |
+| `ring:backend-engineer-typescript`      | typescript.md              |
+| `ring:frontend-bff-engineer-typescript` | typescript.md              |
+| `ring:frontend-engineer`                | frontend.md                |
+| `ring:frontend-designer`                | frontend.md                |
+| `ring:devops-engineer`                  | devops.md                  |
+| `ring:sre`                              | sre.md                     |
+| `ring:qa-analyst`                       | golang.md or typescript.md |
+
+**⛔ If section counts in skills don't match the coverage table → Update the skill.**
 
 ### 6. CLAUDE.md ↔ AGENTS.md Synchronization (AUTOMATIC via Symlink)
 
-**⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md - DO not BREAK:**
+**⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md - MUST NOT break:**
 
 - `CLAUDE.md` - Primary project instructions (source of truth)
 - `AGENTS.md` - Symlink to CLAUDE.md (automatically synchronized)
@@ -134,21 +136,21 @@ If any checkbox is no → Fix before committing.
 
 **Rules:**
 
-- **never delete the AGENTS.md symlink**
-- **never replace AGENTS.md with a regular file**
-- **always edit CLAUDE.md** - changes automatically appear in AGENTS.md
+- **MUST NOT delete the AGENTS.md symlink**
+- **MUST NOT replace AGENTS.md with a regular file**
+- **MUST edit CLAUDE.md** - changes automatically appear in AGENTS.md
 - If symlink is broken → Restore with: `ln -sf CLAUDE.md AGENTS.md`
 
 ---
 
-### 7. Content Duplication Prevention (always CHECK)
+### 7. Content Duplication Prevention (MUST CHECK)
 
 Before adding any content to prompts, skills, agents, or documentation:
 
 1. **SEARCH FIRST**: `grep -r "keyword" --include="*.md"` - Check if content already exists
 2. **If content exists** → **REFERENCE it**, DO NOT duplicate. Use: `See [file](path) for details`
 3. **If adding new content** → Add to the canonical source per table below
-4. **never copy** content between files - always link to the single source of truth
+4. **MUST NOT copy** content between files - link to the single source of truth
 
 | Information Type      | Canonical Source (Single Source of Truth) |
 | --------------------- | ----------------------------------------- |
@@ -165,7 +167,7 @@ When content is reused across multiple skills within a plugin:
 
 1. **Extract to shared-patterns**: Create `{plugin}/skills/shared-patterns/{pattern-name}.md`
 2. **Reference from skills**: Use `See [shared-patterns/{name}.md](../shared-patterns/{name}.md)`
-3. **never duplicate**: If the same table/section appears in 2+ skills → extract to shared-patterns
+3. **MUST NOT duplicate**: If the same table/section appears in 2+ skills → extract to shared-patterns
 
 | Shared Pattern Type           | Location                                                      |
 | ----------------------------- | ------------------------------------------------------------- |
@@ -189,7 +191,7 @@ When content is reused across multiple skills within a plugin:
 | ----------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | [CRITICAL RULES](#-critical-rules-read-first)                                             | Non-negotiable requirements                        |
 | [CLAUDE.md ↔ AGENTS.md Sync](#6-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync                               |
-| [Content Duplication Prevention](#7-content-duplication-prevention-always-check)          | Canonical sources + reference pattern              |
+| [Content Duplication Prevention](#7-content-duplication-prevention-must-check)            | Canonical sources + reference pattern              |
 | [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents)      | Prevent AI from assuming/skipping                  |
 | [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory)                     | Selective emphasis for effective prompts           |
 | [Agent Modification Verification](#agent-modification-verification-mandatory)             | Checklist for agent changes                        |
@@ -198,7 +200,7 @@ When content is reused across multiple skills within a plugin:
 | [Key Workflows](#key-workflows)                                                           | Quick reference + [full docs](docs/WORKFLOWS.md)   |
 | [Agent Output Schemas](#agent-output-schema-archetypes)                                   | Schema summary + [full docs](docs/AGENT_DESIGN.md) |
 | [Compliance Rules](#compliance-rules)                                                     | TDD, Review, Commit rules                          |
-| [Standards-Agent Synchronization](#5-standards-agent-synchronization-always-check)        | Standards ↔ Agent mapping                          |
+| [Standards-Agent Synchronization](#5-standards-agent-synchronization-must-check)          | Standards ↔ Agent mapping                          |
 | [Documentation Sync](#documentation-sync-checklist)                                       | Files to update                                    |
 
 ---
@@ -245,16 +247,7 @@ AI models naturally attempt to be "helpful" by making autonomous decisions. This
 
 **Language Guidelines for Agent Prompts:**
 
-| Weak (AVOID)             | Strong (Correct)              |
-| ------------------------ | ----------------------------- |
-| "You should check..."    | "MUST check..."               |
-| "It's recommended to..." | "REQUIRED: ..."               |
-| "Consider verifying..."  | "MANDATORY: Verify..."        |
-| "You can skip if..."     | "CANNOT skip. No exceptions." |
-| "Optionally include..."  | "MANDATORY: Include..."       |
-| "Try to follow..."       | "HARD GATE: Follow..."        |
-
-**Note:** Place enforcement word at the BEGINNING, not embedded in the sentence.
+See [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory) for the complete weak→strong transformation rules and enforcement word positioning.
 
 **HARD GATE: If an agent lacks anti-rationalization tables, it is incomplete and must be updated.**
 
@@ -536,7 +529,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
 #### Agent/Skill/Command Invocation
 
-See [Unified Ring Namespace](#4-unified-ring-namespace-always) above for invocation format. Always use `ring:{component}` (e.g., `ring:code-reviewer`, `ring:backend-engineer-golang`).
+See [Unified Ring Namespace](#4-unified-ring-namespace-mandatory) above for invocation format. MUST use `ring:{component}` (e.g., `ring:code-reviewer`, `ring:backend-engineer-golang`).
 
 ---
 
@@ -573,12 +566,12 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 - Announce non-obvious skill usage
 
 # Commit compliance (default/commands/commit.md)
-- always use /ring:commit for all commits
-- Never write git commit commands manually
+- MUST use /ring:commit for all commits
+- MUST NOT write git commit commands manually
 - Command enforces: conventional commits, trailers, no emoji signatures
 - MUST use --trailer parameter for AI identification (not in message body)
 - Format: git commit -m "msg" --trailer "Generated-by: Claude" --trailer "AI-Model: <model>"
-- never use HEREDOC to include trailers in message body
+- MUST NOT use HEREDOC to include trailers in message body
 ```
 
 ---
@@ -658,4 +651,4 @@ Using-* Skills (plugin introductions):
 - [ ] No bare agent/skill names in invocation contexts (must have ring: prefix)
 - [ ] No deprecated `ring-{plugin}:` format used
 
-**Always use unified namespace:** `ring:{component}` (e.g., `ring:code-reviewer`)
+**MUST use unified namespace:** `ring:{component}` (e.g., `ring:code-reviewer`)

@@ -15,6 +15,7 @@ This module covers data transformation, error handling, and function design.
 | 3   | [Error Handling](#error-handling)                                                             | Error wrapping and checking rules          |
 | 4   | [Exit/Fatal Location Rules](#exitfatal-location-rules-mandatory)                              | Where exit/fatal/panic is allowed          |
 | 5   | [Function Design](#function-design-mandatory)                                                 | Single responsibility principle            |
+| 6   | [File Organization](#file-organization-mandatory)                                             | File-level single responsibility           |
 
 ---
 
@@ -499,5 +500,114 @@ func applyDiscount(total float64, couponCode string) float64 {
 | More than 3 parameters                  | Consider parameter object or splitting |
 | Nested conditionals > 2 levels          | Extract inner logic to functions       |
 | Function does validation and processing | Separate validation function           |
+
+---
+
+## File Organization (MANDATORY)
+
+**Single Responsibility per File:** Each file MUST represent ONE cohesive concept.
+
+### Rules
+
+| Rule                              | Description                                                   |
+| --------------------------------- | ------------------------------------------------------------- |
+| **One concept per file**          | A file groups functions/types for a single domain concept     |
+| **Max 200-300 lines**             | If longer, split by responsibility boundaries                 |
+| **File name = content**           | `order_validator.go` MUST only contain order validation logic |
+| **Test file mirrors source file** | `order_service.go` → `order_service_test.go`                  |
+
+### Examples
+
+```go
+// ❌ BAD - account_service.go (450 lines, multiple concerns)
+package services
+
+type AccountService struct {
+    repo AccountRepository
+    log  *zap.Logger
+}
+
+// CRUD operations
+func (s *AccountService) CreateAccount(ctx context.Context, input CreateAccountInput) (*Account, error) { ... }
+func (s *AccountService) UpdateAccount(ctx context.Context, id string, input UpdateAccountInput) (*Account, error) { ... }
+func (s *AccountService) DeleteAccount(ctx context.Context, id string) error { ... }
+func (s *AccountService) GetAccount(ctx context.Context, id string) (*Account, error) { ... }
+func (s *AccountService) ListAccounts(ctx context.Context, filter AccountFilter) ([]*Account, error) { ... }
+
+// Validation (different concern)
+func (s *AccountService) ValidateAccountName(name string) error { ... }
+func (s *AccountService) ValidateAccountType(t string) error { ... }
+func (s *AccountService) ValidateAccountStatus(status string) error { ... }
+
+// Balance operations (different concern)
+func (s *AccountService) CalculateAccountBalance(ctx context.Context, id string) (float64, error) { ... }
+func (s *AccountService) ReconcileAccount(ctx context.Context, id string) error { ... }
+
+// Export operations (different concern)
+func (s *AccountService) GenerateAccountStatement(ctx context.Context, id string, period Period) (*Statement, error) { ... }
+func (s *AccountService) ExportAccountToCSV(ctx context.Context, id string) ([]byte, error) { ... }
+```
+
+```go
+// ✅ GOOD - Split by responsibility
+
+// account_command.go (~80 lines) - Write operations
+package services
+
+type AccountCommandService struct {
+    repo AccountRepository
+    log  *zap.Logger
+}
+
+func (s *AccountCommandService) CreateAccount(ctx context.Context, input CreateAccountInput) (*Account, error) { ... }
+func (s *AccountCommandService) UpdateAccount(ctx context.Context, id string, input UpdateAccountInput) (*Account, error) { ... }
+func (s *AccountCommandService) DeleteAccount(ctx context.Context, id string) error { ... }
+
+// account_query.go (~70 lines) - Read operations
+package services
+
+type AccountQueryService struct {
+    repo AccountRepository
+    log  *zap.Logger
+}
+
+func (s *AccountQueryService) GetAccount(ctx context.Context, id string) (*Account, error) { ... }
+func (s *AccountQueryService) ListAccounts(ctx context.Context, filter AccountFilter) ([]*Account, error) { ... }
+
+// account_validator.go (~60 lines) - Validation rules
+package services
+
+func ValidateAccountName(name string) error { ... }
+func ValidateAccountType(t string) error { ... }
+func ValidateAccountStatus(status string) error { ... }
+
+// account_balance.go (~90 lines) - Balance operations
+package services
+
+type AccountBalanceService struct {
+    repo AccountRepository
+    log  *zap.Logger
+}
+
+func (s *AccountBalanceService) CalculateBalance(ctx context.Context, id string) (float64, error) { ... }
+func (s *AccountBalanceService) Reconcile(ctx context.Context, id string) error { ... }
+
+// account_export.go (~70 lines) - Reporting/export
+package services
+
+func GenerateStatement(ctx context.Context, id string, period Period) (*Statement, error) { ... }
+func ExportToCSV(ctx context.Context, id string) ([]byte, error) { ... }
+```
+
+### Signs a File Needs Splitting
+
+| Sign                                         | Action                                             |
+| -------------------------------------------- | -------------------------------------------------- |
+| File exceeds 300 lines                       | Split at responsibility boundaries                 |
+| Multiple struct types with their own methods | One file per struct                                |
+| `// ===== Section =====` separator comments  | Each section becomes its own file                  |
+| Mix of CRUD + validation + business logic    | Separate into command, query, validation files     |
+| File name requires "and" to describe content | Split into separate files                          |
+| Unrelated imports at the top                 | Different import groups suggest different concerns  |
 
 ---
