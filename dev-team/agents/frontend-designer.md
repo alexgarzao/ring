@@ -1,11 +1,12 @@
 ---
 name: ring:frontend-designer
-version: 1.5.0
+version: 1.6.0
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code. Includes UI Library Mode detection for handoff.
 type: specialist
 model: opus
 last_updated: 2026-02-12
 changelog:
+  - 1.6.0: Update Standards Compliance trigger with enforcement-first MANDATORY semantic block
   - 1.5.0: Added Standards Compliance Report section (MANDATORY for ANALYSIS mode) with standards-coverage-table.md reference
   - 1.4.0: Added UI Library Mode Detection for handoff, updated to 19 sections after frontend.md expansion
   - 1.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
@@ -1277,10 +1278,12 @@ If any condition is true, STOP immediately and ask user for clarification.
 
 **Detection:** Prompt contains `**MODE: ANALYSIS only**`
 
-**When triggered, you MUST:**
+<MANDATORY>
+MUST: When triggered:
 
 1. Output Standards Coverage Table per [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md)
 2. Then output detailed findings for items with issues
+</MANDATORY>
 
 See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:
 
