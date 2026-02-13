@@ -1,11 +1,12 @@
 ---
 name: ring:frontend-engineer
-version: 3.4.0
+version: 3.5.0
 description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, modern React patterns, and dual-mode UI library support (sindarian-ui vs vanilla).
 type: specialist
 model: opus
-last_updated: 2026-02-05
+last_updated: 2026-02-12
 changelog:
+  - 3.5.0: Added Standards Compliance Report section for ANALYSIS mode with standards-coverage-table.md reference
   - 3.4.0: Added 6 new standards sections (14-19), Pre-Dev Integration, Mode Detection (sindarian-ui vs vanilla), updated to 19 total sections
   - 3.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
   - 3.2.6: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
@@ -1060,7 +1061,27 @@ Before marking implementation complete, you MUST verify:
 
 **⛔ If any checkbox is unchecked → Fix before submission. Self-check is MANDATORY.**
 
-## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+---
+
+## Standards Compliance Report
+
+**MANDATORY:** When operating in ANALYSIS mode, every frontend implementation review MUST produce a Standards Compliance Report.
+
+**Detection:** Prompt contains `**MODE: ANALYSIS only**`
+
+**When triggered, you MUST:**
+
+1. Output Standards Coverage Table per [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md)
+2. Then output detailed findings for items with issues
+
+See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) for:
+
+- Table format
+- Status legend
+- Anti-rationalization rules
+- Completeness verification checklist
+
+### When Invoked from ring:dev-refactor
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
