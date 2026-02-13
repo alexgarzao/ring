@@ -279,31 +279,32 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 22 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
 | 23 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
 | 24 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
-| 25 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
-| 26 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | **Offset & cursor strategies**, limit validation, response structure, lib-commons utilities |
-| 27 | HTTP Status Code Consistency | api-patterns.md | `#http-status-code-consistency-mandatory` | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands |
-| 28 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
-| 29 | Handler Constructor Pattern | api-patterns.md | `#handler-constructor-pattern-mandatory` | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands |
-| 30 | Input Validation | api-patterns.md | `#input-validation-mandatory` | **Defense in depth (MANDATORY)**, validator v10 tags, **numeric query param validation**, error translation |
-| 31 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
-| 32 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
-| 33 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, **14 mandatory linters**, magic numbers (mnd) |
-| 34 | Migration Guidance for Mandatory Linter Promotion | quality.md | `#migration-guidance-for-mandatory-linter-promotion` | **Phased rollout (MANDATORY)**, per-linter common violations, batch fix commands |
-| 35 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
-| 36 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
-| 37 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
-| 38 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
-| 39 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
-| 40 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
-| 41 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
-| 42 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
-| 43 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
-| 44 | RabbitMQ Reconnection Strategy | messaging.md | `#rabbitmq-reconnection-strategy-mandatory` | **MANDATORY: Consumer Reconnection Loop**, **MANDATORY: Producer Per-Publish Retry**, **MANDATORY: Health Check Integration**, **MANDATORY: Deadlock Prevention** |
-| 45 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
-| 46 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 47 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **⚠️ CONDITIONAL: Tenant Isolation Verification**: IDOR prevention, detection commands |
-| 48 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, Redis-backed storage (in-memory fallback on Redis outage), key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
-| 49 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
+| 25 | File Organization | domain.md | `#file-organization-mandatory` | File-level SRP, max 200-300 lines |
+| 26 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
+| 27 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | **Offset & cursor strategies**, limit validation, response structure, lib-commons utilities |
+| 28 | HTTP Status Code Consistency | api-patterns.md | `#http-status-code-consistency-mandatory` | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands |
+| 29 | OpenAPI Documentation (Swaggo) | api-patterns.md | `#openapi-documentation-swaggo-mandatory` | Annotations as source of truth |
+| 30 | Handler Constructor Pattern | api-patterns.md | `#handler-constructor-pattern-mandatory` | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands |
+| 31 | Input Validation | api-patterns.md | `#input-validation-mandatory` | **Defense in depth (MANDATORY)**, validator v10 tags, **numeric query param validation**, error translation |
+| 32 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
+| 33 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 34 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, **14 mandatory linters**, magic numbers (mnd) |
+| 35 | Migration Guidance for Mandatory Linter Promotion | quality.md | `#migration-guidance-for-mandatory-linter-promotion` | **Phased rollout (MANDATORY)**, per-linter common violations, batch fix commands |
+| 36 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |
+| 37 | Container Security | quality.md | `#container-security-conditional` | **⚠️ CONDITIONAL** - Non-root user, image pinning (if Dockerfile exists) |
+| 38 | Architecture Patterns | architecture.md | `#architecture-patterns` | Hexagonal architecture |
+| 39 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
+| 40 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
+| 41 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
+| 42 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
+| 43 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
+| 44 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
+| 45 | RabbitMQ Reconnection Strategy | messaging.md | `#rabbitmq-reconnection-strategy-mandatory` | **MANDATORY: Consumer Reconnection Loop**, **MANDATORY: Producer Per-Publish Retry**, **MANDATORY: Health Check Integration**, **MANDATORY: Deadlock Prevention** |
+| 46 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
+| 47 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 48 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-conditional` | Pool Manager, JWT tenant extraction, context injection, testing, **⚠️ CONDITIONAL: Tenant Isolation Verification**: IDOR prevention, detection commands |
+| 49 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, Redis-backed storage (in-memory fallback on Redis outage), key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
+| 50 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
 
 **Module Loading Guide:**
 
@@ -336,16 +337,17 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 8   | Testing                       | `#testing`                             | Type-safe mocks, fixtures, edge cases         |
 | 9   | Error Handling                | `#error-handling`                      | Custom error classes                          |
 | 10  | Function Design               | `#function-design-mandatory`           | Single responsibility                         |
-| 11  | Naming Conventions            | `#naming-conventions`                  | Files, interfaces, types                      |
-| 12  | Directory Structure           | `#directory-structure`                 | Lerian pattern                                |
-| 13  | RabbitMQ Worker Pattern       | `#rabbitmq-worker-pattern`             | Async message processing                      |
-| 14  | Always-Valid Domain Model     | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection  |
+| 11  | File Organization             | `#file-organization-mandatory`         | File-level SRP, max 200-300 lines             |
+| 12  | Naming Conventions            | `#naming-conventions`                  | Files, interfaces, types                      |
+| 13  | Directory Structure           | `#directory-structure`                 | Lerian pattern                                |
+| 14  | RabbitMQ Worker Pattern       | `#rabbitmq-worker-pattern`             | Async message processing                      |
+| 15  | Always-Valid Domain Model     | `#always-valid-domain-model-mandatory` | Constructor validation, invariant protection  |
 
 ---
 
 ### frontend-bff-engineer-typescript → typescript.md
 
-**Includes all backend-engineer-typescript sections PLUS 6 BFF-specific sections (20 total).**
+**Includes all backend-engineer-typescript sections PLUS 6 BFF-specific sections (21 total).**
 
 | #   | Section to Check              | Anchor                                 | Key Subsections                                                            |
 | --- | ----------------------------- | -------------------------------------- | -------------------------------------------------------------------------- |
@@ -359,22 +361,23 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 8   | Testing                       | `#testing`                             | Type-safe mocks, fixtures, edge cases                                      |
 | 9   | Error Handling                | `#error-handling`                      | Custom error classes                                                       |
 | 10  | Function Design               | `#function-design-mandatory`           | Single responsibility                                                      |
-| 11  | Naming Conventions            | `#naming-conventions`                  | Files, interfaces, types                                                   |
-| 12  | Directory Structure           | `#directory-structure`                 | Lerian pattern                                                             |
-| 13  | RabbitMQ Worker Pattern       | `#rabbitmq-worker-pattern`             | Async message processing                                                   |
-| 14  | Always-Valid Domain Model     | `#always-valid-domain-model-mandatory` | Constructor validation                                                     |
-| 15  | BFF Architecture Pattern      | `#bff-architecture-pattern-mandatory`  | **HARD GATE:** Clean Architecture, dual-mode (sindarian-server vs vanilla) |
-| 16  | Three-Layer DTO Mapping       | `#three-layer-dto-mapping-mandatory`   | **HARD GATE:** HTTP ↔ Domain ↔ External DTOs, mappers                      |
-| 17  | HttpService Lifecycle         | `#httpservice-lifecycle`               | createDefaults, onBeforeFetch, onAfterFetch, catch hooks                   |
-| 18  | API Routes Pattern            | `#api-routes-pattern-mandatory`        | **⛔ FORBIDDEN:** Server Actions. MUST use Next.js API Routes              |
-| 19  | Exception Hierarchy           | `#exception-hierarchy`                 | ApiException, GlobalExceptionFilter, typed exceptions                      |
-| 20  | Cross-Cutting Decorators      | `#cross-cutting-decorators`            | LogOperation, Cached, Retry decorators                                     |
+| 11  | File Organization             | `#file-organization-mandatory`         | File-level SRP, max 200-300 lines                                          |
+| 12  | Naming Conventions            | `#naming-conventions`                  | Files, interfaces, types                                                   |
+| 13  | Directory Structure           | `#directory-structure`                 | Lerian pattern                                                             |
+| 14  | RabbitMQ Worker Pattern       | `#rabbitmq-worker-pattern`             | Async message processing                                                   |
+| 15  | Always-Valid Domain Model     | `#always-valid-domain-model-mandatory` | Constructor validation                                                     |
+| 16  | BFF Architecture Pattern      | `#bff-architecture-pattern-mandatory`  | **HARD GATE:** Clean Architecture, dual-mode (sindarian-server vs vanilla) |
+| 17  | Three-Layer DTO Mapping       | `#three-layer-dto-mapping-mandatory`   | **HARD GATE:** HTTP ↔ Domain ↔ External DTOs, mappers                      |
+| 18  | HttpService Lifecycle         | `#httpservice-lifecycle`               | createDefaults, onBeforeFetch, onAfterFetch, catch hooks                   |
+| 19  | API Routes Pattern            | `#api-routes-pattern-mandatory`        | **⛔ FORBIDDEN:** Server Actions. MUST use Next.js API Routes              |
+| 20  | Exception Hierarchy           | `#exception-hierarchy`                 | ApiException, GlobalExceptionFilter, typed exceptions                      |
+| 21  | Cross-Cutting Decorators      | `#cross-cutting-decorators`            | LogOperation, Cached, Retry decorators                                     |
 
 **⛔ HARD GATES for BFF Engineer:**
 
-- Section 15: BFF is MANDATORY for all dynamic data
-- Section 16: Three-layer mapping is MANDATORY, no pass-through
-- Section 18: Server Actions are FORBIDDEN, API Routes only
+- Section 16: BFF is MANDATORY for all dynamic data
+- Section 17: Three-layer mapping is MANDATORY, no pass-through
+- Section 19: Server Actions are FORBIDDEN, API Routes only
 
 ---
 
@@ -390,35 +393,36 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 6   | Typography Standards            | `#typography-standards`            | Font selection and pairing                                              |
 | 7   | Animation Standards             | `#animation-standards`             | CSS transitions, Framer Motion                                          |
 | 8   | Component Patterns              | `#component-patterns`              | Compound components, error boundaries                                   |
-| 9   | Accessibility                   | `#accessibility`                   | WCAG 2.1 AA compliance                                                  |
-| 10  | Performance                     | `#performance`                     | Code splitting, image optimization                                      |
-| 11  | Directory Structure             | `#directory-structure`             | Next.js App Router layout                                               |
-| 12  | Forbidden Patterns              | `#forbidden-patterns`              | Anti-patterns to avoid                                                  |
-| 13  | Standards Compliance Categories | `#standards-compliance-categories` | Categories for ring:dev-refactor                                        |
-| 14  | Form Field Abstraction Layer    | `#form-field-abstraction-layer`    | **HARD GATE:** Field wrappers, dual-mode (sindarian-ui vs vanilla)      |
-| 15  | Provider Composition Pattern    | `#provider-composition-pattern`    | Nested providers order, feature providers                               |
-| 16  | Custom Hooks Patterns           | `#custom-hooks-patterns`           | **HARD GATE:** usePagination, useCursorPagination, useCreateUpdateSheet |
-| 17  | Fetcher Utilities Pattern       | `#fetcher-utilities-pattern`       | getFetcher, postFetcher, patchFetcher, deleteFetcher                    |
-| 18  | Client-Side Error Handling      | `#client-side-error-handling`      | **HARD GATE:** ErrorBoundary, API error helpers, toast                  |
-| 19  | Data Table Pattern              | `#data-table-pattern`              | TanStack Table, server-side pagination                                  |
+| 9   | File Organization               | `#file-organization-mandatory`     | File-level SRP, max 200 lines per component                            |
+| 10  | Accessibility                   | `#accessibility`                   | WCAG 2.1 AA compliance                                                  |
+| 11  | Performance                     | `#performance`                     | Code splitting, image optimization                                      |
+| 12  | Directory Structure             | `#directory-structure`             | Next.js App Router layout                                               |
+| 13  | Forbidden Patterns              | `#forbidden-patterns`              | Anti-patterns to avoid                                                  |
+| 14  | Standards Compliance Categories | `#standards-compliance-categories` | Categories for ring:dev-refactor                                        |
+| 15  | Form Field Abstraction Layer    | `#form-field-abstraction-layer`    | **HARD GATE:** Field wrappers, dual-mode (sindarian-ui vs vanilla)      |
+| 16  | Provider Composition Pattern    | `#provider-composition-pattern`    | Nested providers order, feature providers                               |
+| 17  | Custom Hooks Patterns           | `#custom-hooks-patterns`           | **HARD GATE:** usePagination, useCursorPagination, useCreateUpdateSheet |
+| 18  | Fetcher Utilities Pattern       | `#fetcher-utilities-pattern`       | getFetcher, postFetcher, patchFetcher, deleteFetcher                    |
+| 19  | Client-Side Error Handling      | `#client-side-error-handling`      | **HARD GATE:** ErrorBoundary, API error helpers, toast                  |
+| 20  | Data Table Pattern              | `#data-table-pattern`              | TanStack Table, server-side pagination                                  |
 
 **⛔ HARD GATES for Frontend Engineer:**
 
-- Section 14: Form field abstraction is MANDATORY, direct input usage FORBIDDEN
-- Section 16: Custom hooks MANDATORY for pagination and CRUD sheets
-- Section 18: ErrorBoundary and API error handling MANDATORY
+- Section 15: Form field abstraction is MANDATORY, direct input usage FORBIDDEN
+- Section 17: Custom hooks MANDATORY for pagination and CRUD sheets
+- Section 19: ErrorBoundary and API error handling MANDATORY
 
 ---
 
 ### ring:frontend-designer → frontend.md
 
-**Same sections as ring:frontend-engineer (19 sections).** See above.
+**Same sections as ring:frontend-engineer (20 sections).** See above.
 
 ---
 
 ### ring:ui-engineer → frontend.md
 
-**Same sections as ring:frontend-engineer (19 sections).** See above.
+**Same sections as ring:frontend-engineer (20 sections).** See above.
 
 **Additional ui-engineer requirements:**
 The ring:ui-engineer MUST also validate against product-designer outputs:
