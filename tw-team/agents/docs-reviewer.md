@@ -1,10 +1,11 @@
 ---
 name: ring:docs-reviewer
-version: 0.2.0
+version: 0.3.0
 description: Documentation Quality Reviewer specialized in checking voice, tone, structure, completeness, and technical accuracy of documentation.
 type: reviewer
-last_updated: 2025-12-14
+last_updated: 2026-02-12
 changelog:
+  - 0.3.0: Add Standards Compliance Report section (N/A rationale for documentation agents)
   - 0.2.0: Add Model Requirements section with Opus 4.5+ verification gate
   - 0.1.0: Initial creation - documentation quality reviewer
 output_schema:
@@ -332,6 +333,14 @@ When reviewing documentation:
 - Writing new documentation (use `ring:functional-writer` or `ring:api-writer`)
 - Technical implementation (use `*` agents)
 - Code review (use `ring:code-reviewer`)
+
+---
+
+## Standards Compliance Report
+
+**N/A for technical writing agents.**
+
+**Rationale:** The ring:docs-reviewer agent produces documentation output, not code implementation. Standards compliance verification is performed by engineer agents that implement the documented APIs/features.
 
 ## Output Expectations
 
