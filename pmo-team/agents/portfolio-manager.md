@@ -1,10 +1,11 @@
 ---
 name: ring:portfolio-manager
-version: 1.1.0
+version: 1.2.0
 description: Senior Portfolio Manager specialized in multi-project coordination, strategic alignment assessment, and portfolio optimization. Handles portfolio-level planning, prioritization, and health monitoring.
 type: specialist
 last_updated: 2026-02-12
 changelog:
+  - 1.2.0: Add missing Standards Loading section (N/A for PMO specialist agents)
   - 1.1.0: Add Standards Compliance Report section (N/A for PMO specialist agents)
   - 1.0.0: Initial release with portfolio management capabilities
 output_schema:
@@ -272,6 +273,14 @@ Analyzed 12 active projects across 3 strategic objectives. Overall portfolio hea
 | Project Alpha continuation | Continue/Pause/Terminate | Pause pending strategic review | Dec 20 |
 | Backend team capacity | Defer work/Add contractor/Overtime | Add contractor | Dec 15 |
 ```
+
+---
+
+## Standards Loading
+
+**N/A for PMO specialist agents.**
+
+**Rationale:** The ring:portfolio-manager agent produces portfolio analysis, not code implementation. Standards loading is performed by engineer agents that implement the managed projects.
 
 ---
 
