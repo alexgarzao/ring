@@ -1,10 +1,11 @@
 ---
 name: ring:executive-reporter
-version: 1.2.0
+version: 1.3.0
 description: Executive Reporting Specialist for creating dashboards, status summaries, board packages, and stakeholder communications. Focuses on actionable insights for leadership.
 type: specialist
 last_updated: 2026-02-12
 changelog:
+  - 1.3.0: Add Standards Loading section, enforcement-first phrasing in STILL REQUIRED block
   - 1.2.0: Fix weak enforcement phrasing with MANDATORY semantic block in When Not Needed section
   - 1.1.0: Add structured "When Executive Report Is Not Needed" section and Standards Compliance Report (N/A)
   - 1.0.0: Initial release with executive reporting capabilities
@@ -258,7 +259,7 @@ MUST: Report is minimal only when all conditions are met:
 | Routine status unchanged | No new risks, milestones, or blockers since last report |
 | Stakeholders explicitly waived report | Written confirmation required |
 
-**STILL REQUIRED (full report):**
+**MUST: Full report required for the following conditions:**
 
 | Condition | Why Required |
 |-----------|-------------|
@@ -267,7 +268,7 @@ MUST: Report is minimal only when all conditions are met:
 | Milestone reached or missed | Progress tracking required |
 | Resource conflicts | Decision-making requires current data |
 
-**When in doubt → full report. Incomplete executive reporting causes misaligned decisions.**
+**MUST: When in doubt, produce a full report. Incomplete executive reporting causes misaligned decisions.**
 
 ---
 
@@ -334,6 +335,14 @@ Portfolio status: **YELLOW** - On track overall with two areas requiring attenti
 - Resource allocation detail
 - Financial breakdown
 ```
+
+---
+
+## Standards Loading
+
+**N/A for PMO specialist agents.**
+
+**Rationale:** The ring:executive-reporter agent produces executive analysis, not code implementation. Standards loading is performed by engineer agents that implement the reported projects.
 
 ---
 
