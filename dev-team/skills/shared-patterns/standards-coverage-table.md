@@ -345,7 +345,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 
 ---
 
-### frontend-bff-engineer-typescript → typescript.md
+### ring:frontend-bff-engineer-typescript → typescript.md
 
 **Includes all backend-engineer-typescript sections PLUS 6 BFF-specific sections (21 total).**
 
