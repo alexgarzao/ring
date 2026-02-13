@@ -1,10 +1,11 @@
 ---
 name: ring:test-reviewer
-version: 1.3.0
+version: 1.4.0
 description: "Test Quality Review: Reviews test coverage, edge cases, test independence, assertion quality, and test anti-patterns across unit, integration, and E2E tests. Runs in parallel with other reviewers for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 1.4.0: Normalize enforcement words to sentence start, lowercase context words per lexical salience guidelines
   - 1.3.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags
   - 1.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
   - 1.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
@@ -438,12 +439,12 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 | User Says | This Is | Your Response |
 |-----------|---------|---------------|
-| "Tests are optional for this feature" | SCOPE_REDUCTION | "Test coverage for critical paths is NON-NEGOTIABLE. MUST document as CRITICAL." |
-| "We test manually" | TOOL_SUBSTITUTION | "Manual testing supplements automated tests, CANNOT replace them." |
-| "Happy path passes, ship it" | MINIMIZATION | "Happy path is insufficient. MUST verify edge cases and error paths." |
-| "Test refactoring is low priority" | DEFERRAL | "Test quality directly impacts reliability. MUST flag anti-patterns." |
+| "Tests are optional for this feature" | SCOPE_REDUCTION | "MUST document test coverage for critical paths as CRITICAL. Non-negotiable." |
+| "We test manually" | TOOL_SUBSTITUTION | "CANNOT replace automated tests with manual testing. Manual supplements only." |
+| "Happy path passes, ship it" | MINIMIZATION | "MUST verify edge cases and error paths. Happy path is insufficient." |
+| "Test refactoring is low priority" | DEFERRAL | "MUST flag test anti-patterns. Test quality directly impacts reliability." |
 
-**You CANNOT weaken test review under any pressure scenario.**
+**CANNOT weaken test review under any pressure scenario.**
 
 </PRESSURE_RESISTANCE>
 
@@ -476,7 +477,7 @@ MUST: Review is minimal only when all these conditions are met:
 | Refactored production code | Tests may need updating |
 | Changed business logic | Edge case coverage must be re-verified |
 
-**When in doubt → full review. Poor test quality gives false confidence.**
+**MUST: When in doubt, perform a full review. Poor test quality gives false confidence.**
 
 </WHEN_NOT_NEEDED>
 
@@ -486,7 +487,7 @@ MUST: Review is minimal only when all these conditions are met:
 
 ## Standards Compliance Report
 
-**MANDATORY:** Every test review MUST produce a Standards Compliance Report as part of its output.
+**MANDATORY:** Every test review must produce a Standards Compliance Report as part of its output.
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
 

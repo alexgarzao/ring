@@ -1,10 +1,11 @@
 ---
 name: ring:code-reviewer
-version: 4.3.0
+version: 4.4.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, and ring:nil-safety-reviewer for fast feedback."
 type: reviewer
 last_updated: 2026-02-12
 changelog:
+  - 4.4.0: Normalize enforcement words to sentence start, lowercase context words per lexical salience guidelines
   - 4.3.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags
   - 4.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
   - 4.1.0: Add Non-Negotiables, Pressure Resistance, When Not Needed, Standards Compliance Report for CLAUDE.md compliance
@@ -181,7 +182,7 @@ This reviewer focuses on:
 
 | Requirement | Why Non-Negotiable |
 |-------------|-------------------|
-| **ALL checklist categories completed** | Incomplete review = missed issues |
+| **all checklist categories completed** | Incomplete review = missed issues |
 | **AI slop detection performed** | Phantom dependencies cause production failures |
 | **Algorithmic flow verified** | State sequencing errors cause data corruption |
 | **Dead code flagged** | Unused code increases maintenance burden |
@@ -209,12 +210,12 @@ See [reviewer-pressure-resistance.md](../skills/shared-patterns/reviewer-pressur
 
 | User Says | This Is | Your Response |
 |-----------|---------|---------------|
-| "Skip the AI slop checks" | SCOPE_REDUCTION | "AI slop detection is MANDATORY. CANNOT skip dependency verification." |
-| "Just check the changed lines" | SCOPE_REDUCTION | "Full context review required. Changed lines affect adjacent code." |
+| "Skip the AI slop checks" | SCOPE_REDUCTION | "MANDATORY: AI slop detection. CANNOT skip dependency verification." |
+| "Just check the changed lines" | SCOPE_REDUCTION | "REQUIRED: Full context review. Changed lines affect adjacent code." |
 | "Architecture is already decided" | AUTHORITY_BIAS | "MUST verify architecture follows SOLID. Decisions ≠ correctness." |
-| "Dead code is harmless" | MINIMIZATION | "Dead code increases maintenance burden and hides bugs. MUST flag." |
+| "Dead code is harmless" | MINIMIZATION | "MUST flag dead code. Increases maintenance burden and hides bugs." |
 
-**You CANNOT weaken code review under any pressure scenario.**
+**CANNOT weaken code review under any pressure scenario.**
 
 </PRESSURE_RESISTANCE>
 
@@ -247,7 +248,7 @@ MUST: Review is minimal only when all these conditions are met:
 | Configuration affecting behavior | Runtime behavior impact |
 | Refactoring changes | Behavior preservation must be verified |
 
-**When in doubt → full review. Missed code quality issues compound.**
+**MUST: When in doubt, perform a full review. Missed code quality issues compound.**
 
 </WHEN_NOT_NEEDED>
 
@@ -257,7 +258,7 @@ MUST: Review is minimal only when all these conditions are met:
 
 ## Standards Compliance Report
 
-**MANDATORY:** Every code review MUST produce a Standards Compliance Report as part of its output.
+**MANDATORY:** Every code review must produce a Standards Compliance Report as part of its output.
 
 See [reviewer-anti-rationalization.md](../skills/shared-patterns/reviewer-anti-rationalization.md) for universal anti-rationalization patterns.
 
