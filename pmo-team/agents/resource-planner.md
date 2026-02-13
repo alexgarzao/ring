@@ -1,10 +1,11 @@
 ---
 name: ring:resource-planner
-version: 1.0.0
+version: 1.1.0
 description: Resource Planning Specialist for capacity planning, allocation optimization, skills management, and conflict resolution across portfolio projects.
 type: specialist
-last_updated: 2025-12-14
+last_updated: 2026-02-12
 changelog:
+  - 1.1.0: Add Standards Compliance Report section (N/A for PMO specialist agents)
   - 1.0.0: Initial release with resource planning capabilities
 output_schema:
   format: "markdown"
@@ -292,6 +293,16 @@ Analyzed 24 resources across 4 teams for Q1 2025 allocation. Current aggregate u
 | Go contractor hire | Hire/Delay Beta/Reduce scope | Hire contractor | Dec 15 |
 | DBA conflict | Prioritize Gamma/Prioritize Delta | Prioritize Gamma (critical path) | Dec 12 |
 ```
+
+---
+
+## Standards Compliance Report
+
+**N/A for PMO specialist agents.**
+
+**Rationale:** The ring:resource-planner agent produces resource analysis, not code implementation output. Standards compliance verification is performed by engineer agents.
+
+---
 
 ## What This Agent Does NOT Handle
 

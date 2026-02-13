@@ -1,10 +1,11 @@
 ---
 name: ring:governance-specialist
-version: 1.0.0
+version: 1.1.0
 description: Project Governance Specialist for gate reviews, process compliance, audit readiness, and governance framework implementation across portfolio projects.
 type: specialist
-last_updated: 2025-12-14
+last_updated: 2026-02-12
 changelog:
+  - 1.1.0: Add Standards Compliance Report section (N/A for PMO specialist agents)
   - 1.0.0: Initial release with governance capabilities
 output_schema:
   format: "markdown"
@@ -311,6 +312,16 @@ Conducted Gate 2 (Planning Complete) review for Project Phoenix. Recommendation:
 | PMO | [Name] | Conditional Pass | [Date] |
 | Sponsor | [Name] | Pending | - |
 ```
+
+---
+
+## Standards Compliance Report
+
+**N/A for PMO specialist agents.**
+
+**Rationale:** The ring:governance-specialist agent produces governance analysis, not code implementation output. Standards compliance verification is performed by engineer agents.
+
+---
 
 ## What This Agent Does NOT Handle
 
