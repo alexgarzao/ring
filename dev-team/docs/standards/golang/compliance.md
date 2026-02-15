@@ -140,4 +140,4 @@ Before submitting Go code, verify:
 - [ ] Domain entities use constructor functions (NewXxx) with validation
 - [ ] Constructor functions return `(Entity, error)` - never create invalid state
 - [ ] POST endpoints that create resources implement idempotency (Redis SetNX pattern)
-- [ ] If multi-tenant: JWT tenant extraction + `poolmanager` for connections
+- [ ] If multi-tenant: JWT tenant extraction + `tenantmanager.GetModulePostgresForTenant(ctx, module)` for connections

@@ -377,13 +377,13 @@ func IdempotencyKeyForOrg(organizationID uuid.UUID, key string) string {
 
 ##### Multi-Tenant Mode (MULTI_TENANT_ENABLED=true)
 
-When multi-tenant mode is enabled, `poolmanager` adds the tenant prefix automatically:
+When multi-tenant mode is enabled, `tenantmanager` adds the tenant prefix automatically:
 
 ```go
 // In Redis repository layer - applies tenant prefix from context
 func (rr *RedisRepository) SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
-    // poolmanager adds tenantId prefix when MULTI_TENANT_ENABLED=true
-    key = poolmanager.GetKeyFromContext(ctx, key)
+    // tenantmanager adds tenantId prefix when MULTI_TENANT_ENABLED=true
+    key = tenantmanager.GetKeyFromContext(ctx, key)
 
     // Result: "{tenantId}:idempotency:{scope:key}"
 
@@ -398,7 +398,7 @@ func (rr *RedisRepository) SetNX(ctx context.Context, key, value string, ttl tim
 ```
 
 **Defense-in-depth isolation:**
-1. **tenantId** - Routes to correct Redis instance/namespace (connection-level, via poolmanager)
+1. **tenantId** - Routes to correct Redis instance/namespace (connection-level, via tenantmanager)
 2. **scope** - Domain-specific identifiers (data-level, defined by your service)
 
 ##### Reverse Key (Both Modes) - Optional
@@ -468,7 +468,7 @@ CreateOrCheckIdempotencyKey(scope, key, hash, ttl)
     ↓
 Build key: IdempotencyInternalKey(scope, key)
     ↓
-Redis layer: poolmanager.GetKeyFromContext(ctx, key)
+Redis layer: tenantmanager.GetKeyFromContext(ctx, key)
     ↓ (adds {tenantId}: prefix if MULTI_TENANT_ENABLED=true)
 Redis SetNX (atomic lock with empty value)
     ├─ Success (lock acquired) → FIRST REQUEST
@@ -492,7 +492,7 @@ Redis SetNX (atomic lock with empty value)
 | **Async caching** | `go handler.Command.SetValueOnExistingIdempotencyKey()` - non-blocking |
 | **Two-level tenant isolation** | `tenantId` (connection) + domain scope (data) for defense-in-depth |
 | **Domain-specific scope** | Scope identifiers depend on your domain (org+ledger, org only, or none) |
-| **Poolmanager tenant prefix** | `poolmanager.GetKeyFromContext()` adds tenantId prefix when multi-tenant enabled |
+| **Tenantmanager tenant prefix** | `tenantmanager.GetKeyFromContext()` adds tenantId prefix when multi-tenant enabled |
 | **Reverse mapping (optional)** | `IdempotencyReverseKey` enables resource lookup by ID when needed |
 | **Service-specific error code** | Follows Error Codes Convention with service prefix |
 
@@ -527,7 +527,7 @@ Redis SetNX (atomic lock with empty value)
 - [ ] Error code defined for in-flight duplicates (following Error Codes Convention with service prefix)
 - [ ] Key scoping with domain-specific scope (e.g., `IdempotencyInternalKey(scope, key)`)
 - [ ] Scope defined based on domain model (org+ledger, org only, tenantId, or none)
-- [ ] If multi-tenant enabled: `poolmanager.GetKeyFromContext()` adds tenantId prefix in Redis layer
+- [ ] If multi-tenant enabled: `tenantmanager.GetKeyFromContext()` adds tenantId prefix in Redis layer
 - [ ] TTL configurable via `X-TTL` header (default from `libRedis.TTL`)
 - [ ] Async caching via goroutine (`go handler.Command.SetValueOnExistingIdempotencyKey(...)`)
 - [ ] Reverse mapping with `IdempotencyReverseKey` for transaction lookups (if needed)
