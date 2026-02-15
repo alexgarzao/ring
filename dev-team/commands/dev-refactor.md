@@ -68,7 +68,7 @@ Then re-run `/ring:dev-refactor`.
 
 ```bash
 # Direct prompt - focus refactoring on specific area
-/ring:dev-refactor Focus on multi-tenant patterns and ensure all repositories use poolmanager
+/ring:dev-refactor Focus on multi-tenant patterns and ensure all repositories use tenantmanager
 
 # Direct prompt - another example
 /ring:dev-refactor Check idempotency implementation against standards

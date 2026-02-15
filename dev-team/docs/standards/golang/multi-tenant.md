@@ -2,7 +2,7 @@
 
 > **Module:** multi-tenant.md | **Sections:** §23 | **Parent:** [index.md](index.md)
 
-This module covers multi-tenant patterns with Pool Manager.
+This module covers multi-tenant patterns with Tenant Manager.
 
 ---
 
@@ -25,21 +25,19 @@ This module covers multi-tenant patterns with Pool Manager.
 |----------|------|---------------|
 | Single customer deployment | Single-tenant | `MULTI_TENANT_ENABLED=false` (default) |
 | SaaS with shared infrastructure | Multi-tenant | `MULTI_TENANT_ENABLED=true` |
-| Multiple isolated databases per customer | Multi-tenant | Requires Pool Manager |
+| Multiple isolated databases per customer | Multi-tenant | Requires Tenant Manager |
 
 ### Environment Variables
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
-| `POOL_MANAGER_URL` | Pool Manager service URL | - | If multi-tenant |
-| `MULTI_TENANT_CACHE_TTL` | Tenant configuration cache duration | `24h` | No |
+| `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
 
 **Example `.env` for multi-tenant:**
 ```bash
 MULTI_TENANT_ENABLED=true
-POOL_MANAGER_URL=http://pool-manager:4003
-MULTI_TENANT_CACHE_TTL=24h
+MULTI_TENANT_URL=http://tenant-manager:4003
 ```
 
 ### Configuration
@@ -48,24 +46,36 @@ MULTI_TENANT_CACHE_TTL=24h
 // internal/bootstrap/config.go
 type Config struct {
     // Multi-Tenant Configuration
-    MultiTenantEnabled  bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
-    PoolManagerURL      string `env:"POOL_MANAGER_URL"`
-    MultiTenantCacheTTL string `env:"MULTI_TENANT_CACHE_TTL" default:"24h"`
+    MultiTenantEnabled bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
+    MultiTenantURL     string `env:"MULTI_TENANT_URL"`
 
-    // Prefixed DB vars (unified deployment)
-    PrefixedPrimaryDBHost string `env:"DB_TRANSACTION_HOST"`
+    // PostgreSQL Primary
+    PrimaryDBHost     string `env:"DB_HOST"`
+    PrimaryDBUser     string `env:"DB_USER"`
+    PrimaryDBPassword string `env:"DB_PASSWORD"`
+    PrimaryDBName     string `env:"DB_NAME"`
+    PrimaryDBPort     string `env:"DB_PORT"`
+    PrimaryDBSSLMode  string `env:"DB_SSLMODE"`
 
-    // Fallback DB vars (standalone deployment)
-    PrimaryDBHost string `env:"DB_HOST"`
+    // PostgreSQL connection pool
+    MaxOpenConnections int `env:"DB_MAX_OPEN_CONNS"`
+    MaxIdleConnections int `env:"DB_MAX_IDLE_CONNS"`
 }
+```
 
-// Environment fallback pattern
-func envFallback(prefixed, fallback string) string {
-    if prefixed != "" {
-        return prefixed
-    }
-    return fallback
-}
+### Module Constants
+
+Multi-tenant services use module constants to route connections to the correct database:
+
+```go
+// pkg/constant/module.go
+const (
+    // ModuleOnboarding routes PostgreSQL connections for the onboarding component.
+    ModuleOnboarding = "onboarding"
+
+    // ModuleTransaction routes PostgreSQL connections for the transaction component.
+    ModuleTransaction = "transaction"
+)
 ```
 
 ### JWT Tenant Extraction
@@ -74,27 +84,25 @@ func envFallback(prefixed, fallback string) string {
 
 ```go
 // internal/bootstrap/middleware.go
-func (m *Middleware) extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
-    // Get token from Authorization header
-    authHeader := c.Get("Authorization")
-    if authHeader == "" {
-        return "", errors.New("authorization header required")
+func (m *DualPoolMiddleware) extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
+    // Use lib-commons helper for token extraction
+    accessToken := libHTTP.ExtractTokenFromHeader(c)
+    if accessToken == "" {
+        return "", errors.New("no authorization token provided")
     }
 
-    tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
     // Parse without validation (validation done by auth middleware)
-    token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
+    token, _, err := new(jwt.Parser).ParseUnverified(accessToken, jwt.MapClaims{})
     if err != nil {
-        return "", fmt.Errorf("failed to parse token: %w", err)
+        return "", err
     }
 
     claims, ok := token.Claims.(jwt.MapClaims)
     if !ok {
-        return "", errors.New("invalid token claims")
+        return "", errors.New("invalid token claims format")
     }
 
-    // Extract tenantId (hardcoded claim key)
+    // Extract tenantId (camelCase only - no fallbacks)
     tenantID, ok := claims["tenantId"].(string)
     if !ok || tenantID == "" {
         return "", errors.New("tenantId claim not found in token")
@@ -104,44 +112,136 @@ func (m *Middleware) extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
 }
 ```
 
+### DualPoolMiddleware
+
+The middleware routes requests to the correct tenant connection pool based on URL path. It maintains separate pools for onboarding and transaction modules.
+
+```go
+// internal/bootstrap/unified-server.go
+type DualPoolMiddleware struct {
+    onboardingPool       *tenantmanager.TenantConnectionManager
+    transactionPool      *tenantmanager.TenantConnectionManager
+    onboardingMongoPool  *tenantmanager.MongoManager
+    transactionMongoPool *tenantmanager.MongoManager
+    logger               libLog.Logger
+}
+
+func NewDualPoolMiddleware(pools *MultiTenantPools, logger libLog.Logger) *DualPoolMiddleware {
+    return &DualPoolMiddleware{
+        onboardingPool:       pools.OnboardingPool,
+        transactionPool:      pools.TransactionPool,
+        onboardingMongoPool:  pools.OnboardingMongoPool,
+        transactionMongoPool: pools.TransactionMongoPool,
+        logger:               logger,
+    }
+}
+```
+
+### Path-Based Pool Selection
+
+```go
+// internal/bootstrap/unified-server.go
+
+// selectPool determines which PostgreSQL pool to use based on the request path.
+func (m *DualPoolMiddleware) selectPool(path string) *tenantmanager.TenantConnectionManager {
+    if m.isTransactionPath(path) {
+        return m.transactionPool
+    }
+    return m.onboardingPool
+}
+
+// isTransactionPath checks if the path belongs to the transaction module.
+func (m *DualPoolMiddleware) isTransactionPath(path string) bool {
+    transactionPaths := []string{
+        "/transactions",
+        "/operations",
+        "/balances",
+        "/asset-rates",
+        "/operation-routes",
+        "/transaction-routes",
+    }
+
+    for _, tp := range transactionPaths {
+        if strings.Contains(path, tp) {
+            return true
+        }
+    }
+
+    return false
+}
+
+// isPublicPath checks if the path is a public endpoint that doesn't require tenant context.
+func (m *DualPoolMiddleware) isPublicPath(path string) bool {
+    publicPaths := []string{"/health", "/version", "/swagger"}
+    for _, pp := range publicPaths {
+        if path == pp || strings.HasPrefix(path, pp) {
+            return true
+        }
+    }
+    return false
+}
+```
+
 ### Context Injection Middleware
 
 ```go
-// internal/bootstrap/middleware.go
-func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
-    ctx := c.UserContext()
+// internal/bootstrap/unified-server.go
+func (m *DualPoolMiddleware) WithTenantDB(c *fiber.Ctx) error {
+    path := c.Path()
+
+    // Skip public endpoints
+    if m.isPublicPath(path) {
+        return c.Next()
+    }
+
+    // Select the appropriate pool based on request path
+    pool := m.selectPool(path)
+
+    if pool == nil {
+        return c.Next()
+    }
+
+    // Single-tenant mode: pass through
+    if !pool.IsMultiTenant() {
+        return c.Next()
+    }
+
+    ctx := libOpentelemetry.ExtractHTTPContext(c)
     logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
-    ctx, span := tracer.Start(ctx, "middleware.with_tenant_db")
+    ctx, span := tracer.Start(ctx, "middleware.dual_pool.with_tenant_db")
     defer span.End()
 
-    // Skip for public endpoints
-    if m.isPublicPath(c.Path()) {
-        return c.Next()
-    }
-
-    // Skip if not multi-tenant mode
-    if !m.pool.IsMultiTenant() {
-        return c.Next()
-    }
-
-    // Extract tenant ID from JWT
+    // Extract tenant ID from JWT token
     tenantID, err := m.extractTenantIDFromToken(c)
     if err != nil {
         logger.Errorf("Failed to extract tenant ID: %v", err)
+        libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Failed to extract tenant ID", err)
         return libHTTP.Unauthorized(c, "TENANT_ID_REQUIRED", "Unauthorized",
-            "tenantId claim is required in JWT token")
+            "tenantId claim is required in JWT token for multi-tenant mode")
     }
 
-    // Inject tenant ID into context
-    ctx = poolmanager.ContextWithTenantID(ctx, tenantID)
+    // Store tenant ID in context
+    ctx = tenantmanager.ContextWithTenantID(ctx, tenantID)
 
-    // Get tenant-specific database connection
-    conn, err := m.pool.GetConnection(ctx, tenantID)
+    // Get tenant-specific connection from the selected pool
+    conn, err := pool.GetConnection(ctx, tenantID)
     if err != nil {
-        if errors.Is(err, poolmanager.ErrTenantNotFound) {
+        logger.Errorf("Failed to get PostgreSQL connection for tenant %s: %v", tenantID, err)
+        libOpentelemetry.HandleSpanError(&span, "Failed to get tenant connection", err)
+
+        if errors.Is(err, tenantmanager.ErrTenantNotFound) {
             return libHTTP.NotFound(c, "TENANT_NOT_FOUND", "Not Found", "tenant not found")
         }
+
+        if errors.Is(err, tenantmanager.ErrManagerClosed) {
+            return libHTTP.JSONResponse(c, http.StatusServiceUnavailable, libCommons.Response{
+                Code:    "SERVICE_UNAVAILABLE",
+                Title:   "Service Unavailable",
+                Message: "Service temporarily unavailable",
+            })
+        }
+
         return libHTTP.InternalServerError(c, "CONNECTION_ERROR", "Internal Server Error",
             "failed to establish database connection")
     }
@@ -152,47 +252,103 @@ func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
             "failed to get database interface")
     }
 
-    // Inject connection into context
-    ctx = poolmanager.ContextWithPGConnection(ctx, db)
+    // CRITICAL: Set BOTH module connections for cross-module in-process calls
+    if m.isTransactionPath(path) {
+        ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleTransaction, db)
+
+        // Also inject onboarding connection for cross-module calls
+        if m.onboardingPool != nil && m.onboardingPool.IsMultiTenant() {
+            onboardingConn, onboardingErr := m.onboardingPool.GetConnection(ctx, tenantID)
+            if onboardingErr == nil {
+                onboardingDB, dbErr := onboardingConn.GetDB()
+                if dbErr == nil && onboardingDB != nil {
+                    ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleOnboarding, onboardingDB)
+                }
+            }
+        }
+    } else {
+        ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleOnboarding, db)
+
+        // Also inject transaction connection for cross-module calls
+        if m.transactionPool != nil && m.transactionPool.IsMultiTenant() {
+            transactionConn, transactionErr := m.transactionPool.GetConnection(ctx, tenantID)
+            if transactionErr == nil {
+                transactionDB, dbErr := transactionConn.GetDB()
+                if dbErr == nil && transactionDB != nil {
+                    ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleTransaction, transactionDB)
+                }
+            }
+        }
+    }
+
+    // Handle MongoDB if pool is configured
+    mongoPool := m.selectMongoPool(path)
+    if mongoPool != nil {
+        mongoDB, mongoErr := mongoPool.GetDatabaseForTenant(ctx, tenantID)
+        if mongoErr != nil {
+            logger.Errorf("Failed to get MongoDB connection for tenant %s: %v", tenantID, mongoErr)
+            return libHTTP.InternalServerError(c, "TENANT_MONGO_ERROR", "Internal Server Error",
+                "failed to resolve tenant MongoDB connection")
+        }
+
+        ctx = tenantmanager.ContextWithTenantMongo(ctx, mongoDB)
+    }
+
     c.SetUserContext(ctx)
 
     return c.Next()
-}
-
-func (m *Middleware) isPublicPath(path string) bool {
-    publicPaths := []string{"/health", "/version", "/swagger"}
-    for _, p := range publicPaths {
-        if strings.HasPrefix(path, p) {
-            return true
-        }
-    }
-    return false
 }
 ```
 
 ### Database Connection in Repositories
 
+Repositories use module-specific getters to retrieve tenant connections from context:
+
 ```go
-// internal/adapters/postgres/repository.go
-func (r *Repository) Create(ctx context.Context, entity *Entity) (*Entity, error) {
+// internal/adapters/postgres/organization/organization.postgresql.go (Onboarding module)
+func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *mmodel.Organization) (*mmodel.Organization, error) {
     logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
-    ctx, span := tracer.Start(ctx, "repository.entity.create")
+    ctx, span := tracer.Start(ctx, "postgres.create_organization")
     defer span.End()
 
-    // Get tenant-specific connection from context
-    db, err := poolmanager.GetPostgresForTenant(ctx)
+    // Get onboarding module connection from context
+    db, err := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleOnboarding)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
         logger.Errorf("Failed to get database connection: %v", err)
         return nil, err
     }
 
-    // Use db for queries - automatically scoped to tenant
-    query := `INSERT INTO entities (...) VALUES (...) RETURNING *`
-    row := db.QueryRowContext(ctx, query, ...)
+    record := &OrganizationPostgreSQLModel{}
+    record.FromEntity(org)
 
-    // ... rest of implementation
+    // Use db for queries - automatically scoped to tenant's database
+    // ...
+}
+```
+
+```go
+// internal/adapters/postgres/transaction/transaction.postgresql.go (Transaction module)
+func (r *TransactionPostgreSQLRepository) Create(ctx context.Context, txn *Transaction) (*Transaction, error) {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+
+    ctx, span := tracer.Start(ctx, "postgres.create_transaction")
+    defer span.End()
+
+    // Get transaction module connection from context
+    db, err := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleTransaction)
+    if err != nil {
+        libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
+        logger.Errorf("Failed to get database connection: %v", err)
+        return nil, err
+    }
+
+    record := &TransactionPostgreSQLModel{}
+    record.FromEntity(txn)
+
+    // Use db for queries - automatically scoped to tenant's database
+    // ...
 }
 ```
 
@@ -206,8 +362,8 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
     ctx, span := tracer.Start(ctx, "redis.set")
     defer span.End()
 
-    // Tenant-aware key prefixing (adds {tenantId}: prefix if multi-tenant)
-    key = poolmanager.GetKeyFromContext(ctx, key)
+    // Tenant-aware key prefixing (adds tenant:{tenantId}: prefix if multi-tenant)
+    key = tenantmanager.GetKeyFromContext(ctx, key)
 
     rds, err := r.conn.GetClient(ctx)
     if err != nil {
@@ -224,7 +380,7 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
 // internal/adapters/rabbitmq/producer.go
 type ProducerRepository struct {
     conn            *libRabbitmq.RabbitMQConnection
-    rabbitMQPool    *poolmanager.RabbitMQPool
+    rabbitMQManager *tenantmanager.RabbitMQManager
     multiTenantMode bool
 }
 
@@ -237,29 +393,39 @@ func NewProducer(conn *libRabbitmq.RabbitMQConnection) *ProducerRepository {
 }
 
 // Multi-tenant constructor
-func NewProducerMultiTenant(pool *poolmanager.RabbitMQPool) *ProducerRepository {
+func NewProducerMultiTenant(pool *tenantmanager.RabbitMQManager) *ProducerRepository {
     return &ProducerRepository{
-        rabbitMQPool:    pool,
+        rabbitMQManager: pool,
         multiTenantMode: true,
     }
 }
 
 func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, message []byte) error {
     // Inject tenant ID header
-    tenantID := poolmanager.GetTenantID(ctx)
+    tenantID := tenantmanager.GetTenantID(ctx)
     headers := amqp.Table{}
     if tenantID != "" {
         headers["X-Tenant-ID"] = tenantID
     }
 
     if p.multiTenantMode {
-        // Get tenant-specific channel
-        channel, err := p.rabbitMQPool.GetChannel(ctx, tenantID)
+        if tenantID == "" {
+            return fmt.Errorf("tenant ID is required in multi-tenant mode")
+        }
+
+        // Get tenant-specific channel from pool
+        channel, err := p.rabbitMQManager.GetChannel(ctx, tenantID)
         if err != nil {
             return err
         }
+
         return channel.PublishWithContext(ctx, exchange, key, false, false,
-            amqp.Publishing{Body: message, Headers: headers})
+            amqp.Publishing{
+                ContentType:  "application/json",
+                DeliveryMode: amqp.Persistent,
+                Headers:      headers,
+                Body:         message,
+            })
     }
 
     // Single-tenant: use static connection
@@ -287,7 +453,7 @@ func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection strin
     defer span.End()
 
     // Get tenant-specific database from context
-    tenantDB, err := poolmanager.GetMongoForTenant(ctx)
+    tenantDB, err := tenantmanager.GetMongoForTenant(ctx)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
         return err
@@ -309,76 +475,76 @@ func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection strin
 
     return nil
 }
-
-func (r *MetadataMongoDBRepository) FindByEntity(ctx context.Context, collection, id string) (*Metadata, error) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
-
-    ctx, span := tracer.Start(ctx, "mongodb.find_by_entity")
-    defer span.End()
-
-    tenantDB, err := poolmanager.GetMongoForTenant(ctx)
-    if err != nil {
-        libOpentelemetry.HandleSpanError(&span, "Failed to get database", err)
-        return nil, err
-    }
-
-    coll := tenantDB.Collection(strings.ToLower(collection))
-
-    var record MetadataMongoDBModel
-    if err = coll.FindOne(ctx, bson.M{"entity_id": id}).Decode(&record); err != nil {
-        if errors.Is(err, mongo.ErrNoDocuments) {
-            return nil, nil
-        }
-        return nil, err
-    }
-
-    return record.ToEntity(), nil
-}
 ```
 
-### MongoDB Pool Initialization
+### Multi-Tenant Pool Initialization
 
 ```go
 // internal/bootstrap/config.go
-func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
-    poolManagerClient := poolmanager.NewClient(cfg.PoolManagerURL, logger)
 
-    // Create MongoDB pool with module-specific credentials
-    mongoPool := poolmanager.NewMongoPool(poolManagerClient, serviceName,
-        poolmanager.WithMongoModule("transaction"),
-        poolmanager.WithMongoLogger(logger),
+// MultiTenantPools holds the connection pools for the unified ledger.
+// The Tenant Manager returns separate database credentials for each module.
+type MultiTenantPools struct {
+    OnboardingPool       *tenantmanager.TenantConnectionManager
+    TransactionPool      *tenantmanager.TenantConnectionManager
+    OnboardingMongoPool  *tenantmanager.MongoManager
+    TransactionMongoPool *tenantmanager.MongoManager
+}
+
+func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
+    // Create Tenant Manager client (shared between all pools)
+    tenantManagerClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger)
+
+    // Create default PostgreSQL connections for fallback (single-tenant mode)
+    onboardingDefaultConn := &libPostgres.PostgresConnection{
+        ConnectionStringPrimary: buildConnString(cfg),
+        Component:               "onboarding",
+        Logger:                  logger,
+        MaxOpenConnections:      cfg.MaxOpenConnections,
+        MaxIdleConnections:      cfg.MaxIdleConnections,
+    }
+
+    transactionDefaultConn := &libPostgres.PostgresConnection{
+        ConnectionStringPrimary: buildConnString(cfg),
+        Component:               "transaction",
+        Logger:                  logger,
+        MaxOpenConnections:      cfg.MaxOpenConnections,
+        MaxIdleConnections:      cfg.MaxIdleConnections,
+    }
+
+    // Create onboarding pool - orgs, ledgers, accounts, assets, portfolios, segments
+    onboardingPool := tenantmanager.NewTenantConnectionManager(tenantManagerClient, "ledger", "onboarding", logger).
+        WithConnectionLimits(cfg.MaxOpenConnections, cfg.MaxIdleConnections).
+        WithDefaultConnection(onboardingDefaultConn)
+
+    logger.Info("Created onboarding PostgreSQL connection manager for multi-tenant mode")
+
+    // Create transaction pool - transactions, operations, balances, asset-rates, routes
+    transactionPool := tenantmanager.NewTenantConnectionManager(tenantManagerClient, "ledger", "transaction", logger).
+        WithConnectionLimits(cfg.MaxOpenConnections, cfg.MaxIdleConnections).
+        WithDefaultConnection(transactionDefaultConn)
+
+    logger.Info("Created transaction PostgreSQL connection manager for multi-tenant mode")
+
+    // Create MongoDB pools per module
+    onboardingMongoPool := tenantmanager.NewMongoManager(tenantManagerClient, "ledger",
+        tenantmanager.WithMongoModule("onboarding"),
+        tenantmanager.WithMongoLogger(logger),
     )
-    logger.Info("Created MongoDB connection pool for multi-tenant mode")
+    logger.Info("Created onboarding MongoDB connection manager for multi-tenant mode")
+
+    transactionMongoPool := tenantmanager.NewMongoManager(tenantManagerClient, "ledger",
+        tenantmanager.WithMongoModule("transaction"),
+        tenantmanager.WithMongoLogger(logger),
+    )
+    logger.Info("Created transaction MongoDB connection manager for multi-tenant mode")
 
     return &MultiTenantPools{
-        MongoPool: mongoPool,
-        // ... other pools
+        OnboardingPool:       onboardingPool,
+        TransactionPool:      transactionPool,
+        OnboardingMongoPool:  onboardingMongoPool,
+        TransactionMongoPool: transactionMongoPool,
     }
-}
-```
-
-### MongoDB Context Injection in Middleware
-
-```go
-// internal/bootstrap/middleware.go
-func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
-    // ... tenant extraction code ...
-
-    // Inject MongoDB if pool configured
-    if m.mongoPool != nil {
-        mongoDB, err := m.mongoPool.GetDatabaseForTenant(ctx, tenantID)
-        if err != nil {
-            logger.Errorf("Failed to get MongoDB connection for tenant %s: %v", tenantID, err)
-            return libHTTP.InternalServerError(c, "TENANT_MONGO_ERROR", "Internal Server Error",
-                "failed to resolve tenant MongoDB connection")
-        }
-
-        ctx = poolmanager.ContextWithTenantMongo(ctx, mongoDB)
-        logger.Infof("Set MongoDB connection for tenant: %s (db: %s)", tenantID, mongoDB.Name())
-    }
-
-    c.SetUserContext(ctx)
-    return c.Next()
 }
 ```
 
@@ -387,6 +553,23 @@ func (m *Middleware) WithTenantDB(c *fiber.Ctx) error {
 ```go
 // internal/bootstrap/rabbitmq_consumer.go
 func (c *MultiTenantConsumer) injectTenantDBConnections(ctx context.Context, tenantID string, logger libLog.Logger) (context.Context, error) {
+    // Inject PostgreSQL connection
+    if c.postgresPool != nil {
+        pgConn, err := c.postgresPool.GetConnection(ctx, tenantID)
+        if err != nil {
+            logger.Errorf("Failed to get PostgreSQL connection for tenant %s: %v", tenantID, err)
+            return ctx, fmt.Errorf("failed to get PostgreSQL connection: %w", err)
+        }
+
+        db, err := pgConn.GetDB()
+        if err != nil {
+            return ctx, fmt.Errorf("failed to get DB interface: %w", err)
+        }
+
+        ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleTransaction, db)
+        logger.Infof("Injected PostgreSQL connection for tenant: %s", tenantID)
+    }
+
     // Inject MongoDB connection (optional - service may not use MongoDB)
     if c.mongoPool != nil {
         mongoDB, err := c.mongoPool.GetDatabaseForTenant(ctx, tenantID)
@@ -394,7 +577,7 @@ func (c *MultiTenantConsumer) injectTenantDBConnections(ctx context.Context, ten
             // MongoDB is optional for some services - warn but don't fail
             logger.Warnf("Failed to get MongoDB for tenant %s: %v (continuing without MongoDB)", tenantID, err)
         } else {
-            ctx = poolmanager.ContextWithTenantMongo(ctx, mongoDB)
+            ctx = tenantmanager.ContextWithTenantMongo(ctx, mongoDB)
             logger.Infof("Injected MongoDB connection for tenant: %s", tenantID)
         }
     }
@@ -408,23 +591,51 @@ func (c *MultiTenantConsumer) injectTenantDBConnections(ctx context.Context, ten
 ```go
 // internal/bootstrap/service.go
 func InitService(cfg *Config) (*Service, error) {
-    var producer rabbitmq.ProducerRepository
+    var tenantPools *MultiTenantPools
 
-    if cfg.MultiTenantEnabled {
-        // Multi-tenant mode: use pool manager
-        poolClient := poolmanager.NewClient(cfg.PoolManagerURL, logger)
-        rabbitPool := poolmanager.NewRabbitMQPool(poolClient, serviceName, logger)
-        producer = rabbitmq.NewProducerMultiTenant(rabbitPool)
+    if cfg.MultiTenantEnabled && cfg.MultiTenantURL != "" {
+        tenantPools = initMultiTenantPools(cfg, logger)
+        logger.Infof("Multi-tenant mode enabled with Tenant Manager URL: %s", cfg.MultiTenantURL)
     } else {
-        // Single-tenant mode: use static connection
-        conn, err := libRabbitmq.NewRabbitMQConnection(cfg.RabbitMQURL)
-        if err != nil {
-            return nil, err
-        }
-        producer = rabbitmq.NewProducer(conn)
+        logger.Info("Running in SINGLE-TENANT MODE")
     }
 
-    return &Service{producer: producer}, nil
+    // Create unified server with optional tenant pools
+    server := NewUnifiedServer(cfg.ServerAddress, logger, tenantPools)
+
+    // Register multi-tenant middleware if pools exist
+    if tenantPools != nil {
+        dualPoolMid := NewDualPoolMiddleware(tenantPools, logger)
+        server.Use(dualPoolMid.WithTenantDB)
+    }
+
+    return &Service{server: server}, nil
+}
+```
+
+### Error Handler
+
+```go
+// internal/bootstrap/unified-server.go
+func handleUnifiedServerError(c *fiber.Ctx, err error) error {
+    // Check for unprovisioned tenant database (SQLSTATE 42P01)
+    if tenantmanager.IsTenantNotProvisionedError(err) {
+        return libHTTP.UnprocessableEntity(c, "TENANT_NOT_PROVISIONED", "Unprocessable Entity",
+            "The tenant database schema has not been initialized. Please contact support.")
+    }
+
+    // Default error handling
+    code := fiber.StatusInternalServerError
+    var e *fiber.Error
+    if errors.As(err, &e) {
+        code = e.Code
+    }
+
+    return c.Status(code).JSON(libCommons.Response{
+        Code:    http.StatusText(code),
+        Title:   http.StatusText(code),
+        Message: err.Error(),
+    })
 }
 ```
 
@@ -437,11 +648,11 @@ func InitService(cfg *Config) (*Service, error) {
 func TestUserService_Create_WithTenantContext(t *testing.T) {
     // Setup tenant context
     tenantID := "tenant-123"
-    ctx := poolmanager.ContextWithTenantID(context.Background(), tenantID)
+    ctx := tenantmanager.ContextWithTenantID(context.Background(), tenantID)
 
-    // Mock database connection
+    // Mock database connection with module-specific injection
     mockDB := setupMockDB(t)
-    ctx = poolmanager.ContextWithPGConnection(ctx, mockDB)
+    ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleOnboarding, mockDB)
 
     // Create service with mock dependencies
     repo := repository.NewUserRepository()
@@ -454,7 +665,6 @@ func TestUserService_Create_WithTenantContext(t *testing.T) {
     // Assert
     require.NoError(t, err)
     assert.Equal(t, "John", result.Name)
-    assert.Equal(t, tenantID, result.TenantID)
 }
 ```
 
@@ -478,15 +688,15 @@ func TestRepository_Create_TenantIsolation(t *testing.T) {
             name:     "tenant-2 creates same entity (isolated)",
             tenantID: "tenant-2",
             input:    &Entity{Name: "Entity A"},
-            wantErr:  false, // Different tenant = allowed
+            wantErr:  false, // Different tenant = different database = allowed
         },
     }
 
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            // Inject tenant-specific context
-            ctx := poolmanager.ContextWithTenantID(context.Background(), tt.tenantID)
-            ctx = poolmanager.ContextWithPGConnection(ctx, mockDB)
+            // Inject tenant-specific context with module connection
+            ctx := tenantmanager.ContextWithTenantID(context.Background(), tt.tenantID)
+            ctx = tenantmanager.ContextWithModulePGConnection(ctx, constant.ModuleOnboarding, mockDB)
 
             _, err := repo.Create(ctx, tt.input)
 
@@ -500,56 +710,50 @@ func TestRepository_Create_TenantIsolation(t *testing.T) {
 }
 ```
 
-#### Integration Tests with testcontainers
+#### Integration Tests with Tenant Isolation
 
 ```go
-// internal/bootstrap/multi_tenant_integration_test.go
-func TestMultiTenant_EndToEnd(t *testing.T) {
+// tests/integration/multi_tenant_test.go
+func TestMultiTenant_TenantIsolation(t *testing.T) {
+    if !h.IsMultiTenantEnabled() {
+        t.Skip("Multi-tenant mode is not enabled")
+    }
+
+    env := h.LoadEnvironment()
     ctx := context.Background()
+    client := h.NewHTTPClient(env.ServerURL, env.HTTPTimeout)
 
-    // Setup PostgreSQL container
-    pgContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-        ContainerRequest: testcontainers.ContainerRequest{
-            Image:        "postgres:16-alpine",
-            ExposedPorts: []string{"5432/tcp"},
-            Env: map[string]string{
-                "POSTGRES_USER":     "test",
-                "POSTGRES_PASSWORD": "test",
-                "POSTGRES_DB":       "tenant_test",
-            },
-            WaitingFor: wait.ForLog("database system is ready to accept connections"),
-        },
-        Started: true,
-    })
-    require.NoError(t, err)
-    defer pgContainer.Terminate(ctx)
+    // Define two distinct tenants
+    tenantA := "tenant-a-" + h.RandString(6)
+    tenantB := "tenant-b-" + h.RandString(6)
 
-    // Get container host/port
-    host, _ := pgContainer.Host(ctx)
-    port, _ := pgContainer.MappedPort(ctx, "5432")
+    headersTenantA := h.TenantAuthHeaders(h.RandHex(8), tenantA)
+    headersTenantB := h.TenantAuthHeaders(h.RandHex(8), tenantB)
 
-    // Set environment variables with t.Setenv
-    t.Setenv("DB_HOST", host)
-    t.Setenv("DB_PORT", port.Port())
-    t.Setenv("DB_USER", "test")
-    t.Setenv("DB_PASSWORD", "test")
-    t.Setenv("DB_NAME", "tenant_test")
-    t.Setenv("MULTI_TENANT_ENABLED", "true")
-    t.Setenv("POOL_MANAGER_URL", "http://mock-pool-manager:4003")
+    // Step 1: Tenant A creates organization
+    codeA, bodyA, _ := client.Request(ctx, "POST", "/v1/organizations", headersTenantA, orgPayload)
+    require.Equal(t, 201, codeA)
 
-    // Initialize service
-    cfg := &Config{}
-    require.NoError(t, libCommons.SetConfigFromEnvVars(cfg))
+    var orgA struct{ ID string `json:"id"` }
+    json.Unmarshal(bodyA, &orgA)
 
-    // Create Pool Manager mock
-    poolMock := setupMockPoolManager(t, cfg.PoolManagerURL)
-    defer poolMock.Close()
+    // Step 2: Tenant B creates organization
+    codeB, bodyB, _ := client.Request(ctx, "POST", "/v1/organizations", headersTenantB, orgPayload)
+    require.Equal(t, 201, codeB)
 
-    // Test tenant-specific database access
-    tenantID := "tenant-123"
-    ctx = poolmanager.ContextWithTenantID(ctx, tenantID)
+    var orgB struct{ ID string `json:"id"` }
+    json.Unmarshal(bodyB, &orgB)
 
-    // ... test multi-tenant operations
+    // Step 3: Verify Tenant A cannot see Tenant B's data
+    code, body, _ := client.Request(ctx, "GET", "/v1/organizations", headersTenantA, nil)
+    require.Equal(t, 200, code)
+
+    var list struct{ Items []struct{ ID string `json:"id"` } `json:"items"` }
+    json.Unmarshal(body, &list)
+
+    for _, item := range list.Items {
+        assert.NotEqual(t, orgB.ID, item.ID, "ISOLATION VIOLATION: Tenant A can see Tenant B's data")
+    }
 }
 ```
 
@@ -581,7 +785,7 @@ func TestMiddleware_WithTenantDB_ErrorCases(t *testing.T) {
             expectedCode:   "TENANT_ID_REQUIRED",
         },
         {
-            name: "tenant not found in Pool Manager",
+            name: "tenant not found in Tenant Manager",
             setupContext: func(c *fiber.Ctx) {
                 token := createJWT(map[string]interface{}{"tenantId": "unknown-tenant"})
                 c.Request().Header.Set("Authorization", "Bearer "+token)
@@ -593,17 +797,14 @@ func TestMiddleware_WithTenantDB_ErrorCases(t *testing.T) {
 
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            // Setup Fiber context
             app := fiber.New()
             ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
             defer app.ReleaseCtx(ctx)
 
             tt.setupContext(ctx)
 
-            // Execute middleware
             err := middleware.WithTenantDB(ctx)
 
-            // Assert
             require.Error(t, err)
             fiberErr, ok := err.(*fiber.Error)
             require.True(t, ok)
@@ -640,7 +841,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 
         // Assert tenant context injected
         require.NoError(t, err)
-        extractedTenant := poolmanager.GetTenantID(ctx)
+        extractedTenant := tenantmanager.GetTenantID(ctx)
         assert.Equal(t, tenantID, extractedTenant)
     })
 }
@@ -652,28 +853,22 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
     t.Run("prefixes keys with tenant ID", func(t *testing.T) {
         tenantID := "tenant-789"
-        ctx := poolmanager.ContextWithTenantID(context.Background(), tenantID)
+        ctx := tenantmanager.ContextWithTenantID(context.Background(), tenantID)
 
         repo := NewRedisRepository(redisConn)
 
-        // Set value
         err := repo.Set(ctx, "user:session", "value123", 3600)
         require.NoError(t, err)
 
         // Verify key was prefixed
-        // Expected key: {tenant-789}:user:session
-        key := poolmanager.GetKeyFromContext(ctx, "user:session")
-        assert.Equal(t, "{tenant-789}:user:session", key)
+        key := tenantmanager.GetKeyFromContext(ctx, "user:session")
+        assert.Equal(t, "tenant:tenant-789:user:session", key)
     })
 
     t.Run("single-tenant mode does not prefix keys", func(t *testing.T) {
-        // Context without tenant ID
         ctx := context.Background()
 
-        repo := NewRedisRepository(redisConn)
-
-        // Key should NOT be prefixed
-        key := poolmanager.GetKeyFromContext(ctx, "user:session")
+        key := tenantmanager.GetKeyFromContext(ctx, "user:session")
         assert.Equal(t, "user:session", key)
     })
 }
@@ -684,13 +879,14 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Error | HTTP Status | Code | When |
 |-------|-------------|------|------|
 | Missing tenantId claim | 401 | `TENANT_ID_REQUIRED` | JWT doesn't have tenantId |
-| Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Pool Manager |
-| Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized |
+| Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Tenant Manager |
+| Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized (SQLSTATE 42P01) |
 | Connection error | 500 | `CONNECTION_ERROR` | Failed to get tenant connection |
+| Manager closed | 503 | `SERVICE_UNAVAILABLE` | Connection manager has been shut down |
 
 ### Tenant Isolation Verification (⚠️ CONDITIONAL)
 
-Multi-tenant applications MUST verify tenant isolation to prevent Insecure Direct Object Reference (IDOR) vulnerabilities.
+Multi-tenant applications MUST verify tenant isolation to prevent data leakage between tenants.
 
 **⛔ CONDITIONAL:** This section applies ONLY if `MULTI_TENANT_ENABLED=true`. If single-tenant, mark as N/A.
 
@@ -704,123 +900,113 @@ grep -rn "MULTI_TENANT_ENABLED\|MultiTenantEnabled" internal/ --include="*.go"
 # If found AND can be true: Apply this section
 ```
 
+#### Isolation Architecture
+
+Multi-tenant isolation uses a **database-per-tenant** model with two isolation layers:
+
+| Layer | Mechanism | Protection |
+|-------|-----------|------------|
+| **Primary: Database isolation** | `TenantConnectionManager` returns separate database per tenant | Tenant A cannot query Tenant B's database |
+| **Secondary: Entity scoping** | `organization_id` + `ledger_id` in WHERE clauses | Intra-tenant entity separation |
+
 #### Why Tenant Isolation Verification Is MANDATORY
 
 | Attack | Without Verification | With Verification |
 |--------|----------------------|-------------------|
-| IDOR (Insecure Direct Object Reference) | User from Tenant A accesses Tenant B data | Request rejected |
-| Data exfiltration | Cross-tenant data leakage | Isolated by design |
-| Privilege escalation | Admin in Tenant A becomes admin in Tenant B | Scoped to tenant |
+| Cross-tenant data access | Tenant A accesses Tenant B's database | Connection-level isolation prevents it |
+| Data exfiltration | Cross-tenant data leakage | Separate databases per tenant |
+| IDOR within tenant | User accesses wrong organization's data | `organization_id` in WHERE clause |
 
-#### Tenant Verification Pattern (REQUIRED)
+#### Entity Scoping Pattern (REQUIRED)
 
-Every repository operation that fetches data MUST verify the resource belongs to the requesting tenant.
+Within each tenant's database, queries MUST scope by `organization_id` and `ledger_id`:
 
 ```go
-// internal/adapters/postgres/user_repository.go
-
-func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+// internal/adapters/postgres/transaction/transaction.postgresql.go
+func (r *TransactionPostgreSQLRepository) Find(ctx context.Context, organizationID, ledgerID, id uuid.UUID) (*Transaction, error) {
     logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
 
-    ctx, span := tracer.Start(ctx, "repository.user.get_by_id")
+    ctx, span := tracer.Start(ctx, "postgres.find_transaction")
     defer span.End()
 
-    // Get tenant ID from context
-    tenantID := poolmanager.GetTenantID(ctx)
-    if tenantID == "" {
-        libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Missing tenant", ErrTenantRequired)
-        return nil, ErrTenantRequired
-    }
-
-    db, err := poolmanager.GetPostgresForTenant(ctx)
+    db, err := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleTransaction)
     if err != nil {
         return nil, err
     }
 
-    // ✅ CORRECT: Query includes tenant_id in WHERE clause
-    query := `
-        SELECT id, name, email, tenant_id, created_at
-        FROM users
-        WHERE id = $1 AND tenant_id = $2
-    `
+    // Query scoped by organization_id and ledger_id
+    find := squirrel.Select(transactionColumnList...).
+        From(r.tableName).
+        Where(squirrel.Expr("organization_id = ?", organizationID)).
+        Where(squirrel.Expr("ledger_id = ?", ledgerID)).
+        Where(squirrel.Expr("id = ?", id)).
+        Where(squirrel.Eq{"deleted_at": nil}).
+        PlaceholderFormat(squirrel.Dollar)
 
-    var user User
-    err = db.QueryRowContext(ctx, query, id, tenantID).Scan(
-        &user.ID, &user.Name, &user.Email, &user.TenantID, &user.CreatedAt,
-    )
+    query, args, err := find.ToSql()
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            return nil, ErrNotFound  // NOT ErrForbidden - don't reveal existence
-        }
         return nil, err
     }
 
-    return &user, nil
+    row := db.QueryRowContext(ctx, query, args...)
+    // ...
 }
 ```
 
-#### FORBIDDEN Patterns (IDOR Vulnerabilities)
+#### FORBIDDEN Patterns
 
 ```go
-// ❌ FORBIDDEN: Query without tenant verification
-query := `SELECT * FROM users WHERE id = $1`  // WRONG: No tenant_id check
+// ❌ FORBIDDEN: Query without entity scoping
+query := `SELECT * FROM transactions WHERE id = $1`  // WRONG: No organization_id/ledger_id
 row := db.QueryRowContext(ctx, query, id)
 
-// ❌ FORBIDDEN: Post-query tenant check (IDOR vulnerability)
-user, err := r.GetByID(ctx, id)
-if user.TenantID != tenantID {  // WRONG: Data already fetched = leaked
+// ❌ FORBIDDEN: Missing ledger_id in query
+query := `SELECT * FROM transactions WHERE organization_id = $1 AND id = $2`  // WRONG: No ledger_id
+
+// ❌ FORBIDDEN: Post-query entity check
+txn, err := r.GetByID(ctx, id)
+if txn.OrganizationID != organizationID {  // WRONG: Data already fetched
     return nil, ErrForbidden
 }
-
-// ❌ FORBIDDEN: Revealing resource existence to wrong tenant
-if user.TenantID != tenantID {
-    return nil, ErrForbidden  // WRONG: Reveals the resource exists
-}
-// ✅ CORRECT: Return ErrNotFound regardless of reason
+// ✅ CORRECT: Filter in WHERE clause, return ErrNotFound
 ```
 
 #### Detection Commands (MANDATORY)
 
 ```bash
 # MANDATORY: Run before every PR in multi-tenant services
-# Find queries without tenant_id in WHERE clause (single-line SELECT...FROM)
+# Find queries without organization_id in WHERE clause
 grep -rn "SELECT.*FROM.*WHERE" internal/adapters/postgres --include="*.go" | \
-  grep -v "tenant_id" | grep -v "_test.go"
+  grep -v "organization_id" | grep -v "_test.go"
 
-# Find SELECTs that may lack WHERE (review multi-line queries)
+# Find SELECTs that may lack WHERE
 grep -rn "SELECT.*FROM" internal/adapters/postgres --include="*.go" | grep -v "WHERE" | grep -v "_test.go"
 
 # Capture multi-line SQL: call sites that may split queries across lines
 grep -rn "QueryRowContext\|QueryContext" internal/ --include="*.go" | grep -v "_test.go"
-# Review each match - ensure query text (literal or variable) includes tenant_id / WHERE
 
-# JOIN tenant filter: ensure tenant filtering in JOINs is present where needed
-grep -rn "JOIN.*tenant_id\|tenant_id.*=" internal/adapters/postgres --include="*.go" | grep -v "_test.go"
+# Find post-query entity checks (potential information leak)
+grep -rn "OrganizationID.*!=\|\.OrganizationID\s*==" internal/ --include="*.go" | grep -v "_test.go"
 
-# Find post-query tenant checks (potential IDOR) and .TenantID comparisons
-grep -rn "TenantID.*!=\|\.TenantID\s*==" internal/ --include="*.go" | grep -v "_test.go"
-
-# Expected: All queries should include tenant_id (or have documented exception)
-# If matches found: Review each - must be public data or explicitly documented
-# Review each post-fetch match - should be in validation, not post-fetch
+# Expected: All queries should include organization_id (or have documented exception)
 ```
 
 #### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Database is per-tenant anyway" | Database-per-tenant doesn't prevent IDOR in shared tables. | **Add tenant_id to all queries** |
-| "Only admins access this endpoint" | Admins can be in wrong tenant. Verify anyway. | **Add tenant_id to all queries** |
+| "Database is per-tenant anyway" | Database-per-tenant prevents cross-tenant but not intra-tenant IDOR. | **Add organization_id to all queries** |
+| "Only admins access this endpoint" | Admins can access wrong organization. Verify anyway. | **Add organization_id to all queries** |
 | "Post-query check is the same" | Post-query reveals data was fetched. Information leak. | **Filter in WHERE clause** |
-| "We trust authenticated users" | Authentication != Authorization. Tenant scope is authorization. | **Add tenant_id to all queries** |
-| "It's just metadata" | Metadata can reveal business information. | **Add tenant_id to all queries** |
+| "We trust authenticated users" | Authentication != Authorization. Entity scope is authorization. | **Add organization_id to all queries** |
+| "It's just metadata" | Metadata can reveal business information. | **Add organization_id to all queries** |
 
 ### Anti-Rationalization Table (General)
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
-| "Pool Manager adds complexity" | Complexity is in connection management anyway. Pool Manager standardizes it. | **Use Pool Manager for multi-tenant** |
+| "Tenant Manager adds complexity" | Complexity is in connection management anyway. Tenant Manager standardizes it. | **Use Tenant Manager for multi-tenant** |
 | "JWT parsing is expensive" | Parse once in middleware, use from context everywhere. | **Extract tenant once, propagate via context** |
 | "We'll add tenant isolation later" | Retrofitting tenant isolation is a rewrite. | **Build tenant-aware from the start** |
 
@@ -828,31 +1014,40 @@ grep -rn "TenantID.*!=\|\.TenantID\s*==" internal/ --include="*.go" | grep -v "_
 
 **Environment Variables:**
 - [ ] `MULTI_TENANT_ENABLED` in config struct (default: `false`)
-- [ ] `POOL_MANAGER_URL` in config struct (required if multi-tenant)
-- [ ] `MULTI_TENANT_CACHE_TTL` in config struct (default: `24h`)
+- [ ] `MULTI_TENANT_URL` in config struct (required if multi-tenant)
+
+**Architecture:**
+- [ ] `MultiTenantPools` struct with onboarding + transaction pools (PG and Mongo)
+- [ ] `DualPoolMiddleware` with path-based pool selection
+- [ ] Module constants defined (`constant.ModuleOnboarding`, `constant.ModuleTransaction`)
+- [ ] `NewTenantConnectionManager` with `.WithConnectionLimits()` and `.WithDefaultConnection()`
+- [ ] Cross-module connection injection (both modules in context for in-process calls)
 
 **Middleware & Context:**
 - [ ] JWT tenant extraction middleware (claim key: `tenantId`)
-- [ ] `poolmanager.ContextWithTenantID()` in middleware
+- [ ] `tenantmanager.ContextWithTenantID()` in middleware
+- [ ] `tenantmanager.ContextWithModulePGConnection(ctx, module, db)` for PostgreSQL
 - [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
+- [ ] `tenantmanager.ErrManagerClosed` → 503 handling
+- [ ] `tenantmanager.IsTenantNotProvisionedError()` in error handler → 422
 
 **Repositories:**
-- [ ] `poolmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
-- [ ] `poolmanager.GetKeyFromContext(ctx, key)` for Redis keys
-- [ ] `poolmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
-- [ ] `poolmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
+- [ ] `tenantmanager.GetModulePostgresForTenant(ctx, module)` in PostgreSQL repositories
+- [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for Redis keys
+- [ ] `tenantmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
+- [ ] `tenantmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
+- [ ] `ContextWithModulePGConnection` in RabbitMQ consumer with correct module
 - [ ] MongoDB injection in RabbitMQ consumers for async processing
-- [ ] PostgreSQL injection in RabbitMQ consumers for async processing
 - [ ] Proper error codes for tenant-related failures
 
 **Testing:**
-- [ ] Unit tests with mock tenant context (`poolmanager.ContextWithTenantID`)
+- [ ] Unit tests with mock tenant context (`tenantmanager.ContextWithModulePGConnection`)
 - [ ] Tenant isolation tests (verify data separation between tenants)
 - [ ] Error case tests (missing tenant, invalid tenant, tenant not found)
-- [ ] Integration tests with testcontainers
+- [ ] Integration tests with two distinct tenants verifying cross-tenant isolation
 - [ ] RabbitMQ consumer tests (X-Tenant-ID header extraction)
 - [ ] Redis key prefixing tests (verify tenant prefix applied)
 
