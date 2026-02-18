@@ -1126,9 +1126,8 @@ On First Request per Tenant:
 ```
 
 **Endpoint characteristics:**
-- Public (no authentication - internal trusted service)
 - Returns minimal info (id, name, status only)
-- Filters by service (optional query param)
+- Supports optional filtering by service (query param: `?service={serviceName}`)
 
 #### 2. Consumer Manager (lib-commons)
 
@@ -1137,6 +1136,7 @@ On First Request per Tenant:
 **Key methods:**
 ```go
 type MultiTenantConsumer struct {
+    mu sync.RWMutex                      // Protects knownTenants and activeTenants maps
     knownTenants map[string]bool        // Discovered tenants
     activeTenants map[string]CancelFunc // Running consumers
     consumerLocks sync.Map               // Per-tenant mutexes
@@ -1287,7 +1287,10 @@ In each service consuming messages:
 func InitServers() {
     // Create multi-tenant consumer
     consumer := tenantmanager.NewMultiTenantConsumer(...)
-    consumer.Run(ctx)  // Non-blocking, returns <1s
+    if err := consumer.Run(ctx); err != nil {
+        logger.Errorf("tenant manager startup failed: %v", err)
+        // Note: startup continues - consumer will retry tenant discovery in background
+    }
 
     // Create middleware with consumer trigger
     tenantMiddleware := NewTenantMiddleware(consumer)
@@ -1306,7 +1309,11 @@ func (m *TenantMiddleware) Handle(c *fiber.Ctx) error {
 
     // Lazy mode trigger
     if m.consumer != nil {
-        m.consumer.EnsureConsumerStarted(c.UserContext(), tenantID)
+        ctx := c.UserContext()
+        if err := m.consumer.EnsureConsumerStarted(ctx, tenantID); err != nil {
+            logger.Warnf("failed to ensure consumer started for tenant %s: %v", tenantID, err)
+            // Note: request continues - consumer will retry in background sync loop
+        }
     }
 
     return c.Next()
