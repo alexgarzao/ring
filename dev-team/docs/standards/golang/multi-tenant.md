@@ -1,6 +1,6 @@
 # Go Standards - Multi-Tenant
 
-> **Module:** multi-tenant.md | **Sections:** §23 | **Parent:** [index.md](index.md)
+> **Module:** multi-tenant.md | **Sections:** §24 | **Parent:** [index.md](index.md)
 
 This module covers multi-tenant patterns with Tenant Manager.
 
@@ -12,6 +12,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 |---|---------|-------------|
 | 1 | [Multi-Tenant Patterns (CONDITIONAL)](#multi-tenant-patterns-conditional) | Configuration, JWT extraction, context injection |
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | IDOR prevention, tenant verification in queries |
+| 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
 
 ---
 
@@ -1053,3 +1054,390 @@ grep -rn "OrganizationID.*!=\|\.OrganizationID\s*==" internal/ --include="*.go" 
 
 ---
 
+## Multi-Tenant Message Queue Consumers (Lazy Mode)
+
+### When to Use
+
+**CONDITIONAL:** Only applies if your service:
+- Processes messages from a message broker (RabbitMQ, SQS, etc.)
+- Uses per-tenant message isolation (dedicated vhosts or queues per tenant)
+- Has 10+ tenants where startup time is a concern
+
+**If single-tenant or <10 tenants:** Multi-tenant mode overhead may be unnecessary. Consider single-tenant architecture.
+
+---
+
+### Problem: Startup Time Scales with Tenant Count
+
+In multi-tenant services consuming messages, connecting to ALL tenant vhosts at startup causes:
+
+```
+Startup Time = N tenants × 500ms per connection
+10 tenants  = 5 seconds
+100 tenants = 50 seconds  ← Unacceptable for autoscaling/deployments
+```
+
+**Symptoms:**
+- Slow deployments (rolling updates wait for each pod to connect)
+- Poor autoscaling responsiveness (new pods take 30-60s to become ready)
+- Wasted resources (connections to inactive tenants)
+
+---
+
+### Solution: Lazy Consumer Initialization
+
+**Pattern:** Decouple tenant discovery from consumer connection.
+
+```
+Startup:
+  1. Discover tenant list (Redis/API) - lightweight, <1s
+  2. Track discovered tenants in memory (knownTenants map)
+  3. Do NOT start consumers yet
+  4. Return immediately (startup complete)
+
+On First Request per Tenant:
+  1. HTTP middleware extracts tenant ID
+  2. Middleware calls consumer.EnsureConsumerStarted(ctx, tenantID)
+  3. Consumer spawns on-demand (first time: ~500ms)
+  4. Connection cached for reuse
+  5. Subsequent requests: fast path (<1ms)
+```
+
+**Result:** Startup time O(1) regardless of tenant count, resources scale with active tenants only.
+
+---
+
+### Architecture Components
+
+#### 1. Tenant Discovery Service
+
+**Responsibility:** Provide list of active tenants without connection overhead.
+
+**Implementation:**
+- **Primary:** Cache (Redis SET: `tenant-manager:tenants:active`)
+- **Fallback:** HTTP API (`GET /tenants/active?service={serviceName}`)
+
+**Response format (API):**
+```json
+[
+  {"id": "tenant-001", "name": "Tenant A", "status": "active"},
+  {"id": "tenant-002", "name": "Tenant B", "status": "active"}
+]
+```
+
+**Endpoint characteristics:**
+- Public (no authentication - internal trusted service)
+- Returns minimal info (id, name, status only)
+- Filters by service (optional query param)
+
+#### 2. Consumer Manager (lib-commons)
+
+**Responsibility:** Manage lifecycle of message consumers across tenants with lazy initialization.
+
+**Key methods:**
+```go
+type MultiTenantConsumer struct {
+    knownTenants map[string]bool        // Discovered tenants
+    activeTenants map[string]CancelFunc // Running consumers
+    consumerLocks sync.Map               // Per-tenant mutexes
+    retryState sync.Map                  // Failure tracking
+}
+
+// Discover tenants without connecting (non-blocking, <1s)
+func (c *MultiTenantConsumer) Run(ctx context.Context) error
+
+// Ensure consumer is active for tenant (idempotent, thread-safe)
+func (c *MultiTenantConsumer) EnsureConsumerStarted(ctx context.Context, tenantID string) error
+
+// Check if tenant has failed repeatedly
+func (c *MultiTenantConsumer) IsDegraded(tenantID string) bool
+
+// Get runtime statistics
+func (c *MultiTenantConsumer) Stats() ConsumerStats
+```
+
+#### 3. HTTP Middleware Trigger
+
+**Responsibility:** Trigger lazy consumer spawn when requests arrive.
+
+**Implementation pattern:**
+```go
+func TenantMiddleware(consumer ConsumerTrigger) fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        // Extract tenant ID from header or JWT
+        tenantID := c.Get("x-tenant-id")
+        if tenantID == "" {
+            return fiber.NewError(400, "x-tenant-id required")
+        }
+
+        // Lazy mode trigger: ensure consumer is active
+        // First time: spawns consumer (~500ms)
+        // Subsequent: fast path (<1ms)
+        if consumer != nil {  // Nil-safe for single-tenant mode
+            ctx := c.UserContext()
+            if err := consumer.EnsureConsumerStarted(ctx, tenantID); err != nil {
+                logger.Warnf("failed to ensure consumer: %v", err)
+                // Don't fail request - consumer retries via background sync
+            }
+        }
+
+        // Continue with request processing
+        return c.Next()
+    }
+}
+```
+
+**Placement:** After tenant ID extraction, before database connection resolution.
+
+---
+
+### Implementation Steps
+
+#### Step 1: Update Shared Library
+
+Implement lazy mode in your message queue consumer library:
+
+1. **Add state tracking:**
+```go
+knownTenants map[string]bool        // Discovered via API/cache
+activeTenants map[string]CancelFunc // Actually running
+consumerLocks sync.Map               // Prevent duplicate spawns
+```
+
+2. **Non-blocking discovery:**
+```go
+func (c *Consumer) Run(ctx context.Context) error {
+    // Discover tenants (timeout: 500ms, soft failure)
+    c.discoverTenants(ctx)
+
+    // Start background sync loop (for tenant add/remove)
+    go c.runSyncLoop(ctx)
+
+    return nil  // Return immediately
+}
+```
+
+3. **On-demand spawning with double-check locking:**
+```go
+func (c *Consumer) EnsureConsumerStarted(ctx, tenantID string) error {
+    // Fast path: check if already active (read lock)
+    c.mu.RLock()
+    if _, exists := c.activeTenants[tenantID]; exists {
+        c.mu.RUnlock()
+        return nil  // Already running
+    }
+    c.mu.RUnlock()
+
+    // Slow path: acquire per-tenant mutex (prevent thundering herd)
+    mutex := c.getPerTenantMutex(tenantID)
+    mutex.Lock()
+    defer mutex.Unlock()
+
+    // Double-check after acquiring lock
+    c.mu.RLock()
+    if _, exists := c.activeTenants[tenantID]; exists {
+        c.mu.RUnlock()
+        return nil  // Another goroutine created it
+    }
+    c.mu.RUnlock()
+
+    // Spawn consumer
+    return c.startTenantConsumer(ctx, tenantID)
+}
+```
+
+#### Step 2: Add Tenant Discovery Endpoint
+
+In your tenant management service:
+
+```go
+// GET /tenants/active?service={serviceName}
+func GetActiveTenants(c *fiber.Ctx) error {
+    service := c.Query("service")
+
+    // Query active tenants (filter by service if provided)
+    tenants, err := repo.ListActiveTenants(service)
+    if err != nil {
+        return libHTTP.InternalServerError(c, "TENANT_LIST_FAILED", err)
+    }
+
+    // Return minimal info (no credentials)
+    response := []TenantSummary{}
+    for _, t := range tenants {
+        response = append(response, TenantSummary{
+            ID: t.ID,
+            Name: t.Name,
+            Status: t.Status,
+        })
+    }
+
+    return libHTTP.OK(c, response)
+}
+
+// Register as PUBLIC endpoint (no auth)
+app.Get("/tenants/active", GetActiveTenants)
+```
+
+#### Step 3: Wire Trigger in Service Middleware
+
+In each service consuming messages:
+
+```go
+// In bootstrap/config.go
+func InitServers() {
+    // Create multi-tenant consumer
+    consumer := tenantmanager.NewMultiTenantConsumer(...)
+    consumer.Run(ctx)  // Non-blocking, returns <1s
+
+    // Create middleware with consumer trigger
+    tenantMiddleware := NewTenantMiddleware(consumer)
+
+    // Register middleware
+    app.Use(tenantMiddleware)
+}
+
+// In middleware file
+type TenantMiddleware struct {
+    consumer ConsumerTrigger  // Interface with EnsureConsumerStarted method
+}
+
+func (m *TenantMiddleware) Handle(c *fiber.Ctx) error {
+    tenantID := extractTenantID(c)  // From header or JWT
+
+    // Lazy mode trigger
+    if m.consumer != nil {
+        m.consumer.EnsureConsumerStarted(c.UserContext(), tenantID)
+    }
+
+    return c.Next()
+}
+```
+
+---
+
+### Failure Resilience Pattern
+
+**Exponential Backoff:**
+```go
+func backoffDelay(retryCount int) time.Duration {
+    delays := []time.Duration{5*time.Second, 10*time.Second, 20*time.Second, 40*time.Second}
+    if retryCount >= len(delays) {
+        return delays[len(delays)-1]  // Cap at 40s
+    }
+    return delays[retryCount]
+}
+```
+
+**Per-Tenant Retry State:**
+```go
+type retryState struct {
+    count    int
+    degraded bool  // True after 3 failures
+}
+
+retryState sync.Map  // Key: tenantID, Value: *retryState
+```
+
+**Degraded Tenant Handling:**
+```go
+if consumer.IsDegraded(tenantID) {
+    logger.Errorf("Tenant %s is degraded (3+ connection failures)", tenantID)
+    return errors.New("tenant degraded")
+}
+```
+
+---
+
+### Observability Pattern
+
+**Enhanced Stats API:**
+```go
+type ConsumerStats struct {
+    ConnectionMode   string   `json:"connectionMode"`    // "lazy"
+    ActiveTenants    int      `json:"activeTenants"`     // Connected
+    KnownTenants     int      `json:"knownTenants"`      // Discovered
+    PendingTenants   []string `json:"pendingTenants"`    // Known but not active
+    DegradedTenants  []string `json:"degradedTenants"`   // Failed 3+ times
+}
+```
+
+**Structured Logs:**
+- `connection_mode=lazy` at startup
+- `on-demand consumer start for tenant: {id}` when spawning
+- `connecting to vhost: tenant={id}` when connecting
+- `tenant {id} marked degraded` after max retries
+
+---
+
+### Testing Strategy
+
+**Unit Tests:**
+- Startup completes in <1s (0, 100, 500 tenants)
+- Concurrent EnsureConsumerStarted spawns exactly 1 consumer
+- Exponential backoff sequence (5s, 10s, 20s, 40s)
+- Degraded tenant detection after 3 failures
+
+**Integration Tests:**
+- Discovery fallback (Redis → API)
+- On-demand connection with testcontainers
+- Tenant removal cleanup (<30s)
+
+---
+
+### When to Use Multi-Tenant Lazy Consumer
+
+| Scenario | Recommended | Rationale |
+|----------|-------------|-----------|
+| **10+ tenants** | ✅ Yes | Startup time becomes significant with many tenants |
+| **<10 tenants** | ⚠️ Consider | Overhead may not justify complexity |
+| **Most tenants inactive** | ✅ Yes | Resources scale with active count only |
+| **All tenants active** | ✅ Yes | Still faster startup, resources scale proportionally |
+| **Frequent deployments** | ✅ Yes | Fast startup critical for CI/CD velocity |
+| **Latency-sensitive** | ✅ Yes* | *First request per tenant: +500ms (acceptable trade-off) |
+
+---
+
+### Common Pitfalls
+
+**❌ Don't:** Start consumers in discovery loop (defeats lazy purpose)
+**✅ Do:** Populate knownTenants only, defer connection to trigger
+
+**❌ Don't:** Use global mutex for all tenants (contention)
+**✅ Do:** Per-tenant mutex via sync.Map (fine-grained locking)
+
+**❌ Don't:** Fail HTTP request if consumer spawn fails
+**✅ Do:** Log warning, let background sync retry
+
+**❌ Don't:** Forget to cleanup on tenant removal
+**✅ Do:** Remove from knownTenants, activeTenants, consumerLocks
+
+**❌ Don't:** Retry indefinitely on connection failure
+**✅ Do:** Mark degraded after 3 failures, stop retrying
+
+---
+
+### Single-Tenant vs Multi-Tenant Mode
+
+```go
+// Support both single-tenant and multi-tenant deployments
+if !config.MultiTenantEnabled {
+    // Single-tenant: static RabbitMQ connection (no tenant isolation)
+    consumer = initSingleTenantConsumer(...)
+} else {
+    // Multi-tenant: lazy mode with per-tenant vhosts
+    consumer = initMultiTenantConsumer(...)
+}
+```
+
+**Middleware trigger (multi-tenant only):**
+```go
+if m.consumerTrigger != nil {  // Nil in single-tenant mode
+    m.consumerTrigger.EnsureConsumerStarted(ctx, tenantID)
+}
+```
+
+**Note:** Single-tenant uses a different consumer implementation without tenant isolation. Multi-tenant consumers ALWAYS use lazy mode for optimal startup performance.
+
+---
+
+This section can be added to `golang/multi-tenant.md` as **§24: Message Queue Lazy Consumer Pattern**.
