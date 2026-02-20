@@ -10,7 +10,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 
 | # | Section | Description |
 |---|---------|-------------|
-| 1 | [Multi-Tenant Patterns (CONDITIONAL)](#multi-tenant-patterns-conditional) | Configuration, JWT extraction, context injection |
+| 1 | [Multi-Tenant Patterns (CONDITIONAL)](#multi-tenant-patterns-conditional) | Configuration, Tenant Manager API, middleware, context injection |
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | IDOR prevention, tenant verification in queries |
 | 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
 
@@ -34,11 +34,21 @@ This module covers multi-tenant patterns with Tenant Manager.
 |---------|-------------|---------|----------|
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
 | `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
+| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation | `staging` | If multi-tenant |
+| `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
+| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | No |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | No |
 
 **Example `.env` for multi-tenant:**
 ```bash
 MULTI_TENANT_ENABLED=true
 MULTI_TENANT_URL=http://dispatch layer:4003
+MULTI_TENANT_ENVIRONMENT=production
+MULTI_TENANT_MAX_TENANT_POOLS=100
+MULTI_TENANT_IDLE_TIMEOUT_SEC=300
+MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD=5
+MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC=30
 ```
 
 ### Configuration
@@ -47,8 +57,13 @@ MULTI_TENANT_URL=http://dispatch layer:4003
 // internal/bootstrap/config.go
 type Config struct {
     // Multi-Tenant Configuration
-    MultiTenantEnabled bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
-    MultiTenantURL     string `env:"MULTI_TENANT_URL"`
+    MultiTenantEnabled                  bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
+    MultiTenantURL                      string `env:"MULTI_TENANT_URL"`
+    MultiTenantEnvironment              string `env:"MULTI_TENANT_ENVIRONMENT" default:"staging"`
+    MultiTenantMaxTenantPools           int    `env:"MULTI_TENANT_MAX_TENANT_POOLS" default:"100"`
+    MultiTenantIdleTimeoutSec           int    `env:"MULTI_TENANT_IDLE_TIMEOUT_SEC" default:"300"`
+    MultiTenantCircuitBreakerThreshold  int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD" default:"5"`
+    MultiTenantCircuitBreakerTimeoutSec int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC" default:"30"`
 
     // PostgreSQL Primary
     PrimaryDBHost     string `env:"DB_HOST"`
@@ -64,24 +79,66 @@ type Config struct {
 }
 ```
 
-### Module Constants
+### Tenant Manager Service API
 
-Multi-tenant services use module constants to route connections to the correct database:
+The Tenant Manager is an external service that stores database credentials per tenant. All connection managers in lib-commons call this API to resolve tenant-specific connections.
+
+**Endpoints:**
+
+| Method | Path | Returns | Purpose |
+|--------|------|---------|---------|
+| `GET` | `/tenants/{tenantID}/services/{service}/settings` | `TenantConfig` | Full tenant configuration with DB credentials |
+| `GET` | `/tenants/active?service={service}` | `[]*TenantSummary` | List of active tenants (fallback for discovery) |
+
+**Tenant Discovery (for lazy consumer mode):**
+1. Primary: Redis `SMEMBERS "dispatch layer:tenants:active"` (fast, <1ms)
+2. Fallback: HTTP `GET /tenants/active?service={service}` (slower, network call)
+
+### TenantConfig Data Model
+
+The Tenant Manager returns this structure for each tenant. The `Databases` map is keyed by **module name** (e.g., `"onboarding"`, `"transaction"`).
 
 ```go
-// pkg/constant/module.go
-const (
-    // ModuleOnboarding routes PostgreSQL connections for the onboarding component.
-    ModuleOnboarding = "onboarding"
+type TenantConfig struct {
+    ID            string                         // Tenant UUID
+    TenantSlug    string                         // Human-readable slug
+    IsolationMode string                         // "isolated" (default) or "schema"
+    Databases     map[string]DatabaseConfig       // module -> config
+    Messaging     *MessagingConfig               // RabbitMQ config (optional)
+}
 
-    // ModuleTransaction routes PostgreSQL connections for the transaction component.
-    ModuleTransaction = "transaction"
-)
+type DatabaseConfig struct {
+    PostgreSQL        *PostgreSQLConfig
+    PostgreSQLReplica *PostgreSQLConfig   // Read replica (optional)
+    MongoDB           *MongoDBConfig
+}
 ```
+
+**Isolation Modes:**
+
+| Mode | Database | Schema | Connection String | When to Use |
+|------|----------|--------|-------------------|-------------|
+| `isolated` (default) | Separate database per tenant | Default `public` schema | Standard connection | Strong isolation, recommended |
+| `schema` | Shared database | Schema per tenant | Adds `options=-csearch_path={schema}` | Cost optimization, weaker isolation |
+
+### Connection Pool Management
+
+All connection managers (PostgreSQL, MongoDB, RabbitMQ) use **LRU eviction with soft limits**:
+
+- **Soft limit** (`WithMaxTenantPools`): When the pool reaches this size and a new tenant needs a connection, only connections idle longer than the timeout are evicted. If all connections are active, the pool grows beyond the limit.
+- **Idle timeout** (`WithIdleTimeout`): Connections not accessed within this window become eligible for eviction. Default: 5 minutes.
+- **Connection health**: Cached connections are pinged before reuse (3s timeout). Stale connections are recreated transparently.
+
+The Tenant Manager HTTP client supports an optional **circuit breaker** (`WithCircuitBreaker`):
+- After N consecutive failures, the circuit opens and requests fail fast with `ErrCircuitBreakerOpen`
+- After the timeout, the circuit enters half-open state and allows one request through
+- On success, the circuit resets to closed
 
 ### JWT Tenant Extraction
 
 **Claim key:** `tenantId` (camelCase, hardcoded)
+
+**The `tenantId` is the REAL tenant identifier.** It identifies the client/customer. Other IDs like `organization_id` represent entities WITHIN a tenant (multi-organization support) and do NOT provide tenant-level isolation.
 
 ```go
 // internal/bootstrap/middleware.go
@@ -113,9 +170,88 @@ func (m *DualPoolMiddleware) extractTenantIDFromToken(c *fiber.Ctx) (string, err
 }
 ```
 
-### DualPoolMiddleware
+### Generic TenantMiddleware (Standard Pattern)
 
-The middleware routes requests to the correct tenant connection pool based on URL path. It maintains separate pools for onboarding and transaction modules.
+**This is the standard pattern for most services.** The lib-commons `TenantMiddleware` handles JWT extraction, tenant resolution, and context injection automatically. Use this unless your service has multiple database modules.
+
+```go
+// internal/bootstrap/config.go
+func initService(cfg *Config) {
+    // 1. Create Tenant Manager HTTP client (with optional circuit breaker)
+    var clientOpts []tenantmanager.ClientOption
+    if cfg.MultiTenantCircuitBreakerThreshold > 0 {
+        clientOpts = append(clientOpts,
+            tenantmanager.WithCircuitBreaker(
+                cfg.MultiTenantCircuitBreakerThreshold,
+                time.Duration(cfg.MultiTenantCircuitBreakerTimeoutSec)*time.Second,
+            ),
+        )
+    }
+    tmClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+
+    idleTimeout := time.Duration(cfg.MultiTenantIdleTimeoutSec) * time.Second
+
+    // 2. Create PostgreSQL manager (one per service or per module)
+    pgManager := tenantmanager.NewPostgresManager(tmClient, "my-service",
+        tenantmanager.WithModule("my-module"),
+        tenantmanager.WithPostgresLogger(logger),
+        tenantmanager.WithMaxOpenConns(cfg.MaxOpenConnections),
+        tenantmanager.WithMaxIdleConns(cfg.MaxIdleConnections),
+        tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tenantmanager.WithIdleTimeout(idleTimeout),
+    )
+
+    // 3. Create MongoDB manager (optional)
+    mongoManager := tenantmanager.NewMongoManager(tmClient, "my-service",
+        tenantmanager.WithMongoModule("my-module"),
+        tenantmanager.WithMongoLogger(logger),
+        tenantmanager.WithMongoMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tenantmanager.WithMongoIdleTimeout(idleTimeout),
+    )
+
+    // 4. Create and register middleware
+    tenantMid := tenantmanager.NewTenantMiddleware(
+        tenantmanager.WithPostgresManager(pgManager),
+        tenantmanager.WithMongoManager(mongoManager),  // optional
+    )
+    app.Use(tenantMid.WithTenantDB)
+}
+```
+
+**What the middleware does internally:**
+1. Extracts `Authorization: Bearer {token}` header
+2. Parses JWT (unverified — auth middleware already validated it)
+3. Extracts `tenantId` claim
+4. Calls `PostgresManager.GetConnection(ctx, tenantID)` to resolve tenant-specific DB
+5. Stores tenant ID and DB connection in context
+6. If MongoDB manager is set, resolves and stores MongoDB connection
+7. Calls `c.Next()`
+
+**In repositories, use context-based getters:**
+
+```go
+// Single-module service: use generic getter
+db, err := tenantmanager.GetPostgresForTenant(ctx)
+
+// Multi-module service: use module-specific getter
+db, err := tenantmanager.GetModulePostgresForTenant(ctx, "my-module")
+
+// MongoDB
+mongoDB, err := tenantmanager.GetMongoForTenant(ctx)
+
+// Redis key prefixing
+key := tenantmanager.GetKeyFromContext(ctx, "cache-key")
+// -> "tenant:{tenantId}:cache-key"
+
+// Get tenant ID directly
+tenantID := tenantmanager.GetTenantID(ctx)
+```
+
+### DualPoolMiddleware (Multi-Module Pattern)
+
+**Advanced pattern:** Only needed when a service hosts MULTIPLE database modules in a single process (e.g., Core one unified ledger with onboarding + transaction). For single-module services, use the Generic TenantMiddleware above.
+
+The middleware routes requests to the correct tenant connection pool based on URL path. It also supports an optional `ConsumerTrigger` for lazy RabbitMQ consumer activation.
 
 ```go
 // internal/bootstrap/unified-server.go
@@ -124,15 +260,17 @@ type DualPoolMiddleware struct {
     transactionPool      *tenantmanager.TenantConnectionManager
     onboardingMongoPool  *tenantmanager.MongoManager
     transactionMongoPool *tenantmanager.MongoManager
+    consumerTrigger      mbootstrap.ConsumerTrigger
     logger               libLog.Logger
 }
 
-func NewDualPoolMiddleware(pools *MultiTenantPools, logger libLog.Logger) *DualPoolMiddleware {
+func NewDualPoolMiddleware(pools *MultiTenantPools, consumerTrigger mbootstrap.ConsumerTrigger, logger libLog.Logger) *DualPoolMiddleware {
     return &DualPoolMiddleware{
         onboardingPool:       pools.OnboardingPool,
         transactionPool:      pools.TransactionPool,
         onboardingMongoPool:  pools.OnboardingMongoPool,
         transactionMongoPool: pools.TransactionMongoPool,
+        consumerTrigger:      consumerTrigger,
         logger:               logger,
     }
 }
@@ -513,17 +651,42 @@ func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
         MaxIdleConnections:      cfg.MaxIdleConnections,
     }
 
+    // Build client options for Tenant Manager (circuit breaker is optional)
+    var clientOpts []tenantmanager.ClientOption
+    if cfg.MultiTenantCircuitBreakerThreshold > 0 {
+        clientOpts = append(clientOpts,
+            tenantmanager.WithCircuitBreaker(
+                cfg.MultiTenantCircuitBreakerThreshold,
+                time.Duration(cfg.MultiTenantCircuitBreakerTimeoutSec)*time.Second,
+            ),
+        )
+    }
+
+    tenantManagerClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+
+    idleTimeout := time.Duration(cfg.MultiTenantIdleTimeoutSec) * time.Second
+
     // Create onboarding pool - orgs, ledgers, accounts, assets, portfolios, segments
-    onboardingPool := tenantmanager.NewTenantConnectionManager(tenantManagerClient, "ledger", "onboarding", logger).
-        WithConnectionLimits(cfg.MaxOpenConnections, cfg.MaxIdleConnections).
-        WithDefaultConnection(onboardingDefaultConn)
+    onboardingPool := tenantmanager.NewPostgresManager(tenantManagerClient, "ledger",
+        tenantmanager.WithModule("onboarding"),
+        tenantmanager.WithPostgresLogger(logger),
+        tenantmanager.WithMaxOpenConns(cfg.MaxOpenConnections),
+        tenantmanager.WithMaxIdleConns(cfg.MaxIdleConnections),
+        tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tenantmanager.WithIdleTimeout(idleTimeout),
+    ).WithDefaultConnection(onboardingDefaultConn)
 
     logger.Info("Created onboarding PostgreSQL connection manager for multi-tenant mode")
 
     // Create transaction pool - transactions, operations, balances, asset-rates, routes
-    transactionPool := tenantmanager.NewTenantConnectionManager(tenantManagerClient, "ledger", "transaction", logger).
-        WithConnectionLimits(cfg.MaxOpenConnections, cfg.MaxIdleConnections).
-        WithDefaultConnection(transactionDefaultConn)
+    transactionPool := tenantmanager.NewPostgresManager(tenantManagerClient, "ledger",
+        tenantmanager.WithModule("transaction"),
+        tenantmanager.WithPostgresLogger(logger),
+        tenantmanager.WithMaxOpenConns(cfg.MaxOpenConnections),
+        tenantmanager.WithMaxIdleConns(cfg.MaxIdleConnections),
+        tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tenantmanager.WithIdleTimeout(idleTimeout),
+    ).WithDefaultConnection(transactionDefaultConn)
 
     logger.Info("Created transaction PostgreSQL connection manager for multi-tenant mode")
 
@@ -601,14 +764,11 @@ func InitService(cfg *Config) (*Service, error) {
         logger.Info("Running in SINGLE-TENANT MODE")
     }
 
-    // Create unified server with optional tenant pools
-    server := NewUnifiedServer(cfg.ServerAddress, logger, tenantPools)
+    // Get consumer trigger for lazy mode (nil in single-tenant)
+    consumerTrigger := transactionService.GetConsumerTrigger()
 
-    // Register multi-tenant middleware if pools exist
-    if tenantPools != nil {
-        dualPoolMid := NewDualPoolMiddleware(tenantPools, logger)
-        server.Use(dualPoolMid.WithTenantDB)
-    }
+    // Create unified server with optional tenant pools and consumer trigger
+    server := NewUnifiedServer(cfg.ServerAddress, logger, telemetry, tenantPools, consumerTrigger)
 
     return &Service{server: server}, nil
 }
@@ -1002,6 +1162,118 @@ grep -rn "OrganizationID.*!=\|\.OrganizationID\s*==" internal/ --include="*.go" 
 | "We trust authenticated users" | Authentication != Authorization. Entity scope is authorization. | **Add organization_id to all queries** |
 | "It's just metadata" | Metadata can reveal business information. | **Add organization_id to all queries** |
 
+### Context Functions
+
+lib-commons provides two sets of context functions. They use **separate, isolated context keys** with no fallback between them.
+
+| Function | Context Key | Use When |
+|----------|-------------|----------|
+| `GetPostgresForTenant(ctx)` | `tenantPGConnection` | Single-module service (one database) |
+| `GetModulePostgresForTenant(ctx, module)` | `tenantPGConnection:{module}` | Multi-module service (e.g., onboarding + transaction) |
+
+```go
+// Single-module service (most services)
+db, err := tenantmanager.GetPostgresForTenant(ctx)
+if err != nil {
+    // ErrTenantContextRequired: middleware not set up or tenant not resolved
+    return err
+}
+
+// Multi-module service (Core one pattern)
+db, err := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleOnboarding)
+```
+
+**Context setters (used by middleware, not by service code):**
+- `ContextWithTenantID(ctx, tenantID)` — stores tenant ID
+- `ContextWithTenantPGConnection(ctx, db)` — generic PG connection (set by TenantMiddleware)
+- `ContextWithModulePGConnection(ctx, module, db)` — module-specific PG (set by DualPoolMiddleware)
+- `ContextWithTenantMongo(ctx, mongoDB)` — MongoDB connection
+
+### Tenant ID Validation
+
+lib-commons validates tenant IDs to prevent path traversal and injection:
+
+```go
+const maxTenantIDLength = 256
+var validTenantIDPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
+```
+
+Rules:
+- Must start with alphanumeric character
+- Only alphanumeric, underscore, and hyphen allowed
+- Maximum 256 characters
+- Empty strings rejected
+
+### Redis Key Prefixing for Lua Scripts
+
+Beyond simple `Set/Get` operations, Redis Lua scripts require special attention. ALL keys passed as `KEYS[]` and `ARGV[]` to Lua scripts MUST be pre-prefixed in Go **before** the script execution:
+
+```go
+// ✅ CORRECT: Prefix keys in Go before Lua execution
+prefixedBackupQueue := tenantmanager.GetKeyFromContext(ctx, TransactionBackupQueue)
+prefixedTransactionKey := tenantmanager.GetKeyFromContext(ctx, transactionKey)
+prefixedBalanceSyncKey := tenantmanager.GetKeyFromContext(ctx, utils.BalanceSyncScheduleKey)
+
+// Also prefix ARGV values that are used as keys inside the Lua script
+prefixedInternalKey := tenantmanager.GetKeyFromContext(ctx, blcs.InternalKey)
+
+result, err := script.Run(ctx, rds,
+    []string{prefixedBackupQueue, prefixedTransactionKey, prefixedBalanceSyncKey},
+    finalArgs...).Result()
+```
+
+```go
+// ❌ FORBIDDEN: Hardcoded keys inside Lua script
+-- Lua script must NEVER reference keys by name
+local key = "balance:lock"  -- WRONG: not tenant-prefixed
+
+// ✅ CORRECT: Lua script uses only KEYS[] and ARGV[]
+local backupQueue = KEYS[1]  -- Already prefixed by Go caller
+local txKey = KEYS[2]        -- Already prefixed by Go caller
+```
+
+This pattern also ensures Redis Cluster compatibility (all keys in `KEYS[]` must be in the same hash slot for atomic operations).
+
+### Multi-Tenant Metrics
+
+Services implementing multi-tenant MUST expose these metrics:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `tenant_connections_total` | Counter | Total tenant connections created |
+| `tenant_connection_errors_total` | Counter | Connection failures per tenant |
+| `tenant_consumers_active` | Gauge | Active message consumers |
+| `tenant_messages_processed_total` | Counter | Messages processed per tenant |
+
+### Responsibility Split: lib-commons vs Service
+
+| Responsibility | lib-commons handles | Service MUST implement |
+|---------------|--------------------|-----------------------|
+| **Connection pooling** | Cache per tenant, double-check locking | - |
+| **Credential fetching** | HTTP call to Tenant Manager API | - |
+| **JWT parsing** | Extract `tenantId` from token (middleware) | - |
+| **Tenant discovery** | Redis -> API fallback, sync loop | - |
+| **Lazy consumer lifecycle** | On-demand spawn, backoff, degraded tracking | - |
+| **Middleware registration** | - | Register `TenantMiddleware` or `DualPoolMiddleware` on routes |
+| **Repository adaptation** | - | Use `GetPostgresForTenant(ctx)` instead of global DB |
+| **Redis key prefixing** | - | Call `GetKeyFromContext(ctx, key)` for every Redis operation |
+| **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
+| **Consumer trigger** | - | Call `EnsureConsumerStarted(ctx, tenantID)` from middleware |
+| **Error handling** | Return sentinel errors | Map errors to HTTP status codes |
+
+### ConsumerTrigger Interface
+
+Services that process messages in multi-tenant mode MUST implement the `ConsumerTrigger` interface and wire it into the middleware for lazy consumer activation:
+
+```go
+// pkg/mbootstrap/interfaces.go
+type ConsumerTrigger interface {
+    EnsureConsumerStarted(ctx context.Context, tenantID string)
+}
+```
+
+The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. First request per tenant spawns the consumer (~500ms). Subsequent requests are a no-op (<1ms).
+
 ### Anti-Rationalization Table (General)
 
 | Rationalization | Why It's WRONG | Required Action |
@@ -1011,46 +1283,155 @@ grep -rn "OrganizationID.*!=\|\.OrganizationID\s*==" internal/ --include="*.go" 
 | "JWT parsing is expensive" | Parse once in middleware, use from context everywhere. | **Extract tenant once, propagate via context** |
 | "We'll add tenant isolation later" | Retrofitting tenant isolation is a rewrite. | **Build tenant-aware from the start** |
 
+### Final Step: Single-Tenant Backward Compatibility Validation (MANDATORY)
+
+**HARD GATE: This is the LAST step of every multi-tenant implementation.** CANNOT merge or deploy without completing this validation.
+
+If the service was already running as single-tenant before multi-tenant was added, it MUST continue working exactly the same way with `MULTI_TENANT_ENABLED=false` (the default). Multi-tenant is opt-in. Single-tenant is the baseline. Breaking it is a production incident for all existing deployments.
+
+#### How the Backward Compatibility Mechanism Works
+
+The middleware checks `pool.IsMultiTenant()` at the start of every request. When `MULTI_TENANT_ENABLED=false`:
+- `IsMultiTenant()` returns `false`
+- Middleware returns `c.Next()` immediately — zero tenant logic applied
+- No JWT parsing, no Tenant Manager calls, no pool routing
+- The service uses its default database connection as before
+
+```go
+// Single-tenant mode: pass through if pool is not multi-tenant
+if !pool.IsMultiTenant() {
+    return c.Next()  // No tenant logic applied — service works as before
+}
+```
+
+#### Validation Steps (execute in order)
+
+**Step 1 — Remove all multi-tenant env vars and start the service:**
+```bash
+# Unset ALL multi-tenant variables
+unset MULTI_TENANT_ENABLED MULTI_TENANT_URL MULTI_TENANT_ENVIRONMENT
+unset MULTI_TENANT_MAX_TENANT_POOLS MULTI_TENANT_IDLE_TIMEOUT_SEC
+unset MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC
+
+# Start the service — MUST start without errors, without Tenant Manager running
+go run cmd/app/main.go
+# Expected log: "Running in SINGLE-TENANT MODE"
+```
+
+**Step 2 — Run the full existing test suite (single-tenant):**
+```bash
+# ALL pre-existing tests MUST pass with multi-tenant disabled
+MULTI_TENANT_ENABLED=false go test ./...
+```
+
+**Step 3 — Run backward compatibility integration test:**
+```go
+func TestMultiTenant_BackwardCompatibility(t *testing.T) {
+    // MUST skip when multi-tenant is enabled — this test validates single-tenant only
+    if h.IsMultiTenantEnabled() {
+        t.Skip("Skipping backward compatibility test - multi-tenant mode is enabled")
+    }
+
+    // Create resources WITHOUT tenant context — MUST work in single-tenant mode
+    code, body, err := client.Request(ctx, "POST", "/v1/organizations", headers, orgPayload)
+    require.Equal(t, 201, code, "single-tenant CRUD must work without tenant context")
+
+    // List resources — MUST return data normally
+    code, body, err = client.Request(ctx, "GET", "/v1/organizations", headers, nil)
+    require.Equal(t, 200, code, "single-tenant list must work without tenant context")
+
+    // Health endpoints — MUST work without any auth or tenant context
+    code, _, _ = client.Request(ctx, "GET", "/health", nil, nil)
+    require.Equal(t, 200, code, "health endpoint must work in single-tenant mode")
+}
+```
+
+**Step 4 — Validate against this checklist:**
+
+| # | Check | How to Verify | Pass Criteria |
+|---|-------|--------------|---------------|
+| 1 | Service starts without `MULTI_TENANT_*` vars | Remove all vars, start service | Starts normally, logs "SINGLE-TENANT MODE" |
+| 2 | Service starts without Tenant Manager | Don't run Tenant Manager, start service | No connection errors, no panics |
+| 3 | All existing CRUD operations work | Run pre-existing integration tests | All pass with same behavior as before |
+| 4 | Health/version/swagger endpoints work | `GET /health`, `GET /version` | 200 OK without any auth headers |
+| 5 | Default DB connection is used | Check DB queries go to the configured `DB_HOST` | Queries hit single-tenant database |
+| 6 | No new required env vars break startup | Start with only the env vars the service had before | Service starts without errors |
+
+**Step 5 — Run multi-tenant test suite (both modes work):**
+```bash
+# Confirm multi-tenant mode also works
+MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./... -run "MultiTenant"
+```
+
+#### Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Nobody uses single-tenant anymore" | Existing deployments depend on it. Breaking them is a production incident for every customer running self-hosted. | **STOP. Run the validation steps.** |
+| "We tested multi-tenant, that's enough" | Multi-tenant tests exercise a DIFFERENT code path (`IsMultiTenant()=true`). Single-tenant (`IsMultiTenant()=false`) is a separate path that needs separate verification. | **STOP. Run both test suites.** |
+| "The passthrough is trivial, it can't break" | Config struct changes, new required env vars, middleware ordering changes, import side effects — all of these can silently break the passthrough path. | **STOP. Verify with actual requests.** |
+| "I'll test single-tenant later" | Later never comes. Once merged, the damage is done. Existing CI may not catch it if tests assume multi-tenant. | **STOP. Test now, before merge.** |
+
 ### Checklist
 
 **Environment Variables:**
 - [ ] `MULTI_TENANT_ENABLED` in config struct (default: `false`)
 - [ ] `MULTI_TENANT_URL` in config struct (required if multi-tenant)
+- [ ] `MULTI_TENANT_ENVIRONMENT` in config struct (default: `staging`)
+- [ ] `MULTI_TENANT_MAX_TENANT_POOLS` in config struct (default: `100`)
+- [ ] `MULTI_TENANT_IDLE_TIMEOUT_SEC` in config struct (default: `300`)
+- [ ] `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` in config struct (default: `5`)
+- [ ] `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` in config struct (default: `30`)
 
-**Architecture:**
-- [ ] `MultiTenantPools` struct with onboarding + transaction pools (PG and Mongo)
-- [ ] `DualPoolMiddleware` with path-based pool selection
-- [ ] Module constants defined (`constant.ModuleOnboarding`, `constant.ModuleTransaction`)
-- [ ] `NewTenantConnectionManager` with `.WithConnectionLimits()` and `.WithDefaultConnection()`
+**Architecture (Generic — single-module services):**
+- [ ] `tenantmanager.NewClient(url, logger)` for Tenant Manager HTTP client
+- [ ] `tenantmanager.NewPostgresManager(client, service, WithModule(...), WithPostgresLogger(...), WithMaxOpenConns(...), WithMaxIdleConns(...))` for PostgreSQL pool
+- [ ] `tenantmanager.NewTenantMiddleware(WithPostgresManager(...))` for middleware
+- [ ] `tenantmanager.GetPostgresForTenant(ctx)` in repositories
+
+**Architecture (Multi-module — Core one pattern):**
+- [ ] `MultiTenantPools` struct with separate pools per module (PG and Mongo)
+- [ ] `DualPoolMiddleware` with path-based pool selection and `ConsumerTrigger`
+- [ ] Module constants defined (e.g., `constant.ModuleOnboarding`, `constant.ModuleTransaction`)
 - [ ] Cross-module connection injection (both modules in context for in-process calls)
+- [ ] `tenantmanager.GetModulePostgresForTenant(ctx, module)` in repositories
 
 **Middleware & Context:**
-- [ ] JWT tenant extraction middleware (claim key: `tenantId`)
+- [ ] JWT tenant extraction (claim key: `tenantId`)
 - [ ] `tenantmanager.ContextWithTenantID()` in middleware
-- [ ] `tenantmanager.ContextWithModulePGConnection(ctx, module, db)` for PostgreSQL
 - [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
-- [ ] `tenantmanager.ErrManagerClosed` → 503 handling
-- [ ] `tenantmanager.IsTenantNotProvisionedError()` in error handler → 422
+- [ ] `ErrTenantNotFound` → 404, `ErrManagerClosed` → 503, `ErrServiceNotConfigured` → 503
+- [ ] `IsTenantNotProvisionedError()` in error handler → 422
+- [ ] `ErrTenantContextRequired` handled in repositories
+- [ ] `ConsumerTrigger.EnsureConsumerStarted()` called after tenant ID extraction (if using lazy mode)
 
 **Repositories:**
-- [ ] `tenantmanager.GetModulePostgresForTenant(ctx, module)` in PostgreSQL repositories
-- [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for Redis keys
+- [ ] `tenantmanager.GetPostgresForTenant(ctx)` or `GetModulePostgresForTenant(ctx, module)` in PostgreSQL repositories
+- [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
 - [ ] `tenantmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
-- [ ] `tenantmanager.ContextWithTenantMongo()` in middleware (if using MongoDB)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
-- [ ] `ContextWithModulePGConnection` in RabbitMQ consumer with correct module
-- [ ] MongoDB injection in RabbitMQ consumers for async processing
-- [ ] Proper error codes for tenant-related failures
+- [ ] `NewMultiTenantConsumer` with `WithConsumerPostgresManager` and `WithConsumerMongoManager`
+- [ ] `consumer.Register(queueName, handler)` for each queue
+- [ ] `consumer.Run(ctx)` at startup (non-blocking, <1s)
+- [ ] `ConsumerTrigger` interface implemented and wired to middleware
 
 **Testing:**
-- [ ] Unit tests with mock tenant context (`tenantmanager.ContextWithModulePGConnection`)
+- [ ] Unit tests with mock tenant context
 - [ ] Tenant isolation tests (verify data separation between tenants)
 - [ ] Error case tests (missing tenant, invalid tenant, tenant not found)
 - [ ] Integration tests with two distinct tenants verifying cross-tenant isolation
 - [ ] RabbitMQ consumer tests (X-Tenant-ID header extraction)
-- [ ] Redis key prefixing tests (verify tenant prefix applied)
+- [ ] Redis key prefixing tests (verify tenant prefix applied, including Lua scripts)
+
+**Single-Tenant Backward Compatibility (MANDATORY):**
+- [ ] All existing tests pass with `MULTI_TENANT_ENABLED=false` (default)
+- [ ] Service starts without any `MULTI_TENANT_*` environment variables
+- [ ] Service starts without Tenant Manager running
+- [ ] All CRUD operations work in single-tenant mode
+- [ ] Backward compatibility integration test exists (`TestMultiTenant_BackwardCompatibility`)
+- [ ] Health/version endpoints work without tenant context
 
 ---
 
