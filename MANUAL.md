@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 80 skills, 34 agents, and 29 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 81 skills, 34 agents, and 30 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,9 +13,9 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(25)   │  │  Skills(19)   │  │  Skills(13)   │  │  team         │      │
+│  │  Skills(26)   │  │  Skills(19)   │  │  Skills(13)   │  │  team         │      │
 │  │  Agents(7)    │  │  Agents(11)   │  │  Agents(4)    │  │  Skills(7)    │      │
-│  │  Cmds(12)     │  │  Cmds(7)      │  │  Cmds(3)      │  │  Agents(3)    │      │
+│  │  Cmds(13)     │  │  Cmds(7)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐                                            │
 │  │ ring-tw-team  │  │ ring-pmo-team │                                            │
@@ -85,6 +85,7 @@ Commands are invoked directly: `/command-name`.
 | `/ring:brainstorm [topic]`      | Interactive design refinement before coding | `/ring:brainstorm user-authentication`             |
 | `/ring:explore-codebase [path]` | Autonomous two-phase codebase exploration   | `/ring:explore-codebase payment/`                  |
 | `/ring:interview-me [topic]`    | Proactive requirements gathering interview  | `/ring:interview-me auth-system`                   |
+| `/ring:md-to-html [file]`       | Transform a markdown file into an HTML page | `/ring:md-to-html architecture.md`                 |
 | `/ring:release-guide`           | Generate step-by-step release instructions  | `/ring:release-guide`                              |
 | `/ring:pre-dev-feature [name]`  | Plan simple features (<2 days) – 5 gates    | `/ring:pre-dev-feature logout-button`              |
 | `/ring:pre-dev-full [name]`     | Plan complex features (≥2 days) – 10 gates  | `/ring:pre-dev-full payment-system`                |
@@ -385,7 +386,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 80 skills are auto-discovered and available
+2. All 81 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

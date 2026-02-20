@@ -21,7 +21,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 80 specialized skills** (25 core + 19 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
+- **Providing 81 specialized skills** (26 core + 19 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
 - **34 specialized agents** - 7 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -281,9 +281,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 80 Skills (Across 6 Plugins)
+## 📚 All 81 Skills (Across 6 Plugins)
 
-### Core Skills (ring-default plugin - 25 skills)
+### Core Skills (ring-default plugin - 26 skills)
 
 **Testing & Debugging (7):**
 
@@ -316,10 +316,11 @@ No "should work" → Only "does work" with proof
 - `ring:testing-skills-with-subagents` - Skill validation
 - `ring:testing-agents-with-subagents` - Subagent-specific testing
 
-**Session & Learning (2):**
+**Session & Learning (3):**
 
 - `ring:exploring-codebase` - Two-phase codebase exploration
 - `ring:release-guide-info` - Generate Ops Update Guide from git diff analysis
+- `ring:visual-explainer` - Generate self-contained HTML pages to visually explain systems, code changes, and data
 
 **Audit & Readiness (1):**
 
@@ -425,7 +426,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 29 slash commands across 6 plugins for common workflows.
+Ring provides 30 slash commands across 6 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -438,6 +439,7 @@ Ring provides 29 slash commands across 6 plugins for common workflows.
 - `/ring:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
 - `/ring:explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
 - `/ring:interview-me [topic]` - Proactive requirements gathering through structured user interview
+- `/ring:md-to-html [file]` - Transform a markdown file into a standalone, styled HTML page
 - `/ring:release-guide` - Generate Ops Update Guide from git diff between two refs
 - `/ring:create-handoff [name]` - Create handoff document for session continuity
 - `/ring:resume-handoff [path]` - Resume work from a previous handoff
@@ -548,11 +550,11 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (6 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 25 core skills
+│   ├── skills/                       # 26 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
 │   │   └── shared-patterns/         # Universal patterns (6 patterns)
-│   ├── commands/                    # 12 slash command definitions
+│   ├── commands/                    # 13 slash command definitions
 │   ├── hooks/                       # Session initialization
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
