@@ -15,7 +15,7 @@ This module covers authentication, licensing, and secret protection.
 | 3 | [Secret Redaction Patterns](#secret-redaction-patterns-mandatory) | Preventing credential leaks in logs |
 | 4 | [SQL Safety](#sql-safety-mandatory) | SQL injection prevention and parameterized queries |
 | 5 | [HTTP Security Headers](#http-security-headers-mandatory) | X-Content-Type-Options, X-Frame-Options |
-| 6 | [Rate Limiting](#rate-limiting-mandatory) | Three-tier rate limiting with Redis-backed storage |
+| 6 | [Rate Limiting](#rate-limiting-mandatory) | Three-tier rate limiting with Redis-backed storage, Trusted Proxy configuration |
 | 7 | [CORS Configuration](#cors-configuration-mandatory) | Cross-Origin Resource Sharing setup and production validation |
 
 ---
@@ -941,6 +941,222 @@ grep -rn "SecurityHeaders\|security.*middleware" --include="*.go" ./internal
 
 Without rate limiting, a single-client can exhaust server resources, degrade performance for all users, and create cascading failures. Rate limiting is a fundamental security control that MUST be present before any service goes to production.
 
+### Trusted Proxy Configuration (Prerequisite)
+
+**⛔ HARD GATE:** Services deployed behind reverse proxies or load balancers MUST configure Fiber's trusted proxy check (`EnableTrustedProxyCheck` in v2, `TrustProxy` in v3) to obtain the real client IP. Without this, `c.IP()` returns the proxy IP, and the rate limiter treats all clients as a single source.
+
+> **Version Note:** Examples below use Fiber v2 (current project standard per `core.md`).
+> A v2 ↔ v3 field mapping table is provided for projects migrating to Fiber v3.
+> MUST verify your Fiber version before implementing: `grep "gofiber/fiber" go.mod`
+
+#### Why Trusted Proxy Is Required for Rate Limiting
+
+| Scenario | Without TrustProxy | With TrustProxy |
+|----------|-------------------|-----------------|
+| Rate limiting by IP | Limits the proxy (all clients share one limit) | Limits each client individually |
+| Audit logging | Logs proxy IP (useless for investigation) | Logs real client IP |
+| Abuse detection | Cannot identify abusive client | Identifies real source |
+| Geo-restrictions | Resolves to proxy location | Resolves to client location |
+
+#### How Fiber Resolves `c.IP()`
+
+```text
+Request arrives → Is EnableTrustedProxyCheck enabled? (v2) / Is TrustProxy enabled? (v3)
+                  │
+                  ├── NO → c.IP() = TCP RemoteAddr (proxy IP behind LB)
+                  │
+                  └── YES → Is RemoteAddr in TrustedProxies list? (v2) / TrustProxyConfig.Proxies? (v3)
+                            │
+                            ├── YES → c.IP() = ProxyHeader value (real client IP)
+                            │
+                            └── NO → c.IP() = TCP RemoteAddr (untrusted, ignores headers)
+```
+
+#### Required Environment Variable
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `TRUSTED_PROXIES` | string | `""` | Comma-separated IPs/CIDRs of trusted proxies (e.g., `10.0.0.1,172.16.0.0/12`) |
+
+#### Configuration Struct
+
+```go
+// internal/bootstrap/config.go
+
+type ServerConfig struct {
+    Address        string `env:"SERVER_ADDRESS"       envDefault:":8080"`
+    TrustedProxies string `env:"TRUSTED_PROXIES"`
+    // ... other fields ...
+}
+```
+
+#### Implementation Pattern (Fiber)
+
+```go
+// internal/bootstrap/fiber_server.go
+
+import (
+    "strings"
+
+    "github.com/gofiber/fiber/v2"
+)
+
+func NewFiberApp(cfg *Config) *fiber.App {
+    fiberCfg := fiber.Config{
+        DisableStartupMessage: true,
+        ErrorHandler:          libHTTP.HandleFiberError,
+    }
+
+    // Configure trusted proxies when behind a reverse proxy / load balancer
+    if proxies := strings.TrimSpace(cfg.Server.TrustedProxies); proxies != "" {
+        proxyList := strings.Split(proxies, ",")
+        for i := range proxyList {
+            proxyList[i] = strings.TrimSpace(proxyList[i])
+        }
+
+        fiberCfg.EnableTrustedProxyCheck = true
+        fiberCfg.TrustedProxies = proxyList
+        fiberCfg.ProxyHeader = fiber.HeaderXForwardedFor
+        fiberCfg.EnableIPValidation = true
+    }
+
+    return fiber.New(fiberCfg)
+}
+```
+
+#### App-Level Configuration (Not Middleware)
+
+Trusted proxy is a `fiber.Config` field, not a middleware. It affects all calls to `c.IP()`, `c.IPs()`, `c.Protocol()`, and `c.Hostname()` globally. The rate limiter, audit logging, and any code that uses `c.IP()` automatically benefits from the correct client IP.
+
+#### Fiber v2 ↔ v3 Field Mapping
+
+| Purpose | Fiber v2 (current standard) | Fiber v3 |
+|---|---|---|
+| Enable proxy trust | `EnableTrustedProxyCheck: true` | `TrustProxy: true` |
+| List of trusted proxies | `TrustedProxies: []string{...}` | `TrustProxyConfig: fiber.TrustProxyConfig{Proxies: []string{...}}` |
+| Header to read client IP | `ProxyHeader: fiber.HeaderXForwardedFor` | *(automatic when TrustProxy is enabled)* |
+| Validate IP format | `EnableIPValidation: true` | `EnableIPValidation: true` |
+
+**Detection by version:**
+
+```bash
+# Check which version your project uses
+grep "gofiber/fiber" go.mod
+# fiber/v2 → use EnableTrustedProxyCheck, TrustedProxies, ProxyHeader
+# fiber/v3 → use TrustProxy, TrustProxyConfig
+```
+
+#### Production Validation (MANDATORY)
+
+**⛔ HARD GATE:** Services deployed behind proxies in production MUST have `TRUSTED_PROXIES` configured:
+
+```go
+// internal/bootstrap/config.go
+
+func enforceProductionDefaults(cfg *Config, logger log.Logger) {
+    // ... existing rate limit enforcement ...
+
+    // Warn if TRUSTED_PROXIES is empty in production
+    if cfg.App.EnvName == "production" && cfg.Server.TrustedProxies == "" {
+        logger.Warnf("SECURITY: TRUSTED_PROXIES is empty in production. " +
+            "c.IP() will return the load balancer IP instead of the real client IP. " +
+            "Rate limiting and audit logging will not work correctly. env=%s", cfg.App.EnvName)
+    }
+}
+```
+
+#### Configuration Examples
+
+```bash
+# Development (no proxy)
+TRUSTED_PROXIES=
+
+# Development with local proxy (e.g., nginx, traefik)
+TRUSTED_PROXIES=127.0.0.1
+
+# Production - single load balancer
+TRUSTED_PROXIES=10.0.0.1
+
+# Production - multiple proxies (LB + WAF)
+TRUSTED_PROXIES=10.0.0.1,10.0.0.2
+
+# Production - CIDR range (Kubernetes internal network)
+TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12
+
+# Production - AWS ALB (use VPC CIDR)
+TRUSTED_PROXIES=10.0.0.0/16
+```
+
+#### FORBIDDEN Trusted Proxy Patterns
+
+```go
+// ❌ FORBIDDEN: ProxyHeader without EnableTrustedProxyCheck (any client can forge the header)
+fiber.Config{
+    ProxyHeader: fiber.HeaderXForwardedFor,  // WRONG: trusts ALL requests, not just proxies
+}
+
+// ❌ FORBIDDEN: EnableTrustedProxyCheck without TrustedProxies list (trusts nobody, proxy headers ignored)
+fiber.Config{
+    EnableTrustedProxyCheck: true,
+    // Missing TrustedProxies → empty list means no proxy is trusted, headers are ignored
+}
+
+// ❌ FORBIDDEN: Wildcard CIDR (equivalent to trusting everyone)
+fiber.Config{
+    EnableTrustedProxyCheck: true,
+    TrustedProxies:          []string{"0.0.0.0/0"},  // WRONG: trusts entire internet
+    ProxyHeader:             fiber.HeaderXForwardedFor,
+}
+
+// ❌ FORBIDDEN: Hardcoded proxy IPs (must use config)
+fiber.Config{
+    EnableTrustedProxyCheck: true,
+    TrustedProxies:          []string{"10.0.0.1"},  // WRONG: use TRUSTED_PROXIES env var
+    ProxyHeader:             fiber.HeaderXForwardedFor,
+}
+
+// ✅ CORRECT (Fiber v2): Configuration-driven, validated
+proxyList := strings.Split(cfg.Server.TrustedProxies, ",")
+fiber.Config{
+    EnableTrustedProxyCheck: true,
+    TrustedProxies:          proxyList,
+    ProxyHeader:             fiber.HeaderXForwardedFor,
+    EnableIPValidation:      true,
+}
+```
+
+#### Trusted Proxy Detection Commands
+
+```bash
+# PREREQUISITE: Verify Fiber version
+grep "gofiber/fiber" go.mod
+# If fiber/v2 → use EnableTrustedProxyCheck, TrustedProxies, ProxyHeader (this section)
+# If fiber/v3 → use TrustProxy, TrustProxyConfig (see v2 ↔ v3 mapping table above)
+
+# Find trusted proxy configuration (Fiber v2)
+grep -rn "EnableTrustedProxyCheck\|TrustedProxies" --include="*.go" ./internal
+# Expected: At least 1 match in fiber_server.go or init.go
+
+# Find standalone ProxyHeader usage (should be paired with EnableTrustedProxyCheck)
+grep -rn "ProxyHeader" --include="*.go" ./internal
+# Review: every ProxyHeader must have EnableTrustedProxyCheck = true
+
+# Find c.IP() usage to verify all callers benefit from trusted proxy config
+grep -rn "\.IP()" --include="*.go" ./internal
+# Review: all should be behind trusted-proxy-configured Fiber app
+```
+
+#### Trusted Proxy Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We're on an internal network" | Internal networks don't prevent X-Forwarded-For header spoofing. | **Configure EnableTrustedProxyCheck with explicit proxy IPs** |
+| "The load balancer already validates" | Defense in depth. The app MUST NOT trust headers from untrusted sources. | **Configure EnableTrustedProxyCheck** |
+| "We only use UserID in the rate limiter" | UserID is the primary key, but IP is the fallback. Audit logs also need real IPs. | **Configure EnableTrustedProxyCheck** |
+| "ProxyHeader is simpler" | Simpler and insecure. Any client can forge X-Forwarded-For. | **Use EnableTrustedProxyCheck + TrustedProxies + ProxyHeader** |
+| "TRUSTED_PROXIES is hard to maintain" | Proxy IPs rarely change. Use CIDR ranges for flexibility. | **Use CIDR notation** |
+| "We'll add it when we go to production" | Misconfigured c.IP() in dev hides bugs. | **Configure from day one** |
+
 ### Three-tier Rate Limiting Strategy
 
 Services MUST implement tiered rate limiting based on endpoint sensitivity:
@@ -1177,6 +1393,10 @@ import (
 // Order: Auth → RateLimiter → Handlers
 // If storage is provided, uses it for distributed rate limiting across multiple instances.
 // Returns a no-op middleware if rate limiting is disabled via RateLimitEnabled config.
+//
+// IMPORTANT: fiberCtx.IP() depends on Trusted Proxy configuration.
+// See "Trusted Proxy Configuration" section. Without TrustProxy, c.IP() returns
+// the proxy/load balancer IP, and rate limiting by IP will not work correctly.
 func NewRateLimiter(cfg *Config, storage fiber.Storage) fiber.Handler {
     if !cfg.RateLimit.Enabled {
         return func(c *fiber.Ctx) error {
@@ -1406,6 +1626,10 @@ limiter.New(limiter.Config{Max: 100})  // No Storage field = permanent in-memory
 KeyGenerator: func(c *fiber.Ctx) string {
     return c.IP()  // Ignores user/tenant context
 }
+
+// ❌ FORBIDDEN: Using c.IP() without Trusted Proxy configuration behind a proxy
+// c.IP() returns proxy IP, not client IP — rate limiting applies to the proxy as a whole
+// See "Trusted Proxy Configuration" section
 
 // ❌ FORBIDDEN: Hardcoded rate limits (must be configurable)
 limiter.Config{Max: 100, Expiration: time.Minute}  // Use config struct
