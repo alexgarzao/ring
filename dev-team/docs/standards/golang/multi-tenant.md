@@ -65,17 +65,13 @@ type Config struct {
     MultiTenantCircuitBreakerThreshold  int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD" default:"5"`
     MultiTenantCircuitBreakerTimeoutSec int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC" default:"30"`
 
-    // PostgreSQL Primary
+    // PostgreSQL Primary (used as default connection in single-tenant mode)
     PrimaryDBHost     string `env:"DB_HOST"`
     PrimaryDBUser     string `env:"DB_USER"`
     PrimaryDBPassword string `env:"DB_PASSWORD"`
     PrimaryDBName     string `env:"DB_NAME"`
     PrimaryDBPort     string `env:"DB_PORT"`
     PrimaryDBSSLMode  string `env:"DB_SSLMODE"`
-
-    // PostgreSQL connection pool
-    MaxOpenConnections int `env:"DB_MAX_OPEN_CONNS"`
-    MaxIdleConnections int `env:"DB_MAX_IDLE_CONNS"`
 }
 ```
 
@@ -119,7 +115,7 @@ type DatabaseConfig struct {
 | Mode | Database | Schema | Connection String | When to Use |
 |------|----------|--------|-------------------|-------------|
 | `isolated` (default) | Separate database per tenant | Default `public` schema | Standard connection | Strong isolation, recommended |
-| `schema` | Shared database | Schema per tenant | Adds `options=-csearch_path={schema}` | Cost optimization, weaker isolation |
+| `schema` | Shared database | Schema per tenant | Adds `options=-csearch_path="{schema}"` | Cost optimization, weaker isolation |
 
 ### Connection Pool Management
 
@@ -195,8 +191,6 @@ func initService(cfg *Config) {
     pgManager := tenantmanager.NewPostgresManager(tmClient, "my-service",
         tenantmanager.WithModule("my-module"),
         tenantmanager.WithPostgresLogger(logger),
-        tenantmanager.WithMaxOpenConns(cfg.MaxOpenConnections),
-        tenantmanager.WithMaxIdleConns(cfg.MaxIdleConnections),
         tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
         tenantmanager.WithIdleTimeout(idleTimeout),
     )
@@ -668,8 +662,6 @@ func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
     onboardingPool := tenantmanager.NewPostgresManager(tenantManagerClient, "ledger",
         tenantmanager.WithModule("onboarding"),
         tenantmanager.WithPostgresLogger(logger),
-        tenantmanager.WithMaxOpenConns(cfg.MaxOpenConnections),
-        tenantmanager.WithMaxIdleConns(cfg.MaxIdleConnections),
         tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
         tenantmanager.WithIdleTimeout(idleTimeout),
     ).WithDefaultConnection(onboardingDefaultConn)
@@ -680,8 +672,6 @@ func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
     transactionPool := tenantmanager.NewPostgresManager(tenantManagerClient, "ledger",
         tenantmanager.WithModule("transaction"),
         tenantmanager.WithPostgresLogger(logger),
-        tenantmanager.WithMaxOpenConns(cfg.MaxOpenConnections),
-        tenantmanager.WithMaxIdleConns(cfg.MaxIdleConnections),
         tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
         tenantmanager.WithIdleTimeout(idleTimeout),
     ).WithDefaultConnection(transactionDefaultConn)
@@ -1040,8 +1030,12 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Missing tenantId claim | 401 | `TENANT_ID_REQUIRED` | JWT doesn't have tenantId |
 | Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Tenant Manager |
 | Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized (SQLSTATE 42P01) |
-| Connection error | 500 | `CONNECTION_ERROR` | Failed to get tenant connection |
+| Tenant suspended | 403 | `TENANT_SUSPENDED` | Tenant status is suspended (returned by Tenant Manager) |
+| Service not configured | 503 | `SERVICE_NOT_CONFIGURED` | Tenant exists but has no config for this service/module |
+| Schema mode error | 422 | `SCHEMA_MODE_ERROR` | Invalid schema configuration for tenant database |
+| Connection error | 503 | `CONNECTION_ERROR` | Failed to get or establish tenant connection |
 | Manager closed | 503 | `SERVICE_UNAVAILABLE` | Connection manager has been shut down |
+| Circuit breaker open | 503 | `CIRCUIT_BREAKER_OPEN` | Tenant Manager client circuit breaker tripped after consecutive failures |
 
 ### Tenant Isolation Verification (⚠️ CONDITIONAL)
 
@@ -1383,7 +1377,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://tenant-manager:4003 go test ./
 
 **Architecture (Generic — single-module services):**
 - [ ] `tenantmanager.NewClient(url, logger)` for Tenant Manager HTTP client
-- [ ] `tenantmanager.NewPostgresManager(client, service, WithModule(...), WithPostgresLogger(...), WithMaxOpenConns(...), WithMaxIdleConns(...))` for PostgreSQL pool
+- [ ] `tenantmanager.NewPostgresManager(client, service, WithModule(...), WithPostgresLogger(...), WithMaxTenantPools(...), WithIdleTimeout(...))` for PostgreSQL pool
 - [ ] `tenantmanager.NewTenantMiddleware(WithPostgresManager(...))` for middleware
 - [ ] `tenantmanager.GetPostgresForTenant(ctx)` in repositories
 
