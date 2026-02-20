@@ -509,7 +509,7 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
         return err
     }
 
-    return rds.Set(ctx, key, value, ttl*time.Second).Err()
+    return rds.Set(ctx, key, value, ttl).Err()
 }
 ```
 
@@ -631,9 +631,6 @@ type MultiTenantPools struct {
 }
 
 func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
-    // Create Tenant Manager client (shared between all pools)
-    tenantManagerClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger)
-
     // Create default PostgreSQL connections for fallback (single-tenant mode)
     onboardingDefaultConn := &libPostgres.PostgresConnection{
         ConnectionStringPrimary: buildConnString(cfg),
@@ -662,6 +659,7 @@ func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
         )
     }
 
+    // Create Tenant Manager client (shared between all pools)
     tenantManagerClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
 
     idleTimeout := time.Duration(cfg.MultiTenantIdleTimeoutSec) * time.Second
@@ -1272,7 +1270,7 @@ type ConsumerTrigger interface {
 }
 ```
 
-The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. First request per tenant spawns the consumer (~500ms). Subsequent requests are a no-op (<1ms).
+The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. First request per tenant spawns the consumer (~500ms). Subsequent requests return immediately (<1ms).
 
 ### Anti-Rationalization Table (General)
 
@@ -1287,7 +1285,7 @@ The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. Fir
 
 **HARD GATE: This is the LAST step of every multi-tenant implementation.** CANNOT merge or deploy without completing this validation.
 
-If the service was already running as single-tenant before multi-tenant was added, it MUST continue working exactly the same way with `MULTI_TENANT_ENABLED=false` (the default). Multi-tenant is opt-in. Single-tenant is the baseline. Breaking it is a production incident for all existing deployments.
+If the service was already running as single-tenant before multi-tenant was added, it MUST continue working unchanged with `MULTI_TENANT_ENABLED=false` (the default). Multi-tenant is opt-in. Single-tenant is the baseline. Breaking it is a production incident for all existing deployments.
 
 #### How the Backward Compatibility Mechanism Works
 
