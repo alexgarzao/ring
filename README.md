@@ -21,8 +21,8 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 74 specialized skills** (25 core + 13 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
-- **33 specialized agents** - 7 review/planning + 10 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
+- **Providing 81 specialized skills** (26 core + 19 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
+- **35 specialized agents** - 8 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -35,6 +35,7 @@ Ring solves this by:
 - `ring:security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
 - `ring:test-reviewer` - Test quality review (coverage, edge cases, assertions, test anti-patterns)
 - `ring:nil-safety-reviewer` - Nil/null safety review (traces pointer risks, missing guards, panic paths)
+- `ring:consequences-reviewer` - Ripple effect review (traces how changes propagate beyond modified files - caller chains, consumer contracts, downstream breakage)
 - `ring:write-plan` - Implementation planning agent
 - `ring:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
 - Use `/ring:codereview` command to orchestrate parallel review workflow
@@ -49,6 +50,7 @@ Ring solves this by:
 - `ring:frontend-engineer` - Senior Frontend Engineer (React/Next.js)
 - `ring:prompt-quality-reviewer` - Agent Quality Analyst
 - `ring:qa-analyst` - Quality assurance specialist
+- `ring:qa-analyst-frontend` - Frontend QA specialist (accessibility, visual, E2E, performance)
 - `ring:sre` - Site reliability engineer
 - `ring:ui-engineer` - UI component specialist (design systems, accessibility)
 
@@ -280,9 +282,9 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 74 Skills (Across 6 Plugins)
+## 📚 All 81 Skills (Across 6 Plugins)
 
-### Core Skills (ring-default plugin - 25 skills)
+### Core Skills (ring-default plugin - 26 skills)
 
 **Testing & Debugging (7):**
 
@@ -300,7 +302,7 @@ No "should work" → Only "does work" with proof
 - `ring:interviewing-user` - Proactive requirements gathering through structured interview
 - `ring:writing-plans` - Zero-context implementation plans
 - `ring:executing-plans` - Batch execution with checkpoints
-- `ring:requesting-code-review` - **Parallel 5-reviewer dispatch** with severity-based handling
+- `ring:requesting-code-review` - **Parallel 6-reviewer dispatch** with severity-based handling
 - `ring:receiving-code-review` - Responding to feedback
 - `ring:dispatching-parallel-agents` - Concurrent workflows
 - `ring:subagent-driven-development` - Fast iteration with **parallel reviews**
@@ -315,24 +317,27 @@ No "should work" → Only "does work" with proof
 - `ring:testing-skills-with-subagents` - Skill validation
 - `ring:testing-agents-with-subagents` - Subagent-specific testing
 
-**Session & Learning (2):**
+**Session & Learning (3):**
 
 - `ring:exploring-codebase` - Two-phase codebase exploration
 - `ring:release-guide-info` - Generate Ops Update Guide from git diff analysis
+- `ring:visual-explainer` - Generate self-contained HTML pages to visually explain systems, code changes, and data
 
 **Audit & Readiness (1):**
 
-- `ring:production-readiness-audit` - 27-dimension production readiness audit; runs 10 explorers per batch, appends incrementally to a single report; output: scored report (0–270) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
+- `ring:production-readiness-audit` - 44-dimension production readiness audit; runs explorers in batches of up to 10, appends incrementally to a single report; output: scored report (0-430, max 440 with multi-tenant) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
 
-### Developer Skills (ring-dev-team plugin - 13 skills)
+### Developer Skills (ring-dev-team plugin - 19 skills)
 
-**Code Development:**
+**Orchestration & Refactoring (5):**
 
 - `ring:using-dev-team` - Introduction to developer specialist agents
-- `ring:dev-refactor` - Codebase analysis against standards
 - `ring:dev-cycle` - 10-gate development workflow orchestrator
+- `ring:dev-cycle-frontend` - 9-gate frontend development workflow orchestrator
+- `ring:dev-refactor` - Backend/codebase standards analysis
+- `ring:dev-refactor-frontend` - Frontend standards analysis and task generation
 
-**10-Gate Workflow Skills:**
+**Backend Gate Skills (10):**
 
 - `ring:dev-implementation` - Gate 0: TDD implementation
 - `ring:dev-devops` - Gate 1: DevOps setup (Docker, compose)
@@ -345,12 +350,17 @@ No "should work" → Only "does work" with proof
 - `ring:dev-property-testing` - Gate 5: Property-based tests for domain invariants
 - `ring:dev-integration-testing` - Gate 6: Integration tests with real containers via testcontainers
 - `ring:dev-chaos-testing` - Gate 7: Chaos tests using Toxiproxy for graceful degradation
-
-**Review & Validation:**
-
-- `ring:requesting-code-review` - Gate 8: Parallel code review (5 reviewers)
 - `ring:dev-validation` - Gate 9: User approval
 - `ring:dev-feedback-loop` - Assertiveness scoring and metrics
+
+**Frontend Gate Skills (4):**
+
+- `ring:dev-frontend-accessibility` - Frontend accessibility validation gate
+- `ring:dev-frontend-visual` - Visual regression and UI quality gate
+- `ring:dev-frontend-e2e` - End-to-end testing gate
+- `ring:dev-frontend-performance` - Frontend performance validation gate
+
+> Frontend and backend dev-cycle workflows both use `ring:requesting-code-review` (core plugin) as the review gate.
 
 ### Product Planning Skills (ring-pm-team plugin - 13 skills)
 
@@ -417,11 +427,11 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 27 slash commands across 6 plugins for common workflows.
+Ring provides 30 slash commands across 6 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
-- `/ring:codereview [files-or-paths]` - Dispatch 5 parallel code reviewers for comprehensive review
+- `/ring:codereview [files-or-paths]` - Dispatch 6 parallel code reviewers for comprehensive review
 - `/ring:commit [message]` - Create git commit with AI identification via Git trailers
 - `/ring:worktree [branch-name]` - Create isolated git workspace for parallel development
 - `/ring:brainstorm [topic]` - Interactive design refinement using Socratic method
@@ -430,6 +440,7 @@ Ring provides 27 slash commands across 6 plugins for common workflows.
 - `/ring:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
 - `/ring:explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
 - `/ring:interview-me [topic]` - Proactive requirements gathering through structured user interview
+- `/ring:md-to-html [file]` - Transform a markdown file into a standalone, styled HTML page
 - `/ring:release-guide` - Generate Ops Update Guide from git diff between two refs
 - `/ring:create-handoff [name]` - Create handoff document for session continuity
 - `/ring:resume-handoff [path]` - Resume work from a previous handoff
@@ -443,7 +454,9 @@ Ring provides 27 slash commands across 6 plugins for common workflows.
 ### Development Cycle (ring-dev-team)
 
 - `/ring:dev-cycle [task]` - Start 10-gate development workflow (implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation)
+- `/ring:dev-cycle-frontend [task]` - Start 9-gate frontend workflow (implementation→devops→accessibility→unit-testing→visual-testing→e2e-testing→performance→review→validation)
 - `/ring:dev-refactor [path]` - Analyze codebase against standards
+- `/ring:dev-refactor-frontend [path]` - Analyze frontend codebase against standards and generate executable tasks
 - `/ring:dev-status` - Show current gate progress
 - `/ring:dev-report` - Generate development cycle report
 - `/ring:dev-cancel` - Cancel active development cycle
@@ -497,19 +510,20 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
         ... [Through all 8 gates]
 ```
 
-### Code Review (Parallel, 5 Reviewers!)
+### Code Review (Parallel, 6 Reviewers!)
 
 ```
 User: "Review my authentication implementation"
-Claude: Dispatching all 5 reviewers in parallel...
+Claude: Dispatching all 6 reviewers in parallel...
         [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer,
-         ring:test-reviewer, ring:nil-safety-reviewer simultaneously]
+         ring:test-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).
         Security reviewer: FAIL. JWT secret hardcoded (CRITICAL severity).
         Test reviewer: PASS. Good coverage, assertions well-structured.
         Nil-safety reviewer: PASS. No unguarded nil dereferences found.
+        Consequences reviewer: PASS. No downstream breakage detected.
 
         Aggregating issues by severity:
         - CRITICAL: JWT secret hardcoded in auth.ts:42
@@ -518,7 +532,7 @@ Claude: Dispatching all 5 reviewers in parallel...
         Dispatching fix subagent to address Critical/High issues...
         [Fixes applied]
 
-        Re-running all 5 reviewers in parallel...
+        Re-running all 6 reviewers in parallel...
         All reviewers: PASS. Ready for production.
 ```
 
@@ -538,36 +552,38 @@ ring/                                  # Monorepo root
 ├── .claude-plugin/
 │   └── marketplace.json              # Multi-plugin marketplace config (6 active plugins)
 ├── default/                          # Core Ring plugin (ring-default)
-│   ├── skills/                       # 25 core skills
+│   ├── skills/                       # 26 core skills
 │   │   ├── skill-name/
 │   │   │   └── SKILL.md             # Skill definition with frontmatter
 │   │   └── shared-patterns/         # Universal patterns (6 patterns)
-│   ├── commands/                    # 12 slash command definitions
+│   ├── commands/                    # 13 slash command definitions
 │   ├── hooks/                       # Session initialization
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
-│   ├── agents/                      # 7 specialized agents
-│   │   ├── ring:code-reviewer.md        # Foundation review (parallel)
-│   │   ├── ring:business-logic-reviewer.md  # Correctness review (parallel)
-│   │   ├── ring:security-reviewer.md    # Safety review (parallel)
-│   │   ├── ring:test-reviewer.md        # Test quality review (parallel)
-│   │   ├── ring:nil-safety-reviewer.md  # Nil/null safety review (parallel)
-│   │   ├── ring:write-plan.md           # Implementation planning
-│   │   └── ring:codebase-explorer.md    # Deep architecture analysis (Opus)
+│   ├── agents/                      # 8 specialized agents
+│   │   ├── code-reviewer.md             # Foundation review (`ring:code-reviewer`)
+│   │   ├── business-logic-reviewer.md   # Correctness review (`ring:business-logic-reviewer`)
+│   │   ├── security-reviewer.md         # Safety review (`ring:security-reviewer`)
+│   │   ├── test-reviewer.md             # Test quality review (`ring:test-reviewer`)
+│   │   ├── nil-safety-reviewer.md       # Nil/null safety review (`ring:nil-safety-reviewer`)
+│   │   ├── consequences-reviewer.md     # Ripple effect review (`ring:consequences-reviewer`)
+│   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
+│   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 13 skills, 10 agents, 5 commands
-│   └── agents/                      # 10 specialized developer agents
-│       ├── ring:backend-engineer-golang.md  # Go backend specialist
-│       ├── ring:backend-engineer-typescript.md # TypeScript/Node.js backend specialist
-│       ├── ring:devops-engineer.md          # DevOps infrastructure
-│       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js frontend specialist
-│       ├── ring:frontend-designer.md        # Visual design specialist
-│       ├── ring:frontend-engineer.md        # Senior Frontend Engineer (React/Next.js)
-│       ├── prompt-quality-reviewer.md       # Agent Quality Analyst
-│       ├── qa-analyst.md                    # Quality assurance
-│       ├── sre.md                           # Site reliability engineer
-│       └── ui-engineer.md                   # UI component specialist
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 19 skills, 11 agents, 7 commands
+│   └── agents/                      # 11 specialized developer agents
+│       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
+│       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
+│       ├── devops-engineer.md               # DevOps infrastructure (`ring:devops-engineer`)
+│       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js specialist (`ring:frontend-bff-engineer-typescript`)
+│       ├── frontend-designer.md             # Visual design specialist (`ring:frontend-designer`)
+│       ├── frontend-engineer.md             # Frontend engineer (`ring:frontend-engineer`)
+│       ├── prompt-quality-reviewer.md       # Agent quality reviewer (`ring:prompt-quality-reviewer`)
+│       ├── qa-analyst.md                    # Backend QA specialist (`ring:qa-analyst`)
+│       ├── qa-analyst-frontend.md           # Frontend QA specialist (`ring:qa-analyst-frontend`)
+│       ├── sre.md                           # Site reliability engineer (`ring:sre`)
+│       └── ui-engineer.md                   # UI component specialist (`ring:ui-engineer`)
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 13 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks

@@ -328,7 +328,7 @@ Use these sparingly and only at the **beginning** of instructions:
 Examples:
 - MUST dispatch agent before proceeding to next gate
 - STOP and report if PROJECT_RULES.md is missing
-- HARD GATE: All 5 reviewers must pass before Gate 5
+- HARD GATE: All 6 reviewers must pass before Gate 5
 - FORBIDDEN: Reading source code directly as orchestrator
 ```
 
@@ -418,18 +418,18 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 
 **Active Plugins:**
 
-- **ring-default**: 25 core skills, 12 slash commands, 7 specialized agents
+- **ring-default**: 26 core skills, 13 slash commands, 8 specialized agents
 - **ring-dev-team**: 19 development skills, 7 slash commands, 11 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, Frontend Engineer, QA Backend, QA Frontend, SRE, UI Engineer, Prompt Quality Reviewer)
 - **ring-pm-team**: 13 product management skills, 4 research agents, 3 slash commands (includes delivery planning + status tracking + Product Designer)
 - **ring-pmo-team**: 9 PMO skills, 4 slash commands, 6 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter, Delivery Reporter)
 - **ring-finops-team**: 7 regulatory skills, 3 FinOps agents (Analyzer, Automation, Infrastructure Cost Estimator)
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 
-**Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
+**Note:** Plugin versions are managed in `.claude-plugin/marketplace.json` (current marketplace version: `0.244.0`)
 
-**Total: 80 skills (25 + 19 + 13 + 9 + 7 + 7) across 6 plugins**
-**Total: 34 agents (7 + 11 + 4 + 6 + 3 + 3) across 6 plugins**
-**Total: 29 commands (12 + 7 + 3 + 4 + 0 + 3) across 6 plugins**
+**Total: 81 skills (26 + 19 + 13 + 9 + 7 + 7) across 6 plugins**
+**Total: 35 agents (8 + 11 + 4 + 6 + 3 + 3) across 6 plugins**
+**Total: 30 commands (13 + 7 + 3 + 4 + 0 + 3) across 6 plugins**
 
 The architecture uses markdown-based skill definitions with YAML frontmatter, auto-discovered at session start via hooks, and executed through Claude Code's native Skill/Task tools.
 
@@ -449,7 +449,7 @@ See [README.md](README.md#installation) for detailed installation instructions.
 
 | Plugin           | Path           | Contents                         |
 | ---------------- | -------------- | -------------------------------- |
-| ring-default     | `default/`     | 25 skills, 7 agents, 12 commands |
+| ring-default     | `default/`     | 26 skills, 8 agents, 13 commands |
 | ring-dev-team    | `dev-team/`    | 19 skills, 11 agents, 7 commands |
 | ring-pm-team     | `pm-team/`     | 13 skills, 4 agents, 3 commands  |
 | ring-pmo-team    | `pmo-team/`    | 9 skills, 6 agents, 4 commands   |
@@ -476,7 +476,7 @@ Skill tool: "ring:systematic-debugging"     # Debug with 4-phase analysis
 Skill tool: "ring:using-ring"               # Load mandatory workflows
 
 # Slash commands
-/ring:codereview          # Dispatch 5 parallel reviewers
+/ring:codereview          # Dispatch 6 parallel reviewers
 /ring:brainstorm          # Socratic design refinement
 /ring:pre-dev-feature     # <2 day features (5 gates)
 /ring:pre-dev-full        # ≥2 day features (10 gates)
@@ -498,7 +498,7 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter |
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
-| Code review | `/ring:codereview` dispatches 5 parallel reviewers |
+| Code review | `/ring:codereview` dispatches 6 parallel reviewers |
 | Pre-dev (small) | `/ring:pre-dev-feature` → 5-gate workflow |
 | Pre-dev (large) | `/ring:pre-dev-full` → 10-gate workflow |
 | Dev cycle - backend (10 gates) | `/ring:dev-cycle [tasks-file]` → implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation (see [dev-team/skills/dev-cycle/SKILL.md](dev-team/skills/dev-cycle/SKILL.md)) |
@@ -556,9 +556,9 @@ See [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md) for complete schema definitions
 - Only then write implementation (GREEN)
 
 # Review compliance (default/skills/requesting-code-review/SKILL.md)
-- All 5 reviewers must pass
+- All 6 reviewers must pass
 - Critical findings = immediate fix required
-- Re-run all reviewers after fixes
+- Re-run all 6 reviewers after fixes
 
 # Skill compliance (default/skills/using-ring/SKILL.md)
 - Check for applicable skills before any task
@@ -589,7 +589,7 @@ The system loads at SessionStart (from `default/` plugin):
 - Repository: Monorepo marketplace with multiple plugin collections
 - Active plugins: 6 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-pmo-team`, `ring-finops-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
-- Core plugin: `default/` (25 skills, 7 agents, 12 commands)
+- Core plugin: `default/` (26 skills, 8 agents, 13 commands)
 - Developer agents: `dev-team/` (19 skills, 11 agents, 7 commands)
 - Product planning: `pm-team/` (13 skills, 4 agents, 3 commands)
 - PMO specialists: `pmo-team/` (9 skills, 6 agents, 4 commands)

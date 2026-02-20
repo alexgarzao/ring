@@ -48,6 +48,7 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 | "update across", "change all", "refactor" | Launch specialist agent |
 | "find where", "search for", "locate" | Launch Explore agent |
 | "understand how", "how does X work" | Launch Explore agent |
+| "draw a diagram", "explain architecture", "visualize", "comparison table" | Load ring:visual-explainer skill |
 
 **Why?** These phrases imply multi-file operations. You WILL exceed 3 files. Pre-empt the violation.
 

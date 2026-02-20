@@ -2,6 +2,59 @@
 
 ## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
 
+- Refactored agent, skill, and command names by removing the ring-{plugin}: prefix.
+
+Contributors: @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pmo-team@1.1.2...ring-pmo-team@1.1.3)
+
+---
+
+## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
+
+- Improvements:
+  - Refactored naming convention by removing the ring-{plugin}: prefix from agent, skill, and command names for better clarity and consistency.
+
+Contributors: @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pmo-team@1.1.2...ring-pmo-team@1.1.3)
+
+---
+
+## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
+
+- Improvements:
+  - Refactored to remove the ring-{plugin}: prefix from agent, skill, and command names for better clarity and consistency.
+
+Contributors: @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pmo-team@1.1.2...ring-pmo-team@1.1.3)
+
+---
+
+## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
+
+- Improvements:
+  - Refactored naming convention by removing the ring-{plugin}: prefix from agent, skill, and command names for consistency and clarity.
+
+Contributors: @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pmo-team@1.1.2...ring-pmo-team@1.1.3)
+
+---
+
+## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
+
+- Refactor: Removed the ring-{plugin}: prefix from agent, skill, and command names for improved clarity and consistency.
+
+Contributors: @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pmo-team@1.1.2...ring-pmo-team@1.1.3)
+
+---
+
+## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
+
 - Improvements:
   - Refactored naming convention by removing the ring-{plugin}: prefix from agent, skill, and command names.
 
