@@ -1532,8 +1532,8 @@ type MultiTenantConsumer struct {
 // Discover tenants without connecting (non-blocking, <1s)
 func (c *MultiTenantConsumer) Run(ctx context.Context) error
 
-// Ensure consumer is active for tenant (idempotent, thread-safe)
-func (c *MultiTenantConsumer) EnsureConsumerStarted(ctx context.Context, tenantID string) error
+// Ensure consumer is active for tenant (idempotent, thread-safe, fire-and-forget)
+func (c *MultiTenantConsumer) EnsureConsumerStarted(ctx context.Context, tenantID string)
 
 // Check if tenant has failed repeatedly
 func (c *MultiTenantConsumer) IsDegraded(tenantID string) bool
@@ -1561,10 +1561,8 @@ func TenantMiddleware(consumer ConsumerTrigger) fiber.Handler {
         // Subsequent: fast path (<1ms)
         if consumer != nil {  // Nil-safe for single-tenant mode
             ctx := c.UserContext()
-            if err := consumer.EnsureConsumerStarted(ctx, tenantID); err != nil {
-                logger.Warnf("failed to ensure consumer: %v", err)
-                // Don't fail request - consumer retries via background sync
-            }
+            consumer.EnsureConsumerStarted(ctx, tenantID)
+            // Fire-and-forget: consumer retries via background sync if spawn fails
         }
 
         // Continue with request processing
@@ -1605,12 +1603,12 @@ func (c *Consumer) Run(ctx context.Context) error {
 
 3. **On-demand spawning with double-check locking:**
 ```go
-func (c *Consumer) EnsureConsumerStarted(ctx, tenantID string) error {
+func (c *Consumer) EnsureConsumerStarted(ctx context.Context, tenantID string) {
     // Fast path: check if already active (read lock)
     c.mu.RLock()
     if _, exists := c.activeTenants[tenantID]; exists {
         c.mu.RUnlock()
-        return nil  // Already running
+        return  // Already running
     }
     c.mu.RUnlock()
 
@@ -1623,12 +1621,12 @@ func (c *Consumer) EnsureConsumerStarted(ctx, tenantID string) error {
     c.mu.RLock()
     if _, exists := c.activeTenants[tenantID]; exists {
         c.mu.RUnlock()
-        return nil  // Another goroutine created it
+        return  // Another goroutine created it
     }
     c.mu.RUnlock()
 
-    // Spawn consumer
-    return c.startTenantConsumer(ctx, tenantID)
+    // Spawn consumer (fire-and-forget, errors logged internally)
+    c.startTenantConsumer(ctx, tenantID)
 }
 ```
 
@@ -1693,13 +1691,10 @@ type TenantMiddleware struct {
 func (m *TenantMiddleware) Handle(c *fiber.Ctx) error {
     tenantID := extractTenantID(c)  // From header or JWT
 
-    // Lazy mode trigger
+    // Lazy mode trigger (fire-and-forget, errors logged internally)
     if m.consumer != nil {
         ctx := c.UserContext()
-        if err := m.consumer.EnsureConsumerStarted(ctx, tenantID); err != nil {
-            logger.Warnf("failed to ensure consumer started for tenant %s: %v", tenantID, err)
-            // Note: request continues - consumer will retry in background sync loop
-        }
+        m.consumer.EnsureConsumerStarted(ctx, tenantID)
     }
 
     return c.Next()
