@@ -10,6 +10,16 @@ Contributors: @fred
 
 ---
 
+## [1.8.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.8.0)
+
+- Integrate visual-explainer with ring:md-to-html command
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.7.1...ring-default@1.8.0)
+
+---
+
 ## [1.7.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.7.1)
 
 - Fixes:
