@@ -1058,7 +1058,7 @@ func enforceProductionDefaults(cfg *Config, logger log.Logger) {
 
     // Warn if TRUSTED_PROXIES is empty in production
     if cfg.App.EnvName == "production" && cfg.Server.TrustedProxies == "" {
-        logger.Warnf("SECURITY: TRUSTED_PROXIES is empty in production. " +
+        logger.Fatalf("SECURITY: TRUSTED_PROXIES is empty in production. " +
             "c.IP() will return the load balancer IP instead of the real client IP. " +
             "Rate limiting and audit logging will not work correctly. env=%s", cfg.App.EnvName)
     }
