@@ -33,8 +33,8 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(25) Agents(7) │  │ Skills(19) Agents(11)│                       │  │
-│  │  │ Cmds(12) Hooks/Lib   │  │ Cmds(7)              │                       │  │
+│  │  │ Skills(26) Agents(7) │  │ Skills(19) Agents(11)│                       │  │
+│  │  │ Cmds(13) Hooks/Lib   │  │ Cmds(7)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-pm-team         │  │ ring-tw-team         │                       │  │
@@ -74,7 +74,7 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
-| **ring-default**     | Core skills library                  | 25 skills, 7 agents, 12 commands |
+| **ring-default**     | Core skills library                  | 26 skills, 7 agents, 13 commands |
 | **ring-dev-team**    | Developer agents                     | 19 skills, 11 agents, 7 commands |
 | **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
 | **ring-pm-team**     | Product planning workflows           | 13 skills, 4 agents, 3 commands  |
@@ -790,13 +790,13 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | Component                 | Count      | Location               |
 | ------------------------- | ---------- | ---------------------- |
 | Active Plugins            | 6          | All plugin directories |
-| Skills (ring-default)     | 25         | `default/skills/`      |
+| Skills (ring-default)     | 26         | `default/skills/`      |
 | Skills (ring-dev-team)    | 19         | `dev-team/skills/`     |
 | Skills (ring-finops-team) | 7          | `finops-team/skills/`  |
 | Skills (ring-pm-team)     | 13         | `pm-team/skills/`      |
 | Skills (ring-pmo-team)    | 9          | `pmo-team/skills/`     |
 | Skills (ring-tw-team)     | 7          | `tw-team/skills/`      |
-| **Total Skills**          | **80**     | **All plugins**        |
+| **Total Skills**          | **81**     | **All plugins**        |
 | Agents (ring-default)     | 7          | `default/agents/`      |
 | Agents (ring-dev-team)    | 11         | `dev-team/agents/`     |
 | Agents (ring-finops-team) | 3          | `finops-team/agents/`  |
@@ -804,12 +804,12 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | Agents (ring-pmo-team)    | 6          | `pmo-team/agents/`     |
 | Agents (ring-tw-team)     | 3          | `tw-team/agents/`      |
 | **Total Agents**          | **34**     | **All plugins**        |
-| Commands (ring-default)   | 12         | `default/commands/`    |
+| Commands (ring-default)   | 13         | `default/commands/`    |
 | Commands (ring-dev-team)  | 7          | `dev-team/commands/`   |
 | Commands (ring-pm-team)   | 3          | `pm-team/commands/`    |
 | Commands (ring-pmo-team)  | 4          | `pmo-team/commands/`   |
 | Commands (ring-tw-team)   | 3          | `tw-team/commands/`    |
-| **Total Commands**        | **29**     | **All plugins**        |
+| **Total Commands**        | **30**     | **All plugins**        |
 | Hooks                     | Per plugin | `{plugin}/hooks/`      |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.
