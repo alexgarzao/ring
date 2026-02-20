@@ -20,6 +20,34 @@ This module covers multi-tenant patterns with Tenant Manager.
 
 **CONDITIONAL:** Only implement if `MULTI_TENANT_ENABLED=true` is required for your service.
 
+### Required lib-commons Version
+
+Multi-tenant support requires **lib-commons v3** (`github.com/LerianStudio/lib-commons/v3`). The `dispatch layer` package does not exist in v2.
+
+| lib-commons version | Multi-tenant support | Package path |
+|--------------------|-----------------------|-------------|
+| **v2** (`lib-commons/v2`) | Not available | N/A — no `dispatch layer` package |
+| **v3** (`lib-commons/v3`) | Full support | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer` |
+
+**Migration from v2 to v3:**
+
+Services currently on lib-commons v2 MUST upgrade to v3 before implementing multi-tenant. The upgrade involves:
+
+1. Update `go.mod`: `github.com/LerianStudio/lib-commons/v2` -> `github.com/LerianStudio/lib-commons/v3`
+2. Update all import paths: `lib-commons/v2/commons/...` -> `lib-commons/v3/commons/...`
+3. Add the `dispatch layer` package imports where needed
+
+```bash
+# Update go.mod
+go get github.com/LerianStudio/lib-commons/v3@latest
+
+# Update import paths across the codebase
+find . -name "*.go" -exec sed -i '' 's|lib-commons/v2|lib-commons/v3|g' {} +
+
+# Verify build
+go build ./...
+```
+
 ### When to Use Multi-Tenant Mode
 
 | Scenario | Mode | Configuration |
