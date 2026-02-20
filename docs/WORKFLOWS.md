@@ -241,13 +241,14 @@ Task.parallel([
     ("ring:business-logic-reviewer", prompt),
     ("ring:security-reviewer", prompt),
     ("ring:nil-safety-reviewer", prompt),
-    ("ring:test-reviewer", prompt)
-])  # Single message, 5 tool calls
+    ("ring:test-reviewer", prompt),
+    ("ring:consequences-reviewer", prompt)
+])  # Single message, 6 tool calls
 ```
 
 ### Key rule
 
-Always dispatch all 5 reviewers in a single message with multiple Task tool calls.
+Always dispatch all 6 reviewers in a single message with multiple Task tool calls.
 
 ---
 

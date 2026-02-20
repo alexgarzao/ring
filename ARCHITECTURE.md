@@ -33,7 +33,7 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(26) Agents(7) │  │ Skills(19) Agents(11)│                       │  │
+│  │  │ Skills(26) Agents(8) │  │ Skills(19) Agents(11)│                       │  │
 │  │  │ Cmds(13) Hooks/Lib   │  │ Cmds(7)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
@@ -74,7 +74,7 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
-| **ring-default**     | Core skills library                  | 26 skills, 7 agents, 13 commands |
+| **ring-default**     | Core skills library                  | 26 skills, 8 agents, 13 commands |
 | **ring-dev-team**    | Developer agents                     | 19 skills, 11 agents, 7 commands |
 | **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
 | **ring-pm-team**     | Product planning workflows           | 13 skills, 4 agents, 3 commands  |
@@ -120,6 +120,7 @@ default/agents/
 ├── security-reviewer.md       # Safety review (`ring:security-reviewer`)
 ├── test-reviewer.md           # Test coverage and quality review (`ring:test-reviewer`)
 ├── nil-safety-reviewer.md     # Null/nil safety analysis (`ring:nil-safety-reviewer`)
+├── consequences-reviewer.md   # Ripple effect review (`ring:consequences-reviewer`)
 ├── write-plan.md              # Implementation planning (`ring:write-plan`)
 └── codebase-explorer.md       # Deep architecture analysis (`ring:codebase-explorer`)
 ```
@@ -157,7 +158,7 @@ pmo-team/agents/
 
 - Invoked via Claude's `Task` tool with `subagent_type`
 - Must specify model (typically "opus" for comprehensive analysis)
-- Review agents run in parallel (5 reviewers dispatch simultaneously via `/ring:codereview` command)
+- Review agents run in parallel (6 reviewers dispatch simultaneously via `/ring:codereview` command)
 - Developer agents provide specialized domain expertise
 - Return structured reports with severity-based findings
 
@@ -249,7 +250,7 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 ```
 default/commands/
 ├── brainstorm.md         # /ring:brainstorm - Socratic design refinement
-├── codereview.md         # /ring:codereview - Parallel 5-reviewer dispatch
+├── codereview.md         # /ring:codereview - Parallel 6-reviewer dispatch
 ├── commit.md             # /ring:commit - Git commit with trailers
 ├── create-handoff.md     # /ring:create-handoff - Create session handoff
 ├── execute-plan.md       # /ring:execute-plan - Batch execution
@@ -434,11 +435,12 @@ sequenceDiagram
     participant ring:security-reviewer
     participant ring:test-reviewer
     participant ring:nil-safety-reviewer
+    participant ring:consequences-reviewer
 
     User->>Claude: /ring:codereview
     Note over Claude: Command provides<br/>parallel review workflow
 
-    Claude->>Task Tool: Dispatch 5 parallel tasks
+    Claude->>Task Tool: Dispatch 6 parallel tasks
 
     par Parallel Execution
         Task Tool->>ring:code-reviewer: Review architecture
@@ -450,6 +452,8 @@ sequenceDiagram
         Task Tool->>ring:test-reviewer: Review test coverage
         and
         Task Tool->>ring:nil-safety-reviewer: Review nil safety
+        and
+        Task Tool->>ring:consequences-reviewer: Review ripple effects
     end
 
     ring:code-reviewer-->>Claude: Return findings
@@ -457,6 +461,7 @@ sequenceDiagram
     ring:security-reviewer-->>Claude: Return findings
     ring:test-reviewer-->>Claude: Return findings
     ring:nil-safety-reviewer-->>Claude: Return findings
+    ring:consequences-reviewer-->>Claude: Return findings
 
     Note over Claude: Aggregate & prioritize by severity
     Claude->>User: Consolidated report
@@ -519,12 +524,13 @@ User Request → ring:using-ring check → Relevant skill?
 ### Pattern 2: Parallel Review Execution
 
 ```
-Review Request → /ring:codereview → Dispatch 5 Tasks (parallel)
+Review Request → /ring:codereview → Dispatch 6 Tasks (parallel)
     ├─ ring:code-reviewer           ─┐
     ├─ ring:business-logic-reviewer  │
-    ├─ ring:security-reviewer        ┼─→ Aggregate findings → Handle by severity
-    ├─ ring:test-reviewer            │
-    └─ ring:nil-safety-reviewer     ─┘
+    ├─ ring:security-reviewer        │
+    ├─ ring:test-reviewer            ┼─→ Aggregate findings → Handle by severity
+    ├─ ring:nil-safety-reviewer      │
+    └─ ring:consequences-reviewer   ─┘
 ```
 
 **Implementation:** Single message with 5 Task tool calls ensures parallel execution. All reviewers work independently and return simultaneously.
@@ -584,7 +590,7 @@ Complex Skill → TodoWrite tracking
 
 - `/ring:brainstorm` → `ring:brainstorming` skill
 - `/ring:write-plan` → `ring:writing-plans` skill
-- `/ring:codereview` → dispatches 5 parallel review agents (`ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:nil-safety-reviewer`)
+- `/ring:codereview` → dispatches 6 parallel review agents (`ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:nil-safety-reviewer`, `ring:consequences-reviewer`)
 
 ### Skills ↔ Shared Patterns
 
@@ -797,13 +803,13 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | Skills (ring-pmo-team)    | 9          | `pmo-team/skills/`     |
 | Skills (ring-tw-team)     | 7          | `tw-team/skills/`      |
 | **Total Skills**          | **81**     | **All plugins**        |
-| Agents (ring-default)     | 7          | `default/agents/`      |
+| Agents (ring-default)     | 8          | `default/agents/`      |
 | Agents (ring-dev-team)    | 11         | `dev-team/agents/`     |
 | Agents (ring-finops-team) | 3          | `finops-team/agents/`  |
 | Agents (ring-pm-team)     | 4          | `pm-team/agents/`      |
 | Agents (ring-pmo-team)    | 6          | `pmo-team/agents/`     |
 | Agents (ring-tw-team)     | 3          | `tw-team/agents/`      |
-| **Total Agents**          | **34**     | **All plugins**        |
+| **Total Agents**          | **35**     | **All plugins**        |
 | Commands (ring-default)   | 13         | `default/commands/`    |
 | Commands (ring-dev-team)  | 7          | `dev-team/commands/`   |
 | Commands (ring-pm-team)   | 3          | `pm-team/commands/`    |

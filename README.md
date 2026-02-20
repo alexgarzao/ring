@@ -22,7 +22,7 @@ Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
 - **Providing 81 specialized skills** (26 core + 19 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
-- **34 specialized agents** - 7 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
+- **35 specialized agents** - 8 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -35,6 +35,7 @@ Ring solves this by:
 - `ring:security-reviewer` - Safety review (vulnerabilities, OWASP, authentication)
 - `ring:test-reviewer` - Test quality review (coverage, edge cases, assertions, test anti-patterns)
 - `ring:nil-safety-reviewer` - Nil/null safety review (traces pointer risks, missing guards, panic paths)
+- `ring:consequences-reviewer` - Ripple effect review (traces how changes propagate beyond modified files - caller chains, consumer contracts, downstream breakage)
 - `ring:write-plan` - Implementation planning agent
 - `ring:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
 - Use `/ring:codereview` command to orchestrate parallel review workflow
@@ -301,7 +302,7 @@ No "should work" → Only "does work" with proof
 - `ring:interviewing-user` - Proactive requirements gathering through structured interview
 - `ring:writing-plans` - Zero-context implementation plans
 - `ring:executing-plans` - Batch execution with checkpoints
-- `ring:requesting-code-review` - **Parallel 5-reviewer dispatch** with severity-based handling
+- `ring:requesting-code-review` - **Parallel 6-reviewer dispatch** with severity-based handling
 - `ring:receiving-code-review` - Responding to feedback
 - `ring:dispatching-parallel-agents` - Concurrent workflows
 - `ring:subagent-driven-development` - Fast iteration with **parallel reviews**
@@ -430,7 +431,7 @@ Ring provides 30 slash commands across 6 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
-- `/ring:codereview [files-or-paths]` - Dispatch 5 parallel code reviewers for comprehensive review
+- `/ring:codereview [files-or-paths]` - Dispatch 6 parallel code reviewers for comprehensive review
 - `/ring:commit [message]` - Create git commit with AI identification via Git trailers
 - `/ring:worktree [branch-name]` - Create isolated git workspace for parallel development
 - `/ring:brainstorm [topic]` - Interactive design refinement using Socratic method
@@ -509,19 +510,20 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
         ... [Through all 8 gates]
 ```
 
-### Code Review (Parallel, 5 Reviewers!)
+### Code Review (Parallel, 6 Reviewers!)
 
 ```
 User: "Review my authentication implementation"
-Claude: Dispatching all 5 reviewers in parallel...
+Claude: Dispatching all 6 reviewers in parallel...
         [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer,
-         ring:test-reviewer, ring:nil-safety-reviewer simultaneously]
+         ring:test-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).
         Security reviewer: FAIL. JWT secret hardcoded (CRITICAL severity).
         Test reviewer: PASS. Good coverage, assertions well-structured.
         Nil-safety reviewer: PASS. No unguarded nil dereferences found.
+        Consequences reviewer: PASS. No downstream breakage detected.
 
         Aggregating issues by severity:
         - CRITICAL: JWT secret hardcoded in auth.ts:42
@@ -530,7 +532,7 @@ Claude: Dispatching all 5 reviewers in parallel...
         Dispatching fix subagent to address Critical/High issues...
         [Fixes applied]
 
-        Re-running all 5 reviewers in parallel...
+        Re-running all 6 reviewers in parallel...
         All reviewers: PASS. Ready for production.
 ```
 
@@ -559,12 +561,13 @@ ring/                                  # Monorepo root
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
-│   ├── agents/                      # 7 specialized agents
+│   ├── agents/                      # 8 specialized agents
 │   │   ├── code-reviewer.md             # Foundation review (`ring:code-reviewer`)
 │   │   ├── business-logic-reviewer.md   # Correctness review (`ring:business-logic-reviewer`)
 │   │   ├── security-reviewer.md         # Safety review (`ring:security-reviewer`)
 │   │   ├── test-reviewer.md             # Test quality review (`ring:test-reviewer`)
 │   │   ├── nil-safety-reviewer.md       # Nil/null safety review (`ring:nil-safety-reviewer`)
+│   │   ├── consequences-reviewer.md     # Ripple effect review (`ring:consequences-reviewer`)
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
