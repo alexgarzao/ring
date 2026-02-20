@@ -104,9 +104,18 @@ type TenantConfig struct {
 }
 
 type DatabaseConfig struct {
-    PostgreSQL        *PostgreSQLConfig
-    PostgreSQLReplica *PostgreSQLConfig   // Read replica (optional)
-    MongoDB           *MongoDBConfig
+    PostgreSQL         *PostgreSQLConfig
+    PostgreSQLReplica  *PostgreSQLConfig    // Read replica (optional)
+    MongoDB            *MongoDBConfig
+    ConnectionSettings *ConnectionSettings  // Per-tenant pool overrides (optional)
+}
+
+// ConnectionSettings holds per-tenant database connection pool settings.
+// When present, these values override the global defaults on PostgresManager/MongoManager.
+// If nil (e.g., older tenant associations), global defaults apply.
+type ConnectionSettings struct {
+    MaxOpenConns int `json:"maxOpenConns"`
+    MaxIdleConns int `json:"maxIdleConns"`
 }
 ```
 
