@@ -691,12 +691,16 @@ func initMultiTenantPools(cfg *Config, logger libLog.Logger) *MultiTenantPools {
     onboardingMongoPool := tenantmanager.NewMongoManager(tenantManagerClient, "ledger",
         tenantmanager.WithMongoModule("onboarding"),
         tenantmanager.WithMongoLogger(logger),
+        tenantmanager.WithMongoMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tenantmanager.WithMongoIdleTimeout(idleTimeout),
     )
     logger.Info("Created onboarding MongoDB connection manager for multi-tenant mode")
 
     transactionMongoPool := tenantmanager.NewMongoManager(tenantManagerClient, "ledger",
         tenantmanager.WithMongoModule("transaction"),
         tenantmanager.WithMongoLogger(logger),
+        tenantmanager.WithMongoMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tenantmanager.WithMongoIdleTimeout(idleTimeout),
     )
     logger.Info("Created transaction MongoDB connection manager for multi-tenant mode")
 
@@ -1039,12 +1043,12 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Missing tenantId claim | 401 | `TENANT_ID_REQUIRED` | JWT doesn't have tenantId |
 | Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Tenant Manager |
 | Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized (SQLSTATE 42P01) |
-| Tenant suspended | 403 | `TENANT_SUSPENDED` | Tenant status is suspended (returned by Tenant Manager) |
-| Service not configured | 503 | `SERVICE_NOT_CONFIGURED` | Tenant exists but has no config for this service/module |
-| Schema mode error | 422 | `SCHEMA_MODE_ERROR` | Invalid schema configuration for tenant database |
-| Connection error | 503 | `CONNECTION_ERROR` | Failed to get or establish tenant connection |
-| Manager closed | 503 | `SERVICE_UNAVAILABLE` | Connection manager has been shut down |
-| Circuit breaker open | 503 | `CIRCUIT_BREAKER_OPEN` | Tenant Manager client circuit breaker tripped after consecutive failures |
+| Tenant suspended | 403 | service-specific | Tenant status is suspended or purged (use `errors.As(err, &TenantSuspendedError{})`) |
+| Service not configured | 503 | service-specific | Tenant exists but has no config for this service/module (`ErrServiceNotConfigured`) |
+| Schema mode error | 422 | service-specific | Invalid schema configuration for tenant database |
+| Connection error | 503 | service-specific | Failed to get or establish tenant connection |
+| Manager closed | 503 | service-specific | Connection manager has been shut down (`ErrManagerClosed`) |
+| Circuit breaker open | 503 | service-specific | Tenant Manager client tripped after consecutive failures (`ErrCircuitBreakerOpen`) |
 
 ### Tenant Isolation Verification (⚠️ CONDITIONAL)
 
