@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 74 skills, 33 agents, and 27 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 80 skills, 34 agents, and 29 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,9 +13,9 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(25)   │  │  Skills(13)   │  │  Skills(13)   │  │  team         │      │
-│  │  Agents(7)    │  │  Agents(10)   │  │  Agents(4)    │  │  Skills(7)    │      │
-│  │  Cmds(12)     │  │  Cmds(5)      │  │  Cmds(3)      │  │  Agents(3)    │      │
+│  │  Skills(25)   │  │  Skills(19)   │  │  Skills(13)   │  │  team         │      │
+│  │  Agents(7)    │  │  Agents(11)   │  │  Agents(4)    │  │  Skills(7)    │      │
+│  │  Cmds(12)     │  │  Cmds(7)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐                                            │
 │  │ ring-tw-team  │  │ ring-pmo-team │                                            │
@@ -113,7 +113,9 @@ Commands are invoked directly: `/command-name`.
 | Command                     | Use Case                           | Example                                 |
 | --------------------------- | ---------------------------------- | --------------------------------------- |
 | `/ring:dev-cycle [task]`    | Start 10-gate development workflow | `/ring:dev-cycle "implement user auth"` |
+| `/ring:dev-cycle-frontend [task]` | Start 9-gate frontend workflow | `/ring:dev-cycle-frontend "improve dashboard UX"` |
 | `/ring:dev-refactor [path]` | Analyze codebase against standards | `/ring:dev-refactor src/`               |
+| `/ring:dev-refactor-frontend [path]` | Analyze frontend against standards | `/ring:dev-refactor-frontend web/` |
 | `/ring:dev-status`          | Show current gate progress         | `/ring:dev-status`                      |
 | `/ring:dev-report`          | Generate development cycle report  | `/ring:dev-report`                      |
 | `/ring:dev-cancel`          | Cancel active development cycle    | `/ring:dev-cancel`                      |
@@ -139,9 +141,9 @@ Commands are invoked directly: `/command-name`.
 
 ## 💡 About Skills
 
-Skills (74) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly – Claude Code uses them internally to enforce best practices.
+Skills (80) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
 
-Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (27-dimension audit, 10 explorers per batch, incremental report 0–270; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
+Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
 ### Skill Selection Criteria
 
@@ -203,6 +205,7 @@ Use when you need expert depth in specific domains:
 | `ring:frontend-engineer`                | General frontend development | React, TypeScript, CSS, component architecture     |
 | `ring:prompt-quality-reviewer`          | AI prompt quality review     | Prompt engineering, clarity, effectiveness         |
 | `ring:qa-analyst`                       | Quality assurance            | Test strategy, automation, coverage                |
+| `ring:qa-analyst-frontend`              | Frontend QA specialist       | Accessibility, visual regression, E2E, performance |
 | `ring:sre`                              | Site reliability & ops       | Monitoring, alerting, incident response, SLOs      |
 | `ring:ui-engineer`                      | UI component specialist      | Design systems, accessibility, React               |
 
@@ -355,7 +358,8 @@ These enforce quality standards:
 | Visual design & aesthetics        | `ring:frontend-designer`                    |
 | UI component development          | `ring:ui-engineer`                          |
 | AI prompt quality review          | `ring:prompt-quality-reviewer`              |
-| Quality assurance & testing       | `ring:qa-analyst`                           |
+| Backend quality assurance          | `ring:qa-analyst`                           |
+| Frontend quality assurance         | `ring:qa-analyst-frontend`                  |
 | Site reliability & operations     | `ring:sre`                                  |
 | Best practices research           | `ring:best-practices-researcher`            |
 | Framework documentation research  | `ring:framework-docs-researcher`            |
@@ -381,7 +385,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 74 skills are auto-discovered and available
+2. All 80 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
