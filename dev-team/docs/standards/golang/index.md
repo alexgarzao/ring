@@ -48,7 +48,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 |---|--------|----------|-------|-------------|
 | 1 | [core.md](core.md) | 9 | ~1100 | Version, lib-commons, Frameworks, Configuration, DB Naming, Migrations, License, MongoDB, Dependency Management |
 | 2 | [bootstrap.md](bootstrap.md) | 5 | ~1050 | Observability, Bootstrap, Graceful Shutdown, Health Checks, Connection Management |
-| 3 | [security.md](security.md) | 7 | ~1300 | Access Manager, License Manager, Secret Redaction, SQL Safety, HTTP Security Headers, Rate Limiting, CORS Configuration |
+| 3 | [security.md](security.md) | 7 | ~1700 | Access Manager, License Manager, Secret Redaction, SQL Safety, HTTP Security Headers, Rate Limiting (with Trusted Proxy), CORS Configuration |
 | 4 | [domain.md](domain.md) | 5 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
 | 5 | [api-patterns.md](api-patterns.md) | 6 | ~900 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo, Handler Constructor, Input Validation |
 | 6 | [quality.md](quality.md) | 4 | ~900 | Logging, Linting, Config Validation, Container Security |
