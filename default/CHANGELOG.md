@@ -14,6 +14,17 @@ Contributors: @fred
 ## [1.9.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.9.0)
 
 - **Features**
+  - Add consequences-reviewer to parallel code review
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.8.0...ring-default@1.9.0)
+
+---
+
+## [1.9.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.9.0)
+
+- **Features**
   - Add consequences-reviewer to parallel code review.
 
 Contributors: @fred
