@@ -152,7 +152,7 @@ DETECT (run in parallel):
 
 **Always executes. This gate builds the implementation roadmap for all subsequent gates.**
 
-**Dispatch `ring:codebase-explorer` with multi-tenant focused context:**
+**Dispatch `ring:codebase-explorer` with multi-tenant-focused context:**
 
 > TASK: Analyze this codebase exclusively under the multi-tenant perspective.
 > DETECTED STACK: {databases and messaging from Gate 0}
