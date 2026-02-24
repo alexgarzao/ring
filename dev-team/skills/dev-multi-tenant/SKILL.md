@@ -388,7 +388,7 @@ Save to `docs/ring-dev-multi-tenant/current-cycle.json` for resume support:
 
 ## Anti-Rationalization Table
 
-See [multi-tenant.md § Anti-Rationalization](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md) for the canonical anti-rationalization tables on tenantId vs organization_id.
+See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical anti-rationalization tables on tenantId vs organization_id.
 
 **Skill-specific rationalizations:**
 
