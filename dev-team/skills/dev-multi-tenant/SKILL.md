@@ -120,6 +120,7 @@ This ensures the agent loads the standards first, uses canonical code examples, 
 | 8 | Tests | Always | ring:backend-engineer-golang |
 | 9 | Code Review | Always | 6 parallel reviewers |
 | 10 | User Validation | Always | User |
+| 11 | Activation Guide | Always | Orchestrator |
 
 **⛔ Gates are SEQUENTIAL. No skipping. No reordering.**
 
@@ -389,6 +390,32 @@ MUST include this context in ALL 6 reviewer dispatches:
 - [ ] Tests pass
 - [ ] Code review passed
 ```
+
+---
+
+## Gate 11: Activation Guide
+
+**After all gates pass, present activation instructions directly to the user in the output.**
+
+The orchestrator MUST present a summary based on Gate 0 (components) and Gate 1 (analysis):
+
+1. **How many components** were modified and which ones need the env vars (e.g., "This service has 2 components: manager and worker. Both need these env vars.")
+2. **Env vars to configure** per component:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `MULTI_TENANT_ENABLED` | Yes | `false` | Set to `true` to activate |
+| `MULTI_TENANT_URL` | Yes (if enabled) | — | Tenant Manager URL (e.g., `http://dispatch layer:4003`) |
+| `MULTI_TENANT_ENVIRONMENT` | No | `staging` | Environment for cache key segmentation |
+| `MULTI_TENANT_MAX_TENANT_POOLS` | No | `100` | Max tenant connection pools |
+| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | No | `300` | Idle connection eviction timeout |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | No | `5` | Failures before circuit opens |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | No | `30` | Circuit breaker reset timeout |
+
+3. **How to activate**: set `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_URL` in each component's environment, then start the service alongside the Tenant Manager. The Tenant Manager must have the tenant provisioned with database credentials.
+4. **How to verify**: check service logs for "Multi-tenant mode enabled with Tenant Manager URL: ...", send a request with JWT containing `tenantId` claim and confirm it routes to the tenant's database.
+5. **How to deactivate**: remove `MULTI_TENANT_ENABLED` or set to `false`. Service returns to single-tenant mode — no Tenant Manager needed.
+6. **Common errors**: 401 = JWT missing `tenantId`, 404 = tenant not provisioned, 503 = Tenant Manager unreachable.
 
 ---
 
