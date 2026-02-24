@@ -351,16 +351,23 @@ DETECT (run in parallel):
 
 ## Gate 9: Code Review
 
-**Dispatch 6 parallel reviewers (same pattern as ring:requesting-code-review):**
+**Dispatch 6 parallel reviewers (same pattern as ring:requesting-code-review).**
+
+MUST include this context in ALL 6 reviewer dispatches:
+
+> **MULTI-TENANT REVIEW CONTEXT:**
+> - Multi-tenant isolation is based on `tenantId` from JWT → `TenantConnectionManager` → database-per-tenant.
+> - `organization_id` is NOT a tenant identifier. It is a business filter within the tenant's database. A single tenant can have multiple organizations. Do NOT flag organization_id as a multi-tenant issue.
+> - Backward compatibility is required: when `MULTI_TENANT_ENABLED=false`, the service MUST work exactly as before (single-tenant mode, no tenant context needed).
 
 | Reviewer | Focus |
 |----------|-------|
-| ring:code-reviewer | Architecture, lib-commons v3 usage |
-| ring:business-logic-reviewer | Tenant context propagation |
-| ring:security-reviewer | Cross-tenant isolation, JWT validation |
-| ring:test-reviewer | Coverage, isolation tests |
-| ring:nil-safety-reviewer | Nil risks in context extraction |
-| ring:consequences-reviewer | Impact on single-tenant paths |
+| ring:code-reviewer | Architecture, lib-commons v3 usage, TenantMiddleware placement |
+| ring:business-logic-reviewer | Tenant context propagation via tenantId (NOT organization_id) |
+| ring:security-reviewer | Cross-tenant DB isolation, JWT tenantId validation, no data leaks between tenant databases |
+| ring:test-reviewer | Coverage, isolation tests between two tenants, backward compat tests |
+| ring:nil-safety-reviewer | Nil risks in tenant context extraction from JWT and context getters |
+| ring:consequences-reviewer | Impact on single-tenant paths, backward compat when MULTI_TENANT_ENABLED=false |
 
 **MUST pass all 6 reviewers. Critical findings → fix and re-review.**
 
