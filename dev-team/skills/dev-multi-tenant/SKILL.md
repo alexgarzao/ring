@@ -115,7 +115,7 @@ This ensures the agent loads the standards first, uses canonical code examples, 
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | TenantMiddleware | Always (core) | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Per detected DB | ring:backend-engineer-golang |
-| 6 | RabbitMQ Tenant Headers | Skip if no RabbitMQ | ring:backend-engineer-golang |
+| 6 | RabbitMQ Multi-Tenant (lazy init, vhosts, ConsumerTrigger) | Skip if no RabbitMQ | ring:backend-engineer-golang |
 | 7 | Metrics & Backward Compat | Always | ring:backend-engineer-golang |
 | 8 | Tests | Always | ring:backend-engineer-golang |
 | 9 | Code Review | Always | 6 parallel reviewers |
@@ -168,7 +168,7 @@ DETECT (run in parallel):
 > 3. **Database connections**: How do repositories get their DB connection today? Static field in struct? Constructor injection? Context? List EVERY repository file with file:line showing where the connection is obtained.
 > 4. **Middleware chain**: What middleware exists and in what order? Where would TenantMiddleware fit (after auth, before handlers)?
 > 5. **Config struct**: Where is the Config struct? What fields exist? Where is it loaded? Identify exact location for MULTI_TENANT_ENABLED vars.
-> 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected?
+> 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split (`if cfg.IsMultiTenant()`) for RabbitMQ initialization? Are there dual constructors (`NewProducerMultiTenant` vs `NewProducerRabbitMQ`)? Is there a `RabbitMQManager` pool? Does the service struct have both `*MultiQueueConsumer` and `*MultiTenantRabbitMQConsumer`?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
 > 8. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely. Multi-tenant is exclusively tenantId from JWT → database routing)
 >
@@ -213,18 +213,23 @@ DETECT (run in parallel):
 | 10 | JWT tenantId extraction | Exists / Missing | Middleware extracts `tenantId` claim from JWT | Verify in middleware | bootstrap/ |
 | 11 | Repository connections | Static / Context | `GetMongoForTenant(ctx)` / `GetPostgresForTenant(ctx)` | Adapt per repo file | adapters/ |
 | 12 | Redis key prefixing | No prefix / Prefixed | `GetKeyFromContext(ctx, key)` for all ops + Lua scripts | Add if Redis detected | adapters/ |
-| 13 | RabbitMQ producer | Missing / Present | `X-Tenant-ID` header + per-tenant channel | Add if RabbitMQ detected | adapters/ |
-| 14 | RabbitMQ consumer | Missing / Present | Extract `X-Tenant-ID` from header + inject tenant DB | Add if RabbitMQ detected | adapters/ |
-| 15 | ConsumerTrigger | Missing / Present | `EnsureConsumerStarted(ctx, tenantID)` wired to middleware | Add if RabbitMQ + lazy mode | bootstrap/ |
-| 16 | Public endpoint bypass | Exists / Missing | /health, /version, /swagger skip tenant middleware | Verify | bootstrap/ |
-| 17 | Backward compatibility | N/A | `IsMultiTenant()` passthrough, single-tenant works unchanged | Verify + write test | bootstrap/ |
-| 18 | Metrics | Missing / Present | `tenant_connections_total`, `tenant_connection_errors_total` (+2 if RabbitMQ) | Add | bootstrap/ |
-| 19 | Error handling | Missing / Present | Map tenant errors to HTTP: 401/404/422/403/503 | Add in error handler | adapters/ |
-| 20 | Graceful shutdown | Exists / Missing | Close tenant managers on shutdown (LIFO cleanup) | Verify in cleanup stack | bootstrap/ |
-| 21 | Tests — unit | Missing / Present | Mock tenant context, verify per-repo | Write | tests/ |
-| 22 | Tests — isolation | Missing / Present | Two tenants, data separation | Write | tests/ |
-| 23 | Tests — error cases | Missing / Present | Missing JWT, tenant not found, not provisioned | Write | tests/ |
-| 24 | Tests — backward compat | Missing / Present | `TestMultiTenant_BackwardCompatibility` | Write | tests/ |
+| 13 | RabbitMQ producer (header) | Missing / Present | `X-Tenant-ID` header injection in AMQP messages | Add if RabbitMQ detected | adapters/ |
+| 14 | RabbitMQ producer (dual constructor) | Missing / Present | `NewProducerMultiTenant(pool)` vs `NewProducerRabbitMQ(conn)` | Add if RabbitMQ detected | adapters/ |
+| 15 | RabbitMQ consumer (header) | Missing / Present | Extract `X-Tenant-ID` from AMQP header + inject tenant DB | Add if RabbitMQ detected | adapters/ |
+| 16 | RabbitMQ consumer (lazy init) | Missing / Present | `MultiTenantConsumer` with handler registration (NOT started at boot) | Add if RabbitMQ detected | bootstrap/ |
+| 17 | RabbitMQ config split | Missing / Present | `if cfg.IsMultiTenant()` branches for producer AND consumer init | Add if RabbitMQ detected | bootstrap/ |
+| 18 | RabbitMQManager pool | Missing / Present | `NewRabbitMQManager(tmClient, serviceName, WithRabbitMQModule(...))` | Add if RabbitMQ detected | bootstrap/ |
+| 19 | ConsumerTrigger interface | Missing / Present | `EnsureConsumerStarted(ctx, tenantID)` wired to middleware | MANDATORY if RabbitMQ detected | bootstrap/ |
+| 20 | Service struct (both consumers) | Missing / Present | `*MultiQueueConsumer` (single) + `*MultiTenantRabbitMQConsumer` (multi) | Add if RabbitMQ detected | bootstrap/ |
+| 21 | Public endpoint bypass | Exists / Missing | /health, /version, /swagger skip tenant middleware | Verify | bootstrap/ |
+| 22 | Backward compatibility | N/A | `IsMultiTenant()` passthrough, single-tenant works unchanged | Verify + write test | bootstrap/ |
+| 23 | Metrics | Missing / Present | `tenant_connections_total`, `tenant_connection_errors_total` (+2 if RabbitMQ) | Add | bootstrap/ |
+| 24 | Error handling | Missing / Present | Map tenant errors to HTTP: 401/404/422/403/503 | Add in error handler | adapters/ |
+| 25 | Graceful shutdown | Exists / Missing | Close tenant managers on shutdown (LIFO cleanup) | Verify in cleanup stack | bootstrap/ |
+| 26 | Tests — unit | Missing / Present | Mock tenant context, verify per-repo | Write | tests/ |
+| 27 | Tests — isolation | Missing / Present | Two tenants, data separation | Write | tests/ |
+| 28 | Tests — error cases | Missing / Present | Missing JWT, tenant not found, not provisioned | Write | tests/ |
+| 29 | Tests — backward compat | Missing / Present | `TestMultiTenant_BackwardCompatibility` | Write | tests/ |
 ```
 
 **This report becomes the CONTEXT for all subsequent gates.** Each gate receives: "Here is what needs to change (from Gate 1 analysis), now implement Gate N following multi-tenant.md."
@@ -339,6 +344,39 @@ DETECT (run in parallel):
 > CRITICAL: tenantId comes from JWT, NOT from URL path parameters.
 > The middleware resolves which DATABASE to connect to.
 > When MULTI_TENANT_ENABLED=false, middleware calls c.Next() immediately (single-tenant passthrough).
+>
+> **IF RabbitMQ DETECTED:**
+> MUST accept an optional `ConsumerTrigger` parameter in the TenantMiddleware handler.
+> When not nil, the middleware calls `consumerTrigger.EnsureConsumerStarted(ctx, tenantID)` AFTER tenant ID extraction
+> to trigger lazy consumer activation for that tenant's RabbitMQ vhost.
+> DO NOT block the request on consumer startup — this is a fire-and-forget call.
+> MUST keep the existing single-tenant code path untouched: when `ConsumerTrigger` is nil (single-tenant mode or no RabbitMQ), this is a no-op.
+> MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode — connections are resolved lazily per-tenant.
+>
+> ```go
+> // Example middleware with ConsumerTrigger
+> func NewTenantMiddlewareHandler(
+>     tenantMid *tenantmanager.TenantMiddleware,
+>     consumerTrigger ConsumerTrigger,  // nil when no RabbitMQ or single-tenant
+> ) fiber.Handler {
+>     return func(c *fiber.Ctx) error {
+>         if tenantMid == nil { return c.Next() }       // single-tenant passthrough
+>         if isPublicPath(c.Path()) { return c.Next() } // public endpoints
+>
+>         err := tenantMid.WithTenantDB(c)              // resolve tenant DB
+>         if err != nil { return err }
+>
+>         // Lazy consumer trigger (fire-and-forget)
+>         if consumerTrigger != nil {
+>             tenantID := tenantmanager.GetTenantID(c.UserContext())
+>             if tenantID != "" {
+>                 consumerTrigger.EnsureConsumerStarted(c.UserContext(), tenantID)
+>             }
+>         }
+>         return c.Next()
+>     }
+> }
+> ```
 
 **Verification:** `grep "tenantmanager.NewTenantMiddleware" internal/bootstrap/` + `go build ./...`
 
@@ -371,16 +409,92 @@ DETECT (run in parallel):
 
 **SKIP IF:** no RabbitMQ detected.
 
+**This gate implements the FULL multi-tenant RabbitMQ pattern: lazy initialization, per-tenant vhosts, dual constructors, and ConsumerTrigger.**
+
+**MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode:** each tenant has its own RabbitMQ vhost and connections are resolved lazily per-tenant via `RabbitMQManager.GetChannel(ctx, tenantID)`.
+
+**Standards reference:** See `../../docs/standards/golang/multi-tenant.md` sections "RabbitMQ Multi-Tenant Producer", "Multi-Tenant Message Queue Consumers (Lazy Mode)", and "ConsumerTrigger Interface" for canonical patterns and code examples.
+
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Implement RabbitMQ multi-tenant patterns.
+> TASK: Implement RabbitMQ multi-tenant patterns with lazy initialization.
 > CONTEXT FROM GATE 1: {Producer and consumer file:line locations from analysis report}
+> DETECTED ARCHITECTURE: {Are producer and consumer in the same process or separate components?}
 >
-> Follow multi-tenant.md sections "RabbitMQ Multi-Tenant Producer", "Multi-Tenant Message Queue Consumers (Lazy Mode)", and "ConsumerTrigger Interface".
+> MUST follow multi-tenant.md sections "RabbitMQ Multi-Tenant Producer", "Multi-Tenant Message Queue Consumers (Lazy Mode)", and "ConsumerTrigger Interface".
 >
-> Key points: X-Tenant-ID AMQP header (NOT in message body), per-tenant channels, lazy consumer initialization, ConsumerTrigger wired to middleware.
+> ## Gate-specific orchestration:
+>
+> **1. CONFIG SPLIT (MANDATORY):** MUST branch on `cfg.IsMultiTenant()` for both producer and consumer in bootstrap:
+>
+> ```go
+> // Producer initialization
+> if cfg.IsMultiTenant() {
+>     result := initMultiTenantProducer(cfg, logger)      // NO connection at startup
+>     producerRepo = result.Producer
+>     rabbitMQPool = result.Pool                           // RabbitMQManager for lazy channels
+> } else {
+>     result := initSingleTenantProducer(cfg, logger)      // IMMEDIATE connection (current behavior)
+>     producerRepo = result.Producer
+> }
+>
+> // Consumer initialization
+> if cfg.IsMultiTenant() {
+>     multiTenantConsumer = initMultiTenantConsumer(cfg, rabbitMQPool, redisClient, useCase, logger)  // NO connection
+> } else {
+>     staticConsumer = initSingleTenantConsumer(cfg, useCase, logger)                    // IMMEDIATE connection
+> }
+> ```
+>
+> **⛔ MUST keep the existing single-tenant code path untouched.** Only the multi-tenant branch is new.
+>
+> **2. RABBITMQMANAGER POOL (MANDATORY):** MUST create the pool in bootstrap with no connection:
+>
+> ```go
+> rabbitMQPool := tenantmanager.NewRabbitMQManager(tmClient, constant.ApplicationName,
+>     tenantmanager.WithRabbitMQModule(constant.ModuleWorker),
+>     tenantmanager.WithRabbitMQLogger(logger),
+>     tenantmanager.WithRabbitMQMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+>     tenantmanager.WithRabbitMQIdleTimeout(idleTimeout),
+> )
+> ```
+>
+> **3. CONSUMERTRIGGER (MANDATORY):** MUST implement the `ConsumerTrigger` interface (see multi-tenant.md "ConsumerTrigger Interface") and wire `EnsureConsumerStarted(ctx, tenantID)` to the TenantMiddleware (see Gate 4). The Service struct MUST hold both consumer types:
+>
+> ```go
+> type Service struct {
+>     *MultiQueueConsumer              // Single-tenant only (nil in multi-tenant mode)
+>     *MultiTenantRabbitMQConsumer     // Multi-tenant only (nil in single-tenant mode)
+> }
+>
+> func (app *Service) GetConsumerTrigger() ConsumerTrigger {
+>     if app.MultiTenantRabbitMQConsumer == nil {
+>         return nil
+>     }
+>     return app.MultiTenantRabbitMQConsumer
+> }
+> ```
+>
+> **4. X-Tenant-ID AMQP HEADER (MANDATORY):**
+> - MUST inject `X-Tenant-ID` header in producer when tenant context is present
+> - MUST extract `X-Tenant-ID` from AMQP headers in consumer and inject tenant context
+> - MUST place the header in the AMQP headers table, NOT in the message body
+>
+> **Summary: Single-Tenant vs Multi-Tenant Startup**
+>
+> | Phase | Single-Tenant | Multi-Tenant |
+> |-------|---------------|--------------|
+> | Startup | Producer: `GetNewConnect()` blocks | Producer: pool created, NO connection |
+> | Startup | Consumer: `RunConsumers()` blocks | Consumer: handlers registered, NOT started |
+> | First request | N/A (already connected) | `EnsureConsumerStarted(tenantID)` spawns consumer |
+> | Publish | Static channel | `GetChannel(ctx, tenantID)` → tenant vhost |
 
-**Verification:** `grep "X-Tenant-ID" internal/adapters/` + `go build ./...`
+**Verification:**
+- `grep "RabbitMQManager\|NewProducerMultiTenant\|EnsureConsumerStarted\|ConsumerTrigger" internal/` + `go build ./...`
+- Multi-tenant mode: service starts WITHOUT connecting to RabbitMQ
+- Single-tenant mode: service starts WITH immediate RabbitMQ connection (backward compat)
+
+**⛔ HARD GATE: MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode.**
 
 ---
 
@@ -491,7 +605,7 @@ Add to **every component** listed above:
 |----------|----------|---------|-------------|
 | `MULTI_TENANT_ENABLED` | Yes | `false` | Activate multi-tenant |
 | `MULTI_TENANT_URL` | If enabled | — | Tenant Manager URL |
-| `MULTI_TENANT_ENVIRONMENT` | No | `staging` | Cache key segmentation |
+| `MULTI_TENANT_ENVIRONMENT` | Only if RabbitMQ | `staging` | Cache key segmentation for lazy consumer tenant discovery |
 | `MULTI_TENANT_MAX_TENANT_POOLS` | No | `100` | Connection pool soft limit (LRU) |
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | No | `300` | Idle eviction timeout |
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | No | `5` | Failures before circuit opens |
