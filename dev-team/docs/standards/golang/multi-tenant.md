@@ -205,7 +205,7 @@ func extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
 
 ### Generic TenantMiddleware (Standard Pattern)
 
-**This is the standard pattern for most services.** The lib-commons `TenantMiddleware` handles JWT extraction, tenant resolution, and context injection automatically. Use this unless your service has multiple database modules (see [Advanced: Multi-Module Services](#advanced-multi-module-services) below).
+**This is the standard pattern for all services.** The lib-commons `TenantMiddleware` handles JWT extraction, tenant resolution, and context injection automatically.
 
 ```go
 // internal/bootstrap/config.go
@@ -445,10 +445,6 @@ func InitService(cfg *Config) (*Service, error) {
     // ...
 }
 ```
-
-### Advanced: Multi-Module Services
-
-If your service hosts multiple database modules in a single process (like the Midaz unified ledger with onboarding + transaction), you may need separate connection pools per module. See Midaz's `DualPoolMiddleware` as a reference implementation. This pattern uses `GetModulePostgresForTenant(ctx, module)` instead of `GetPostgresForTenant(ctx)` and requires path-based pool routing to select the correct pool per request. Multi-module services also need cross-module connection injection so that in-process calls between modules can access each other's databases. Most services do NOT need this pattern — use the Generic TenantMiddleware above.
 
 ### Testing Multi-Tenant Code
 
@@ -823,25 +819,25 @@ lib-commons provides two sets of context functions. They use **separate, isolate
 
 | Function | Context Key | Use When |
 |----------|-------------|----------|
-| `GetPostgresForTenant(ctx)` | `tenantPGConnection` | Single-module service (one database) |
-| `GetModulePostgresForTenant(ctx, module)` | `tenantPGConnection:{module}` | Multi-module service (e.g., onboarding + transaction) |
+| `GetPostgresForTenant(ctx)` | `tenantPGConnection` | Standard — one database per tenant |
+| `GetModulePostgresForTenant(ctx, module)` | `tenantPGConnection:{module}` | When service has multiple database modules |
 
 ```go
-// Single-module service (most services)
+// Standard usage
 db, err := tenantmanager.GetPostgresForTenant(ctx)
 if err != nil {
     // ErrTenantContextRequired: middleware not set up or tenant not resolved
     return err
 }
 
-// Multi-module service (advanced pattern)
+// If service has multiple database modules
 db, err := tenantmanager.GetModulePostgresForTenant(ctx, "my-module")
 ```
 
 **Context setters (used by middleware, not by service code):**
 - `ContextWithTenantID(ctx, tenantID)` — stores tenant ID
 - `ContextWithTenantPGConnection(ctx, db)` — generic PG connection (set by TenantMiddleware)
-- `ContextWithModulePGConnection(ctx, module, db)` — module-specific PG (set by multi-module middleware)
+- `ContextWithModulePGConnection(ctx, module, db)` — module-specific PG (when service has multiple DB modules)
 - `ContextWithTenantMongo(ctx, mongoDB)` — MongoDB connection
 
 ### Tenant ID Validation
