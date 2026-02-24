@@ -282,6 +282,10 @@ Re-run after file exists.
 
 **TodoWrite:** Mark "Detect frontend stack and UI library mode" as `in_progress`
 
+**⛔ SCOPE: FRONTEND AND BFF CODE ONLY.** This skill analyzes frontend code (React, Next.js) and BFF layers exclusively. Backend code (Go, pure TypeScript backend with Express/Fastify/NestJS without React) MUST be analyzed by `ring:dev-refactor` instead.
+
+**⛔ FORBIDDEN:** Dispatching `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` from this skill. These are backend agents and belong to `ring:dev-refactor`.
+
 **MANDATORY: Verify this is a frontend project. If not, redirect.**
 
 Check for frontend indicators:
