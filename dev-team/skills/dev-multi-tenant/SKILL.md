@@ -395,63 +395,57 @@ MUST include this context in ALL 6 reviewer dispatches:
 
 ## Gate 11: Activation Guide
 
-**After all gates pass, present activation instructions directly to the user in the output.**
+**MUST generate `docs/multi-tenant-guide.md` in the project root.** Direct, concise, no filler text.
 
-The orchestrator MUST present a summary based on Gate 0 (stack detection) and Gate 1 (codebase analysis).
+The file is built from Gate 0 (stack) and Gate 1 (analysis). Template:
 
-### 1. Service Architecture
+```markdown
+# Multi-Tenant Guide — {service_name}
 
-Show which components the service has and what resources each one uses:
+## Components
 
-```
-Service: {service_name}
+| Component | Resources | Adapted |
+|-----------|-----------|---------|
+| {name}    | {MongoDB, PostgreSQL, Redis, RabbitMQ...} | {GetMongoForTenant, GetKeyFromContext, X-Tenant-ID...} |
 
-| Component | Resources | Multi-Tenant Adapted |
-|-----------|-----------|---------------------|
-| manager   | MongoDB, Redis, RabbitMQ (producer) | Yes — GetMongoForTenant(ctx), GetKeyFromContext, X-Tenant-ID header |
-| worker    | MongoDB, Redis, RabbitMQ (consumer) | Yes — GetMongoForTenant(ctx), GetKeyFromContext, X-Tenant-ID extraction |
-```
+## Environment Variables
 
-(Adapt based on what Gate 0 detected and Gate 1 analyzed — list only the actual components and resources found.)
-
-### 2. Environment Variables
-
-MUST add to **each component** that was adapted:
+Add to **every component** listed above:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `MULTI_TENANT_ENABLED` | Yes | `false` | Set to `true` to activate |
-| `MULTI_TENANT_URL` | Yes (if enabled) | — | Tenant Manager URL (e.g., `http://dispatch layer:4003`) |
-| `MULTI_TENANT_ENVIRONMENT` | No | `staging` | Environment for cache key segmentation |
-| `MULTI_TENANT_MAX_TENANT_POOLS` | No | `100` | Max concurrent tenant connection pools (LRU soft limit) |
-| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | No | `300` | Idle time before a tenant connection becomes eviction-eligible |
-| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | No | `5` | Consecutive Tenant Manager failures before circuit opens |
-| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | No | `30` | Seconds before circuit breaker transitions to half-open |
+| `MULTI_TENANT_ENABLED` | Yes | `false` | Activate multi-tenant |
+| `MULTI_TENANT_URL` | If enabled | — | Tenant Manager URL |
+| `MULTI_TENANT_ENVIRONMENT` | No | `staging` | Cache key segmentation |
+| `MULTI_TENANT_MAX_TENANT_POOLS` | No | `100` | Connection pool soft limit (LRU) |
+| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | No | `300` | Idle eviction timeout |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | No | `5` | Failures before circuit opens |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | No | `30` | Circuit reset timeout |
 
-### 3. How to Activate
+## Activate
 
-1. Set `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_URL` in **each component's** environment (docker-compose, k8s, .env)
-2. Start the service alongside the Tenant Manager
-3. The Tenant Manager must have the tenant provisioned with database credentials for each resource the component uses
+1. Add `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_URL` to each component
+2. Tenant Manager must be running with tenant provisioned (database credentials configured)
 
-### 4. How to Verify
+## Verify
 
-- Service logs: "Multi-tenant mode enabled with Tenant Manager URL: ..."
-- Send a request with JWT containing `tenantId` claim → confirm it routes to the tenant's database
-- Send a request without `tenantId` → confirm 401 TENANT_ID_REQUIRED
+- Logs: "Multi-tenant mode enabled with Tenant Manager URL: ..."
+- JWT with `tenantId` → routes to tenant database
+- JWT without `tenantId` → 401 TENANT_ID_REQUIRED
 
-### 5. How to Deactivate
+## Deactivate
 
-Remove `MULTI_TENANT_ENABLED` or set to `false`. Service returns to single-tenant mode — no Tenant Manager needed, default database connections used.
+Set `MULTI_TENANT_ENABLED=false` or remove it. Single-tenant mode, no Tenant Manager needed.
 
-### 6. Common Errors
+## Errors
 
-| Status | Error | Cause | Fix |
-|--------|-------|-------|-----|
-| 401 | `TENANT_ID_REQUIRED` | JWT missing `tenantId` claim | Add `tenantId` to JWT |
-| 404 | `TENANT_NOT_FOUND` | Tenant not provisioned | Register tenant in Tenant Manager |
-| 503 | Connection error | Tenant Manager unreachable | Check `MULTI_TENANT_URL` |
-| 503 | `ErrCircuitBreakerOpen` | Tenant Manager down (N consecutive failures) | Wait for circuit breaker reset or fix Tenant Manager |
+| Status | Code | Fix |
+|--------|------|-----|
+| 401 | TENANT_ID_REQUIRED | Add `tenantId` to JWT |
+| 404 | TENANT_NOT_FOUND | Provision tenant in Tenant Manager |
+| 503 | Connection error | Check MULTI_TENANT_URL |
+| 503 | Circuit breaker open | Tenant Manager down, wait or fix |
+```
 
 ---
 
