@@ -77,9 +77,9 @@ examples:
 | **ring:backend-engineer-golang** | Load multi-tenant.md via WebFetch, implement following the standards |
 | **6 reviewers** | Review at Gate 8 |
 
-**⛔ The skill defines WHAT to implement. The agent loads the standards and implements HOW.**
+**⛔ CANNOT change scope:** the skill defines WHAT to implement. The agent implements HOW.
 
-**⛔ TDD is MANDATORY for all implementation gates (Gates 2-6).** The agent MUST follow RED-GREEN: write a failing test first, then implement to make it pass. Every dispatch to the agent for implementation gates MUST include: "Follow TDD: write failing test (RED), then implement (GREEN)."
+**⛔ MANDATORY: TDD for all implementation gates (Gates 2-6).** MUST follow RED-GREEN: write a failing test first, then implement to make it pass. MUST include in every dispatch: "Follow TDD: write failing test (RED), then implement (GREEN)."
 
 </cannot_skip>
 
@@ -89,17 +89,17 @@ examples:
 
 Multi-tenant isolation is 100% based on `tenantId` from JWT → `TenantConnectionManager` → database-per-tenant. Each tenant has its own database. `organization_id` is NOT part of multi-tenant.
 
-**Standards reference:** All code examples and implementation patterns are in `multi-tenant.md`. The agent MUST load this via WebFetch before implementing any gate.
+**Standards reference:** All code examples and implementation patterns are in `multi-tenant.md`. MUST load via WebFetch before implementing any gate.
 
 **WebFetch URL:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md`
 
-### MANDATORY Agent Instruction (include in EVERY gate dispatch)
+### MANDATORY: Agent Instruction (include in EVERY gate dispatch)
 
-Every dispatch to `ring:backend-engineer-golang` MUST include these instructions:
+MUST include these instructions in every dispatch to `ring:backend-engineer-golang`:
 
 > **STANDARDS: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md` and follow the sections referenced below. All code examples, patterns, and implementation details are in that document. Use them as-is.**
 >
-> **TDD: For implementation gates (2-6), follow TDD methodology — write a failing test first (RED), then implement to make it pass (GREEN). Every change MUST have test coverage.**
+> **TDD: For implementation gates (2-6), follow TDD methodology — write a failing test first (RED), then implement to make it pass (GREEN). MUST have test coverage for every change.**
 
 This ensures the agent loads the standards first, uses canonical code examples, and follows TDD for all implementation work.
 
@@ -144,7 +144,7 @@ DETECT (run in parallel):
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 ```
 
-**Present results to user. User MUST confirm before proceeding.**
+**MUST confirm: user explicitly approves detection results before proceeding.**
 
 ---
 
@@ -201,7 +201,7 @@ DETECT (run in parallel):
 | ... | ... | ... |
 ```
 
-**⛔ HARD GATE: The analysis report MUST be complete before proceeding. All subsequent gates use this report to know exactly what to change.**
+**⛔ HARD GATE: MUST complete the analysis report before proceeding. All subsequent gates use this report to know exactly what to change.**
 
 ---
 
@@ -218,7 +218,7 @@ DETECT (run in parallel):
 
 **Verification:** `grep "lib-commons/v3" go.mod` + `go build ./...` + `go test ./...`
 
-**⛔ HARD GATE: Build and tests MUST pass.**
+**⛔ HARD GATE: MUST pass build and tests before proceeding.**
 
 ---
 
@@ -276,7 +276,7 @@ DETECT (run in parallel):
 > - "MongoDB Multi-Tenant Repository" (MongoDB)
 > - "Redis Key Prefixing" and "Redis Key Prefixing for Lua Scripts" (Redis)
 >
-> Repositories MUST work in both modes: multi-tenant (connection from context) and single-tenant (default connection via passthrough).
+> MUST work in both modes: multi-tenant (connection from context) and single-tenant (default connection via passthrough).
 
 **Verification:** grep for `GetPostgresForTenant` / `GetMongoForTenant` / `GetKeyFromContext` in `internal/adapters/` + `go build ./...`
 
@@ -307,9 +307,9 @@ DETECT (run in parallel):
 > Follow multi-tenant.md sections "Multi-Tenant Metrics" and "Single-Tenant Backward Compatibility Validation (MANDATORY)".
 >
 > BACKWARD COMPATIBILITY IS NON-NEGOTIABLE:
-> - Service MUST start without any MULTI_TENANT_* env vars
-> - Service MUST start without Tenant Manager running
-> - All existing tests MUST pass with MULTI_TENANT_ENABLED=false
+> - MUST start without any MULTI_TENANT_* env vars
+> - MUST start without Tenant Manager running
+> - MUST pass all existing tests with MULTI_TENANT_ENABLED=false
 > - Health/version endpoints MUST work without tenant context
 >
 > Write TestMultiTenant_BackwardCompatibility integration test.
@@ -348,13 +348,13 @@ DETECT (run in parallel):
 | ring:nil-safety-reviewer | Nil risks in context extraction |
 | ring:consequences-reviewer | Impact on single-tenant paths |
 
-**All 6 MUST pass. Critical findings → fix and re-review.**
+**MUST pass all 6 reviewers. Critical findings → fix and re-review.**
 
 ---
 
 ## Gate 10: User Validation
 
-**Present checklist. User MUST approve.**
+**MUST approve: present checklist for explicit user approval.**
 
 ```markdown
 ## Multi-Tenant Implementation Complete
