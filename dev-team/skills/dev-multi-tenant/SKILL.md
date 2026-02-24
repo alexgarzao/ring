@@ -110,7 +110,7 @@ This ensures the agent loads the standards first, uses canonical code examples, 
 | Gate | Name | Condition | Agent |
 |------|------|-----------|-------|
 | 0 | Stack Detection | Always | Orchestrator |
-| 1 | Codebase Analysis | Always | ring:backend-engineer-golang |
+| 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
 | 2 | lib-commons v3 Upgrade | Skip if already v3 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | TenantMiddleware | Always (core) | ring:backend-engineer-golang |
@@ -148,60 +148,67 @@ DETECT (run in parallel):
 
 ---
 
-## Gate 1: Codebase Analysis
+## Gate 1: Codebase Analysis (Multi-Tenant Focus)
 
 **Always executes. This gate builds the implementation roadmap for all subsequent gates.**
 
-**Dispatch `ring:backend-engineer-golang` with context:**
+**Dispatch `ring:codebase-explorer` with multi-tenant-focused context:**
 
-> TASK: Analyze the current codebase to understand what needs to change for multi-tenant support.
-> DETECTED STACK: {from Gate 0}
+> TASK: Analyze this codebase exclusively under the multi-tenant perspective.
+> DETECTED STACK: {databases and messaging from Gate 0}
 >
-> STANDARDS: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md` and read ALL sections. This document defines the target state.
+> FOCUS AREAS (explore ONLY these — ignore everything else):
 >
-> ANALYZE and report:
-> 1. **Bootstrap/initialization**: How does the service start? Where are DB connections created? Where is middleware registered?
-> 2. **Repositories**: List ALL repository files. How do they get their DB connection today (static field, constructor injection, context)?
-> 3. **Middleware chain**: What middleware exists? Where would TenantMiddleware be inserted?
-> 4. **RabbitMQ** (if detected): How are producers and consumers wired? Where are messages published?
-> 5. **Redis** (if detected): Where are Redis operations? Any Lua scripts?
-> 6. **Config struct**: What fields exist? Where is the config loaded?
-> 7. **Gap analysis**: For each section of multi-tenant.md, what exists today vs what needs to be added?
+> 1. **Bootstrap/initialization**: Where does the service start? Where are database connections created? Where is the middleware chain registered? Identify the exact insertion point for TenantMiddleware.
+> 2. **Database connections**: How do repositories get their DB connection today? Static field in struct? Constructor injection? Context? List EVERY repository file with file:line showing where the connection is obtained.
+> 3. **Middleware chain**: What middleware exists and in what order? Where would TenantMiddleware fit (after auth, before handlers)?
+> 4. **Config struct**: Where is the Config struct? What fields exist? Where is it loaded? Identify exact location for MULTI_TENANT_ENABLED vars.
+> 5. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected?
+> 6. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
+> 7. **Existing multi-tenant code**: Any partial implementation? tenantmanager imports? organization_id patterns?
 >
-> OUTPUT: A structured report with file paths and line numbers for every change needed across Gates 2-8.
-> DO NOT write any code. Analysis only.
+> OUTPUT FORMAT: Structured report with file:line references for every point above.
+> DO NOT write code. Analysis only.
 
-**Output format:**
+**The explorer produces a report like:**
 
 ```markdown
-## Codebase Analysis for Multi-Tenant
+## Multi-Tenant Codebase Analysis
 
 ### Bootstrap
-- Config: {file:line} — needs MULTI_TENANT_ENABLED vars
-- Initialization: {file:line} — TenantMiddleware registration point
-- Middleware chain: {file:line} — insertion order
+- Config struct: internal/bootstrap/config.go:15 — no MULTI_TENANT_* fields
+- Service init: internal/bootstrap/service.go:42 — DB connections created here
+- Middleware registration: internal/bootstrap/server.go:78 — insert TenantMiddleware after auth middleware (line 82)
 
-### Repositories ({N} files)
-- {file:line} — uses static connection, needs GetPostgresForTenant(ctx) / GetMongoForTenant(ctx)
-- {file:line} — ...
+### Database Connections ({N} repository files)
+- internal/adapters/mongodb/report/report.mongodb.go:34 — static conn field `conn *libMongo.MongoConnection`, used at lines 56, 89, 124
+- internal/adapters/mongodb/template/template.mongodb.go:28 — static conn field, used at lines 45, 78, 112
+- internal/adapters/redis/cache.go:22 — static client, used at lines 38, 55
 
 ### RabbitMQ (if applicable)
-- Producer: {file:line} — needs X-Tenant-ID header
-- Consumer: {file:line} — needs tenant context injection
+- Producer: internal/adapters/rabbitmq/producer.go:45 — publishes at line 67, no X-Tenant-ID header
+- Consumer: internal/adapters/rabbitmq/consumer.go:32 — processes at line 58, no tenant context
 
 ### Redis (if applicable)
-- {file:line} — needs GetKeyFromContext(ctx, key)
+- internal/adapters/redis/cache.go:38 — Set() without key prefix
+- internal/adapters/redis/cache.go:55 — Get() without key prefix
 
 ### Gap Summary
-| multi-tenant.md Section | Current State | Action Needed |
-|------------------------|---------------|---------------|
-| Environment Variables | Missing | Add to config |
-| TenantMiddleware | Missing | Implement in bootstrap |
-| Repository Adaptation | Static connections | Use context getters |
-| ... | ... | ... |
+| multi-tenant.md Section | Current State | Action Needed | Files |
+|------------------------|---------------|---------------|-------|
+| Environment Variables | Missing | Add 7 vars to config | config.go |
+| TenantMiddleware | Missing | Implement in bootstrap | service.go, server.go |
+| Repository Adaptation | Static connections | Use GetMongoForTenant(ctx) | 2 repo files |
+| Redis Key Prefixing | No prefix | Add GetKeyFromContext | 1 file |
+| RabbitMQ Headers | No X-Tenant-ID | Add header in producer | 1 file |
+| Backward Compatibility | N/A | Add IsMultiTenant() check | service.go |
 ```
 
+**This report becomes the CONTEXT for all subsequent gates.** Each gate receives: "Here is what needs to change (from Gate 1 analysis), now implement Gate N following multi-tenant.md."
+
 **⛔ HARD GATE: MUST complete the analysis report before proceeding. All subsequent gates use this report to know exactly what to change.**
+
+**⛔ MUST ensure backward compatibility context:** The analysis MUST identify how the service works today in single-tenant mode, so subsequent gates preserve this behavior when `MULTI_TENANT_ENABLED=false`.
 
 ---
 
@@ -226,9 +233,10 @@ DETECT (run in parallel):
 
 **SKIP IF:** config already has `MULTI_TENANT_ENABLED`.
 
-**Dispatch `ring:backend-engineer-golang` with context:**
+**Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
 > TASK: Add multi-tenant environment variables to the Config struct.
+> CONTEXT FROM GATE 1: {Config struct location and current fields from analysis report}
 > Follow multi-tenant.md sections "Environment Variables", "Configuration", and "Conditional Initialization".
 > Add conditional log: "Multi-tenant mode enabled" vs "Running in SINGLE-TENANT MODE".
 > DO NOT implement TenantMiddleware yet — only configuration.
@@ -243,10 +251,11 @@ DETECT (run in parallel):
 
 **This is the CORE gate. Without TenantMiddleware, there is no tenant isolation.**
 
-**Dispatch `ring:backend-engineer-golang` with context:**
+**Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
 > TASK: Implement TenantMiddleware using lib-commons/v3 tenant-manager package.
 > DETECTED DATABASES: {postgresql: Y/N, mongodb: Y/N} (from Gate 0)
+> CONTEXT FROM GATE 1: {Bootstrap location, middleware chain insertion point, service init from analysis report}
 >
 > Follow multi-tenant.md sections "Generic TenantMiddleware", "JWT Tenant Extraction", and "Conditional Initialization".
 > Create connection managers ONLY for detected databases.
@@ -266,10 +275,11 @@ DETECT (run in parallel):
 
 **SKIP IF:** repositories already use context-based connections.
 
-**Dispatch `ring:backend-engineer-golang` with context:**
+**Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
 > TASK: Adapt all repository implementations to get database connections from tenant context instead of static connections.
 > DETECTED DATABASES: {postgresql: Y/N, mongodb: Y/N, redis: Y/N} (from Gate 0)
+> CONTEXT FROM GATE 1: {List of ALL repository files with file:line showing static connections from analysis report}
 >
 > Follow multi-tenant.md sections:
 > - "Database Connection in Repositories" (PostgreSQL)
@@ -286,9 +296,10 @@ DETECT (run in parallel):
 
 **SKIP IF:** no RabbitMQ detected.
 
-**Dispatch `ring:backend-engineer-golang` with context:**
+**Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
 > TASK: Implement RabbitMQ multi-tenant patterns.
+> CONTEXT FROM GATE 1: {Producer and consumer file:line locations from analysis report}
 >
 > Follow multi-tenant.md sections "RabbitMQ Multi-Tenant Producer", "Multi-Tenant Message Queue Consumers (Lazy Mode)", and "ConsumerTrigger Interface".
 >
