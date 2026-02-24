@@ -41,8 +41,8 @@ Services currently on lib-commons v2 MUST upgrade to v3 before implementing mult
 # Update go.mod
 go get github.com/LerianStudio/lib-commons/v3@latest
 
-# Update import paths across the codebase
-find . -name "*.go" -exec sed -i '' 's|lib-commons/v2|lib-commons/v3|g' {} +
+# Update import paths across the codebase (portable — works on macOS and Linux)
+find . -name "*.go" -exec perl -pi -e 's|lib-commons/v2|lib-commons/v3|g' {} +
 
 # Verify build
 go build ./...
