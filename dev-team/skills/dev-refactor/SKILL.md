@@ -190,7 +190,7 @@ Re-run after file exists.
 
 **TodoWrite:** Mark "Detect project stack (Go/TypeScript)" as `in_progress`
 
-**⛔ SCOPE: BACKEND CODE ONLY.** This skill analyzes backend code exclusively. Frontend code (React, Next.js, Vue, Angular) MUST be analyzed by `ring:dev-refactor-frontend` instead.
+**⛔ SCOPE: BACKEND CODE ONLY.** This skill analyzes backend code exclusively. MUST use `ring:dev-refactor-frontend` for frontend code (React, Next.js, Vue, Angular).
 
 Check for backend manifest files:
 
@@ -440,7 +440,7 @@ Task tool 1:
 | Go only | Task 1 (Go) + Task 2-4 |
 | TypeScript Backend only | Task 1 (TS Backend) + Task 2-4 |
 
-**⛔ Frontend/BFF projects MUST use `ring:dev-refactor-frontend` instead.** This skill does not dispatch frontend agents.
+**⛔ MUST use `ring:dev-refactor-frontend` for frontend/BFF projects.** This skill does not dispatch frontend agents.
 
 **TodoWrite:** Mark "Dispatch specialist agents in parallel" as `completed`
 
