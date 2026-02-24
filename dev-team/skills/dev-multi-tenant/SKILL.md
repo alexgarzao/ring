@@ -157,6 +157,9 @@ DETECT (run in parallel):
 > TASK: Analyze this codebase exclusively under the multi-tenant perspective.
 > DETECTED STACK: {databases and messaging from Gate 0}
 >
+> CRITICAL: Multi-tenant is ONLY about tenantId from JWT → TenantConnectionManager → database-per-tenant.
+> IGNORE organization_id completely — it is NOT multi-tenant. A tenant can have multiple organizations inside its database. organization_id is a domain entity, not a tenant identifier.
+>
 > FOCUS AREAS (explore ONLY these — ignore everything else):
 >
 > 1. **Bootstrap/initialization**: Where does the service start? Where are database connections created? Where is the middleware chain registered? Identify the exact insertion point for TenantMiddleware.
@@ -165,7 +168,7 @@ DETECT (run in parallel):
 > 4. **Config struct**: Where is the Config struct? What fields exist? Where is it loaded? Identify exact location for MULTI_TENANT_ENABLED vars.
 > 5. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected?
 > 6. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
-> 7. **Existing multi-tenant code**: Any partial implementation? tenantmanager imports? organization_id patterns?
+> 7. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely. Multi-tenant is exclusively tenantId from JWT → database routing)
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
 > DO NOT write code. Analysis only.
