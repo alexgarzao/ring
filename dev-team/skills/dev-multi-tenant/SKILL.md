@@ -163,7 +163,7 @@ DETECT (run in parallel):
 >
 > FOCUS AREAS (explore ONLY these — ignore everything else):
 >
-> 1. **Service name and components**: What is the service called? (Look for `const ApplicationName` or similar.) How many components does it have (e.g., manager, worker)? Each component needs its own service name for Tenant Manager registration.
+> 1. **Service name, modules, and components**: What is the service called? (Look for `const ApplicationName`.) How many components/modules does it have? Each module needs a constant (e.g., `const ModuleManager = "manager"`). Identify: service name (ApplicationName), module names per component, and whether constants exist or need to be created. Hierarchy: Service → Module → Resource.
 > 2. **Bootstrap/initialization**: Where does the service start? Where are database connections created? Where is the middleware chain registered? Identify the exact insertion point for TenantMiddleware.
 > 3. **Database connections**: How do repositories get their DB connection today? Static field in struct? Constructor injection? Context? List EVERY repository file with file:line showing where the connection is obtained.
 > 4. **Middleware chain**: What middleware exists and in what order? Where would TenantMiddleware fit (after auth, before handlers)?
@@ -199,14 +199,32 @@ DETECT (run in parallel):
 - internal/adapters/redis/cache.go:55 — Get() without key prefix
 
 ### Gap Summary
-| multi-tenant.md Section | Current State | Action Needed | Files |
-|------------------------|---------------|---------------|-------|
-| Environment Variables | Missing | Add 7 vars to config | config.go |
-| TenantMiddleware | Missing | Implement in bootstrap | service.go, server.go |
-| Repository Adaptation | Static connections | Use GetMongoForTenant(ctx) | 2 repo files |
-| Redis Key Prefixing | No prefix | Add GetKeyFromContext | 1 file |
-| RabbitMQ Headers | No X-Tenant-ID | Add header in producer | 1 file |
-| Backward Compatibility | N/A | Add IsMultiTenant() check | service.go |
+| # | Item | Current State | Required State | Action | Files |
+|---|------|--------------|----------------|--------|-------|
+| 1 | lib-commons version | v2 / v3 | v3 | Upgrade if v2 | go.mod |
+| 2 | ApplicationName const | Exists / Missing | `const ApplicationName = "..."` (service name) | Create if missing | pkg/constant/ |
+| 3 | Module consts | Exists / Missing | `const Module{Name} = "..."` per component | Create if missing | pkg/constant/ |
+| 4 | MULTI_TENANT_ENABLED config | Exists / Missing | 7 env vars in Config struct (both components) | Add if missing | bootstrap/config.go |
+| 5 | Conditional initialization | Exists / Missing | `if cfg.IsMultiTenant()` with log message | Add if missing | bootstrap/ |
+| 6 | Tenant Manager client | Exists / Missing | `tenantmanager.NewClient(url, logger, opts...)` | Create if missing | bootstrap/ |
+| 7 | Circuit breaker | Exists / Missing | `WithCircuitBreaker(threshold, timeout)` on client | Add if configured | bootstrap/ |
+| 8 | Connection managers | Exists / Missing | NewMongoManager/NewPostgresManager per module with `WithModule(const)` | Create per detected DB | bootstrap/ |
+| 9 | TenantMiddleware | Exists / Missing | `WithTenantDB` registered after auth, before handlers | Implement if missing | bootstrap/ |
+| 10 | JWT tenantId extraction | Exists / Missing | Middleware extracts `tenantId` claim from JWT | Verify in middleware | bootstrap/ |
+| 11 | Repository connections | Static / Context | `GetMongoForTenant(ctx)` / `GetPostgresForTenant(ctx)` | Adapt per repo file | adapters/ |
+| 12 | Redis key prefixing | No prefix / Prefixed | `GetKeyFromContext(ctx, key)` for all ops + Lua scripts | Add if Redis detected | adapters/ |
+| 13 | RabbitMQ producer | Missing / Present | `X-Tenant-ID` header + per-tenant channel | Add if RabbitMQ detected | adapters/ |
+| 14 | RabbitMQ consumer | Missing / Present | Extract `X-Tenant-ID` from header + inject tenant DB | Add if RabbitMQ detected | adapters/ |
+| 15 | ConsumerTrigger | Missing / Present | `EnsureConsumerStarted(ctx, tenantID)` wired to middleware | Add if RabbitMQ + lazy mode | bootstrap/ |
+| 16 | Public endpoint bypass | Exists / Missing | /health, /version, /swagger skip tenant middleware | Verify | bootstrap/ |
+| 17 | Backward compatibility | N/A | `IsMultiTenant()` passthrough, single-tenant works unchanged | Verify + write test | bootstrap/ |
+| 18 | Metrics | Missing / Present | `tenant_connections_total`, `tenant_connection_errors_total` (+2 if RabbitMQ) | Add | bootstrap/ |
+| 19 | Error handling | Missing / Present | Map tenant errors to HTTP: 401/404/422/403/503 | Add in error handler | adapters/ |
+| 20 | Graceful shutdown | Exists / Missing | Close tenant managers on shutdown (LIFO cleanup) | Verify in cleanup stack | bootstrap/ |
+| 21 | Tests — unit | Missing / Present | Mock tenant context, verify per-repo | Write | tests/ |
+| 22 | Tests — isolation | Missing / Present | Two tenants, data separation | Write | tests/ |
+| 23 | Tests — error cases | Missing / Present | Missing JWT, tenant not found, not provisioned | Write | tests/ |
+| 24 | Tests — backward compat | Missing / Present | `TestMultiTenant_BackwardCompatibility` | Write | tests/ |
 ```
 
 **This report becomes the CONTEXT for all subsequent gates.** Each gate receives: "Here is what needs to change (from Gate 1 analysis), now implement Gate N following multi-tenant.md."
@@ -262,9 +280,57 @@ DETECT (run in parallel):
 > DETECTED DATABASES: {postgresql: Y/N, mongodb: Y/N} (from Gate 0)
 > CONTEXT FROM GATE 1: {Bootstrap location, middleware chain insertion point, service init from analysis report}
 >
-> CRITICAL — SERVICE NAME: Each component MUST define a constant (e.g., `const ApplicationName = "reporter"`) that is passed as the `serviceName` parameter to `tenantmanager.NewPostgresManager(client, serviceName, ...)` and `NewMongoManager`. This name is used in the Tenant Manager API call: `GET /tenants/{tenantID}/services/{serviceName}/settings`. If the name doesn't match what's registered in Tenant Manager, no credentials are returned.
+> CRITICAL — HIERARCHY: Service → Module → Resource
 >
-> For services with multiple database modules, use `WithModule(moduleName)` to specify which module's credentials to fetch (e.g., `WithModule("onboarding")`, `WithModule("transaction")`).
+> The Tenant Manager API follows this hierarchy:
+> - **Service**: The top-level application name. Passed as `serviceName` to connection managers. Used in: `GET /tenants/{tenantID}/services/{serviceName}/settings`
+> - **Module**: A component within the service. Each module has its own database credentials in the `/settings` response. Passed via `WithModule()` / `WithMongoModule()`.
+> - **Resource**: The database type within a module (postgresql, mongodb, rabbitmq). Provisioned per module in the Tenant Manager.
+>
+> ```
+> Service: {ApplicationName}
+>   ├── Module: {component-a}  → Resources (PostgreSQL, MongoDB, ...)
+>   └── Module: {component-b}  → Resources (MongoDB, RabbitMQ, ...)
+> ```
+>
+> MUST define constants for service name and module names — never pass raw strings:
+> ```go
+> // pkg/constant/app.go
+> const (
+>     ApplicationName = "my-service"     // SERVICE — registered in Tenant Manager
+>     ModuleAPI       = "api"            // MODULE — component within the service
+>     ModuleWorker    = "worker"         // MODULE — component within the service
+> )
+> ```
+>
+> In bootstrap, the first parameter is always the SERVICE (ApplicationName),
+> and WithModule/WithMongoModule receives the MODULE (component name):
+> ```go
+> // API component bootstrap:
+> NewMongoManager(client, constant.ApplicationName,          // ← SERVICE (not module)
+>     tenantmanager.WithMongoModule(constant.ModuleAPI),     // ← MODULE (not service)
+> )
+>
+> // Worker component bootstrap:
+> NewMongoManager(client, constant.ApplicationName,          // ← same SERVICE
+>     tenantmanager.WithMongoModule(constant.ModuleWorker),  // ← different MODULE
+> )
+> ```
+>
+> The `/settings` response groups credentials by MODULE name:
+> ```json
+> GET /tenants/{tenantId}/services/{ApplicationName}/settings
+> {
+>   "databases": {
+>     "api":    { "mongodb": { "host": "...", ... } },
+>     "worker": { "mongodb": { "host": "...", ... } }
+>   }
+> }
+> ```
+>
+> Examples:
+> - Service with 2 components: service=`"reporter"`, modules=`"manager"`, `"worker"`
+> - Service with 2 domains: service=`"ledger"`, modules=`"onboarding"`, `"transaction"`
 >
 > Follow multi-tenant.md sections "Generic TenantMiddleware", "JWT Tenant Extraction", and "Conditional Initialization".
 > Create connection managers ONLY for detected databases.
@@ -409,11 +475,13 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). Template:
 
 ## Components
 
-| Component | Service Name | Module | Resources | Adapted |
-|-----------|-------------|--------|-----------|---------|
-| {name}    | {ApplicationName constant} | {module if multi-module} | {MongoDB, PostgreSQL, Redis, RabbitMQ...} | {GetMongoForTenant, GetKeyFromContext, X-Tenant-ID...} |
+| Component | Service (const) | Module (const) | Resources | Adapted |
+|-----------|----------------|----------------|-----------|---------|
+| {name}    | {ApplicationName} | {ModuleName} | {MongoDB, PostgreSQL, Redis, RabbitMQ...} | {GetMongoForTenant, GetKeyFromContext, X-Tenant-ID...} |
 
-The **Service Name** is the constant passed to `tenantmanager.NewPostgresManager(client, serviceName, ...)`. It must match what is registered in Tenant Manager (`GET /tenants/{tenantID}/services/{serviceName}/settings`).
+**Service** = `const ApplicationName` — the top-level service registered in Tenant Manager.
+**Module** = `const Module{Name}` — the component within the service. Each module has its own credentials in `/settings`.
+Both MUST be constants (never raw strings). The service must match: `GET /tenants/{tenantID}/services/{ApplicationName}/settings`.
 
 ## Environment Variables
 
