@@ -320,13 +320,16 @@ MUST: Be bound to all sections in [standards-coverage-table.md](../skills/shared
 
 **Step 2: Load modules based on task (for detailed reference):**
 
-| Task Type             | Recommended Modules                          | Note                        |
-| --------------------- | -------------------------------------------- | --------------------------- |
-| New feature (full)    | core.md, bootstrap.md, domain.md, quality.md | Covers most patterns        |
-| Auth implementation   | core.md, security.md                         | Auth-specific               |
-| Add tracing           | bootstrap.md                                 | Observability focus         |
-| Testing               | quality.md                                   | Test patterns               |
-| Full compliance check | **all modules**                              | MANDATORY for analysis mode |
+| Task Type                        | Recommended Modules                          | Note                                    |
+| -------------------------------- | -------------------------------------------- | --------------------------------------- |
+| New feature (full)               | core.md, bootstrap.md, domain.md, quality.md | Covers most patterns                    |
+| Auth implementation              | core.md, security.md                         | Auth-specific                           |
+| Add tracing                      | bootstrap.md                                 | Observability focus                     |
+| Multi-tenant implementation      | multi-tenant.md, bootstrap.md                | Tenant Manager, JWT, lib-commons v3     |
+| Idempotency                      | idempotency.md, domain.md                    | Redis SetNX, tenant-aware keys          |
+| Messaging / RabbitMQ             | messaging.md, bootstrap.md                   | Worker pattern, reconnection strategy   |
+| Testing                          | quality.md                                   | Test patterns                           |
+| Full compliance check            | **all modules**                              | MANDATORY for analysis mode             |
 
 **⚠️ REMEMBER:** Even if you only WebFetch core.md, you CANNOT:
 

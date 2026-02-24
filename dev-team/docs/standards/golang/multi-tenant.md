@@ -171,7 +171,29 @@ The Tenant Manager HTTP client supports an optional **circuit breaker** (`WithCi
 
 **Claim key:** `tenantId` (camelCase, hardcoded)
 
-**The `tenantId` is the REAL tenant identifier.** It identifies the client/customer. Other IDs like `organization_id` represent entities WITHIN a tenant (multi-organization support) and do NOT provide tenant-level isolation.
+<cannot_skip>
+
+**⛔ CRITICAL DISTINCTION — tenantId vs organization_id:**
+
+| Identifier | Source | Purpose | Isolation Layer |
+|------------|--------|---------|-----------------|
+| **`tenantId`** | JWT claim | **REAL tenant identifier** — determines which DATABASE to connect to | **Primary: Database-per-tenant** via `TenantConnectionManager` |
+| **`organization_id`** | URL path parameter | Entity WITHIN a tenant — used for IDOR prevention inside the tenant's database | **Secondary: Entity scoping** in WHERE clauses |
+
+**`tenantId` IS the multi-tenant mechanism.** It identifies the client/customer. The lib-commons `TenantMiddleware` extracts it from the JWT, resolves the tenant-specific database connection via Tenant Manager API, and stores it in context. Without this, there is NO multi-tenant isolation — only IDOR prevention.
+
+**`organization_id` is NOT multi-tenant isolation.** It represents an entity WITHIN a tenant's database (multi-organization support). Adding `organization_id` filters to queries is IDOR prevention (OWASP BOLA), not tenant isolation. A service that only filters by `organization_id` without `TenantConnectionManager` is **NOT multi-tenant** — it is single-tenant with entity scoping.
+
+**Anti-Rationalization:**
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Adding organization_id filters = multi-tenant" | organization_id is intra-tenant IDOR prevention, NOT tenant isolation. All orgs still share ONE database. | **MUST implement TenantConnectionManager (Layer 1) FIRST** |
+| "Layer 2 only, Layer 1 later" | Without Layer 1, all tenants share one database. organization_id does NOT isolate tenants. This is NOT multi-tenant. | **MUST implement BOTH layers. Layer 1 is the PRIMARY isolation.** |
+| "The codebase already has organization_id, just connect it" | Completing organization_id wiring is IDOR prevention, not multi-tenant. Multi-tenant requires lib-commons v3 TenantMiddleware + GetMongoForTenant(ctx). | **MUST start with lib-commons v3 integration, not organization_id wiring** |
+| "Midaz uses organization_id as tenant identifier" | WRONG. Midaz uses tenantId from JWT for database routing. organization_id is a SECONDARY filter within the tenant's database. | **MUST follow Ring standards, not assumptions about other codebases** |
+
+</cannot_skip>
 
 ```go
 // internal/bootstrap/middleware.go
@@ -714,12 +736,20 @@ grep -rn "MULTI_TENANT_ENABLED\|MultiTenantEnabled" internal/ --include="*.go"
 
 #### Isolation Architecture
 
+<cannot_skip>
+
+**⛔ HARD GATE: Multi-tenant implementation MUST include Layer 1. Layer 2 alone is NOT multi-tenant.**
+
 Multi-tenant isolation uses a **database-per-tenant** model with two isolation layers:
 
-| Layer | Mechanism | Protection |
-|-------|-----------|------------|
-| **Primary: Database isolation** | `TenantConnectionManager` returns separate database per tenant | Tenant A cannot query Tenant B's database |
-| **Secondary: Entity scoping** | `organization_id` + `ledger_id` in WHERE clauses | Intra-tenant entity separation |
+| Layer | Mechanism | Protection | Required? |
+|-------|-----------|------------|-----------|
+| **Primary (Layer 1): Database isolation** | `TenantConnectionManager` via `tenantId` from JWT → resolves tenant-specific database | Tenant A cannot query Tenant B's database | **MANDATORY for multi-tenant** |
+| **Secondary (Layer 2): Entity scoping** | `organization_id` + `ledger_id` in WHERE clauses | Intra-tenant entity separation (IDOR prevention) | **MANDATORY when multi-tenant is enabled** |
+
+**Implementation order: Layer 1 FIRST, then Layer 2.** Layer 1 (lib-commons v3 `TenantMiddleware` + `GetPostgresForTenant(ctx)` / `GetMongoForTenant(ctx)`) provides the actual tenant isolation. Layer 2 (`organization_id` filtering) provides IDOR prevention WITHIN the tenant's database. Implementing Layer 2 without Layer 1 is NOT multi-tenant — it is single-tenant with entity scoping.
+
+</cannot_skip>
 
 #### Why Tenant Isolation Verification Is MANDATORY
 
