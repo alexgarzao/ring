@@ -397,25 +397,61 @@ MUST include this context in ALL 6 reviewer dispatches:
 
 **After all gates pass, present activation instructions directly to the user in the output.**
 
-The orchestrator MUST present a summary based on Gate 0 (components) and Gate 1 (analysis):
+The orchestrator MUST present a summary based on Gate 0 (stack detection) and Gate 1 (codebase analysis).
 
-1. **How many components** were modified and which ones need the env vars (e.g., "This service has 2 components: manager and worker. Both need these env vars.")
-2. **Env vars to configure** per component:
+### 1. Service Architecture
+
+Show which components the service has and what resources each one uses:
+
+```
+Service: {service_name}
+
+| Component | Resources | Multi-Tenant Adapted |
+|-----------|-----------|---------------------|
+| manager   | MongoDB, Redis, RabbitMQ (producer) | Yes — GetMongoForTenant(ctx), GetKeyFromContext, X-Tenant-ID header |
+| worker    | MongoDB, Redis, RabbitMQ (consumer) | Yes — GetMongoForTenant(ctx), GetKeyFromContext, X-Tenant-ID extraction |
+```
+
+(Adapt based on what Gate 0 detected and Gate 1 analyzed — list only the actual components and resources found.)
+
+### 2. Environment Variables
+
+MUST add to **each component** that was adapted:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `MULTI_TENANT_ENABLED` | Yes | `false` | Set to `true` to activate |
 | `MULTI_TENANT_URL` | Yes (if enabled) | — | Tenant Manager URL (e.g., `http://dispatch layer:4003`) |
 | `MULTI_TENANT_ENVIRONMENT` | No | `staging` | Environment for cache key segmentation |
-| `MULTI_TENANT_MAX_TENANT_POOLS` | No | `100` | Max tenant connection pools |
-| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | No | `300` | Idle connection eviction timeout |
-| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | No | `5` | Failures before circuit opens |
-| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | No | `30` | Circuit breaker reset timeout |
+| `MULTI_TENANT_MAX_TENANT_POOLS` | No | `100` | Max concurrent tenant connection pools (LRU soft limit) |
+| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | No | `300` | Idle time before a tenant connection becomes eviction-eligible |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | No | `5` | Consecutive Tenant Manager failures before circuit opens |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | No | `30` | Seconds before circuit breaker transitions to half-open |
 
-3. **How to activate**: set `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_URL` in each component's environment, then start the service alongside the Tenant Manager. The Tenant Manager must have the tenant provisioned with database credentials.
-4. **How to verify**: check service logs for "Multi-tenant mode enabled with Tenant Manager URL: ...", send a request with JWT containing `tenantId` claim and confirm it routes to the tenant's database.
-5. **How to deactivate**: remove `MULTI_TENANT_ENABLED` or set to `false`. Service returns to single-tenant mode — no Tenant Manager needed.
-6. **Common errors**: 401 = JWT missing `tenantId`, 404 = tenant not provisioned, 503 = Tenant Manager unreachable.
+### 3. How to Activate
+
+1. Set `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_URL` in **each component's** environment (docker-compose, k8s, .env)
+2. Start the service alongside the Tenant Manager
+3. The Tenant Manager must have the tenant provisioned with database credentials for each resource the component uses
+
+### 4. How to Verify
+
+- Service logs: "Multi-tenant mode enabled with Tenant Manager URL: ..."
+- Send a request with JWT containing `tenantId` claim → confirm it routes to the tenant's database
+- Send a request without `tenantId` → confirm 401 TENANT_ID_REQUIRED
+
+### 5. How to Deactivate
+
+Remove `MULTI_TENANT_ENABLED` or set to `false`. Service returns to single-tenant mode — no Tenant Manager needed, default database connections used.
+
+### 6. Common Errors
+
+| Status | Error | Cause | Fix |
+|--------|-------|-------|-----|
+| 401 | `TENANT_ID_REQUIRED` | JWT missing `tenantId` claim | Add `tenantId` to JWT |
+| 404 | `TENANT_NOT_FOUND` | Tenant not provisioned | Register tenant in Tenant Manager |
+| 503 | Connection error | Tenant Manager unreachable | Check `MULTI_TENANT_URL` |
+| 503 | `ErrCircuitBreakerOpen` | Tenant Manager down (N consecutive failures) | Wait for circuit breaker reset or fix Tenant Manager |
 
 ---
 
