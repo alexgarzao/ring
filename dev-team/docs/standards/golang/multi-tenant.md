@@ -62,7 +62,7 @@ go build ./...
 |---------|-------------|---------|----------|
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
 | `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
-| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation | `staging` | If multi-tenant |
+| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
 | `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | No |
@@ -983,7 +983,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://tenant-manager:4003 go test ./
 **Environment Variables:**
 - [ ] `MULTI_TENANT_ENABLED` in config struct (default: `false`)
 - [ ] `MULTI_TENANT_URL` in config struct (required if multi-tenant)
-- [ ] `MULTI_TENANT_ENVIRONMENT` in config struct (default: `staging`)
+- [ ] `MULTI_TENANT_ENVIRONMENT` in config struct (default: `staging`, only if RabbitMQ)
 - [ ] `MULTI_TENANT_MAX_TENANT_POOLS` in config struct (default: `100`)
 - [ ] `MULTI_TENANT_IDLE_TIMEOUT_SEC` in config struct (default: `300`)
 - [ ] `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` in config struct (default: `5`)
