@@ -754,7 +754,8 @@ Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from
 grep -rn "GetPostgresForTenant\|GetModulePostgresForTenant\|GetMongoForTenant" internal/adapters/ --include="*.go"
 
 # Verify no repositories use static/hardcoded connections when multi-tenant is enabled
-grep -rn "\.DB\.\|\.Database\.\|\.Collection(" internal/adapters/ --include="*.go" | grep -v "_test.go" | grep -v "tenantmanager"
+# Excludes tenant-aware variables (tenantDB, tenantmanager) to avoid false positives
+grep -rn "\.DB\.\|\.Database\." internal/adapters/ --include="*.go" | grep -v "_test.go" | grep -v "tenantmanager\|tenantDB"
 
 # Expected: All repositories should use tenantmanager context getters
 ```

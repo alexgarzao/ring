@@ -1,5 +1,7 @@
 ---
 name: ring:dev-multi-tenant
+version: 1.0.0
+type: skill
 description: |
   Multi-tenant development cycle orchestrator following Ring Standards.
   Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ),
@@ -371,7 +373,7 @@ DETECT (run in parallel):
 
 ## State Persistence
 
-Save to `docs/ring:dev-multi-tenant/current-cycle.json` for resume support:
+Save to `docs/ring-dev-multi-tenant/current-cycle.json` for resume support:
 
 ```json
 {
@@ -386,11 +388,12 @@ Save to `docs/ring:dev-multi-tenant/current-cycle.json` for resume support:
 
 ## Anti-Rationalization Table
 
+See [multi-tenant.md § Anti-Rationalization](https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md) for the canonical anti-rationalization tables on tenantId vs organization_id.
+
+**Skill-specific rationalizations:**
+
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "organization_id = multi-tenant" | Does NOT route to different databases. Not isolation. | **Implement tenantId → TenantConnectionManager** |
-| "lib-commons v3 is too risky" | tenant-manager package only exists in v3. | **Gate 1 is MANDATORY** |
-| "Midaz uses organization_id" | WRONG. Midaz uses tenantId → GetModulePostgresForTenant(ctx). | **Follow multi-tenant.md** |
 | "Agent says out of scope" | Skill defines scope, not agent. | **Re-dispatch with gate context** |
-| "Skip tests" | Gate 7 proves isolation works. | **MANDATORY** |
+| "Skip tests" | Gate 8 proves isolation works. | **MANDATORY** |
 | "Skip review" | Security implications. One mistake = data leak. | **MANDATORY** |
