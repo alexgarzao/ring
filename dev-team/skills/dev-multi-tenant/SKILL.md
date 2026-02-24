@@ -59,7 +59,7 @@ examples:
       1. Gate 0: Auto-detect stack
       2. Gate 1: Analyze codebase (build implementation roadmap)
       3. Gates 2-6: Implementation (agent loads multi-tenant.md, follows roadmap)
-      4. Gate 7: Backward compatibility
+      4. Gate 7: Metrics & Backward compatibility
       5. Gate 8: Tests
       6. Gate 9: Code review
       7. Gate 10: User validation
