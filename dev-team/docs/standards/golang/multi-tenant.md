@@ -1077,6 +1077,7 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Connection error | 503 | service-specific | Failed to get or establish tenant connection |
 | Manager closed | 503 | service-specific | Connection manager has been shut down (`ErrManagerClosed`) |
 | Circuit breaker open | 503 | service-specific | Tenant Manager client tripped after consecutive failures (`ErrCircuitBreakerOpen`) |
+| Tenant config rate limited | 503 | service-specific | Too many concurrent requests for the same tenant config — retry after brief delay |
 
 ### Tenant Isolation Verification (⚠️ CONDITIONAL)
 
