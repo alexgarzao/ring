@@ -163,13 +163,14 @@ DETECT (run in parallel):
 >
 > FOCUS AREAS (explore ONLY these — ignore everything else):
 >
-> 1. **Bootstrap/initialization**: Where does the service start? Where are database connections created? Where is the middleware chain registered? Identify the exact insertion point for TenantMiddleware.
-> 2. **Database connections**: How do repositories get their DB connection today? Static field in struct? Constructor injection? Context? List EVERY repository file with file:line showing where the connection is obtained.
-> 3. **Middleware chain**: What middleware exists and in what order? Where would TenantMiddleware fit (after auth, before handlers)?
-> 4. **Config struct**: Where is the Config struct? What fields exist? Where is it loaded? Identify exact location for MULTI_TENANT_ENABLED vars.
-> 5. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected?
-> 6. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
-> 7. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely. Multi-tenant is exclusively tenantId from JWT → database routing)
+> 1. **Service name and components**: What is the service called? (Look for `const ApplicationName` or similar.) How many components does it have (e.g., manager, worker)? Each component needs its own service name for Tenant Manager registration.
+> 2. **Bootstrap/initialization**: Where does the service start? Where are database connections created? Where is the middleware chain registered? Identify the exact insertion point for TenantMiddleware.
+> 3. **Database connections**: How do repositories get their DB connection today? Static field in struct? Constructor injection? Context? List EVERY repository file with file:line showing where the connection is obtained.
+> 4. **Middleware chain**: What middleware exists and in what order? Where would TenantMiddleware fit (after auth, before handlers)?
+> 5. **Config struct**: Where is the Config struct? What fields exist? Where is it loaded? Identify exact location for MULTI_TENANT_ENABLED vars.
+> 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected?
+> 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
+> 8. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely. Multi-tenant is exclusively tenantId from JWT → database routing)
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
 > DO NOT write code. Analysis only.
@@ -260,6 +261,10 @@ DETECT (run in parallel):
 > TASK: Implement TenantMiddleware using lib-commons/v3 dispatch layer package.
 > DETECTED DATABASES: {postgresql: Y/N, mongodb: Y/N} (from Gate 0)
 > CONTEXT FROM GATE 1: {Bootstrap location, middleware chain insertion point, service init from analysis report}
+>
+> CRITICAL — SERVICE NAME: Each component MUST define a constant (e.g., `const ApplicationName = "reporter"`) that is passed as the `serviceName` parameter to `tenantmanager.NewPostgresManager(client, serviceName, ...)` and `NewMongoManager`. This name is used in the Tenant Manager API call: `GET /tenants/{tenantID}/services/{serviceName}/settings`. If the name doesn't match what's registered in Tenant Manager, no credentials are returned.
+>
+> For services with multiple database modules, use `WithModule(moduleName)` to specify which module's credentials to fetch (e.g., `WithModule("onboarding")`, `WithModule("transaction")`).
 >
 > Follow multi-tenant.md sections "Generic TenantMiddleware", "JWT Tenant Extraction", and "Conditional Initialization".
 > Create connection managers ONLY for detected databases.
@@ -404,9 +409,11 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). Template:
 
 ## Components
 
-| Component | Resources | Adapted |
-|-----------|-----------|---------|
-| {name}    | {MongoDB, PostgreSQL, Redis, RabbitMQ...} | {GetMongoForTenant, GetKeyFromContext, X-Tenant-ID...} |
+| Component | Service Name | Module | Resources | Adapted |
+|-----------|-------------|--------|-----------|---------|
+| {name}    | {ApplicationName constant} | {module if multi-module} | {MongoDB, PostgreSQL, Redis, RabbitMQ...} | {GetMongoForTenant, GetKeyFromContext, X-Tenant-ID...} |
+
+The **Service Name** is the constant passed to `tenantmanager.NewPostgresManager(client, serviceName, ...)`. It must match what is registered in Tenant Manager (`GET /tenants/{tenantID}/services/{serviceName}/settings`).
 
 ## Environment Variables
 
