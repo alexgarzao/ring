@@ -341,6 +341,36 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
 }
 ```
 
+### S3/Object Storage Key Prefixing
+
+Services that store files in S3 or S3-compatible storage (MinIO, SeaweedFS S3 API) MUST prefix object keys with the tenant ID for tenant isolation. The bucket is configured per service via environment variable. Tenant separation is by directory within the bucket.
+
+```go
+// In any service/adapter that uploads, downloads, or deletes files from S3:
+func (r *StorageRepository) Upload(ctx context.Context, originalKey string, data []byte) error {
+    // Tenant-aware key prefixing: {tenantId}/{originalKey} in multi-tenant, {originalKey} in single-tenant
+    key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+
+    return r.s3Client.Upload(ctx, key, bytes.NewReader(data), contentType)
+}
+
+func (r *StorageRepository) Download(ctx context.Context, originalKey string) ([]byte, error) {
+    // MUST use the same prefixed key for reads and writes
+    key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+
+    return r.s3Client.Download(ctx, key)
+}
+```
+
+**Storage structure:**
+```
+Bucket: {service-name}  (env var: OBJECT_STORAGE_BUCKET)
+  └── {tenantId}/
+       └── {resource}/{path}
+```
+
+**Backward compatibility:** When no tenant is in context (single-tenant mode), the key is returned unchanged — no prefix added.
+
 ### RabbitMQ Multi-Tenant Producer
 
 ```go

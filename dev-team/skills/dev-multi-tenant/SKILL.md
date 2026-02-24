@@ -138,10 +138,12 @@ DETECT (run in parallel):
 3. MongoDB:              grep -rn "mongodb\|mongo" internal/ go.mod
 4. Redis:                grep -rn "redis\|valkey" internal/ go.mod
 5. RabbitMQ:             grep -rn "rabbitmq\|amqp" internal/ go.mod
-6. Existing multi-tenant:
+6. S3/Object Storage:    grep -rn "s3\|ObjectStorage\|PutObject\|GetObject\|Upload.*storage\|Download.*storage" internal/ pkg/ go.mod
+7. Existing multi-tenant:
    - Config:     grep -rn "MULTI_TENANT_ENABLED" internal/
    - Middleware: grep -rn "tenantmanager\|WithTenantDB" internal/
    - Context:    grep -rn "GetMongoForTenant\|GetPostgresForTenant" internal/
+   - S3 keys:    grep -rn "GetObjectStorageKeyForTenant" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 ```
 
@@ -170,7 +172,8 @@ DETECT (run in parallel):
 > 5. **Config struct**: Where is the Config struct? What fields exist? Where is it loaded? Identify exact location for MULTI_TENANT_ENABLED vars.
 > 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split (`if cfg.IsMultiTenant()`) for RabbitMQ initialization? Are there dual constructors (`NewProducerMultiTenant` vs `NewProducerRabbitMQ`)? Is there a `RabbitMQManager` pool? Does the service struct have both `*MultiQueueConsumer` and `*MultiTenantRabbitMQConsumer`?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
-> 8. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely. Multi-tenant is exclusively tenantId from JWT → database routing)
+> 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key — these all need `GetObjectStorageKeyForTenant(ctx, key)`. What bucket env var is used?
+> 9. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant/GetObjectStorageKeyForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely. Multi-tenant is exclusively tenantId from JWT → database routing)
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
 > DO NOT write code. Analysis only.
@@ -213,23 +216,24 @@ DETECT (run in parallel):
 | 10 | JWT tenantId extraction | Exists / Missing | Middleware extracts `tenantId` claim from JWT | Verify in middleware | bootstrap/ |
 | 11 | Repository connections | Static / Context | `GetMongoForTenant(ctx)` / `GetPostgresForTenant(ctx)` | Adapt per repo file | adapters/ |
 | 12 | Redis key prefixing | No prefix / Prefixed | `GetKeyFromContext(ctx, key)` for all ops + Lua scripts | Add if Redis detected | adapters/ |
-| 13 | RabbitMQ producer (header) | Missing / Present | `X-Tenant-ID` header injection in AMQP messages | Add if RabbitMQ detected | adapters/ |
-| 14 | RabbitMQ producer (dual constructor) | Missing / Present | `NewProducerMultiTenant(pool)` vs `NewProducerRabbitMQ(conn)` | Add if RabbitMQ detected | adapters/ |
-| 15 | RabbitMQ consumer (header) | Missing / Present | Extract `X-Tenant-ID` from AMQP header + inject tenant DB | Add if RabbitMQ detected | adapters/ |
-| 16 | RabbitMQ consumer (lazy init) | Missing / Present | `MultiTenantConsumer` with handler registration (NOT started at boot) | Add if RabbitMQ detected | bootstrap/ |
-| 17 | RabbitMQ config split | Missing / Present | `if cfg.IsMultiTenant()` branches for producer AND consumer init | Add if RabbitMQ detected | bootstrap/ |
-| 18 | RabbitMQManager pool | Missing / Present | `NewRabbitMQManager(tmClient, serviceName, WithRabbitMQModule(...))` | Add if RabbitMQ detected | bootstrap/ |
-| 19 | ConsumerTrigger interface | Missing / Present | `EnsureConsumerStarted(ctx, tenantID)` wired to middleware | MANDATORY if RabbitMQ detected | bootstrap/ |
-| 20 | Service struct (both consumers) | Missing / Present | `*MultiQueueConsumer` (single) + `*MultiTenantRabbitMQConsumer` (multi) | Add if RabbitMQ detected | bootstrap/ |
-| 21 | Public endpoint bypass | Exists / Missing | /health, /version, /swagger skip tenant middleware | Verify | bootstrap/ |
-| 22 | Backward compatibility | N/A | `IsMultiTenant()` passthrough, single-tenant works unchanged | Verify + write test | bootstrap/ |
-| 23 | Metrics | Missing / Present | `tenant_connections_total`, `tenant_connection_errors_total` (+2 if RabbitMQ) | Add | bootstrap/ |
-| 24 | Error handling | Missing / Present | Map tenant errors to HTTP: 401/404/422/403/503 | Add in error handler | adapters/ |
-| 25 | Graceful shutdown | Exists / Missing | Close tenant managers on shutdown (LIFO cleanup) | Verify in cleanup stack | bootstrap/ |
-| 26 | Tests — unit | Missing / Present | Mock tenant context, verify per-repo | Write | tests/ |
-| 27 | Tests — isolation | Missing / Present | Two tenants, data separation | Write | tests/ |
-| 28 | Tests — error cases | Missing / Present | Missing JWT, tenant not found, not provisioned | Write | tests/ |
-| 29 | Tests — backward compat | Missing / Present | `TestMultiTenant_BackwardCompatibility` | Write | tests/ |
+| 13 | S3 object key prefixing | Flat paths / Tenant-prefixed | `GetObjectStorageKeyForTenant(ctx, key)` for all Upload/Download/Delete ops. Bucket per service (env var), directories per tenant: `{tenantId}/{resource}/{path}` | Add if S3 detected | services/, adapters/ |
+| 14 | RabbitMQ producer (header) | Missing / Present | `X-Tenant-ID` header injection in AMQP messages | Add if RabbitMQ detected | adapters/ |
+| 15 | RabbitMQ producer (dual constructor) | Missing / Present | `NewProducerMultiTenant(pool)` vs `NewProducerRabbitMQ(conn)` | Add if RabbitMQ detected | adapters/ |
+| 16 | RabbitMQ consumer (header) | Missing / Present | Extract `X-Tenant-ID` from AMQP header + inject tenant DB | Add if RabbitMQ detected | adapters/ |
+| 17 | RabbitMQ consumer (lazy init) | Missing / Present | `MultiTenantConsumer` with handler registration (NOT started at boot) | Add if RabbitMQ detected | bootstrap/ |
+| 18 | RabbitMQ config split | Missing / Present | `if cfg.IsMultiTenant()` branches for producer AND consumer init | Add if RabbitMQ detected | bootstrap/ |
+| 19 | RabbitMQManager pool | Missing / Present | `NewRabbitMQManager(tmClient, serviceName, WithRabbitMQModule(...))` | Add if RabbitMQ detected | bootstrap/ |
+| 20 | ConsumerTrigger interface | Missing / Present | `EnsureConsumerStarted(ctx, tenantID)` wired to middleware | MANDATORY if RabbitMQ detected | bootstrap/ |
+| 21 | Service struct (both consumers) | Missing / Present | `*MultiQueueConsumer` (single) + `*MultiTenantRabbitMQConsumer` (multi) | Add if RabbitMQ detected | bootstrap/ |
+| 22 | Public endpoint bypass | Exists / Missing | /health, /version, /swagger skip tenant middleware | Verify | bootstrap/ |
+| 23 | Backward compatibility | N/A | `IsMultiTenant()` passthrough, single-tenant works unchanged | Verify + write test | bootstrap/ |
+| 24 | Metrics | Missing / Present | `tenant_connections_total`, `tenant_connection_errors_total` (+2 if RabbitMQ) | Add | bootstrap/ |
+| 25 | Error handling | Missing / Present | Map tenant errors to HTTP: 401/404/422/403/503 | Add in error handler | adapters/ |
+| 26 | Graceful shutdown | Exists / Missing | Close tenant managers on shutdown (LIFO cleanup) | Verify in cleanup stack | bootstrap/ |
+| 27 | Tests — unit | Missing / Present | Mock tenant context, verify per-repo | Write | tests/ |
+| 28 | Tests — isolation | Missing / Present | Two tenants, data separation | Write | tests/ |
+| 29 | Tests — error cases | Missing / Present | Missing JWT, tenant not found, not provisioned | Write | tests/ |
+| 30 | Tests — backward compat | Missing / Present | `TestMultiTenant_BackwardCompatibility` | Write | tests/ |
 ```
 
 **This report becomes the CONTEXT for all subsequent gates.** Each gate receives: "Here is what needs to change (from Gate 1 analysis), now implement Gate N following multi-tenant.md."
@@ -390,18 +394,30 @@ DETECT (run in parallel):
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Adapt all repository implementations to get database connections from tenant context instead of static connections.
-> DETECTED DATABASES: {postgresql: Y/N, mongodb: Y/N, redis: Y/N} (from Gate 0)
-> CONTEXT FROM GATE 1: {List of ALL repository files with file:line showing static connections from analysis report}
+> TASK: Adapt all repository implementations to get database connections from tenant context instead of static connections. Also adapt S3/object storage operations to prefix keys with tenant ID.
+> DETECTED STACK: {postgresql: Y/N, mongodb: Y/N, redis: Y/N, s3: Y/N} (from Gate 0)
+> CONTEXT FROM GATE 1: {List of ALL repository files and storage operations with file:line from analysis report}
 >
 > Follow multi-tenant.md sections:
 > - "Database Connection in Repositories" (PostgreSQL)
 > - "MongoDB Multi-Tenant Repository" (MongoDB)
 > - "Redis Key Prefixing" and "Redis Key Prefixing for Lua Scripts" (Redis)
 >
-> MUST work in both modes: multi-tenant (connection from context) and single-tenant (default connection via passthrough).
+> S3/OBJECT STORAGE (if detected):
+> For every Upload, Download, Delete, Exists, and GeneratePresignedURL operation, prefix the object key with tenant ID using lib-commons:
+> ```go
+> key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+> // Multi-tenant: "{tenantId}/reports/{templateID}/{reportID}.html"
+> // Single-tenant: "reports/{templateID}/{reportID}.html" (unchanged)
+> storage.Upload(ctx, key, reader, contentType)
+> storage.Download(ctx, key)
+> ```
+> The bucket is configured per service via env var (e.g., `OBJECT_STORAGE_BUCKET`). Tenant isolation is by directory within the bucket, not separate buckets.
+> Both read and write paths MUST use the same prefixed key to ensure consistency.
+>
+> MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
-**Verification:** grep for `GetPostgresForTenant` / `GetMongoForTenant` / `GetKeyFromContext` in `internal/adapters/` + `go build ./...`
+**Verification:** grep for `GetPostgresForTenant` / `GetMongoForTenant` / `GetKeyFromContext` / `GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
 
 ---
 
