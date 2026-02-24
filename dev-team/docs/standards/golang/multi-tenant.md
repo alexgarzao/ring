@@ -893,6 +893,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Middleware registration** | - | Register `TenantMiddleware` on routes |
 | **Repository adaptation** | - | Use `GetPostgresForTenant(ctx)` instead of global DB |
 | **Redis key prefixing** | - | Call `GetKeyFromContext(ctx, key)` for every Redis operation |
+| **S3 key prefixing** | Tenant-aware key prefix (`GetObjectStorageKeyForTenant`) | Call `GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
 | **Consumer trigger** | - | Call `EnsureConsumerStarted(ctx, tenantID)` from middleware |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes |
@@ -1038,6 +1039,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `tenantmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
 - [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
 - [ ] `tenantmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
+- [ ] `tenantmanager.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages

@@ -404,16 +404,10 @@ DETECT (run in parallel):
 > - "Redis Key Prefixing" and "Redis Key Prefixing for Lua Scripts" (Redis)
 >
 > S3/OBJECT STORAGE (if detected):
-> For every Upload, Download, Delete, Exists, and GeneratePresignedURL operation, prefix the object key with tenant ID using lib-commons:
-> ```go
-> key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
-> // Multi-tenant: "{tenantId}/reports/{templateID}/{reportID}.html"
-> // Single-tenant: "reports/{templateID}/{reportID}.html" (unchanged)
-> storage.Upload(ctx, key, reader, contentType)
-> storage.Download(ctx, key)
-> ```
-> The bucket is configured per service via env var (e.g., `OBJECT_STORAGE_BUCKET`). Tenant isolation is by directory within the bucket, not separate buckets.
-> Both read and write paths MUST use the same prefixed key to ensure consistency.
+> Follow multi-tenant.md section "S3/Object Storage Key Prefixing".
+> MUST apply `tenantmanager.GetObjectStorageKeyForTenant(ctx, key)` to every Upload, Download, Delete, Exists, and GeneratePresignedURL call.
+> Bucket per service via env var (`OBJECT_STORAGE_BUCKET`). Tenant isolation by directory: `{tenantId}/{resource}/{path}`.
+> MUST use the same prefixed key for both read and write paths to ensure consistency.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
@@ -541,11 +535,16 @@ DETECT (run in parallel):
 **Dispatch `ring:backend-engineer-golang` with context:**
 
 > TASK: Write multi-tenant tests.
-> DETECTED STACK: {postgresql: Y/N, mongodb: Y/N, redis: Y/N, rabbitmq: Y/N} (from Gate 0)
+> DETECTED STACK: {postgresql: Y/N, mongodb: Y/N, redis: Y/N, s3: Y/N, rabbitmq: Y/N} (from Gate 0)
 >
 > Follow multi-tenant.md section "Testing Multi-Tenant Code" (all subsections).
 >
-> Required tests: unit tests with mock tenant context, tenant isolation tests (two tenants, data separation), error case tests (missing JWT, tenant not found), plus RabbitMQ and Redis tests if detected.
+> Required tests: unit tests with mock tenant context, tenant isolation tests (two tenants, data separation), error case tests (missing JWT, tenant not found), plus RabbitMQ, Redis, and S3 tests if detected.
+>
+> S3 TESTS (if detected):
+> - Verify `GetObjectStorageKeyForTenant` prefixes keys with tenantId in multi-tenant mode
+> - Verify keys are unchanged in single-tenant mode (no prefix)
+> - Verify both Upload and Download use the same prefixed key (read/write consistency)
 
 **Verification:** `go test ./... -v -count=1` + `go test ./... -cover`
 
@@ -586,6 +585,7 @@ MUST include this context in ALL 6 reviewer dispatches:
 - [ ] MULTI_TENANT_ENABLED config
 - [ ] TenantMiddleware (JWT tenantId → DB routing)
 - [ ] Repositories use context-based connections
+- [ ] S3 keys prefixed with tenantId (if applicable)
 - [ ] RabbitMQ X-Tenant-ID (if applicable)
 - [ ] Backward compat (MULTI_TENANT_ENABLED=false works)
 - [ ] Tests pass
