@@ -11,7 +11,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [Multi-Tenant Patterns (CONDITIONAL)](#multi-tenant-patterns-conditional) | Configuration, Tenant Manager API, middleware, context injection, repository adaptation |
-| 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | IDOR prevention, tenant verification in queries |
+| 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
 | 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
 
 ---
@@ -173,25 +173,19 @@ The Tenant Manager HTTP client supports an optional **circuit breaker** (`WithCi
 
 <cannot_skip>
 
-**⛔ CRITICAL DISTINCTION — tenantId vs organization_id:**
+**⛔ CRITICAL: `tenantId` from JWT is the ONLY multi-tenant mechanism.**
 
-| Identifier | Source | Purpose | Isolation Layer |
-|------------|--------|---------|-----------------|
-| **`tenantId`** | JWT claim | **REAL tenant identifier** — determines which DATABASE to connect to | **Primary: Database-per-tenant** via `TenantConnectionManager` |
-| **`organization_id`** | URL path parameter | Entity WITHIN a tenant — used for IDOR prevention inside the tenant's database | **Secondary: Entity scoping** in WHERE clauses |
+The `tenantId` identifies the client/customer. The lib-commons `TenantMiddleware` extracts it from the JWT, resolves the tenant-specific database connection via Tenant Manager API, and stores it in context. Each tenant has its own database — tenant A cannot query tenant B's database.
 
-**`tenantId` IS the multi-tenant mechanism.** It identifies the client/customer. The lib-commons `TenantMiddleware` extracts it from the JWT, resolves the tenant-specific database connection via Tenant Manager API, and stores it in context. Without this, there is NO multi-tenant isolation — only IDOR prevention.
-
-**`organization_id` is NOT multi-tenant isolation.** It represents an entity WITHIN a tenant's database (multi-organization support). Adding `organization_id` filters to queries is IDOR prevention (OWASP BOLA), not tenant isolation. A service that only filters by `organization_id` without `TenantConnectionManager` is **NOT multi-tenant** — it is single-tenant with entity scoping.
+**`organization_id` is NOT part of multi-tenant isolation.** It is a separate concern (entity within a domain). Adding `organization_id` filters to queries does NOT provide tenant isolation. Multi-tenant isolation comes exclusively from `tenantId` → `TenantConnectionManager` → database-per-tenant.
 
 **Anti-Rationalization:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Adding organization_id filters = multi-tenant" | organization_id is intra-tenant IDOR prevention, NOT tenant isolation. All orgs still share ONE database. | **MUST implement TenantConnectionManager (Layer 1) FIRST** |
-| "Layer 2 only, Layer 1 later" | Without Layer 1, all tenants share one database. organization_id does NOT isolate tenants. This is NOT multi-tenant. | **MUST implement BOTH layers. Layer 1 is the PRIMARY isolation.** |
-| "The codebase already has organization_id, just connect it" | Completing organization_id wiring is IDOR prevention, not multi-tenant. Multi-tenant requires lib-commons v3 TenantMiddleware + GetMongoForTenant(ctx). | **MUST start with lib-commons v3 integration, not organization_id wiring** |
-| "Core one uses organization_id as tenant identifier" | WRONG. Core one uses tenantId from JWT for database routing. organization_id is a SECONDARY filter within the tenant's database. | **MUST follow Ring standards, not assumptions about other codebases** |
+| "Adding organization_id filters = multi-tenant" | organization_id does NOT route to different databases. All data still in ONE database. | **MUST implement tenantId → TenantConnectionManager** |
+| "The codebase already has organization_id wiring" | organization_id is irrelevant for multi-tenant. tenantId from JWT is the mechanism. | **Implement TenantMiddleware with JWT tenantId extraction** |
+| "Core one uses organization_id for tenant isolation" | WRONG. Core one has ZERO organization_id in WHERE clauses. It uses tenantId → GetModulePostgresForTenant(ctx). | **Follow the actual pattern: tenantId → context → database routing** |
 
 </cannot_skip>
 
@@ -736,20 +730,14 @@ grep -rn "MULTI_TENANT_ENABLED\|MultiTenantEnabled" internal/ --include="*.go"
 
 #### Isolation Architecture
 
-<cannot_skip>
+Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from JWT determines which database the request connects to. Each tenant has its own database — tenant A cannot query tenant B's database.
 
-**⛔ HARD GATE: Multi-tenant implementation MUST include Layer 1. Layer 2 alone is NOT multi-tenant.**
-
-Multi-tenant isolation uses a **database-per-tenant** model with two isolation layers:
-
-| Layer | Mechanism | Protection | Required? |
-|-------|-----------|------------|-----------|
-| **Primary (Layer 1): Database isolation** | `TenantConnectionManager` via `tenantId` from JWT → resolves tenant-specific database | Tenant A cannot query Tenant B's database | **MANDATORY for multi-tenant** |
-| **Secondary (Layer 2): Entity scoping** | `organization_id` + `ledger_id` in WHERE clauses | Intra-tenant entity separation (IDOR prevention) | **MANDATORY when multi-tenant is enabled** |
-
-**Implementation order: Layer 1 FIRST, then Layer 2.** Layer 1 (lib-commons v3 `TenantMiddleware` + `GetPostgresForTenant(ctx)` / `GetMongoForTenant(ctx)`) provides the actual tenant isolation. Layer 2 (`organization_id` filtering) provides IDOR prevention WITHIN the tenant's database. Implementing Layer 2 without Layer 1 is NOT multi-tenant — it is single-tenant with entity scoping.
-
-</cannot_skip>
+| Mechanism | How It Works | Protection |
+|-----------|-------------|------------|
+| **JWT `tenantId` extraction** | `TenantMiddleware` extracts `tenantId` claim from JWT | Identifies the tenant |
+| **Database routing** | `TenantConnectionManager` resolves tenant-specific DB connection | Tenant A → Database A, Tenant B → Database B |
+| **Context injection** | Connection stored in request context | Repositories use `GetPostgresForTenant(ctx)` / `GetMongoForTenant(ctx)` |
+| **Single-tenant passthrough** | `IsMultiTenant() == false` → `c.Next()` immediately | Backward compatibility |
 
 #### Why Tenant Isolation Verification Is MANDATORY
 
@@ -757,91 +745,27 @@ Multi-tenant isolation uses a **database-per-tenant** model with two isolation l
 |--------|----------------------|-------------------|
 | Cross-tenant data access | Tenant A accesses Tenant B's database | Connection-level isolation prevents it |
 | Data exfiltration | Cross-tenant data leakage | Separate databases per tenant |
-| IDOR within tenant | User accesses wrong organization's data | `organization_id` in WHERE clause |
-
-#### Entity Scoping Pattern (REQUIRED)
-
-Within each tenant's database, queries MUST scope by `organization_id` and `ledger_id`:
-
-```go
-// internal/adapters/postgres/entity/entity.postgresql.go
-func (r *EntityPostgreSQLRepository) Find(ctx context.Context, organizationID, ledgerID, id uuid.UUID) (*Entity, error) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
-
-    ctx, span := tracer.Start(ctx, "postgres.find_entity")
-    defer span.End()
-
-    db, err := tenantmanager.GetPostgresForTenant(ctx)
-    if err != nil {
-        return nil, err
-    }
-
-    // Query scoped by organization_id and ledger_id
-    find := squirrel.Select(entityColumnList...).
-        From(r.tableName).
-        Where(squirrel.Expr("organization_id = ?", organizationID)).
-        Where(squirrel.Expr("ledger_id = ?", ledgerID)).
-        Where(squirrel.Expr("id = ?", id)).
-        Where(squirrel.Eq{"deleted_at": nil}).
-        PlaceholderFormat(squirrel.Dollar)
-
-    query, args, err := find.ToSql()
-    if err != nil {
-        return nil, err
-    }
-
-    row := db.QueryRowContext(ctx, query, args...)
-    // ...
-}
-```
-
-#### FORBIDDEN Patterns
-
-```go
-// ❌ FORBIDDEN: Query without entity scoping
-query := `SELECT * FROM entities WHERE id = $1`  // WRONG: No organization_id/ledger_id
-row := db.QueryRowContext(ctx, query, id)
-
-// ❌ FORBIDDEN: Missing ledger_id in query
-query := `SELECT * FROM entities WHERE organization_id = $1 AND id = $2`  // WRONG: No ledger_id
-
-// ❌ FORBIDDEN: Post-query entity check
-entity, err := r.GetByID(ctx, id)
-if entity.OrganizationID != organizationID {  // WRONG: Data already fetched
-    return nil, ErrForbidden
-}
-// ✅ CORRECT: Filter in WHERE clause, return ErrNotFound
-```
 
 #### Detection Commands (MANDATORY)
 
 ```bash
 # MANDATORY: Run before every PR in multi-tenant services
-# Find queries without organization_id in WHERE clause
-grep -rn "SELECT.*FROM.*WHERE" internal/adapters/postgres --include="*.go" | \
-  grep -v "organization_id" | grep -v "_test.go"
+# Verify all repositories use context-based connections (not static)
+grep -rn "GetPostgresForTenant\|GetModulePostgresForTenant\|GetMongoForTenant" internal/adapters/ --include="*.go"
 
-# Find SELECTs that may lack WHERE
-grep -rn "SELECT.*FROM" internal/adapters/postgres --include="*.go" | grep -v "WHERE" | grep -v "_test.go"
+# Verify no repositories use static/hardcoded connections when multi-tenant is enabled
+grep -rn "\.DB\.\|\.Database\.\|\.Collection(" internal/adapters/ --include="*.go" | grep -v "_test.go" | grep -v "tenantmanager"
 
-# Capture multi-line SQL: call sites that may split queries across lines
-grep -rn "QueryRowContext\|QueryContext" internal/ --include="*.go" | grep -v "_test.go"
-
-# Find post-query entity checks (potential information leak)
-grep -rn "OrganizationID.*!=\|\.OrganizationID\s*==" internal/ --include="*.go" | grep -v "_test.go"
-
-# Expected: All queries should include organization_id (or have documented exception)
+# Expected: All repositories should use tenantmanager context getters
 ```
 
 #### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Database is per-tenant anyway" | Database-per-tenant prevents cross-tenant but not intra-tenant IDOR. | **Add organization_id to all queries** |
-| "Only admins access this endpoint" | Admins can access wrong organization. Verify anyway. | **Add organization_id to all queries** |
-| "Post-query check is the same" | Post-query reveals data was fetched. Information leak. | **Filter in WHERE clause** |
-| "We trust authenticated users" | Authentication != Authorization. Entity scope is authorization. | **Add organization_id to all queries** |
-| "It's just metadata" | Metadata can reveal business information. | **Add organization_id to all queries** |
+| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use tenantmanager.GetPostgresForTenant(ctx) / GetMongoForTenant(ctx)** |
+| "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
+| "organization_id filtering = tenant isolation" | organization_id does NOT route to different databases. It is NOT multi-tenant. | **Use tenantId from JWT → TenantConnectionManager** |
 
 ### Context Functions
 
