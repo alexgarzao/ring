@@ -1,6 +1,6 @@
 ---
 name: ring:dev-refactor
-description: Analyzes codebase against standards and generates refactoring tasks for ring:dev-cycle.
+description: Analyzes backend codebase (Go/TypeScript) against standards and generates refactoring tasks for ring:dev-cycle. For frontend projects, use ring:dev-refactor-frontend instead.
 trigger: |
   - User wants to refactor existing project to follow standards
   - Legacy codebase needs modernization
@@ -105,7 +105,7 @@ TodoWrite:
     - content: "Validate PROJECT_RULES.md exists"
       status: "pending"
       activeForm: "Validating PROJECT_RULES.md exists"
-    - content: "Detect project stack (Go/TypeScript/Frontend)"
+    - content: "Detect project stack (Go/TypeScript backend only)"
       status: "pending"
       activeForm: "Detecting project stack"
     - content: "Read PROJECT_RULES.md for context"
@@ -188,26 +188,25 @@ Re-run after file exists.
 
 ## Step 1: Detect Project Stack
 
-**TodoWrite:** Mark "Detect project stack (Go/TypeScript/Frontend)" as `in_progress`
+**TodoWrite:** Mark "Detect project stack (Go/TypeScript)" as `in_progress`
 
-Check for manifest files and frontend indicators:
+**⛔ SCOPE: BACKEND CODE ONLY.** This skill analyzes backend code exclusively. Frontend code (React, Next.js, Vue, Angular) MUST be analyzed by `ring:dev-refactor-frontend` instead.
+
+Check for backend manifest files:
 
 | File/Pattern | Stack | Agent |
 |--------------|-------|-------|
 | `go.mod` | Go Backend | ring:backend-engineer-golang |
-| `package.json` + `src/` (no React) | TypeScript Backend | ring:backend-engineer-typescript |
-| `package.json` + React/Next.js | Frontend | ring:frontend-engineer |
-| `package.json` + BFF pattern | TypeScript BFF | frontend-bff-engineer-typescript |
+| `package.json` + Express/Fastify/NestJS (no React/Next.js) | TypeScript Backend | ring:backend-engineer-typescript |
 
 **Detection Logic:**
 - `go.mod` exists → Add Go backend agent
-- `package.json` exists + `next.config.*` or React in dependencies → Add frontend agent
-- `package.json` exists + `/api/` routes or Express/Fastify → Add TypeScript backend agent
-- `package.json` exists + BFF indicators (`/bff/`, gateway patterns) → Add BFF agent
+- `package.json` exists + Express/Fastify/NestJS in dependencies (NO React/Next.js) → Add TypeScript backend agent
+- `package.json` exists + React/Next.js in dependencies → **STOP: This is a frontend project. Use `ring:dev-refactor-frontend` instead.**
 
-If multiple stacks detected, dispatch agents for all.
+**⛔ FORBIDDEN:** Dispatching `ring:frontend-engineer`, `ring:frontend-designer`, `ring:ui-engineer`, `ring:qa-analyst-frontend`, or `ring:frontend-bff-engineer-typescript` from this skill. These are frontend agents and belong to `ring:dev-refactor-frontend`.
 
-**TodoWrite:** Mark "Detect project stack (Go/TypeScript/Frontend)" as `completed`
+**TodoWrite:** Mark "Detect project stack (Go/TypeScript)" as `completed`
 
 ---
 
@@ -434,79 +433,14 @@ Task tool 1:
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
 ```
 
-### For Frontend projects (React/Next.js):
-
-<parallel_dispatch agents="ring:frontend-engineer, ring:qa-analyst, ring:devops-engineer, ring:sre">
-All four agents MUST be dispatched in parallel via Task tool.
-Input: codebase-report.md, PROJECT_RULES.md
-</parallel_dispatch>
-
-```yaml
-Task tool 5:
-  subagent_type: "ring:frontend-engineer"
-  description: "Frontend standards analysis"
-  prompt: |
-    **MODE: ANALYSIS only**
-
-    ⛔ MANDATORY: Check all 13 sections in frontend.md per shared-patterns/standards-coverage-table.md
-
-    Input:
-    - Ring Standards: Load via WebFetch (frontend.md)
-    - Section Index: See shared-patterns/standards-coverage-table.md → "ring:frontend-engineer"
-    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
-    - Project Rules: docs/PROJECT_RULES.md
-
-    Output:
-    1. Standards Coverage Table (per shared-patterns format)
-    2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
-```
-
-### For BFF (Backend-for-Frontend) projects:
-
-<parallel_dispatch agents="frontend-bff-engineer-typescript, ring:qa-analyst, ring:devops-engineer, ring:sre">
-All four agents MUST be dispatched in parallel via Task tool.
-Input: codebase-report.md, PROJECT_RULES.md
-</parallel_dispatch>
-
-```yaml
-Task tool 6:
-  subagent_type: "ring:frontend-bff-engineer-typescript"
-  description: "BFF TypeScript standards analysis"
-  prompt: |
-    **MODE: ANALYSIS only**
-
-    ⛔ MANDATORY: Check all sections in typescript.md per shared-patterns/standards-coverage-table.md
-
-    ⛔ FRAMEWORKS & LIBRARIES DETECTION (MANDATORY):
-    1. Read package.json to extract all dependencies used in codebase
-    2. Load typescript.md standards via WebFetch → extract all listed frameworks/libraries
-    3. For each category in standards (Backend Framework, ORM, Validation, Testing, etc.):
-       - Compare codebase dependency vs standards requirement
-       - If codebase uses DIFFERENT library than standards → ISSUE-XXX
-       - If codebase is MISSING required library → ISSUE-XXX
-    4. any library not in standards that serves same purpose = ISSUE-XXX
-
-    Input:
-    - Ring Standards: Load via WebFetch (typescript.md)
-    - Section Index: See shared-patterns/standards-coverage-table.md → "frontend-bff-engineer-typescript"
-    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
-    - Project Rules: docs/PROJECT_RULES.md
-
-    Output:
-    1. Standards Coverage Table (per shared-patterns format)
-    2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
-```
-
 ### Agent Dispatch Summary
 
 | Stack Detected | Agents to Dispatch |
 |----------------|-------------------|
 | Go only | Task 1 (Go) + Task 2-4 |
 | TypeScript Backend only | Task 1 (TS Backend) + Task 2-4 |
-| Frontend only | Task 5 (Frontend) + Task 2-4 |
-| Go + Frontend | Task 1 (Go) + Task 5 (Frontend) + Task 2-4 |
-| TypeScript Backend + Frontend | Task 1 (TS Backend) + Task 5 (Frontend) + Task 2-4 |
-| BFF detected | Add Task 6 (BFF) to above |
+
+**⛔ Frontend/BFF projects MUST use `ring:dev-refactor-frontend` instead.** This skill does not dispatch frontend agents.
 
 **TodoWrite:** Mark "Dispatch specialist agents in parallel" as `completed`
 
@@ -524,8 +458,6 @@ After all parallel agent tasks complete, save each agent's output to a separate 
 docs/ring:dev-refactor/{timestamp}/reports/
 ├── ring:backend-engineer-golang-report.md     (if Go project)
 ├── ring:backend-engineer-typescript-report.md (if TypeScript Backend)
-├── ring:frontend-engineer-report.md           (if Frontend)
-├── frontend-bff-engineer-report.md       (if BFF)
 ├── ring:qa-analyst-report.md                  (always)
 ├── ring:devops-engineer-report.md             (always)
 └── ring:sre-report.md                         (always)
@@ -568,8 +500,6 @@ docs/ring:dev-refactor/{timestamp}/reports/
 |------------------|------------------|
 | ring:backend-engineer-golang | `ring:backend-engineer-golang-report.md` |
 | ring:backend-engineer-typescript | `ring:backend-engineer-typescript-report.md` |
-| ring:frontend-engineer | `ring:frontend-engineer-report.md` |
-| frontend-bff-engineer-typescript | `frontend-bff-engineer-report.md` |
 | ring:qa-analyst | `ring:qa-analyst-report.md` |
 | ring:devops-engineer | `ring:devops-engineer-report.md` |
 | ring:sre | `ring:sre-report.md` |
