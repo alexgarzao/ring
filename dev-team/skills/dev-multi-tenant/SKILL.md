@@ -8,6 +8,7 @@ description: |
   Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3),
   then executes a gate-based implementation using tenantId from JWT
   for database-per-tenant isolation via lib-commons v3 dispatch layer sub-packages (postgres.Manager, mongo.Manager).
+  Requires lib-auth and lib-commons v3 as dependencies — both MUST be updated via go get before implementation.
   Each gate dispatches ring:backend-engineer-golang with context and section references.
   The agent loads multi-tenant.md via WebFetch and has all code examples.
 
@@ -82,6 +83,10 @@ examples:
 
 **CANNOT change scope:** the skill defines WHAT to implement. The agent implements HOW.
 
+**FORBIDDEN: Orchestrator MUST NOT use Edit, Write, or Bash tools to modify source code files.**
+All code changes MUST go through `Task(subagent_type="ring:backend-engineer-golang")`.
+The orchestrator only verifies outputs (grep, go build, go test) — never writes implementation code.
+
 **MANDATORY: TDD for all implementation gates (Gates 2-6).** MUST follow RED-GREEN: write a failing test first, then implement to make it pass. MUST include in every dispatch: "Follow TDD: write failing test (RED), then implement (GREEN)."
 
 </cannot_skip>
@@ -115,6 +120,9 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | "organization_id is our tenant identifier" | AUTHORITY_OVERRIDE | "STOP. organization_id is NOT multi-tenant. tenantId from JWT is the only mechanism." |
 | "Skip code review, we tested it" | QUALITY_BYPASS | "MANDATORY: 6 reviewers. One security mistake = cross-tenant data leak." |
 | "We don't need RabbitMQ multi-tenant" | SCOPE_REDUCTION | "MUST execute Gate 6 if RabbitMQ was detected. CANNOT skip detected stack." |
+| "I'll make a quick edit directly" | CODE_BYPASS | "FORBIDDEN: All code changes go through ring:backend-engineer-golang. Dispatch the agent." |
+| "It's just one line, no need for an agent" | CODE_BYPASS | "FORBIDDEN: Even single-line changes MUST be dispatched. Agent ensures standards compliance." |
+| "Agent is slow, I'll edit faster" | CODE_BYPASS | "FORBIDDEN: Speed is not a justification. Agent applies TDD and standards checks." |
 
 ---
 
@@ -125,7 +133,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | 0 | Stack Detection | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
 | 1.5 | Implementation Preview (visual report) | Always | Orchestrator (ring:visual-explainer) |
-| 2 | lib-commons v3 Upgrade | Skip if already v3 | ring:backend-engineer-golang |
+| 2 | lib-commons v3 + lib-auth Upgrade | Skip if already v3 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Per detected DB/storage | ring:backend-engineer-golang |
@@ -148,6 +156,7 @@ MUST execute gates sequentially. CANNOT skip or reorder.
 DETECT (run in parallel):
 
 1. lib-commons version:  grep "lib-commons" go.mod
+1b. lib-auth version:    grep "lib-auth" go.mod
 2. PostgreSQL:           grep -rn "postgresql\|pgx\|squirrel" internal/ go.mod
 3. MongoDB:              grep -rn "mongodb\|mongo" internal/ go.mod
 4. Redis:                grep -rn "redis\|valkey" internal/ go.mod
@@ -231,7 +240,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
-| 2 | `go.mod` | lib-commons v2 → v3, import paths | All files |
+| 2 | `go.mod` | lib-commons v2 → v3 + lib-auth update, import paths | All files |
 | 3 | `config.go` | Add 7 MULTI_TENANT_* env vars to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
@@ -243,21 +252,74 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | 6 | `rabbitmq.server.go` | MultiTenantConsumer setup with lazy mode | ~40 lines added |
 | 7 | `config.go` | Backward compat validation | ~10 lines added |
 
+**MANDATORY: Below the summary table, show per-file code diff panels for every file that will be modified.**
+
+For each file in the change map, generate a before/after diff panel showing:
+- **Before:** The exact current code from the codebase (sourced from the Gate 1 analysis)
+- **After:** The exact code that will be written (following multi-tenant.md patterns)
+- Use syntax highlighting and line numbers (read `default/skills/visual-explainer/templates/code-diff.html` for patterns)
+
+Example diff panel for a repository file:
+
+```go
+// BEFORE: organization.postgresql.go
+func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Organization) error {
+    db := r.connection.GetDB()
+    result := db.Model(&OrganizationPostgreSQLModel{}).Create(toModel(org))
+    // ...
+}
+
+// AFTER: organization.postgresql.go
+func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Organization) error {
+    db, err := core.GetModulePostgresForTenant(ctx, "organization")
+    if err != nil {
+        return fmt.Errorf("getting tenant db for organization: %w", err)
+    }
+    result := db.Model(&OrganizationPostgreSQLModel{}).Create(toModel(org))
+    // ...
+}
+```
+
+The developer MUST be able to see the exact code that will be implemented to approve it. High-level descriptions alone are not sufficient for approval.
+
 ### 4. Backward Compatibility Analysis
+
+**MANDATORY: Show complete conditional initialization code, not just the if/else skeleton.**
+
+For each component (PostgreSQL, MongoDB, Redis, RabbitMQ, S3), show:
+1. **Current initialization code** (exact lines from codebase, sourced from Gate 1)
+2. **New initialization code** with the `if cfg.MultiTenantEnabled` branch
+3. **Explicit callout:** "When MULTI_TENANT_ENABLED=false, execution follows the ELSE branch which is IDENTICAL to current behavior"
+
 Side-by-side comparison showing:
 - **MULTI_TENANT_ENABLED=false (default):** Exact current behavior preserved. No JWT parsing, no Tenant Manager calls, no pool routing. Middleware calls `c.Next()` immediately.
 - **MULTI_TENANT_ENABLED=true:** New behavior with tenant isolation.
 
-Code diff showing the conditional initialization:
+Code diff showing the complete conditional initialization (not skeleton):
 ```go
 if cfg.MultiTenantEnabled && cfg.MultiTenantURL != "" {
     // Multi-tenant path (NEW)
-    ...
+    tmClient := client.NewHTTPClient(cfg.MultiTenantURL)
+    pgManager := postgres.NewManager(tmClient, logger)
+    // ... show complete initialization
 } else {
     // Single-tenant path (UNCHANGED — exactly how it works today)
+    // Show the exact same constructor calls that exist in the current codebase
     logger.Info("Running in SINGLE-TENANT MODE")
 }
 ```
+
+Show the middleware bypass explicitly:
+```go
+// When MULTI_TENANT_ENABLED=false, TenantMiddleware is NOT registered.
+// Requests flow directly to handlers without any JWT parsing or tenant resolution.
+```
+
+The developer MUST understand that:
+- No new code paths execute in single-tenant mode
+- The `else` branch preserves the exact current constructor calls
+- No additional dependencies are loaded when disabled
+- No performance impact when disabled (middleware calls c.Next() immediately)
 
 ### 5. New Dependencies
 Table showing what gets added to go.mod and which sub-packages are imported:
@@ -277,6 +339,23 @@ Table with: Risk, Mitigation, Verification. Examples:
 - Cross-tenant data leak → Context-based isolation → Tenant isolation integration tests (Gate 8)
 - Startup performance → Lazy consumer mode → `consumer.Run(ctx)` returns in <1s
 
+### 8. Retro Compatibility Guarantee
+
+Explicit explanation of backward compatibility strategy:
+
+**Method:** Feature flag with `MULTI_TENANT_ENABLED` environment variable (default: `false`).
+
+**Guarantee:** When `MULTI_TENANT_ENABLED=false`:
+- No tenant middleware is registered in the HTTP chain
+- No JWT parsing or tenant resolution occurs
+- All database connections use the original static constructors
+- All Redis keys are unprefixed (original behavior)
+- All S3 keys are unprefixed (original behavior)
+- RabbitMQ connects directly at startup (original behavior)
+- `go test ./...` passes with zero changes to existing tests
+
+**Verification (Gate 7):** The agent MUST run `MULTI_TENANT_ENABLED=false go test ./...` and verify all existing tests pass unchanged.
+
 **Output:** Save the HTML report to `docs/multi-tenant-preview.html` in the project root.
 
 **Open in browser** for the developer to review.
@@ -289,18 +368,20 @@ HARD GATE: Developer MUST explicitly approve the implementation preview before a
 
 ---
 
-## Gate 2: lib-commons v3 Upgrade
+## Gate 2: lib-commons v3 + lib-auth Upgrade
 
-**SKIP IF:** already v3.
+**SKIP IF:** already lib-commons v3 AND lib-auth latest.
 
 **Dispatch `ring:backend-engineer-golang` with context:**
 
-> TASK: Upgrade lib-commons from v2 to v3. Update go.mod and all import paths.
+> TASK: Upgrade lib-commons to v3 AND update lib-auth to latest.
+> Run: `go get github.com/LerianStudio/lib-commons/v3@latest github.com/LerianStudio/lib-auth@latest`
+> Update go.mod and all import paths from v2 to v3.
 > Follow multi-tenant.md section "Required lib-commons Version".
-> DO NOT implement multi-tenant code yet — only upgrade the dependency.
+> DO NOT implement multi-tenant code yet — only upgrade the dependencies.
 > Verify: go build ./... and go test ./... MUST pass.
 
-**Verification:** `grep "lib-commons/v3" go.mod` + `go build ./...` + `go test ./...`
+**Verification:** `grep "lib-commons/v3" go.mod` + `grep "lib-auth" go.mod` + `go build ./...` + `go test ./...`
 
 <block_condition>
 HARD GATE: MUST pass build and tests before proceeding.

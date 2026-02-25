@@ -508,7 +508,7 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
 
 ### S3/Object Storage Key Prefixing
 
-Services that store files in S3 or S3-compatible storage (MinIO, SeaweedFS S3 API) MUST prefix object keys with the tenant ID for tenant isolation. The bucket is configured per service via environment variable. Tenant separation is by directory within the bucket.
+Services that store files in S3 MUST prefix object keys with the tenant ID for tenant isolation. The bucket is configured per service via environment variable. Tenant separation is by directory within the bucket.
 
 ```go
 // In any service/adapter that uploads, downloads, or deletes files from S3:
