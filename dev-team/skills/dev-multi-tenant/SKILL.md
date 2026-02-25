@@ -377,9 +377,11 @@ HARD GATE: Developer MUST explicitly approve the implementation preview before a
 **Dispatch `ring:backend-engineer-golang` with context:**
 
 > TASK: Upgrade lib-commons to v3 first, then update lib-auth to v2 (lib-auth v2 depends on lib-commons v3).
+> For both libraries, fetch the latest tag (may be beta/rc in dev).
+> Check latest tags: `git ls-remote --tags https://github.com/LerianStudio/lib-commons.git | tail -5` and `git ls-remote --tags https://github.com/LerianStudio/lib-auth.git | tail -5`
 > Run in order:
-> 1. `go get github.com/LerianStudio/lib-commons/v3@latest`
-> 2. `go get github.com/LerianStudio/lib-auth/v2@latest`
+> 1. `go get github.com/LerianStudio/lib-commons/v3@{latest-tag}`
+> 2. `go get github.com/LerianStudio/lib-auth/v2@{latest-tag}`
 > Update go.mod and all import paths from v2 to v3 for lib-commons.
 > Follow multi-tenant.md section "Required lib-commons Version".
 > DO NOT implement multi-tenant code yet — only upgrade the dependencies.
