@@ -124,7 +124,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 |------|------|-----------|-------|
 | 0 | Stack Detection | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
-| 1.5 | Implementation Preview (visual report) | Always | visual-explainer |
+| 1.5 | Implementation Preview (visual report) | Always | Orchestrator (visual-explainer skill) |
 | 2 | lib-commons v3 Upgrade | Skip if already v3 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
@@ -397,7 +397,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 > - "ConsumerTrigger Interface" for the trigger wiring
 >
 > Gate-specific constraints:
-> 1. CONFIG SPLIT (MANDATORY): Branch on `cfg.IsMultiTenant()` for both producer and consumer in bootstrap
+> 1. CONFIG SPLIT (MANDATORY): Branch on `cfg.MultiTenantEnabled` for both producer and consumer in bootstrap
 > 2. MUST keep the existing single-tenant code path untouched
 > 3. MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode
 > 4. X-Tenant-ID goes in AMQP headers, NOT in message body
@@ -519,7 +519,7 @@ Save to `docs/ring-dev-multi-tenant/current-cycle.json` for resume support:
 {
   "cycle": "multi-tenant",
   "stack": {"postgresql": false, "mongodb": true, "redis": true, "rabbitmq": true, "s3": true},
-  "gates": {"0": "PASS", "1": "PASS", "2": "IN_PROGRESS", "3": "PENDING"},
+  "gates": {"0": "PASS", "1": "PASS", "1.5": "PASS", "2": "IN_PROGRESS", "3": "PENDING"},
   "current_gate": 2
 }
 ```
