@@ -22,7 +22,7 @@ prerequisite: |
 NOT_skip_when: |
   - "organization_id already exists" → organization_id is NOT multi-tenant. tenantId via JWT is required.
   - "Just need to connect the wiring" → Multi-tenant requires lib-commons v3 dispatch layer sub-packages.
-  - "lib-commons v3 upgrade is too risky" → Multi-tenant REQUIRES lib-commons v3 dispatch layer sub-packages. No v3 = no multi-tenant.
+  - "lib-commons v3 upgrade is too risky" → REQUIRES lib-commons v3 dispatch layer sub-packages. No v3 = no multi-tenant.
 
 sequence:
   after: [ring:dev-devops]
