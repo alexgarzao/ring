@@ -1082,26 +1082,9 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Consumer trigger** | - | Implement `ConsumerTrigger` interface (imported from `tmmiddleware`) and wire to middleware |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
 
-### ConsumerTrigger Interface
+### ConsumerTrigger Wiring
 
-Services that process messages in multi-tenant mode MUST implement the `ConsumerTrigger` interface and wire it into the middleware for lazy consumer activation.
-
-The `ConsumerTrigger` interface is defined in the lib-commons middleware package:
-
-```go
-// github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware
-import tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
-
-type ConsumerTrigger interface {
-    EnsureConsumerStarted(ctx context.Context, tenantID string)
-}
-```
-
-**Import `ConsumerTrigger` from `tmmiddleware`, not from service-specific packages.** If your service previously defined this interface in `pkg/mbootstrap/interfaces.go` or similar, remove that definition and import from lib-commons instead.
-
-The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. First request per tenant spawns the consumer (~500ms). Subsequent requests return immediately (<1ms).
-
-For `TenantMiddleware`, wire it externally. For `MultiPoolMiddleware`, pass it via `WithConsumerTrigger(ct)`.
+For `ConsumerTrigger` interface definition and usage, see [ConsumerTrigger interface](#consumertrigger-interface) in the Multi-module middleware section above. Import from `tmmiddleware`, not from service-specific packages. For `TenantMiddleware`, wire it externally. For `MultiPoolMiddleware`, pass it via `WithConsumerTrigger(ct)`.
 
 ### Anti-Rationalization Table (General)
 
