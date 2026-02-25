@@ -686,6 +686,8 @@ class TestCursorAdapter:
         assert not result.startswith("---")
         assert "Parameters" in result
         assert "Steps" in result
+        assert "/ring:" not in result
+        assert "## Usage" in result
 
     def test_get_component_mapping(self, adapter):
         """get_component_mapping() should map to Cursor directories."""
