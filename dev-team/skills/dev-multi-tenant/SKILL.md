@@ -124,7 +124,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 |------|------|-----------|-------|
 | 0 | Stack Detection | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
-| 1.5 | Implementation Preview (visual report) | Always | Orchestrator (visual-explainer skill) |
+| 1.5 | Implementation Preview (visual report) | Always | Orchestrator (ring:visual-explainer) |
 | 2 | lib-commons v3 Upgrade | Skip if already v3 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
@@ -208,11 +208,11 @@ MUST ensure backward compatibility context: the analysis MUST identify how the s
 
 **Always executes. This gate generates a visual HTML report showing exactly what will change before any code is written.**
 
-**Uses the `visual-explainer` skill to produce a self-contained HTML page.**
+**Uses the `ring:visual-explainer` skill to produce a self-contained HTML page.**
 
 The report is built from Gate 0 (stack detection) and Gate 1 (codebase analysis). It shows the developer a complete preview of every change that will be made across all subsequent gates, with backward compatibility analysis.
 
-**Orchestrator generates the report using `visual-explainer` with this content:**
+**Orchestrator generates the report using `ring:visual-explainer` with this content:**
 
 The HTML page MUST include these sections:
 
