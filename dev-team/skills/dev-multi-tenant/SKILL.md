@@ -59,12 +59,13 @@ examples:
     expected_flow: |
       1. Gate 0: Auto-detect stack
       2. Gate 1: Analyze codebase (build implementation roadmap)
-      3. Gates 2-6: Implementation (agent loads multi-tenant.md, follows roadmap)
-      4. Gate 7: Metrics & Backward compatibility
-      5. Gate 8: Tests
-      6. Gate 9: Code review
-      7. Gate 10: User validation
-      8. Gate 11: Activation guide
+      3. Gate 1.5: Visual implementation preview (HTML report for developer approval)
+      4. Gates 2-6: Implementation (agent loads multi-tenant.md, follows roadmap)
+      5. Gate 7: Metrics & Backward compatibility
+      6. Gate 8: Tests
+      7. Gate 9: Code review
+      8. Gate 10: User validation
+      9. Gate 11: Activation guide
 ---
 
 # Multi-Tenant Development Cycle
@@ -123,6 +124,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 |------|------|-----------|-------|
 | 0 | Stack Detection | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
+| 1.5 | Implementation Preview (visual report) | Always | visual-explainer |
 | 2 | lib-commons v3 Upgrade | Skip if already v3 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
@@ -199,6 +201,91 @@ HARD GATE: MUST complete the analysis report before proceeding. All subsequent g
 </block_condition>
 
 MUST ensure backward compatibility context: the analysis MUST identify how the service works today in single-tenant mode, so subsequent gates preserve this behavior when `MULTI_TENANT_ENABLED=false`.
+
+---
+
+## Gate 1.5: Implementation Preview (Visual Report)
+
+**Always executes. This gate generates a visual HTML report showing exactly what will change before any code is written.**
+
+**Uses the `visual-explainer` skill to produce a self-contained HTML page.**
+
+The report is built from Gate 0 (stack detection) and Gate 1 (codebase analysis). It shows the developer a complete preview of every change that will be made across all subsequent gates, with backward compatibility analysis.
+
+**Orchestrator generates the report using `visual-explainer` with this content:**
+
+The HTML page MUST include these sections:
+
+### 1. Current Architecture (Before)
+- Mermaid diagram showing current request flow (how connections work today in single-tenant mode)
+- Table of all files that will be modified, with current line counts
+- How repositories get DB connections today (static field, constructor injection, etc.)
+
+### 2. Target Architecture (After)
+- Mermaid diagram showing the multi-tenant request flow (JWT → middleware → tenant pool → handler)
+- Which middleware will be used: `TenantMiddleware` (single-module) or `MultiPoolMiddleware` (multi-module)
+- How repositories will get DB connections (context-based: `core.GetPostgresForTenant(ctx)`)
+
+### 3. Change Map (per gate)
+Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row per file that will be modified. Example:
+
+| Gate | File | What Changes | Impact |
+|------|------|-------------|--------|
+| 2 | `go.mod` | lib-commons v2 → v3, import paths | All files |
+| 3 | `config.go` | Add 7 MULTI_TENANT_* env vars to Config struct | ~20 lines added |
+| 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
+| 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
+| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `core.GetModulePostgresForTenant(ctx, module)` | ~3 lines per method |
+| 5 | `metadata.mongodb.go` | Static mongo → `core.GetMongoForTenant(ctx)` | ~2 lines per method |
+| 5 | `consumer.redis.go` | Key prefixing with `valkey.GetKeyFromContext(ctx, key)` | ~1 line per operation |
+| 5 | `storage.go` | S3 key prefixing with `s3.GetObjectStorageKeyForTenant(ctx, key)` | ~1 line per operation |
+| 6 | `producer.rabbitmq.go` | Dual constructor (single-tenant + multi-tenant) | ~20 lines added |
+| 6 | `rabbitmq.server.go` | MultiTenantConsumer setup with lazy mode | ~40 lines added |
+| 7 | `config.go` | Backward compat validation | ~10 lines added |
+
+### 4. Backward Compatibility Analysis
+Side-by-side comparison showing:
+- **MULTI_TENANT_ENABLED=false (default):** Exact current behavior preserved. No JWT parsing, no Tenant Manager calls, no pool routing. Middleware calls `c.Next()` immediately.
+- **MULTI_TENANT_ENABLED=true:** New behavior with tenant isolation.
+
+Code diff showing the conditional initialization:
+```go
+if cfg.MultiTenantEnabled && cfg.MultiTenantURL != "" {
+    // Multi-tenant path (NEW)
+    ...
+} else {
+    // Single-tenant path (UNCHANGED — exactly how it works today)
+    logger.Info("Running in SINGLE-TENANT MODE")
+}
+```
+
+### 5. New Dependencies
+Table showing what gets added to go.mod and which sub-packages are imported:
+- `dispatch layer/core` — types, errors, context helpers
+- `dispatch layer/client` — Tenant Manager HTTP client
+- `dispatch layer/middleware` — TenantMiddleware or MultiPoolMiddleware
+- `dispatch layer/postgres` — PostgresManager (if PG detected)
+- `dispatch layer/mongo` — MongoManager (if Mongo detected)
+- etc.
+
+### 6. Environment Variables
+Table with the 7 MULTI_TENANT_* vars that will be added to Config struct.
+
+### 7. Risk Assessment
+Table with: Risk, Mitigation, Verification. Examples:
+- Single-tenant regression → Backward compat gate (Gate 7) → `MULTI_TENANT_ENABLED=false go test ./...`
+- Cross-tenant data leak → Context-based isolation → Tenant isolation integration tests (Gate 8)
+- Startup performance → Lazy consumer mode → `consumer.Run(ctx)` returns in <1s
+
+**Output:** Save the HTML report to `docs/multi-tenant-preview.html` in the project root.
+
+**Open in browser** for the developer to review.
+
+<block_condition>
+HARD GATE: Developer MUST explicitly approve the implementation preview before any code changes begin. This prevents wasted effort on misunderstood requirements or incorrect architectural decisions.
+</block_condition>
+
+**If the developer requests changes to the preview, regenerate the report and re-confirm.**
 
 ---
 
