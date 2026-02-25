@@ -8,7 +8,7 @@ description: |
   Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3),
   then executes a gate-based implementation using tenantId from JWT
   for database-per-tenant isolation via lib-commons v3 tenant-manager sub-packages (postgres.Manager, mongo.Manager).
-  Requires lib-commons v3 and lib-auth v2 as dependencies — lib-commons v3 MUST be updated first (lib-auth v2 depends on it).
+  MUST update lib-commons v3 first; lib-auth v2 depends on it. Both are required dependencies.
   Each gate dispatches ring:backend-engineer-golang with context and section references.
   The agent loads multi-tenant.md via WebFetch and has all code examples.
 
@@ -87,7 +87,7 @@ examples:
 All code changes MUST go through `Task(subagent_type="ring:backend-engineer-golang")`.
 The orchestrator only verifies outputs (grep, go build, go test) — MUST NOT write implementation code.
 
-**MANDATORY: TDD for all implementation gates (Gates 2-6).** MUST follow RED-GREEN: write a failing test first, then implement to make it pass. MUST include in every dispatch: "Follow TDD: write failing test (RED), then implement (GREEN)."
+**MANDATORY: TDD for all implementation gates (Gates 2-6).** MUST follow RED → GREEN → REFACTOR: write a failing test first, then implement to make it pass, then refactor for clarity/performance. MUST include in every dispatch: "Follow TDD: write failing test (RED), implement to make it pass (GREEN), then refactor for clarity/performance (REFACTOR)."
 
 </cannot_skip>
 
@@ -301,7 +301,7 @@ Code diff showing the complete conditional initialization (not skeleton):
 ```go
 if cfg.MultiTenantEnabled && cfg.MultiTenantURL != "" {
     // Multi-tenant path (NEW)
-    tmClient := client.NewHTTPClient(cfg.MultiTenantURL)
+    tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
     pgManager := postgres.NewManager(tmClient, logger)
     // ... show complete initialization
 } else {
