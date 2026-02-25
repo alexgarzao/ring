@@ -916,11 +916,11 @@ Read tool:
 **Unit Checkpoint (after subtask completes Gate 8):**
 
 **VISUAL CHANGE REPORT (MANDATORY - before checkpoint question):**
-- MUST generate a code-diff HTML report for this execution unit using `ring:visual-explainer`
+- MUST invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
 - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
 - Content sourced from state JSON `agent_outputs` for the current unit:
   * **TDD Output:** `tdd_red` (failing test) + `tdd_green` (implementation)
-  * **Files Changed:** Per-file before/after diff panels (read current file content for "after" state)
+  * **Files Changed:** Per-file before/after diff panels using `git diff` data from the implementation (do not read source files directly — use diff output provided by the implementation agent)
   * **Frontend-Specific Metrics:** WCAG violations resolved (Gate 2), visual snapshot pass rate (Gate 4), LCP/CLS/INP values (Gate 6), Lighthouse score (Gate 6)
   * **Review Verdicts:** Summary of all 5 reviewer verdicts from Gate 7
 - Save to: `docs/ring:dev-cycle-frontend/reports/unit-{unit_id}-report.html`
@@ -942,7 +942,7 @@ Subtask {id} complete. All 9 gates passed.
 **Task Checkpoint (after all subtasks of a task complete):**
 
 **VISUAL CHANGE REPORT (MANDATORY - before task checkpoint question):**
-- MUST generate an aggregate code-diff HTML report for all subtasks using `ring:visual-explainer`
+- MUST invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks
 - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
 - Content aggregated from all subtask executions:
   * **Task Overview:** Task ID, title, all subtask IDs and their gate statuses

@@ -2044,7 +2044,7 @@ ELSE (no findings file exists):
 
 **MANDATORY: Generate a visual HTML report before presenting the review summary.**
 
-Uses `ring:visual-explainer` to produce a self-contained HTML page showing review results visually. This complements the markdown output with an interactive browser view.
+Invokes `Skill("ring:visual-explainer")` to produce a self-contained HTML page showing review results visually. This complements the markdown output with an interactive browser view.
 
 **Read the code-diff template first:** Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating.
 
