@@ -1,6 +1,6 @@
 ---
-name: "Multi-Tenant Development Cycle"
-slug: "dev-multi-tenant"
+name: ring:dev-multi-tenant
+slug: dev-multi-tenant
 version: 1.1.0
 type: skill
 description: |
