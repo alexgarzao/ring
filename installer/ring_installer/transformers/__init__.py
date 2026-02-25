@@ -218,13 +218,19 @@ def generate_cursor_output(
     commands = commands or []
     output = {}
 
-    # Generate .cursorrules from skills
-    if skills:
-        output[".cursorrules"] = generate_cursorrules_from_skills(
-            skills, include_metadata
+    for skill in skills:
+        transformer = get_transformer("cursor", "skill")
+        context = TransformContext(
+            platform="cursor",
+            component_type="skill",
+            source_path=skill.get("source", ""),
+            metadata={"name": skill.get("name", "unknown")}
         )
+        result = transformer.transform(skill.get("content", ""), context)
+        if result.success:
+            filename = f"skills/{skill.get('name', 'unknown')}.md"
+            output[filename] = result.content
 
-    # Generate workflows from agents and commands
     for agent in agents:
         transformer = get_transformer("cursor", "agent")
         context = TransformContext(
@@ -235,7 +241,7 @@ def generate_cursor_output(
         )
         result = transformer.transform(agent.get("content", ""), context)
         if result.success:
-            filename = f"workflows/{agent.get('name', 'unknown')}.md"
+            filename = f"agents/{agent.get('name', 'unknown')}.md"
             output[filename] = result.content
 
     for command in commands:
@@ -248,7 +254,7 @@ def generate_cursor_output(
         )
         result = transformer.transform(command.get("content", ""), context)
         if result.success:
-            filename = f"workflows/{command.get('name', 'unknown')}.md"
+            filename = f"commands/{command.get('name', 'unknown')}.md"
             output[filename] = result.content
 
     return output

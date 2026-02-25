@@ -124,7 +124,7 @@ Ring works across multiple AI development platforms:
 
 - Claude Code receives Ring content in its native format
 - Factory AI: `agents` → `droids` terminology
-- Cursor: Skills → ~/.cursor/skills/, Agents → agents/, Commands → commands/
+- Cursor: Skills → ~/.cursor/skills/, Agents → ~/.cursor/agents/, Commands → ~/.cursor/commands/
 - Cline: All content → structured prompts
 
 **Platform-Specific Guides:**

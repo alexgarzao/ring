@@ -105,13 +105,6 @@ class CommandTransformer(BaseTransformer):
 
         return TransformResult(content=content, success=True)
 
-    def _normalize_cursor_name(self, name: str) -> str:
-        """Normalize name for Cursor: lowercase, [a-z0-9-] only, max 64 chars."""
-        normalized = name.lower().replace(":", "-").replace("/", "")
-        normalized = re.sub(r"[^a-z0-9-]", "", normalized)
-        normalized = re.sub(r"-+", "-", normalized).strip("-")
-        return normalized[:64]
-
     def _transform_cursor(
         self,
         frontmatter: Dict[str, Any],
@@ -136,7 +129,7 @@ class CommandTransformer(BaseTransformer):
             parts.append(clean_desc)
             parts.append("")
 
-        cmd_name = self._normalize_cursor_name(name)
+        cmd_name = self._normalize_cursor_name(name) or "untitled-command"
         parts.append("## Usage")
         parts.append("")
         parts.append(f"/{cmd_name}")

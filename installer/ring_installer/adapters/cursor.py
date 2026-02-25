@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
+from ring_installer.transformers.base import normalize_cursor_name
 
 
 class CursorAdapter(PlatformAdapter):
@@ -54,13 +55,10 @@ class CursorAdapter(PlatformAdapter):
         description = frontmatter.get("description", "")
         clean_desc = self._clean_yaml_string(description)
         clean_desc_single = clean_desc.replace("\n", " ").strip()[:1024]
-        normalized_name = self._normalize_cursor_name(name)
+        normalized_name = normalize_cursor_name(name) or "untitled-skill"
 
         parts: List[str] = []
-        parts.append("---")
-        parts.append(f"name: {normalized_name}")
-        parts.append(f"description: {clean_desc_single}")
-        parts.append("---")
+        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc_single}).rstrip())
         parts.append("")
 
         parts.append(f"# {self._to_title_case(name)}")
@@ -121,13 +119,10 @@ class CursorAdapter(PlatformAdapter):
         name = frontmatter.get("name", metadata.get("name", "untitled-agent") if metadata else "untitled-agent")
         description = frontmatter.get("description", "")
         clean_desc = self._clean_yaml_string(description).replace("\n", " ").strip()[:1024]
-        normalized_name = self._normalize_cursor_name(name)
+        normalized_name = normalize_cursor_name(name) or "untitled-agent"
 
         parts: List[str] = []
-        parts.append("---")
-        parts.append(f"name: {normalized_name}")
-        parts.append(f"description: {clean_desc}")
-        parts.append("---")
+        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc}).rstrip())
         parts.append("")
         parts.append(self._transform_body_for_cursor(body))
 
@@ -161,7 +156,7 @@ class CursorAdapter(PlatformAdapter):
             parts.append(clean_desc)
             parts.append("")
 
-        cmd_name = self._normalize_cursor_name(name.replace("/", ""))
+        cmd_name = normalize_cursor_name(name.replace("/", "")) or "untitled-command"
         parts.append("## Usage")
         parts.append("")
         parts.append(f"/{cmd_name}")
@@ -255,21 +250,6 @@ class CursorAdapter(PlatformAdapter):
         text = text.replace("-", " ").replace("_", " ")
         # Title case
         return text.title()
-
-    def _normalize_cursor_name(self, name: str) -> str:
-        """
-        Normalize name for Cursor: lowercase, [a-z0-9-] only, max 64 chars.
-
-        Args:
-            name: Input name (e.g. ring:requesting-code-review)
-
-        Returns:
-            Normalized name (e.g. ring-requesting-code-review)
-        """
-        normalized = name.lower().replace(":", "-")
-        normalized = re.sub(r"[^a-z0-9-]", "", normalized)
-        normalized = re.sub(r"-+", "-", normalized).strip("-")
-        return normalized[:64]
 
     def _clean_yaml_string(self, text: str) -> str:
         """

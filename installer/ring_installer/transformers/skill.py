@@ -105,14 +105,6 @@ class SkillTransformer(BaseTransformer):
 
         return TransformResult(content=content, success=True)
 
-    def _normalize_cursor_name(self, name: str) -> str:
-        """Normalize name for Cursor: lowercase, [a-z0-9-] only, max 64 chars."""
-        import re
-        normalized = name.lower().replace(":", "-")
-        normalized = re.sub(r"[^a-z0-9-]", "", normalized)
-        normalized = re.sub(r"-+", "-", normalized).strip("-")
-        return normalized[:64]
-
     def _transform_cursor(
         self,
         frontmatter: Dict[str, Any],
@@ -126,12 +118,9 @@ class SkillTransformer(BaseTransformer):
         description = frontmatter.get("description", "")
         clean_desc = self.clean_yaml_string(description)
         clean_desc_single = clean_desc.replace("\n", " ").strip()[:1024]
-        normalized_name = self._normalize_cursor_name(name)
+        normalized_name = self._normalize_cursor_name(name) or "untitled-skill"
 
-        parts.append("---")
-        parts.append(f"name: {normalized_name}")
-        parts.append(f"description: {clean_desc_single}")
-        parts.append("---")
+        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc_single}).rstrip())
         parts.append("")
 
         parts.append(f"# {self.to_title_case(name)}")
@@ -304,9 +293,9 @@ class SkillTransformerFactory:
             "command": "command",
         },
         "cursor": {
-            "agent": "workflow",
-            "skill": "rule",
-            "command": "workflow",
+            "agent": "agent",
+            "skill": "skill",
+            "command": "command",
         },
         "cline": {
             "agent": "prompt",
