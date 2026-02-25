@@ -110,7 +110,7 @@ func (mq *MultiQueueConsumer) handleBalanceCreate(ctx context.Context, body []by
 ```text
 RunConsumers()
 ├── For each registered queue:
-│   ├── EnsureChannel() with exponential backoff
+│   ├── EnsureChannel(ctx) with exponential backoff
 │   ├── Set QoS (prefetch)
 │   ├── Start Consume()
 │   └── Spawn N worker goroutines
@@ -334,7 +334,7 @@ for {  // WRONG: Infinite retry = stuck message
 
 ```go
 func (p *ProducerRepository) Publish(ctx context.Context, exchange, routingKey string, message []byte) error {
-    if err := p.EnsureChannel(); err != nil {
+    if err := p.EnsureChannel(ctx); err != nil {
         return fmt.Errorf("ensure channel: %w", err)
     }
 
@@ -427,14 +427,14 @@ func (s *Service) Run() {
 
 Services that use RabbitMQ MUST implement automatic reconnection at both the consumer and producer layers. Without reconnection, a broker restart or network partition leaves the service permanently disconnected.
 
-**⛔ HARD GATE:** All RabbitMQ services MUST implement two-layer reconnection using `EnsureChannel()` from lib-commons.
+**⛔ HARD GATE:** All RabbitMQ services MUST implement two-layer reconnection using `EnsureChannel(ctx)` from lib-commons.
 
 ### Reconnection Architecture
 
 | Layer | Mechanism | Trigger |
 |-------|-----------|---------|
 | **Consumer** | Infinite loop + `NotifyClose` channel | Channel closure detected automatically |
-| **Producer** | `EnsureChannel()` + retry loop per publish | Connection failure on publish attempt |
+| **Producer** | `EnsureChannel(ctx)` + retry loop per publish | Connection failure on publish attempt |
 
 Both layers use the same exponential backoff with full jitter strategy defined in [Exponential Backoff with Jitter](#exponential-backoff-with-jitter-mandatory).
 
@@ -452,7 +452,7 @@ func (cr *ConsumerRoutes) RunConsumers(ctx context.Context) error {
                 attempt++
 
                 // 1. Ensure channel is open (with retries)
-                if err := cr.conn.EnsureChannel(); err != nil {
+                if err := cr.conn.EnsureChannel(ctx); err != nil {
                     select {
                     case <-ctx.Done():
                         return
@@ -523,7 +523,7 @@ func (cr *ConsumerRoutes) RunConsumers(ctx context.Context) error {
 
 #### How It Works
 
-1. `EnsureChannel()` creates a new AMQP channel if the current one is nil or closed
+1. `EnsureChannel(ctx)` creates a new AMQP channel if the current one is nil or closed
 2. If channel creation, Qos, or Consume fails, wait with `CalculateBackoff(attempt)` and retry
 3. All waits honor `ctx.Done()` so the goroutine exits cleanly on shutdown
 4. Once consuming starts, `NotifyClose` blocks until the channel dies
@@ -532,7 +532,7 @@ func (cr *ConsumerRoutes) RunConsumers(ctx context.Context) error {
 
 ### Producer Per-Publish Retry (MANDATORY)
 
-The producer MUST call `EnsureChannel()` before every publish and retry with exponential backoff on failure.
+The producer MUST call `EnsureChannel(ctx)` before every publish and retry with exponential backoff on failure.
 
 ```go
 func (p *ProducerRepository) PublishWithRetry(
@@ -540,7 +540,7 @@ func (p *ProducerRepository) PublishWithRetry(
 ) error {
     for attempt := 1; attempt <= MaxRetries; attempt++ {
         // 1. Ensure channel is available
-        if err := p.conn.EnsureChannel(); err != nil {
+        if err := p.conn.EnsureChannel(ctx); err != nil {
             select {
             case <-ctx.Done():
                 return ctx.Err()
@@ -590,12 +590,12 @@ func (p *ProducerRepository) PublishWithRetry(
 }
 ```
 
-#### Key Detail: `EnsureChannel()`
+#### Key Detail: `EnsureChannel(ctx)`
 
-This is the critical function from `lib-commons`. It:
+This is the critical function from `lib-commons`. It takes a `context.Context` parameter, which allows the caller to control cancellation and timeouts during reconnection. It:
 
 - Checks if the current channel is nil or closed
-- If so, calls `GetNewConnect()` to re-establish the AMQP connection
+- If so, calls `GetConnection()` to re-establish the AMQP connection
 - Creates a new channel on the fresh connection
 - Updates `conn.Connected` to `true` (which makes `/ready` return 200)
 
@@ -615,7 +615,7 @@ func (p *ProducerRepository) CheckRabbitMQHealth() bool {
 - `conn.Connection != nil`
 - `!conn.Connection.IsClosed()`
 
-A background goroutine MUST periodically call `EnsureChannel()` to keep the health status accurate. Without this, the service enters a deadlock state where `/ready` reports unhealthy but nothing triggers reconnection (see [Deadlock Prevention](#deadlock-prevention-mandatory)).
+A background goroutine MUST periodically call `EnsureChannel(ctx)` to keep the health status accurate. Without this, the service enters a deadlock state where `/ready` reports unhealthy but nothing triggers reconnection (see [Deadlock Prevention](#deadlock-prevention-mandatory)).
 
 ### Deadlock Prevention (MANDATORY)
 
@@ -628,27 +628,32 @@ When the broker restarts or a network partition occurs, services without active 
 ```text
 1. Broker restarts → connection dies
 2. /ready returns 503 (connection is closed)
-3. No background process calls EnsureChannel() to reconnect
+3. No background process calls EnsureChannel(ctx) to reconnect
 4. Connection only recovers when a publish is attempted
 5. No publish happens because upstream sees 503 from /ready
 6. Deadlock: nothing triggers reconnection
 ```
 
-Consumer-based services with the background loop from [Consumer Reconnection Loop](#consumer-reconnection-loop-mandatory) naturally recover because the consumer loop calls `EnsureChannel()` continuously.
+Consumer-based services with the background loop from [Consumer Reconnection Loop](#consumer-reconnection-loop-mandatory) naturally recover because the consumer loop calls `EnsureChannel(ctx)` continuously.
 
 #### The Fix: Background Periodic Reconnection (REQUIRED)
 
-Add a background goroutine during service bootstrap that periodically calls `EnsureChannel()`:
+Add a background goroutine during service bootstrap that periodically calls `EnsureChannel(ctx)`:
 
 ```go
-func startReconnectionMonitor(conn *libRabbitmq.RabbitMQConnection, interval time.Duration) {
+func startReconnectionMonitor(ctx context.Context, conn *libRabbitmq.RabbitMQConnection, interval time.Duration) {
     go func() {
         ticker := time.NewTicker(interval)
         defer ticker.Stop()
 
-        for range ticker.C {
-            if err := conn.EnsureChannel(); err != nil {
-                log.Warnf("background reconnection attempt failed: %v", err)
+        for {
+            select {
+            case <-ctx.Done():
+                return
+            case <-ticker.C:
+                if err := conn.EnsureChannel(ctx); err != nil {
+                    log.Warnf("background reconnection attempt failed: %v", err)
+                }
             }
         }
     }()
@@ -659,7 +664,7 @@ Call in service bootstrap:
 
 ```go
 // REQUIRED: Prevents deadlock after broker restart
-startReconnectionMonitor(rabbitMQConnection, 10*time.Second)
+startReconnectionMonitor(ctx, rabbitMQConnection, 10*time.Second)
 ```
 
 #### Detection Commands (MANDATORY)
@@ -669,13 +674,13 @@ startReconnectionMonitor(rabbitMQConnection, 10*time.Second)
 grep -rn "EnsureChannel" internal/adapters/rabbitmq --include="*.go"
 
 # Expected: EnsureChannel called in both consumer and producer
-# If missing in producer: BLOCKER - Add EnsureChannel + retry before publish
+# If missing in producer: BLOCKER - Add EnsureChannel(ctx) + retry before publish
 
 # Check for background reconnection monitor
 grep -rn "startReconnectionMonitor\|NewTicker.*EnsureChannel" internal/ --include="*.go"
 
 # Expected: Background monitor present in bootstrap
-# If missing: BLOCKER for producer-only services - Add periodic EnsureChannel
+# If missing: BLOCKER for producer-only services - Add periodic EnsureChannel(ctx)
 ```
 
 #### FORBIDDEN Patterns
@@ -683,12 +688,12 @@ grep -rn "startReconnectionMonitor\|NewTicker.*EnsureChannel" internal/ --includ
 ```go
 // ❌ FORBIDDEN: Single publish attempt without retry
 func (p *Producer) Publish(ctx context.Context, msg []byte) error {
-    return p.conn.Channel.Publish(...)  // WRONG: No EnsureChannel, no retry
+    return p.conn.Channel.Publish(...)  // WRONG: No EnsureChannel(ctx), no retry
 }
 
-// ❌ FORBIDDEN: EnsureChannel without retry loop
+// ❌ FORBIDDEN: EnsureChannel(ctx) without retry loop
 func (p *Producer) Publish(ctx context.Context, msg []byte) error {
-    p.conn.EnsureChannel()  // WRONG: If EnsureChannel fails, publish fails permanently
+    p.conn.EnsureChannel(ctx)  // WRONG: If EnsureChannel fails, publish fails permanently
     return p.conn.Channel.Publish(...)
 }
 
@@ -705,18 +710,18 @@ func main() {
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Consumer reconnects, producer is fine" | Consumer and producer may use separate connections. Producer needs its own reconnection. | **Add EnsureChannel + retry to producer** |
+| "Consumer reconnects, producer is fine" | Consumer and producer may use separate connections. Producer needs its own reconnection. | **Add EnsureChannel(ctx) + retry to producer** |
 | "Broker rarely restarts" | Rare ≠ never. When it happens, service is stuck until pod restart. | **Add reconnection to both layers** |
 | "Kubernetes will restart the pod" | Pod restart = downtime + message loss. Self-healing is faster and lossless. | **Add background reconnection** |
 | "Health check will catch it" | Health check reports the problem but does not fix it. That's the deadlock. | **Add startReconnectionMonitor** |
 | "We only have a consumer, no producer" | Consumer loop handles itself. But verify NotifyClose is used, not just range. | **Verify NotifyClose pattern** |
-| "Single EnsureChannel before publish is enough" | If EnsureChannel fails, publish fails permanently with no retry. | **Wrap in retry loop with backoff** |
+| "Single EnsureChannel(ctx) before publish is enough" | If EnsureChannel fails, publish fails permanently with no retry. | **Wrap in retry loop with backoff** |
 
 ### Reconnection Checklist
 
-- [ ] Consumer uses infinite loop with `EnsureChannel()` + `NotifyClose`
+- [ ] Consumer uses infinite loop with `EnsureChannel(ctx)` + `NotifyClose`
 - [ ] Consumer resets backoff to `InitialBackoff` on successful connection
-- [ ] Producer calls `EnsureChannel()` before every publish
+- [ ] Producer calls `EnsureChannel(ctx)` before every publish
 - [ ] Producer wraps publish in retry loop with exponential backoff
 - [ ] Health check delegates to `lib-commons` `HealthCheck()`
 - [ ] Background `startReconnectionMonitor` present for producer-only services

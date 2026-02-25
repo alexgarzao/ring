@@ -11,6 +11,8 @@ This module covers multi-tenant patterns with Tenant Manager.
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [Multi-Tenant Patterns (CONDITIONAL)](#multi-tenant-patterns-conditional) | Configuration, Tenant Manager API, middleware, context injection, repository adaptation |
+| 1a | [Generic TenantMiddleware (Standard Pattern)](#generic-tenantmiddleware-standard-pattern) | Single-module services (CRM, plugins, reporter) |
+| 1b | [Multi-module middleware (MultiPoolMiddleware)](#multi-module-middleware-multipoolmiddleware) | Multi-module unified services (midaz ledger) |
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
 | 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
 
@@ -27,7 +29,7 @@ Multi-tenant support requires **lib-commons v3** (`github.com/LerianStudio/lib-c
 | lib-commons version | Multi-tenant support | Package path |
 |--------------------|-----------------------|-------------|
 | **v2** (`lib-commons/v2`) | Not available | N/A — no `tenant-manager` package |
-| **v3** (`lib-commons/v3`) | Full support | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager` |
+| **v3** (`lib-commons/v3`) | Full support | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/...` (sub-packages: `core`, `client`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains both `TenantMiddleware` (single-module) and `MultiPoolMiddleware` (multi-module). |
 
 **Migration from v2 to v3:**
 
@@ -185,7 +187,7 @@ The `tenantId` identifies the client/customer. The lib-commons `TenantMiddleware
 |-----------------|----------------|-----------------|
 | "Adding organization_id filters = multi-tenant" | organization_id does NOT route to different databases. All data still in ONE database. | **MUST implement tenantId → TenantConnectionManager** |
 | "The codebase already has organization_id wiring" | organization_id is irrelevant for multi-tenant. tenantId from JWT is the mechanism. | **Implement TenantMiddleware with JWT tenantId extraction** |
-| "Midaz uses organization_id for tenant isolation" | WRONG. Midaz has ZERO organization_id in WHERE clauses. It uses tenantId → GetModulePostgresForTenant(ctx). | **Follow the actual pattern: tenantId → context → database routing** |
+| "Midaz uses organization_id for tenant isolation" | WRONG. Midaz has ZERO organization_id in WHERE clauses. It uses tenantId → core.GetModulePostgresForTenant(ctx). | **Follow the actual pattern: tenantId → context → database routing** |
 
 </cannot_skip>
 
@@ -225,41 +227,48 @@ func extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
 
 ```go
 // internal/bootstrap/config.go
+import (
+    "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/client"
+    tmpostgres "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/postgres"
+    tmmongo "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/mongo"
+    "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware"
+)
+
 func initService(cfg *Config) {
     // 1. Create Tenant Manager HTTP client (with optional circuit breaker)
-    var clientOpts []tenantmanager.ClientOption
+    var clientOpts []client.ClientOption
     if cfg.MultiTenantCircuitBreakerThreshold > 0 {
         clientOpts = append(clientOpts,
-            tenantmanager.WithCircuitBreaker(
+            client.WithCircuitBreaker(
                 cfg.MultiTenantCircuitBreakerThreshold,
                 time.Duration(cfg.MultiTenantCircuitBreakerTimeoutSec)*time.Second,
             ),
         )
     }
-    tmClient := tenantmanager.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+    tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
 
     idleTimeout := time.Duration(cfg.MultiTenantIdleTimeoutSec) * time.Second
 
     // 2. Create PostgreSQL manager (one per service or per module)
-    pgManager := tenantmanager.NewPostgresManager(tmClient, "my-service",
-        tenantmanager.WithModule("my-module"),
-        tenantmanager.WithPostgresLogger(logger),
-        tenantmanager.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
-        tenantmanager.WithIdleTimeout(idleTimeout),
+    pgManager := tmpostgres.NewManager(tmClient, "my-service",
+        tmpostgres.WithModule("my-module"),
+        tmpostgres.WithLogger(logger),
+        tmpostgres.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tmpostgres.WithIdleTimeout(idleTimeout),
     )
 
     // 3. Create MongoDB manager (optional)
-    mongoManager := tenantmanager.NewMongoManager(tmClient, "my-service",
-        tenantmanager.WithMongoModule("my-module"),
-        tenantmanager.WithMongoLogger(logger),
-        tenantmanager.WithMongoMaxTenantPools(cfg.MultiTenantMaxTenantPools),
-        tenantmanager.WithMongoIdleTimeout(idleTimeout),
+    mongoManager := tmmongo.NewManager(tmClient, "my-service",
+        tmmongo.WithModule("my-module"),
+        tmmongo.WithLogger(logger),
+        tmmongo.WithMaxTenantPools(cfg.MultiTenantMaxTenantPools),
+        tmmongo.WithIdleTimeout(idleTimeout),
     )
 
     // 4. Create and register middleware
-    tenantMid := tenantmanager.NewTenantMiddleware(
-        tenantmanager.WithPostgresManager(pgManager),
-        tenantmanager.WithMongoManager(mongoManager),  // optional
+    tenantMid := middleware.NewTenantMiddleware(
+        middleware.WithPostgresManager(pgManager),
+        middleware.WithMongoManager(mongoManager),  // optional
     )
     app.Use(tenantMid.WithTenantDB)
 }
@@ -277,18 +286,174 @@ func initService(cfg *Config) {
 **In repositories, use context-based getters:**
 
 ```go
+import (
+    "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/core"
+    "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/valkey"
+)
+
 // Single-module service: use generic getter
-db, err := tenantmanager.GetPostgresForTenant(ctx)
+db, err := core.GetPostgresForTenant(ctx)
 
 // MongoDB
-mongoDB, err := tenantmanager.GetMongoForTenant(ctx)
+mongoDB, err := core.GetMongoForTenant(ctx)
 
 // Redis key prefixing
-key := tenantmanager.GetKeyFromContext(ctx, "cache-key")
+key := valkey.GetKeyFromContext(ctx, "cache-key")
 // -> "tenant:{tenantId}:cache-key"
 
 // Get tenant ID directly
-tenantID := tenantmanager.GetTenantID(ctx)
+tenantID := core.GetTenantID(ctx)
+```
+
+### Multi-module middleware (MultiPoolMiddleware)
+
+**When to use:** Services that serve multiple modules on a single port with different databases per module. For example, midaz ledger serves onboarding and transaction modules in a single process, each with its own PostgreSQL and MongoDB pools.
+
+**Most services do NOT need this.** If your service has a single database (CRM, plugin-auth, reporter, etc.), use the standard `TenantMiddleware` above. Only reach for `MultiPoolMiddleware` when you have path-based routing to separate database pools.
+
+**Import:**
+
+```go
+import (
+    tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware"
+)
+```
+
+**Key types:**
+
+| Type | Purpose |
+|------|---------|
+| `MultiPoolMiddleware` | Routes requests to module-specific tenant pools based on URL path matching |
+| `MultiPoolOption` | Functional option for configuring `MultiPoolMiddleware` |
+| `ConsumerTrigger` | Interface for lazy consumer spawning (defined in middleware package) |
+| `ErrorMapper` | Function type for custom HTTP error responses |
+
+**Available options:**
+
+| Option | Purpose | Required |
+|--------|---------|----------|
+| `WithRoute(paths, module, pgPool, mongoPool)` | Map URL path prefixes to a module's database pools | At least one route or default |
+| `WithDefaultRoute(module, pgPool, mongoPool)` | Fallback route when no path-based route matches | At least one route or default |
+| `WithPublicPaths(paths...)` | URL prefixes that bypass tenant resolution entirely | No |
+| `WithConsumerTrigger(ct)` | Enable lazy consumer spawning after tenant ID extraction | No (only if using lazy RabbitMQ mode) |
+| `WithCrossModuleInjection()` | Resolve PG connections for all registered modules, not just the matched one | No (only if handlers need cross-module DB access) |
+| `WithErrorMapper(fn)` | Custom function to convert tenant-manager errors into HTTP responses | No (built-in mapper is used by default) |
+| `WithMultiPoolLogger(logger)` | Set logger for the middleware (otherwise extracted from context) | No |
+
+#### Multi-module service example
+
+```go
+// config.go - Multi-module service (e.g., unified ledger with onboarding + transaction)
+import (
+    tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware"
+)
+
+transactionPaths := []string{"/transactions", "/operations", "/balances", "/asset-rates"}
+
+multiMid := tmmiddleware.NewMultiPoolMiddleware(
+    tmmiddleware.WithRoute(transactionPaths, "transaction", txPGPool, txMongoPool),
+    tmmiddleware.WithDefaultRoute("onboarding", onbPGPool, onbMongoPool),
+    tmmiddleware.WithPublicPaths("/health", "/version", "/swagger"),
+    tmmiddleware.WithConsumerTrigger(consumerTrigger), // optional, for lazy RabbitMQ mode
+    tmmiddleware.WithCrossModuleInjection(),            // enables cross-module PG connections
+    tmmiddleware.WithErrorMapper(customErrorMapper),    // optional, for custom HTTP error responses
+    tmmiddleware.WithMultiPoolLogger(logger),
+)
+
+app.Use(multiMid.WithTenantDB)
+```
+
+**What the middleware does internally:**
+1. Checks if the request path matches a public path — if so, calls `c.Next()` immediately
+2. Matches the request path against registered routes (first match wins, falls back to default route)
+3. Checks if the matched route's PG pool is multi-tenant — if not, calls `c.Next()`
+4. Extracts `Authorization: Bearer {token}` header and parses JWT
+5. Extracts `tenantId` claim from JWT
+6. Calls `ConsumerTrigger.EnsureConsumerStarted(ctx, tenantID)` if configured
+7. Resolves PG connection via `route.pgPool.GetConnection(ctx, tenantID)` and stores it using module-scoped context keys
+8. If `WithCrossModuleInjection()` is enabled, resolves PG connections for all other routes too
+9. Resolves MongoDB connection if the route has a mongo pool
+10. Calls `c.Next()`
+
+**In repositories for multi-module services, use module-scoped getters:**
+
+```go
+import "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/core"
+
+// Multi-module: use module-specific getter
+db, err := core.GetModulePostgresForTenant(ctx, "transaction")
+db, err := core.GetModulePostgresForTenant(ctx, "onboarding")
+```
+
+#### Simple single-module service example
+
+```go
+// config.go - Single-module service (e.g., CRM, plugin, reporter)
+// Just use TenantMiddleware directly — no need for MultiPoolMiddleware
+import (
+    tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware"
+)
+
+tenantMid := tmmiddleware.NewTenantMiddleware(
+    tmmiddleware.WithPostgresManager(pgManager),
+    tmmiddleware.WithMongoManager(mongoManager),  // optional
+)
+app.Use(tenantMid.WithTenantDB)
+```
+
+#### Choosing between TenantMiddleware and MultiPoolMiddleware
+
+| Feature | TenantMiddleware | MultiPoolMiddleware |
+|---------|-----------------|-------------------|
+| Single PG pool | Yes | Yes (via `WithDefaultRoute`) |
+| Multiple PG pools (path-based) | No | Yes (via `WithRoute`) |
+| MongoDB support | Yes | Yes |
+| Cross-module injection | No | Yes (via `WithCrossModuleInjection`) |
+| Consumer trigger (lazy mode) | No | Yes (via `WithConsumerTrigger`) |
+| Custom error mapping | No | Yes (via `WithErrorMapper`) |
+| Public path bypass | No (handled externally) | Yes (via `WithPublicPaths`) |
+| When to use | Single-module services | Multi-module unified services |
+
+**Rule of thumb:** If your service has one database module, use `TenantMiddleware`. If your service combines multiple modules with different databases behind one HTTP port, use `MultiPoolMiddleware`.
+
+#### ConsumerTrigger interface
+
+The `ConsumerTrigger` interface is defined in the lib-commons middleware package. Services that process messages in multi-tenant mode implement this interface and pass it to the middleware for lazy consumer activation.
+
+```go
+// Defined in github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware
+type ConsumerTrigger interface {
+    EnsureConsumerStarted(ctx context.Context, tenantID string)
+}
+```
+
+The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. The first request per tenant spawns the consumer (~500ms). Subsequent requests return immediately (<1ms). Import this interface from `tmmiddleware`, not from service-specific packages.
+
+#### ErrorMapper
+
+The `ErrorMapper` type lets you customize how tenant-manager errors are converted into HTTP responses. When not set, the built-in default mapper handles standard cases (401, 403, 404, 503).
+
+```go
+// Defined in github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware
+type ErrorMapper func(c *fiber.Ctx, err error, tenantID string) error
+```
+
+Example custom mapper:
+
+```go
+customErrorMapper := func(c *fiber.Ctx, err error, tenantID string) error {
+    if errors.Is(err, core.ErrTenantNotFound) {
+        return c.Status(404).JSON(fiber.Map{
+            "code":    "TENANT_NOT_FOUND",
+            "message": fmt.Sprintf("tenant %s not found", tenantID),
+        })
+    }
+    // Fall through to default behavior for other errors
+    return c.Status(500).JSON(fiber.Map{
+        "code":    "INTERNAL_ERROR",
+        "message": err.Error(),
+    })
+}
 ```
 
 ### Database Connection in Repositories
@@ -304,7 +469,7 @@ func (r *EntityPostgreSQLRepository) Create(ctx context.Context, entity *mmodel.
     defer span.End()
 
     // Get tenant-specific connection from context
-    db, err := tenantmanager.GetPostgresForTenant(ctx)
+    db, err := core.GetPostgresForTenant(ctx)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
         logger.Errorf("Failed to get database connection: %v", err)
@@ -330,9 +495,9 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
     defer span.End()
 
     // Tenant-aware key prefixing (adds tenant:{tenantId}: prefix if multi-tenant)
-    key = tenantmanager.GetKeyFromContext(ctx, key)
+    key = valkey.GetKeyFromContext(ctx, key)
 
-    rds, err := r.conn.GetClient(ctx)
+    rds, err := r.conn.GetConnection(ctx)
     if err != nil {
         return err
     }
@@ -349,14 +514,14 @@ Services that store files in S3 or S3-compatible storage (MinIO, SeaweedFS S3 AP
 // In any service/adapter that uploads, downloads, or deletes files from S3:
 func (r *StorageRepository) Upload(ctx context.Context, originalKey, contentType string, data io.Reader) error {
     // Tenant-aware key prefixing: {tenantId}/{originalKey} in multi-tenant, {originalKey} in single-tenant
-    key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+    key := s3.GetObjectStorageKeyForTenant(ctx, originalKey)
 
     return r.s3Client.Upload(ctx, key, data, contentType)
 }
 
 func (r *StorageRepository) Download(ctx context.Context, originalKey string) (io.ReadCloser, error) {
     // MUST use the same prefixed key for reads and writes
-    key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+    key := s3.GetObjectStorageKeyForTenant(ctx, originalKey)
 
     return r.s3Client.Download(ctx, key)
 }
@@ -377,7 +542,7 @@ Bucket: {service-name}  (env var: OBJECT_STORAGE_BUCKET)
 // internal/adapters/rabbitmq/producer.go
 type ProducerRepository struct {
     conn            *libRabbitmq.RabbitMQConnection
-    rabbitMQManager *tenantmanager.RabbitMQManager
+    rabbitMQManager *tmrabbitmq.Manager
     multiTenantMode bool
 }
 
@@ -390,7 +555,7 @@ func NewProducer(conn *libRabbitmq.RabbitMQConnection) *ProducerRepository {
 }
 
 // Multi-tenant constructor
-func NewProducerMultiTenant(pool *tenantmanager.RabbitMQManager) *ProducerRepository {
+func NewProducerMultiTenant(pool *tmrabbitmq.Manager) *ProducerRepository {
     return &ProducerRepository{
         rabbitMQManager: pool,
         multiTenantMode: true,
@@ -399,7 +564,7 @@ func NewProducerMultiTenant(pool *tenantmanager.RabbitMQManager) *ProducerReposi
 
 func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, message []byte) error {
     // Inject tenant ID header
-    tenantID := tenantmanager.GetTenantID(ctx)
+    tenantID := core.GetTenantID(ctx)
     headers := amqp.Table{}
     if tenantID != "" {
         headers["X-Tenant-ID"] = tenantID
@@ -450,7 +615,7 @@ func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection strin
     defer span.End()
 
     // Get tenant-specific database from context
-    tenantDB, err := tenantmanager.GetMongoForTenant(ctx)
+    tenantDB, err := core.GetMongoForTenant(ctx)
     if err != nil {
         libOpentelemetry.HandleSpanError(&span, "Failed to get database connection", err)
         return err
@@ -476,12 +641,26 @@ func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection strin
 
 ### Conditional Initialization
 
+The initialization path depends on whether the service runs a single module or combines multiple modules:
+
 ```go
 // internal/bootstrap/service.go
 func InitService(cfg *Config) (*Service, error) {
     if cfg.MultiTenantEnabled && cfg.MultiTenantURL != "" {
-        // Create client, managers, and middleware (as shown in Generic TenantMiddleware above)
-        // ...
+        if isUnifiedService {
+            // Multi-module: use MultiPoolMiddleware
+            // See "Multi-module middleware (MultiPoolMiddleware)" section above
+            multiMid := initMultiTenantMiddleware(cfg, logger, consumerTrigger)
+            app.Use(multiMid.WithTenantDB)
+        } else {
+            // Single-module: use TenantMiddleware
+            // See "Generic TenantMiddleware (Standard Pattern)" section above
+            tenantMid := tmmiddleware.NewTenantMiddleware(
+                tmmiddleware.WithPostgresManager(pgManager),
+            )
+            app.Use(tenantMid.WithTenantDB)
+        }
+
         logger.Infof("Multi-tenant mode enabled with Tenant Manager URL: %s", cfg.MultiTenantURL)
     } else {
         logger.Info("Running in SINGLE-TENANT MODE")
@@ -492,6 +671,8 @@ func InitService(cfg *Config) (*Service, error) {
 }
 ```
 
+**Most services follow the single-module path.** Only unified services like midaz ledger need the multi-module path with `MultiPoolMiddleware`.
+
 ### Testing Multi-Tenant Code
 
 #### Unit Tests with Mock Tenant Context
@@ -501,11 +682,11 @@ func InitService(cfg *Config) (*Service, error) {
 func TestUserService_Create_WithTenantContext(t *testing.T) {
     // Setup tenant context
     tenantID := "tenant-123"
-    ctx := tenantmanager.ContextWithTenantID(context.Background(), tenantID)
+    ctx := core.ContextWithTenantID(context.Background(), tenantID)
 
     // Mock database connection
     mockDB := setupMockDB(t)
-    ctx = tenantmanager.ContextWithTenantPGConnection(ctx, mockDB)
+    ctx = core.ContextWithTenantPGConnection(ctx, mockDB)
 
     // Create service with mock dependencies
     repo := repository.NewUserRepository()
@@ -548,8 +729,8 @@ func TestRepository_Create_TenantIsolation(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             // Inject tenant-specific context
-            ctx := tenantmanager.ContextWithTenantID(context.Background(), tt.tenantID)
-            ctx = tenantmanager.ContextWithTenantPGConnection(ctx, mockDB)
+            ctx := core.ContextWithTenantID(context.Background(), tt.tenantID)
+            ctx = core.ContextWithTenantPGConnection(ctx, mockDB)
 
             _, err := repo.Create(ctx, tt.input)
 
@@ -694,7 +875,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 
         // Assert tenant context injected
         require.NoError(t, err)
-        extractedTenant := tenantmanager.GetTenantID(ctx)
+        extractedTenant := core.GetTenantID(ctx)
         assert.Equal(t, tenantID, extractedTenant)
     })
 }
@@ -706,7 +887,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
     t.Run("prefixes keys with tenant ID", func(t *testing.T) {
         tenantID := "tenant-789"
-        ctx := tenantmanager.ContextWithTenantID(context.Background(), tenantID)
+        ctx := core.ContextWithTenantID(context.Background(), tenantID)
 
         repo := NewRedisRepository(redisConn)
 
@@ -714,14 +895,14 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
         require.NoError(t, err)
 
         // Verify key was prefixed
-        key := tenantmanager.GetKeyFromContext(ctx, "user:session")
+        key := valkey.GetKeyFromContext(ctx, "user:session")
         assert.Equal(t, "tenant:tenant-789:user:session", key)
     })
 
     t.Run("single-tenant mode does not prefix keys", func(t *testing.T) {
         ctx := context.Background()
 
-        key := tenantmanager.GetKeyFromContext(ctx, "user:session")
+        key := valkey.GetKeyFromContext(ctx, "user:session")
         assert.Equal(t, "user:session", key)
     })
 }
@@ -734,12 +915,12 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
 | Missing tenantId claim | 401 | `TENANT_ID_REQUIRED` | JWT doesn't have tenantId |
 | Tenant not found | 404 | `TENANT_NOT_FOUND` | Tenant not registered in Tenant Manager |
 | Tenant not provisioned | 422 | `TENANT_NOT_PROVISIONED` | Database schema not initialized (SQLSTATE 42P01) |
-| Tenant suspended | 403 | service-specific | Tenant status is suspended or purged (use `errors.As(err, &TenantSuspendedError{})`) |
-| Service not configured | 503 | service-specific | Tenant exists but has no config for this service/module (`ErrServiceNotConfigured`) |
+| Tenant suspended | 403 | service-specific | Tenant status is suspended or purged (use `errors.As(err, &core.TenantSuspendedError{})`) |
+| Service not configured | 503 | service-specific | Tenant exists but has no config for this service/module (`core.ErrServiceNotConfigured`) |
 | Schema mode error | 422 | service-specific | Invalid schema configuration for tenant database |
 | Connection error | 503 | service-specific | Failed to get or establish tenant connection |
-| Manager closed | 503 | service-specific | Connection manager has been shut down (`ErrManagerClosed`) |
-| Circuit breaker open | 503 | service-specific | Tenant Manager client tripped after consecutive failures (`ErrCircuitBreakerOpen`) |
+| Manager closed | 503 | service-specific | Connection manager has been shut down (`core.ErrManagerClosed`) |
+| Circuit breaker open | 503 | service-specific | Tenant Manager client tripped after consecutive failures (`core.ErrCircuitBreakerOpen`) |
 | Tenant config rate limited | 503 | service-specific | Too many concurrent requests for the same tenant config — retry after brief delay |
 
 ### Tenant Isolation Verification (⚠️ CONDITIONAL)
@@ -766,7 +947,7 @@ Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from
 |-----------|-------------|------------|
 | **JWT `tenantId` extraction** | `TenantMiddleware` extracts `tenantId` claim from JWT | Identifies the tenant |
 | **Database routing** | `TenantConnectionManager` resolves tenant-specific DB connection | Tenant A → Database A, Tenant B → Database B |
-| **Context injection** | Connection stored in request context | Repositories use `GetPostgresForTenant(ctx)` / `GetMongoForTenant(ctx)` |
+| **Context injection** | Connection stored in request context | Repositories use `core.GetPostgresForTenant(ctx)` / `core.GetMongoForTenant(ctx)` |
 | **Single-tenant passthrough** | `IsMultiTenant() == false` → `c.Next()` immediately | Backward compatibility |
 
 #### Why Tenant Isolation Verification Is MANDATORY
@@ -787,14 +968,14 @@ grep -rn "GetPostgresForTenant\|GetModulePostgresForTenant\|GetMongoForTenant" i
 # Excludes tenant-aware variables (tenantDB, tenantmanager) to avoid false positives
 grep -rn "\.DB\.\|\.Database\." internal/adapters/ --include="*.go" | grep -v "_test.go" | grep -v "tenantmanager\|tenantDB"
 
-# Expected: All repositories should use tenantmanager context getters
+# Expected: All repositories should use tenant-manager context getters (core, valkey, s3 packages)
 ```
 
 #### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use tenantmanager.GetPostgresForTenant(ctx) / GetMongoForTenant(ctx)** |
+| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use core.GetPostgresForTenant(ctx) / core.GetMongoForTenant(ctx)** |
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
 | "organization_id filtering = tenant isolation" | organization_id does NOT route to different databases. It is NOT multi-tenant. | **Use tenantId from JWT → TenantConnectionManager** |
 
@@ -804,26 +985,26 @@ lib-commons provides two sets of context functions. They use **separate, isolate
 
 | Function | Context Key | Use When |
 |----------|-------------|----------|
-| `GetPostgresForTenant(ctx)` | `tenantPGConnection` | Standard — one database per tenant |
-| `GetModulePostgresForTenant(ctx, module)` | `tenantPGConnection:{module}` | When service has multiple database modules |
+| `core.GetPostgresForTenant(ctx)` | `tenantPGConnection` | Standard — one database per tenant |
+| `core.GetModulePostgresForTenant(ctx, module)` | `tenantPGConnection:{module}` | When service has multiple database modules |
 
 ```go
 // Standard usage
-db, err := tenantmanager.GetPostgresForTenant(ctx)
+db, err := core.GetPostgresForTenant(ctx)
 if err != nil {
     // ErrTenantContextRequired: middleware not set up or tenant not resolved
     return err
 }
 
 // If service has multiple database modules
-db, err := tenantmanager.GetModulePostgresForTenant(ctx, "my-module")
+db, err := core.GetModulePostgresForTenant(ctx, "my-module")
 ```
 
 **Context setters (used by middleware, not by service code):**
-- `ContextWithTenantID(ctx, tenantID)` — stores tenant ID
-- `ContextWithTenantPGConnection(ctx, db)` — generic PG connection (set by TenantMiddleware)
-- `ContextWithModulePGConnection(ctx, module, db)` — module-specific PG (when service has multiple DB modules)
-- `ContextWithTenantMongo(ctx, mongoDB)` — MongoDB connection
+- `core.ContextWithTenantID(ctx, tenantID)` — stores tenant ID
+- `core.ContextWithTenantPGConnection(ctx, db)` — generic PG connection (set by TenantMiddleware)
+- `core.ContextWithModulePGConnection(ctx, module, db)` — module-specific PG (when service has multiple DB modules)
+- `core.ContextWithTenantMongo(ctx, mongoDB)` — MongoDB connection
 
 ### Tenant ID Validation
 
@@ -846,12 +1027,12 @@ Beyond simple `Set/Get` operations, Redis Lua scripts require special attention.
 
 ```go
 // ✅ CORRECT: Prefix keys in Go before Lua execution
-prefixedBackupQueue := tenantmanager.GetKeyFromContext(ctx, TransactionBackupQueue)
-prefixedTransactionKey := tenantmanager.GetKeyFromContext(ctx, transactionKey)
-prefixedBalanceSyncKey := tenantmanager.GetKeyFromContext(ctx, utils.BalanceSyncScheduleKey)
+prefixedBackupQueue := valkey.GetKeyFromContext(ctx, TransactionBackupQueue)
+prefixedTransactionKey := valkey.GetKeyFromContext(ctx, transactionKey)
+prefixedBalanceSyncKey := valkey.GetKeyFromContext(ctx, utils.BalanceSyncScheduleKey)
 
 // Also prefix ARGV values that are used as keys inside the Lua script
-prefixedInternalKey := tenantmanager.GetKeyFromContext(ctx, blcs.InternalKey)
+prefixedInternalKey := valkey.GetKeyFromContext(ctx, blcs.InternalKey)
 
 result, err := script.Run(ctx, rds,
     []string{prefixedBackupQueue, prefixedTransactionKey, prefixedBalanceSyncKey},
@@ -887,29 +1068,23 @@ Services implementing multi-tenant MUST expose these metrics:
 |---------------|--------------------|-----------------------|
 | **Connection pooling** | Cache per tenant, double-check locking | - |
 | **Credential fetching** | HTTP call to Tenant Manager API | - |
-| **JWT parsing** | Extract `tenantId` from token (middleware) | - |
+| **JWT parsing** | Extract `tenantId` from token (both middlewares) | - |
 | **Tenant discovery** | Redis -> API fallback, sync loop | - |
 | **Lazy consumer lifecycle** | On-demand spawn, backoff, degraded tracking | - |
-| **Middleware registration** | - | Register `TenantMiddleware` on routes |
-| **Repository adaptation** | - | Use `GetPostgresForTenant(ctx)` instead of global DB |
-| **Redis key prefixing** | - | Call `GetKeyFromContext(ctx, key)` for every Redis operation |
-| **S3 key prefixing** | Tenant-aware key prefix (`GetObjectStorageKeyForTenant`) | Call `GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
+| **Path-based pool routing** | `MultiPoolMiddleware` matches URL to module pools | - |
+| **Cross-module connection injection** | `MultiPoolMiddleware` resolves PG for all modules when enabled | - |
+| **Error mapping** | Default error mapper in both middlewares; customizable via `ErrorMapper` in `MultiPoolMiddleware` | - |
+| **Middleware registration** | - | Register `TenantMiddleware` or `MultiPoolMiddleware` on routes |
+| **Repository adaptation** | - | Use `core.GetPostgresForTenant(ctx)` or `core.GetModulePostgresForTenant(ctx, module)` instead of global DB |
+| **Redis key prefixing** | - | Call `valkey.GetKeyFromContext(ctx, key)` for every Redis operation |
+| **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
-| **Consumer trigger** | - | Call `EnsureConsumerStarted(ctx, tenantID)` from middleware |
-| **Error handling** | Return sentinel errors | Map errors to HTTP status codes |
+| **Consumer trigger** | - | Implement `ConsumerTrigger` interface (imported from `tmmiddleware`) and wire to middleware |
+| **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
 
-### ConsumerTrigger Interface
+### ConsumerTrigger Wiring
 
-Services that process messages in multi-tenant mode MUST implement the `ConsumerTrigger` interface and wire it into the middleware for lazy consumer activation:
-
-```go
-// pkg/mbootstrap/interfaces.go
-type ConsumerTrigger interface {
-    EnsureConsumerStarted(ctx context.Context, tenantID string)
-}
-```
-
-The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. First request per tenant spawns the consumer (~500ms). Subsequent requests return immediately (<1ms).
+For `ConsumerTrigger` interface definition and usage, see [ConsumerTrigger interface](#consumertrigger-interface) in the Multi-module middleware section above. Import from `tmmiddleware`, not from service-specific packages. For `TenantMiddleware`, wire it externally. For `MultiPoolMiddleware`, pass it via `WithConsumerTrigger(ct)`.
 
 ### Anti-Rationalization Table (General)
 
@@ -1021,29 +1196,35 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://tenant-manager:4003 go test ./
 - [ ] `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` in config struct (default: `30`)
 
 **Architecture:**
-- [ ] `tenantmanager.NewClient(url, logger)` for Tenant Manager HTTP client
-- [ ] `tenantmanager.NewPostgresManager(client, service, WithModule(...), WithPostgresLogger(...), WithMaxTenantPools(...), WithIdleTimeout(...))` for PostgreSQL pool
-- [ ] `tenantmanager.NewTenantMiddleware(WithPostgresManager(...))` for middleware
-- [ ] `tenantmanager.GetPostgresForTenant(ctx)` in repositories
+- [ ] `client.NewClient(url, logger)` for Tenant Manager HTTP client
+- [ ] `tmpostgres.NewManager(client, service, WithModule(...), WithLogger(...), WithMaxTenantPools(...), WithIdleTimeout(...))` for PostgreSQL pool
+- [ ] Each manager has `Stats()`, `IsMultiTenant()`, and `ApplyConnectionSettings()` methods
+
+**Middleware — choose one:**
+- [ ] For single-module services: `tmmiddleware.NewTenantMiddleware(WithPostgresManager(...))` registered in routes
+- [ ] For multi-module services: `tmmiddleware.NewMultiPoolMiddleware(WithRoute(...), WithDefaultRoute(...))` registered in routes
+- [ ] `MultiPoolMiddleware.Enabled()` or `TenantMiddleware.Enabled()` checked before registering (to support single-tenant passthrough)
 
 **Middleware & Context:**
 - [ ] JWT tenant extraction (claim key: `tenantId`)
-- [ ] `tenantmanager.ContextWithTenantID()` in middleware
+- [ ] `core.ContextWithTenantID()` in middleware
 - [ ] Public endpoints (`/health`, `/version`, `/swagger`) bypass tenant middleware
-- [ ] `ErrTenantNotFound` → 404, `ErrManagerClosed` → 503, `ErrServiceNotConfigured` → 503
-- [ ] `IsTenantNotProvisionedError()` in error handler → 422
-- [ ] `ErrTenantContextRequired` handled in repositories
+- [ ] `core.ErrTenantNotFound` → 404, `core.ErrManagerClosed` → 503, `core.ErrServiceNotConfigured` → 503
+- [ ] `core.IsTenantNotProvisionedError()` in error handler → 422
+- [ ] `core.ErrTenantContextRequired` handled in repositories
+- [ ] `ConsumerTrigger` imported from `tmmiddleware` (not from midaz pkg or service-specific packages)
 - [ ] `ConsumerTrigger.EnsureConsumerStarted()` called after tenant ID extraction (if using lazy mode)
 
 **Repositories:**
-- [ ] `tenantmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
-- [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
-- [ ] `tenantmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
-- [ ] `tenantmanager.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
+- [ ] `core.GetPostgresForTenant(ctx)` in PostgreSQL repositories (single-module services)
+- [ ] `core.GetModulePostgresForTenant(ctx, module)` in PostgreSQL repositories (multi-module services)
+- [ ] `valkey.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
+- [ ] `core.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
+- [ ] `s3.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
-- [ ] `NewMultiTenantConsumer` with `WithConsumerPostgresManager` and `WithConsumerMongoManager`
+- [ ] `consumer.NewMultiTenantConsumer` with `consumer.WithPostgresManager` and `consumer.WithMongoManager`
 - [ ] `consumer.Register(queueName, handler)` for each queue
 - [ ] `consumer.Run(ctx)` at startup (non-blocking, <1s)
 - [ ] `ConsumerTrigger` interface implemented and wired to middleware
@@ -1296,14 +1477,14 @@ In each service consuming messages:
 // In bootstrap/config.go
 func InitServers() {
     // Create multi-tenant consumer
-    consumer := tenantmanager.NewMultiTenantConsumer(...)
-    if err := consumer.Run(ctx); err != nil {
+    tmConsumer := consumer.NewMultiTenantConsumer(...)
+    if err := tmConsumer.Run(ctx); err != nil {
         logger.Errorf("tenant manager startup failed: %v", err)
         // Note: startup continues - consumer will retry tenant discovery in background
     }
 
     // Create middleware with consumer trigger
-    tenantMiddleware := NewTenantMiddleware(consumer)
+    tenantMiddleware := NewTenantMiddleware(tmConsumer)
 
     // Register middleware
     app.Use(tenantMiddleware)
