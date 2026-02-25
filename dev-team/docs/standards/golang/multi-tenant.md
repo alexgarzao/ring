@@ -341,6 +341,36 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
 }
 ```
 
+### S3/Object Storage Key Prefixing
+
+Services that store files in S3 or S3-compatible storage (MinIO, SeaweedFS S3 API) MUST prefix object keys with the tenant ID for tenant isolation. The bucket is configured per service via environment variable. Tenant separation is by directory within the bucket.
+
+```go
+// In any service/adapter that uploads, downloads, or deletes files from S3:
+func (r *StorageRepository) Upload(ctx context.Context, originalKey, contentType string, data io.Reader) error {
+    // Tenant-aware key prefixing: {tenantId}/{originalKey} in multi-tenant, {originalKey} in single-tenant
+    key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+
+    return r.s3Client.Upload(ctx, key, data, contentType)
+}
+
+func (r *StorageRepository) Download(ctx context.Context, originalKey string) (io.ReadCloser, error) {
+    // MUST use the same prefixed key for reads and writes
+    key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
+
+    return r.s3Client.Download(ctx, key)
+}
+```
+
+**Storage structure:**
+```
+Bucket: {service-name}  (env var: OBJECT_STORAGE_BUCKET)
+  └── {tenantId}/
+       └── {resource}/{path}
+```
+
+**Backward compatibility:** When no tenant is in context (single-tenant mode), the key is returned unchanged — no prefix added.
+
 ### RabbitMQ Multi-Tenant Producer
 
 ```go
@@ -863,6 +893,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Middleware registration** | - | Register `TenantMiddleware` on routes |
 | **Repository adaptation** | - | Use `GetPostgresForTenant(ctx)` instead of global DB |
 | **Redis key prefixing** | - | Call `GetKeyFromContext(ctx, key)` for every Redis operation |
+| **S3 key prefixing** | Tenant-aware key prefix (`GetObjectStorageKeyForTenant`) | Call `GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
 | **Consumer trigger** | - | Call `EnsureConsumerStarted(ctx, tenantID)` from middleware |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes |
@@ -1008,6 +1039,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://tenant-manager:4003 go test ./
 - [ ] `tenantmanager.GetPostgresForTenant(ctx)` in PostgreSQL repositories
 - [ ] `tenantmanager.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
 - [ ] `tenantmanager.GetMongoForTenant(ctx)` in MongoDB repositories (if using MongoDB)
+- [ ] `tenantmanager.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages
