@@ -8,7 +8,7 @@ description: |
   Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3),
   then executes a gate-based implementation using tenantId from JWT
   for database-per-tenant isolation via lib-commons v3 tenant-manager sub-packages (postgres.Manager, mongo.Manager).
-  Requires lib-auth and lib-commons v3 as dependencies — both MUST be updated via go get before implementation.
+  Requires lib-commons v3 and lib-auth v2 as dependencies — lib-commons v3 MUST be updated first (lib-auth v2 depends on it).
   Each gate dispatches ring:backend-engineer-golang with context and section references.
   The agent loads multi-tenant.md via WebFetch and has all code examples.
 
@@ -133,7 +133,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | 0 | Stack Detection | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
 | 1.5 | Implementation Preview (visual report) | Always | Orchestrator (ring:visual-explainer) |
-| 2 | lib-commons v3 + lib-auth Upgrade | Skip if already v3 AND lib-auth latest | ring:backend-engineer-golang |
+| 2 | lib-commons v3 + lib-auth v2 Upgrade | Skip if already v3 AND lib-auth v2 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Per detected DB/storage | ring:backend-engineer-golang |
@@ -156,7 +156,7 @@ MUST execute gates sequentially. CANNOT skip or reorder.
 DETECT (run in parallel):
 
 1. lib-commons version:  grep "lib-commons" go.mod
-1b. lib-auth version:    grep "lib-auth" go.mod
+1b. lib-auth v2:         grep "lib-auth" go.mod
 2. PostgreSQL:           grep -rn "postgresql\|pgx\|squirrel" internal/ go.mod
 3. MongoDB:              grep -rn "mongodb\|mongo" internal/ go.mod
 4. Redis:                grep -rn "redis\|valkey" internal/ go.mod
@@ -240,7 +240,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
-| 2 | `go.mod` | lib-commons v2 → v3 + lib-auth update, import paths | All files |
+| 2 | `go.mod` | lib-commons v2 → v3 + lib-auth v2, import paths | All files |
 | 3 | `config.go` | Add 7 MULTI_TENANT_* env vars to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
@@ -370,20 +370,22 @@ HARD GATE: Developer MUST explicitly approve the implementation preview before a
 
 ---
 
-## Gate 2: lib-commons v3 + lib-auth Upgrade
+## Gate 2: lib-commons v3 + lib-auth v2 Upgrade
 
-**SKIP IF:** already lib-commons v3 AND lib-auth latest.
+**SKIP IF:** already lib-commons v3 AND lib-auth v2.
 
 **Dispatch `ring:backend-engineer-golang` with context:**
 
-> TASK: Upgrade lib-commons to v3 AND update lib-auth to latest.
-> Run: `go get github.com/LerianStudio/lib-commons/v3@latest github.com/LerianStudio/lib-auth@latest`
-> Update go.mod and all import paths from v2 to v3.
+> TASK: Upgrade lib-commons to v3 first, then update lib-auth to v2 (lib-auth v2 depends on lib-commons v3).
+> Run in order:
+> 1. `go get github.com/LerianStudio/lib-commons/v3@latest`
+> 2. `go get github.com/LerianStudio/lib-auth/v2@latest`
+> Update go.mod and all import paths from v2 to v3 for lib-commons.
 > Follow multi-tenant.md section "Required lib-commons Version".
 > DO NOT implement multi-tenant code yet — only upgrade the dependencies.
 > Verify: go build ./... and go test ./... MUST pass.
 
-**Verification:** `grep "lib-commons/v3" go.mod` + `grep "lib-auth" go.mod` + `go build ./...` + `go test ./...`
+**Verification:** `grep "lib-commons/v3" go.mod` + `grep "lib-auth/v2" go.mod` + `go build ./...` + `go test ./...`
 
 <block_condition>
 HARD GATE: MUST pass build and tests before proceeding.
