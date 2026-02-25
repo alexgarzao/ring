@@ -2808,11 +2808,11 @@ For current execution unit:
    - else: Skip commit (will happen at task or cycle end)
 
 0b. **VISUAL CHANGE REPORT (MANDATORY - before checkpoint):**
-   - MUST generate a code-diff HTML report for this execution unit using `ring:visual-explainer`
+   - MUST invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
    - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
    - Content sourced from state JSON `agent_outputs` for the current unit:
      * **TDD Output:** `tdd_red` (failing test with failure_output) + `tdd_green` (implementation with pass_output)
-     * **Files Changed:** Per-file before/after (read current file content via Read tool to get the "after" state; for new files, show "New File" in the before panel)
+     * **Files Changed:** Per-file before/after using `git diff` data from the implementation (for new files, show "New File" in the before panel). Do not read source files directly — use diff output provided by the implementation agent.
      * **Review Verdicts:** Summary of all 6 reviewer verdicts from Gate 8
      * **Acceptance Criteria:** Status from Gate 9 validation
    - HTML includes: KPI cards (files changed, tests added, review iterations, gate pass/fail summary), per-file diff panels, review issues section (if any Medium+ issues were found and fixed)
@@ -2848,7 +2848,7 @@ For current execution unit:
    - else: Skip commit (will happen at cycle end)
 
 0b. **VISUAL CHANGE REPORT (MANDATORY - before task checkpoint):**
-   - MUST generate an aggregate code-diff HTML report for all subtasks in this task using `ring:visual-explainer`
+   - MUST invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks in this task
    - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
    - Content aggregated from all subtask executions:
      * **Task Overview:** Task ID, title, all subtask IDs and their gate statuses
