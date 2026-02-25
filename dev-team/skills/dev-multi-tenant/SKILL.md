@@ -337,38 +337,19 @@ HARD GATE: MUST pass build and tests before proceeding.
 > SERVICE ARCHITECTURE: {single-module OR multi-module} (from Gate 1)
 > CONTEXT FROM GATE 1: {Bootstrap location, middleware chain insertion point, service init from analysis report}
 >
-> **Sub-package imports (use only what's needed):**
-> ```
-> tmcore "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/core"
-> tmclient "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/client"
-> tmpg "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/postgres"
-> tmmongo "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/mongo"
-> tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
-> ```
+> **For single-module services:** Follow multi-tenant.md § "Generic TenantMiddleware (Standard Pattern)" for imports, constructor, and options.
+> **For multi-module services:** Follow multi-tenant.md § "Multi-module middleware (MultiPoolMiddleware)" for WithRoute/WithDefaultRoute pattern.
+> **For sub-package import aliases:** See multi-tenant.md § sub-package import table.
 >
-> **For single-module services (most cases):**
-> Use `tmmiddleware.NewTenantMiddleware(tmmiddleware.WithPostgresManager(pgManager))`.
-> See multi-tenant.md § "Generic TenantMiddleware (Standard Pattern)".
+> Follow multi-tenant.md § "JWT Tenant Extraction" for tenantId claim handling.
+> Follow multi-tenant.md § "Conditional Initialization" for the bootstrap pattern.
 >
-> **For multi-module services (unified servers with multiple DB modules):**
-> Use `tmmiddleware.NewMultiPoolMiddleware(WithRoute(...), WithDefaultRoute(...))`.
-> See multi-tenant.md § "Multi-module middleware (MultiPoolMiddleware)".
->
-> MUST define constants for service name and module names.
-> Managers use sub-package constructors: `tmpg.NewManager(client, service, tmpg.WithModule(module), tmpg.WithLogger(logger))`.
-> Options use clean names without prefix: `tmpg.WithLogger` (not `WithPostgresLogger`), `tmmongo.WithModule` (not `WithMongoModule`).
->
-> See multi-tenant.md § "JWT Tenant Extraction" for tenantId claim handling.
-> See multi-tenant.md § "Conditional Initialization" for the bootstrap pattern.
->
+> MUST define constants for service name and module names — never pass raw strings.
 > Create connection managers ONLY for detected databases.
 > Public endpoints (/health, /version, /swagger) MUST bypass tenant middleware.
->
-> CRITICAL: tenantId comes from JWT, NOT from URL path parameters.
 > When MULTI_TENANT_ENABLED=false, middleware calls c.Next() immediately (single-tenant passthrough).
 >
-> **IF RabbitMQ DETECTED:** MUST accept an optional ConsumerTrigger parameter.
-> See [multi-tenant.md § ConsumerTrigger Interface](../../docs/standards/golang/multi-tenant.md) for the wiring pattern.
+> **IF RabbitMQ DETECTED:** Follow multi-tenant.md § "ConsumerTrigger interface" for the wiring pattern.
 
 **Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `go build ./...`
 
