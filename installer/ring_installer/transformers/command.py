@@ -275,7 +275,7 @@ class CommandTransformerFactory:
     PLATFORM_TERMINOLOGY = {
         "claude": {"command": "command"},
         "factory": {"command": "command"},
-        "cursor": {"command": "workflow"},
+        "cursor": {"command": "command"},
         "cline": {"command": "prompt"},
     }
 

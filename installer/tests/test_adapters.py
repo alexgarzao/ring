@@ -696,11 +696,11 @@ class TestCursorAdapter:
         assert mapping["skills"]["target_dir"] == "skills"
 
     def test_transform_replaces_ring_terminology(self, adapter):
-        """CursorAdapter should replace Ring-specific terminology."""
+        """CursorAdapter should replace Ring-specific terminology (CURSOR_REPLACEMENTS)."""
         content = "Use the Skill tool to load a skill."
         result = adapter.transform_skill(content)
 
-        assert "skill reference" in result.lower()
+        assert "rule reference" in result.lower()
 
     def test_get_cursorrules_path_default(self, adapter):
         """get_cursorrules_path() should return default path."""

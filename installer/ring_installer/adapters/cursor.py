@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
-from ring_installer.transformers.base import normalize_cursor_name
+from ring_installer.transformers.base import BaseTransformer, normalize_cursor_name
 
 
 class CursorAdapter(PlatformAdapter):
@@ -170,7 +170,10 @@ class CursorAdapter(PlatformAdapter):
                 arg_name = arg.get("name", "")
                 arg_desc = arg.get("description", "")
                 required = "required" if arg.get("required", False) else "optional"
-                parts.append(f"- **{arg_name}** ({required}): {arg_desc}")
+                param_line = f"- **{arg_name}** ({required})"
+                if arg_desc:
+                    param_line += f": {arg_desc}"
+                parts.append(param_line)
             parts.append("")
 
         parts.append("## Steps")
@@ -276,12 +279,8 @@ class CursorAdapter(PlatformAdapter):
         Returns:
             Transformed body content
         """
-        replacements = [
-            ("Skill tool", "skill reference"),
-        ]
-
         result = body
-        for old, new in replacements:
+        for old, new in BaseTransformer.CURSOR_REPLACEMENTS:
             result = result.replace(old, new)
 
         # Remove Ring-specific tool references that don't apply

@@ -279,7 +279,7 @@ class AgentTransformerFactory:
     PLATFORM_TERMINOLOGY = {
         "claude": {"agent": "agent"},
         "factory": {"agent": "droid"},
-        "cursor": {"agent": "workflow"},
+        "cursor": {"agent": "agent"},
         "cline": {"agent": "prompt"},
     }
 
