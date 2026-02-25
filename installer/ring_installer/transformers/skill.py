@@ -4,6 +4,7 @@ Skill content transformer.
 Transforms Ring SKILL.md files to platform-specific formats.
 """
 
+import re
 from typing import Any, Dict, List, Optional
 
 from ring_installer.transformers.base import (
@@ -263,7 +264,6 @@ class SkillTransformer(BaseTransformer):
 
     def _replace_term(self, text: str, old_term: str, new_term: str) -> str:
         """Replace a term with various case variants."""
-        import re
         result = text
         # Lowercase
         result = re.sub(rf'\b{old_term}\b', new_term, result)

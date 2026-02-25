@@ -25,6 +25,7 @@ from ring_installer.transformers.base import (
     TransformContext,
     TransformerPipeline,
     TransformResult,
+    normalize_cursor_name,
 )
 from ring_installer.transformers.cline_prompts import (
     ClinePromptsGenerator,
@@ -228,7 +229,8 @@ def generate_cursor_output(
         )
         result = transformer.transform(skill.get("content", ""), context)
         if result.success:
-            filename = f"skills/{skill.get('name', 'unknown')}.md"
+            safe_name = normalize_cursor_name(skill.get("name", "") or "") or "unknown"
+            filename = f"skills/{safe_name}.md"
             output[filename] = result.content
 
     for agent in agents:
@@ -241,7 +243,8 @@ def generate_cursor_output(
         )
         result = transformer.transform(agent.get("content", ""), context)
         if result.success:
-            filename = f"agents/{agent.get('name', 'unknown')}.md"
+            safe_name = normalize_cursor_name(agent.get("name", "") or "") or "unknown"
+            filename = f"agents/{safe_name}.md"
             output[filename] = result.content
 
     for command in commands:
@@ -254,7 +257,8 @@ def generate_cursor_output(
         )
         result = transformer.transform(command.get("content", ""), context)
         if result.success:
-            filename = f"commands/{command.get('name', 'unknown')}.md"
+            safe_name = normalize_cursor_name((command.get("name", "") or "").replace("/", "")) or "unknown"
+            filename = f"commands/{safe_name}.md"
             output[filename] = result.content
 
     return output
