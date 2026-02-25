@@ -1021,6 +1021,7 @@ artifacts:
   - reports/{agent-name}-report.md (Step 4.5)
   - findings.md (Step 5)
   - tasks.md (Step 7)
+  - change-report.html (Step 7.5)
 
 traceability:
   Ring Standard → Agent Report → FINDING-XXX → REFACTOR-XXX → Implementation

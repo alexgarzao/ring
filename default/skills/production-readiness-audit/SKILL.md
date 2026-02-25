@@ -6546,7 +6546,7 @@ Linux: xdg-open docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}-dashboard
 
 **Tell the user** the file path. The dashboard opens before the verbal summary.
 
-See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
 
 ### Step 13: Present Summary
 

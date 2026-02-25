@@ -930,7 +930,7 @@ Read tool:
   Linux: xdg-open docs/ring:dev-cycle-frontend/reports/unit-{unit_id}-report.html
   ```
 - Tell the user the file path
-- See [shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
+- See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
 
 ```text
 Subtask {id} complete. All 9 gates passed.
@@ -955,7 +955,7 @@ Subtask {id} complete. All 9 gates passed.
   Linux: xdg-open docs/ring:dev-cycle-frontend/reports/task-{task_id}-report.html
   ```
 - Tell the user the file path
-- See [shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
+- See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
 
 ```text
 Task {id} complete. All subtasks passed all gates.

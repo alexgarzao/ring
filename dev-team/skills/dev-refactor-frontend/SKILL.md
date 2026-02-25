@@ -53,6 +53,8 @@ output_schema:
       description: "All findings mapped from agent reports"
     - name: "tasks.md"
       description: "1:1 mapped REFACTOR-XXX tasks from findings"
+    - name: "change-report.html"
+      description: "Visual HTML change report from ring:visual-explainer"
   traceability: "Ring Standard -> Agent Report -> FINDING-XXX -> REFACTOR-XXX -> Implementation"
 ---
 
@@ -1291,6 +1293,7 @@ artifacts:
   - reports/{agent-name}-report.md (Step 4.6)
   - findings.md (Step 5)
   - tasks.md (Step 7)
+  - change-report.html (Step 7.5)
 
 traceability:
   Ring Standard -> Agent Report -> FINDING-XXX -> REFACTOR-XXX -> Implementation
