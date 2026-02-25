@@ -1011,6 +1011,199 @@ Two-column comparison with diff-colored headers. For review pages, migration doc
 </div>
 ```
 
+### Code Diff Enhancements
+
+Extended patterns for code-level diff views with line numbers, added/removed indicators, severity badges, and finding cards. Use alongside the base `.diff-panels` above. See `./templates/code-diff.html` for a complete working example.
+
+**Line numbers via CSS counter:**
+
+```css
+.diff-code {
+  counter-reset: line;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.diff-line {
+  counter-increment: line;
+  display: block;
+  padding: 1px 12px 1px 48px;
+  position: relative;
+  min-height: 20px;
+  line-height: 20px;
+  white-space: pre;
+}
+
+.diff-line::before {
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  width: 40px;
+  text-align: right;
+  padding-right: 8px;
+  color: var(--text-dim);
+  opacity: 0.4;
+  font-size: 12px;
+  user-select: none;
+}
+```
+
+**Added / removed / unchanged line indicators:**
+
+```css
+.diff-line--added {
+  background: var(--green-dim, rgba(80, 247, 105, 0.12));
+}
+
+.diff-line--removed {
+  background: var(--red-dim, rgba(239, 68, 68, 0.10));
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.diff-line--unchanged {
+  opacity: 0.55;
+}
+```
+
+**Hunk headers** (file path + line range):
+
+```css
+.diff-hunk-header {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--surface2, rgba(0, 0, 0, 0.04));
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.3px;
+}
+```
+
+```html
+<div class="diff-hunk-header">@@ internal/handler/user.go:45-62 @@</div>
+```
+
+**Severity badges:**
+
+```css
+.severity-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.severity-badge--critical { background: var(--red-dim); color: var(--red); }
+.severity-badge--high { background: var(--orange-dim); color: var(--orange); }
+.severity-badge--medium { background: var(--accent-dim); color: var(--accent); }
+.severity-badge--low { background: var(--surface2); color: var(--text-dim); }
+```
+
+```html
+<span class="severity-badge severity-badge--critical">Critical</span>
+<span class="severity-badge severity-badge--high">High</span>
+<span class="severity-badge severity-badge--medium">Medium</span>
+<span class="severity-badge severity-badge--low">Low</span>
+```
+
+**Finding card** (wraps each finding's diff panel):
+
+```css
+.finding-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.finding-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.finding-id {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.finding-category {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.finding-file {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+```
+
+```html
+<div class="finding-card">
+  <div class="finding-header">
+    <span class="finding-id">FINDING-001</span>
+    <span class="severity-badge severity-badge--critical">Critical</span>
+    <span class="finding-category">Error Handling</span>
+    <span class="finding-file">internal/handler/user.go:45-62</span>
+  </div>
+  <div class="diff-hunk-header">@@ internal/handler/user.go:45-62 @@</div>
+  <div class="diff-panels">
+    <div class="diff-panel__header diff-panel__header--before">Before</div>
+    <div class="diff-panel__header diff-panel__header--after">After</div>
+    <div class="diff-panel__body">
+      <div class="diff-code">
+        <span class="diff-line diff-line--removed">if err != nil {</span>
+        <span class="diff-line diff-line--removed">    return err</span>
+        <span class="diff-line diff-line--removed">}</span>
+      </div>
+    </div>
+    <div class="diff-panel__body">
+      <div class="diff-code">
+        <span class="diff-line diff-line--added">if err != nil {</span>
+        <span class="diff-line diff-line--added">    return fmt.Errorf("create user: %w", err)</span>
+        <span class="diff-line diff-line--added">}</span>
+      </div>
+    </div>
+  </div>
+  <details class="collapsible">
+    <summary>Why This Matters</summary>
+    <div class="collapsible__body">
+      <strong>Problem:</strong> Missing error context makes debugging impossible<br>
+      <strong>Standard:</strong> golang.md → Error Handling<br>
+      <strong>Impact:</strong> Production incidents take 3x longer to diagnose
+    </div>
+  </details>
+</div>
+```
+
+**Highlight.js background override** (make syntax colors visible through diff line tints):
+
+```css
+.diff-panel__body .hljs,
+.diff-code .hljs {
+  background: transparent;
+  padding: 0;
+}
+```
+
 ## Collapsible Sections
 
 Native `<details>/<summary>` with styled disclosure. Zero JS, accessible. For lower-priority content: file maps, decision logs, reference sections.

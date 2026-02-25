@@ -2807,6 +2807,24 @@ For current execution unit:
      - Include all changed files from this subtask
    - else: Skip commit (will happen at task or cycle end)
 
+0b. **VISUAL CHANGE REPORT (MANDATORY - before checkpoint):**
+   - MUST invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
+   - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
+   - Content sourced from state JSON `agent_outputs` for the current unit:
+     * **TDD Output:** `tdd_red` (failing test with failure_output) + `tdd_green` (implementation with pass_output)
+     * **Files Changed:** Per-file before/after using `git diff` data from the implementation (for new files, show "New File" in the before panel). Do not read source files directly — use diff output provided by the implementation agent.
+     * **Review Verdicts:** Summary of all 6 reviewer verdicts from Gate 8
+     * **Acceptance Criteria:** Status from Gate 9 validation
+   - HTML includes: KPI cards (files changed, tests added, review iterations, gate pass/fail summary), per-file diff panels, review issues section (if any Medium+ issues were found and fixed)
+   - Save to: `docs/ring:dev-cycle/reports/unit-{unit_id}-report.html`
+   - Open in browser:
+     ```text
+     macOS: open docs/ring:dev-cycle/reports/unit-{unit_id}-report.html
+     Linux: xdg-open docs/ring:dev-cycle/reports/unit-{unit_id}-report.html
+     ```
+   - Tell the user the file path
+   - See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
+
 1. Set `status = "paused_for_approval"`, save state
 2. Present summary: Unit ID, Parent Task, Gates 0-9 status, Criteria X/X, Duration, Files Changed, Commit Status
 3. **AskUserQuestion:** "Ready to proceed?" Options: (a) Continue (b) Test First (c) Stop Here
@@ -2828,6 +2846,22 @@ For current execution unit:
      - Include all changed files from this task (all subtasks combined)
    - else if `commit_timing == "per_subtask"`: Already committed per subtask
    - else: Skip commit (will happen at cycle end)
+
+0b. **VISUAL CHANGE REPORT (MANDATORY - before task checkpoint):**
+   - MUST invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks in this task
+   - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
+   - Content aggregated from all subtask executions:
+     * **Task Overview:** Task ID, title, all subtask IDs and their gate statuses
+     * **Combined File Changes:** All files modified across all subtasks with before/after diff panels
+     * **Aggregate Metrics:** Total tests added, total review iterations, total lines changed
+   - Save to: `docs/ring:dev-cycle/reports/task-{task_id}-report.html`
+   - Open in browser:
+     ```text
+     macOS: open docs/ring:dev-cycle/reports/task-{task_id}-report.html
+     Linux: xdg-open docs/ring:dev-cycle/reports/task-{task_id}-report.html
+     ```
+   - Tell the user the file path
+   - See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
 
 1. Set task `status = "completed"`, cycle `status = "paused_for_task_approval"`, save state
 2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed, Commit Status

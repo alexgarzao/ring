@@ -6495,6 +6495,59 @@ Once ALL explorers complete:
 Write: docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md
 ```
 
+### Step 12.5: Visual Readiness Dashboard
+
+**MANDATORY: Generate a visual HTML dashboard from the audit results.**
+
+Invokes `Skill("ring:visual-explainer")` to produce a self-contained HTML page showing the production readiness score and findings visually. The markdown report is exhaustive (thousands of lines) — the HTML dashboard provides an executive overview that opens in the browser.
+
+**Read templates first:** Read `default/skills/visual-explainer/templates/code-diff.html` for severity badges and KPI card patterns, AND read `default/skills/visual-explainer/templates/data-table.html` for table/heatmap patterns. Combine patterns for an audit dashboard layout. Also read `default/skills/visual-explainer/references/responsive-nav.md` for section navigation (7 sections require sidebar TOC).
+
+**Generate the HTML dashboard with these sections:**
+
+**1. Score Hero**
+- Large overall score display: `{score}/{dynamic_max}` with percentage
+- Readiness classification badge (Production Ready / Ready with Minor Remediation / Needs Significant Work / Not Production Ready)
+- Color-coded: green (90%+), yellow (75-89%), orange (50-74%), red (<50%)
+
+**2. Category Scoreboard**
+- 5 category cards (A: Structure, B: Security, C: Operations, D: Quality, E: Infrastructure)
+- Each card shows: score/max, percentage bar, critical/high/medium/low counts with severity badges
+- Visual progress bars per category
+
+**3. Dimension Scores Heatmap**
+- All 44 dimensions in a grid/table
+- Color-coded cells: 8-10 green, 6-7 yellow, 4-5 orange, 0-3 red
+- Grouped by category with subtotals
+
+**4. HARD GATE Violations** (if any)
+- Prominent red section listing all HARD GATE violations
+- Each violation shows: dimension, standard reference, evidence, remediation
+
+**5. Critical Blockers** (if any)
+- Per-blocker cards with: severity badge, description, file:line references, impact, remediation steps
+
+**6. Remediation Roadmap**
+- 4-phase timeline: Immediate (blockers) → Short-term (HIGH) → Medium-term (MEDIUM) → Backlog (LOW)
+- Issue count per phase
+- Collapsible details per phase
+
+**7. Standards Compliance Summary**
+- Table showing which Ring standards were checked and their compliance status
+- Collapsible per-standard details
+
+**Output:** Save to `docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}-dashboard.html`
+
+**Open in browser:**
+```text
+macOS: open docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}-dashboard.html
+Linux: xdg-open docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}-dashboard.html
+```
+
+**Tell the user** the file path. The dashboard opens before the verbal summary.
+
+See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+
 ### Step 13: Present Summary
 
 Provide a verbal summary to the user including:
@@ -6503,7 +6556,7 @@ Provide a verbal summary to the user including:
 - Number of critical/high issues
 - HARD GATE violations summary
 - Top 3 recommendations
-- Link to full report
+- Link to full report and visual dashboard
 
 ---
 

@@ -53,6 +53,8 @@ output_schema:
       description: "All findings mapped from agent reports"
     - name: "tasks.md"
       description: "1:1 mapped REFACTOR-XXX tasks from findings"
+    - name: "change-report.html"
+      description: "Visual HTML change report from ring:visual-explainer"
   traceability: "Ring Standard -> Agent Report -> FINDING-XXX -> REFACTOR-XXX -> Implementation"
 ---
 
@@ -203,6 +205,9 @@ TodoWrite:
     - content: "Generate tasks.md"
       status: "pending"
       activeForm: "Generating tasks.md"
+    - content: "Generate visual change report"
+      status: "pending"
+      activeForm: "Generating visual change report"
     - content: "Get user approval"
       status: "pending"
       activeForm: "Getting user approval"
@@ -1079,6 +1084,50 @@ Before proceeding to Step 7, verify:
 
 ---
 
+## Step 7.5: Visual Change Report
+
+**TodoWrite:** Mark "Generate visual change report" as `in_progress`
+
+**MANDATORY: Generate a visual HTML report before user approval.**
+
+Invokes `Skill("ring:visual-explainer")` to produce a self-contained HTML page showing all planned frontend refactoring changes. This replaces reading raw findings.md / tasks.md markdown for approval decisions.
+
+**Read the code-diff template first:** Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating.
+
+**Generate the HTML report with these sections:**
+
+### 1. Summary Dashboard
+- UI Library Mode (from findings.md header)
+- Total FINDING-XXX count with severity breakdown (Critical / High / Medium / Low)
+- Total files affected (unique file paths from all findings)
+- Horizontal severity breakdown bar
+
+### 2. Per-Finding Diff Panels (one section per FINDING-XXX)
+For each FINDING-XXX in findings.md:
+- **Header:** Finding ID, severity badge, category, agent that reported it
+- **Before panel:** Current Code block from findings.md (with file:line reference, syntax highlighted via Highlight.js)
+- **After panel:** Ring Standard pattern from Required Changes section (syntax highlighted)
+- **Collapsible "Why This Matters":** Problem / Standard Violated / Impact from findings.md
+
+### 3. Task Mapping Table
+Table showing: FINDING-XXX → REFACTOR-XXX → Severity → Category → Estimated Effort
+
+**Output:** Save to `docs/ring:dev-refactor-frontend/{timestamp}/change-report.html`
+
+**Open in browser:**
+```text
+macOS: open docs/ring:dev-refactor-frontend/{timestamp}/change-report.html
+Linux: xdg-open docs/ring:dev-refactor-frontend/{timestamp}/change-report.html
+```
+
+**Tell the user** the file path. The report opens before the approval question so the user can review changes visually.
+
+See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+
+**TodoWrite:** Mark "Generate visual change report" as `completed`
+
+---
+
 ## Step 8: User Approval
 
 **TodoWrite:** Mark "Get user approval" as `in_progress`
@@ -1141,6 +1190,7 @@ docs/ring:dev-refactor-frontend/{timestamp}/
 |   +-- ring:ui-engineer-report.md              (conditional)
 +-- findings.md         (Step 5)
 +-- tasks.md           (Step 7)
++-- change-report.html (Step 7.5)
 ```
 
 **TodoWrite:** Mark "Save all artifacts" as `completed`
@@ -1243,6 +1293,7 @@ artifacts:
   - reports/{agent-name}-report.md (Step 4.6)
   - findings.md (Step 5)
   - tasks.md (Step 7)
+  - change-report.html (Step 7.5)
 
 traceability:
   Ring Standard -> Agent Report -> FINDING-XXX -> REFACTOR-XXX -> Implementation

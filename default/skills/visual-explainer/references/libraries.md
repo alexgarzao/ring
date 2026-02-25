@@ -480,3 +480,40 @@ Define as CSS variables for easy reference:
 | Plus Jakarta Sans | Azeret Mono | Rounded, approachable |
 
 Never default to Inter, Roboto, Arial, or system-ui as the primary choice.
+
+## Highlight.js — Syntax Highlighting
+
+Use for code blocks that need language-aware syntax coloring. Required for code diff / change review pages. Lightweight — only load the languages you need.
+
+**CDN (core + theme pair for light/dark):**
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css"
+      media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css"
+      media="(prefers-color-scheme: light)">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+```
+
+**Selective language loading** (smaller bundle — load only what the page needs):
+```html
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/go.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/typescript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/css.min.js"></script>
+<script>hljs.highlightAll();</script>
+```
+
+**Theme integration with diff panels:** Override `.hljs` background to `transparent` so the diff line backgrounds (green/red tints) show through the syntax-highlighted code:
+
+```css
+.diff-panel__body .hljs,
+.diff-code .hljs {
+  background: transparent;
+  padding: 0;
+}
+```
+
+**When to use:** Any page displaying code blocks with syntax coloring — code diff reports, change reviews, implementation previews. Not needed for diagrams, data tables, or architecture overviews unless they embed code snippets.
+
+**Dark mode:** The `github` / `github-dark` theme pair with `prefers-color-scheme` media queries switches automatically. No JS needed for theme toggling.
