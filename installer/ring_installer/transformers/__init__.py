@@ -7,7 +7,7 @@ This module provides transformers for converting Ring components
 Supported Platforms:
 - Claude Code: Native Ring format (passthrough)
 - Factory AI: Agents -> Droids transformation
-- Cursor: Skills -> Rules, Agents/Commands -> Workflows
+- Cursor: Skills -> Skills, Agents -> Agents, Commands -> Commands
 - Cline: All components -> Prompts
 """
 

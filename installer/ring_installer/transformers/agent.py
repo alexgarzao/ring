@@ -21,7 +21,7 @@ class AgentTransformer(BaseTransformer):
     Handles transformation of agent definitions including:
     - Claude: passthrough (native format)
     - Factory: agent -> droid, update references
-    - Cursor: convert to workflow definition
+    - Cursor: convert to agent format (frontmatter + body)
     - Cline: convert to prompt template
     """
 
@@ -108,6 +108,13 @@ class AgentTransformer(BaseTransformer):
 
         return TransformResult(content=content, success=True)
 
+    def _normalize_cursor_name(self, name: str) -> str:
+        """Normalize name for Cursor: lowercase, [a-z0-9-] only, max 64 chars."""
+        normalized = name.lower().replace(":", "-")
+        normalized = re.sub(r"[^a-z0-9-]", "", normalized)
+        normalized = re.sub(r"-+", "-", normalized).strip("-")
+        return normalized[:64]
+
     def _transform_cursor(
         self,
         frontmatter: Dict[str, Any],
@@ -115,46 +122,20 @@ class AgentTransformer(BaseTransformer):
         context: TransformContext
     ) -> TransformResult:
         """
-        Transform agent to Cursor workflow format.
+        Transform agent to Cursor agent format.
 
-        Converts agent definition to workflow structure suitable
-        for Cursor's multi-step operations.
+        Cursor agents use YAML frontmatter (name, description) plus body.
         """
-        parts: List[str] = []
-
-        # Extract metadata
-        name = frontmatter.get("name", context.metadata.get("name", "Untitled Workflow"))
+        name = frontmatter.get("name", context.metadata.get("name", "untitled-agent"))
         description = frontmatter.get("description", "")
-        model = frontmatter.get("model", "")
+        clean_desc = self.clean_yaml_string(description).replace("\n", " ").strip()[:1024]
+        normalized_name = self._normalize_cursor_name(name)
 
-        # Build workflow header
-        parts.append(f"# {self.to_title_case(name)} Workflow")
-        parts.append("")
-
-        if description:
-            clean_desc = self.clean_yaml_string(description)
-            parts.append(f"**Purpose:** {clean_desc}")
-            parts.append("")
-
-        if model:
-            parts.append(f"**Recommended Model:** {model}")
-            parts.append("")
-
-        # Output requirements from schema
-        output_schema = frontmatter.get("output_schema", {})
-        if output_schema:
-            parts.append("## Output Requirements")
-            parts.append("")
-            required_sections = output_schema.get("required_sections", [])
-            for section in required_sections:
-                section_name = section.get("name", "")
-                if section_name:
-                    required = " (required)" if section.get("required", True) else ""
-                    parts.append(f"- {section_name}{required}")
-            parts.append("")
-
-        # Transform and add the body
-        parts.append("## Workflow Steps")
+        parts: List[str] = []
+        parts.append("---")
+        parts.append(f"name: {normalized_name}")
+        parts.append(f"description: {clean_desc}")
+        parts.append("---")
         parts.append("")
         parts.append(self.transform_body_for_cursor(body))
 

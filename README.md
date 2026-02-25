@@ -117,21 +117,21 @@ Ring works across multiple AI development platforms:
 | --------------- | ----------- | ------------------ | ------------------------------- |
 | **Claude Code** | Native      | ✅ Source of truth | Skills, agents, commands, hooks |
 | **Factory AI**  | Transformed | ✅ Supported       | Droids, commands, skills        |
-| **Cursor**      | Transformed | ✅ Supported       | Rules, workflows                |
+| **Cursor**      | Transformed | ✅ Supported       | Skills, agents, commands        |
 | **Cline**       | Transformed | ✅ Supported       | Prompts                         |
 
 **Transformation Notes:**
 
 - Claude Code receives Ring content in its native format
 - Factory AI: `agents` → `droids` terminology
-- Cursor: Skills/agents → `.cursorrules` and workflows
+- Cursor: Skills → ~/.cursor/skills/, Agents → agents/, Commands → commands/
 - Cline: All content → structured prompts
 
 **Platform-Specific Guides:**
 
 - [Claude Code Installation Guide](docs/platforms/claude-code.md) - Native format setup and usage
 - [Factory AI Installation Guide](docs/platforms/factory-ai.md) - Droids transformation and configuration
-- [Cursor Installation Guide](docs/platforms/cursor.md) - Rules and workflow setup
+- [Cursor Installation Guide](docs/platforms/cursor.md) - Skills, agents, and commands setup
 - [Cline Installation Guide](docs/platforms/cline.md) - Prompt-based configuration
 - [Migration Guide](docs/platforms/MIGRATION.md) - Moving between platforms or upgrading
 
@@ -717,7 +717,7 @@ ring/                                  # Monorepo root
 - **Platform Guides:**
   - [Claude Code](docs/platforms/claude-code.md) - Native format setup
   - [Factory AI](docs/platforms/factory-ai.md) - Droids transformation
-  - [Cursor](docs/platforms/cursor.md) - Rules and workflows
+  - [Cursor](docs/platforms/cursor.md) - Skills, agents, and commands
   - [Cline](docs/platforms/cline.md) - Prompt-based setup
   - [Migration](docs/platforms/MIGRATION.md) - Platform switching and upgrades
 

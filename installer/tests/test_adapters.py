@@ -625,11 +625,11 @@ Read-only droid.
 
 
 # ==============================================================================
-# Tests for CursorAdapter (rules and workflows)
+# Tests for CursorAdapter (skills, agents, and commands)
 # ==============================================================================
 
 class TestCursorAdapter:
-    """Tests for CursorAdapter rule/workflow generation."""
+    """Tests for CursorAdapter skill/agent/command generation."""
 
     @pytest.fixture
     def adapter(self):
@@ -649,71 +649,58 @@ class TestCursorAdapter:
         """get_terminology() should return Cursor-specific mapping."""
         terminology = adapter.get_terminology()
 
-        assert terminology["agent"] == "workflow"
-        assert terminology["skill"] == "rule"
-        assert terminology["command"] == "workflow"
+        assert terminology["agent"] == "agent"
+        assert terminology["skill"] == "skill"
+        assert terminology["command"] == "command"
 
-    def test_transform_skill_to_rule(self, adapter, sample_skill_content):
-        """transform_skill() should convert skill to Cursor rule format."""
+    def test_transform_skill_format(self, adapter, sample_skill_content):
+        """transform_skill() should convert skill to Cursor skill format with frontmatter."""
         result = adapter.transform_skill(sample_skill_content)
 
-        # Rule format should have title (from name)
+        assert result.startswith("---")
+        assert "name:" in result
+        assert "description:" in result
         assert "# Sample Skill" in result or "# Sample-Skill" in result or "# sample" in result.lower()
-
-        # Should have "When to Apply" section from trigger
         assert "When to Apply" in result or "Instructions" in result
-
-        # Should not have YAML frontmatter
-        assert not result.startswith("---")
 
     def test_transform_skill_with_frontmatter_extraction(self, adapter, minimal_skill_content):
         """transform_skill() should extract and use frontmatter data."""
         result = adapter.transform_skill(minimal_skill_content)
 
-        # Title should come from name field
+        assert result.startswith("---")
+        assert "name: minimal-skill" in result
         assert "Minimal Skill" in result or "minimal" in result.lower()
 
-    def test_transform_agent_to_workflow(self, adapter, sample_agent_content):
-        """transform_agent() should convert agent to workflow format."""
+    def test_transform_agent_format(self, adapter, sample_agent_content):
+        """transform_agent() should convert agent to Cursor agent format with frontmatter."""
         result = adapter.transform_agent(sample_agent_content)
 
-        # Should have workflow header
-        assert "Workflow" in result
+        assert result.startswith("---")
+        assert "name:" in result
+        assert "description:" in result
 
-        # Should have workflow steps section
-        assert "Workflow Steps" in result or "Steps" in result
-
-        # Should not have YAML frontmatter
-        assert not result.startswith("---")
-
-    def test_transform_command_to_workflow(self, adapter, sample_command_content):
-        """transform_command() should convert command to workflow format."""
+    def test_transform_command_format(self, adapter, sample_command_content):
+        """transform_command() should convert command to Cursor command format (plain markdown)."""
         result = adapter.transform_command(sample_command_content)
 
-        # Should have Parameters section (from args)
-        assert "Parameters" in result
-
-        # Should have Instructions section
-        assert "Instructions" in result
-
-        # Should not have YAML frontmatter
         assert not result.startswith("---")
+        assert "Parameters" in result
+        assert "Steps" in result
 
     def test_get_component_mapping(self, adapter):
         """get_component_mapping() should map to Cursor directories."""
         mapping = adapter.get_component_mapping()
 
-        assert mapping["agents"]["target_dir"] == "workflows"
-        assert mapping["commands"]["target_dir"] == "workflows"
-        assert mapping["skills"]["target_dir"] == "rules"
+        assert mapping["agents"]["target_dir"] == "agents"
+        assert mapping["commands"]["target_dir"] == "commands"
+        assert mapping["skills"]["target_dir"] == "skills"
 
     def test_transform_replaces_ring_terminology(self, adapter):
         """CursorAdapter should replace Ring-specific terminology."""
-        content = "Use the Task tool to dispatch subagent."
+        content = "Use the Skill tool to load a skill."
         result = adapter.transform_skill(content)
 
-        # Ring terminology should be replaced
-        assert "workflow step" in result.lower() or "sub-workflow" in result.lower()
+        assert "skill reference" in result.lower()
 
     def test_get_cursorrules_path_default(self, adapter):
         """get_cursorrules_path() should return default path."""
