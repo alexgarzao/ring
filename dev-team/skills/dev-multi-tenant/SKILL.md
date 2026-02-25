@@ -1,28 +1,28 @@
 ---
 name: ring:dev-multi-tenant
 slug: dev-multi-tenant
-version: 1.1.0
+version: 2.0.0
 type: skill
 description: |
   Multi-tenant development cycle orchestrator following Ring Standards.
   Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3),
   then executes a gate-based implementation using tenantId from JWT
-  for database-per-tenant isolation via lib-commons v3 TenantConnectionManager.
+  for database-per-tenant isolation via lib-commons v3 dispatch layer sub-packages (postgres.Manager, mongo.Manager).
   Each gate dispatches ring:backend-engineer-golang with context and section references.
   The agent loads multi-tenant.md via WebFetch and has all code examples.
 
 trigger: |
   - User requests multi-tenant implementation for a Go service
   - User asks to add tenant isolation to an existing service
-  - Task mentions "multi-tenant", "tenant isolation", "TenantConnectionManager"
+  - Task mentions "multi-tenant", "tenant isolation", "dispatch layer", "postgres.Manager", "MultiPoolMiddleware"
 
 prerequisite: |
   - Go service with existing single-tenant functionality
 
 NOT_skip_when: |
   - "organization_id already exists" → organization_id is NOT multi-tenant. tenantId via JWT is required.
-  - "Just need to connect the wiring" → Multi-tenant requires lib-commons v3 TenantConnectionManager.
-  - "lib-commons v3 upgrade is too risky" → Multi-tenant REQUIRES v3. No v3 = no multi-tenant.
+  - "Just need to connect the wiring" → Multi-tenant requires lib-commons v3 dispatch layer sub-packages.
+  - "lib-commons v3 upgrade is too risky" → Multi-tenant REQUIRES lib-commons v3 dispatch layer sub-packages. No v3 = no multi-tenant.
 
 sequence:
   after: [ring:dev-devops]
@@ -89,7 +89,7 @@ examples:
 
 ## Multi-Tenant Architecture
 
-Multi-tenant isolation is 100% based on `tenantId` from JWT → `TenantConnectionManager` → database-per-tenant. Each tenant has its own database. `organization_id` is NOT part of multi-tenant.
+Multi-tenant isolation is 100% based on `tenantId` from JWT → dispatch layer middleware → database-per-tenant. Connection managers (`postgres.Manager`, `mongo.Manager`, `rabbitmq.Manager`) resolve tenant-specific credentials via the Tenant Manager API. `organization_id` is NOT part of multi-tenant.
 
 **Standards reference:** All code examples and implementation patterns are in [multi-tenant.md](../../docs/standards/golang/multi-tenant.md). MUST load via WebFetch before implementing any gate.
 
@@ -109,7 +109,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 
 | User Says | This Is | Response |
 |-----------|---------|----------|
-| "Skip the lib-commons upgrade" | QUALITY_BYPASS | "CANNOT proceed without lib-commons v3. TenantConnectionManager does not exist in v2." |
+| "Skip the lib-commons upgrade" | QUALITY_BYPASS | "CANNOT proceed without lib-commons v3. Tenant-manager sub-packages do not exist in v2." |
 | "Just do the happy path, skip backward compat" | SCOPE_REDUCTION | "Backward compatibility is NON-NEGOTIABLE. Single-tenant deployments depend on it." |
 | "organization_id is our tenant identifier" | AUTHORITY_OVERRIDE | "STOP. organization_id is NOT multi-tenant. tenantId from JWT is the only mechanism." |
 | "Skip code review, we tested it" | QUALITY_BYPASS | "MANDATORY: 6 reviewers. One security mistake = cross-tenant data leak." |
@@ -125,7 +125,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
 | 2 | lib-commons v3 Upgrade | Skip if already v3 | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
-| 4 | TenantMiddleware | Always (core) | ring:backend-engineer-golang |
+| 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Per detected DB/storage | ring:backend-engineer-golang |
 | 6 | RabbitMQ Multi-Tenant | Skip if no RabbitMQ | ring:backend-engineer-golang |
 | 7 | Metrics & Backward Compat | Always | ring:backend-engineer-golang |
@@ -153,9 +153,9 @@ DETECT (run in parallel):
 6. S3/Object Storage:    grep -rn "s3\|ObjectStorage\|PutObject\|GetObject\|Upload.*storage\|Download.*storage" internal/ pkg/ go.mod
 7. Existing multi-tenant:
    - Config:     grep -rn "MULTI_TENANT_ENABLED" internal/
-   - Middleware: grep -rn "tenantmanager\|WithTenantDB" internal/
-   - Context:    grep -rn "GetMongoForTenant\|GetPostgresForTenant" internal/
-   - S3 keys:    grep -rn "GetObjectStorageKeyForTenant" internal/
+   - Middleware: grep -rn "dispatch layer/middleware\|WithTenantDB\|MultiPoolMiddleware" internal/
+   - Context:    grep -rn "dispatch layer/core\|GetMongoForTenant\|GetPostgresForTenant" internal/
+   - S3 keys:    grep -rn "dispatch layer/s3\|GetObjectStorageKeyForTenant" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 ```
 
@@ -172,7 +172,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > TASK: Analyze this codebase exclusively under the multi-tenant perspective.
 > DETECTED STACK: {databases and messaging from Gate 0}
 >
-> CRITICAL: Multi-tenant is ONLY about tenantId from JWT → TenantConnectionManager → database-per-tenant.
+> CRITICAL: Multi-tenant is ONLY about tenantId from JWT → dispatch layer middleware → database-per-tenant.
 > IGNORE organization_id completely — it is NOT multi-tenant. A tenant can have multiple organizations inside its database. organization_id is a domain entity, not a tenant identifier.
 >
 > FOCUS AREAS (explore ONLY these — ignore everything else):
@@ -185,7 +185,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split? Are there dual constructors? Is there a RabbitMQManager pool? Does the service struct have both consumer types?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
 > 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key. What bucket env var is used?
-> 9. **Existing multi-tenant code**: Any tenantmanager imports? TenantMiddleware? GetPostgresForTenant/GetMongoForTenant/GetObjectStorageKeyForTenant calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
+> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware or MultiPoolMiddleware? `core.GetPostgresForTenant`/`core.GetMongoForTenant`/`s3.GetObjectStorageKeyForTenant` calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
 > DO NOT write code. Analysis only.
@@ -245,18 +245,34 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Implement TenantMiddleware using lib-commons/v3 dispatch layer package.
+> TASK: Implement tenant middleware using lib-commons/v3 dispatch layer sub-packages.
 > DETECTED DATABASES: {postgresql: Y/N, mongodb: Y/N} (from Gate 0)
+> SERVICE ARCHITECTURE: {single-module OR multi-module} (from Gate 1)
 > CONTEXT FROM GATE 1: {Bootstrap location, middleware chain insertion point, service init from analysis report}
 >
-> CRITICAL — HIERARCHY: Service → Module → Resource.
-> See [multi-tenant.md § Generic TenantMiddleware](../../docs/standards/golang/multi-tenant.md) for the full middleware pattern.
-> See [multi-tenant.md § Conditional Initialization](../../docs/standards/golang/multi-tenant.md) for the bootstrap pattern.
+> **Sub-package imports (use only what's needed):**
+> ```
+> tmcore "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/core"
+> tmclient "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/client"
+> tmpg "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/postgres"
+> tmmongo "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/mongo"
+> tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
+> ```
 >
-> MUST define constants for service name and module names — never pass raw strings.
-> The first parameter to NewPostgresManager/NewMongoManager is the SERVICE (ApplicationName).
-> WithModule/WithMongoModule receives the MODULE (component name).
+> **For single-module services (most cases):**
+> Use `tmmiddleware.NewTenantMiddleware(tmmiddleware.WithPostgresManager(pgManager))`.
+> See multi-tenant.md § "Generic TenantMiddleware (Standard Pattern)".
+>
+> **For multi-module services (unified servers with multiple DB modules):**
+> Use `tmmiddleware.NewMultiPoolMiddleware(WithRoute(...), WithDefaultRoute(...))`.
+> See multi-tenant.md § "Multi-module middleware (MultiPoolMiddleware)".
+>
+> MUST define constants for service name and module names.
+> Managers use sub-package constructors: `tmpg.NewManager(client, service, tmpg.WithModule(module), tmpg.WithLogger(logger))`.
+> Options use clean names without prefix: `tmpg.WithLogger` (not `WithPostgresLogger`), `tmmongo.WithModule` (not `WithMongoModule`).
+>
 > See multi-tenant.md § "JWT Tenant Extraction" for tenantId claim handling.
+> See multi-tenant.md § "Conditional Initialization" for the bootstrap pattern.
 >
 > Create connection managers ONLY for detected databases.
 > Public endpoints (/health, /version, /swagger) MUST bypass tenant middleware.
@@ -267,7 +283,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 > **IF RabbitMQ DETECTED:** MUST accept an optional ConsumerTrigger parameter.
 > See [multi-tenant.md § ConsumerTrigger Interface](../../docs/standards/golang/multi-tenant.md) for the wiring pattern.
 
-**Verification:** `grep "tenantmanager.NewTenantMiddleware" internal/bootstrap/` + `go build ./...`
+**Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `go build ./...`
 
 <block_condition>
 HARD GATE: CANNOT proceed without TenantMiddleware.
@@ -293,7 +309,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
-**Verification:** grep for `GetPostgresForTenant` / `GetMongoForTenant` / `GetKeyFromContext` / `GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
+**Verification:** grep for `core.GetPostgresForTenant` / `core.GetMongoForTenant` / `core.GetModulePostgresForTenant` (multi-module) / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
 
 ---
 
@@ -318,7 +334,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 > 3. MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode
 > 4. X-Tenant-ID goes in AMQP headers, NOT in message body
 
-**Verification:** `grep "RabbitMQManager\|NewProducerMultiTenant\|EnsureConsumerStarted\|ConsumerTrigger" internal/` + `go build ./...`
+**Verification:** `grep "tmrabbitmq.Manager\|NewProducerMultiTenant\|EnsureConsumerStarted\|tmmiddleware.ConsumerTrigger" internal/` + `go build ./...`
 
 <block_condition>
 HARD GATE: MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode.
@@ -372,13 +388,13 @@ HARD GATE: Backward compatibility MUST pass.
 MUST include this context in ALL 6 reviewer dispatches:
 
 > **MULTI-TENANT REVIEW CONTEXT:**
-> - Multi-tenant isolation is based on `tenantId` from JWT → `TenantConnectionManager` → database-per-tenant.
+> - Multi-tenant isolation is based on `tenantId` from JWT → dispatch layer middleware (TenantMiddleware or MultiPoolMiddleware) → database-per-tenant.
 > - `organization_id` is NOT a tenant identifier. It is a business filter within the tenant's database. A single tenant can have multiple organizations. Do NOT flag organization_id as a multi-tenant issue.
 > - Backward compatibility is required: when `MULTI_TENANT_ENABLED=false`, the service MUST work exactly as before (single-tenant mode, no tenant context needed).
 
 | Reviewer | Focus |
 |----------|-------|
-| ring:code-reviewer | Architecture, lib-commons v3 usage, TenantMiddleware placement |
+| ring:code-reviewer | Architecture, lib-commons v3 usage, TenantMiddleware/MultiPoolMiddleware placement, sub-package usage |
 | ring:business-logic-reviewer | Tenant context propagation via tenantId (NOT organization_id) |
 | ring:security-reviewer | Cross-tenant DB isolation, JWT tenantId validation, no data leaks between tenant databases |
 | ring:test-reviewer | Coverage, isolation tests between two tenants, backward compat tests |
@@ -398,7 +414,7 @@ MUST approve: present checklist for explicit user approval.
 
 - [ ] lib-commons v3
 - [ ] MULTI_TENANT_ENABLED config
-- [ ] TenantMiddleware (JWT tenantId → DB routing)
+- [ ] Tenant middleware (TenantMiddleware or MultiPoolMiddleware for multi-module services)
 - [ ] Repositories use context-based connections
 - [ ] S3 keys prefixed with tenantId (if applicable)
 - [ ] RabbitMQ X-Tenant-ID (if applicable)
