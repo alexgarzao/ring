@@ -347,14 +347,14 @@ Services that store files in S3 or S3-compatible storage (MinIO, SeaweedFS S3 AP
 
 ```go
 // In any service/adapter that uploads, downloads, or deletes files from S3:
-func (r *StorageRepository) Upload(ctx context.Context, originalKey string, data []byte) error {
+func (r *StorageRepository) Upload(ctx context.Context, originalKey, contentType string, data io.Reader) error {
     // Tenant-aware key prefixing: {tenantId}/{originalKey} in multi-tenant, {originalKey} in single-tenant
     key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
 
-    return r.s3Client.Upload(ctx, key, bytes.NewReader(data), contentType)
+    return r.s3Client.Upload(ctx, key, data, contentType)
 }
 
-func (r *StorageRepository) Download(ctx context.Context, originalKey string) ([]byte, error) {
+func (r *StorageRepository) Download(ctx context.Context, originalKey string) (io.ReadCloser, error) {
     // MUST use the same prefixed key for reads and writes
     key := tenantmanager.GetObjectStorageKeyForTenant(ctx, originalKey)
 

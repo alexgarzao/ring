@@ -404,10 +404,7 @@ DETECT (run in parallel):
 > - "Redis Key Prefixing" and "Redis Key Prefixing for Lua Scripts" (Redis)
 >
 > S3/OBJECT STORAGE (if detected):
-> Follow multi-tenant.md section "S3/Object Storage Key Prefixing".
-> MUST apply `tenantmanager.GetObjectStorageKeyForTenant(ctx, key)` to every Upload, Download, Delete, Exists, and GeneratePresignedURL call.
-> Bucket per service via env var (`OBJECT_STORAGE_BUCKET`). Tenant isolation by directory: `{tenantId}/{resource}/{path}`.
-> MUST use the same prefixed key for both read and write paths to ensure consistency.
+> See [multi-tenant.md § S3/Object Storage Key Prefixing](../../docs/standards/golang/multi-tenant.md) for details.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
