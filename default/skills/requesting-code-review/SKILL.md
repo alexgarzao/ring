@@ -2083,6 +2083,8 @@ Linux: xdg-open docs/codereview/review-report-{unit_id}.html
 
 **Tell the user** the file path. The visual report opens before the markdown summary is displayed.
 
+See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+
 ### Step 8.2: Generate Success Output
 
 ```text

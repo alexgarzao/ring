@@ -915,8 +915,8 @@ Read tool:
 
 **Unit Checkpoint (after subtask completes Gate 8):**
 
-**VISUAL CHANGE REPORT (before checkpoint question):**
-- Generate a code-diff HTML report for this execution unit using `ring:visual-explainer`
+**VISUAL CHANGE REPORT (MANDATORY - before checkpoint question):**
+- MUST generate a code-diff HTML report for this execution unit using `ring:visual-explainer`
 - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
 - Content sourced from state JSON `agent_outputs` for the current unit:
   * **TDD Output:** `tdd_red` (failing test) + `tdd_green` (implementation)
@@ -924,8 +924,13 @@ Read tool:
   * **Frontend-Specific Metrics:** WCAG violations resolved (Gate 2), visual snapshot pass rate (Gate 4), LCP/CLS/INP values (Gate 6), Lighthouse score (Gate 6)
   * **Review Verdicts:** Summary of all 5 reviewer verdicts from Gate 7
 - Save to: `docs/ring:dev-cycle-frontend/reports/unit-{unit_id}-report.html`
-- Open in browser (`open` on macOS, `xdg-open` on Linux)
+- Open in browser:
+  ```text
+  macOS: open docs/ring:dev-cycle-frontend/reports/unit-{unit_id}-report.html
+  Linux: xdg-open docs/ring:dev-cycle-frontend/reports/unit-{unit_id}-report.html
+  ```
 - Tell the user the file path
+- See [shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
 
 ```text
 Subtask {id} complete. All 9 gates passed.
@@ -936,16 +941,21 @@ Subtask {id} complete. All 9 gates passed.
 
 **Task Checkpoint (after all subtasks of a task complete):**
 
-**VISUAL CHANGE REPORT (before task checkpoint question):**
-- Generate an aggregate code-diff HTML report for all subtasks using `ring:visual-explainer`
+**VISUAL CHANGE REPORT (MANDATORY - before task checkpoint question):**
+- MUST generate an aggregate code-diff HTML report for all subtasks using `ring:visual-explainer`
 - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
 - Content aggregated from all subtask executions:
   * **Task Overview:** Task ID, title, all subtask IDs and their gate statuses
   * **Combined File Changes:** All files modified across all subtasks with before/after diff panels
   * **Aggregate Metrics:** Total tests added, total review iterations, total lines changed, accessibility score, performance score
 - Save to: `docs/ring:dev-cycle-frontend/reports/task-{task_id}-report.html`
-- Open in browser (`open` on macOS, `xdg-open` on Linux)
+- Open in browser:
+  ```text
+  macOS: open docs/ring:dev-cycle-frontend/reports/task-{task_id}-report.html
+  Linux: xdg-open docs/ring:dev-cycle-frontend/reports/task-{task_id}-report.html
+  ```
 - Tell the user the file path
+- See [shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
 
 ```text
 Task {id} complete. All subtasks passed all gates.

@@ -891,6 +891,8 @@ Linux: xdg-open docs/ring:dev-refactor/{timestamp}/change-report.html
 
 **Tell the user** the file path. The report opens before the approval question so the user can review changes visually.
 
+See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+
 **TodoWrite:** Mark "Generate visual change report" as `completed`
 
 ---
@@ -937,7 +939,8 @@ docs/ring:dev-refactor/{timestamp}/
 │   ├── ring:devops-engineer-report.md
 │   └── ring:sre-report.md
 ├── findings.md         (Step 5)
-└── tasks.md           (Step 7)
+├── tasks.md           (Step 7)
+└── change-report.html (Step 7.5)
 ```
 
 **TodoWrite:** Mark "Save all artifacts" as `completed`

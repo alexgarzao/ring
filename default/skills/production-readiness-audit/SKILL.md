@@ -6501,7 +6501,7 @@ Write: docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}.md
 
 Uses `ring:visual-explainer` to produce a self-contained HTML page showing the production readiness score and findings visually. The markdown report is exhaustive (thousands of lines) — the HTML dashboard provides an executive overview that opens in the browser.
 
-**Read the code-diff template first:** Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns (severity badges, KPI cards, responsive nav). Adapt for an audit dashboard rather than code diffs.
+**Read templates first:** Read `default/skills/visual-explainer/templates/code-diff.html` for severity badges and KPI card patterns, AND read `default/skills/visual-explainer/templates/data-table.html` for table/heatmap patterns. Combine patterns for an audit dashboard layout. Also read `default/skills/visual-explainer/references/responsive-nav.md` for section navigation (7 sections require sidebar TOC).
 
 **Generate the HTML dashboard with these sections:**
 
@@ -6545,6 +6545,8 @@ Linux: xdg-open docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}-dashboard
 ```
 
 **Tell the user** the file path. The dashboard opens before the verbal summary.
+
+See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
 
 ### Step 13: Present Summary
 
