@@ -11,6 +11,7 @@ Supported Platforms:
 - Cline: All components -> Prompts
 """
 
+from pathlib import Path
 from typing import Dict, Optional, Type
 
 from ring_installer.transformers.agent import (
@@ -219,7 +220,7 @@ def generate_cursor_output(
     commands = commands or []
     output = {}
 
-    for skill in skills:
+    for idx, skill in enumerate(skills, start=1):
         transformer = get_transformer("cursor", "skill")
         context = TransformContext(
             platform="cursor",
@@ -229,11 +230,12 @@ def generate_cursor_output(
         )
         result = transformer.transform(skill.get("content", ""), context)
         if result.success:
-            safe_name = normalize_cursor_name(skill.get("name", "") or "") or "unknown"
+            raw_name = skill.get("name") or Path(skill.get("source", "")).stem or f"untitled-skill-{idx}"
+            safe_name = normalize_cursor_name(raw_name) or f"untitled-skill-{idx}"
             filename = f"skills/{safe_name}.md"
             output[filename] = result.content
 
-    for agent in agents:
+    for idx, agent in enumerate(agents, start=1):
         transformer = get_transformer("cursor", "agent")
         context = TransformContext(
             platform="cursor",
@@ -243,11 +245,12 @@ def generate_cursor_output(
         )
         result = transformer.transform(agent.get("content", ""), context)
         if result.success:
-            safe_name = normalize_cursor_name(agent.get("name", "") or "") or "unknown"
+            raw_name = agent.get("name") or Path(agent.get("source", "")).stem or f"untitled-agent-{idx}"
+            safe_name = normalize_cursor_name(raw_name) or f"untitled-agent-{idx}"
             filename = f"agents/{safe_name}.md"
             output[filename] = result.content
 
-    for command in commands:
+    for idx, command in enumerate(commands, start=1):
         transformer = get_transformer("cursor", "command")
         context = TransformContext(
             platform="cursor",
@@ -257,7 +260,8 @@ def generate_cursor_output(
         )
         result = transformer.transform(command.get("content", ""), context)
         if result.success:
-            safe_name = normalize_cursor_name((command.get("name", "") or "").replace("/", "")) or "unknown"
+            raw_name = (command.get("name") or Path(command.get("source", "")).stem or f"untitled-command-{idx}").replace("/", "")
+            safe_name = normalize_cursor_name(raw_name) or f"untitled-command-{idx}"
             filename = f"commands/{safe_name}.md"
             output[filename] = result.content
 

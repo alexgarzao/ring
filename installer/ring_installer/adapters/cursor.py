@@ -178,7 +178,8 @@ class CursorAdapter(PlatformAdapter):
 
         parts.append("## Steps")
         parts.append("")
-        parts.append(self._transform_body_for_cursor(body))
+        transformed_body = self._transform_body_for_cursor(body).replace("/ring:", "/")
+        parts.append(transformed_body)
 
         return "\n".join(parts)
 
