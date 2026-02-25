@@ -43,6 +43,7 @@ Vary the choice each time. If the last diagram was dark and technical, make the 
 - For text-heavy architecture overviews (card content matters more than topology): read `./templates/architecture.html`
 - For flowcharts, sequence diagrams, ER, state machines, mind maps: read `./templates/mermaid-flowchart.html`
 - For data tables, comparisons, audits, feature matrices: read `./templates/data-table.html`
+- For code diffs, change reviews, refactoring previews: read `./templates/code-diff.html`
 
 **For CSS/layout patterns and SVG connectors**, read `./references/css-patterns.md`.
 
@@ -63,6 +64,7 @@ Vary the choice each time. If the last diagram was dark and technical, make the 
 | Data table | HTML `<table>` | Semantic markup, accessibility, copy-paste behavior |
 | Timeline | CSS (central line + cards) | Simple linear layout doesn't need a layout engine |
 | Dashboard | CSS Grid + Chart.js | Card grid with embedded charts |
+| Code diff / change review | HTML panels + Highlight.js | Side-by-side code with syntax highlighting needs semantic markup and fine-grained line control |
 
 **Mermaid theming:** Always use `theme: 'base'` with custom `themeVariables` so colors match your page palette. Use `look: 'handDrawn'` for sketch aesthetic or `look: 'classic'` for clean lines. Use `layout: 'elk'` for complex graphs (requires the `@mermaid-js/layout-elk` package — see `./references/libraries.md` for the CDN import). Override Mermaid's SVG classes with CSS for pixel-perfect control. See `./references/libraries.md` for full theming guide.
 
@@ -188,6 +190,24 @@ Vertical or horizontal timeline with a central line (CSS pseudo-element). Phase 
 
 ### Dashboard / Metrics Overview
 Card grid layout. Hero numbers large and prominent. Sparklines via inline SVG `<polyline>`. Progress bars via CSS `linear-gradient` on a div. For real charts (bar, line, pie), use **Chart.js via CDN** (see `./references/libraries.md`). KPI cards with trend indicators (up/down arrows, percentage deltas).
+
+### Code Diff / Change Review
+Use for refactoring previews (before/after code comparison), development cycle change summaries, and any approval checkpoint that needs to show what will change. The reference template at `./templates/code-diff.html` demonstrates all patterns below.
+
+Two modes depending on context:
+- **Refactoring diffs** (before/after known): Two-column layout with the current code on the left and the Ring standard / target code on the right. Each finding gets its own diff panel with a severity badge. Group by severity (Critical first).
+- **New development summaries** (planned changes): Single-column cards showing the task context, acceptance criteria, files to create/modify, and a code preview of the planned implementation approach.
+
+Layout patterns:
+- Responsive nav sidebar (read `./references/responsive-nav.md`) — one TOC entry per finding or task
+- Summary KPI cards at top: Total changes, files affected, severity breakdown
+- Per-finding/task collapsible `<details>` section with the diff panel inside
+- Syntax highlighting via Highlight.js CDN (see `./references/libraries.md`)
+- Line numbers in code blocks via CSS counter (see `./references/css-patterns.md` → Code Diff Enhancements)
+- Added lines highlighted green, removed lines highlighted red, unchanged lines dimmed
+- File path + line range header above each code block (`.diff-hunk-header`)
+- Severity badge (Critical/High/Medium/Low) with color-coded indicator on each section header (`.severity-badge`)
+- Finding card wrapper (`.finding-card`) with header showing finding ID + severity + file path
 
 ## File Structure
 

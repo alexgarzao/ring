@@ -2040,6 +2040,51 @@ ELSE (no findings file exists):
   → Proceed directly to Step 8.2 (Success Output)
 ```
 
+### Step 8.1.5: Visual Review Report
+
+**MANDATORY: Generate a visual HTML report before presenting the review summary.**
+
+Invokes `Skill("ring:visual-explainer")` to produce a self-contained HTML page showing review results visually. This complements the markdown output with an interactive browser view.
+
+**Read the code-diff template first:** Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating.
+
+**Generate the HTML report with these sections:**
+
+**1. Review Dashboard**
+- Overall status (PASS/FAIL) with large status indicator
+- Unit ID, iterations count, total duration
+- KPI cards: Total issues found, issues fixed, issues remaining, reviewers passed (X/6)
+
+**2. Reviewer Verdicts Panel**
+- 6 reviewer cards in a grid layout, each showing:
+  - Reviewer name, PASS/FAIL badge
+  - Issue count by severity (severity badges)
+  - Key findings summary (1-2 lines)
+
+**3. Issues by Severity**
+- Severity breakdown bar (Critical red / High orange / Medium violet / Low dim)
+- Per-issue cards with: severity badge, description, file:line reference, reviewer that found it, recommendation
+- Issues that were fixed during iterations: show before (issue) vs after (fix applied) using diff panels
+
+**4. CodeRabbit Findings** (if applicable)
+- Separate section showing CodeRabbit-specific issues
+- Status per unit validated
+
+**5. Fix Iteration Timeline** (if iterations > 0)
+- Visual timeline showing: Iteration 1 → Issues found → Fixes applied → Iteration 2 → ...
+
+**Output:** Save to `docs/codereview/review-report-{unit_id}.html`
+
+**Open in browser:**
+```text
+macOS: open docs/codereview/review-report-{unit_id}.html
+Linux: xdg-open docs/codereview/review-report-{unit_id}.html
+```
+
+**Tell the user** the file path. The visual report opens before the markdown summary is displayed.
+
+See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+
 ### Step 8.2: Generate Success Output
 
 ```text
@@ -2088,6 +2133,8 @@ Generate skill output:
 ```
 
 ## Step 9: Escalate - Max Iterations Reached
+
+**VISUAL REPORT:** Generate the same visual HTML report as Step 8.1.5, but with FAIL status prominently displayed. The report highlights unresolved issues in red, shows which reviewers still have FAIL verdicts, and includes the full iteration history. Save to `docs/codereview/review-report-{unit_id}.html` and open in browser.
 
 ```text
 Generate skill output:
