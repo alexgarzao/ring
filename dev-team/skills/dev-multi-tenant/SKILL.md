@@ -85,7 +85,7 @@ examples:
 
 **FORBIDDEN: Orchestrator MUST NOT use Edit, Write, or Bash tools to modify source code files.**
 All code changes MUST go through `Task(subagent_type="ring:backend-engineer-golang")`.
-The orchestrator only verifies outputs (grep, go build, go test) — never writes implementation code.
+The orchestrator only verifies outputs (grep, go build, go test) — MUST NOT write implementation code.
 
 **MANDATORY: TDD for all implementation gates (Gates 2-6).** MUST follow RED-GREEN: write a failing test first, then implement to make it pass. MUST include in every dispatch: "Follow TDD: write failing test (RED), then implement (GREEN)."
 
@@ -133,7 +133,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | 0 | Stack Detection | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
 | 1.5 | Implementation Preview (visual report) | Always | Orchestrator (ring:visual-explainer) |
-| 2 | lib-commons v3 + lib-auth Upgrade | Skip if already v3 | ring:backend-engineer-golang |
+| 2 | lib-commons v3 + lib-auth Upgrade | Skip if already v3 AND lib-auth latest | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Per detected DB/storage | ring:backend-engineer-golang |
@@ -281,6 +281,8 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 ```
 
 The developer MUST be able to see the exact code that will be implemented to approve it. High-level descriptions alone are not sufficient for approval.
+
+**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to `core.GetPostgresForTenant(ctx)`): show one representative diff panel, then list the remaining files with "Same pattern applied to: [file list]."
 
 ### 4. Backward Compatibility Analysis
 
