@@ -101,6 +101,35 @@ Multi-tenant isolation is 100% based on `tenantId` from JWT → dispatch layer m
 
 **WebFetch URL:** `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md`
 
+### MANDATORY: Canonical Environment Variables
+
+These are the only valid multi-tenant environment variables. MUST NOT use any other names (e.g., `TENANT_MANAGER_ADDRESS` is WRONG — the correct name is `MULTI_TENANT_URL`).
+
+| Env Var | Description | Default | Required |
+|---------|-------------|---------|----------|
+| `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
+| `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
+| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
+| `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
+| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | No |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | No |
+
+HARD GATE: Any env var outside this table is non-compliant. Agent MUST NOT invent or accept alternative names.
+
+### MANDATORY: Canonical Metrics
+
+These are the only valid multi-tenant metrics. All 4 are required.
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `tenant_connections_total` | Counter | Total tenant connections created |
+| `tenant_connection_errors_total` | Counter | Connection failures per tenant |
+| `tenant_consumers_active` | Gauge | Active message consumers |
+| `tenant_messages_processed_total` | Counter | Messages processed per tenant |
+
+When `MULTI_TENANT_ENABLED=false`, metrics MUST use no-op implementations (zero overhead in single-tenant mode).
+
 ### MANDATORY: Agent Instruction (include in EVERY gate dispatch)
 
 MUST include these instructions in every dispatch to `ring:backend-engineer-golang`:
@@ -241,7 +270,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
 | 2 | `go.mod` | lib-commons v2 → v3 + lib-auth v2, import paths | All files |
-| 3 | `config.go` | Add 7 MULTI_TENANT_* env vars to Config struct | ~20 lines added |
+| 3 | `config.go` | Add the 7 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
 | 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `core.GetModulePostgresForTenant(ctx, module)` | ~3 lines per method |
@@ -333,7 +362,7 @@ Table showing what gets added to go.mod and which sub-packages are imported:
 - etc.
 
 ### 6. Environment Variables
-Table with the 7 MULTI_TENANT_* vars that will be added to Config struct.
+The exact 7 canonical env vars from the "Canonical Environment Variables" table (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC). MUST NOT use alternative names.
 
 ### 7. Risk Assessment
 Table with: Risk, Mitigation, Verification. Examples:
@@ -401,9 +430,20 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Add multi-tenant environment variables to the Config struct.
+> TASK: Add the 7 canonical multi-tenant environment variables to the Config struct.
 > CONTEXT FROM GATE 1: {Config struct location and current fields from analysis report}
 > Follow multi-tenant.md sections "Environment Variables", "Configuration", and "Conditional Initialization".
+>
+> The EXACT env vars to add (no alternatives allowed):
+> - MULTI_TENANT_ENABLED (bool, default false)
+> - MULTI_TENANT_URL (string, required when enabled)
+> - MULTI_TENANT_ENVIRONMENT (string, default "staging", only if RabbitMQ)
+> - MULTI_TENANT_MAX_TENANT_POOLS (int, default 100)
+> - MULTI_TENANT_IDLE_TIMEOUT_SEC (int, default 300)
+> - MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD (int, default 5)
+> - MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC (int, default 30)
+>
+> MUST NOT use alternative names (e.g., TENANT_MANAGER_ADDRESS, TENANT_MANAGER_URL are WRONG).
 > Add conditional log: "Multi-tenant mode enabled" vs "Running in SINGLE-TENANT MODE".
 > DO NOT implement TenantMiddleware yet — only configuration.
 
@@ -505,6 +545,14 @@ HARD GATE: MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode
 >
 > Follow multi-tenant.md sections "Multi-Tenant Metrics" and "Single-Tenant Backward Compatibility Validation (MANDATORY)".
 >
+> The EXACT metrics to implement (no alternatives allowed):
+> - `tenant_connections_total` (Counter) — Total tenant connections created
+> - `tenant_connection_errors_total` (Counter) — Connection failures per tenant
+> - `tenant_consumers_active` (Gauge) — Active message consumers
+> - `tenant_messages_processed_total` (Counter) — Messages processed per tenant
+>
+> All 4 metrics are MANDATORY. When MULTI_TENANT_ENABLED=false, metrics MUST use no-op implementations (zero overhead).
+>
 > BACKWARD COMPATIBILITY IS NON-NEGOTIABLE:
 > - MUST start without any MULTI_TENANT_* env vars
 > - MUST start without Tenant Manager running
@@ -590,7 +638,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
-2. **Environment variables**: the 7 MULTI_TENANT_* vars with required/default/description
+2. **Environment variables**: the 7 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC) with required/default/description
 3. **How to activate**: set envs + start alongside Tenant Manager
 4. **How to verify**: check logs, test with JWT tenantId
 5. **How to deactivate**: set MULTI_TENANT_ENABLED=false
@@ -624,3 +672,5 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
 | "Agent says out of scope" | Skill defines scope, not agent. | **Re-dispatch with gate context** |
 | "Skip tests" | Gate 8 proves isolation works. | **MANDATORY** |
 | "Skip review" | Security implications. One mistake = data leak. | **MANDATORY** |
+| "Using TENANT_MANAGER_ADDRESS instead" | Non-standard name. Only the 7 canonical MULTI_TENANT_* vars are valid. | **STOP. Use MULTI_TENANT_URL** |
+| "The service already uses a different env name" | Legacy names are non-compliant. Rename to canonical names. | **Replace with canonical env vars** |
