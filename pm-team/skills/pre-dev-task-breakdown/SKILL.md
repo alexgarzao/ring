@@ -425,7 +425,7 @@ This file contains tasks filtered for the **{module}** module.
 
 ## Task Template Structure
 
-Output to `docs/pre-dev/{feature}/tasks.md`. The file starts with two summary sections followed by the full task details.
+Output path depends on `topology.structure` (see [Output & After Approval](#output--after-approval)): single-repo produces one file at `docs/pre-dev/{feature}/tasks.md`; monorepo produces an index plus one file per module; multi-repo produces one file per repository with no central index. The file starts with two summary sections followed by the full task details.
 
 ### File Summary Sections (top of tasks.md)
 
@@ -454,8 +454,8 @@ MUST appear immediately after Summary Table 1. A plain-language view for product
 
 | Task | Deliverable (business view) |
 |------|-----------------------------|
-| T-001 | O produto existe e roda — infraestrutura local completa, banco, cache e container funcionando. Base para todo o desenvolvimento. |
-| T-002 | O produto consegue "falar a língua do BACEN" com segurança — assina e cifra as mensagens conforme o padrão obrigatório. Sem isso, nenhuma mensagem é aceita. |
+| T-001 | The team can develop and test locally from day one — every contributor gets a working environment without manual setup. |
+| T-002 | Transactions reach their destination — the product speaks the required protocol and counterparties accept every message sent. |
 ```
 
 **Writing rules for Business Deliverables View:**
