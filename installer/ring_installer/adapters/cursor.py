@@ -26,6 +26,15 @@ class CursorAdapter(PlatformAdapter):
     platform_id = "cursor"
     platform_name = "Cursor"
 
+    @staticmethod
+    def _as_text(value: Any, default: str = "") -> str:
+        """Coerce frontmatter value to str; avoid crashes on non-string YAML types."""
+        if value is None:
+            return default
+        text = value if isinstance(value, str) else str(value)
+        text = text.strip()
+        return text or default
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize the Cursor adapter.
@@ -51,8 +60,11 @@ class CursorAdapter(PlatformAdapter):
         """
         frontmatter, body = self.extract_frontmatter(skill_content)
 
-        name = frontmatter.get("name", metadata.get("name", "untitled-skill") if metadata else "untitled-skill")
-        description = frontmatter.get("description", "")
+        name = self._as_text(
+            frontmatter.get("name", metadata.get("name") if metadata else None),
+            "untitled-skill",
+        )
+        description = self._as_text(frontmatter.get("description", ""))
         clean_desc = self._clean_yaml_string(description)
         clean_desc_single = clean_desc.replace("\n", " ").strip()[:1024]
         normalized_name = normalize_cursor_name(name) or "untitled-skill"
@@ -116,8 +128,11 @@ class CursorAdapter(PlatformAdapter):
         """
         frontmatter, body = self.extract_frontmatter(agent_content)
 
-        name = frontmatter.get("name", metadata.get("name", "untitled-agent") if metadata else "untitled-agent")
-        description = frontmatter.get("description", "")
+        name = self._as_text(
+            frontmatter.get("name", metadata.get("name") if metadata else None),
+            "untitled-agent",
+        )
+        description = self._as_text(frontmatter.get("description", ""))
         clean_desc = self._clean_yaml_string(description).replace("\n", " ").strip()[:1024]
         normalized_name = normalize_cursor_name(name) or "untitled-agent"
 
@@ -144,8 +159,11 @@ class CursorAdapter(PlatformAdapter):
         """
         frontmatter, body = self.extract_frontmatter(command_content)
 
-        name = frontmatter.get("name", metadata.get("name", "Untitled Command") if metadata else "Untitled Command")
-        description = frontmatter.get("description", "")
+        name = self._as_text(
+            frontmatter.get("name", metadata.get("name") if metadata else None),
+            "Untitled Command",
+        )
+        description = self._as_text(frontmatter.get("description", ""))
         clean_desc = self._clean_yaml_string(description)
 
         parts: List[str] = []
@@ -162,11 +180,20 @@ class CursorAdapter(PlatformAdapter):
         parts.append(f"/{cmd_name}")
         parts.append("")
 
-        args = frontmatter.get("args", [])
+        raw_args = frontmatter.get("args", [])
+        if isinstance(raw_args, dict):
+            args: List[Any] = [raw_args]
+        elif isinstance(raw_args, list):
+            args = raw_args
+        else:
+            args = []
+
         if args:
             parts.append("## Parameters")
             parts.append("")
             for arg in args:
+                if not isinstance(arg, dict):
+                    continue
                 arg_name = arg.get("name", "")
                 arg_desc = arg.get("description", "")
                 required = "required" if arg.get("required", False) else "optional"
