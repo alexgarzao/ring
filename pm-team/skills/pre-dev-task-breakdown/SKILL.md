@@ -425,7 +425,7 @@ This file contains tasks filtered for the **{module}** module.
 
 ## Task Template Structure
 
-Output path depends on `topology.structure` (see [Output & After Approval](#output--after-approval)): single-repo produces one file at `docs/pre-dev/{feature}/tasks.md`; monorepo produces an index plus one file per module; multi-repo produces one file per repository with no central index. The file starts with two summary sections followed by the full task details.
+Output path depends on topology — see [Output & After Approval](#output--after-approval) for the full topology-dependent rules. The file starts with two summary sections followed by the full task details.
 
 ### File Summary Sections (top of tasks.md)
 
@@ -454,8 +454,8 @@ MUST appear immediately after Summary Table 1. A plain-language view for product
 
 | Task | Deliverable (business view) |
 |------|-----------------------------|
-| T-001 | The team can develop and test locally from day one — every contributor gets a working environment without manual setup. |
-| T-002 | Transactions reach their destination — messages conform to the agreed standard and counterparties accept every one sent. |
+| T-001 | The team can develop and test locally from day one — **every contributor gets a working environment without manual setup**. |
+| T-002 | **Transactions reach their destination** — messages conform to the agreed standard and counterparties accept every one sent. |
 | ... | _(additional tasks omitted for brevity)_ |
 ```
 
