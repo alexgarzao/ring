@@ -194,8 +194,8 @@ class CursorAdapter(PlatformAdapter):
             for arg in args:
                 if not isinstance(arg, dict):
                     continue
-                arg_name = arg.get("name", "")
-                arg_desc = arg.get("description", "")
+                arg_name = self._as_text(arg.get("name", ""), "")
+                arg_desc = self._as_text(arg.get("description", ""), "")
                 required = "required" if arg.get("required", False) else "optional"
                 param_line = f"- **{arg_name}** ({required})"
                 if arg_desc:
