@@ -425,7 +425,67 @@ This file contains tasks filtered for the **{module}** module.
 
 ## Task Template Structure
 
-Output to `docs/pre-dev/{feature-name}/tasks.md`. Each task includes:
+Output to `docs/pre-dev/{feature-name}/tasks.md`. The file starts with two summary sections followed by the full task details.
+
+### File Summary Sections (top of tasks.md)
+
+The file MUST open with two summary tables before the individual task details.
+
+#### Summary Table 1 — Technical Overview
+
+A quick-reference table for the engineering team:
+
+```markdown
+## Sumário
+
+| Task | Título | Tipo | Horas | Confidence | Bloqueia |
+|------|--------|------|-------|------------|---------|
+| T-001 | Fundação do Projeto | Foundation | 3.0 | High | Todos |
+| T-002 | ... | Feature | 6.5 | Medium | T-004, T-008 |
+| | **TOTAL** | | **85.0h** | | |
+```
+
+#### Summary Table 2 — Business Deliverables View
+
+A plain-language view for product managers, stakeholders, and the team to understand **what value each task delivers**. MUST appear immediately after Summary Table 1.
+
+```markdown
+## Visão de Negócio por Entregável
+
+| Task | Entregável (visão de negócio) |
+|------|-------------------------------|
+| T-001 | O produto existe e roda — infraestrutura local completa, banco, cache e container funcionando. Base para todo o desenvolvimento. |
+| T-002 | O produto consegue "falar a língua do BACEN" com segurança — assina e cifra as mensagens conforme o padrão obrigatório. Sem isso, nenhuma mensagem é aceita. |
+```
+
+**Writing rules for Business Deliverables View:**
+
+| Rule | Correct | Wrong |
+|------|---------|-------|
+| **Language** | Plain business language | Technical jargon (endpoints, migrations, repositories) |
+| **Perspective** | What the business/user gains | What the developer implements |
+| **Voice** | Active — "O produto consegue...", "A IF acessa..." | Passive — "É implementado...", "Será criado..." |
+| **Length** | 1-3 sentences max | Bullet lists, long paragraphs |
+| **Emphasis** | Bold the core value proposition | No bold or formatting |
+| **Source** | Derived from each task's **Deliverable** field | Invented separately |
+
+**What to include:**
+- The capability unlocked ("O produto consegue...")
+- Why it matters to the business ("Sem isso, nenhuma mensagem trafega")
+- Who benefits (developer, operator, end user, regulator)
+- Business consequence if missing (when relevant)
+
+**What to exclude:**
+- File names, class names, function names
+- Architecture terms (API, REST, handler, service layer)
+- Infrastructure terms (Docker, Kubernetes, PostgreSQL)
+- Implementation verbs (implementar, criar endpoint, configurar banco)
+
+---
+
+### Per-Task Template
+
+Each task includes:
 
 | Section | Content |
 |---------|---------|
