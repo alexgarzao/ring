@@ -67,8 +67,8 @@ go build ./...
 | `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
 | `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
-| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | No |
-| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | No |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
 
 **Example `.env` for multi-tenant:**
 ```bash
@@ -164,7 +164,7 @@ All connection managers (PostgreSQL, MongoDB, RabbitMQ) use **LRU eviction with 
 - **Idle timeout** (`WithIdleTimeout`): Connections not accessed within this window become eligible for eviction. Default: 5 minutes.
 - **Connection health**: Cached connections are pinged before reuse (3s timeout). Stale connections are recreated transparently.
 
-The Tenant Manager HTTP client supports an optional **circuit breaker** (`WithCircuitBreaker`):
+The Tenant Manager HTTP client MUST enable the **circuit breaker** (`WithCircuitBreaker`):
 - After N consecutive failures, the circuit opens and requests fail fast with `ErrCircuitBreakerOpen`
 - After the timeout, the circuit enters half-open state and allows one request through
 - On success, the circuit resets to closed
@@ -235,7 +235,7 @@ import (
 )
 
 func initService(cfg *Config) {
-    // 1. Create Tenant Manager HTTP client (with optional circuit breaker)
+    // 1. Create Tenant Manager HTTP client (with circuit breaker — MANDATORY)
     var clientOpts []client.ClientOption
     if cfg.MultiTenantCircuitBreakerThreshold > 0 {
         clientOpts = append(clientOpts,

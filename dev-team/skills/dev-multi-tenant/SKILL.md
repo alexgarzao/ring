@@ -112,8 +112,8 @@ These are the only valid multi-tenant environment variables. MUST NOT use any ot
 | `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
 | `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
-| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | No |
-| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | No |
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
 
 HARD GATE: Any env var outside this table is non-compliant. Agent MUST NOT invent or accept alternative names.
 
@@ -129,6 +129,17 @@ These are the only valid multi-tenant metrics. All 4 are required.
 | `tenant_messages_processed_total` | Counter | Messages processed per tenant |
 
 When `MULTI_TENANT_ENABLED=false`, metrics MUST use no-op implementations (zero overhead in single-tenant mode).
+
+### MANDATORY: Circuit Breaker
+
+The Tenant Manager HTTP client MUST enable `WithCircuitBreaker`. MUST NOT create the client without it.
+
+| Env Var | Default | Description |
+|---------|---------|-------------|
+| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | `5` | Consecutive failures before circuit opens |
+| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | `30` | Seconds before circuit resets (half-open) |
+
+HARD GATE: A client without circuit breaker can cascade failures across all tenants.
 
 ### MANDATORY: Agent Instruction (include in EVERY gate dispatch)
 
