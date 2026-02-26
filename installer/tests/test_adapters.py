@@ -704,6 +704,20 @@ class TestCursorAdapter:
 
         assert "rule reference" in result.lower()
 
+    def test_transform_fallback_when_name_normalizes_to_empty(self, adapter):
+        """Adapter should use untitled-* fallbacks when name normalizes to empty (e.g. '!!!')."""
+        skill_content = '---\nname: "!!!"\ndescription: ""\n---\nbody'
+        agent_content = '---\nname: "!!!"\ndescription: ""\n---\nbody'
+        command_content = '---\nname: "!!!"\ndescription: ""\n---\nbody'
+
+        skill_result = adapter.transform_skill(skill_content)
+        agent_result = adapter.transform_agent(agent_content)
+        command_result = adapter.transform_command(command_content)
+
+        assert "untitled-skill" in skill_result
+        assert "untitled-agent" in agent_result
+        assert "untitled-command" in command_result
+
     def test_get_cursorrules_path_default(self, adapter):
         """get_cursorrules_path() should return default path."""
         path = adapter.get_cursorrules_path()

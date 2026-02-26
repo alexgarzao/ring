@@ -178,8 +178,7 @@ class CursorAdapter(PlatformAdapter):
 
         parts.append("## Steps")
         parts.append("")
-        transformed_body = self._transform_body_for_cursor(body).replace("/ring:", "/")
-        parts.append(transformed_body)
+        parts.append(self._transform_body_for_cursor(body))
 
         return "\n".join(parts)
 
@@ -286,6 +285,9 @@ class CursorAdapter(PlatformAdapter):
 
         # Remove Ring-specific tool references that don't apply
         result = re.sub(r'`ring:[^`]+`', lambda m: self._transform_ring_reference(m.group(0)), result)
+
+        # Normalize /ring: command references for all component types
+        result = result.replace("/ring:", "/")
 
         return result
 

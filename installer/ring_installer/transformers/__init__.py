@@ -260,7 +260,10 @@ def generate_cursor_output(
         )
         result = transformer.transform(command.get("content", ""), context)
         if result.success:
-            raw_name = (command.get("name") or Path(command.get("source", "")).stem or f"untitled-command-{idx}").replace("/", "")
+            cmd_name = command.get("name")
+            if cmd_name:
+                cmd_name = cmd_name.replace("/", "")
+            raw_name = cmd_name or Path(command.get("source", "")).stem or f"untitled-command-{idx}"
             safe_name = normalize_cursor_name(raw_name) or f"untitled-command-{idx}"
             filename = f"commands/{safe_name}.md"
             output[filename] = result.content
