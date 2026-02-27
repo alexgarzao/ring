@@ -21,7 +21,7 @@ class CommandTransformer(BaseTransformer):
     Handles transformation of slash command definitions:
     - Claude: passthrough (native format)
     - Factory: minimal terminology changes
-    - Cursor: convert to workflow (commands don't exist)
+    - Cursor: convert to command format (plain markdown)
     - Cline: convert to action prompt (commands don't exist)
     """
 
@@ -112,26 +112,29 @@ class CommandTransformer(BaseTransformer):
         context: TransformContext
     ) -> TransformResult:
         """
-        Transform command to Cursor workflow format.
+        Transform command to Cursor command format.
 
-        Cursor doesn't have slash commands, so we convert to workflows.
+        Cursor commands are plain markdown (no frontmatter), triggered with / in chat.
         """
         parts: List[str] = []
 
-        # Extract metadata
         name = frontmatter.get("name", context.metadata.get("name", "Untitled Command"))
         description = frontmatter.get("description", "")
+        clean_desc = self.clean_yaml_string(description)
 
-        # Build workflow header
         parts.append(f"# {self.to_title_case(name)}")
         parts.append("")
 
-        if description:
-            clean_desc = self.clean_yaml_string(description)
+        if clean_desc:
             parts.append(clean_desc)
             parts.append("")
 
-        # Arguments -> Parameters section
+        cmd_name = self._normalize_cursor_name(name) or "untitled-command"
+        parts.append("## Usage")
+        parts.append("")
+        parts.append(f"/{cmd_name}")
+        parts.append("")
+
         args = frontmatter.get("args", [])
         if args:
             parts.append("## Parameters")
@@ -150,10 +153,8 @@ class CommandTransformer(BaseTransformer):
                 parts.append(param_line)
             parts.append("")
 
-        # Add the body content
-        parts.append("## Instructions")
+        parts.append("## Steps")
         parts.append("")
-        # Command transformer needs to remove /ring: prefix for Cursor
         transformed_body = self.transform_body_for_cursor(body)
         transformed_body = transformed_body.replace("/ring:", "/")
         parts.append(transformed_body)
@@ -274,7 +275,7 @@ class CommandTransformerFactory:
     PLATFORM_TERMINOLOGY = {
         "claude": {"command": "command"},
         "factory": {"command": "command"},
-        "cursor": {"command": "workflow"},
+        "cursor": {"command": "command"},
         "cline": {"command": "prompt"},
     }
 

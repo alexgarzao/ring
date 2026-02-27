@@ -1,9 +1,10 @@
 """
-Cursor adapter - converts Ring format to Cursor rules and workflows.
+Cursor adapter - converts Ring format to Cursor native format.
 
-Cursor uses a different approach to AI assistance:
-- skills -> rules (in .cursorrules or rules/ directory)
-- agents/commands -> workflows
+Cursor uses:
+- skills -> skills/ (SKILL.md with frontmatter)
+- agents -> agents/ (frontmatter + body)
+- commands -> commands/ (plain markdown, no frontmatter)
 """
 
 import re
@@ -11,18 +12,28 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ring_installer.adapters.base import PlatformAdapter
+from ring_installer.transformers.base import BaseTransformer, normalize_cursor_name
 
 
 class CursorAdapter(PlatformAdapter):
     """
     Platform adapter for Cursor.
 
-    Cursor uses "rules" for skills and "workflows" for agents/commands.
-    Rules are typically stored in .cursorrules or a rules/ directory.
+    Cursor uses skills, agents, and commands in their native directories
+    and formats. Skills and agents use YAML frontmatter; commands are plain markdown.
     """
 
     platform_id = "cursor"
     platform_name = "Cursor"
+
+    @staticmethod
+    def _as_text(value: Any, default: str = "") -> str:
+        """Coerce frontmatter value to str; avoid crashes on non-string YAML types."""
+        if value is None:
+            return default
+        text = value if isinstance(value, str) else str(value)
+        text = text.strip()
+        return text or default
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -35,176 +46,168 @@ class CursorAdapter(PlatformAdapter):
 
     def transform_skill(self, skill_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
-        Transform a Ring skill to a Cursor rule.
+        Transform a Ring skill to Cursor skill format.
 
-        Converts the Ring skill format to Cursor's rule format, which is
-        simpler markdown without YAML frontmatter.
+        Converts the Ring skill format to Cursor's skill format with YAML
+        frontmatter (name, description) for agent discovery.
 
         Args:
             skill_content: The original skill content
             metadata: Optional metadata about the skill
 
         Returns:
-            Transformed rule content for Cursor
+            Transformed skill content for Cursor
         """
         frontmatter, body = self.extract_frontmatter(skill_content)
 
-        # Build Cursor rule structure
-        rule_parts: List[str] = []
+        name = self._as_text(
+            frontmatter.get("name", metadata.get("name") if metadata else None),
+            "untitled-skill",
+        )
+        description = self._as_text(frontmatter.get("description", ""))
+        clean_desc = self._clean_yaml_string(description)
+        clean_desc_single = clean_desc.replace("\n", " ").strip()[:1024]
+        normalized_name = normalize_cursor_name(name) or "untitled-skill"
 
-        # Extract name and description from frontmatter
-        name = frontmatter.get("name", metadata.get("name", "Untitled Rule") if metadata else "Untitled Rule")
-        description = frontmatter.get("description", "")
+        parts: List[str] = []
+        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc_single}).rstrip())
+        parts.append("")
 
-        # Create rule header
-        rule_parts.append(f"# {self._to_title_case(name)}")
-        rule_parts.append("")
+        parts.append(f"# {self._to_title_case(name)}")
+        parts.append("")
 
-        if description:
-            # Clean up description (remove YAML multi-line markers)
-            clean_desc = self._clean_yaml_string(description)
-            rule_parts.append(clean_desc)
-            rule_parts.append("")
+        if clean_desc:
+            parts.append(clean_desc)
+            parts.append("")
 
-        # Add trigger information as "When to apply" section
         trigger = frontmatter.get("trigger", "")
         if trigger:
-            rule_parts.append("## When to Apply")
-            rule_parts.append("")
+            parts.append("## When to Apply")
+            parts.append("")
             clean_trigger = self._clean_yaml_string(trigger)
             for line in clean_trigger.split("\n"):
                 line = line.strip()
                 if line.startswith("-"):
-                    rule_parts.append(line)
+                    parts.append(line)
                 elif line:
-                    rule_parts.append(f"- {line}")
-            rule_parts.append("")
+                    parts.append(f"- {line}")
+            parts.append("")
 
-        # Add skip conditions if present
         skip_when = frontmatter.get("skip_when", "")
         if skip_when:
-            rule_parts.append("## Skip When")
-            rule_parts.append("")
+            parts.append("## Skip When")
+            parts.append("")
             clean_skip = self._clean_yaml_string(skip_when)
             for line in clean_skip.split("\n"):
                 line = line.strip()
                 if line.startswith("-"):
-                    rule_parts.append(line)
+                    parts.append(line)
                 elif line:
-                    rule_parts.append(f"- {line}")
-            rule_parts.append("")
+                    parts.append(f"- {line}")
+            parts.append("")
 
-        # Add the main content
-        rule_parts.append("## Instructions")
-        rule_parts.append("")
-        rule_parts.append(self._transform_body_for_cursor(body))
+        parts.append("## Instructions")
+        parts.append("")
+        parts.append(self._transform_body_for_cursor(body))
 
-        return "\n".join(rule_parts)
+        return "\n".join(parts)
 
     def transform_agent(self, agent_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
-        Transform a Ring agent to a Cursor workflow.
+        Transform a Ring agent to Cursor agent format.
 
-        Converts agent format to Cursor's workflow format for complex
-        multi-step operations.
+        Converts agent format to Cursor's agent format with YAML frontmatter
+        (name, description) for subagent discovery.
 
         Args:
             agent_content: The original agent content
             metadata: Optional metadata about the agent
 
         Returns:
-            Transformed workflow content for Cursor
+            Transformed agent content for Cursor
         """
         frontmatter, body = self.extract_frontmatter(agent_content)
 
-        workflow_parts: List[str] = []
+        name = self._as_text(
+            frontmatter.get("name", metadata.get("name") if metadata else None),
+            "untitled-agent",
+        )
+        description = self._as_text(frontmatter.get("description", ""))
+        clean_desc = self._clean_yaml_string(description).replace("\n", " ").strip()[:1024]
+        normalized_name = normalize_cursor_name(name) or "untitled-agent"
 
-        # Extract agent information
-        name = frontmatter.get("name", metadata.get("name", "Untitled Workflow") if metadata else "Untitled Workflow")
-        description = frontmatter.get("description", "")
+        parts: List[str] = []
+        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc}).rstrip())
+        parts.append("")
+        parts.append(self._transform_body_for_cursor(body))
 
-        # Create workflow header
-        workflow_parts.append(f"# {self._to_title_case(name)} Workflow")
-        workflow_parts.append("")
-
-        if description:
-            clean_desc = self._clean_yaml_string(description)
-            workflow_parts.append(f"**Purpose:** {clean_desc}")
-            workflow_parts.append("")
-
-        # Add model information if present
-        model = frontmatter.get("model", "")
-        if model:
-            workflow_parts.append(f"**Recommended Model:** {model}")
-            workflow_parts.append("")
-
-        # Extract output schema requirements
-        output_schema = frontmatter.get("output_schema", {})
-        if output_schema:
-            workflow_parts.append("## Output Requirements")
-            workflow_parts.append("")
-            required_sections = output_schema.get("required_sections", [])
-            for section in required_sections:
-                section_name = section.get("name", "")
-                if section_name:
-                    workflow_parts.append(f"- {section_name}")
-            workflow_parts.append("")
-
-        # Transform and add the body
-        workflow_parts.append("## Workflow Steps")
-        workflow_parts.append("")
-        workflow_parts.append(self._transform_body_for_cursor(body))
-
-        return "\n".join(workflow_parts)
+        return "\n".join(parts)
 
     def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
-        Transform a Ring command to a Cursor workflow.
+        Transform a Ring command to Cursor command format.
 
-        Commands become workflows in Cursor, similar to agents.
+        Cursor commands are plain markdown files (no frontmatter), triggered
+        with / in chat. Filename determines command name.
 
         Args:
             command_content: The original command content
             metadata: Optional metadata about the command
 
         Returns:
-            Transformed workflow content for Cursor
+            Transformed command content for Cursor (plain markdown)
         """
         frontmatter, body = self.extract_frontmatter(command_content)
 
-        workflow_parts: List[str] = []
+        name = self._as_text(
+            frontmatter.get("name", metadata.get("name") if metadata else None),
+            "Untitled Command",
+        )
+        description = self._as_text(frontmatter.get("description", ""))
+        clean_desc = self._clean_yaml_string(description)
 
-        # Extract command information
-        name = frontmatter.get("name", metadata.get("name", "Untitled Command") if metadata else "Untitled Command")
-        description = frontmatter.get("description", "")
+        parts: List[str] = []
+        parts.append(f"# {self._to_title_case(name)}")
+        parts.append("")
 
-        # Create workflow header
-        workflow_parts.append(f"# {self._to_title_case(name)}")
-        workflow_parts.append("")
+        if clean_desc:
+            parts.append(clean_desc)
+            parts.append("")
 
-        if description:
-            clean_desc = self._clean_yaml_string(description)
-            workflow_parts.append(clean_desc)
-            workflow_parts.append("")
+        cmd_name = normalize_cursor_name(name.replace("/", "")) or "untitled-command"
+        parts.append("## Usage")
+        parts.append("")
+        parts.append(f"/{cmd_name}")
+        parts.append("")
 
-        # Add argument information if present
-        args = frontmatter.get("args", [])
+        raw_args = frontmatter.get("args", [])
+        if isinstance(raw_args, dict):
+            args: List[Any] = [raw_args]
+        elif isinstance(raw_args, list):
+            args = raw_args
+        else:
+            args = []
+
         if args:
-            workflow_parts.append("## Parameters")
-            workflow_parts.append("")
+            parts.append("## Parameters")
+            parts.append("")
             for arg in args:
-                arg_name = arg.get("name", "")
-                arg_desc = arg.get("description", "")
+                if not isinstance(arg, dict):
+                    continue
+                arg_name = self._as_text(arg.get("name", ""), "")
+                arg_desc = self._as_text(arg.get("description", ""), "")
                 required = "required" if arg.get("required", False) else "optional"
-                workflow_parts.append(f"- **{arg_name}** ({required}): {arg_desc}")
-            workflow_parts.append("")
+                param_line = f"- **{arg_name}** ({required})"
+                if arg_desc:
+                    param_line += f": {arg_desc}"
+                parts.append(param_line)
+            parts.append("")
 
-        # Add the body content
-        workflow_parts.append("## Instructions")
-        workflow_parts.append("")
-        workflow_parts.append(self._transform_body_for_cursor(body))
+        parts.append("## Steps")
+        parts.append("")
+        parts.append(self._transform_body_for_cursor(body))
 
-        return "\n".join(workflow_parts)
+        return "\n".join(parts)
 
     def get_install_path(self) -> Path:
         """
@@ -227,15 +230,15 @@ class CursorAdapter(PlatformAdapter):
         """
         return {
             "agents": {
-                "target_dir": "workflows",
+                "target_dir": "agents",
                 "extension": ".md"
             },
             "commands": {
-                "target_dir": "workflows",
+                "target_dir": "commands",
                 "extension": ".md"
             },
             "skills": {
-                "target_dir": "rules",
+                "target_dir": "skills",
                 "extension": ".md"
             }
         }
@@ -248,9 +251,9 @@ class CursorAdapter(PlatformAdapter):
             Mapping of Ring terms to Cursor terms
         """
         return {
-            "agent": "workflow",
-            "skill": "rule",
-            "command": "workflow",
+            "agent": "agent",
+            "skill": "skill",
+            "command": "command",
             "hook": "automation"
         }
 
@@ -303,20 +306,15 @@ class CursorAdapter(PlatformAdapter):
         Returns:
             Transformed body content
         """
-        # Replace Ring-specific terminology
-        replacements = [
-            ("subagent", "sub-workflow"),
-            ("Subagent", "Sub-workflow"),
-            ("Task tool", "workflow step"),
-            ("Skill tool", "rule reference"),
-        ]
-
         result = body
-        for old, new in replacements:
+        for old, new in BaseTransformer.CURSOR_REPLACEMENTS:
             result = result.replace(old, new)
 
         # Remove Ring-specific tool references that don't apply
         result = re.sub(r'`ring:[^`]+`', lambda m: self._transform_ring_reference(m.group(0)), result)
+
+        # Normalize /ring: command references for all component types
+        result = result.replace("/ring:", "/")
 
         return result
 

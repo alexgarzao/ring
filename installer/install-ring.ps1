@@ -110,7 +110,7 @@ Write-Host ""
 Write-Host "  1) Claude Code     (recommended, native format)" -ForegroundColor Blue
 Write-Host "  2) Codex           (native format)" -ForegroundColor Blue
 Write-Host "  3) Factory AI      (droids, transformed)" -ForegroundColor Blue
-Write-Host "  4) Cursor          (rules/workflows, transformed)" -ForegroundColor Blue
+Write-Host "  4) Cursor          (skills/agents/commands)" -ForegroundColor Blue
 Write-Host "  5) Cline           (prompts, transformed)" -ForegroundColor Blue
 Write-Host "  6) OpenCode        (native format)" -ForegroundColor Blue
 Write-Host "  7) All supported platforms" -ForegroundColor Blue

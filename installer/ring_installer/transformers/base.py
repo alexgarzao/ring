@@ -18,6 +18,18 @@ except ImportError:
     YAML_AVAILABLE = False
 
 
+def normalize_cursor_name(name: str) -> str:
+    """
+    Normalize name for Cursor: lowercase, [a-z0-9-] only, max 64 chars.
+
+    Shared by transformers and Cursor adapter to avoid duplication.
+    """
+    normalized = name.lower().replace(":", "-")
+    normalized = re.sub(r"[^a-z0-9-]", "", normalized)
+    normalized = re.sub(r"-+", "-", normalized).strip("-")
+    return normalized[:64]
+
+
 @dataclass
 class TransformContext:
     """
@@ -178,6 +190,10 @@ class BaseTransformer(ABC):
 
         yaml_str = yaml.dump(data, default_flow_style=False, allow_unicode=True, sort_keys=False)
         return f"---\n{yaml_str}---\n"
+
+    def _normalize_cursor_name(self, name: str) -> str:
+        """Normalize name for Cursor; delegates to shared function."""
+        return normalize_cursor_name(name)
 
     def clean_yaml_string(self, text: str) -> str:
         """

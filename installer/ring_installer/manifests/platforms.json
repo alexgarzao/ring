@@ -127,21 +127,21 @@
       "components": {
         "agents": {
           "source_dir": "agents",
-          "target_dir": "workflows",
+          "target_dir": "agents",
           "file_extension": ".md",
           "transform": "cursor_workflow"
         },
         "commands": {
           "source_dir": "commands",
-          "target_dir": "workflows",
+          "target_dir": "commands",
           "file_extension": ".md",
           "transform": "cursor_workflow"
         },
         "skills": {
           "source_dir": "skills",
-          "target_dir": "rules",
+          "target_dir": "skills",
           "file_extension": ".md",
-          "transform": "cursor_rule"
+          "transform": "cursor_skill"
         }
       },
       "config_file": ".cursorrules",
@@ -156,9 +156,9 @@
       },
       "native_format": false,
       "terminology": {
-        "agent": "workflow",
-        "skill": "rule",
-        "command": "workflow"
+        "agent": "agent",
+        "skill": "skill",
+        "command": "command"
       }
     },
     "cline": {

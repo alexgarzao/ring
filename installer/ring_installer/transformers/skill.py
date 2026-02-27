@@ -4,6 +4,7 @@ Skill content transformer.
 Transforms Ring SKILL.md files to platform-specific formats.
 """
 
+import re
 from typing import Any, Dict, List, Optional
 
 from ring_installer.transformers.base import (
@@ -111,23 +112,25 @@ class SkillTransformer(BaseTransformer):
         body: str,
         context: TransformContext
     ) -> TransformResult:
-        """Transform skill to Cursor rule format."""
+        """Transform skill to Cursor skill format with frontmatter."""
         parts: List[str] = []
 
-        # Extract metadata
-        name = frontmatter.get("name", context.metadata.get("name", "Untitled Rule"))
+        name = frontmatter.get("name", context.metadata.get("name", "untitled-skill"))
         description = frontmatter.get("description", "")
+        clean_desc = self.clean_yaml_string(description)
+        clean_desc_single = clean_desc.replace("\n", " ").strip()[:1024]
+        normalized_name = self._normalize_cursor_name(name) or "untitled-skill"
 
-        # Build rule structure
+        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc_single}).rstrip())
+        parts.append("")
+
         parts.append(f"# {self.to_title_case(name)}")
         parts.append("")
 
-        if description:
-            clean_desc = self.clean_yaml_string(description)
+        if clean_desc:
             parts.append(clean_desc)
             parts.append("")
 
-        # Trigger conditions -> "When to Apply"
         trigger = frontmatter.get("trigger", "")
         if trigger:
             parts.append("## When to Apply")
@@ -135,7 +138,6 @@ class SkillTransformer(BaseTransformer):
             self._add_list_section(parts, trigger)
             parts.append("")
 
-        # Skip conditions
         skip_when = frontmatter.get("skip_when", "")
         if skip_when:
             parts.append("## Skip When")
@@ -143,7 +145,6 @@ class SkillTransformer(BaseTransformer):
             self._add_list_section(parts, skip_when)
             parts.append("")
 
-        # Main instructions
         parts.append("## Instructions")
         parts.append("")
         parts.append(self.transform_body_for_cursor(body))
@@ -263,7 +264,6 @@ class SkillTransformer(BaseTransformer):
 
     def _replace_term(self, text: str, old_term: str, new_term: str) -> str:
         """Replace a term with various case variants."""
-        import re
         result = text
         # Lowercase
         result = re.sub(rf'\b{old_term}\b', new_term, result)
@@ -293,9 +293,9 @@ class SkillTransformerFactory:
             "command": "command",
         },
         "cursor": {
-            "agent": "workflow",
-            "skill": "rule",
-            "command": "workflow",
+            "agent": "agent",
+            "skill": "skill",
+            "command": "command",
         },
         "cline": {
             "agent": "prompt",

@@ -184,7 +184,7 @@ class HookTransformer(BaseTransformer):
         """
         Transform hook for Cursor.
 
-        Cursor has limited hook support - generate automation rules
+        Cursor has limited hook support - generate automation skills
         or skip with warning.
         """
         warnings: List[str] = []

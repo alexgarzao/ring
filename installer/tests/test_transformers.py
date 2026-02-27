@@ -420,18 +420,18 @@ class TestSkillTransformer:
         # Factory preserves frontmatter but changes terminology
         assert result.content.startswith("---")
 
-    def test_cursor_rule_format(self, sample_skill_content, transform_context):
-        """Cursor transformer should convert to rule format."""
+    def test_cursor_skill_format(self, sample_skill_content, transform_context):
+        """Cursor transformer should convert to skill format with frontmatter."""
         transformer = SkillTransformerFactory.create("cursor")
         context = transform_context(platform="cursor", component_type="skill")
 
         result = transformer.transform(sample_skill_content, context)
 
         assert result.success is True
-        # Cursor removes frontmatter
-        assert not result.content.startswith("---")
-        # Should have rule structure
-        assert "# " in result.content  # Title
+        assert result.content.startswith("---")
+        assert "name:" in result.content
+        assert "description:" in result.content
+        assert "# " in result.content
         assert "When to Apply" in result.content or "Instructions" in result.content
 
     def test_cline_prompt_format(self, sample_skill_content, transform_context):
@@ -496,16 +496,17 @@ class TestAgentTransformer:
         # Should contain droid terminology
         assert "droid" in result.content.lower() or "Droid" in result.content
 
-    def test_cursor_workflow_format(self, sample_agent_content, transform_context):
-        """Cursor transformer should convert agent to workflow."""
+    def test_cursor_agent_format(self, sample_agent_content, transform_context):
+        """Cursor transformer should convert agent to Cursor agent format with frontmatter."""
         transformer = AgentTransformerFactory.create("cursor")
         context = transform_context(platform="cursor", component_type="agent")
 
         result = transformer.transform(sample_agent_content, context)
 
         assert result.success is True
-        assert not result.content.startswith("---")
-        assert "Workflow" in result.content
+        assert result.content.startswith("---")
+        assert "name:" in result.content
+        assert "description:" in result.content
 
     def test_cline_prompt_format(self, sample_agent_content, transform_context):
         """Cline transformer should convert agent to prompt."""
@@ -546,8 +547,8 @@ class TestCommandTransformer:
 
         assert result.success is True
 
-    def test_cursor_workflow_format(self, sample_command_content, transform_context):
-        """Cursor transformer should convert command to workflow."""
+    def test_cursor_command_format(self, sample_command_content, transform_context):
+        """Cursor transformer should convert command to plain markdown (no frontmatter)."""
         transformer = CommandTransformerFactory.create("cursor")
         context = transform_context(platform="cursor", component_type="command")
 
@@ -556,7 +557,7 @@ class TestCommandTransformer:
         assert result.success is True
         assert not result.content.startswith("---")
         assert "Parameters" in result.content
-        assert "Instructions" in result.content
+        assert "Steps" in result.content
 
     def test_cline_prompt_format(self, sample_command_content, transform_context):
         """Cline transformer should convert command to action prompt."""

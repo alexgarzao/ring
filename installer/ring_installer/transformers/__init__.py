@@ -7,10 +7,11 @@ This module provides transformers for converting Ring components
 Supported Platforms:
 - Claude Code: Native Ring format (passthrough)
 - Factory AI: Agents -> Droids transformation
-- Cursor: Skills -> Rules, Agents/Commands -> Workflows
+- Cursor: Skills -> Skills, Agents -> Agents, Commands -> Commands
 - Cline: All components -> Prompts
 """
 
+from pathlib import Path
 from typing import Dict, Optional, Type
 
 from ring_installer.transformers.agent import (
@@ -25,6 +26,7 @@ from ring_installer.transformers.base import (
     TransformContext,
     TransformerPipeline,
     TransformResult,
+    normalize_cursor_name,
 )
 from ring_installer.transformers.cline_prompts import (
     ClinePromptsGenerator,
@@ -218,14 +220,22 @@ def generate_cursor_output(
     commands = commands or []
     output = {}
 
-    # Generate .cursorrules from skills
-    if skills:
-        output[".cursorrules"] = generate_cursorrules_from_skills(
-            skills, include_metadata
+    for idx, skill in enumerate(skills, start=1):
+        transformer = get_transformer("cursor", "skill")
+        context = TransformContext(
+            platform="cursor",
+            component_type="skill",
+            source_path=skill.get("source", ""),
+            metadata={"name": skill.get("name", "unknown")}
         )
+        result = transformer.transform(skill.get("content", ""), context)
+        if result.success:
+            raw_name = skill.get("name") or Path(skill.get("source", "")).stem or f"untitled-skill-{idx}"
+            safe_name = normalize_cursor_name(raw_name) or f"untitled-skill-{idx}"
+            filename = f"skills/{safe_name}.md"
+            output[filename] = result.content
 
-    # Generate workflows from agents and commands
-    for agent in agents:
+    for idx, agent in enumerate(agents, start=1):
         transformer = get_transformer("cursor", "agent")
         context = TransformContext(
             platform="cursor",
@@ -235,10 +245,12 @@ def generate_cursor_output(
         )
         result = transformer.transform(agent.get("content", ""), context)
         if result.success:
-            filename = f"workflows/{agent.get('name', 'unknown')}.md"
+            raw_name = agent.get("name") or Path(agent.get("source", "")).stem or f"untitled-agent-{idx}"
+            safe_name = normalize_cursor_name(raw_name) or f"untitled-agent-{idx}"
+            filename = f"agents/{safe_name}.md"
             output[filename] = result.content
 
-    for command in commands:
+    for idx, command in enumerate(commands, start=1):
         transformer = get_transformer("cursor", "command")
         context = TransformContext(
             platform="cursor",
@@ -248,7 +260,12 @@ def generate_cursor_output(
         )
         result = transformer.transform(command.get("content", ""), context)
         if result.success:
-            filename = f"workflows/{command.get('name', 'unknown')}.md"
+            cmd_name = command.get("name")
+            if cmd_name:
+                cmd_name = cmd_name.replace("/", "")
+            raw_name = cmd_name or Path(command.get("source", "")).stem or f"untitled-command-{idx}"
+            safe_name = normalize_cursor_name(raw_name) or f"untitled-command-{idx}"
+            filename = f"commands/{safe_name}.md"
             output[filename] = result.content
 
     return output
