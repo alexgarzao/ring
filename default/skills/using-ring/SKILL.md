@@ -300,3 +300,4 @@ Your human partner's specific instructions describe WHAT to do, not HOW.
 **Model default: Opus** (unless user specifies Haiku/Sonnet explicitly).
 
 **Finding a relevant skill = mandatory to read and use it. Not optional.**
+
