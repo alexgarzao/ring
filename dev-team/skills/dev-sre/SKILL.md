@@ -292,6 +292,13 @@ Task:
     - gRPC: InjectGRPCContext (Go) or equivalent
     - Queues: PrepareQueueHeaders (Go) or equivalent
 
+    ### 4. Multi-Tenant Observability (MANDATORY)
+    All services MUST include tenant context in observability:
+    - [ ] Trace spans include `tenant_id` attribute when in multi-tenant mode
+    - [ ] Structured logs include `tenant_id` field when in multi-tenant mode
+    - [ ] Metrics include `tenant_id` label when in multi-tenant mode
+    - [ ] Graceful degradation: no crash when `tenant_id` is absent (single-tenant mode)
+
     ## Required Output Format
 
     ### Validation Summary

@@ -270,6 +270,8 @@ Task:
     ## Ring Standards Reference
     For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    Multi-Tenant (MANDATORY): https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md
+    All services MUST support both single-tenant and multi-tenant modes with backward compatibility.
 
     ## Frontend TDD Policy (React/Next.js only)
     If the component is purely visual/presentational (layout, styling, animations,
@@ -375,6 +377,8 @@ Task:
     ## Ring Standards Reference
     For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    Multi-Tenant (MANDATORY): https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md
+    All services MUST support both single-tenant and multi-tenant modes with backward compatibility.
 
     ## ⛔ CRITICAL: all Ring Standards Apply (no DEFERRAL)
     See Ring Standards for mandatory requirements:
@@ -418,6 +422,7 @@ Task:
     |----------|----------------|-------------------------------|
     | **Go** | `golang.md` | "Telemetry & Observability (MANDATORY)", "Child Spans", "Context Propagation", "Anti-Patterns" |
     | **TypeScript** | `typescript.md` | "Observability", "Telemetry Patterns", "Context Propagation", "Anti-Patterns" |
+    | **All** | `golang/multi-tenant.md` | "Multi-Tenant Patterns", "Backward Compatibility", "M2M Credentials" (if plugin) |
 
     **⛔ NON-NEGOTIABLE: Agent MUST implement EXACTLY the patterns from standards. no deviations. no shortcuts.**
 
