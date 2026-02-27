@@ -109,3 +109,52 @@ TDD forces: (1) Think about what you're testing, (2) Watch fail confirms real be
 If TDD reveals you're testing mock behavior, you've gone wrong.
 
 Fix: Test real behavior or question why you're mocking at all.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Mock Justification | Cannot explain what real behavior the mock enables testing | STOP and report |
+| Test-Only Method | Method exists only for test purposes in production code | STOP and report |
+| Incomplete Mock | Mock missing fields that real API returns | STOP and report |
+| TDD Violation | Tests written after implementation complete | STOP and report |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- Tests MUST verify real behavior, not mock existence
+- Production code CANNOT contain test-only methods
+- Mocks MUST mirror real API structures completely
+- Understanding dependencies is REQUIRED before mocking
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Asserting on mock elements (`*-mock` test IDs) | MUST fix immediately |
+| CRITICAL | Test-only methods in production classes | MUST fix immediately |
+| HIGH | Mocking without understanding side effects | MUST fix before completing |
+| HIGH | Incomplete mocks missing required fields | MUST fix before completing |
+| MEDIUM | Mock setup exceeds 50% of test logic | Should fix |
+| LOW | Test coverage gaps in non-critical paths | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just mock it to make the test pass quickly" | "CANNOT mock without understanding what behavior I'm enabling tests for. Let me analyze the real dependencies first." |
+| "Add a test-only method, it's the fastest solution" | "CANNOT add test-only methods to production code. I'll create a test utility instead." |
+| "The mock doesn't need all those fields" | "CANNOT use incomplete mocks. Partial mocks fail silently when downstream code accesses missing fields." |
+| "Skip TDD, we're behind schedule" | "CANNOT skip TDD. Writing tests after leads to testing mock behavior instead of real behavior." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Mock makes the test simpler" | Simpler test ≠ correct test. You may be testing mock existence, not behavior. | **MUST verify assertion tests real behavior** |
+| "Test-only method is small, doesn't hurt" | Any test pollution in production is dangerous if called accidentally. | **MUST move to test utilities** |
+| "I know what the mock needs" | Assumption ≠ verification. Check real API response. | **MUST verify mock completeness against real API** |
+| "Tests after is the same as TDD" | Order matters. TDD reveals what to mock; tests-after tests mocks blindly. | **MUST follow RED-GREEN-REFACTOR** |
+| "Mocking to be safe" | "Safe" mocking without understanding breaks tests that depend on real behavior. | **MUST understand dependencies before mocking** |

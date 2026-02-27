@@ -202,6 +202,38 @@ From 24 failure memories:
 - Implications of success
 - ANY communication suggesting completion/correctness
 
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| No verification command identified | Cannot determine what command proves the claim | STOP and identify verification command first |
+| Verification command fails to run | Command errors, times out, or is unavailable | STOP and report infrastructure issue |
+| Verification output contradicts claim | Tests fail but claiming success | STOP and state actual status with evidence |
+| Banned phrase detected | About to use "should work", "appears to", etc. | STOP and run verification before continuing |
+| Evidence is stale | Verification was from previous message or session | STOP and re-run verification fresh |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST run verification command in the SAME message as the claim
+- MUST paste COMPLETE output (not partial or summarized)
+- CANNOT use banned phrases without prior evidence
+- CANNOT claim completion based on previous verification runs
+- CANNOT trust agent success reports without independent verification
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Claimed complete without any verification | MUST immediately run verification and correct claim |
+| CRITICAL | Used banned phrase with no evidence | MUST run verification and restate with evidence |
+| HIGH | Verification from previous message used for current claim | MUST re-run verification fresh |
+| HIGH | Partial verification used (linter for build, etc.) | MUST run correct verification command |
+| MEDIUM | Output pasted but incomplete | Should re-run and paste full output |
+| LOW | Claim made then verified (wrong order) | Restate with verification first in future |
+
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |

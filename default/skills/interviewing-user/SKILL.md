@@ -245,6 +245,51 @@ Interview is complete when ALL of these are true:
 - [ ] User explicitly confirmed understanding
 - [ ] No remaining ambiguities that affect correctness
 
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Question Budget | Exceeded 3 rounds of questions without resolution | STOP and report - user may not have required information |
+| Confirmation | User neither confirms nor denies understanding after 2 attempts | STOP and ask for explicit confirmation |
+| Scope Creep | Interview reveals task is fundamentally different than expected | STOP and restart with new scope definition |
+| Contradiction | User responses contradict each other | STOP and surface the contradiction for resolution |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST explore codebase before asking questions - asking without context wastes user time
+- MUST provide concrete options (2-4 choices) - open-ended questions are FORBIDDEN
+- MUST present Validated Understanding summary before proceeding
+- CANNOT treat silence or ambiguous responses as confirmation
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | P0 blocking question unanswered | MUST resolve before any implementation |
+| HIGH | P1 architecture question unanswered | MUST resolve - affects overall structure |
+| MEDIUM | P2 behavior question unanswered | Should resolve - affects user-facing functionality |
+| LOW | P3 preference question unanswered | Can proceed with sensible default |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just start building, we'll figure it out" | "CANNOT proceed without resolving P0 and P1 questions. It's better to ask 5 questions upfront than rewrite code 3 times." |
+| "I don't have time for all these questions" | "I MUST ask at least P0 blocking questions. Maximum 3 rounds, maximum 4 questions per round - this saves time versus incorrect implementation." |
+| "You're the expert, just decide" | "CANNOT make architecture decisions without user input. I'll present 2-4 concrete options with trade-offs for you to choose." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "User seems busy, I'll skip the interview" | Skipping requirements gathering causes rework. 5 upfront questions < 3 implementation rewrites. | **MUST complete interview for ambiguous requirements** |
+| "I can infer what they want from context" | Inference creates assumptions. Explicit confirmation prevents misunderstanding. | **MUST get explicit answers, not infer intent** |
+| "Open-ended question will give richer response" | Open-ended questions are hard to answer and produce vague responses. | **MUST provide 2-4 concrete options** |
+| "User said 'sounds good' - that's confirmation" | 'Sounds good' is acknowledgment, not explicit confirmation. | **MUST get explicit 'confirmed' or 'proceed'** |
+
 ## Key Principles
 
 | Principle | Application |

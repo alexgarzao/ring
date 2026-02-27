@@ -200,3 +200,53 @@ After final review passes:
 - **ring:executing-plans** - Use for parallel session instead of same-session execution
 
 See reviewer agent definitions: ring:code-reviewer (agents/code-reviewer.md), ring:security-reviewer (agents/security-reviewer.md), ring:business-logic-reviewer (agents/business-logic-reviewer.md)
+
+---
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Plan missing | No plan file available to execute | STOP and use ring:writing-plans first |
+| Critical issue unfixed | Code review found Critical/High/Medium issue that cannot be resolved | STOP and report blocker to human partner |
+| Task dependency | Current task depends on incomplete previous task | STOP and resolve dependency before proceeding |
+| Subagent failure | Subagent cannot complete task after retry | STOP and report for manual intervention |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST dispatch all 5 reviewers in parallel (single message with 5 Task calls)
+- MUST NOT proceed with unfixed Critical/High/Medium issues
+- MUST NOT dispatch multiple implementation subagents in parallel
+- MUST add TODO/FIXME comments for Low/Cosmetic issues
+- MUST use ring:finishing-a-development-branch at completion
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Review finds security vulnerability or data loss risk | MUST fix immediately, re-run all 5 reviewers |
+| HIGH | Review finds logic error or missing functionality | MUST fix before marking task complete |
+| MEDIUM | Review finds code quality issue affecting maintainability | MUST fix before proceeding to next task |
+| LOW | Review finds minor improvement opportunity | Add TODO comment, continue to next task |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Skip the code review, we're behind schedule" | "CANNOT skip review between tasks. Review catches issues early, which is cheaper than debugging later." |
+| "Run reviewers one at a time to see results faster" | "MUST dispatch all 5 reviewers in parallel. Sequential execution is 5x slower with no benefit." |
+| "That Medium issue can wait" | "MUST fix Medium and above before proceeding. Technical debt compounds and blocks later tasks." |
+| "Just implement multiple tasks at once" | "CANNOT dispatch parallel implementation subagents. Conflicts and context pollution will corrupt the codebase." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "One quick review is enough" | Single reviewer misses issues. 5 reviewers catch different problem types. | **MUST run all 5 reviewers** |
+| "This task is simple, skip review" | Simple tasks have simple bugs that compound. Review is cheap insurance. | **MUST review after every task** |
+| "Low severity issues don't need tracking" | Low issues become Medium over time. TODO comments ensure they're not forgotten. | **MUST add TODO/FIXME for Low/Cosmetic** |
+| "I'll fix the Medium issue in the next task" | Issues from task N don't belong in task N+1. Fix in context, not later. | **MUST fix Medium+ before proceeding** |
+| "Parallel implementation would be faster" | Parallel implementation causes merge conflicts and context pollution. | **MUST execute tasks sequentially** |

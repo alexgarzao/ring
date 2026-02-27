@@ -126,6 +126,38 @@ Complete each phase before proceeding to the next.
 - **defense-in-depth** - Add validation after finding root cause
 - **verification-before-completion** - Verify fix worked before claiming success
 
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Cannot reproduce issue | Bug is intermittent and no consistent reproduction steps | STOP and gather more data before proceeding |
+| 3 hypotheses failed | Three consecutive hypotheses tested and all failed | STOP and escalate for architecture review |
+| 3 fixes failed | Three fix attempts made but issue persists | STOP and question fundamental assumptions |
+| 30 minutes without root cause | Extended investigation without identifying root cause | STOP and escalate for help |
+| Fix reveals new problem | Each attempted fix creates different symptoms | STOP and request architecture review |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST complete Phase 1 (Root Cause Investigation) before any code changes
+- MUST form evidence-based hypothesis before attempting fixes
+- CANNOT skip creating a failing test in Phase 4
+- MUST stop and escalate after 3 failed hypotheses or fixes
+- CANNOT claim fix is complete without fresh verification
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Production system affected | MUST prioritize and escalate immediately |
+| CRITICAL | Data corruption or loss risk | MUST stop other work and focus exclusively |
+| HIGH | User-facing functionality broken | MUST investigate before other tasks |
+| HIGH | Tests failing on main branch | MUST resolve before merging new code |
+| MEDIUM | Non-critical feature affected | Should investigate within current session |
+| LOW | Minor behavior deviation | Fix in next iteration if time permits |
+
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |

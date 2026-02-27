@@ -212,3 +212,53 @@ This skill uses these universal patterns:
 - **TodoWrite:** See `skills/shared-patterns/todowrite-integration.md`
 
 Apply ALL patterns when using this skill.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Design Validation | Design phase not complete (brainstorming/PRD/TRD not validated) | STOP and report |
+| Plan Validation | Plan fails `validate-plan-precedent.py` check | STOP and report |
+| Zero-Context Test | Plan contains vague instructions ("add validation here") | STOP and report |
+| Agent Assignment | Tasks missing recommended agent specification | STOP and report |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- Design phase MUST be complete before creating implementation plan
+- Plan validation script MUST pass before execution
+- All tasks MUST include exact file paths, never "somewhere in src"
+- All tasks MUST include complete code examples, never placeholders
+- Each task MUST specify recommended agent
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Plan created without validated design | MUST complete design phase first |
+| CRITICAL | Tasks contain placeholder code ("add logic here") | MUST write complete code examples |
+| HIGH | Plan fails validation script | MUST address warnings and re-validate |
+| HIGH | Missing exact file paths in tasks | MUST specify complete paths |
+| MEDIUM | Missing verification commands in tasks | Should add expected output verification |
+| LOW | Missing review checkpoints between tasks | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Skip design validation, we know what to build" | "CANNOT skip design validation. Plans without validated design lead to rework. Design phase MUST be complete first." |
+| "Add the code later, just outline the tasks" | "CANNOT use placeholder code. Zero-Context Test requires complete code so engineers can execute without codebase knowledge." |
+| "Approximate file paths are fine" | "CANNOT use vague paths. Tasks MUST include exact file paths - never 'somewhere in src'." |
+| "Skip plan validation, we're in a hurry" | "CANNOT skip validation. Plan validation catches issues before they become implementation blockers." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Design is obvious, skip to planning" | Obvious ≠ validated. Unvalidated designs cause plan rework. | **MUST complete design phase first** |
+| "Engineer will figure out the details" | Zero-Context Test: engineer has NO codebase context. Plan must be complete. | **MUST include complete code and paths** |
+| "Validation warnings are minor" | Warnings indicate issues that become blockers during execution. | **MUST address all warnings** |
+| "Agent assignment is flexible" | Wrong agent = wrong standards applied. Each task needs correct specialist. | **MUST specify recommended agent** |
+| "Plan is good enough, validation is overkill" | "Good enough" plans fail Zero-Context Test. Validation ensures completeness. | **MUST run and pass validation** |

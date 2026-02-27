@@ -73,3 +73,53 @@ Related failures (fix one might fix others) | Need full context | Exploratory de
 ## Verification
 
 After agents return: Review summaries → check for conflicts → run full suite → spot check for systematic errors.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Independence check | Problems share state or files | STOP and use sequential investigation instead |
+| Minimum threshold | Fewer than 3 independent failures | STOP and investigate directly without parallel dispatch |
+| Conflict detection | Agent changes would overlap | STOP and re-partition domains |
+| Context requirements | Problem requires full system context | STOP and use single agent investigation |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- Problems MUST be verified independent before parallel dispatch - shared state means sequential
+- Minimum 3 failures REQUIRED for parallel dispatch - fewer means direct investigation
+- Each agent MUST have focused scope (one file/subsystem) - broad scope is FORBIDDEN
+- Agent prompts MUST include constraints about what NOT to change
+- Full test suite MUST run after integrating all agent changes
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Dispatched agents for related/connected failures | MUST stop and switch to sequential investigation |
+| CRITICAL | Agent changes conflict with each other | MUST re-partition domains and re-dispatch |
+| HIGH | Agent prompt lacks scope constraints | MUST add specific "do NOT change" constraints |
+| HIGH | Skipped post-integration test suite | MUST run full test suite before completion |
+| MEDIUM | Agent prompt lacks expected output format | Should add specific output requirements |
+| LOW | Could optimize domain partitioning | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just dispatch agents for all failures, don't analyze" | "MUST verify independence first. Related failures need sequential investigation to avoid conflicts." |
+| "Two failures is enough for parallel dispatch" | "CANNOT dispatch for fewer than 3 failures. Direct investigation is faster for 1-2 problems." |
+| "Skip the verification step, agents finished successfully" | "MUST run full test suite after integration. Agent success doesn't guarantee no conflicts." |
+| "Give agents broad scope to fix more issues" | "Focused scope prevents interference. MUST limit each agent to one file/subsystem." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "These failures look independent enough" | Looking independent ≠ verified independent; check for shared state | **MUST verify independence before dispatch** |
+| "Dispatching for 2 failures saves time" | Overhead of parallel dispatch exceeds benefit for <3 failures | **MUST investigate directly if fewer than 3** |
+| "Agents can figure out their own scope" | Unclear scope causes agents to interfere with each other | **MUST provide explicit scope and constraints** |
+| "Test suite passed for each agent" | Individual success doesn't catch integration conflicts | **MUST run full suite after integration** |
+| "Re-partitioning is too much work" | Conflicting changes create more work than re-partitioning | **MUST re-partition if domains overlap** |
