@@ -425,7 +425,79 @@ This file contains tasks filtered for the **{module}** module.
 
 ## Task Template Structure
 
-Output to `docs/pre-dev/{feature-name}/tasks.md`. Each task includes:
+Output path depends on topology — see [Output & After Approval](#output--after-approval) for the full topology-dependent rules. The file starts with two summary sections followed by the full task details.
+
+### File Summary Sections (top of tasks.md)
+
+MUST open with two summary tables before the individual task details.
+
+#### Summary Table 1 — Technical Overview
+
+A quick-reference table for the engineering team:
+
+```markdown
+## Summary
+
+| Task | Title | Type | Hours | Confidence | Blocks |
+|------|-------|------|-------|------------|--------|
+| T-001 | Project Foundation | Foundation | 3.0 | High | All |
+| T-002 | ... | Feature | 6.5 | Medium | T-004, T-008 |
+| | **TOTAL** | | **85.0h** | | |
+```
+
+#### Summary Table 2 — Business Deliverables View
+
+MUST appear immediately after Summary Table 1. A plain-language view for product managers, stakeholders, and the team to understand **what value each task delivers**.
+
+```markdown
+## Business Deliverables
+
+| Task | Deliverable (business view) |
+|------|-----------------------------|
+| T-001 | The team can develop and test locally from day one — **every contributor gets a working environment without manual setup**. |
+| T-002 | **Transactions reach their destination** — messages conform to the agreed standard and counterparties accept every one sent. |
+| ... | _(additional tasks omitted for brevity)_ |
+```
+
+**Writing rules for Business Deliverables View:**
+
+| Rule | Correct | Wrong |
+|------|---------|-------|
+| **Language** | Plain business language | Technical jargon (endpoints, migrations, repositories) |
+| **Perspective** | What the business/user gains | What the developer implements |
+| **Voice** | Active — "The product can...", "Users gain..." | Passive — "It is implemented...", "It will be created..." |
+| **Length** | 1-3 sentences max | Bullet lists, long paragraphs |
+| **Emphasis** | Bold the core value proposition | No bold or no emphasis at all |
+| **Source** | Derived from each task's **Deliverable** field | Invented separately |
+
+**What to include:**
+- The capability unlocked ("The product can...", "Users can now...")
+- Why it matters to the business ("Without this, no transaction reaches its destination")
+- Who benefits (developer, operator, end user, regulator)
+- Business consequence if missing (when relevant)
+
+**What to exclude:**
+- File names, class names, function names
+- Architecture terms (API, REST, handler, service layer)
+- Infrastructure terms (Docker, Kubernetes, PostgreSQL)
+- Implementation verbs (implement, create endpoint, configure database)
+
+**Validation for Business Deliverables View:**
+
+| Check | Requirement |
+|-------|-------------|
+| Language | No technical jargon (no API, REST, handler, migration, repository) |
+| Length | 1-3 sentences per row; no bullet lists |
+| Voice | Active and capability-focused; no passive constructions |
+| Source | Each row derived from the task's Deliverable field, not invented |
+| Formatting | Core value proposition bolded; no other inline formatting |
+| Exclusions | No file/class names, architecture terms, infrastructure terms, or implementation verbs |
+
+---
+
+### Per-Task Template
+
+Each task includes:
 
 | Section | Content |
 |---------|---------|
