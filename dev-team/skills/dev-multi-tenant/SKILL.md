@@ -5,9 +5,12 @@ version: 2.0.0
 type: skill
 description: |
   Multi-tenant development cycle orchestrator following Ring Standards.
-  Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3),
+  Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3)
+  and service type (plugin vs product),
   then executes a gate-based implementation using tenantId from JWT
   for database-per-tenant isolation via lib-commons v3 tenant-manager sub-packages (postgres.Manager, mongo.Manager).
+  For plugins: includes mandatory M2M credential retrieval from AWS Secrets Manager
+  via lib-commons v3 secretsmanager package (per-tenant authentication with product APIs).
   MUST update lib-commons v3 first; lib-auth v2 depends on it. Both are required dependencies.
   Each gate dispatches ring:backend-engineer-golang with context and section references.
   The agent loads multi-tenant.md via WebFetch and has all code examples.
@@ -58,15 +61,17 @@ examples:
   - name: "Add multi-tenant to a service"
     invocation: "/ring:dev-multi-tenant"
     expected_flow: |
-      1. Gate 0: Auto-detect stack
+      1. Gate 0: Auto-detect stack + service type (plugin vs product)
       2. Gate 1: Analyze codebase (build implementation roadmap)
       3. Gate 1.5: Visual implementation preview (HTML report for developer approval)
-      4. Gates 2-6: Implementation (agent loads multi-tenant.md, follows roadmap)
-      5. Gate 7: Metrics & Backward compatibility
-      6. Gate 8: Tests
-      7. Gate 9: Code review
-      8. Gate 10: User validation
-      9. Gate 11: Activation guide
+      4. Gates 2-5: Implementation (agent loads multi-tenant.md, follows roadmap)
+      5. Gate 5.5: M2M Secret Manager for plugin auth (if plugin)
+      6. Gate 6: RabbitMQ multi-tenant (if RabbitMQ detected)
+      7. Gate 7: Metrics & Backward compatibility
+      8. Gate 8: Tests
+      9. Gate 9: Code review
+      10. Gate 10: User validation
+      11. Gate 11: Activation guide
 ---
 
 # Multi-Tenant Development Cycle
@@ -163,6 +168,9 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | "I'll make a quick edit directly" | CODE_BYPASS | "FORBIDDEN: All code changes go through ring:backend-engineer-golang. Dispatch the agent." |
 | "It's just one line, no need for an agent" | CODE_BYPASS | "FORBIDDEN: Even single-line changes MUST be dispatched. Agent ensures standards compliance." |
 | "Agent is slow, I'll edit faster" | CODE_BYPASS | "FORBIDDEN: Speed is not a justification. Agent applies TDD and standards checks." |
+| "This plugin doesn't need Secret Manager" | SCOPE_REDUCTION | "If it's a plugin with MULTI_TENANT_ENABLED=true that calls product APIs, M2M via Secret Manager is MANDATORY." |
+| "We can use env vars for M2M credentials" | SECURITY_BYPASS | "Env vars are shared across tenants. M2M credentials are PER-TENANT. MUST use Secrets Manager." |
+| "Caching M2M credentials is optional" | QUALITY_BYPASS | "Every request to AWS adds ~50-100ms latency + cost. Caching is MANDATORY from day one." |
 
 ---
 
@@ -177,6 +185,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
 | 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Per detected DB/storage | ring:backend-engineer-golang |
+| 5.5 | M2M Secret Manager (Plugin Auth) | Skip if NOT a plugin | ring:backend-engineer-golang |
 | 6 | RabbitMQ Multi-Tenant | Skip if no RabbitMQ | ring:backend-engineer-golang |
 | 7 | Metrics & Backward Compat | Always | ring:backend-engineer-golang |
 | 8 | Tests | Always | ring:backend-engineer-golang |
@@ -208,7 +217,21 @@ DETECT (run in parallel):
    - Context:    grep -rn "tenant-manager/core\|GetMongoForTenant\|GetPostgresForTenant" internal/
    - S3 keys:    grep -rn "tenant-manager/s3\|GetObjectStorageKeyForTenant" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
+8. Service type (plugin vs product):
+   - Plugin:     grep -rn "plugin-\|Plugin" go.mod cmd/ internal/bootstrap/
+   - M2M client: grep -rn "client_credentials\|M2M\|secretsmanager\|GetM2MCredentials" internal/ pkg/
+   - Product API calls: grep -rn "ledger.*client\|midaz.*client\|product.*client" internal/
 ```
+
+**Service type classification:**
+
+| Signal | Classification |
+|--------|---------------|
+| Module name contains `plugin-` (in go.mod) | **Plugin** → Gate 5.5 MANDATORY |
+| Service calls product APIs (ledger, midaz, etc.) | **Plugin** → Gate 5.5 MANDATORY |
+| No product API calls, serves own data | **Product** → Gate 5.5 SKIP |
+
+MUST confirm with user: "Is this service a **plugin** (calls product APIs like ledger/midaz) or a **product** (serves its own data)?"
 
 MUST confirm: user explicitly approves detection results before proceeding.
 
@@ -237,6 +260,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
 > 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key. What bucket env var is used?
 > 9. **Existing multi-tenant code**: Any tenant-manager sub-package imports (`tenant-manager/core`, `tenant-manager/middleware`, `tenant-manager/postgres`, etc.)? TenantMiddleware or MultiPoolMiddleware? `core.GetPostgresForTenant`/`core.GetMongoForTenant`/`s3.GetObjectStorageKeyForTenant` calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
+> 10. **M2M / Plugin authentication** (if service is a plugin): Does the service call product APIs (ledger, midaz, CRM)? How does it authenticate today (static token, env var, hardcoded)? Where is the HTTP client that calls the product? Is there an existing M2M or `client_credentials` flow? Any `secretsmanager` imports? List every file:line where product API calls are made and where authentication credentials are injected.
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
 > DO NOT write code. Analysis only.
@@ -288,6 +312,9 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | 5 | `metadata.mongodb.go` | Static mongo → `core.GetMongoForTenant(ctx)` | ~2 lines per method |
 | 5 | `consumer.redis.go` | Key prefixing with `valkey.GetKeyFromContext(ctx, key)` | ~1 line per operation |
 | 5 | `storage.go` | S3 key prefixing with `s3.GetObjectStorageKeyForTenant(ctx, key)` | ~1 line per operation |
+| 5.5 | `m2m/provider.go` | New file: M2MCredentialProvider with credential caching (plugin only) | ~80 lines |
+| 5.5 | `config.go` | Add M2M_TARGET_SERVICE, cache TTL, AWS_REGION env vars (plugin only) | ~10 lines added |
+| 5.5 | `bootstrap.go` | Conditional M2M wiring when multi-tenant + plugin (plugin only) | ~20 lines added |
 | 6 | `producer.rabbitmq.go` | Dual constructor (single-tenant + multi-tenant) | ~20 lines added |
 | 6 | `rabbitmq.server.go` | MultiTenantConsumer setup with lazy mode | ~40 lines added |
 | 7 | `config.go` | Backward compat validation | ~10 lines added |
@@ -519,6 +546,72 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 
 ---
 
+## Gate 5.5: M2M Secret Manager (Plugin Auth)
+
+**SKIP IF:** service is NOT a plugin (i.e., it is a product or infrastructure service).
+
+**This gate is MANDATORY for plugins** that need to authenticate with product APIs (e.g., ledger, midaz) in multi-tenant mode. Each tenant has its own M2M credentials stored in AWS Secrets Manager.
+
+**Dispatch `ring:backend-engineer-golang` with context from Gate 0/1 analysis:**
+
+> TASK: Implement M2M credential retrieval from AWS Secrets Manager with per-tenant caching.
+> SERVICE TYPE: Plugin (confirmed in Gate 0)
+> APPLICATION NAME: {ApplicationName constant from codebase, e.g., "plugin-pix"}
+> TARGET SERVICE: {product the plugin calls, e.g., "ledger", "midaz"}
+>
+> Follow multi-tenant.md section "M2M Credentials via Secret Manager (Plugin-Only)" for all implementation patterns.
+>
+> **What to implement:**
+>
+> 1. **M2M Authenticator struct** with credential caching (`sync.Map`) and token caching.
+>    Use `secretsmanager.GetM2MCredentials()` from `github.com/LerianStudio/lib-commons/v3/commons/secretsmanager`.
+>    The function signature is:
+>    ```go
+>    secretsmanager.GetM2MCredentials(ctx, smClient, env, tenantOrgID, applicationName, targetService) (*M2MCredentials, error)
+>    ```
+>    It returns `*M2MCredentials{ClientID, ClientSecret}` fetched from path:
+>    `tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials`
+>
+> 2. **Credential cache** with configurable TTL (default 300s). MUST NOT hit AWS on every request.
+>
+> 3. **Bootstrap wiring** — conditional on `cfg.MultiTenantEnabled`:
+>    ```go
+>    if cfg.MultiTenantEnabled {
+>        awsCfg, _ := awsconfig.LoadDefaultConfig(ctx)
+>        smClient := awssm.NewFromConfig(awsCfg)
+>        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.MultiTenantEnvironment,
+>            constant.ApplicationName, cfg.M2MTargetService,
+>            time.Duration(cfg.M2MCredentialCacheTTLSec)*time.Second)
+>        productClient = product.NewClient(cfg.ProductURL, m2mProvider)
+>    } else {
+>        productClient = product.NewClient(cfg.ProductURL, nil) // single-tenant: static auth
+>    }
+>    ```
+>
+> 4. **Config env vars** — add to Config struct:
+>    - `M2M_TARGET_SERVICE` (string, required for plugins)
+>    - `M2M_CREDENTIAL_CACHE_TTL_SEC` (int, default 300)
+>    - `AWS_REGION` (string, required for plugins)
+>
+> 6. **Error handling** using sentinel errors from lib-commons:
+>    - `secretsmanager.ErrM2MCredentialsNotFound` → tenant not provisioned
+>    - `secretsmanager.ErrM2MVaultAccessDenied` → IAM issue, alert ops
+>    - `secretsmanager.ErrM2MInvalidCredentials` → secret malformed, alert ops
+>
+> **SECURITY:**
+> - MUST NOT log clientId or clientSecret values
+> - MUST NOT store credentials in environment variables (fetch from Secrets Manager at runtime)
+> - MUST cache locally to avoid per-request AWS API calls
+> - MUST handle credential rotation via cache TTL expiry
+
+**Verification:** `grep "secretsmanager.GetM2MCredentials\|M2MAuthenticator\|NewM2MAuthenticator" internal/` + `go build ./...`
+
+<block_condition>
+HARD GATE: If service is a plugin and MULTI_TENANT_ENABLED=true, M2M Secret Manager integration is NON-NEGOTIABLE. The plugin cannot authenticate with product APIs without it.
+</block_condition>
+
+---
+
 ## Gate 6: RabbitMQ Multi-Tenant
 
 **SKIP IF:** no RabbitMQ detected.
@@ -632,6 +725,7 @@ MUST approve: present checklist for explicit user approval.
 - [ ] Repositories use context-based connections
 - [ ] S3 keys prefixed with tenantId (if applicable)
 - [ ] RabbitMQ X-Tenant-ID (if applicable)
+- [ ] M2M Secret Manager with credential + token caching (if plugin)
 - [ ] Backward compat (MULTI_TENANT_ENABLED=false works)
 - [ ] Tests pass
 - [ ] Code review passed
@@ -650,10 +744,11 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
 2. **Environment variables**: the 7 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC) with required/default/description
-3. **How to activate**: set envs + start alongside Tenant Manager
-4. **How to verify**: check logs, test with JWT tenantId
-5. **How to deactivate**: set MULTI_TENANT_ENABLED=false
-6. **Common errors**: see [multi-tenant.md § Error Handling](../../docs/standards/golang/multi-tenant.md)
+3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
+4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
+5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
+6. **How to deactivate**: set MULTI_TENANT_ENABLED=false
+7. **Common errors**: see [multi-tenant.md § Error Handling](../../docs/standards/golang/multi-tenant.md)
 
 ---
 
@@ -664,8 +759,9 @@ Save to `docs/ring-dev-multi-tenant/current-cycle.json` for resume support:
 ```json
 {
   "cycle": "multi-tenant",
+  "service_type": "plugin",
   "stack": {"postgresql": false, "mongodb": true, "redis": true, "rabbitmq": true, "s3": true},
-  "gates": {"0": "PASS", "1": "PASS", "1.5": "PASS", "2": "IN_PROGRESS", "3": "PENDING"},
+  "gates": {"0": "PASS", "1": "PASS", "1.5": "PASS", "2": "IN_PROGRESS", "3": "PENDING", "5.5": "PENDING"},
   "current_gate": 2
 }
 ```
@@ -685,3 +781,6 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
 | "Skip review" | Security implications. One mistake = data leak. | **MANDATORY** |
 | "Using TENANT_MANAGER_ADDRESS instead" | Non-standard name. Only the 7 canonical MULTI_TENANT_* vars are valid. | **STOP. Use MULTI_TENANT_URL** |
 | "The service already uses a different env name" | Legacy names are non-compliant. Rename to canonical names. | **Replace with canonical env vars** |
+| "Plugin doesn't need Secret Manager for M2M" | If multi-tenant is active, each tenant has different credentials. Env vars can't hold per-tenant secrets. | **MUST use Secret Manager for per-tenant M2M** |
+| "We'll add M2M caching later" | Without caching, every request hits AWS (~50-100ms + cost). This is a production blocker. | **MUST implement caching from day one** |
+| "Hardcoded credentials work for now" | Hardcoded creds don't scale across tenants and are a security risk. | **MUST fetch from Secrets Manager per tenant** |

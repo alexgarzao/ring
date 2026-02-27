@@ -1,6 +1,6 @@
 # Go Standards - Multi-Tenant
 
-> **Module:** multi-tenant.md | **Sections:** §24 | **Parent:** [index.md](index.md)
+> **Module:** multi-tenant.md | **Sections:** §25 | **Parent:** [index.md](index.md)
 
 This module covers multi-tenant patterns with Tenant Manager.
 
@@ -15,6 +15,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 1b | [Multi-module middleware (MultiPoolMiddleware)](#multi-module-middleware-multipoolmiddleware) | Multi-module unified services (midaz ledger) |
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
 | 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
+| 25 | [M2M Credentials via Secret Manager (Plugin-Only)](#m2m-credentials-via-secret-manager-plugin-only) | AWS Secrets Manager integration for plugin-to-product authentication per tenant |
 
 ---
 
@@ -1635,4 +1636,403 @@ if m.consumerTrigger != nil {  // Nil in single-tenant mode
 
 ---
 
-This section can be added to `golang/multi-tenant.md` as **§24: Message Queue Lazy Consumer Pattern**.
+## M2M Credentials via Secret Manager (Plugin-Only)
+
+**CONDITIONAL:** Only implement if the service is a **plugin** that needs to authenticate with a **product** (e.g., ledger, midaz, CRM). Products do NOT need this — only plugins that call product APIs.
+
+### When This Applies
+
+| Service Type | `MULTI_TENANT_ENABLED` | Needs Secret Manager? | Reason |
+|-------------|------------------------|----------------------|--------|
+| **Plugin** (plugin-pix, plugin-crm, etc.) | `true` | ✅ YES | Plugin must authenticate with product APIs per tenant |
+| **Plugin** (plugin-pix, plugin-crm, etc.) | `false` | ❌ NO | Single-tenant — plugin uses existing static auth, no Secrets Manager calls |
+| **Product** (midaz, ledger, CRM) | any | ❌ NO | Products don't call other products via M2M |
+| **Infrastructure** (tenant-manager, reporter) | any | ❌ NO | Infrastructure services use internal auth |
+
+**⛔ Backward Compatibility:** When `MULTI_TENANT_ENABLED=false` (the default), the plugin MUST continue working with its existing authentication mechanism — no AWS Secrets Manager calls, no M2M credential fetching. The Secret Manager path is activated **only** when multi-tenant mode is enabled. This follows the same conditional pattern as all other tenant-manager resources (PostgreSQL, MongoDB, Redis, S3, RabbitMQ).
+
+### How It Works
+
+When `MULTI_TENANT_ENABLED=true`, each tenant has its own M2M credentials stored in **AWS Secrets Manager**. When a plugin needs to call a product API (e.g., ledger), it must:
+
+1. Extract `tenantOrgID` from the JWT context (already available via tenant middleware)
+2. Call `secretsmanager.GetM2MCredentials()` to fetch `clientId` + `clientSecret` for that tenant
+3. Pass the credentials to the existing Plugin Access Manager integration (which handles JWT acquisition)
+
+**Note:** The plugin already handles JWT token acquisition via Plugin Access Manager. This section only covers **how to retrieve M2M credentials** from AWS Secrets Manager — not how to exchange them for tokens.
+
+### Required lib-commons Package
+
+```go
+import (
+    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+)
+```
+
+### Secret Path Convention
+
+Credentials are stored in AWS Secrets Manager following this path:
+
+```
+tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials
+```
+
+| Segment | Source | Example |
+|---------|--------|---------|
+| `env` | `MULTI_TENANT_ENVIRONMENT` env var | `staging`, `production` |
+| `tenantOrgID` | JWT `owner` claim via `auth.GetTenantID(ctx)` | `org_01KHVKQQP6D2N4RDJK0ADEKQX1` |
+| `applicationName` | Plugin's own service name constant | `plugin-pix`, `plugin-crm` |
+| `targetService` | The product being called | `ledger`, `midaz` |
+
+### Environment Variables (Plugin-Only)
+
+In addition to the 7 canonical multi-tenant env vars, plugins MUST add:
+
+| Env Var | Description | Default | Required |
+|---------|-------------|---------|----------|
+| `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for plugins) |
+| `M2M_TARGET_SERVICE` | Target product service name | - | Yes (for plugins) |
+| `M2M_CREDENTIAL_CACHE_TTL_SEC` | Local cache TTL for credentials | `300` | No |
+
+### Implementation Pattern
+
+#### 1. Fetching M2M Credentials
+
+```go
+package m2m
+
+import (
+    "context"
+    "fmt"
+
+    awsconfig "github.com/aws/aws-sdk-go-v2/config"
+    awssm "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+)
+
+// FetchCredentials retrieves M2M credentials from AWS Secrets Manager for a specific tenant.
+func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, targetService string) (*secretsmanager.M2MCredentials, error) {
+    cfg, err := awsconfig.LoadDefaultConfig(ctx)
+    if err != nil {
+        return nil, fmt.Errorf("loading AWS config: %w", err)
+    }
+
+    client := awssm.NewFromConfig(cfg)
+
+    creds, err := secretsmanager.GetM2MCredentials(ctx, client, env, tenantOrgID, applicationName, targetService)
+    if err != nil {
+        return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
+    }
+
+    return creds, nil
+}
+```
+
+#### 2. Credential Caching (MANDATORY)
+
+**MUST cache credentials locally.** Hitting AWS Secrets Manager on every request is expensive and adds latency.
+
+```go
+package m2m
+
+import (
+    "context"
+    "fmt"
+    "sync"
+    "time"
+
+    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+)
+
+type cachedCredentials struct {
+    creds     *secretsmanager.M2MCredentials
+    expiresAt time.Time
+}
+
+// M2MCredentialProvider handles per-tenant M2M credential retrieval with caching.
+// Token acquisition is handled by Plugin Access Manager — this only provides credentials.
+type M2MCredentialProvider struct {
+    smClient        secretsmanager.SecretsManagerClient
+    env             string
+    applicationName string
+    targetService   string
+    credCacheTTL    time.Duration
+
+    credCache sync.Map // map[tenantOrgID]*cachedCredentials
+}
+
+// NewM2MCredentialProvider creates a credential provider with configurable cache TTL.
+func NewM2MCredentialProvider(
+    smClient secretsmanager.SecretsManagerClient,
+    env, applicationName, targetService string,
+    credCacheTTL time.Duration,
+) *M2MCredentialProvider {
+    return &M2MCredentialProvider{
+        smClient:        smClient,
+        env:             env,
+        applicationName: applicationName,
+        targetService:   targetService,
+        credCacheTTL:    credCacheTTL,
+    }
+}
+
+// GetCredentials returns M2M credentials for the given tenant, using cache when possible.
+// The caller (Plugin Access Manager integration) handles token acquisition.
+func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID string) (*secretsmanager.M2MCredentials, error) {
+    if cached, ok := p.credCache.Load(tenantOrgID); ok {
+        cc := cached.(*cachedCredentials)
+        if time.Now().Before(cc.expiresAt) {
+            return cc.creds, nil
+        }
+    }
+
+    creds, err := secretsmanager.GetM2MCredentials(ctx, p.smClient, p.env, tenantOrgID, p.applicationName, p.targetService)
+    if err != nil {
+        return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
+    }
+
+    p.credCache.Store(tenantOrgID, &cachedCredentials{
+        creds:     creds,
+        expiresAt: time.Now().Add(p.credCacheTTL),
+    })
+
+    return creds, nil
+}
+```
+
+#### 3. Single-Tenant vs Multi-Tenant: Conditional Flow
+
+This is the core pattern. The plugin MUST work in both modes — the `M2MCredentialProvider` is **nil** in single-tenant mode.
+
+**Few-shot 1 — Bootstrap wiring (picks the right path at startup):**
+
+```go
+// In bootstrap/config.go or bootstrap/dependencies.go
+
+var m2mProvider *m2m.M2MCredentialProvider // nil = single-tenant mode
+
+if cfg.MultiTenantEnabled {
+    // MULTI-TENANT: create credential provider that fetches from AWS Secrets Manager
+    awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
+    if err != nil {
+        logger.Fatalf("Failed to load AWS config for M2M: %v", err)
+    }
+    smClient := awssm.NewFromConfig(awsCfg)
+
+    m2mProvider = m2m.NewM2MCredentialProvider(
+        smClient,
+        cfg.MultiTenantEnvironment,
+        constant.ApplicationName,
+        cfg.M2MTargetService,
+        time.Duration(cfg.M2MCredentialCacheTTLSec) * time.Second,
+    )
+}
+// SINGLE-TENANT: m2mProvider stays nil — no AWS calls, no Secret Manager
+
+// Both modes use the same client — it checks internally if m2mProvider is nil
+productClient := product.NewClient(cfg.ProductURL, m2mProvider)
+```
+
+**Few-shot 2 — Product client (handles both modes transparently):**
+
+```go
+// internal/adapters/product/client.go
+
+type Client struct {
+    baseURL     string
+    m2mProvider *m2m.M2MCredentialProvider // nil in single-tenant mode
+    httpClient  *http.Client
+}
+
+func NewClient(baseURL string, m2mProvider *m2m.M2MCredentialProvider) *Client {
+    return &Client{
+        baseURL:     baseURL,
+        m2mProvider: m2mProvider,
+        httpClient:  &http.Client{Timeout: 30 * time.Second},
+    }
+}
+
+func (c *Client) CreateTransaction(ctx context.Context, input TransactionInput) (*TransactionOutput, error) {
+    req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/v1/transactions", marshal(input))
+    if err != nil {
+        return nil, err
+    }
+
+    if c.m2mProvider != nil {
+        // MULTI-TENANT: fetch per-tenant credentials from Secret Manager
+        tenantOrgID := auth.GetTenantID(ctx)
+        creds, err := c.m2mProvider.GetCredentials(ctx, tenantOrgID)
+        if err != nil {
+            return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
+        }
+        req.SetBasicAuth(creds.ClientID, creds.ClientSecret)
+    }
+    // SINGLE-TENANT: no credentials injected — plugin uses existing auth
+    // (e.g., static token from env var, already set in headers by middleware, etc.)
+
+    resp, err := c.httpClient.Do(req)
+    if err != nil {
+        return nil, fmt.Errorf("calling product API: %w", err)
+    }
+    defer resp.Body.Close()
+
+    // ... handle response
+}
+```
+
+**Few-shot 3 — Service layer (no branching needed, client handles it):**
+
+```go
+func (uc *ProcessPaymentUseCase) Execute(ctx context.Context, input PaymentInput) error {
+    // Works in both modes:
+    // - Single-tenant: client calls product API with existing static auth
+    // - Multi-tenant: client fetches per-tenant creds from Secret Manager first
+    resp, err := uc.ledgerClient.CreateTransaction(ctx, input.Transaction)
+    if err != nil {
+        return fmt.Errorf("creating transaction in ledger: %w", err)
+    }
+
+    return nil
+}
+```
+
+**The pattern:** The conditional logic lives in the **client/adapter layer**, not in the service/use-case layer. The service layer calls the same method regardless of mode — it doesn't know or care whether credentials came from Secret Manager or static config.
+
+### Error Handling
+
+The `secretsmanager` package provides sentinel errors for precise error handling:
+
+```go
+import (
+    "errors"
+    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+)
+
+creds, err := secretsmanager.GetM2MCredentials(ctx, client, env, tenantOrgID, appName, target)
+if err != nil {
+    switch {
+    case errors.Is(err, secretsmanager.ErrM2MCredentialsNotFound):
+        // Tenant not provisioned yet — return 503 or queue for retry
+    case errors.Is(err, secretsmanager.ErrM2MVaultAccessDenied):
+        // IAM permissions missing or token expired — alert ops
+    case errors.Is(err, secretsmanager.ErrM2MInvalidCredentials):
+        // Secret exists but clientId/clientSecret missing — alert ops
+    default:
+        // Infrastructure error — retry with backoff
+    }
+}
+```
+
+### AWS IAM Permissions
+
+The plugin's IAM role (or ECS task role / EKS service account) MUST have permission to read the tenant secrets. Minimal policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": "arn:aws:secretsmanager:*:*:secret:tenants/*/m2m/*/credentials-*"
+    }
+  ]
+}
+```
+
+For tighter scoping, replace wildcards with specific values:
+
+| Wildcard | Scoped Example |
+|----------|---------------|
+| First `*` (env) | `production` or `staging` |
+| Second `*` (target) | `ledger` or `midaz` |
+| Trailing `-*` | Required — AWS appends a random suffix to secret ARNs |
+
+**MUST NOT** grant `secretsmanager:*` — only `GetSecretValue` is needed.
+
+### Testing Guidance
+
+The `secretsmanager.SecretsManagerClient` is an interface, so it can be mocked in unit tests without hitting AWS.
+
+#### Mocking the client
+
+```go
+type mockSMClient struct {
+    getSecretValueFunc func(ctx context.Context, input *awssm.GetSecretValueInput, opts ...func(*awssm.Options)) (*awssm.GetSecretValueOutput, error)
+}
+
+func (m *mockSMClient) GetSecretValue(ctx context.Context, input *awssm.GetSecretValueInput, opts ...func(*awssm.Options)) (*awssm.GetSecretValueOutput, error) {
+    return m.getSecretValueFunc(ctx, input, opts...)
+}
+```
+
+#### Testing credential cache TTL
+
+```go
+func TestCredentialCacheExpiry(t *testing.T) {
+    callCount := 0
+    mock := &mockSMClient{
+        getSecretValueFunc: func(_ context.Context, _ *awssm.GetSecretValueInput, _ ...func(*awssm.Options)) (*awssm.GetSecretValueOutput, error) {
+            callCount++
+            secret := `{"clientId":"id","clientSecret":"secret"}`
+            return &awssm.GetSecretValueOutput{SecretString: &secret}, nil
+        },
+    }
+
+    provider := NewM2MCredentialProvider(mock, "test", "plugin-pix", "ledger", 1*time.Second)
+
+    // First call — fetches from AWS
+    _, err := provider.GetCredentials(context.Background(), "tenant-1")
+    require.NoError(t, err)
+    assert.Equal(t, 1, callCount)
+
+    // Second call — served from cache
+    _, err = provider.GetCredentials(context.Background(), "tenant-1")
+    require.NoError(t, err)
+    assert.Equal(t, 1, callCount) // still 1
+
+    // Wait for cache expiry
+    time.Sleep(1100 * time.Millisecond)
+
+    // Third call — cache expired, fetches again
+    _, err = provider.GetCredentials(context.Background(), "tenant-1")
+    require.NoError(t, err)
+    assert.Equal(t, 2, callCount)
+}
+```
+
+#### Testing error scenarios
+
+Test each sentinel error path (`ErrM2MCredentialsNotFound`, `ErrM2MVaultAccessDenied`, `ErrM2MInvalidCredentials`) by returning the corresponding error from the mock.
+
+### Observability & Metrics
+
+Instrument `M2MCredentialProvider` to track credential retrieval health. Recommended counters and histogram:
+
+| Metric | Type | Where to Increment | Description |
+|--------|------|-------------------|-------------|
+| `m2m_credential_cache_hits` | Counter | `GetCredentials` — cache hit path | Credential served from local cache |
+| `m2m_credential_cache_misses` | Counter | `GetCredentials` — cache miss path | Cache miss, fetching from AWS |
+| `m2m_credential_fetch_errors` | Counter | `GetCredentials` — error return | AWS Secrets Manager call failed |
+| `m2m_credential_fetch_duration_seconds` | Histogram | `GetCredentials` — around the `GetM2MCredentials` call | Latency of AWS Secrets Manager requests |
+
+Labels: `tenant_org_id`, `target_service`, `environment`.
+
+**MUST NOT** include `clientId` or `clientSecret` in metric labels or log fields.
+
+### Security Considerations
+
+1. **MUST NOT log credentials** — never log `clientId` or `clientSecret` values
+2. **MUST NOT store credentials in environment variables** — always fetch from Secrets Manager at runtime
+3. **MUST cache locally** — avoid per-request AWS API calls (latency + cost)
+4. **MUST handle credential rotation** — cache TTL ensures stale credentials are refreshed automatically
+
+### Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Product service doesn't need M2M" | Correct. Only plugins need M2M. | **Skip this gate for products** |
+| "We can hardcode credentials per tenant" | Hardcoded creds don't scale and are a security risk. | **MUST use Secrets Manager** |
+| "Caching is optional, we'll add it later" | Every request hitting AWS adds ~50-100ms latency + cost. | **MUST implement caching from day one** |
+| "We'll use env vars for client credentials" | Env vars are shared across tenants. M2M is per-tenant. | **MUST use Secrets Manager per tenant** |
+| "Single-tenant plugins don't need this" | Correct if MULTI_TENANT_ENABLED=false. | **Skip when single-tenant** |
