@@ -1,5 +1,18 @@
 # Ring-default Changelog
 
+## [1.10.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.10.0)
+
+- **Features:**
+  - Add visual HTML reports to code review and production readiness audit.
+
+- **Contributors:**
+  - @jefferson.comff
+  - @lucasc.bedatty
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.9.0...ring-default@1.10.0)
+
+---
+
 ## [1.9.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.9.0)
 
 - **Features**
