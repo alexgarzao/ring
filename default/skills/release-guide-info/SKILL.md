@@ -80,6 +80,17 @@ related:
 
 # Release Guide Info — Ops Update Guide Generator
 
+## Modularization Note
+
+> **⚠️ CANDIDATE FOR MODULARIZATION**: This skill file exceeds 700 lines and is a candidate for splitting into sub-skills. Future work MUST consider:
+>
+> 1. **Template extraction**: Move language-specific templates (EN, PT-BR) to separate template files
+> 2. **Section generators**: Split each guide section (Breaking Changes, Configuration, Database, etc.) into separate template modules
+> 3. **Git analysis separation**: Extract git diff/commit analysis logic from documentation generation
+> 4. **Output formatters**: Separate markdown generation from content analysis
+>
+> MUST NOT add new sections or languages without first implementing modularization to prevent further bloat.
+
 ## Overview
 
 You are a code-aware documentation agent. Produce an **internal** Operations-facing update/migration guide.

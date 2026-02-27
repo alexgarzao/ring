@@ -267,6 +267,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | Asked to misrepresent status | STOP. Cannot compromise integrity. Escalate if pressured. |
 | Critical escalation discovered | STOP. Immediate verbal communication before written report. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **Accurate status reporting** | False status destroys credibility with executives |
+| **Complete risk disclosure** | Hidden risks become board-level surprises |
+| **Data verification** | Unverified data misleads executive decisions |
+| **Clear decision requests** | Vague asks don't get executive decisions |
+| **Balanced presentation** | Spin erodes trust and credibility |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT publish inaccurate report
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+When determining what to escalate in executive reports:
+
+| Severity | Criteria | Executive Action Required |
+|----------|----------|---------------------------|
+| **CRITICAL** | Business viability impacted, material risk | Immediate attention, decision this meeting |
+| **HIGH** | Significant objective impact, recovery needed | Decision needed this week, intervention may be required |
+| **MEDIUM** | Notable but manageable deviation | Awareness, monitor, may need decision next cycle |
+| **LOW** | Minor variance within tolerance | FYI only, included for completeness |
+
+**Escalate CRITICAL and HIGH. Report MEDIUM for awareness. Include LOW for transparency.**
+
 ---
 
 ## Output Format
@@ -341,3 +373,30 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 | status_distribution | G/Y/R |
 | escalations | N |
 | decisions_needed | N |
+
+---
+
+## When Executive Report Is Not Needed
+
+<MANDATORY>
+MUST: Report is minimal only when ALL conditions are met:
+</MANDATORY>
+
+| Condition | Verification |
+|-----------|-------------|
+| No active portfolio projects | Verify no projects in tracking |
+| Routine status unchanged | No new risks, milestones, or blockers since last report |
+| Stakeholders explicitly waived | Written confirmation required |
+| Recent report covers same period | Reference recent report that applies |
+
+**MUST: Full executive report REQUIRED for the following conditions:**
+
+| Condition | Why Required |
+|-----------|-------------|
+| Any project status change | Stakeholders need current information |
+| New risks identified | Risk visibility is NON-NEGOTIABLE for executives |
+| Milestone reached or missed | Progress tracking required for governance |
+| Resource or budget conflicts | Decision-making requires current data |
+| Board or sponsor meeting | Cannot attend unprepared |
+
+**MUST: When in doubt, produce the report. Incomplete executive reporting causes misaligned decisions and erodes trust.**

@@ -225,6 +225,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Legal compliance risk, users blocked | Missing alt text on images, no keyboard access, form without labels |
+| **HIGH** | WCAG AA violation, significant barrier | Color contrast fails, missing focus indicators, no skip links |
+| **MEDIUM** | Minor accessibility gaps | Non-semantic HTML, missing ARIA on complex widgets |
+| **LOW** | Best practices, enhancements | Optional ARIA improvements, landmark suggestions |
+
+Report all severities. CRITICAL = immediate fix (legal risk). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations. Gate-specific:

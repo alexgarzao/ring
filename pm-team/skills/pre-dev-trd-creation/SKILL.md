@@ -701,6 +701,74 @@ If reviewing a TRD for a UI feature and you see NONE of these, **STOP and add th
 
 ---
 
+## Standards Loading (MANDATORY)
+
+This skill REQUIRES loading Ring Standards via WebFetch as part of Step 0 (Tech Stack Definition).
+
+**HARD GATE:** MUST load appropriate standards based on detected/selected tech stack:
+
+| Tech Stack | Standards to Load via WebFetch |
+|------------|-------------------------------|
+| Go Backend | golang/index.md + devops.md + sre.md |
+| TypeScript Backend | typescript.md + devops.md + sre.md |
+| TypeScript Frontend | frontend.md + devops.md |
+| Full-Stack TypeScript | typescript.md + frontend.md + devops.md + sre.md |
+
+**MUST also** read PROJECT_RULES.md from `docs/PROJECT_RULES.md` (or `docs/STANDARDS.md` for legacy projects).
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| PRD (Gate 1) not validated | STOP and complete Gate 1 first | CRITICAL |
+| Design Validation failed (UI features) | STOP and complete design validation first | CRITICAL |
+| Tech stack cannot be determined | STOP and ask user for clarification | CRITICAL |
+| Ring Standards not loaded | STOP and WebFetch required standards | CRITICAL |
+| Technology product names in architecture | STOP and abstract to capabilities | HIGH |
+| PROJECT_RULES.md not found (new project) | Continue but MUST create during Step 0.3 | MEDIUM |
+| Component ownership unclear | STOP and define single owner per component | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT include specific technology products (PostgreSQL, Redis, etc.)
+- MUST NOT include framework versions (Fiber v2, React 18, etc.)
+- MUST NOT include cloud service names (AWS RDS, Azure Functions, etc.)
+- MUST complete Step 0 (Tech Stack Definition) before architecture
+- MUST complete Step -1 (Design Validation Check) for UI features
+- MUST load Ring Standards via WebFetch
+- MUST abstract all technology choices to capabilities
+- CANNOT proceed to Gate 4 with technology-specific content
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot proceed with TRD | PRD not validated, design validation failed, standards not loaded |
+| **HIGH** | TRD violates abstraction principle | PostgreSQL mentioned, framework versions included |
+| **MEDIUM** | TRD incomplete but usable | Missing one component boundary definition |
+| **LOW** | Minor documentation gaps | ADR rationale could be more detailed |
+
+---
+
+## When This Skill Is Not Needed
+
+- PRD (Gate 1) not validated → complete Gate 1 first
+- Design Validation not passed (UI features) → complete design validation first
+- Architecture already documented → proceed to API Design
+- Pure business requirement change → update PRD
+- Bug fix requiring no architecture changes
+- Configuration changes with no system impact
+
+---
+
 ## Document Placement
 
 **trd.md is a shared document** - it defines architecture for the entire feature.

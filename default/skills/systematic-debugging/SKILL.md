@@ -126,6 +126,28 @@ Complete each phase before proceeding to the next.
 - **defense-in-depth** - Add validation after finding root cause
 - **verification-before-completion** - Verify fix worked before claiming success
 
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Quick fix for now, investigate later" | Later never comes. Quick fixes mask root causes. | **MUST complete Phase 1 before any code change** |
+| "Just try changing X and see" | Guessing wastes time and introduces new bugs | **MUST form hypothesis with evidence first** |
+| "I'm confident this is the issue" | Confidence without evidence is guessing | **MUST verify with reproduction steps** |
+| "One more fix attempt" (after 2+) | Pattern indicates architecture issue, not bug | **STOP and escalate for architecture review** |
+| "Each fix reveals new problem" | Symptom of deeper structural issue | **STOP: architecture review REQUIRED** |
+| "I don't fully understand but this might work" | Partial understanding = partial fix = new bugs | **MUST understand root cause before fixing** |
+| "Skip the test, I'll manually verify" | Manual verification is unreliable and non-repeatable | **MUST create failing test (Phase 4, Step 1)** |
+| "Previous run showed it works" | Stale evidence is not evidence | **MUST re-verify with fresh execution** |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just fix it quickly, we don't have time" | "MUST follow the phases - skipping investigation causes more delays through repeated fixes" |
+| "Try this change, I think it'll work" | "I'll add that as a hypothesis and test it properly in Phase 3" |
+| "We've tried 5 fixes, try one more" | "CANNOT proceed - 3+ failed fixes requires architecture review before more attempts" |
+| "Skip the investigation, the cause is obvious" | "MUST verify the obvious before acting - obvious causes are often wrong" |
+
 ## Required Patterns
 
 This skill uses these universal patterns:

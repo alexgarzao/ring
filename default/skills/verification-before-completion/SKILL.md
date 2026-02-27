@@ -202,6 +202,28 @@ From 24 failure memories:
 - Implications of success
 - ANY communication suggesting completion/correctness
 
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "I ran it earlier, it passed" | Stale evidence is not evidence. Code may have changed. | **MUST run verification fresh THIS message** |
+| "It should work now after my change" | Prediction is not verification | **MUST execute command and paste output** |
+| "I'm confident the tests pass" | Confidence without evidence is lying | **MUST run tests and show actual output** |
+| "Previous output showed success" | Each claim needs fresh verification | **MUST re-run command for each claim** |
+| "The linter passed so build works" | Linter ≠ compiler ≠ tests | **MUST run the specific verification for each claim** |
+| "Agent reported success" | Agent reports MUST be independently verified | **MUST check VCS diff and run verification** |
+| "Just this once, I'll skip it" | No exceptions. Every claim needs evidence. | **MUST verify before ANY completion claim** |
+| "Partial check is enough" | Partial proves nothing. Silent failures remain hidden. | **MUST run FULL verification command** |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just say it's done, we're in a hurry" | "CANNOT claim completion without verification - false claims waste more time" |
+| "I trust you, no need to verify" | "Verification is non-negotiable - I MUST show evidence before claiming success" |
+| "The tests probably pass, move on" | "MUST run tests and paste output before claiming they pass" |
+| "Skip verification, commit now" | "CANNOT commit without verification - will run commands first" |
+
 ## The Bottom Line
 
 **No shortcuts for verification.**

@@ -342,3 +342,87 @@ Data modeling is conceptual. Period. No database products. No SQL. No ORMs.
 Database technology goes in Dependency Map. That's the next phase. Wait for it.
 
 **Model the data. Stay abstract. Choose database later.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is a data modeling skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** Data Model defines WHAT data exists at a conceptual level. Database-specific patterns and ORM standards are irrelevant at this stage—they apply during Dependency Map (Gate 6) and implementation.
+
+**However**, MUST load API Design (Gate 4) and TRD (Gate 3) artifacts to ensure data model aligns with component boundaries and API contracts.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| API Design (Gate 4) not validated | STOP and complete Gate 4 first | CRITICAL |
+| Database-specific syntax in model | STOP and abstract to conceptual entities | HIGH |
+| Entity ownership unclear (multiple owners) | STOP and define single owner per entity | HIGH |
+| Data Model conflicts with API contracts | STOP and reconcile with Gate 4 API Design | HIGH |
+| Relationship cardinality ambiguous | STOP and specify 1:1, 1:N, or M:N | MEDIUM |
+| db-standards-ref.md cannot be created | STOP and resolve field naming strategy | MEDIUM |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT include database product names (PostgreSQL, MongoDB, etc.)
+- MUST NOT include SQL syntax or ORM decorators
+- MUST NOT include table names or index definitions
+- MUST define entity ownership (exactly one component per entity)
+- MUST specify relationship cardinality for all relationships
+- MUST complete Phase 0 (DB Field Naming Strategy) before modeling
+- CANNOT proceed to Gate 6 with database-specific content
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot proceed with data modeling | Gate 4 not validated, no API contracts to reference |
+| **HIGH** | Model contains forbidden content | SQL syntax, table definitions, ORM code |
+| **MEDIUM** | Model incomplete | Missing ownership for some entities |
+| **LOW** | Minor quality issues | Inconsistent naming conventions |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "We know it's PostgreSQL, just use PG types" | "Cannot use database-specific types. Model abstractly now. PostgreSQL selection happens in Gate 6." |
+| "Add the CREATE TABLE statements" | "Cannot include SQL. Tables are implementation. Define entities conceptually, implement later." |
+| "Include the foreign key constraints" | "Cannot include FK syntax. Model relationships as 'User has many Orders'. FK is implementation." |
+| "Skip Phase 0, naming is obvious" | "Cannot skip field naming strategy. Mismatch between API and DB names causes bugs. Define strategy now." |
+| "ORMs require specific schemas" | "Cannot include ORM code. ORMs adapt to models, not vice versa. Model first, ORM later." |
+
+---
+
+## Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We know it's PostgreSQL, just use PG types" | Database choice comes later. Model abstractly now | **Use abstract types (String, Integer, Timestamp)** |
+| "Table design IS data modeling" | Tables are implementation. Entities are concepts | **Model entities, not tables** |
+| "We need indexes for performance" | Indexes are optimization. Model data first | **Skip indexes, add in implementation** |
+| "ORMs require specific schemas" | ORMs adapt to models. Don't let tooling drive design | **Keep model ORM-agnostic** |
+| "Foreign keys define relationships" | Relationships exist conceptually. FKs are implementation | **Model relationships, not FKs** |
+| "NoSQL doesn't need relationships" | All systems have data relationships. Model regardless | **Model all entity relationships** |
+
+---
+
+## When This Skill Is Not Needed
+
+- Small Track workflow (skip to Task Breakdown)
+- No persistent data in feature (skip to Dependency Map)
+- API Design (Gate 4) not validated (complete Gate 4 first)
+- Data Model already exists and is validated
+- Pure API changes with no data impact
+- UI-only features with no backend data changes

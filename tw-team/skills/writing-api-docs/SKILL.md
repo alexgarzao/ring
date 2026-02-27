@@ -153,3 +153,90 @@ For deprecated: `> **Deprecated:** This endpoint will be removed in v4. Use [/v3
 - [ ] All error codes documented
 - [ ] Deprecated fields marked
 - [ ] Links to related endpoints included
+
+---
+
+## Standards Loading (MANDATORY)
+
+Before writing any API documentation, MUST load relevant standards:
+
+1. **Voice and Tone Guidelines** - Load `ring:voice-and-tone` skill
+2. **Field Description Patterns** - Load `ring:api-field-descriptions` skill
+3. **Documentation Structure** - Load `ring:documentation-structure` skill
+
+**HARD GATE:** CANNOT proceed with API documentation without loading these standards.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Decision | Action |
+|-----------|----------|--------|
+| API endpoint not implemented | STOP | Report: "Cannot document non-existent endpoint" |
+| API behavior undetermined | STOP | Report: "Need confirmed API behavior before documenting" |
+| Response schema unknown | STOP | Report: "Need response schema to document fields" |
+| Error codes undefined | STOP | Report: "Need error code list before completing" |
+| Voice/tone guidelines unclear | STOP | Report: "Need style guide clarification" |
+
+### Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST document ALL fields (request and response)
+- MUST include realistic examples (not "foo", "bar")
+- MUST document ALL error codes
+- MUST use present tense and active voice
+- MUST use sentence case for headings
+- CANNOT skip required vs optional indicators
+
+---
+
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Missing core sections, incorrect API paths | No request/response examples, wrong HTTP method |
+| **HIGH** | Missing field documentation, no error codes | Undocumented required fields, missing error table |
+| **MEDIUM** | Voice/tone violations, structure issues | Passive voice, title case headings |
+| **LOW** | Minor clarity improvements, formatting | Could add more context, spacing issues |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Skip the examples, developers will figure it out" | "CANNOT skip examples. Realistic examples are REQUIRED for every endpoint. I'll add complete request/response examples." |
+| "Just document the happy path, errors are rare" | "MUST document all error codes. Error handling is critical for developers. I'll include the complete error table." |
+| "The code is the documentation" | "Code is NOT documentation. API reference MUST explain purpose, constraints, and behavior. I'll write proper field descriptions." |
+| "We'll add docs later, ship the feature first" | "Documentation is part of the feature. CANNOT ship undocumented APIs. I'll complete the documentation now." |
+| "Copy the schema, that's enough" | "Schema alone is insufficient. MUST add descriptions, examples, and context. I'll write complete documentation." |
+
+---
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Field name is self-explanatory" | Self-explanatory to you ≠ self-explanatory to users | **MUST write explicit description** |
+| "Simple API doesn't need extensive docs" | Simplicity doesn't reduce documentation need | **Document ALL fields completely** |
+| "Error codes are standard HTTP" | Each error needs context and resolution guidance | **MUST document all errors with resolutions** |
+| "Examples slow down documentation" | Examples are the most-read part of API docs | **MUST include realistic examples** |
+| "Internal API, limited audience" | Internal users deserve quality docs too | **Apply same standards as public APIs** |
+| "Schema is generated, no need to write" | Generated schemas lack context and guidance | **MUST add human-written descriptions** |
+
+---
+
+## When This Skill is Not Needed
+
+Signs that API documentation already meets standards:
+
+- ALL endpoints have HTTP method, path, and description
+- ALL request fields documented with type, required status, constraints
+- ALL response fields documented with type and description
+- ALL error codes listed with descriptions and resolutions
+- Realistic JSON examples for every request and response
+- Links to related endpoints included
+- Voice and tone guidelines followed consistently
+
+**If all above are true:** Documentation is complete, no changes needed.

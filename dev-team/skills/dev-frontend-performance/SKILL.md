@@ -250,6 +250,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Core Web Vitals fail, page unusable | LCP > 4s, CLS > 0.25, INP > 500ms |
+| **HIGH** | Threshold violations, major regressions | Lighthouse < 90, bundle +20%, LCP > 2.5s |
+| **MEDIUM** | Minor threshold concerns, optimization opportunities | Client ratio > 40%, bare img tags |
+| **LOW** | Best practices, minor optimizations | Code splitting suggestions, cache improvements |
+
+Report all severities. CRITICAL = immediate fix (UX broken). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations. Gate-specific:

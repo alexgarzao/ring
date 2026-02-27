@@ -457,3 +457,75 @@ Contracts are protocol-agnostic. Period. No REST. No GraphQL. No HTTP codes.
 Protocol choices go in Dependency Map. That's a later phase. Wait for it.
 
 **Define the contract. Stay abstract. Choose protocol later.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is an API contract design skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** API Design defines WHAT operations and data contracts exist, not HOW they're implemented. Protocol-specific patterns apply during Dependency Map (Gate 6) and implementation.
+
+**However**, MUST complete Phase 0 (API Standards Discovery) to check for organizational naming standards before designing contracts.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| TRD (Gate 3) not validated | STOP and complete Gate 3 first | CRITICAL |
+| Protocol details in contracts (HTTP verbs, URLs) | STOP and abstract to operations | HIGH |
+| Phase 0 not completed (no standards check) | STOP and ask user about data dictionary | HIGH |
+| Dictionary conflicts with codebase patterns | STOP and ask user which to follow | MEDIUM |
+| Operation missing error handling | STOP and define error contracts | MEDIUM |
+| BFF pattern required but contracts missing | STOP and define BFF contracts | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT include HTTP verbs (GET, POST, PUT, DELETE)
+- MUST NOT include URL paths (/api/v1/users, etc.)
+- MUST NOT include protocol names (REST, GraphQL, gRPC)
+- MUST NOT include HTTP status codes (200, 404, 500)
+- MUST complete Phase 0 (API Standards Discovery) before designing
+- MUST define error contracts for all operations
+- MUST define BFF contracts if api_pattern is bff
+- CANNOT proceed to Gate 5 with protocol-specific content
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot proceed with API design | TRD not validated, no component boundaries |
+| **HIGH** | Contract contains forbidden content | HTTP verbs, URL paths, status codes |
+| **MEDIUM** | Contract incomplete but usable | Missing error contract for some operations |
+| **LOW** | Minor documentation gaps | Idempotency behavior not fully detailed |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "REST is obvious, just document endpoints" | "Cannot include REST specifics. Define operations abstractly. Protocol choice happens in Gate 6." |
+| "We need HTTP codes for errors" | "Cannot use HTTP codes. Define error semantics abstractly. 'UserNotFound' not '404'." |
+| "Teams need to see JSON examples" | "Cannot include JSON. JSON is serialization. Define structure abstractly, format later." |
+| "Skip Phase 0, naming is obvious" | "Cannot skip standards discovery. Organizational standards may exist. I'll check with user first." |
+| "The contract IS the OpenAPI spec" | "Cannot conflate contract with spec. Design abstract contracts first, generate OpenAPI later." |
+
+---
+
+## When This Skill Is Not Needed
+
+- Small Track workflow (skip to Task Breakdown)
+- Single component system (skip to Data Model)
+- TRD (Gate 3) not validated (complete Gate 3 first)
+- API Design already exists and is validated
+- No component-to-component communication needed
+- Pure frontend feature with no API changes

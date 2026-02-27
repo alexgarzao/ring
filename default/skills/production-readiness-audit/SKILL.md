@@ -9,6 +9,17 @@ allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 
 # Production Readiness Audit
 
+## Modularization Note
+
+> **⚠️ CANDIDATE FOR MODULARIZATION**: This skill file exceeds 6,000 lines and is a candidate for splitting into sub-skills. Future work MUST consider:
+>
+> 1. **Category-based sub-skills**: Split into 5 category-specific skills (Structure, Security, Operations, Quality, Infrastructure)
+> 2. **Explorer templates extraction**: Move the 44 dimension-specific explorer prompts to separate template files
+> 3. **Scoring logic separation**: Extract scoring and weighting logic to a dedicated calculation module
+> 4. **Report generation**: Separate report templating from audit logic
+>
+> MUST NOT add new dimensions without first implementing modularization to prevent further bloat.
+
 A comprehensive, multi-agent audit system that evaluates codebase production readiness across **44 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates

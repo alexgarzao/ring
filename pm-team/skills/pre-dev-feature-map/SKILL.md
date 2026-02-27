@@ -270,3 +270,89 @@ The Feature Map is business-level feature relationships only. Period. No compone
 Technical architecture goes in TRD. That's the next phase. Wait for it.
 
 **Map the features. Understand relationships. Then architect in TRD.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is a business analysis skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** Feature Map defines business-level feature relationships and groupings. Technical standards are irrelevant at this stage—they apply during TRD (Gate 3) and implementation.
+
+**However**, MUST load PRD (Gate 1) and ux-criteria.md to ensure feature map aligns with validated business requirements.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| PRD (Gate 1) not validated | STOP and complete Gate 1 first | CRITICAL |
+| Technical architecture creeps into map | STOP and remove—keep business level only | HIGH |
+| Feature domains have unclear boundaries | STOP and clarify domain ownership | HIGH |
+| User journeys cross all domains (no cohesion) | STOP and re-evaluate domain groupings | MEDIUM |
+| Backend integration points undefined (fullstack) | STOP and document API dependencies | HIGH |
+| Circular feature dependencies detected | STOP and resolve dependency cycle | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT include technical architecture or components
+- MUST NOT include technology choices or frameworks
+- MUST NOT include database schemas or API specifications
+- MUST map ALL features from PRD (no missing features)
+- MUST define feature categories (Core/Supporting/Enhancement/Integration)
+- MUST define domain groupings with clear boundaries
+- MUST document backend integration points for fullstack features
+- MUST dispatch product-designer for UX Design (Large Track only)
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot proceed with mapping | PRD not validated, no features to map |
+| **HIGH** | Map contains forbidden content | Technical components, API specs |
+| **MEDIUM** | Map incomplete but usable | Some journeys not fully documented |
+| **LOW** | Minor documentation gaps | Integration point descriptions brief |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Include the component architecture" | "Cannot include components. Feature Map is business-level only. Components go in TRD." |
+| "Feature relationships are obvious" | "Cannot assume obvious. Obvious to you ≠ documented for team. I'll map explicitly." |
+| "Skip UX Design, we have wireframes" | "Cannot skip UX Design for Large Track. Wireframes need detailed flows and states. I'll dispatch product-designer." |
+| "Mention the API dependencies" | "Cannot include API specifics. Document business-level integration points only. 'Feature A uses data from Feature B'." |
+| "This feels like extra work" | "Cannot skip mapping. Skipping causes architecture-feature mismatch. 30 minutes now saves days of rework." |
+
+---
+
+## Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Feature relationships are obvious" | Obvious to you ≠ documented for team | **Map explicitly** |
+| "We can figure out groupings during TRD" | TRD architecture follows feature structure | **Define groupings first** |
+| "This feels like extra work" | Skipping causes rework when architecture mismatches features | **Complete the mapping** |
+| "PRD already has this info" | PRD lists features; map shows relationships | **Different views, both needed** |
+| "I'll just mention the components" | Components are technical (TRD territory) | **Keep business groupings only** |
+| "User journeys are in the PRD" | PRD has stories; map shows cross-feature flows | **Different levels** |
+| "Integration points are technical" | WHERE features interact = business. HOW = technical | **Document integration points** |
+
+---
+
+## When This Skill Is Not Needed
+
+- Small Track workflow (< 2 days) → skip to TRD
+- Single simple feature → TRD directly
+- PRD (Gate 1) not validated → complete Gate 1 first
+- Feature Map already exists and is validated
+- Bug fix with no feature relationship changes
+- Documentation-only updates
