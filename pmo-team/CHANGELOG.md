@@ -2,6 +2,16 @@
 
 ## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
 
+- Refactored agent, skill, and command names by removing the ring-{plugin}: prefix for consistency and clarity.
+
+Contributors: @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pmo-team@1.1.2...ring-pmo-team@1.1.3)
+
+---
+
+## [1.1.3](https://github.com/LerianStudio/ring/releases/tag/ring-pmo-team@1.1.3)
+
 - **Refactor:**
   - Removed `ring-{plugin}:` prefix from agent, skill, and command names for improved clarity and consistency.
 
