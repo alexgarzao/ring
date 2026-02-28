@@ -3489,8 +3489,8 @@ func GetTenantID(c *fiber.Ctx) string {
     return c.Get("X-Tenant-ID")  // User-controlled!
 }
 
-// BAD: Non-module-specific connection getter
-db, err := tenantmanager.ResolvePostgres(ctx, r.connection)  // WRONG: missing module parameter
+// BAD: Using ResolvePostgres in multi-module service — must use ResolveModuleDB
+db, err := tenantmanager.ResolvePostgres(ctx, r.connection)  // WRONG: use ResolveModuleDB(ctx, module, fallback)
 ```
 
 **Check Against Ring Standards For:**

@@ -602,11 +602,12 @@ func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, 
 ```go
 // internal/adapters/mongodb/metadata.go
 type MetadataMongoDBRepository struct {
-    conn *libMongo.MongoConnection // Single-tenant
+    connection *libMongo.MongoConnection
+    dbName     string
 }
 
-func NewMetadataMongoDBRepository(conn *libMongo.MongoConnection) *MetadataMongoDBRepository {
-    return &MetadataMongoDBRepository{conn: conn}
+func NewMetadataMongoDBRepository(conn *libMongo.MongoConnection, dbName string) *MetadataMongoDBRepository {
+    return &MetadataMongoDBRepository{connection: conn, dbName: dbName}
 }
 
 func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection string, metadata *Metadata) error {
