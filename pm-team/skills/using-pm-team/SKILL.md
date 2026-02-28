@@ -235,7 +235,7 @@ This skill is an orchestration/navigation skill for the pm-team plugin. It does 
 These requirements are NON-NEGOTIABLE:
 
 - MUST use ORCHESTRATOR principle - dispatch skills, don't plan manually
-- MUST complete gates in sequence - cannot skip gates
+- MUST complete gates in sequence - CANNOT skip gates
 - MUST validate gate outputs before proceeding to next gate
 - MUST create planning artifacts before implementation
 - MUST use Large Track when feature exceeds Small Track criteria

@@ -79,11 +79,11 @@ STOP and report if:
 ### Cannot Be Overridden
 
 The following requirements CANNOT be waived:
-- All four layers MUST be evaluated - entry, business logic, environment guards, debug instrumentation
-- Each layer MUST be tested independently to prove it catches bypasses of other layers
-- Data flow MUST be traced from origin to error before adding validation
-- Environment guards MUST prevent dangerous operations in test/production contexts
-- Debug instrumentation MUST capture context for forensics even when other layers fail
+- MUST evaluate all four layers - entry, business logic, environment guards, debug instrumentation
+- MUST test each layer independently to prove it catches bypasses of other layers
+- MUST trace data flow from origin to error before adding validation
+- MUST have environment guards that prevent dangerous operations in test/production contexts
+- MUST have debug instrumentation that captures context for forensics even when other layers fail
 
 ## Severity Calibration
 

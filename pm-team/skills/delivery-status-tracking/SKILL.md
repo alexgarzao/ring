@@ -65,7 +65,7 @@ Estimates without evidence ("probably 80% done"), assumptions about completion (
 | "Pattern matching is enough, skip semantic" | Patterns miss uncommitted work and scope gaps. | **MUST run semantic analysis via specialized agents.** |
 | "Current date is obvious, don't ask" | Wrong date = wrong variance calculations. | **MUST get current date (auto or user input).** |
 | "Tasks file is optional" | Without tasks, can't validate scope completion. | **STOP. Tasks file is REQUIRED input.** |
-| "Main branch only, ignore feature branches" | Work happens in branches first. | **MUST scan ALL branches, not just main.** |
+| "Main branch only, ignore feature branches" | Work happens in branches first. | **MUST scan all branches, not just main.** |
 | "Merged PRs mean 100% done" | PR merged ≠ scope complete. Verify with agents. | **MUST validate scope completion, not just PR status.** |
 | "Commit count = progress" | Commit count ≠ scope completion. Analyze content. | **MUST use semantic analysis, not commit metrics.** |
 | "Skip delays, report only what's done" | Hiding delays breaks trust. Report accurately. | **MUST report variance (early/late), not just completion.** |

@@ -133,7 +133,7 @@ Before writing field descriptions:
 
 These requirements are NON-NEGOTIABLE:
 
-- MUST document purpose for EVERY field
+- MUST document purpose for every field
 - MUST include accurate data type
 - MUST specify required vs optional status
 - MUST document all constraints (length, format, range)

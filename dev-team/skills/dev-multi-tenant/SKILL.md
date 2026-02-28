@@ -165,7 +165,7 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 | **MEDIUM** | Configuration gaps, partial implementation | Missing circuit breaker, incomplete metrics |
 | **LOW** | Documentation, optimization | Missing env var comments, pool tuning |
 
-Report all severities. CRITICAL = STOP (security breach). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: Fix before gate pass. MEDIUM: Fix in iteration. LOW: Document.
 
 ---
 

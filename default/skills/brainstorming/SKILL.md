@@ -241,11 +241,11 @@ STOP and report if:
 ### Cannot Be Overridden
 
 The following requirements CANNOT be waived:
-- Phase lock rules MUST be followed - CANNOT skip ahead while waiting for answers
-- Design approval MUST be explicit - silence or "interesting" does NOT mean approval
-- Question budget of 3 per phase CANNOT be exceeded - research instead
-- Autonomous recon evidence MUST be pasted before forming model
-- Sub-skill usage (ring:writing-plans, ring:using-git-worktrees) CANNOT be skipped when applicable
+- MUST follow phase lock rules - CANNOT skip ahead while waiting for answers
+- MUST have explicit design approval - silence or "interesting" does not mean approval
+- CANNOT exceed question budget of 3 per phase - research instead
+- MUST paste autonomous recon evidence before forming model
+- CANNOT skip sub-skill usage (ring:writing-plans, ring:using-git-worktrees) when applicable
 
 ## Severity Calibration
 
@@ -263,7 +263,7 @@ The following requirements CANNOT be waived:
 | User Says | Your Response |
 |---|---|
 | "Just skip the exploration phase, I know what I want" | "MUST complete Phase 2 exploration to ensure we consider alternatives. This prevents costly rework later." |
-| "I said it looks good, just proceed" | "Need explicit approval like 'approved' or 'proceed'. 'Looks good' is ambiguous - shall I proceed with implementation?" |
+| "I said it looks good, just proceed" | "MUST have explicit approval like 'approved' or 'proceed'. 'Looks good' is ambiguous - shall I proceed with implementation?" |
 | "Stop asking questions and just build it" | "MUST gather understanding before building. I'll research the codebase to minimize questions while ensuring we build the right thing." |
 | "We don't have time for all these phases" | "Phases exist to prevent expensive mistakes. Skipping them creates technical debt. MUST follow the process." |
 

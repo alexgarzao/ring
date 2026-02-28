@@ -240,7 +240,7 @@ Risk severity based on probability × impact matrix:
 | **MEDIUM** | Score 5-9 | Documented response plan, bi-weekly monitoring |
 | **LOW** | Score 1-4 | Monitor and review quarterly, accept with documentation |
 
-**Report ALL severities. Escalate CRITICAL immediately. Act on HIGH this week.**
+**Report all severities. Escalate CRITICAL immediately. Act on HIGH this week.**
 
 ---
 

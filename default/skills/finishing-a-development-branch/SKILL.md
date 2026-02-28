@@ -109,10 +109,10 @@ STOP and report if:
 
 | Decision Type | Blocker Condition | Required Action |
 |---|---|---|
-| Test Verification | Tests fail or test command not found | STOP and report - cannot proceed until tests pass |
+| Test Verification | Tests fail or test command not found | STOP and report - CANNOT proceed until tests pass |
 | Base Branch | Cannot determine base branch (main or master) | STOP and ask user which branch to merge into |
-| Git State | Uncommitted changes exist in working directory | STOP and report - commit or stash changes first |
-| Merge Conflict | Git merge results in conflicts | STOP and report conflicts - user must resolve |
+| Git State | Uncommitted changes exist in working directory | STOP and report - MUST commit or stash changes first |
+| Merge Conflict | Git merge results in conflicts | STOP and report conflicts - user MUST resolve |
 
 ### Cannot Be Overridden
 

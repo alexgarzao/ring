@@ -168,11 +168,11 @@ Before reviewing documentation:
 
 These requirements are NON-NEGOTIABLE:
 
-- MUST review ALL five dimensions (voice, structure, completeness, clarity, accuracy)
-- MUST flag ALL issues found (not just major ones)
+- MUST review all five dimensions (voice, structure, completeness, clarity, accuracy)
+- MUST flag all issues found (not just major ones)
 - MUST provide specific line references for issues
 - MUST categorize issues by priority (High/Medium/Low)
-- CANNOT approve documentation with HIGH priority issues
+- CANNOT approve documentation with HIGH-priority issues
 - CANNOT skip accuracy verification
 
 ---

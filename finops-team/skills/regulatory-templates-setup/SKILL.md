@@ -192,7 +192,7 @@ Setup appears simple but errors propagate through 4-6 hours of gate execution. F
 | **Complete Context Initialization** | Incomplete context causes mysterious gate failures | ALL required fields populated |
 | **Template Registry Validation** | Ensures template exists and is supported | Template verified in registry |
 
-**User CANNOT:**
+**CANNOT allow user to:**
 - Skip template selection ("I already told you CADOC 4010" = NO - validate anyway)
 - Bypass dictionary check ("just assume no dictionary" = NO)
 - Skip user alert ("they'll figure it out" = NO)

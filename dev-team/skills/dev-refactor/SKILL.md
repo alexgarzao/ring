@@ -59,7 +59,7 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 | **MEDIUM** | Code quality, maintainability issues | Incomplete observability, naming conventions |
 | **LOW** | Best practices, documentation | Missing comments, minor refactoring |
 
-**All severities are MANDATORY to track.** Severity affects PRIORITY of execution, NOT whether to track.
+**MANDATORY:** Track all severities. Severity affects priority of execution, not whether to track.
 
 ---
 

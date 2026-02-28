@@ -315,10 +315,10 @@ STOP and report if:
 ### Cannot Be Overridden
 
 The following requirements CANNOT be waived:
-- The 3-file rule is a PROHIBITION, not guidance
-- If a skill exists for a task, it MUST be used
-- ORCHESTRATOR role is MANDATORY - you dispatch agents, not operate tools
-- PRE-ACTION CHECKPOINT MUST be completed before every tool use
+- PROHIBITION: The 3-file rule is not guidance - it is a hard limit
+- MUST: Use the skill if one exists for a task
+- MANDATORY: ORCHESTRATOR role requires dispatching agents, not operating tools directly
+- MUST: Complete PRE-ACTION CHECKPOINT before every tool use
 
 ## Severity Calibration
 

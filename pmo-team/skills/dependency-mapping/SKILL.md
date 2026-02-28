@@ -262,7 +262,7 @@ When assessing dependency risks:
 | **MEDIUM** | 1-4 weeks slack, moderate impact | Supporting service dependency, documentation dependency |
 | **LOW** | > 4 weeks slack, minor impact | Nice-to-have integration, optional feature dependency |
 
-**Track ALL severities. Actively manage CRITICAL and HIGH.**
+**Track all severities. Actively manage CRITICAL and HIGH.**
 
 ---
 
@@ -344,7 +344,7 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 ## When Dependency Mapping Is Not Needed
 
 <MANDATORY>
-MUST: Dependency mapping is minimal only when ALL conditions are met:
+MUST: Dependency mapping is minimal only when all conditions are met:
 </MANDATORY>
 
 | Condition | Verification |
