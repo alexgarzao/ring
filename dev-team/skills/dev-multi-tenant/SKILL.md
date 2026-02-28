@@ -227,7 +227,7 @@ DETECT (run in parallel):
 7. Existing multi-tenant:
    - Config:     grep -rn "MULTI_TENANT_ENABLED" internal/
    - Middleware: grep -rn "tenant-manager/middleware\|WithTenantDB\|MultiPoolMiddleware" internal/
-   - Context:    grep -rn "tenant-manager/core\|GetMongoForTenant\|GetPostgresForTenant" internal/
+   - Context:    grep -rn "tenant-manager/core\|ResolveMongo\|ResolvePostgres\|ResolveModuleDB" internal/
    - S3 keys:    grep -rn "tenant-manager/s3\|GetObjectStorageKeyForTenant" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 8. Service type (plugin vs product):
@@ -272,7 +272,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split? Are there dual constructors? Is there a RabbitMQManager pool? Does the service struct have both consumer types?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
 > 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key. What bucket env var is used?
-> 9. **Existing multi-tenant code**: Any tenant-manager sub-package imports (`tenant-manager/core`, `tenant-manager/middleware`, `tenant-manager/postgres`, etc.)? TenantMiddleware or MultiPoolMiddleware? `core.GetPostgresForTenant`/`core.GetMongoForTenant`/`s3.GetObjectStorageKeyForTenant` calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
+> 9. **Existing multi-tenant code**: Any tenant-manager sub-package imports (`tenant-manager/core`, `tenant-manager/middleware`, `tenant-manager/postgres`, etc.)? TenantMiddleware or MultiPoolMiddleware? `core.ResolvePostgres`/`core.ResolveMongo`/`core.ResolveModuleDB`/`s3.GetObjectStorageKeyForTenant` calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
 > 10. **M2M / Plugin authentication** (if service is a plugin): Does the service call product APIs (ledger, midaz, CRM)? How does it authenticate today (static token, env var, hardcoded)? Where is the HTTP client that calls the product? Is there an existing M2M or `client_credentials` flow? Any `secretsmanager` imports? List every file:line where product API calls are made and where authentication credentials are injected.
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
@@ -310,7 +310,7 @@ The HTML page MUST include these sections:
 ### 2. Target Architecture (After)
 - Mermaid diagram showing the multi-tenant request flow (JWT → middleware → tenant pool → handler)
 - Which middleware will be used: `TenantMiddleware` (single-module) or `MultiPoolMiddleware` (multi-module)
-- How repositories will get DB connections (context-based: `core.GetPostgresForTenant(ctx)`)
+- How repositories will get DB connections (context-based: `core.ResolvePostgres(ctx, fallback)`)
 
 ### 3. Change Map (per gate)
 Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row per file that will be modified. Example:
@@ -321,8 +321,8 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | 3 | `config.go` | Add the 7 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
-| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `core.GetModulePostgresForTenant(ctx, module)` | ~3 lines per method |
-| 5 | `metadata.mongodb.go` | Static mongo → `core.GetMongoForTenant(ctx)` | ~2 lines per method |
+| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `core.ResolveModuleDB(ctx, module, r.connection)` | ~3 lines per method |
+| 5 | `metadata.mongodb.go` | Static mongo → `core.ResolveMongo(ctx, r.connection, r.dbName)` | ~2 lines per method |
 | 5 | `consumer.redis.go` | Key prefixing with `valkey.GetKeyFromContext(ctx, key)` | ~1 line per operation |
 | 5 | `storage.go` | S3 key prefixing with `s3.GetObjectStorageKeyForTenant(ctx, key)` | ~1 line per operation |
 | 5.5 | `m2m/provider.go` | New file: M2MCredentialProvider with credential caching (plugin only) | ~80 lines |
@@ -351,7 +351,7 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 
 // AFTER: organization.postgresql.go
 func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Organization) error {
-    db, err := core.GetModulePostgresForTenant(ctx, "organization")
+    db, err := core.ResolveModuleDB(ctx, "organization", r.connection)
     if err != nil {
         return fmt.Errorf("getting tenant db for organization: %w", err)
     }
@@ -362,7 +362,7 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 
 The developer MUST be able to see the exact code that will be implemented to approve it. High-level descriptions alone are not sufficient for approval.
 
-**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to `core.GetPostgresForTenant(ctx)`): show one representative diff panel, then list the remaining files with "Same pattern applied to: [file list]."
+**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to `core.ResolvePostgres(ctx, r.connection)`): show one representative diff panel, then list the remaining files with "Same pattern applied to: [file list]."
 
 ### 4. Backward Compatibility Analysis
 
@@ -555,7 +555,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
-**Verification:** grep for `core.GetPostgresForTenant` / `core.GetMongoForTenant` / `core.GetModulePostgresForTenant` (multi-module) / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
+**Verification:** grep for `core.ResolvePostgres` / `core.ResolveMongo` / `core.ResolveModuleDB` (multi-module) / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
 
 ---
 
