@@ -433,6 +433,19 @@ User intervention required.
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Test infrastructure broken, no coverage possible | Test framework failure, build broken |
+| **HIGH** | Coverage below threshold, missing AC tests | 84% coverage (below 85%), untested acceptance criteria |
+| **MEDIUM** | Test quality issues, edge case gaps | Missing edge case tests, poor assertion messages |
+| **LOW** | Test naming, documentation gaps | Non-standard test names, missing test descriptions |
+
+Report all severities. CRITICAL/HIGH = immediate fix. MEDIUM = fix in iteration. LOW = document for follow-up.
+
+---
+
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.

@@ -140,3 +140,88 @@ Review documentation systematically across multiple dimensions. A thorough revie
 **Completeness (1m):** Examples present, links work, next steps included
 
 **Accuracy (varies):** Technical facts correct, code examples work
+
+---
+
+## Standards Loading (MANDATORY)
+
+Before reviewing documentation:
+
+1. **Load voice and tone** - `ring:voice-and-tone` for style verification
+2. **Load structure patterns** - `ring:documentation-structure` for organization checks
+3. **Load document type patterns** - `ring:writing-functional-docs` or `ring:writing-api-docs`
+
+**HARD GATE:** CANNOT review documentation without loading relevant standards.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Decision | Action |
+|-----------|----------|--------|
+| Style guide unavailable | STOP | Report: "Need style guide to review against" |
+| Source material missing | STOP | Report: "Need source to verify technical accuracy" |
+| Review scope undefined | STOP | Report: "Need to know what aspects to review" |
+| Technical SME unavailable | STOP | Report: "Need SME access for accuracy verification" |
+
+### Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST review all five dimensions (voice, structure, completeness, clarity, accuracy)
+- MUST flag all issues found (not just major ones)
+- MUST provide specific line references for issues
+- MUST categorize issues by priority (High/Medium/Low)
+- CANNOT approve documentation with HIGH-priority issues
+- CANNOT skip accuracy verification
+
+---
+
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Factually incorrect, misleading information | Wrong API paths, incorrect behavior described |
+| **HIGH** | Major voice/structure violations, missing sections | Passive voice throughout, no examples |
+| **MEDIUM** | Multiple minor issues, inconsistencies | Mixed pronouns, some title case |
+| **LOW** | Polish issues, optimization opportunities | Could flow better, minor wording |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just do a quick review, we're rushing" | "Quick review still covers all 5 dimensions. CANNOT skip any review category." |
+| "Only check for typos" | "Review MUST cover voice, structure, completeness, clarity, AND accuracy. Typos are LOW priority." |
+| "Skip technical accuracy, trust the writer" | "Technical accuracy MUST be verified. Trust but verify." |
+| "Approve it, minor issues can be fixed later" | "CANNOT approve with HIGH priority issues. They must be fixed first." |
+| "The content is more important than style" | "Style affects comprehension. Voice and tone are REQUIRED review dimensions." |
+
+---
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Good enough for now" | Good enough ≠ meets standards | **MUST flag all issues** |
+| "Writer knows the product" | Knowledge ≠ documentation quality | **Review all dimensions** |
+| "Style issues are subjective" | Style guidelines are objective standards | **Apply guidelines consistently** |
+| "Users won't notice minor issues" | Minor issues accumulate into poor UX | **Flag all issues regardless of size** |
+| "Review is blocking release" | Poor docs also block user success | **Complete review properly** |
+| "Trust the automated checks" | Automated checks miss context | **Human review is REQUIRED** |
+
+---
+
+## When This Skill is Not Needed
+
+Signs that documentation doesn't need review:
+
+- Documentation was written by ring-tw-team specialists
+- Previous review found zero issues
+- Documentation hasn't changed since last review
+- All five review dimensions already verified
+
+**If all above are true:** Review may be skipped for unchanged content.
+
+**Note:** New or modified documentation MUST always be reviewed.

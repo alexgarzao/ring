@@ -146,3 +146,90 @@ If >5 screens, consider splitting.
 - [ ] Cross-links connect related content
 - [ ] Page length appropriate for type
 - [ ] Navigation connects sequential content
+
+---
+
+## Standards Loading (MANDATORY)
+
+Before planning documentation structure:
+
+1. **Understand content types** - What documents will exist (conceptual, how-to, API reference)
+2. **Load writing skills** - `ring:writing-functional-docs` and `ring:writing-api-docs`
+3. **Review existing structure** - Understand current documentation hierarchy
+
+**HARD GATE:** CANNOT reorganize documentation without understanding content and audience.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Decision | Action |
+|-----------|----------|--------|
+| Content inventory incomplete | STOP | Report: "Need complete list of documentation topics" |
+| User tasks undefined | STOP | Report: "Need user task list to organize around" |
+| Information architecture undefined | STOP | Report: "Need IA decisions before structuring" |
+| Navigation requirements unclear | STOP | Report: "Need navigation pattern decisions" |
+
+### Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST organize by user tasks (not system structure)
+- MUST include overview pages that link to children
+- MUST use section dividers (`---`) between major topics
+- MUST keep page length appropriate for document type
+- CANNOT nest deeper than H3 without good reason
+- CANNOT create orphan pages (must be linked)
+
+---
+
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Completely disorganized, no navigation | No hierarchy, orphan pages everywhere |
+| **HIGH** | Organized by system, not user tasks | "Database tables" instead of "Managing accounts" |
+| **MEDIUM** | Missing links, poor scannability | No cross-links, walls of text |
+| **LOW** | Structure works but could be optimized | Could improve navigation, add dividers |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Organize by our system components" | "MUST organize by user tasks. System structure ≠ mental model. I'll structure around what users do." |
+| "One long page is fine" | "Long pages overwhelm users. MUST split by document type guidelines. I'll organize appropriately." |
+| "Skip the overview pages" | "Overview pages are REQUIRED for navigation. I'll create overview pages linking to children." |
+| "Cross-links are extra work" | "Cross-links enable discovery. MUST connect related content. I'll add appropriate links." |
+| "Flat structure is simpler" | "Flat structure makes finding content harder. MUST use appropriate hierarchy." |
+
+---
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Mirrors our codebase structure" | Users don't know your codebase | **MUST organize by user tasks** |
+| "Everything on one page is convenient" | Convenience for whom? Not users | **Split per page length guidelines** |
+| "Deep nesting shows thoroughness" | Deep nesting hides content | **Keep hierarchy shallow (H3 max)** |
+| "Users will search anyway" | Search supplements, not replaces structure | **MUST provide clear navigation** |
+| "Links can be added later" | Orphan pages are lost pages | **Add links during creation** |
+| "Structure is aesthetic, not functional" | Structure IS functionality | **Structure enables findability** |
+
+---
+
+## When This Skill is Not Needed
+
+Signs that documentation structure is already correct:
+
+- Content organized around user tasks and goals
+- Clear hierarchy with appropriate depth
+- Overview pages link to all child content
+- Section dividers separate major topics
+- Navigation connects sequential content
+- Cross-links connect related topics
+- Page lengths appropriate for document type
+- No orphan pages
+
+**If all above are true:** Structure is correct, no reorganization needed.

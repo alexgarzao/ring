@@ -80,6 +80,17 @@ related:
 
 # Release Guide Info — Ops Update Guide Generator
 
+## Modularization Note
+
+> **⚠️ CANDIDATE FOR MODULARIZATION**: This skill file exceeds 700 lines and is a candidate for splitting into sub-skills. Future work MUST consider:
+>
+> 1. **Template extraction**: Move language-specific templates (EN, PT-BR) to separate template files
+> 2. **Section generators**: Split each guide section (Breaking Changes, Configuration, Database, etc.) into separate template modules
+> 3. **Git analysis separation**: Extract git diff/commit analysis logic from documentation generation
+> 4. **Output formatters**: Separate markdown generation from content analysis
+>
+> MUST NOT add new sections or languages without first implementing modularization to prevent further bloat.
+
 ## Overview
 
 You are a code-aware documentation agent. Produce an **internal** Operations-facing update/migration guide.
@@ -681,6 +692,48 @@ esac
 | External changes | API, events, DB, auth, timeouts MUST be called out |
 | Preview required | MUST show preview before saving |
 | User confirmation | MUST wait for user approval before writing files |
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Ref resolution failure | BASE_REF or TARGET_REF cannot be resolved | STOP and report which ref failed - suggest TEMP_CLONE mode |
+| No git repository | Not in a git repository or .git directory missing | STOP and report - skill requires git context |
+| Forbidden command attempt | STRICT_NO_TOUCH mode and need to fetch/pull | STOP and ask user to switch to TEMP_CLONE mode |
+| No diff available | git diff returns empty or fails | STOP and verify refs exist with commits between them |
+| User declined preview | User rejected preview confirmation | STOP and ask for corrections or confirmation to abort |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST show preview before writing any files to disk
+- MUST wait for user confirmation before saving
+- CANNOT invent changes not supported by the diff
+- CANNOT use forbidden git commands in STRICT_NO_TOUCH mode
+- MUST mark uncertain information as ASSUMPTION with validation steps
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Invented change not in diff included in guide | MUST remove or mark as ASSUMPTION with validation |
+| CRITICAL | Guide saved without user preview confirmation | MUST re-run preview step and get confirmation |
+| HIGH | Breaking change missed in analysis | MUST add breaking change section with migration steps |
+| HIGH | Rollback analysis omitted | MUST add rollback compatibility matrix |
+| MEDIUM | Contextual narrative missing from sections | Should add 1-3 paragraph context before technical details |
+| LOW | Minor formatting inconsistencies | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Skip the preview, just save the file" | "CANNOT save without preview confirmation - MUST show preview first" |
+| "We need this fast, summarize the big diff" | "CANNOT summarize - Ops needs ALL significant changes documented" |
+| "This change is internal, Ops doesn't need it" | "CANNOT decide relevance - MUST document all changes, Ops will filter" |
+| "Just use STRICT mode even though ref is missing" | "CANNOT fetch in STRICT mode - MUST switch to TEMP_CLONE or provide existing ref" |
+| "Invent a reason, the commit message is unclear" | "CANNOT invent - MUST mark as ASSUMPTION with HOW TO VALIDATE" |
 
 ## Anti-Rationalization Table
 

@@ -153,3 +153,48 @@ After all agents complete, run `<lint_command> 2>&1`.
 ## Example Session
 
 `/ring:lint` → Run lint → 16 issues in 3 areas → Analyze streams (API: 5, Services: 8, Utils: 3) → Dispatch 3 parallel agents → All complete → Re-run lint → ✅ All pass.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Lint Command | No lint command found (make lint, npm run lint, etc.) | STOP and ask user to specify lint command |
+| Agent Dispatch | Unable to launch parallel agents for fix streams | STOP and report infrastructure issue |
+| Max Iterations | 5 iterations completed without lint passing | STOP and report remaining issues - manual intervention needed |
+| Conflicting Changes | Multiple agents edited same file with conflicts | STOP and report conflicts for manual merge |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST NOT create automated scripts to fix lint issues - direct source code edits only
+- MUST NOT create documentation or README files during lint fixing
+- MUST NOT add comments explaining the fixes - minimal changes only
+- CANNOT skip re-verification after agent fixes - lint must be re-run
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Lint errors indicate security vulnerabilities | MUST fix immediately and flag for security review |
+| HIGH | Lint errors in production code paths | MUST fix before completing |
+| MEDIUM | Lint warnings in non-critical code | Should fix in current iteration |
+| LOW | Style-only lint issues | Fix if time permits |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just disable the lint rules that are failing" | "CANNOT disable lint rules to pass. I MUST fix the actual issues - disabling rules hides real problems." |
+| "Write a script to auto-fix everything" | "CANNOT create automated scripts. I MUST make direct source code edits only - scripts can introduce unexpected changes." |
+| "Skip the verification loop, the fixes should work" | "MUST re-run lint after all agent fixes. 'Should work' is not verification - actual lint output is required." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Creating a fix script is more efficient" | Scripts can cause unintended side effects. Direct edits are traceable and reversible. | **MUST make direct source code edits only** |
+| "This lint rule is too strict, disable it" | Lint rules exist for reasons. Disabling hides real issues instead of fixing them. | **MUST fix issues, not disable rules** |
+| "Agent fixed 15/16 issues, close enough" | Partial completion is not completion. All lint issues must be resolved or reported. | **MUST iterate until lint passes or max iterations reached** |
+| "Adding explanatory comments helps future devs" | Scope is lint fixing only. Comments add noise and change file semantics. | **MUST NOT add comments - minimal changes only** |

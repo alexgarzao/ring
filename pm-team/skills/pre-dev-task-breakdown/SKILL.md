@@ -635,3 +635,90 @@ Every task must answer: **"What working software can I demo to users?"**
 If you can't demo it, it's not a task. It's subtask implementation detail.
 
 **Deliver value. Ship working software. Make tasks demoable.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is a task decomposition skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** Task Breakdown defines WHAT value increments to deliver, not HOW to implement them. Language-specific standards apply during subtask creation and implementation.
+
+**However**, MUST load PRD (Gate 1), TRD (Gate 3), and research.md to ensure tasks align with requirements and architecture.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| PRD (Gate 1) not validated | STOP and complete Gate 1 first | CRITICAL |
+| TRD (Gate 3) not validated | STOP and complete Gate 3 first | CRITICAL |
+| Task exceeds 2 weeks (XL size) | STOP and break down further | HIGH |
+| Task has no measurable success criteria | STOP and define testable criteria | HIGH |
+| Task has no user or technical value | STOP and redefine as value delivery | HIGH |
+| AI estimation failed | Follow fallback procedure in skill | MEDIUM |
+| Dependencies form circular loop | STOP and resolve dependency cycle | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT create tasks exceeding 2 weeks (break them down)
+- MUST include measurable success criteria for every task
+- MUST include user value OR technical value for every task
+- MUST include task dependencies (blocks, requires, optional)
+- MUST run AI estimation for all tasks (no manual guesses)
+- MUST include Definition of Done checklist for every task
+- MUST include Business Deliverables View in summary section
+- CANNOT use technical-only tasks without value connection
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot create valid tasks | PRD/TRD not validated, no requirements to decompose |
+| **HIGH** | Task violates sizing or value rules | XL task, no success criteria, no value defined |
+| **MEDIUM** | Task incomplete but usable | Missing one dependency, unclear testing strategy |
+| **LOW** | Minor documentation gaps | Definition of Done could be more detailed |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "This 3-week task is fine" | "Cannot accept 3-week tasks. Tasks >2 weeks hide complexity. I'll break it into smaller deliverables." |
+| "Setup tasks don't need user value" | "Cannot create valueless tasks. Setup ENABLES value. I'll define what this setup enables." |
+| "Success criteria are obvious" | "Cannot assume obvious criteria. Obvious to you ≠ testable. I'll document explicit, measurable criteria." |
+| "Skip AI estimation, use story points" | "Cannot skip AI estimation. Story points are abstract; AI hours are concrete. I'll run AI analysis." |
+| "We can figure out dependencies later" | "Cannot defer dependencies. Later is too late. I'll map dependencies now." |
+
+---
+
+## Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "This 3-week task is fine" | Tasks >2 weeks hide complexity | **Break down into ≤2 week tasks** |
+| "Setup tasks don't need value" | Setup enables value. Define what it enables | **Connect to user/technical value** |
+| "Success criteria are obvious" | Obvious to you ≠ testable. Document explicitly | **Define measurable criteria** |
+| "Dependencies will be clear later" | Later is too late. Map them now | **Document all dependencies** |
+| "Skip AI estimation, use story points" | Story points are abstract; AI hours are concrete | **Run AI estimation** |
+| "Technical tasks can skip user value" | Even infrastructure enables users. Define connection | **Connect to user impact** |
+| "Testing strategy can be decided during" | Testing affects design. Plan it upfront | **Define testing strategy now** |
+
+---
+
+## When This Skill Is Not Needed
+
+- PRD or TRD not validated (complete earlier gates first)
+- Tasks already exist and are validated
+- Trivial change that can be implemented directly
+- Bug fix with known solution (no decomposition needed)
+- Documentation-only updates
+- Configuration changes with no implementation work

@@ -269,6 +269,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | Data unavailable for assessment | STOP. Cannot assess without data. Request information. |
 | Stakeholder loss of confidence | STOP. Relationship repair needed before project work. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **All six dimensions assessed** | Partial assessment misses critical issues |
+| **Data-driven scoring** | Opinions without data lead to wrong conclusions |
+| **Root cause analysis for Red** | Symptoms without causes cannot be fixed |
+| **Evidence-based status** | Feelings don't predict project outcomes |
+| **Stakeholder feedback inclusion** | Project health includes perception, not just metrics |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT proceed with incomplete assessment
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+When assessing health check findings:
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Project viability at risk | Overall health < 4, sponsor withdrawing, budget frozen |
+| **HIGH** | Significant intervention needed | Any dimension Red, schedule slip > 2 weeks, cost overrun > 15% |
+| **MEDIUM** | Active management required | Dimensions Yellow, minor variances, stakeholder concerns |
+| **LOW** | Normal monitoring | All Green with minor improvements possible |
+
+**Escalate CRITICAL immediately. Address HIGH this week. Monitor MEDIUM bi-weekly.**
+
 ---
 
 ## Output Format
@@ -342,3 +374,30 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 | schedule_variance | X% |
 | cost_variance | X% |
 | scope_changes | N |
+
+---
+
+## When Health Check Is Not Needed
+
+<MANDATORY>
+MUST: Health check is minimal only when ALL conditions are met:
+</MANDATORY>
+
+| Condition | Verification |
+|-----------|-------------|
+| Recent check exists (<14 days) | Reference existing health check |
+| No reported issues | Confirm no new risks or blockers |
+| Project in maintenance phase | Verify no active development |
+| Stakeholders satisfied | Confirm no escalations or concerns |
+
+**MUST: Full health check REQUIRED for the following conditions:**
+
+| Condition | Why Required |
+|-----------|-------------|
+| Project status changed | Yellow/Red requires immediate assessment |
+| Milestone approaching | Risk assessment needed before milestone |
+| Stakeholder escalation received | Must diagnose the concern |
+| Project phase transition | Entry/exit criteria must be validated |
+| Periodic review cadence | Regular health monitoring required |
+
+**MUST: When in doubt, conduct the health check. Undetected issues become crises.**

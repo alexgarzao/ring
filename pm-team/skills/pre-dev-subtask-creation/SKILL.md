@@ -196,3 +196,74 @@ Every subtask must be completable by someone who:
 If they can't complete it with zero questions while following RED-GREEN-REFACTOR, **it's not atomic enough.**
 
 **Remember: DRY. YAGNI. TDD. Frequent commits.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill creates implementation subtasks. While it does NOT require direct WebFetch of standards, subtasks MUST reference lib-commons patterns for Go projects.
+
+**For Go projects:** All code examples in subtasks MUST use lib-commons imports. See [shared-patterns/code-example-standards.md](../shared-patterns/code-example-standards.md) for required patterns.
+
+**HARD GATE:** Subtasks with custom logger, config loader, or HTTP helper implementations are INVALID. Use lib-commons.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| Tasks (Gate 7) not validated | STOP and complete Gate 7 first | CRITICAL |
+| Subtask contains TODO or placeholder | STOP and expand with complete code | HIGH |
+| Subtask requires context not provided | STOP and add missing context to subtask | HIGH |
+| Step exceeds 5 minutes | STOP and break into smaller steps | MEDIUM |
+| Missing TDD cycle (no RED phase) | STOP and add failing test first | HIGH |
+| Go subtask uses custom logger instead of lib-commons | STOP and replace with lib-commons | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT include placeholders (TODO, ..., "implement here")
+- MUST NOT include vague instructions ("update the service")
+- MUST provide complete file paths (absolute or from root)
+- MUST provide all imports explicitly
+- MUST follow TDD cycle: RED (failing test) → GREEN (implementation) → REFACTOR
+- MUST include verification commands with expected output
+- MUST include rollback procedures
+- MUST use lib-commons for Go code examples (no custom utilities)
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Subtask cannot be executed | Missing prerequisite, no file paths |
+| **HIGH** | Subtask requires interpretation | TODO placeholder, vague description |
+| **MEDIUM** | Subtask quality degraded | Missing verification command |
+| **LOW** | Minor documentation gaps | Rollback could be more detailed |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Developer will figure out imports" | "Cannot assume imports. Imports ARE context. I'll provide explicit import statements." |
+| "TODO comments are fine for simple parts" | "Cannot use TODOs. TODOs require decisions. I'll make those decisions now and provide complete code." |
+| "Steps are too detailed, feels like hand-holding" | "Cannot reduce detail. Small steps = verifiable progress. Detail enables parallelization." |
+| "Skip TDD for this simple change" | "Cannot skip TDD. Every subtask follows RED-GREEN-REFACTOR. I'll write the failing test first." |
+| "Custom logger is simpler for this example" | "Cannot use custom logger. Subtasks teach patterns. lib-commons is the pattern." |
+
+---
+
+## When This Skill Is Not Needed
+
+- Small Track workflow (execute tasks directly without subtask breakdown)
+- Tasks are simple enough without fine-grained breakdown
+- Tasks (Gate 7) not yet validated (complete Gate 7 first)
+- Implementation already in progress (use ring:executing-plans)
+- Proof-of-concept work without formal process needs

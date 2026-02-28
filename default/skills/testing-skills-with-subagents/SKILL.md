@@ -239,3 +239,52 @@ From applying TDD to TDD skill itself (2025-10-03):
 - Each REFACTOR closed specific loopholes
 - Final VERIFY GREEN: 100% compliance under maximum pressure
 - Same process works for any discipline-enforcing skill
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| RED Phase Skip | Attempting to write skill without baseline failure documentation | STOP and report |
+| Pressure Scenario Quality | Scenarios have single pressure instead of 3+ combined pressures | STOP and report |
+| Rationalization Capture | Agent failures not documented verbatim | STOP and report |
+| GREEN Verification | Skill deployed without verification that agent now complies | STOP and report |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- RED phase baseline testing is REQUIRED before writing any skill
+- Pressure scenarios MUST combine 3+ pressure types
+- Agent rationalizations MUST be captured verbatim, not paraphrased
+- REFACTOR cycle MUST continue until no new rationalizations appear
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Skill written without RED phase baseline | MUST restart with baseline testing |
+| CRITICAL | Skill deployed without GREEN phase verification | MUST verify compliance before deployment |
+| HIGH | Pressure scenarios use single pressure only | MUST combine 3+ pressures |
+| HIGH | Rationalizations summarized instead of verbatim | MUST re-capture exact wording |
+| MEDIUM | Meta-testing skipped after agent still fails | Should run meta-testing |
+| LOW | Fewer than 3 pressure scenarios tested | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just write the skill, we know what it should do" | "CANNOT write skill without RED phase. I MUST observe agent failures first to know what the skill must prevent." |
+| "One pressure scenario is enough" | "CANNOT use single-pressure scenarios. Agents rationalize under combined pressure - I need 3+ pressure types." |
+| "Paraphrase the rationalizations to save space" | "CANNOT paraphrase. Exact wording reveals the loopholes to close. I'll capture them verbatim." |
+| "Agent passes once, skill is done" | "CANNOT stop at first pass. New rationalizations may emerge. REFACTOR cycle continues until bulletproof." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "I know what agents will do wrong" | Assumption ≠ observation. Actual failures differ from predicted ones. | **MUST run RED phase baseline** |
+| "Academic scenarios test the skill adequately" | Academic tests let agents recite rules. Real pressure reveals bypass attempts. | **MUST use realistic pressure scenarios** |
+| "Agent passed, skill is bulletproof" | Single pass proves nothing. New contexts trigger new rationalizations. | **MUST continue REFACTOR cycle** |
+| "The spirit of the skill matters more than the letter" | "Spirit over letter" IS a rationalization. Skill must close this loophole. | **MUST add explicit anti-spirit-over-letter clause** |
+| "Skill is clear enough, agent chose to ignore" | If agent ignores, skill failed to compel. Add stronger language. | **MUST strengthen enforcement language** |

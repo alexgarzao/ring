@@ -71,6 +71,19 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Wrong agent dispatched, security risk | Backend agent for frontend task, skipped security review |
+| **HIGH** | Missing specialist dispatch, sequential reviewers | Implemented directly without agent, reviewers run one-by-one |
+| **MEDIUM** | Suboptimal agent selection, missing context | Used general agent when specialist exists |
+| **LOW** | Documentation gaps, minor dispatch issues | Missing agent context, unclear prompt |
+
+Report all severities. CRITICAL = immediate correction. HIGH = fix before continuing. MEDIUM = note for next dispatch. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section and Universal section).

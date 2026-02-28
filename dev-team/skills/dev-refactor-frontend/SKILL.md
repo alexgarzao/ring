@@ -130,6 +130,19 @@ If counts don't match -> SKILL FAILURE. Go back and add missing findings.
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Security risk, accessibility legal issue, production blocker | XSS vulnerability, WCAG violation blocking users, build broken |
+| **HIGH** | Major standards violation, performance regression | Missing server components, Lighthouse < 80, wrong pattern |
+| **MEDIUM** | Code quality, component structure issues | Client component overuse, missing snapshots |
+| **LOW** | Best practices, documentation | Naming conventions, file organization |
+
+**All severities are MANDATORY to track.** Severity affects PRIORITY of execution, NOT whether to track.
+
+---
+
 ## Architecture Pattern Applicability
 
 **Not all architecture patterns apply to all frontend projects.** Before flagging gaps, verify the pattern is applicable.

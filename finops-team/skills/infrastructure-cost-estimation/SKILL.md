@@ -774,17 +774,93 @@ Agent receives: Products selected + actual Helm values + all collected data
 
 ---
 
-## Anti-Rationalization
+---
+
+## Severity Calibration
+
+**MUST classify cost estimation issues using these severity levels:**
+
+| Severity | Definition | Examples | Impact |
+|----------|------------|----------|--------|
+| **CRITICAL** | BLOCKS cost estimation OR produces invalid results | - Helm chart data unavailable<br>- No service discovery possible<br>- Pricing data missing<br>- Sharing model undefined | **HARD BLOCK** - Cannot produce estimate |
+| **HIGH** | REQUIRES resolution for accurate estimate | - Partial Helm data only<br>- Some components missing from model<br>- TPS capacity mismatch<br>- Billing data incomplete | **MUST resolve** before final estimate |
+| **MEDIUM** | SHOULD address for optimal accuracy | - Using default values (Helm unavailable)<br>- Assumptions documented but unverified<br>- Minor data gaps filled with estimates | **SHOULD address** - document assumptions |
+| **LOW** | Minor improvements possible | - Additional breakdown detail<br>- Report formatting<br>- Supplementary analysis | **OPTIONAL** - note in summary |
+
+**Classification Rules:**
+
+**CRITICAL = ANY of:**
+- Cannot read ANY Helm chart (no resource data)
+- Sharing model not provided for ANY component
+- Missing required billing data (unit, price, volume)
+- Service discovery produces zero services
+
+**HIGH = ANY of:**
+- Missing Helm data for specific products (Midaz, Reporter, Access Manager)
+- Component sharing model incomplete (some components undefined)
+- TPS value inconsistent with tier selection
+- Database or backup configuration ambiguous
+
+---
+
+## Blocker Criteria - STOP and Report
+
+**You MUST distinguish between decisions you CAN make vs those requiring escalation.**
+
+| Decision Type | Examples | Action |
+|---------------|----------|--------|
+| **Can Decide** | Default backup retention, tier recommendation, calculation methodology | **Proceed with estimation** |
+| **MUST Escalate** | Helm charts inaccessible, ambiguous sharing model, conflicting TPS requirements | **STOP and ask for clarification** |
+| **CANNOT Override** | Per-component sharing question, environment selection, actual Helm values over defaults, complete billing data | **HARD BLOCK** - Must collect first |
+
+**HARD GATES (STOP immediately):**
+
+1. **No Helm Access:** Cannot read LerianStudio/helm charts
+2. **Missing Sharing Model:** Component sharing not specified
+3. **Incomplete Billing:** Unit, price, or volume missing
+4. **Zero Services:** Service discovery found nothing
+
+**Escalation Message Template:**
+```markdown
+⛔ **COST ESTIMATION BLOCKER**
+
+**Issue:** [Specific blocker]
+**Impact:** [What cannot be calculated]
+**Required:** [What needs to be provided]
+
+**Cannot dispatch agent until resolved.**
+```
+
+---
+
+## Pressure Resistance
+
+### Cost Estimation-Specific Pressures
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just estimate without Helm charts" | "I CANNOT produce accurate estimates without actual resource configurations. Default values may differ significantly from actual deployment. Let me attempt to read LerianStudio/helm first." |
+| "Assume all components shared" | "I CANNOT assume sharing model. MUST ask for each component explicitly. PostgreSQL DEDICATED vs SHARED changes cost by R$1,000+/month." |
+| "Skip environment selection, just do production" | "I MUST confirm which environments to calculate. Most customers need BOTH Homolog + Production. Combined cost is the realistic budget." |
+| "Use last month's Helm values" | "I CANNOT use cached values. MUST read current Helm charts - configurations change frequently. 5-minute read prevents budget surprises." |
+| "DocumentDB same as PostgreSQL" | "I CANNOT assume database sharing models match. MUST ask about PostgreSQL AND DocumentDB separately - different isolation requirements common." |
+| "Skip profitability, just give costs" | "I SHOULD include profitability analysis. It takes 30 seconds and answers the real question: Is this deal worth pursuing?" |
+
+---
+
+## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "Assume all components are shared" | Customer may have dedicated DB | **ASK for each component** |
-| "Skip component questions" | Cost attribution will be wrong | **Must ask shared/dedicated** |
+| "Skip component questions" | Cost attribution will be wrong | **MUST ask shared/dedicated** |
 | "Agent can figure it out" | Agent calculates, skill orchestrates | **Skill collects all data** |
 | "Just use total customers" | Some components may be dedicated | **Per-component model required** |
 | "Asked about PostgreSQL, that covers databases" | **PostgreSQL ≠ DocumentDB** - they are separate components with different costs | **MUST ask about BOTH PostgreSQL AND DocumentDB** |
 | "DocumentDB is obviously shared/dedicated like PostgreSQL" | Customer may want different isolation levels for different data types | **Ask about each database separately in multiSelect** |
 | "I'll ask about databases separately" | Separate questions risk forgetting one | **Use single multiSelect with ALL components** |
+| "Default Helm values are close enough" | Actual configs often differ 2-3x from defaults | **Read actual Helm chart values** |
+| "Skip environment comparison" | Customers need both Homolog + Production costs | **Calculate BOTH environments** |
 
 ---
 

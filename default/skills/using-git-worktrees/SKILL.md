@@ -119,3 +119,52 @@ Announce → Check `.worktrees/` exists → Verify .gitignore → `git worktree 
 **Pairs with:**
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
 - **ring:executing-plans** or **ring:subagent-driven-development** - Work happens in this worktree
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| .gitignore Safety | Project-local worktree directory not in .gitignore | STOP and report |
+| Baseline Tests | Tests fail during worktree setup | STOP and report |
+| Directory Ambiguity | Multiple conflicting worktree locations exist | STOP and report |
+| Permission Issues | Cannot create worktree in target directory | STOP and report |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- Project-local worktree directories MUST be in .gitignore before creation
+- Baseline test verification is REQUIRED before proceeding with work
+- Directory selection MUST follow priority order: existing > CLAUDE.md > ask user
+- Worktree creation MUST include dependency installation and test verification
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Worktree directory not in .gitignore (project-local) | MUST add to .gitignore immediately |
+| CRITICAL | Proceeding with failing baseline tests | MUST report failures and get permission |
+| HIGH | Skipping dependency installation step | MUST run appropriate package manager |
+| HIGH | Assuming directory location when ambiguous | MUST follow priority order or ask user |
+| MEDIUM | Missing CLAUDE.md check in priority order | Should check CLAUDE.md preferences |
+| LOW | Not auto-detecting project type | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Skip .gitignore check, just create the worktree" | "CANNOT skip .gitignore verification for project-local directories. Worktree contents would pollute git status." |
+| "Tests are failing but proceed anyway" | "CANNOT proceed with failing baseline tests. I need to report failures so we can distinguish pre-existing bugs from new ones." |
+| "Put the worktree in this custom location" | "I'll verify that location doesn't conflict with existing conventions and check .gitignore requirements first." |
+| "Skip dependency installation, it takes too long" | "CANNOT skip dependency installation. Tests won't run correctly without dependencies, invalidating baseline verification." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| ".gitignore check is paranoia" | Without it, worktree contents get tracked, polluting every git status. | **MUST verify .gitignore first** |
+| "I know where worktrees go in this project" | Assumption conflicts with existing directories or CLAUDE.md preferences. | **MUST follow directory priority order** |
+| "Failing tests are probably unrelated" | You cannot distinguish new vs pre-existing bugs without clean baseline. | **MUST report failures and ask before proceeding** |
+| "Setup is straightforward, skip auto-detection" | Different projects use different tools. Manual setup misses dependencies. | **MUST auto-detect from project files** |
+| "Global directory doesn't need verification" | Global directories don't need .gitignore verification - this is correct. Only project-local needs it. | **MUST distinguish global vs project-local** |

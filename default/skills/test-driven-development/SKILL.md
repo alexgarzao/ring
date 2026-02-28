@@ -419,3 +419,53 @@ Otherwise → not TDD
 ```
 
 No exceptions without your human partner's permission.
+
+---
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Test framework missing | Cannot run tests in the project | STOP and install/configure test framework first |
+| Code written first | Implementation exists without corresponding test | STOP and DELETE the code immediately |
+| Test passes immediately | New test passes without implementation | STOP and fix test to fail correctly |
+| Cannot reproduce RED | Unable to make test fail for expected reason | STOP and investigate test correctness |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST write test before implementation code
+- MUST watch test fail before writing implementation
+- MUST DELETE any code written before its test
+- MUST NOT stash, backup, or keep "reference" of untested code
+- MUST verify test fails for the right reason (missing feature, not typo)
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Code written before test exists | MUST delete code immediately, start over with TDD |
+| HIGH | Test passes immediately without implementation | MUST fix test to fail correctly before proceeding |
+| MEDIUM | Test fails for wrong reason (error vs assertion failure) | MUST fix test to fail correctly |
+| LOW | Test name unclear or multiple assertions | Should refactor test for clarity |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just write the code, we'll add tests later" | "CANNOT write code without test first. Tests-after prove nothing. Will write test now." |
+| "I already spent 4 hours on this code" | "MUST delete it. Sunk cost fallacy. Untested code will cause production incidents." |
+| "Keep it as reference and write tests first" | "CANNOT keep reference. That's not deleting. Will start fresh with TDD." |
+| "TDD is too slow, deadline is tomorrow" | "CANNOT skip TDD due to deadline. TDD is faster than debugging. Will proceed with TDD." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Code is simple, doesn't need TDD" | Simple code breaks. TDD takes 30 seconds. Complexity is not the criterion. | **MUST follow TDD regardless of simplicity** |
+| "I'll test thoroughly after implementing" | Tests-after pass immediately, proving nothing. Test must fail first. | **MUST write failing test before code** |
+| "Deleting my work is wasteful" | Sunk cost fallacy. Keeping untested code is technical debt that costs more later. | **MUST delete code, start fresh with TDD** |
+| "I already manually tested it works" | Manual testing is ad-hoc and not reproducible. No record, can't re-run. | **MUST have automated test that failed first** |
+| "Spirit of TDD matters, not the ritual" | The ritual IS the spirit. Tests-first asks "what should this do?" not "what does this do?" | **MUST follow RED-GREEN-REFACTOR exactly** |

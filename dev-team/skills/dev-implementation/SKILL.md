@@ -557,6 +557,19 @@ Generate skill output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | TDD bypassed, no test exists, security vulnerability | Skipped RED phase, missing test file, exposed credentials |
+| **HIGH** | Standards non-compliance, missing observability | No telemetry spans, missing error handling, raw OTel usage |
+| **MEDIUM** | Code quality issues, incomplete implementation | Partial telemetry coverage, non-standard patterns |
+| **LOW** | Style improvements, documentation gaps | Naming conventions, missing comments |
+
+Report all severities. CRITICAL = immediate block. HIGH = fix before proceeding. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.

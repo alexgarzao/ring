@@ -178,3 +178,54 @@ Use finishing-a-development-branch to verify tests, present options, execute cho
 - Low → TODO, Cosmetic → FIXME
 - Stop when blocked, don't guess
 - **If rationalizing why to skip AskUserQuestion → You're wrong → Ask anyway**
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Execution mode | AskUserQuestion not used for mode selection | STOP and ask for execution mode - NO exceptions |
+| Plan loading | Plan file not found or unreadable | STOP and report missing plan |
+| Code review | Critical/High/Medium issues found in review | STOP and fix before proceeding |
+| Task blocker | Task blocked mid-batch | STOP and report blocker details |
+| Verification | Task verification fails repeatedly | STOP and escalate |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- AskUserQuestion for execution mode is MANDATORY - user intent does NOT skip this step
+- Code review after each batch is REQUIRED - all 6 reviewers in parallel
+- Critical/High/Medium issues MUST be fixed immediately - TODO comments are FORBIDDEN for these severities
+- Context switch confirmation is REQUIRED when switching between modules
+- Full test suite MUST pass before completing development
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Skipped AskUserQuestion for execution mode | MUST stop and ask for mode selection |
+| CRITICAL | Proceeding with unfixed Critical/High review findings | MUST fix issues before continuing |
+| HIGH | Skipped code review after batch | MUST run all 6 reviewers |
+| HIGH | Used TODO for Critical/High/Medium issues | MUST fix immediately, remove TODO |
+| MEDIUM | Missing context switch confirmation for multi-module | Should add module switch prompt |
+| LOW | Low-severity issues without TODO comment | Fix by adding proper TODO format |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just execute, don't ask about mode" | "MUST use AskUserQuestion for execution mode. This is a structural checkpoint, not optional. Takes 3 seconds." |
+| "Skip the code review, we're in a hurry" | "Code review is REQUIRED after each batch. CANNOT proceed without running all 6 reviewers." |
+| "Add a TODO for that critical issue, fix later" | "Critical/High/Medium issues MUST be fixed immediately. TODO comments FORBIDDEN for these severities." |
+| "User intent is clear, skip the question" | "Intent is not explicit selection. MUST use AskUserQuestion - it's a structural gate, not conversation." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "User said 'just execute' so mode is clear" | Verbal shorthand ≠ structured mode selection | **MUST use AskUserQuestion anyway** |
+| "This is contextual guidance, not absolute law" | It says MANDATORY - that means mandatory | **MUST follow the mandatory step** |
+| "Asking would violate their 'don't ask' instruction" | AskUserQuestion is a 3-second structural gate, not a conversation | **MUST ask for execution mode** |
+| "Skills are tools, not bureaucratic checklists" | This skill IS the checklist; that's its purpose | **MUST follow the checklist** |
+| "Review is overkill for small changes" | Small changes can have critical bugs; review catches them | **MUST run code review after each batch** |

@@ -290,6 +290,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | System crashes on failure, data loss | Panic on connection loss, corrupted state on partition |
+| **HIGH** | No recovery, missing dependency tests | System doesn't recover after failure, untested dependency |
+| **MEDIUM** | Partial recovery, missing scenarios | Recovery takes too long, missing latency test |
+| **LOW** | Cleanup issues, documentation | Test artifacts not cleaned, missing chaos docs |
+
+Report all severities. CRITICAL = immediate fix (production risk). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |

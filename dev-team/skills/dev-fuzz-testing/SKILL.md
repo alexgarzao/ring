@@ -223,6 +223,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Crash found, security vulnerability discovered | Panic on input, buffer overflow, memory corruption |
+| **HIGH** | No fuzz functions, missing corpus | Zero FuzzXxx functions, empty seed corpus |
+| **MEDIUM** | Insufficient corpus, naming issues | Less than 5 corpus entries, non-standard function names |
+| **LOW** | Coverage gaps, optimization | Missing edge case seeds, fuzz duration improvements |
+
+Report all severities. CRITICAL = immediate fix and re-fuzz. HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |

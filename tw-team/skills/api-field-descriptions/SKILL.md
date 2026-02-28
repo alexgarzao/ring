@@ -104,3 +104,92 @@ For nested objects: `status.code`, `status.description`
 - [ ] Read-only fields indicated
 - [ ] Relationships to other entities clear
 - [ ] Example values realistic
+
+---
+
+## Standards Loading (MANDATORY)
+
+Before writing field descriptions:
+
+1. **Load API documentation skill** - `ring:writing-api-docs` for endpoint context
+2. **Load voice and tone** - `ring:voice-and-tone` for consistent style
+3. **Verify data types** - Confirm actual types from API schema
+
+**HARD GATE:** CANNOT document fields without verified type information.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Decision | Action |
+|-----------|----------|--------|
+| Field types unknown | STOP | Report: "Need schema or type definitions" |
+| Constraints not defined | STOP | Report: "Need validation rules for constraints" |
+| Required/optional unclear | STOP | Report: "Need field requirement status" |
+| Enum values undefined | STOP | Report: "Need complete list of enum values" |
+| Default values unknown | STOP | Report: "Need default values for optional fields" |
+
+### Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST document purpose for every field
+- MUST include accurate data type
+- MUST specify required vs optional status
+- MUST document all constraints (length, format, range)
+- MUST use realistic example values (not "foo", "bar")
+- CANNOT leave fields undocumented
+- CANNOT guess types or constraints
+
+---
+
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Wrong type, missing required fields | Documents string as integer, skips required field |
+| **HIGH** | Missing constraints, no examples | Max length undocumented, no example values |
+| **MEDIUM** | Vague descriptions, inconsistent format | "The name" instead of "The display name of the Account" |
+| **LOW** | Could be clearer, minor format issues | Description could include more context |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Field names are self-explanatory" | "Self-explanatory to you ≠ self-explanatory to users. MUST write explicit descriptions." |
+| "Just copy the schema" | "Schema lacks context. MUST add purpose, constraints, and examples." |
+| "Skip constraints, they're in validation" | "Constraints MUST be documented. Users shouldn't discover limits via errors." |
+| "Use placeholder examples (foo, bar)" | "MUST use realistic examples. Placeholders don't demonstrate proper usage." |
+| "Required/optional is obvious" | "Nothing is obvious. MUST explicitly mark required vs optional." |
+
+---
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Schema documents the type" | Schema doesn't explain purpose or usage | **MUST add human description** |
+| "ID fields don't need description" | Users need to know what ID refers to | **Document ALL fields including IDs** |
+| "Boolean is self-documenting" | Users need to know effect of true/false | **MUST explain boolean behavior** |
+| "Timestamp format is standard" | Which standard? Timezone? Format? | **MUST specify format and timezone** |
+| "Enum values are obvious" | Enum meanings may not be clear | **MUST describe each enum value** |
+| "Same field, same description everywhere" | Context may differ | **Tailor description to context** |
+
+---
+
+## When This Skill is Not Needed
+
+Signs that field descriptions already meet standards:
+
+- ALL fields have purpose-explaining descriptions
+- ALL data types documented accurately
+- ALL required/optional status clearly marked
+- ALL constraints documented (length, format, valid values)
+- ALL default values noted for optional fields
+- ALL nullable behavior explained
+- ALL deprecated fields marked with migration path
+- ALL examples use realistic values
+
+**If all above are true:** Field descriptions are complete, no changes needed.

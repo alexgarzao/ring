@@ -301,3 +301,52 @@ Your human partner's specific instructions describe WHAT to do, not HOW.
 
 **Finding a relevant skill = mandatory to read and use it. Not optional.**
 
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| 3-File Violation | About to read/edit more than 3 files directly | STOP and dispatch agent |
+| Skill Exists | Relevant skill found but considering not using it | STOP and use skill |
+| Orchestrator Break | About to use Read/Grep/Glob for investigation | STOP and dispatch Explore agent |
+| Auto-Trigger Phrase | User said "fix issues", "find where", "understand how" | STOP and dispatch specialist agent |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- PROHIBITION: The 3-file rule is not guidance - it is a hard limit
+- MUST: Use the skill if one exists for a task
+- MANDATORY: ORCHESTRATOR role requires dispatching agents, not operating tools directly
+- MUST: Complete PRE-ACTION CHECKPOINT before every tool use
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Directly reading >3 files without agent dispatch | MUST stop and dispatch agent immediately |
+| CRITICAL | Skipping skill when relevant skill exists | MUST load and use the skill |
+| HIGH | Using Read/Grep/Glob for investigation | MUST dispatch Explore agent instead |
+| HIGH | Missing PRE-ACTION CHECKPOINT before tool use | MUST complete checkpoint |
+| MEDIUM | Not announcing meta-skill usage | Should announce methodology change |
+| LOW | Not documenting orchestration decision in TodoWrite | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just read these 5 files quickly" | "CANNOT read >3 files directly. I'll dispatch an Explore agent to analyze them efficiently." |
+| "This is too simple for a skill" | "CANNOT skip skill check. If a skill exists, I MUST use it. Skills prevent known mistakes." |
+| "Do it yourself, don't use an agent" | "CANNOT operate tools directly for investigation. Orchestration is 15x more context-efficient. I'll dispatch an agent." |
+| "Fix these issues manually, it's faster" | "CANNOT manually fix multi-file issues. 'Fix issues' triggers automatic agent dispatch per the auto-trigger rules." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "I can check these files quickly" | Quick ≠ efficient. Direct file reading wastes 15x more context than agent dispatch. | **MUST dispatch agent** |
+| "This task is too simple for a skill" | Simple tasks become complex. Skills prevent mistakes you haven't thought of yet. | **MUST check and use relevant skills** |
+| "I need context before checking skills" | Gathering context IS a task. Check for skills FIRST. | **MUST check skills before any action** |
+| "Already read 3 files, I can finish" | 3 files = limit reached. STOP now and dispatch agent. | **MUST dispatch agent immediately** |
+| "User said 'here' so they want me to do it" | "Here" means get it done, not manually. Agent dispatch IS doing it here. | **MUST dispatch agent regardless** |
+

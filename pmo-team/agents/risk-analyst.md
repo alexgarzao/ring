@@ -313,6 +313,14 @@ Analyzed 18 risks across portfolio. Portfolio risk exposure: MEDIUM-HIGH. 2 crit
 
 ---
 
+## Standards Loading
+
+**N/A for PMO specialist agents.**
+
+**Rationale:** The ring:risk-analyst agent produces risk analysis, not code implementation. Standards loading is performed by engineer agents that implement the managed projects.
+
+---
+
 ## What This Agent Does NOT Handle
 
 - Portfolio prioritization (use `portfolio-manager`)

@@ -2172,6 +2172,40 @@ Generate skill output:
 
 ---
 
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Missing git context | Cannot determine base_sha or head_sha | STOP and request valid git context |
+| No files changed | git diff returns empty between refs | STOP and verify implementation exists |
+| Max iterations exceeded | 3 fix iterations completed but issues remain | STOP and escalate to user for manual resolution |
+| Pre-analysis binary verification fails | Checksum mismatch on codereview binary | STOP and report security concern |
+| All reviewers fail to dispatch | Task tool unavailable or errors | STOP and report infrastructure issue |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST dispatch ALL 6 reviewers in parallel (not sequential, not partial)
+- CANNOT edit source files directly - MUST dispatch implementation agent for fixes
+- MUST re-run ALL 6 reviewers after any fix (no cherry-picking reviewers)
+- CANNOT skip CodeRabbit if installed and authenticated
+- MUST fix Critical, High, and Medium severity issues before Gate 5
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Security vulnerability found | MUST fix immediately before any other work |
+| CRITICAL | Data loss or corruption risk | MUST fix immediately |
+| HIGH | Business logic error or missing validation | MUST fix before completing Gate 4 |
+| HIGH | Nil/null safety violation | MUST fix before completing Gate 4 |
+| MEDIUM | Code quality issue affecting maintainability | MUST fix before completing Gate 4 |
+| MEDIUM | Missing error handling | MUST fix before completing Gate 4 |
+| LOW | Code style or minor improvements | Add TODO comment, fix in next iteration |
+| COSMETIC | Formatting, naming suggestions | Add FIXME comment, optional fix |
+
 ## Pressure Resistance
 
 See [dev-team/skills/shared-patterns/shared-pressure-resistance.md](../../dev-team/skills/shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.

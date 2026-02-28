@@ -248,6 +248,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | User flow completely broken, data corruption | Transaction fails, user data lost, checkout blocked |
+| **HIGH** | Missing user flow tests, flaky tests, browser failure | Untested flow from product-designer, test fails intermittently |
+| **MEDIUM** | Error path gaps, viewport issues | Missing error handling test, mobile viewport untested |
+| **LOW** | Selector improvements, test organization | Non-semantic selectors, test file structure |
+
+Report all severities. CRITICAL = immediate fix. HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations. Gate-specific:

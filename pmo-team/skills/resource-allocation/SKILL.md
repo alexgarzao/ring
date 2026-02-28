@@ -199,6 +199,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | Key person single point of failure | STOP. Report risk. Wait for mitigation decision. |
 | Conflicting executive commitments | STOP. Escalate conflict. Wait for resolution. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **Utilization limits (≤95%)** | >95% sustained causes burnout and quality issues |
+| **Conflict documentation** | Unresolved conflicts cause project failures |
+| **Skills verification** | Assumed skills lead to delivery problems |
+| **Availability confirmation** | Committed resources must be verified before allocation |
+| **Context switching accounting** | Multi-project allocation must account for overhead |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT proceed with unrealistic allocation
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+When reporting resource issues:
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Delivery at risk, burnout imminent | >110% sustained utilization, critical skill gap, key person leaving |
+| **HIGH** | Significant risk if not addressed | >100% temporary utilization, conflict between priority projects |
+| **MEDIUM** | Optimization opportunity | Suboptimal allocation, minor skill gaps, unbalanced teams |
+| **LOW** | Minor improvements possible | Process refinements, training opportunities |
+
+**Report ALL severities. Escalate CRITICAL immediately. Address HIGH this week.**
+
 ---
 
 ## Output Format
@@ -266,3 +298,30 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 | allocation_conflicts | N |
 | utilization_average | X% |
 | gap_count | N |
+
+---
+
+## When Resource Allocation Is Not Needed
+
+<MANDATORY>
+MUST: Resource allocation is minimal only when ALL conditions are met:
+</MANDATORY>
+
+| Condition | Verification |
+|-----------|-------------|
+| Recent allocation exists (<14 days) | Reference existing allocation plan |
+| No new projects started | Verify no new resource demands |
+| No resource changes | Confirm no departures, hires, or availability changes |
+| Utilization within targets (70-85%) | Verify no over/under allocation |
+
+**MUST: Full resource allocation REQUIRED for the following conditions:**
+
+| Condition | Why Required |
+|-----------|-------------|
+| New project starting | Resource demand must be planned |
+| Resource conflict identified | Resolution needed before escalation |
+| Team member departure/arrival | Reallocation required |
+| Utilization outside targets | Optimization or intervention needed |
+| Quarterly planning cycle | Regular capacity review required |
+
+**MUST: When in doubt, refresh the allocation plan. Stale resource data causes delivery failures.**

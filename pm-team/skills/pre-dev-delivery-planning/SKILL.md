@@ -735,3 +735,62 @@ Roadmaps are not educated guesses. Roadmaps are calculated schedules based on:
 If any question is unanswered, **STOP and ask the user.**
 
 **Deliver realistic roadmaps. Respect team capacity. Respect period boundaries. Build trust through accuracy.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is a delivery planning skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** Delivery Planning transforms tasks into realistic schedules. Technical standards are irrelevant at this stage—they apply during implementation via `ring:dev-cycle`.
+
+**However**, MUST load tasks.md (Gate 7) to access AI estimates, dependencies, and scope definitions.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| Tasks (Gate 7) not validated | STOP and complete Gate 7 first | CRITICAL |
+| Team composition unknown | STOP and ask user for team size | CRITICAL |
+| Start date not provided | STOP and ask user for start date | CRITICAL |
+| Delivery cadence not selected | STOP and ask user for cadence preference | HIGH |
+| Critical path forms circular dependency | STOP and resolve dependency cycle | HIGH |
+| All questions not answered | STOP and gather missing inputs | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST gather ALL mandatory user questions before creating roadmap
+- MUST NOT create roadmap without team composition
+- MUST NOT assume delivery cadence (must ask user)
+- MUST include contingency buffer (10-20%)
+- MUST calculate critical path from dependency graph
+- MUST identify and document spill overs for sprint/cycle cadences
+- MUST use AI estimates from tasks.md (no manual guessing)
+- CANNOT commit to dates without capacity analysis
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot create roadmap | Tasks not validated, no team composition |
+| **HIGH** | Roadmap missing essential elements | No buffer, no critical path, cadence assumed |
+| **MEDIUM** | Roadmap incomplete but usable | Missing one risk milestone |
+| **LOW** | Minor documentation gaps | Spill over impact not fully detailed |
+
+---
+
+## When This Skill Is Not Needed
+
+- Tasks (Gate 7) not validated → complete task breakdown first
+- Proof-of-concept without delivery commitment
+- Research/exploration work without deadline
+- Planning phase only (no execution planned yet)
+- Roadmap already exists and dates are still valid

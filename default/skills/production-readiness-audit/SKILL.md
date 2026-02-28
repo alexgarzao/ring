@@ -9,6 +9,17 @@ allowed-tools: Task, Read, Glob, Grep, Write, TodoWrite, WebFetch
 
 # Production Readiness Audit
 
+## Modularization Note
+
+> **⚠️ CANDIDATE FOR MODULARIZATION**: This skill file exceeds 6,000 lines and is a candidate for splitting into sub-skills. Future work MUST consider:
+>
+> 1. **Category-based sub-skills**: Split into 5 category-specific skills (Structure, Security, Operations, Quality, Infrastructure)
+> 2. **Explorer templates extraction**: Move the 44 dimension-specific explorer prompts to separate template files
+> 3. **Scoring logic separation**: Extract scoring and weighting logic to a dedicated calculation module
+> 4. **Report generation**: Separate report templating from audit logic
+>
+> MUST NOT add new dimensions without first implementing modularization to prevent further bloat.
+
 A comprehensive, multi-agent audit system that evaluates codebase production readiness across **44 dimensions in 5 categories**, aligned with **Ring development standards** as the source of truth. This skill detects the project stack, loads relevant standards via WebFetch, and runs explorer agents in **batches of 10**, appending results incrementally to a single report file to prevent context bloat while maintaining thorough coverage.
 
 ## When This Skill Activates
@@ -6629,3 +6640,48 @@ Original reference implementations derived from the Matcher codebase, which serv
 - Fiber HTTP framework conventions
 
 When auditing projects, findings are compared against Ring standards as the authoritative reference. Matcher patterns remain as supplementary examples.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Stack Detection | Cannot detect project stack (no go.mod, package.json, etc.) | STOP and ask user to specify stack |
+| Standards Loading | WebFetch fails for critical Ring standards | STOP and report - audit requires standards as source of truth |
+| Batch Failure | Entire batch of agents fails to complete | STOP and report - investigate infrastructure issue |
+| Report File | Cannot write to docs/audits/ directory | STOP and report - ensure directory exists and is writable |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST load Ring standards before dispatching explorers - audit without standards is not Ring-compliant
+- MUST run ALL applicable dimensions (43 base + 1 conditional) - partial audits are incomplete
+- MUST include HARD GATE violations prominently in report - they CANNOT be buried in findings
+- CANNOT mark audit complete without generating both markdown report AND HTML dashboard
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | HARD GATE violation per Ring standards | MUST be fixed before production deployment - blocks release |
+| HIGH | Security vulnerability or missing auth protection | MUST fix before completing audit remediation |
+| MEDIUM | Quality issue or missing best practice | Should fix - improves maintainability |
+| LOW | Style inconsistency or documentation gap | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just audit security, skip the rest" | "CANNOT run partial audit unless --dimensions flag is specified. Full audit (44 dimensions) is required for production readiness assessment." |
+| "Skip the standards loading, just run generic checks" | "CANNOT audit without Ring standards unless --no-standards flag is specified. Standards are the source of truth for compliance." |
+| "We need to deploy tomorrow, mark it production ready" | "CANNOT mark production ready if CRITICAL issues or HARD GATE violations exist. Report shows actual state - deployment decision is yours." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Most dimensions passed, skip the remaining ones" | Partial audit hides unknown risks. Each dimension covers unique production concerns. | **MUST complete all 44 dimensions** |
+| "Standards fetch is slow, use cached version" | Cached standards may be outdated. Ring standards evolve - fresh fetch ensures accuracy. | **MUST WebFetch current standards** |
+| "HARD GATE violations are minor for this project" | HARD GATE means NON-NEGOTIABLE per Ring standards. Project size doesn't change compliance. | **MUST report HARD GATE violations prominently** |
+| "HTML dashboard is optional, markdown is enough" | Dashboard provides executive visibility. Both outputs are required for complete audit. | **MUST generate both markdown and HTML dashboard** |

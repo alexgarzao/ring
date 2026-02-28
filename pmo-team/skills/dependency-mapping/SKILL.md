@@ -232,6 +232,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | External dependency failed | STOP. Contingency activation required. |
 | Dependency owner unresponsive | STOP. Escalate for owner assignment. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **Complete dependency inventory** | Hidden dependencies cause surprise delays |
+| **Owner assignment** | Unowned dependencies are unmanaged |
+| **External verification** | Vendor assurance without evidence is unreliable |
+| **Critical path protection** | Critical path delays affect entire portfolio |
+| **Cascade impact documentation** | Unknown cascades become crisis |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT proceed with incomplete mapping
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+When assessing dependency risks:
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | On critical path, no slack, high impact | Core API dependency blocking 3+ projects, vendor at risk of bankruptcy |
+| **HIGH** | < 1 week slack, significant impact | Integration dependency with tight timeline, key resource dependency |
+| **MEDIUM** | 1-4 weeks slack, moderate impact | Supporting service dependency, documentation dependency |
+| **LOW** | > 4 weeks slack, minor impact | Nice-to-have integration, optional feature dependency |
+
+**Track all severities. Actively manage CRITICAL and HIGH.**
+
 ---
 
 ## Output Format
@@ -306,3 +338,30 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 | critical_path_deps | N |
 | external_deps | N |
 | at_risk_deps | N |
+
+---
+
+## When Dependency Mapping Is Not Needed
+
+<MANDATORY>
+MUST: Dependency mapping is minimal only when all conditions are met:
+</MANDATORY>
+
+| Condition | Verification |
+|-----------|-------------|
+| Single isolated project | Verify no cross-project dependencies |
+| No external dependencies | Confirm all resources internal |
+| No shared resources | Verify team is dedicated |
+| Previous mapping is current (<30 days) | Reference existing map |
+
+**MUST: Full dependency mapping REQUIRED for the following conditions:**
+
+| Condition | Why Required |
+|-----------|-------------|
+| Multiple projects share resources | Resource conflicts cause delays |
+| External vendor dependencies exist | Vendor delays cascade to projects |
+| Integration points between projects | Technical dependencies create coupling |
+| New project added to portfolio | Impact on existing dependencies unknown |
+| Critical milestone approaching | Risk assessment needs current dependencies |
+
+**MUST: When in doubt, update the dependency map. Stale dependency information causes crisis.**

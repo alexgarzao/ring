@@ -358,6 +358,105 @@ Generated .tpl files integrate directly with Reporter platform:
 
 ---
 
+## Severity Calibration
+
+**MUST classify FinOps issues using these severity levels:**
+
+| Severity | Definition | Examples | Action |
+|----------|------------|----------|--------|
+| **CRITICAL** | BLOCKS regulatory submission OR cost estimation invalid | - Mandatory regulatory field unmapped<br>- Cost calculation produces negative values<br>- Agent unavailable for required gate<br>- Compliance violation detected | **HARD BLOCK** - Cannot proceed |
+| **HIGH** | REQUIRES resolution for accurate output | - LOW confidence mappings > 20%<br>- Cost attribution model incorrect<br>- Template syntax errors<br>- Profitability calculation wrong | **MUST resolve** before completion |
+| **MEDIUM** | SHOULD fix for optimal results | - Optional fields skipped<br>- Minor cost estimation assumptions<br>- Documentation incomplete<br>- Suboptimal template structure | **SHOULD fix** - document if deferred |
+| **LOW** | Minor improvements possible | - Report formatting<br>- Additional breakdown detail<br>- Documentation enhancements | **OPTIONAL** - note in output |
+
+---
+
+## Blocker Criteria - STOP and Report
+
+**You MUST distinguish between decisions you CAN make vs those requiring escalation.**
+
+| Decision Type | Examples | Action |
+|---------------|----------|--------|
+| **Can Decide** | Agent selection, cost calculation methodology, template format | **Proceed with dispatch** |
+| **MUST Escalate** | Agent unavailable, required input missing, ambiguous requirements | **STOP and ask for clarification** |
+| **CANNOT Override** | Regulatory field requirements, cost accuracy standards, gate sequencing | **HARD BLOCK** - Must follow process |
+
+**HARD GATES (STOP immediately):**
+
+1. **Agent Unavailable:** Required FinOps agent not accessible
+2. **Missing Input Data:** Cannot proceed without required information
+3. **Regulatory Ambiguity:** Cannot determine compliance requirements
+4. **Cost Data Invalid:** Pricing or configuration data missing
+
+---
+
+## Cannot Be Overridden
+
+**NON-NEGOTIABLE requirements (no exceptions, no user override):**
+
+| Requirement | Why NON-NEGOTIABLE | Verification |
+|-------------|-------------------|--------------|
+| **Agent-Based Execution** | Manual compliance work bypasses validation | Used Task tool with subagent_type |
+| **Sequential Gates for Regulatory** | Gate dependencies require order | Gates run 1→2→3 |
+| **Accurate Cost Attribution** | Wrong costs = wrong business decisions | Sharing model applied correctly |
+| **100% Mandatory Field Coverage** | Regulatory submissions require ALL fields | All mandatory fields mapped |
+
+**User CANNOT:**
+- Skip gates in regulatory workflow ("just generate template" = NO)
+- Ignore cost attribution model ("assume all shared" = NO)
+- Bypass agent dispatch ("I'll do it manually" = NO)
+- Accept partial regulatory coverage ("map critical only" = NO)
+
+---
+
+## Pressure Resistance
+
+### FinOps-Specific Pressures
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just estimate costs without reading Helm charts" | "I CANNOT produce accurate estimates without actual resource configurations. MUST read LerianStudio/helm for current CPU/memory values." |
+| "Skip Gate 2, we trust Gate 1 analysis" | "I CANNOT skip Gate 2. Validation is MANDATORY to verify mappings before template generation. Gate 1 analysis ≠ Gate 2 validation." |
+| "Assume all components shared for simplicity" | "I CANNOT assume sharing model. MUST ask for each component (PostgreSQL, DocumentDB, Valkey, etc.) - cost attribution depends on it." |
+| "Regulatory template looks right, skip testing" | "I CANNOT skip testing. MUST validate with sample data per Gate 2 requirements. Visual inspection ≠ validated correctness." |
+| "Use last month's cost estimates" | "I CANNOT reuse old estimates without verification. Helm configs change, pricing updates, requirements evolve. MUST recalculate." |
+
+---
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Cost estimation is straightforward, skip Helm read" | Actual values differ from defaults. Assumptions lead to budget overruns | **Read actual Helm chart configs** |
+| "Gate 2 is redundant after good Gate 1 analysis" | Analysis ≠ validation. Gate 2 catches what Gate 1 missed | **Run all gates sequentially** |
+| "All components are obviously shared" | Each component has different isolation requirements. Assumptions wrong | **Ask per-component sharing model** |
+| "Manual template is faster than agent" | Manual bypasses validation layers. Agents apply systematic checks | **Use finops-automation agent** |
+| "Previous estimate still valid" | Configurations change. Old estimates drift from reality | **Recalculate with current data** |
+| "Only need critical regulatory fields" | BACEN/RFB require 100% mandatory coverage. Partial = rejected | **Map ALL mandatory fields** |
+
+---
+
+## When Not Needed
+
+**MUST skip FinOps agents only when ALL conditions are true:**
+
+| Condition | Verification Required |
+|-----------|----------------------|
+| 1. Non-Brazilian regulations | Confirm regulatory authority is NOT BACEN/RFB |
+| 2. Non-AWS infrastructure | Confirm target is NOT AWS (adapt pricing formulas) |
+| 3. One-time simple calculation | Direct math without component attribution |
+| 4. Existing valid estimate | Previous estimate < 30 days AND no config changes |
+
+**Signs You MUST Use FinOps Agents:**
+
+- Brazilian regulatory template (BACEN CADOC, RFB e-Financeira, DIMP, Open Banking)
+- Customer onboarding cost estimation
+- Per-component cost attribution required
+- Profitability analysis needed
+- Regulatory compliance validation required
+
+---
+
 ## Integration with Other Plugins
 
 - **ring:using-ring** (default) – ORCHESTRATOR principle for ALL agents

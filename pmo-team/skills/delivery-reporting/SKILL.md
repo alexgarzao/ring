@@ -438,6 +438,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | Date range produces no data | STOP. Verify period is correct or report "no activity". |
 | Visual identity not specified | STOP. Must ask user preference before generating HTML. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **Deep code analysis (Gate 2.5)** | Shallow analysis produces meaningless business value |
+| **Specialized agents per repo type** | Domain expertise required for accurate understanding |
+| **Git data verification** | Cannot report without source data |
+| **Business value extraction** | Technical jargon doesn't serve executives |
+| **Visual identity selection** | Branding consistency is required |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT generate report without proper analysis
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+When determining delivery significance:
+
+| Severity | Criteria | Prominence in Report |
+|----------|----------|---------------------|
+| **CRITICAL** | New product launch (v1.0.0), major strategic feature | Lead slide, detailed coverage, executive highlight |
+| **HIGH** | Multiple releases, significant PRs, architectural changes | Dedicated slide or major section |
+| **MEDIUM** | Bug fixes, minor enhancements, tech debt | Brief mention in summary |
+| **LOW** | Dependency updates, refactoring, documentation | Aggregated stats only |
+
+**Lead with CRITICAL and HIGH. Aggregate MEDIUM and LOW. Never inflate significance.**
+
 ---
 
 ## Output Format
