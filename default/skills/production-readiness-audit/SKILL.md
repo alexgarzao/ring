@@ -3458,11 +3458,11 @@ func (m *DualPoolMiddleware) selectPool(path string) *tenantmanager.TenantConnec
 }
 
 // Module-specific connection from context
-db, err := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleOnboarding)
+db, err := tenantmanager.ResolveModuleDB(ctx, constant.ModuleOnboarding, r.connection)
 
 // Entity-scoped query — ALWAYS filter by organization_id + ledger_id
 func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity, error) {
-    db, err := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleTransaction)
+    db, err := tenantmanager.ResolveModuleDB(ctx, constant.ModuleTransaction, r.connection)
     if err != nil {
         return nil, err
     }
@@ -3480,7 +3480,7 @@ func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity
 ```go
 // BAD: Query without entity scoping — intra-tenant IDOR!
 func (r *Repo) FindByID(ctx context.Context, id uuid.UUID) (*Entity, error) {
-    db, _ := tenantmanager.GetModulePostgresForTenant(ctx, constant.ModuleTransaction)
+    db, _ := tenantmanager.ResolveModuleDB(ctx, constant.ModuleTransaction, r.connection)
     return db.QueryRowContext(ctx, "SELECT * FROM entities WHERE id = $1", id)
 }
 
@@ -3489,8 +3489,8 @@ func GetTenantID(c *fiber.Ctx) string {
     return c.Get("X-Tenant-ID")  // User-controlled!
 }
 
-// BAD: Non-module-specific connection getter
-db, err := tenantmanager.GetPostgresForTenant(ctx)  // WRONG: missing module parameter
+// BAD: Using ResolvePostgres in multi-module service — must use ResolveModuleDB
+db, err := tenantmanager.ResolvePostgres(ctx, r.connection)  // WRONG: use ResolveModuleDB(ctx, module, fallback)
 ```
 
 **Check Against Ring Standards For:**
