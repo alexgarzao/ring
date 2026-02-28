@@ -3,6 +3,23 @@
 ## [0.18.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.18.0)
 
 - **Features**
+  - Add business deliverables view to task summary.
+
+- **Fixes**
+  - Address fourth round of coderabbit feedback on business deliverables.
+  - Address third round of coderabbit feedback on business deliverables.
+  - Address second round of coderabbit feedback on business deliverables.
+  - Address coderabbit feedback on business deliverables view.
+
+Contributors: @jota
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.17.0...ring-pm-team@0.18.0)
+
+---
+
+## [0.18.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.18.0)
+
+- **Features**
   - Added business deliverables view to task summary.
 
 - **Fixes**
