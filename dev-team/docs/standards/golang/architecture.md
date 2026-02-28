@@ -1,6 +1,6 @@
 # Go Standards - Architecture
 
-> **Module:** architecture.md | **Sections:** §23-27 | **Parent:** [index.md](index.md)
+> **Module:** architecture.md | **Sections:** §23-28 | **Parent:** [index.md](index.md)
 
 This module covers architecture patterns, directory structure, concurrency, goroutine recovery, and query optimization.
 
@@ -14,8 +14,9 @@ This module covers architecture patterns, directory structure, concurrency, goro
 | 2 | [Directory Structure](#directory-structure) | Lerian pattern directory layout |
 | 3 | [Concurrency Patterns](#concurrency-patterns) | Goroutines with context and channel patterns |
 | 4 | [Goroutine Recovery Patterns](#goroutine-recovery-patterns-mandatory) | Panic recovery for background goroutines |
-| 5 | [N+1 Query Detection](#n1-query-detection-mandatory) | Avoiding N+1 queries in collection processing |
-| 6 | [Performance Patterns](#performance-patterns-mandatory) | SELECT * avoidance, sync.Pool, memory optimization |
+| 5 | [Goroutine Leak Detection](#goroutine-leak-detection-mandatory) | goleak framework for detecting goroutine leaks |
+| 6 | [N+1 Query Detection](#n1-query-detection-mandatory) | Avoiding N+1 queries in collection processing |
+| 7 | [Performance Patterns](#performance-patterns-mandatory) | SELECT * avoidance, sync.Pool, memory optimization |
 
 ---
 
@@ -384,6 +385,213 @@ grep -rn "^\s*go func\|^\s*go [a-zA-Z]" internal/ pkg/ --include="*.go" | grep -
 | "Process will restart" | Restart = downtime + lost in-flight work. | **Recover and log instead** |
 | "It's just a background task" | Background task crash = process crash. | **Add recovery wrapper** |
 | "Recovery adds overhead" | Overhead is negligible vs process crash cost. | **Add recovery wrapper** |
+
+---
+
+## Goroutine Leak Detection (MANDATORY)
+
+Goroutine leaks cause memory exhaustion, increased latency, and eventual process crashes. When implementing goroutines, you MUST create leak tests using the goleak framework.
+
+**⛔ HARD GATE:** When implementing goroutines, MUST create goleak leak tests using the goleak framework. This is NON-NEGOTIABLE.
+
+### Why Goroutine Leak Detection Is MANDATORY
+
+| Scenario | Without Detection | With goleak |
+|----------|-------------------|-------------|
+| Leaked goroutine | Silent memory growth | Test fails immediately |
+| Channel not closed | Goroutine hangs forever | Detected in test |
+| Missing context cancellation | Resources not released | Caught before deploy |
+| Worker pool not shutdown | Goroutines accumulate | Fails quality gate |
+
+### goleak Installation
+
+```bash
+go get -u go.uber.org/goleak
+```
+
+### TestMain Pattern (RECOMMENDED for packages with goroutines)
+
+```go
+// pkg/worker/worker_test.go
+package worker
+
+import (
+    "testing"
+
+    "go.uber.org/goleak"
+)
+
+// TestMain ensures no goroutine leaks across all tests in this package
+func TestMain(m *testing.M) {
+    goleak.VerifyTestMain(m)
+}
+```
+
+**When to use TestMain:**
+- Package creates goroutines (workers, consumers, background tasks)
+- Package manages channels or connection pools
+- Package has async operations
+
+### Per-Test Pattern (For specific tests)
+
+```go
+func TestWorker_ProcessMessage(t *testing.T) {
+    defer goleak.VerifyNone(t)
+    
+    worker := NewWorker()
+    worker.Start()
+    
+    // ... test logic ...
+    
+    worker.Stop() // Must properly shutdown
+}
+```
+
+### Ignoring Known Goroutines
+
+Some external libraries create background goroutines. Ignore them explicitly:
+
+```go
+func TestMain(m *testing.M) {
+    goleak.VerifyTestMain(m,
+        // OpenTelemetry background exporters
+        goleak.IgnoreTopFunction("go.opentelemetry.io/otel/sdk/trace.(*batchSpanProcessor).processQueue"),
+        // gRPC keepalive
+        goleak.IgnoreTopFunction("google.golang.org/grpc.(*addrConn).resetTransport"),
+        // Database connection pool maintenance
+        goleak.IgnoreTopFunction("database/sql.(*DB).connectionOpener"),
+    )
+}
+```
+
+### Common Leak Patterns and Fixes
+
+#### Pattern 1: Unbounded Channel Send
+
+```go
+// ❌ LEAK: Sender blocked forever if receiver exits
+func process(items []Item) {
+    results := make(chan Result)
+    for _, item := range items {
+        go func(i Item) {
+            results <- processItem(i) // BLOCKS if no receiver
+        }(item)
+    }
+    // If we return early, goroutines leak
+}
+
+// ✅ CORRECT: Use buffered channel or context
+func process(ctx context.Context, items []Item) {
+    results := make(chan Result, len(items)) // Buffered
+    for _, item := range items {
+        go func(i Item) {
+            select {
+            case results <- processItem(i):
+            case <-ctx.Done():
+                return // Clean exit
+            }
+        }(item)
+    }
+}
+```
+
+#### Pattern 2: Missing Cleanup
+
+```go
+// ❌ LEAK: Worker goroutine never stops
+type Service struct {
+    done chan struct{}
+}
+
+func (s *Service) Start() {
+    go func() {
+        for {
+            // Background work
+        }
+    }()
+}
+
+// ✅ CORRECT: Implement proper shutdown
+func (s *Service) Start() {
+    s.done = make(chan struct{})
+    go func() {
+        for {
+            select {
+            case <-s.done:
+                return // Clean exit
+            default:
+                // Background work
+            }
+        }
+    }()
+}
+
+func (s *Service) Stop() {
+    close(s.done)
+}
+```
+
+#### Pattern 3: Context Not Honored
+
+```go
+// ❌ LEAK: Ignores context cancellation
+func worker(ctx context.Context, jobs <-chan Job) {
+    for job := range jobs {
+        processJob(job) // Continues even if ctx cancelled
+    }
+}
+
+// ✅ CORRECT: Check context in loop
+func worker(ctx context.Context, jobs <-chan Job) {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case job, ok := <-jobs:
+            if !ok {
+                return
+            }
+            processJob(job)
+        }
+    }
+}
+```
+
+### Detection Commands (MANDATORY)
+
+```bash
+# Find goroutines that may leak (review each)
+grep -rn "go func()" --include="*.go" | grep -v "_test.go"
+
+# Find channels without close
+grep -rn "make(chan" --include="*.go" | grep -v "_test.go"
+
+# Check for goleak in test files
+grep -rn "goleak" --include="*_test.go"
+
+# Run tests with leak detection
+go test -v ./... 2>&1 | grep -i "leak"
+```
+
+### Quality Gate Requirements
+
+| Check | Detection | PASS Criteria |
+|-------|-----------|---------------|
+| goleak in TestMain | `grep "goleak.VerifyTestMain"` | Present in packages with goroutines |
+| All tests pass with goleak | `go test ./...` | 0 leaked goroutines |
+| Proper shutdown | Code review | All workers have Stop/Close |
+| Context honored | Code review | All goroutines check ctx.Done() |
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Goroutine will exit eventually" | Eventually = memory leak until then. | **Add proper shutdown** |
+| "It's just one goroutine" | One leak × thousands of requests = OOM. | **Add goleak test** |
+| "Process restarts clean it" | Restart = downtime. Prevent leaks instead. | **Add goleak test** |
+| "Too complex to test" | goleak makes it simple. One line in TestMain. | **Add goleak.VerifyTestMain** |
+| "External lib leaks, not my code" | Use goleak.IgnoreTopFunction for known libs. | **Ignore known, catch yours** |
+| "Performance overhead" | goleak only runs in tests, not production. | **No production overhead** |
 
 ---
 

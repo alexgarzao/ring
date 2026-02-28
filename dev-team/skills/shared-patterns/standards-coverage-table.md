@@ -296,15 +296,16 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 39 | Directory Structure | architecture.md | `#directory-structure` | Lerian pattern |
 | 40 | Concurrency Patterns | architecture.md | `#concurrency-patterns` | Goroutines, channels, errgroup, **Map mutex (MANDATORY)**, loop variable capture, detection commands |
 | 41 | Goroutine Recovery Patterns | architecture.md | `#goroutine-recovery-patterns-mandatory` | **Panic recovery (MANDATORY)**, recovery wrapper, detection commands |
-| 42 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
-| 43 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
-| 44 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
-| 45 | RabbitMQ Reconnection Strategy | messaging.md | `#rabbitmq-reconnection-strategy-mandatory` | **MANDATORY: Consumer Reconnection Loop**, **MANDATORY: Producer Per-Publish Retry**, **MANDATORY: Health Check Integration**, **MANDATORY: Deadlock Prevention** |
-| 46 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
-| 47 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
-| 48 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-mandatory` | **MANDATORY: Both single-tenant and multi-tenant modes with backward compatibility.** See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for full standard. |
-| 49 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, **Trusted Proxy (MANDATORY)**: EnableTrustedProxyCheck + TrustedProxies (Fiber v2) / TrustProxy + TrustProxyConfig (Fiber v3) for real client IP, Redis-backed storage (in-memory fallback on Redis outage), key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
-| 50 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
+| 42 | Goroutine Leak Detection | architecture.md | `#goroutine-leak-detection-mandatory` | **goleak framework (MANDATORY)**: When implementing goroutines, MUST create goleak leak tests. TestMain pattern, per-test VerifyNone, goroutine leak patterns, detection commands |
+| 43 | N+1 Query Detection | architecture.md | `#n1-query-detection-mandatory` | **Batch loading (MANDATORY)**, JOIN patterns, detection commands |
+| 44 | Performance Patterns | architecture.md | `#performance-patterns-mandatory` | **SELECT * avoidance (MANDATORY)**, sync.Pool, memory allocation, detection commands |
+| 45 | RabbitMQ Worker Pattern | messaging.md | `#rabbitmq-worker-pattern` | Async message processing, **Exponential Backoff with Jitter (MANDATORY)**, **Error Classification (MANDATORY)** |
+| 46 | RabbitMQ Reconnection Strategy | messaging.md | `#rabbitmq-reconnection-strategy-mandatory` | **MANDATORY: Consumer Reconnection Loop**, **MANDATORY: Producer Per-Publish Retry**, **MANDATORY: Health Check Integration**, **MANDATORY: Deadlock Prevention** |
+| 47 | Always-Valid Domain Model | domain-modeling.md | `#always-valid-domain-model-mandatory` | **MANDATORY: Constructor Validation Patterns**: NewEntity/NewEntityFromDTO/ReconstructEntity conventions, invariant protection, ToEntity/FromEntity integration, detection commands |
+| 48 | Idempotency Patterns | idempotency.md | `#idempotency-patterns-mandatory-for-transaction-apis` | Redis SetNX, hash fallback, async caching |
+| 49 | Multi-Tenant Patterns | multi-tenant.md | `#multi-tenant-patterns-mandatory` | **MANDATORY: Both single-tenant and multi-tenant modes with backward compatibility.** See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for full standard. |
+| 50 | Rate Limiting | security.md | `#rate-limiting-mandatory` | **Three-tier strategy (MANDATORY)**: Global/Export/Dispatch, **Trusted Proxy (MANDATORY)**: EnableTrustedProxyCheck + TrustedProxies (Fiber v2) / TrustProxy + TrustProxyConfig (Fiber v3) for real client IP, Redis-backed storage (in-memory fallback on Redis outage), key priority (UserID > TenantID+IP > IP), **production force-enable (MANDATORY)**, Retry-After header, detection commands |
+| 51 | CORS Configuration | security.md | `#cors-configuration-mandatory` | **Configuration-driven (MANDATORY)**, production validation (no wildcard, no empty), middleware ordering (before Helmet), Helmet integration, detection commands |
 
 **Module Loading Guide:**
 
