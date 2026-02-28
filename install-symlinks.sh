@@ -28,7 +28,10 @@ NC='\033[0m' # No Color
 
 # --- Globals ---
 CLAUDE_DIR="$HOME/.claude"
+FACTORY_DIR="$HOME/.factory"
 RING_DIR=""
+INSTALL_CLAUDE=true
+INSTALL_FACTORY=false
 CREATED=0
 SKIPPED=0
 ERRORS=0
@@ -51,7 +54,7 @@ log_error()   { echo -e "  ${RED}ERROR${NC}   $1"; }
 log_section() { echo -e "\n  ${BOLD}${CYAN}── $1 ──${NC}\n"; }
 
 resolve_ring_dir() {
-  if [[ -n "${1:-}" && "$1" != "--remove" ]]; then
+  if [[ -n "${1:-}" && "$1" != "--remove" && "$1" != "--factory" && "$1" != "--all" && "$1" != "--claude" ]]; then
     RING_DIR="$(cd "$1" && pwd)"
   else
     # Auto-detect from script location
@@ -72,13 +75,27 @@ resolve_ring_dir() {
 }
 
 create_directories() {
-  local dirs=("$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills")
-  for dir in "${dirs[@]}"; do
-    if [[ ! -d "$dir" ]]; then
-      mkdir -p "$dir"
-      log_info "Created directory: $dir"
-    fi
-  done
+  local base_dirs=("agents" "commands" "skills")
+  
+  if [[ "$INSTALL_CLAUDE" == true ]]; then
+    for subdir in "${base_dirs[@]}"; do
+      local dir="$CLAUDE_DIR/$subdir"
+      if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+        log_info "Created directory: $dir"
+      fi
+    done
+  fi
+  
+  if [[ "$INSTALL_FACTORY" == true ]]; then
+    for subdir in "${base_dirs[@]}"; do
+      local dir="$FACTORY_DIR/$subdir"
+      if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+        log_info "Created directory: $dir"
+      fi
+    done
+  fi
 }
 
 create_symlink() {
@@ -113,6 +130,7 @@ create_symlink() {
 
 link_agents() {
   local plugin="$1"
+  local target_dir="$2"
   local agents_dir="$RING_DIR/$plugin/agents"
 
   [[ ! -d "$agents_dir" ]] && return
@@ -121,12 +139,13 @@ link_agents() {
     [[ ! -f "$agent" ]] && continue
     local name
     name="$(basename "$agent")"
-    create_symlink "$agent" "$CLAUDE_DIR/agents/$name"
+    create_symlink "$agent" "$target_dir/agents/$name"
   done
 }
 
 link_commands() {
   local plugin="$1"
+  local target_dir="$2"
   local commands_dir="$RING_DIR/$plugin/commands"
 
   [[ ! -d "$commands_dir" ]] && return
@@ -135,12 +154,13 @@ link_commands() {
     [[ ! -f "$cmd" ]] && continue
     local name
     name="$(basename "$cmd")"
-    create_symlink "$cmd" "$CLAUDE_DIR/commands/$name"
+    create_symlink "$cmd" "$target_dir/commands/$name"
   done
 }
 
 link_skills() {
   local plugin="$1"
+  local target_dir="$2"
   local skills_dir="$RING_DIR/$plugin/skills"
 
   [[ ! -d "$skills_dir" ]] && return
@@ -151,7 +171,7 @@ link_skills() {
     name="$(basename "$skill")"
     # Skip shared-patterns directories (internal to each plugin, not standalone skills)
     [[ "$name" == "shared-patterns" ]] && continue
-    create_symlink "$skill" "$CLAUDE_DIR/skills/$name"
+    create_symlink "$skill" "$target_dir/skills/$name"
   done
 }
 
@@ -160,9 +180,16 @@ install_symlinks() {
 
   for plugin in "${plugins[@]}"; do
     log_section "$plugin"
-    link_agents "$plugin"
-    link_commands "$plugin"
-    link_skills "$plugin"
+    if [[ "$INSTALL_CLAUDE" == true ]]; then
+      link_agents "$plugin" "$CLAUDE_DIR"
+      link_commands "$plugin" "$CLAUDE_DIR"
+      link_skills "$plugin" "$CLAUDE_DIR"
+    fi
+    if [[ "$INSTALL_FACTORY" == true ]]; then
+      link_agents "$plugin" "$FACTORY_DIR"
+      link_commands "$plugin" "$FACTORY_DIR"
+      link_skills "$plugin" "$FACTORY_DIR"
+    fi
   done
 }
 
@@ -200,15 +227,19 @@ print_summary() {
   fi
   echo -e "  ${BOLD}════════════════════════════════════════${NC}"
   echo ""
-  echo -e "  ${CYAN}Ring repo:${NC}  $RING_DIR"
-  echo -e "  ${CYAN}Claude dir:${NC} $CLAUDE_DIR"
+  echo -e "  ${CYAN}Ring repo:${NC}   $RING_DIR"
+  [[ "$INSTALL_CLAUDE" == true ]] && echo -e "  ${CYAN}Claude dir:${NC}  $CLAUDE_DIR"
+  [[ "$INSTALL_FACTORY" == true ]] && echo -e "  ${CYAN}Factory dir:${NC} $FACTORY_DIR"
   echo ""
 
   local total=$((CREATED + SKIPPED))
   if [[ $total -gt 0 ]]; then
-    echo -e "  ${GREEN}${BOLD}Ring is ready!${NC} Open Claude Code to use all skills, agents, and commands."
+    local target_names=""
+    [[ "$INSTALL_CLAUDE" == true ]] && target_names="Claude Code"
+    [[ "$INSTALL_FACTORY" == true ]] && { [[ -n "$target_names" ]] && target_names="$target_names and Factory AI" || target_names="Factory AI"; }
+    echo -e "  ${GREEN}${BOLD}Ring is ready!${NC} Open $target_names to use all skills, agents, and commands."
     echo ""
-    echo -e "  Try these commands in Claude Code:"
+    echo -e "  Try these commands:"
     echo -e "    ${BOLD}/ring:brainstorm${NC}      - Socratic design refinement"
     echo -e "    ${BOLD}/ring:dev-cycle${NC}       - 10-gate development cycle"
     echo -e "    ${BOLD}/ring:pre-dev-feature${NC} - Lightweight pre-dev workflow"
@@ -229,17 +260,30 @@ fi
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   echo "  Usage:"
-  echo "    bash install-symlinks.sh              # Auto-detect Ring repo"
+  echo "    bash install-symlinks.sh              # Install for Claude Code (default)"
+  echo "    bash install-symlinks.sh --factory    # Install for Factory AI"
+  echo "    bash install-symlinks.sh --all        # Install for both Claude Code and Factory AI"
   echo "    bash install-symlinks.sh /path/to/ring # Explicit path"
   echo "    bash install-symlinks.sh --remove      # Remove Ring symlinks"
   echo ""
   exit 0
 fi
 
+if [[ "${1:-}" == "--factory" ]]; then
+  INSTALL_CLAUDE=false
+  INSTALL_FACTORY=true
+  shift
+elif [[ "${1:-}" == "--all" ]]; then
+  INSTALL_CLAUDE=true
+  INSTALL_FACTORY=true
+  shift
+fi
+
 resolve_ring_dir "${1:-}"
 
 log_info "Ring repo: $RING_DIR"
-log_info "Claude dir: $CLAUDE_DIR"
+[[ "$INSTALL_CLAUDE" == true ]] && log_info "Claude dir: $CLAUDE_DIR"
+[[ "$INSTALL_FACTORY" == true ]] && log_info "Factory dir: $FACTORY_DIR"
 
 create_directories
 install_symlinks

@@ -1,11 +1,12 @@
 ---
 name: ring:qa-analyst
-version: 1.6.0
-description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), and chaos (Gate 7) testing modes.
+version: 1.7.0
+description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), chaos (Gate 7), and goroutine-leak (detection) testing modes.
 type: specialist
 model: opus
 last_updated: 2026-02-10
 changelog:
+  - 1.7.0: Added goroutine-leak testing mode for detecting goroutine leaks in code, running goleak, and dispatching ring:backend-engineer-golang to fix leaks and create regression tests
   - 1.6.0: Added fuzz testing mode (Gate 4), property-based testing mode (Gate 5), and chaos testing mode (Gate 7) with dedicated sections, quality gates, output formats, and anti-rationalization tables for each mode
   - 1.5.1: Made output_schema mode-aware - unit-specific sections (Coverage Validation, Summary, Implementation, Files Changed, Testing, Test Execution Results) use required_when test_mode=unit; integration-specific sections (Integration Testing Summary, Scenario Coverage, Quality Gate Results) use required_when test_mode=integration
   - 1.5.0: Added integration testing mode (Gate 6) with test_mode parameter, testcontainers patterns, and integration-specific quality gates
@@ -121,6 +122,18 @@ output_schema:
       required_when:
         test_mode: "chaos"
       description: "External dependency failure scenarios tested (chaos mode only)"
+    - name: "Goroutine Leak Detection Summary"
+      pattern: "^## Goroutine Leak Detection Summary"
+      required: false
+      required_when:
+        test_mode: "goroutine-leak"
+      description: "Goroutine leak detection results and remediation (goroutine-leak mode only)"
+    - name: "Leak Findings"
+      pattern: "^## Leak Findings"
+      required: false
+      required_when:
+        test_mode: "goroutine-leak"
+      description: "Detected goroutine leaks and their locations (goroutine-leak mode only)"
     - name: "Next Steps"
       pattern: "^## Next Steps"
       required: true
@@ -173,9 +186,9 @@ input_schema:
       description: "List of acceptance criteria to verify"
     - name: "test_mode"
       type: "enum"
-      values: ["unit", "fuzz", "property", "integration", "chaos"]
+      values: ["unit", "fuzz", "property", "integration", "chaos", "goroutine-leak"]
       default: "unit"
-      description: "Testing mode - unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), chaos (Gate 7)"
+      description: "Testing mode - unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), chaos (Gate 7), goroutine-leak (detection)"
   optional_context:
     - name: "implementation_files"
       type: "list[file_path]"
@@ -895,6 +908,56 @@ _No precedence conflicts. Following Ring Standards._
 | "We have circuit breakers"           | Circuit breakers need testing too. Chaos tests verify they actually work.            | **Test circuit breakers**  |
 | "Monitoring will catch issues"       | Monitoring finds problems in production. Chaos tests prevent them before production. | **Test before production** |
 | "Too complex to set up"              | Toxiproxy is one container. 20 minutes setup saves production incidents.             | **Set up chaos infra**     |
+
+---
+
+## Goroutine Leak Detection Mode
+
+**When `test_mode: goroutine-leak` is specified, this agent operates in Goroutine Leak Detection Mode.**
+
+**⛔ HARD GATE:** This mode is **Go-only**. MUST verify `language: go` before proceeding. If TypeScript, report blocker.
+
+### Standards Loading (Goroutine Leak Mode)
+
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md
+</fetch_required>
+
+See [architecture.md](../docs/standards/golang/architecture.md#goroutine-leak-detection-mandatory) for full detection patterns, goleak requirements, and anti-rationalization table.
+
+### Mode Behavior
+
+1. **Detect** goroutine usage (`go func()`, `go methodCall()`, channels)
+2. **Verify** goleak coverage (`goleak.VerifyTestMain`, `goleak.VerifyNone`)
+3. **Execute** leak detection via `go test`
+4. **Dispatch** `ring:backend-engineer-golang` if leaks found
+
+### Output Format (Goroutine Leak Mode)
+
+```markdown
+## VERDICT: PASS/FAIL
+
+## Goroutine Leak Detection Summary
+
+| Metric                  | Value |
+| ----------------------- | ----- |
+| Files with goroutines   | X     |
+| Packages with goleak    | Y     |
+| Packages missing goleak | Z     |
+| Leaks detected          | N     |
+
+## Leak Findings
+
+| Package | File:Line | Pattern | goleak | Status |
+|---------|-----------|---------|--------|--------|
+
+## Required Actions
+- Dispatch: ring:backend-engineer-golang (if leaks found)
+```
+
+### Dispatch Template
+
+When leaks found, dispatch `ring:backend-engineer-golang` with package path, file:line, leak pattern, and reference to architecture.md § Goroutine Leak Detection.
 
 ---
 
