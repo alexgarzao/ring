@@ -350,8 +350,8 @@ Check 2: Was codebase-report.md created by ring:codebase-explorer?
 
 ### For Go projects:
 
-<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre">
-All four agents MUST be dispatched in parallel via Task tool.
+<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:qa-analyst(goroutine-leak), ring:devops-engineer, ring:sre">
+All five agents MUST be dispatched in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
 
@@ -414,6 +414,56 @@ Task tool 4:
     Check all 6 sections per shared-patterns/standards-coverage-table.md → "ring:sre"
     Input: codebase-report.md, PROJECT_RULES.md
     Output: Standards Coverage Table + ISSUE-XXX for gaps
+
+Task tool 5 (Go only):
+  subagent_type: "ring:qa-analyst"
+  description: "Goroutine leak analysis"
+  prompt: |
+    **MODE: ANALYSIS only**
+    **test_mode: goroutine-leak**
+
+    ⛔ GOROUTINE LEAK DETECTION MODE
+
+    ## Standards Reference
+    https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md
+    Focus on: Goroutine Leak Detection (MANDATORY) section
+
+    ## Analysis Steps
+
+    ### 1. Detect Goroutine Usage
+    Scan all Go files for:
+    - `go func()` patterns (anonymous goroutines)
+    - `go methodCall()` patterns (direct calls)
+    - Channel consumers (`for range channel`)
+    - Worker pools and background services
+
+    ### 2. Verify goleak Coverage
+    For each package with goroutines:
+    - Check for `goleak.VerifyTestMain(m)` in TestMain
+    - Check for `defer goleak.VerifyNone(t)` in relevant tests
+    - Verify go.uber.org/goleak is in go.mod
+
+    ### 3. Identify Gaps
+    Create ISSUE-XXX for:
+    - Packages with goroutines but no goleak tests
+    - Missing goleak.VerifyTestMain in packages with workers
+    - Missing goleak.VerifyNone in specific tests
+
+    Input:
+    - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
+    - Project Rules: docs/PROJECT_RULES.md
+
+    Output:
+    ## Goroutine Detection Summary
+    | File | Line | Pattern | Package |
+    |------|------|---------|---------|
+    
+    ## goleak Coverage
+    | Package | Goroutine Files | goleak Present | Status |
+    |---------|-----------------|----------------|--------|
+    
+    ## Issues Found
+    ISSUE-XXX for each gap (missing goleak, missing TestMain, etc.)
 ```
 
 ### For TypeScript Backend projects:
@@ -459,10 +509,12 @@ Task tool 1:
 
 | Stack Detected | Agents to Dispatch |
 |----------------|-------------------|
-| Go only | Task 1 (Go) + Task 2-4 |
+| Go only | Task 1 (Go) + Task 2-4 + Task 5 (goroutine-leak) |
 | TypeScript Backend only | Task 1 (TS Backend) + Task 2-4 |
 
 **⛔ MUST use `ring:dev-refactor-frontend` for frontend/BFF projects.** This skill does not dispatch frontend agents.
+
+**Note:** Task 5 (goroutine-leak) is Go-specific. It detects goroutine usage and verifies goleak test coverage.
 
 **TodoWrite:** Mark "Dispatch specialist agents in parallel" as `completed`
 
@@ -481,6 +533,7 @@ docs/ring:dev-refactor/{timestamp}/reports/
 ├── ring:backend-engineer-golang-report.md     (if Go project)
 ├── ring:backend-engineer-typescript-report.md (if TypeScript Backend)
 ├── ring:qa-analyst-report.md                  (always)
+├── ring:qa-analyst-goroutine-leak-report.md   (if Go project)
 ├── ring:devops-engineer-report.md             (always)
 └── ring:sre-report.md                         (always)
 ```
@@ -523,6 +576,7 @@ docs/ring:dev-refactor/{timestamp}/reports/
 | ring:backend-engineer-golang | `ring:backend-engineer-golang-report.md` |
 | ring:backend-engineer-typescript | `ring:backend-engineer-typescript-report.md` |
 | ring:qa-analyst | `ring:qa-analyst-report.md` |
+| ring:qa-analyst (goroutine-leak) | `ring:qa-analyst-goroutine-leak-report.md` |
 | ring:devops-engineer | `ring:devops-engineer-report.md` |
 | ring:sre | `ring:sre-report.md` |
 

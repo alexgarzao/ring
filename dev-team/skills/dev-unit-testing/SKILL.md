@@ -189,7 +189,13 @@ testing_state = {
   iterations: 0,
   max_iterations: 3,
   traceability_matrix: [],
-  tests_written: 0
+  tests_written: 0,
+  # Goroutine leak detection (Go only)
+  goroutine_check: null,       # NOT_APPLICABLE | REQUIRED
+  goroutine_files: 0,          # Count of files with goroutines
+  goleak_coverage: null,       # "X/Y" packages with goleak
+  leaks_detected: 0,           # Count of actual leaks
+  goroutine_verdict: null      # PASS | NEEDS_ACTION | FAIL
 }
 ```
 
@@ -297,6 +303,168 @@ Task:
     - **Files needing coverage:** [list with line numbers]
 ```
 
+## Step 3.5: Goroutine Leak Detection (Go only)
+
+**⛔ CONDITIONAL: Only execute if `language == "go"`**
+
+After unit tests pass, detect goroutine usage and verify goleak coverage.
+
+### Detection Logic
+
+```text
+if language != "go":
+  → Skip to Step 4
+
+# Detect goroutine patterns in implementation files
+goroutine_patterns = grep for:
+  - "go func("
+  - "go [a-zA-Z_][a-zA-Z0-9_]*\."
+  - "go [a-zA-Z_][a-zA-Z0-9_]*("
+
+if no goroutine patterns found:
+  → testing_state.goroutine_check = "NOT_APPLICABLE"
+  → Skip to Step 4
+
+# Goroutines detected - verify goleak coverage
+→ testing_state.goroutine_check = "REQUIRED"
+→ Dispatch QA Analyst in goroutine-leak mode
+```
+
+### Dispatch QA Analyst (goroutine-leak mode)
+
+<dispatch_required agent="ring:qa-analyst" test_mode="goroutine-leak">
+Detect goroutine leaks and verify goleak test coverage.
+</dispatch_required>
+
+```yaml
+Task:
+  subagent_type: "ring:qa-analyst"
+  description: "Goroutine leak detection for [unit_id]"
+  prompt: |
+    ⛔ GOROUTINE LEAK DETECTION MODE
+
+    ## Input Context
+    - **Unit ID:** [unit_id]
+    - **Language:** go
+    - **Implementation Files:** [implementation_files]
+
+    ## Standards Reference
+    https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md
+    Focus on: Goroutine Leak Detection (MANDATORY) section
+
+    ## Requirements
+
+    ### 1. Detect Goroutine Usage
+    Scan implementation files for:
+    - `go func()` patterns
+    - `go methodCall()` patterns
+    - Channel consumers (`for range channel`)
+    - Worker pools
+
+    ### 2. Verify goleak Coverage
+    For each package with goroutines:
+    - Check for `goleak.VerifyTestMain(m)` in TestMain
+    - Check for `defer goleak.VerifyNone(t)` in relevant tests
+
+    ### 3. Run Leak Detection
+    Execute: `go test ./[package]/... -v 2>&1 | grep -i "leak\|unexpected goroutine"`
+
+    ### 4. Report Findings
+
+    ## Required Output Format
+
+    ### Goroutine Detection Summary
+    | File | Line | Pattern | Package |
+    |------|------|---------|---------|
+    | [file] | [line] | `go func()` | [pkg] |
+
+    **Goroutines found:** [count]
+
+    ### goleak Coverage
+    | Package | Goroutine Files | goleak Present | Status |
+    |---------|-----------------|----------------|--------|
+    | [pkg] | [count] | ✅/❌ | Covered/Missing |
+
+    **Coverage:** [X]/[Y] packages
+
+    ### Leak Test Results
+    **Command:** `go test ./... -v 2>&1`
+    **Leaks detected:** [count]
+
+    If leaks found:
+    | Package | File:Line | Leak Description |
+    |---------|-----------|------------------|
+    | [pkg] | [file:line] | [description] |
+
+    ### VERDICT
+    - **Goroutines detected:** [count]
+    - **Packages with goleak:** [X]/[Y]
+    - **Leaks found:** [count]
+    - **VERDICT:** PASS / NEEDS_ACTION / FAIL
+
+    If NEEDS_ACTION or FAIL:
+    - **Required fixes:** [list packages needing goleak.VerifyTestMain]
+    - **Leak fixes needed:** [list of leaks to fix]
+```
+
+### Parse Goroutine Leak Output
+
+```text
+Parse agent output:
+
+testing_state.goroutine_files = [count from detection]
+testing_state.goleak_coverage = [X/Y from coverage]
+testing_state.leaks_detected = [count from leak test]
+
+if verdict == "PASS":
+  → testing_state.goroutine_verdict = "PASS"
+  → Proceed to Step 4
+
+if verdict == "NEEDS_ACTION":
+  → testing_state.goroutine_verdict = "NEEDS_ACTION"
+  → Dispatch ring:backend-engineer-golang to add goleak tests
+  → Re-run this step after fix
+
+if verdict == "FAIL":
+  → testing_state.goroutine_verdict = "FAIL"
+  → Dispatch ring:backend-engineer-golang to fix leaks
+  → Re-run this step after fix
+```
+
+### Dispatch Fix for Goroutine Leaks
+
+```yaml
+Task:
+  subagent_type: "ring:backend-engineer-golang"
+  description: "Fix goroutine leaks for [unit_id]"
+  prompt: |
+    ⛔ FIX GOROUTINE LEAKS
+
+    ## Leak Report
+    [paste leak findings from QA output]
+
+    ## Requirements
+    1. Add goleak.VerifyTestMain(m) to packages missing it
+    2. Fix actual goroutine leaks (proper shutdown, channel close)
+    3. Add regression tests for leak scenarios
+    4. Verify: `go test ./... -v` shows no leak warnings
+
+    ## Standards Reference
+    https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md
+    Section: Goroutine Leak Detection (MANDATORY)
+```
+
+### Anti-Rationalization for Step 3.5
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Unit tests already pass, skip goroutine check" | Unit tests don't detect leaks. goleak does. | **Run goroutine leak detection** |
+| "No goroutines in this code" | Detection verifies this claim. Don't assume. | **Run detection to confirm** |
+| "Goroutine will exit eventually" | Eventually = memory leak = OOM crash. | **Dispatch fix immediately** |
+| "goleak is overkill for simple code" | Simple code can leak too. goleak is mandatory. | **Run detection** |
+
+---
+
 ## Step 4: Parse QA Analyst Output
 
 ```text
@@ -392,6 +560,19 @@ Generate skill output:
 | All ACs tested | ✅ |
 | No skipped tests | ✅ |
 | Edge cases present | ✅ |
+| Goroutine leak check (Go only) | [✅/N/A] |
+
+## Goroutine Leak Report (Go only)
+[If language == "go" and goroutines detected]
+
+| Metric | Value |
+|--------|-------|
+| Goroutines detected | [count] |
+| Packages with goleak | [X]/[Y] |
+| Leaks found | 0 |
+| Status | ✅ PASS |
+
+[If language != "go" or no goroutines: "N/A - No goroutines detected"]
 
 ## Handoff to Next Gate
 - Testing status: COMPLETE
