@@ -65,7 +65,7 @@ Estimates without evidence ("probably 80% done"), assumptions about completion (
 | "Pattern matching is enough, skip semantic" | Patterns miss uncommitted work and scope gaps. | **MUST run semantic analysis via specialized agents.** |
 | "Current date is obvious, don't ask" | Wrong date = wrong variance calculations. | **MUST get current date (auto or user input).** |
 | "Tasks file is optional" | Without tasks, can't validate scope completion. | **STOP. Tasks file is REQUIRED input.** |
-| "Main branch only, ignore feature branches" | Work happens in branches first. | **MUST scan ALL branches, not just main.** |
+| "Main branch only, ignore feature branches" | Work happens in branches first. | **MUST scan all branches, not just main.** |
 | "Merged PRs mean 100% done" | PR merged ≠ scope complete. Verify with agents. | **MUST validate scope completion, not just PR status.** |
 | "Commit count = progress" | Commit count ≠ scope completion. Analyze content. | **MUST use semantic analysis, not commit metrics.** |
 | "Skip delays, report only what's done" | Hiding delays breaks trust. Report accurately. | **MUST report variance (early/late), not just completion.** |
@@ -518,3 +518,72 @@ Status reports are not guesses. Status reports are evidence-based assessments:
 If any question lacks evidence, **STOP and gather data from repository.**
 
 **Deliver evidence-based status. Build trust through accuracy. Enable decisions with insights.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is a status tracking skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** Delivery Status Tracking analyzes repository evidence to calculate progress. Technical standards are irrelevant at this stage—this skill focuses on evidence-based progress reporting.
+
+**However**, when dispatching specialized agents for semantic analysis (e.g., `ring:backend-engineer-golang`), those agents apply their standards to evaluate code quality.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| No delivery roadmap exists | STOP and create roadmap first | CRITICAL |
+| Tasks file not provided | STOP and request tasks.md location | CRITICAL |
+| Repository cannot be accessed | STOP and verify repository permissions | CRITICAL |
+| Current date not determined | STOP and get date (auto or user input) | HIGH |
+| Pattern matching finds <50% and semantic analysis unavailable | STOP and investigate agent availability | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST scan ALL branches (not just main)
+- MUST run semantic analysis via specialized agents when pattern matching insufficient
+- MUST provide GitHub links as evidence for all claims
+- MUST calculate variance against planned dates from roadmap
+- MUST include insights section (velocity, quality, trends)
+- MUST NOT report completion % without code analysis evidence
+- CANNOT assume task is done because PR merged (verify scope)
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot generate status report | No roadmap, no tasks file, repository inaccessible |
+| **HIGH** | Report lacks essential evidence | No semantic analysis, main branch only |
+| **MEDIUM** | Report incomplete but usable | Missing some GitHub links |
+| **LOW** | Minor documentation gaps | Trends section brief |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Just give quick estimate of progress" | "Cannot estimate without evidence. I'll scan repository and provide evidence-based progress with GitHub links." |
+| "Pattern matching is enough" | "Cannot rely on patterns alone. Patterns miss uncommitted work. I'll run semantic analysis via specialized agents." |
+| "Main branch status is sufficient" | "Cannot ignore branches. Work happens in feature branches first. I'll scan ALL branches." |
+| "Skip variance, just tell me what's done" | "Cannot skip variance. Variance shows plan vs reality. I'll report both completion and timeline variance." |
+| "Report looks good enough without links" | "Cannot report without evidence links. Every % must have GitHub evidence. I'll add all links." |
+
+---
+
+## When This Skill Is Not Needed
+
+- No delivery roadmap exists → create roadmap first with `ring:pre-dev-delivery-planning`
+- Planning phase only → execute tasks first
+- No repository activity → nothing to analyze yet
+- Status tracking not requested → continue execution
+- Informal progress check → direct query to user is sufficient

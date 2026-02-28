@@ -105,3 +105,53 @@ Runs tests one-by-one, stops at first polluter. See script for usage.
 ## Real-World Impact
 
 5-level trace → fixed at source (getter validation) → 4 layers defense → 1847 tests, zero pollution
+
+---
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Incomplete trace | Cannot trace call chain back to original trigger | STOP and add instrumentation before proceeding |
+| Missing source access | Cannot access code that calls problematic function | STOP and report missing context |
+| Complex async flow | Call chain involves async/event-driven code that breaks linear trace | STOP and instrument with timestamps before continuing |
+| External dependency | Root cause appears to be in external library or service | STOP and report external dependency issue |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST trace backward through call chain to find original trigger
+- MUST NOT fix where error appears without finding true source
+- MUST add instrumentation when manual tracing is insufficient
+- MUST use defense-in-depth: validate at multiple layers after finding root cause
+- MUST verify fix eliminates the symptom completely
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Error causes data corruption or test pollution across suite | MUST trace to source immediately, cannot proceed until resolved |
+| HIGH | Error affects multiple call sites or components | MUST complete full trace before any fix attempt |
+| MEDIUM | Error isolated to single execution path | MUST trace at least 3 levels up before fixing |
+| LOW | Error is cosmetic or easily reproducible | Should trace to source, can fix incrementally |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just fix it where the error appears" | "MUST NOT fix at symptom location. Tracing to root cause prevents the bug from manifesting elsewhere." |
+| "We don't have time for full tracing" | "CANNOT skip tracing. Fixing symptoms creates whack-a-mole debugging that takes longer overall." |
+| "The fix works in my test" | "MUST verify fix eliminates root cause, not just masks symptom in one scenario." |
+| "Add a try-catch and move on" | "CANNOT suppress errors without tracing. Error indicates invalid state that will cause problems elsewhere." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "The error message tells us enough" | Error location ≠ error source. Message describes symptom, not cause. | **MUST trace call chain backward** |
+| "I know this code, the fix is obvious" | Familiarity breeds assumptions. Obvious fixes often mask deeper issues. | **MUST verify with actual tracing** |
+| "Tracing is overkill for this simple bug" | Simple symptoms often have complex causes. Skipping trace leads to regression. | **MUST trace regardless of apparent simplicity** |
+| "Adding logging slows things down" | Temporary instrumentation is cheap. Untraced bugs cause expensive debugging sessions. | **MUST add instrumentation when needed** |
+| "The stack trace shows the problem" | Stack trace shows where, not why. Original invalid data may be layers above. | **MUST trace data flow, not just call stack** |

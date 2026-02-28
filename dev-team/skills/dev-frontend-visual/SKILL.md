@@ -233,6 +233,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Component duplication, major visual regression | sindarian-ui duplicated in shadcn, layout completely broken |
+| **HIGH** | Missing state snapshots, snapshot failures | No loading/error state snapshot, unexpected diff |
+| **MEDIUM** | Incomplete coverage, minor visual issues | Missing viewport size, edge case not tested |
+| **LOW** | Documentation, test organization | Missing snapshot descriptions, file naming |
+
+Report all severities. CRITICAL = immediate fix. HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations. Gate-specific:

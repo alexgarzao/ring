@@ -304,6 +304,14 @@ Analyzed 24 resources across 4 teams for Q1 2025 allocation. Current aggregate u
 
 ---
 
+## Standards Loading
+
+**N/A for PMO specialist agents.**
+
+**Rationale:** The ring:resource-planner agent produces resource analysis, not code implementation. Standards loading is performed by engineer agents that implement the planned projects.
+
+---
+
 ## What This Agent Does NOT Handle
 
 - Portfolio-level prioritization (use `portfolio-manager`)

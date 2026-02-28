@@ -86,6 +86,19 @@ TodoWrite tool:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Score 0 (rejected), system failure | User rejected validation, complete workflow failure |
+| **HIGH** | Score < 70, threshold breach | Assertiveness below 70, recurring pattern unresolved |
+| **MEDIUM** | Score 70-79, pattern emerging | Acceptable but degraded, same issue twice |
+| **LOW** | Score 80-89, minor improvements | Good but not excellent, optimization opportunity |
+
+Report all severities. CRITICAL = mandatory post-mortem. HIGH = root cause analysis. MEDIUM = track pattern. LOW = document.
+
+---
+
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.

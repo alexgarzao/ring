@@ -492,3 +492,91 @@ The PRD is business-only. Period. No exceptions. No "just this once". No "but it
 Technical details go in TRD. That's the next phase. Wait for it.
 
 **Follow the separation. Your future self will thank you.**
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is a business requirements skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** PRD defines WHAT/WHY at a business level. Technical standards are irrelevant at this stage—they apply during TRD (Gate 3) and implementation.
+
+**However**, if research.md exists from Gate 0, MUST load and reference it for:
+- Existing codebase patterns
+- Prior solutions from docs/solutions/
+- Framework constraints discovered during research
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| Problem statement cannot be articulated | STOP and conduct discovery with stakeholders | CRITICAL |
+| No user personas can be identified | STOP and validate who the feature serves | CRITICAL |
+| Technical details creep into PRD | STOP and remove them—move to TRD notes | HIGH |
+| Success metrics cannot be defined | STOP and clarify business value | HIGH |
+| Scope boundaries unclear (in/out not defined) | STOP and establish explicit scope | MEDIUM |
+| research.md exists but wasn't consulted | Continue but MUST reference research findings | MEDIUM |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST NOT include technical implementation details in PRD
+- MUST NOT include technology names, frameworks, or databases
+- MUST define measurable success metrics
+- MUST include explicit scope boundaries (in-scope/out-of-scope)
+- MUST include user personas with goals and frustrations
+- MUST dispatch `ring:product-designer` for UX validation after PRD
+- CANNOT proceed to Gate 2/3 with unvalidated PRD
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | PRD cannot be written | No problem identified, no users defined |
+| **HIGH** | PRD violates separation principle | Technology names in feature requirements |
+| **MEDIUM** | PRD incomplete but usable | Missing 1-2 success metrics |
+| **LOW** | Minor quality issues | User story format inconsistent |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Include the tech stack, stakeholders need it" | "Cannot include technology in PRD. Stakeholders see tech choices in TRD/Dependency Map. PRD stays business-only." |
+| "Just mention PostgreSQL as a constraint" | "Cannot mention specific databases. Use 'persistent data storage' if needed. Tech selection happens in Gate 6." |
+| "Skip UX validation, designer approved verbally" | "Cannot skip UX validation. Verbal approval isn't documented. I'll dispatch product-designer for formal validation." |
+| "Success metrics can be defined later" | "Cannot defer metrics. Undefined metrics = building without targets. I'll define measurable KPIs now." |
+| "Scope is obvious, skip boundaries" | "Cannot skip scope boundaries. 'Obvious' scope causes creep. I'll document explicit in/out lists." |
+
+---
+
+## Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Quick technical note won't hurt" | Technical details constrain business thinking | **Remove all tech, move to TRD notes** |
+| "Stakeholders need feasibility context" | Feasibility comes in TRD after requirements locked | **Keep PRD pure business** |
+| "The implementation is obvious" | Obvious to you ≠ obvious to everyone | **Separate concerns regardless** |
+| "Combining PRD and TRD saves time" | Combining wastes time when requirements change | **Keep documents separate** |
+| "This is a simple feature, no formality needed" | Simple features still need clear requirements | **Follow the process** |
+| "Problem is obvious, skip personas" | Obvious to you ≠ validated with users | **Document personas** |
+| "Adding one API detail helps clarity" | API design is TRD territory. Stop. Keep it in TRD | **Remove, add to TRD notes** |
+
+---
+
+## When This Skill Is Not Needed
+
+- PRD already exists and is validated (Gate 1 passed)
+- Pure technical task without business impact (TRD directly)
+- Bug fix with known solution (use systematic-debugging)
+- Documentation-only updates
+- Configuration changes with no feature impact
+- Refactoring with no user-facing changes

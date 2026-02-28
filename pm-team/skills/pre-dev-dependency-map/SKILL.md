@@ -266,3 +266,64 @@ Two non-negotiable requirements:
 2. **Every dependency MUST be explicit** - No @latest, no vague versions, no "we'll figure it out"
 
 **Load standards first. Be explicit. Be specific. Lock your versions.**
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| Data Model (Gate 5) not validated | STOP and complete Gate 5 first | CRITICAL |
+| Ring Standards not loaded via WebFetch | STOP and load required standards | CRITICAL |
+| TRD metadata missing technology decisions | STOP and complete TRD Step 0.4 | CRITICAL |
+| Version uses @latest or vague range | STOP and specify exact version | HIGH |
+| Critical CVE (9.0+) found in dependency | STOP and find alternative or document risk | CRITICAL |
+| License incompatible with commercial use | STOP and find compliant alternative | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST complete Step 0 (Standards Loading) before selecting technologies
+- MUST NOT use @latest, @next, or vague version ranges
+- MUST specify exact versions for ALL dependencies
+- MUST scan for CVEs before finalizing selections
+- MUST verify license compatibility for commercial use
+- MUST include lib-auth for Go services requiring authentication
+- MUST include lib-license-go for Go services requiring licensing
+- CANNOT proceed to Gate 7 with missing versions or unresolved CVEs
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Cannot proceed with dependency selection | Standards not loaded, critical CVE found |
+| **HIGH** | Dependency violates explicitness rules | @latest used, license unclear |
+| **MEDIUM** | Dependency incomplete but acceptable | Missing alternative documentation |
+| **LOW** | Minor documentation gaps | Cost analysis could be more detailed |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Latest version is always best" | "Cannot use @latest. Latest is untested in this context. I'll specify exact version after validation." |
+| "Flexible version ranges are fine" | "Cannot use ranges. Ranges cause non-reproducible builds. I'll lock to specific versions." |
+| "Security scanning can happen in CI" | "Cannot defer security. CVE analysis must happen before committing. I'll scan now." |
+| "Skip Ring Standards, we know our stack" | "Cannot skip standards. Standards validate against organizational baseline. I'll load them first." |
+| "License compliance is legal's problem" | "Cannot ignore licenses. You're responsible for your dependencies. I'll verify now." |
+
+---
+
+## When This Skill Is Not Needed
+
+- Small Track workflow (skip to Task Breakdown)
+- Technologies already locked and validated
+- Data Model (Gate 5) not validated → complete Gate 5 first
+- Dependency Map already exists and versions are current
+- No new technology decisions needed for this feature

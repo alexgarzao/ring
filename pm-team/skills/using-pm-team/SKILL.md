@@ -207,3 +207,83 @@ docs/pre-dev/{feature}/
 ### Bad (OPERATOR):
 
 > "I'll start coding and plan as I go."
+
+---
+
+## Standards Loading (MANDATORY)
+
+This skill is an orchestration/navigation skill for the pm-team plugin. It does NOT require WebFetch of language-specific standards.
+
+**However**, when dispatching implementation agents (e.g., `ring:backend-engineer-golang`), those agents MUST load their respective standards via WebFetch before proceeding.
+
+---
+
+## Blocker Criteria - STOP and Report
+
+| Condition | Action | Severity |
+|-----------|--------|----------|
+| No project scope or feature defined | STOP and report to user | CRITICAL |
+| User requests to skip all planning | STOP and report - planning is mandatory | CRITICAL |
+| PRD/TRD already exists but user wants to start over | STOP and confirm user intent | HIGH |
+| Unclear whether Small or Large Track applies | STOP and ask clarifying questions | MEDIUM |
+| Missing prerequisite gate artifacts | STOP and complete previous gate first | HIGH |
+
+---
+
+## Cannot Be Overridden
+
+These requirements are NON-NEGOTIABLE:
+
+- MUST use ORCHESTRATOR principle - dispatch skills, don't plan manually
+- MUST complete gates in sequence - CANNOT skip gates
+- MUST validate gate outputs before proceeding to next gate
+- MUST create planning artifacts before implementation
+- MUST use Large Track when feature exceeds Small Track criteria
+- CANNOT proceed to implementation without completing mandatory gates
+
+---
+
+## Severity Calibration
+
+| Severity | Definition | Example |
+|----------|------------|---------|
+| **CRITICAL** | Blocks all progress, fundamental violation | Attempting to code without any planning artifacts |
+| **HIGH** | Significant risk, must address before continuing | Skipping a mandatory gate in the workflow |
+| **MEDIUM** | Quality impact, should address soon | Choosing wrong track (Small vs Large) |
+| **LOW** | Minor issue, track for improvement | Incomplete gate documentation |
+
+---
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|-----------|---------------|
+| "Skip planning, just start coding" | "Cannot proceed. Planning prevents 10x rework cost. I'll start with ring:pre-dev-research to gather context first." |
+| "We don't need PRD, requirements are obvious" | "Cannot skip PRD. 'Obvious' requirements cause scope creep. I'll create a focused PRD documenting what we're building and why." |
+| "Use Small Track, we're in a hurry" | "Cannot compromise on track selection. If feature meets Large Track criteria, I MUST use Large Track. Shortcuts now = rework later." |
+| "Skip research, we know the codebase" | "Cannot skip Gate 0. Research validates assumptions and finds existing patterns. Takes 30 mins, saves hours of reinvention." |
+| "Just give me tasks, skip the architecture" | "Cannot skip TRD. Architecture decisions affect all tasks. I'll create TRD first to ensure tasks are correctly scoped." |
+
+---
+
+## Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "This feature is simple, skip planning" | Simple features still have requirements and architecture | **Use at minimum Small Track (5 gates)** |
+| "We already know what to build" | Knowing ≠ documenting. Documentation prevents drift | **Create PRD regardless of certainty** |
+| "Planning slows us down" | Unplanned work slows down 10x more during implementation | **Complete all gates in sequence** |
+| "I can plan in my head while coding" | Mental planning isn't verifiable or shareable | **Create written artifacts for each gate** |
+| "Previous similar feature didn't need this" | Each feature is independent. Past shortcuts don't justify current ones | **Evaluate each feature independently** |
+| "User is experienced, they know what they want" | Experience doesn't replace systematic planning | **Follow the workflow regardless** |
+
+---
+
+## When This Skill Is Not Needed
+
+- Quick exploratory work where `ring:brainstorming` suffices
+- Bug fix with known solution requiring no design changes
+- Trivial changes that take less than 1 hour
+- Documentation-only updates
+- Configuration changes with no code impact
+- Direct implementation after planning is already complete (use `ring:executing-plans` or `ring:dev-cycle` instead)

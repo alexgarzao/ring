@@ -441,6 +441,19 @@ Generate skill output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Security risk, deployment blocked | :latest tags, secrets in image, root user, missing HEALTHCHECK |
+| **HIGH** | Build fails, services broken | docker-compose build fails, services don't start, no health checks |
+| **MEDIUM** | Configuration gaps, optimization issues | Missing layer caching, no named volumes, incomplete .env.example |
+| **LOW** | Best practices, documentation | Missing comments in Dockerfile, suboptimal ordering |
+
+Report all severities. CRITICAL = immediate fix. HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.

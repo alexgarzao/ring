@@ -64,3 +64,53 @@ Different layers catch different cases:
 All four layers necessary - each caught bugs others missed: different code paths bypassed entry validation | mocks bypassed business logic | edge cases needed environment guards | debug logging identified structural misuse.
 
 **Don't stop at one validation point.** Add checks at every layer.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Data flow analysis | Cannot trace data from origin to error point | STOP and map complete data flow first |
+| Layer identification | Cannot identify all checkpoint layers | STOP and document entry, business, environment, and debug layers |
+| Validation coverage | Single validation point without layer analysis | STOP and identify remaining layers |
+| Test verification | Cannot test each layer independently | STOP and design layer isolation tests |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST evaluate all four layers - entry, business logic, environment guards, debug instrumentation
+- MUST test each layer independently to prove it catches bypasses of other layers
+- MUST trace data flow from origin to error before adding validation
+- MUST have environment guards that prevent dangerous operations in test/production contexts
+- MUST have debug instrumentation that captures context for forensics even when other layers fail
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Single validation point with no layer analysis | MUST identify and validate all layers |
+| CRITICAL | No environment guard for dangerous operations | MUST add context-specific protections |
+| HIGH | Missing entry point validation | MUST add validation at API boundary |
+| HIGH | No debug logging for validation failures | MUST add forensic instrumentation |
+| MEDIUM | Layer cannot be tested independently | Should refactor for testability |
+| LOW | Debug logging lacks stack trace | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Entry validation is enough, we don't need all layers" | "Single validation can be bypassed. MUST validate at every layer to make bug structurally impossible." |
+| "Adding validation everywhere is overkill" | "Each layer catches bugs others miss. All four layers are REQUIRED for defense-in-depth." |
+| "Just fix the bug, don't add all this validation" | "Fixing one instance doesn't prevent the category. MUST add multi-layer validation." |
+| "We can skip environment guards, it's just internal code" | "Environment guards prevent context-specific dangers. CANNOT skip - test vs production matters." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "We already have validation at the entry point" | Entry validation can be bypassed by different code paths | **MUST add validation at all layers** |
+| "This is just a simple fix, layers are excessive" | Simple fixes recur; multi-layer prevents the bug category | **MUST implement all four layers** |
+| "Mocks bypass this validation anyway" | That's why business logic layer exists - catches mock bypasses | **MUST add business logic validation** |
+| "We'll add more validation later" | Later never comes; bugs ship without defense | **MUST add all layers now** |
+| "Debug logging is noise" | Debug logging is forensic evidence when layers fail | **MUST add debug instrumentation** |

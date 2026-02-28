@@ -102,3 +102,48 @@ Present exactly these 4 options (no explanation):
 
 **Pairs with:**
 - **ring:using-git-worktrees** - Cleans up worktree created by that skill
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Test Verification | Tests fail or test command not found | STOP and report - CANNOT proceed until tests pass |
+| Base Branch | Cannot determine base branch (main or master) | STOP and ask user which branch to merge into |
+| Git State | Uncommitted changes exist in working directory | STOP and report - MUST commit or stash changes first |
+| Merge Conflict | Git merge results in conflicts | STOP and report conflicts - user MUST resolve |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST verify tests pass before offering any completion options
+- MUST present exactly 4 options - no improvised alternatives
+- MUST require typed "discard" confirmation for Option 4 - no shortcuts
+- CANNOT force-push without explicit user request and confirmation
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Tests failing in feature branch | MUST fix tests before any merge/PR option |
+| HIGH | Merge to base branch introduces test failures | MUST abort merge and report - tests must pass post-merge |
+| MEDIUM | Worktree cleanup fails after successful merge | Should report warning but consider completion successful |
+| LOW | Branch deletion fails after merge | Fix in next iteration - code is already merged |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just merge it, I'll fix the tests later" | "CANNOT proceed with failing tests. Tests MUST pass before offering merge options. This prevents broken code from reaching the base branch." |
+| "Skip the test verification, I know it works" | "I MUST run test verification. 'Knowing it works' is not evidence - actual test output is required before proceeding." |
+| "Delete the branch without confirmation" | "CANNOT delete work without typed 'discard' confirmation. Type 'discard' to confirm you want to permanently delete this branch." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Tests were passing earlier, skip verification" | Tests can break between commits. Current state must be verified, not assumed. | **MUST run tests before offering options** |
+| "User is experienced, skip the 4-option prompt" | Structured options prevent mistakes. User experience doesn't justify skipping workflow. | **MUST present exactly 4 options** |
+| "Small change, discard confirmation is overkill" | Size doesn't determine value. Any work deserves explicit discard confirmation. | **MUST require typed 'discard' for Option 4** |
+| "Worktree cleanup failed but merge succeeded" | Cleanup failure leaves orphan state. Report it even if merge completed. | **MUST report cleanup failures** |

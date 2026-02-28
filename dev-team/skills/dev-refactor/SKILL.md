@@ -50,6 +50,19 @@ If counts don't match → SKILL FAILURE. Go back and add missing findings.
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Security risk, data corruption, production blocker | Exposed credentials, SQL injection, missing auth |
+| **HIGH** | Major standards violation, architecture issue | Missing hexagonal architecture, wrong library usage |
+| **MEDIUM** | Code quality, maintainability issues | Incomplete observability, naming conventions |
+| **LOW** | Best practices, documentation | Missing comments, minor refactoring |
+
+**MANDATORY:** Track all severities. Severity affects priority of execution, not whether to track.
+
+---
+
 ## ⛔ Architecture Pattern Applicability
 
 **Not all architecture patterns apply to all services.** Before flagging gaps, verify the pattern is applicable.

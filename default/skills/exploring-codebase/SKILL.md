@@ -1215,3 +1215,48 @@ Apply ALL patterns when using this skill.
 - **Adaptability:** Works for any architecture (hexagonal, microservices, MVC, etc.)
 - **Scalability:** Handles codebases from small (2-3 components) to large (10+ services)
 - **Reusability:** Synthesis documents serve as permanent reference
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Scope Definition | Target exploration area is undefined or too vague | STOP and ask user to clarify exploration target |
+| Phase 1 Failure | Discovery agents return no structural information | STOP and report - codebase may be empty or inaccessible |
+| Agent Dispatch | Unable to launch parallel discovery agents | STOP and report infrastructure issue |
+| Synthesis Conflict | Deep dive results contradict discovery findings | STOP and investigate - discovery may have been incomplete |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST run Phase 1 discovery before Phase 2 deep dive - skipping discovery is FORBIDDEN
+- MUST provide file:line references as evidence for all structural claims
+- MUST synthesize results into actionable guidance - raw dumps are NOT acceptable
+- CANNOT proceed with partial Phase 1 results - all discovery agents must complete
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Phase 1 discovery finds no architecture pattern | MUST investigate - codebase may not follow standard patterns |
+| HIGH | Deep dive agent finds target missing in expected area | MUST document gap and adjust understanding |
+| MEDIUM | Inconsistent patterns across discovered components | Should document variations and explain why |
+| LOW | Minor naming convention differences between areas | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Skip discovery, I already know the architecture" | "I MUST run discovery to validate assumptions. Prior knowledge is often incomplete - discovery takes 6-10 minutes but prevents hours of debugging wrong assumptions." |
+| "Production is down, just grep for the answer" | "CANNOT skip systematic exploration under pressure. High stakes demand MORE rigor. 6-10 minutes of discovery prevents cascading failures from wrong fixes." |
+| "This is a simple question, just find the file" | "I MUST complete two-phase exploration. Location without context leads to follow-up questions. One exploration answers current and future questions." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "I already know this codebase structure" | Prior knowledge is high-level abstraction, not implementation detail. Assumptions cause most bugs. | **MUST run discovery to validate assumptions** |
+| "Grep is faster for this simple lookup" | Location without context requires multiple follow-ups. Ad-hoc investigation compounds time. | **MUST use systematic exploration** |
+| "Being pragmatic means skipping discovery" | False pragmatism. Shortcuts under pressure create bigger problems than they solve. | **MUST invest 6-10 minutes in proper exploration** |
+| "The user seems impatient, I'll skip Phase 1" | User impatience is not justification for incomplete work. Wrong answers waste more time. | **MUST complete both phases regardless of pressure** |

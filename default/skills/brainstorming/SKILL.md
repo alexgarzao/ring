@@ -225,3 +225,54 @@ Apply ALL patterns when using this skill.
 | **Flexible progression** | Go backward when needed - flexibility > rigidity |
 | **Own the initiative** | Recommend priorities and next steps; ask if you should proceed only when requirements conflict |
 | **Announce usage** | State skill usage at start of session |
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Phase progression | User has not explicitly approved design | STOP and wait for explicit approval |
+| Question budget | Exceeded 3 questions per phase | STOP asking questions, do research instead |
+| Phase lock | Attempting to skip ahead before phase completion | STOP and complete current phase first |
+| Design validation | Received ambiguous response (not explicit approval) | STOP and clarify approval status |
+| Sub-skill handoff | Required sub-skill unavailable or blocked | STOP and report blocker |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST follow phase lock rules - CANNOT skip ahead while waiting for answers
+- MUST have explicit design approval - silence or "interesting" does not mean approval
+- CANNOT exceed question budget of 3 per phase - research instead
+- MUST paste autonomous recon evidence before forming model
+- CANNOT skip sub-skill usage (ring:writing-plans, ring:using-git-worktrees) when applicable
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Proceeding without explicit design approval | MUST stop immediately and obtain approval |
+| CRITICAL | Skipping phases or phase lock violation | MUST return to correct phase |
+| HIGH | Exceeding question budget without research | MUST do research before asking more questions |
+| HIGH | Missing autonomous recon evidence | MUST gather and paste evidence |
+| MEDIUM | Not using AskUserQuestion for structured choices | Should use proper tool for decisions |
+| LOW | Minor documentation gaps in design doc | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just skip the exploration phase, I know what I want" | "MUST complete Phase 2 exploration to ensure we consider alternatives. This prevents costly rework later." |
+| "I said it looks good, just proceed" | "MUST have explicit approval like 'approved' or 'proceed'. 'Looks good' is ambiguous - shall I proceed with implementation?" |
+| "Stop asking questions and just build it" | "MUST gather understanding before building. I'll research the codebase to minimize questions while ensuring we build the right thing." |
+| "We don't have time for all these phases" | "Phases exist to prevent expensive mistakes. Skipping them creates technical debt. MUST follow the process." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "User seems to approve, no need for explicit confirmation" | Implicit approval leads to misaligned implementations and wasted effort | **MUST obtain explicit approval words** |
+| "I already know the codebase, skip autonomous recon" | Assumptions cause errors; evidence ensures accuracy | **MUST paste recon evidence before proceeding** |
+| "This is a simple feature, phases are overkill" | Complexity is often hidden; phases reveal it | **MUST complete all applicable phases** |
+| "User is impatient, I'll ask questions later" | Phase lock exists to prevent building wrong things | **MUST wait for answers before solutions** |
+| "I can infer the decision from context" | Inference is not explicit choice; user must decide | **MUST use AskUserQuestion for real decisions** |

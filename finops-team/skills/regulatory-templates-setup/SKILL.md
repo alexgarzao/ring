@@ -121,6 +121,102 @@ Setup appears simple but errors propagate through 4-6 hours of gate execution. F
 
 ---
 
+---
+
+## Severity Calibration
+
+**MUST classify setup issues using these severity levels:**
+
+| Severity | Definition | Examples | Gate Impact |
+|----------|------------|----------|-------------|
+| **CRITICAL** | BLOCKS workflow progression OR invalidates foundation | - Template not in registry<br>- Authority selection invalid<br>- Context initialization failed<br>- Required field missing from context | **HARD BLOCK** - Cannot proceed to Gate 1 |
+| **HIGH** | REQUIRES resolution for accurate gate execution | - Dictionary status unknown<br>- Documentation path missing<br>- Template code incorrect<br>- User not alerted about validation mode | **MUST resolve** before Gate 1 |
+| **MEDIUM** | SHOULD fix for optimal workflow | - Deadline not specified (using default)<br>- Optional context fields missing<br>- Documentation incomplete | **SHOULD resolve** - document if deferred |
+| **LOW** | Minor improvements possible | - Context verbosity<br>- Naming improvements<br>- Additional metadata | **OPTIONAL** - note in report |
+
+**Classification Rules:**
+
+**CRITICAL = ANY of:**
+- Template selection cannot be validated against registry
+- Authority is not BACEN or RFB (invalid for Brazilian regulatory)
+- Context object missing required fields (authority, template_code, template_name)
+- Setup steps cannot complete
+
+**HIGH = ANY of:**
+- Dictionary status not checked (determines 40-min vs automatic validation)
+- User not informed about interactive validation requirement
+- Documentation path not set correctly
+- Template metadata incomplete
+
+---
+
+## Blocker Criteria - STOP and Report
+
+**You MUST distinguish between decisions you CAN make vs those requiring escalation.**
+
+| Decision Type | Examples | Action |
+|---------------|----------|--------|
+| **Can Decide** | Default deadline, context field ordering, documentation format | **Proceed with setup** |
+| **MUST Escalate** | Template not in registry, user selection unclear, multiple valid authorities | **STOP and ask for clarification** |
+| **CANNOT Override** | AskUserQuestion requirement, dictionary check, context completeness, user alert for interactive mode | **HARD BLOCK** - Must complete before Gate 1 |
+
+**HARD GATES (STOP immediately):**
+
+1. **Template Not Found:** Template missing from registry
+2. **Ambiguous Selection:** User response doesn't match available templates
+3. **Missing Context:** Required context fields cannot be populated
+4. **Dictionary Check Skipped:** Cannot determine validation mode without check
+
+**Escalation Message Template:**
+```markdown
+⛔ **SETUP BLOCKER - Cannot Initialize Context**
+
+**Issue:** [Specific blocker]
+**Impact:** [What cannot be determined/initialized]
+**Required:** [What needs resolution]
+
+**Cannot proceed to Gate 1 until resolved.**
+```
+
+---
+
+## Cannot Be Overridden
+
+**NON-NEGOTIABLE requirements (no exceptions, no user override):**
+
+| Requirement | Why NON-NEGOTIABLE | Verification |
+|-------------|-------------------|--------------|
+| **AskUserQuestion for Selection** | Prevents typos, validates against registry, creates audit trail | Used AskUserQuestion tool |
+| **Dictionary Status Check** | Determines validation mode (40-min difference) | Checked dictionary path |
+| **User Alert for Interactive Mode** | UX requirement, informed consent for long process | Alert shown if no dictionary |
+| **Complete Context Initialization** | Incomplete context causes mysterious gate failures | ALL required fields populated |
+| **Template Registry Validation** | Ensures template exists and is supported | Template verified in registry |
+
+**CANNOT allow user to:**
+- Skip template selection ("I already told you CADOC 4010" = NO - validate anyway)
+- Bypass dictionary check ("just assume no dictionary" = NO)
+- Skip user alert ("they'll figure it out" = NO)
+- Initialize partial context ("add missing fields later" = NO)
+- Hard-code selections ("same as last time" = NO - run selection)
+
+---
+
+## Pressure Resistance
+
+See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
+
+### Setup-Specific Pressures
+
+| User Says | Your Response |
+|-----------|---------------|
+| "I already said CADOC 4010, just start" | "I MUST validate the selection against our registry. This takes 30 seconds and prevents typos (4010 vs 4020). Running AskUserQuestion now." |
+| "Skip dictionary check, it doesn't exist" | "I CANNOT skip the dictionary check. It determines if we need 40-minute interactive validation or can proceed automatically. Checking now." |
+| "Don't alert me, just proceed" | "I MUST inform you if interactive validation is required. This is a 40-minute process that requires your input. You need to be prepared." |
+| "Just use the same template as last time" | "I CANNOT hard-code previous selections. Each workflow MUST validate against current registry. Requirements may have changed." |
+| "Setup is ceremony, go straight to analysis" | "I CANNOT skip setup. It initializes the context that ALL gates depend on. Incomplete setup = mysterious failures in Gates 1-3." |
+
+---
+
 ## Setup Steps
 
 ### Step 1: Regulatory Authority Selection

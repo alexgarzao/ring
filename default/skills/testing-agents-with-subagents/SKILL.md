@@ -357,3 +357,53 @@ RED-GREEN-REFACTOR for agents works exactly like RED-GREEN-REFACTOR for code:
 3. **REFACTOR:** Make it robust (edge cases, consistency)
 
 **Evidence before deployment. Always.**
+
+---
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| No test inputs | Cannot create meaningful test cases for agent | STOP and define expected inputs/outputs before testing |
+| Agent unreachable | Cannot dispatch agent via Task tool | STOP and fix agent accessibility first |
+| Inconsistent outputs | Same input produces different outputs across runs | STOP and fix agent definition ambiguity |
+| Below metrics threshold | Agent fails accuracy metrics after multiple fixes | STOP and report for human partner review |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST run agent with documented test inputs before deployment
+- MUST complete minimum test suite (4-6 cases per agent type)
+- MUST re-run FULL test suite after ANY agent modification
+- MUST NOT substitute manual UI testing for documented test runs
+- MUST NOT deploy agent that fails accuracy metrics
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Agent deployed without any testing | MUST halt deployment, run full test suite immediately |
+| HIGH | Agent modified but not re-tested | MUST re-run full test suite before any further use |
+| MEDIUM | Agent tested but edge cases missing | MUST add edge case tests before production use |
+| LOW | Agent passes but consistency below 95% | Should investigate and fix definition ambiguity |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Deploy now, we'll test in production" | "CANNOT deploy untested agent. Production is not QA. Will complete test suite first." |
+| "One test case passed, ship it" | "MUST have minimum 4-6 test cases. One case proves nothing about agent behavior." |
+| "I reviewed the prompt carefully, it's fine" | "CANNOT substitute prompt review for execution. Must run agent with test inputs." |
+| "Small change, no need to re-test everything" | "MUST re-run full test suite after ANY change. Small prompt changes can alter behavior completely." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Agent prompt is obviously correct" | Obvious prompts fail in practice. Execution proves correctness, not reading. | **MUST run with test inputs** |
+| "Tested manually in Claude UI" | Manual testing is ad-hoc with no documented baseline. Not reproducible. | **MUST document inputs and expected outputs** |
+| "Based on a proven template" | Templates need validation for YOUR use case. Context changes behavior. | **MUST test even template-based agents** |
+| "Expert in prompt engineering" | Expertise doesn't prevent bugs. Only tests catch runtime failures. | **MUST test regardless of expertise** |
+| "Change was tiny, re-test is overkill" | Tiny changes cause big behavior shifts in LLMs. One word can change everything. | **MUST re-run full suite after any change** |

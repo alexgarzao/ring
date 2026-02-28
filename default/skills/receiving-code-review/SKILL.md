@@ -130,3 +130,53 @@ If you pushed back and were wrong: ✅ "You were right - I checked [X] and it do
 Verify. Question. Then implement.
 
 No performative agreement. Technical rigor always.
+
+---
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Unclear feedback | Cannot understand reviewer intent after initial read | STOP and ask for clarification before implementing |
+| Conflicting feedback | Multiple reviewers suggest contradictory fixes | STOP and report conflict to human partner |
+| Architectural change | Feedback requires major structural changes | STOP and discuss with human partner first |
+| Missing context | Reviewer lacks full context and suggestion would break existing functionality | STOP and explain context before implementing |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST verify suggestions against codebase reality before implementing
+- MUST NOT use performative agreement ("You're absolutely right!", "Great point!")
+- MUST clarify ALL unclear items before implementing ANY items
+- MUST push back with technical reasoning when suggestions are incorrect
+- MUST implement fixes one at a time and test each individually
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Suggestion would break production functionality | MUST push back immediately with technical evidence |
+| HIGH | Suggestion conflicts with architectural decisions | MUST discuss with human partner before implementing |
+| MEDIUM | Suggestion unclear or partially understood | MUST ask clarifying questions before proceeding |
+| LOW | Suggestion is cosmetic or stylistic preference | Should implement after verifying correctness |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just implement all the feedback quickly" | "MUST verify each suggestion against codebase first. Implementing without verification risks breaking functionality." |
+| "The reviewer is senior, just trust them" | "CANNOT skip verification based on authority. Technical correctness requires evidence, not trust." |
+| "Say thanks and move on" | "MUST NOT use performative agreement. Will acknowledge with technical response or just implement." |
+| "We're running out of time, skip clarification" | "CANNOT implement unclear items. Partial understanding leads to wrong implementation." |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "Reviewer must be right, they're experienced" | Experience doesn't guarantee context. Reviewer may not know full codebase. | **MUST verify against codebase reality** |
+| "Saying thanks is just being polite" | Performative agreement obscures technical communication. | **MUST use technical acknowledgment only** |
+| "I mostly understand the feedback, close enough" | Partial understanding = wrong implementation. Items may be interdependent. | **MUST clarify ALL unclear items first** |
+| "Pushing back will upset the reviewer" | Technical correctness > social comfort. Wrong code upsets everyone. | **MUST push back with technical reasoning** |
+| "Implementing quickly shows responsiveness" | Fast wrong implementation is worse than slow correct implementation. | **MUST verify and test each fix individually** |

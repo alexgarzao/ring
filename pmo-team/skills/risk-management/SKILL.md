@@ -210,6 +210,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | Risk owner not identified | STOP. Unowned risks are unmanaged. Require owner assignment. |
 | Assumption invalidated | STOP. Trigger re-planning based on new reality. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **Risk documentation** | Undocumented risks cannot be managed or communicated |
+| **Owner assignment** | Unowned risks never get mitigated |
+| **Response plans for CRITICAL/HIGH** | High severity demands action, not just awareness |
+| **Regular risk review** | Risks change; stale assessments mislead decisions |
+| **Correlation analysis** | Isolated analysis misses compound risk exposure |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT proceed with incomplete risk management
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+Risk severity based on probability × impact matrix:
+
+| Severity | Criteria | Response Required |
+|----------|----------|-------------------|
+| **CRITICAL** | Score 16-25 (High P × High I) | Immediate escalation, active mitigation, daily monitoring |
+| **HIGH** | Score 10-15 | Active mitigation plan, weekly monitoring, owner accountability |
+| **MEDIUM** | Score 5-9 | Documented response plan, bi-weekly monitoring |
+| **LOW** | Score 1-4 | Monitor and review quarterly, accept with documentation |
+
+**Report all severities. Escalate CRITICAL immediately. Act on HIGH this week.**
+
 ---
 
 ## Output Format
@@ -283,3 +315,30 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 | risks_by_severity | C/H/M/L |
 | mitigation_plans | N |
 | overdue_actions | N |
+
+---
+
+## When Risk Analysis Is Not Needed
+
+<MANDATORY>
+MUST: Risk analysis is minimal only when ALL conditions are met:
+</MANDATORY>
+
+| Condition | Verification |
+|-----------|-------------|
+| Recent analysis exists (<14 days) | Reference existing risk register |
+| No new projects or changes | Verify portfolio unchanged |
+| No risks materialized | Confirm no issues since last review |
+| No external changes | Verify market/vendor/regulatory stability |
+
+**MUST: Full risk analysis REQUIRED for the following conditions:**
+
+| Condition | Why Required |
+|-----------|-------------|
+| New project added | Unknown risks must be identified |
+| Risk materialized | Response effectiveness must be assessed |
+| External change occurred | Market, vendor, or regulatory changes create new risks |
+| Milestone approaching | Risk posture must be current for decisions |
+| Stakeholder requests update | Stale risk data undermines trust |
+
+**MUST: When in doubt, refresh the risk analysis. Outdated risk data causes preventable failures.**

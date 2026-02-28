@@ -369,3 +369,54 @@ Same cycle: RED (baseline) → GREEN (write skill) → REFACTOR (close loopholes
 Same benefits: Better quality, fewer surprises, bulletproof results.
 
 If you follow TDD for code, follow it for skills. It's the same discipline applied to documentation.
+
+## Blocker Criteria
+
+STOP and report if:
+
+| Decision Type | Blocker Condition | Required Action |
+|---|---|---|
+| Missing baseline test | No failing test exists before writing skill content | STOP and run baseline scenario first |
+| Untested skill deployment | Skill created without pressure scenario testing | STOP and delete skill - start over with TDD |
+| Missing rationalization coverage | Skill enforces rules but lacks anti-rationalization table | STOP and add rationalization prevention |
+| No red-green verification | Wrote skill without watching agent fail then pass | STOP and revert - follow RED-GREEN-REFACTOR |
+
+### Cannot Be Overridden
+
+The following requirements CANNOT be waived:
+- MUST run baseline test (RED phase) before writing any skill content
+- MUST verify agent compliance (GREEN phase) after writing skill
+- MUST include rationalization table for any discipline-enforcing skill
+- MUST delete and restart if skill written before failing test
+- CANNOT deploy skill without testing against pressure scenarios
+
+## Severity Calibration
+
+| Severity | Condition | Required Action |
+|---|---|---|
+| CRITICAL | Skill deployed without any testing | MUST delete skill and start over with TDD |
+| CRITICAL | Discipline skill lacks anti-rationalization table | MUST add table before deployment |
+| HIGH | Skill written before baseline test | MUST revert and run baseline first |
+| HIGH | No pressure scenario tested | MUST test with subagent before deployment |
+| MEDIUM | Skill missing ASO optimization | Should add searchable terms and improve description |
+| LOW | Minor structure improvements needed | Fix in next iteration |
+
+## Pressure Resistance
+
+| User Says | Your Response |
+|---|---|
+| "Just write the skill quickly, we can test it later" | "CANNOT write skill before baseline test - TDD applies to documentation too" |
+| "This skill is simple, no need for testing" | "Simple skills still need verification - 15 minutes testing saves hours of debugging" |
+| "Skip the rationalization table, it's obvious" | "Obvious to me ≠ obvious to agents - MUST include rationalization prevention" |
+| "We're in a hurry, deploy now and iterate" | "CANNOT deploy untested skill - will run pressure scenarios first" |
+| "The skill is just documentation, not code" | "Documentation IS code for agent behavior - same TDD discipline applies" |
+
+## Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|---|---|---|
+| "I know what the agent needs, no baseline test required" | Assumptions about agent behavior are unreliable without evidence. | **MUST run baseline scenario and document actual agent behavior.** |
+| "The skill is straightforward, testing is overhead" | Simple-looking skills often have subtle failure modes under pressure. | **MUST test with pressure scenarios before deployment.** |
+| "I'll add the rationalization table after shipping" | After = never. Agents will find loopholes immediately. | **MUST include anti-rationalization table before deployment.** |
+| "One test pass is enough verification" | Single pass misses edge cases and pressure-induced failures. | **MUST run multiple scenarios including adversarial pressure.** |
+| "Existing skills don't follow TDD, why should mine?" | Legacy skills are not the standard. New skills MUST follow TDD. | **MUST follow RED-GREEN-REFACTOR regardless of existing skills.** |

@@ -156,6 +156,19 @@ MUST include these instructions in every dispatch to `ring:backend-engineer-gola
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Cross-tenant data leak, security vulnerability | Tenant A sees Tenant B data, missing tenant validation, hardcoded creds |
+| **HIGH** | Missing tenant isolation, wrong env vars | No TenantMiddleware, TENANT_MANAGER_ADDRESS instead of MULTI_TENANT_URL |
+| **MEDIUM** | Configuration gaps, partial implementation | Missing circuit breaker, incomplete metrics |
+| **LOW** | Documentation, optimization | Missing env var comments, pool tuning |
+
+MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: Fix before gate pass. MEDIUM: Fix in iteration. LOW: Document.
+
+---
+
 ## Pressure Resistance
 
 | User Says | This Is | Response |

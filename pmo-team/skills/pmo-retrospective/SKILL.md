@@ -250,6 +250,38 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | Blame culture emerging | STOP. Reset to blameless framework. Not about individuals. |
 | No action ownership | STOP. Lessons without owners become forgotten. Assign owners. |
 
+### Cannot Be Overridden
+
+**The following requirements are NON-NEGOTIABLE:**
+
+| Requirement | Cannot Override Because |
+|-------------|------------------------|
+| **Blameless approach** | Blame prevents learning. Fear prevents honesty. |
+| **Action owner assignment** | Unowned actions are never completed. |
+| **Data-driven analysis** | Opinions without data lead to wrong conclusions. |
+| **Participant inclusion** | Missing perspectives create incomplete learning. |
+| **Follow-up tracking** | Lessons without follow-up are forgotten. |
+
+**If user insists on violating these:**
+1. Escalate to orchestrator
+2. Do NOT proceed with incomplete retrospective
+3. Document the request and your refusal
+
+---
+
+## Severity Calibration
+
+When assessing retrospective findings:
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Systemic issue affecting multiple projects | Process failure causing 3+ project delays, compliance violation pattern |
+| **HIGH** | Significant recurring problem | Same estimation error in 2+ projects, repeated resource conflicts |
+| **MEDIUM** | Notable improvement opportunity | Communication gaps, tool friction, documentation quality |
+| **LOW** | Minor optimization | Template improvements, minor process tweaks |
+
+**Document ALL severities. Prioritize action on CRITICAL and HIGH.**
+
 ---
 
 ## Output Format
@@ -336,3 +368,30 @@ Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execut
 | projects_completed | N |
 | lessons_captured | N |
 | process_improvements | N |
+
+---
+
+## When Retrospective Is Not Needed
+
+<MANDATORY>
+MUST: Retrospective is minimal only when ALL conditions are met:
+</MANDATORY>
+
+| Condition | Verification |
+|-----------|-------------|
+| Project was trivial (<1 week, <3 people) | Verify scope and team size |
+| No significant issues occurred | Confirm no deviations from plan |
+| Team explicitly requested skip | Written confirmation required |
+| Previous recent retrospective covers patterns | Reference recent retro that applies |
+
+**MUST: Full retrospective REQUIRED for the following conditions:**
+
+| Condition | Why Required |
+|-----------|-------------|
+| Any project completion | Learning opportunity, even for successful projects |
+| Any project termination | Understanding failure prevents repetition |
+| Significant budget/schedule variance | Root cause analysis prevents recurrence |
+| Team or stakeholder conflicts | Relationship and process lessons critical |
+| Process improvement identified | Must capture and act on improvement |
+
+**MUST: When in doubt, conduct the retrospective. Skipped retrospectives become repeated failures.**

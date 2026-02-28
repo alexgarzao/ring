@@ -480,6 +480,19 @@ User intervention required.
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Production service used, data corruption risk | Tests hit production DB, no cleanup, hardcoded creds |
+| **HIGH** | Missing scenarios, flaky tests | Untested integration scenario, test fails on retry |
+| **MEDIUM** | Quality gate failures, port issues | Missing build tags, hardcoded ports, no t.Cleanup |
+| **LOW** | Documentation, optimization | Missing test comments, slow container startup |
+
+Report all severities. CRITICAL = immediate fix (production risk). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Pressure Resistance
 
 See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.

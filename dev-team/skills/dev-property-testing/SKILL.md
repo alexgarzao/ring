@@ -239,6 +239,19 @@ if "Status: FAIL" in output:
 
 ---
 
+## Severity Calibration
+
+| Severity | Criteria | Examples |
+|----------|----------|----------|
+| **CRITICAL** | Counterexample found, invariant violated | quick.Check finds input that breaks property |
+| **HIGH** | No property tests, missing quick.Check | Zero TestProperty_ functions, no testing/quick usage |
+| **MEDIUM** | Incomplete properties, naming issues | Missing domain invariants, non-standard names |
+| **LOW** | Documentation, optimization | Missing property descriptions, generator tuning |
+
+Report all severities. CRITICAL = immediate fix (invariant broken). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
+
+---
+
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |

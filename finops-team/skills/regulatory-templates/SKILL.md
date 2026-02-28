@@ -277,6 +277,87 @@ If you catch yourself thinking ANY of these, STOP and re-read the NO EXCEPTIONS 
 
 ---
 
+---
+
+## Severity Calibration
+
+**MUST classify workflow issues using these severity levels:**
+
+| Severity | Definition | Examples | Workflow Impact |
+|----------|------------|----------|-----------------|
+| **CRITICAL** | BLOCKS workflow completion OR risks regulatory violation | - Gate fails with no recovery path<br>- Context lost between gates<br>- Agent unavailable<br>- Mandatory field unmapped after all gates | **HARD BLOCK** - Cannot produce compliant template |
+| **HIGH** | REQUIRES intervention for workflow to succeed | - Gate 1 returns INCOMPLETE<br>- Gate 2 fails validation threshold<br>- Gate 3 syntax errors<br>- Context incomplete for next gate | **MUST resolve** - retry gate or escalate |
+| **MEDIUM** | SHOULD address for optimal workflow | - Low confidence mappings passing gates<br>- Optional fields skipped<br>- Minor validation warnings<br>- Suboptimal gate performance | **SHOULD address** - document if deferred |
+| **LOW** | Minor improvements possible | - State tracking verbosity<br>- Context field ordering<br>- Documentation improvements | **OPTIONAL** - note in completion report |
+
+**Classification Rules:**
+
+**CRITICAL = ANY of:**
+- Any gate fails with non-retriable error
+- finops-analyzer or finops-automation agents unavailable
+- Template cannot be produced after all retry attempts
+- Regulatory mandatory field missing from final template
+
+**HIGH = ANY of:**
+- Gate returns INCOMPLETE or FAILED (retriable)
+- Context missing required fields for next gate
+- Gate 3 produces invalid template syntax
+- >10% of mandatory fields at LOW confidence
+
+---
+
+## Blocker Criteria - STOP and Report
+
+**You MUST distinguish between decisions you CAN make vs those requiring escalation.**
+
+| Decision Type | Examples | Action |
+|---------------|----------|--------|
+| **Can Decide** | Gate retry strategy, context field ordering, state tracking format | **Proceed with workflow** |
+| **MUST Escalate** | Agent unavailable, non-retriable errors, regulatory spec ambiguity | **STOP and ask for clarification** |
+| **CANNOT Override** | Sequential gate execution, context accumulation, gate PASS criteria, no intermediate files | **HARD BLOCK** - Workflow requires this |
+
+**HARD GATES (STOP immediately):**
+
+1. **Agent Unavailable:** finops-analyzer or finops-automation not accessible
+2. **Gate Non-Retriable Failure:** Error cannot be fixed by retry
+3. **Context Loss:** Previous gate results not available
+4. **Specification Ambiguity:** Regulatory requirement unclear, cannot map
+
+**Escalation Message Template:**
+```markdown
+⛔ **WORKFLOW BLOCKER - Cannot Continue**
+
+**Issue:** [Specific blocker]
+**Gate:** [Current gate that failed]
+**Impact:** [What cannot be completed]
+**Required:** [What needs resolution]
+
+**Cannot proceed to next gate until resolved.**
+```
+
+---
+
+## Cannot Be Overridden
+
+**NON-NEGOTIABLE requirements (no exceptions, no user override):**
+
+| Requirement | Why NON-NEGOTIABLE | Verification |
+|-------------|-------------------|--------------|
+| **Sequential Gate Execution (1→2→3)** | Each gate depends on previous gate output | gate_order == [1, 2, 3] |
+| **Gate PASS Required Before Next** | Failed gates produce invalid input for next | current_gate.status == PASSED |
+| **Context Accumulation (Never Overwrite)** | Previous gate data required by later gates | context.has(all_previous_gate_data) |
+| **No Intermediate Files** | Memory-only context prevents file corruption | intermediate_files.count == 0 |
+| **Single Output File (.tpl)** | Gate 3 produces final artifact only | output_files == [.tpl, .tpl.docs] |
+
+**User CANNOT:**
+- Run gates out of order ("skip to Gate 3" = NO)
+- Proceed without PASS ("good enough to continue" = NO)
+- Replace context ("use different mappings" = NO - run full workflow)
+- Create intermediate files ("save for debugging" = NO)
+- Manually create template ("faster than Gate 3" = NO)
+
+---
+
 ## Quick Reference
 
 | Sub-skill | Purpose | Input | Output |

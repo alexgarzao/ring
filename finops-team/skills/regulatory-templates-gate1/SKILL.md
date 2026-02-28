@@ -115,22 +115,24 @@ Gate 1 creates the foundation for Gates 2-3. Technical correctness here prevents
 
 ---
 
-## Rationalization Table - Know the Excuses
+## Anti-Rationalization Table
 
-Every rationalization below has been used to justify skipping requirements. **ALL are invalid.**
+**CRITICAL: Prevent yourself from making these autonomous decisions.**
 
-| Excuse | Why It's Wrong | Correct Response |
-|--------|---------------|------------------|
-| "camelCase works fine in Django" | PEP 8 violation, maintenance debt, inconsistent conventions | Convert ALL to snake_case |
-| "Prefix is verbose and ugly" | Audit trail required, multi-source disambiguation critical | Prefix ALL fields |
-| "HIGH confidence = obvious, no approval needed" | No dictionary = no ground truth, assumptions fail | Ask approval for EACH field |
-| "Optional fields don't affect compliance" | Confidence calculated across ALL fields, 64% = FAIL | Map ALL fields |
-| "75% is close to 80%, good enough" | Threshold erosion, LOW confidence = high risk | Research to ≥80% |
-| "I know these mappings by heart" | Memory fallible, experience creates overconfidence | Check dictionary first |
-| "Everyone knows where organization comes from" | Implicit tribal knowledge, new team members lost | Explicit beats implicit |
-| "User approval wastes their time" | User provides domain knowledge we lack | Interactive validation mandatory |
-| "Conversion is unnecessary busywork" | Dismissing requirements without understanding cost | Technical correctness prevents debt |
-| "This is simple, process is overkill" | Simple tasks accumulate into complex problems | Follow workflow completely |
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "camelCase works fine in Django" | PEP 8 violation, maintenance debt, inconsistent conventions | **Convert ALL to snake_case** |
+| "Prefix is verbose and ugly" | Audit trail required, multi-source disambiguation critical | **Prefix ALL fields with data source** |
+| "HIGH confidence = obvious, no approval needed" | No dictionary = no ground truth, assumptions fail | **Ask approval for EACH field** |
+| "Optional fields don't affect compliance" | Confidence calculated across ALL fields, 64% = FAIL | **Map ALL fields (mandatory + optional)** |
+| "75% is close to 80%, good enough" | Threshold erosion, LOW confidence = high risk | **Research to ≥80% or FAIL** |
+| "I know these mappings by heart" | Memory fallible, experience creates overconfidence | **Check dictionary first** |
+| "Everyone knows where organization comes from" | Implicit tribal knowledge, new team members lost | **Explicit prefix beats implicit** |
+| "User approval wastes their time" | User provides domain knowledge we lack | **Interactive validation MANDATORY** |
+| "Conversion is unnecessary busywork" | Dismissing requirements without understanding cost | **Technical correctness prevents debt** |
+| "This is simple, process is overkill" | Simple tasks accumulate into complex problems | **Follow workflow completely** |
+| "Dictionary probably doesn't exist anyway" | 1-minute check vs 20-minute correction | **ALWAYS check dictionary path** |
+| "MCP API will have the field, skip check" | API schema changes, fields deprecate | **VERIFY field exists before mapping** |
 
 ### If You Find Yourself Making These Excuses
 
@@ -422,6 +424,57 @@ If you catch yourself thinking ANY of these, STOP and re-read the NO EXCEPTIONS 
 4. **Follow the requirement completely** (no modifications)
 
 **Technical requirements are not negotiable. Field mapping errors compound through Gates 2-3.**
+
+---
+
+---
+
+## Severity Calibration
+
+**MUST classify field mapping issues using these severity levels:**
+
+| Severity | Definition | Examples | Gate Impact |
+|----------|------------|----------|-------------|
+| **CRITICAL** | BLOCKS Gate 1 completion OR creates compliance risk | - Mandatory field has NO valid source<br>- Dictionary check skipped<br>- MCP discovery not performed<br>- snake_case conversion skipped | **HARD BLOCK** - Cannot proceed to Gate 2 |
+| **HIGH** | REQUIRES resolution before Gate 2 | - Mandatory field confidence < 60%<br>- Data source prefix missing<br>- Transformation untested<br>- User approval skipped | **MUST resolve** before proceeding |
+| **MEDIUM** | SHOULD fix to improve template quality | - Optional field confidence 60-80%<br>- camelCase partially converted<br>- Some fields missing prefix<br>- Interactive validation partial | **SHOULD resolve** - document if deferred |
+| **LOW** | Minor improvements possible | - Documentation reference incomplete<br>- Confidence 80-90% (could be higher)<br>- Additional validation possible | **OPTIONAL** - note in report |
+
+**Classification Rules:**
+
+**CRITICAL = ANY of:**
+- Mandatory regulatory field has NO valid source mapping
+- Dictionary path not checked before MCP calls
+- snake_case conversion not applied
+- Data source prefix (midaz_onboarding, midaz_transaction) missing
+- Interactive validation skipped for templates without dictionary
+
+**HIGH = ANY of:**
+- Field mapping confidence < 60% for mandatory fields
+- Transformation rule needs validation with test data
+- Multiple possible sources for same regulatory field (ambiguous)
+- User approval not obtained for uncertain mappings
+
+---
+
+## Cannot Be Overridden
+
+**NON-NEGOTIABLE requirements (no exceptions, no user override):**
+
+| Requirement | Why NON-NEGOTIABLE | Verification |
+|-------------|-------------------|--------------|
+| **snake_case Conversion** | PEP 8 standard, maintenance, grep-ability | ALL fields use snake_case |
+| **Data Source Prefix** | Audit trail, multi-source disambiguation | ALL fields have midaz_* prefix |
+| **Dictionary Check First** | Determines validation mode (auto vs 40-min interactive) | Dictionary path checked |
+| **Interactive Validation** | User provides domain knowledge AI lacks | AskUserQuestion for EACH field |
+| **≥80% Confidence Threshold** | Quality gate for Gate 2/3 | overall_confidence >= 80% |
+
+**User CANNOT:**
+- Skip snake_case ("camelCase works" = NO)
+- Omit prefixes ("obvious source" = NO)
+- Auto-approve HIGH confidence ("no need to ask" = NO)
+- Map mandatory only ("skip optional" = NO)
+- Lower threshold ("75% is close" = NO)
 
 ---
 

@@ -46,6 +46,16 @@ sequence:
 
 ---
 
+## Standards Loading (MANDATORY)
+
+This skill is a validation/checklist skill and does NOT require WebFetch of language-specific standards.
+
+**Purpose:** Design Validation verifies UX artifact completeness against a checklist. Technical standards are irrelevant at this stage—they apply during TRD (Gate 3) and implementation.
+
+**However**, if validating component library alignment (Section 8), MUST reference the UI library's documentation to verify component availability and variant names.
+
+---
+
 ## Purpose
 
 **Verify that UX specifications are COMPLETE before investing in technical architecture.**
