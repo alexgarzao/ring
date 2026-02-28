@@ -596,7 +596,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 ## Goroutine Leak Detection (MANDATORY)
 
-**⛔ HARD GATE:** When implementing goroutines, MUST create goleak leak tests using the goleak framework. This is NON-NEGOTIABLE.
+**⛔ HARD GATE:** When implementing goroutines, MUST create goleak leak tests. This is NON-NEGOTIABLE.
 
 **Standards Reference (MANDATORY WebFetch):**
 
@@ -604,72 +604,15 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | ---------------- | ------------------------ | ------------------------------------ |
 | architecture.md  | Goroutine Leak Detection | #goroutine-leak-detection-mandatory  |
 
-### Detection: Does Code Use Goroutines?
+See [architecture.md](../docs/standards/golang/architecture.md#goroutine-leak-detection-mandatory) for full policy including:
+- Detection patterns (`go func()`, `go methodCall()`, channels)
+- Required goleak patterns (TestMain with `goleak.VerifyTestMain`, per-test `goleak.VerifyNone`)
+- Checklist and anti-rationalization table
 
-**Patterns that trigger this requirement:**
-
-| Pattern              | Detection                                         | Requirement                |
-| -------------------- | ------------------------------------------------- | -------------------------- |
-| `go func()`          | Anonymous goroutine                               | MUST add goleak test       |
-| `go functionName()`  | Direct function call                              | MUST add goleak test       |
-| `go obj.Method()`    | Method call in goroutine                          | MUST add goleak test       |
-| Worker pools         | `for { go ... }`                                  | MUST add goleak TestMain   |
-| Background tasks     | Service with Start/Stop                           | MUST add goleak TestMain   |
-| Channel consumers    | `for range channel`                               | MUST add goleak test       |
-
-### Required Implementation
-
-**For packages with goroutines, MUST add TestMain with goleak:**
-
-```go
-// pkg/worker/worker_test.go
-package worker
-
-import (
-    "testing"
-    "go.uber.org/goleak"
-)
-
-func TestMain(m *testing.M) {
-    goleak.VerifyTestMain(m)
-}
-```
-
-**For specific tests:**
-
-```go
-func TestWorker_ProcessMessage(t *testing.T) {
-    defer goleak.VerifyNone(t)
-    
-    worker := NewWorker()
-    worker.Start()
-    // ... test logic ...
-    worker.Stop()
-}
-```
-
-### Goroutine Leak Checklist (all REQUIRED when implementing goroutines)
-
-| #   | Check                                           | If Missing         |
-| --- | ----------------------------------------------- | ------------------ |
-| 1   | `goleak.VerifyTestMain(m)` in TestMain          | **REJECTED**       |
-| 2   | Proper shutdown mechanism (Stop/Close/Cancel)   | **REJECTED**       |
-| 3   | Context honored in goroutine (`<-ctx.Done()`)   | **REJECTED**       |
-| 4   | Channels closed when done                       | **REJECTED**       |
-| 5   | No blocking sends without context               | **REJECTED**       |
-
-### Anti-Rationalization Table (Goroutine Leaks)
-
-| Rationalization                       | Why It's WRONG                                     | Required Action        |
-| ------------------------------------- | -------------------------------------------------- | ---------------------- |
-| "Goroutine will exit eventually"      | Eventually = memory leak until then.               | **Add proper shutdown** |
-| "It's just one goroutine"             | One leak × thousands of requests = OOM.            | **Add goleak test**    |
-| "Process restarts clean it"           | Restart = downtime. Prevent leaks instead.         | **Add goleak test**    |
-| "Too complex to test"                 | goleak makes it simple. One line in TestMain.      | **Add goleak.VerifyTestMain** |
-| "External lib leaks, not my code"     | Use goleak.IgnoreTopFunction for known libs.       | **Ignore known, catch yours** |
-| "I'll add leak tests later"           | Later = never. Add goleak test NOW.                | **Add goleak test NOW** |
-
-**⛔ If goroutines implemented without goleak tests → Implementation is INCOMPLETE and REJECTED.**
+**Quick Reference:**
+- MUST add `goleak.VerifyTestMain(m)` to packages with goroutines
+- MUST ensure proper shutdown (Stop/Close/Cancel) for all workers
+- If goroutines implemented without goleak tests → Implementation is **REJECTED**
 
 ## Architecture Patterns (MANDATORY)
 
