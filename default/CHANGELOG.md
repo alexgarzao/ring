@@ -15,6 +15,21 @@ Contributors: @jeff, @jefferson.comff
 
 ---
 
+## [1.11.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.0)
+
+- **Features:**
+  - Added CLAUDE.md compliance sections to all 25 default skills.
+
+- **Fixes:**
+  - Applied lexical salience guidelines across skills.
+  - Added missing CLAUDE.md required sections across all 6 plugins.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.10.0...ring-default@1.11.0)
+
+---
+
 ## [1.10.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.10.0)
 
 - **Features**
