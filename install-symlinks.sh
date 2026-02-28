@@ -28,7 +28,10 @@ NC='\033[0m' # No Color
 
 # --- Globals ---
 CLAUDE_DIR="$HOME/.claude"
+FACTORY_DIR="$HOME/.factory"
 RING_DIR=""
+INSTALL_CLAUDE=true
+INSTALL_FACTORY=false
 CREATED=0
 SKIPPED=0
 ERRORS=0
@@ -51,7 +54,7 @@ log_error()   { echo -e "  ${RED}ERROR${NC}   $1"; }
 log_section() { echo -e "\n  ${BOLD}${CYAN}── $1 ──${NC}\n"; }
 
 resolve_ring_dir() {
-  if [[ -n "${1:-}" && "$1" != "--remove" ]]; then
+  if [[ -n "${1:-}" && "$1" != "--remove" && "$1" != "--factory" && "$1" != "--all" && "$1" != "--claude" ]]; then
     RING_DIR="$(cd "$1" && pwd)"
   else
     # Auto-detect from script location
@@ -200,15 +203,19 @@ print_summary() {
   fi
   echo -e "  ${BOLD}════════════════════════════════════════${NC}"
   echo ""
-  echo -e "  ${CYAN}Ring repo:${NC}  $RING_DIR"
-  echo -e "  ${CYAN}Claude dir:${NC} $CLAUDE_DIR"
+  echo -e "  ${CYAN}Ring repo:${NC}   $RING_DIR"
+  [[ "$INSTALL_CLAUDE" == true ]] && echo -e "  ${CYAN}Claude dir:${NC}  $CLAUDE_DIR"
+  [[ "$INSTALL_FACTORY" == true ]] && echo -e "  ${CYAN}Factory dir:${NC} $FACTORY_DIR"
   echo ""
 
   local total=$((CREATED + SKIPPED))
   if [[ $total -gt 0 ]]; then
-    echo -e "  ${GREEN}${BOLD}Ring is ready!${NC} Open Claude Code to use all skills, agents, and commands."
+    local target_names=""
+    [[ "$INSTALL_CLAUDE" == true ]] && target_names="Claude Code"
+    [[ "$INSTALL_FACTORY" == true ]] && { [[ -n "$target_names" ]] && target_names="$target_names and Factory AI" || target_names="Factory AI"; }
+    echo -e "  ${GREEN}${BOLD}Ring is ready!${NC} Open $target_names to use all skills, agents, and commands."
     echo ""
-    echo -e "  Try these commands in Claude Code:"
+    echo -e "  Try these commands:"
     echo -e "    ${BOLD}/ring:brainstorm${NC}      - Socratic design refinement"
     echo -e "    ${BOLD}/ring:dev-cycle${NC}       - 10-gate development cycle"
     echo -e "    ${BOLD}/ring:pre-dev-feature${NC} - Lightweight pre-dev workflow"
@@ -229,17 +236,30 @@ fi
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   echo "  Usage:"
-  echo "    bash install-symlinks.sh              # Auto-detect Ring repo"
+  echo "    bash install-symlinks.sh              # Install for Claude Code (default)"
+  echo "    bash install-symlinks.sh --factory    # Install for Factory AI"
+  echo "    bash install-symlinks.sh --all        # Install for both Claude Code and Factory AI"
   echo "    bash install-symlinks.sh /path/to/ring # Explicit path"
   echo "    bash install-symlinks.sh --remove      # Remove Ring symlinks"
   echo ""
   exit 0
 fi
 
+if [[ "${1:-}" == "--factory" ]]; then
+  INSTALL_CLAUDE=false
+  INSTALL_FACTORY=true
+  shift
+elif [[ "${1:-}" == "--all" ]]; then
+  INSTALL_CLAUDE=true
+  INSTALL_FACTORY=true
+  shift
+fi
+
 resolve_ring_dir "${1:-}"
 
 log_info "Ring repo: $RING_DIR"
-log_info "Claude dir: $CLAUDE_DIR"
+[[ "$INSTALL_CLAUDE" == true ]] && log_info "Claude dir: $CLAUDE_DIR"
+[[ "$INSTALL_FACTORY" == true ]] && log_info "Factory dir: $FACTORY_DIR"
 
 create_directories
 install_symlinks
