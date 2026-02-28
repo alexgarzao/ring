@@ -3,6 +3,18 @@
 ## [0.18.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.18.1)
 
 - Fixes:
+  - Applied lexical salience guidelines across skills.
+  - Added missing CLAUDE.md required sections.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.18.0...ring-pm-team@0.18.1)
+
+---
+
+## [0.18.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.18.1)
+
+- Fixes:
   - Applied lexical salience guidelines across skills to enhance clarity and consistency.
   - Added missing required sections in CLAUDE.md to ensure comprehensive documentation.
 
