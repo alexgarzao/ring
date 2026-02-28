@@ -308,6 +308,7 @@ Task:
     | Tracing Enabled | ✅/❌ | [file:line or "not FOUND"] |
     | Instrumentation ≥90% | ✅/❌ | [X%] |
     | Context Propagation | ✅/❌/N/A | [file:line or "N/A"] |
+    | Multi-Tenant Observability | ✅/❌/N/A | [file:line where tenant_id in spans/logs/metrics, or "N/A" if single-tenant only] |
 
     ### Instrumentation Coverage Table
     | Layer | Instrumented | Total | Coverage |

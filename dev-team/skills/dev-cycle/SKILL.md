@@ -1761,6 +1761,8 @@ detected_dependencies = []
 
 ```text
 6. Detect existing multi-tenant code:
+   multi_tenant_exists = false
+
    if language == "go":
      - Grep tool: pattern "MULTI_TENANT_ENABLED" in internal/ --include="*.go" → multi_tenant_exists = true
      - Grep tool: pattern "dispatch layer" in go.mod → multi_tenant_exists = true
@@ -1853,6 +1855,8 @@ implementation_input = {
      requirements: implementation_input.requirements
      language: implementation_input.language
      service_type: implementation_input.service_type
+     multi_tenant_required: implementation_input.multi_tenant_required
+     multi_tenant_exists: implementation_input.multi_tenant_exists
      technical_design: implementation_input.technical_design
      existing_patterns: implementation_input.existing_patterns
      project_rules_path: implementation_input.project_rules_path
