@@ -1,5 +1,8 @@
 ---
 name: ring:dev-goroutine-leak-testing
+type: testing
+author: ring-dev-team
+version: 0.1.0
 description: |
   Goroutine leak detection skill - detects goroutine usage in Go code, runs goleak 
   to identify memory leaks, and dispatches ring:backend-engineer-golang to fix leaks
@@ -87,10 +90,9 @@ WebFetch architecture.md before any goroutine leak analysis work. Focus on "Goro
 <block_condition>
 - target_path does not exist or is not a Go package
 - Language is not Go (detected via go.mod absence)
-- No write access to target package for adding tests
 </block_condition>
 
-If any condition is true, STOP immediately and report blocker.
+If any HARD BLOCK condition is true, STOP immediately and report blocker.
 
 **HARD BLOCK conditions:**
 
@@ -98,6 +100,13 @@ If any condition is true, STOP immediately and report blocker.
 |-----------|--------|-----|
 | No go.mod found | STOP - report "Not a Go project" | goleak is Go-specific |
 | target_path invalid | STOP - report path error | Cannot analyze non-existent code |
+
+**WARNING conditions (proceed with detection, note limitation):**
+
+| Condition | Action | Why |
+|-----------|--------|-----|
+| No write access | WARN - proceed in detection-only mode | Can still detect leaks, just cannot add tests |
+| No test files exist | WARN - note gap, proceed | Can detect goroutines, note missing test infrastructure |
 | No test files exist | WARN - proceed but note gap | Can still detect, but no existing tests to check |
 
 ---

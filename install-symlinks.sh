@@ -75,13 +75,27 @@ resolve_ring_dir() {
 }
 
 create_directories() {
-  local dirs=("$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills")
-  for dir in "${dirs[@]}"; do
-    if [[ ! -d "$dir" ]]; then
-      mkdir -p "$dir"
-      log_info "Created directory: $dir"
-    fi
-  done
+  local base_dirs=("agents" "commands" "skills")
+  
+  if [[ "$INSTALL_CLAUDE" == true ]]; then
+    for subdir in "${base_dirs[@]}"; do
+      local dir="$CLAUDE_DIR/$subdir"
+      if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+        log_info "Created directory: $dir"
+      fi
+    done
+  fi
+  
+  if [[ "$INSTALL_FACTORY" == true ]]; then
+    for subdir in "${base_dirs[@]}"; do
+      local dir="$FACTORY_DIR/$subdir"
+      if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+        log_info "Created directory: $dir"
+      fi
+    done
+  fi
 }
 
 create_symlink() {
@@ -116,6 +130,7 @@ create_symlink() {
 
 link_agents() {
   local plugin="$1"
+  local target_dir="$2"
   local agents_dir="$RING_DIR/$plugin/agents"
 
   [[ ! -d "$agents_dir" ]] && return
@@ -124,12 +139,13 @@ link_agents() {
     [[ ! -f "$agent" ]] && continue
     local name
     name="$(basename "$agent")"
-    create_symlink "$agent" "$CLAUDE_DIR/agents/$name"
+    create_symlink "$agent" "$target_dir/agents/$name"
   done
 }
 
 link_commands() {
   local plugin="$1"
+  local target_dir="$2"
   local commands_dir="$RING_DIR/$plugin/commands"
 
   [[ ! -d "$commands_dir" ]] && return
@@ -138,12 +154,13 @@ link_commands() {
     [[ ! -f "$cmd" ]] && continue
     local name
     name="$(basename "$cmd")"
-    create_symlink "$cmd" "$CLAUDE_DIR/commands/$name"
+    create_symlink "$cmd" "$target_dir/commands/$name"
   done
 }
 
 link_skills() {
   local plugin="$1"
+  local target_dir="$2"
   local skills_dir="$RING_DIR/$plugin/skills"
 
   [[ ! -d "$skills_dir" ]] && return
@@ -154,7 +171,7 @@ link_skills() {
     name="$(basename "$skill")"
     # Skip shared-patterns directories (internal to each plugin, not standalone skills)
     [[ "$name" == "shared-patterns" ]] && continue
-    create_symlink "$skill" "$CLAUDE_DIR/skills/$name"
+    create_symlink "$skill" "$target_dir/skills/$name"
   done
 }
 
@@ -163,9 +180,16 @@ install_symlinks() {
 
   for plugin in "${plugins[@]}"; do
     log_section "$plugin"
-    link_agents "$plugin"
-    link_commands "$plugin"
-    link_skills "$plugin"
+    if [[ "$INSTALL_CLAUDE" == true ]]; then
+      link_agents "$plugin" "$CLAUDE_DIR"
+      link_commands "$plugin" "$CLAUDE_DIR"
+      link_skills "$plugin" "$CLAUDE_DIR"
+    fi
+    if [[ "$INSTALL_FACTORY" == true ]]; then
+      link_agents "$plugin" "$FACTORY_DIR"
+      link_commands "$plugin" "$FACTORY_DIR"
+      link_skills "$plugin" "$FACTORY_DIR"
+    fi
   done
 }
 
