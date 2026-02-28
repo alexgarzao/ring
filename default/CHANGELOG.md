@@ -1,5 +1,17 @@
 # Ring-default Changelog
 
+## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
+
+- Improvements:
+  - Update tenant-manager function names to Resolve* interface for consistency.
+  - Correct Resolve* examples and checklist after code review for better clarity.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.11.0...ring-default@1.11.1)
+
+---
+
 ## [1.11.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.0)
 
 - **Features:**
