@@ -1,6 +1,6 @@
 # Go Standards - Architecture
 
-> **Module:** architecture.md | **Sections:** §23-28 | **Parent:** [index.md](index.md)
+> **Module:** architecture.md | **Sections:** §23-29 | **Parent:** [index.md](index.md)
 
 This module covers architecture patterns, directory structure, concurrency, goroutine recovery, and query optimization.
 
