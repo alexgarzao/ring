@@ -972,8 +972,9 @@ Read tool:
 
 ### State Persistence Checkpoints
 
-| After | MUST Update | MUST Write File |
-|-------|-------------|-----------------|
+| Checkpoint | MUST Update | MUST Write File |
+|------------|-------------|-----------------|
+| **Before Gate 0 (task start)** | `task.status = "in_progress"` in JSON **+ tasks.md Status → `🔄 Doing`** | ✅ YES |
 | Gate 0.1 (TDD-RED) | `tdd_red.status`, `tdd_red.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | `tdd_green.status`, `implementation.status` | ✅ YES |
 | Gate 1 (DevOps) | `devops.status`, `agent_outputs.devops` | ✅ YES |
@@ -984,9 +985,29 @@ Read tool:
 | Gate 6 (Integration Testing) | `integration_testing.status`, `agent_outputs.integration_testing` | ✅ YES |
 | Gate 7 (Chaos Testing) | `chaos_testing.status`, `agent_outputs.chaos_testing` | ✅ YES |
 | Gate 8 (Review) | `review.status`, `agent_outputs.review` | ✅ YES |
-| Gate 9 (Validation) | `validation.status`, task `status` | ✅ YES |
+| Gate 9 (Validation) | `validation.status` (execution unit only — do NOT touch task-level status here) | ✅ YES |
 | Step 11.1 (Unit Approval) | `status = "paused_for_approval"` | ✅ YES |
-| Step 11.2 (Task Approval) | `status = "paused_for_task_approval"` | ✅ YES |
+| Step 11.2 (Task Approval) | `task.status = "completed"` in JSON **+ tasks.md Status → `✅ Done`** | ✅ YES |
+| HARD BLOCK (any gate) | `task.status = "failed"` in JSON **+ tasks.md Status → `❌ Failed`** | ✅ YES |
+
+**tasks.md Status update rules (apply at the three checkpoints above):**
+
+```text
+If state.source_file is absent or file does not exist → log warning "tasks.md Status updates skipped: source_file missing" and skip all status updates for this cycle.
+
+task_id = state.tasks[state.current_task_index].id
+# Always the parent TASK ID — do NOT use current_subtask_index
+# Rows where column 1 is "TOTAL" or empty → skip, not a task row
+
+Use Edit tool on state.source_file (tasks.md):
+- Find the row starting with `| {task_id} |` in the `## Summary` table
+- Before Gate 0: replace `⏸️ Pending` with `🔄 Doing`
+  - If already `🔄 Doing` (resumed cycle) → skip, no change needed
+- Step 11.2 (all subtasks done, user approved): replace `🔄 Doing` with `✅ Done`
+- HARD BLOCK (any gate, task abandoned): replace `🔄 Doing` with `❌ Failed`
+  - If row shows `⏸️ Pending` (unexpected) → replace with target value anyway
+- If row not found or no Status column → log warning "Status update skipped: task {task_id} row not found in {source_file}" and continue, do not abort
+```
 
 ### Anti-Rationalization for State Persistence
 
@@ -1810,6 +1831,15 @@ Multi-tenant is MANDATORY for all services. Every service MUST support both sing
 **REQUIRED SUB-SKILL:** Use ring:dev-implementation
 
 **Execution Unit:** Task (if no subtasks) or Subtask (if task has subtasks)
+
+### Pre-Dispatch: Before Gate 0 Checkpoint (MANDATORY)
+
+MUST execute the **Before Gate 0 (task start)** row from the State Persistence Checkpoints table before sub-steps 2.1–2.3:
+- Set `task.status = "in_progress"` in state JSON
+- Update tasks.md Status → `🔄 Doing` (per tasks.md Status update rules in that table)
+- Write state to file
+
+CANNOT proceed to sub-steps 2.1–2.3 without completing this checkpoint.
 
 ### ⛔ MANDATORY: Invoke ring:dev-implementation Skill (not inline execution)
 
@@ -2916,7 +2946,8 @@ For current execution unit:
    - Tell the user the file path
    - See [shared-patterns/anti-rationalization-visual-report.md](../shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table
 
-1. Set task `status = "completed"`, cycle `status = "paused_for_task_approval"`, save state
+1. Set task `status = "completed"`, cycle `status = "paused_for_task_approval"`, save state, and update tasks.md Status → `✅ Done` (per Step 11.2 row in State Persistence Checkpoints table)
+
 2. Present summary: Task ID, Subtasks X/X, Total Duration, Review Iterations, Files Changed, Commit Status
 3. **AskUserQuestion:** "Task complete. Ready for next?" Options: (a) Continue (b) Integration Test (c) Stop Here
 4. **Handle response:**
