@@ -225,7 +225,7 @@ Invoke this agent when the task involves:
 - **Messaging**: RabbitMQ, Valkey Streams
 - **APIs**: REST, gRPC
 - **Auth**: OAuth2, JWT, WorkOS (SSO, Directory Sync, Admin Portal), SAML, OIDC
-- **Testing**: Go test, Testify, GoMock, SQLMock
+- **Testing**: Go test, Testify, GoMock, SQLMock, goleak (goroutine leak detection)
 - **Observability**: OpenTelemetry, Zap
 - **Patterns**: Hexagonal Architecture, CQRS, Repository, DDD, Multi-Tenancy
 - **Serverless**: AWS Lambda, API Gateway, Step Functions, SAM
@@ -593,6 +593,26 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 | **Worker Only**  | Only queue code     | Bootstrap, RabbitMQ Worker Pattern                      |
 
 **If task involves async processing → WebFetch "RabbitMQ Worker Pattern" section is MANDATORY.**
+
+## Goroutine Leak Detection (MANDATORY)
+
+**⛔ HARD GATE:** When implementing goroutines, MUST create goleak leak tests. This is NON-NEGOTIABLE.
+
+**Standards Reference (MANDATORY WebFetch):**
+
+| Standards File   | Section to Load          | Anchor                               |
+| ---------------- | ------------------------ | ------------------------------------ |
+| architecture.md  | Goroutine Leak Detection | #goroutine-leak-detection-mandatory  |
+
+See [architecture.md](../docs/standards/golang/architecture.md#goroutine-leak-detection-mandatory) for full policy including:
+- Detection patterns (`go func()`, `go methodCall()`, channels)
+- Required goleak patterns (TestMain with `goleak.VerifyTestMain`, per-test `goleak.VerifyNone`)
+- Checklist and anti-rationalization table
+
+**Quick Reference:**
+- MUST add `goleak.VerifyTestMain(m)` to packages with goroutines
+- MUST ensure proper shutdown (Stop/Close/Cancel) for all workers
+- If goroutines implemented without goleak tests → Implementation is **REJECTED**
 
 ## Architecture Patterns (MANDATORY)
 

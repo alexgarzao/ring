@@ -189,7 +189,13 @@ testing_state = {
   iterations: 0,
   max_iterations: 3,
   traceability_matrix: [],
-  tests_written: 0
+  tests_written: 0,
+  # Goroutine leak detection (Go only)
+  goroutine_check: null,       # NOT_APPLICABLE | REQUIRED
+  goroutine_files: 0,          # Count of files with goroutines
+  goleak_coverage: null,       # "X/Y" packages with goleak
+  leaks_detected: 0,           # Count of actual leaks
+  goroutine_verdict: null      # PASS | NEEDS_ACTION | FAIL
 }
 ```
 
@@ -297,6 +303,47 @@ Task:
     - **Files needing coverage:** [list with line numbers]
 ```
 
+## Step 3.5: Goroutine Leak Detection (Go only)
+
+**⛔ CONDITIONAL: Only execute if `language == "go"`**
+
+After unit tests pass, detect goroutine usage and verify goleak coverage.
+
+See [ring:dev-goroutine-leak-testing](../dev-goroutine-leak-testing/SKILL.md) for full detection patterns and dispatch templates.
+See [architecture.md](../../docs/standards/golang/architecture.md#goroutine-leak-detection-mandatory) for goleak standards.
+
+### Detection Logic
+
+```text
+if language != "go":
+  → Skip to Step 4
+
+# Detect goroutine patterns: "go func(", "go methodCall("
+if no goroutine patterns found:
+  → testing_state.goroutine_check = "NOT_APPLICABLE"
+  → Skip to Step 4
+
+# Goroutines detected
+→ testing_state.goroutine_check = "REQUIRED"
+→ Dispatch ring:qa-analyst with test_mode="goroutine-leak"
+```
+
+### Dispatch
+
+<dispatch_required agent="ring:qa-analyst" test_mode="goroutine-leak">
+MUST dispatch with test_mode="goroutine-leak" to detect leaks and verify goleak coverage.
+</dispatch_required>
+
+### Parse Output and Handle Verdict
+
+| Verdict | Action |
+|---------|--------|
+| PASS | Proceed to Step 4 |
+| NEEDS_ACTION | Dispatch `ring:backend-engineer-golang` to add goleak tests, re-run |
+| FAIL | Dispatch `ring:backend-engineer-golang` to fix leaks, re-run |
+
+---
+
 ## Step 4: Parse QA Analyst Output
 
 ```text
@@ -392,6 +439,19 @@ Generate skill output:
 | All ACs tested | ✅ |
 | No skipped tests | ✅ |
 | Edge cases present | ✅ |
+| Goroutine leak check (Go only) | [✅/N/A] |
+
+## Goroutine Leak Report (Go only)
+[If language == "go" and goroutines detected]
+
+| Metric | Value |
+|--------|-------|
+| Goroutines detected | [count] |
+| Packages with goleak | [X]/[Y] |
+| Leaks found | 0 |
+| Status | ✅ PASS |
+
+[If language != "go" or no goroutines: "N/A - No goroutines detected"]
 
 ## Handoff to Next Gate
 - Testing status: COMPLETE

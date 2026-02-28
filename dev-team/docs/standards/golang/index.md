@@ -52,7 +52,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 4 | [domain.md](domain.md) | 5 | ~255 | ToEntity/FromEntity, Error Codes, Error Handling, Exit/Fatal Rules, Function Design |
 | 5 | [api-patterns.md](api-patterns.md) | 6 | ~900 | JSON Naming, Pagination, HTTP Status Codes, OpenAPI/Swaggo, Handler Constructor, Input Validation |
 | 6 | [quality.md](quality.md) | 4 | ~900 | Logging, Linting, Config Validation, Container Security |
-| 7 | [architecture.md](architecture.md) | 6 | ~350 | Architecture, Directory, Concurrency, Goroutine Recovery, N+1 Detection, Performance |
+| 7 | [architecture.md](architecture.md) | 7 | ~500 | Architecture, Directory, Concurrency, Goroutine Recovery, Goroutine Leak Detection (goleak), N+1 Detection, Performance |
 | 8 | [messaging.md](messaging.md) | 2 | ~650 | RabbitMQ Worker Pattern, Reconnection Strategy |
 | 9 | [domain-modeling.md](domain-modeling.md) | 4 | ~290 | Always-Valid Domain Model, Constructor Patterns, ToEntity Integration |
 | 10 | [idempotency.md](idempotency.md) | 1 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
@@ -143,7 +143,9 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 2 | Directory Structure | [#directory-structure](architecture.md#directory-structure) |
 | 3 | Concurrency Patterns | [#concurrency-patterns](architecture.md#concurrency-patterns) |
 | 4 | Goroutine Recovery Patterns (MANDATORY) | [#goroutine-recovery-patterns-mandatory](architecture.md#goroutine-recovery-patterns-mandatory) |
-| 5 | N+1 Query Detection (MANDATORY) | [#n1-query-detection-mandatory](architecture.md#n1-query-detection-mandatory) |
+| 5 | Goroutine Leak Detection (MANDATORY) | [#goroutine-leak-detection-mandatory](architecture.md#goroutine-leak-detection-mandatory) |
+| 6 | N+1 Query Detection (MANDATORY) | [#n1-query-detection-mandatory](architecture.md#n1-query-detection-mandatory) |
+| 7 | Performance Patterns (MANDATORY) | [#performance-patterns-mandatory](architecture.md#performance-patterns-mandatory) |
 
 ### Messaging (messaging.md)
 
