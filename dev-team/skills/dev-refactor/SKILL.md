@@ -366,6 +366,9 @@ Task tool 1:
     - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
     - Project Rules: docs/PROJECT_RULES.md
 
+    ⛔ MULTI-TENANT ANALYSIS (MANDATORY):
+    See [shared-patterns/multi-tenant-analysis.md](../shared-patterns/multi-tenant-analysis.md) for the full checklist.
+
     Output:
     1. Standards Coverage Table (per shared-patterns format)
     2. ISSUE-XXX for each ⚠️/❌ finding with: Pattern name, Severity, file:line, Current Code, Expected Code
@@ -424,6 +427,9 @@ Task tool 1:
        - If codebase uses DIFFERENT library than standards → ISSUE-XXX
        - If codebase is MISSING required library → ISSUE-XXX
     4. any library not in standards that serves same purpose = ISSUE-XXX
+
+    ⛔ MULTI-TENANT ANALYSIS (MANDATORY):
+    See [shared-patterns/multi-tenant-analysis.md](../shared-patterns/multi-tenant-analysis.md) for the full checklist.
 
     Input:
     - Ring Standards: Load via WebFetch (typescript.md)

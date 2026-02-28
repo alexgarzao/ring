@@ -1749,11 +1749,58 @@ detected_dependencies = []
 4. Store: state.detected_dependencies = detected_dependencies
 5. Log: "Auto-detected external dependencies: [detected_dependencies]"
 
-**MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
+### ⛔ MANDATORY: Multi-Tenant Enforcement (HARD GATE)
+
+<cannot_skip>
+- state.multi_tenant_required = true for ALL services (NO exceptions)
+- Both single-tenant AND multi-tenant modes MUST be implemented
+- Backward compatibility MUST be verified (works without MULTI_TENANT_* vars)
+</cannot_skip>
+
+**Detection (informational only — does NOT affect the requirement):**
+
+```text
+6. Detect existing multi-tenant code:
+   multi_tenant_exists = false
+
+   if language == "go":
+     - Grep tool: pattern "MULTI_TENANT_ENABLED" in internal/ --include="*.go" → multi_tenant_exists = true
+     - Grep tool: pattern "dispatch layer" in go.mod → multi_tenant_exists = true
+     - Grep tool: pattern "TenantMiddleware\|MultiPoolMiddleware" in internal/ --include="*.go" → multi_tenant_exists = true
+   if language == "typescript":
+     - Grep tool: pattern "MULTI_TENANT_ENABLED" in src/ --include="*.ts" → multi_tenant_exists = true
+     - Grep tool: pattern "dispatch layer" in package.json → multi_tenant_exists = true
+
+   state.multi_tenant_required = true   // ALWAYS true — NO exceptions
+   state.multi_tenant_exists = multi_tenant_exists
+
+   if multi_tenant_exists:
+     Log: "Multi-tenant support detected — will validate both modes (single + multi)"
+   else:
+     Log: "Multi-tenant support NOT detected — MUST be implemented (both single-tenant and multi-tenant modes)"
 ```
+
+**⛔ NON-NEGOTIABLE: Backward Compatibility Requirement**
+- Service MUST work with `MULTI_TENANT_ENABLED=true` (multi-tenant mode)
+- Service MUST work with `MULTI_TENANT_ENABLED=false` (single-tenant mode)
+- Service MUST work WITHOUT any `MULTI_TENANT_*` env vars (default = single-tenant)
+
+#### Multi-Tenant Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Service doesn't need multi-tenant" | ALL services need multi-tenant. No exceptions. | **Set multi_tenant_required = true** |
+| "Multi-tenant adds complexity" | Complexity ≠ optional. Platform requirement. | **Implement both modes** |
+| "Single-tenant mode works" | Single-tenant is ONE of TWO required modes. | **Implement BOTH modes** |
+| "Will add multi-tenant later" | Later = never. Gate 0 requirement. | **Implement NOW** |
+| "Codebase is too small" | Size ≠ exemption. All codebases need MT. | **Implement multi-tenant** |
+
+**MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
 
 <auto_detect_reason>
 PM team task files often omit external_dependencies. If the codebase uses postgres, mongodb, valkey, or rabbitmq, these MUST be detected and passed to Gates 6 (integration) and 7 (chaos). Auto-detection at cycle level avoids redundant scans per gate.
+
+Multi-tenant is MANDATORY for all services. Every service MUST support both single-tenant (MULTI_TENANT_ENABLED=false) and multi-tenant (MULTI_TENANT_ENABLED=true) modes with backward compatibility. See multi-tenant.md for the full standard.
 </auto_detect_reason>
 
 ---
@@ -1785,6 +1832,10 @@ implementation_input = {
   language: state.current_unit.language,  // "go" | "typescript" | "python"
   service_type: state.current_unit.service_type,  // "api" | "worker" | "batch" | "cli" | "frontend" | "bff"
 
+  // REQUIRED - multi-tenant context (from Step 1.5)
+  multi_tenant_required: state.multi_tenant_required,   // always true
+  multi_tenant_exists: state.multi_tenant_exists,        // whether code already has it
+
   // OPTIONAL - additional context
   technical_design: state.current_unit.technical_design || null,
   existing_patterns: state.current_unit.existing_patterns || [],
@@ -1804,6 +1855,8 @@ implementation_input = {
      requirements: implementation_input.requirements
      language: implementation_input.language
      service_type: implementation_input.service_type
+     multi_tenant_required: implementation_input.multi_tenant_required
+     multi_tenant_exists: implementation_input.multi_tenant_exists
      technical_design: implementation_input.technical_design
      existing_patterns: implementation_input.existing_patterns
      project_rules_path: implementation_input.project_rules_path
