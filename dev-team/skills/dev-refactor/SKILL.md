@@ -350,8 +350,8 @@ Check 2: Was codebase-report.md created by ring:codebase-explorer?
 
 ### For Go projects:
 
-<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:qa-analyst(goroutine-leak), ring:devops-engineer, ring:sre">
-All five agents MUST be dispatched in parallel via Task tool.
+<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:qa-analyst[goroutine-leak], ring:devops-engineer, ring:sre">
+MUST dispatch all five agents in parallel via Task tool.
 Input: codebase-report.md, PROJECT_RULES.md
 </parallel_dispatch>
 
