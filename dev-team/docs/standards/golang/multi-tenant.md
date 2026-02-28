@@ -537,6 +537,19 @@ Bucket: {service-name}  (env var: OBJECT_STORAGE_BUCKET)
 
 **Backward compatibility:** When no tenant is in context (single-tenant mode), the key is returned unchanged — no prefix added.
 
+### RabbitMQ Multi-Tenant: Two-Layer Isolation Model
+
+RabbitMQ multi-tenant requires **two complementary layers** — both are mandatory:
+
+| Layer | Mechanism | Purpose |
+|-------|-----------|---------|
+| **1. Vhost Isolation** | `tmrabbitmq.Manager` → `GetChannel(ctx, tenantID)` | **Isolation.** Each tenant gets its own RabbitMQ vhost. Queues, exchanges, and connections are fully separated. |
+| **2. X-Tenant-ID Header** | `headers["X-Tenant-ID"] = tenantID` | **Audit + context propagation.** Enables distributed tracing, log correlation, and downstream tenant resolution. Does NOT provide isolation. |
+
+**⛔ Layer 2 alone is NOT multi-tenant compliant.** A shared connection with `X-Tenant-ID` headers provides traceability but zero isolation — a poison message or traffic spike from one tenant affects all tenants.
+
+**⛔ Layer 1 alone is incomplete.** Vhosts isolate but the `X-Tenant-ID` header is needed for log correlation, distributed tracing, and downstream context propagation across services.
+
 ### RabbitMQ Multi-Tenant Producer
 
 ```go

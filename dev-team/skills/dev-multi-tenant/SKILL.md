@@ -629,28 +629,73 @@ HARD GATE: If service is a plugin and MULTI_TENANT_ENABLED=true, M2M Secret Mana
 
 **SKIP IF:** no RabbitMQ detected.
 
+MANDATORY: RabbitMQ multi-tenant requires **TWO complementary layers** — both are required. See [multi-tenant.md § RabbitMQ Multi-Tenant: Two-Layer Isolation Model](../../docs/standards/golang/multi-tenant.md#rabbitmq-multi-tenant-two-layer-isolation-model) for the canonical reference.
+
+**Summary:**
+- **Layer 1 (Isolation):** `tmrabbitmq.Manager` → `GetChannel(ctx, tenantID)` for per-tenant vhosts
+- **Layer 2 (Audit):** `X-Tenant-ID` AMQP header for tracing and context propagation
+
+**⛔ CRITICAL DISTINCTION:**
+- FORBIDDEN: Using `X-Tenant-ID` header as an isolation mechanism — it is metadata for audit/tracing only
+- REQUIRED: `tmrabbitmq.Manager` with per-tenant vhosts as the only acceptable isolation mechanism
+- FORBIDDEN: A service that only propagates `X-Tenant-ID` headers on a shared connection — this is not multi-tenant compliant
+
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Implement RabbitMQ multi-tenant patterns with lazy initialization.
+> TASK: Implement RabbitMQ multi-tenant with TWO mandatory layers:
+>
+> **Layer 1 — Vhost Isolation (MANDATORY):**
+> - MUST use `tmrabbitmq.Manager` for per-tenant vhost connections with LRU eviction
+> - MUST call `tmrabbitmq.Manager.GetChannel(ctx, tenantID)` for tenant-specific channel (Producer)
+> - MUST use `tmconsumer.MultiTenantConsumer` with lazy initialization — no startup connections (Consumer)
+> - MUST branch on `cfg.MultiTenantEnabled` in bootstrap (CONFIG SPLIT with dual constructors)
+> - MUST keep existing single-tenant code path untouched
+>
+> **Layer 2 — X-Tenant-ID Header (MANDATORY):**
+> - MUST inject `headers["X-Tenant-ID"] = tenantID` in all published messages (Producer)
+> - MUST extract `X-Tenant-ID` from AMQP headers for log correlation and tracing (Consumer)
+> - Header is audit trail ONLY — isolation comes from Layer 1
+>
 > CONTEXT FROM GATE 1: {Producer and consumer file:line locations from analysis report}
 > DETECTED ARCHITECTURE: {Are producer and consumer in the same process or separate components?}
 >
 > Follow multi-tenant.md sections:
-> - "RabbitMQ Multi-Tenant Producer" for dual constructor and X-Tenant-ID header
+> - "RabbitMQ Multi-Tenant Producer" for dual constructor pattern with both layers
 > - "Multi-Tenant Message Queue Consumers (Lazy Mode)" for lazy initialization
 > - "ConsumerTrigger Interface" for the trigger wiring
 >
 > Gate-specific constraints:
-> 1. CONFIG SPLIT (MANDATORY): Branch on `cfg.MultiTenantEnabled` for both producer and consumer in bootstrap
+> 1. MANDATORY: CONFIG SPLIT — branch on `cfg.MultiTenantEnabled` for both producer and consumer in bootstrap
 > 2. MUST keep the existing single-tenant code path untouched
 > 3. MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode
-> 4. X-Tenant-ID goes in AMQP headers, NOT in message body
+> 4. MUST use X-Tenant-ID in AMQP headers for audit — NOT as isolation mechanism
+> 5. MUST implement both layers together — one without the other is non-compliant
 
-**Verification:** `grep "tmrabbitmq.Manager\|NewProducerMultiTenant\|EnsureConsumerStarted\|tmmiddleware.ConsumerTrigger" internal/` + `go build ./...`
+**Verification:**
+1. `grep "tmrabbitmq.Manager\|NewProducerMultiTenant\|EnsureConsumerStarted\|tmmiddleware.ConsumerTrigger" internal/` + `go build ./...`
+2. **Vhost isolation (Layer 1):** `grep -rn "tmrabbitmq.NewManager\|tmrabbitmq.Manager" internal/` MUST return results.
+3. **X-Tenant-ID header (Layer 2):** `grep -rn "X-Tenant-ID" internal/` MUST return results in both producer AND consumer.
+4. **Shared connection rejection:** If RabbitMQ multi-tenant uses a shared connection with only `X-Tenant-ID` headers (no `tmrabbitmq.Manager`), this gate FAILS.
 
 <block_condition>
-HARD GATE: MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode.
+HARD GATE: RabbitMQ multi-tenant requires BOTH layers:
+1. `tmrabbitmq.Manager` for per-tenant vhost isolation (Layer 1 — ISOLATION)
+2. `X-Tenant-ID` AMQP header for audit trail and context propagation (Layer 2 — OBSERVABILITY)
+
+Layer 2 alone (shared connection + X-Tenant-ID header) is NOT multi-tenant compliant — it provides traceability but ZERO isolation between tenants.
+Layer 1 alone (vhosts without header) provides isolation but loses audit trail and cross-service context propagation.
+Both layers MUST be implemented together. MUST NOT connect directly to RabbitMQ at startup in multi-tenant mode.
 </block_condition>
+
+#### RabbitMQ Multi-Tenant Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "X-Tenant-ID header is enough for isolation" | Headers are metadata for audit/tracing, NOT isolation. All tenants share the same queues and vhost. A consumer bug or poison message affects ALL tenants. | **MUST implement Layer 1: `tmrabbitmq.Manager` with per-tenant vhosts** |
+| "Vhosts are enough, we don't need the header" | Vhosts isolate but don't propagate tenant context for logging, tracing, and downstream DB resolution. Header is required for observability. | **MUST implement Layer 2: `X-Tenant-ID` header in all messages** |
+| "Shared connection is simpler" | Simplicity ≠ isolation. One tenant's traffic spike blocks all others. No per-tenant rate limiting or queue policies possible. | **MUST use per-tenant vhosts via `tmrabbitmq.Manager`** |
+| "We'll migrate to vhosts later" | Later = never. This is a HARD GATE. | **MUST implement NOW** |
+| "Our service has low RabbitMQ traffic" | Traffic volume ≠ exemption. Isolation is a platform requirement. | **MUST use `tmrabbitmq.Manager` + `X-Tenant-ID` header** |
 
 ---
 
