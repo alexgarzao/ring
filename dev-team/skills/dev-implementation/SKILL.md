@@ -270,8 +270,8 @@ Task:
     ## Ring Standards Reference
     For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-    Multi-Tenant (MANDATORY, all languages): https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md
-    All services MUST support both single-tenant and multi-tenant modes with backward compatibility.
+    Multi-Tenant: Handled by Gate 0.5 (ring:dev-multi-tenant) — implement single-tenant in this gate.
+    Design for adaptability: use `r.connection` as a struct field so Gate 0.5 can replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
 
     ## Frontend TDD Policy (React/Next.js only)
     If the component is purely visual/presentational (layout, styling, animations,
@@ -377,8 +377,8 @@ Task:
     ## Ring Standards Reference
     For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
     For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-    Multi-Tenant (MANDATORY, all languages): https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md
-    All services MUST support both single-tenant and multi-tenant modes with backward compatibility.
+    Multi-Tenant: Handled by Gate 0.5 (ring:dev-multi-tenant) — implement single-tenant in this gate.
+    Design for adaptability: use `r.connection` as a struct field so Gate 0.5 can replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
 
     ## ⛔ CRITICAL: all Ring Standards Apply (no DEFERRAL)
     See Ring Standards for mandatory requirements:
@@ -422,7 +422,7 @@ Task:
     |----------|----------------|-------------------------------|
     | **Go** | `golang.md` | "Telemetry & Observability (MANDATORY)", "Child Spans", "Context Propagation", "Anti-Patterns" |
     | **TypeScript** | `typescript.md` | "Observability", "Telemetry Patterns", "Context Propagation", "Anti-Patterns" |
-    | **All** | `golang/multi-tenant.md` | "Multi-Tenant Patterns", "Backward Compatibility", "M2M Credentials" (if plugin) |
+    | **All** | N/A (Gate 0.5 handles multi-tenant) | Multi-tenant adaptation happens after single-tenant implementation |
 
     **⛔ NON-NEGOTIABLE: Agent MUST implement EXACTLY the patterns from standards. no deviations. no shortcuts.**
 
@@ -542,16 +542,12 @@ Generate skill output:
 - OpenTelemetry Spans: ✅
 - Error Handling: ✅
 - Context Propagation: ✅
-- Multi-Tenant Mode: ✅/❌/N/A [single-tenant AND multi-tenant paths verified]
-- Multi-Tenant Evidence: [file:line where MULTI_TENANT_ENABLED is checked, or "N/A" if not applicable]
-
 ## Handoff to Next Gate
 - Implementation status: COMPLETE
 - Code compiles: ✅
 - Tests pass: ✅
 - Standards met: ✅
-- Multi-tenant verified: ✅/❌ [both modes work]
-- Ready for Gate 1 (DevOps): YES
+- Ready for Gate 0.5 (Multi-Tenant): YES
 - Environment needs: [list any new deps, env vars, services]
 ```
 

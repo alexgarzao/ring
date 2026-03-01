@@ -39,7 +39,7 @@ When a prompt is provided **without a tasks file**, ring:dev-cycle enters prompt
 
 1. **Analyzes the prompt** to understand what needs to be done
 2. **Generates tasks internally** (similar to pre-dev but streamlined)
-3. **Executes through 6 gates** as normal
+3. **Executes through 11 gates** as normal
 
 ```bash
 # Direct prompt - no tasks file needed
@@ -142,7 +142,8 @@ jq '.custom_prompt' docs/ring:dev-cycle/current-cycle.json  # View
 
 | Gate | Skill | Description |
 |------|-------|-------------|
-| 0 | `ring:dev-implementation` | Implement code (TDD) |
+| 0 | `ring:dev-implementation` | Implement code (TDD, single-tenant) |
+| 0.5 | `ring:dev-multi-tenant` | Multi-tenant adaptation (scoped or full) |
 | 1 | `ring:dev-devops` | Create Docker/compose |
 | 2 | `ring:dev-sre` | Observability (health checks, logging, tracing) |
 | 3 | `ring:dev-unit-testing` | Unit tests with 85%+ coverage |
@@ -153,7 +154,7 @@ jq '.custom_prompt' docs/ring:dev-cycle/current-cycle.json  # View
 | 8 | `ring:requesting-code-review` | Code review (6 reviewers in parallel) |
 | 9 | `ring:dev-validation` | Final validation |
 
-**Note:** Tasks are loaded at initialization, not as a separate gate. All 10 gates are MANDATORY.
+**Note:** Tasks are loaded at initialization, not as a separate gate. All 11 gates are MANDATORY.
 
 After all tasks: `ring:dev-feedback-loop` generates metrics report.
 
@@ -180,7 +181,7 @@ After all tasks: `ring:dev-feedback-loop` generates metrics report.
 Use Skill tool: ring:dev-cycle
 ```
 
-The skill contains the complete 10-gate workflow with:
+The skill contains the complete 11-gate workflow with:
 - Anti-rationalization tables
 - Pressure resistance scenarios
 - TDD sub-phases (Gate 0.1 RED → Gate 0.2 GREEN)
@@ -230,8 +231,8 @@ AskUserQuestion:
 
 See skill `ring:dev-cycle` for full details. Key rules:
 
-- **all 6 gates execute** - Checkpoints affect pauses, not gates
-- **Gates execute in order** - 0 → 1 → 2 → 3 → 4 → 5
-- **Gate 4 requires all 6 reviewers** - 5/6 = FAIL
+- **all 11 gates execute** - Checkpoints affect pauses, not gates
+- **Gates execute in order** - 0 → 0.5 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
+- **Gate 8 requires all 6 reviewers** - 5/6 = FAIL
 - **Coverage threshold** - 85% minimum, no exceptions
 - **State persisted** - Can resume with `--resume` after any interruption
