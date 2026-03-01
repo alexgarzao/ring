@@ -2,6 +2,20 @@
 
 ## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
 
+- **Improvements:**
+  - Updated tenant-manager function names to align with the Resolve* interface for better consistency and clarity.
+
+- **Fixes:**
+  - Corrected Resolve* examples and checklist following a code review to ensure accuracy and adherence to standards.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.11.0...ring-default@1.11.1)
+
+---
+
+## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
+
 - **Fixes:**
   - Corrected Resolve* examples and checklist after code review.
 
