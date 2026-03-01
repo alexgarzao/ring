@@ -2861,7 +2861,7 @@ For current execution unit:
    - else: Skip commit (will happen at task or cycle end)
 
 0b. **VISUAL CHANGE REPORT (MANDATORY - before checkpoint):**
-   - MUST invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
+   - MANDATORY: Invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
    - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
    - Content sourced from state JSON `agent_outputs` for the current unit:
      * **TDD Output:** `tdd_red` (failing test with failure_output) + `tdd_green` (implementation with pass_output)
@@ -2901,7 +2901,7 @@ For current execution unit:
    - else: Skip commit (will happen at cycle end)
 
 0b. **VISUAL CHANGE REPORT (MANDATORY - before task checkpoint):**
-   - MUST invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks in this task
+   - MANDATORY: Invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks in this task
    - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
    - Content aggregated from all subtask executions:
      * **Task Overview:** Task ID, title, all subtask IDs and their gate statuses

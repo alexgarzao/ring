@@ -931,9 +931,7 @@ Before proceeding to Step 7, verify:
 
 **TodoWrite:** Mark "Generate visual change report" as `in_progress`
 
-**MANDATORY: Generate a visual HTML report before user approval.**
-
-Invokes `Skill("ring:visual-explainer")` to produce a self-contained HTML page showing all planned refactoring changes. This replaces reading raw findings.md / tasks.md markdown for approval decisions.
+**MANDATORY:** Invoke `Skill("ring:visual-explainer")` to produce a self-contained HTML page showing all planned refactoring changes. This replaces reading raw findings.md / tasks.md markdown for approval decisions.
 
 **Read the code-diff template first:** Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating.
 

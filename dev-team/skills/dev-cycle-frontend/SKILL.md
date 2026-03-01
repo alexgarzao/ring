@@ -916,7 +916,7 @@ Read tool:
 **Unit Checkpoint (after subtask completes Gate 8):**
 
 **VISUAL CHANGE REPORT (MANDATORY - before checkpoint question):**
-- MUST invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
+- MANDATORY: Invoke `Skill("ring:visual-explainer")` to generate a code-diff HTML report for this execution unit
 - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
 - Content sourced from state JSON `agent_outputs` for the current unit:
   * **TDD Output:** `tdd_red` (failing test) + `tdd_green` (implementation)
@@ -942,7 +942,7 @@ Subtask {id} complete. All 9 gates passed.
 **Task Checkpoint (after all subtasks of a task complete):**
 
 **VISUAL CHANGE REPORT (MANDATORY - before task checkpoint question):**
-- MUST invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks
+- MANDATORY: Invoke `Skill("ring:visual-explainer")` to generate an aggregate code-diff HTML report for all subtasks
 - Read `default/skills/visual-explainer/templates/code-diff.html` to absorb the patterns before generating
 - Content aggregated from all subtask executions:
   * **Task Overview:** Task ID, title, all subtask IDs and their gate statuses
