@@ -23,6 +23,78 @@ This module covers multi-tenant patterns with Tenant Manager.
 
 **CONDITIONAL:** Only implement if `MULTI_TENANT_ENABLED=true` is required for your service.
 
+### HARD GATE: Canonical Model Compliance
+
+**Existence ≠ Compliance.** A service that has "some multi-tenant code" is NOT considered multi-tenant unless every component matches the canonical patterns defined in this document exactly.
+
+MUST replace multi-tenant implementations that use custom middleware, manual DB switching, non-standard env var names, or any mechanism other than the lib-commons v3 tenant-manager sub-packages — they are **non-compliant**. Not patched, not adapted, **replaced**.
+
+The only valid multi-tenant implementation uses:
+- `tenantId` from JWT via `TenantMiddleware` or `MultiPoolMiddleware` (from `lib-commons/v3/commons/tenant-manager/middleware`)
+- `core.ResolvePostgres` / `core.ResolveMongo` / `core.ResolveModuleDB` for database resolution (from `lib-commons/v3/commons/tenant-manager/core`)
+- `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v3/commons/tenant-manager/valkey`)
+- `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v3/commons/tenant-manager/s3`)
+- `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v3/commons/tenant-manager/rabbitmq`)
+- The 7 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
+- `client.WithCircuitBreaker` on the Tenant Manager HTTP client
+
+MUST correct any deviation from these patterns before the service can be considered multi-tenant.
+
+**Any file outside this canonical set that claims to handle multi-tenant logic (custom tenant resolvers, manual pool managers, wrapper middleware, etc.) is non-compliant and MUST NOT be considered part of the multi-tenant implementation.** Only files following the patterns below are valid.
+
+### Canonical File Map
+
+These are the only files that require multi-tenant changes. The exact paths follow the standard Go project layout used across Lerian services. Files not listed here MUST NOT contain multi-tenant logic.
+
+**Always modified (every service):**
+
+| File | Gate | What Changes |
+|------|------|-------------|
+| `go.mod` | 2 | lib-commons v3, lib-auth v2 |
+| `internal/bootstrap/config.go` | 3 | 7 canonical `MULTI_TENANT_*` env vars in Config struct |
+| `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware registration. Branch on `cfg.MultiTenantEnabled` |
+| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Register `TenantMiddleware` or `MultiPoolMiddleware` in HTTP chain (after auth, before handlers). Public paths bypass |
+
+**Per detected database/storage (Gate 5):**
+
+| File Pattern | Stack | What Changes |
+|-------------|-------|-------------|
+| `internal/adapters/postgres/**/*.postgresql.go` | PostgreSQL | `r.connection.GetDB()` → `core.ResolvePostgres(ctx, r.connection)` or `core.ResolveModuleDB(ctx, module, r.connection)` (multi-module) |
+| `internal/adapters/mongodb/**/*.mongodb.go` | MongoDB | Static mongo connection → `core.ResolveMongo(ctx, r.connection, r.dbName)` |
+| `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyFromContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
+| `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetObjectStorageKeyForTenant(ctx, key)` |
+
+**Conditional — plugin only (Gate 5.5):**
+
+| File | Condition | What Changes |
+|------|-----------|-------------|
+| `internal/adapters/product/client.go` (or equivalent product API client) | Plugin that calls product APIs | M2M authenticator with per-tenant credential caching via `secretsmanager.GetM2MCredentials` |
+| `internal/bootstrap/service.go` | Plugin | Conditional M2M wiring: `if cfg.MultiTenantEnabled` → AWS Secrets Manager client + M2M provider |
+
+**Conditional — RabbitMQ only (Gate 6):**
+
+| File Pattern | What Changes |
+|-------------|-------------|
+| `internal/adapters/rabbitmq/producer*.go` | Dual constructor: single-tenant (direct connection) + multi-tenant (`tmrabbitmq.Manager.GetChannel`). `X-Tenant-ID` header injection |
+| `internal/adapters/rabbitmq/consumer*.go` (or `internal/bootstrap/`) | `tmconsumer.MultiTenantConsumer` with lazy initialization. `X-Tenant-ID` header extraction |
+
+**Tests (Gate 7-8):**
+
+| File Pattern | What Tests |
+|-------------|------------|
+| `internal/bootstrap/*_test.go` | `TestMultiTenant_BackwardCompatibility` — validates single-tenant mode works unchanged |
+| `internal/adapters/**/*_test.go` | Unit tests with mock tenant context, tenant isolation tests (two tenants, data separation) |
+| `internal/service/*_test.go` (or integration test dir) | Integration tests with two distinct tenants verifying cross-tenant isolation |
+
+**Output artifacts (Gate 11):**
+
+| File | What |
+|------|------|
+| `docs/multi-tenant-guide.md` | Activation guide: env vars, how to enable/disable, verification steps |
+| `docs/multi-tenant-preview.html` | Visual implementation preview (generated at Gate 1.5, kept for reference) |
+
+**HARD GATE: Files outside this map that contain multi-tenant logic are non-compliant.** If a service has custom files like `internal/tenant/resolver.go`, `internal/middleware/tenant_middleware.go`, `pkg/multitenancy/pool.go` or similar — these MUST be removed and replaced with the canonical lib-commons v3 tenant-manager sub-packages wired through the files listed above.
+
 ### Required lib-commons Version
 
 Multi-tenant support requires **lib-commons v3** (`github.com/LerianStudio/lib-commons/v3`). The `tenant-manager` package does not exist in v2.
@@ -1152,6 +1224,9 @@ For `ConsumerTrigger` interface definition and usage, see [ConsumerTrigger inter
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
+| "Service already has multi-tenant code" | Existence ≠ compliance. Code that doesn't match the Ring canonical model (lib-commons v3 tenant-manager sub-packages) is non-compliant and MUST be replaced entirely. | **STOP. Run compliance audit against this document. Replace every non-compliant component.** |
+| "Our custom multi-tenant approach works" | Working ≠ compliant. Custom implementations create drift, block lib-commons upgrades, prevent standardized tooling, and cannot be validated by automated compliance checks. | **STOP. Replace with canonical lib-commons v3 implementation.** |
+| "Just need to adapt/patch the existing code" | Non-standard implementations cannot be patched into compliance. The patterns are structurally different (context-based resolution vs static connections, lib-commons middleware vs custom middleware). | **STOP. Replace, do not patch.** |
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
 | "Tenant Manager adds complexity" | Complexity is in connection management anyway. Tenant Manager standardizes it. | **Use Tenant Manager for multi-tenant** |
 | "JWT parsing is expensive" | Parse once in middleware, use from context everywhere. | **Extract tenant once, propagate via context** |
