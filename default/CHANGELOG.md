@@ -3,6 +3,17 @@
 ## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
 
 - **Fixes:**
+  - Corrected Resolve* examples and checklist after code review.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.11.0...ring-default@1.11.1)
+
+---
+
+## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
+
+- **Fixes:**
   - Corrected `Resolve*` examples and checklist following code review.
 
 Contributors: @jeff, @jefferson.comff
