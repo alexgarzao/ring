@@ -2,6 +2,18 @@
 
 ## [0.4.1](https://github.com/LerianStudio/ring/releases/tag/ring-tw-team@0.4.1)
 
+- **Fixes:**
+  - Applied lexical salience guidelines across skills.
+  - Added missing CLAUDE.md required sections.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-tw-team@0.4.0...ring-tw-team@0.4.1)
+
+---
+
+## [0.4.1](https://github.com/LerianStudio/ring/releases/tag/ring-tw-team@0.4.1)
+
 - Fixes:
   - Applied lexical salience guidelines across skills.
   - Added missing CLAUDE.md required sections.
