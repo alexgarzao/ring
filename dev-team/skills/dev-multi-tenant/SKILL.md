@@ -27,6 +27,8 @@ NOT_skip_when: |
   - "organization_id already exists" → organization_id is NOT multi-tenant. tenantId via JWT is required.
   - "Just need to connect the wiring" → Multi-tenant requires lib-commons v3 dispatch layer sub-packages.
   - "lib-commons v3 upgrade is too risky" → REQUIRES lib-commons v3 dispatch layer sub-packages. No v3 = no multi-tenant.
+  - "Service already has multi-tenant" → Existence ≠ compliance. MUST replace non-standard implementations with Ring canonical model.
+  - "Multi-tenant is already done" → Every gate verifies compliance. MUST fix non-compliant code — it is wrong, not done.
 
 sequence:
   after: [ring:dev-devops]
@@ -108,41 +110,23 @@ Multi-tenant isolation is 100% based on `tenantId` from JWT → dispatch layer m
 
 ### MANDATORY: Canonical Environment Variables
 
-These are the only valid multi-tenant environment variables. MUST NOT use any other names (e.g., `TENANT_MANAGER_ADDRESS` is WRONG — the correct name is `MULTI_TENANT_URL`).
+See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi-tenant.md#environment-variables) for the complete table of 7 canonical `MULTI_TENANT_*` env vars with descriptions, defaults, and required status.
 
-| Env Var | Description | Default | Required |
-|---------|-------------|---------|----------|
-| `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
-| `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
-| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
-| `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
-| `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
-| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
-| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
+MUST NOT use any other names (e.g., `TENANT_MANAGER_ADDRESS` is WRONG — the correct name is `MULTI_TENANT_URL`).
 
-HARD GATE: Any env var outside this table is non-compliant. Agent MUST NOT invent or accept alternative names.
+HARD GATE: Any env var outside that table is non-compliant. Agent MUST NOT invent or accept alternative names.
 
 ### MANDATORY: Canonical Metrics
 
-These are the only valid multi-tenant metrics. All 4 are required.
-
-| Metric | Type | Description |
-|--------|------|-------------|
-| `tenant_connections_total` | Counter | Total tenant connections created |
-| `tenant_connection_errors_total` | Counter | Connection failures per tenant |
-| `tenant_consumers_active` | Gauge | Active message consumers |
-| `tenant_messages_processed_total` | Counter | Messages processed per tenant |
+See [multi-tenant.md § Multi-Tenant Metrics](../../docs/standards/golang/multi-tenant.md#multi-tenant-metrics) for the 4 required metrics. All 4 are MANDATORY.
 
 When `MULTI_TENANT_ENABLED=false`, metrics MUST use no-op implementations (zero overhead in single-tenant mode).
 
 ### MANDATORY: Circuit Breaker
 
-The Tenant Manager HTTP client MUST enable `WithCircuitBreaker`. MUST NOT create the client without it.
+See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi-tenant.md#environment-variables) for circuit breaker env vars (`MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD`, `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC`).
 
-| Env Var | Default | Description |
-|---------|---------|-------------|
-| `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | `5` | Consecutive failures before circuit opens |
-| `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | `30` | Seconds before circuit resets (half-open) |
+The Tenant Manager HTTP client MUST enable `WithCircuitBreaker`. MUST NOT create the client without it.
 
 HARD GATE: A client without circuit breaker can cascade failures across all tenants.
 
@@ -173,6 +157,9 @@ MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: 
 
 | User Says | This Is | Response |
 |-----------|---------|----------|
+| "It already has multi-tenant, skip this gate" | COMPLIANCE_BYPASS | "Existence ≠ compliance. MUST run compliance audit. If it doesn't match the Ring canonical model exactly, it is non-compliant and MUST be replaced." |
+| "Multi-tenant is done, just review it" | COMPLIANCE_BYPASS | "CANNOT skip gates. Every gate verifies compliance OR implements. Non-standard implementations are not 'done' — they are wrong." |
+| "Our custom approach works the same way" | COMPLIANCE_BYPASS | "Working ≠ compliant. Only lib-commons v3 dispatch layer sub-packages are valid. Custom implementations create drift and block upgrades." |
 | "Skip the lib-commons upgrade" | QUALITY_BYPASS | "CANNOT proceed without lib-commons v3. Tenant-manager sub-packages do not exist in v2." |
 | "Just do the happy path, skip backward compat" | SCOPE_REDUCTION | "Backward compatibility is NON-NEGOTIABLE. Single-tenant deployments depend on it." |
 | "organization_id is our tenant identifier" | AUTHORITY_OVERRIDE | "STOP. organization_id is NOT multi-tenant. tenantId from JWT is the only mechanism." |
@@ -191,13 +178,13 @@ MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: 
 
 | Gate | Name | Condition | Agent |
 |------|------|-----------|-------|
-| 0 | Stack Detection | Always | Orchestrator |
+| 0 | Stack Detection + Compliance Audit | Always | Orchestrator |
 | 1 | Codebase Analysis (multi-tenant focus) | Always | ring:codebase-explorer |
 | 1.5 | Implementation Preview (visual report) | Always | Orchestrator (ring:visual-explainer) |
-| 2 | lib-commons v3 + lib-auth v2 Upgrade | Skip if already v3 AND lib-auth v2 | ring:backend-engineer-golang |
-| 3 | Multi-Tenant Configuration | Skip if already configured | ring:backend-engineer-golang |
-| 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always (core) | ring:backend-engineer-golang |
-| 5 | Repository Adaptation | Per detected DB/storage | ring:backend-engineer-golang |
+| 2 | lib-commons v3 + lib-auth v2 Upgrade | Skip only if `go.mod` contains `lib-commons/v3` AND `lib-auth/v2` (verified via grep) | ring:backend-engineer-golang |
+| 3 | Multi-Tenant Configuration | Always — verify compliance or implement/fix | ring:backend-engineer-golang |
+| 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always — verify compliance or implement/fix | ring:backend-engineer-golang |
+| 5 | Repository Adaptation | Always per detected DB/storage — verify compliance or implement/fix | ring:backend-engineer-golang |
 | 5.5 | M2M Secret Manager (Plugin Auth) | Skip if NOT a plugin | ring:backend-engineer-golang |
 | 6 | RabbitMQ Multi-Tenant | Skip if no RabbitMQ | ring:backend-engineer-golang |
 | 7 | Metrics & Backward Compat | Always | ring:backend-engineer-golang |
@@ -208,11 +195,29 @@ MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: 
 
 MUST execute gates sequentially. CANNOT skip or reorder.
 
+<cannot_skip>
+
+### HARD GATE: Existence ≠ Compliance
+
+**"The service already has multi-tenant code" is NOT a reason to skip any gate.**
+
+MUST replace existing multi-tenant code that does not follow the Ring canonical model — it is **non-compliant**. The only valid reason to skip a gate is when the existing implementation has been **verified** to match the exact patterns defined in [multi-tenant.md](../../docs/standards/golang/multi-tenant.md).
+
+**Compliance verification requires EVIDENCE, not assumption.** See [multi-tenant.md § HARD GATE: Canonical Model Compliance](../../docs/standards/golang/multi-tenant.md#hard-gate-canonical-model-compliance) for the canonical list of compliant patterns. The Gate 0 Phase 2 compliance audit (A1-A8 grep checks) verifies each component against those patterns.
+
+**If ANY audit check is NON-COMPLIANT → the corresponding gate MUST execute to fix it. CANNOT skip.**
+
+</cannot_skip>
+
 ---
 
-## Gate 0: Stack Detection
+## Gate 0: Stack Detection + Compliance Audit
 
 **Orchestrator executes directly. No agent dispatch.**
+
+**This gate has TWO phases: detection AND compliance audit.**
+
+### Phase 1: Stack Detection
 
 ```text
 DETECT (run in parallel):
@@ -235,6 +240,89 @@ DETECT (run in parallel):
    - M2M client: grep -rn "client_credentials\|M2M\|secretsmanager\|GetM2MCredentials" internal/ pkg/
    - Product API calls: grep -rn "ledger.*client\|midaz.*client\|product.*client" internal/
 ```
+
+### Phase 2: Compliance Audit (MANDATORY if any multi-tenant code detected)
+
+If Phase 1 detects any existing multi-tenant code (step 7 returns results), MUST run a compliance audit. MUST replace existing code that does not match the Ring canonical model — it is not "partially done", it is **wrong**.
+
+```text
+AUDIT (run in parallel — only if step 7 found existing multi-tenant code):
+
+NOTE: A1 is a NEGATIVE check (presence of wrong names = NON-COMPLIANT).
+      A2-A8 are POSITIVE checks (absence of canonical patterns = NON-COMPLIANT).
+
+A1. Config compliance:
+    - grep -rn "TENANT_MANAGER_ADDRESS\|TENANT_URL\|TENANT_MANAGER_URL" internal/
+    - (any match = NON-COMPLIANT config var names → Gate 3 MUST fix)
+
+A2. Middleware compliance:
+    - grep -rn "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/
+    - (no match but other tenant middleware exists = NON-COMPLIANT → Gate 4 MUST fix)
+
+A3. Repository compliance:
+    - grep -rn "core.ResolvePostgres\|core.ResolveMongo\|core.ResolveModuleDB" internal/
+    - (repositories use static connections or custom pool lookup = NON-COMPLIANT → Gate 5 MUST fix)
+
+A4. Redis compliance (if Redis detected):
+    - grep -rn "valkey.GetKeyFromContext" internal/
+    - (Redis operations without GetKeyFromContext = NON-COMPLIANT → Gate 5 MUST fix)
+
+A5. S3 compliance (if S3 detected):
+    - grep -rn "s3.GetObjectStorageKeyForTenant" internal/
+    - (S3 operations without GetObjectStorageKeyForTenant = NON-COMPLIANT → Gate 5 MUST fix)
+
+A6. RabbitMQ compliance (if RabbitMQ detected):
+    - grep -rn "tmrabbitmq.NewManager\|tmrabbitmq.Manager" internal/
+    - (RabbitMQ multi-tenant without tmrabbitmq.Manager = NON-COMPLIANT → Gate 6 MUST fix)
+
+A7. Circuit breaker compliance:
+    - grep -rn "WithCircuitBreaker" internal/
+    - (Tenant Manager client without circuit breaker = NON-COMPLIANT → Gate 4 MUST fix)
+
+A8. Backward compatibility compliance:
+    - grep -rn "TestMultiTenant_BackwardCompatibility" internal/
+    - (no backward compat test = NON-COMPLIANT → Gate 7 MUST fix)
+```
+
+**Output format for compliance audit:**
+
+```text
+COMPLIANCE AUDIT RESULTS:
+| Component | Status | Evidence | Gate Action |
+|-----------|--------|----------|-------------|
+| Config vars | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 3: SKIP / MUST FIX |
+| Middleware | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 4: SKIP / MUST FIX |
+| Repositories | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 5: SKIP / MUST FIX |
+| Redis keys | COMPLIANT / NON-COMPLIANT / N/A | {grep results} | Gate 5: SKIP / MUST FIX |
+| S3 keys | COMPLIANT / NON-COMPLIANT / N/A | {grep results} | Gate 5: SKIP / MUST FIX |
+| RabbitMQ | COMPLIANT / NON-COMPLIANT / N/A | {grep results} | Gate 6: SKIP / MUST FIX |
+| Circuit breaker | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 4: SKIP / MUST FIX |
+| Backward compat test | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 7: SKIP / MUST FIX |
+```
+
+**HARD GATE: A gate can only be marked as SKIP when ALL its compliance checks are COMPLIANT with evidence. One NON-COMPLIANT row → gate MUST execute.**
+
+### Phase 3: Non-Canonical File Detection (MANDATORY)
+
+MUST scan for multi-tenant logic in files outside the canonical file map. See [multi-tenant.md § Canonical File Map](../../docs/standards/golang/multi-tenant.md#canonical-file-map) for the complete list of valid files.
+
+```text
+DETECT non-canonical multi-tenant files:
+
+N1. Custom tenant middleware:
+    grep -rn "tenant" internal/middleware/ pkg/middleware/ --include="*.go" | grep -v "_test.go"
+    (any match = NON-CANONICAL file → MUST be removed and replaced with lib-commons middleware)
+
+N2. Custom tenant resolvers/managers:
+    grep -rln "tenant" internal/tenant/ internal/multitenancy/ pkg/tenant/ pkg/multitenancy/ --include="*.go" 2>/dev/null
+    (any match = NON-CANONICAL file → MUST be removed)
+
+N3. Custom pool managers:
+    grep -rln "pool.*tenant\|tenant.*pool" internal/ pkg/ --include="*.go" | grep -v "dispatch layer"
+    (any match outside lib-commons = NON-CANONICAL → MUST be removed)
+```
+
+**If non-canonical files are found:** report them in the compliance audit as `NON-CANONICAL FILES DETECTED`. The implementing agent MUST remove these files and replace their functionality with the canonical lib-commons v3 sub-packages during the appropriate gate.
 
 **Service type classification:**
 
@@ -452,7 +540,7 @@ HARD GATE: Developer MUST explicitly approve the implementation preview before a
 
 ## Gate 2: lib-commons v3 + lib-auth v2 Upgrade
 
-**SKIP IF:** already lib-commons v3 AND lib-auth v2.
+**SKIP only if:** `go.mod` contains `lib-commons/v3` AND `lib-auth/v2` (verified via grep, not assumed). If the service uses lib-commons v2 or lib-auth v1, this gate is MANDATORY.
 
 **Dispatch `ring:backend-engineer-golang` with context:**
 
@@ -477,11 +565,11 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 ## Gate 3: Multi-Tenant Configuration
 
-**SKIP IF:** config already has `MULTI_TENANT_ENABLED`.
+**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 7 canonical env vars are present with correct names, types, and defaults. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Add the 7 canonical multi-tenant environment variables to the Config struct.
+> TASK: Verify and ensure all 7 canonical multi-tenant environment variables exist in the Config struct with correct names and defaults. If any are missing, misnamed, or have wrong defaults — fix them.
 > CONTEXT FROM GATE 1: {Config struct location and current fields from analysis report}
 > Follow multi-tenant.md sections "Environment Variables", "Configuration", and "Conditional Initialization".
 >
@@ -504,9 +592,9 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 ## Gate 4: TenantMiddleware (Core)
 
-**SKIP IF:** middleware already exists.
+**Always executes.** If middleware already exists, this gate VERIFIES it uses the canonical lib-commons v3 dispatch layer sub-packages (`tmmiddleware.NewTenantMiddleware` or `tmmiddleware.NewMultiPoolMiddleware`). Custom middleware, inline JWT parsing, or any non-lib-commons implementation is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
 
-**This is the CORE gate. Without TenantMiddleware, there is no tenant isolation.**
+**This is the CORE gate. Without compliant TenantMiddleware, there is no tenant isolation.**
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
@@ -539,7 +627,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 
 ## Gate 5: Repository Adaptation
 
-**SKIP IF:** repositories already use context-based connections.
+**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v3 functions (`core.ResolvePostgres`, `core.ResolveMongo`, `core.ResolveModuleDB`, `valkey.GetKeyFromContext`, `s3.GetObjectStorageKeyForTenant`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
@@ -834,6 +922,12 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
+| "Service already has multi-tenant code" | Existence ≠ compliance. Code that doesn't follow the Ring canonical model is WRONG and must be replaced. | **STOP. Run compliance audit (Gate 0 Phase 2). Fix every NON-COMPLIANT component.** |
+| "Multi-tenant is already implemented, just needs tweaks" | Partial or non-standard implementation is not "almost done" — it is non-compliant. Every component must match the canonical model exactly. | **STOP. Execute every gate. Verify or fix each one.** |
+| "Skipping this gate because something similar exists" | "Similar" is not "compliant". Only exact matches to lib-commons v3 dispatch layer sub-packages are valid. | **STOP. Verify with grep evidence. If it doesn't match the canonical pattern → gate MUST execute.** |
+| "The current approach works fine, no need to change" | Working ≠ compliant. A custom solution that works today creates drift, blocks upgrades, and prevents standardized tooling. | **STOP. Replace with canonical implementation.** |
+| "We have a custom tenant package that handles this" | Custom packages are non-canonical. Only lib-commons v3 dispatch layer sub-packages are valid. Custom files MUST be removed. | **STOP. Remove custom files. Use lib-commons v3 sub-packages.** |
+| "This extra file just wraps lib-commons" | Wrappers add indirection that breaks compliance verification and creates maintenance burden. MUST use lib-commons directly. | **STOP. Remove wrapper. Call lib-commons directly from bootstrap/adapters.** |
 | "Agent says out of scope" | Skill defines scope, not agent. | **Re-dispatch with gate context** |
 | "Skip tests" | Gate 8 proves isolation works. | **MANDATORY** |
 | "Skip review" | Security implications. One mistake = data leak. | **MANDATORY** |
