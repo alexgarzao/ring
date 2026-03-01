@@ -33,7 +33,7 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(26) Agents(8) │  │ Skills(19) Agents(11)│                       │  │
+│  │  │ Skills(26) Agents(8) │  │ Skills(21) Agents(11)│                       │  │
 │  │  │ Cmds(13) Hooks/Lib   │  │ Cmds(7)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
@@ -75,7 +75,7 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
 | **ring-default**     | Core skills library                  | 26 skills, 8 agents, 13 commands |
-| **ring-dev-team**    | Developer agents                     | 19 skills, 11 agents, 7 commands |
+| **ring-dev-team**    | Developer agents                     | 21 skills, 11 agents, 7 commands |
 | **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
 | **ring-pm-team**     | Product planning workflows           | 13 skills, 4 agents, 3 commands  |
 | **ring-pmo-team**    | PMO portfolio management specialists | 9 skills, 6 agents, 4 commands   |
@@ -275,7 +275,7 @@ pmo-team/commands/
 
 dev-team/commands/
 ├── dev-cancel.md           # /ring:dev-cancel - Cancel dev cycle
-├── dev-cycle.md            # /ring:dev-cycle - 10-gate development cycle
+├── dev-cycle.md            # /ring:dev-cycle - 11-gate development cycle
 ├── dev-cycle-frontend.md   # /ring:dev-cycle-frontend - 9-gate frontend cycle
 ├── dev-refactor.md         # /ring:dev-refactor - Standards refactoring
 ├── dev-refactor-frontend.md # /ring:dev-refactor-frontend - Frontend standards refactor
@@ -797,12 +797,12 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | ------------------------- | ---------- | ---------------------- |
 | Active Plugins            | 6          | All plugin directories |
 | Skills (ring-default)     | 26         | `default/skills/`      |
-| Skills (ring-dev-team)    | 19         | `dev-team/skills/`     |
+| Skills (ring-dev-team)    | 21         | `dev-team/skills/`     |
 | Skills (ring-finops-team) | 7          | `finops-team/skills/`  |
 | Skills (ring-pm-team)     | 13         | `pm-team/skills/`      |
 | Skills (ring-pmo-team)    | 9          | `pmo-team/skills/`     |
 | Skills (ring-tw-team)     | 7          | `tw-team/skills/`      |
-| **Total Skills**          | **81**     | **All plugins**        |
+| **Total Skills**          | **83**     | **All plugins**        |
 | Agents (ring-default)     | 8          | `default/agents/`      |
 | Agents (ring-dev-team)    | 11         | `dev-team/agents/`     |
 | Agents (ring-finops-team) | 3          | `finops-team/agents/`  |

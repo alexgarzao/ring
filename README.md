@@ -21,7 +21,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 81 specialized skills** (26 core + 19 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
+- **Providing 83 specialized skills** (26 core + 21 dev-team + 13 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
 - **35 specialized agents** - 8 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -243,7 +243,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 - ring:test-driven-development (RED-GREEN-REFACTOR cycle)
 - ring:systematic-debugging (4-phase root cause analysis)
 - ring:verification-before-completion (Evidence before claims)
-... and 70 more skills
+... and 72 more skills
 ```
 
 ## 🎯 Core Skills
@@ -282,7 +282,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 81 Skills (Across 6 Plugins)
+## 📚 All 83 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 26 skills)
 
@@ -327,29 +327,31 @@ No "should work" → Only "does work" with proof
 
 - `ring:production-readiness-audit` - 44-dimension production readiness audit; runs explorers in batches of up to 10, appends incrementally to a single report; output: scored report (0-430, max 440 with multi-tenant) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
 
-### Developer Skills (ring-dev-team plugin - 19 skills)
+### Developer Skills (ring-dev-team plugin - 21 skills)
 
 **Orchestration & Refactoring (5):**
 
 - `ring:using-dev-team` - Introduction to developer specialist agents
-- `ring:dev-cycle` - 10-gate development workflow orchestrator
+- `ring:dev-cycle` - 11-gate development workflow orchestrator
 - `ring:dev-cycle-frontend` - 9-gate frontend development workflow orchestrator
 - `ring:dev-refactor` - Backend/codebase standards analysis
 - `ring:dev-refactor-frontend` - Frontend standards analysis and task generation
 
-**Backend Gate Skills (10):**
+**Backend Gate Skills (11):**
 
 - `ring:dev-implementation` - Gate 0: TDD implementation
+- `ring:dev-multi-tenant` - Gate 0.5: Multi-tenant adaptation (database-per-tenant isolation)
 - `ring:dev-devops` - Gate 1: DevOps setup (Docker, compose)
 - `ring:dev-sre` - Gate 2: Observability validation
 
-**Advanced Testing Gates (5):**
+**Advanced Testing Gates (6):**
 
 - `ring:dev-unit-testing` - Gate 3: Unit test coverage (85%+ threshold)
 - `ring:dev-fuzz-testing` - Gate 4: Fuzz testing with seed corpus for edge case discovery
 - `ring:dev-property-testing` - Gate 5: Property-based tests for domain invariants
 - `ring:dev-integration-testing` - Gate 6: Integration tests with real containers via testcontainers
 - `ring:dev-chaos-testing` - Gate 7: Chaos tests using Toxiproxy for graceful degradation
+- `ring:dev-goroutine-leak-testing` - Goroutine leak detection and regression testing
 - `ring:dev-validation` - Gate 9: User approval
 - `ring:dev-feedback-loop` - Assertiveness scoring and metrics
 
@@ -453,7 +455,7 @@ Ring provides 30 slash commands across 6 plugins for common workflows.
 
 ### Development Cycle (ring-dev-team)
 
-- `/ring:dev-cycle [task]` - Start 10-gate development workflow (implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation)
+- `/ring:dev-cycle [task]` - Start 11-gate development workflow (implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation)
 - `/ring:dev-cycle-frontend [task]` - Start 9-gate frontend workflow (implementation→devops→accessibility→unit-testing→visual-testing→e2e-testing→performance→review→validation)
 - `/ring:dev-refactor [path]` - Analyze codebase against standards
 - `/ring:dev-refactor-frontend [path]` - Analyze frontend codebase against standards and generate executable tasks
@@ -571,7 +573,7 @@ ring/                                  # Monorepo root
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 19 skills, 11 agents, 7 commands
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 21 skills, 11 agents, 7 commands
 │   └── agents/                      # 11 specialized developer agents
 │       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
 │       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
