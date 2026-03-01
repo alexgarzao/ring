@@ -2,6 +2,20 @@
 
 ## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
 
+- **Fixes:**
+  - Corrected Resolve* examples and checklist after code review.
+
+- **Improvements:**
+  - Updated function names in dispatch layer to align with the Resolve* interface.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.11.0...ring-default@1.11.1)
+
+---
+
+## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
+
 - Improvements:
   - Update dispatch layer function names to Resolve* interface for consistency.
   - Correct Resolve* examples and checklist after code review for better clarity.
