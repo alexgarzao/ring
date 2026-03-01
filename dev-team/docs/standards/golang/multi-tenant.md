@@ -63,6 +63,7 @@ go build ./...
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
+| `APPLICATION_NAME` | Service name for Tenant Manager API (`/tenants/{id}/services/{service}/settings`) | - | Yes |
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
 | `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
 | `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
@@ -87,6 +88,8 @@ MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC=30
 ```go
 // internal/bootstrap/config.go
 type Config struct {
+    ApplicationName string `env:"APPLICATION_NAME"`
+
     // Multi-Tenant Configuration
     MultiTenantEnabled                  bool   `env:"MULTI_TENANT_ENABLED" default:"false"`
     MultiTenantURL                      string `env:"MULTI_TENANT_URL"`
@@ -103,6 +106,51 @@ type Config struct {
     PrimaryDBName     string `env:"DB_NAME"`
     PrimaryDBPort     string `env:"DB_PORT"`
     PrimaryDBSSLMode  string `env:"DB_SSLMODE"`
+}
+```
+
+### Service Name Resolution
+
+The `service` parameter in `NewManager` maps to the Tenant Manager API path: `/tenants/{id}/services/{service}/settings`. Use `cfg.ApplicationName` (env `APPLICATION_NAME`):
+
+```go
+pgMgr := tmpostgres.NewManager(tmClient, cfg.ApplicationName,
+    tmpostgres.WithModule(ApplicationName),  // module = component name constant
+    tmpostgres.WithLogger(logger),
+)
+```
+
+| Parameter | Source | Purpose | Example |
+|-----------|--------|---------|---------|
+| `service` (2nd arg) | `cfg.ApplicationName` (env `APPLICATION_NAME`) | Tenant Manager API path | `"ledger"`, `"reporter"` |
+| `module` (WithModule) | Component constant `ApplicationName` | Key in `TenantConfig.Databases[module]` | `"onboarding"`, `"transaction"`, `"manager"` |
+
+### Manager Wiring
+
+**TenantMiddleware (single-module):** Managers are passed directly to the middleware:
+
+```go
+mongoManager := tmmongo.NewManager(tmClient, cfg.ApplicationName, ...)
+tenantMid := tmmiddleware.NewTenantMiddleware(
+    tmmiddleware.WithMongoManager(mongoManager),
+)
+```
+
+**MultiPoolMiddleware (multi-module):** Managers MUST be assigned to the Service struct and exposed via getters:
+
+```go
+type Service struct {
+    pgManager    interface{}
+    mongoManager interface{}
+}
+
+func (s *Service) GetPGManager() interface{} { return s.pgManager }
+func (s *Service) GetMongoManager() interface{} { return s.mongoManager }
+
+// At construction, MUST assign managers
+service := &Service{
+    pgManager:    pg.pgManager,
+    mongoManager: mgo.mongoManager,
 }
 ```
 
