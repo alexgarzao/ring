@@ -243,7 +243,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 - ring:test-driven-development (RED-GREEN-REFACTOR cycle)
 - ring:systematic-debugging (4-phase root cause analysis)
 - ring:verification-before-completion (Evidence before claims)
-... and 72 more skills
+... and 79 more skills
 ```
 
 ## 🎯 Core Skills
@@ -455,7 +455,7 @@ Ring provides 30 slash commands across 6 plugins for common workflows.
 
 ### Development Cycle (ring-dev-team)
 
-- `/ring:dev-cycle [task]` - Start 11-gate development workflow (implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation)
+- `/ring:dev-cycle [task]` - Start 11-gate development workflow (implementation→multi-tenant→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation)
 - `/ring:dev-cycle-frontend [task]` - Start 9-gate frontend workflow (implementation→devops→accessibility→unit-testing→visual-testing→e2e-testing→performance→review→validation)
 - `/ring:dev-refactor [path]` - Analyze codebase against standards
 - `/ring:dev-refactor-frontend [path]` - Analyze frontend codebase against standards and generate executable tasks

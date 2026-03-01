@@ -151,7 +151,7 @@ After all tasks: `ring:dev-feedback-loop` generates metrics report.
 
 | Command | Description |
 |---------|-------------|
-| `/ring:dev-cycle` | Backend development cycle (10 gates) |
+| `/ring:dev-cycle` | Backend development cycle (11 gates) |
 | `/ring:dev-status` | Check current cycle status |
 | `/ring:dev-cancel` | Cancel running cycle |
 | `/ring:dev-report` | View feedback report |
