@@ -433,17 +433,30 @@ MUST open with two summary tables before the individual task details.
 
 #### Summary Table 1 — Technical Overview
 
-A quick-reference table for the engineering team:
+A quick-reference table for the engineering team. The `Status` column is initialized by `ring:pre-dev-task-breakdown` and updated by `ring:dev-cycle` during execution.
+
+- CANNOT set any value other than `⏸️ Pending` at task creation time
 
 ```markdown
 ## Summary
 
-| Task | Title | Type | Hours | Confidence | Blocks |
-|------|-------|------|-------|------------|--------|
-| T-001 | Project Foundation | Foundation | 3.0 | High | All |
-| T-002 | ... | Feature | 6.5 | Medium | T-004, T-008 |
-| | **TOTAL** | | **85.0h** | | |
+| Task | Title | Type | Hours | Confidence | Blocks | Status |
+|------|-------|------|-------|------------|--------|--------|
+| T-001 | Project Foundation | Foundation | 3.0 | High | All | ⏸️ Pending |
+| T-002 | ... | Feature | 6.5 | Medium | T-004, T-008 | ⏸️ Pending |
+| | **TOTAL** | | **85.0h** | | | |
 ```
+
+MUST leave the Status cell of the TOTAL row empty. CANNOT apply `⏸️ Pending` or any status value to the TOTAL row.
+
+**Status lifecycle (managed by `ring:dev-cycle`):**
+
+| Value | Meaning | Set by |
+|-------|---------|--------|
+| `⏸️ Pending` | Not started | `ring:pre-dev-task-breakdown` at task creation |
+| `🔄 Doing` | Execution started (Gate 0 began) | `ring:dev-cycle` |
+| `✅ Done` | Gate 9 approved | `ring:dev-cycle` |
+| `❌ Failed` | Execution terminated with unresolved blocker | `ring:dev-cycle` |
 
 #### Summary Table 2 — Business Deliverables View
 
@@ -673,6 +686,8 @@ These requirements are NON-NEGOTIABLE:
 - MUST run AI estimation for all tasks (no manual guesses)
 - MUST include Definition of Done checklist for every task
 - MUST include Business Deliverables View in summary section
+- MUST initialize Status column as `⏸️ Pending` for every task row
+- CANNOT set Status to any value other than `⏸️ Pending` at task creation
 - CANNOT use technical-only tasks without value connection
 
 ---
