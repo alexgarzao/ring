@@ -906,6 +906,8 @@ Large hero number with trend indicator and label. For dashboards, review summari
 
 ## Before / After Panels
 
+> **⛔ DEPRECATED for diff views:** These CSS patterns are superseded by `@pierre/diffs` (see `./libraries.md`). MUST use `@pierre/diffs` for all code diff/review visualizations. These patterns are ONLY retained for non-diff before/after comparisons (e.g., configuration comparisons, text comparisons without syntax highlighting). For code diffs, `@pierre/diffs` provides superior syntax highlighting (Shiki), word-level inline diffs, split/unified toggle, and Shadow DOM isolation.
+
 Two-column comparison with diff-colored headers. For review pages, migration docs, and feature comparisons.
 
 ```css
@@ -970,6 +972,8 @@ Two-column comparison with diff-colored headers. For review pages, migration doc
 ```
 
 ### Code Diff Enhancements
+
+> **⛔ DEPRECATED for diff views:** These CSS patterns are superseded by `@pierre/diffs` (see `./libraries.md`). MUST use `@pierre/diffs` for all code diff/review visualizations. These patterns are ONLY retained for non-diff before/after comparisons (e.g., configuration comparisons, text comparisons without syntax highlighting). For code diffs, `@pierre/diffs` provides superior syntax highlighting (Shiki), word-level inline diffs, split/unified toggle, and Shadow DOM isolation.
 
 Extended patterns for code-level diff views with line numbers, added/removed indicators, severity badges, and finding cards. Use alongside the base `.diff-panels` above. See `./templates/code-diff.html` for a complete working example.
 
@@ -1152,7 +1156,7 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
 </div>
 ```
 
-**Highlight.js background override** (make syntax colors visible through diff line tints):
+**Highlight.js background override** (⚠️ DEPRECATED for diff views — use `@pierre/diffs` instead, which handles syntax highlighting via Shiki in Shadow DOM):
 
 ```css
 .diff-panel__body .hljs,

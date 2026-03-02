@@ -227,11 +227,11 @@ git clone https://github.com/lerianstudio/ring.git ~/ring
 # No additional configuration needed for Claude Code
 ```
 
-### Binary Security
+### Code Analysis Pipeline
 
-The codereview pipeline includes pre-built binaries with SHA256 checksum verification. Binaries are verified before execution; if verification fails, they are automatically rebuilt from source.
+The codereview pipeline uses [Mithril](https://github.com/LerianStudio/mithril), an external code analysis tool installed via `go install`. Mithril performs static analysis, AST extraction, call graph generation, and context compilation for AI-assisted code review.
 
-See [Binary Security Model](default/lib/codereview/README.md#security-model) for details on checksum verification and the `RING_ALLOW_UNVERIFIED` environment variable.
+Install via `go install github.com/lerianstudio/mithril@latest`. See the [Mithril repository](https://github.com/LerianStudio/mithril) for full installation details and release notes.
 
 ### First Session
 

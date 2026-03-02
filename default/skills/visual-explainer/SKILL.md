@@ -64,11 +64,15 @@ Vary the choice each time. If the last diagram was dark and technical, make the 
 
 ### 2. Structure
 
-**Read the standard template FIRST**, then read the diagram-specific reference template.
+MUST use the Read tool to open `./templates/standard.html` before writing any HTML. Reading the description of the template in this skill file does NOT satisfy this requirement. Then use the Read tool to open the diagram-specific reference template.
 
 MUST read templates (in order):
 1. `./templates/standard.html` — brand foundation (ALWAYS read first)
 2. `./templates/{diagram-type}.html` — layout reference for the specific diagram type
+
+After reading standard.html, MUST copy the complete `<style>` block, `<header>`, `<footer>`, and date script verbatim into the output HTML. Do NOT reconstruct from memory — copy from the file you just read.
+
+HARD GATE: The copy requirements from the Standard Template section above MUST be executed at this step. Do NOT proceed to writing diagram-specific HTML until the standard.html foundation (style block, header, footer, date script) has been copied verbatim.
 
 Diagram-specific templates:
 - For text-heavy architecture overviews (card content matters more than topology): read `./templates/architecture.html`
@@ -78,7 +82,25 @@ Diagram-specific templates:
 
 **For CSS/layout patterns and SVG connectors**, read `./references/css-patterns.md`.
 
-**For pages with 4+ sections** (reviews, recaps, dashboards), also read `./references/responsive-nav.md` for section navigation with sticky sidebar TOC on desktop and horizontal scrollable bar on mobile.
+**For pages with 4+ sections** (reviews, recaps, dashboards), MUST read `./references/responsive-nav.md` if the page has 4 or more content sections (see Required Reading Matrix).
+
+#### Required Reference Files by Diagram Type
+
+HARD GATE: After reading the templates above, MUST also read the reference files listed for your diagram type. Do NOT proceed to writing HTML until all required references have been read.
+
+| Diagram Type | Required References (MUST Read) |
+|---|---|
+| Architecture (CSS Grid cards) | `./references/css-patterns.md` (depth tiers, grid layouts, connectors, backgrounds) |
+| Flowchart / Mermaid diagrams | `./references/libraries.md` (Mermaid CDN, themeVariables, ELK config), `./references/css-patterns.md` (zoom controls, backgrounds) |
+| Data tables | `./references/css-patterns.md` (overflow protection, depth tiers, badges, KPI cards) |
+| Code diffs / reviews | `./references/css-patterns.md` (diff enhancements, collapsibles, before/after panels), `./references/libraries.md` (@pierre/diffs CDN, FileDiff config), `./references/responsive-nav.md` (sidebar TOC) |
+| Sequence diagrams | `./references/libraries.md` (Mermaid CDN, sequence config), `./references/css-patterns.md` (backgrounds) |
+| Dashboards / KPI pages | `./references/css-patterns.md` (KPI cards, animations, badges, grid layouts) |
+| Any page with 4+ sections | `./references/responsive-nav.md` (sidebar TOC pattern) |
+| Any page with animations | `./references/css-patterns.md` (animation patterns, reduced-motion) |
+| Any page using CDN libraries | `./references/libraries.md` (correct CDN URLs and versions — MUST NOT use URLs from memory) |
+
+**Why this matrix exists:** Reference files contain exact CDN URLs (which change between versions), exact CSS variable names, and exact JavaScript patterns. Generating these from memory produces plausible but incorrect output — wrong CDN versions, missing overflow guards, broken zoom controls.
 
 **Choosing a rendering approach:**
 
@@ -95,11 +117,11 @@ Diagram-specific templates:
 | Data table | HTML `<table>` | Semantic markup, accessibility, copy-paste behavior |
 | Timeline | CSS (central line + cards) | Simple linear layout doesn't need a layout engine |
 | Dashboard | CSS Grid + Chart.js | Card grid with embedded charts |
-| Code diff / change review | HTML panels + Highlight.js | Side-by-side code with syntax highlighting needs semantic markup and fine-grained line control |
+| Code diff / change review | HTML panels + @pierre/diffs | Side-by-side diff rendering handled by @pierre/diffs (includes Shiki internally); Highlight.js is still used for single-file code display (non-diff) |
 
-**Mermaid theming:** Always use `theme: 'base'` with custom `themeVariables` so colors match the Lerian palette. Use `look: 'handDrawn'` for sketch aesthetic or `look: 'classic'` for clean lines. Use `layout: 'elk'` for complex graphs (requires the `@mermaid-js/layout-elk` package — see `./references/libraries.md` for the CDN import). Override Mermaid's SVG classes with CSS for pixel-perfect control. See `./references/libraries.md` for full theming guide.
+**Mermaid theming:** Always use `theme: 'base'` with custom `themeVariables` so colors match the Lerian palette. Use `look: 'handDrawn'` for sketch aesthetic or `look: 'classic'` for clean lines. Use `layout: 'elk'` for complex graphs (requires the `@mermaid-js/layout-elk` package — see `./references/libraries.md` for the CDN import). Override Mermaid's SVG classes with CSS for pixel-perfect control. MUST read `./references/libraries.md` before adding library theming variables (see Required Reading Matrix) — do NOT use CDN links or theme configs from memory as versions change.
 
-**Mermaid zoom controls:** Always add zoom controls (+/-/reset buttons) to every `.mermaid-wrap` container. Complex diagrams render at small sizes and need zoom to be readable. Include Ctrl/Cmd+scroll zoom on the container. See the zoom controls pattern in `./references/css-patterns.md` and the reference template at `./templates/mermaid-flowchart.html`.
+**Mermaid zoom controls:** Always add zoom controls (+/-/reset buttons) to every `.mermaid-wrap` container. Complex diagrams render at small sizes and need zoom to be readable. Include Ctrl/Cmd+scroll zoom on the container. MUST copy the zoom controls pattern from `./references/css-patterns.md` (see Required Reading Matrix) and the reference template at `./templates/mermaid-flowchart.html`.
 
 **AI-generated illustrations (optional).** If [surf-cli](https://github.com/nicobailon/surf-cli) is available, you can generate images via Gemini and embed them in the page for creative, illustrative, explanatory, educational, or decorative purposes. Check availability with `which surf`. If available:
 
@@ -116,7 +138,7 @@ IMG=$(base64 -i /tmp/ve-img.png)
 rm /tmp/ve-img.png
 ```
 
-See `./references/css-patterns.md` for image container styles (hero banners, inline illustrations, captions).
+MUST read `./references/css-patterns.md` image container section before placing images (see Required Reading Matrix).
 
 **When to use:** Hero banners that establish the page's visual tone. Conceptual illustrations for abstract systems that Mermaid can't express (physical infrastructure, user journeys, mental models). Educational diagrams that benefit from artistic or photorealistic rendering. Decorative accents that reinforce the aesthetic.
 
@@ -125,6 +147,13 @@ See `./references/css-patterns.md` for image container styles (hero banners, inl
 **Prompt craft:** Match the image to the Lerian palette and aesthetic direction. Specify the style (3D render, technical illustration, watercolor, isometric, flat vector, etc.) and mention dominant colors from the standard template's CSS variables (sunglow yellow, zinc neutrals, de-york green, tangerine orange). Use `--aspect-ratio 16:9` for hero banners, `--aspect-ratio 1:1` for inline illustrations. Keep prompts specific — "isometric illustration of a message queue with sunglow-yellow nodes on zinc-800 background" beats "a diagram of a queue."
 
 ### 3. Style
+
+**HARD GATE:** Before applying diagram-specific styles, verify:
+1. Standard template foundation (style block, header, footer) has been copied from `standard.html`
+2. All required reference files from the Reading Matrix above have been read via the Read tool
+3. CDN URLs and library configs are taken from `./references/libraries.md`, NOT from memory
+
+If any condition is not met, STOP and go back to the reading step.
 
 Apply these principles to every diagram, building ON TOP of the standard template foundation:
 
@@ -136,11 +165,11 @@ Apply these principles to every diagram, building ON TOP of the standard templat
 
 **Backgrounds create atmosphere.** Don't use flat solid colors for the page background. Subtle gradients, faint grid patterns via CSS, or gentle radial glows behind focal areas using the Lerian palette colors. The background should feel like a space, not a void.
 
-**Visual weight signals importance.** Not every section deserves equal visual treatment. Executive summaries and key metrics should dominate the viewport on load (larger type, more padding, subtle accent-tinted background zone). Reference sections (file maps, dependency lists, decision logs) should be compact and stay out of the way. Use `<details>/<summary>` for sections that are useful but not primary — the collapsible pattern is in `./references/css-patterns.md`.
+**Visual weight signals importance.** Not every section deserves equal visual treatment. Executive summaries and key metrics should dominate the viewport on load (larger type, more padding, subtle accent-tinted background zone). Reference sections (file maps, dependency lists, decision logs) should be compact and stay out of the way. Use `<details>/<summary>` for sections that are useful but not primary — MUST read the collapsible pattern from `./references/css-patterns.md` (see Required Reading Matrix) before using `<details>/<summary>`.
 
-**Surface depth creates hierarchy.** Use the standard template's `.card` and `.card-elevated` classes as the base. For hero sections, tint the background with `var(--accent-dim)`. For recessed content, use `var(--surface-muted)`. See the depth tiers in `./references/css-patterns.md`. Don't make everything elevated — when everything pops, nothing does.
+**Surface depth creates hierarchy.** Use the standard template's `.card` and `.card-elevated` classes as the base. For hero sections, tint the background with `var(--accent-dim)`. For recessed content, use `var(--surface-muted)`. MUST use depth tiers as defined in `./references/css-patterns.md` (see Required Reading Matrix). Don't make everything elevated — when everything pops, nothing does.
 
-**Animation earns its place.** Use the standard template's `.animate` class with `--i` stagger variable. Mix animation types by role: `fadeUp` for cards, `fadeScale` for KPIs and badges, `drawIn` for SVG connectors, `countUp` for hero numbers. Hover transitions on interactive-feeling elements make the diagram feel alive. Always respect `prefers-reduced-motion` (already handled by the standard template). CSS transitions and keyframes handle most cases. For orchestrated multi-element sequences, anime.js via CDN is available (see `./references/libraries.md`).
+**Animation earns its place.** Use the standard template's `.animate` class with `--i` stagger variable. Mix animation types by role: `fadeUp` for cards, `fadeScale` for KPIs and badges, `drawIn` for SVG connectors, `countUp` for hero numbers. Hover transitions on interactive-feeling elements make the diagram feel alive. Always respect `prefers-reduced-motion` (already handled by the standard template). CSS transitions and keyframes handle most cases. For orchestrated multi-element sequences, anime.js via CDN is available (MUST use CDN URL from `./references/libraries.md` (see Required Reading Matrix) — do NOT use CDN links from memory).
 
 ### 4. Deliver
 
@@ -157,7 +186,7 @@ Apply these principles to every diagram, building ON TOP of the standard templat
 ### Architecture / System Diagrams
 Two approaches depending on what matters more:
 
-**Text-heavy overviews** (card content matters more than connections): CSS Grid with explicit row/column placement. Sections as rounded cards with colored borders and monospace labels. Vertical flow arrows between sections. Nested grids for subsystems. The reference template at `./templates/architecture.html` demonstrates this pattern. Use when cards need descriptions, code references, tool lists, or other rich content that Mermaid nodes can't hold.
+**Text-heavy overviews** (card content matters more than connections): CSS Grid with explicit row/column placement. Sections as rounded cards with colored borders and monospace labels. Vertical flow arrows between sections. Nested grids for subsystems. MUST read `./templates/architecture.html` before generating architecture diagrams. The template is the authoritative source; descriptions below are summaries only. Use when cards need descriptions, code references, tool lists, or other rich content that Mermaid nodes can't hold.
 
 **Topology-focused diagrams** (connections matter more than card content): **Use Mermaid.** A `graph TD` or `graph LR` with custom `themeVariables` produces proper diagrams with automatic edge routing. Use `look: 'handDrawn'` for informal feel or `look: 'classic'` for clean lines. Use when the point is showing how components connect rather than describing what each component does in detail.
 
@@ -182,7 +211,7 @@ Two approaches depending on what matters more:
 **Use Mermaid.** Use `mindmap` syntax for hierarchical branching from a root node. Mermaid handles the radial layout automatically. Style with `themeVariables` to control node colors at each depth level.
 
 ### Data Tables / Comparisons / Audits
-Use a real `<table>` element — not CSS Grid pretending to be a table. Tables get accessibility, copy-paste behavior, and column alignment for free. The reference template at `./templates/data-table.html` demonstrates all patterns below.
+Use a real `<table>` element — not CSS Grid pretending to be a table. Tables get accessibility, copy-paste behavior, and column alignment for free. MUST read `./templates/data-table.html` before generating data tables. The template is the authoritative source; descriptions below are summaries only.
 
 **Use proactively.** Any time you'd render an ASCII box-drawing table in the terminal, generate an HTML table instead. This includes: requirement audits (request vs plan), feature comparisons, status reports, configuration matrices, test result summaries, dependency lists, permission tables, API endpoint inventories — any structured rows and columns.
 
@@ -213,20 +242,28 @@ Vertical or horizontal timeline with a central line (CSS pseudo-element). Phase 
 Card grid layout. Hero numbers large and prominent. Sparklines via inline SVG `<polyline>`. Progress bars via CSS `linear-gradient` on a div. For real charts (bar, line, pie), use **Chart.js via CDN** (see `./references/libraries.md`). KPI cards with trend indicators (up/down arrows, percentage deltas).
 
 ### Code Diff / Change Review
-Use for refactoring previews (before/after code comparison), development cycle change summaries, and any approval checkpoint that needs to show what will change. The reference template at `./templates/code-diff.html` demonstrates all patterns below.
+Use for refactoring previews (before/after code comparison), development cycle change summaries, and any approval checkpoint that needs to show what will change. MUST read `./templates/code-diff.html` before generating code diff pages. The template is the authoritative source; descriptions below are summaries only.
+
+**⛔ MUST use `@pierre/diffs` for all code diff rendering.** MUST NOT build hand-rolled CSS diff panels with `.diff-line--added`/`.diff-line--removed` classes or CSS counter-based line numbers. The `@pierre/diffs` library handles diff computation, syntax highlighting (via Shiki), split/unified views, and line-level rendering. See `./references/libraries.md` for CDN URL and configuration.
+
+**⛔ HTML Script Escaping (MANDATORY for code diffs):** When embedding source code strings inside `<script>` blocks (e.g., as `oldFile.contents` / `newFile.contents` for `@pierre/diffs`), MUST escape any `</script>` sequences that appear in the code samples. The HTML parser does NOT understand JavaScript string context — it will terminate the `<script>` block at the first `</script>` it encounters, even inside a template literal or string.
+
+**Required escape:** `</script>` → `<\/script>` (backslash before `/` is valid JS — `\/` === `/`)
+
+This is especially common in security-focused code reviews where XSS examples naturally contain `<script>` tags.
 
 Two modes depending on context:
 - **Refactoring diffs** (before/after known): Two-column layout with the current code on the left and the Ring standard / target code on the right. Each finding gets its own diff panel with a severity badge. Group by severity (Critical first).
 - **New development summaries** (planned changes): Single-column cards showing the task context, acceptance criteria, files to create/modify, and a code preview of the planned implementation approach.
 
 Layout patterns:
-- Responsive nav sidebar (read `./references/responsive-nav.md`) — one TOC entry per finding or task
+- Responsive nav sidebar (MUST read `./references/responsive-nav.md` if the page has 4 or more content sections — see Required Reading Matrix) — one TOC entry per finding or task
 - Summary KPI cards at top: Total changes, files affected, severity breakdown
 - Per-finding/task collapsible `<details>` section with the diff panel inside
-- Syntax highlighting via Highlight.js CDN (see `./references/libraries.md`)
-- Line numbers in code blocks via CSS counter (see `./references/css-patterns.md` -> Code Diff Enhancements)
-- Added lines highlighted green, removed lines highlighted red, unchanged lines dimmed
-- File path + line range header above each code block (`.diff-hunk-header`)
+- Diff rendering via `@pierre/diffs` CDN (see `./references/libraries.md`); this library handles syntax highlighting internally via Shiki — do NOT also add Highlight.js for diff views. Highlight.js is still used for single-file code display (non-diff blocks).
+- **Line numbers in code blocks handled automatically by `@pierre/diffs`** (do NOT use CSS counter-based line numbers for diff views)
+- Diff line coloring (added/removed/unchanged) handled automatically by `@pierre/diffs` — do NOT add manual `.diff-line--added` / `.diff-line--removed` CSS
+- File path headers handled automatically by `@pierre/diffs` via `disableFileHeader` option (default: visible)
 - Severity badge (Critical/High/Medium/Low) with color-coded indicator on each section header (`.severity-badge`)
 - Finding card wrapper (`.finding-card`) with header showing finding ID + severity + file path
 
@@ -278,7 +315,10 @@ Every diagram is a single self-contained `.html` file. No external assets except
 ## Quality Checks
 
 Before delivering, verify:
-- **Standard template compliance**: Does the page include the Lerian header with logo, footer with "Generated with Ring", and the full standard `<style>` block? Is Inter the body font?
+
+HARD GATE: Standard template compliance MUST be verified by comparing the generated HTML against `./templates/standard.html` — re-read the file if not currently in context. Self-certification from memory is NOT valid.
+
+- **Standard template compliance**: MUST verify by searching the generated HTML for: (1) the exact SVG logo path from standard.html, (2) the exact footer text 'Generated with Ring', (3) `font-family: 'Inter'`. If any element is absent, STOP and fix before delivering.
 - **No token conflicts:** Template-specific CSS does NOT redefine standard foundation tokens (`--bg`, `--surface`, `--text`, `--accent`, `--font-body`, `--font-mono`, `--success`, `--warning`, `--error`, `--info`, `--border`). Use NEW variable names for diagram-specific aliases (e.g., `--node-a`, `--pipeline-step`).
 - **The squint test**: Blur your eyes. Can you still perceive hierarchy? Are sections visually distinct? (Verify at least 3 distinct visual depth levels: hero/elevated, default surface, recessed/muted)
 - **The swap test**: Would replacing your template-specific styles with nothing make this indistinguishable from the raw standard template? If yes, push the aesthetic further. (Template-specific CSS must define at least: 1 background atmosphere, 2+ semantic color aliases, and component-specific classes)
@@ -286,6 +326,7 @@ Before delivering, verify:
 - **Information completeness**: Does the diagram actually convey what the user asked for? Pretty but incomplete is a failure.
 - **No overflow**: Resize the browser to different widths. No content should clip or escape its container. Every grid and flex child needs `min-width: 0`. Side-by-side panels need `overflow-wrap: break-word`. Never use `display: flex` on `<li>` for marker characters — it creates anonymous flex items that can't shrink, causing lines with many inline `<code>` badges to overflow. Use absolute positioning for markers instead. See the Overflow Protection section in `./references/css-patterns.md`.
 - **Mermaid zoom controls**: Every `.mermaid-wrap` container must have zoom controls (+/-/reset buttons), Ctrl/Cmd+scroll zoom, and click-and-drag panning. Complex diagrams render too small without them. The cursor should change to `grab` when zoomed in and `grabbing` while dragging. See `./references/css-patterns.md` for the full pattern.
+- **Reference compliance**: If using Mermaid: verify CDN URL and themeVariables match `./references/libraries.md`. If using code diffs: verify `@pierre/diffs` CDN URL matches `./references/libraries.md`. If using single-file code display (non-diff): verify Highlight.js CDN URL matches `./references/libraries.md`. If page has zoom controls: verify pattern matches `./references/css-patterns.md`. If page has sidebar TOC: verify pattern matches `./references/responsive-nav.md`.
 - **File opens cleanly**: No console errors, no broken font loads, no layout shifts. (Browser DevTools console shows 0 errors on load)
 
 ## Standards Loading
@@ -298,6 +339,7 @@ STOP and report if you encounter:
 | Missing Dependency | `templates/` or `references/` directories are missing | STOP and report |
 | Missing Standard Template | `templates/standard.html` is missing or unreadable | STOP and report |
 | Unrenderable Format | The user explicitly forbids HTML output but asks for complex tables | STOP and report |
+| Library Usage | Code diff page generated without @pierre/diffs (using hand-rolled CSS diff panels instead) | STOP — rewrite using @pierre/diffs per libraries.md |
 
 ### Cannot Be Overridden
 The following requirements CANNOT be waived:
@@ -308,6 +350,7 @@ The following requirements CANNOT be waived:
 - MUST use the Lerian color palette (sunglow accent, zinc neutrals, semantic status colors)
 - MUST generate an HTML table for any data >3 columns or 4 rows
 - MUST always provide a browser-openable HTML file, never fallback to ASCII art if the threshold is met
+- Code diff visualizations MUST use `@pierre/diffs` — hand-rolled CSS diff panels are NOT acceptable for code review pages
 
 ## Severity Calibration
 | Severity | Condition | Required Action |
@@ -335,6 +378,14 @@ The following requirements CANNOT be waived:
 | "Zoom controls are overkill" | Complex diagrams render too small and become illegible without zoom. | **MUST include zoom controls.** |
 | "The standard template is too heavy for a simple diagram" | Brand consistency is non-negotiable. The template is the foundation. | **MUST use standard.html as the base.** |
 | "I'll just pick a nice font instead of Inter" | Inter is the Lerian brand font. Consistency across outputs matters. | **MUST use Inter as body font.** |
+| "I know the standard.html structure from the skill description" | Reading the description ≠ reading the file. Token values, SVG paths, and exact CSS change between versions. MUST use the Read tool to open the actual file. | **MUST Read tool open standard.html** |
+| "I already read the templates in a previous task" | Each generation MUST re-read the relevant templates. Memory of a previous read is not reliable — context may have been compressed. | **MUST re-read templates every time** |
+| "The description below the template reference is sufficient" | Descriptions are summaries. The template file is the authoritative source with exact token values, SVG data, and CSS patterns. | **MUST read the template file, not just the description** |
+| "I'll create something similar to the template" | "Similar" means "different." The template defines the EXACT standard. Copy the foundation, then customize only what the skill explicitly marks as variable. | **MUST copy foundation verbatim from template** |
+| "I already know CSS/Mermaid/Highlight.js well enough" | Your knowledge may be outdated or generic. The reference files contain PROJECT-SPECIFIC patterns: exact CDN versions, Lerian-themed variables, overflow guards. Generic knowledge produces plausible but incorrect output. | **MUST read the required reference files per the Reading Matrix** |
+| "The template already has everything I need" | Templates provide structure. References provide the patterns, CDN URLs, and CSS techniques that go INSIDE the structure. Both are required. | **MUST read both templates AND references per the Reading Matrix** |
+| "css-patterns.md is 1300 lines, too long to read" | Read the SECTIONS relevant to your diagram type, not the entire file. The Reading Matrix tells you which sections. Skipping because a file is long is not acceptable. | **MUST read at minimum the sections listed in the Reading Matrix** |
+| "css-patterns.md has diff panel CSS I can use directly" | Those CSS patterns are DEPRECATED for code diffs. They exist only for non-code comparisons (config files, text). For code diffs, `@pierre/diffs` provides superior rendering with Shiki highlighting, word-level diffs, and split/unified toggle. Using old CSS patterns is a regression. | **MUST use `@pierre/diffs` from `./references/libraries.md`, NOT hand-rolled CSS diff panels** |
 
 ## When Implementation is Not Needed
 - When the data fits in a small table (e.g., 2 columns, 3 rows).

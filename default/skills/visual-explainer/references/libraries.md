@@ -487,7 +487,7 @@ The standard template uses Inter as the body font (MUST NOT override). The fonts
 
 ## Highlight.js — Syntax Highlighting
 
-Use for code blocks that need language-aware syntax coloring. Required for code diff / change review pages. Lightweight — only load the languages you need.
+Use for code blocks that need language-aware syntax coloring. Required for non-diff code blocks (inline snippets, implementation previews, standalone `<code>` elements). Lightweight — only load the languages you need.
 
 **CDN (core + theme pair for light/dark):**
 ```html
@@ -508,6 +508,8 @@ Use for code blocks that need language-aware syntax coloring. Required for code 
 <script>hljs.highlightAll();</script>
 ```
 
+> **⚠️ DEPRECATED for diff views:** The following CSS override is only needed if you use Highlight.js for non-diff before/after comparisons. For code diffs, use `@pierre/diffs` instead (see below) — it handles syntax highlighting internally via Shiki.
+
 **Theme integration with diff panels:** Override `.hljs` background to `transparent` so the diff line backgrounds (green/red tints) show through the syntax-highlighted code:
 
 ```css
@@ -518,6 +520,126 @@ Use for code blocks that need language-aware syntax coloring. Required for code 
 }
 ```
 
-**When to use:** Any page displaying code blocks with syntax coloring — code diff reports, change reviews, implementation previews. Not needed for diagrams, data tables, or architecture overviews unless they embed code snippets.
+**When to use:** Any page displaying non-diff code blocks with syntax coloring — implementation previews, standalone code snippets, single-file code display. NOT for diff views (use `@pierre/diffs` instead). Not needed for diagrams, data tables, or architecture overviews unless they embed code snippets.
 
 **Dark mode:** The `github` / `github-dark` theme pair with `prefers-color-scheme` media queries switches automatically. No JS needed for theme toggling.
+
+> **Note:** Highlight.js is still used for non-diff code blocks (inline code snippets, implementation previews, standalone `<code>` elements). Use `@pierre/diffs` below only for diff/review views where you have old vs. new file content.
+
+## @pierre/diffs (Code Diff Rendering)
+
+**CDN (ESM):** `https://cdn.jsdelivr.net/npm/@pierre/diffs@1.0.11/+esm`
+
+> **Version Update:** When updating the `@pierre/diffs` version, update ALL files that reference it: `libraries.md`, `SKILL.md`, `css-patterns.md`, and `code-diff.html`. Search: `grep -r "@pierre/diffs" default/skills/visual-explainer/`
+
+**What it is:** A professional code diff renderer built on Shiki. Provides split/unified views with syntax highlighting, word-level inline diffs, line selection, and dark/light theme support. Uses Shadow DOM for style isolation.
+
+**Why ESM from CDN works:** jsDelivr's `+esm` endpoint rewrites bare module specifiers (`"shiki"` → `"/npm/shiki@3.22.0/+esm"`), resolving all transitive dependencies automatically. No bundler needed.
+
+**MUST use this for all code diff/review visualizations.** Hand-rolled CSS diff panels are deprecated in favor of this library.
+
+### Import Pattern
+
+```html
+<script type="module">
+  import { FileDiff } from 'https://cdn.jsdelivr.net/npm/@pierre/diffs@1.0.11/+esm';
+</script>
+```
+
+### Basic Usage
+
+```js
+const instance = new FileDiff({
+  theme: { dark: 'pierre-dark', light: 'pierre-light' },
+  themeType: 'system',           // Follow OS preference
+  diffStyle: 'split',            // 'split' or 'unified'
+  diffIndicators: 'bars',        // 'bars', 'classic', or 'none'
+  lineDiffType: 'word-alt',      // Word-level inline highlighting
+  overflow: 'scroll',            // 'scroll' or 'wrap'
+  hunkSeparators: 'line-info',   // Show collapsed line count
+});
+
+instance.render({
+  oldFile: { name: 'handler.go', contents: oldCode },
+  newFile: { name: 'handler.go', contents: newCode },
+  containerWrapper: document.getElementById('diff-container'),
+});
+```
+
+### Lerian Theme Integration
+
+The component renders inside Shadow DOM, so Lerian's page-level CSS tokens do NOT affect the diff rendering. However, CSS custom properties cascade into Shadow DOM. Use these on the container element:
+
+```css
+#diff-container {
+  --diffs-font-family: var(--font-mono);  /* Map to Lerian mono token */
+  --diffs-font-size: 13px;
+  --diffs-line-height: 1.5;
+  --diffs-tab-size: 4;
+}
+```
+
+### Dual Theme (Dark/Light Auto-Switch)
+
+```js
+const instance = new FileDiff({
+  theme: { dark: 'pierre-dark', light: 'pierre-light' },
+  themeType: 'system',  // Follows prefers-color-scheme automatically
+});
+```
+
+To force a specific theme at runtime:
+```js
+instance.setThemeType('dark');  // or 'light' or 'system'
+```
+
+### Key Options Reference
+
+| Option | Values | Default | Description |
+|---|---|---|---|
+| `theme` | string or `{ dark, light }` | — | Shiki theme name or dual-theme object |
+| `themeType` | `'system'`, `'dark'`, `'light'` | `'system'` | Active theme selection |
+| `diffStyle` | `'split'`, `'unified'` | `'split'` | Side-by-side or stacked |
+| `diffIndicators` | `'bars'`, `'classic'`, `'none'` | `'bars'` | Change indicator style |
+| `lineDiffType` | `'word-alt'`, `'word'`, `'char'`, `'none'` | `'word-alt'` | Inline diff granularity |
+| `overflow` | `'scroll'`, `'wrap'` | `'scroll'` | Long line handling |
+| `disableLineNumbers` | boolean | `false` | Hide line numbers |
+| `disableFileHeader` | boolean | `false` | Hide file header bar |
+| `disableBackground` | boolean | `false` | Disable colored line backgrounds |
+| `enableLineSelection` | boolean | `false` | Click to select lines |
+| `unsafeCSS` | string | — | **CAUTION:** Inject custom CSS into shadow DOM. MUST NOT use with user-supplied input — risk of CSS injection. |
+
+### Instance Methods
+
+| Method | Description |
+|---|---|
+| `render({ oldFile, newFile, containerWrapper })` | Mount and render diff |
+| `setThemeType('dark')` | Switch theme without re-render |
+| `setOptions(opts)` | Full options replacement (then call `rerender()`) |
+| `rerender()` | Force re-render after option changes |
+| `cleanUp()` | Destroy instance, remove DOM elements |
+
+### Language Detection
+
+Language is auto-detected from filename extension (`handler.go` → Go). Override with `lang` property:
+```js
+{ name: 'config', contents: '...', lang: 'yaml' }
+```
+
+### Performance Notes
+
+- First load fetches Shiki (~2MB+ with grammars) — browser caches subsequent loads
+- `render()` is synchronous (instant layout), syntax highlighting loads asynchronously
+- Language grammars are loaded lazily on first encounter
+
+### Gotchas
+
+**`</script>` in code samples:** When code samples contain `</script>` (common in XSS vulnerability examples), the HTML parser terminates the `<script type="module">` block prematurely. MUST escape as `<\/script>` in all JavaScript string literals. This applies to template literals, single-quoted strings, and double-quoted strings alike. The backslash escape (`\/`) is valid JavaScript — `\/` evaluates to `/`.
+
+```js
+// WRONG — breaks the HTML parser:
+const before = `<script>alert(1)</script>`;
+
+// CORRECT — escaped for HTML embedding:
+const before = `<script>alert(1)<\/script>`;
+```

@@ -6,19 +6,19 @@
 <title>Refactoring Findings — Lerian Studio</title>
 <!--
   Reference template for the visual-explainer skill: code diff review.
-  Lerian Standard branding — sunglow accent with GitHub-dark code panels.
+  Lerian Standard branding — sunglow accent with @pierre/diffs code panels.
   Key patterns demonstrated:
   - Lerian sunglow accent palette (standard.html tokens)
-  - GitHub-dark overrides for Highlight.js code panel readability
+  - @pierre/diffs FileDiff components for code comparison rendering
+  - Shiki-powered syntax highlighting (built-in to @pierre/diffs)
+  - Shadow DOM isolation for each diff instance
+  - Per-finding and global split/unified toggle controls
+  - CSS variable bridge between Lerian tokens and @pierre/diffs
   - Responsive nav sidebar (desktop: sticky TOC, mobile: horizontal scrollbar)
   - Scroll spy JS for active section tracking
   - KPI summary cards with data-count animation via @property
   - Horizontal severity breakdown bar below KPIs
   - Finding cards with severity badges, category tags, file paths
-  - Two-column diff panels (Before / After) with line numbers via CSS counter
-  - Highlight.js syntax highlighting with transparent background override
-  - Diff line markup: added (green), removed (red), unchanged (dimmed)
-  - Hunk headers showing file path and line range
   - Collapsible "Why This Matters" sections via <details>
   - Task mapping data table with sticky thead, alternating rows, severity badges
   - Staggered fade-in via --i CSS variable
@@ -32,10 +32,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Highlight.js: theme-aware syntax highlighting -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css" media="(prefers-color-scheme: light)">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
 
 <style>
   /* ============ THEME ============ */
@@ -112,7 +108,6 @@
 
 
   /* ========== DESIGN TOKENS: DARK MODE ========== */
-  /* GitHub-dark overrides for Highlight.js code panel readability */
 
   @media (prefers-color-scheme: dark) {
     :root {
@@ -510,101 +505,119 @@
     padding: 0;
   }
 
-  /* ============ DIFF PANELS ============ */
-  .diff-panels {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
+  /* ============ @PIERRE/DIFFS CONTAINER BRIDGE ============ */
+  .diff-container {
+    --diffs-font-family: var(--font-mono);
+    --diffs-font-size: 13px;
+    --diffs-line-height: 1.5;
+    --diffs-tab-size: 4;
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
   }
 
-  .diff-panels > * { min-width: 0; }
-
-  .diff-panel {
+  /* Diff toolbar: per-finding controls */
+  .diff-toolbar {
     display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border);
-  }
-
-  .diff-panel:last-child { border-right: none; }
-
-  .diff-panel__header {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 10px 16px;
-  }
-
-  .diff-panel__header--before {
-    background: var(--error-dim);
-    color: var(--error);
-    border-bottom: 2px solid var(--error);
-  }
-
-  .diff-panel__header--after {
-    background: var(--success-dim);
-    color: var(--success);
-    border-bottom: 2px solid var(--success);
-  }
-
-  /* Hunk header: file path + line range */
-  .diff-hunk {
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--surface-muted);
+    border-bottom: 1px solid var(--border);
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--text-muted);
-    padding: 6px 16px;
-    background: var(--surface-muted);
-    border-bottom: 1px solid var(--border);
   }
 
-  /* Code area */
-  .diff-code {
-    counter-reset: line;
-    padding: 0;
-    margin: 0;
-    overflow-x: auto;
+  .diff-toolbar__label {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-right: auto;
+  }
+
+  .diff-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .diff-toggle__btn {
+    padding: 4px 10px;
     font-family: var(--font-mono);
-    font-size: 13px;
-    line-height: 20px;
-    flex: 1;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .diff-toggle__btn:hover {
+    color: var(--text);
     background: var(--surface);
   }
 
-  .diff-line {
-    counter-increment: line;
-    display: block;
-    padding: 1px 12px 1px 48px;
-    position: relative;
-    min-height: 20px;
-    line-height: 20px;
-    white-space: pre;
+  .diff-toggle__btn--active {
+    background: var(--accent);
+    color: var(--accent-text);
   }
 
-  .diff-line::before {
-    content: counter(line);
-    position: absolute;
-    left: 0;
-    width: 40px;
-    text-align: right;
-    padding-right: 8px;
+  .diff-toggle__btn--active:hover {
+    background: var(--accent-hover);
+    color: var(--accent-text);
+  }
+
+  /* Global diff style controls */
+  .global-diff-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
     color: var(--text-muted);
-    opacity: 0.5;
-    font-size: 12px;
-    user-select: none;
   }
 
-  .diff-line--added { background: var(--success-dim); }
-  .diff-line--removed { background: var(--error-dim); text-decoration: line-through; opacity: 0.7; }
-  .diff-line--unchanged { opacity: 0.6; }
+  .global-diff-controls__label {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: auto;
+  }
 
-  /* Override Highlight.js background so diff line colors show through */
-  .diff-code .hljs { background: transparent !important; padding: 0 !important; }
+  /* Loading placeholder for diffs while Shiki initializes */
+  .diff-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    gap: 8px;
+  }
 
-  @media (max-width: 768px) {
-    .diff-panels { grid-template-columns: 1fr; }
-    .diff-panel { border-right: none; border-bottom: 1px solid var(--border); }
-    .diff-panel:last-child { border-bottom: none; }
+  @keyframes diffSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  .diff-loading__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: diffSpin 0.8s linear infinite;
   }
 
   /* ============ COLLAPSIBLE (WHY THIS MATTERS) ============ */
@@ -926,6 +939,15 @@
     .logo-mark {
       color: #27272A !important;
     }
+
+    .diff-toolbar,
+    .global-diff-controls {
+      display: none;
+    }
+
+    .diff-container {
+      break-inside: avoid;
+    }
   }
 </style>
 </head>
@@ -998,6 +1020,15 @@
       </div>
     </div>
 
+    <!-- ========== GLOBAL DIFF STYLE TOGGLE ========== -->
+    <div class="global-diff-controls animate" style="--i:5">
+      <span class="global-diff-controls__label">Diff View</span>
+      <div class="diff-toggle" id="global-diff-toggle">
+        <button class="diff-toggle__btn diff-toggle__btn--active" data-style="split">Split</button>
+        <button class="diff-toggle__btn" data-style="unified">Unified</button>
+      </div>
+    </div>
+
     <!-- ========== FINDING-001: CRITICAL ========== -->
     <div id="s-f001" class="sec-head animate" style="--i:6">Finding 001 &mdash; Error Handling</div>
 
@@ -1009,18 +1040,17 @@
         <span class="finding-file">internal/handler/user.go</span>
       </div>
       <div class="finding-body">
-        <div class="diff-panels">
-          <!-- BEFORE panel -->
-          <div class="diff-panel">
-            <div class="diff-panel__header diff-panel__header--before">Before</div>
-            <div class="diff-hunk">@@ handler.go:45-62 @@</div>
-            <pre class="diff-code"><code class="language-go"><span class="diff-line diff-line--unchanged">func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {</span><span class="diff-line diff-line--unchanged">	var req CreateUserRequest</span><span class="diff-line diff-line--removed">	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {</span><span class="diff-line diff-line--removed">		return err</span><span class="diff-line diff-line--removed">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--removed">	user, err := h.service.Create(req)</span><span class="diff-line diff-line--removed">	if err != nil {</span><span class="diff-line diff-line--removed">		return err</span><span class="diff-line diff-line--removed">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--unchanged">	return json.NewEncoder(w).Encode(user)</span><span class="diff-line diff-line--unchanged">}</span></code></pre>
+        <div class="diff-toolbar">
+          <span class="diff-toolbar__label">Before / After</span>
+          <div class="diff-toggle" data-finding="1">
+            <button class="diff-toggle__btn diff-toggle__btn--active" data-style="split">Split</button>
+            <button class="diff-toggle__btn" data-style="unified">Unified</button>
           </div>
-          <!-- AFTER panel -->
-          <div class="diff-panel">
-            <div class="diff-panel__header diff-panel__header--after">After</div>
-            <div class="diff-hunk">@@ handler.go:45-62 @@</div>
-            <pre class="diff-code"><code class="language-go"><span class="diff-line diff-line--unchanged">func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {</span><span class="diff-line diff-line--unchanged">	var req CreateUserRequest</span><span class="diff-line diff-line--added">	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {</span><span class="diff-line diff-line--added">		return fmt.Errorf("decoding create user request: %w", err)</span><span class="diff-line diff-line--added">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--added">	user, err := h.service.Create(r.Context(), req)</span><span class="diff-line diff-line--added">	if err != nil {</span><span class="diff-line diff-line--added">		return fmt.Errorf("creating user %q: %w", req.Email, err)</span><span class="diff-line diff-line--added">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--unchanged">	return json.NewEncoder(w).Encode(user)</span><span class="diff-line diff-line--unchanged">}</span></code></pre>
+        </div>
+        <div class="diff-container" id="diff-finding-1">
+          <div class="diff-loading">
+            <div class="diff-loading__spinner"></div>
+            Loading diff...
           </div>
         </div>
 
@@ -1049,18 +1079,17 @@
         <span class="finding-file">internal/service/auth.go</span>
       </div>
       <div class="finding-body">
-        <div class="diff-panels">
-          <!-- BEFORE panel -->
-          <div class="diff-panel">
-            <div class="diff-panel__header diff-panel__header--before">Before</div>
-            <div class="diff-hunk">@@ auth.go:23-35 @@</div>
-            <pre class="diff-code"><code class="language-go"><span class="diff-line diff-line--unchanged">func (s *AuthService) Login(ctx context.Context, email, password string) (*Token, error) {</span><span class="diff-line diff-line--removed">	log.Printf("user login: %s", email)</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--unchanged">	user, err := s.repo.FindByEmail(ctx, email)</span><span class="diff-line diff-line--unchanged">	if err != nil {</span><span class="diff-line diff-line--removed">		log.Printf("login failed: %v", err)</span><span class="diff-line diff-line--unchanged">		return nil, fmt.Errorf("finding user: %w", err)</span><span class="diff-line diff-line--unchanged">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--removed">	log.Printf("login success: %s", email)</span><span class="diff-line diff-line--unchanged">	return s.issueToken(user)</span><span class="diff-line diff-line--unchanged">}</span></code></pre>
+        <div class="diff-toolbar">
+          <span class="diff-toolbar__label">Before / After</span>
+          <div class="diff-toggle" data-finding="2">
+            <button class="diff-toggle__btn diff-toggle__btn--active" data-style="split">Split</button>
+            <button class="diff-toggle__btn" data-style="unified">Unified</button>
           </div>
-          <!-- AFTER panel -->
-          <div class="diff-panel">
-            <div class="diff-panel__header diff-panel__header--after">After</div>
-            <div class="diff-hunk">@@ auth.go:23-35 @@</div>
-            <pre class="diff-code"><code class="language-go"><span class="diff-line diff-line--unchanged">func (s *AuthService) Login(ctx context.Context, email, password string) (*Token, error) {</span><span class="diff-line diff-line--added">	span := trace.SpanFromContext(ctx)</span><span class="diff-line diff-line--added">	s.logger.Info("user login attempt",</span><span class="diff-line diff-line--added">		zap.String("trace_id", span.SpanContext().TraceID().String()),</span><span class="diff-line diff-line--added">	)</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--unchanged">	user, err := s.repo.FindByEmail(ctx, email)</span><span class="diff-line diff-line--unchanged">	if err != nil {</span><span class="diff-line diff-line--added">		s.logger.Warn("login failed",</span><span class="diff-line diff-line--added">			zap.Error(err),</span><span class="diff-line diff-line--added">			zap.String("trace_id", span.SpanContext().TraceID().String()),</span><span class="diff-line diff-line--added">		)</span><span class="diff-line diff-line--unchanged">		return nil, fmt.Errorf("finding user: %w", err)</span><span class="diff-line diff-line--unchanged">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--added">	s.logger.Info("login success",</span><span class="diff-line diff-line--added">		zap.String("user_id", user.ID),</span><span class="diff-line diff-line--added">		zap.String("trace_id", span.SpanContext().TraceID().String()),</span><span class="diff-line diff-line--added">	)</span><span class="diff-line diff-line--unchanged">	return s.issueToken(user)</span><span class="diff-line diff-line--unchanged">}</span></code></pre>
+        </div>
+        <div class="diff-container" id="diff-finding-2">
+          <div class="diff-loading">
+            <div class="diff-loading__spinner"></div>
+            Loading diff...
           </div>
         </div>
 
@@ -1089,18 +1118,17 @@
         <span class="finding-file">internal/repository/user.go</span>
       </div>
       <div class="finding-body">
-        <div class="diff-panels">
-          <!-- BEFORE panel -->
-          <div class="diff-panel">
-            <div class="diff-panel__header diff-panel__header--before">Before</div>
-            <div class="diff-hunk">@@ user.go:15-28 @@</div>
-            <pre class="diff-code"><code class="language-go"><span class="diff-line diff-line--removed">func (r *UserRepo) FindByID(id string) (*User, error) {</span><span class="diff-line diff-line--unchanged">	var user User</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--removed">	result := r.db.First(&user, "id = ?", id)</span><span class="diff-line diff-line--unchanged">	if result.Error != nil {</span><span class="diff-line diff-line--unchanged">		return nil, fmt.Errorf("finding user %s: %w", id, result.Error)</span><span class="diff-line diff-line--unchanged">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--unchanged">	return &user, nil</span><span class="diff-line diff-line--unchanged">}</span></code></pre>
+        <div class="diff-toolbar">
+          <span class="diff-toolbar__label">Before / After</span>
+          <div class="diff-toggle" data-finding="3">
+            <button class="diff-toggle__btn diff-toggle__btn--active" data-style="split">Split</button>
+            <button class="diff-toggle__btn" data-style="unified">Unified</button>
           </div>
-          <!-- AFTER panel -->
-          <div class="diff-panel">
-            <div class="diff-panel__header diff-panel__header--after">After</div>
-            <div class="diff-hunk">@@ user.go:15-28 @@</div>
-            <pre class="diff-code"><code class="language-go"><span class="diff-line diff-line--added">func (r *UserRepo) FindByID(ctx context.Context, id string) (*User, error) {</span><span class="diff-line diff-line--unchanged">	var user User</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--added">	result := r.db.WithContext(ctx).First(&user, "id = ?", id)</span><span class="diff-line diff-line--unchanged">	if result.Error != nil {</span><span class="diff-line diff-line--unchanged">		return nil, fmt.Errorf("finding user %s: %w", id, result.Error)</span><span class="diff-line diff-line--unchanged">	}</span><span class="diff-line diff-line--unchanged"></span><span class="diff-line diff-line--unchanged">	return &user, nil</span><span class="diff-line diff-line--unchanged">}</span></code></pre>
+        </div>
+        <div class="diff-container" id="diff-finding-3">
+          <div class="diff-loading">
+            <div class="diff-loading__spinner"></div>
+            Loading diff...
           </div>
         </div>
 
@@ -1192,16 +1220,233 @@
   </div>
 </footer>
 
-<!-- Highlight.js: Go + TypeScript -->
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/go.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/typescript.min.js"></script>
-<script>
-  // Highlight all code blocks but skip individual line highlighting
-  // (we use manual spans for diff lines, hljs for syntax within them)
-  if (typeof hljs !== 'undefined') {
-    document.querySelectorAll('.diff-code code').forEach(function(block) {
-      hljs.highlightElement(block);
+<!-- ========== @PIERRE/DIFFS: ESM MODULE + FINDING DATA ========== -->
+<script type="module">
+  import { FileDiff } from 'https://cdn.jsdelivr.net/npm/@pierre/diffs@1.0.11/+esm';
+
+  // ============================================================
+  // Finding code data — before/after source for each finding
+  // ============================================================
+
+  const FINDINGS = [
+    {
+      id: 1,
+      fileName: 'handler.go',
+      before: `func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+\tvar req CreateUserRequest
+\tif err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+\t\treturn err
+\t}
+
+\tuser, err := h.service.Create(req)
+\tif err != nil {
+\t\treturn err
+\t}
+
+\treturn json.NewEncoder(w).Encode(user)
+}`,
+      after: `func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+\tvar req CreateUserRequest
+\tif err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+\t\treturn fmt.Errorf("decoding create user request: %w", err)
+\t}
+
+\tuser, err := h.service.Create(r.Context(), req)
+\tif err != nil {
+\t\treturn fmt.Errorf("creating user %q: %w", req.Email, err)
+\t}
+
+\treturn json.NewEncoder(w).Encode(user)
+}`,
+    },
+    {
+      id: 2,
+      fileName: 'auth.go',
+      before: `func (s *AuthService) Login(ctx context.Context, email, password string) (*Token, error) {
+\tlog.Printf("user login: %s", email)
+
+\tuser, err := s.repo.FindByEmail(ctx, email)
+\tif err != nil {
+\t\tlog.Printf("login failed: %v", err)
+\t\treturn nil, fmt.Errorf("finding user: %w", err)
+\t}
+
+\tlog.Printf("login success: %s", email)
+\treturn s.issueToken(user)
+}`,
+      after: `func (s *AuthService) Login(ctx context.Context, email, password string) (*Token, error) {
+\tspan := trace.SpanFromContext(ctx)
+\ts.logger.Info("user login attempt",
+\t\tzap.String("trace_id", span.SpanContext().TraceID().String()),
+\t)
+
+\tuser, err := s.repo.FindByEmail(ctx, email)
+\tif err != nil {
+\t\ts.logger.Warn("login failed",
+\t\t\tzap.Error(err),
+\t\t\tzap.String("trace_id", span.SpanContext().TraceID().String()),
+\t\t)
+\t\treturn nil, fmt.Errorf("finding user: %w", err)
+\t}
+
+\ts.logger.Info("login success",
+\t\tzap.String("user_id", user.ID),
+\t\tzap.String("trace_id", span.SpanContext().TraceID().String()),
+\t)
+\treturn s.issueToken(user)
+}`,
+    },
+    {
+      id: 3,
+      fileName: 'user.go',
+      before: `func (r *UserRepo) FindByID(id string) (*User, error) {
+\tvar user User
+
+\tresult := r.db.First(&user, "id = ?", id)
+\tif result.Error != nil {
+\t\treturn nil, fmt.Errorf("finding user %s: %w", id, result.Error)
+\t}
+
+\treturn &user, nil
+}`,
+      after: `func (r *UserRepo) FindByID(ctx context.Context, id string) (*User, error) {
+\tvar user User
+
+\tresult := r.db.WithContext(ctx).First(&user, "id = ?", id)
+\tif result.Error != nil {
+\t\treturn nil, fmt.Errorf("finding user %s: %w", id, result.Error)
+\t}
+
+\treturn &user, nil
+}`,
+    },
+  ];
+
+  // ============================================================
+  // Detect system theme preference
+  // ============================================================
+  function getThemeType() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  }
+
+  // ============================================================
+  // Create and render FileDiff instances
+  // ============================================================
+  const diffInstances = new Map();
+
+  function createDiffInstance(finding, style) {
+    const diff = new FileDiff({
+      theme: { dark: 'pierre-dark', light: 'pierre-light' },
+      themeType: getThemeType(),
+      diffStyle: style || 'split',
+      diffIndicators: 'bars',
+      lineDiffType: 'word-alt',
+      overflow: 'scroll',
+      disableFileHeader: false,
+      hunkSeparators: 'line-info',
+    });
+    return diff;
+  }
+
+  async function renderFinding(finding, style) {
+    const containerId = 'diff-finding-' + finding.id;
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.warn('Diff container not found: ' + containerId);
+      return;
+    }
+
+    // Clear loading placeholder or previous render
+    const prev = diffInstances.get(finding.id);
+    if (prev) prev.cleanUp();
+    container.replaceChildren();
+
+    const diff = createDiffInstance(finding, style);
+    diffInstances.set(finding.id, diff);
+
+    await diff.render({
+      oldFile: { name: finding.fileName, contents: finding.before },
+      newFile: { name: finding.fileName, contents: finding.after },
+      containerWrapper: container,
+    });
+  }
+
+  // Render all findings on page load
+  async function renderAll(style) {
+    const tasks = FINDINGS.map(function(f) {
+      return renderFinding(f, style);
+    });
+    await Promise.all(tasks);
+  }
+
+  // Initial render
+  await renderAll('split');
+
+  // ============================================================
+  // Listen for system theme changes and re-render
+  // ============================================================
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+      // Re-render all diffs with the current style to pick up the new theme
+      var currentStyle = document.querySelector('#global-diff-toggle .diff-toggle__btn--active');
+      var style = currentStyle ? (currentStyle.getAttribute('data-style') || 'split') : 'split';
+      renderAll(style);
+    });
+  }
+
+  // ============================================================
+  // Per-finding toggle handlers
+  // ============================================================
+  document.querySelectorAll('.diff-toggle[data-finding]').forEach(function(toggle) {
+    var findingId = parseInt(toggle.getAttribute('data-finding'), 10);
+    if (isNaN(findingId)) return;
+    toggle.querySelectorAll('.diff-toggle__btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var style = btn.getAttribute('data-style');
+        // Update toggle visual state
+        toggle.querySelectorAll('.diff-toggle__btn').forEach(function(b) {
+          b.classList.remove('diff-toggle__btn--active');
+        });
+        btn.classList.add('diff-toggle__btn--active');
+
+        // Re-render this finding with the new style
+        var finding = FINDINGS.find(function(f) { return f.id === findingId; });
+        if (finding) renderFinding(finding, style);
+      });
+    });
+  });
+
+  // ============================================================
+  // Global toggle handler
+  // ============================================================
+  var globalToggle = document.getElementById('global-diff-toggle');
+  if (globalToggle) {
+    globalToggle.querySelectorAll('.diff-toggle__btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var style = btn.getAttribute('data-style');
+
+        // Update global toggle visual state
+        globalToggle.querySelectorAll('.diff-toggle__btn').forEach(function(b) {
+          b.classList.remove('diff-toggle__btn--active');
+        });
+        btn.classList.add('diff-toggle__btn--active');
+
+        // Update all per-finding toggles to match
+        document.querySelectorAll('.diff-toggle[data-finding]').forEach(function(toggle) {
+          toggle.querySelectorAll('.diff-toggle__btn').forEach(function(b) {
+            b.classList.remove('diff-toggle__btn--active');
+            if (b.getAttribute('data-style') === style) {
+              b.classList.add('diff-toggle__btn--active');
+            }
+          });
+        });
+
+        // Re-render all findings
+        renderAll(style);
+      });
     });
   }
 </script>
