@@ -1056,11 +1056,11 @@ Where `{timestamp}` format is `YYYY-MM-DDTHH:MM:SS` (e.g., `2026-02-07T22:30:45`
 If user approved execution, you MUST:
 1. Invoke `Skill tool: ring:dev-cycle`
 2. Pass tasks file path: `docs/ring:dev-refactor/{timestamp}/tasks.md`
-3. Wait for ring:dev-cycle to complete all 11 gates
+3. Wait for ring:dev-cycle to complete all 10 gates
 
 **Skipping this step = SKILL FAILURE.**
 
-ring:dev-cycle executes each REFACTOR-XXX task through 11-gate process.
+ring:dev-cycle executes each REFACTOR-XXX task through 10-gate process. After all tasks complete, ring:dev-multi-tenant runs as a post-cycle step to adapt all implemented code for multi-tenant support.
 
 **TodoWrite:** Mark "Handoff to ring:dev-cycle" as `completed`
 

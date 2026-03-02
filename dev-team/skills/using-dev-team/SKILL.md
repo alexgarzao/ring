@@ -95,7 +95,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 <cannot_skip>
 
 - Dispatch to specialist (standards loading required)
-- 11-gate development cycle (quality gates)
+- 10-gate development cycle (quality gates)
 - Parallel reviewer dispatch (not sequential)
 - TDD in Gate 0 (test-first)
 - User approval in Gate 9
@@ -106,7 +106,7 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | Requirement                    | Why It Cannot Be Waived                       |
 | ------------------------------ | --------------------------------------------- |
 | **Dispatch to specialist**     | Specialists have standards loading, you don't |
-| **11-gate development cycle**  | Gates prevent quality regressions             |
+| **10-gate development cycle**  | Gates prevent quality regressions             |
 | **Parallel reviewer dispatch** | Sequential review = 3x slower, same cost      |
 | **TDD in Gate 0**              | Test-first ensures testability                |
 | **User approval in Gate 9**    | Only users can approve completion             |
@@ -249,7 +249,7 @@ Remember:
 
 **Agents:** See "9 Developer Specialists" table above.
 
-**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (11-gate backend workflow), `ring:dev-cycle-frontend` (9-gate frontend workflow), `ring:dev-refactor` (backend/general codebase analysis), `ring:dev-refactor-frontend` (frontend codebase analysis)
+**Skills:** `ring:using-dev-team` (this), `ring:dev-cycle` (10-gate backend workflow), `ring:dev-cycle-frontend` (9-gate frontend workflow), `ring:dev-refactor` (backend/general codebase analysis), `ring:dev-refactor-frontend` (frontend codebase analysis)
 
 **Commands:** `/ring:dev-cycle` (backend tasks), `/ring:dev-cycle-frontend` (frontend tasks), `/ring:dev-refactor` (analyze backend/general codebase), `/ring:dev-refactor-frontend` (analyze frontend codebase), `/ring:dev-status`, `/ring:dev-cancel`, `/ring:dev-report`
 
@@ -259,7 +259,7 @@ Remember:
 
 ## Development Workflows
 
-All workflows converge to the 11-gate development cycle:
+All workflows converge to the 10-gate development cycle:
 
 | Workflow         | Entry Point                           | Output                                        | Then                         |
 | ---------------- | ------------------------------------- | --------------------------------------------- | ---------------------------- |
@@ -268,12 +268,11 @@ All workflows converge to the 11-gate development cycle:
 | **Refactoring**  | `/ring:dev-refactor`                  | `docs/ring:dev-refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
 | **Frontend Refactoring** | `/ring:dev-refactor-frontend` | `docs/ring:dev-refactor-frontend/{timestamp}/tasks.md` | → `/ring:dev-cycle-frontend tasks.md` |
 
-**11-Gate Backend Development Cycle:**
+**10-Gate Backend Development Cycle (+ post-cycle multi-tenant):**
 
 | Gate                       | Focus                            | Agent(s)                                                                               |
 | -------------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
 | **0: Implementation**      | TDD: RED→GREEN→REFACTOR (single-tenant) | `ring:backend-engineer-*`, `ring:frontend-bff-engineer-typescript`, `ring:ui-engineer` |
-| **0.5: Multi-Tenant**      | Multi-tenant adaptation (scoped or full) | `ring:backend-engineer-golang` (via `ring:dev-multi-tenant`)                          |
 | **1: DevOps**              | Dockerfile, docker-compose, .env | `ring:devops-engineer`                                                                 |
 | **2: SRE**                 | Health checks, logging, tracing  | `ring:sre`                                                                             |
 | **3: Unit Testing**        | Unit tests, coverage ≥85%        | `ring:qa-analyst`                                                                      |
@@ -283,13 +282,14 @@ All workflows converge to the 11-gate development cycle:
 | **7: Chaos Testing**       | Chaos tests (write per unit, execute at end) | `ring:qa-analyst`                                                         |
 | **8: Review**              | 6 reviewers IN PARALLEL          | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:nil-safety-reviewer`, `ring:consequences-reviewer` |
 | **9: Validation**          | User approval: APPROVED/REJECTED | User decision                                                                          |
+| **Post-cycle: Multi-Tenant** | Adapt all code for multi-tenant | `ring:backend-engineer-golang` (via `ring:dev-multi-tenant`)                          |
 
 **Gate 0 Agent Selection for Frontend:**
 
 - If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ring:ui-engineer`
 - Otherwise → use `ring:frontend-bff-engineer-typescript`
 
-**Key Principle:** Backend follows the 11-gate process. Frontend follows the 9-gate process.
+**Key Principle:** Backend follows the 10-gate process. Frontend follows the 9-gate process.
 
 ### Frontend Development Cycle (9 Gates)
 

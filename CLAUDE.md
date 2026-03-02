@@ -480,7 +480,7 @@ Skill tool: "ring:using-ring"               # Load mandatory workflows
 /ring:brainstorm          # Socratic design refinement
 /ring:pre-dev-feature     # <2 day features (5 gates)
 /ring:pre-dev-full        # ≥2 day features (10 gates)
-/ring:dev-cycle           # 11-gate development cycle
+/ring:dev-cycle           # 10-gate development cycle + post-cycle multi-tenant
 /ring:execute-plan        # Batch execution with checkpoints
 /ring:worktree            # Create isolated development branch
 
@@ -501,7 +501,7 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 | Code review | `/ring:codereview` dispatches 6 parallel reviewers |
 | Pre-dev (small) | `/ring:pre-dev-feature` → 5-gate workflow |
 | Pre-dev (large) | `/ring:pre-dev-full` → 10-gate workflow |
-| Dev cycle - backend (11 gates) | `/ring:dev-cycle [tasks-file]` → implementation→multi-tenant→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation (see [dev-team/skills/dev-cycle/SKILL.md](dev-team/skills/dev-cycle/SKILL.md)) |
+| Dev cycle - backend (10 gates + post-cycle MT) | `/ring:dev-cycle [tasks-file]` → implementation→devops→SRE→unit-testing→fuzz-testing→property-testing→integration-testing→chaos-testing→review→validation→**multi-tenant** (see [dev-team/skills/dev-cycle/SKILL.md](dev-team/skills/dev-cycle/SKILL.md)) |
 | Dev cycle - frontend (9 gates) | `/ring:dev-cycle-frontend [tasks-file]` → implementation→devops→accessibility→unit-testing→visual-testing→e2e-testing→performance→review→validation (see [dev-team/skills/dev-cycle-frontend/SKILL.md](dev-team/skills/dev-cycle-frontend/SKILL.md)) |
 | Refactor - frontend | `/ring:dev-refactor-frontend` → dispatches 5-7 frontend agents in ANALYSIS mode → generates findings → tasks → handoff to `/ring:dev-cycle-frontend` |
 
