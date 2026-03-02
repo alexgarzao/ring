@@ -1,5 +1,7 @@
 # Responsive Section Navigation
 
+> All color tokens and base styles are defined in `../templates/standard.html`. This reference shows the responsive navigation TOC pattern that builds ON TOP of the standard foundation.
+
 Navigation pattern for multi-section pages (reviews, recaps, dashboards). Provides a sticky sidebar TOC on desktop and a sticky horizontal scrollable bar on mobile.
 
 ## Layout Structure
@@ -75,7 +77,7 @@ Key structural rules:
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   padding: 0 0 10px;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--border);
@@ -84,7 +86,7 @@ Key structural rules:
 .toc a {
   display: block;
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   text-decoration: none;
   padding: 4px 8px;
   border-radius: 5px;
@@ -93,11 +95,11 @@ Key structural rules:
   line-height: 1.4;
   margin-bottom: 1px;
 }
-.toc a:hover { color: var(--text); background: var(--surface2); }
+.toc a:hover { color: var(--text); background: var(--surface-elevated); }
 .toc a.active { color: var(--text); border-left-color: var(--accent); }
 ```
 
-Replace `var(--accent)` with your page's primary accent color variable (e.g., `var(--orange)`, `var(--blue)`).
+Replace `var(--accent)` with your page's primary accent color variable (e.g., `var(--tangerine-500)`, `var(--info)`).
 
 ### TOC — Mobile (sticky horizontal bar)
 

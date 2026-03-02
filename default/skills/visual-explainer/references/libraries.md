@@ -1,5 +1,7 @@
 # External Libraries (CDN)
 
+All color tokens and base styles are defined in `../templates/standard.html`. This reference shows library integration patterns (Mermaid, Chart.js, Highlight.js, anime.js) that build ON TOP of the standard foundation.
+
 Optional CDN libraries for cases where pure CSS/HTML isn't enough. Only include what the diagram actually needs — most diagrams need zero external JS.
 
 ## Mermaid.js — Diagramming Engine
@@ -44,26 +46,26 @@ Always use `theme: 'base'` — it's the only theme where all `themeVariables` ar
     theme: 'base',
     look: 'classic',
     themeVariables: {
-      // Background and surfaces
-      primaryColor: isDark ? '#2d1b69' : '#ede9fe',
-      primaryBorderColor: isDark ? '#7c3aed' : '#8b5cf6',
-      primaryTextColor: isDark ? '#e6edf3' : '#1a1a2e',
-      secondaryColor: isDark ? '#1c2333' : '#f0fdf4',
-      secondaryBorderColor: isDark ? '#059669' : '#16a34a',
-      secondaryTextColor: isDark ? '#e6edf3' : '#1a1a2e',
-      tertiaryColor: isDark ? '#27201a' : '#fef3c7',
-      tertiaryBorderColor: isDark ? '#d97706' : '#f59e0b',
-      tertiaryTextColor: isDark ? '#e6edf3' : '#1a1a2e',
+      // Background and surfaces — Lerian palette
+      primaryColor: isDark ? '#3F3F46' : '#FFF8C2',          // dark: zinc-700, light: sunglow-100
+      primaryBorderColor: isDark ? '#EDAC05' : '#EDAC05',   // sunglow-500
+      primaryTextColor: isDark ? '#F4F4F5' : '#27272A',     // dark: zinc-100, light: zinc-800
+      secondaryColor: isDark ? '#2a3a2e' : '#E0F8E8',       // dark: dark green, light: de-york-100
+      secondaryBorderColor: isDark ? '#26934F' : '#26934F', // de-york-600
+      secondaryTextColor: isDark ? '#F4F4F5' : '#27272A',
+      tertiaryColor: isDark ? '#3a2e28' : '#FEE9E2',        // dark: dark warm, light: tangerine-100
+      tertiaryBorderColor: isDark ? '#F06E43' : '#F06E43',  // tangerine-500
+      tertiaryTextColor: isDark ? '#F4F4F5' : '#27272A',
       // Lines and edges
-      lineColor: isDark ? '#6b7280' : '#9ca3af',
+      lineColor: isDark ? '#6b7280' : '#52525B',
       // Text
       // Global default — CSS overrides on .nodeLabel/.edgeLabel win when present
       fontSize: '16px',
-      fontFamily: 'var(--font-body)',
+      fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
       // Notes and labels
-      noteBkgColor: isDark ? '#1c2333' : '#fefce8',
-      noteTextColor: isDark ? '#e6edf3' : '#1a1a2e',
-      noteBorderColor: isDark ? '#fbbf24' : '#d97706',
+      noteBkgColor: isDark ? '#3F3F46' : '#fefce8',       // dark: zinc-700
+      noteTextColor: isDark ? '#F4F4F5' : '#27272A',     // dark: zinc-100, light: zinc-800
+      noteBorderColor: isDark ? '#FDCB28' : '#d97706',   // dark: sunglow-400
     }
   });
 </script>
@@ -123,7 +125,7 @@ Mermaid renders SVG. Override its classes for pixel-perfect control that `themeV
    breaks in the opposite color scheme. Fix: never set color: in classDef,
    and always include these CSS overrides. */
 .mermaid .nodeLabel { color: var(--text) !important; }
-.mermaid .edgeLabel { color: var(--text-dim) !important; background-color: var(--bg) !important; }
+.mermaid .edgeLabel { color: var(--text-muted) !important; background-color: var(--bg) !important; }
 .mermaid .edgeLabel rect { fill: var(--bg) !important; }
 
 /* Node shapes */
@@ -344,7 +346,7 @@ Use for bar charts, line charts, pie/doughnut charts, radar charts, and other da
 
 <script>
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const textColor = isDark ? '#8b949e' : '#6b7280';
+  const textColor = isDark ? '#A1A1AA' : '#52525B';
   const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const fontFamily = getComputedStyle(document.documentElement)
     .getPropertyValue('--font-body').trim() || 'system-ui, sans-serif';
@@ -356,8 +358,8 @@ Use for bar charts, line charts, pie/doughnut charts, radar charts, and other da
       datasets: [{
         label: 'Feedback Items',
         data: [45, 62, 78, 91, 120],
-        backgroundColor: isDark ? 'rgba(129, 140, 248, 0.6)' : 'rgba(79, 70, 229, 0.6)',
-        borderColor: isDark ? '#818cf8' : '#4f46e5',
+        backgroundColor: isDark ? 'rgba(253, 203, 40, 0.6)' : 'rgba(237, 172, 5, 0.6)',
+        borderColor: isDark ? '#FDCB28' : '#EDAC05',
         borderWidth: 1,
         borderRadius: 4,
       }]
@@ -445,41 +447,43 @@ When using anime.js, set initial opacity to 0 in CSS so elements don't flash bef
 
 ## Google Fonts — Typography
 
-Always load with `display=swap` for fast rendering. Pick a distinctive pairing — body + mono at minimum, optionally a display font for the title.
+The standard template (`../templates/standard.html`) uses **Inter** as the body font (`--font-body`) and **'SF Mono'** / system monospace as the code font (`--font-mono`). You MUST NOT override these -- they ensure visual consistency across all diagrams.
+
+You may optionally load a **secondary display font** for `h1`/`h2` headings to give a specific diagram personality. Always load with `display=swap` for fast rendering.
 
 ```html
+<!-- Only load a display font — Inter (body) and mono are already in the standard template -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
 ```
 
-Define as CSS variables for easy reference:
+Define the display font as a separate variable — do NOT override `--font-body`:
 ```css
 :root {
-  --font-body: 'Outfit', system-ui, sans-serif;
-  --font-mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+  --font-display: 'Outfit', system-ui, sans-serif;
+  /* --font-body and --font-mono are defined in standard.html — do not redeclare */
 }
+
+h1, h2 { font-family: var(--font-display); }
 ```
 
-**Font suggestions** (rotate — never use the same pairing twice in a row):
+The standard template uses Inter as the body font (MUST NOT override). The fonts below are suggestions for an optional secondary display font used for `h1`/`h2` headings only.
 
-| Body / Headings | Mono / Labels | Feel |
+**Secondary display font suggestions** (rotate — never use the same pairing twice in a row):
+
+| Display Font (h1/h2) | Pairs Well With (mono) | Feel |
 |---|---|---|
 | Outfit | Space Mono | Clean geometric, modern |
 | Instrument Serif | JetBrains Mono | Editorial, refined |
 | Sora | IBM Plex Mono | Technical, precise |
-| DM Sans | Fira Code | Friendly, developer |
 | Fraunces | Source Code Pro | Warm, distinctive |
-| Libre Franklin | Inconsolata | Classic, reliable |
-| Manrope | Martian Mono | Soft, contemporary |
 | Playfair Display | Roboto Mono | Elegant contrast |
 | Bricolage Grotesque | Fragment Mono | Bold, characterful |
-| Geist | Geist Mono | Vercel-inspired, sharp |
 | Crimson Pro | Noto Sans Mono | Scholarly, serious |
 | Red Hat Display | Red Hat Mono | Cohesive family |
-| Plus Jakarta Sans | Azeret Mono | Rounded, approachable |
-
-Never default to Inter, Roboto, Arial, or system-ui as the primary choice.
+| Manrope | Martian Mono | Soft, contemporary |
+| Geist | Geist Mono | Vercel-inspired, sharp |
 
 ## Highlight.js — Syntax Highlighting
 

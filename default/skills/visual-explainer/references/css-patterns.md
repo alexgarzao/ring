@@ -1,58 +1,47 @@
 # CSS Patterns for Diagrams
 
-Reusable patterns for layout, connectors, theming, and visual effects in self-contained HTML diagrams.
+All color tokens, typography, and base styles are defined in `../templates/standard.html`. This reference shows reusable CSS patterns that build ON TOP of the standard foundation. When using these patterns, the standard template's `:root` variables are already available — reference them directly.
 
 ## Theme Setup
 
-Always define both light and dark palettes via custom properties. Start with whichever fits the chosen aesthetic, ensure both work.
+The standard template (`../templates/standard.html`) defines both light and dark palettes via custom properties. You do NOT need to redefine the core tokens. For diagram-specific needs, add semantic aliases that map to the standard palette:
 
 ```css
-:root {
-  --font-body: 'Outfit', system-ui, sans-serif;
-  --font-mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+/* Standard tokens are already defined by the template:
+   --font-body, --font-mono, --bg, --surface, --surface-elevated,
+   --surface-muted, --text, --text-secondary, --text-muted, --accent,
+   --accent-dim, --success, --warning, --error, --info, --border,
+   --border-strong, --border-subtle, --shadow-sm, --shadow-md, --shadow-lg,
+   --sunglow-*, --de-york-*, --tangerine-*, --cod-gray-*
+*/
 
-  --bg: #F2F2F2;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --border-bright: rgba(0, 0, 0, 0.15);
-  --text: #191A1B;
-  --text-dim: #3E3C37;
-  --accent: #2ED8FE;
-  --accent-dim: rgba(46, 216, 254, 0.15);
-  /* Semantic accents for diagram elements */
-  --node-a: #2ED8FE;
-  --node-a-dim: rgba(46, 216, 254, 0.15);
-  --node-b: #50F769;
-  --node-b-dim: rgba(80, 247, 105, 0.15);
-  --node-c: #FEED02;
-  --node-c-dim: rgba(254, 237, 2, 0.2);
+/* Add diagram-specific semantic aliases in TEMPLATE-SPECIFIC STYLES */
+:root {
+  /* Map nodes to extended palette colors for variety */
+  --node-a: var(--de-york-400);              /* #5BCD86 */
+  --node-a-dim: rgba(91, 205, 134, 0.15);
+  --node-b: var(--tangerine-500);            /* #F06E43 */
+  --node-b-dim: rgba(240, 110, 67, 0.15);
+  --node-c: var(--sunglow-400);              /* #FDCB28 */
+  --node-c-dim: rgba(253, 203, 40, 0.2);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #191A1B;
-    --surface: #3E3C37;
-    --surface-elevated: #4e4c46;
-    --border: rgba(255, 255, 255, 0.06);
-    --border-bright: rgba(255, 255, 255, 0.12);
-    --text: #F2F2F2;
-    --text-dim: #CECECE;
-    --accent: #2ED8FE;
-    --accent-dim: rgba(46, 216, 254, 0.15);
-    --node-a: #2ED8FE;
-    --node-a-dim: rgba(46, 216, 254, 0.15);
-    --node-b: #50F769;
-    --node-b-dim: rgba(80, 247, 105, 0.15);
-    --node-c: #FEED02;
-    --node-c-dim: rgba(254, 237, 2, 0.15);
+    /* Node colors stay the same; dim variants may need slight adjustment */
+    --node-a: var(--de-york-400);
+    --node-a-dim: rgba(91, 205, 134, 0.15);
+    --node-b: var(--tangerine-500);
+    --node-b-dim: rgba(240, 110, 67, 0.15);
+    --node-c: var(--sunglow-400);
+    --node-c-dim: rgba(253, 203, 40, 0.15);
   }
 }
 ```
 
 ## Background Atmosphere
 
-Flat backgrounds feel dead. Use subtle gradients or patterns.
+Flat backgrounds feel dead. Use subtle gradients or patterns built on the standard palette.
 
 ```css
 /* Radial glow behind focal area */
@@ -77,7 +66,7 @@ body {
   );
 }
 
-/* Gradient mesh (pick 2-3 positioned radials) */
+/* Gradient mesh (pick 2-3 positioned radials from extended palette) */
 body {
   background: var(--bg);
   background-image:
@@ -88,7 +77,7 @@ body {
 
 ## Section / Node Cards
 
-The fundamental building block. A colored card representing a system component, pipeline step, or data entity.
+The fundamental building block. A colored card representing a system component, pipeline step, or data entity. The standard template provides `.card` and `.card-elevated` base classes. These patterns extend them for diagram-specific use.
 
 ```css
 .node {
@@ -109,12 +98,12 @@ The fundamental building block. A colored card representing a system component, 
 /* Elevated: KPIs, key sections, anything that should pop */
 .node--elevated {
   background: var(--surface-elevated);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-md);
 }
 
 /* Recessed: code blocks, secondary content, detail panels */
 .node--recessed {
-  background: color-mix(in srgb, var(--bg) 70%, var(--surface) 30%);
+  background: var(--surface-muted);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
   border-color: var(--border);
 }
@@ -122,7 +111,7 @@ The fundamental building block. A colored card representing a system component, 
 /* Hero: executive summaries, focal elements — demands attention */
 .node--hero {
   background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-lg);
   border-color: color-mix(in srgb, var(--border) 50%, var(--accent) 50%);
 }
 
@@ -211,7 +200,7 @@ li {
   gap: 6px;
 }
 li::before {
-  content: '›';
+  content: '>';
   flex-shrink: 0;
 }
 
@@ -221,7 +210,7 @@ li {
   position: relative;
 }
 li::before {
-  content: '›';
+  content: '>';
   position: absolute;
   left: 0;
 }
@@ -238,7 +227,7 @@ Mermaid diagrams are often too small to read comfortably, especially complex flo
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 32px 24px;
   overflow: auto;
   scrollbar-width: thin;
@@ -247,7 +236,7 @@ Mermaid diagrams are often too small to read comfortably, especially complex flo
 .mermaid-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
 .mermaid-wrap::-webkit-scrollbar-track { background: transparent; }
 .mermaid-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.mermaid-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+.mermaid-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .mermaid-wrap .mermaid {
   transition: transform 0.2s ease;
@@ -263,7 +252,7 @@ Mermaid diagrams are often too small to read comfortably, especially complex flo
   z-index: 10;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 2px;
 }
 
@@ -272,11 +261,11 @@ Mermaid diagrams are often too small to read comfortably, especially complex flo
   height: 28px;
   border: none;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 14px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -378,7 +367,7 @@ document.querySelectorAll('.mermaid-wrap').forEach(function(wrap) {
 });
 ```
 
-Scroll-to-zoom requires Ctrl/Cmd+scroll to avoid hijacking normal page scroll. Click-and-drag panning activates only when zoomed in (zoom > 1). Cursor changes to `grab`/`grabbing` to signal the behavior. The zoom range is capped at 0.3x–5x.
+Scroll-to-zoom requires Ctrl/Cmd+scroll to avoid hijacking normal page scroll. Click-and-drag panning activates only when zoomed in (zoom > 1). Cursor changes to `grab`/`grabbing` to signal the behavior. The zoom range is capped at 0.3x-5x.
 
 ## Grid Layouts
 
@@ -417,7 +406,7 @@ Scroll-to-zoom requires Ctrl/Cmd+scroll to avoid hijacking normal page scroll. C
   display: flex;
   align-items: center;
   padding: 0 4px;
-  color: var(--border-bright);
+  color: var(--border-strong);
   font-size: 18px;
   flex-shrink: 0;
 }
@@ -441,14 +430,14 @@ Scroll-to-zoom requires Ctrl/Cmd+scroll to avoid hijacking normal page scroll. C
 
 ### Data Tables
 
-Use real `<table>` elements for tabular data. Wrap in a scrollable container for wide tables.
+Use real `<table>` elements for tabular data. The standard template provides base `.data-table` styles. These patterns extend them for diagram-specific needs. Wrap in a scrollable container for wide tables.
 
 ```css
 /* Scrollable wrapper for wide tables */
 .table-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -457,41 +446,15 @@ Use real `<table>` elements for tabular data. Wrap in a scrollable container for
   -webkit-overflow-scrolling: touch;
 }
 
-/* Base table */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-/* Header */
-.data-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
+/* Extended table styles (supplement the standard template's .data-table) */
 .data-table th {
-  background: var(--surface-elevated, var(--surface2, var(--surface)));
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--text-dim);
-  text-align: left;
-  padding: 12px 16px;
-  border-bottom: 2px solid var(--border-bright);
+  color: var(--text-muted);
   white-space: nowrap;
-}
-
-/* Cells */
-.data-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-  color: var(--text);
 }
 
 /* Let text-heavy columns wrap naturally */
@@ -508,7 +471,7 @@ Use real `<table>` elements for tabular data. Wrap in a scrollable container for
   font-family: var(--font-mono);
 }
 
-/* Alternating rows */
+/* Alternating rows (subtle accent tint) */
 .data-table tbody tr:nth-child(even) {
   background: var(--accent-dim);
 }
@@ -516,10 +479,6 @@ Use real `<table>` elements for tabular data. Wrap in a scrollable container for
 /* Row hover */
 .data-table tbody tr {
   transition: background 0.15s ease;
-}
-
-.data-table tbody tr:hover {
-  background: var(--border);
 }
 
 /* Last row: no bottom border (container handles it) */
@@ -540,7 +499,7 @@ Use real `<table>` elements for tabular data. Wrap in a scrollable container for
 /* Secondary detail text */
 .data-table small {
   display: block;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 11px;
   margin-top: 2px;
 }
@@ -559,28 +518,28 @@ Styled spans for match/gap/warning states. Never use emoji.
   font-size: 11px;
   font-weight: 500;
   padding: 3px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   white-space: nowrap;
 }
 
 .status--match {
-  background: var(--green-dim, rgba(5, 150, 105, 0.1));
-  color: var(--green, #059669);
+  background: var(--success-dim);
+  color: var(--success);
 }
 
 .status--gap {
-  background: var(--red-dim, rgba(239, 68, 68, 0.1));
-  color: var(--red, #ef4444);
+  background: var(--error-dim);
+  color: var(--error);
 }
 
 .status--warn {
-  background: var(--orange-dim, rgba(217, 119, 6, 0.1));
-  color: var(--orange, #d97706);
+  background: var(--warning-dim);
+  color: var(--warning);
 }
 
 .status--info {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: var(--info-dim);
+  color: var(--info);
 }
 
 /* Dot variant (compact, no text) */
@@ -591,9 +550,9 @@ Styled spans for match/gap/warning states. Never use emoji.
   display: inline-block;
 }
 
-.status-dot--match { background: var(--green, #059669); }
-.status-dot--gap { background: var(--red, #ef4444); }
-.status-dot--warn { background: var(--orange, #d97706); }
+.status-dot--match { background: var(--success); }
+.status-dot--gap { background: var(--error); }
+.status-dot--warn { background: var(--warning); }
 ```
 
 Usage in table cells:
@@ -609,10 +568,10 @@ For totals, counts, or aggregate status at the bottom:
 
 ```css
 .data-table tfoot td {
-  background: var(--surface-elevated, var(--surface2, var(--surface)));
+  background: var(--surface-elevated);
   font-weight: 600;
   font-size: 12px;
-  border-top: 2px solid var(--border-bright);
+  border-top: 2px solid var(--border-strong);
   border-bottom: none;
   padding: 12px 16px;
 }
@@ -643,7 +602,7 @@ For totals, counts, or aggregate status at the bottom:
   justify-content: center;
   align-items: center;
   gap: 8px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 12px;
   padding: 6px 0;
@@ -654,7 +613,7 @@ For totals, counts, or aggregate status at the bottom:
   width: 20px;
   height: 20px;
   fill: none;
-  stroke: var(--border-bright);
+  stroke: var(--border-strong);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -670,8 +629,8 @@ Down arrow SVG (reuse inline):
 Use `::after` or a literal arrow character:
 ```css
 .h-arrow::after {
-  content: '→';
-  color: var(--border-bright);
+  content: '->';
+  color: var(--border-strong);
   font-size: 18px;
   padding: 0 4px;
 }
@@ -691,16 +650,13 @@ Position the parent container as `position: relative` to scope the SVG overlay.
 
 ## Animations
 
+The standard template provides the base `fadeUp` keyframe and the `.animate` utility class. These additional patterns extend the animation toolkit.
+
 ### Staggered Fade-In on Load
 
-Define the keyframe once, then stagger via a `--i` CSS variable set per element. This approach works regardless of DOM nesting or interleaved non-animated elements (unlike `nth-child` which breaks when siblings aren't all the same type).
+The standard template defines `fadeUp` and `.animate` with `--i` stagger. For diagram-specific node animations:
 
 ```css
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 .node {
   animation: fadeUp 0.4s ease-out both;
   animation-delay: calc(var(--i, 0) * 0.05s);
@@ -725,7 +681,7 @@ Set `--i` per element in the HTML to control stagger order:
 
 .node:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 ```
 
@@ -796,6 +752,9 @@ Don't use the same animation for everything. Mix types by element role, with eas
 - **Stagger timing**: `calc(var(--i) * 0.06s)` with lower `--i` values on important elements so they appear first
 
 ### Respect Reduced Motion
+
+The standard template already includes the global reduced-motion override. If you need it in a standalone context:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -825,20 +784,19 @@ For simple inline visualizations without a library:
 
 ## Responsive Breakpoint
 
-Include a single breakpoint for narrow viewports:
+The standard template includes base responsive overrides. For diagram-specific layouts:
 
 ```css
 @media (max-width: 768px) {
   .arch-grid { grid-template-columns: 1fr; }
   .pipeline { flex-wrap: wrap; gap: 8px; }
   .pipeline__arrow { display: none; }
-  body { padding: 16px; }
 }
 ```
 
 ## Badges and Tags
 
-Small inline labels for categorizing elements:
+The standard template provides `.badge`, `.badge-success`, `.badge-warning`, `.badge-error`, `.badge-info`, `.badge-accent`, and `.badge-neutral`. For diagram-specific compact tags:
 
 ```css
 .tag {
@@ -846,7 +804,7 @@ Small inline labels for categorizing elements:
   font-size: 10px;
   font-weight: 500;
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--node-a-dim);
   color: var(--node-a);
 }
@@ -871,8 +829,8 @@ For tool listings, feature lists, table columns:
 }
 
 .node-list li::before {
-  content: '›';
-  color: var(--text-dim);
+  content: '>';
+  color: var(--text-muted);
   font-weight: 600;
   position: absolute;
   left: 0;
@@ -902,9 +860,9 @@ Large hero number with trend indicator and label. For dashboards, review summari
 .kpi-card {
   background: var(--surface-elevated);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .kpi-card__value {
@@ -921,7 +879,7 @@ Large hero number with trend indicator and label. For dashboards, review summari
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   margin-top: 6px;
 }
 
@@ -931,8 +889,8 @@ Large hero number with trend indicator and label. For dashboards, review summari
   margin-top: 4px;
 }
 
-.kpi-card__trend--up { color: var(--node-b, #059669); }
-.kpi-card__trend--down { color: var(--red, #ef4444); }
+.kpi-card__trend--up { color: var(--success); }
+.kpi-card__trend--down { color: var(--error); }
 ```
 
 ```html
@@ -956,7 +914,7 @@ Two-column comparison with diff-colored headers. For review pages, migration doc
   grid-template-columns: 1fr 1fr;
   gap: 0;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -972,15 +930,15 @@ Two-column comparison with diff-colored headers. For review pages, migration doc
 }
 
 .diff-panel__header--before {
-  background: var(--red-dim, rgba(239, 68, 68, 0.08));
-  color: var(--red, #ef4444);
-  border-bottom: 2px solid var(--red, #ef4444);
+  background: var(--error-dim);
+  color: var(--error);
+  border-bottom: 2px solid var(--error);
 }
 
 .diff-panel__header--after {
-  background: var(--green-dim, rgba(5, 150, 105, 0.08));
-  color: var(--green, #059669);
-  border-bottom: 2px solid var(--green, #059669);
+  background: var(--success-dim);
+  color: var(--success);
+  border-bottom: 2px solid var(--success);
 }
 
 .diff-panel__body {
@@ -1043,7 +1001,7 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
   width: 40px;
   text-align: right;
   padding-right: 8px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   opacity: 0.4;
   font-size: 12px;
   user-select: none;
@@ -1054,11 +1012,11 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
 
 ```css
 .diff-line--added {
-  background: var(--green-dim, rgba(80, 247, 105, 0.12));
+  background: var(--success-dim);
 }
 
 .diff-line--removed {
-  background: var(--red-dim, rgba(239, 68, 68, 0.10));
+  background: var(--error-dim);
   text-decoration: line-through;
   opacity: 0.7;
 }
@@ -1074,8 +1032,8 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
 .diff-hunk-header {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-dim);
-  background: var(--surface2, rgba(0, 0, 0, 0.04));
+  color: var(--text-muted);
+  background: var(--surface-muted);
   padding: 6px 16px;
   border-bottom: 1px solid var(--border);
   letter-spacing: 0.3px;
@@ -1095,15 +1053,15 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
   font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.severity-badge--critical { background: var(--red-dim); color: var(--red); }
-.severity-badge--high { background: var(--orange-dim); color: var(--orange); }
+.severity-badge--critical { background: var(--error-dim); color: var(--error); }
+.severity-badge--high { background: var(--warning-dim); color: var(--warning); }
 .severity-badge--medium { background: var(--accent-dim); color: var(--accent); }
-.severity-badge--low { background: var(--surface2); color: var(--text-dim); }
+.severity-badge--low { background: var(--surface-muted); color: var(--text-muted); }
 ```
 
 ```html
@@ -1118,7 +1076,7 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
 ```css
 .finding-card {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 24px;
 }
@@ -1142,16 +1100,16 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
 
 .finding-category {
   font-size: 11px;
-  color: var(--text-dim);
-  background: var(--surface2);
+  color: var(--text-muted);
+  background: var(--surface-muted);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .finding-file {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   margin-left: auto;
 }
 ```
@@ -1187,7 +1145,7 @@ Extended patterns for code-level diff views with line numbers, added/removed ind
     <summary>Why This Matters</summary>
     <div class="collapsible__body">
       <strong>Problem:</strong> Missing error context makes debugging impossible<br>
-      <strong>Standard:</strong> golang.md → Error Handling<br>
+      <strong>Standard:</strong> golang.md -> Error Handling<br>
       <strong>Impact:</strong> Production incidents take 3x longer to diagnose
     </div>
   </details>
@@ -1211,7 +1169,7 @@ Native `<details>/<summary>` with styled disclosure. Zero JS, accessible. For lo
 ```css
 details.collapsible {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -1231,16 +1189,16 @@ details.collapsible summary {
 }
 
 details.collapsible summary:hover {
-  background: var(--surface-elevated, var(--surface));
+  background: var(--surface-elevated);
 }
 
 details.collapsible summary::-webkit-details-marker { display: none; }
 
 /* Chevron indicator */
 details.collapsible summary::before {
-  content: '▸';
+  content: '\25B8';
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   transition: transform 0.15s ease;
 }
 
@@ -1276,7 +1234,7 @@ Full-width image cropped to a fixed height with a gradient fade into the page ba
 ```css
 .hero-img-wrap {
   position: relative;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 24px;
 }
@@ -1322,15 +1280,15 @@ Centered image with border, shadow, and optional caption. Use within content sec
 .illus img {
   max-width: 480px;
   width: 100%;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .illus figcaption {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   margin-top: 8px;
 }
 ```
@@ -1353,9 +1311,9 @@ Small image floated beside a section. Use when the illustration supports but doe
   float: right;
   max-width: 200px;
   margin: 0 0 16px 24px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 768px) {

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Refactoring Findings — Reference Template</title>
+<title>Refactoring Findings — Lerian Studio</title>
 <!--
   Reference template for the visual-explainer skill: code diff review.
-  Violet/purple palette — distinctly different from terracotta (architecture),
-  rose (data-table), and teal (mermaid) templates so agents absorb variety.
+  Lerian Standard branding — sunglow accent with GitHub-dark code panels.
   Key patterns demonstrated:
-  - Violet/purple accent palette (NOT terracotta, rose, or teal)
+  - Lerian sunglow accent palette (standard.html tokens)
+  - GitHub-dark overrides for Highlight.js code panel readability
   - Responsive nav sidebar (desktop: sticky TOC, mobile: horizontal scrollbar)
   - Scroll spy JS for active section tracking
   - KPI summary cards with data-count animation via @property
@@ -24,11 +24,14 @@
   - Staggered fade-in via --i CSS variable
   - Both light and dark themes via prefers-color-scheme
   - Reduced motion respect
-  - Font pairing: Sora (body) + IBM Plex Mono (code)
+  - Font pairing: Inter (body) + JetBrains Mono (code)
+  - Lerian header and footer with auto-fill date
 -->
+
+<!-- ========== FONTS ========== -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Highlight.js: theme-aware syntax highlighting -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css" media="(prefers-color-scheme: light)">
@@ -36,63 +39,141 @@
 
 <style>
   /* ============ THEME ============ */
-  :root {
-    --font-body: 'Sora', system-ui, sans-serif;
-    --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
 
-    /* Light theme — Lerian palette with violet accent */
-    --bg: #F2F2F2;
-    --surface: #ffffff;
-    --surface2: #CECECE;
-    --surface-elevated: #ffffff;
-    --border: rgba(0, 0, 0, 0.07);
-    --border-bright: rgba(0, 0, 0, 0.14);
-    --text: #191A1B;
-    --text-dim: #3E3C37;
-    --accent: #7c3aed;
-    --accent-dim: rgba(124, 58, 237, 0.12);
-    --green: #50F769;
-    --green-dim: rgba(80, 247, 105, 0.15);
-    --red: #ef4444;
-    --red-dim: rgba(239, 68, 68, 0.10);
-    --orange: #f59e0b;
-    --orange-dim: rgba(245, 158, 11, 0.15);
+  /* ========== DESIGN TOKENS: LIGHT MODE ========== */
+
+  :root {
+    /* --- Fonts --- */
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace;
+
+    /* --- Backgrounds --- */
+    --bg: #F4F4F5;                          /* page background (zinc-100) */
+    --surface: #FFFFFF;                      /* cards, panels */
+    --surface-elevated: #FFFFFF;             /* modals, popovers */
+    --surface-muted: #E4E4E7;               /* subtle backgrounds, muted areas */
+
+    /* --- Text --- */
+    --text: #27272A;                         /* primary text (zinc-800) */
+    --text-secondary: #52525B;               /* secondary text (zinc-600) */
+    --text-muted: #A1A1AA;                   /* placeholder, meta (zinc-400) */
+    --text-inverse: #F4F4F5;                 /* text on dark backgrounds */
+
+    /* --- Brand Accent (Sunglow) --- */
+    --accent: #FDCB28;                       /* primary brand yellow */
+    --accent-dim: rgba(253, 203, 40, 0.15);
+    --accent-hover: rgba(253, 203, 40, 0.7);
+    --accent-text: #27272A;                  /* text color on accent bg */
+
+    /* --- Semantic Status --- */
+    --success: #16A34A;
+    --success-bg: #f0fdf4;
+    --success-dim: rgba(22, 163, 74, 0.12);
+    --warning: #EAB308;
+    --warning-bg: #fefce8;
+    --warning-dim: rgba(234, 179, 8, 0.15);
+    --error: #EF4444;
+    --error-bg: #fef2f2;
+    --error-dim: rgba(239, 68, 68, 0.12);
+    --info: #2563EB;
+    --info-bg: #eff6ff;
+    --info-dim: rgba(37, 99, 235, 0.12);
+
+    /* --- Extended Palette (diagram variety) --- */
+    --sunglow-400: #FDCB28;
+    --sunglow-500: #EDAC05;
+    --sunglow-100: #FFF8C2;
+    --de-york-400: #5BCD86;
+    --de-york-600: #26934F;
+    --de-york-100: #E0F8E8;
+    --tangerine-400: #FAA589;
+    --tangerine-500: #F06E43;
+    --tangerine-100: #FEE9E2;
+    --cod-gray-400: #927E81;
+    --cod-gray-600: #655557;
+
+    /* --- Borders --- */
+    --border: #E4E4E7;                       /* default border (zinc-200) */
+    --border-strong: #D4D4D8;               /* input borders (zinc-300) */
+    --border-subtle: rgba(0, 0, 0, 0.05);   /* very faint separators */
+
+    /* --- Shadows (product-console) --- */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0px 1px 2px rgba(0, 0, 0, 0.1), 0px 10px 20px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0px 4px 8px rgba(0, 0, 0, 0.12), 0px 0px 32px rgba(0, 0, 0, 0.04);
+
+    /* --- Radius --- */
+    --radius: 8px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
   }
+
+
+  /* ========== DESIGN TOKENS: DARK MODE ========== */
+  /* GitHub-dark overrides for Highlight.js code panel readability */
 
   @media (prefers-color-scheme: dark) {
     :root {
+      /* GitHub dark — intentional overrides for code readability */
       --bg: #0d1117;
       --surface: #161b22;
-      --surface2: #21262d;
-      --surface-elevated: #1c2129;
-      --border: rgba(255, 255, 255, 0.08);
-      --border-bright: rgba(255, 255, 255, 0.14);
+      --surface-elevated: #1c2128;
+      --surface-muted: #21262d;
+
+      /* GitHub dark text */
       --text: #e6edf3;
-      --text-dim: #8b949e;
-      --accent: #a78bfa;
-      --accent-dim: rgba(167, 139, 250, 0.15);
-      --green: #50F769;
-      --green-dim: rgba(80, 247, 105, 0.12);
-      --red: #f87171;
-      --red-dim: rgba(248, 113, 113, 0.12);
-      --orange: #fbbf24;
-      --orange-dim: rgba(251, 191, 36, 0.12);
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --text-inverse: #27272A;
+
+      /* Sunglow accent (works well on dark backgrounds) */
+      --accent: #FDCB28;
+      --accent-dim: rgba(253, 203, 40, 0.2);
+      --accent-text: #27272A;
+
+      /* Semantic status (standard tokens) */
+      --success: #16A34A;
+      --success-bg: rgba(22, 163, 74, 0.15);
+      --success-dim: rgba(22, 163, 74, 0.12);
+      --warning: #EAB308;
+      --warning-bg: rgba(234, 179, 8, 0.15);
+      --warning-dim: rgba(234, 179, 8, 0.15);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.12);
+      --error-dim: rgba(248, 113, 113, 0.12);
+      --info: #60a5fa;
+      --info-bg: rgba(96, 165, 250, 0.12);
+      --info-dim: rgba(96, 165, 250, 0.12);
+
+      /* Borders */
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0px 2px 4px rgba(0, 0, 0, 0.3), 0px 10px 20px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0px 4px 8px rgba(0, 0, 0, 0.4), 0px 0px 32px rgba(0, 0, 0, 0.15);
     }
   }
 
   /* ============ RESET + BASE ============ */
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     background: var(--bg);
     background-image:
       radial-gradient(ellipse at 25% 0%, var(--accent-dim) 0%, transparent 50%),
-      radial-gradient(ellipse at 75% 100%, var(--red-dim) 0%, transparent 40%);
+      radial-gradient(ellipse at 75% 100%, var(--error-dim) 0%, transparent 40%);
     color: var(--text);
     font-family: var(--font-body);
     padding: 40px;
     min-height: 100vh;
     overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* ============ ANIMATION ============ */
@@ -144,6 +225,29 @@
     content: counter(val);
   }
 
+  /* ============ LERIAN HEADER ============ */
+  .lerian-header {
+    max-width: 1400px;
+    margin: 0 auto 32px;
+  }
+
+  .lerian-header a {
+    display: inline-block;
+    text-decoration: none;
+    color: var(--text);
+    transition: color 0.2s ease;
+  }
+
+  .lerian-header a:hover {
+    color: var(--accent);
+  }
+
+  .lerian-header .logo-mark {
+    width: 100px;
+    height: auto;
+    display: block;
+  }
+
   /* ============ LAYOUT: SIDEBAR + MAIN ============ */
   .wrap {
     max-width: 1400px;
@@ -155,7 +259,7 @@
 
   .main { min-width: 0; }
 
-  /* ============ TOC — DESKTOP (sticky sidebar) ============ */
+  /* ============ TOC -- DESKTOP (sticky sidebar) ============ */
   .toc {
     position: sticky;
     top: 24px;
@@ -166,7 +270,7 @@
     overflow-y: auto;
   }
   .toc::-webkit-scrollbar { width: 3px; }
-  .toc::-webkit-scrollbar-thumb { background: var(--surface-elevated); border-radius: 2px; }
+  .toc::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   .toc-title {
     font-family: var(--font-mono);
@@ -174,7 +278,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     padding: 0 0 10px;
     margin-bottom: 8px;
     border-bottom: 1px solid var(--border);
@@ -183,7 +287,7 @@
   .toc a {
     display: block;
     font-size: 11px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     text-decoration: none;
     padding: 4px 8px;
     border-radius: 5px;
@@ -192,10 +296,10 @@
     line-height: 1.4;
     margin-bottom: 1px;
   }
-  .toc a:hover { color: var(--text); background: var(--surface2); }
+  .toc a:hover { color: var(--text); background: var(--surface-muted); }
   .toc a.active { color: var(--text); border-left-color: var(--accent); }
 
-  /* ============ TOC — MOBILE (sticky horizontal bar) ============ */
+  /* ============ TOC -- MOBILE (sticky horizontal bar) ============ */
   @media (max-width: 1000px) {
     .wrap { grid-template-columns: 1fr; padding-top: 0; }
     body { padding-top: 0; }
@@ -250,7 +354,7 @@
   }
 
   .subtitle {
-    color: var(--text-dim);
+    color: var(--text-secondary);
     font-size: 13px;
     font-family: var(--font-mono);
     margin-bottom: 32px;
@@ -269,7 +373,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 18px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .kpi-card__value {
@@ -281,8 +385,8 @@
   }
 
   .kpi-card__value--accent { color: var(--accent); }
-  .kpi-card__value--red { color: var(--red); }
-  .kpi-card__value--orange { color: var(--orange); }
+  .kpi-card__value--error { color: var(--error); }
+  .kpi-card__value--warning { color: var(--warning); }
 
   .kpi-card__label {
     font-family: var(--font-mono);
@@ -290,7 +394,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     margin-top: 6px;
   }
 
@@ -301,7 +405,7 @@
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 32px;
-    background: var(--surface2);
+    background: var(--surface-muted);
   }
 
   .severity-bar__segment {
@@ -309,9 +413,9 @@
     transition: width 0.6s ease-out;
   }
 
-  .severity-bar__segment--critical { background: var(--red); }
-  .severity-bar__segment--high { background: var(--orange); }
-  .severity-bar__segment--medium { background: var(--accent); }
+  .severity-bar__segment--critical { background: var(--error); }
+  .severity-bar__segment--high { background: var(--warning); }
+  .severity-bar__segment--medium { background: var(--info); }
 
   .severity-bar-legend {
     display: flex;
@@ -327,7 +431,7 @@
     gap: 6px;
     font-family: var(--font-mono);
     font-size: 10px;
-    color: var(--text-dim);
+    color: var(--text-muted);
   }
 
   .severity-bar-legend__swatch {
@@ -348,10 +452,16 @@
     white-space: nowrap;
   }
 
-  .severity-badge--critical { background: var(--red-dim); color: var(--red); }
-  .severity-badge--high { background: var(--orange-dim); color: var(--orange); }
-  .severity-badge--medium { background: var(--accent-dim); color: var(--accent); }
-  .severity-badge--low { background: var(--surface2); color: var(--text-dim); }
+  .severity-badge--critical { background: var(--error-dim); color: var(--error); }
+  .severity-badge--high { background: var(--warning-dim); color: var(--warning); }
+  .severity-badge--medium { background: var(--info-dim); color: var(--info); }
+  .severity-badge--low { background: var(--surface-muted); color: var(--text-muted); }
+
+  @media (prefers-color-scheme: dark) {
+    .severity-badge--critical { color: #fecaca; }
+    .severity-badge--high { color: #fef08a; }
+    .severity-badge--medium { color: #bfdbfe; }
+  }
 
   /* ============ CATEGORY TAG ============ */
   .category-tag {
@@ -361,7 +471,7 @@
     padding: 2px 7px;
     border-radius: 4px;
     background: var(--accent-dim);
-    color: var(--accent);
+    color: var(--accent-text);
   }
 
   /* ============ FINDING CARD ============ */
@@ -392,7 +502,7 @@
   .finding-file {
     font-family: var(--font-mono);
     font-size: 12px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     margin-left: auto;
   }
 
@@ -427,24 +537,24 @@
   }
 
   .diff-panel__header--before {
-    background: var(--red-dim);
-    color: var(--red);
-    border-bottom: 2px solid var(--red);
+    background: var(--error-dim);
+    color: var(--error);
+    border-bottom: 2px solid var(--error);
   }
 
   .diff-panel__header--after {
-    background: var(--green-dim);
-    color: var(--green);
-    border-bottom: 2px solid var(--green);
+    background: var(--success-dim);
+    color: var(--success);
+    border-bottom: 2px solid var(--success);
   }
 
   /* Hunk header: file path + line range */
   .diff-hunk {
     font-family: var(--font-mono);
     font-size: 11px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     padding: 6px 16px;
-    background: var(--surface2);
+    background: var(--surface-muted);
     border-bottom: 1px solid var(--border);
   }
 
@@ -478,14 +588,14 @@
     width: 40px;
     text-align: right;
     padding-right: 8px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     opacity: 0.5;
     font-size: 12px;
     user-select: none;
   }
 
-  .diff-line--added { background: var(--green-dim); }
-  .diff-line--removed { background: var(--red-dim); text-decoration: line-through; opacity: 0.7; }
+  .diff-line--added { background: var(--success-dim); }
+  .diff-line--removed { background: var(--error-dim); text-decoration: line-through; opacity: 0.7; }
   .diff-line--unchanged { opacity: 0.6; }
 
   /* Override Highlight.js background so diff line colors show through */
@@ -526,7 +636,7 @@
   details.collapsible summary::before {
     content: '\25B8';
     font-size: 11px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     transition: transform 0.15s ease;
   }
 
@@ -539,7 +649,7 @@
     border-top: 1px solid var(--border);
     font-size: 13px;
     line-height: 1.6;
-    color: var(--text-dim);
+    color: var(--text-secondary);
     background: var(--surface);
   }
 
@@ -562,7 +672,7 @@
 
   details.collapsible .collapsible__body li::before {
     content: '\203A';
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-weight: 600;
     position: absolute;
     left: 0;
@@ -572,7 +682,7 @@
     font-family: var(--font-mono);
     font-size: 11px;
     background: var(--accent-dim);
-    color: var(--accent);
+    color: var(--accent-text);
     padding: 1px 5px;
     border-radius: 3px;
   }
@@ -605,16 +715,16 @@
   }
 
   .data-table th {
-    background: var(--surface2);
+    background: var(--surface-muted);
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     text-align: left;
     padding: 14px 16px;
-    border-bottom: 2px solid var(--border-bright);
+    border-bottom: 2px solid var(--border-strong);
     white-space: nowrap;
   }
 
@@ -639,24 +749,24 @@
   }
 
   .data-table tbody tr:hover {
-    background: var(--border);
+    background: rgba(253, 203, 40, 0.06);
   }
 
   .data-table code {
     font-family: var(--font-mono);
     font-size: 11px;
     background: var(--accent-dim);
-    color: var(--accent);
+    color: var(--accent-text);
     padding: 1px 5px;
     border-radius: 3px;
   }
 
   .data-table tfoot td {
-    background: var(--surface2);
+    background: var(--surface-muted);
     font-weight: 600;
     font-family: var(--font-mono);
     font-size: 12px;
-    border-top: 2px solid var(--border-bright);
+    border-top: 2px solid var(--border-strong);
     border-bottom: none;
     padding: 14px 16px;
   }
@@ -668,7 +778,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     padding: 10px 0;
     margin-top: 32px;
     margin-bottom: 16px;
@@ -676,6 +786,94 @@
   }
 
   .sec-head:first-of-type { margin-top: 0; }
+
+  /* ============ LERIAN FOOTER ============ */
+  .lerian-footer {
+    max-width: 1400px;
+    margin: 64px auto 0;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  /* Full-bleed background via pseudo-element */
+  .lerian-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 100%;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: -1;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .footer-brand .logo-mark {
+    height: 20px;
+    width: auto;
+    color: var(--text);
+  }
+
+  .footer-brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .footer-company {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .footer-link {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--accent);
+  }
+
+  .footer-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .footer-generated {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .footer-generated strong {
+    font-weight: 600;
+  }
+
+  .footer-date {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 768px) {
@@ -686,14 +884,61 @@
     .finding-file { margin-left: 0; }
     .data-table th,
     .data-table td { padding: 10px 12px; }
+    .footer-inner { flex-direction: column; align-items: flex-start; }
+    .footer-meta { align-items: flex-start; }
   }
 
   @media (max-width: 1000px) {
     body { padding: 40px 40px 40px 40px; }
   }
+
+  /* ============ PRINT ============ */
+  @media print {
+    body {
+      background: #fff;
+      color: #000;
+      padding: 20px;
+    }
+
+    .lerian-header {
+      margin-bottom: 16px;
+    }
+
+    .lerian-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-top: 1px solid #ddd;
+      background: #fff;
+      padding: 12px 20px;
+    }
+
+    .lerian-footer::before {
+      display: none;
+    }
+
+    .animate, .animate-scale {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+
+    .logo-mark {
+      color: #27272A !important;
+    }
+  }
 </style>
 </head>
 <body>
+
+<!-- ========== LERIAN HEADER ========== -->
+<header class="lerian-header">
+  <a href="https://lerian.studio" aria-label="Lerian Studio">
+    <svg class="logo-mark" viewBox="0 0 1090.88 280" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M619.42,29.69c0,15.43-10.87,27.93-27.93,27.93s-27.93-12.51-27.93-27.93,10.86-27.93,27.92-27.93,27.93,12.51,27.93,27.93h0ZM158.64,242.4v33.54H12.13v-33.55h48.36c3.16,0,5.73-2.57,5.73-5.73V87.77c0-3.16-2.57-5.73-5.73-5.73H7.85v-34.31h98.33v188.94c0,3.16,2.57,5.73,5.73,5.73h46.74ZM168.85,179.86c0,58.52,37.29,98.33,99.47,98.33,49.15,0,79.7-30.6,86.27-67.08h-40.69c-6.29,24.54-26.97,33.91-48.61,33.91-48.85,0-53.41-45.18-53.83-55-.04-1.02.77-1.87,1.79-1.87h143.61c.76-5.26,1.13-10.42,1.13-15.44,0-32.71-20.25-91.92-95.33-91.92-57.04,0-93.8,41.26-93.81,99.07ZM314.47,158.39l-99.49.02c-1.08,0-1.94-.96-1.78-2.02,4.49-31.28,30.98-42.82,50.98-42.82,33.88,0,48.71,21.59,52.08,42.79.17,1.08-.69,2.04-1.78,2.04h0ZM867.2,83.16h0s0,0,0,0h0ZM826.87,83.16h40.33v192.83h-40.32v-24.53c0-3.09-3.92-4.41-5.79-1.95-.18.23-.35.47-.53.71h0s0,.02,0,.02h0c-.11.16-.23.32-.35.47-7.92,10.56-20.68,27.53-56.24,27.53-60.83,0-91.19-46.33-91.19-98.7,0-61.42,40.37-98.72,91.17-98.72,36.73,0,48.44,15.73,56.64,26.75l.49.66c1.86,2.49,5.81,1.18,5.81-1.93v-23.14ZM770.75,115.48c34.78,0,56.14,27.81,56.14,64.8h0c0,42-26.32,63.68-56.14,63.68-34.83,0-56.14-27.43-56.14-64.43,0-42.07,26.11-64.05,56.14-64.05ZM1063.39,101.7c14.42,14.06,21.64,36.67,21.64,67.8v106.25h-41.06v-103.99c0-43.98-22.35-56.14-45.96-56.14-31.99,0-51.6,23.22-51.6,62.92v97.21h-40.68V83.15h39.93v25.07c0,3.11,3.95,4.4,5.82,1.92,8.55-11.4,26.72-29.52,55.98-29.52,37.55,0,55.75,20.88,55.93,21.08ZM657.42,275.94v-33.54h0s-37.37,0-37.37,0c-3.16,0-5.73-2.57-5.73-5.73V83.14h-81.34v34.31h37.54c3.16,0,5.73,2.57,5.73,5.73v113.48c0,3.16-2.57,5.73-5.73,5.73h-38.14v33.55h125.03ZM499.27,119.27c0,.13-.1.23-.23.23h0s-36.31,0-36.31,0c-28.68,0-28.65,24.99-28.64,43.62,0,.46,0,.92,0,1.37v111.24c0,.13-.1.23-.23.23h-41.01c-.13,0-.23-.1-.23-.23V83.27c0-.13.1-.23.23-.23h36.49c.13,0,.23.1.23.23v24.03c0,4.05,5.24,5.65,7.49,2.28.22-.32.43-.64.65-.97,8.18-12.25,18.71-28.02,52.51-28.02h9.05v38.68Z"/>
+    </svg>
+  </a>
+</header>
 
 <div class="wrap">
 
@@ -726,11 +971,11 @@
         <div class="kpi-card__label">Files Affected</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-card__value kpi-card__value--animated kpi-card__value--red" style="--target:1"></div>
+        <div class="kpi-card__value kpi-card__value--animated kpi-card__value--error" style="--target:1"></div>
         <div class="kpi-card__label">Critical Issues</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-card__value kpi-card__value--animated kpi-card__value--orange" style="--target:1"></div>
+        <div class="kpi-card__value kpi-card__value--animated kpi-card__value--warning" style="--target:1"></div>
         <div class="kpi-card__label">High Issues</div>
       </div>
     </div>
@@ -743,13 +988,13 @@
     </div>
     <div class="severity-bar-legend animate" style="--i:5">
       <div class="severity-bar-legend__item">
-        <div class="severity-bar-legend__swatch" style="background: var(--red)"></div> Critical (1)
+        <div class="severity-bar-legend__swatch" style="background: var(--error)"></div> Critical (1)
       </div>
       <div class="severity-bar-legend__item">
-        <div class="severity-bar-legend__swatch" style="background: var(--orange)"></div> High (1)
+        <div class="severity-bar-legend__swatch" style="background: var(--warning)"></div> High (1)
       </div>
       <div class="severity-bar-legend__item">
-        <div class="severity-bar-legend__swatch" style="background: var(--accent)"></div> Medium (1)
+        <div class="severity-bar-legend__swatch" style="background: var(--info)"></div> Medium (1)
       </div>
     </div>
 
@@ -928,6 +1173,25 @@
 
 </div><!-- /wrap -->
 
+<!-- ========== LERIAN FOOTER ========== -->
+<footer class="lerian-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <svg class="logo-mark" viewBox="0 0 1090.88 280" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M619.42,29.69c0,15.43-10.87,27.93-27.93,27.93s-27.93-12.51-27.93-27.93,10.86-27.93,27.92-27.93,27.93,12.51,27.93,27.93h0ZM158.64,242.4v33.54H12.13v-33.55h48.36c3.16,0,5.73-2.57,5.73-5.73V87.77c0-3.16-2.57-5.73-5.73-5.73H7.85v-34.31h98.33v188.94c0,3.16,2.57,5.73,5.73,5.73h46.74ZM168.85,179.86c0,58.52,37.29,98.33,99.47,98.33,49.15,0,79.7-30.6,86.27-67.08h-40.69c-6.29,24.54-26.97,33.91-48.61,33.91-48.85,0-53.41-45.18-53.83-55-.04-1.02.77-1.87,1.79-1.87h143.61c.76-5.26,1.13-10.42,1.13-15.44,0-32.71-20.25-91.92-95.33-91.92-57.04,0-93.8,41.26-93.81,99.07ZM314.47,158.39l-99.49.02c-1.08,0-1.94-.96-1.78-2.02,4.49-31.28,30.98-42.82,50.98-42.82,33.88,0,48.71,21.59,52.08,42.79.17,1.08-.69,2.04-1.78,2.04h0ZM867.2,83.16h0s0,0,0,0h0ZM826.87,83.16h40.33v192.83h-40.32v-24.53c0-3.09-3.92-4.41-5.79-1.95-.18.23-.35.47-.53.71h0s0,.02,0,.02h0c-.11.16-.23.32-.35.47-7.92,10.56-20.68,27.53-56.24,27.53-60.83,0-91.19-46.33-91.19-98.7,0-61.42,40.37-98.72,91.17-98.72,36.73,0,48.44,15.73,56.64,26.75l.49.66c1.86,2.49,5.81,1.18,5.81-1.93v-23.14ZM770.75,115.48c34.78,0,56.14,27.81,56.14,64.8h0c0,42-26.32,63.68-56.14,63.68-34.83,0-56.14-27.43-56.14-64.43,0-42.07,26.11-64.05,56.14-64.05ZM1063.39,101.7c14.42,14.06,21.64,36.67,21.64,67.8v106.25h-41.06v-103.99c0-43.98-22.35-56.14-45.96-56.14-31.99,0-51.6,23.22-51.6,62.92v97.21h-40.68V83.15h39.93v25.07c0,3.11,3.95,4.4,5.82,1.92,8.55-11.4,26.72-29.52,55.98-29.52,37.55,0,55.75,20.88,55.93,21.08ZM657.42,275.94v-33.54h0s-37.37,0-37.37,0c-3.16,0-5.73-2.57-5.73-5.73V83.14h-81.34v34.31h37.54c3.16,0,5.73,2.57,5.73,5.73v113.48c0,3.16-2.57,5.73-5.73,5.73h-38.14v33.55h125.03ZM499.27,119.27c0,.13-.1.23-.23.23h0s-36.31,0-36.31,0c-28.68,0-28.65,24.99-28.64,43.62,0,.46,0,.92,0,1.37v111.24c0,.13-.1.23-.23.23h-41.01c-.13,0-.23-.1-.23-.23V83.27c0-.13.1-.23.23-.23h36.49c.13,0,.23.1.23.23v24.03c0,4.05,5.24,5.65,7.49,2.28.22-.32.43-.64.65-.97,8.18-12.25,18.71-28.02,52.51-28.02h9.05v38.68Z"/>
+      </svg>
+      <div class="footer-brand-text">
+        <span class="footer-company">Lerian Studio</span>
+        <a href="https://lerian.studio" class="footer-link">lerian.studio</a>
+      </div>
+    </div>
+    <div class="footer-meta">
+      <span class="footer-generated">Generated with <strong>Ring</strong></span>
+      <span class="footer-date"></span>
+    </div>
+  </div>
+</footer>
+
 <!-- Highlight.js: Go + TypeScript -->
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/go.min.js"></script>
@@ -935,15 +1199,18 @@
 <script>
   // Highlight all code blocks but skip individual line highlighting
   // (we use manual spans for diff lines, hljs for syntax within them)
-  document.querySelectorAll('.diff-code code').forEach(function(block) {
-    hljs.highlightElement(block);
-  });
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('.diff-code code').forEach(function(block) {
+      hljs.highlightElement(block);
+    });
+  }
 </script>
 
 <!-- Scroll Spy -->
 <script>
 (function() {
   var toc = document.getElementById('toc');
+  if (!toc) return;
   var links = toc.querySelectorAll('a');
   var sections = [];
 
@@ -985,6 +1252,12 @@
     });
   });
 })();
+</script>
+
+<!-- ========== DATE AUTO-FILL ========== -->
+<script>
+  var footerDate = document.querySelector('.footer-date');
+  if (footerDate) footerDate.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 </script>
 
 </body>
