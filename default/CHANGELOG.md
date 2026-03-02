@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.12.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.12.2)
+
+- Refactor: Replace codereview binaries and overhaul diff visualization.
+- Chore: Remove codereview tooling and all related assets.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.12.1...ring-default@1.12.2)
+
+---
+
 ## [1.12.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.12.1)
 
 - Fixes:
