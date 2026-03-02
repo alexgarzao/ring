@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.12.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.12.0)
+
+- Features:
+  - Introduce mandatory Lerian design system in visual explainer.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.11.1...ring-default@1.12.0)
+
+---
+
 ## [1.11.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.11.1)
 
 - **Fixes:**
