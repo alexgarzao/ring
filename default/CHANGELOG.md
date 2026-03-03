@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.13.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.13.0)
+
+- Features:
+  - Add documentation for diagram and visualize commands.
+  
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.12.2...ring-default@1.13.0)
+
+---
+
 ## [1.12.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.12.2)
 
 - Refactor: Replace codereview binaries and overhaul diff visualization.
