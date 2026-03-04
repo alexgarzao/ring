@@ -11,12 +11,14 @@ This module covers idempotency patterns for transaction APIs.
 | # | Section | Description |
 |---|---------|-------------|
 | 1 | [Idempotency Patterns (MANDATORY for Transaction APIs)](#idempotency-patterns-mandatory-for-transaction-apis) | Redis SetNX pattern for deduplication |
-| 1.1 | [HTTP Headers](#http-headers-lib-commons-constants) | lib-commons constants for idempotency |
-| 1.2 | [Implementation Decisions](#implementation-decisions-ask-before-implementing) | Key scope configuration |
-| 1.3 | [Implementation Pattern](#implementation-pattern-midaz-reference) | Handler, Command, Redis key format |
-| 1.4 | [Flow Diagram](#flow-diagram) | Request flow visualization |
-| 1.5 | [Key Design Decisions](#key-design-decisions-midaz) | Architecture rationale |
-| 1.6 | [Which Endpoints Need Idempotency](#which-endpoints-need-idempotency) | Decision guide |
+| 1.1 | [Environment Variables](#environment-variables-mandatory) | Config struct fields for idempotency |
+| 1.2 | [HTTP Headers](#http-headers-lib-commons-constants) | lib-commons constants for idempotency |
+| 1.3 | [Configuration Precedence](#configuration-precedence) | Request header > env > hardcoded default |
+| 1.4 | [Implementation Decisions](#implementation-decisions-ask-before-implementing) | Key scope configuration |
+| 1.5 | [Implementation Pattern](#implementation-pattern-midaz-reference) | Handler, Command, Redis key format |
+| 1.6 | [Flow Diagram](#flow-diagram) | Request flow visualization |
+| 1.7 | [Key Design Decisions](#key-design-decisions-midaz) | Architecture rationale |
+| 1.8 | [Which Endpoints Need Idempotency](#which-endpoints-need-idempotency) | Decision guide |
 
 **Meta-sections:**
 - [Anti-Rationalization Table](#anti-rationalization-table) - Common excuses and required actions
@@ -37,13 +39,71 @@ This module covers idempotency patterns for transaction APIs.
 | User double-clicks submit | Two identical transactions | Request fingerprinting |
 | Load balancer retry | Multiple side effects | Atomic lock with SetNX |
 
+### Environment Variables (MANDATORY)
+
+**MUST define idempotency configuration in the Config struct** following the [Config Struct Pattern](core.md#1-define-config-struct).
+
+| Environment Variable | Type | Default | Description |
+|----------------------|------|---------|-------------|
+| `IDEMPOTENCY_ENABLED` | bool | `true` | Enable/disable idempotency middleware globally |
+| `IDEMPOTENCY_DEFAULT_TTL_SEC` | int | `300` | Default TTL in seconds when `X-TTL` header is not provided |
+
+**Config struct fields:**
+
+```go
+// bootstrap/config.go - add to Config struct
+type Config struct {
+    // ... existing fields ...
+
+    // Idempotency
+    IdempotencyEnabled       bool `env:"IDEMPOTENCY_ENABLED"         envDefault:"true"`
+    IdempotencyDefaultTTLSec int  `env:"IDEMPOTENCY_DEFAULT_TTL_SEC" envDefault:"300"`
+}
+```
+
+**`.env` example:**
+
+```env
+IDEMPOTENCY_ENABLED=true
+IDEMPOTENCY_DEFAULT_TTL_SEC=300
+```
+
+**When `IDEMPOTENCY_ENABLED=false`:**
+- Handler skips idempotency check entirely and proceeds to business logic
+- Useful for local development or services where idempotency is not needed
+- **WARNING:** MUST not be disabled in production for transaction APIs
+
+**Guard pattern (wrap idempotency block in handler):**
+
+```go
+if handler.Config.IdempotencyEnabled {
+    // ... idempotency check logic (extract key, SetNX, cache) ...
+}
+
+// ... proceed to business logic ...
+```
+
 ### HTTP Headers (lib-commons constants)
 
 | Constant | Header | Type | Description |
 |----------|--------|------|-------------|
 | `libConstants.IdempotencyKey` | `X-Idempotency` | string | Client-provided unique key |
-| `libConstants.IdempotencyTTL` | `X-TTL` | int | Cache TTL in seconds |
+| `libConstants.IdempotencyTTL` | `X-TTL` | int | Cache TTL in seconds (overrides `IDEMPOTENCY_DEFAULT_TTL_SEC`) |
 | `libConstants.IdempotencyReplayed` | `X-Idempotency-Replayed` | bool | Response header: `"true"` if cached |
+
+### Configuration Precedence
+
+TTL resolution follows standard config precedence — most specific wins:
+
+```
+X-TTL header (per-request) > IDEMPOTENCY_DEFAULT_TTL_SEC (env) > libRedis.TTL (hardcoded fallback)
+```
+
+| Priority | Source | Scope | Example |
+|----------|--------|-------|---------|
+| 1 (highest) | `X-TTL` header | Per-request | Client sends `X-TTL: 60` for short-lived operations |
+| 2 | `IDEMPOTENCY_DEFAULT_TTL_SEC` env | Per-service | Service sets `IDEMPOTENCY_DEFAULT_TTL_SEC=600` for longer cache |
+| 3 (lowest) | `libRedis.TTL` constant | Global fallback | Hardcoded default in lib-commons |
 
 ### Implementation Decisions (Ask Before Implementing)
 
@@ -76,15 +136,22 @@ import (
     libRedis "github.com/LerianStudio/lib-commons/v2/commons/redis"
 )
 
-// GetIdempotencyKeyAndTTL returns idempotency key and ttl if pass through.
-func GetIdempotencyKeyAndTTL(c *fiber.Ctx) (string, time.Duration) {
+// GetIdempotencyKeyAndTTL returns idempotency key and TTL.
+// Precedence: X-TTL header > IDEMPOTENCY_DEFAULT_TTL_SEC env > libRedis.TTL fallback.
+func GetIdempotencyKeyAndTTL(c *fiber.Ctx, defaultTTLSec int) (string, time.Duration) {
     ikey := c.Get(libConstants.IdempotencyKey)
     iTTL := c.Get(libConstants.IdempotencyTTL)
 
-    // Interpret TTL as seconds count. Downstream Redis helpers multiply by time.Second.
+    // Priority 1: X-TTL header (per-request override)
     t, err := strconv.Atoi(iTTL)
     if err != nil || t <= 0 {
-        t = libRedis.TTL
+        // Priority 2: IDEMPOTENCY_DEFAULT_TTL_SEC (env-based default)
+        if defaultTTLSec > 0 {
+            t = defaultTTLSec
+        } else {
+            // Priority 3: libRedis.TTL (hardcoded fallback)
+            t = libRedis.TTL
+        }
     }
 
     ttl := time.Duration(t)
@@ -118,7 +185,7 @@ func (handler *TransactionHandler) createTransaction(c *fiber.Ctx, ...) error {
     // Generate hash from request payload
     ts, _ := libCommons.StructToJSONString(parserDSL)
     hash := libCommons.HashSHA256(ts)
-    key, ttl := http.GetIdempotencyKeyAndTTL(c)
+    key, ttl := http.GetIdempotencyKeyAndTTL(c, handler.Config.IdempotencyDefaultTTLSec)
 
     // Check or create idempotency lock
     value, err := handler.Command.CreateOrCheckIdempotencyKey(
@@ -461,6 +528,8 @@ constant.ErrIdempotencyKey: EntityConflictError{
 ```
 Request → Extract X-Idempotency & X-TTL headers → SHA256(payload) as hash
     ↓
+Resolve TTL: X-TTL header > IDEMPOTENCY_DEFAULT_TTL_SEC env > libRedis.TTL
+    ↓
 CreateOrCheckIdempotencyKey(scope, key, hash, ttl)
     ↓                        ↑
     │               (scope = domain-specific identifiers)
@@ -487,6 +556,8 @@ Redis SetNX (atomic lock with empty value)
 
 | Decision | Rationale |
 |----------|-----------|
+| **Env-based configuration** | `IDEMPOTENCY_ENABLED` and `IDEMPOTENCY_DEFAULT_TTL_SEC` follow Config struct pattern — no scattered `os.Getenv()` |
+| **Three-level TTL precedence** | Header > env > hardcoded ensures flexibility: per-request override, per-service default, global fallback |
 | **Hash fallback** | If client doesn't provide key, SHA256 of payload ensures natural deduplication |
 | **Empty initial value** | SetNX with `""` acts as lock; actual value set asynchronously |
 | **Async caching** | `go handler.Command.SetValueOnExistingIdempotencyKey()` - non-blocking |
@@ -516,9 +587,13 @@ Redis SetNX (atomic lock with empty value)
 | "Too complex to implement" | Pattern is standard. Redis SetNX is simple. | **Follow the midaz pattern above** |
 | "Only needed for payments" | Any duplicate has cost: support tickets, data cleanup. | **Apply to all resource creation** |
 | "We'll add it later" | Retrofitting is harder than building in. | **Implement from the start** |
+| "IDEMPOTENCY_ENABLED=false in production is fine" | Disabling idempotency in production exposes all create endpoints to duplicates. | **MUST keep enabled in production for transaction APIs** |
 
 ### Checklist
 
+- [ ] `IDEMPOTENCY_ENABLED` and `IDEMPOTENCY_DEFAULT_TTL_SEC` defined in Config struct with `env` tags
+- [ ] `.env` file includes `IDEMPOTENCY_ENABLED` and `IDEMPOTENCY_DEFAULT_TTL_SEC`
+- [ ] TTL precedence implemented: `X-TTL` header > `IDEMPOTENCY_DEFAULT_TTL_SEC` env > `libRedis.TTL` fallback
 - [ ] All POST endpoints that create resources have idempotency
 - [ ] Using `libConstants.IdempotencyKey`, `libConstants.IdempotencyTTL`, `libConstants.IdempotencyReplayed` from lib-commons
 - [ ] Hash fallback implemented (`libCommons.HashSHA256`) for clients without key
@@ -528,7 +603,6 @@ Redis SetNX (atomic lock with empty value)
 - [ ] Key scoping with domain-specific scope (e.g., `IdempotencyInternalKey(scope, key)`)
 - [ ] Scope defined based on domain model (org+ledger, org only, tenantId, or none)
 - [ ] If multi-tenant enabled: `tenantmanager.GetKeyFromContext()` adds tenantId prefix in Redis layer
-- [ ] TTL configurable via `X-TTL` header (default from `libRedis.TTL`)
 - [ ] Async caching via goroutine (`go handler.Command.SetValueOnExistingIdempotencyKey(...)`)
 - [ ] Reverse mapping with `IdempotencyReverseKey` for transaction lookups (if needed)
 

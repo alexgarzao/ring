@@ -140,4 +140,6 @@ Before submitting Go code, verify:
 - [ ] Domain entities use constructor functions (NewXxx) with validation
 - [ ] Constructor functions return `(Entity, error)` - never create invalid state
 - [ ] POST endpoints that create resources implement idempotency (Redis SetNX pattern)
+- [ ] `IDEMPOTENCY_ENABLED` and `IDEMPOTENCY_DEFAULT_TTL_SEC` defined in Config struct
+- [ ] TTL precedence: `X-TTL` header > `IDEMPOTENCY_DEFAULT_TTL_SEC` env > `libRedis.TTL` fallback
 - [ ] If multi-tenant: JWT tenant extraction + appropriate resolver (`ResolveModuleDB` for multi-module PG, `ResolvePostgres` for single-module PG, `ResolveMongo` for MongoDB)

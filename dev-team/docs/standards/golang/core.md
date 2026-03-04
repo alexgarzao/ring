@@ -422,8 +422,9 @@ func InitServers() *Service {
 | MongoDB            | `MONGO_`          | `MONGO_HOST`, `MONGO_NAME`                |
 | Redis              | `REDIS_`          | `REDIS_HOST`, `REDIS_PASSWORD`            |
 | OpenTelemetry      | `OTEL_`           | `OTEL_RESOURCE_SERVICE_NAME`              |
-| Auth Plugin        | `PLUGIN_AUTH_`    | `PLUGIN_AUTH_ENABLED`, `PLUGIN_AUTH_HOST` |
-| gRPC Services      | `{SERVICE}_GRPC_` | `TRANSACTION_GRPC_ADDRESS`                |
+| Auth Plugin        | `PLUGIN_AUTH_`    | `PLUGIN_AUTH_ENABLED`, `PLUGIN_AUTH_HOST`                      |
+| Idempotency        | `IDEMPOTENCY_`    | `IDEMPOTENCY_ENABLED`, `IDEMPOTENCY_DEFAULT_TTL_SEC`          |
+| gRPC Services      | `{SERVICE}_GRPC_` | `TRANSACTION_GRPC_ADDRESS`                                     |
 
 ### What not to Do
 
