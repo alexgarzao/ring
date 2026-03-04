@@ -1,6 +1,6 @@
 # Go Standards - Multi-Tenant
 
-> **Module:** multi-tenant.md | **Sections:** §25 | **Parent:** [index.md](index.md)
+> **Module:** multi-tenant.md | **Sections:** §26 | **Parent:** [index.md](index.md)
 
 This module covers multi-tenant patterns with Tenant Manager.
 
@@ -14,6 +14,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 1a | [Generic TenantMiddleware (Standard Pattern)](#generic-tenantmiddleware-standard-pattern) | Single-module services (CRM, plugins, reporter) |
 | 1b | [Multi-module middleware (MultiPoolMiddleware)](#multi-module-middleware-multipoolmiddleware) | Multi-module unified services (midaz ledger) |
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
+| 3 | [Route-Level Auth-Before-Tenant Ordering (MANDATORY)](#route-level-auth-before-tenant-ordering-mandatory) | Auth MUST validate JWT before tenant middleware calls Tenant Manager API |
 | 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
 | 25 | [M2M Credentials via Secret Manager (Plugin-Only)](#m2m-credentials-via-secret-manager-plugin-only) | AWS Secrets Manager integration for plugin-to-product authentication per tenant |
 
@@ -1381,6 +1382,74 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://tenant-manager:4003 go test ./
 - [ ] All CRUD operations work in single-tenant mode
 - [ ] Backward compatibility integration test exists (`TestMultiTenant_BackwardCompatibility`)
 - [ ] Health/version endpoints work without tenant context
+
+---
+
+## Route-Level Auth-Before-Tenant Ordering (MANDATORY)
+
+**MANDATORY:** When using multi-tenant middleware, auth MUST validate the JWT **before** tenant middleware resolves the database connection. This ordering is a security requirement, not a performance optimization.
+
+### Why This Matters
+
+| Concern | Impact Without Auth-Before-Tenant |
+|---------|-----------------------------------|
+| **SECURITY** | Forged or expired JWTs trigger Tenant Manager API calls before token signature validation. Any request with a `tenantId` claim — valid or not — causes a network round-trip to resolve tenant DB credentials. |
+| **PERFORMANCE** | Unauthenticated requests trigger unnecessary Tenant Manager API round-trips (~50ms+ each). At scale, this adds significant latency and load to the Tenant Manager service. |
+| **DoS VECTOR** | Attackers can flood the Tenant Manager API with crafted tokens containing valid-looking `tenantId` claims. Since tenant resolution happens before auth rejects the token, every malicious request costs a TM API call. |
+
+### The WRONG Pattern (Anti-Pattern)
+
+```go
+// ❌ WRONG: Tenant middleware runs before auth on ALL routes
+app.Use(tenantMid.WithTenantDB)  // Runs first — calls TM API before auth validates JWT
+app.Post("/v1/resources", auth.Authorize("app", "resource", "post"), handler.Create)
+```
+
+In this pattern, `WithTenantDB` executes for **every request** before `auth.Authorize` validates the JWT. A request with a forged JWT containing `tenantId: "victim-tenant"` triggers a full Tenant Manager resolution — fetching credentials, opening connections — before auth rejects it.
+
+### The CORRECT Pattern: WithTenantRoute
+
+**MUST use `WithTenantRoute` from lib-commons to compose auth and tenant middleware per-route.** This guarantees auth runs first, then tenant resolution runs only for authenticated requests.
+
+```go
+import tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware"
+
+// ✅ CORRECT: Auth validates JWT FIRST, then tenant resolves DB
+f.Post("/v1/resources",
+    append(tmmiddleware.WithTenantRoute(
+        auth.Authorize("app", "resource", "post"),
+        tenantMid.WithTenantDB,
+    ), handler.Create)...)
+```
+
+**How it works:**
+1. `WithTenantRoute(authHandler, tenantHandler)` returns `[]fiber.Handler{authHandler, tenantHandler}`
+2. `append(..., handler.Create)` produces the final handler chain: `[auth, tenant, handler]`
+3. Fiber executes handlers in order: auth validates JWT → tenant resolves DB → handler processes request
+4. If auth rejects the request, tenant middleware never runs — no TM API call
+
+### Detection Commands (MANDATORY)
+
+```bash
+# MANDATORY: Run before every PR in multi-tenant services
+# Check for global tenant middleware registration (anti-pattern)
+grep -rn "app\.Use(.*WithTenantDB\|app\.Use(.*tenantMid" internal/ --include="*.go"
+# Expected: 0 matches. Tenant middleware MUST NOT be registered globally.
+
+# Check for correct per-route composition
+grep -rn "WithTenantRoute" internal/ --include="*.go"
+# Expected: 1+ matches in routes.go or equivalent router file.
+```
+
+### Anti-Rationalization Table
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "Auth middleware is already global, so order doesn't matter" | Global middleware ordering is implicit and fragile — a refactor can silently break it. Different routes may need different auth handlers. | **MUST use explicit per-route composition with WithTenantRoute** |
+| "Tenant resolution is fast, no harm running it first" | TM API calls are network round-trips (~50ms+). At scale, unauthorized traffic amplifies cost. Every unauthenticated request wastes a TM API call. | **MUST authenticate before any TM API call** |
+| "We'll just register auth middleware before tenant in app.Use()" | Global ordering provides no guarantee per-route. Different routes may need different auth handlers. A single `app.Use()` reorder silently breaks security for all routes. | **MUST compose auth+tenant per-route** |
+| "Only internal services call this endpoint, no DoS risk" | Internal networks are not trusted by default. Compromised services, misconfigured proxies, or lateral movement can generate unauthorized traffic. | **MUST enforce auth-before-tenant regardless of network topology** |
+| "We already validate tokens at the API gateway" | Defense in depth. Gateway validation can be bypassed, misconfigured, or removed. Service-level auth is the last line of defense. | **MUST validate auth at service level before tenant resolution** |
 
 ---
 
