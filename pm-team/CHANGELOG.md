@@ -3,6 +3,17 @@
 ## [0.19.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.0)
 
 - **Features:**
+  - Added task status tracking between tasks.md and dev-cycle.
+
+Contributors: @jeff, @jota
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.18.1...ring-pm-team@0.19.0)
+
+---
+
+## [0.19.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.0)
+
+- **Features:**
   - Added task status tracking between tasks.md and dev-cycle. (fa0351e4)
   - Merged pull request for task status tracking feature. (44bee525)
 
