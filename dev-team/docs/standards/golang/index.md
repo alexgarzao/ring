@@ -56,7 +56,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 8 | [messaging.md](messaging.md) | 2 | ~650 | RabbitMQ Worker Pattern, Reconnection Strategy |
 | 9 | [domain-modeling.md](domain-modeling.md) | 4 | ~290 | Always-Valid Domain Model, Constructor Patterns, ToEntity Integration |
 | 10 | [idempotency.md](idempotency.md) | 1 | ~510 | Idempotency Patterns (Redis SetNX, hash fallback) |
-| 11 | [multi-tenant.md](multi-tenant.md) | 1 | ~460 | Multi-Tenant Patterns (Tenant Manager, JWT) |
+| 11 | [multi-tenant.md](multi-tenant.md) | 2 | ~2240 | Multi-Tenant Patterns (Tenant Manager, JWT), Auth-Before-Tenant Ordering |
 | 12 | [compliance.md](compliance.md) | Meta | ~125 | Standards Compliance Output Format, Checklist |
 | 13 | [testing-unit.md](testing-unit.md) | 11 | ~600 | Unit Testing (Gate 3): Table-driven, t.Parallel, loop capture, assertions, mocks, t.Setenv, testutils, scope boundaries |
 | 14 | [testing-fuzz.md](testing-fuzz.md) | 5 | ~300 | Fuzz Testing (Gate 4): Native Go fuzz, seed corpus |
@@ -174,6 +174,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | # | Section | Anchor |
 |---|---------|--------|
 | 1 | Multi-Tenant Patterns (CONDITIONAL) | [#multi-tenant-patterns-conditional](multi-tenant.md#multi-tenant-patterns-conditional) |
+| 2 | Route-Level Auth-Before-Tenant Ordering (MANDATORY) | [#route-level-auth-before-tenant-ordering-mandatory](multi-tenant.md#route-level-auth-before-tenant-ordering-mandatory) |
 
 ### Unit Testing (testing-unit.md) - Gate 3
 
