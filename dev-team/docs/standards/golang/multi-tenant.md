@@ -53,8 +53,8 @@ These are the only files that require multi-tenant changes. The exact paths foll
 |------|------|-------------|
 | `go.mod` | 2 | lib-commons v3, lib-auth v2 |
 | `internal/bootstrap/config.go` | 3 | 7 canonical `MULTI_TENANT_*` env vars in Config struct |
-| `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware registration. Branch on `cfg.MultiTenantEnabled` |
-| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Register `TenantMiddleware` or `MultiPoolMiddleware` in HTTP chain (after auth, before handlers). Public paths bypass |
+| `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
+| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WithTenantRoute(authHandler, tenantMid.WithTenantDB)` — auth validates JWT before tenant resolves DB. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
 
 **Per detected database/storage (Gate 5):**
 
@@ -387,12 +387,13 @@ func initService(cfg *Config) {
         tmmongo.WithIdleTimeout(idleTimeout),
     )
 
-    // 4. Create and register middleware
+    // 4. Create middleware (do NOT register globally — use per-route composition)
     tenantMid := middleware.NewTenantMiddleware(
         middleware.WithPostgresManager(pgManager),
         middleware.WithMongoManager(mongoManager),  // optional
     )
-    app.Use(tenantMid.WithTenantDB)
+    // Register per-route in routes.go using WithTenantRoute:
+    // See "Route-Level Auth-Before-Tenant Ordering" section
 }
 ```
 
@@ -482,7 +483,8 @@ multiMid := tmmiddleware.NewMultiPoolMiddleware(
     tmmiddleware.WithMultiPoolLogger(logger),
 )
 
-app.Use(multiMid.WithTenantDB)
+// Register per-route in routes.go using WithTenantRoute:
+// See "Route-Level Auth-Before-Tenant Ordering" section
 ```
 
 **What the middleware does internally:**
@@ -520,7 +522,8 @@ tenantMid := tmmiddleware.NewTenantMiddleware(
     tmmiddleware.WithPostgresManager(pgManager),
     tmmiddleware.WithMongoManager(mongoManager),  // optional
 )
-app.Use(tenantMid.WithTenantDB)
+// Register per-route in routes.go using WithTenantRoute:
+// See "Route-Level Auth-Before-Tenant Ordering" section
 ```
 
 #### Choosing between TenantMiddleware and MultiPoolMiddleware
@@ -786,16 +789,16 @@ func InitService(cfg *Config) (*Service, error) {
         if isUnifiedService {
             // Multi-module: use MultiPoolMiddleware
             // See "Multi-module middleware (MultiPoolMiddleware)" section above
-            multiMid := initMultiTenantMiddleware(cfg, logger, consumerTrigger)
-            app.Use(multiMid.WithTenantDB)
+            svc.multiMid = initMultiTenantMiddleware(cfg, logger, consumerTrigger)
         } else {
             // Single-module: use TenantMiddleware
             // See "Generic TenantMiddleware (Standard Pattern)" section above
-            tenantMid := tmmiddleware.NewTenantMiddleware(
+            svc.tenantMid = tmmiddleware.NewTenantMiddleware(
                 tmmiddleware.WithPostgresManager(pgManager),
             )
-            app.Use(tenantMid.WithTenantDB)
         }
+        // Do NOT register globally with app.Use() — register per-route in routes.go
+        // using WithTenantRoute. See "Route-Level Auth-Before-Tenant Ordering" section.
 
         logger.Infof("Multi-tenant mode enabled with Tenant Manager URL: %s", cfg.MultiTenantURL)
     } else {
@@ -1690,10 +1693,9 @@ func InitServers() {
     }
 
     // Create middleware with consumer trigger
-    tenantMiddleware := NewTenantMiddleware(tmConsumer)
-
-    // Register middleware
-    app.Use(tenantMiddleware)
+    svc.tenantMiddleware = NewTenantMiddleware(tmConsumer)
+    // Register per-route in routes.go using WithTenantRoute
+    // See "Route-Level Auth-Before-Tenant Ordering" section
 }
 
 // In middleware file
