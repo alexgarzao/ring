@@ -54,7 +54,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | `go.mod` | 2 | lib-commons v3, lib-auth v2 |
 | `internal/bootstrap/config.go` | 3 | 7 canonical `MULTI_TENANT_*` env vars in Config struct |
 | `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
-| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttMiddleware)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
+| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttHandler)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
 
 **Per detected database/storage (Gate 5):**
 
@@ -1464,9 +1464,9 @@ f.Get("/v1/resources/:id", auth.Authorize("app", "resource", "get"), WhenEnabled
 grep -rn "app\.Use(.*WithTenantDB\|app\.Use(.*tenantMid" internal/ --include="*.go"
 # Expected: 0 matches. Tenant middleware MUST NOT be registered globally.
 
-# Check for correct per-route composition with WhenEnabled
-grep -rn "WhenEnabled" internal/ --include="*.go"
-# Expected: 1+ matches in routes.go or equivalent router file.
+# Check for correct per-route composition: auth.Authorize BEFORE WhenEnabled on same route
+grep -rnE '^\s*(app|f)\.(Get|Post|Put|Patch|Delete)\(.*auth\.Authorize\(.*WhenEnabled\(' internal/ --include="*.go"
+# Expected: 1+ matches in routes.go — auth appears before WhenEnabled on protected routes.
 
 ```
 
@@ -1719,7 +1719,7 @@ func InitServers() {
     }
 
     // Create middleware with consumer trigger
-    svc.ttMiddleware = NewTenantMiddleware(tmConsumer)
+    svc.ttHandler = NewTenantMiddleware(tmConsumer)
     // Register per-route in routes.go using WhenEnabled
     // See "Route-Level Auth-Before-Tenant Ordering" section
 }
