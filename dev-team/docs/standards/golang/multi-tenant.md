@@ -31,7 +31,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 MUST replace multi-tenant implementations that use custom middleware, manual DB switching, non-standard env var names, or any mechanism other than the lib-commons v3 dispatch layer sub-packages — they are **non-compliant**. Not patched, not adapted, **replaced**.
 
 The only valid multi-tenant implementation uses:
-- `tenantId` from JWT via `TenantMiddleware` or `MultiPoolMiddleware` (from `lib-commons/v3/commons/dispatch layer/middleware`)
+- `tenantId` from JWT via `TenantMiddleware` or `MultiPoolMiddleware` (from `lib-commons/v3/commons/dispatch layer/middleware`), registered per-route using a local `WhenEnabled` helper
 - `core.ResolvePostgres` / `core.ResolveMongo` / `core.ResolveModuleDB` for database resolution (from `lib-commons/v3/commons/dispatch layer/core`)
 - `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v3/commons/dispatch layer/valkey`)
 - `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v3/commons/dispatch layer/s3`)
@@ -54,7 +54,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | `go.mod` | 2 | lib-commons v3, lib-auth v2 |
 | `internal/bootstrap/config.go` | 3 | 7 canonical `MULTI_TENANT_*` env vars in Config struct |
 | `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
-| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WithTenantRoute(authHandler, tenantMid.WithTenantDB)` — auth validates JWT before tenant resolves DB. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
+| `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttMiddleware)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
 
 **Per detected database/storage (Gate 5):**
 
@@ -103,7 +103,7 @@ Multi-tenant support requires **lib-commons v3** (`github.com/LerianStudio/lib-c
 | lib-commons version | Multi-tenant support | Package path |
 |--------------------|-----------------------|-------------|
 | **v2** (`lib-commons/v2`) | Not available | N/A — no `dispatch layer` package |
-| **v3** (`lib-commons/v3`) | Full support | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/...` (sub-packages: `core`, `client`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains both `TenantMiddleware` (single-module) and `MultiPoolMiddleware` (multi-module). |
+| **v3** (`lib-commons/v3`) | Full support | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/...` (sub-packages: `core`, `client`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains both `TenantMiddleware` (single-module) and `MultiPoolMiddleware` (multi-module). Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
 
 **Migration from v2 to v3:**
 
@@ -204,7 +204,7 @@ pgMgr := tmpostgres.NewManager(tmClient, cfg.ApplicationName,
 
 ```go
 mongoManager := tmmongo.NewManager(tmClient, cfg.ApplicationName, ...)
-tenantMid := tmmiddleware.NewTenantMiddleware(
+ttMid := tmmiddleware.NewTenantMiddleware(
     tmmiddleware.WithMongoManager(mongoManager),
 )
 ```
@@ -387,12 +387,14 @@ func initService(cfg *Config) {
         tmmongo.WithIdleTimeout(idleTimeout),
     )
 
-    // 4. Create middleware (do NOT register globally — use per-route composition)
-    tenantMid := middleware.NewTenantMiddleware(
+    // 4. Create middleware (do NOT register globally — use per-route with WhenEnabled)
+    ttMid := middleware.NewTenantMiddleware(
         middleware.WithPostgresManager(pgManager),
         middleware.WithMongoManager(mongoManager),  // optional
     )
-    // Register per-route in routes.go using WithTenantRoute:
+    // Pass ttMid.WithTenantDB as the ttHandler to routes.go.
+    // In routes.go, register per-route using WhenEnabled(ttHandler).
+    // When MULTI_TENANT_ENABLED=false, pass nil instead — WhenEnabled handles it.
     // See "Route-Level Auth-Before-Tenant Ordering" section
 }
 ```
@@ -483,7 +485,7 @@ multiMid := tmmiddleware.NewMultiPoolMiddleware(
     tmmiddleware.WithMultiPoolLogger(logger),
 )
 
-// Register per-route in routes.go using WithTenantRoute:
+// Pass multiMid.Handle to routes.go — register per-route using WhenEnabled:
 // See "Route-Level Auth-Before-Tenant Ordering" section
 ```
 
@@ -518,11 +520,11 @@ import (
     tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
 )
 
-tenantMid := tmmiddleware.NewTenantMiddleware(
+ttMid := tmmiddleware.NewTenantMiddleware(
     tmmiddleware.WithPostgresManager(pgManager),
     tmmiddleware.WithMongoManager(mongoManager),  // optional
 )
-// Register per-route in routes.go using WithTenantRoute:
+// Pass ttMid.WithTenantDB to routes.go — register per-route using WhenEnabled:
 // See "Route-Level Auth-Before-Tenant Ordering" section
 ```
 
@@ -785,27 +787,33 @@ The initialization path depends on whether the service runs a single module or c
 ```go
 // internal/bootstrap/service.go
 func InitService(cfg *Config) (*Service, error) {
+    // ttHandler starts as nil — WhenEnabled(nil) is a no-op (single-tenant passthrough)
+    var ttHandler fiber.Handler
+
     if cfg.MultiTenantEnabled && cfg.MultiTenantURL != "" {
         if isUnifiedService {
             // Multi-module: use MultiPoolMiddleware
             // See "Multi-module middleware (MultiPoolMiddleware)" section above
-            svc.multiMid = initMultiTenantMiddleware(cfg, logger, consumerTrigger)
+            multiMid := initMultiTenantMiddleware(cfg, logger, consumerTrigger)
+            ttHandler = multiMid.Handle
         } else {
             // Single-module: use TenantMiddleware
             // See "Generic TenantMiddleware (Standard Pattern)" section above
-            svc.tenantMid = tmmiddleware.NewTenantMiddleware(
+            ttMid := tmmiddleware.NewTenantMiddleware(
                 tmmiddleware.WithPostgresManager(pgManager),
             )
+            ttHandler = ttMid.WithTenantDB
         }
         // Do NOT register globally with app.Use() — register per-route in routes.go
-        // using WithTenantRoute. See "Route-Level Auth-Before-Tenant Ordering" section.
+        // using WhenEnabled(ttHandler). See "Route-Level Auth-Before-Tenant Ordering" section.
 
         logger.Infof("Multi-tenant mode enabled with Tenant Manager URL: %s", cfg.MultiTenantURL)
     } else {
         logger.Info("Running in SINGLE-TENANT MODE")
+        // ttHandler remains nil — WhenEnabled(nil) calls c.Next() immediately
     }
 
-    // Continue with normal service initialization
+    // Pass ttHandler to NewRoutes — routes use WhenEnabled(ttHandler) per-route
     // ...
 }
 ```
@@ -1342,9 +1350,10 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] Each manager has `Stats()`, `IsMultiTenant()`, and `ApplyConnectionSettings()` methods
 
 **Middleware — choose one:**
-- [ ] For single-module services: `tmmiddleware.NewTenantMiddleware(WithPostgresManager(...))` registered in routes
-- [ ] For multi-module services: `tmmiddleware.NewMultiPoolMiddleware(WithRoute(...), WithDefaultRoute(...))` registered in routes
-- [ ] `MultiPoolMiddleware.Enabled()` or `TenantMiddleware.Enabled()` checked before registering (to support single-tenant passthrough)
+- [ ] For single-module services: `tmmiddleware.NewTenantMiddleware(WithPostgresManager(...))` registered in routes via `WhenEnabled`
+- [ ] For multi-module services: `tmmiddleware.NewMultiPoolMiddleware(WithRoute(...), WithDefaultRoute(...))` registered in routes via `WhenEnabled`
+- [ ] `WhenEnabled` helper implemented locally in the routes file (nil check → `c.Next()`)
+- [ ] Tenant middleware passed as nil when `MULTI_TENANT_ENABLED=false` (single-tenant passthrough via `WhenEnabled` nil check)
 
 **Middleware & Context:**
 - [ ] JWT tenant extraction (claim key: `tenantId`)
@@ -1410,26 +1419,42 @@ app.Post("/v1/resources", auth.Authorize("app", "resource", "post"), handler.Cre
 
 In this pattern, `WithTenantDB` executes for **every request** before `auth.Authorize` validates the JWT. A request with a forged JWT containing `tenantId: "victim-tenant"` triggers a full Tenant Manager resolution — fetching credentials, opening connections — before auth rejects it.
 
-### The CORRECT Pattern: WithTenantRoute
+### The CORRECT Pattern: WhenEnabled
 
-**MUST use `WithTenantRoute` from lib-commons to compose auth and tenant middleware per-route.** This guarantees auth runs first, then tenant resolution runs only for authenticated requests.
+**MUST use `WhenEnabled` — a simple helper function that each project implements locally — to conditionally apply tenant middleware per-route.** Auth is listed before `WhenEnabled` in the handler chain, guaranteeing auth runs first. Tenant resolution runs only for authenticated requests.
+
+**`WhenEnabled` implementation (each project implements this locally):**
 
 ```go
-import tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
+// WhenEnabled is a helper that conditionally applies a middleware if it's not nil.
+// When multi-tenant is disabled, the middleware passed is nil and WhenEnabled calls c.Next().
+func WhenEnabled(middleware fiber.Handler) fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        if middleware == nil {
+            return c.Next()
+        }
 
+        return middleware(c)
+    }
+}
+```
+
+**Route registration:**
+
+```go
 // ✅ CORRECT: Auth validates JWT FIRST, then tenant resolves DB
-f.Post("/v1/resources",
-    append(tmmiddleware.WithTenantRoute(
-        auth.Authorize("app", "resource", "post"),
-        tenantMid.WithTenantDB,
-    ), handler.Create)...)
+// ttHandler is nil when MULTI_TENANT_ENABLED=false (single-tenant passthrough)
+f.Post("/v1/resources", auth.Authorize("app", "resource", "post"), WhenEnabled(ttHandler), handler.Create)
+f.Get("/v1/resources", auth.Authorize("app", "resource", "get"), WhenEnabled(ttHandler), handler.GetAll)
+f.Get("/v1/resources/:id", auth.Authorize("app", "resource", "get"), WhenEnabled(ttHandler), handler.GetByID)
 ```
 
 **How it works:**
-1. `WithTenantRoute(authHandler, tenantHandler)` returns `[]fiber.Handler{authHandler, tenantHandler}`
-2. `append(..., handler.Create)` produces the final handler chain: `[auth, tenant, handler]`
-3. Fiber executes handlers in order: auth validates JWT → tenant resolves DB → handler processes request
+1. `auth.Authorize(...)` is the first handler — validates JWT before anything else
+2. `WhenEnabled(ttHandler)` runs second — if `ttHandler` is nil (single-tenant mode), it calls `c.Next()` immediately; if non-nil, it executes the tenant middleware
+3. The business handler runs last
 4. If auth rejects the request, tenant middleware never runs — no TM API call
+5. If `MULTI_TENANT_ENABLED=false`, `ttHandler` is nil and `WhenEnabled` is a no-op — zero overhead
 
 ### Detection Commands (MANDATORY)
 
@@ -1439,18 +1464,19 @@ f.Post("/v1/resources",
 grep -rn "app\.Use(.*WithTenantDB\|app\.Use(.*tenantMid" internal/ --include="*.go"
 # Expected: 0 matches. Tenant middleware MUST NOT be registered globally.
 
-# Check for correct per-route composition
-grep -rn "WithTenantRoute" internal/ --include="*.go"
+# Check for correct per-route composition with WhenEnabled
+grep -rn "WhenEnabled" internal/ --include="*.go"
 # Expected: 1+ matches in routes.go or equivalent router file.
+
 ```
 
 ### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Auth middleware is already global, so order doesn't matter" | Global middleware ordering is implicit and fragile — a refactor can silently break it. Different routes may need different auth handlers. | **MUST use explicit per-route composition with WithTenantRoute** |
+| "Auth middleware is already global, so order doesn't matter" | Global middleware ordering is implicit and fragile — a refactor can silently break it. Different routes may need different auth handlers. | **MUST use explicit per-route composition: `auth, WhenEnabled(tenant), handler`** |
 | "Tenant resolution is fast, no harm running it first" | TM API calls are network round-trips (~50ms+). At scale, unauthorized traffic amplifies cost. Every unauthenticated request wastes a TM API call. | **MUST authenticate before any TM API call** |
-| "We'll just register auth middleware before tenant in app.Use()" | Global ordering provides no guarantee per-route. Different routes may need different auth handlers. A single `app.Use()` reorder silently breaks security for all routes. | **MUST compose auth+tenant per-route** |
+| "We'll just register auth middleware before tenant in app.Use()" | Global ordering provides no guarantee per-route. Different routes may need different auth handlers. A single `app.Use()` reorder silently breaks security for all routes. | **MUST compose auth+tenant per-route using WhenEnabled** |
 | "Only internal services call this endpoint, no DoS risk" | Internal networks are not trusted by default. Compromised services, misconfigured proxies, or lateral movement can generate unauthorized traffic. | **MUST enforce auth-before-tenant regardless of network topology** |
 | "We already validate tokens at the API gateway" | Defense in depth. Gateway validation can be bypassed, misconfigured, or removed. Service-level auth is the last line of defense. | **MUST validate auth at service level before tenant resolution** |
 
@@ -1693,8 +1719,8 @@ func InitServers() {
     }
 
     // Create middleware with consumer trigger
-    svc.tenantMiddleware = NewTenantMiddleware(tmConsumer)
-    // Register per-route in routes.go using WithTenantRoute
+    svc.ttMiddleware = NewTenantMiddleware(tmConsumer)
+    // Register per-route in routes.go using WhenEnabled
     // See "Route-Level Auth-Before-Tenant Ordering" section
 }
 
