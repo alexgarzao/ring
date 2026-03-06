@@ -3,9 +3,9 @@ name: ring:dev-delivery-verification
 description: |
   Delivery Verification Gate — verifies that what was requested is actually delivered
   as reachable, integrated code. Not quality review (Gate 8), not test verification
-  (Gate 9) — this gate answers: "Is the requested functionality actually wired into
-  the running application?" Catches dead code, uninitialized structs, unwired
-  middleware, and scaffold-without-integration patterns.
+  (Gate 9) — this gate answers: "Is every requirement from the original task actually
+  functioning in the running application?" Applies to ANY task type: features, refactors,
+  fixes, infrastructure, API endpoints, middleware, business logic, integrations.
 
 trigger: |
   - After Gate 0 (implementation) completes, before advancing to Gate 1
@@ -18,6 +18,7 @@ NOT_skip_when: |
   - "It's just a struct/interface" → Structs that aren't instantiated are dead code.
   - "Wire will happen in next task" → Each task must deliver complete, reachable code.
   - "Time pressure" → Unwired code is worse than no code — it creates false confidence.
+  - "It's a simple task" → Simple tasks still need verification. Partial delivery is not delivery.
 
 sequence:
   after: [ring:dev-implementation]
@@ -79,9 +80,9 @@ output_schema:
 
 ## The Problem This Solves
 
-Agents generate code that compiles and passes unit tests but is never wired into the application. This creates dead code that gives false confidence — the task appears complete, but the functionality doesn't exist at runtime.
+Agents generate code that compiles and passes unit tests but doesn't actually deliver what was requested. The code exists in the repo but is never wired, never called, never reachable at runtime. This applies to **any kind of task** — not just infrastructure or observability, but features, API endpoints, business logic, integrations, refactors, everything.
 
-**Real-world example:** An agent was tasked with "Add custom OpenTelemetry application metrics." It created a complete `Metrics` struct with 5 counters/histograms, wrote 12 unit tests (all passing), but never called `NewMetrics()` in the bootstrap. The code was dead. All gates passed. The problem was only discovered weeks later during a manual Grafana investigation.
+**The pattern is always the same:** agent creates artifacts (structs, functions, handlers, middleware, config, migrations) that look complete in isolation, but are never connected to the application's execution path. The task appears done. It's not.
 
 ## The Core Principle
 
@@ -90,47 +91,93 @@ REQUESTED ≠ CREATED ≠ DELIVERED
 
 - REQUESTED: What the task/requirement asks for
 - CREATED: What files/structs/functions were written
-- DELIVERED: What code is reachable from main() at runtime
+- DELIVERED: What is actually functioning in the running application
 
 Only DELIVERED counts. CREATED without DELIVERED is dead code.
+This applies to EVERY task type, not just infrastructure.
 ```
 
 ## The Verification Process
 
-### Step 1: Extract Requirements from Task
+### Step 1: Extract Requirements from the Original Task
 
-Parse the original task into discrete, verifiable requirements.
+Parse the original task (as given to Gate 0) into discrete, verifiable requirements. **Every requirement the task asks for must become a line item.** Don't filter by type — if it was requested, it must be verified.
 
+**Examples across different task types:**
+
+#### Feature task: "Add tenant suspension with email notification"
 ```
-Task: "Add custom OpenTelemetry application metrics (REFACTOR-005)"
-
-Extracted requirements:
-  R1: Metrics struct with HTTP request counters/histograms
-  R2: Metrics struct with provisioning counters/histograms
-  R3: Metrics struct with error counters
-  R4: Metrics initialized at application startup
-  R5: HTTP requests recorded via metrics
-  R6: Provisioning operations recorded via metrics
-  R7: Errors recorded via metrics
+R1: Suspend endpoint accepts tenant ID and reason
+R2: Tenant status changes to 'suspended' in database
+R3: All active connections for tenant are closed
+R4: Email notification sent to tenant admin
+R5: Subsequent API calls from suspended tenant return 403
+R6: Suspension is logged with audit trail
 ```
 
-**Key insight:** R1-R3 are "code exists" requirements. R4-R7 are "code is integrated" requirements. Most agents complete R1-R3 and skip R4-R7.
+#### Refactor task: "Migrate authentication from custom JWT to lib-auth middleware"
+```
+R1: lib-auth middleware replaces custom JWT validation
+R2: All protected routes use new middleware
+R3: Custom JWT code removed (no dead code left)
+R4: Token format backward compatible (existing tokens still work)
+R5: Authorization checks use lib-auth's Authorize() method
+R6: M2M flow uses lib-auth's GetApplicationToken()
+```
+
+#### Fix task: "Fix race condition in connection pool during tenant eviction"
+```
+R1: Mutex protects concurrent access to connections map
+R2: Eviction checks connection state before closing
+R3: In-flight requests complete before connection is removed
+R4: Test reproduces the race condition (fails without fix)
+R5: Test passes with the fix applied
+```
+
+#### Infrastructure task: "Add Redis caching to tenant config lookups"
+```
+R1: Cache interface defined with Get/Set/Invalidate
+R2: In-memory implementation as default (zero config)
+R3: Redis implementation as opt-in
+R4: Client uses cache before HTTP fallback
+R5: Cache TTL is configurable
+R6: Cache invalidation on config change
+R7: Cache metrics (hit/miss) recorded
+```
+
+**Key insight:** Every task has "code exists" requirements AND "code is integrated" requirements. Agents consistently complete the first and skip the second. This gate catches that gap.
 
 ### Step 2: Verify Each Requirement is DELIVERED (not just CREATED)
 
-For each requirement, trace the path from `main()` to the delivered code:
+For each requirement, answer THREE questions:
+
+1. **Does the code exist?** (file, struct, function, migration, config)
+2. **Is it connected?** (called, imported, registered, wired, injected)
+3. **Is it reachable at runtime?** (trace path from main() or entry point)
 
 ```
-R1: Metrics struct created → metrics.go ✅ CREATED
-R4: Metrics initialized at startup → wire.go calls NewMetrics()? 
-    → Search: grep -rn "NewMetrics" internal/bootstrap/wire*.go
-    → If 0 matches: ❌ NOT DELIVERED (struct exists but never instantiated)
-    → If found: ✅ DELIVERED
+Example verification:
+
+R1: "Suspend endpoint accepts tenant ID and reason"
+  1. Code exists? → handler.go:SuspendTenant() ✅
+  2. Connected? → RegisterRoutes() includes DELETE /tenants/:id/suspend? 
+     → grep -rn "Suspend" internal/bootstrap/wire*.go internal/adapters/http/
+     → Found in RegisterRoutes() ✅
+  3. Reachable? → main→InitServers→initHTTPServer→RegisterRoutes→SuspendTenant ✅
+  → Status: ✅ DELIVERED
+
+R4: "Email notification sent to tenant admin"
+  1. Code exists? → notifier.go:SendSuspensionEmail() ✅
+  2. Connected? → Called from SuspendTenant handler?
+     → grep -rn "SendSuspensionEmail" internal/ --include="*.go" | grep -v test
+     → 0 matches outside tests ❌
+  3. Reachable? → N/A (not connected)
+  → Status: ❌ CREATED NOT DELIVERED — function exists but never called
 ```
 
 ### Step 3: Integration Verification Checklist
 
-For every new artifact created by the implementation, verify integration:
+For **every new artifact** created by Gate 0, verify integration based on its type:
 
 #### Structs & Types
 ```
@@ -148,12 +195,30 @@ For each new exported function:
   [ ] If it's a method: is the receiver struct instantiated and used?
 ```
 
+#### API Endpoints & Routes
+```
+For each new endpoint:
+  [ ] Is the handler function registered in the router?
+  [ ] Is the route path correct and matches the spec?
+  [ ] Are required middleware applied (auth, validation, telemetry)?
+  [ ] Does a request to this endpoint reach the handler? (trace route registration)
+```
+
 #### Middleware
 ```
 For each new middleware:
   [ ] Is it registered in the router/fiber middleware chain?
   [ ] Is it registered in the correct ORDER? (e.g., telemetry before auth)
   [ ] Are its dependencies injected? (not nil at runtime)
+```
+
+#### Database Changes
+```
+For each new migration/schema change:
+  [ ] Is the migration file created with up AND down?
+  [ ] Is the new column/table used by at least one repository method?
+  [ ] Is the repository method called by a service?
+  [ ] Is the service called by a handler or consumer?
 ```
 
 #### Interfaces & Implementations
@@ -172,91 +237,115 @@ For each new config field:
   [ ] Does the component's behavior change based on the value?
 ```
 
-#### Dependencies (go.mod)
+#### Event Publishers & Consumers
+```
+For each new event:
+  [ ] Is the publisher called at the right business moment?
+  [ ] Is the consumer registered and listening?
+  [ ] Is the event schema consistent between publisher and consumer?
+```
+
+#### Dependencies (go.mod / package.json)
 ```
 For each new dependency added:
-  [ ] Is it imported in at least one non-test .go file?
+  [ ] Is it imported in at least one non-test file?
   [ ] Is the import used (not just side-effect import)?
 ```
 
 ### Step 4: Dead Code Detection
 
-Run language-specific dead code analysis:
+Identify any code created by Gate 0 that is not reachable:
 
 #### Go
 ```bash
-# Find unexported functions never called internally
-grep -rn "^func [a-z]" internal/ --include="*.go" | while read line; do
-  func_name=$(echo "$line" | grep -oP 'func \K[a-z]\w+')
-  file=$(echo "$line" | cut -d: -f1)
-  pkg_dir=$(dirname "$file")
-  count=$(grep -rn "$func_name" "$pkg_dir" --include="*.go" | grep -v "_test.go" | wc -l)
-  if [ "$count" -le 1 ]; then
-    echo "DEAD: $func_name in $file (only defined, never called)"
-  fi
+# Find exported functions/methods in changed files that are never called outside tests
+changed_files=$(git diff --name-only HEAD~1 | grep "\.go$" | grep -v "_test.go")
+for f in $changed_files; do
+  # Extract exported function/method names
+  grep -oP 'func (\(.*?\) )?(\K[A-Z]\w+)' "$f" | while read func_name; do
+    # Count non-test references across the repo
+    refs=$(grep -rn "$func_name" --include="*.go" . | grep -v "_test.go" | grep -v "^$f:" | wc -l)
+    if [ "$refs" -eq 0 ]; then
+      echo "DEAD: $func_name in $f (defined but never referenced outside tests)"
+    fi
+  done
 done
-
-# Find exported types never referenced outside their package
-# Find structs with New* constructors where New* is never called outside tests
 ```
 
-#### Integration Reachability (Go-specific)
 ```bash
 # For each new file, check if its package is imported by bootstrap/wire/main
-new_files=$(git diff --name-only HEAD~1 | grep "\.go$" | grep -v "_test.go")
-for f in $new_files; do
-  pkg=$(head -1 "$f" | grep -oP 'package \K\w+')
+for f in $changed_files; do
   pkg_path=$(dirname "$f")
-  # Check if any bootstrap/wire/main file imports this package
   importers=$(grep -rn "\".*$pkg_path\"" internal/bootstrap/ cmd/ --include="*.go" | grep -v "_test.go")
   if [ -z "$importers" ]; then
-    echo "WARNING: Package $pkg_path not imported by bootstrap/cmd"
+    echo "WARNING: Package $pkg_path not imported by bootstrap/cmd — code may be unreachable"
   fi
+done
+```
+
+#### TypeScript
+```bash
+# Find exported functions/classes never imported
+changed_files=$(git diff --name-only HEAD~1 | grep "\.ts$" | grep -v "\.test\.\|\.spec\.")
+for f in $changed_files; do
+  grep -oP 'export (function|class|const|interface) \K\w+' "$f" | while read name; do
+    refs=$(grep -rn "import.*$name\|require.*$name" --include="*.ts" src/ | grep -v "$f" | wc -l)
+    if [ "$refs" -eq 0 ]; then
+      echo "DEAD: $name in $f (exported but never imported)"
+    fi
+  done
 done
 ```
 
 ### Step 5: Requirement Coverage Matrix
 
-Build and output the matrix:
+Build and output the full matrix — one row per requirement extracted in Step 1:
 
 ```markdown
 ## Requirement Coverage Matrix
 
-| # | Requirement | Created | Integrated | Reachable | Status |
-|---|-------------|---------|------------|-----------|--------|
-| R1 | Metrics struct with HTTP counters | ✅ metrics.go | ✅ NewMetrics() in wire.go | ✅ via Application.Metrics | ✅ DELIVERED |
-| R2 | Metrics struct with provisioning counters | ✅ metrics.go | ✅ NewMetrics() in wire.go | ✅ via Application.Metrics | ✅ DELIVERED |
-| R4 | Metrics initialized at startup | ✅ NewMetrics() exists | ✅ Called in NewApplication() | ✅ main→InitServers→NewApplication | ✅ DELIVERED |
-| R5 | HTTP requests recorded | ✅ RecordHTTPRequest() exists | ❌ Never called in any handler | ❌ Dead code | ❌ NOT DELIVERED |
+| # | Requirement | Created | Connected | Reachable | Status |
+|---|-------------|---------|-----------|-----------|--------|
+| R1 | [requirement text] | ✅ file:line | ✅ called by X | ✅ main→...→here | ✅ DELIVERED |
+| R2 | [requirement text] | ✅ file:line | ❌ never called | ❌ dead code | ❌ NOT DELIVERED |
+| R3 | [requirement text] | ❌ not found | — | — | ❌ NOT CREATED |
 ```
+
+**Every requirement from Step 1 MUST appear in this matrix.** No filtering, no "this one is obvious." If it was requested, it gets a row.
 
 ### Step 6: Verdict
 
 ```
-PASS: All requirements have status DELIVERED
-       AND dead code count = 0
-       AND all integration checks pass
+PASS: ALL requirements have status DELIVERED
+      AND dead code count = 0
+      AND all integration checks pass
 
 PARTIAL: Some requirements DELIVERED, some NOT DELIVERED
-         → List specific gaps
-         → Agent MUST fix before advancing
+         → List specific gaps with fix instructions
+         → Agent MUST fix before advancing to Gate 1
 
 FAIL: Critical requirements NOT DELIVERED
+      OR majority of requirements NOT DELIVERED
       OR significant dead code introduced
-      → Return to Gate 0
+      → Return to Gate 0 with explicit instructions
 ```
+
+**Verdict is based on the original task requirements, not on code quality.** Quality is Gate 8's job. This gate only answers: "Was the requested work actually delivered?"
 
 ## Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
 | "The struct is there, wiring is a separate task" | Unwired struct = dead code. Each task must deliver complete functionality. | **Wire it NOW or mark task as incomplete** |
-| "Tests prove it works" | Tests on isolated structs prove the struct works in isolation. Not that it works in the app. | **Verify reachability from main()** |
-| "It compiles, so it's integrated" | Compilation doesn't prove integration. Unused imports compile too. | **Trace call path from main()** |
+| "Tests prove it works" | Tests on isolated code prove it works in isolation. Not that it works in the app. | **Verify reachability from main()** |
+| "It compiles, so it's integrated" | Compilation doesn't prove integration. Unused code compiles. | **Trace call path from main()** |
 | "The next PR will wire it" | The next PR is not guaranteed. Deliver complete or don't deliver. | **Complete integration in this task** |
 | "It's just scaffolding" | Scaffolding without integration is dead code with extra steps. | **Either wire it or don't create it** |
-| "Review will catch it" | Review catches quality issues, not integration gaps. Different concerns. | **Verify integration explicitly** |
+| "Review will catch it" | Review catches quality issues, not delivery completeness. Different concerns. | **Verify delivery explicitly** |
 | "Go vet would catch unused code" | Go vet catches unused variables, not unused exported types/functions. | **Run integration verification** |
+| "The feature works, just missing one small piece" | Partial delivery ≠ delivery. If R4 of 7 requirements is missing, task is incomplete. | **Deliver ALL requirements** |
+| "That requirement was implied, not explicit" | If the task says it, verify it. Ambiguity → ask, don't skip. | **Verify or clarify with requester** |
+| "I did the hard part, the wiring is trivial" | Trivial ≠ done. If it's trivial, do it now. | **Complete the trivial wiring** |
 
 ## Integration with dev-cycle
 
@@ -264,7 +353,7 @@ This gate runs as **Gate 0.5** — after implementation (Gate 0), before DevOps 
 
 ```
 Gate 0:   Implementation (write code)
-Gate 0.5: Delivery Verification (verify code is wired) ← THIS GATE
+Gate 0.5: Delivery Verification (verify ALL requested work is delivered) ← THIS GATE
 Gate 1:   DevOps (infrastructure)
 Gate 2:   SRE (reliability)
 Gate 3:   Unit Testing
@@ -272,56 +361,9 @@ Gate 3:   Unit Testing
 ```
 
 If Gate 0.5 returns PARTIAL or FAIL:
-1. List specific undelivered requirements
-2. Return to Gate 0 with explicit instructions: "Wire the following: [list]"
+1. List ALL undelivered requirements with specific evidence
+2. Return to Gate 0 with explicit instructions: "Deliver the following: [list with file:line references]"
 3. Re-run Gate 0.5 after fixes
 4. Only advance to Gate 1 when Gate 0.5 returns PASS
 
-## Example Output
-
-```markdown
-## Delivery Verification Summary
-
-Task: REFACTOR-005 — Add custom OpenTelemetry application metrics
-Gate 0 Agent: ring:backend-engineer-golang
-Files Changed: internal/bootstrap/metrics.go, internal/bootstrap/metrics_test.go
-
-## Requirement Coverage Matrix
-
-| # | Requirement | Status | Evidence |
-|---|-------------|--------|----------|
-| R1 | Metrics struct with 5 counters/histograms | ✅ DELIVERED | metrics.go:L82-L135 |
-| R2 | NewMetrics() constructor | ✅ DELIVERED | metrics.go:L140-L195 |
-| R3 | RecordHTTPRequest() method | ⚠️ CREATED NOT DELIVERED | metrics.go:L210, never called |
-| R4 | RecordProvisioningOperation() method | ⚠️ CREATED NOT DELIVERED | metrics.go:L230, never called |
-| R5 | RecordError() method | ⚠️ CREATED NOT DELIVERED | metrics.go:L250, never called |
-| R6 | Metrics initialized at startup | ❌ NOT DELIVERED | NewMetrics() not called in wire.go |
-| R7 | HTTP requests recorded in handlers | ❌ NOT DELIVERED | No handler calls RecordHTTPRequest() |
-
-## Integration Verification
-
-- [ ] ❌ `NewMetrics()` not called in `wire.go` or `NewApplication()`
-- [ ] ❌ `Metrics` not added to `Application` struct
-- [ ] ❌ `RecordHTTPRequest()` not called in any handler or middleware
-- [ ] ❌ `RecordProvisioningOperation()` not called in any service
-
-## Dead Code Detection
-
-| Item | Location | Issue |
-|------|----------|-------|
-| `NewMetrics()` | metrics.go:140 | Constructor never called outside tests |
-| `RecordHTTPRequest()` | metrics.go:210 | Method never called outside tests |
-| `RecordProvisioningOperation()` | metrics.go:230 | Method never called outside tests |
-| `RecordError()` | metrics.go:250 | Method never called outside tests |
-
-## Verdict
-
-**FAIL** — 2/7 requirements delivered. 4 dead code items introduced.
-
-Return to Gate 0 with instructions:
-1. Add `Metrics *Metrics` to Application struct in wire.go
-2. Call `NewMetrics()` in NewApplication() after telemetry init
-3. Create HTTP metrics middleware calling RecordHTTPRequest()
-4. Inject metrics into TenantServiceHandler and call Record* methods
-5. Inject metrics into tenant-service service for provisioning tracking
-```
+**Gate 0.5 is language-agnostic and task-type-agnostic.** It works the same whether the task is a Go API endpoint, a TypeScript frontend component, a database migration, an infrastructure change, or a business logic refactor. The process is always: extract requirements → verify each is delivered → report gaps.
