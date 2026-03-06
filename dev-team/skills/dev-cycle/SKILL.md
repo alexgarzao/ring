@@ -47,7 +47,7 @@ examples:
     expected_flow: |
       1. Load tasks with subtasks from tasks.md
       2. Ask user for checkpoint mode (per-task/per-gate/continuous)
-      3. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each task sequentially
+      3. Execute Gate 0→0.5→1→2→3→4→5→6→7→8→9 for each task sequentially
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
     invocation: "/ring:dev-cycle --resume"
@@ -71,7 +71,7 @@ examples:
       2. Dispatch ring:codebase-explorer to analyze project
       3. Generate tasks internally from prompt + codebase analysis
       4. Present generated tasks for user confirmation
-      5. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each generated task
+      5. Execute Gate 0→0.5→1→2→3→4→5→6→7→8→9 for each generated task
 ---
 
 # Development Cycle Orchestrator
@@ -95,7 +95,7 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 10 gates (Gate 0–9) with **deferred execution** for infrastructure-dependent tests:
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 11 gates (Gate 0–9, including 0.5 Delivery Verification) with **deferred execution** for infrastructure-dependent tests:
 
 - **Gates 0-5, 8-9 (per unit):** Write code + run tests per task/subtask
 - **Gates 6-7 (per unit):** Write/update integration and chaos test code, verify compilation, but do **not execute** tests (no containers)
@@ -103,7 +103,7 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 
 This keeps test code current with each feature while avoiding redundant container spin-ups during development.
 
-**MUST announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
+**MUST announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 11 gates (Gate 0–9, including 0.5 Delivery Verification). Gates 6-7 write tests per unit but execute at end of cycle."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -185,6 +185,7 @@ This is not negotiable:
 
 <cannot_skip>
 - Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
+- Gate 0.5: `Skill("ring:dev-delivery-verification")` → Verify all requirements are DELIVERED (not just created). Catches dead code, unwired structs, unregistered middleware. FAIL → return to Gate 0 with explicit fix instructions.
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
 - Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
 - Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
@@ -504,7 +505,7 @@ Day 4: Production incident from Day 1 code
 
 **Core Principle:** Each execution unit passes through all 10 gates. Gates 6-7 write test code per unit but defer execution to end of cycle.
 
-**Per-Unit Flow:** Unit → Gate 0→1→2→3→4→5→6(write)→7(write)→8→9 → 🔒 Unit Checkpoint → 🔒 Task Checkpoint → Next Unit
+**Per-Unit Flow:** Unit → Gate 0→0.5(delivery verify)→1→2→3→4→5→6(write)→7(write)→8→9 → 🔒 Unit Checkpoint → 🔒 Task Checkpoint → Next Unit
 **End-of-Cycle Flow:** All units done → Gate 6(execute)→7(execute) → **Multi-Tenant Adaptation** → Final Commit → Feedback
 
 | Scenario | Execution Unit | Gates Per Unit | End of Cycle |
@@ -978,6 +979,7 @@ Read tool:
 | **Before Gate 0 (task start)** | `task.status = "in_progress"` in JSON **+ tasks.md Status → `🔄 Doing`** | ✅ YES |
 | Gate 0.1 (TDD-RED) | `tdd_red.status`, `tdd_red.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | `tdd_green.status`, `implementation.status` | ✅ YES |
+| Gate 0.5 (Delivery Verification) | `delivery_verification.status`, `delivery_verification.requirements_total`, `delivery_verification.requirements_delivered`, `delivery_verification.dead_code_items` | ✅ YES |
 | Gate 1 (DevOps) | `devops.status`, `agent_outputs.devops` | ✅ YES |
 | Gate 2 (SRE) | `sre.status`, `agent_outputs.sre` | ✅ YES |
 | Gate 3 (Unit Testing) | `unit_testing.status`, `agent_outputs.unit_testing` | ✅ YES |
