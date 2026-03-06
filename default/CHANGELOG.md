@@ -27,6 +27,18 @@ Contributors: @fred
 ## [1.13.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.13.0)
 
 - Features:
+  - Add documentation for diagram and visualize commands.
+  - Add drawing-diagrams skill for Mermaid visualizations.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.12.2...ring-default@1.13.0)
+
+---
+
+## [1.13.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.13.0)
+
+- Features:
   - Add docs for diagram and visualize commands.
   - Add drawing-diagrams skill for Mermaid visualizations.
 
