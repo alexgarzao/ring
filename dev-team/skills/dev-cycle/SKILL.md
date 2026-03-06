@@ -36,7 +36,7 @@ verification:
       success_pattern: "exit 0"
     - command: "cat docs/ring:dev-cycle/current-cycle.json 2>/dev/null || cat docs/ring:dev-refactor/current-cycle.json | jq '.current_gate'"
       description: "Current gate is valid"
-      success_pattern: "[0-5]"
+      success_pattern: "[0-5]|0\.5"
   manual:
     - "All gates for current task show PASS in state file"
     - "No tasks have status 'blocked' for more than 3 iterations"
@@ -47,7 +47,7 @@ examples:
     expected_flow: |
       1. Load tasks with subtasks from tasks.md
       2. Ask user for checkpoint mode (per-task/per-gate/continuous)
-      3. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each task sequentially
+      3. Execute Gate 0→0.5→1→2→3→4→5→6→7→8→9 for each task sequentially
       4. Generate feedback report after completion
   - name: "Resume interrupted cycle"
     invocation: "/ring:dev-cycle --resume"
@@ -57,7 +57,7 @@ examples:
     expected_flow: |
       1. Execute Gate 0, pause for approval
       2. User approves, execute Gate 1, pause
-      3. Continue until all 10 gates complete
+      3. Continue until all 11 gates complete
   - name: "Execute with custom context for agents"
     invocation: "/ring:dev-cycle tasks.md \"Focus on error handling. Use existing UserRepository.\""
     expected_flow: |
@@ -71,7 +71,7 @@ examples:
       2. Dispatch ring:codebase-explorer to analyze project
       3. Generate tasks internally from prompt + codebase analysis
       4. Present generated tasks for user confirmation
-      5. Execute Gate 0→1→2→3→4→5→6→7→8→9 for each generated task
+      5. Execute Gate 0→0.5→1→2→3→4→5→6→7→8→9 for each generated task
 ---
 
 # Development Cycle Orchestrator
@@ -95,7 +95,7 @@ If any condition is true, STOP and report blocker. Cannot proceed without Ring s
 
 ## Overview
 
-The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 10 gates (Gate 0–9) with **deferred execution** for infrastructure-dependent tests:
+The development cycle orchestrator loads tasks/subtasks from PM team output (or manual task files) and executes through 11 gates (Gate 0–9, including 0.5 Delivery Verification) with **deferred execution** for infrastructure-dependent tests:
 
 - **Gates 0-5, 8-9 (per unit):** Write code + run tests per task/subtask
 - **Gates 6-7 (per unit):** Write/update integration and chaos test code, verify compilation, but do **not execute** tests (no containers)
@@ -103,7 +103,7 @@ The development cycle orchestrator loads tasks/subtasks from PM team output (or 
 
 This keeps test code current with each feature while avoiding redundant container spin-ups during development.
 
-**MUST announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 10 gates (Gate 0–9). Gates 6-7 write tests per unit but execute at end of cycle."
+**MUST announce at start:** "I'm using the ring:dev-cycle skill to orchestrate task execution through 11 gates (Gate 0–9, including 0.5 Delivery Verification). Gates 6-7 write tests per unit but execute at end of cycle."
 
 ## ⛔ CRITICAL: Specialized Agents Perform All Tasks
 
@@ -185,6 +185,7 @@ This is not negotiable:
 
 <cannot_skip>
 - Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
+- Gate 0.5: `Skill("ring:dev-delivery-verification")` → Verify all requirements are DELIVERED (not just created). Catches dead code, unwired structs, unregistered middleware. FAIL → return to Gate 0 with explicit fix instructions.
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
 - Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
 - Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
@@ -322,9 +323,9 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 ### Cannot Be Overridden
 
 <cannot_skip>
-- All 10 gates must execute (0→1→2→3→4→5→6→7→8→9) - Each gate catches different issues
+- All 11 gates must execute (0→0.5→1→2→3→4→5→6→7→8→9) - Each gate catches different issues
 - All testing gates (3-7) are MANDATORY - Comprehensive test coverage ensures quality
-- Gates execute in order (0→1→2→3→4→5→6→7→8→9) - Dependencies exist between gates
+- Gates execute in order (0→0.5→1→2→3→4→5→6→7→8→9) - Dependencies exist between gates
 - Gate 8 requires all 6 reviewers - Different review perspectives are complementary
 - Coverage threshold ≥ 85% - Industry standard for quality code
 - PROJECT_RULES.md must exist - Cannot verify standards without target
@@ -451,7 +452,7 @@ Day 4: Production incident from Day 1 code
 
 ## Gate Order Enforcement (HARD GATE)
 
-**Gates MUST execute in order: 0 → 1 → 2 → 3 → 4 → 5 → 6(write) → 7(write) → 8 → 9. All 10 gates are MANDATORY.**
+**Gates MUST execute in order: 0 → 0.5 → 1 → 2 → 3 → 4 → 5 → 6(write) → 7(write) → 8 → 9. All 11 gates are MANDATORY.**
 
 **Deferred Execution Model for Gates 6-7:**
 - **Per unit:** Write/update test code + verify compilation (no container execution)
@@ -502,15 +503,15 @@ Day 4: Production incident from Day 1 code
 
 ## Execution Order
 
-**Core Principle:** Each execution unit passes through all 10 gates. Gates 6-7 write test code per unit but defer execution to end of cycle.
+**Core Principle:** Each execution unit passes through all 11 gates. Gates 6-7 write test code per unit but defer execution to end of cycle.
 
-**Per-Unit Flow:** Unit → Gate 0→1→2→3→4→5→6(write)→7(write)→8→9 → 🔒 Unit Checkpoint → 🔒 Task Checkpoint → Next Unit
+**Per-Unit Flow:** Unit → Gate 0→0.5(delivery verify)→1→2→3→4→5→6(write)→7(write)→8→9 → 🔒 Unit Checkpoint → 🔒 Task Checkpoint → Next Unit
 **End-of-Cycle Flow:** All units done → Gate 6(execute)→7(execute) → **Multi-Tenant Adaptation** → Final Commit → Feedback
 
 | Scenario | Execution Unit | Gates Per Unit | End of Cycle |
 |----------|----------------|----------------|--------------|
-| Task without subtasks | Task itself | 10 gates (6-7 write only) | Gate 6-7 execute |
-| Task with subtasks | Each subtask | 10 gates per subtask (6-7 write only) | Gate 6-7 execute |
+| Task without subtasks | Task itself | 11 gates (6-7 write only) | Gate 6-7 execute |
+| Task with subtasks | Each subtask | 11 gates per subtask (6-7 write only) | Gate 6-7 execute |
 
 **Why deferred execution for Gates 6-7:**
 - Integration tests require testcontainers (slow to spin up/tear down)
@@ -630,6 +631,15 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             "test_pass_output": "PASS: TestFoo (0.003s)",
             "completed_at": "ISO timestamp"
           }
+        },
+        "delivery_verification": {
+          "status": "pending|in_progress|completed",
+          "requirements_total": 0,
+          "requirements_delivered": 0,
+          "requirements_missing": 0,
+          "dead_code_items": 0,
+          "remediation_items": 0,
+          "completed_at": "ISO timestamp"
         },
         "devops": {"status": "pending"},
         "sre": {"status": "pending"},
@@ -978,6 +988,7 @@ Read tool:
 | **Before Gate 0 (task start)** | `task.status = "in_progress"` in JSON **+ tasks.md Status → `🔄 Doing`** | ✅ YES |
 | Gate 0.1 (TDD-RED) | `tdd_red.status`, `tdd_red.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | `tdd_green.status`, `implementation.status` | ✅ YES |
+| Gate 0.5 (Delivery Verification) | `delivery_verification.status`, `delivery_verification.requirements_total`, `delivery_verification.requirements_delivered`, `delivery_verification.dead_code_items` | ✅ YES |
 | Gate 1 (DevOps) | `devops.status`, `agent_outputs.devops` | ✅ YES |
 | Gate 2 (SRE) | `sre.status`, `agent_outputs.sre` | ✅ YES |
 | Gate 3 (Unit Testing) | `unit_testing.status`, `agent_outputs.unit_testing` | ✅ YES |
@@ -1960,6 +1971,75 @@ implementation_input = {
    │ TDD-RED:   FAIL captured ✓                     │
    │ TDD-GREEN: PASS verified ✓                     │
    │ STANDARDS: [N]/[N] sections compliant ✓        │
+   │                                                 │
+   │ Proceeding to Gate 1 (DevOps)...               │
+   └─────────────────────────────────────────────────┘
+
+7. MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]
+   See "State Persistence Rule" section.
+
+8. Proceed to Gate 0.5
+```
+
+## Step 2.5: Gate 0.5 - Delivery Verification (Per Execution Unit)
+
+```text
+1. Load Skill:
+   Skill("ring:dev-delivery-verification")
+
+2. Invoke with Gate 0 outputs:
+   - unit_id: current task/subtask ID
+   - requirements: original task requirements from tasks.md
+   - files_changed: from Gate 0 agent_outputs.implementation (## Files Changed)
+   - gate0_handoff: full Gate 0 output
+
+3. Parse result from skill output:
+   - result: PASS | PARTIAL | FAIL
+   - requirements_total: from "## Requirement Coverage Matrix"
+   - requirements_delivered: count of ✅ DELIVERED rows
+   - requirements_missing: count of ❌ NOT DELIVERED rows
+   - dead_code_items: count from "## Dead Code Detection"
+   - remediation_items: count from "## Return to Gate 0" (0 if PASS)
+
+4. Update state:
+   - gate_progress.delivery_verification = {
+       status: "completed",
+       requirements_total: [N],
+       requirements_delivered: [N],
+       requirements_missing: [N],
+       dead_code_items: [N],
+       remediation_items: [N],
+       completed_at: "[ISO timestamp]"
+     }
+
+5. Control flow based on result:
+
+   IF PASS:
+     → Display ✓ GATE 0.5 COMPLETE, proceed to Gate 1
+   
+   IF PARTIAL:
+     → Extract undelivered requirements from "## Return to Gate 0"
+     → Display ⚠ GATE 0.5 PARTIAL — [N] of [M] requirements not delivered
+     → Return to Gate 0 (Step 2) with explicit fix instructions:
+       "Deliver the following requirements: [list from Return to Gate 0]"
+     → After Gate 0 re-run, re-execute Gate 0.5
+     → Max 2 retries. If still PARTIAL after 2 retries → escalate to user
+   
+   IF FAIL:
+     → Extract all gaps from "## Return to Gate 0"
+     → Display ✗ GATE 0.5 FAIL — critical requirements not delivered
+     → Return to Gate 0 (Step 2) with full remediation list
+     → After Gate 0 re-run, re-execute Gate 0.5
+     → Max 2 retries. If still FAIL after 2 retries → escalate to user
+
+6. Display to user:
+   ┌─────────────────────────────────────────────────┐
+   │ ✓ GATE 0.5 COMPLETE                            │
+   ├─────────────────────────────────────────────────┤
+   │ Skill: ring:dev-delivery-verification           │
+   │ Requirements: [delivered]/[total] DELIVERED     │
+   │ Dead Code: [N] items                            │
+   │ Verdict: [PASS|PARTIAL|FAIL]                    │
    │                                                 │
    │ Proceeding to Gate 1 (DevOps)...               │
    └─────────────────────────────────────────────────┘
