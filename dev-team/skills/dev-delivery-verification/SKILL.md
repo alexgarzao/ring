@@ -1,5 +1,6 @@
 ---
 name: ring:dev-delivery-verification
+version: 1.0.0
 description: |
   Delivery Verification Gate — verifies that what was requested is actually delivered
   as reachable, integrated code. Not quality review (Gate 8), not test verification
@@ -62,6 +63,10 @@ output_schema:
     - name: "Verdict"
       pattern: "^## Verdict"
       required: true
+    - name: "Return to Gate 0"
+      pattern: "^## Return to Gate 0"
+      required: true
+      description: "Mandatory when verdict is PARTIAL or FAIL. Lists specific undelivered requirements with fix instructions for Gate 0."
   metrics:
     - name: result
       type: enum
@@ -74,6 +79,9 @@ output_schema:
       type: integer
     - name: dead_code_items
       type: integer
+    - name: remediation_items
+      type: integer
+      description: "Number of fix instructions returned to Gate 0 (0 when PASS)"
 ---
 
 # Delivery Verification Gate
@@ -258,8 +266,13 @@ Identify any code created by Gate 0 that is not reachable:
 
 #### Go
 ```bash
-# Find exported functions/methods in changed files that are never called outside tests
-changed_files=$(git diff --name-only HEAD~1 | grep "\.go$" | grep -v "_test.go")
+# Use files_changed from Gate 0 handoff (NOT git diff — avoids drift on stacked/squashed commits)
+# files_changed is provided as input to this gate
+if [ -z "$files_changed" ]; then
+  echo "ERROR: files_changed not provided. Cannot verify delivery."
+  exit 1
+fi
+changed_files=$(echo "$files_changed" | tr ',' '\n' | grep "\.go$" | grep -v "_test.go")
 for f in $changed_files; do
   # Extract exported function/method names
   grep -oP 'func (\(.*?\) )?(\K[A-Z]\w+)' "$f" | while read func_name; do
@@ -273,7 +286,7 @@ done
 ```
 
 ```bash
-# For each new file, check if its package is imported by bootstrap/wire/main
+# For each changed file, check if its package is imported by bootstrap/wire/main
 for f in $changed_files; do
   pkg_path=$(dirname "$f")
   importers=$(grep -rn "\".*$pkg_path\"" internal/bootstrap/ cmd/ --include="*.go" | grep -v "_test.go")
@@ -285,9 +298,9 @@ done
 
 #### TypeScript
 ```bash
-# Find exported functions/classes never imported
-changed_files=$(git diff --name-only HEAD~1 | grep "\.ts$" | grep -v "\.test\.\|\.spec\.")
-for f in $changed_files; do
+# Use files_changed from Gate 0 handoff
+changed_ts_files=$(echo "$files_changed" | tr ',' '\n' | grep "\.ts$" | grep -v "\.test\.\|\.spec\.")
+for f in $changed_ts_files; do
   grep -oP 'export (function|class|const|interface) \K\w+' "$f" | while read name; do
     refs=$(grep -rn "import.*$name\|require.*$name" --include="*.ts" src/ | grep -v "$f" | wc -l)
     if [ "$refs" -eq 0 ]; then
