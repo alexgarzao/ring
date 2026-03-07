@@ -318,6 +318,12 @@ Write tool:
 
 **TodoWrite:** Mark "Dispatch specialist agents in parallel" as `in_progress`
 
+### ⛔ File Size Enforcement (MANDATORY)
+
+See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds and agent instructions.
+
+**All analysis agents MUST flag files exceeding 300 lines as ISSUE-XXX** (converted to FINDING-XXX during Step 4.1 mapping, like all other agent issues). Files > 500 lines are CRITICAL severity. Files > 1000 lines are CRITICAL with mandatory decomposition plan included in the finding. Each oversized file = one ISSUE-XXX (not grouped). **Test files are included** — large test files are equally hard to maintain.
+
 ### ⛔ HARD GATE: Verify codebase-report.md Exists
 
 **BEFORE dispatching any specialist agent, verify:**
@@ -372,6 +378,15 @@ Task tool 1:
        - If codebase uses DIFFERENT library than standards → ISSUE-XXX
        - If codebase is MISSING required library → ISSUE-XXX
     4. any library not in standards that serves same purpose = ISSUE-XXX
+
+    ⛔ FILE SIZE ENFORCEMENT (MANDATORY):
+    - Any source file > 300 lines (including test files, excluding auto-generated: *.pb.go, */generated/*, */mocks*) MUST be flagged as ISSUE-XXX
+    - 301-500 lines: severity HIGH
+    - > 500 lines: severity CRITICAL
+    - > 1000 lines: severity CRITICAL with explicit decomposition plan
+    - Include current line count and proposed split strategy in each finding
+    - See shared-patterns/file-size-enforcement.md for split patterns
+    - Reference: golang/domain.md → File Organization (MANDATORY)
 
     Input:
     - Ring Standards: Load via WebFetch (golang.md)
@@ -490,6 +505,15 @@ Task tool 1:
        - If codebase uses DIFFERENT library than standards → ISSUE-XXX
        - If codebase is MISSING required library → ISSUE-XXX
     4. any library not in standards that serves same purpose = ISSUE-XXX
+
+    ⛔ FILE SIZE ENFORCEMENT (MANDATORY):
+    - Any source file > 300 lines (including test files, excluding auto-generated: *.d.ts, *.gen.ts, *.generated.ts, */generated/*, */__generated__/*) MUST be flagged as ISSUE-XXX
+    - 301-500 lines: severity HIGH
+    - > 500 lines: severity CRITICAL
+    - > 1000 lines: severity CRITICAL with explicit decomposition plan
+    - Include current line count and proposed split strategy in each finding
+    - See shared-patterns/file-size-enforcement.md for split patterns
+    - Reference: typescript.md → File Organization (MANDATORY)
 
     ⛔ MULTI-TENANT ANALYSIS (MANDATORY):
     See [shared-patterns/multi-tenant-analysis.md](../shared-patterns/multi-tenant-analysis.md) for the full checklist.
