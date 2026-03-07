@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **6 active plugins**. It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **6 active plugins** (86 skills, 35 agents, 33 commands). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
 
 ### Architecture Philosophy
 
@@ -33,8 +33,8 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(26) Agents(8) │  │ Skills(21) Agents(11)│                       │  │
-│  │  │ Cmds(13) Hooks/Lib   │  │ Cmds(7)              │                       │  │
+│  │  │ Skills(27) Agents(8) │  │ Skills(23) Agents(11)│                       │  │
+│  │  │ Cmds(15) Hooks/Lib   │  │ Cmds(8)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-pm-team         │  │ ring-tw-team         │                       │  │
@@ -74,8 +74,8 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
-| **ring-default**     | Core skills library                  | 26 skills, 8 agents, 13 commands |
-| **ring-dev-team**    | Developer agents                     | 21 skills, 11 agents, 7 commands |
+| **ring-default**     | Core skills library                  | 27 skills, 8 agents, 15 commands |
+| **ring-dev-team**    | Developer agents                     | 23 skills, 11 agents, 8 commands |
 | **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
 | **ring-pm-team**     | Product planning workflows           | 13 skills, 4 agents, 3 commands  |
 | **ring-pmo-team**    | PMO portfolio management specialists | 9 skills, 6 agents, 4 commands   |
@@ -253,12 +253,15 @@ default/commands/
 ├── codereview.md         # /ring:codereview - Parallel 6-reviewer dispatch
 ├── commit.md             # /ring:commit - Git commit with trailers
 ├── create-handoff.md     # /ring:create-handoff - Create session handoff
+├── diagram.md            # /ring:diagram - Generate Mermaid diagrams
 ├── execute-plan.md       # /ring:execute-plan - Batch execution
 ├── explore-codebase.md   # /ring:explore-codebase - Deep architecture analysis
 ├── interview-me.md       # /ring:interview-me - Interactive interview
 ├── lint.md               # /ring:lint - Run linters and fix issues
+├── md-to-html.md         # /ring:md-to-html - Markdown to HTML
 ├── release-guide.md      # /ring:release-guide - Release guidance
 ├── resume-handoff.md     # /ring:resume-handoff - Resume from handoff
+├── visualize.md          # /ring:visualize - Visual system explanations
 ├── worktree.md           # /ring:worktree - Git worktree creation
 └── write-plan.md         # /ring:write-plan - Implementation planning
 
@@ -275,11 +278,12 @@ pmo-team/commands/
 
 dev-team/commands/
 ├── dev-cancel.md           # /ring:dev-cancel - Cancel dev cycle
-├── dev-cycle.md            # /ring:dev-cycle - 11-gate development cycle
+├── dev-cycle.md            # /ring:dev-cycle - 10-gate development cycle
 ├── dev-cycle-frontend.md   # /ring:dev-cycle-frontend - 9-gate frontend cycle
 ├── dev-refactor.md         # /ring:dev-refactor - Standards refactoring
 ├── dev-refactor-frontend.md # /ring:dev-refactor-frontend - Frontend standards refactor
 ├── dev-report.md           # /ring:dev-report - Development reporting
+├── dev-service-discovery.md # /ring:dev-service-discovery - Service hierarchy scan
 └── dev-status.md           # /ring:dev-status - Development status
 
 tw-team/commands/
@@ -796,13 +800,13 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | Component                 | Count      | Location               |
 | ------------------------- | ---------- | ---------------------- |
 | Active Plugins            | 6          | All plugin directories |
-| Skills (ring-default)     | 26         | `default/skills/`      |
-| Skills (ring-dev-team)    | 21         | `dev-team/skills/`     |
+| Skills (ring-default)     | 27         | `default/skills/`      |
+| Skills (ring-dev-team)    | 23         | `dev-team/skills/`     |
 | Skills (ring-finops-team) | 7          | `finops-team/skills/`  |
 | Skills (ring-pm-team)     | 13         | `pm-team/skills/`      |
 | Skills (ring-pmo-team)    | 9          | `pmo-team/skills/`     |
 | Skills (ring-tw-team)     | 7          | `tw-team/skills/`      |
-| **Total Skills**          | **83**     | **All plugins**        |
+| **Total Skills**          | **86**     | **All plugins**        |
 | Agents (ring-default)     | 8          | `default/agents/`      |
 | Agents (ring-dev-team)    | 11         | `dev-team/agents/`     |
 | Agents (ring-finops-team) | 3          | `finops-team/agents/`  |
@@ -810,12 +814,12 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | Agents (ring-pmo-team)    | 6          | `pmo-team/agents/`     |
 | Agents (ring-tw-team)     | 3          | `tw-team/agents/`      |
 | **Total Agents**          | **35**     | **All plugins**        |
-| Commands (ring-default)   | 13         | `default/commands/`    |
-| Commands (ring-dev-team)  | 7          | `dev-team/commands/`   |
+| Commands (ring-default)   | 15         | `default/commands/`    |
+| Commands (ring-dev-team)  | 8          | `dev-team/commands/`   |
 | Commands (ring-pm-team)   | 3          | `pm-team/commands/`    |
 | Commands (ring-pmo-team)  | 4          | `pmo-team/commands/`   |
 | Commands (ring-tw-team)   | 3          | `tw-team/commands/`    |
-| **Total Commands**        | **30**     | **All plugins**        |
+| **Total Commands**        | **33**     | **All plugins**        |
 | Hooks                     | Per plugin | `{plugin}/hooks/`      |
 
 The system achieves these goals through clear component separation, structured workflows, automatic context management, and a modular marketplace architecture, creating a robust foundation for AI-assisted software development.

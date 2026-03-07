@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 83 skills, 35 agents, and 30 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 86 skills, 35 agents, and 33 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,9 +13,9 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(26)   │  │  Skills(21)   │  │  Skills(13)   │  │  team         │      │
+│  │  Skills(27)   │  │  Skills(23)   │  │  Skills(13)   │  │  team         │      │
 │  │  Agents(8)    │  │  Agents(11)   │  │  Agents(4)    │  │  Skills(7)    │      │
-│  │  Cmds(13)     │  │  Cmds(7)      │  │  Cmds(3)      │  │  Agents(3)    │      │
+│  │  Cmds(15)     │  │  Cmds(8)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐                                            │
 │  │ ring-tw-team  │  │ ring-pmo-team │                                            │
@@ -86,6 +86,8 @@ Commands are invoked directly: `/command-name`.
 | `/ring:explore-codebase [path]` | Autonomous two-phase codebase exploration   | `/ring:explore-codebase payment/`                  |
 | `/ring:interview-me [topic]`    | Proactive requirements gathering interview  | `/ring:interview-me auth-system`                   |
 | `/ring:md-to-html [file]`       | Transform a markdown file into an HTML page | `/ring:md-to-html architecture.md`                 |
+| `/ring:diagram [topic]`         | Generate a Mermaid diagram                  | `/ring:diagram payment-flow`                       |
+| `/ring:visualize [topic]`       | Generate visual explanation                 | `/ring:visualize auth-architecture`                |
 | `/ring:release-guide`           | Generate step-by-step release instructions  | `/ring:release-guide`                              |
 | `/ring:pre-dev-feature [name]`  | Plan simple features (<2 days) – 5 gates    | `/ring:pre-dev-feature logout-button`              |
 | `/ring:pre-dev-full [name]`     | Plan complex features (≥2 days) – 10 gates  | `/ring:pre-dev-full payment-system`                |
@@ -113,10 +115,11 @@ Commands are invoked directly: `/command-name`.
 
 | Command                     | Use Case                           | Example                                 |
 | --------------------------- | ---------------------------------- | --------------------------------------- |
-| `/ring:dev-cycle [task]`    | Start 11-gate development workflow | `/ring:dev-cycle "implement user auth"` |
+| `/ring:dev-cycle [task]`    | Start 10-gate development workflow | `/ring:dev-cycle "implement user auth"` |
 | `/ring:dev-cycle-frontend [task]` | Start 9-gate frontend workflow | `/ring:dev-cycle-frontend "improve dashboard UX"` |
 | `/ring:dev-refactor [path]` | Analyze codebase against standards | `/ring:dev-refactor src/`               |
 | `/ring:dev-refactor-frontend [path]` | Analyze frontend against standards | `/ring:dev-refactor-frontend web/` |
+| `/ring:dev-service-discovery [path]` | Scan service/module/resource hierarchy | `/ring:dev-service-discovery .` |
 | `/ring:dev-status`          | Show current gate progress         | `/ring:dev-status`                      |
 | `/ring:dev-report`          | Generate development cycle report  | `/ring:dev-report`                      |
 | `/ring:dev-cancel`          | Cancel active development cycle    | `/ring:dev-cancel`                      |
@@ -142,7 +145,7 @@ Commands are invoked directly: `/command-name`.
 
 ## 💡 About Skills
 
-Skills (83) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
+Skills (86) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
 
 Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
@@ -388,7 +391,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 83 skills are auto-discovered and available
+2. All 86 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
