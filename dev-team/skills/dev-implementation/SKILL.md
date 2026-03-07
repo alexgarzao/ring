@@ -272,6 +272,7 @@ Task:
     For TS: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
     **Go minimum for tests:** WebFetch `quality.md` → Testing section for test conventions.
     Multi-Tenant: Handled post-cycle by ring:dev-multi-tenant — implement single-tenant in this gate.
+    Design for adaptability (Go only): use `r.connection` as a struct field, accept `ctx context.Context` in all methods, no global DB singletons. See TDD-GREEN prompt for full Multi-Tenant Adaptability section.
 
     ## Frontend TDD Policy (React/Next.js only)
     If the component is purely visual/presentational (layout, styling, animations,
@@ -396,7 +397,20 @@ Task:
     URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
     
     Multi-Tenant: Handled post-cycle by ring:dev-multi-tenant — implement single-tenant in this gate.
-    Design for adaptability: use `r.connection` as a struct field so ring:dev-multi-tenant can replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
+    
+    ## ⛔ Multi-Tenant Adaptability (Go backend only — skip for TypeScript/Frontend)
+    
+    **Applies only when `language == "go"`.** TypeScript and frontend projects have different patterns.
+    
+    Even though multi-tenant is implemented post-cycle by ring:dev-multi-tenant, Go code must be structured for easy adaptation:
+    
+    1. **Database connection as struct field:** Repositories must store the connection as a struct field (`r.connection`) — not inline `db.GetDB()` calls. This allows ring:dev-multi-tenant to replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
+    2. **Context propagation:** All service/repository methods must accept `ctx context.Context` as first parameter. Multi-tenant resolves connections from context.
+    3. **No global DB singletons:** Database connections must be injected via constructor, not accessed from package-level variables. Global state blocks per-tenant connection routing.
+    4. **Redis keys as parameters:** Redis operations must receive the key as a parameter (not hardcode it). Multi-tenant prefixes keys with `valkey.GetKeyFromContext(ctx, key)`.
+    5. **S3 keys as parameters:** S3 operations must receive the object key as a parameter. Multi-tenant prefixes with `s3.GetObjectStorageKeyForTenant(ctx, key)`.
+    
+    **Verification (Go only):** If any repository uses inline DB access (not via struct field), hardcoded Redis keys, or global DB singletons → agent must refactor before gate passes.
 
     ## ⛔ FILE SIZE ENFORCEMENT (MANDATORY)
     See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md)
