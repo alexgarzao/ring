@@ -331,3 +331,4 @@ For agents loading standards via WebFetch:
 | testing-integration.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-integration.md` |
 | testing-chaos.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-chaos.md` |
 | testing-benchmark.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-benchmark.md` |
+| migration-safety.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/migration-safety.md` |
