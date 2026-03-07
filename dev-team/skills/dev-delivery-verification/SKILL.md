@@ -554,7 +554,120 @@ fi
 - oasdiff not installed → **WARNING** (does not block, flags for installation)
 - Non-breaking changes (new endpoints, new optional fields) → **PASS**
 
-**Verdict integration:** ALL six checks (A, B, C, D, E, F) must pass for overall PASS. Any FAIL makes the overall verdict PARTIAL at best. SKIP checks do not affect the verdict. WARNING checks are informational.
+#### G. Multi-Tenant Dual-Mode Verification (Go backend only)
+**Reference:** [multi-tenant.md](../../docs/standards/golang/multi-tenant.md), [dev-multi-tenant SKILL.md § Sub-Package Import Reference](../dev-multi-tenant/SKILL.md)
+
+This check only applies to Go backend services. It verifies that all resource access uses lib-commons v3 resolvers (which work transparently in both single-tenant and multi-tenant mode).
+
+```bash
+# Step G.1: Detect if this is a Go project
+if [ ! -f "go.mod" ]; then
+  echo "MT_DUALMODE: ⚠️ SKIP — not a Go project"
+  exit 0
+fi
+
+blocking=0
+
+# Step G.2: Check PostgreSQL — must use resolvers, not direct GetDB()
+pg_direct=$(grep -rn "\.GetDB()" internal/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go" \
+  | grep -v "// deprecated\|// legacy\|// TODO" \
+  | grep -v "core\.Resolve\|tmpostgres\|Manager")
+if [ -n "$pg_direct" ]; then
+  echo "⛔ BLOCKING: Direct .GetDB() calls found — must use core.ResolvePostgres(ctx, r.connection)"
+  echo "$pg_direct"
+  blocking=1
+fi
+
+# Step G.3: Check MongoDB — must use resolvers
+mongo_direct=$(grep -rn "\.GetDatabase()\|\.Database()" internal/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go" \
+  | grep -v "core\.Resolve\|tmmongo\|Manager")
+if [ -n "$mongo_direct" ]; then
+  echo "⛔ BLOCKING: Direct MongoDB access found — must use core.ResolveMongo(ctx, r.mongoConn)"
+  echo "$mongo_direct"
+  blocking=1
+fi
+
+# Step G.4: Check Redis/Valkey — keys must use GetKeyFromContext
+redis_hardcoded=$(grep -rn '\.Set\(\s*"[^"]*"\s*,' internal/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go" \
+  | grep -v "GetKeyFromContext\|valkey\.")
+redis_hardcoded2=$(grep -rn '\.Get\(\s*"[^"]*"\s*[,)]' internal/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go" \
+  | grep -v "GetKeyFromContext\|valkey\.\|Getenv\|flag\.")
+if [ -n "$redis_hardcoded" ] || [ -n "$redis_hardcoded2" ]; then
+  echo "⚠️ WARNING: Possible hardcoded Redis keys — verify valkey.GetKeyFromContext is used"
+  echo "$redis_hardcoded"
+  echo "$redis_hardcoded2"
+fi
+
+# Step G.5: Check S3 — keys must use GetObjectStorageKeyForTenant
+s3_hardcoded=$(grep -rn 'PutObject\|GetObject\|DeleteObject' internal/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go" \
+  | grep -v "GetObjectStorageKeyForTenant\|s3\.")
+if [ -n "$s3_hardcoded" ]; then
+  echo "⚠️ WARNING: Possible hardcoded S3 keys — verify s3.GetObjectStorageKeyForTenant is used"
+  echo "$s3_hardcoded"
+fi
+
+# Step G.6: Check RabbitMQ — must use tmrabbitmq.Manager
+if grep -rq "rabbitmq\|amqp" go.mod 2>/dev/null; then
+  rmq_direct=$(grep -rn "amqp\.Dial\|channel\.Publish\|channel\.Consume" internal/ pkg/ --include="*.go" 2>/dev/null \
+    | grep -v "_test.go" \
+    | grep -v "tmrabbitmq\|Manager")
+  if [ -n "$rmq_direct" ]; then
+    echo "⛔ BLOCKING: Direct RabbitMQ access found — must use tmrabbitmq.Manager"
+    echo "$rmq_direct"
+    blocking=1
+  fi
+fi
+
+# Step G.7: Check route registration — tenant middleware must use WhenEnabled
+if grep -rq "TenantMiddleware\|MultiPoolMiddleware" internal/ pkg/ --include="*.go" 2>/dev/null; then
+  global_use=$(grep -rn "app\.Use.*[Tt]enant\|app\.Use.*[Mm]ulti[Pp]ool" internal/ pkg/ --include="*.go" 2>/dev/null \
+    | grep -v "_test.go")
+  if [ -n "$global_use" ]; then
+    echo "⛔ BLOCKING: Tenant middleware registered globally (app.Use) — must use per-route WhenEnabled()"
+    echo "$global_use"
+    blocking=1
+  fi
+fi
+
+# Step G.8: Check context propagation — all exported methods must accept ctx
+no_ctx=$(grep -rn "^func (r \*.*) [A-Z].*(" internal/adapters/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go" \
+  | grep -v "ctx context\.Context\|Close()\|String()\|Error()")
+if [ -n "$no_ctx" ]; then
+  echo "⚠️ WARNING: Exported methods without ctx parameter found — needed for MT resolution"
+  echo "$no_ctx" | head -10
+fi
+
+# Step G.9: Check global DB singletons
+global_db=$(grep -rn "^var.*sql\.DB\|^var.*pgx\.Pool\|^var.*mongo\.Client\|^var.*redis\.Client" internal/ pkg/ --include="*.go" 2>/dev/null \
+  | grep -v "_test.go")
+if [ -n "$global_db" ]; then
+  echo "⛔ BLOCKING: Global database singletons found — must use struct fields with constructor injection"
+  echo "$global_db"
+  blocking=1
+fi
+
+if [ "$blocking" -eq 1 ]; then
+  echo "MT_DUALMODE: ⛔ FAIL — return to Gate 0 with multi-tenant.md"
+else
+  echo "MT_DUALMODE: ✅ PASS — all resources use dual-mode resolvers"
+fi
+```
+
+- Direct `.GetDB()` or `.GetDatabase()` calls → **FAIL** (must use resolvers)
+- Direct RabbitMQ channel operations → **FAIL** (must use tmrabbitmq.Manager)
+- Global tenant middleware (app.Use) → **FAIL** (must use per-route WhenEnabled)
+- Global DB singletons → **FAIL** (must use struct fields)
+- Hardcoded Redis/S3 keys → **WARNING** (may be false positive, verify manually)
+- Missing ctx on exported methods → **WARNING** (informational)
+- Not a Go project → **SKIP**
+
+**Verdict integration:** ALL seven checks (A, B, C, D, E, F, G) must pass for overall PASS. Any FAIL makes the overall verdict PARTIAL at best. SKIP checks do not affect the verdict. WARNING checks are informational.
 
 ### Step 4: Dead Code Detection
 
