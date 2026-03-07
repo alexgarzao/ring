@@ -260,6 +260,69 @@ For each new dependency added:
   [ ] Is the import used (not just side-effect import)?
 ```
 
+### Step 3.5: Automated Standards Checks (MANDATORY)
+
+**These checks run on ALL files created/modified by Gate 0. Any failure = PARTIAL verdict.**
+
+#### A. File Size Verification
+See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md)
+
+**Go:**
+```bash
+find . -name "*.go" \
+  ! -path "*/mocks*" ! -path "*/generated/*" ! -path "*/gen/*" \
+  ! -name "*.pb.go" ! -name "*.gen.go" \
+  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
+```
+
+**TypeScript:**
+```bash
+find . \( -name "*.ts" -o -name "*.tsx" \) \
+  ! -path "*/node_modules/*" ! -path "*/dist/*" ! -path "*/build/*" \
+  ! -path "*/generated/*" ! -path "*/__generated__/*" ! -path "*/__mocks__/*" \
+  ! -name "*.d.ts" ! -name "*.gen.ts" ! -name "*.generated.ts" ! -name "*.mock.ts" \
+  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
+```
+
+- Any modified file > 500 lines → **FAIL**
+- Any modified file > 300 lines → **PARTIAL** (return to Gate 0 with split instructions)
+
+#### B. License Header Verification
+**Reference:** core.md → License Headers (MANDATORY)
+
+```bash
+# Check all files created/modified by Gate 0 for license headers
+for f in $files_changed; do
+  if echo "$f" | grep -qE '\.(go|ts|tsx)$'; then
+    if ! head -5 "$f" | grep -qiE 'copyright|licensed|spdx'; then
+      echo "MISSING LICENSE HEADER: $f"
+    fi
+  fi
+done
+```
+
+- Any source file missing license header → **PARTIAL** (return to Gate 0: "Add license header per core.md")
+
+#### C. Linting Verification
+**Reference:** quality.md → Linting (MANDATORY — 14 linters)
+
+```bash
+# Go: Run golangci-lint if config exists
+if [ -f .golangci.yml ] || [ -f .golangci.yaml ]; then
+  golangci-lint run ./...
+fi
+
+# TypeScript: Run eslint if config exists
+if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f eslint.config.js ]; then
+  npx eslint . --ext .ts,.tsx
+fi
+```
+
+- Lint failures → **PARTIAL** (return to Gate 0: "Fix lint issues: [errors]")
+- Missing .golangci.yml in a Go project → flag as warning (quality.md requires it)
+
+**Verdict integration:** ALL three checks (A, B, C) must pass for overall PASS. Any failure makes the overall verdict PARTIAL at best.
+
 ### Step 4: Dead Code Detection
 
 Identify any code created by Gate 0 that is not reachable:
@@ -332,6 +395,9 @@ Build and output the full matrix — one row per requirement extracted in Step 1
 PASS: ALL requirements have status DELIVERED
       AND dead code count = 0
       AND all integration checks pass
+      AND no modified file exceeds 300 lines (file-size-enforcement.md)
+      AND all modified source files have license headers (core.md)
+      AND linting passes (quality.md)
 
 PARTIAL: Some requirements DELIVERED, some NOT DELIVERED
          → List specific gaps with fix instructions

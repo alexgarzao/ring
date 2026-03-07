@@ -267,11 +267,11 @@ Task:
     ## Project Standards
     Read and follow: [project_rules_path]
 
-    ## Ring Standards Reference
-    For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-    For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    ## Ring Standards Reference (Modular)
+    Go modules: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/{module}.md`
+    For TS: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
+    **Go minimum for tests:** WebFetch `quality.md` → Testing section for test conventions.
     Multi-Tenant: Handled post-cycle by ring:dev-multi-tenant — implement single-tenant in this gate.
-    Design for adaptability: use `r.connection` as a struct field so ring:dev-multi-tenant can replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
 
     ## Frontend TDD Policy (React/Next.js only)
     If the component is purely visual/presentational (layout, styling, animations,
@@ -374,18 +374,48 @@ Task:
     ## Project Standards
     Read and follow: [project_rules_path]
 
-    ## Ring Standards Reference
-    For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-    For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    ## Ring Standards Reference (Modular — Load by Task Type)
+    
+    **⛔ MANDATORY: WebFetch the MODULAR standards files below, NOT the monolithic golang.md.**
+    The standards are split into focused modules. Load the ones relevant to your task type.
+    
+    ### Go — Module Loading Guide
+    Base URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/`
+    
+    | Task Type | REQUIRED Modules to WebFetch |
+    |-----------|----------------------------|
+    | New feature (full) | `core.md` → `bootstrap.md` → `domain.md` → `quality.md` → `api-patterns.md` |
+    | API endpoint | `core.md` → `api-patterns.md` → `domain.md` → `quality.md` |
+    | Auth / Security | `core.md` → `security.md` |
+    | Database work | `core.md` → `domain.md` → `domain-modeling.md` |
+    | Messaging / RabbitMQ | `core.md` → `messaging.md` |
+    | Infra / Bootstrap | `core.md` → `bootstrap.md` |
+    | Any task | `core.md` is ALWAYS required (lib-commons, license headers, dependency management) |
+    
+    ### TypeScript
+    URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
+    
     Multi-Tenant: Handled post-cycle by ring:dev-multi-tenant — implement single-tenant in this gate.
     Design for adaptability: use `r.connection` as a struct field so ring:dev-multi-tenant can replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
 
     ## ⛔ CRITICAL: all Ring Standards Apply (no DEFERRAL)
-    See Ring Standards for mandatory requirements:
+    
+    **You MUST check ALL sections from the modules you loaded.** Not just telemetry — ALL of them.
+    See Ring Standards for mandatory requirements including (but not limited to):
+    - lib-commons usage (HARD GATE — no duplicate utils/helpers)
+    - License headers on all source files
     - Structured JSON logging with trace_id correlation
     - OpenTelemetry instrumentation (spans in every function)
-    - Error handling (no panic, wrap with context)
+    - Error handling (no panic, wrap with context, sentinel errors)
     - Context propagation
+    - Input validation (validator v10)
+    - SQL safety (parameterized queries)
+    - Secret redaction in logs
+    - HTTP status code consistency (201 create, 200 update)
+    - Handler constructor pattern (DI via constructor)
+    - File organization (≤300 lines per file)
+    - Function design (single responsibility, max 20-30 lines)
+    - Database naming (snake_case)
 
     **⛔ HARD GATE:** If you output "DEFERRED" for any Ring Standard → Implementation is INCOMPLETE.
 
@@ -416,22 +446,26 @@ Task:
 
     ### Language-Specific Patterns (MANDATORY)
 
-    **⛔ HARD GATE: Agent MUST WebFetch standards file BEFORE writing any code.**
-
-    | Language | Standards File | REQUIRED Sections to WebFetch |
-    |----------|----------------|-------------------------------|
-    | **Go** | `golang.md` | "Telemetry & Observability (MANDATORY)", "Child Spans", "Context Propagation", "Anti-Patterns" |
-    | **TypeScript** | `typescript.md` | "Observability", "Telemetry Patterns", "Context Propagation", "Anti-Patterns" |
+    **⛔ HARD GATE: Agent MUST WebFetch modular standards files BEFORE writing any code.**
+    
+    Use the Module Loading Guide above to determine which modules to load.
+    **Minimum for ANY Go task:** `core.md` (lib-commons, license headers, deps, MongoDB patterns)
+    
+    | Language | Standards Modules | REQUIRED Sections to WebFetch |
+    |----------|-------------------|-------------------------------|
+    | **Go** | See Module Loading Guide above | ALL sections from loaded modules (use `standards-coverage-table.md` → `ring:backend-engineer-golang` section index) |
+    | **TypeScript** | `typescript.md` | ALL 15 sections from `standards-coverage-table.md` → `ring:backend-engineer-typescript` |
     | **All** | N/A (post-cycle ring:dev-multi-tenant) | Multi-tenant adaptation happens after dev-cycle completes |
 
     **⛔ NON-NEGOTIABLE: Agent MUST implement EXACTLY the patterns from standards. no deviations. no shortcuts.**
 
     | Requirement | Enforcement |
     |-------------|-------------|
-    | WebFetch standards file | MANDATORY before implementation |
+    | WebFetch modular standards files | MANDATORY before implementation |
     | Follow exact patterns | REQUIRED - copy structure from standards |
-    | Output Standards Coverage Table | REQUIRED - with file:line evidence |
+    | Output Standards Coverage Table | REQUIRED - with file:line evidence for ALL loaded sections |
     | 90%+ instrumentation coverage | HARD GATE - implementation REJECTED if below |
+    | All loaded sections ✅ or N/A | HARD GATE - any ❌ = REJECTED |
 
     ### ⛔ FORBIDDEN Patterns (HARD BLOCK)
     
@@ -473,11 +507,31 @@ Task:
     [paste actual test pass output here]
     ```
 
-    ### Standards Compliance
+    ### Standards Coverage Table (MANDATORY)
+    
+    **Standards Modules Loaded:** [list modules WebFetched]
+    **Total Sections Checked:** [N]
+    
+    | # | Section (from standards) | Status | Evidence |
+    |---|------------------------|--------|----------|
+    | 1 | [section name] | ✅/⚠️/❌/N/A | file:line or reason |
+    | ... | ... | ... | ... |
+    
+    **Completeness:** [N] sections checked / [N] total = ✅ Complete
+    
+    ⛔ This table is MANDATORY. Missing table = Implementation INCOMPLETE.
+    ⛔ Any ❌ = Implementation REJECTED. Fix before proceeding.
+
+    ### Standards Compliance Summary
+    - lib-commons Usage: ✅/❌
+    - License Headers: ✅/❌
     - Structured Logging: ✅/❌
     - OpenTelemetry Spans: ✅/❌
     - Error Handling: ✅/❌
     - Context Propagation: ✅/❌
+    - Input Validation: ✅/❌/N/A
+    - SQL Safety: ✅/❌/N/A
+    - File Size (≤300 lines): ✅/❌
 
     ### Commit
     **SHA:** [commit hash after implementation]
@@ -497,16 +551,42 @@ if pass_output is missing or does not contain "PASS":
   → STOP: "TDD-GREEN incomplete - test not passing"
   → Re-dispatch agent with error details
 
-if any standards compliance is ❌:
+if Standards Coverage Table is missing:
+  → STOP: "Standards Coverage Table not provided - implementation INCOMPLETE"
+  → Re-dispatch agent: "You MUST output a Standards Coverage Table with one row per section from the modules you loaded. See standards-coverage-table.md for format."
+
+if any section in Standards Coverage Table is ❌:
+  → STOP: "Standards not met - [list ❌ sections with evidence]"
+  → Re-dispatch agent to fix specific sections
+
+if any standards compliance summary is ❌:
   → STOP: "Standards not met - [list failing standards]"
   → Re-dispatch agent to fix
 
-if pass_output contains "PASS" and all standards ✅:
+if pass_output contains "PASS" and all standards ✅ and Standards Coverage Table complete:
+  → Run linting verification (R4 — quality.md mandates 14 linters):
+    Go: if .golangci.yml exists, run: golangci-lint run ./...
+         if .golangci.yml does not exist, flag as warning (quality.md requires it)
+    TypeScript: if eslint config exists, run: npx eslint . --ext .ts,.tsx
+  
+  if linting fails:
+    → Re-dispatch agent: "Linting failed. Fix all lint issues before proceeding. Output: [lint errors]"
+  
+  → Run license header check (R5 — core.md License Headers MANDATORY):
+    Go: check all created/modified .go files for license header
+         grep -L "Copyright\|Licensed\|SPDX" [files_created + files_modified] | grep "\.go$"
+    TypeScript: check all created/modified .ts files for license header
+
+  if any file missing license header:
+    → Re-dispatch agent: "Missing license headers in: [file list]. Add license headers per core.md → License Headers (MANDATORY)."
+
   → implementation_state.tdd_green = {
       status: "completed",
       implementation_files: [extracted files],
       pass_output: [extracted output],
-      commit_sha: [extracted SHA]
+      commit_sha: [extracted SHA],
+      linting: "PASS",
+      license_headers: "PASS"
     }
   → Proceed to Step 8
 ```
