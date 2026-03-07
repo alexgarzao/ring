@@ -293,8 +293,9 @@ find . \( -name "*.ts" -o -name "*.tsx" \) \
   -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
 ```
 
-- Any modified file > 500 lines → **FAIL**
+- Any modified file > 500 lines → **FAIL** (hard block, return to Gate 0 with split instructions)
 - Any modified file > 300 lines → **PARTIAL** (return to Gate 0 with split instructions)
+- **This check applies to ALL files in the project, not just files changed by Gate 0.** Existing oversized files are flagged but do not block unless they were modified by Gate 0.
 
 #### B. License Header Verification
 **Reference:** core.md → License Headers (MANDATORY)
