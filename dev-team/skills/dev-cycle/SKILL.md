@@ -1865,7 +1865,11 @@ MUST invoke the ring:dev-implementation skill via the Skill tool; it handles all
 
 See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds, verification commands, split strategies, and agent instructions.
 
-**Summary:** No source file may exceed 300 lines (500 = hard block). Implementation agents MUST split proactively. This check applies at Gate 0 (implementation), Gate 0.5 (delivery verification), and Gate 8 (review).
+**Summary:** No source file may exceed 300 lines (>300 = loop back to agent; >500 = hard block). Implementation agents MUST split proactively. Enforcement points:
+
+- **Gate 0:** Implementation agent receives file-size instructions; orchestrator runs verification command after agent completes and loops back if any file > 300 lines.
+- **Gate 0.5:** Delivery verification skill MUST run the file-size verification command from the shared pattern and FAIL if any non-exempt file > 300 lines.
+- **Gate 8:** Code reviewers MUST flag any file > 300 lines as a MEDIUM+ issue (blocking).
 
 ### Step 2.1: Prepare Input for ring:dev-implementation Skill
 

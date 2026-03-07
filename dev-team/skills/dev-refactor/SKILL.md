@@ -322,7 +322,7 @@ Write tool:
 
 See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds and agent instructions.
 
-**All analysis agents MUST flag files exceeding 300 lines as FINDING-XXX.** Files > 500 lines are CRITICAL severity. Files > 1000 lines are CRITICAL with mandatory decomposition plan included in the finding. Each oversized file = one FINDING-XXX (not grouped).
+**All analysis agents MUST flag files exceeding 300 lines as ISSUE-XXX** (converted to FINDING-XXX during Step 4.1 mapping, like all other agent issues). Files > 500 lines are CRITICAL severity. Files > 1000 lines are CRITICAL with mandatory decomposition plan included in the finding. Each oversized file = one ISSUE-XXX (not grouped). **Test files are included** — large test files are equally hard to maintain.
 
 ### ⛔ HARD GATE: Verify codebase-report.md Exists
 
@@ -380,7 +380,7 @@ Task tool 1:
     4. any library not in standards that serves same purpose = ISSUE-XXX
 
     ⛔ FILE SIZE ENFORCEMENT (MANDATORY):
-    - Any source file > 300 lines (excluding tests, auto-generated) MUST be flagged as ISSUE-XXX
+    - Any source file > 300 lines (including test files, excluding auto-generated: *.pb.go, */generated/*, */mocks*) MUST be flagged as ISSUE-XXX
     - 301-500 lines: severity HIGH
     - > 500 lines: severity CRITICAL
     - > 1000 lines: severity CRITICAL with explicit decomposition plan
@@ -507,7 +507,7 @@ Task tool 1:
     4. any library not in standards that serves same purpose = ISSUE-XXX
 
     ⛔ FILE SIZE ENFORCEMENT (MANDATORY):
-    - Any source file > 300 lines (excluding tests, auto-generated) MUST be flagged as ISSUE-XXX
+    - Any source file > 300 lines (including test files, excluding auto-generated: *.d.ts, *.gen.ts, *.generated.ts, */generated/*, */__generated__/*) MUST be flagged as ISSUE-XXX
     - 301-500 lines: severity HIGH
     - > 500 lines: severity CRITICAL
     - > 1000 lines: severity CRITICAL with explicit decomposition plan
