@@ -271,8 +271,8 @@ Task:
     Go modules: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/{module}.md`
     For TS: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
     **Go minimum for tests:** WebFetch `quality.md` → Testing section for test conventions.
-    Multi-Tenant: Handled post-cycle by ring:dev-multi-tenant — implement single-tenant in this gate.
-    Design for adaptability (Go only): use `r.connection` as a struct field, accept `ctx context.Context` in all methods, no global DB singletons. See TDD-GREEN prompt for full Multi-Tenant Adaptability section.
+    Multi-Tenant: Implement DUAL-MODE from the start (Go only). Use resolvers for all resources — they work transparently in both single-tenant and multi-tenant mode. See TDD-GREEN prompt for full Dual-Mode Implementation section and the sub-package import table.
+    WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md` for patterns.
 
     ## Frontend TDD Policy (React/Next.js only)
     If the component is purely visual/presentational (layout, styling, animations,
@@ -396,21 +396,67 @@ Task:
     ### TypeScript
     URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
     
-    Multi-Tenant: Handled post-cycle by ring:dev-multi-tenant — implement single-tenant in this gate.
+    Multi-Tenant: Implement DUAL-MODE from the start. Use lib-commons v3 resolvers for ALL resources.
+    WebFetch: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md`
     
-    ## ⛔ Multi-Tenant Adaptability (Go backend only — skip for TypeScript/Frontend)
+    ## ⛔ Multi-Tenant Dual-Mode Implementation (Go backend only — skip for TypeScript/Frontend)
     
     **Applies only when `language == "go"`.** TypeScript and frontend projects have different patterns.
     
-    Even though multi-tenant is implemented post-cycle by ring:dev-multi-tenant, Go code must be structured for easy adaptation:
+    All Go backend code must work in BOTH modes from the start. The lib-commons v3 resolvers handle both transparently — in single-tenant mode they return the default connection, in multi-tenant mode they resolve per-tenant. There is NO post-cycle adaptation step.
     
-    1. **Database connection as struct field:** Repositories must store the connection as a struct field (`r.connection`) — not inline `db.GetDB()` calls. This allows ring:dev-multi-tenant to replace `r.connection.GetDB()` with `core.ResolvePostgres(ctx, r.connection)` without restructuring.
-    2. **Context propagation:** All service/repository methods must accept `ctx context.Context` as first parameter. Multi-tenant resolves connections from context.
-    3. **No global DB singletons:** Database connections must be injected via constructor, not accessed from package-level variables. Global state blocks per-tenant connection routing.
-    4. **Redis keys as parameters:** Redis operations must receive the key as a parameter (not hardcode it). Multi-tenant prefixes keys with `valkey.GetKeyFromContext(ctx, key)`.
-    5. **S3 keys as parameters:** S3 operations must receive the object key as a parameter. Multi-tenant prefixes with `s3.GetObjectStorageKeyForTenant(ctx, key)`.
+    ### Sub-Package Import Reference
     
-    **Verification (Go only):** If any repository uses inline DB access (not via struct field), hardcoded Redis keys, or global DB singletons → agent must refactor before gate passes.
+    | Alias | Import Path | Purpose |
+    |-------|-------------|---------|
+    | `core` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/core` | Resolvers, context helpers, types |
+    | `tmmiddleware` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware` | TenantMiddleware, WhenEnabled |
+    | `tmpostgres` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/postgres` | PostgresManager |
+    | `tmmongo` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/mongo` | MongoManager |
+    | `tmrabbitmq` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/rabbitmq` | RabbitMQ Manager (vhost isolation) |
+    | `valkey` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/valkey` | Redis key prefixing |
+    | `s3` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/s3` | S3 key prefixing |
+    
+    ### Resource Resolver Rules (ALL resources the service uses)
+    
+    | Resource | Single-Tenant Pattern (WRONG) | Dual-Mode Pattern (CORRECT) |
+    |----------|-------------------------------|------------------------------|
+    | **PostgreSQL** | `r.connection.GetDB()` | `core.ResolvePostgres(ctx, r.connection)` |
+    | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `core.ResolveModuleDB(ctx, r.connection, "module")` |
+    | **MongoDB** | `r.mongoConn.GetDatabase()` | `core.ResolveMongo(ctx, r.mongoConn)` |
+    | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyFromContext(ctx, "key"), val)` |
+    | **S3** | `s3.PutObject("path/obj")` | `s3.PutObject(s3.GetObjectStorageKeyForTenant(ctx, "path/obj"))` |
+    | **RabbitMQ** | `channel.Publish(exchange, ...)` | Use `tmrabbitmq.Manager` for vhost isolation + set `X-Tenant-ID` header |
+    
+    ### Route Registration with WhenEnabled
+    
+    Routes that need tenant context must use `WhenEnabled` — it's a no-op in single-tenant mode:
+    
+    ```go
+    // Auth MUST run before tenant middleware (per-route, not global)
+    app.Get("/accounts/:id",
+        authMiddleware.Handle,                    // Always runs
+        multiTenantMiddleware.WhenEnabled(),      // No-op when MULTI_TENANT_ENABLED=false
+        handler.GetAccount,
+    )
+    ```
+    
+    ### Backward Compatibility Rule
+    
+    The service must work correctly with ZERO `MULTI_TENANT_*` environment variables set. This is the single-tenant default. The resolvers handle this transparently — when `MULTI_TENANT_ENABLED` is not set or is `false`, they return the default connection.
+    
+    ### Verification (Go only)
+    
+    The agent must verify before completing Gate 0:
+    - No direct `r.connection.GetDB()` or `r.mongoConn.GetDatabase()` — must use resolvers
+    - No hardcoded Redis keys — must use `valkey.GetKeyFromContext`
+    - No hardcoded S3 keys — must use `s3.GetObjectStorageKeyForTenant`
+    - No global DB singletons — connections injected via constructor
+    - All methods accept `ctx context.Context` as first parameter
+    - Routes use `WhenEnabled()` for tenant middleware (not global `app.Use`)
+    - RabbitMQ uses `tmrabbitmq.Manager` (not direct channel operations)
+    
+    If any check fails → refactor before gate passes. Do NOT defer to a post-cycle step.
 
     ## ⛔ FILE SIZE ENFORCEMENT (MANDATORY)
     See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md)

@@ -261,6 +261,41 @@ Task:
     | Business logic | zero, negative, overflow, boundary | 3+ |
     | Error handling | timeout, connection failure, retry | 2+ |
 
+    ### Multi-Tenant Dual-Mode Testing (Go backend only)
+
+    Every repository/service test that accesses a resource (PostgreSQL, MongoDB, Redis, S3, RabbitMQ) must verify BOTH modes. The resolvers in lib-commons v3 work transparently — the same code path handles both modes. Tests verify this contract.
+
+    **Required pattern:** Add dual-mode sub-tests for any test that touches a resource:
+
+    ```go
+    func TestCreateAccount(t *testing.T) {
+        modes := []struct {
+            name         string
+            multiTenant  string
+        }{
+            {"single-tenant", "false"},
+            {"multi-tenant", "true"},
+        }
+        for _, mode := range modes {
+            t.Run(mode.name, func(t *testing.T) {
+                t.Setenv("MULTI_TENANT_ENABLED", mode.multiTenant)
+                // ... same test logic, same assertions
+                // Resolvers handle the connection routing transparently
+            })
+        }
+    }
+    ```
+
+    **What to verify in multi-tenant mode:**
+    - Context contains tenant ID → resolver returns tenant-specific connection
+    - Context WITHOUT tenant ID → resolver returns error (not default connection)
+    - Backward compat: no MULTI_TENANT_* env vars → works as single-tenant
+
+    **What does NOT need dual-mode tests:**
+    - Pure business logic (no resource access)
+    - Utility/helper functions
+    - Frontend/TypeScript tests
+
     ## Required Output Format
 
     ### Test Files Created
