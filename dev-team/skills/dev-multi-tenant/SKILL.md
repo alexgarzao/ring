@@ -49,7 +49,8 @@ input_schema:
       default: "FULL"
     - name: files_changed
       type: array
-      description: "Files changed during dev-cycle (only in SCOPED mode). Used to limit Gate 5 scope."
+      items: string
+      description: "File paths changed during dev-cycle (only in SCOPED mode). Used to limit Gate 5 scope."
       required: false
     - name: multi_tenant_exists
       type: boolean
@@ -61,11 +62,18 @@ input_schema:
       required: false
     - name: detected_dependencies
       type: object
-      description: "Stack detection from dev-cycle (postgresql, mongodb, redis, rabbitmq, s3)."
+      properties:
+        postgresql: boolean
+        mongodb: boolean
+        redis: boolean
+        rabbitmq: boolean
+        s3: boolean
+      description: "Stack detection from dev-cycle. Each key indicates whether that technology was detected."
       required: false
     - name: skip_gates
       type: array
-      description: "Gates to skip (set by dev-cycle based on execution_mode)."
+      items: string
+      description: "Gate identifiers to skip (e.g., '0', '1.5', '5.5'). Set by dev-cycle based on execution_mode."
       required: false
 
 output_schema:
@@ -164,7 +172,7 @@ HARD GATE: A client without circuit breaker can cascade failures across all tena
 
 ### MANDATORY: Sub-Package Import Reference
 
-Agents MUST use these exact import paths. Include this table in every gate dispatch to prevent hallucinated or outdated imports.
+Agents must use these exact import paths. Include this table in every gate dispatch to prevent hallucinated or outdated imports.
 
 | Alias | Import Path | Purpose |
 |-------|-------------|---------|
@@ -179,7 +187,7 @@ Agents MUST use these exact import paths. Include this table in every gate dispa
 | `s3` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/s3` | S3 key prefixing (GetObjectStorageKeyForTenant) |
 | `secretsmanager` | `github.com/LerianStudio/lib-commons/v3/commons/secretsmanager` | M2M credential retrieval (plugin only) |
 
-**HARD GATE:** Agent MUST NOT use v2 import paths or invent sub-package paths. If WebFetch truncates, this table is the authoritative reference.
+**⛔ HARD GATE:** Agent must not use v2 import paths or invent sub-package paths. If WebFetch truncates, this table is the authoritative reference.
 
 ### MANDATORY: Isolation Modes
 
@@ -190,9 +198,9 @@ The Tenant Manager determines the isolation mode per tenant. Agents MUST handle 
 | `isolated` (default) | Separate DB per tenant | Default `public` | None | Strong isolation, recommended |
 | `schema` | Shared DB | Schema per tenant | `options=-csearch_path="{schema}"` | Cost optimization |
 
-The agent does NOT choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `core.ResolvePostgres`/`core.ResolveModuleDB` which handles both modes transparently.
+The agent does not choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `core.ResolvePostgres`/`core.ResolveModuleDB` which handles both modes transparently.
 
-### MANDATORY: ConnectionSettings Override
+### ConnectionSettings Override
 
 Connection managers support per-tenant pool overrides via `TenantConfig.Databases[module].ConnectionSettings`:
 - `MaxOpenConns` and `MaxIdleConns` per tenant
@@ -200,7 +208,7 @@ Connection managers support per-tenant pool overrides via `TenantConfig.Database
 - When nil (older tenant associations), global defaults apply
 - Managers call `ApplyConnectionSettings()` automatically after resolving a connection
 
-Agents MUST NOT hardcode pool sizes — the Tenant Manager controls per-tenant pool tuning.
+Agents must not hardcode pool sizes — the Tenant Manager controls per-tenant pool tuning.
 
 ### MANDATORY: Agent Instruction (include in EVERY gate dispatch)
 
@@ -282,7 +290,12 @@ VALIDATE input:
    - multi_tenant_compliant MUST be true
    - skip_gates MUST include ["0", "1.5", "2", "3", "4", "10", "11"]
 3. If execution_mode == "FULL":
-   - All gates execute (skip_gates may only contain ["10", "11"])
+   - Core gates always execute (0, 1, 1.5, 2, 3, 4, 5, 7, 8, 9)
+   - Conditional gates may be in skip_gates based on stack detection:
+     - "5.5" may be skipped if service is NOT a plugin
+     - "6" may be skipped if RabbitMQ was NOT detected
+     - "10", "11" may be skipped when invoked from dev-cycle
+   - skip_gates MUST NOT contain core gates (0-5, 7-9)
 4. detected_dependencies (if provided) is used to pre-populate Gate 0 stack detection
    — still MUST verify with grep commands (trust but verify)
 
