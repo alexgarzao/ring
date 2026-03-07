@@ -36,6 +36,46 @@ sequence:
 related:
   complementary: [ring:dev-cycle, ring:dev-implementation, ring:dev-devops, ring:dev-unit-testing, ring:requesting-code-review, ring:dev-validation]
 
+input_schema:
+  description: |
+    When invoked from ring:dev-cycle (post-cycle step), receives structured handoff context.
+    When invoked standalone (direct user request), these fields are auto-detected in Gate 0.
+  fields:
+    - name: execution_mode
+      type: string
+      enum: ["FULL", "SCOPED"]
+      description: "FULL = complete 12-gate cycle. SCOPED = only adapt new files (when existing MT is compliant)."
+      required: false
+      default: "FULL"
+    - name: files_changed
+      type: array
+      items: string
+      description: "File paths changed during dev-cycle (only in SCOPED mode). Used to limit Gate 5 scope."
+      required: false
+    - name: multi_tenant_exists
+      type: boolean
+      description: "Whether multi-tenant code was detected by dev-cycle Step 1.5."
+      required: false
+    - name: multi_tenant_compliant
+      type: boolean
+      description: "Whether existing MT code passed compliance audit in dev-cycle Step 1.5."
+      required: false
+    - name: detected_dependencies
+      type: object
+      properties:
+        postgresql: boolean
+        mongodb: boolean
+        redis: boolean
+        rabbitmq: boolean
+        s3: boolean
+      description: "Stack detection from dev-cycle. Each key indicates whether that technology was detected."
+      required: false
+    - name: skip_gates
+      type: array
+      items: string
+      description: "Gate identifiers to skip (e.g., '0', '1.5', '5.5'). Set by dev-cycle based on execution_mode."
+      required: false
+
 output_schema:
   format: markdown
   required_sections:
@@ -130,11 +170,53 @@ The Tenant Manager HTTP client MUST enable `WithCircuitBreaker`. MUST NOT create
 
 HARD GATE: A client without circuit breaker can cascade failures across all tenants.
 
+### MANDATORY: Sub-Package Import Reference
+
+Agents must use these exact import paths. Include this table in every gate dispatch to prevent hallucinated or outdated imports.
+
+| Alias | Import Path | Purpose |
+|-------|-------------|---------|
+| `client` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/client` | Tenant Manager HTTP client with circuit breaker |
+| `core` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/core` | Context helpers, resolvers, errors, types |
+| `tmmiddleware` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/middleware` | TenantMiddleware, MultiPoolMiddleware, ConsumerTrigger |
+| `tmpostgres` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/postgres` | PostgresManager (per-tenant PG pools) |
+| `tmmongo` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/mongo` | MongoManager (per-tenant Mongo pools) |
+| `tmrabbitmq` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/rabbitmq` | RabbitMQ Manager (per-tenant vhosts) |
+| `tmconsumer` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/consumer` | MultiTenantConsumer (lazy mode) |
+| `valkey` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/valkey` | Redis key prefixing (GetKeyFromContext) |
+| `s3` | `github.com/LerianStudio/lib-commons/v3/commons/tenant-manager/s3` | S3 key prefixing (GetObjectStorageKeyForTenant) |
+| `secretsmanager` | `github.com/LerianStudio/lib-commons/v3/commons/secretsmanager` | M2M credential retrieval (plugin only) |
+
+**⛔ HARD GATE:** Agent must not use v2 import paths or invent sub-package paths. If WebFetch truncates, this table is the authoritative reference.
+
+### MANDATORY: Isolation Modes
+
+The Tenant Manager determines the isolation mode per tenant. Agents MUST handle both:
+
+| Mode | Database | Schema | Connection String Modifier | When |
+|------|----------|--------|---------------------------|------|
+| `isolated` (default) | Separate DB per tenant | Default `public` | None | Strong isolation, recommended |
+| `schema` | Shared DB | Schema per tenant | `options=-csearch_path="{schema}"` | Cost optimization |
+
+The agent does not choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `core.ResolvePostgres`/`core.ResolveModuleDB` which handles both modes transparently.
+
+### ConnectionSettings Override
+
+Connection managers support per-tenant pool overrides via `TenantConfig.Databases[module].ConnectionSettings`:
+- `MaxOpenConns` and `MaxIdleConns` per tenant
+- When present, these override global defaults on `PostgresManager`/`MongoManager`
+- When nil (older tenant associations), global defaults apply
+- Managers call `ApplyConnectionSettings()` automatically after resolving a connection
+
+Agents must not hardcode pool sizes — the Tenant Manager controls per-tenant pool tuning.
+
 ### MANDATORY: Agent Instruction (include in EVERY gate dispatch)
 
 MUST include these instructions in every dispatch to `ring:backend-engineer-golang`:
 
 > **STANDARDS: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md` and follow the sections referenced below. All code examples, patterns, and implementation details are in that document. Use them as-is.**
+>
+> **SUB-PACKAGES: Use the import table from the skill — see "Sub-Package Import Reference" above. Do NOT invent import paths.**
 >
 > **TDD: For implementation gates (2-6), follow TDD methodology — write a failing test first (RED), then implement to make it pass (GREEN). MUST have test coverage for every change.**
 
@@ -194,6 +276,33 @@ MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: 
 | 11 | Activation Guide | Always | Orchestrator |
 
 MUST execute gates sequentially. CANNOT skip or reorder.
+
+### Input Validation (when invoked from dev-cycle)
+
+If this skill receives structured input from ring:dev-cycle (post-cycle handoff):
+
+```text
+VALIDATE input:
+1. execution_mode MUST be "FULL" or "SCOPED"
+2. If execution_mode == "SCOPED":
+   - files_changed MUST be non-empty (otherwise there's nothing to adapt)
+   - multi_tenant_exists MUST be true
+   - multi_tenant_compliant MUST be true
+   - skip_gates MUST include ["0", "1.5", "2", "3", "4", "10", "11"]
+3. If execution_mode == "FULL":
+   - Core gates always execute (0, 1, 1.5, 2, 3, 4, 5, 7, 8, 9)
+   - Conditional gates may be in skip_gates based on stack detection:
+     - "5.5" may be skipped if service is NOT a plugin
+     - "6" may be skipped if RabbitMQ was NOT detected
+     - "10", "11" may be skipped when invoked from dev-cycle
+   - skip_gates MUST NOT contain core gates (0-5, 7-9)
+4. detected_dependencies (if provided) is used to pre-populate Gate 0 stack detection
+   — still MUST verify with grep commands (trust but verify)
+
+If invoked standalone (no input_schema fields):
+   - Default to execution_mode = "FULL"
+   - Run full Gate 0 stack detection
+```
 
 <cannot_skip>
 
