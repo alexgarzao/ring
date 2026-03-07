@@ -348,7 +348,9 @@ This check only runs when the current branch contains new or modified SQL migrat
 
 ```bash
 # Step D.1: Detect migration files in this branch
-migration_files=$(git diff --name-only origin/main -- '**/migrations/*.sql' '**/*.sql' 2>/dev/null | grep -v "_test")
+# Only match files in migrations/ directories (not arbitrary .sql files like test fixtures)
+base_branch=$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null | sed 's|origin/||' || echo "main")
+migration_files=$(git diff --name-only "origin/$base_branch" -- '**/migrations/*.sql' 2>/dev/null | grep -v "_test")
 
 if [ -z "$migration_files" ]; then
   echo "NO_MIGRATIONS — Step 3.5D skipped"
@@ -358,8 +360,9 @@ else
 
   # Step D.2: Check for blocking operations
   for f in $migration_files; do
-    # NOT NULL without DEFAULT on ALTER TABLE ADD COLUMN
-    if grep -Pin "ADD\s+COLUMN.*NOT\s+NULL" "$f" | grep -Piv "DEFAULT"; then
+    # ADD COLUMN ... NOT NULL without DEFAULT (unsafe — table rewrite + lock)
+    # Allows: ADD COLUMN ... NOT NULL DEFAULT, ALTER COLUMN SET NOT NULL (constraint-only, safe after backfill)
+    if grep -Pin "ADD\s+COLUMN\b.*\bNOT\s+NULL\b" "$f" | grep -Piv "DEFAULT|SET\s+NOT\s+NULL"; then
       echo "⛔ BLOCKING: $f — ADD COLUMN NOT NULL without DEFAULT (table rewrite + lock)"
       blocking=1
     fi
@@ -667,7 +670,7 @@ fi
 - Missing ctx on exported methods → **WARNING** (informational)
 - Not a Go project → **SKIP**
 
-**Verdict integration:** ALL seven checks (A, B, C, D, E, F, G) must pass for overall PASS. Any FAIL makes the overall verdict PARTIAL at best. SKIP checks do not affect the verdict. WARNING checks are informational.
+**Verdict integration:** ALL seven checks (A, B, C, D, E, F, G) must pass for overall PASS. Any FAIL in checks D, E, F, or G → overall verdict is **FAIL** (hard block, return to Gate 0). Any FAIL in checks A, B, C → overall verdict is **PARTIAL** (return to Gate 0 with fix instructions, max 2 retries). SKIP checks do not affect the verdict. WARNING checks are informational.
 
 ### Step 4: Dead Code Detection
 

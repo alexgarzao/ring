@@ -120,16 +120,22 @@ All schema changes that modify existing columns or tables MUST follow the expand
 ### Example: Renaming a Column
 
 ```sql
--- Migration 1: EXPAND (add new column)
+-- Migration 1 (PR #1): EXPAND — add new column, backfill
 ALTER TABLE accounts ADD COLUMN account_name VARCHAR(255);
 UPDATE accounts SET account_name = name WHERE account_name IS NULL;
+-- Application now writes to BOTH name and account_name, reads from account_name
 
--- Migration 2: CONTRACT (after deploy confirms new column works)
--- In a SEPARATE migration file, deployed AFTER verifying Phase 1
-ALTER TABLE accounts DROP COLUMN name;
+-- Migration 2 (PR #2, separate deploy): CONTRACT — drop old column
+-- This PR is allowed to use DROP COLUMN because:
+-- 1. The previous deploy confirmed no service reads 'name' anymore
+-- 2. The PR description documents the expand-contract sequence
+-- 3. Gate 0.5D will flag it — the agent must acknowledge it as intentional
+ALTER TABLE accounts DROP COLUMN IF EXISTS name;
 ```
 
-**Never combine expand and contract in the same migration.** Each phase must be a separate deployment to allow rollback.
+**Never combine expand and contract in the same migration or same PR.** Each phase must be a separate deployment to allow rollback.
+
+**Note on Gate 0.5D interaction:** The contract phase (DROP COLUMN) will trigger a Gate 0.5D BLOCKING flag. This is by design — the agent must verify the expand phase was already deployed and documented in the PR. The check forces explicit acknowledgment, not blind automation.
 
 ---
 
