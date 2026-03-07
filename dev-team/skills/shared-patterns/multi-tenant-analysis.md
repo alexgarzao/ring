@@ -33,12 +33,12 @@ See [multi-tenant.md § Canonical Model Compliance](../../docs/standards/golang/
 ### Connection Pool Health
 ```bash
 # Check pool configuration is parameterized (not hardcoded)
-grep -rn "WithMaxTenantPools\|WithIdleTimeout" internal/ --include="*.go"
+grep -rn "WithMaxTenantPools\|WithIdleTimeout" internal/ pkg/ cmd/ --include="*.go"
 # Expected: Pool limits come from config (env vars), not hardcoded values
 
-# Check for hardcoded pool sizes
-grep -rn "MaxOpenConns.*=\|MaxIdleConns.*=" internal/ --include="*.go" | grep -v "_test.go" | grep -v "config\."
-# Expected: 0 matches outside config. Pool sizes MUST come from config or ConnectionSettings.
+# Check for hardcoded pool sizes (outside config/bootstrap)
+grep -rn "MaxOpenConns.*=\|MaxIdleConns.*=" internal/ pkg/ --include="*.go" | grep -v "_test.go" | grep -v "config\.\|Config\.\|cfg\."
+# Expected: 0 matches outside config. Pool sizes should come from config or ConnectionSettings.
 ```
 - ISSUE if pool limits are hardcoded → MEDIUM: "Pool limits MUST come from MULTI_TENANT_MAX_TENANT_POOLS config"
 - ISSUE if idle timeout is missing → MEDIUM: "MUST configure WithIdleTimeout to prevent connection leaks"
@@ -46,7 +46,7 @@ grep -rn "MaxOpenConns.*=\|MaxIdleConns.*=" internal/ --include="*.go" | grep -v
 ### Circuit Breaker Configuration
 ```bash
 # Verify circuit breaker is configured with env-driven thresholds
-grep -rn "WithCircuitBreaker" internal/ --include="*.go"
+grep -rn "WithCircuitBreaker" internal/ pkg/ cmd/ --include="*.go"
 # Expected: threshold and timeout come from config, not hardcoded
 ```
 - ISSUE if circuit breaker uses hardcoded values → MEDIUM: "Circuit breaker thresholds MUST come from MULTI_TENANT_CIRCUIT_BREAKER_* config"
@@ -54,7 +54,7 @@ grep -rn "WithCircuitBreaker" internal/ --include="*.go"
 ### Metrics Implementation
 ```bash
 # Verify all 4 mandatory metrics exist
-grep -rn "tenant_connections_total\|tenant_connection_errors_total\|tenant_consumers_active\|tenant_messages_processed_total" internal/ --include="*.go"
+grep -rn "tenant_connections_total\|tenant_connection_errors_total\|tenant_consumers_active\|tenant_messages_processed_total" internal/ pkg/ --include="*.go"
 # Expected: All 4 metrics present
 ```
 - ISSUE if any metric missing → MEDIUM: "Missing multi-tenant metric: [name]. All 4 are MANDATORY."
@@ -62,31 +62,38 @@ grep -rn "tenant_connections_total\|tenant_connection_errors_total\|tenant_consu
 
 ### Graceful Shutdown
 ```bash
-# Verify managers are closed on shutdown
-grep -rn "\.Close()\|\.Shutdown()" internal/bootstrap/ --include="*.go"
+# Verify managers are closed on shutdown (check bootstrap, cmd, and pkg paths)
+grep -rn "\.Close()\|\.Shutdown()" internal/bootstrap/ cmd/ pkg/ --include="*.go" 2>/dev/null
 # Expected: PostgresManager.Close(), MongoManager.Close(), RabbitMQManager.Close() in shutdown path
 ```
 - ISSUE if managers not closed on shutdown → HIGH: "Connection managers MUST be closed on graceful shutdown to prevent leaks"
 
 ### Error Handling Completeness
 ```bash
-# Verify sentinel errors are handled
-grep -rn "ErrTenantNotFound\|ErrCircuitBreakerOpen\|ErrManagerClosed\|ErrServiceNotConfigured\|ErrTenantContextRequired\|IsTenantNotProvisionedError" internal/ --include="*.go"
+# Verify sentinel errors are handled (search all Go source paths)
+grep -rn "ErrTenantNotFound\|ErrCircuitBreakerOpen\|ErrManagerClosed\|ErrServiceNotConfigured\|ErrTenantContextRequired\|IsTenantNotProvisionedError" internal/ pkg/ --include="*.go"
 # Expected: All sentinel errors handled in middleware or error handler
 ```
 - ISSUE if sentinel errors not handled → HIGH: "Multi-tenant error [name] not handled. See multi-tenant.md § Error Handling."
 
 ### Single-Tenant Adaptability (for non-MT codebases analyzed by dev-refactor)
 ```bash
-# Check if repositories are MT-adaptable
-grep -rn "\.GetDB()\|\.Database()" internal/adapters/ --include="*.go" | grep -v "_test.go"
-# Expected: Connections accessed via struct field (r.connection), not inline
-# Flag if global singletons or inline DB access found
+# Check for global DB singletons (non-MT-adaptable)
+# This catches package-level var db = ... patterns, NOT struct field access like r.connection.GetDB()
+grep -rn "^var.*sql\.DB\|^var.*pgx\.Pool\|^var.*mongo\.Client\|^var.*redis\.Client" internal/ pkg/ --include="*.go" | grep -v "_test.go"
+# Expected: 0 matches. Database connections should be struct fields, not package-level vars.
 
-# Check context propagation
-grep -rn "func.*ctx context\.Context" internal/adapters/ --include="*.go" | wc -l
-grep -rn "^func " internal/adapters/ --include="*.go" | wc -l
-# Expected: ~100% of functions accept ctx as first param
+# Check that repository methods accept context as first parameter
+# Sample 5 repository files and verify ctx is first param
+for f in $(find internal/adapters/ pkg/adapters/ -name "*.go" ! -name "*_test.go" 2>/dev/null | head -5); do
+  missing=$(grep -c "^func (r \*.*) .*[^(](" "$f" 2>/dev/null)
+  with_ctx=$(grep -c "^func (r \*.*) .*(ctx context\.Context" "$f" 2>/dev/null)
+  total=$((missing + with_ctx))
+  if [ "$total" -gt 0 ] && [ "$with_ctx" -lt "$total" ]; then
+    echo "LOW CTX COVERAGE: $f ($with_ctx/$total methods have ctx)"
+  fi
+done
+# Expected: All repository methods accept ctx context.Context as first parameter.
 ```
-- ISSUE if repositories use inline DB access → MEDIUM: "Repository uses inline DB access. MUST use struct field for MT adaptability."
-- ISSUE if functions lack ctx parameter → MEDIUM: "Function [name] lacks ctx parameter. All methods MUST accept context for MT adaptation."
+- ISSUE if global DB singletons found → HIGH: "Package-level database variable blocks per-tenant connection routing. Refactor to struct field with constructor injection."
+- ISSUE if <80% of repository methods accept ctx → MEDIUM: "Repository methods must accept ctx context.Context as first parameter for MT adaptation."
