@@ -5,7 +5,7 @@ description: |
   from PM team output and executes through implementation → devops → SRE → unit testing → fuzz testing → property testing → integration testing (write) → chaos testing (write) → review → validation
   gates (Gates 0-9), with state persistence and metrics collection.
   Gates 6-7 (integration/chaos) write and update test code per unit but only execute tests at end of cycle (deferred execution).
-  Post-cycle: ring:dev-multi-tenant adapts all implemented code for multi-tenant support.
+  Multi-tenant dual-mode is implemented during Gate 0 and verified at Gate 0.5G (no separate post-cycle step).
 
 trigger: |
   - Starting a new development cycle with a task file
@@ -27,7 +27,7 @@ sequence:
   before: [ring:dev-feedback-loop]
 
 related:
-  complementary: [ring:dev-implementation, ring:dev-multi-tenant, ring:dev-devops, ring:dev-sre, ring:dev-unit-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop]
+  complementary: [ring:dev-implementation, ring:dev-devops, ring:dev-sre, ring:dev-unit-testing, ring:requesting-code-review, ring:dev-validation, ring:dev-feedback-loop, ring:dev-delivery-verification]
 
 verification:
   automated:
@@ -185,7 +185,7 @@ This is not negotiable:
 
 <cannot_skip>
 - Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
-- Gate 0.5: `Skill("ring:dev-delivery-verification")` → Verify all requirements are DELIVERED (not just created). Catches dead code, unwired structs, unregistered middleware. FAIL → return to Gate 0 with explicit fix instructions.
+- Gate 0.5: `Skill("ring:dev-delivery-verification")` → Verify all requirements are DELIVERED (not just created). Catches dead code, unwired structs, unregistered middleware. Also runs 7 automated checks: (A) file size ≤300 lines, (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility, (G) multi-tenant dual-mode. FAIL → return to Gate 0 with explicit fix instructions.
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
 - Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
 - Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
@@ -456,7 +456,7 @@ Day 4: Production incident from Day 1 code
 
 **Deferred Execution Model for Gates 6-7:**
 - **Per unit:** Write/update test code + verify compilation (no container execution)
-- **End of cycle:** Execute all integration and chaos tests (containers spun up once), then multi-tenant adaptation via ring:dev-multi-tenant
+- **End of cycle:** Execute all integration and chaos tests (containers spun up once), then verify multi-tenant dual-mode compliance (already implemented at Gate 0, verified at Gate 0.5G)
 
 | Violation | Why It's WRONG | Consequence |
 |-----------|----------------|-------------|
@@ -1785,9 +1785,9 @@ detected_dependencies = []
 ### ⛔ MANDATORY: Multi-Tenant Detection & Compliance Audit
 
 <cannot_skip>
-MANDATORY: Multi-tenant applies to all services (no exceptions). After all units complete their 10-gate cycle, ring:dev-multi-tenant runs as a post-cycle step to adapt all implemented code for multi-tenant support. This detection prepares the context for that step.
+MANDATORY: Multi-tenant dual-mode applies to all Go services (no exceptions). Gate 0 implements dual-mode from the start using lib-commons v3 resolvers. Gate 0.5G verifies compliance. This detection captures the CURRENT state of the codebase for context.
 
-See [ring:dev-multi-tenant](../dev-multi-tenant/SKILL.md) for the full multi-tenant workflow and [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical model.
+See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical model and [dev-delivery-verification](../dev-delivery-verification/SKILL.md) Step 3.5G for the verification checks.
 </cannot_skip>
 
 ```text
@@ -1822,11 +1822,11 @@ See [ring:dev-multi-tenant](../dev-multi-tenant/SKILL.md) for the full multi-ten
    state.multi_tenant_compliant = multi_tenant_compliant
 
    if multi_tenant_exists && multi_tenant_compliant:
-     Log: "Multi-tenant COMPLIANT — post-cycle MT step will scope to new files only"
+     Log: "Multi-tenant COMPLIANT — Gate 0 agent uses dual-mode resolvers, Gate 0.5G will verify"
    elif multi_tenant_exists && !multi_tenant_compliant:
-     Log: "Multi-tenant DETECTED but NON-COMPLIANT — post-cycle MT step will run full ring:dev-multi-tenant"
+     Log: "Multi-tenant DETECTED but NON-COMPLIANT — Gate 0 agent must fix, Gate 0.5G will verify"
    else:
-     Log: "Multi-tenant NOT detected — post-cycle MT step will run full ring:dev-multi-tenant"
+     Log: "Multi-tenant NOT detected — Gate 0 agent will implement dual-mode, Gate 0.5G will verify"
 ```
 
 **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
@@ -1834,7 +1834,7 @@ See [ring:dev-multi-tenant](../dev-multi-tenant/SKILL.md) for the full multi-ten
 <auto_detect_reason>
 PM team task files often omit external_dependencies. If the codebase uses postgres, mongodb, valkey, or rabbitmq, these MUST be detected and passed to Gates 6 (integration) and 7 (chaos). Auto-detection at cycle level avoids redundant scans per gate.
 
-Multi-tenant state is detected here and used by the post-cycle multi-tenant adaptation step. See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical model and compliance criteria.
+Multi-tenant state is detected here and passed to Gate 0 (implementation) and Gate 0.5G (verification). See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical model and compliance criteria.
 </auto_detect_reason>
 
 ---
@@ -1868,7 +1868,7 @@ See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enfo
 **Summary:** No source file may exceed 300 lines (>300 = loop back to agent; >500 = hard block). Implementation agents MUST split proactively. Enforcement points:
 
 - **Gate 0:** Implementation agent receives file-size instructions; orchestrator runs verification command after agent completes and loops back if any file > 300 lines.
-- **Gate 0.5:** Delivery verification skill MUST run the file-size verification command from the shared pattern and FAIL if any non-exempt file > 300 lines.
+- **Gate 0.5:** Delivery verification skill runs 7 checks: (A) file-size, (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility, (G) multi-tenant dual-mode. Any FAIL → return to Gate 0 with specific fix instructions.
 - **Gate 8:** Code reviewers MUST flag any file > 300 lines as a MEDIUM+ issue (blocking).
 
 ### Step 2.1: Prepare Input for ring:dev-implementation Skill
@@ -3219,74 +3219,32 @@ All units have written/updated test code during their Gate 6-7 passes. Now execu
 | "Containers are slow, let CI handle it" | CI is backup, not replacement. Verify locally first. | **Execute deferred tests** |
 | "One test failed but it's flaky" | Flaky = unreliable = fix it. No exceptions. | **Fix and re-run** |
 
-### Step 12.0.5: Multi-Tenant Adaptation (Post-Cycle)
+### Step 12.0.5: Multi-Tenant Verification (Post-Cycle — Verification Only)
 
-**⛔ MANDATORY: After all units complete and deferred tests pass, adapt all implemented code for multi-tenant.**
-
-<cannot_skip>
-MANDATORY: Multi-tenant applies to all services (no exceptions). This step runs ring:dev-multi-tenant with the context of all files changed during the cycle. ring:dev-multi-tenant runs its own tests (Gate 8) and review (Gate 9) for the multi-tenant-specific changes.
-
-See [ring:dev-multi-tenant](../dev-multi-tenant/SKILL.md) for the full workflow and [multi-tenant.md § Canonical Model Compliance](../../docs/standards/golang/multi-tenant.md#hard-gate-canonical-model-compliance) for compliance criteria.
-</cannot_skip>
+**Multi-tenant dual-mode is now implemented during Gate 0 and verified at Gate 0.5G.** This post-cycle step is a final sanity check only — it does NOT implement or adapt any code.
 
 ```text
-1. Collect ALL files changed during the cycle:
-   all_files_changed = []
+1. Verify Gate 0.5G passed for ALL units:
    for each task in state.tasks:
      for each unit in task.units:
-       all_files_changed += unit.agent_outputs.implementation.files_changed
-   deduplicate all_files_changed
+       if unit.gate_progress.delivery_verification.mt_dualmode != "PASS":
+         → HARD BLOCK: "Unit [unit_id] failed MT dual-mode verification at Gate 0.5G"
+         → This should never happen (Gate 0.5G blocks progression)
 
-2. Determine execution mode from Step 1.5 state:
-
-   if state.multi_tenant_exists && state.multi_tenant_compliant:
-     execution_mode = "SCOPED"  // Only adapt new files
-     skip_gates = ["0", "1.5", "2", "3", "4", "10", "11"]
-     // Executes: Gate 1 (analysis of new files), Gate 5 (adapt repos),
-     // Gate 5.5 (if plugin), Gate 6 (if RabbitMQ), Gate 7 (backward compat),
-     // Gate 8 (MT tests), Gate 9 (MT review)
-   else:
-     execution_mode = "FULL"  // Full ring:dev-multi-tenant cycle
-     skip_gates = ["10", "11"]
-     // Executes: Gates 0-9 (complete cycle with own tests and review)
-
-3. REQUIRED: Invoke ring:dev-multi-tenant skill:
-
-   Skill("ring:dev-multi-tenant") with input:
-     execution_mode: execution_mode
-     files_changed: all_files_changed
-     multi_tenant_exists: state.multi_tenant_exists
-     multi_tenant_compliant: state.multi_tenant_compliant
-     detected_dependencies: state.detected_dependencies
-     skip_gates: skip_gates
-
-4. if ring:dev-multi-tenant FAILS:
-   → HARD BLOCK. Cannot complete cycle.
-   → Report failures to user.
-
-5. Display to user:
+2. Display to user:
    ┌─────────────────────────────────────────────────┐
-   │ ✓ MULTI-TENANT ADAPTATION COMPLETE             │
+   │ ✓ MULTI-TENANT DUAL-MODE VERIFIED              │
    ├─────────────────────────────────────────────────┤
-   │ Skill: ring:dev-multi-tenant                    │
-   │ Mode: [SCOPED / FULL]                           │
-   │ Files Adapted: [count]                          │
-   │ Backward Compat: PASS ✓                         │
-   │ MT Tests: PASS ✓                                │
-   │ MT Review: PASS ✓                               │
+   │ Mode: Dual-mode (implemented at Gate 0)         │
+   │ Verification: Gate 0.5G PASS for all units      │
+   │ Resources Covered: [PG/Mongo/Redis/RMQ/S3]      │
+   │ Backward Compat: Resolvers handle single-tenant │
    └─────────────────────────────────────────────────┘
 
-6. MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]
+3. MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]
 ```
 
-### Step 12.0.5 Anti-Rationalization
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "All tests passed, multi-tenant can wait" | Tests ran in single-tenant mode. Multi-tenant is a separate concern. | **MUST run ring:dev-multi-tenant** |
-| "Multi-tenant infra already exists, nothing to do" | Existing infra ≠ new files are adapted. New repositories need context-based resolution. | **MUST run in SCOPED mode** |
-| "Will add multi-tenant in a separate PR" | Separate PR = never. Multi-tenant is part of the dev-cycle completion. | **MUST run NOW** |
-| "Small change, no new adapters" | MUST verify. ring:dev-multi-tenant validates backward compat regardless. | **MUST run** |
+**Note:** The full ring:dev-multi-tenant skill (12 gates) is now used ONLY for migrating legacy codebases that were written before dual-mode was standard. For new development via dev-cycle, all multi-tenant compliance is handled by Gate 0 (implementation) + Gate 0.5G (verification).
 
 ---
 
