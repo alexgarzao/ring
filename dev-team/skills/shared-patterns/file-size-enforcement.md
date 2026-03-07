@@ -39,6 +39,7 @@ This is a **HARD GATE** — not a suggestion.
 
 ```bash
 # Go projects — excludes tests, docs, mocks, protobuf, generated files
+# Note: awk filters out the "total" row emitted by wc when multiple files are counted
 find . -name "*.go" \
   ! -name "*_test.go" \
   ! -path "*/docs/*" \
@@ -47,14 +48,14 @@ find . -name "*.go" \
   ! -path "*/gen/*" \
   ! -name "*.pb.go" \
   ! -name "*.gen.go" \
-  -exec wc -l {} + | awk '$1 > 300 {print}' | sort -rn
+  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
 
 # Go test files (checked separately — same 300-line threshold)
 find . -name "*_test.go" \
   ! -path "*/mocks*" \
-  -exec wc -l {} + | awk '$1 > 300 {print}' | sort -rn
+  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
 
-# TypeScript projects — excludes node_modules, dist, build, generated, declaration files
+# TypeScript projects — excludes node_modules, dist, build, generated, declaration files, mocks
 find . \( -name "*.ts" -o -name "*.tsx" \) \
   ! -path "*/node_modules/*" \
   ! -path "*/dist/*" \
@@ -63,10 +64,13 @@ find . \( -name "*.ts" -o -name "*.tsx" \) \
   ! -path "*/.next/*" \
   ! -path "*/generated/*" \
   ! -path "*/__generated__/*" \
+  ! -path "*/__mocks__/*" \
+  ! -path "*/mocks/*" \
   ! -name "*.d.ts" \
   ! -name "*.gen.ts" \
   ! -name "*.generated.ts" \
-  -exec wc -l {} + | awk '$1 > 300 {print}' | sort -rn
+  ! -name "*.mock.ts" \
+  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
 ```
 
 ---
@@ -167,7 +171,7 @@ Include in ALL analysis agent prompts:
 |-----------------|----------------|-----------------|
 | "It's all one struct, can't split" | Methods on the same struct can live in different files (same package) | **Split by method responsibility** |
 | "File will be split later" | Later = never. Split NOW during implementation. | **Split before gate passes** |
-| "It's only 350 lines" | 350 > 300 = non-compliant. Standards are not negotiable. | **Split or justify** |
+| "It's only 350 lines" | 350 > 300 = non-compliant. Standards are not negotiable. | **Split before proceeding** |
 | "Splitting adds complexity" | Large files ARE complexity. Small focused files reduce cognitive load. | **Split by responsibility** |
 | "Tests will break" | Split test files to match. Same package = same access. | **Split tests alongside source** |
 | "Auto-generated code is large" | Auto-generated files (swagger, protobuf, mocks) are exempt. | **Check if truly auto-generated** |
