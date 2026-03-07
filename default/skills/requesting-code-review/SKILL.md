@@ -375,6 +375,33 @@ Task:
     - Naming conventions
     - Error handling patterns
     - Performance concerns
+    - **File size compliance** — Any file > 300 lines (excluding auto-generated: *.pb.go, *.d.ts, */generated/*, */mocks/*) MUST be flagged as MEDIUM+ issue. Files > 500 lines = CRITICAL. See shared-patterns/file-size-enforcement.md.
+
+    ## ⛔ Ring Standards Verification (MANDATORY)
+    
+    **WebFetch the relevant standards modules and verify the changed code against them.**
+    
+    For Go projects, WebFetch these modules based on changed files:
+    Base URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/`
+    
+    **Always load:**
+    - `core.md` (lib-commons, license headers, deps, MongoDB patterns)
+    - `quality.md` (linting, testing, production config validation)
+    
+    **Conditional (load if changed files match):**
+    - `domain.md` (if service/domain/model code changed)
+    - `domain-modeling.md` (if entity/value object code changed)
+    - `api-patterns.md` (if handler/API/route code changed)
+    - `architecture.md` (if structural/directory changes, new packages, concurrency patterns)
+    - `bootstrap.md` (if bootstrap/main/wire/health code changed)
+    - `security.md` (if auth/middleware/validation code changed)
+    - `messaging.md` (if RabbitMQ/message queue code changed)
+    
+    For TypeScript: WebFetch `typescript.md`
+    
+    **Check the changed code against ALL applicable sections.** Use the section index from `standards-coverage-table.md`.
+    
+    **Include a Standards Compliance section in your output** listing which standards were verified and any violations found.
 
     ## Required Output
     ### VERDICT: PASS / FAIL
@@ -383,6 +410,11 @@ Task:
     | Severity | Description | File:Line | Recommendation |
     |----------|-------------|-----------|----------------|
     | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
+
+    ### Standards Compliance
+    | Standard | Section | Status | Evidence |
+    |----------|---------|--------|----------|
+    | [module.md] | [section name] | ✅/❌ | [file:line or N/A] |
 
     ### What Was Done Well
     [positive observations]
@@ -478,6 +510,23 @@ Task:
     - Sensitive data handling
     - OWASP Top 10 risks
 
+    ## ⛔ Ring Security Standards Verification (MANDATORY)
+    
+    **WebFetch the security standards and verify changed code against them:**
+    - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/security.md`
+    
+    **Check ALL applicable sections from standards-coverage-table.md → ring:backend-engineer-golang:**
+    - #15 Access Manager Integration (if auth code changed)
+    - #16 License Manager Integration (if licensed project)
+    - #17 Secret Redaction Patterns (MANDATORY — credential leak prevention)
+    - #18 SQL Safety (MANDATORY — parameterized queries, injection prevention)
+    - #19 HTTP Security Headers (MANDATORY — X-Content-Type-Options, X-Frame-Options)
+    - #51 Rate Limiting Three-Tier (MANDATORY — if API endpoints changed)
+    - #52 CORS Configuration (MANDATORY — if middleware changed)
+    
+    **Also check from core.md:**
+    - #8 MongoDB Injection Prevention (CRITICAL — if MongoDB code present)
+
     ## Required Output
     ### VERDICT: PASS / FAIL
 
@@ -485,6 +534,16 @@ Task:
     | Severity | Description | File:Line | OWASP Category | Recommendation |
     |----------|-------------|-----------|----------------|----------------|
     | [CRITICAL/HIGH/MEDIUM/LOW] | [issue] | [location] | [A01-A10] | [fix] |
+
+    ### Ring Security Standards Compliance
+    | Standard Section | Status | Evidence |
+    |-----------------|--------|----------|
+    | Secret Redaction | ✅/❌/N/A | [file:line] |
+    | SQL Safety | ✅/❌/N/A | [file:line] |
+    | HTTP Security Headers | ✅/❌/N/A | [file:line] |
+    | Rate Limiting | ✅/❌/N/A | [file:line] |
+    | CORS Configuration | ✅/❌/N/A | [file:line] |
+    | MongoDB Injection Prevention | ✅/❌/N/A | [file:line] |
 
     ### Security Checklist
     | Check | Status |
