@@ -1861,6 +1861,12 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 **⛔ FORBIDDEN: Executing TDD-RED/GREEN logic directly from this step.**
 MUST invoke the ring:dev-implementation skill via the Skill tool; it handles all TDD phases, agent selection, agent dispatch, standards verification, and fix iteration.
 
+### ⛔ File Size Enforcement (MANDATORY — All Gates)
+
+See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds, verification commands, split strategies, and agent instructions.
+
+**Summary:** No source file may exceed 300 lines (500 = hard block). Implementation agents MUST split proactively. This check applies at Gate 0 (implementation), Gate 0.5 (delivery verification), and Gate 8 (review).
+
 ### Step 2.1: Prepare Input for ring:dev-implementation Skill
 
 ```text
