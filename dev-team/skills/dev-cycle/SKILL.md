@@ -185,7 +185,7 @@ This is not negotiable:
 
 <cannot_skip>
 - Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`
-- Gate 0.5: `Skill("ring:dev-delivery-verification")` → Verify all requirements are DELIVERED (not just created). Catches dead code, unwired structs, unregistered middleware. FAIL → return to Gate 0 with explicit fix instructions.
+- Gate 0.5: `Skill("ring:dev-delivery-verification")` → Verify all requirements are DELIVERED (not just created). Catches dead code, unwired structs, unregistered middleware. Also runs 6 automated checks: (A) file size ≤300 lines, (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility. FAIL → return to Gate 0 with explicit fix instructions.
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
 - Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
 - Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
@@ -1868,7 +1868,7 @@ See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enfo
 **Summary:** No source file may exceed 300 lines (>300 = loop back to agent; >500 = hard block). Implementation agents MUST split proactively. Enforcement points:
 
 - **Gate 0:** Implementation agent receives file-size instructions; orchestrator runs verification command after agent completes and loops back if any file > 300 lines.
-- **Gate 0.5:** Delivery verification skill MUST run the file-size verification command from the shared pattern and FAIL if any non-exempt file > 300 lines.
+- **Gate 0.5:** Delivery verification skill runs 6 checks: (A) file-size, (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility. Any FAIL → return to Gate 0 with specific fix instructions.
 - **Gate 8:** Code reviewers MUST flag any file > 300 lines as a MEDIUM+ issue (blocking).
 
 ### Step 2.1: Prepare Input for ring:dev-implementation Skill

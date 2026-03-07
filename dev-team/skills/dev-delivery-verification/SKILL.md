@@ -341,7 +341,220 @@ fi
 - Missing linter config in Go project → **PARTIAL** (quality.md requires .golangci.yml with 14 mandatory linters)
 - Missing linter config in TypeScript project → **PARTIAL** (typescript.md requires eslint)
 
-**Verdict integration:** ALL three checks (A, B, C) must pass for overall PASS. Any failure makes the overall verdict PARTIAL at best.
+#### D. Migration Safety Verification
+**Reference:** [migration-safety.md](../../docs/standards/golang/migration-safety.md) — Dangerous Operations Detection
+
+This check only runs when the current branch contains new or modified SQL migration files.
+
+```bash
+# Step D.1: Detect migration files in this branch
+migration_files=$(git diff --name-only origin/main -- '**/migrations/*.sql' '**/*.sql' 2>/dev/null | grep -v "_test")
+
+if [ -z "$migration_files" ]; then
+  echo "NO_MIGRATIONS — Step 3.5D skipped"
+else
+  echo "Migration files found: $migration_files"
+  blocking=0
+
+  # Step D.2: Check for blocking operations
+  for f in $migration_files; do
+    # NOT NULL without DEFAULT on ALTER TABLE ADD COLUMN
+    if grep -Pin "ADD\s+COLUMN.*NOT\s+NULL" "$f" | grep -Piv "DEFAULT"; then
+      echo "⛔ BLOCKING: $f — ADD COLUMN NOT NULL without DEFAULT (table rewrite + lock)"
+      blocking=1
+    fi
+    # DROP COLUMN
+    if grep -Pin "DROP\s+COLUMN" "$f"; then
+      echo "⛔ BLOCKING: $f — DROP COLUMN (use expand-contract: deprecate first, drop in next release)"
+      blocking=1
+    fi
+    # DROP TABLE without safety
+    if grep -Pin "DROP\s+TABLE" "$f" | grep -Piv "IF EXISTS.*deprecated"; then
+      echo "⛔ BLOCKING: $f — DROP TABLE (rename to _deprecated first)"
+      blocking=1
+    fi
+    # TRUNCATE
+    if grep -Pin "TRUNCATE" "$f"; then
+      echo "⛔ BLOCKING: $f — TRUNCATE TABLE (never in production migrations)"
+      blocking=1
+    fi
+    # CREATE INDEX without CONCURRENTLY
+    if grep -Pin "CREATE\s+(UNIQUE\s+)?INDEX\b" "$f" | grep -Piv "CONCURRENTLY"; then
+      echo "⛔ BLOCKING: $f — CREATE INDEX without CONCURRENTLY (locks writes)"
+      blocking=1
+    fi
+    # ALTER COLUMN TYPE
+    if grep -Pin "ALTER\s+COLUMN.*TYPE\b" "$f"; then
+      echo "⛔ BLOCKING: $f — ALTER COLUMN TYPE (table rewrite, use add-new-column pattern)"
+      blocking=1
+    fi
+  done
+
+  # Step D.3: Check DOWN migration exists
+  for f in $migration_files; do
+    base=$(basename "$f")
+    dir=$(dirname "$f")
+    if echo "$base" | grep -q "\.up\.sql$"; then
+      down_file="${base/.up.sql/.down.sql}"
+      if [ ! -f "$dir/$down_file" ]; then
+        echo "⛔ BLOCKING: $f — Missing DOWN migration ($down_file)"
+        blocking=1
+      elif [ ! -s "$dir/$down_file" ]; then
+        echo "⛔ BLOCKING: $f — DOWN migration is empty ($down_file)"
+        blocking=1
+      fi
+    fi
+  done
+
+  # Step D.4: Check idempotency (multi-tenant safety)
+  for f in $migration_files; do
+    if grep -Pin "CREATE\s+(TABLE|INDEX)" "$f" | grep -Piv "IF NOT EXISTS|CONCURRENTLY"; then
+      echo "⚠️ WARNING: $f — DDL without IF NOT EXISTS (not idempotent for multi-tenant re-runs)"
+    fi
+  done
+
+  if [ "$blocking" -eq 1 ]; then
+    echo "MIGRATION_SAFETY: ⛔ FAIL — return to Gate 0 with migration-safety.md"
+  else
+    echo "MIGRATION_SAFETY: ✅ PASS"
+  fi
+fi
+```
+
+- Any blocking operation → **FAIL** (hard block, return to Gate 0 with `migration-safety.md` reference)
+- Missing/empty DOWN migration → **FAIL**
+- Non-idempotent DDL → **WARNING** (flags but does not block)
+- No migration files in branch → **SKIP** (check does not apply)
+
+#### E. Dependency Vulnerability Scanning
+**Reference:** [core.md § Dependency Management](../../docs/standards/golang/core.md)
+
+This check runs on every cycle to detect known vulnerabilities in dependencies.
+
+```bash
+# Step E.1: Detect project language
+if [ -f "go.mod" ]; then
+  lang="go"
+elif [ -f "package.json" ]; then
+  lang="typescript"
+else
+  echo "VULN_SCAN: ⚠️ SKIP — no go.mod or package.json found"
+  lang="unknown"
+fi
+
+# Step E.2: Run vulnerability scanner
+if [ "$lang" = "go" ]; then
+  # govulncheck scans for known CVEs in Go dependencies
+  if command -v govulncheck &>/dev/null; then
+    vuln_output=$(govulncheck ./... 2>&1)
+    vuln_exit=$?
+    if [ $vuln_exit -ne 0 ]; then
+      echo "$vuln_output"
+      # Parse severity — govulncheck reports all as actionable
+      echo "VULN_SCAN: ⛔ FAIL — govulncheck found vulnerabilities"
+    else
+      echo "VULN_SCAN: ✅ PASS — no known vulnerabilities"
+    fi
+  else
+    echo "VULN_SCAN: ⚠️ WARNING — govulncheck not installed (go install golang.org/x/vuln/cmd/govulncheck@latest)"
+  fi
+
+  # Also verify module integrity
+  go_verify=$(go mod verify 2>&1)
+  if [ $? -ne 0 ]; then
+    echo "⛔ BLOCKING: go mod verify failed — module integrity compromised"
+    echo "$go_verify"
+  fi
+
+elif [ "$lang" = "typescript" ]; then
+  # npm audit for Node.js projects
+  if [ -f "package-lock.json" ]; then
+    audit_output=$(npm audit --audit-level=high 2>&1)
+    audit_exit=$?
+    if [ $audit_exit -ne 0 ]; then
+      echo "$audit_output"
+      echo "VULN_SCAN: ⛔ FAIL — npm audit found high/critical vulnerabilities"
+    else
+      echo "VULN_SCAN: ✅ PASS — no high/critical vulnerabilities"
+    fi
+  elif [ -f "yarn.lock" ]; then
+    audit_output=$(yarn audit --level high 2>&1)
+    audit_exit=$?
+    if [ $audit_exit -ne 0 ]; then
+      echo "$audit_output"
+      echo "VULN_SCAN: ⛔ FAIL — yarn audit found high/critical vulnerabilities"
+    else
+      echo "VULN_SCAN: ✅ PASS"
+    fi
+  fi
+fi
+```
+
+- Go: `govulncheck` finds vulnerability → **FAIL** (return to Gate 0: "Update vulnerable dependency or find alternative")
+- Go: `go mod verify` fails → **FAIL** (module tampered)
+- TypeScript: `npm audit --audit-level=high` finds high/critical → **FAIL**
+- Scanner not installed → **WARNING** (does not block, but flags for team to install)
+
+#### F. API Backward Compatibility (oasdiff + swaggo)
+**Reference:** [api-patterns.md § OpenAPI Documentation](../../docs/standards/golang/api-patterns.md#openapi-documentation-swaggo-mandatory)
+
+This check only applies to services that have swaggo-generated OpenAPI specs (api/swagger.yaml or api/swagger.json).
+
+```bash
+# Step F.1: Check if this is an API service with OpenAPI spec
+spec_file=""
+if [ -f "api/swagger.yaml" ]; then
+  spec_file="api/swagger.yaml"
+elif [ -f "api/swagger.json" ]; then
+  spec_file="api/swagger.json"
+fi
+
+if [ -z "$spec_file" ]; then
+  echo "API_COMPAT: ⚠️ SKIP — no OpenAPI spec found (not an API service or swaggo not configured)"
+else
+  # Step F.2: Regenerate spec from current annotations
+  if command -v swag &>/dev/null; then
+    swag init -g cmd/api/main.go -o api/ --parseDependency --parseInternal 2>/dev/null
+  fi
+
+  # Step F.3: Get the spec from main branch for comparison
+  main_spec=$(git show origin/main:$spec_file 2>/dev/null)
+
+  if [ -z "$main_spec" ]; then
+    echo "API_COMPAT: ⚠️ SKIP — no spec on main branch (new service, nothing to compare)"
+  else
+    # Step F.4: Run oasdiff breaking change detection
+    if command -v oasdiff &>/dev/null; then
+      # Write main spec to temp file for comparison
+      tmp_main=$(mktemp)
+      echo "$main_spec" > "$tmp_main"
+
+      breaking_output=$(oasdiff breaking "$tmp_main" "$spec_file" 2>&1)
+      breaking_exit=$?
+      rm -f "$tmp_main"
+
+      if [ $breaking_exit -ne 0 ] || [ -n "$breaking_output" ]; then
+        echo "$breaking_output"
+        echo ""
+        echo "API_COMPAT: ⛔ FAIL — breaking changes detected in API spec"
+        echo "Review each change above. If intentional (new API version), document in PR description."
+      else
+        echo "API_COMPAT: ✅ PASS — no breaking changes in API spec"
+      fi
+    else
+      echo "API_COMPAT: ⚠️ WARNING — oasdiff not installed (go install github.com/tufin/oasdiff@latest)"
+    fi
+  fi
+fi
+```
+
+- Breaking change detected → **FAIL** (return to Gate 0: "Breaking API change — use additive-only changes or document version bump")
+- No spec file → **SKIP** (not an API service)
+- No spec on main → **SKIP** (new service, no baseline)
+- oasdiff not installed → **WARNING** (does not block, flags for installation)
+- Non-breaking changes (new endpoints, new optional fields) → **PASS**
+
+**Verdict integration:** ALL six checks (A, B, C, D, E, F) must pass for overall PASS. Any FAIL makes the overall verdict PARTIAL at best. SKIP checks do not affect the verdict. WARNING checks are informational.
 
 ### Step 4: Dead Code Detection
 
