@@ -382,11 +382,20 @@ Task:
     **WebFetch the relevant standards modules and verify the changed code against them.**
     
     For Go projects, WebFetch these modules based on changed files:
-    - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/core.md` (ALWAYS — lib-commons, license headers, deps)
-    - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain.md` (if service/domain code changed)
-    - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/quality.md` (ALWAYS — linting, testing)
-    - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md` (if structural changes)
-    - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/api-patterns.md` (if handler/API code changed)
+    Base URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/`
+    
+    **Always load:**
+    - `core.md` (lib-commons, license headers, deps, MongoDB patterns)
+    - `quality.md` (linting, testing, production config validation)
+    
+    **Conditional (load if changed files match):**
+    - `domain.md` (if service/domain/model code changed)
+    - `domain-modeling.md` (if entity/value object code changed)
+    - `api-patterns.md` (if handler/API/route code changed)
+    - `architecture.md` (if structural/directory changes, new packages, concurrency patterns)
+    - `bootstrap.md` (if bootstrap/main/wire/health code changed)
+    - `security.md` (if auth/middleware/validation code changed)
+    - `messaging.md` (if RabbitMQ/message queue code changed)
     
     For TypeScript: WebFetch `typescript.md`
     

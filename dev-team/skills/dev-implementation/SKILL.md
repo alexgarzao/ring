@@ -523,6 +523,10 @@ Task:
     ⛔ Any ❌ = Implementation REJECTED. Fix before proceeding.
 
     ### Standards Compliance Summary
+    
+    **Quick reference derived from the Standards Coverage Table above.**
+    If any item is ❌ here, it MUST also appear as ❌ in the Coverage Table with file:line evidence.
+    
     - lib-commons Usage: ✅/❌
     - License Headers: ✅/❌
     - Structured Logging: ✅/❌
@@ -573,9 +577,9 @@ if pass_output contains "PASS" and all standards ✅ and Standards Coverage Tabl
     → Re-dispatch agent: "Linting failed. Fix all lint issues before proceeding. Output: [lint errors]"
   
   → Run license header check (R5 — core.md License Headers MANDATORY):
-    Go: check all created/modified .go files for license header
-         grep -L "Copyright\|Licensed\|SPDX" [files_created + files_modified] | grep "\.go$"
-    TypeScript: check all created/modified .ts files for license header
+    For each file in [files_created + files_modified] matching *.go, *.ts, *.tsx:
+      Check first 10 lines for: copyright|licensed|spdx|license (case-insensitive)
+      If not found → flag as missing
 
   if any file missing license header:
     → Re-dispatch agent: "Missing license headers in: [file list]. Add license headers per core.md → License Headers (MANDATORY)."

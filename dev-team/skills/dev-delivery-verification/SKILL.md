@@ -267,19 +267,28 @@ For each new dependency added:
 #### A. File Size Verification
 See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md)
 
-**Go:**
+**Go** (matches shared-patterns/file-size-enforcement.md):
 ```bash
 find . -name "*.go" \
+  ! -name "*_test.go" \
+  ! -path "*/docs/*" \
   ! -path "*/mocks*" ! -path "*/generated/*" ! -path "*/gen/*" \
   ! -name "*.pb.go" ! -name "*.gen.go" \
   -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
+
+# Also check test files separately (same threshold)
+find . -name "*_test.go" \
+  ! -path "*/mocks*" \
+  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
 ```
 
-**TypeScript:**
+**TypeScript** (matches shared-patterns/file-size-enforcement.md):
 ```bash
 find . \( -name "*.ts" -o -name "*.tsx" \) \
   ! -path "*/node_modules/*" ! -path "*/dist/*" ! -path "*/build/*" \
-  ! -path "*/generated/*" ! -path "*/__generated__/*" ! -path "*/__mocks__/*" \
+  ! -path "*/out/*" ! -path "*/.next/*" \
+  ! -path "*/generated/*" ! -path "*/__generated__/*" \
+  ! -path "*/__mocks__/*" ! -path "*/mocks/*" \
   ! -name "*.d.ts" ! -name "*.gen.ts" ! -name "*.generated.ts" ! -name "*.mock.ts" \
   -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
 ```
@@ -292,14 +301,17 @@ find . \( -name "*.ts" -o -name "*.tsx" \) \
 
 ```bash
 # Check all files created/modified by Gate 0 for license headers
+# Patterns checked: Copyright, Licensed, SPDX, License (covers Apache, MIT, etc.)
 for f in $files_changed; do
   if echo "$f" | grep -qE '\.(go|ts|tsx)$'; then
-    if ! head -5 "$f" | grep -qiE 'copyright|licensed|spdx'; then
+    if ! head -10 "$f" | grep -qiE 'copyright|licensed|spdx|license'; then
       echo "MISSING LICENSE HEADER: $f"
     fi
   fi
 done
 ```
+
+**Note:** Checks first 10 lines (not 5) to account for build tags, package declarations, or shebang lines that may precede the license block. The pattern is intentionally broad (`copyright|licensed|spdx|license`) to match common formats (Apache, MIT, BSD, SPDX identifiers).
 
 - Any source file missing license header → **PARTIAL** (return to Gate 0: "Add license header per core.md")
 
@@ -307,19 +319,26 @@ done
 **Reference:** quality.md → Linting (MANDATORY — 14 linters)
 
 ```bash
-# Go: Run golangci-lint if config exists
+# Go: Run golangci-lint
 if [ -f .golangci.yml ] || [ -f .golangci.yaml ]; then
   golangci-lint run ./...
+else
+  echo "WARNING: Missing .golangci.yml — quality.md requires it (14 mandatory linters)"
+  echo "FLAG: PARTIAL — create .golangci.yml per quality.md → Linting (MANDATORY)"
 fi
 
-# TypeScript: Run eslint if config exists
-if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f eslint.config.js ]; then
+# TypeScript: Run eslint
+if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f eslint.config.js ] || [ -f .eslintrc.yaml ] || [ -f .eslintrc.yml ]; then
   npx eslint . --ext .ts,.tsx
+else
+  echo "WARNING: Missing eslint config — typescript.md requires linting"
+  echo "FLAG: PARTIAL — create eslint config per typescript.md standards"
 fi
 ```
 
 - Lint failures → **PARTIAL** (return to Gate 0: "Fix lint issues: [errors]")
-- Missing .golangci.yml in a Go project → flag as warning (quality.md requires it)
+- Missing linter config in Go project → **PARTIAL** (quality.md requires .golangci.yml with 14 mandatory linters)
+- Missing linter config in TypeScript project → **PARTIAL** (typescript.md requires eslint)
 
 **Verdict integration:** ALL three checks (A, B, C) must pass for overall PASS. Any failure makes the overall verdict PARTIAL at best.
 
