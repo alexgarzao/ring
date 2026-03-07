@@ -38,6 +38,7 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | **Benchmark testing (optional)** | testing-benchmark.md |
 | **Idempotency** | idempotency.md (+ domain.md for error codes) |
 | **Multi-tenant** | multi-tenant.md (+ bootstrap.md for context) |
+| **Database migration** | migration-safety.md (+ core.md for golang-migrate) |
 | **Compliance check** | ALL modules |
 
 ---
@@ -64,8 +65,9 @@ This directory contains modular Go standards for Lerian Studio. Load only the mo
 | 16 | [testing-integration.md](testing-integration.md) | 10 | ~500 | Integration Testing (Gate 6): Testcontainers, fixtures, stubs |
 | 17 | [testing-chaos.md](testing-chaos.md) | 5 | ~350 | Chaos Testing (Gate 7): Toxiproxy, failure injection |
 | 18 | [testing-benchmark.md](testing-benchmark.md) | 4 | ~250 | Benchmark Testing (optional): b.Loop(), performance |
+| 19 | [migration-safety.md](migration-safety.md) | 5 | ~350 | Migration Safety (Gate 0.5D): Dangerous ops detection, expand-contract, multi-tenant idempotency |
 
-**Total:** 18 modules with testing split into 6 specialized files
+**Total:** 19 modules with testing split into 6 specialized files
 
 ---
 
