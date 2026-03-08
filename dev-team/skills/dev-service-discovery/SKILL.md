@@ -11,8 +11,8 @@ description: |
   Produces a visual HTML report for human decision-making.
   
   Additionally detects MongoDB index definitions (both in-code EnsureIndexes and
-  scripts/mongodb/*.js files) and can generate or execute index creation scripts
-  for any detected indexes that lack corresponding scripts.
+  scripts/mongodb/*.js files), generates index creation scripts for any gaps,
+  and uploads them to S3 for use during dedicated tenant database provisioning.
 
 trigger: |
   - User wants to know what to provision in dispatch layer for a service
