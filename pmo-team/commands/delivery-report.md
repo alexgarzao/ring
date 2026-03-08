@@ -1,5 +1,5 @@
 ---
-name: delivery-report
+name: ring:delivery-report
 description: Generate visual executive presentation of squad deliveries from Git repository analysis
 argument-hint: "[options]"
 ---
