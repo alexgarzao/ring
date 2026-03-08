@@ -99,7 +99,7 @@
     },
     {
       "name": "ring-finops-team",
-      "version": "0.10.2",
+      "version": "0.11.0",
       "description": "FinOps and Brazilian regulatory compliance skills for financial systems",
       "source": "./finops-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/finops-team",
@@ -136,5 +136,5 @@
       ]
     }
   ],
-  "version": "0.275.0"
+  "version": "0.276.0"
 }
