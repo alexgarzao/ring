@@ -1,7 +1,7 @@
 ---
 name: ring:dev-service-discovery
 slug: dev-service-discovery
-version: 1.0.0
+version: 1.1.0
 type: skill
 description: |
   Scans the current Go project and identifies the Service → Module → Resource
@@ -9,12 +9,17 @@ description: |
   modules (via WithModule or component structure), and resources per module
   (PostgreSQL, MongoDB, RabbitMQ). Redis is excluded (managed via key prefixing).
   Produces a visual HTML report for human decision-making.
+  
+  Additionally detects MongoDB index definitions (both in-code EnsureIndexes and
+  scripts/mongodb/*.js files) and can generate or execute index creation scripts
+  for any detected indexes that lack corresponding scripts.
 
 trigger: |
   - User wants to know what to provision in tenant-manager for a service
   - User asks "what services/modules/resources does this project have?"
   - User needs to register a service in the tenant-manager catalog
   - Before running ring:dev-multi-tenant on a new service
+  - User asks about MongoDB indexes in a project
 
 prerequisite: |
   - Go project with go.mod in the current working directory
@@ -40,8 +45,9 @@ examples:
       1. Detect service identity (ApplicationName, type)
       2. Detect modules (WithModule calls, component structure)
       3. Detect resources per module (PostgreSQL, MongoDB, RabbitMQ)
-      4. Generate visual HTML report
-      5. Open in browser for review
+      4. Detect MongoDB indexes (in-code + scripts)
+      5. Generate visual HTML report
+      6. Open in browser for review
 ---
 
 # Service Discovery for Tenant-Manager
@@ -174,6 +180,30 @@ Store per module:
 
 ---
 
+## Phase 3.5: MongoDB Index Detection & Script Generation
+
+**Only execute this phase if MongoDB was detected in any module during Phase 3.**
+
+**Read the full reference:** `references/mongodb-index-detection.md` (in this skill's directory)
+
+Summary of steps:
+1. **Detect in-code indexes** — scan `EnsureIndexes()` / `IndexModel{}` in MongoDB adapter files
+2. **Detect existing scripts** — scan `scripts/mongodb/*.js` for `createIndex` calls
+3. **Cross-reference** — match in-code indexes against script indexes (covered / missing_script / script_only)
+4. **Generate missing scripts** — create `mongosh`-compatible `.js` scripts following the idempotent `createIndexSafely` pattern (see reference for full template)
+5. **Execute scripts (optional)** — ⚠️ only with explicit user confirmation; auto-detect connection from env/config/docker-compose
+
+Store results for Phase 4 report:
+```text
+  index_coverage = {
+    covered: [{collection, keys, in_code_file, script_file}],
+    missing_script: [{collection, keys, in_code_file}],
+    script_only: [{collection, keys, script_file}],
+  }
+```
+
+---
+
 ## Phase 4: Generate Visual Report
 
 **MANDATORY: Invoke `Skill("ring:visual-explainer")` to produce the report.**
@@ -228,7 +258,16 @@ graph TD
     M2 --> R5["RabbitMQ"]
 ```
 
-### 4. Tenant-Manager Registration Checklist
+### 4. MongoDB Index Coverage (if MongoDB detected)
+
+Table showing cross-reference between in-code indexes and scripts (see `references/mongodb-index-detection.md` for the full format). Include coverage status per collection: ✅✅ (covered), ✅❌ (missing script), ❌✅ (script-only).
+
+If there are **missing scripts**, show a callout:
+```
+⚠️  {N} indexes detected in code without corresponding scripts.
+```
+
+### 5. Tenant-Manager Registration Checklist
 
 ```markdown
 ## What to register in tenant-manager:
@@ -237,11 +276,11 @@ graph TD
 
 - [ ] **Module:** `onboarding`
   - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb
+  - [ ] Resource: mongodb (indexes: 3 in-code, 2 scripts)
 
 - [ ] **Module:** `transaction`
   - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb
+  - [ ] Resource: mongodb (indexes: 2 in-code, 2 scripts)
   - [ ] Resource: rabbitmq
 ```
 
@@ -264,6 +303,8 @@ Linux: xdg-open docs/service-discovery.html
 | "Redis should be included as a resource" | Redis uses key prefixing (`GetKeyFromContext`), not per-tenant provisioning. It is not a tenant-manager resource. | **Exclude Redis from resources** |
 | "The report doesn't need to be visual" | Visual reports are for human decision-making. A JSON dump is not actionable. | **Generate HTML via ring:visual-explainer** |
 | "WithModule not found, so no modules" | Fall back to component structure or ApplicationName. A service always has at least one module. | **Use Strategy B or C** |
+| "No index scripts needed, EnsureIndexes handles it" | In-code indexes run at app startup — but only if the app has connected. Scripts are needed for pre-provisioning, CI/CD, and dedicated tenant databases where the app hasn't booted yet. | **Generate scripts for all in-code indexes** |
+| "I'll just run the indexes manually" | Manual index creation is error-prone and not reproducible. Scripts are idempotent, documented, and version-controlled. | **Generate scripts** |
 
 ---
 
