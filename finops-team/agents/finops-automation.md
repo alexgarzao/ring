@@ -4,11 +4,6 @@ version: 1.2.0
 description: Senior Template Implementation Engineer specializing in .tpl template creation for Brazilian regulatory compliance (Gate 3). Expert in Reporter platform with XML, HTML and TXT template formats.
 type: specialist
 color: green
-last_updated: 2026-02-12
-changelog:
-  - 1.2.0: Add Standards Compliance Report section (N/A for template generation agents)
-  - 1.1.0: Add Model Requirements section with self-verification protocol
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

@@ -3,26 +3,6 @@ name: ring:backend-engineer-golang
 version: 1.7.0
 description: Senior Backend Engineer specialized in Go for high-demand financial systems. Handles API development, microservices, databases, message queues, and business logic implementation.
 type: specialist
-model: opus
-last_updated: 2026-02-07
-changelog:
-  - 1.7.0: Updated to 47 sections per standards-coverage-table.md; added RabbitMQ Reconnection Strategy (MANDATORY) section to messaging.md
-  - 1.6.0: Updated to 45 sections per standards-coverage-table.md; added explicit FOUR-FILE UPDATE RULE documentation for maintainers; references standards-coverage-table.md maintenance
-  - 1.5.0: Added MANDATORY Post-Implementation Validation section - goimports + golangci-lint execution required
-  - 1.4.0: Added HARD GATE requiring all sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.3.0: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 1.2.9: Added Pre-Submission Self-Check section (MANDATORY) to prevent AI slop - references ai-slop-detection.md
-  - 1.2.8: Strengthened Bootstrap Pattern language - MANDATORY not conditional, REJECTED if missing
-  - 1.2.7: Added REQUIRED Bootstrap Pattern Check for new projects (HARD GATE - must follow Lerian Bootstrap Pattern)
-  - 1.2.6: Expanded FORBIDDEN Patterns Check to include HTTP and Telemetry patterns (not just logging)
-  - 1.2.5: Added FORBIDDEN Patterns Check (HARD GATE - must list patterns before coding)
-  - 1.2.4: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 1.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.2.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 1.2.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 1.2.0: Removed duplicated standards content, now references docs/standards/golang.md
-  - 1.1.0: Added multi-tenancy patterns and security best practices
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

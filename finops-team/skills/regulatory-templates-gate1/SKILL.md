@@ -332,7 +332,7 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 
 ### Agent Dispatch
 
-**Dispatch:** `Task(subagent_type: "ring:finops-analyzer", model: "opus")`
+**Dispatch:** `Task(subagent_type: "ring:finops-analyzer")`
 
 **Pre-dispatch:** Check dictionary at `~/.claude/docs/regulatory/dictionaries/{category}-{code}.yaml`
 

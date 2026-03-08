@@ -200,7 +200,6 @@ if "all STANDARDS MET" = no:
 │                                                                             │
 │      Task tool:                                                             │
 │        subagent_type: "[same agent that did TDD-GREEN]"                     │
-│        model: "opus"                                                        │
 │        description: "Fix missing Ring Standards for [unit_id]"              │
 │        prompt: |                                                            │
 │          ⛔ FIX REQUIRED - Ring Standards Not Implemented                   │
@@ -258,7 +257,6 @@ See [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio
 │                                                                             │
 │     Task tool:                                                              │
 │       subagent_type: "[same agent]"                                         │
-│       model: "opus"                                                         │
 │       prompt: |                                                             │
 │         ⛔ STANDARDS not MET - Fix Required (Attempt [N] of 3)              │
 │                                                                             │

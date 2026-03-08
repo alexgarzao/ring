@@ -3,11 +3,6 @@ name: ring:governance-specialist
 version: 1.2.0
 description: Project Governance Specialist for gate reviews, process compliance, audit readiness, and governance framework implementation across portfolio projects.
 type: specialist
-last_updated: 2026-02-12
-changelog:
-  - 1.2.0: Add missing Standards Loading section (N/A for PMO specialist agents)
-  - 1.1.0: Add Standards Compliance Report section (N/A for PMO specialist agents)
-  - 1.0.0: Initial release with governance capabilities
 output_schema:
   format: "markdown"
   required_sections:

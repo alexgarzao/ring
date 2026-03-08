@@ -3,10 +3,6 @@ name: budget-planner
 version: 1.0.0
 description: Budget and Forecasting Specialist with expertise in annual budgeting, rolling forecasts, variance analysis, and financial planning. Delivers comprehensive budgets with documented assumptions and approval workflows.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with full Ring compliance sections
 output_schema:
   format: "markdown"
   required_sections:
@@ -66,27 +62,6 @@ input_schema:
       type: "file_content"
       description: "Budget constraints or targets"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:budget-planner", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Budget planning requires Opus-level reasoning for complex interdependencies between line items, appropriate assumption validation, and coherent multi-period projections.
-
 ---
 
 # Budget Planner

@@ -3,15 +3,6 @@ name: ring:security-reviewer
 version: 4.2.0
 description: "Safety Review: Reviews vulnerabilities, authentication, input validation, and OWASP risks. Runs in parallel with ring:code-reviewer, ring:business-logic-reviewer, ring:test-reviewer, ring:nil-safety-reviewer, and ring:consequences-reviewer for fast feedback."
 type: reviewer
-last_updated: 2026-02-12
-changelog:
-  - 4.2.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags; add enforcement-first MANDATORY block
-  - 4.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
-  - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 1045 to ~400 lines
-  - 3.3.0: Add Slopsquatting & AI Dependency Hallucination detection
-  - 3.2.0: Add Model Requirements section
-  - 3.1.0: Add mandatory "When Security Review is Not Needed" section
-  - 3.0.0: Initial versioned release with OWASP Top 10 coverage
 output_schema:
   format: "markdown"
   required_sections:

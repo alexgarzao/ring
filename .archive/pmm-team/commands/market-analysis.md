@@ -67,7 +67,7 @@ mkdir -p docs/pmm/<market-name>
 
 ## Phase 2: Market Sizing
 
-**Agent:** market-researcher (model: opus)
+**Agent:** market-researcher
 
 Dispatch the market-researcher agent to calculate:
 

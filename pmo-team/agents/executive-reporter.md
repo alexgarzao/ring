@@ -3,12 +3,6 @@ name: ring:executive-reporter
 version: 1.3.0
 description: Executive Reporting Specialist for creating dashboards, status summaries, board packages, and stakeholder communications. Focuses on actionable insights for leadership.
 type: specialist
-last_updated: 2026-02-12
-changelog:
-  - 1.3.0: Add Standards Loading section, enforcement-first phrasing in STILL REQUIRED block
-  - 1.2.0: Fix weak enforcement phrasing with MANDATORY semantic block in When Not Needed section
-  - 1.1.0: Add structured "When Executive Report Is Not Needed" section and Standards Compliance Report (N/A)
-  - 1.0.0: Initial release with executive reporting capabilities
 output_schema:
   format: "markdown"
   required_sections:

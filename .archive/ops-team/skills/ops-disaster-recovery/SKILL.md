@@ -372,7 +372,6 @@ For DR planning tasks, dispatch:
 ```
 Task tool:
   subagent_type: "ring:infrastructure-architect"
-  model: "opus"
   prompt: |
     DR PLANNING REQUEST
     Services: [services requiring DR]

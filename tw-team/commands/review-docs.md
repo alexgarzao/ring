@@ -52,7 +52,6 @@ The review covers five dimensions:
 ```
 Task tool:
   subagent_type: "ring:docs-reviewer"
-  model: "opus"
   prompt: "Review this documentation for quality. Check:
           1. Voice and tone (second person, active voice, present tense)
           2. Structure (sentence case, dividers, scannable)

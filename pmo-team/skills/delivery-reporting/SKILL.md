@@ -222,7 +222,6 @@ For each repository:
 2. **Dispatch Appropriate Specialized Agent**
    Task(
      subagent_type="ring:backend-engineer-golang",  # or appropriate
-     model="opus",
      prompt="""
      Analyze {repo_name} deliveries for period {start} to {end}.
 
@@ -582,7 +581,6 @@ This skill dispatches the `ring:delivery-reporter` agent to perform repository a
 ```
 Task tool:
   subagent_type: "ring:delivery-reporter"
-  model: "opus"
   prompt: |
     Create delivery report for period {start_date} to {end_date}.
     Repositories: {repo_list}

@@ -96,7 +96,6 @@ Collect schedule and deliverable information from projects in scope.
 ```
 Task tool:
   subagent_type: "ring:portfolio-manager"
-  model: "opus"
   prompt: "Identify cross-project dependencies for: [scope]"
 ```
 
@@ -105,7 +104,6 @@ Task tool:
 ```
 Task tool:
   subagent_type: "ring:risk-analyst"
-  model: "opus"
   prompt: "Analyze risks associated with identified dependencies"
 ```
 

@@ -126,7 +126,8 @@ examples:
       
       ## Files Changed
       | File | Action |
-      |------|--------|
+      |
+------|--------|
       | Dockerfile | Created |
       | docker-compose.yml | Created |
       | .env.example | Created |

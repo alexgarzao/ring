@@ -98,7 +98,8 @@ examples:
 
       ## Violations Report
       | Component | Violations | Status |
-      |-----------|-----------|--------|
+      |
+-----------|-----------|--------|
       | LoginForm | 0 | PASS |
 
       ## Handoff to Next Gate
@@ -163,7 +164,6 @@ if language != "typescript":
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst-frontend"
-  model: "opus"
   prompt: |
     **MODE:** ACCESSIBILITY TESTING (Gate 2)
 

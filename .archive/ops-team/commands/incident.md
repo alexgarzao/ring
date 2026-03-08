@@ -34,7 +34,6 @@ Parse the severity and description from the command arguments.
 ```
 Task tool:
   subagent_type: "ring:incident-responder"
-  model: "opus"
   prompt: |
     PRODUCTION INCIDENT DECLARED
 

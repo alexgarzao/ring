@@ -476,7 +476,6 @@ Check 2: Was codebase-report.md created by ring:codebase-explorer?
 Task tool 1:
   subagent_type: "ring:frontend-engineer"
   description: "Frontend standards analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
 
@@ -506,7 +505,6 @@ Task tool 1:
 Task tool 2:
   subagent_type: "ring:qa-analyst-frontend"
   description: "Frontend testing analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
 
@@ -533,7 +531,6 @@ Task tool 2:
 Task tool 3:
   subagent_type: "ring:frontend-designer"
   description: "Frontend design analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
 
@@ -561,7 +558,6 @@ Task tool 3:
 Task tool 4:
   subagent_type: "ring:devops-engineer"
   description: "DevOps analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
     Check all 8 sections per shared-patterns/standards-coverage-table.md -> "ring:devops-engineer"
@@ -587,7 +583,6 @@ Task tool 4:
 Task tool 5:
   subagent_type: "ring:sre"
   description: "Observability analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
     Check all 6 sections per shared-patterns/standards-coverage-table.md -> "ring:sre"
@@ -615,7 +610,6 @@ Task tool 5:
 Task tool 6 (if dispatch_bff == true):
   subagent_type: "ring:frontend-bff-engineer-typescript"
   description: "BFF TypeScript standards analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
 
@@ -645,7 +639,6 @@ Task tool 6 (if dispatch_bff == true):
 Task tool 7 (if dispatch_ui_engineer == true):
   subagent_type: "ring:ui-engineer"
   description: "UI engineer standards analysis"
-  model: "opus"
   prompt: |
     **MODE: ANALYSIS only**
 

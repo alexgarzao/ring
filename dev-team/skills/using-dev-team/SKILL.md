@@ -136,7 +136,6 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 ```
 Task tool:
   subagent_type: "ring:backend-engineer-golang"
-  model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
 
@@ -173,7 +172,6 @@ Use Task tool to dispatch appropriate specialist based on technology need.
 ```
 Task tool:
   subagent_type: "ring:{agent-name}"
-  model: "opus"
   prompt: "{Your specific request with context}"
 ```
 

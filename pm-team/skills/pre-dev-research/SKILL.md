@@ -86,7 +86,6 @@ Research prevents: Reinventing existing patterns, ignoring conventions, missing 
 ```
 Task(
   subagent_type="ring:product-designer",
-  model="opus",
   prompt="Analyze user needs for [feature]. Mode: ux-research. Return: problem validation, preliminary personas, competitive analysis, design constraints."
 )
 ```

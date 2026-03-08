@@ -3,13 +3,6 @@ name: ring:test-reviewer
 version: 1.4.0
 description: "Test Quality Review: Reviews test coverage, edge cases, test independence, assertion quality, and test anti-patterns across unit, integration, and E2E tests. Runs in parallel with ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, and ring:consequences-reviewer for fast feedback."
 type: reviewer
-last_updated: 2026-02-12
-changelog:
-  - 1.4.0: Normalize enforcement words to sentence start, lowercase context words per lexical salience guidelines
-  - 1.3.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags
-  - 1.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
-  - 1.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
-  - 1.0.0: Initial release - test quality, coverage analysis, anti-pattern detection
 output_schema:
   format: "markdown"
   required_sections:

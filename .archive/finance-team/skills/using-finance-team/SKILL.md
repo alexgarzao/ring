@@ -137,7 +137,6 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 ```
 Task tool:
   subagent_type: "{agent-name}"
-  model: "opus"
   prompt: "{Your specific request with context}"
 ```
 

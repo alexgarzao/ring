@@ -3,10 +3,6 @@ name: launch-coordinator
 version: 1.0.0
 description: Launch Execution Specialist for launch checklists, stakeholder coordination, day-of execution, and post-launch monitoring. Ensures smooth launch execution.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with comprehensive launch coordination capabilities
 output_schema:
   format: "markdown"
   required_sections:
@@ -50,27 +46,6 @@ input_schema:
       type: "markdown"
       description: "Lessons from previous launches"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:launch-coordinator", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Launch coordination requires Opus-level reasoning for managing complex dependencies, anticipating issues, and ensuring nothing falls through the cracks during high-stakes execution.
-
 ---
 
 # Launch Coordinator

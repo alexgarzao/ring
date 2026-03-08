@@ -466,7 +466,6 @@ For migration planning tasks, dispatch:
 ```
 Task tool:
   subagent_type: "ring:infrastructure-architect"
-  model: "opus"
   prompt: |
     MIGRATION PLANNING REQUEST
     Type: [cloud-to-cloud / on-prem-to-cloud / upgrade]
@@ -482,7 +481,6 @@ For platform preparation:
 ```
 Task tool:
   subagent_type: "ring:platform-engineer"
-  model: "opus"
   prompt: |
     MIGRATION ENVIRONMENT PREPARATION
     Target Platform: [platform details]

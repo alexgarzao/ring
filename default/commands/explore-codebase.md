@@ -314,7 +314,7 @@ Run twice to understand changes:
 - **Discovery Phase:** 3-4 agents × ~2-3 min each = ~3-5 minutes total (parallel)
 - **Deep Dive Phase:** N agents × ~3-5 min each = ~3-5 minutes total (parallel)
 - **Total Time:** ~6-10 minutes for comprehensive exploration
-- **Model Used:** Haiku (cost-effective for exploration)
+- **Optimized for:** Fast, cost-effective exploration
 - **Cost:** Minimal - optimized for efficiency
 
 ## What Makes This Different

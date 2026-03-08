@@ -3,10 +3,6 @@ name: infrastructure-architect
 version: 1.0.0
 description: Senior Infrastructure Architect specialized in cloud infrastructure design, capacity planning, disaster recovery, and infrastructure lifecycle management for high-availability financial systems.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:
@@ -50,27 +46,6 @@ input_schema:
       type: "object"
       description: "Budget limits"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:infrastructure-architect", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Infrastructure architecture decisions have long-term implications requiring comprehensive analysis of tradeoffs, compliance requirements, and scalability patterns - all requiring Opus-level reasoning.
-
 ---
 
 # Infrastructure Architect

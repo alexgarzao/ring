@@ -161,9 +161,9 @@ The workflow exists specifically to prevent these exact thoughts from leading to
 | Phase | Sub-skill | Purpose | Agent |
 |-------|-----------|---------|-------|
 | Setup | `regulatory-templates-setup` | Template selection, context init | — |
-| Gate 1 | `regulatory-templates-gate1` | Regulatory analysis, field mapping | `finops-analyzer` (opus) |
-| Gate 2 | `regulatory-templates-gate2` | Validate mappings, test transformations | `finops-analyzer` (opus) |
-| Gate 3 | `regulatory-templates-gate3` | Generate .tpl template file | `finops-automation` (sonnet) |
+| Gate 1 | `regulatory-templates-gate1` | Regulatory analysis, field mapping | `finops-analyzer` |
+| Gate 2 | `regulatory-templates-gate2` | Validate mappings, test transformations | `finops-analyzer` |
+| Gate 3 | `regulatory-templates-gate3` | Generate .tpl template file | `finops-automation` |
 
 ---
 

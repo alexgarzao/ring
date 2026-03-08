@@ -3,10 +3,6 @@ name: gtm-planner
 version: 1.0.0
 description: Go-to-Market Strategy Specialist for channel strategy, campaign planning, launch tactics, and GTM execution planning. Creates comprehensive GTM plans.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with comprehensive GTM planning capabilities
 output_schema:
   format: "markdown"
   required_sections:
@@ -56,27 +52,6 @@ input_schema:
       type: "markdown"
       description: "Known constraints or requirements"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:gtm-planner", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** GTM planning requires Opus-level reasoning for synthesizing positioning, messaging, and market context into executable plans with appropriate resource allocation.
-
 ---
 
 # GTM Planner

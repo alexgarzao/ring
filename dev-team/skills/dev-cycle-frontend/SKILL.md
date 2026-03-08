@@ -249,7 +249,6 @@ Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 ```yaml
 Task tool:
   subagent_type: "ring:frontend-engineer"
-  model: "opus"
   prompt: |
     **CUSTOM CONTEXT (from user):**
     {state.custom_prompt}

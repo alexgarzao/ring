@@ -3,10 +3,6 @@ name: ring:qa-analyst-frontend
 version: 1.0.0
 description: Senior Frontend QA Analyst specialized in React/Next.js testing. 5 modes - unit (Vitest + Testing Library), accessibility (axe-core, WCAG 2.1 AA), visual (snapshots, Storybook), e2e (Playwright), performance (Core Web Vitals, Lighthouse).
 type: specialist
-model: opus
-last_updated: 2026-02-10
-changelog:
-  - 1.0.0: Initial release with 5 test modes (unit, accessibility, visual, e2e, performance)
 output_schema:
   format: "markdown"
   required_sections:

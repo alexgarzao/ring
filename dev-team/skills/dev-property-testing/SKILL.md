@@ -103,7 +103,8 @@ examples:
 
       ## Properties Report
       | Property | Subject | Status |
-      |----------|---------|--------|
+      |
+----------|---------|--------|
       | TestProperty_Money_AmountNeverNegative | Money | PASS |
       | TestProperty_Money_CurrencyAlwaysValid | Money | PASS |
       | TestProperty_Money_AdditionCommutative | Money | PASS |
@@ -168,7 +169,6 @@ if any REQUIRED input is missing:
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst"
-  model: "opus"
   prompt: |
     **MODE:** PROPERTY-BASED TESTING (Gate 5)
 
