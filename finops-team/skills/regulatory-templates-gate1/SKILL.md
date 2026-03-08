@@ -1,8 +1,14 @@
 ---
 name: ring:regulatory-templates-gate1
 description: |
-  Gate 1 sub-skill - performs regulatory compliance analysis and field mapping
-  from template specifications.
+  Gate 1 sub-skill - performs regulatory compliance analysis, field mapping,
+  batch approval by confidence level, and auto-saves dictionary after approval.
+  Supports both pre-defined templates (dictionary exists) and new templates (any spec).
+
+dependencies:
+  - ring:finops-analyzer
+
+role: regulatory-analyst
 
 trigger: |
   - regulatory-templates-setup completed
@@ -191,25 +197,60 @@ The requirements exist to prevent these exact thoughts from causing errors. If a
 
 ## Gate 1 Process
 
+### PRE-STEP 0: Mandatory Pre-Checks (BEFORE any field mapping)
+
+**MANDATORY: Execute these checks before EVERY Gate 1 analysis.**
+
+**0a. Load DATA_SOURCES.md**
+Read `finops-team/docs/regulatory/templates/DATA_SOURCES.md` (or `.claude/docs/regulatory/templates/DATA_SOURCES.md` in project context).
+This is the canonical reference for all available Reporter fields and data source prefixes.
+**BLOCKER:** If file not found → use hierarchy from memory: CRM first for personal/banking, midaz_transaction for accounting, midaz_onboarding for organizational.
+
+**0b. Fetch Reporter documentation (source of truth)**
+The official Reporter documentation is the authoritative reference for template syntax and available filters.
+- URL is provided in context as `reporter_docs_url` (if configured in Setup)
+- If `reporter_docs_url` is available: fetch current documentation before proceeding
+- If unavailable: use local fallback at `finops-team/docs/regulatory/templates/reporter-guide.md`
+- **NEVER rely solely on memorized filter list** — Reporter may have added or removed filters
+
+**0c. Cross-dictionary pattern matching (for templates WITHOUT dictionary)**
+Before MCP discovery, search existing dictionaries in `.claude/docs/regulatory/dictionaries/` for patterns:
+
+| If field looks like... | Check this first |
+|-----------------------|-----------------|
+| CNPJ / document number | `midaz_onboarding.organization.0.legal_document` |
+| COSIF code / account code | `midaz_transaction.operation_route.code` |
+| Balance / saldo | `midaz_transaction.balance.available` |
+| Holder name / client name | `crm.holder.name` |
+| Branch / agência | `crm.alias.banking_details.branch` |
+| Account number | `crm.alias.banking_details.account_number` |
+| Date of birth | `crm.holder.natural_person.date_of_birth` |
+| Address | `crm.holder.addresses.primary.*` |
+| GIIN / FATCA | `midaz_onboarding.organization.0.metadata.giin` |
+
+This dramatically reduces the number of fields requiring MCP discovery or user input.
+
+---
+
 ### STEP 1: Check for Data Dictionary (FROM/TO Mappings)
 
-**HIERARCHICAL SEARCH - Dictionary first, Interactive Validation second:**
+**HIERARCHICAL SEARCH - Dictionary first, Batch Approval second:**
 
 **Dictionary Path:** `~/.claude/docs/regulatory/dictionaries/{category}-{code}.yaml`
 
 | Step | If Dictionary EXISTS | If Dictionary NOT EXISTS |
 |------|---------------------|--------------------------|
-| 1 | Load YAML, use field_mappings | Query MCP: `mcp__apidog_midaz/crm__read_project_oas()` |
-| 2 | Apply transformations | Analyze schemas, SUGGEST mappings (preserve casing) |
-| 3 | Use existing mappings | **AskUserQuestion** for EACH field (user approval required) |
-| 4 | Return | Create dictionary with APPROVED mappings only |
-| 5 | — | Save to dictionary path for future use |
+| 1 | Load YAML, use field_mappings | Run Pre-Step 0c (pattern matching) first |
+| 2 | Apply transformations | Query MCP: `mcp__apidog_midaz__read_project_oas()` for remaining fields |
+| 3 | Use existing mappings | Group fields by confidence → **Batch Approval** (see below) |
+| 4 | Return | Auto-save dictionary (see Auto-Save section below) |
+| 5 | — | Update registry.yaml with new entry |
 
 **Dictionary contains:** field_mappings (FROM→TO), transformations, pitfalls, validation_rules
 
 ---
 
-## 🔴 CRITICAL: INTERACTIVE VALIDATION FOR TEMPLATES WITHOUT DICTIONARY
+## 🔴 CRITICAL: VALIDATION FOR TEMPLATES WITHOUT DICTIONARY
 
 ### Data Dictionaries Location
 
@@ -219,15 +260,91 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 
 ---
 
-### Interactive Validation Process (MANDATORY for templates without dictionary)
+### Batch Approval Process (supersedes field-by-field AskUserQuestion for HIGH/MEDIUM)
+
+> **Reconciliation note:** This section supersedes any earlier instruction in this document that requires AskUserQuestion per-field for HIGH or MEDIUM confidence fields. The batch flow below is the authoritative approval process for templates without dictionary. Per-field AskUserQuestion applies ONLY to LOW confidence fields (< 60%). Each field is still presented and user-approved — just in groups rather than one at a time. This reduces interaction from 40–100 min to 10–15 min without removing user control.
+
+**After MCP discovery and pattern matching, group fields by confidence level:**
+
+| Confidence | Threshold | Approval method | Est. time |
+|------------|-----------|-----------------|-----------|
+| **HIGH** | ≥ 90% | Present ALL at once → single YES/NO | ~1 min |
+| **MEDIUM** | 60–89% | Groups of 5 → review each group | ~5–10 min |
+| **LOW** | < 60% | Field-by-field (genuinely uncertain) | ~1–2 min/field |
+
+**Example HIGH confidence batch presentation:**
+```
+Aprovação em lote — campos HIGH confidence (23 campos):
+
+✓ CNPJ Base     → midaz_onboarding.organization.0.legal_document | slice:':8'   (95%)
+✓ Código COSIF  → midaz_transaction.operation_route.code                         (92%)
+✓ Saldo Disp.   → midaz_transaction.balance.available | floatformat:2            (91%)
+✓ Nome titular  → crm.holder.name                                                 (94%)
+[... demais campos HIGH ...]
+
+Aprovar TODOS os 23 campos acima? [Sim / Não — revisar um a um]
+```
+
+**This replaces the old O(n) question flow. Estimated total: 10–15 min vs 40–100+ min.**
+
+---
+
+### Auto-Save Dictionary (MANDATORY after user approval)
+
+**After all field mappings are approved, execute these steps before returning Gate 1 result:**
+
+**STEP A: Generate dictionary YAML**
+Create a complete dictionary file following the format of existing dictionaries (check `.claude/docs/regulatory/dictionaries/` for format reference).
+
+**STEP B: Save dictionary file**
+
+Save to the canonical registry path (so the registry entry and Setup discovery will find it):
+```
+Path: finops-team/docs/regulatory/templates/{AUTHORITY}/{CATEGORY}/{CODE}/dictionary.yaml
+Example: finops-team/docs/regulatory/templates/BACEN/CADOC/4030/dictionary.yaml
+         finops-team/docs/regulatory/templates/RFB/EFINANCEIRA/evtMovOpFin/dictionary.yaml
+```
+
+This path must match the `reference_files.dictionary` value added to `registry.yaml` in STEP C.
+
+**STEP C: Update registry.yaml**
+Append the new template entry to `finops-team/docs/regulatory/templates/registry.yaml`:
+```yaml
+{AUTHORITY}_{CATEGORY}_{CODE}:
+  display_name: "{Template Full Name}"
+  authority: "{BACEN|RFB|other}"
+  category: "{CADOC|EFINANCEIRA|DIMP|APIX|other}"
+  code: "{code}"
+  format: "{XML|TXT|HTML}"
+  frequency: "{monthly|semestral|annual|per_period}"
+  status: active
+  description: "{brief description}"
+  has_dictionary: true
+  validation_mode: automatic
+  reference_files:
+    dictionary: "{authority}/{category}/{code}/dictionary.yaml"
+  fields_count: {N}
+  mandatory_fields: {M}
+```
+
+**STEP D: Confirm to user**
+> "✅ Dicionário salvo em `.claude/docs/regulatory/dictionaries/{filename}.yaml`. Na próxima execução deste template, o workflow será automático (~5 min em vez de ~15 min)."
+
+**BLOCKER:** If save fails (permissions, path error) → STOP. Cannot proceed to Gate 2 until dictionary is persisted. Report exact error and path.
+
+---
+
+### Interactive Validation Process (field-by-field, only for LOW confidence fields)
 
 | Step | Action | Details |
 |------|--------|---------|
-| **A** | Discover Fields | Read regulatory spec (XSD/PDF) → Extract ALL required fields + types + formats |
-| **B** | Query API Schemas | `mcp__apidog-midaz/crm__read_project_oas()` → Extract available fields from both systems |
-| **C** | Interactive Validation | For EACH field: AskUserQuestion with top 3-4 suggestions + "Skip" + "Other" (custom path) |
-| **D** | Validate Transformations | If field needs transform: AskUserQuestion with options (e.g., `slice:':8'`, "No transformation") |
-| **E** | Generate Dictionary | Create YAML with APPROVED mappings only → Save to `DICTIONARY_BASE_PATH/[template].yaml`
+| **A** | Discover Fields | Read regulatory spec (XSD/PDF/URL) → Extract ALL required fields + types + formats |
+| **B** | Pattern Matching | Apply Pre-Step 0c patterns before MCP calls |
+| **C** | Query API Schemas | `mcp__apidog_midaz__read_project_oas()` for fields not resolved by pattern matching |
+| **D** | Batch Approval | Group HIGH/MEDIUM/LOW → present by group (see Batch Approval above) |
+| **E** | Individual Validation | For LOW confidence only: AskUserQuestion with top 3-4 suggestions + "Skip" + "Other" |
+| **F** | Validate Transformations | If field needs transform: confirm filter (e.g., `slice:':8'`, `floatformat:2`) |
+| **G** | Auto-Save Dictionary | Execute Auto-Save steps A–D above (MANDATORY) |
 
 ---
 
@@ -291,7 +408,7 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 
 | Step | Action | Priority Paths |
 |------|--------|----------------|
-| **1** | Query MCP schemas | `mcp__apidog_crm/midaz__read_project_oas()` |
+| **1** | Query MCP schemas | `mcp__apidog_midaz__read_project_oas()` |
 | **2** | Search CRM first | holder.document, holder.name, holder.type, holder.addresses.*, holder.contact.*, holder.naturalPerson.*, holder.legalPerson.*, alias.bankingDetails.*, alias.metadata.* |
 | **3** | Search Midaz second | account.name, account.alias, account.metadata.*, account.status, transaction.metadata.*, balance.amount, organization.legalDocument |
 | **4** | Check metadata | crm.holder/alias.metadata.*, midaz.account/transaction.metadata.* |
