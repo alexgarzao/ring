@@ -1,5 +1,16 @@
 # Ring-tw-team Changelog
 
+## [0.4.2](https://github.com/LerianStudio/ring/releases/tag/ring-tw-team@0.4.2)
+
+- Improvements:
+  - Decoupled agents from specific model requirements to enhance flexibility and modularity.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-tw-team@0.4.1...ring-tw-team@0.4.2)
+
+---
+
 ## [0.4.1](https://github.com/LerianStudio/ring/releases/tag/ring-tw-team@0.4.1)
 
 - Fixes:
