@@ -1,16 +1,20 @@
 # Template Registry - Central Configuration
 # Generated: 2025-11-25
-# Version: 1.1
+# Version: 1.2
+#
+# NOTE: This registry is DYNAMIC.
+# New templates are added automatically via the Contribution Gate after
+# user approval and PR merge. Do not edit manually — use the regulatory-templates workflow.
 #
 # DICTIONARY STATUS:
-# - has_dictionary: true  → Uses pre-configured field mappings (automatic validation)
-# - has_dictionary: false → Requires INTERACTIVE user validation for each field
+# - has_dictionary: true  → Uses pre-configured field mappings (automatic validation, ~5 min)
+# - has_dictionary: false → Requires interactive validation + auto-saves dictionary on completion
 #
 # When has_dictionary is FALSE, Gate 1 will:
-# 1. Query API schemas via MCP
-# 2. Suggest mappings for each regulatory field
-# 3. Present AskUserQuestion with selection boxes + typing option
-# 4. Save user-approved mappings as new dictionary
+# 1. Query API schemas via MCP + pattern-match against existing dictionaries
+# 2. Suggest mappings using batch approval by confidence level
+# 3. Save approved mappings as new dictionary automatically
+# 4. Update this registry with the new entry
 
 templates:
   # ==========================================
@@ -128,17 +132,17 @@ templates:
     code: "evtCadDeclarante"
     format: XML
     frequency: per_period
-    status: pending
+    status: active  # Dictionary exists — activated 2026-03-08
     description: "Entity registration with GIIN, FATCA/CRS categories"
     # DICTIONARY STATUS - Determines validation mode
-    has_dictionary: false  # ⚠️ REQUIRES INTERACTIVE USER VALIDATION
-    validation_mode: interactive  # User must approve each field mapping
+    has_dictionary: true  # ✅ Dictionary available — automatic validation
+    validation_mode: automatic
     reference_files:
       schema: null
       examples: []
-      dictionary: null  # No dictionary - will be created during Gate 1
-    fields_count: 0
-    mandatory_fields: 0
+      dictionary: "RFB/EFINANCEIRA/evtCadDeclarante/dictionary.yaml"
+    fields_count: 12
+    mandatory_fields: 10
 
   RFB_EFINANCEIRA_evtAberturaeFinanceira:
     display_name: "e-Financeira - Abertura e-Financeira"
@@ -257,10 +261,10 @@ templates:
 
 # Metadata
 metadata:
-  last_updated: "2025-11-25"
+  last_updated: "2026-03-08"
   total_templates: 12
-  templates_with_dictionary: 3
-  templates_without_dictionary: 9
+  templates_with_dictionary: 4
+  templates_without_dictionary: 8
   authorities:
     - BACEN
     - RFB
