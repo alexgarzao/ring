@@ -2,7 +2,12 @@
 name: ring:regulatory-templates-setup
 description: |
   Initial setup sub-skill - handles template selection and context initialization
-  for the 3-gate regulatory workflow.
+  for the 5-stage regulatory workflow. Supports any regulatory template (pre-defined
+  or new) via official spec intake (URL/XSD/PDF).
+
+dependencies: []
+
+role: setup
 
 trigger: |
   - Called by regulatory-templates orchestrator at workflow start

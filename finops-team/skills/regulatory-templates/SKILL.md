@@ -1,13 +1,25 @@
 ---
 name: ring:regulatory-templates
 description: |
-  3-gate regulatory template orchestrator - manages setup, Gate 1 (analysis),
-  Gate 2 (validation), Gate 3 (generation) for BACEN/RFB compliance.
+  5-stage regulatory template orchestrator - manages setup, Gate 1 (analysis + auto-save),
+  Gate 2 (validation), Gate 3 (generation), optional Test Gate, optional Contribution Gate.
+  Supports any regulatory template (BACEN, RFB, CVM, SUSEP, COAF, or other).
+
+dependencies:
+  - ring:regulatory-templates-setup
+  - ring:regulatory-templates-gate1
+  - ring:regulatory-templates-gate2
+  - ring:regulatory-templates-gate3
+  - ring:finops-analyzer
+  - ring:finops-automation
+
+role: orchestrator
 
 trigger: |
-  - Creating BACEN CADOCs (4010, 4016, 4111)
+  - Creating BACEN CADOCs (4010, 4016, 4111, or any other)
   - Mapping e-Financeira, DIMP, APIX templates
   - Full automation from analysis to template creation
+  - Creating any new regulatory template not yet in registry
 
 skip_when: |
   - Non-Brazilian regulations → not applicable
@@ -225,11 +237,25 @@ The workflow exists specifically to prevent these exact thoughts from leading to
    - Verify user has GitHub token configured (via environment or user input)
    - Fork `LerianStudio/ring` to user's GitHub account (if not already forked)
    - Create branch: `feat/regulatory-template-{template_code_lower}` (ex: `feat/regulatory-template-cadoc4030`)
-   - Commit the following files (signed via GitHub API with **user's own token**):
+   - Prepare the following files locally:
      - New dictionary YAML: `finops-team/docs/regulatory/templates/{authority}/{category}/{code}/dictionary.yaml`
      - Updated `registry.yaml` with new template entry
      - Generated `.tpl` file in appropriate directory
-   - Open PR to `LerianStudio/ring` with auto-generated description:
+   - **Commit signing is required.** A GitHub PAT token authenticates API calls but does NOT produce a cryptographically signed commit. The user must sign the commit themselves using one of:
+     - GPG key: `git commit -S -m "..."`
+     - SSH signing key (configured in `~/.gitconfig` with `gpg.format=ssh`)
+   - Provide the user with the exact commit command:
+     ```bash
+     git checkout -b feat/regulatory-template-{template_code_lower}
+     # Files are ready at the paths listed above
+     git add finops-team/docs/regulatory/templates/{authority}/{category}/{code}/dictionary.yaml
+     git add finops-team/docs/regulatory/templates/registry.yaml
+     git add finops-team/docs/regulatory/templates/{authority}/{category}/{code}/*.tpl
+     git commit -S -m "feat(finops): add {Template Name} regulatory template"
+     gh pr create --title "feat(finops): add {Template Name} regulatory template" \
+       --body "..."
+     ```
+   - Open PR to `LerianStudio/ring` with auto-generated PR body:
      ```
      feat(finops): add {Template Name} regulatory template
 
@@ -238,25 +264,20 @@ The workflow exists specifically to prevent these exact thoughts from leading to
      - Fields mapped: {N} ({HIGH}H / {MEDIUM}M / {LOW}L confidence)
      - Dictionary: auto-generated via ring:regulatory-templates workflow
 
-     Contributed via ring-finops-team regulatory-templates workflow
+     Contributed via ring:finops-team regulatory-templates workflow
      ```
    - Report PR URL: "✅ PR aberto: {url}"
    - Mark `contribution: { pr_url: "{url}", status: "open" }`
-4. **If GitHub token unavailable:**
-   - Provide manual instructions:
-     ```bash
-     cd <ring-repo>
-     git checkout -b feat/regulatory-template-{code}
-     # Copy dictionary and .tpl files shown above
-     git add . && git commit -S -m "feat(finops): add {name} template"
-     gh pr create --title "feat(finops): add {name} template"
-     ```
+4. **If user does not have GPG/SSH signing configured:**
+   - Explain: "Commit assinado requer chave GPG ou SSH configurada no git. Veja: https://docs.github.com/authentication/managing-commit-signature-verification"
+   - Provide alternative: open a draft PR without signed commit and mark it for manual signing
 
 **🔴 CRITICAL — Commit signing:**
-- Commits MUST be signed with the **user's own GitHub token** via GitHub API
+- A GitHub PAT authenticates API calls but does NOT cryptographically sign commits
+- Signed commits REQUIRE the user's GPG key (`git commit -S`) or SSH signing key
 - **NEVER use agent credentials** for commits
-- The contribution must be attributed to the human contributor
-- If unable to sign as user → provide manual `git commit -S` instructions
+- The contribution must be attributed to and signed by the human contributor
+- If user cannot sign → provide draft PR instructions and explain signing requirement
 
 **BLOCKER:** If fork or branch creation fails → provide manual git instructions. Do NOT attempt workarounds using agent credentials.
 
