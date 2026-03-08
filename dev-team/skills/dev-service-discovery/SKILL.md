@@ -210,78 +210,67 @@ Store results for Phase 4 report:
 
 Read `default/skills/visual-explainer/templates/data-table.html` first to absorb table patterns.
 
+**The report is focused on what needs to be configured in the dispatch layer for multi-tenant to work for this service.**
+
 **The HTML report MUST include these sections:**
 
-### 1. Service Overview
+### 1. Tenant-Manager Configuration Summary
 
-Card showing:
-- **Service Name:** `{service_name}`
-- **Service Type:** `product` | `plugin`
-- **Modules:** `{count}`
-- **Total Resources:** `{count across all modules}`
+The primary section — tells the operator exactly what to register:
 
-### 2. Module Map
+```markdown
+## Tenant-Manager Configuration for: {service_name}
 
-One card per module:
+Service: {service_name}
+Type: {product | plugin}
+Isolation: database
+
+### Modules to Register
+
+| Module       | PostgreSQL | MongoDB | RabbitMQ | MongoDB Indexes (S3) |
+|--------------|------------|---------|----------|----------------------|
+| onboarding   | ✅ primary | ✅      | ❌       | s3://{bucket}/scripts/mongodb/{service_name}/create-onboarding-indexes.js |
+| transaction  | ✅ primary | ✅      | ✅       | s3://{bucket}/scripts/mongodb/{service_name}/create-transaction-indexes.js |
+```
+
+For each module, show:
+- Which resources need to be registered (postgresql, mongodb, rabbitmq)
+- S3 path where MongoDB index scripts are available (if MongoDB detected)
+- If index scripts were not uploaded yet, show: "⚠️ Not uploaded"
+
+### 2. MongoDB Index Scripts
+
+Table showing what scripts exist and where they are:
 
 ```
-┌─────────────────────────────────────┐
-│ MODULE: onboarding                  │
-├─────────────────────────────────────┤
-│ PostgreSQL ✅  (7 repositories)     │
-│   organization, ledger, account,    │
-│   asset, portfolio, segment,        │
-│   accounttype                       │
-│                                     │
-│ MongoDB ✅  (metadata)              │
-│                                     │
-│ RabbitMQ ❌  (not detected)         │
-│                                     │
-│ Redis ℹ️  (detected — not a         │
-│   dispatch layer resource)          │
-└─────────────────────────────────────┘
+| Script                       | Indexes | S3 Status  | S3 Path                              |
+|------------------------------|---------|------------|--------------------------------------|
+| create-service-indexes.js    | 4       | ✅ Uploaded | s3://{bucket}/scripts/mongodb/...     |
+| create-resource-indexes.js   | 4       | ✅ Uploaded | s3://{bucket}/scripts/mongodb/...     |
+| create-audit-indexes.js      | 2       | ⚠️ Missing  | (generated locally, not yet uploaded) |
+```
+
+If there are indexes in code without scripts:
+```
+⚠️  {N} indexes detected in code without corresponding scripts.
+    Scripts were generated in scripts/mongodb/ — upload to S3 to make them
+    available for dedicated tenant database provisioning.
 ```
 
 ### 3. Service Hierarchy Diagram
 
-Mermaid diagram:
+Mermaid diagram showing Service → Module → Resource tree:
 
 ```mermaid
 graph TD
     S["Service: ledger (product)"]
     S --> M1["Module: onboarding"]
     S --> M2["Module: transaction"]
-    M1 --> R1["PostgreSQL (7 repos)"]
+    M1 --> R1["PostgreSQL"]
     M1 --> R2["MongoDB"]
-    M2 --> R3["PostgreSQL (6 repos)"]
+    M2 --> R3["PostgreSQL"]
     M2 --> R4["MongoDB"]
     M2 --> R5["RabbitMQ"]
-```
-
-### 4. MongoDB Index Coverage (if MongoDB detected)
-
-Table showing cross-reference between in-code indexes and scripts (see `references/mongodb-index-detection.md` for the full format). Include coverage status per collection: ✅✅ (covered), ✅❌ (missing script), ❌✅ (script-only).
-
-If there are **missing scripts**, show a callout:
-```
-⚠️  {N} indexes detected in code without corresponding scripts.
-```
-
-### 5. Tenant-Manager Registration Checklist
-
-```markdown
-## What to register in dispatch layer:
-
-- [ ] **Service:** `ledger` (type: product, isolation: database)
-
-- [ ] **Module:** `onboarding`
-  - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb (indexes: 3 in-code, 2 scripts, 1 missing)
-
-- [ ] **Module:** `transaction`
-  - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb (indexes: 2 in-code, 2 scripts, all covered)
-  - [ ] Resource: rabbitmq
 ```
 
 **Save to:** `docs/service-discovery.html` in the project root.
