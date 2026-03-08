@@ -3,10 +3,6 @@ name: ring:risk-analyst
 version: 1.1.0
 description: Portfolio Risk Analyst specialized in risk identification, assessment, correlation analysis, and mitigation planning across portfolio projects. Manages RAID logs and portfolio risk exposure.
 type: specialist
-last_updated: 2026-02-12
-changelog:
-  - 1.1.0: Add Standards Compliance Report section (N/A for PMO specialist agents)
-  - 1.0.0: Initial release with risk analysis capabilities
 output_schema:
   format: "markdown"
   required_sections:

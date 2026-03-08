@@ -3,26 +3,6 @@ name: ring:frontend-designer
 version: 1.6.0
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code. Includes UI Library Mode detection for handoff.
 type: specialist
-model: opus
-last_updated: 2026-02-12
-changelog:
-  - 1.6.0: Update Standards Compliance trigger with enforcement-first MANDATORY semantic block
-  - 1.5.0: Added Standards Compliance Report section (MANDATORY for ANALYSIS mode) with standards-coverage-table.md reference
-  - 1.4.0: Added UI Library Mode Detection for handoff, updated to 19 sections after frontend.md expansion
-  - 1.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.2.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 1.2.2: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 1.2.1: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.2.0: Fixed Anti-Rationalization Table to use mandatory format (Rationalization | Why It's WRONG | Required Action), added new rationalizations for PROJECT_RULES.md and standards compliance
-  - 1.1.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 1.1.0: Removed duplicated Domain Standards section, references Ring Frontend standards via WebFetch
-  - 1.0.0: Refactored to specification-only format, removed format examples
-  - 0.5.0: Added full design team capabilities (UX Research, IA, Content Design, Accessibility, Mobile, i18n, Data Viz, Prototyping)
-  - 0.4.0: Added New Component Discovery, Conflict Resolution, Design Tools Integration
-  - 0.3.0: Added Project Context Discovery
-  - 0.2.0: Refactored to focus on design analysis and specifications
-  - 0.1.0: Initial creation
 output_schema:
   format: "markdown"
   required_sections:

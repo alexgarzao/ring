@@ -3,10 +3,6 @@ name: platform-engineer
 version: 1.0.0
 description: Senior Platform Engineer specialized in building and maintaining internal developer platforms, service mesh, API gateways, and self-service infrastructure. Focuses on enabling developer productivity through golden paths and platform abstractions.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:
@@ -44,27 +40,6 @@ input_schema:
       type: "list[string]"
       description: "List of services to be supported"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:platform-engineer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Platform engineering requires comprehensive understanding of service mesh configurations, API gateway patterns, and complex platform abstractions that require Opus-level reasoning.
-
 ---
 
 # Platform Engineer

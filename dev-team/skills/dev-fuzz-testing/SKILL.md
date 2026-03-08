@@ -98,7 +98,8 @@ examples:
 
       ## Corpus Report
       | Function | Entries | Crashes |
-      |----------|---------|---------|
+      |
+----------|---------|---------|
       | FuzzParseJSON | 6 | 0 |
       | FuzzParseConfig | 6 | 0 |
 
@@ -164,7 +165,6 @@ if language != "go":
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst"
-  model: "opus"
   prompt: |
     **MODE:** FUZZ TESTING (Gate 4)
 

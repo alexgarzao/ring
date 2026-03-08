@@ -157,7 +157,7 @@ pmo-team/agents/
 **Key Characteristics:**
 
 - Invoked via Claude's `Task` tool with `subagent_type`
-- Must specify model (typically "opus" for comprehensive analysis)
+- Invoked with specialized subagent_type for domain-specific analysis
 - Review agents run in parallel (6 reviewers dispatch simultaneously via `/ring:codereview` command)
 - Developer agents provide specialized domain expertise
 - Return structured reports with severity-based findings
@@ -625,13 +625,13 @@ See `skills/shared-patterns/todowrite-integration.md` for tracking setup
 SKILL.md frontmatter → generate-skills-ref.py → formatted overview → session context
 ```
 
-### Agents ↔ Models
+### Agents ↔ Orchestrator
 
-**Relationship:** Model requirement specification
+**Relationship:** Agent dispatch via Task tool
 
-- Agents specify required AI model in frontmatter
-- Review agents typically require "opus" for comprehensive analysis
-- Model choice affects depth and quality of analysis
+- Agents are invoked via `Task(subagent_type: "ring:{agent-name}")`
+- Review agents run in parallel for comprehensive analysis
+- Agent specialization determines depth and quality of analysis
 
 ### TodoWrite ↔ Skills
 
@@ -683,8 +683,8 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 
 ### Adding New Agents
 
-1. Create `{plugin}/agents/{name}.md` with model specification
-2. Include YAML frontmatter: `name`, `description`, `model`, `version`
+1. Create `{plugin}/agents/{name}.md` with agent definition
+2. Include YAML frontmatter: `name`, `description`, `version`
 3. Invoke via Task tool with `subagent_type="ring:{name}"`
 4. Review agents can run in parallel via `/ring:codereview`
 5. Developer agents provide domain expertise via direct Task invocation
@@ -767,7 +767,7 @@ SKILL.md frontmatter → generate-skills-ref.py → formatted overview → sessi
 ### Parallel Reviews Not Working
 
 1. Ensure all Task calls in single message
-2. Verify model specification (opus required)
+2. Verify agent names match exactly
 3. Check agent names match exactly
 
 ### Commands Not Recognized

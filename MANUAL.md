@@ -178,23 +178,23 @@ Invoke via `Task tool with subagent_type: "..."`.
 
 **Always dispatch all 6 in parallel** (single message, 6 Task calls):
 
-| Agent                          | Purpose                                      | Model |
-| ------------------------------ | -------------------------------------------- | ----- |
-| `ring:code-reviewer`           | Architecture, patterns, maintainability      | Opus  |
-| `ring:business-logic-reviewer` | Domain correctness, edge cases, requirements | Opus  |
-| `ring:security-reviewer`       | Vulnerabilities, OWASP, auth, validation     | Opus  |
-| `ring:test-reviewer`           | Test coverage, quality, and completeness     | Opus  |
-| `ring:nil-safety-reviewer`     | Nil/null pointer safety analysis             | Opus  |
-| `ring:consequences-reviewer`   | Ripple effect, caller impact, downstream consequences | Opus  |
+| Agent                          | Purpose                                      |
+| ------------------------------ | -------------------------------------------- |
+| `ring:code-reviewer`           | Architecture, patterns, maintainability      |
+| `ring:business-logic-reviewer` | Domain correctness, edge cases, requirements |
+| `ring:security-reviewer`       | Vulnerabilities, OWASP, auth, validation     |
+| `ring:test-reviewer`           | Test coverage, quality, and completeness     |
+| `ring:nil-safety-reviewer`     | Nil/null pointer safety analysis             |
+| `ring:consequences-reviewer`   | Ripple effect, caller impact, downstream consequences |
 
 **Example:** Before merging, run all 6 parallel reviewers via `/ring:codereview src/`
 
 ### Planning & Analysis (ring-default)
 
-| Agent                    | Purpose                                                  | Model |
-| ------------------------ | -------------------------------------------------------- | ----- |
-| `ring:write-plan`        | Generate implementation plans for zero-context execution | Opus  |
-| `ring:codebase-explorer` | Deep architecture analysis (vs `Explore` for speed)      | Opus  |
+| Agent                    | Purpose                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `ring:write-plan`        | Generate implementation plans for zero-context execution |
+| `ring:codebase-explorer` | Deep architecture analysis (vs `Explore` for speed)      |
 
 ### Developer Specialists (ring-dev-team)
 
@@ -312,12 +312,12 @@ For portfolio-level project management and oversight:
 /ring:codereview [files-or-paths]
     ↓
 Runs in parallel:
-  • ring:code-reviewer (Opus)
-  • ring:business-logic-reviewer (Opus)
-  • ring:security-reviewer (Opus)
-  • ring:test-reviewer (Opus)
-  • ring:nil-safety-reviewer (Opus)
-  • ring:consequences-reviewer (Opus)
+  • ring:code-reviewer
+  • ring:business-logic-reviewer
+  • ring:security-reviewer
+  • ring:test-reviewer
+  • ring:nil-safety-reviewer
+  • ring:consequences-reviewer
     ↓
 Consolidated report with recommendations
 ```
@@ -399,10 +399,9 @@ These enforce quality standards:
 ```
 Task tool:
   subagent_type: "ring:code-reviewer"
-  model: "opus"
   prompt: [context]
     ↓
-Runs agent with Opus model
+Runs agent
     ↓
 Returns structured output per agent's output_schema
 ```

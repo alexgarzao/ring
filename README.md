@@ -37,7 +37,7 @@ Ring solves this by:
 - `ring:nil-safety-reviewer` - Nil/null safety review (traces pointer risks, missing guards, panic paths)
 - `ring:consequences-reviewer` - Ripple effect review (traces how changes propagate beyond modified files - caller chains, consumer contracts, downstream breakage)
 - `ring:write-plan` - Implementation planning agent
-- `ring:codebase-explorer` - Deep architecture analysis (Opus-powered, complements built-in Explore)
+- `ring:codebase-explorer` - Deep architecture analysis (deep-analysis, complements built-in Explore)
 - Use `/ring:codereview` command to orchestrate parallel review workflow
 
 **Developer Agents (dev-team plugin):**
@@ -439,7 +439,7 @@ Ring provides 33 slash commands across 6 plugins for common workflows.
 - `/ring:write-plan [feature]` - Create detailed implementation plan with bite-sized tasks
 - `/ring:execute-plan [path]` - Execute plan in batches with review checkpoints
 - `/ring:lint [path]` - Run lint checks and dispatch parallel agents to fix all issues
-- `/ring:explore-codebase [path]` - Deep codebase exploration using Opus-powered agent
+- `/ring:explore-codebase [path]` - Deep codebase exploration using deep-analysis agent
 - `/ring:interview-me [topic]` - Proactive requirements gathering through structured user interview
 - `/ring:md-to-html [file]` - Transform a markdown file into a standalone, styled HTML page
 - `/ring:diagram [topic]` - Generate a Mermaid diagram and open in mermaid.live
@@ -545,7 +545,7 @@ Claude: Dispatching all 6 reviewers in parallel...
 - **All reviewers run simultaneously** (not sequential)
 - **Comprehensive** - Get all feedback at once, easier to prioritize
 - **Tech debt tracking** - Low/Cosmetic issues tracked with TODO/FIXME comments in code
-- **Model-specific** - All reviewers run on Opus for deep analysis
+- **Model-specific** - All reviewers run on for deep analysis
 
 ## 🏗️ Architecture
 

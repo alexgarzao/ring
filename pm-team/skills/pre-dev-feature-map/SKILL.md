@@ -111,7 +111,6 @@ If you catch yourself writing any of these in a Feature Map, **STOP**:
 ```
 Task(
   subagent_type="ring:product-designer",
-  model="opus",
   prompt="Create detailed UX design based on PRD, ux-criteria.md, and feature-map.md at docs/pre-dev/{feature}/. Mode: ux-design. Create: user-flows.md with Mermaid diagrams for all user journeys (happy path, error paths, edge cases), wireframes/ directory with YAML specs for all screens, UI state documentation for all interactive elements."
 )
 ```

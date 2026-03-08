@@ -9,7 +9,6 @@ trigger: |
 skip_when: |
   - Greenfield project → Use /pre-dev-* instead
   - Single file fix → Use ring:dev-cycle directly
-
 ---
 
 # Dev Refactor Skill

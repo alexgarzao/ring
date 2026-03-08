@@ -3,22 +3,6 @@ name: ring:infrastructure-cost-estimator
 version: 7.3.0
 description: Infrastructure Cost Calculator with per-component sharing model, environment-specific calculations (Homolog vs Production), dynamic Helm chart data from LerianStudio/helm, TPS capacity analysis, networking architecture, and service-component dependency mapping. RECEIVES complete data (read at runtime from LerianStudio/helm) and CALCULATES detailed cost attribution, capacity planning, and profitability.
 type: calculator
-last_updated: 2026-02-12
-changelog:
-  - 7.3.0: Enforcement-first language, XML semantic blocks, lift Cannot Be Overridden to top-level, rename When Not Needed
-  - 7.2.0: Add Standards Loading (N/A), Cannot Be Overridden, Severity Calibration, When Not Needed sections for CLAUDE.md compliance
-  - 7.1.0: Add Blocker Criteria section with proper table format, add Standards Compliance Report section (N/A for infrastructure cost agents)
-  - 7.0.0: Added Service Component Dependencies section showing which services use which components, Access Manager as ALWAYS SHARED platform component
-  - 6.0.0: Dynamic data model - skill reads actual values from LerianStudio/helm at runtime, removed hardcoded Bitnami presets, removed firmino-gitops references
-  - 5.0.0: Added environment-specific calculations (Homolog vs Production side-by-side), Bitnami resource presets, actual Helm chart config support, environment comparison summary
-  - 4.3.0: Added VPC as shareable component, networking architecture (NAT Gateway always shared, 1 for homolog, 3 for production), TPS-based data transfer calculations
-  - 4.2.0: Added TPS capacity benchmarks from load tests, operational recommendations, Valkey scaling rules, authentication impact analysis
-  - 4.1.0: Added actual Helm chart resource configs (CPU/memory), EKS node sizing calculation, homolog (1 pod) vs production (3 pods) baseline
-  - 4.0.0: Added per-component sharing model, detailed infrastructure breakdown, cost by category, shared vs dedicated summary
-  - 3.1.0: Refactored to pure calculator - receives all data, does not ask questions. Skill orchestrates.
-  - 3.0.0: Added profitability analysis
-  - 2.0.0: Simplified - auto-discovers from docker-compose
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:
@@ -873,7 +857,6 @@ Monthly data volume = TPS × 86,400 × 30 × 15KB ÷ 1,000,000 = [X,XXX] GB
 ```
 Task tool:
   subagent_type: "ring:infrastructure-cost-estimator"
-  model: "opus"
   prompt: |
     Calculate infrastructure costs and profitability.
 

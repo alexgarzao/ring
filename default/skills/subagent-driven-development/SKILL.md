@@ -83,7 +83,6 @@ Read plan file, create TodoWrite with all tasks.
    ```
    Task(
      subagent_type=task.agent,
-     model="opus",
      prompt="Working directory: {task.working_directory}
 
      FIRST: cd {task.working_directory}

@@ -98,7 +98,8 @@ examples:
 
       ## Failure Scenarios
       | Component | Scenario | Status | Recovery |
-      |-----------|----------|--------|----------|
+      |
+-----------|----------|--------|----------|
       | PostgreSQL | Connection Loss | PASS | Yes |
       | PostgreSQL | High Latency | PASS | Yes |
       | PostgreSQL | Network Partition | PASS | Yes |
@@ -217,7 +218,6 @@ if external_dependencies is empty (AFTER auto-detection in Step 0):
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst"
-  model: "opus"
   prompt: |
     **MODE:** CHAOS TESTING (Gate 7)
 

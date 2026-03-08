@@ -3,10 +3,6 @@ name: incident-responder
 version: 1.0.0
 description: Senior Incident Commander specialized in production incident management, root cause analysis, and incident response coordination. Expert in SRE incident practices for high-availability financial systems.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:
@@ -54,27 +50,6 @@ input_schema:
       type: "list[object]"
       description: "Known events leading to incident"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:incident-responder", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Incident response requires rapid analysis of complex distributed systems, correlation of multiple signals, and decisive action under pressure - all requiring Opus-level reasoning capabilities.
-
 ---
 
 # Incident Responder

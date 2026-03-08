@@ -65,7 +65,7 @@ mkdir -p docs/pmm/<product-name>
 ## Gate 0: Market Analysis (if needed)
 
 **Skill:** market-analysis
-**Agent:** market-researcher (model: opus)
+**Agent:** market-researcher
 
 Skip if: Recent market analysis exists (<6 months old)
 
@@ -98,7 +98,7 @@ Skip if: Recent competitive intel exists (<3 months old)
 ## Gate 2: Positioning Development
 
 **Skill:** positioning-development
-**Agent:** positioning-strategist (model: opus)
+**Agent:** positioning-strategist
 
 1. Define category strategy
 2. Identify differentiation
@@ -116,7 +116,7 @@ Skip if: Recent competitive intel exists (<3 months old)
 ## Gate 3: Messaging Creation
 
 **Skill:** messaging-creation
-**Agent:** messaging-specialist (model: opus)
+**Agent:** messaging-specialist
 
 1. Create value propositions
 2. Develop proof points
@@ -134,7 +134,7 @@ Skip if: Recent competitive intel exists (<3 months old)
 ## Gate 4: Pricing Strategy (if applicable)
 
 **Skill:** pricing-strategy
-**Agent:** pricing-analyst (model: opus)
+**Agent:** pricing-analyst
 
 Skip if: Pricing already determined or not applicable
 
@@ -152,7 +152,7 @@ Skip if: Pricing already determined or not applicable
 ## Gate 5: GTM Planning
 
 **Skill:** gtm-planning
-**Agent:** gtm-planner (model: opus)
+**Agent:** gtm-planner
 
 1. Define GTM strategy
 2. Select and prioritize channels
@@ -172,7 +172,7 @@ Skip if: Pricing already determined or not applicable
 ## Gate 6: Launch Coordination
 
 **Skill:** launch-execution
-**Agent:** launch-coordinator (model: opus)
+**Agent:** launch-coordinator
 
 1. Assess launch readiness
 2. Create pre-launch checklist
@@ -226,7 +226,7 @@ Next steps:
 - **Positioning before messaging** - don't skip the order
 - **Budget clarity is required** - tactics without budget are wishes
 - **Timeline is fixed** - scope can flex, date cannot
-- All agents use **model: opus** - do not use sonnet
+- All agents are dispatched via Task tool with appropriate subagent_type
 
 ## Quick Reference
 

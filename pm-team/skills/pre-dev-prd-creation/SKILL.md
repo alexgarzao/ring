@@ -216,7 +216,6 @@ topology:
 ```
 Task(
   subagent_type="ring:product-designer",
-  model="opus",
   prompt="Validate PRD at docs/pre-dev/{feature}/prd.md against user needs. Mode: ux-validation.
 
   UI Configuration (from pre-dev command):

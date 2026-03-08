@@ -217,7 +217,6 @@ Between "WebFetch standards" and "Task(agent)" there MUST be "Skill(sub-skill)".
 ```yaml
 Task tool:
   subagent_type: "ring:backend-engineer-golang"
-  model: "opus"
   prompt: |
     **CUSTOM CONTEXT (from user):**
     {state.custom_prompt}
@@ -1173,7 +1172,6 @@ Action: Use Task tool with EXACTLY these parameters:
 # Agent 1: Codebase Explorer - Technical Analysis
 Task tool:
   subagent_type: "ring:codebase-explorer"
-  model: "opus"
   description: "Analyze legacy project for PROJECT_RULES.md"
   prompt: |
     Analyze this LEGACY codebase to extract technical information for PROJECT_RULES.md.
@@ -1651,7 +1649,6 @@ When custom instructions are provided without a tasks file, ring:dev-cycle gener
 ```yaml
 Task tool:
   subagent_type: "ring:codebase-explorer"
-  model: "opus"
   prompt: |
     Analyze this codebase to support the following implementation request:
     

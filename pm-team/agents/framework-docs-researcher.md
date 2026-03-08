@@ -33,11 +33,6 @@ output_schema:
       required: true
 
 version: 1.2.0
-last_updated: 2026-02-12
-changelog:
-  - 1.2.0: Add Standards Compliance Report section (N/A for research agents)
-  - 1.1.0: Add Model Requirements section with Opus 4.5+ gate
-  - 1.0.0: CLAUDE.md compliance - Added 7 mandatory sections (Standards Loading, Blocker Criteria, Cannot Be Overridden, Severity Calibration, Pressure Resistance, Anti-Rationalization Table, When Research is Not Needed)
 ---
 
 # Framework Docs Researcher

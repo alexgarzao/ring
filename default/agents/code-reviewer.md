@@ -3,17 +3,6 @@ name: ring:code-reviewer
 version: 4.4.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer, and ring:consequences-reviewer for fast feedback."
 type: reviewer
-last_updated: 2026-02-12
-changelog:
-  - 4.4.0: Normalize enforcement words to sentence start, lowercase context words per lexical salience guidelines
-  - 4.3.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags
-  - 4.2.0: Replace weak minimal review phrasing with enforcement-first MANDATORY block
-  - 4.1.0: Add Non-Negotiables, Pressure Resistance, When Not Needed, Standards Compliance Report for CLAUDE.md compliance
-  - 4.0.0: Major refactor - extract common sections to shared-patterns, reduce from 931 to ~300 lines
-  - 3.3.0: Add AI Slop Detection section
-  - 3.2.0: Add Model Requirements section
-  - 3.1.0: Add mandatory "When Code Review is Not Needed" section
-  - 3.0.0: Initial versioned release
 output_schema:
   format: "markdown"
   required_sections:

@@ -44,7 +44,6 @@ Parse scope and focus from arguments.
 ```
 Task tool:
   subagent_type: "ring:cloud-cost-optimizer"
-  model: "opus"
   prompt: |
     COST ANALYSIS REQUEST
 

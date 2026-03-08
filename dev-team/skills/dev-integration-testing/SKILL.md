@@ -110,7 +110,8 @@ examples:
 
       ## Scenario Coverage
       | Scenario | Test File | Tests | Status |
-      |----------|-----------|-------|--------|
+      |
+----------|-----------|-------|--------|
       | Create user in DB | user_integration_test.go | 2 | PASS |
       | Find user by email | user_integration_test.go | 2 | PASS |
       | Update user | user_integration_test.go | 1 | PASS |

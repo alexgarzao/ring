@@ -3,11 +3,6 @@ name: ring:functional-writer
 version: 0.3.0
 description: Senior Technical Writer specialized in functional documentation including guides, conceptual explanations, tutorials, and best practices.
 type: specialist
-last_updated: 2026-02-12
-changelog:
-  - 0.3.0: Add Standards Compliance Report section (N/A rationale for documentation agents)
-  - 0.2.0: Add Model Requirements section with Opus 4.5+ verification gate
-  - 0.1.0: Initial creation - functional documentation specialist
 output_schema:
   format: "markdown"
   required_sections:
