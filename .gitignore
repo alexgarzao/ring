@@ -3,6 +3,7 @@
 .test/
 examples/
 .references/
+docs/codereview/
 
 # Python cache
 .pytest_cache/
