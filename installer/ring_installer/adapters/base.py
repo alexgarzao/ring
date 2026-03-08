@@ -5,9 +5,13 @@ All platform adapters must inherit from PlatformAdapter and implement
 the required abstract methods for transforming Ring components.
 """
 
+import logging
+import re
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class PlatformAdapter(ABC):
@@ -61,7 +65,9 @@ class PlatformAdapter(ABC):
         pass
 
     @abstractmethod
-    def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_command(
+        self, command_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Transform a Ring command to the target platform format.
 
@@ -102,7 +108,9 @@ class PlatformAdapter(ABC):
         """
         pass
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    def transform_hook(
+        self, hook_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
         """
         Transform a Ring hook to the target platform format.
 
@@ -130,12 +138,7 @@ class PlatformAdapter(ABC):
         Example:
             {"agent": "droid", "skill": "skill", "command": "command"}
         """
-        return {
-            "agent": "agent",
-            "skill": "skill",
-            "command": "command",
-            "hook": "hook"
-        }
+        return {"agent": "agent", "skill": "skill", "command": "command", "hook": "hook"}
 
     def is_native_format(self) -> bool:
         """
@@ -175,6 +178,10 @@ class PlatformAdapter(ABC):
         """
         Extract YAML frontmatter from markdown content.
 
+        Uses yaml.safe_load for full parsing. On parse failure, falls back to
+        regex extraction of critical fields (name, description) so that a single
+        invalid YAML value in a non-essential field doesn't destroy all metadata.
+
         Args:
             content: Markdown content with optional YAML frontmatter
 
@@ -192,11 +199,69 @@ class PlatformAdapter(ABC):
                 yaml_content = content[3:end_marker].strip()
                 try:
                     frontmatter = yaml.safe_load(yaml_content) or {}
-                except yaml.YAMLError:
-                    pass
-                body = content[end_marker + 3:].strip()
+                except yaml.YAMLError as exc:
+                    logger.warning(
+                        "YAML parse error in frontmatter — falling back to regex extraction: %s",
+                        exc,
+                    )
+                    frontmatter = self._extract_frontmatter_fallback(yaml_content)
+                body = content[end_marker + 3 :].strip()
 
         return frontmatter, body
+
+    @staticmethod
+    def _extract_frontmatter_fallback(yaml_content: str) -> Dict[str, Any]:
+        """
+        Regex fallback for extracting critical frontmatter fields when YAML
+        parsing fails.
+
+        Extracts simple ``key: value`` and ``key: |\\n  multiline`` patterns
+        for the fields that every platform adapter needs (name, description).
+        Does not attempt to parse nested structures — those are non-critical
+        and were likely the source of the YAML error.
+
+        Args:
+            yaml_content: Raw YAML text between the ``---`` delimiters
+
+        Returns:
+            Dict with whatever critical fields could be recovered
+        """
+        result: Dict[str, Any] = {}
+
+        # Match top-level scalar: "key: value" (not a block indicator)
+        for match in re.finditer(
+            r"^([a-zA-Z_][\w-]*):[ \t]+(?![|>])(.+)$",
+            yaml_content,
+            re.MULTILINE,
+        ):
+            key, value = match.group(1), match.group(2).strip()
+            # Strip surrounding quotes
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+                value = value[1:-1]
+            result[key] = value
+
+        # Match top-level block scalar: "key: |\n  lines..."
+        for match in re.finditer(
+            r"^([a-zA-Z_][\w-]*):[ \t]+[|>]-?\n((?:[ \t]+.+\n?)+)",
+            yaml_content,
+            re.MULTILINE,
+        ):
+            key = match.group(1)
+            # Only overwrite if YAML scalar didn't already capture it
+            if key not in result:
+                lines = match.group(2).splitlines()
+                # Dedent: strip the common leading whitespace
+                stripped = [ln.lstrip() for ln in lines if ln.strip()]
+                result[key] = " ".join(stripped)
+
+        if result:
+            logger.info(
+                "Fallback recovered %d frontmatter field(s): %s",
+                len(result),
+                ", ".join(result.keys()),
+            )
+
+        return result
 
     def create_frontmatter(self, data: Dict[str, Any]) -> str:
         """
