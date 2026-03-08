@@ -3,6 +3,17 @@
 ## [0.19.2](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.2)
 
 - Improvements:
+  - Decoupled agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.1...ring-pm-team@0.19.2)
+
+---
+
+## [0.19.2](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.2)
+
+- Improvements:
   - Refactored code to decouple agents from specific model requirements.
 
 Contributors: @fred
