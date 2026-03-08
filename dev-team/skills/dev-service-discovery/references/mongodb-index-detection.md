@@ -218,55 +218,86 @@ print("");
 
 **Execute after Step 4 (script generation) or when scripts already exist.**
 
-Upload all index scripts to S3 so they are available for automated provisioning of dedicated tenant databases. Uses the AWS CLI installed on the local machine.
+Upload index scripts to S3 following the migrations bucket convention. Uses the AWS CLI installed on the local machine.
+
+### S3 Path Convention
+
+The migrations bucket follows the **Service → Module → Resource Type** hierarchy:
+
+```
+{bucket}/
+├── {service}/
+│   ├── {module_1}/
+│   │   ├── mongodb/        ← index scripts go here
+│   │   └── postgresql/     ← DDL migrations (not managed by this skill)
+│   └── {module_2}/
+│       ├── mongodb/
+│       └── postgresql/
+```
+
+Example for ledger service:
+```
+lerian-development-migrations/
+├── ledger/
+│   ├── onboarding/
+│   │   ├── mongodb/         ← 7 index migration files
+│   │   └── postgresql/      ← 9 DDL migrations
+│   └── transaction/
+│       ├── mongodb/         ← 4 index migration files
+│       └── postgresql/      ← 18 DDL migrations
+```
+
+Each module's MongoDB index scripts go into `s3://{bucket}/{service}/{module}/mongodb/`.
 
 ### Upload Flow
 
 ```text
-1. Detect service name (from Phase 1 results)
-
-2. Collect all index scripts:
-   - Glob: scripts/mongodb/*.js OR scripts/mongo/*.js
+1. Collect index scripts per module:
+   - For each module with MongoDB detected (from Phase 3):
+     - Glob: scripts/mongodb/*{module}* OR scripts/mongodb/*.js
+     - Map each script to its target module
    - If none found → skip upload, log warning
 
-3. Verify AWS CLI is available:
+2. Verify AWS CLI is available:
    - Run: aws --version
-   - If not found → SKIP Step 6: Log warning "AWS CLI not installed. Skipping S3 upload. Install with: brew install awscli"
+   - If not found → SKIP Step 5: Log warning "AWS CLI not installed. Skipping S3 upload."
      → Continue to Phase 4 report with upload status: "Skipped (AWS CLI not available)"
 
-4. Ask the user which S3 bucket to use:
+3. Ask the user which S3 bucket to use:
    "Found {N} index scripts to upload for service '{service_name}'.
     Which S3 bucket should I upload to?
     
-    Example: my-bucket-name
-    (scripts will be placed at: s3://{bucket}/scripts/mongodb/{service_name}/)"
+    Example: lerian-development-migrations
+    (scripts will be placed at: s3://{bucket}/{service}/{module}/mongodb/)"
 
    - Wait for user response
    - Store as: s3_bucket = "{user_response}"
 
-5. Verify S3 access:
+4. Verify S3 access:
    - Run: aws s3 ls s3://{s3_bucket}/ 2>&1
-   - If access denied → SKIP Step 6: Log warning "No access to bucket '{s3_bucket}'. Check AWS credentials (aws configure or aws sts get-caller-identity)"
+   - If access denied → SKIP Step 5: Log warning "No access to bucket '{s3_bucket}'."
      → Continue to Phase 4 report with upload status: "Failed (access denied)"
-   - If bucket not found → SKIP Step 6: Log warning "Bucket '{s3_bucket}' not found."
+   - If bucket not found → SKIP Step 5: Log warning "Bucket '{s3_bucket}' not found."
      → Continue to Phase 4 report with upload status: "Failed (bucket not found)"
 
-6. Upload each script (best-effort, continue on failure):
-   - For each script in scripts/mongodb/*.js:
-     aws s3 cp {script_path} s3://{s3_bucket}/scripts/mongodb/{service_name}/{filename} \
+5. Upload each script to the correct module path (best-effort, continue on failure):
+   - For each (script, module) pair:
+     aws s3 cp {script_path} \
+       s3://{s3_bucket}/{service_name}/{module}/mongodb/{filename} \
        --content-type "application/javascript"
    - If a single upload fails, log the error and continue with remaining files
    - Track: successful_uploads = [], failed_uploads = []
 
-7. Verify upload:
-   - Run: aws s3 ls s3://{s3_bucket}/scripts/mongodb/{service_name}/
+6. Verify upload per module:
+   - For each module:
+     aws s3 ls s3://{s3_bucket}/{service_name}/{module}/mongodb/
    - List uploaded files with sizes
-   - If count mismatches: list missing files (local - uploaded), report as "Partially uploaded ({X}/{Y})"
+   - If count mismatches: report as "Partially uploaded ({X}/{Y})"
 
-8. Report results:
+7. Report results:
    "Uploaded {N} index scripts to S3:
-    ✅ s3://{s3_bucket}/scripts/mongodb/{service_name}/create-service-indexes.js
-    ✅ s3://{s3_bucket}/scripts/mongodb/{service_name}/create-resource-indexes.js"
+    ✅ s3://{s3_bucket}/ledger/onboarding/mongodb/create-metadata-indexes.js
+    ✅ s3://{s3_bucket}/ledger/transaction/mongodb/create-metadata-indexes.js"
 ```
 
 ### Report Section Addition
@@ -284,7 +315,7 @@ Add to the Phase 4 HTML report:
 │ create-audit-indexes     │ ⚠️  Generated (not yet    │
 │                          │    uploaded — run again)   │
 └──────────────────────────┴───────────────────────────┘
-S3 prefix: s3://{bucket}/scripts/mongodb/{service_name}/
+S3 prefix: s3://{bucket}/{service}/{module}/mongodb/
 ```
 
 ---

@@ -191,7 +191,7 @@ Summary of steps:
 2. **Detect existing scripts** — scan `scripts/mongodb/*.js` for `createIndex` calls
 3. **Cross-reference** — match in-code indexes against script indexes (covered / missing_script / script_only)
 4. **Generate missing scripts** — create `mongosh`-compatible `.js` scripts following the idempotent `createIndexSafely` pattern (see reference for full template)
-5. **Upload to S3** — asks which bucket to use, then uploads all scripts to `s3://{bucket}/scripts/mongodb/{service_name}/` via AWS CLI (requires valid AWS credentials; verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
+5. **Upload to S3** — asks which bucket to use, then uploads scripts following the migrations bucket convention: `s3://{bucket}/{service}/{module}/mongodb/` (requires valid AWS credentials; verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
 
 Store results for Phase 4 report:
 ```text
@@ -227,10 +227,10 @@ Isolation: database
 
 ### Modules to Register
 
-| Module       | PostgreSQL | MongoDB | RabbitMQ | MongoDB Indexes (S3) |
-|--------------|------------|---------|----------|----------------------|
-| onboarding   | ✅ primary | ✅      | ❌       | s3://{bucket}/scripts/mongodb/{service_name}/create-onboarding-indexes.js |
-| transaction  | ✅ primary | ✅      | ✅       | s3://{bucket}/scripts/mongodb/{service_name}/create-transaction-indexes.js |
+| Module       | PostgreSQL | MongoDB | RabbitMQ | MongoDB Indexes (S3)                          |
+|--------------|------------|---------|----------|-----------------------------------------------|
+| onboarding   | ✅ primary | ✅      | ❌       | s3://{bucket}/{service}/onboarding/mongodb/    |
+| transaction  | ✅ primary | ✅      | ✅       | s3://{bucket}/{service}/transaction/mongodb/   |
 ```
 
 For each module, show:
@@ -243,18 +243,19 @@ For each module, show:
 Table showing what scripts exist and where they are:
 
 ```
-| Script                       | Indexes | S3 Status  | S3 Path                              |
-|------------------------------|---------|------------|--------------------------------------|
-| create-service-indexes.js    | 4       | ✅ Uploaded | s3://{bucket}/scripts/mongodb/...     |
-| create-resource-indexes.js   | 4       | ✅ Uploaded | s3://{bucket}/scripts/mongodb/...     |
-| create-audit-indexes.js      | 2       | ⚠️ Missing  | (generated locally, not yet uploaded) |
+| Script                       | Module      | Indexes | S3 Status  | S3 Path                                       |
+|------------------------------|-------------|---------|------------|-----------------------------------------------|
+| create-metadata-indexes.js   | onboarding  | 7       | ✅ Uploaded | s3://{bucket}/{service}/onboarding/mongodb/    |
+| create-metadata-indexes.js   | transaction | 4       | ✅ Uploaded | s3://{bucket}/{service}/transaction/mongodb/   |
+| create-audit-indexes.js      | transaction | 2       | ⚠️ Missing  | (generated locally, not yet uploaded)          |
 ```
 
 If there are indexes in code without scripts:
 ```
 ⚠️  {N} indexes detected in code without corresponding scripts.
-    Scripts were generated in scripts/mongodb/ — upload to S3 to make them
-    available for dedicated tenant database provisioning.
+    Scripts were generated in scripts/mongodb/ — upload to S3 at
+    s3://{bucket}/{service}/{module}/mongodb/ to make them available
+    for dedicated tenant database provisioning.
 ```
 
 ### 3. Service Hierarchy Diagram
