@@ -3,6 +3,15 @@ name: ring:using-finops-team
 description: |
   3 FinOps agents: 2 for Brazilian financial regulatory compliance (BACEN, RFB,
   Open Banking), 1 for infrastructure cost estimation when onboarding customers.
+  Supports any regulatory template via open intake system.
+
+dependencies:
+  - ring:finops-analyzer
+  - ring:finops-automation
+  - ring:infrastructure-cost-estimator
+  - ring:regulatory-templates
+
+role: guide
 
 trigger: |
   - Brazilian regulatory reporting (BACEN, RFB)
@@ -196,43 +205,61 @@ Task tool:
 
 ---
 
-## Regulatory Workflow: 3-Gate Process
+## Regulatory Workflow: 5-Stage Process (3 mandatory + 2 optional)
 
-Brazilian regulatory compliance follows a 3-gate workflow:
+The workflow supports **any regulatory template** — not just the pre-defined list. For unknown templates, provide the official spec (URL/XSD/PDF) and Gate 1 will extract fields, suggest mappings, and auto-save the dictionary.
 
-### Gate 1: Compliance Analysis
+### Setup: Template Selection
+**Purpose:** Select or define the template. For pre-defined templates with dictionary → fast path. For new templates → provide spec.
+
+**Supports:**
+- Pre-defined templates with dictionaries: CADOC 4010, 4016, APIX 001, evtCadDeclarante
+- **Any regulatory template** via "Novo template" option (BACEN, RFB, CVM, SUSEP, COAF, or other)
+
+---
+
+### Gate 1: Compliance Analysis + Auto-Save
 **Agent:** ring:finops-analyzer
-**Purpose:** Understand requirements, identify fields, validate mappings
-**Output:** compliance analysis document
+**Purpose:** Understand requirements, map fields, save dictionary
 
-**Dispatch when:**
-- Starting regulatory feature
-- Need to understand BACEN/RFB specs
-- Planning field mappings
+**New in this version:**
+- Loads **DATA_SOURCES.md** before any mapping (canonical field reference)
+- Fetches **Reporter docs online** (source of truth for filters/syntax)
+- **Cross-dictionary pattern matching** to reuse knowledge from existing templates
+- **Batch approval** by confidence level (replaces O(n) field-by-field questions)
+- **Auto-saves dictionary** after approval → next run is automatic (~5 min)
+
+**Output:** compliance analysis + dictionary saved + registry updated
 
 ---
 
 ### Gate 2: Validation & Confirmation
 **Agent:** ring:finops-analyzer (again)
-**Purpose:** Confirm mappings are correct, validate against specs
+**Purpose:** Validate mappings, test transformations, accounting checks
 **Output:** validated specification document
-
-**Dispatch when:**
-- Ready to confirm compliance understanding
-- Need secondary validation
-- Before moving to template generation
 
 ---
 
 ### Gate 3: Template Generation
 **Agent:** ring:finops-automation
 **Purpose:** Generate executable .tpl templates from validated specifications
-**Output:** complete .tpl files for Reporter platform
+**Output:** complete .tpl + .tpl.docs files for Reporter platform
 
-**Dispatch when:**
-- Specifications are finalized & validated
-- Ready to create Reporter templates
-- Need production-ready compliance files
+---
+
+### Gate Teste: Dev Environment Validation *(optional)*
+**Purpose:** Validate generated template in the Reporter dev environment
+**Triggered when:** `reporter_dev_url` configured in Setup AND user opts in
+**Output:** Confirmed render or feedback for Gate 3 correction
+
+---
+
+### Contribution Gate: PR to Ring *(optional, new templates only)*
+**Purpose:** Open PR to LerianStudio/ring to share the new template with the community
+**Triggered when:** new template was created AND user wants to contribute
+**Includes:** dictionary YAML + updated registry.yaml + .tpl file
+**Commit:** signed with user's own GitHub token (never agent credentials)
+**Output:** PR URL
 
 ---
 
@@ -240,18 +267,25 @@ Brazilian regulatory compliance follows a 3-gate workflow:
 
 ### BACEN (Central Bank of Brazil)
 - **COSIF** – Chart of accounts and accounting rules
-- **CADOCs** – Financial instruments and derivatives catalog
+- **CADOCs** – Financial instruments catalog (4010, 4016, 4111, and others)
+- **APIX** – Open Banking API (001, 002, and others)
 - **Manual de Normas** – Regulatory requirements
+- **Any other BACEN obligation** (via "Novo template" + official spec)
 
 ### RFB (Brazilian Federal Revenue)
-- **e-Financeira** – Electronic financial reporting
+- **e-Financeira** – Electronic financial reporting (all 6 events)
+- **DIMP** – Asset movement declaration (v10)
 - **SPED** – Electronic data exchange system
 - **ECF** – Financial institutions data
+- **Any other RFB obligation** (via "Novo template" + official spec)
 
 ### Open Banking
 - **API specifications** – Data sharing standards
 - **Security requirements** – Auth and encryption
 - **Integration patterns** – System interoperability
+
+### Data Sources Reference
+Canonical field reference: `finops-team/docs/regulatory/templates/DATA_SOURCES.md`
 
 ---
 

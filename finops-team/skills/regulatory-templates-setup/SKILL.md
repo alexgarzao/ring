@@ -2,7 +2,12 @@
 name: ring:regulatory-templates-setup
 description: |
   Initial setup sub-skill - handles template selection and context initialization
-  for the 3-gate regulatory workflow.
+  for the 5-stage regulatory workflow. Supports any regulatory template (pre-defined
+  or new) via official spec intake (URL/XSD/PDF).
+
+dependencies: []
+
+role: setup
 
 trigger: |
   - Called by regulatory-templates orchestrator at workflow start
@@ -229,6 +234,35 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 | e-Financeira | RFB - SPED e-Financeira |
 | DIMP | RFB - Declaração de Informações sobre Movimentação Patrimonial |
 | APIX | BACEN - Open Banking API |
+| **Novo template** | **Qualquer regulação BACEN/RFB/CVM/SUSEP/outro não listado acima** |
+
+> **Open system:** The workflow supports ANY regulatory template, not just the pre-defined list. If the template is not listed, select "Novo template" and provide the spec.
+
+---
+
+### Step 1.0: New Template Intake (only if "Novo template" selected)
+
+If the user selects "Novo template", collect the following before proceeding:
+
+**AskUserQuestion (sequence):**
+1. **Template name** — ex: "CADOC 4030", "DLO", "e-Financeira evtPatrimonio", "DECRED"
+2. **Regulatory authority** — BACEN | RFB | CVM | SUSEP | COAF | outro (especificar)
+3. **Output format** — XML | TXT (fixed-width) | HTML | CSV | JSON
+4. **Official spec** — URL do manual/circular oficial OU caminho de arquivo XSD/PDF (OBRIGATÓRIO)
+5. **Reporter dev URL** (optional) — URL do ambiente de desenvolvimento para validação pós-geração
+
+**Context additions for new templates:**
+```yaml
+is_new_template: true
+template_spec_url: "<URL fornecida>"
+template_spec_format: "<XML|TXT|HTML|CSV>"
+reporter_dev_url: "<URL ou null>"  # for optional Test Gate
+```
+
+**Alert user:**
+> "Template novo detectado. Gate 1 irá extrair os campos da spec fornecida, usar pattern matching com templates existentes para sugerir mapeamentos, e **salvar o dicionário automaticamente** ao final. Na próxima execução deste template, o workflow será automático (~5 min)."
+
+**BLOCKER:** If no official spec URL/file is provided → STOP. Cannot map fields without the authoritative specification.
 
 ---
 
@@ -279,9 +313,9 @@ If not provided by user, use standard deadline for the template type.
 | All others | ❌ No | Interactive |
 
 **If NO dictionary exists → AskUserQuestion:**
-- Question: "Template has no pre-configured dictionary. Interactive validation required (~40 min). Proceed?"
-- Options: "Proceed with interactive validation" | "Choose different template"
-- Alert user: Query APIs → Suggest mappings → User approval each → Save as new dictionary
+- Question: "Template has no pre-configured dictionary. Gate 1 will use batch approval by confidence level (~10-15 min). Proceed?"
+- Options: "Proceed" | "Choose different template"
+- Alert user: Gate 1 will query APIs → suggest mappings → batch approval by confidence level → **auto-save dictionary** for future use
 
 ---
 
@@ -300,6 +334,9 @@ If not provided by user, use standard deadline for the template type.
 | `documentation_path` | Registry | ".claude/docs/regulatory/templates/..." |
 | `deadline` | User/Default | "2025-12-31" |
 | `gate1/gate2/gate3` | Initialize | null (populated by subsequent gates) |
+| `is_new_template` | Step 1.0 | false (default) or true (new template) |
+| `template_spec_url` | Step 1.0 | null (default) or URL/path of official spec |
+| `reporter_dev_url` | Step 1.0 | null (default) or Reporter dev environment URL |
 
 **Template-Specific Extensions:**
 

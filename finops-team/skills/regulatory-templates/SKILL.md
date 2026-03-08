@@ -1,13 +1,25 @@
 ---
 name: ring:regulatory-templates
 description: |
-  3-gate regulatory template orchestrator - manages setup, Gate 1 (analysis),
-  Gate 2 (validation), Gate 3 (generation) for BACEN/RFB compliance.
+  5-stage regulatory template orchestrator - manages setup, Gate 1 (analysis + auto-save),
+  Gate 2 (validation), Gate 3 (generation), optional Test Gate, optional Contribution Gate.
+  Supports any regulatory template (BACEN, RFB, CVM, SUSEP, COAF, or other).
+
+dependencies:
+  - ring:regulatory-templates-setup
+  - ring:regulatory-templates-gate1
+  - ring:regulatory-templates-gate2
+  - ring:regulatory-templates-gate3
+  - ring:finops-analyzer
+  - ring:finops-automation
+
+role: orchestrator
 
 trigger: |
-  - Creating BACEN CADOCs (4010, 4016, 4111)
+  - Creating BACEN CADOCs (4010, 4016, 4111, or any other)
   - Mapping e-Financeira, DIMP, APIX templates
   - Full automation from analysis to template creation
+  - Creating any new regulatory template not yet in registry
 
 skip_when: |
   - Non-Brazilian regulations → not applicable
@@ -169,18 +181,103 @@ The workflow exists specifically to prevent these exact thoughts from leading to
 
 ## Orchestration Process
 
-**Step 1:** Initialize TodoWrite with 5 tasks (setup, gate1, gate2, gate3, verify)
+**Step 1:** Initialize TodoWrite with tasks (setup, gate1, gate2, gate3, + optional: gate_test, contribution)
 
-**Step 2-5:** Execute each sub-skill using Skill tool:
+**Steps 2–5:** Execute mandatory gates using Skill tool:
 
 | Step | Skill | On PASS | On FAIL |
 |------|-------|---------|---------|
 | 2 | `regulatory-templates-setup` | Store context → Gate 1 | Fix selection issues |
-| 3 | `regulatory-templates-gate1` | Store spec report → Gate 2 | Address critical gaps, retry |
+| 3 | `regulatory-templates-gate1` | Store spec report + auto-saved dict → Gate 2 | Address critical gaps, retry |
 | 4 | `regulatory-templates-gate2` | Store finalized report → Gate 3 | Resolve uncertainties, retry |
-| 5 | `regulatory-templates-gate3` | Template complete | 401=refresh token, 500/503=wait+retry |
+| 5 | `regulatory-templates-gate3` | Template complete → Gate Teste (if configured) | 401=refresh token, 500/503=wait+retry |
+
+**Steps 6–7 (optional):** Execute only when conditions are met:
+
+| Step | Gate | Condition | On PASS | On FAIL |
+|------|------|-----------|---------|---------|
+| 6 | Gate Teste | `reporter_dev_url` set AND user opts in | Mark `gate_test_passed: true` → Contribution Gate | Feedback → retry Gate 3 |
+| 7 | Contribution Gate | `is_new_template: true` AND user opts in | PR opened, URL reported | Provide manual instructions |
 
 **Context flows in memory** - no intermediate files created
+
+---
+
+## Gate Teste — Validação no Ambiente Dev (Opcional)
+
+**Triggered when:** `reporter_dev_url` is set in context (configured during Setup)
+
+**Process:**
+1. Check if `reporter_dev_url` is available in context
+2. If available → Ask: "Quer validar o template gerado no ambiente de desenvolvimento agora?"
+3. **If YES:**
+   - Submit the generated `.tpl` to `reporter_dev_url` with available test data
+   - Display the rendered output to the user
+   - Ask: "O output está correto? Deseja fazer algum ajuste?"
+   - If adjustments needed: return feedback to Gate 3 with specific corrections → re-run Gate 3 → re-run Gate Teste
+   - If correct: mark `gate_test_passed: true`, proceed
+4. **If NO or `reporter_dev_url` not configured:** mark `gate_test_passed: skipped`, proceed
+
+**Output context addition:** `gate_test: { passed: true|false|skipped }`
+
+---
+
+## Contribution Gate — PR para o Ring (Opcional)
+
+**Triggered when:** `is_new_template: true` is in context (set during Setup when user selects "Novo template")
+
+**Process:**
+1. Ask: "Quer contribuir este template de volta para a comunidade Ring? Isso abre um PR público no repositório LerianStudio/ring."
+2. **If NO:**
+   - Inform: "Template e dicionário salvos localmente. Disponíveis para uso imediato."
+   - Mark `contribution: skipped`
+3. **If YES:**
+   - Verify user has GitHub token configured (via environment or user input)
+   - Fork `LerianStudio/ring` to user's GitHub account (if not already forked)
+   - Create branch: `feat/regulatory-template-{template_code_lower}` (ex: `feat/regulatory-template-cadoc4030`)
+   - Prepare the following files locally:
+     - New dictionary YAML: `finops-team/docs/regulatory/templates/{authority}/{category}/{code}/dictionary.yaml`
+     - Updated `registry.yaml` with new template entry
+     - Generated `.tpl` file in appropriate directory
+   - **Commit signing is required.** A GitHub PAT token authenticates API calls but does NOT produce a cryptographically signed commit. The user must sign the commit themselves using one of:
+     - GPG key: `git commit -S -m "..."`
+     - SSH signing key (configured in `~/.gitconfig` with `gpg.format=ssh`)
+   - Provide the user with the exact commit command:
+     ```bash
+     git checkout -b feat/regulatory-template-{template_code_lower}
+     # Files are ready at the paths listed above
+     git add finops-team/docs/regulatory/templates/{authority}/{category}/{code}/dictionary.yaml
+     git add finops-team/docs/regulatory/templates/registry.yaml
+     git add finops-team/docs/regulatory/templates/{authority}/{category}/{code}/*.tpl
+     git commit -S -m "feat(finops): add {Template Name} regulatory template"
+     gh pr create --title "feat(finops): add {Template Name} regulatory template" \
+       --body "..."
+     ```
+   - Open PR to `LerianStudio/ring` with auto-generated PR body:
+     ```
+     feat(finops): add {Template Name} regulatory template
+
+     - Authority: {BACEN|RFB|other}
+     - Format: {XML|TXT|HTML}
+     - Fields mapped: {N} ({HIGH}H / {MEDIUM}M / {LOW}L confidence)
+     - Dictionary: auto-generated via ring:regulatory-templates workflow
+
+     Contributed via ring:finops-team regulatory-templates workflow
+     ```
+   - Report PR URL: "✅ PR aberto: {url}"
+   - Mark `contribution: { pr_url: "{url}", status: "open" }`
+4. **If user does not have GPG/SSH signing configured:**
+   - Explain: "Commit assinado requer chave GPG ou SSH configurada no git. Veja: https://docs.github.com/authentication/managing-commit-signature-verification"
+   - Provide alternative: open a draft PR without signed commit and mark it for manual signing
+
+**🔴 CRITICAL — Commit signing:**
+- A GitHub PAT authenticates API calls but does NOT cryptographically sign commits
+- Signed commits REQUIRE the user's GPG key (`git commit -S`) or SSH signing key
+- **NEVER use agent credentials** for commits
+- The contribution must be attributed to and signed by the human contributor
+- If user cannot sign → provide draft PR instructions and explain signing requirement
+
+**BLOCKER:** If fork or branch creation fails → provide manual git instructions. Do NOT attempt workarounds using agent credentials.
 
 ---
 
