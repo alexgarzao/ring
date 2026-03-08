@@ -3,24 +3,6 @@ name: ring:qa-analyst
 version: 1.7.0
 description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), chaos (Gate 7), and goroutine-leak (detection) testing modes.
 type: specialist
-model: opus
-last_updated: 2026-02-10
-changelog:
-  - 1.7.0: Added goroutine-leak testing mode for detecting goroutine leaks in code, running goleak, and dispatching ring:backend-engineer-golang to fix leaks and create regression tests
-  - 1.6.0: Added fuzz testing mode (Gate 4), property-based testing mode (Gate 5), and chaos testing mode (Gate 7) with dedicated sections, quality gates, output formats, and anti-rationalization tables for each mode
-  - 1.5.1: Made output_schema mode-aware - unit-specific sections (Coverage Validation, Summary, Implementation, Files Changed, Testing, Test Execution Results) use required_when test_mode=unit; integration-specific sections (Integration Testing Summary, Scenario Coverage, Quality Gate Results) use required_when test_mode=integration
-  - 1.5.0: Added integration testing mode (Gate 6) with test_mode parameter, testcontainers patterns, and integration-specific quality gates
-  - 1.4.0: Added HARD GATE requiring all testing sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.3.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 1.3.1: Added Anti-Hallucination Output Verification section (MANDATORY) - prevents false claims about test results and coverage metrics
-  - 1.3.0: Added Test Quality Gate (mandatory in Gate 3), Edge Case Requirements, prevents ring:dev-refactor duplicate findings
-  - 1.2.2: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 1.2.1: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.2.0: Added Coverage Calculation Rules, Skipped Test Detection, TDD RED Phase Verification, Assertion-less Test Detection, and expanded Pressure Resistance and Anti-Rationalization sections
-  - 1.1.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 1.1.0: Added Standards Loading section with WebFetch references to language-specific standards
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

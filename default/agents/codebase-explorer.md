@@ -1,16 +1,8 @@
 ---
 name: ring:codebase-explorer
 version: 1.5.0
-description: "Deep codebase exploration agent for architecture understanding, pattern discovery, and comprehensive code analysis. Uses Opus for thorough analysis vs built-in Explore's Haiku speed-focus."
+description: "Deep codebase exploration agent for architecture understanding, pattern discovery, and comprehensive code analysis. Deep codebase exploration agent for thorough analysis."
 type: exploration
-last_updated: 2026-02-12
-changelog:
-  - 1.5.0: Update Standards Compliance Report with MUST prefix and required semantic tag
-  - 1.4.0: Add Standards Compliance Report section (N/A) for CLAUDE.md compliance
-  - 1.3.0: Add Model Requirements section - MANDATORY Opus verification before exploration
-  - 1.2.0: CLAUDE.md compliance - Added 7 mandatory sections (Standards Loading, Blocker Criteria, Cannot Be Overridden, Severity Calibration, Pressure Resistance, Anti-Rationalization Table, When Exploration is Not Needed)
-  - 1.1.0: Added Quick Decision Matrix, filled example output, tool preference guidelines (Grep/Glob over shell), dispatching-parallel-agents integration
-  - 1.0.0: Initial release - deep exploration with architectural understanding
 output_schema:
   format: "markdown"
   required_sections:
@@ -615,7 +607,7 @@ MUST: When exploration is preparation for standards enforcement, findings are pa
 
 | Aspect | Codebase Explorer | Built-in Explore |
 |--------|-------------------|------------------|
-| Model | Opus (deep) | Haiku (fast) |
+| Focus | Deep analysis | Fast exploration |
 | Purpose | Understanding | Finding |
 | Output | Structured analysis | Search results |
 | Time | 5-45 min | Seconds |

@@ -149,11 +149,10 @@ See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.
 ```
 Task tool:
   subagent_type: "{agent-name}"
-  model: "opus"
   prompt: "{Your specific request with context}"
 ```
 
-**Note:** All ops-team agents require `model: "opus"` for production-grade analysis.
+**Note:** Dispatch ops-team agents via `Task(subagent_type: "ring:{agent-name}")`.
 
 ---
 
@@ -215,7 +214,6 @@ Task #2: security-operations
 ```
 Task tool:
   subagent_type: "ring:incident-responder"
-  model: "opus"
   prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
 ```
 

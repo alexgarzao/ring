@@ -41,7 +41,7 @@ Creates a step-by-step plan for implementing connection pooling.
 ## Process
 
 ### Step 1: Dispatch Planning Agent
-A specialized planning agent (running on Opus model) is dispatched to:
+A specialized planning agent (running) is dispatched to:
 - Explore the codebase to understand architecture
 - Identify all files that need modification
 - Break the feature into bite-sized tasks (2-5 minutes each)

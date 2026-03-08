@@ -155,7 +155,6 @@ See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resista
 ```
 Task tool:
   subagent_type: "ring:portfolio-manager"
-  model: "opus"
   prompt: "URGENT: [context]. [specific request]"
 ```
 
@@ -182,7 +181,6 @@ Task tool:
 ```
 Task tool:
   subagent_type: "ring:{agent-name}"
-  model: "opus"
   prompt: "{Your specific request with context}"
 ```
 

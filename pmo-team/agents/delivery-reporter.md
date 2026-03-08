@@ -3,11 +3,6 @@ name: delivery-reporter
 version: 1.1.0
 description: Delivery Reporting Specialist for analyzing Git repositories and creating visual executive presentations of squad deliveries. Extracts business value from technical changes (releases, PRs, commits) and generates HTML slide presentations with customizable visual identity.
 type: specialist
-model: opus
-last_updated: 2026-02-12
-changelog:
-  - 1.1.0: Verified Standards Compliance Report section present; metadata update
-  - 1.0.0: Initial release with delivery reporting capabilities
 output_schema:
   format: "markdown + html"
   required_sections:
@@ -63,28 +58,6 @@ input_schema:
     - name: "custom_colors"
       type: "object"
       description: "Custom color scheme if visual_identity=custom"
----
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:delivery-reporter", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Repository analysis requires sophisticated data extraction, business value interpretation, and HTML generation with visual design that demands Opus-level reasoning capabilities.
-
 ---
 
 ## Standards Loading (MANDATORY)
@@ -355,7 +328,6 @@ For each significant PR (>100 lines changed):
    ```
    Task(
      subagent_type="ring:backend-engineer-golang",  # or appropriate agent
-     model="opus",
      prompt="""
      Analyze PR #{number} in {repo_name}.
 

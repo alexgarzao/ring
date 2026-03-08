@@ -79,9 +79,18 @@ if [ $# -gt 0 ]; then
         fi
     fi
 
-    # Direct passthrough to Python module
+    # Direct passthrough to Python module.
+    # If the first arg is a flag (--*), prepend "install" as the default subcommand.
+    # Known subcommands are passed through as-is.
     cd "$RING_ROOT"
-    exec "$PYTHON_CMD" -m installer.ring_installer "$@"
+    case "$1" in
+        install|update|rebuild|check|sync|uninstall|list|detect|platforms)
+            exec "$PYTHON_CMD" -m installer.ring_installer "$@"
+            ;;
+        *)
+            exec "$PYTHON_CMD" -m installer.ring_installer install "$@"
+            ;;
+    esac
 fi
 
 # Interactive mode - platform selection
@@ -156,10 +165,14 @@ echo "Installing to: ${GREEN}${PLATFORMS}${RESET}"
 echo ""
 
 # Additional options
+read -p "Use symlink mode? (builds in-repo, symlinks to config) (y/N): " use_link
 read -p "Enable verbose output? (y/N): " verbose
 read -p "Perform dry-run first? (y/N): " dry_run
 
 EXTRA_ARGS=()
+if [[ "$use_link" =~ ^[Yy]$ ]]; then
+    EXTRA_ARGS+=("--link" "--force")
+fi
 if [[ "$verbose" =~ ^[Yy]$ ]]; then
     EXTRA_ARGS+=("--verbose")
 fi
@@ -192,10 +205,15 @@ echo ""
 echo "Next steps:"
 echo "  1. Restart your AI tool or start a new session"
 echo "  2. Skills will auto-load (Claude Code) or be available as configured"
+if [[ "$use_link" =~ ^[Yy]$ ]]; then
+    echo "  3. After git pull, run: ./installer/install-ring.sh rebuild"
+fi
 echo ""
 echo "Commands:"
 echo "  ./installer/install-ring.sh                    # Interactive install"
 echo "  ./installer/install-ring.sh --platforms claude # Direct install"
+echo "  ./installer/install-ring.sh --platforms opencode --link  # Symlink install"
 echo "  ./installer/install-ring.sh update             # Update installation"
+echo "  ./installer/install-ring.sh rebuild            # Rebuild after git pull"
 echo "  ./installer/install-ring.sh list               # List installed"
 echo ""

@@ -558,7 +558,6 @@ If Reporter selected:
 ```
 Task tool:
   subagent_type: "ring:infrastructure-cost-estimator"
-  model: "opus"
   prompt: |
     Calculate infrastructure costs using PRE-CONFIGURED TIER.
 
@@ -621,7 +620,6 @@ Task tool:
 ```
 Task tool:
   subagent_type: "ring:infrastructure-cost-estimator"
-  model: "opus"
   prompt: |
     Calculate infrastructure costs for CUSTOM TPS.
 

@@ -297,7 +297,6 @@ For capacity planning tasks, dispatch:
 ```
 Task tool:
   subagent_type: "ring:infrastructure-architect"
-  model: "opus"
   prompt: |
     CAPACITY PLANNING: [scope]
     CURRENT STATE: [baseline]
@@ -310,7 +309,6 @@ For cost analysis of capacity options:
 ```
 Task tool:
   subagent_type: "ring:cloud-cost-optimizer"
-  model: "opus"
   prompt: |
     CAPACITY OPTIONS: [options to evaluate]
     CONSTRAINTS: [budget, performance requirements]

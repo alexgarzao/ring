@@ -104,7 +104,8 @@ examples:
 
       ## Core Web Vitals Report
       | Page | LCP | CLS | INP | Status |
-      |------|-----|-----|-----|--------|
+      |
+------|-----|-----|-----|--------|
       | /dashboard | 1.8s | 0.03 | 95ms | PASS |
 
       ## Handoff to Next Gate
@@ -168,7 +169,6 @@ if any REQUIRED input is missing:
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst-frontend"
-  model: "opus"
   prompt: |
     **MODE:** PERFORMANCE TESTING (Gate 6)
 

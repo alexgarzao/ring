@@ -27,7 +27,7 @@ Result: 30k tokens of context bloat
 
 **Enforcement Gates That Catch This:**
 - ✅ **MANDATORY FIRST RESPONSE PROTOCOL** (line 34-38)
-  - Step 2 requires: "Create TodoWrite: 'Orchestration decision: [agent-name] with Opus'"
+  - Step 2 requires: "Create TodoWrite: 'Orchestration decision: [agent-name]'"
   - Violation: No todo created before using Grep
 - ✅ **MANDATORY PRE-TOOL-USE PROTOCOL** (line 132-146)
   - Checklist required before Grep
@@ -41,23 +41,22 @@ Result: 30k tokens of context bloat
 My thought: "This is an investigation task - orchestration decision required"
 
 TodoWrite:
-1. "Orchestration decision: Explore agent with Opus for auth middleware usage"
+1. "Orchestration decision: Explore agent for auth middleware usage"
 
 Pre-Tool-Use Check:
 Tool I'm about to use: None (using agent)
 Purpose: Find all uses of authentication middleware
 Orchestration Decision: Investigation → Explore agent
 Agent: Explore
-Model: Opus
 
-Action: Task tool with Explore agent, model=opus
+Action: Task tool with Explore agent
 ```
 
 **Verification Checklist:**
-- ☐ TodoWrite created with "Orchestration decision: Explore agent with Opus"
+- ☐ TodoWrite created with "Orchestration decision: Explore agent"
 - ☐ Pre-tool-use protocol documented (even if mental)
 - ☐ No direct Grep call
-- ☐ Opus model specified in Task call
+- ☐ Agent dispatched via Task tool
 
 **Result:** ✅ PASS - Multiple enforcement gates prevent violation
 
@@ -90,9 +89,9 @@ Result: Assumption wrong - bug actually in config loader, not config file
 My thought: "User mentioned config.ts but didn't explicitly ask me to read it - this is investigation"
 
 TodoWrite:
-1. "Orchestration decision: Explore agent with Opus to investigate config.ts and related configuration"
+1. "Orchestration decision: Explore agent to investigate config.ts and related configuration"
 
-Action: Task tool with Explore agent, model=opus
+Action: Task tool with Explore agent
 Prompt: "Investigate bug related to config.ts - examine config.ts and configuration loading system"
 ```
 
@@ -100,7 +99,6 @@ Prompt: "Investigate bug related to config.ts - examine config.ts and configurat
 - ☐ TodoWrite created
 - ☐ Recognized "mentioned" ≠ "read this specific file"
 - ☐ Dispatched Explore agent instead of direct Read
-- ☐ Opus model specified
 
 **Result:** ✅ PASS - "User mentioned Z" pattern caught by Common Violation Patterns
 
@@ -132,10 +130,10 @@ Result: 50k tokens of context before even starting task
 My thought: "This is new feature implementation - need to understand existing patterns first"
 
 TodoWrite:
-1. "Orchestration decision: Explore agent with Opus for API architecture understanding"
+1. "Orchestration decision: Explore agent for API architecture understanding"
 2. "Check for relevant skills" (might match brainstorming or pre-dev)
 
-Action: Task tool with Explore agent, model=opus
+Action: Task tool with Explore agent
 Prompt: "Understand existing API endpoint patterns, user controller structure, and authentication middleware to inform new profile update endpoint"
 ```
 
@@ -143,7 +141,6 @@ Prompt: "Understand existing API endpoint patterns, user controller structure, a
 - ☐ TodoWrite created BEFORE any file reading
 - ☐ Recognized "need context" as orchestration task
 - ☐ Agent will build context, not me
-- ☐ Opus model specified
 
 **Result:** ✅ PASS - Pattern 4 explicitly addresses this rationalization
 
@@ -181,9 +178,9 @@ My thought: "I read one file already - STOP. This is sunk cost fallacy"
 Action: STOP immediately
 
 TodoWrite (correcting course):
-1. "Orchestration decision: Explore agent with Opus to understand error handling (note: already read utils/errors.ts)"
+1. "Orchestration decision: Explore agent to understand error handling (note: already read utils/errors.ts)"
 
-Task tool with Explore agent, model=opus:
+Task tool with Explore agent:
 "Understand error handling architecture in codebase. I've already read utils/errors.ts which defines error classes. Please investigate full error handling flow including middleware, logging, and service layer handling."
 ```
 
@@ -192,7 +189,6 @@ Task tool with Explore agent, model=opus:
 - ☐ Stopped before reading more files
 - ☐ Created corrective orchestration todo
 - ☐ Provided context to agent about what was already read
-- ☐ Opus model specified
 
 **Result:** ✅ PASS - Pattern 5 + Anti-Patterns catch this with explicit "STOP" instruction
 
@@ -225,21 +221,19 @@ Result: Multiple matches, need to read files to disambiguate, context spiral
 My thought: "Looking up function signature = search operation"
 
 TodoWrite:
-1. "Orchestration decision: Explore agent with Opus for validateUser function signature"
+1. "Orchestration decision: Explore agent for validateUser function signature"
 
 Pre-Tool-Use Check:
 Tool I'm about to use: None (using agent)
 Purpose: Find validateUser function return type
 Orchestration Decision: Search operation → Explore agent
 Agent: Explore
-Model: Opus
 ```
 
 **Verification Checklist:**
 - ☐ Recognized "lookup" = "search" = orchestration task
 - ☐ Did not rationalize as "too simple for agent"
 - ☐ Completed pre-tool-use protocol
-- ☐ Opus model specified
 
 **Result:** ✅ PASS - Pre-tool-use protocol catches this before Grep executes
 
@@ -295,61 +289,33 @@ Action: Read src/config/database.ts
 **Old Behavior (VIOLATION):**
 ```
 My thought: "I'll use Explore agent"
-Action: Task tool with Explore agent (defaults to Haiku)
-Result: Works but violates Opus default requirement
+Action: Task tool with Explore agent
+Result: Agent dispatched successfully
 ```
 
 **Enforcement Gates That Catch This:**
 - ✅ **MANDATORY FIRST RESPONSE PROTOCOL** (line 35-36)
-  - TodoWrite must include: "[agent-name] with Opus"
-  - Default model: Opus (unless user specifies)
+  - TodoWrite must include: "[agent-name]"
+  - 
 - ✅ **Your Role: ORCHESTRATOR** (line 194)
-  - "Model Selection: Always use Opus...unless user explicitly specifies otherwise"
+  - 
 - ✅ **TodoWrite Examples** (line 373-382)
-  - ✅ Correct: "Explore agent with Opus"
-  - ❌ Wrong: "Orchestration decision: Explore agent" (missing model)
+  - ✅ Correct: "Explore agent"
+  - ❌ Wrong: "Orchestration decision: Explore agent" (too vague, add purpose)
 
 **Required Behavior:**
 ```
 TodoWrite:
-1. "Orchestration decision: Explore agent with Opus for authentication architecture"
+1. "Orchestration decision: Explore agent for authentication architecture"
 
 Action: Task tool with Explore agent
 ```
 
 **Verification Checklist:**
-- ☐ TodoWrite includes "with Opus"
+- ☐ TodoWrite includes orchestration decision
 - ☐ Task tool call uses appropriate agent
-- ☐ Did not default to Haiku
-- ☐ No user specification of different model
 
-**Result:** ✅ PASS - Model requirement enforced in protocol, examples, and TodoWrite format
-
----
-
-## Scenario 8: User Specifies Different Model - Valid Override
-
-**User Request:**
-> "Use Haiku to quickly find where the logger is configured"
-
-**Old Behavior (N/A - new requirement):**
-
-**Required Behavior:**
-```
-My thought: "User explicitly specified Haiku - override Opus default"
-
-TodoWrite:
-1. "Orchestration decision: Explore agent with Haiku (user specified) for logger configuration"
-
-Action: Task tool with Explore agent, model="haiku"
-```
-
-**Verification Checklist:**
-- ☐ Recognized explicit user model specification
-- ☐ TodoWrite documents "user specified"
-- ☐ Used Haiku instead of Opus (valid override)
-
-**Result:** ✅ PASS - User override respected
+**Result:** ✅ PASS - Orchestration enforced in protocol, examples, and TodoWrite format
 
 ---
 
@@ -362,7 +328,7 @@ Action: Task tool with Explore agent, model="haiku"
 | Need context first | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Already started | ✅ | ✅ | - | ✅ | ✅ | ✅ |
 | Simple lookup | ✅ | ✅ | ✅ | - | ✅ | ✅ |
-| Missing Opus model | ✅ | ✅ | ✅ | - | ✅ | - |
+| Missing agent dispatch | ✅ | ✅ | ✅ | - | ✅ | - |
 
 **Average Enforcement Gates Per Violation: 4.8**
 
@@ -387,14 +353,14 @@ Every violation pattern is caught by **at least 4 different enforcement mechanis
 
 5. **Real Pattern Examples** - Common Violation Patterns shows my actual thoughts vs correct actions
 
-6. **Opus Default** - Model specification enforced at protocol level, examples, and TodoWrite format
+6. **Agent Dispatch** - Orchestration enforced at protocol level, examples, and TodoWrite format
 
 ### ❌ What Would Make It Fail:
 
 1. If I don't read the MANDATORY FIRST RESPONSE PROTOCOL
 2. If I skip TodoWrite (but this violates explicit "automatic failure" clause)
 3. If I rationalize that exception applies when it doesn't (but examples show this explicitly)
-4. If I forget Opus model (but TodoWrite examples show required format)
+4. If I forget agent dispatch (but TodoWrite examples show required format)
 
 **Hardening Assessment: ROBUST** - Multiple redundant enforcement gates make violation nearly impossible without explicit conscious choice to disobey.
 
@@ -402,14 +368,13 @@ Every violation pattern is caught by **at least 4 different enforcement mechanis
 
 ## Stress Test Result: ✅ PASS
 
-**All 8 scenarios demonstrate that the hardened skill would catch violations through multiple enforcement mechanisms.**
+**All 7 scenarios demonstrate that the hardened skill would catch violations through multiple enforcement mechanisms.**
 
 **Key Improvements from Hardening:**
 - Orchestration decision moved to step 2 of first response (before everything else)
 - Pre-tool-use protocol creates hard stop before Read/Grep/Glob/Bash
 - Common Violation Patterns provides real-time pattern recognition
 - TodoWrite requirement creates audit trail and user visibility
-- Opus model requirement ensures consistent high-quality agent dispatch
 - Exception clause reduced to single clear rule (no rationalization path)
 
 **Recommendation: Deploy hardening to production.** The enforcement mechanisms are redundant enough that even partial compliance would significantly reduce ORCHESTRATOR violations.

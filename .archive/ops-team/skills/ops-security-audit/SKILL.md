@@ -380,7 +380,6 @@ For security audit tasks, dispatch:
 ```
 Task tool:
   subagent_type: "ring:security-operations"
-  model: "opus"
   prompt: |
     SECURITY AUDIT REQUEST
     Scope: [accounts, regions, services]

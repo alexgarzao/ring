@@ -3,10 +3,6 @@ name: cloud-cost-optimizer
 version: 1.0.0
 description: Cloud Cost Operations Specialist focused on cloud infrastructure cost analysis, optimization recommendations, reserved instance management, and FinOps practices. Expert in AWS, GCP, and Azure cost optimization.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:
@@ -53,27 +49,6 @@ input_schema:
       type: "object"
       description: "Expected growth rates"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:cloud-cost-optimizer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Cloud cost optimization requires analysis of complex billing data, understanding of pricing models across providers, and strategic financial recommendations - all requiring Opus-level analytical capabilities.
-
 ---
 
 # Cloud Cost Optimizer

@@ -100,7 +100,6 @@ SKILL gathers ALL data (including environment selection + Helm configs) → Agen
 ```
 Task tool:
   subagent_type: "ring:infrastructure-cost-estimator"
-  model: "opus"
   prompt: |
     Calculate infrastructure costs and profitability.
 
@@ -172,7 +171,6 @@ Task tool:
 ```
 Task tool:
   subagent_type: "ring:finops-analyzer"
-  model: "opus"
   prompt: "Analyze BACEN COSIF requirements for corporate account reporting"
 ```
 
@@ -202,7 +200,6 @@ Task tool:
 ```
 Task tool:
   subagent_type: "ring:finops-automation"
-  model: "opus"
   prompt: "Generate BACEN COSIF template from analyzed requirements"
 ```
 

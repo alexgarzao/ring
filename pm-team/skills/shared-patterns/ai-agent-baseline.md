@@ -26,7 +26,7 @@ All time estimates in pm-team workflows use **AI-agent-hours** as the baseline u
 
 ### What "AI-agent-hours" Means
 
-- **Executor:** Claude Sonnet 4.5 implementing via ring:dev-cycle
+- **Executor:** AI agent implementing via ring:dev-cycle
 - **Includes:** TDD, automated code review, SRE validation, DevOps setup
 - **Execution:** Fully automated through dev-team gates
 - **Quality:** Production-ready (all gates passed)

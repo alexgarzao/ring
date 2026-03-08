@@ -459,7 +459,6 @@ For platform onboarding tasks, dispatch:
 ```
 Task tool:
   subagent_type: "ring:platform-engineer"
-  model: "opus"
   prompt: |
     SERVICE ONBOARDING REQUEST
     Service: [name]

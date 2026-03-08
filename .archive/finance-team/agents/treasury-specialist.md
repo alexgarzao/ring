@@ -3,10 +3,6 @@ name: treasury-specialist
 version: 1.0.0
 description: Treasury and Cash Management Specialist with expertise in cash flow forecasting, liquidity management, working capital optimization, FX exposure, and debt management. Delivers actionable treasury insights with risk awareness.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with full Ring compliance sections
 output_schema:
   format: "markdown"
   required_sections:
@@ -66,27 +62,6 @@ input_schema:
       type: "file_content"
       description: "Foreign currency exposure data"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:treasury-specialist", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Treasury management requires Opus-level reasoning for multi-currency cash flow timing, liquidity risk assessment, covenant compliance monitoring, and optimal cash deployment strategies.
-
 ---
 
 # Treasury Specialist

@@ -3,10 +3,6 @@ name: accounting-specialist
 version: 1.0.0
 description: Accounting Operations Specialist with expertise in journal entries, reconciliations, month-end close, GAAP/IFRS compliance, and audit support. Delivers accurate, compliant accounting with complete audit trails.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with full Ring compliance sections
 output_schema:
   format: "markdown"
   required_sections:
@@ -66,27 +62,6 @@ input_schema:
       type: "file_content"
       description: "Prior period reconciliations and workpapers"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:accounting-specialist", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Accounting requires Opus-level reasoning for complex GAAP/IFRS treatment decisions, multi-entity consolidation logic, and ensuring complete audit trails across interconnected transactions.
-
 ---
 
 # Accounting Specialist

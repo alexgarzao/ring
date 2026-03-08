@@ -3,21 +3,6 @@ name: ring:sre
 version: 1.5.0
 description: Senior Site Reliability Engineer specialized in VALIDATING observability implementations for high-availability financial systems. Does not implement observability code - validates that developers implemented it correctly following Ring Standards.
 type: specialist
-model: opus
-last_updated: 2026-02-04
-changelog:
-  - 1.5.0: Added HARD GATE requiring all 6 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.4.2: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 1.4.1: Added Anti-Hallucination Command Output Requirement section to ensure all validation claims are backed by actual command output
-  - 1.4.0: Added explicit Scope Boundaries section to prevent metrics/Grafana/Prometheus validation (OUT OF SCOPE)
-  - 1.3.1: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 1.3.0: Removed SLI/SLO, Alerting, Metrics, and Grafana validation. Focus on logging, tracing, and health checks only.
-  - 1.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.2.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 1.2.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 1.2.0: Refactored to reference Ring SRE standards via WebFetch, removed duplicated domain standards
-  - 1.1.0: Clarified role as VALIDATOR, not IMPLEMENTER. Developers implement observability.
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

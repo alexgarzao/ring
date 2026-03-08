@@ -135,7 +135,8 @@ examples:
       
       ## TDD Results
       | Phase | Status | Output |
-      |-------|--------|--------|
+      |
+-------|--------|--------|
       | RED | ✅ | FAIL: TestUserAuth - expected token, got nil |
       | GREEN | ✅ | PASS: TestUserAuth (0.003s) |
       

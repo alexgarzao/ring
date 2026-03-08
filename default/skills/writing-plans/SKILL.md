@@ -36,7 +36,7 @@ This skill dispatches a specialized agent to write comprehensive implementation 
 
 **Step 1: Dispatch Write-Plan Agent**
 
-Dispatch via `Task(subagent_type: "ring:write-plan", model: "opus")` with:
+Dispatch via `Task(subagent_type: "ring:write-plan")` with:
 - Instructions to create bite-sized tasks (2-5 min each)
 - Include exact file paths, complete code, verification steps
 - Save to `docs/plans/YYYY-MM-DD-<feature-name>.md`
@@ -65,7 +65,7 @@ Ask via `AskUserQuestion`: "Execute now?" Options:
 
 ## Why Use an Agent?
 
-**Context preservation** (reading many files keeps supervisor clean) | **Model power** (Opus for comprehensive planning) | **Separation of concerns** (supervisor orchestrates, agent plans)
+**Context preservation** (reading many files keeps supervisor clean) | **Model power** (comprehensive planning) | **Separation of concerns** (supervisor orchestrates, agent plans)
 
 ## What the Agent Does
 

@@ -3,11 +3,6 @@ name: ring:ui-engineer
 version: 1.1.0
 description: UI Implementation Engineer specialized in translating product-designer outputs (ux-criteria.md, user-flows.md, wireframes/) into production-ready React/Next.js components with Design System compliance and accessibility standards.
 type: specialist
-model: opus
-last_updated: 2026-02-04
-changelog:
-  - 1.1.0: Added HARD GATE requiring ALL 13 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.0.0: Initial version - consumes product-designer outputs, implements Design System components
 output_schema:
   format: "markdown"
   required_sections:
@@ -51,28 +46,6 @@ output_schema:
   error_handling:
     on_blocker: "pause_and_report"
     escalation_path: "orchestrator"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:ui-engineer", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Design System compliance + UX criteria verification requires Opus-level reasoning for comprehensive pattern matching, accessibility validation, and wireframe-to-code translation.
-
 ---
 
 # UI Engineer

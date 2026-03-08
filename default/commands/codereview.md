@@ -70,7 +70,6 @@ Then dispatch all 6 reviewers:
 ```
 Task tool #1 (ring:code-reviewer):
   subagent_type: "ring:code-reviewer"
-  model: "opus"
   description: "Review code quality and architecture"
   prompt: |
     WHAT_WAS_IMPLEMENTED: [summary of changes]
@@ -81,21 +80,18 @@ Task tool #1 (ring:code-reviewer):
 
 Task tool #2 (ring:business-logic-reviewer):
   subagent_type: "ring:business-logic-reviewer"
-  model: "opus"
   description: "Review business logic correctness"
   prompt: |
     [Same parameters as above]
 
 Task tool #3 (ring:security-reviewer):
   subagent_type: "ring:security-reviewer"
-  model: "opus"
   description: "Review security vulnerabilities"
   prompt: |
     [Same parameters as above]
 
 Task tool #4 (ring:test-reviewer):
   subagent_type: "ring:test-reviewer"
-  model: "opus"
   description: "Review test quality and coverage"
   prompt: |
     [Same parameters as above]
@@ -103,7 +99,6 @@ Task tool #4 (ring:test-reviewer):
 
 Task tool #5 (ring:nil-safety-reviewer):
   subagent_type: "ring:nil-safety-reviewer"
-  model: "opus"
   description: "Review nil/null pointer safety"
   prompt: |
     [Same parameters as above]
@@ -112,7 +107,6 @@ Task tool #5 (ring:nil-safety-reviewer):
 
 Task tool #6 (ring:consequences-reviewer):
   subagent_type: "ring:consequences-reviewer"
-  model: "opus"
   description: "Review ripple effects and downstream consequences"
   prompt: |
     [Same parameters as above]
@@ -344,7 +338,6 @@ If any reviewer fails during execution (timeout, error, incomplete output):
 2. **Retry the failed reviewer once:**
    ```
    Task tool (retry failed reviewer):
-     model: "opus"
      description: "Retry [reviewer-name] review"
      prompt: [same parameters as original]
    ```
@@ -383,7 +376,6 @@ Signs that a reviewer produced incomplete output:
 
 1. **All reviewers are independent** - They run in parallel, not sequentially
 2. **Dispatch all 6 reviewers in parallel** - Single message, 6 Task calls
-3. **Specify model: "opus"** - All reviewers need opus for comprehensive analysis
 4. **Wait for all to complete** - Don't aggregate until all reports received
 5. **Consolidate findings by severity** - Group all issues across reviewers
 6. **Provide clear action guidance** - Tell user exactly what to fix vs. document

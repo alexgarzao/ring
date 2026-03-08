@@ -3,10 +3,6 @@ name: positioning-strategist
 version: 1.0.0
 description: Strategic Positioning Specialist for differentiation strategy, category design, positioning statements, and competitive framing. Creates defensible market positions.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with comprehensive positioning capabilities
 output_schema:
   format: "markdown"
   required_sections:
@@ -50,27 +46,6 @@ input_schema:
       type: "string"
       description: "Existing positioning if repositioning"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:positioning-strategist", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Positioning strategy requires Opus-level reasoning for evaluating competitive dynamics, identifying defensible differentiators, and creating compelling positioning that stands up to market scrutiny.
-
 ---
 
 # Positioning Strategist

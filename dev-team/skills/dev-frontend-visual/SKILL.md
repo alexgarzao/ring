@@ -99,7 +99,8 @@ examples:
 
       ## Snapshot Coverage
       | Component | States | Viewports | Edge Cases | Status |
-      |-----------|--------|-----------|------------|--------|
+      |
+-----------|--------|-----------|------------|--------|
       | TransactionList | 4/4 | 3/3 | Long text | PASS |
 
       ## Component Duplication Check
@@ -166,7 +167,6 @@ if any REQUIRED input is missing:
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst-frontend"
-  model: "opus"
   prompt: |
     **MODE:** VISUAL TESTING (Gate 4)
 

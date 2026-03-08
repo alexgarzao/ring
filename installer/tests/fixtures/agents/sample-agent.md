@@ -4,7 +4,6 @@ description: |
   A sample agent for testing platform transformations.
   Demonstrates full agent definition structure.
 
-model: claude-sonnet-4-20250514
 
 output_schema:
   format: markdown

@@ -26,7 +26,7 @@ platforms/opencode/
 
 The installer reads skills, agents, and commands directly from the Ring monorepo's canonical directories (`default/`, `dev-team/`, `pm-team/`, etc.) and applies transformations for OpenCode compatibility:
 
-1. **Agent transform**: `type` → `mode`, strip unsupported frontmatter (version, changelog, output_schema), normalize tool names, remove Claude-specific model requirement sections
+1. **Agent transform**: `type` → `mode`, strip unsupported frontmatter (version, output_schema), normalize tool names
 2. **Skill transform**: Keep `name` and `description` in frontmatter, normalize tool references in body
 3. **Command transform**: Strip `argument-hint` (unsupported), normalize tool references
 4. **Hooks**: Not installed (OpenCode uses plugin-based hooks incompatible with Ring's file-based hooks)

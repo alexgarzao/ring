@@ -201,7 +201,6 @@ The skill contains the complete reporting workflow with:
 ```
 Task tool:
   subagent_type: "ring:delivery-reporter"
-  model: "opus"
   prompt: |
     Create delivery report for period {start_date} to {end_date}.
 

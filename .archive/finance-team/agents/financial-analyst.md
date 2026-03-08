@@ -3,10 +3,6 @@ name: financial-analyst
 version: 1.0.0
 description: Senior Financial Analyst specialized in financial statement analysis, ratio analysis, trend analysis, benchmarking, and investment evaluation. Delivers actionable insights with documented methodology.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with full Ring compliance sections
 output_schema:
   format: "markdown"
   required_sections:
@@ -69,27 +65,6 @@ input_schema:
       type: "list[string]"
       description: "Specific metrics to focus on"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:financial-analyst", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Financial analysis requires Opus-level reasoning for accurate ratio interpretation, trend identification, and nuanced recommendations that consider multiple factors simultaneously.
-
 ---
 
 # Financial Analyst

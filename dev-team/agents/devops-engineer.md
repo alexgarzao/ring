@@ -3,21 +3,6 @@ name: ring:devops-engineer
 version: 1.4.0
 description: Senior DevOps Engineer specialized in cloud infrastructure for financial services. Handles containerization, IaC, and local development environments.
 type: specialist
-model: opus
-last_updated: 2026-02-04
-changelog:
-  - 1.4.0: Added HARD GATE requiring all 8 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.3.3: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 1.3.2: Added Pre-Submission Self-Check section (MANDATORY) to prevent AI slop in infrastructure code
-  - 1.3.1: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 1.3.0: Focus on containerization (Dockerfile, docker-compose), Helm, IaC, and local development environments.
-  - 1.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.2.2: Fixed critical loopholes - added WebFetch checkpoint, clarified required_when logic, added anti-rationalizations, strengthened weak language
-  - 1.2.1: Added required_when condition for Standards Compliance (mandatory when invoked from ring:dev-refactor)
-  - 1.2.0: Added Pressure Resistance section for consistency with other agents
-  - 1.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 1.1.0: Refactored to reference Ring DevOps standards via WebFetch, removed duplicated domain standards
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

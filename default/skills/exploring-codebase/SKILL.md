@@ -456,7 +456,6 @@ Task(subagent_type="Explore", description="Explore target in Component C",
 
 **Agent Configuration:**
 - **subagent_type:** `Explore` (fast agent specialized for codebase exploration)
-- **model:** `haiku` (fast, cost-effective)
 - **run_in_background:** No (await results for synthesis)
 
 **Step 2.3: Await All Deep Dive Agents**
@@ -1211,7 +1210,7 @@ Apply ALL patterns when using this skill.
 ## Notes
 
 - **Performance:** Two phases complete faster than naive sequential exploration
-- **Cost:** Uses `haiku` model (cost-effective for exploration)
+- **Cost:** Optimized for fast, cost-effective exploration
 - **Adaptability:** Works for any architecture (hexagonal, microservices, MVC, etc.)
 - **Scalability:** Handles codebases from small (2-3 components) to large (10+ services)
 - **Reusability:** Synthesis documents serve as permanent reference

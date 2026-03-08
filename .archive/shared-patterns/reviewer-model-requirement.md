@@ -1,37 +1,22 @@
-# Reviewer Model Requirement
+# Reviewer Agent Dispatch
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **Applies to:** All reviewer agents (ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer)
 
 ---
 
-## Model Requirement: Claude Opus 4.5+
+## Orchestrator Requirement
 
-**HARD GATE:** All reviewer agents REQUIRE Claude Opus 4.5 or higher.
-
-### Self-Verification (MANDATORY - Check FIRST)
-
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-### Orchestrator Requirement
-
-When calling ANY reviewer agent, you MUST specify the model parameter:
+When calling ANY reviewer agent, dispatch via Task tool:
 
 ```python
-Task(subagent_type="ring:{reviewer-name}", model="opus", ...)  # REQUIRED
+Task(subagent_type="ring:{reviewer-name}", ...)
 ```
 
-### Why Opus is Required for Reviewers
+### Why Specialized Reviewers Are Required
 
-| Review Capability | Why It Requires Opus |
-|------------------|---------------------|
+| Review Capability | Why Specialized Agents |
+|------------------|----------------------|
 | **Complex code tracing** | Tracing data flows across components, following function calls, understanding state changes |
 | **Pattern recognition** | Identifying subtle design patterns, anti-patterns, and inconsistencies |
 | **Mental execution** | Walking through code with concrete scenarios to verify correctness |
@@ -46,16 +31,3 @@ Task(subagent_type="ring:{reviewer-name}", model="opus", ...)  # REQUIRED
 - **Security Reviewer:** Requires deep vulnerability detection, OWASP Top 10 coverage, and cryptographic evaluation
 - **Test Reviewer:** Requires analyzing test quality, coverage gaps, and test anti-patterns
 - **Nil-Safety Reviewer:** Requires tracing nil propagation through call chains and identifying risk patterns
-
----
-
-## Enforcement
-
-This is a **HARD GATE** - no reviewer can proceed without Opus model verification.
-
-If invoked with wrong model, the agent MUST:
-1. NOT perform any review
-2. Output the error message above
-3. Return immediately
-
-The orchestrator MUST reinvoke with `model="opus"` parameter.

@@ -3,10 +3,6 @@ name: security-operations
 version: 1.0.0
 description: Security Operations Specialist focused on infrastructure security, compliance validation, vulnerability management, and security monitoring for financial services organizations.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:
@@ -50,27 +46,6 @@ input_schema:
       type: "object"
       description: "Automated security scan outputs"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ -> **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:security-operations", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Security operations requires comprehensive analysis of complex attack vectors, compliance requirements, and nuanced risk assessment - all requiring Opus-level reasoning capabilities.
-
 ---
 
 # Security Operations Specialist
