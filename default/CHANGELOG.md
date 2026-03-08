@@ -1,5 +1,15 @@
 # Ring-default Changelog
 
+## [1.14.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.1)
+
+- Refactor: Decoupled agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.14.0...ring-default@1.14.1)
+
+---
+
 ## [1.14.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.0)
 
 - **Features**
