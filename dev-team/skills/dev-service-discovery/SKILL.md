@@ -191,8 +191,7 @@ Summary of steps:
 2. **Detect existing scripts** — scan `scripts/mongodb/*.js` for `createIndex` calls
 3. **Cross-reference** — match in-code indexes against script indexes (covered / missing_script / script_only)
 4. **Generate missing scripts** — create `mongosh`-compatible `.js` scripts following the idempotent `createIndexSafely` pattern (see reference for full template)
-5. **Execute scripts (optional)** — ⚠️ only with explicit user confirmation; auto-detect connection from env/config/docker-compose
-6. **Upload to S3** — asks which bucket to use, then uploads all scripts to `s3://{bucket}/scripts/mongodb/{service_name}/` via AWS CLI (requires valid AWS credentials; verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
+5. **Upload to S3** — asks which bucket to use, then uploads all scripts to `s3://{bucket}/scripts/mongodb/{service_name}/` via AWS CLI (requires valid AWS credentials; verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
 
 Store results for Phase 4 report:
 ```text

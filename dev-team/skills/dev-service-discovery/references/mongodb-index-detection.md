@@ -214,41 +214,7 @@ print("");
 
 ---
 
-## Step 5: Execute Index Scripts (Optional — User Confirmation Required)
-
-**⚠️ NEVER execute without explicit user confirmation.**
-
-If the user requests execution of detected or generated index scripts:
-
-```text
-1. Determine MongoDB connection:
-   a. Check environment variables: MONGO_URI, MONGO_HOST, MONGO_PORT, MONGO_DATABASE
-   b. Check bootstrap config: grep "MongoURI\|MongoHost\|MongoDB" in internal/bootstrap/config.go
-   c. Check docker-compose.yml for MongoDB service + port mapping
-   d. Default fallback: mongodb://localhost:27017/{service_name}
-
-2. List scripts to execute:
-   - All files in scripts/mongodb/*.js (sorted alphabetically)
-   - Show the user each script + target database
-
-3. ASK for confirmation:
-   "Found {N} index scripts for database '{db_name}':
-    1. scripts/mongodb/create-service-indexes.js (4 indexes)
-    2. scripts/mongodb/create-resource-indexes.js (4 indexes)
-   
-    Target: mongodb://localhost:27017/{db_name}
-    
-    Execute? [y/N]"
-
-4. Execute with mongosh:
-   mongosh "{connection_string}" scripts/mongodb/{script}.js
-
-5. Report results per script (OK/SKIP/ERROR per index)
-```
-
----
-
-## Step 6: Upload Index Scripts to S3
+## Step 5: Upload Index Scripts to S3
 
 **Execute after Step 4 (script generation) or when scripts already exist.**
 
