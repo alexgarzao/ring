@@ -1,5 +1,5 @@
 ---
-name: /ring:delivery-status
+name: ring:delivery-status
 description: Track delivery progress against roadmap with evidence-based analysis
 argument-hint: "[feature-name or roadmap-path]"
 ---
