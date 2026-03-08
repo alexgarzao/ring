@@ -246,6 +246,78 @@ If the user requests execution of detected or generated index scripts:
 
 ---
 
+## Step 6: Upload Index Scripts to S3
+
+**Execute after Step 4 (script generation) or when scripts already exist.**
+
+Upload all index scripts to S3 so they are available for automated provisioning of dedicated tenant databases. Uses the AWS CLI installed on the local machine.
+
+### S3 Path Convention
+
+```
+s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/{script_filename}
+```
+
+Example:
+```
+s3://midaz-cloudformation-foundation/scripts/mongodb/dispatch layer/create-service-indexes.js
+s3://midaz-cloudformation-foundation/scripts/mongodb/dispatch layer/create-resource-indexes.js
+s3://midaz-cloudformation-foundation/scripts/mongodb/ledger/create-metadata-indexes.js
+```
+
+### Upload Flow
+
+```text
+1. Detect service name (from Phase 1 results)
+
+2. Collect all index scripts:
+   - Glob: scripts/mongodb/*.js OR scripts/mongo/*.js
+   - If none found → skip upload, log warning
+
+3. Verify AWS CLI is available:
+   - Run: aws --version
+   - If not found → ERROR: "AWS CLI not installed. Install with: brew install awscli"
+
+4. Verify S3 access:
+   - Run: aws s3 ls s3://midaz-cloudformation-foundation/scripts/ 2>&1
+   - If access denied → ERROR: "No S3 access. Check AWS credentials (aws configure)"
+
+5. Upload each script:
+   - For each script in scripts/mongodb/*.js:
+     aws s3 cp {script_path} s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/{filename}
+   - Use --content-type "application/javascript"
+
+6. Verify upload:
+   - Run: aws s3 ls s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/
+   - List uploaded files with sizes
+   - Confirm count matches local scripts
+
+7. Report results:
+   "Uploaded {N} index scripts to S3:
+    ✅ s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/create-service-indexes.js
+    ✅ s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/create-resource-indexes.js"
+```
+
+### Report Section Addition
+
+Add to the Phase 4 HTML report:
+
+```
+┌──────────────────────────────────────────────────────┐
+│ S3 Upload Status                                     │
+├──────────────────────────┬───────────────────────────┤
+│ Script                   │ Status                    │
+├──────────────────────────┼───────────────────────────┤
+│ create-service-indexes   │ ✅ Uploaded               │
+│ create-resource-indexes  │ ✅ Uploaded               │
+│ create-audit-indexes     │ ⚠️  Generated (not yet    │
+│                          │    uploaded — run again)   │
+└──────────────────────────┴───────────────────────────┘
+S3 prefix: s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/
+```
+
+---
+
 ## Report Section: MongoDB Index Coverage
 
 Include this section in the Phase 4 HTML report when MongoDB indexes are detected.

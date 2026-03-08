@@ -192,6 +192,7 @@ Summary of steps:
 3. **Cross-reference** — match in-code indexes against script indexes (covered / missing_script / script_only)
 4. **Generate missing scripts** — create `mongosh`-compatible `.js` scripts following the idempotent `createIndexSafely` pattern (see reference for full template)
 5. **Execute scripts (optional)** — ⚠️ only with explicit user confirmation; auto-detect connection from env/config/docker-compose
+6. **Upload to S3** — upload all scripts to `s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/` via AWS CLI for automated provisioning of dedicated tenant databases
 
 Store results for Phase 4 report:
 ```text
