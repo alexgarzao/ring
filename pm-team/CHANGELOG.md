@@ -3,6 +3,17 @@
 ## [0.19.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.1)
 
 - Fixes:
+  - Removed leading slash from delivery-status command name.
+
+Contributors: @gandalf,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.0...ring-pm-team@0.19.1)
+
+---
+
+## [0.19.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.1)
+
+- Fixes:
   - Removed leading slash from the delivery-status command name.
 
 Contributors: @gandalf
