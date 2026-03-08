@@ -1,5 +1,16 @@
 # Ring-pm-team Changelog
 
+## [0.19.2](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.2)
+
+- Improvements:
+  - Refactored to decouple agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.1...ring-pm-team@0.19.2)
+
+---
+
 ## [0.19.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.1)
 
 - **Fixes:**
