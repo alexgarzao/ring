@@ -52,6 +52,7 @@ MAX_FILE_SIZE = 10 * 1024 * 1024
 
 class InstallStatus(Enum):
     """Status of an installation operation."""
+
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
@@ -69,6 +70,7 @@ class InstallTarget:
         components: List of component types to install (agents, commands, skills)
                    If None, installs all components.
     """
+
     platform: str
     path: Optional[Path] = None
     components: Optional[List[str]] = None
@@ -89,9 +91,7 @@ class InstallTarget:
             except ValueError:
                 # Path not under home - check if it's a reasonable location
                 allowed = [Path("/opt"), Path("/usr/local"), Path(tempfile.gettempdir()).resolve()]
-                if not any(
-                    self.path.is_relative_to(p) for p in allowed if p.exists()
-                ):
+                if not any(self.path.is_relative_to(p) for p in allowed if p.exists()):
                     warnings.warn(
                         f"Install path is outside recommended locations: {self.path}",
                         RuntimeWarning,
@@ -112,7 +112,12 @@ class InstallOptions:
         plugin_names: List of plugin names to install (None = all)
         exclude_plugins: List of plugin names to exclude
         rollback_on_failure: If True, remove files written in a failed install pass
+        link: If True, build transformed files in-repo and create symlinks
+               instead of copying files to the platform config directory.
+               Build output: <source>/.ring-build/<platform>/
+               Symlinks: <config>/{agent,command,skill} -> build dir
     """
+
     dry_run: bool = False
     force: bool = False
     backup: bool = True
@@ -120,11 +125,13 @@ class InstallOptions:
     plugin_names: Optional[List[str]] = None
     exclude_plugins: Optional[List[str]] = None
     rollback_on_failure: bool = True
+    link: bool = False
 
 
 @dataclass(slots=True)
 class ComponentResult:
     """Result of installing a single component."""
+
     source_path: Path
     target_path: Path
     status: InstallStatus
@@ -150,6 +157,7 @@ class InstallResult:
         details: Detailed results per component
         timestamp: When the installation was performed
     """
+
     status: InstallStatus
     targets: List[str] = field(default_factory=list)
     components_installed: int = 0
@@ -164,12 +172,14 @@ class InstallResult:
     def add_success(self, source: Path, target: Path, backup: Optional[Path] = None) -> None:
         """Record a successful component installation."""
         self.components_installed += 1
-        self.details.append(ComponentResult(
-            source_path=source,
-            target_path=target,
-            status=InstallStatus.SUCCESS,
-            backup_path=backup
-        ))
+        self.details.append(
+            ComponentResult(
+                source_path=source,
+                target_path=target,
+                status=InstallStatus.SUCCESS,
+                backup_path=backup,
+            )
+        )
 
     def add_failure(
         self,
@@ -177,7 +187,7 @@ class InstallResult:
         target: Path,
         message: str,
         exc_info: Optional[BaseException] = None,
-        include_traceback: bool = True
+        include_traceback: bool = True,
     ) -> None:
         """Record a failed component installation.
 
@@ -197,34 +207,40 @@ class InstallResult:
                 traceback.format_exception(type(exc_info), exc_info, exc_info.__traceback__)
             )
 
-        self.details.append(ComponentResult(
-            source_path=source,
-            target_path=target,
-            status=InstallStatus.FAILED,
-            message=message,
-            traceback_str=traceback_str
-        ))
+        self.details.append(
+            ComponentResult(
+                source_path=source,
+                target_path=target,
+                status=InstallStatus.FAILED,
+                message=message,
+                traceback_str=traceback_str,
+            )
+        )
 
     def add_skip(self, source: Path, target: Path, message: str) -> None:
         """Record a skipped component."""
         self.components_skipped += 1
         self.warnings.append(f"{source}: {message}")
-        self.details.append(ComponentResult(
-            source_path=source,
-            target_path=target,
-            status=InstallStatus.SKIPPED,
-            message=message
-        ))
+        self.details.append(
+            ComponentResult(
+                source_path=source,
+                target_path=target,
+                status=InstallStatus.SKIPPED,
+                message=message,
+            )
+        )
 
     def add_removal(self, target: Path, message: str = "") -> None:
         """Record a successful component removal."""
         self.components_removed += 1
-        self.details.append(ComponentResult(
-            source_path=Path(""),  # No source for removals
-            target_path=target,
-            status=InstallStatus.SUCCESS,
-            message=message or "Removed"
-        ))
+        self.details.append(
+            ComponentResult(
+                source_path=Path(""),  # No source for removals
+                target_path=target,
+                status=InstallStatus.SUCCESS,
+                message=message or "Removed",
+            )
+        )
 
     def finalize(self) -> None:
         """Set the overall status based on component results."""
@@ -240,9 +256,7 @@ class InstallResult:
 
 
 def _validate_marketplace_schema(
-    marketplace: Dict[str, Any],
-    marketplace_path: Path,
-    ring_path: Path
+    marketplace: Dict[str, Any], marketplace_path: Path, ring_path: Path
 ) -> None:
     """
     Validate the marketplace.json schema.
@@ -271,9 +285,7 @@ def _validate_marketplace_schema(
 
     for i, plugin in enumerate(plugins):
         if not isinstance(plugin, dict):
-            raise ValueError(
-                f"Invalid marketplace.json: plugin at index {i} must be an object"
-            )
+            raise ValueError(f"Invalid marketplace.json: plugin at index {i} must be an object")
 
         # Required fields
         if "name" not in plugin:
@@ -391,8 +403,11 @@ def _verify_marketplace_integrity(ring_path: Path) -> None:
         )
 
 
-def discover_ring_components(ring_path: Path, plugin_names: Optional[List[str]] = None,
-                             exclude_plugins: Optional[List[str]] = None) -> Dict[str, Dict[str, List[Path]]]:
+def discover_ring_components(
+    ring_path: Path,
+    plugin_names: Optional[List[str]] = None,
+    exclude_plugins: Optional[List[str]] = None,
+) -> Dict[str, Dict[str, List[Path]]]:
     """
     Discover Ring components (skills, agents, commands) from a Ring installation.
 
@@ -470,12 +485,7 @@ def _discover_plugin_components(plugin_path: Path) -> Dict[str, List[Path]]:
     Returns:
         Dictionary mapping component types to file paths
     """
-    result: Dict[str, List[Path]] = {
-        "agents": [],
-        "commands": [],
-        "skills": [],
-        "hooks": []
-    }
+    result: Dict[str, List[Path]] = {"agents": [], "commands": [], "skills": [], "hooks": []}
 
     # Discover agents
     agents_dir = plugin_path / "agents"
@@ -509,7 +519,7 @@ def install(
     source_path: Path,
     targets: List[InstallTarget],
     options: Optional[InstallOptions] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ) -> InstallResult:
     """
     Install Ring components to one or more target platforms.
@@ -526,8 +536,11 @@ def install(
     """
     from ring_installer.utils.fs import (
         backup_existing,
+        clean_build_dir,
         copy_with_transform,
+        create_directory_symlink,
         ensure_directory,
+        get_build_dir,
         safe_remove,
     )
 
@@ -542,14 +555,13 @@ def install(
 
     # Discover components
     components = discover_ring_components(
-        source_path,
-        plugin_names=options.plugin_names,
-        exclude_plugins=options.exclude_plugins
+        source_path, plugin_names=options.plugin_names, exclude_plugins=options.exclude_plugins
     )
 
     # Calculate total work
     total_components = sum(
-        len(files) for plugin_components in components.values()
+        len(files)
+        for plugin_components in components.values()
         for files in plugin_components.values()
     ) * len(targets)
 
@@ -562,7 +574,22 @@ def install(
         adapter = get_adapter(target.platform, manifest.get("platforms", {}).get(target.platform))
         install_path = target.path or adapter.get_install_path()
         component_mapping = adapter.get_component_mapping()
-        
+
+        # --- Link mode setup ---
+        # When link=True, write transformed files to .ring-build/<platform>/ inside the
+        # Ring repo, then create directory symlinks from the platform config dir.
+        # This allows `git pull` + rebuild to instantly update all installed components.
+        build_dir: Optional[Path] = None
+        write_base = install_path  # default: write directly to platform config
+        symlink_targets: Dict[str, Path] = {}  # component_dir -> build_dir subpath
+
+        if options.link:
+            build_dir = get_build_dir(source_path, target.platform)
+            write_base = build_dir
+            if not options.dry_run:
+                clean_build_dir(build_dir)
+            logger.info("Link mode: building to %s, will symlink from %s", build_dir, install_path)
+
         # Collect hooks.json configs for platforms that need hooks merged into settings
         hooks_configs_to_merge: List[Dict[str, Any]] = []
 
@@ -579,7 +606,13 @@ def install(
                     continue
 
                 target_config = component_mapping[component_type]
-                target_dir = install_path / target_config["target_dir"]
+                target_dir = write_base / target_config["target_dir"]
+
+                # Track component dirs for symlink creation in link mode
+                if options.link and build_dir is not None:
+                    comp_dir_name = target_config["target_dir"]
+                    if comp_dir_name not in symlink_targets:
+                        symlink_targets[comp_dir_name] = build_dir / comp_dir_name
 
                 # Check if platform requires flat structure for this component type
                 requires_flat = adapter.requires_flat_components(component_type)
@@ -602,7 +635,7 @@ def install(
                         progress_callback(
                             f"Installing {source_file.name} to {target.platform}",
                             current,
-                            total_components
+                            total_components,
                         )
 
                     # Determine target filename
@@ -616,11 +649,13 @@ def install(
                             target_file = target_dir / skill_name / source_file.name
                     elif component_type == "hooks":
                         # Check if platform needs hooks.json merged into settings instead of installed as file
-                        if (hasattr(adapter, "should_skip_hook_file") and 
-                            adapter.should_skip_hook_file(source_file.name)):
+                        if hasattr(
+                            adapter, "should_skip_hook_file"
+                        ) and adapter.should_skip_hook_file(source_file.name):
                             # Collect hooks.json content for later merge into settings
                             try:
                                 import json
+
                                 hooks_content = source_file.read_text(encoding="utf-8")
                                 # Transform hook paths before merge
                                 if hasattr(adapter, "transform_hook"):
@@ -632,7 +667,7 @@ def install(
                                     source_file,
                                     Path("settings.json"),
                                     f"Failed to parse hooks.json: {e}",
-                                    exc_info=e
+                                    exc_info=e,
                                 )
                             continue  # Skip installing hooks.json as a file
                         # Hooks can have multiple extensions (.json/.sh/.py). Preserve the original filename.
@@ -642,22 +677,20 @@ def install(
                         target_filename = adapter.get_flat_filename(
                             source_file.name,
                             component_type.rstrip("s"),  # agents -> agent
-                            plugin_name
+                            plugin_name,
                         )
                         target_file = target_dir / target_filename
                     else:
                         target_filename = adapter.get_target_filename(
                             source_file.name,
-                            component_type.rstrip("s")  # agents -> agent
+                            component_type.rstrip("s"),  # agents -> agent
                         )
                         target_file = target_dir / target_filename
 
                     # Check if target exists
                     if target_file.exists() and not options.force:
                         result.add_skip(
-                            source_file,
-                            target_file,
-                            "File exists (use --force to overwrite)"
+                            source_file, target_file, "File exists (use --force to overwrite)"
                         )
                         continue
 
@@ -673,7 +706,7 @@ def install(
                             result.add_failure(
                                 source_file,
                                 target_file,
-                                f"File too large ({file_size} bytes, max {MAX_FILE_SIZE})"
+                                f"File too large ({file_size} bytes, max {MAX_FILE_SIZE})",
                             )
                             continue
 
@@ -692,7 +725,7 @@ def install(
                         metadata = {
                             "name": metadata_name,
                             "source_path": str(source_file),
-                            "plugin": plugin_name
+                            "plugin": plugin_name,
                         }
 
                         if component_type == "agents":
@@ -708,13 +741,15 @@ def install(
                                 result.add_skip(
                                     source_file,
                                     target_file,
-                                    "Platform does not support file-based hooks"
+                                    "Platform does not support file-based hooks",
                                 )
                                 continue
                         else:
                             transformed = content
                     except Exception as e:
-                        result.add_failure(source_file, target_file, f"Transform error: {e}", exc_info=e)
+                        result.add_failure(
+                            source_file, target_file, f"Transform error: {e}", exc_info=e
+                        )
                         continue
 
                     # Write transformed content
@@ -734,7 +769,9 @@ def install(
                             result.add_success(source_file, target_file, backup_path)
                             installed_paths.append(target_file)
                         except Exception as e:
-                            result.add_failure(source_file, target_file, f"Write error: {e}", exc_info=e)
+                            result.add_failure(
+                                source_file, target_file, f"Write error: {e}", exc_info=e
+                            )
 
         # Merge collected hooks.json configs into settings for platforms that require it
         if hooks_configs_to_merge and hasattr(adapter, "merge_hooks_to_settings"):
@@ -753,13 +790,17 @@ def install(
                                 if h.get("hooks")
                             }
                             for entry in entries:
-                                cmd = entry.get("hooks", [{}])[0].get("command", "") if entry.get("hooks") else ""
+                                cmd = (
+                                    entry.get("hooks", [{}])[0].get("command", "")
+                                    if entry.get("hooks")
+                                    else ""
+                                )
                                 matcher = entry.get("matcher", "")
                                 key = (cmd, matcher)
                                 if cmd and key not in existing_hooks:
                                     merged_config["hooks"][event].append(entry)
                                     existing_hooks.add(key)
-            
+
             if adapter.merge_hooks_to_settings(merged_config, options.dry_run, install_path):
                 settings_path = install_path / "settings.json"
                 if options.dry_run:
@@ -768,6 +809,36 @@ def install(
                     result.warnings.append(f"Merged hooks configuration into {settings_path}")
             else:
                 result.warnings.append("Failed to merge hooks into settings.json")
+
+        # --- Link mode: create directory symlinks ---
+        # After all files are written to .ring-build/<platform>/, create symlinks
+        # from the platform config dir pointing to each component subdirectory.
+        if options.link and symlink_targets and build_dir is not None:
+            for comp_dir_name, build_subdir in symlink_targets.items():
+                link_path = install_path / comp_dir_name
+                if options.dry_run:
+                    result.warnings.append(f"[DRY RUN] Would symlink {link_path} -> {build_subdir}")
+                else:
+                    try:
+                        create_directory_symlink(
+                            link_path=link_path,
+                            target_path=build_subdir,
+                            force=options.force,
+                            backup=options.backup,
+                        )
+                        result.warnings.append(f"Symlinked {link_path} -> {build_subdir}")
+                    except FileExistsError as e:
+                        result.warnings.append(
+                            f"Symlink skipped ({comp_dir_name}): {e}. "
+                            f"Use --force to replace existing directory."
+                        )
+                    except Exception as e:
+                        result.add_failure(
+                            build_subdir,
+                            link_path,
+                            f"Symlink creation failed: {e}",
+                            exc_info=e,
+                        )
 
         # Roll back partial target installs when failures occur
         if not options.dry_run and options.rollback_on_failure:
@@ -789,7 +860,7 @@ def update(
     source_path: Path,
     targets: List[InstallTarget],
     options: Optional[InstallOptions] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ) -> InstallResult:
     """
     Update Ring components on target platforms.
@@ -813,7 +884,7 @@ def update(
 def uninstall(
     targets: List[InstallTarget],
     options: Optional[InstallOptions] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ) -> InstallResult:
     """
     Remove Ring components from target platforms.
@@ -832,7 +903,9 @@ def uninstall(
     platform_manifest = load_manifest()
 
     for target in targets:
-        adapter = get_adapter(target.platform, platform_manifest.get("platforms", {}).get(target.platform))
+        adapter = get_adapter(
+            target.platform, platform_manifest.get("platforms", {}).get(target.platform)
+        )
         install_path = target.path or adapter.get_install_path()
         component_mapping = adapter.get_component_mapping()
 
@@ -852,6 +925,7 @@ def uninstall(
                 # Create backup if requested
                 if options.backup:
                     from ring_installer.utils.fs import backup_existing
+
                     backup_existing(target_dir)
 
                 # Remove directory
@@ -914,6 +988,7 @@ class UpdateCheckResult:
         new_files: New files to be added
         removed_files: Files to be removed
     """
+
     platform: str
     installed_version: Optional[str]
     available_version: Optional[str]
@@ -928,10 +1003,7 @@ class UpdateCheckResult:
         return bool(self.changed_files or self.new_files or self.removed_files)
 
 
-def check_updates(
-    source_path: Path,
-    targets: List[InstallTarget]
-) -> Dict[str, UpdateCheckResult]:
+def check_updates(source_path: Path, targets: List[InstallTarget]) -> Dict[str, UpdateCheckResult]:
     """
     Check for available updates on target platforms.
 
@@ -968,7 +1040,7 @@ def update_with_diff(
     source_path: Path,
     targets: List[InstallTarget],
     options: Optional[InstallOptions] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ) -> InstallResult:
     """
     Update Ring components, only updating changed files.
@@ -1006,9 +1078,7 @@ def update_with_diff(
 
     # Discover components
     components = discover_ring_components(
-        source_path,
-        plugin_names=options.plugin_names,
-        exclude_plugins=options.exclude_plugins
+        source_path, plugin_names=options.plugin_names, exclude_plugins=options.exclude_plugins
     )
 
     # Process each target
@@ -1057,7 +1127,7 @@ def update_with_diff(
                         progress_callback(
                             f"Checking {source_file.name}",
                             result.components_installed + result.components_skipped,
-                            sum(len(f) for pc in components.values() for f in pc.values())
+                            sum(len(f) for pc in components.values() for f in pc.values()),
                         )
 
                     # Determine target path
@@ -1073,15 +1143,12 @@ def update_with_diff(
                     elif requires_flat and len(components) > 1:
                         # Platform requires flat structure - use prefixed filename
                         target_filename = adapter.get_flat_filename(
-                            source_file.name,
-                            component_type.rstrip("s"),
-                            plugin_name
+                            source_file.name, component_type.rstrip("s"), plugin_name
                         )
                         target_file = target_dir / target_filename
                     else:
                         target_filename = adapter.get_target_filename(
-                            source_file.name,
-                            component_type.rstrip("s")
+                            source_file.name, component_type.rstrip("s")
                         )
                         target_file = target_dir / target_filename
 
@@ -1139,7 +1206,7 @@ def update_with_diff(
                         metadata = {
                             "name": metadata_name,
                             "source_path": str(source_file),
-                            "plugin": plugin_name
+                            "plugin": plugin_name,
                         }
 
                         if component_type == "agents":
@@ -1155,7 +1222,7 @@ def update_with_diff(
                                 result.add_skip(
                                     source_file,
                                     target_file,
-                                    "Platform does not support file-based hooks"
+                                    "Platform does not support file-based hooks",
                                 )
                                 continue
                         else:
@@ -1203,7 +1270,7 @@ def update_with_diff(
                 platform=target.platform,
                 version=source_version,
                 plugins=installed_plugins,
-                installed_files=installed_files
+                installed_files=installed_files,
             )
 
     result.finalize()
@@ -1221,6 +1288,7 @@ class SyncResult:
         drift_detected: Whether drift was detected between platforms
         drift_details: Details about drift per platform
     """
+
     platforms_synced: List[str] = field(default_factory=list)
     platforms_skipped: List[str] = field(default_factory=list)
     drift_detected: bool = False
@@ -1232,7 +1300,7 @@ def sync_platforms(
     source_path: Path,
     targets: List[InstallTarget],
     options: Optional[InstallOptions] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ) -> SyncResult:
     """
     Sync Ring components across multiple platforms.
@@ -1275,19 +1343,10 @@ def sync_platforms(
     # Sync each platform
     for target in targets:
         if progress_callback:
-            progress_callback(
-                f"Syncing {target.platform}",
-                targets.index(target),
-                len(targets)
-            )
+            progress_callback(f"Syncing {target.platform}", targets.index(target), len(targets))
 
         # Use update_with_diff for smart syncing
-        install_result = update_with_diff(
-            source_path,
-            [target],
-            options,
-            progress_callback
-        )
+        install_result = update_with_diff(source_path, [target], options, progress_callback)
 
         sync_result.install_results[target.platform] = install_result
 
@@ -1302,7 +1361,7 @@ def sync_platforms(
 def uninstall_with_manifest(
     targets: List[InstallTarget],
     options: Optional[InstallOptions] = None,
-    progress_callback: Optional[Callable[[str, int, int], None]] = None
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ) -> InstallResult:
     """
     Remove Ring components using the install manifest for precision.
@@ -1319,6 +1378,7 @@ def uninstall_with_manifest(
         InstallResult with details about what was removed
     """
     from ring_installer.utils.fs import backup_existing, safe_remove
+
     options = options or InstallOptions()
     result = InstallResult(status=InstallStatus.SUCCESS, targets=[t.platform for t in targets])
 
@@ -1349,6 +1409,7 @@ def uninstall_with_manifest(
                         try:
                             if options.backup:
                                 from ring_installer.utils.fs import backup_existing
+
                                 backup_existing(target_dir)
                             shutil.rmtree(target_dir)
                             result.add_removal(target_dir)
@@ -1365,7 +1426,7 @@ def uninstall_with_manifest(
                 progress_callback(
                     f"Removing {file_path}",
                     list(install_manifest.files.keys()).index(file_path),
-                    len(install_manifest.files)
+                    len(install_manifest.files),
                 )
 
             if options.dry_run:
@@ -1381,6 +1442,7 @@ def uninstall_with_manifest(
             try:
                 if options.backup:
                     from ring_installer.utils.fs import backup_existing
+
                     backup_existing(full_path)
 
                 safe_remove(full_path)

@@ -2,8 +2,9 @@
 Ring Installer CLI - Multi-platform AI agent skill installer.
 
 Usage:
-    python -m ring_installer install [--platforms PLATFORMS] [--dry-run] [--force] [--verbose]
-    python -m ring_installer update [--platforms PLATFORMS] [--dry-run] [--verbose]
+    python -m ring_installer install [--platforms PLATFORMS] [--dry-run] [--force] [--verbose] [--link]
+    python -m ring_installer update [--platforms PLATFORMS] [--dry-run] [--verbose] [--link]
+    python -m ring_installer rebuild [--platforms PLATFORMS] [--verbose]
     python -m ring_installer uninstall [--platforms PLATFORMS] [--dry-run] [--force]
     python -m ring_installer list [--platform PLATFORM]
     python -m ring_installer detect
@@ -14,6 +15,12 @@ Examples:
 
     # Install to specific platforms
     python -m ring_installer install --platforms claude,cursor
+
+    # Symlink install (builds in-repo, symlinks from config dir)
+    python -m ring_installer install --platforms opencode --link
+
+    # Rebuild after git pull (re-transforms, symlinks still valid)
+    python -m ring_installer rebuild
 
     # Dry run to see what would be done
     python -m ring_installer install --dry-run --verbose
@@ -197,6 +204,7 @@ def cmd_install(args: argparse.Namespace) -> int:
     targets = [InstallTarget(platform=p) for p in platforms]
 
     # Build options
+    use_link = getattr(args, "link", False)
     options = InstallOptions(
         dry_run=args.dry_run,
         force=args.force,
@@ -204,10 +212,16 @@ def cmd_install(args: argparse.Namespace) -> int:
         verbose=args.verbose,
         plugin_names=parse_platforms(args.plugins) if args.plugins else None,
         exclude_plugins=parse_platforms(args.exclude) if args.exclude else None,
+        link=use_link,
     )
 
     if args.dry_run:
         print("\n[DRY RUN] No changes will be made.\n")
+
+    if use_link:
+        print(
+            f"[LINK MODE] Building to {source_path / '.ring-build'}, symlinking to config dirs.\n"
+        )
 
     # Run installation
     callback = progress_callback if not args.quiet and not args.verbose else None
@@ -250,6 +264,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     targets = [InstallTarget(platform=p) for p in platforms]
 
     # Build options
+    use_link = getattr(args, "link", False)
     options = InstallOptions(
         dry_run=args.dry_run,
         force=True,
@@ -257,18 +272,82 @@ def cmd_update(args: argparse.Namespace) -> int:
         verbose=args.verbose,
         plugin_names=parse_platforms(args.plugins) if args.plugins else None,
         exclude_plugins=parse_platforms(args.exclude) if args.exclude else None,
+        link=use_link,
     )
 
     if args.dry_run:
         print("\n[DRY RUN] No changes will be made.\n")
 
+    if use_link:
+        print(f"[LINK MODE] Rebuilding {source_path / '.ring-build'}\n")
+
     callback = progress_callback if not args.quiet and not args.verbose else None
 
     # Use smart update if --smart flag is set
-    if getattr(args, 'smart', False):
+    if getattr(args, "smart", False):
         result = update_with_diff(source_path, targets, options, callback)
     else:
         result = update(source_path, targets, options, callback)
+
+    if callback:
+        print()
+
+    print_result(result, args.verbose)
+
+    return 0 if result.status in [InstallStatus.SUCCESS, InstallStatus.SKIPPED] else 1
+
+
+def cmd_rebuild(args: argparse.Namespace) -> int:
+    """
+    Handle rebuild command — re-transform files in .ring-build/ for symlink installs.
+
+    This is the fast path after `git pull`: re-runs transformations on source files
+    and writes updated content to the build directory. Symlinks already point there,
+    so the platform picks up changes immediately.
+    """
+    source_path = Path(args.source).expanduser() if args.source else find_ring_source()
+
+    if not source_path or not source_path.exists():
+        print("Error: Could not find Ring source directory.")
+        return 1
+
+    build_root = source_path / ".ring-build"
+    if not build_root.exists():
+        print("Error: No .ring-build/ directory found.")
+        print("Run 'install --link' first to set up symlink-based installation.")
+        return 1
+
+    print(f"Ring source: {source_path}")
+
+    # Determine which platforms have existing builds
+    if args.platforms:
+        platforms = validate_platforms(parse_platforms(args.platforms))
+        if not platforms:
+            return 1
+    else:
+        # Auto-detect from existing .ring-build/ subdirectories
+        platforms = [
+            d.name for d in build_root.iterdir() if d.is_dir() and d.name in SUPPORTED_PLATFORMS
+        ]
+        if not platforms:
+            print("Error: No platform builds found in .ring-build/")
+            return 1
+        print(f"Rebuilding platforms: {', '.join(platforms)}")
+
+    targets = [InstallTarget(platform=p) for p in platforms]
+
+    # Rebuild = force update with link mode
+    options = InstallOptions(
+        force=True,
+        backup=False,
+        verbose=args.verbose,
+        plugin_names=parse_platforms(args.plugins) if args.plugins else None,
+        exclude_plugins=parse_platforms(args.exclude) if args.exclude else None,
+        link=True,
+    )
+
+    callback = progress_callback if not args.quiet and not args.verbose else None
+    result = install(source_path, targets, options, callback)
 
     if callback:
         print()
@@ -457,7 +536,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     callback = progress_callback if not args.quiet and not args.verbose else None
 
     # Use manifest-based uninstall if --precise flag is set
-    if getattr(args, 'precise', False):
+    if getattr(args, "precise", False):
         result = uninstall_with_manifest(targets, options, callback)
     else:
         result = uninstall(targets, options, callback)
@@ -512,17 +591,20 @@ def cmd_detect(args: argparse.Namespace) -> int:
     """Handle detect command."""
     if args.json:
         import json
+
         platforms = detect_installed_platforms()
         data = []
         for p in platforms:
-            data.append({
-                "platform_id": p.platform_id,
-                "name": p.name,
-                "version": p.version,
-                "install_path": str(p.install_path) if p.install_path else None,
-                "binary_path": str(p.binary_path) if p.binary_path else None,
-                "details": p.details,
-            })
+            data.append(
+                {
+                    "platform_id": p.platform_id,
+                    "name": p.name,
+                    "version": p.version,
+                    "install_path": str(p.install_path) if p.install_path else None,
+                    "binary_path": str(p.binary_path) if p.binary_path else None,
+                    "details": p.details,
+                }
+            )
         print(json.dumps(data, indent=2))
     else:
         print_detection_report()
@@ -564,59 +646,43 @@ Examples:
   %(prog)s update                     Update existing installation
   %(prog)s list --platform claude     List installed components
   %(prog)s detect                     Detect installed platforms
-        """
+        """,
     )
 
-    parser.add_argument(
-        "--version", "-V",
-        action="version",
-        version=f"%(prog)s {__version__}"
-    )
+    parser.add_argument("--version", "-V", action="version", version=f"%(prog)s {__version__}")
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Install command
     install_parser = subparsers.add_parser("install", help="Install Ring components")
+    install_parser.add_argument("--source", "-s", help="Path to Ring source directory")
     install_parser.add_argument(
-        "--source", "-s",
-        help="Path to Ring source directory"
+        "--platforms", "-p", help="Comma-separated list of target platforms"
     )
+    install_parser.add_argument("--plugins", help="Comma-separated list of plugins to install")
+    install_parser.add_argument("--exclude", help="Comma-separated list of plugins to exclude")
     install_parser.add_argument(
-        "--platforms", "-p",
-        help="Comma-separated list of target platforms"
-    )
-    install_parser.add_argument(
-        "--plugins",
-        help="Comma-separated list of plugins to install"
-    )
-    install_parser.add_argument(
-        "--exclude",
-        help="Comma-separated list of plugins to exclude"
-    )
-    install_parser.add_argument(
-        "--dry-run", "-n",
+        "--dry-run",
+        "-n",
         action="store_true",
-        help="Show what would be done without making changes"
+        help="Show what would be done without making changes",
     )
     install_parser.add_argument(
-        "--force", "-f",
-        action="store_true",
-        help="Overwrite existing files"
+        "--force", "-f", action="store_true", help="Overwrite existing files"
     )
     install_parser.add_argument(
-        "--no-backup",
-        action="store_true",
-        help="Don't create backups before overwriting"
+        "--no-backup", action="store_true", help="Don't create backups before overwriting"
+    )
+    install_parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed output")
+    install_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Suppress progress output"
     )
     install_parser.add_argument(
-        "--verbose", "-v",
+        "--link",
+        "-l",
         action="store_true",
-        help="Show detailed output"
-    )
-    install_parser.add_argument(
-        "--quiet", "-q",
-        action="store_true",
-        help="Suppress progress output"
+        help="Build transformed files in-repo (.ring-build/) and symlink "
+        "from platform config dir. Enables instant updates via git pull + rebuild.",
     )
 
     # Update command
@@ -625,11 +691,37 @@ Examples:
     update_parser.add_argument("--platforms", "-p", help="Comma-separated list of target platforms")
     update_parser.add_argument("--plugins", help="Comma-separated list of plugins to update")
     update_parser.add_argument("--exclude", help="Comma-separated list of plugins to exclude")
-    update_parser.add_argument("--dry-run", "-n", action="store_true", help="Show what would be done")
+    update_parser.add_argument(
+        "--dry-run", "-n", action="store_true", help="Show what would be done"
+    )
     update_parser.add_argument("--no-backup", action="store_true", help="Don't create backups")
     update_parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed output")
-    update_parser.add_argument("--quiet", "-q", action="store_true", help="Suppress progress output")
+    update_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Suppress progress output"
+    )
     update_parser.add_argument("--smart", action="store_true", help="Only update changed files")
+    update_parser.add_argument(
+        "--link",
+        "-l",
+        action="store_true",
+        help="Rebuild transformed files in-repo (.ring-build/) for symlink installs",
+    )
+
+    # Rebuild command - lightweight re-transform for symlink installs
+    rebuild_parser = subparsers.add_parser(
+        "rebuild",
+        help="Rebuild .ring-build/ transformed files (for symlink installs after git pull)",
+    )
+    rebuild_parser.add_argument("--source", "-s", help="Path to Ring source directory")
+    rebuild_parser.add_argument(
+        "--platforms", "-p", help="Comma-separated list of target platforms"
+    )
+    rebuild_parser.add_argument("--plugins", help="Comma-separated list of plugins to rebuild")
+    rebuild_parser.add_argument("--exclude", help="Comma-separated list of plugins to exclude")
+    rebuild_parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed output")
+    rebuild_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Suppress progress output"
+    )
 
     # Check command
     check_parser = subparsers.add_parser("check", help="Check for available updates")
@@ -649,13 +741,25 @@ Examples:
 
     # Uninstall command
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove Ring components")
-    uninstall_parser.add_argument("--platforms", "-p", help="Comma-separated list of target platforms")
-    uninstall_parser.add_argument("--dry-run", "-n", action="store_true", help="Show what would be done")
-    uninstall_parser.add_argument("--force", "-f", action="store_true", help="Don't prompt for confirmation")
+    uninstall_parser.add_argument(
+        "--platforms", "-p", help="Comma-separated list of target platforms"
+    )
+    uninstall_parser.add_argument(
+        "--dry-run", "-n", action="store_true", help="Show what would be done"
+    )
+    uninstall_parser.add_argument(
+        "--force", "-f", action="store_true", help="Don't prompt for confirmation"
+    )
     uninstall_parser.add_argument("--no-backup", action="store_true", help="Don't create backups")
-    uninstall_parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed output")
-    uninstall_parser.add_argument("--quiet", "-q", action="store_true", help="Suppress progress output")
-    uninstall_parser.add_argument("--precise", action="store_true", help="Use manifest for precise removal")
+    uninstall_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed output"
+    )
+    uninstall_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Suppress progress output"
+    )
+    uninstall_parser.add_argument(
+        "--precise", action="store_true", help="Use manifest for precise removal"
+    )
 
     # List command
     list_parser = subparsers.add_parser("list", help="List installed components")
@@ -679,6 +783,7 @@ Examples:
     commands = {
         "install": cmd_install,
         "update": cmd_update,
+        "rebuild": cmd_rebuild,
         "check": cmd_check,
         "sync": cmd_sync,
         "uninstall": cmd_uninstall,
@@ -698,6 +803,7 @@ Examples:
             print(f"Error: {e}")
             if hasattr(args, "verbose") and args.verbose:
                 import traceback
+
                 traceback.print_exc()
             return 1
     else:
