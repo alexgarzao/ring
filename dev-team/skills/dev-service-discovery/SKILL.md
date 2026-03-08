@@ -73,7 +73,7 @@ Redis is **not** a dispatch layer resource — it uses key prefixing via `GetKey
 **Orchestrator executes directly. No agent dispatch.**
 
 ```text
-DETECT service identity (run in parallel):
+Detect service identity (run in parallel):
 
 1. Service name:
    - Grep tool: pattern "const ApplicationName" in internal/bootstrap/ cmd/ --include="*.go"
@@ -109,7 +109,7 @@ Store results:
 ## Phase 2: Module Detection
 
 ```text
-DETECT modules (run in parallel):
+Detect modules (run in parallel):
 
 Strategy A — Explicit WithModule calls (preferred):
    - Grep tool: pattern "WithModule\(" in internal/ components/ --include="*.go"
@@ -145,7 +145,7 @@ For EACH detected module, scan its adapter directory:
 base_path = module.component_path + "internal/adapters/"
 // For single-component: base_path = "internal/adapters/"
 
-DETECT resources (run in parallel per module):
+Detect resources (run in parallel per module):
 
 1. PostgreSQL:
    - Glob tool: pattern "{base_path}postgres/*" (directories)
@@ -192,7 +192,7 @@ Summary of steps:
 3. **Cross-reference** — match in-code indexes against script indexes (covered / missing_script / script_only)
 4. **Generate missing scripts** — create `mongosh`-compatible `.js` scripts following the idempotent `createIndexSafely` pattern (see reference for full template)
 5. **Execute scripts (optional)** — ⚠️ only with explicit user confirmation; auto-detect connection from env/config/docker-compose
-6. **Upload to S3** — asks which bucket to use, then uploads all scripts to `s3://{bucket}/scripts/mongodb/{service_name}/` via AWS CLI
+6. **Upload to S3** — asks which bucket to use, then uploads all scripts to `s3://{bucket}/scripts/mongodb/{service_name}/` via AWS CLI (requires valid AWS credentials; verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
 
 Store results for Phase 4 report:
 ```text
@@ -277,11 +277,11 @@ If there are **missing scripts**, show a callout:
 
 - [ ] **Module:** `onboarding`
   - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb (indexes: 3 in-code, 2 scripts)
+  - [ ] Resource: mongodb (indexes: 3 in-code, 2 scripts, 1 missing)
 
 - [ ] **Module:** `transaction`
   - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb (indexes: 2 in-code, 2 scripts)
+  - [ ] Resource: mongodb (indexes: 2 in-code, 2 scripts, all covered)
   - [ ] Resource: rabbitmq
 ```
 

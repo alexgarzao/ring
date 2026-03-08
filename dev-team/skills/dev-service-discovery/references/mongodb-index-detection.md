@@ -14,7 +14,7 @@ This phase detects MongoDB index definitions in two places:
 For EACH module where MongoDB was detected:
 
 1. Find EnsureIndexes methods:
-   - Grep tool: pattern "func.*EnsureIndexes\|IndexModel\|CreateIndex\|createIndex"
+   - Grep tool (regex): grep -E 'func.*EnsureIndexes|IndexModel|CreateIndex|createIndex'
      in {base_path}mongodb/ OR {base_path}mongo/ --include="*.go"
    - For each file with matches, extract:
      a. Collection name (from the receiver's collection field or constant)
@@ -45,12 +45,12 @@ Store results:
 ## Step 2: Detect Existing Index Scripts
 
 ```text
-SCAN for existing MongoDB index scripts:
+Scan for existing MongoDB index scripts:
 
 1. Glob tool: pattern "scripts/mongodb/*.js" OR "scripts/mongo/*.js"
 2. For each script found:
    a. Extract collection name (from db.getCollection("name"))
-   b. Extract index definitions (from createIndex calls)
+   b. Extract index definitions (from both createIndex() and createIndexSafely() calls)
    c. Map each to: {file, collection, indexes: [{keys, options}]}
 
 3. Also check for:
@@ -76,7 +76,7 @@ Store results:
 ## Step 3: Cross-Reference and Identify Gaps
 
 ```text
-COMPARE in-code indexes vs script indexes:
+Compare in-code indexes vs script indexes:
 
 For each in-code index:
   - Find matching script index (same collection + same key fields)
@@ -107,7 +107,7 @@ For each missing index, generate a `mongosh`-compatible script following the dis
 **Naming convention for generated scripts:**
 - `scripts/mongodb/create-{collection}-indexes.js`
 - If the `scripts/mongodb/` directory doesn't exist, create it.
-- If a script already exists for that collection, append the new indexes to it instead of creating a new file.
+- If a script already exists for that collection, create a new file with a numeric suffix (e.g., `create-{collection}-indexes-2.js`) to avoid modifying existing scripts. The original script remains untouched.
 
 **Index naming convention:**
 - Single field: `idx_{field}` (e.g., `idx_tenant_id`)
@@ -143,7 +143,9 @@ For each missing index, generate a `mongosh`-compatible script following the dis
 
 // Helper function to safely create an index
 function createIndexSafely(collection, keys, options) {
-    const indexName = options.name;
+    // Compute fallback name from keys if options.name is not provided
+    const indexName = options.name || Object.entries(keys).map(([k, v]) => `${k}_${v}`).join("_");
+    options.name = indexName;
     const existingIndexes = collection.getIndexes();
     const indexExists = existingIndexes.some(idx => idx.name === indexName);
 
@@ -263,9 +265,10 @@ Upload all index scripts to S3 so they are available for automated provisioning 
 
 3. Verify AWS CLI is available:
    - Run: aws --version
-   - If not found → ERROR: "AWS CLI not installed. Install with: brew install awscli"
+   - If not found → SKIP Step 6: Log warning "AWS CLI not installed. Skipping S3 upload. Install with: brew install awscli"
+     → Continue to Phase 4 report with upload status: "Skipped (AWS CLI not available)"
 
-4. ASK the user which S3 bucket to use:
+4. Ask the user which S3 bucket to use:
    "Found {N} index scripts to upload for service '{service_name}'.
     Which S3 bucket should I upload to?
     
@@ -277,18 +280,22 @@ Upload all index scripts to S3 so they are available for automated provisioning 
 
 5. Verify S3 access:
    - Run: aws s3 ls s3://{s3_bucket}/ 2>&1
-   - If access denied → ERROR: "No access to bucket '{s3_bucket}'. Check AWS credentials (aws configure)"
-   - If bucket not found → ERROR: "Bucket '{s3_bucket}' not found."
+   - If access denied → SKIP Step 6: Log warning "No access to bucket '{s3_bucket}'. Check AWS credentials (aws configure or aws sts get-caller-identity)"
+     → Continue to Phase 4 report with upload status: "Failed (access denied)"
+   - If bucket not found → SKIP Step 6: Log warning "Bucket '{s3_bucket}' not found."
+     → Continue to Phase 4 report with upload status: "Failed (bucket not found)"
 
-6. Upload each script:
+6. Upload each script (best-effort, continue on failure):
    - For each script in scripts/mongodb/*.js:
      aws s3 cp {script_path} s3://{s3_bucket}/scripts/mongodb/{service_name}/{filename} \
        --content-type "application/javascript"
+   - If a single upload fails, log the error and continue with remaining files
+   - Track: successful_uploads = [], failed_uploads = []
 
 7. Verify upload:
    - Run: aws s3 ls s3://{s3_bucket}/scripts/mongodb/{service_name}/
    - List uploaded files with sizes
-   - Confirm count matches local scripts
+   - If count mismatches: list missing files (local - uploaded), report as "Partially uploaded ({X}/{Y})"
 
 8. Report results:
    "Uploaded {N} index scripts to S3:
@@ -344,7 +351,7 @@ If there are **missing scripts**, show a callout:
 
 ```
 ⚠️  {N} indexes detected in code without corresponding scripts.
-    Run with --generate-scripts to create them.
+    Scripts will be generated automatically in scripts/mongodb/.
 ```
 
 ### Checklist Addition
