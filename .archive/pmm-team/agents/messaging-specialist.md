@@ -3,10 +3,6 @@ name: messaging-specialist
 version: 1.0.0
 description: Messaging & Copywriting Specialist for value propositions, messaging frameworks, proof points, and channel-specific messaging. Creates compelling, consistent messaging.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with comprehensive messaging capabilities
 output_schema:
   format: "markdown"
   required_sections:
@@ -50,27 +46,6 @@ input_schema:
       type: "list"
       description: "Available proof points and evidence"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:messaging-specialist", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Messaging requires Opus-level reasoning for translating positioning into compelling copy, maintaining consistency across channels, and ensuring claims are properly supported.
-
 ---
 
 # Messaging Specialist

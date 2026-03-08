@@ -449,7 +449,7 @@ Append the new template entry to `finops-team/docs/regulatory/templates/registry
 
 ### Agent Dispatch
 
-**Dispatch:** `Task(subagent_type: "ring:finops-analyzer", model: "opus")`
+**Dispatch:** `Task(subagent_type: "ring:finops-analyzer")`
 
 **Pre-dispatch:** Check dictionary at `~/.claude/docs/regulatory/dictionaries/{category}-{code}.yaml`
 

@@ -3,10 +3,6 @@ name: ring:resource-planner
 version: 1.1.0
 description: Resource Planning Specialist for capacity planning, allocation optimization, skills management, and conflict resolution across portfolio projects.
 type: specialist
-last_updated: 2026-02-12
-changelog:
-  - 1.1.0: Add Standards Compliance Report section (N/A for PMO specialist agents)
-  - 1.0.0: Initial release with resource planning capabilities
 output_schema:
   format: "markdown"
   required_sections:

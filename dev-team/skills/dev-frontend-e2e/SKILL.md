@@ -105,7 +105,8 @@ examples:
 
       ## Flow Coverage
       | User Flow | Happy Path | Error Paths | Browsers | Status |
-      |-----------|------------|-------------|----------|--------|
+      |
+-----------|------------|-------------|----------|--------|
       | Create Transaction | PASS | API 500, Validation | 3/3 | PASS |
 
       ## Handoff to Next Gate
@@ -177,7 +178,6 @@ if backend_handoff provided:
 ```text
 Task tool:
   subagent_type: "ring:qa-analyst-frontend"
-  model: "opus"
   prompt: |
     **MODE:** E2E TESTING (Gate 5)
 

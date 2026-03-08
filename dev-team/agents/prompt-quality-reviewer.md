@@ -7,11 +7,6 @@ description: |
   suggestions. This agent possesses deep knowledge of prompt engineering, agent architecture patterns,
   and behavioral analysis to ensure continuous improvement of all agents in the system.
 type: analyst
-last_updated: 2025-12-14
-changelog:
-  - 2.0.1: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 2.0.0: Enhanced with comprehensive agent quality knowledge, best practices, anti-patterns
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

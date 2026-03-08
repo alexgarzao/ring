@@ -1,5 +1,39 @@
 # Ring-default Changelog
 
+## [1.14.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.1)
+
+- Refactor: Decouple agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.14.0...ring-default@1.14.1)
+
+---
+
+## [1.14.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.1)
+
+- Refactor: Decoupled agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.14.0...ring-default@1.14.1)
+
+---
+
+## [1.14.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.0)
+
+- **Features**
+  - Enforced Ring standards across all gates (R1-R5).
+
+- **Fixes**
+  - Addressed CodeRabbit review feedback on PR #228.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.13.0...ring-default@1.14.0)
+
+---
+
 ## [1.14.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.0)
 
 - **Features:**

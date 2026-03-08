@@ -333,7 +333,6 @@ For complex incidents, dispatch the incident-responder agent:
 ```
 Task tool:
   subagent_type: "ring:incident-responder"
-  model: "opus"
   prompt: |
     INCIDENT: [description]
     SEVERITY: SEV[X]

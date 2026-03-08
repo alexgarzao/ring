@@ -85,37 +85,37 @@ class OpenCodeAdapter(PlatformAdapter):
     # Reference: OpenCode skill schema - only these fields are recognized
     # All other fields (model, tools, version, etc.) are stripped during transformation
     _OPENCODE_SKILL_ALLOWED_FIELDS: List[str] = [
-        "name",          # Required: skill identifier
-        "description",   # Optional: displayed in skill list
-        "license",       # Optional: license identifier (e.g., "MIT")
-        "compatibility", # Optional: version constraints
-        "metadata",      # Optional: arbitrary key-value metadata
+        "name",  # Required: skill identifier
+        "description",  # Optional: displayed in skill list
+        "license",  # Optional: license identifier (e.g., "MIT")
+        "compatibility",  # Optional: version constraints
+        "metadata",  # Optional: arbitrary key-value metadata
     ]
 
     # OpenCode agent allowed frontmatter fields
     # Reference: OpenCode agent schema - defines agent behavior and capabilities
     _OPENCODE_AGENT_ALLOWED_FIELDS: List[str] = [
-        "name",          # Required: agent identifier
-        "description",   # Optional: shown in agent selection
-        "mode",          # Optional: "primary", "subagent", or "all"
-        "model",         # Optional: "provider/model-id" format
-        "tools",         # Optional: tool access configuration
-        "hidden",        # Optional: hide from agent list
-        "subtask",       # Optional: mark as subtask-only agent
-        "temperature",   # Optional: response randomness (0.0-1.0)
-        "maxSteps",      # Optional: max agentic iterations
-        "permission",    # Optional: {edit: ask|allow|deny, bash: ask|allow|deny}
+        "name",  # Required: agent identifier
+        "description",  # Optional: shown in agent selection
+        "mode",  # Optional: "primary", "subagent", or "all"
+        "model",  # Optional: "provider/model-id" format
+        "tools",  # Optional: tool access configuration
+        "hidden",  # Optional: hide from agent list
+        "subtask",  # Optional: mark as subtask-only agent
+        "temperature",  # Optional: response randomness (0.0-1.0)
+        "maxSteps",  # Optional: max agentic iterations
+        "permission",  # Optional: {edit: ask|allow|deny, bash: ask|allow|deny}
     ]
 
     # OpenCode command allowed frontmatter fields
     # Reference: OpenCode command schema
     # Note: argument-hint is NOT supported - use $ARGUMENTS in template body
     _OPENCODE_COMMAND_ALLOWED_FIELDS: List[str] = [
-        "name",          # Optional: override filename-based name
-        "description",   # Optional: shown in slash command suggestions
-        "model",         # Optional: override model for this command
-        "subtask",       # Optional: mark as subtask command
-        "agent",         # Optional: which agent executes this command
+        "name",  # Optional: override filename-based name
+        "description",  # Optional: shown in slash command suggestions
+        "model",  # Optional: override model for this command
+        "subtask",  # Optional: mark as subtask command
+        "agent",  # Optional: which agent executes this command
     ]
 
     # OpenCode permission values
@@ -139,6 +139,7 @@ class OpenCodeAdapter(PlatformAdapter):
         Transformation includes:
         - Tool name normalization (capitalized -> lowercase)
         - Frontmatter filtering (only allowed fields kept)
+        - Inline resolution of shared-patterns and docs references
 
         OpenCode skill frontmatter only supports: name, description, license,
         compatibility, metadata. All other fields are stripped.
@@ -156,6 +157,10 @@ class OpenCodeAdapter(PlatformAdapter):
             frontmatter = self._transform_skill_frontmatter(frontmatter)
 
         body = self._normalize_tool_references(body)
+
+        # Inline shared-patterns and docs references
+        source_path = metadata.get("source_path") if metadata else None
+        body = self._resolve_inline_references(body, source_path)
 
         if frontmatter:
             return self.create_frontmatter(frontmatter) + "\n" + body
@@ -218,6 +223,10 @@ class OpenCodeAdapter(PlatformAdapter):
         body = self._normalize_tool_references(body)
         body = self._strip_model_requirement_section(body)
 
+        # Inline shared-patterns and docs references
+        source_path = metadata.get("source_path") if metadata else None
+        body = self._resolve_inline_references(body, source_path)
+
         if frontmatter:
             return self.create_frontmatter(frontmatter) + "\n" + body
         return body
@@ -242,15 +251,17 @@ class OpenCodeAdapter(PlatformAdapter):
         # - The self-verification instructions
         # - The orchestrator requirement code block
         # - The trailing horizontal rule (---) separator
-        pattern = r'## ⚠️ Model Requirement[^\n]*\n.*?\n---\n'
-        result = re.sub(pattern, '', body, flags=re.DOTALL)
+        pattern = r"## ⚠️ Model Requirement[^\n]*\n.*?\n---\n"
+        result = re.sub(pattern, "", body, flags=re.DOTALL)
 
         # Clean up any resulting double blank lines
-        result = re.sub(r'\n{3,}', '\n\n', result)
+        result = re.sub(r"\n{3,}", "\n\n", result)
 
-        return result.strip() + '\n'
+        return result.strip() + "\n"
 
-    def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_command(
+        self, command_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Transform a Ring command for OpenCode.
 
@@ -278,11 +289,17 @@ class OpenCodeAdapter(PlatformAdapter):
 
         body = self._normalize_tool_references(body)
 
+        # Inline shared-patterns and docs references
+        source_path = metadata.get("source_path") if metadata else None
+        body = self._resolve_inline_references(body, source_path)
+
         if frontmatter:
             return self.create_frontmatter(frontmatter) + "\n" + body
         return body
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    def transform_hook(
+        self, hook_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
         """
         Transform a Ring hook for OpenCode.
 
@@ -307,7 +324,7 @@ class OpenCodeAdapter(PlatformAdapter):
             "Hook '%s' cannot be installed: OpenCode uses plugin-based hooks "
             "(tool.execute.before, tool.execute.after, etc.) which are incompatible with "
             "Ring's file-based hooks. This hook will be skipped.",
-            hook_name
+            hook_name,
         )
         return None
 
@@ -350,16 +367,16 @@ class OpenCodeAdapter(PlatformAdapter):
         return {
             "agents": {
                 "target_dir": "agent",  # Singular in OpenCode
-                "extension": ".md"
+                "extension": ".md",
             },
             "commands": {
                 "target_dir": "command",  # Singular in OpenCode
-                "extension": ".md"
+                "extension": ".md",
             },
             "skills": {
                 "target_dir": "skill",  # Singular in OpenCode
-                "extension": ".md"
-            }
+                "extension": ".md",
+            },
             # NOTE: hooks intentionally excluded - OpenCode uses plugin-based hooks
         }
 
@@ -591,7 +608,7 @@ class OpenCodeAdapter(PlatformAdapter):
             logger.debug(
                 "Dropped unsupported argument fields: %s. "
                 "OpenCode doesn't support argument-hint. Use $ARGUMENTS in template body.",
-                dropped_args
+                dropped_args,
             )
 
         # Filter to only allowed fields
@@ -656,12 +673,164 @@ class OpenCodeAdapter(PlatformAdapter):
         result = text
         for claude_name, opencode_name in self._OPENCODE_TOOL_NAME_MAP.items():
             result = re.sub(
-                rf'\b{claude_name}\b(?=\s+tool|\s+command)',
+                rf"\b{claude_name}\b(?=\s+tool|\s+command)",
                 opencode_name,
                 result,
-                flags=re.IGNORECASE
+                flags=re.IGNORECASE,
             )
         return result
+
+    # --- Inline Reference Resolution ---
+    # Patterns for files that should be inlined when referenced via relative paths.
+    # These directories contain shared content (anti-rationalization tables, pressure
+    # resistance, standards, etc.) that agents/skills reference but that won't exist
+    # at the installed location due to directory hierarchy inversion.
+    _INLINE_PATH_PATTERNS = [
+        "shared-patterns/",
+        "docs/standards/",
+        "docs/regulatory/",
+        "docs/infrastructure",
+    ]
+
+    # Maximum file size to inline (256KB) — prevents accidental inclusion of huge files
+    _MAX_INLINE_SIZE = 256 * 1024
+
+    # Track already-inlined files per transform call to prevent infinite recursion
+    # when inlined files themselves reference other files.
+    _MAX_INLINE_DEPTH = 2
+
+    def _resolve_inline_references(
+        self,
+        body: str,
+        source_path: Optional[str],
+        depth: int = 0,
+    ) -> str:
+        """
+        Resolve relative-path markdown references by inlining the referenced file content.
+
+        Finds markdown links like [text](../shared-patterns/foo.md) where the target
+        is a shared-pattern or docs file, reads the source file from the Ring repo,
+        and replaces the link with the actual content. This makes each installed
+        component self-contained — no broken references at runtime.
+
+        Only resolves references to paths matching _INLINE_PATH_PATTERNS.
+        Skips URLs (http/https), anchors (#), and already-inlined content.
+
+        Args:
+            body: The markdown body content
+            source_path: Absolute path to the original source file in the Ring repo.
+                         Used to resolve relative references.
+            depth: Current recursion depth (prevents infinite loops)
+
+        Returns:
+            Body with resolvable references replaced by inlined content
+        """
+        if not source_path or depth >= self._MAX_INLINE_DEPTH:
+            return body
+
+        source_dir = Path(source_path).parent
+
+        # Match markdown links: [text](path)
+        # Capture: full match, link text, link path
+        link_pattern = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+
+        def _should_inline(link_path: str) -> bool:
+            """Check if a link path should be inlined."""
+            # Skip URLs, anchors, and non-file references
+            if link_path.startswith(("http://", "https://", "#", "mailto:")):
+                return False
+            # Only inline paths matching our patterns
+            return any(pat in link_path for pat in self._INLINE_PATH_PATTERNS)
+
+        def _read_referenced_file(link_path: str) -> Optional[str]:
+            """Resolve and read a referenced file relative to the source."""
+            try:
+                resolved = (source_dir / link_path).resolve()
+                # Safety: must exist and be a file
+                if not resolved.is_file():
+                    return None
+                # Safety: don't inline huge files
+                if resolved.stat().st_size > self._MAX_INLINE_SIZE:
+                    logger.warning(
+                        "Skipping inline for %s: file too large (%d bytes)",
+                        link_path,
+                        resolved.stat().st_size,
+                    )
+                    return None
+                content = resolved.read_text(encoding="utf-8")
+                # Recursively resolve references in the inlined content
+                if depth + 1 < self._MAX_INLINE_DEPTH:
+                    content = self._resolve_inline_references(content, str(resolved), depth + 1)
+                return content
+            except (OSError, UnicodeDecodeError) as e:
+                logger.debug("Could not inline %s: %s", link_path, e)
+                return None
+
+        lines = body.split("\n")
+        result_lines: List[str] = []
+        inlined_count = 0
+
+        for line in lines:
+            matches = list(link_pattern.finditer(line))
+            if not matches:
+                result_lines.append(line)
+                continue
+
+            # Check if any link on this line should be inlined
+            inlined_this_line = False
+            for match in matches:
+                link_text = match.group(1)
+                link_path = match.group(2)
+
+                if not _should_inline(link_path):
+                    continue
+
+                content = _read_referenced_file(link_path)
+                if content is None:
+                    continue
+
+                # Determine replacement strategy based on line context
+                stripped = line.strip()
+                full_match = match.group(0)
+
+                # Case 1: Line is ONLY the link (possibly with "See " prefix)
+                # e.g., "See [foo.md](../shared-patterns/foo.md)"
+                # Replace entire line with inlined content
+                is_standalone = (
+                    stripped == full_match
+                    or stripped.startswith(("See ", "see ", "Refer to ", "Reference: "))
+                    and full_match in stripped
+                    and len(stripped) - len(full_match) < 30
+                )
+
+                if is_standalone:
+                    # Replace the entire line with the file content
+                    # Add a subtle marker for debugging
+                    file_name = Path(link_path).name
+                    result_lines.append(f"<!-- inlined: {file_name} -->")
+                    result_lines.append(content.rstrip())
+                    inlined_this_line = True
+                    inlined_count += 1
+                    break  # Only one inline per line
+                else:
+                    # Case 2: Link is embedded in a larger sentence
+                    # Append the content after the line
+                    result_lines.append(line)
+                    file_name = Path(link_path).name
+                    result_lines.append("")
+                    result_lines.append(f"<!-- inlined: {file_name} -->")
+                    result_lines.append(content.rstrip())
+                    inlined_this_line = True
+                    inlined_count += 1
+                    break
+
+            if not inlined_this_line:
+                result_lines.append(line)
+
+        if inlined_count > 0:
+            logger.debug("Inlined %d reference(s) from %s", inlined_count, source_path)
+
+        return "\n".join(result_lines)
 
     def get_target_filename(self, source_filename: str, component_type: str) -> str:
         """
@@ -695,7 +864,7 @@ class OpenCodeAdapter(PlatformAdapter):
         self,
         hooks_config: Dict[str, Any],
         dry_run: bool = False,
-        install_path: Optional[Path] = None
+        install_path: Optional[Path] = None,
     ) -> bool:
         """
         Merge hooks configuration into OpenCode's config file.
@@ -732,6 +901,6 @@ class OpenCodeAdapter(PlatformAdapter):
                 "OpenCode uses plugin-based hooks (tool.execute.before, etc.) "
                 "which are incompatible with Ring's file-based hooks. "
                 "Hooks will not be installed.",
-                hook_count
+                hook_count,
             )
         return True

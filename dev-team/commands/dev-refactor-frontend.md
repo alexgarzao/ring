@@ -228,7 +228,6 @@ AskUserQuestion:
 See skill `ring:dev-refactor-frontend` for full details. Key rules:
 
 - **All agents dispatch in parallel** - Single message, multiple Task calls
-- **Specify model: "opus"** - All agents need opus for comprehensive analysis
 - **MODE: ANALYSIS only** - Agents analyze, they DO NOT implement
 - **Save artifacts** to `docs/ring:dev-refactor-frontend/{timestamp}/`
 - **Get user approval** before executing ring:dev-cycle-frontend

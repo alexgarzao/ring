@@ -3,23 +3,6 @@ name: ring:frontend-engineer
 version: 3.5.0
 description: Senior Frontend Engineer specialized in React/Next.js for financial dashboards and enterprise applications. Expert in App Router, Server Components, accessibility, performance optimization, modern React patterns, and dual-mode UI library support (sindarian-ui vs vanilla).
 type: specialist
-model: opus
-last_updated: 2026-02-12
-changelog:
-  - 3.5.0: Added Standards Compliance Report section for ANALYSIS mode with standards-coverage-table.md reference
-  - 3.4.0: Added 6 new standards sections (14-19), Pre-Dev Integration, Mode Detection (sindarian-ui vs vanilla), updated to 19 total sections
-  - 3.3.0: Added HARD GATE requiring all 13 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 3.2.6: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 3.2.5: Added Pre-Submission Self-Check section (MANDATORY) for AI slop prevention with npm dependency verification, scope boundary checks, and evidence-of-reading requirements
-  - 3.2.4: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 3.2.3: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 3.2.2: Added Server/Client component mixing detection, styling consistency checks, improved edge case handling
-  - 3.2.1: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 3.2.0: Added Blocker Criteria, Severity Calibration, Cannot Be Overridden, Pressure Resistance sections for consistency with other agents
-  - 3.1.0: Added Standards Loading section with WebFetch references to Ring Frontend standards
-  - 3.0.0: Refactored to specification-only format, removed code examples
-  - 2.0.0: Major expansion - Added Next.js App Router, React 18+, WCAG 2.1, Security, SEO, Architecture patterns
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

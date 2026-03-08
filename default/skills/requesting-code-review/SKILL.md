@@ -128,7 +128,8 @@ examples:
 
       ## Issues by Severity
       | Severity | Count |
-      |----------|-------|
+      |
+----------|-------|
       | Critical | 0 |
       | High | 0 |
       | Medium | 0 |
@@ -1530,7 +1531,6 @@ IF coderabbit_results.overall_status == "ISSUES_FOUND":
             
             Task:
               subagent_type: "[correct agent based on file type or gate0_handoff]"
-              model: "opus"
               description: "Retry fix for unresolved issues in [unit.id]"
               prompt: |
                 ## RETRY: Unresolved CodeRabbit Issues - [unit.id]
@@ -1624,7 +1624,6 @@ LEGACY FLOW (when validation_scope.mode == "task"):
       
       Task:
         subagent_type: "[same agent used in Gate 0]"
-        model: "opus"
         description: "Fix CodeRabbit issues for [unit_id]"
         prompt: |
           ## CodeRabbit Issues to Fix

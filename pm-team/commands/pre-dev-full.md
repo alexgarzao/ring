@@ -534,7 +534,7 @@ mkdir -p docs/pre-dev/<feature-name>
      - Mixed/Unknown → ring:codebase-explorer
    - Agent analyzes scope and estimates AI-agent-hours per task
    - Output includes: AI estimate (hours), confidence level (High/Medium/Low), detailed breakdown
-   - **AI-agent-hours definition:** Time for Claude Sonnet 4.5 to implement via ring:dev-cycle (includes TDD, automated review, SRE validation, DevOps setup)
+   - **AI-agent-hours definition:** Time for AI agent to implement via ring:dev-cycle (includes TDD, automated review, SRE validation, DevOps setup)
 3. Create task breakdown document with:
    - Value-driven decomposition
    - Each task delivers working software

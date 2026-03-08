@@ -3,19 +3,6 @@ name: ring:business-logic-reviewer
 version: 6.4.0
 description: "Correctness Review: reviews domain correctness, business rules, edge cases, and requirements. Uses mental execution to trace code paths and analyzes full file context, not just changes. Runs in parallel with ring:code-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer, and ring:consequences-reviewer for fast feedback."
 type: reviewer
-last_updated: 2026-02-12
-changelog:
-  - 6.4.0: Normalize enforcement words to sentence start, lowercase context words per lexical salience guidelines
-  - 6.3.0: Expand Standards Compliance Report with standards checklist, report template, and documentation rules
-  - 6.2.0: Wrap Pressure Resistance, When Not Needed, Standards Compliance in XML semantic tags; add enforcement-first MANDATORY block
-  - 6.1.0: Add Pressure Resistance, When Not Needed, Standards Compliance Report sections for CLAUDE.md compliance
-  - 6.0.0: Major refactor - extract common sections to shared-patterns, reduce from 991 to ~350 lines
-  - 5.3.0: Add AI Slop Detection section
-  - 5.2.0: Add Model Requirements section
-  - 5.1.0: Add mandatory "When Business Logic Review is Not Needed" section
-  - 5.0.0: CLAUDE.md compliance - Add mandatory sections
-  - 4.1.0: Add explicit output schema reminders
-  - 4.0.0: Add Mental Execution Analysis as required section
 output_schema:
   format: "markdown"
   required_sections:

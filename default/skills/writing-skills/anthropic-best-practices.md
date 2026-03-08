@@ -133,13 +133,7 @@ Do not modify the command or add additional flags.
 
 Skills act as additions to models, so effectiveness depends on the underlying model. Test your Skill with all the models you plan to use it with.
 
-**Testing considerations by model**:
-
-* **Claude Haiku** (fast, economical): Does the Skill provide enough guidance?
-* **Claude Sonnet** (balanced): Is the Skill clear and efficient?
-* **Claude Opus** (powerful reasoning): Does the Skill avoid over-explaining?
-
-What works perfectly for Opus might need more detail for Haiku. If you plan to use your Skill across multiple models, aim for instructions that work well with all of them.
+Aim for instructions that work well across different AI models and capability levels.
 
 ## Skill structure
 
@@ -1129,7 +1123,7 @@ Before sharing a Skill, verify:
 ### Testing
 
 * [ ] At least three evaluations created
-* [ ] Tested with Haiku, Sonnet, and Opus
+* [ ] Tested with multiple AI models
 * [ ] Tested with real usage scenarios
 * [ ] Team feedback incorporated (if applicable)
 

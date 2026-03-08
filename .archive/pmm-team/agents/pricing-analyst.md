@@ -3,10 +3,6 @@ name: pricing-analyst
 version: 1.0.0
 description: Pricing Strategy Specialist for pricing model analysis, competitive pricing intelligence, value-based pricing, and pricing recommendations. Creates data-driven pricing strategies.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with comprehensive pricing strategy capabilities
 output_schema:
   format: "markdown"
   required_sections:
@@ -53,27 +49,6 @@ input_schema:
       type: "markdown"
       description: "Cost information for margin analysis"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:pricing-analyst", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Pricing analysis requires Opus-level reasoning for evaluating complex trade-offs, synthesizing competitive intelligence, and providing reliable recommendations that directly impact revenue.
-
 ---
 
 # Pricing Analyst

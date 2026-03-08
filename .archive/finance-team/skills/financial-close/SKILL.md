@@ -106,7 +106,6 @@ The financial close workflow follows 6 phases:
 ```
 Task tool:
   subagent_type: "ring:accounting-specialist"
-  model: "opus"
   prompt: |
     Perform period-end reconciliations:
 

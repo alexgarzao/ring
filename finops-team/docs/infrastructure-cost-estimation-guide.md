@@ -759,7 +759,6 @@ If any NO → Ask user first, then dispatch.
 ```yaml
 Task tool:
   subagent_type: "ring:infrastructure-cost-estimator"
-  model: "opus"
   prompt: |
     Calculate infrastructure costs and profitability.
 

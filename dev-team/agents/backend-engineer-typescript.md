@@ -3,24 +3,6 @@ name: ring:backend-engineer-typescript
 version: 1.5.0
 description: Senior Backend Engineer specialized in TypeScript/Node.js for scalable systems. Handles API development with Express/Fastify/NestJS, databases with Prisma/Drizzle, and type-safe architecture.
 type: specialist
-model: opus
-last_updated: 2026-02-04
-changelog:
-  - 1.5.0: Added MANDATORY Post-Implementation Validation section - ESLint + Prettier + tsc execution required
-  - 1.4.0: Added HARD GATE requiring ALL 14 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 1.3.9: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 1.3.8: Added Pre-Submission Self-Check section (MANDATORY) for AI slop prevention
-  - 1.3.7: Strengthened Bootstrap Pattern language - MANDATORY not conditional, REJECTED if missing
-  - 1.3.6: Added REQUIRED Bootstrap Pattern Check for new projects; renamed Midaz → Lerian pattern
-  - 1.3.5: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 1.3.4: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 1.3.3: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 1.3.2: Enhanced Standards Compliance conditional requirement documentation across all docs (invoked_from_dev_refactor, MODE ANALYSIS only detection)
-  - 1.3.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 1.3.0: Removed duplicated standards content, now references docs/standards/typescript.md
-  - 1.2.0: Added Real-time, File Handling sections; HTTP Security checklist
-  - 1.1.0: Removed code examples - patterns should come from project STANDARDS.md
-  - 1.0.0: Initial release - TypeScript backend specialist
 output_schema:
   format: "markdown"
   required_sections:

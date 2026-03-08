@@ -108,7 +108,8 @@ examples:
       
       ## Coverage Report
       | Package | Coverage |
-      |---------|----------|
+      |
+---------|----------|
       | internal/service | 89.5% |
       
       ## Traceability Matrix

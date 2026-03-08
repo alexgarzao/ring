@@ -120,7 +120,6 @@ User saying "don't wait", "don't ask questions", or "just execute" does NOT skip
    ```
    Task(
      subagent_type=task.agent,
-     model="opus",
      prompt="Working directory: {task.working_directory}
 
      Before executing, cd to the working directory:

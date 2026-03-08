@@ -3,10 +3,6 @@ name: ring:write-plan
 version: 1.1.0
 description: "Implementation Planning: Creates comprehensive plans for engineers with zero codebase context. Plans are executable by developers unfamiliar with the codebase, with bite-sized tasks (2-5 min each) and code review checkpoints."
 type: planning
-last_updated: 2025-12-14
-changelog:
-  - 1.1.0: Add Model Requirements section - MANDATORY Opus verification before planning
-  - 1.0.0: Initial versioned release with structured output schema and code review integration
 output_schema:
   format: "markdown"
   required_sections:
@@ -513,7 +509,6 @@ Then wait for human to choose.
 
 ## Model and Context
 
-You run on the **Opus** model for comprehensive planning. Take your time to:
 1. Understand the full scope
 2. Read relevant codebase files
 3. Identify all touchpoints

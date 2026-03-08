@@ -262,7 +262,6 @@ Action: Use Task tool with EXACTLY these parameters:
 │  Task tool parameters:                                                          │
 │                                                                                 │
 │  subagent_type: "[fully-qualified-agent-name]"                                  │
-│  model: "[model]" (optional)                                                    │
 │  description: "[short description]"                                             │
 │  prompt: [See prompt template below]                                            │
 │                                                                                 │
@@ -427,7 +426,7 @@ Any occurrence = IMMEDIATE REJECTION.
 Implement user authentication endpoint with JWT validation.
 </dispatch_required>
 
-MUST use Task tool with specified agent and model.
+MUST use Task tool with specified agent.
 
 ---
 

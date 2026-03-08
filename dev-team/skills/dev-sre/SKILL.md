@@ -109,7 +109,8 @@ examples:
       
       ## Instrumentation Coverage
       | Layer | Instrumented | Total | Coverage |
-      |-------|--------------|-------|----------|
+      |
+-------|--------------|-------|----------|
       | Handlers | 5 | 5 | 100% |
       | Services | 8 | 8 | 100% |
       | Repositories | 4 | 4 | 100% |

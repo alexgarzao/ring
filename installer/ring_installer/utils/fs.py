@@ -92,7 +92,7 @@ def copy_with_transform(
     source: Path,
     target: Path,
     transform_func: Optional[Callable[[str], str]] = None,
-    encoding: str = "utf-8"
+    encoding: str = "utf-8",
 ) -> Path:
     """
     Copy a file with optional content transformation.
@@ -264,9 +264,7 @@ def get_directory_size(path: Path) -> int:
 
 
 def list_files_recursive(
-    path: Path,
-    extensions: Optional[list[str]] = None,
-    exclude_patterns: Optional[list[str]] = None
+    path: Path, extensions: Optional[list[str]] = None, exclude_patterns: Optional[list[str]] = None
 ) -> list[Path]:
     """
     List all files in a directory recursively.
@@ -342,11 +340,7 @@ def atomic_write(path: Path, content: Union[str, bytes], encoding: str = "utf-8"
     ensure_directory(path.parent)
 
     # Use tempfile for secure random filename
-    fd, temp_path_str = tempfile.mkstemp(
-        dir=path.parent,
-        prefix=f".{path.name}.",
-        suffix=".tmp"
-    )
+    fd, temp_path_str = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     temp_path = Path(temp_path_str)
 
     try:
@@ -373,6 +367,121 @@ def atomic_write(path: Path, content: Union[str, bytes], encoding: str = "utf-8"
             temp_path.unlink()
 
 
+def create_directory_symlink(
+    link_path: Path,
+    target_path: Path,
+    force: bool = False,
+    backup: bool = True,
+) -> Path:
+    """
+    Create a directory symlink, handling existing directories safely.
+
+    If link_path already exists:
+    - As a symlink pointing to target_path: no-op (idempotent)
+    - As a symlink pointing elsewhere: remove and re-create (if force)
+    - As a regular directory: back up and replace (if force)
+    - As a file: raise ValueError
+
+    Args:
+        link_path: Where the symlink should be created
+        target_path: The directory the symlink should point to (must exist)
+        force: If True, replace existing directories/symlinks
+        backup: If True, back up existing directories before replacing
+
+    Returns:
+        The created symlink path
+
+    Raises:
+        FileNotFoundError: If target_path doesn't exist
+        FileExistsError: If link_path exists and force is False
+        ValueError: If link_path is a regular file (not a directory or symlink)
+    """
+    link_path = Path(link_path).expanduser()
+    target_path = Path(target_path).expanduser().resolve()
+
+    if not target_path.exists():
+        raise FileNotFoundError(f"Symlink target does not exist: {target_path}")
+
+    if not target_path.is_dir():
+        raise ValueError(f"Symlink target is not a directory: {target_path}")
+
+    # Idempotent: already linked correctly
+    if link_path.is_symlink():
+        existing_target = link_path.resolve()
+        if existing_target == target_path:
+            logger.debug("Symlink already correct: %s -> %s", link_path, target_path)
+            return link_path
+
+        # Points elsewhere
+        if not force:
+            raise FileExistsError(
+                f"Symlink exists but points to {existing_target}, not {target_path}. "
+                f"Use --force to replace."
+            )
+        link_path.unlink()
+        logger.info("Replaced stale symlink: %s (was -> %s)", link_path, existing_target)
+
+    elif link_path.exists():
+        if link_path.is_file():
+            raise ValueError(f"Cannot create directory symlink: {link_path} is a regular file")
+
+        if not force:
+            raise FileExistsError(
+                f"Directory exists at {link_path}. Use --force to replace with symlink."
+            )
+
+        # Back up the existing directory
+        if backup:
+            backup_path = backup_existing(link_path)
+            if backup_path:
+                logger.info("Backed up existing directory: %s -> %s", link_path, backup_path)
+
+        # Remove the existing directory
+        shutil.rmtree(link_path)
+        logger.info("Removed existing directory: %s", link_path)
+
+    # Ensure parent exists
+    ensure_directory(link_path.parent)
+
+    # Create the symlink
+    link_path.symlink_to(target_path, target_is_directory=True)
+    logger.info("Created symlink: %s -> %s", link_path, target_path)
+
+    return link_path
+
+
+def get_build_dir(source_path: Path, platform: str) -> Path:
+    """
+    Get the build output directory for a platform's symlink install.
+
+    Build directories live inside the Ring repo at .ring-build/<platform>/
+    and contain transformed files that are then symlinked from the platform's
+    config directory.
+
+    Args:
+        source_path: Path to the Ring repository root
+        platform: Platform identifier (e.g., "opencode", "claude")
+
+    Returns:
+        Path to the build directory (may not exist yet)
+    """
+    return Path(source_path).expanduser().resolve() / ".ring-build" / platform
+
+
+def clean_build_dir(build_dir: Path) -> None:
+    """
+    Remove and recreate a build directory for a fresh build.
+
+    Args:
+        build_dir: Path to the build directory
+    """
+    build_dir = Path(build_dir).expanduser()
+    if build_dir.exists():
+        shutil.rmtree(build_dir)
+        logger.debug("Cleaned build directory: %s", build_dir)
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+
 def _is_binary_file(path: Path, sample_size: int = 8192) -> bool:
     """
     Check if a file appears to be binary.
@@ -386,10 +495,24 @@ def _is_binary_file(path: Path, sample_size: int = 8192) -> bool:
     """
     # Known binary extensions
     binary_extensions = {
-        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico",
-        ".pdf", ".zip", ".tar", ".gz", ".bz2",
-        ".exe", ".dll", ".so", ".dylib",
-        ".pyc", ".pyo", ".class",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".bmp",
+        ".ico",
+        ".pdf",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".exe",
+        ".dll",
+        ".so",
+        ".dylib",
+        ".pyc",
+        ".pyo",
+        ".class",
     }
 
     if path.suffix.lower() in binary_extensions:

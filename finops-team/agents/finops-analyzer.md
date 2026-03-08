@@ -4,11 +4,6 @@ version: 1.2.0
 description: Senior Regulatory Compliance Analyst specializing in Brazilian financial regulatory template analysis and field mapping validation (Gates 1-2). Expert in BACEN, RFB, and Open Banking compliance.
 type: specialist
 color: blue
-last_updated: 2026-02-12
-changelog:
-  - 1.2.0: Add Standards Compliance Report section (N/A for analysis agents)
-  - 1.1.0: Add Model Requirements section with self-verification protocol
-  - 1.0.0: Initial release
 output_schema:
   format: "markdown"
   required_sections:

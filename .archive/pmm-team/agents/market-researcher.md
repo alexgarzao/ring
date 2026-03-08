@@ -3,10 +3,6 @@ name: market-researcher
 version: 1.0.0
 description: Market Intelligence Specialist for TAM/SAM/SOM analysis, market segmentation, trend analysis, and customer research. Provides data-driven market insights for strategic decisions.
 type: specialist
-model: opus
-last_updated: 2025-12-14
-changelog:
-  - 1.0.0: Initial release with comprehensive market analysis capabilities
 output_schema:
   format: "markdown"
   required_sections:
@@ -50,27 +46,6 @@ input_schema:
       type: "list[string]"
       description: "Specific market questions to answer"
 ---
-
-## Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are NOT Claude Opus 4.5+ → **STOP immediately and report:**
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-```
-Task(subagent_type="ring:market-researcher", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Market analysis requires Opus-level reasoning for synthesizing disparate data sources, identifying non-obvious patterns, and providing reliable strategic recommendations.
-
 ---
 
 # Market Researcher

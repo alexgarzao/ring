@@ -1,5 +1,39 @@
 # Ring-finops-team Changelog
 
+## [0.10.2](https://github.com/LerianStudio/ring/releases/tag/ring-finops-team@0.10.2)
+
+- Improvements:
+  - Decoupled agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-finops-team@0.10.1...ring-finops-team@0.10.2)
+
+---
+
+## [0.10.2](https://github.com/LerianStudio/ring/releases/tag/ring-finops-team@0.10.2)
+
+- Improvements:
+  - Decoupled agents from specific model requirements.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-finops-team@0.10.1...ring-finops-team@0.10.2)
+
+---
+
+## [0.10.1](https://github.com/LerianStudio/ring/releases/tag/ring-finops-team@0.10.1)
+
+- **Fixes:**
+  - Applied lexical salience guidelines across skills.
+  - Added missing CLAUDE.md required sections.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-finops-team@0.10.0...ring-finops-team@0.10.1)
+
+---
+
 ## [0.10.1](https://github.com/LerianStudio/ring/releases/tag/ring-finops-team@0.10.1)
 
 - **Fixes:**

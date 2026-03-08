@@ -3,24 +3,6 @@ name: ring:frontend-bff-engineer-typescript
 version: 2.5.0
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption. Supports dual-mode architecture (sindarian-server with decorators OR vanilla inversify).
 type: specialist
-model: opus
-last_updated: 2026-02-05
-changelog:
-  - 2.5.0: "Added Pre-Dev Integration (reads tasks.md, trd.md, api-design.md), Mode Detection Step 0, BFF Contract output section, Task Context Loading, Bootstrap Guidance, lib-commons-js integration, Code Review Preparation. Updated Technical Expertise with sindarian-server and Vitest. Added BFF-specific Pressure Resistance scenarios."
-  - 2.4.0: "Added 6 BFF-specific sections (15-20): BFF Architecture Pattern, Three-Layer DTO Mapping, HttpService Lifecycle, API Routes Pattern, Exception Hierarchy, Cross-Cutting Decorators. Total sections now 20. Added dual-mode architecture (sindarian-server vs vanilla). Server Actions FORBIDDEN."
-  - 2.3.0: Added MANDATORY Post-Implementation Validation section - ESLint + Prettier + tsc execution required
-  - 2.2.0: Added HARD GATE requiring ALL 14 sections from standards-coverage-table.md - no cherry-picking allowed
-  - 2.1.8: Added MANDATORY Standards Verification output section - MUST be first section to prove standards were loaded
-  - 2.1.7: Added Pre-Submission Self-Check section (MANDATORY) with AI slop detection reference, npm dependency verification, scope boundary checks, and evidence-of-reading requirements
-  - 2.1.6: Renamed Midaz → Lerian pattern
-  - 2.1.5: Added Model Requirements section (HARD GATE - requires Claude Opus 4.5+)
-  - 2.1.4: Enhanced Standards Compliance mode detection with robust pattern matching (case-insensitive, partial markers, explicit requests, fail-safe behavior)
-  - 2.1.2: Added required_when condition to Standards Compliance for ring:dev-refactor gate enforcement
-  - 2.1.3: Added Anti-Rationalization Table to Standards Compliance, strengthened Cannot Be Overridden section, strengthened weak language (Apply → MUST apply)
-  - 2.1.1: Added Standards Compliance documentation cross-references (CLAUDE.md, MANUAL.md, README.md, ARCHITECTURE.md, session-start.sh)
-  - 2.1.0: Added Standards Loading, Blocker Criteria, Severity Calibration per Go agent standards
-  - 2.0.0: Refactored to specification-only format, removed code examples
-  - 1.0.0: Initial release - BFF specialist with Clean Architecture, DDD, Inversify DI
 output_schema:
   format: "markdown"
   required_sections:
@@ -99,30 +81,6 @@ input_schema:
     - name: "acceptance_criteria"
       type: "list[string]"
       description: "List of acceptance criteria to satisfy"
----
-
-## ⚠️ Model Requirement: Claude Opus 4.5+
-
-**HARD GATE:** This agent REQUIRES Claude Opus 4.5 or higher.
-
-**Self-Verification (MANDATORY - Check FIRST):**
-If you are not Claude Opus 4.5+ → **STOP immediately and report:**
-
-```
-ERROR: Model requirement not met
-Required: Claude Opus 4.5+
-Current: [your model]
-Action: Cannot proceed. Orchestrator must reinvoke with model="opus"
-```
-
-**Orchestrator Requirement:**
-
-```
-Task(subagent_type="ring:frontend-bff-engineer-typescript", model="opus", ...)  # REQUIRED
-```
-
-**Rationale:** Clean Architecture + DDD pattern implementation requires Opus-level reasoning for architectural boundary enforcement, dependency injection patterns, and comprehensive standards validation.
-
 ---
 
 # BFF Engineer (TypeScript Specialist)
