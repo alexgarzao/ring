@@ -1,7 +1,7 @@
 ---
 name: ring:dev-service-discovery
 slug: dev-service-discovery
-version: 1.0.0
+version: 1.1.0
 type: skill
 description: |
   Scans the current Go project and identifies the Service → Module → Resource
@@ -9,12 +9,17 @@ description: |
   modules (via WithModule or component structure), and resources per module
   (PostgreSQL, MongoDB, RabbitMQ). Redis is excluded (managed via key prefixing).
   Produces a visual HTML report for human decision-making.
+  
+  Additionally detects MongoDB index definitions (both in-code EnsureIndexes and
+  scripts/mongodb/*.js files), generates index creation scripts for any gaps,
+  and uploads them to S3 for use during dedicated tenant database provisioning.
 
 trigger: |
   - User wants to know what to provision in dispatch layer for a service
   - User asks "what services/modules/resources does this project have?"
   - User needs to register a service in the dispatch layer catalog
   - Before running ring:dev-multi-tenant on a new service
+  - User asks about MongoDB indexes in a project
 
 prerequisite: |
   - Go project with go.mod in the current working directory
@@ -40,8 +45,9 @@ examples:
       1. Detect service identity (ApplicationName, type)
       2. Detect modules (WithModule calls, component structure)
       3. Detect resources per module (PostgreSQL, MongoDB, RabbitMQ)
-      4. Generate visual HTML report
-      5. Open in browser for review
+      4. Detect MongoDB indexes (in-code + scripts)
+      5. Generate visual HTML report
+      6. Open in browser for review
 ---
 
 # Service Discovery for Tenant-Manager
@@ -67,7 +73,7 @@ Redis is **not** a dispatch layer resource — it uses key prefixing via `GetKey
 **Orchestrator executes directly. No agent dispatch.**
 
 ```text
-DETECT service identity (run in parallel):
+Detect service identity (run in parallel):
 
 1. Service name:
    - Grep tool: pattern "const ApplicationName" in internal/bootstrap/ cmd/ --include="*.go"
@@ -103,7 +109,7 @@ Store results:
 ## Phase 2: Module Detection
 
 ```text
-DETECT modules (run in parallel):
+Detect modules (run in parallel):
 
 Strategy A — Explicit WithModule calls (preferred):
    - Grep tool: pattern "WithModule\(" in internal/ components/ --include="*.go"
@@ -139,7 +145,7 @@ For EACH detected module, scan its adapter directory:
 base_path = module.component_path + "internal/adapters/"
 // For single-component: base_path = "internal/adapters/"
 
-DETECT resources (run in parallel per module):
+Detect resources (run in parallel per module):
 
 1. PostgreSQL:
    - Glob tool: pattern "{base_path}postgres/*" (directories)
@@ -174,75 +180,98 @@ Store per module:
 
 ---
 
+## Phase 3.5: MongoDB Index Detection & Script Generation
+
+**Only execute this phase if MongoDB was detected in any module during Phase 3.**
+
+**Read the full reference:** `references/mongodb-index-detection.md` (in this skill's directory)
+
+Summary of steps:
+1. **Detect in-code indexes** — scan `EnsureIndexes()` / `IndexModel{}` in MongoDB adapter files
+2. **Detect existing scripts** — scan `scripts/mongodb/*.js` for `createIndex` calls
+3. **Cross-reference** — match in-code indexes against script indexes (covered / missing_script / script_only)
+4. **Generate missing scripts** — create `mongosh`-compatible `.js` scripts following the idempotent `createIndexSafely` pattern (see reference for full template)
+5. **Upload to S3** — asks which bucket to use, then uploads scripts following the migrations bucket convention: `s3://{bucket}/{service}/{module}/mongodb/` (requires valid AWS credentials; verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
+
+Store results for Phase 4 report:
+```text
+  index_coverage = {
+    covered: [{collection, keys, in_code_file, script_file}],
+    missing_script: [{collection, keys, in_code_file}],
+    script_only: [{collection, keys, script_file}],
+  }
+```
+
+---
+
 ## Phase 4: Generate Visual Report
 
 **MANDATORY: Invoke `Skill("ring:visual-explainer")` to produce the report.**
 
 Read `default/skills/visual-explainer/templates/data-table.html` first to absorb table patterns.
 
+**The report is focused on what needs to be configured in the dispatch layer for multi-tenant to work for this service.**
+
 **The HTML report MUST include these sections:**
 
-### 1. Service Overview
+### 1. Tenant-Manager Configuration Summary
 
-Card showing:
-- **Service Name:** `{service_name}`
-- **Service Type:** `product` | `plugin`
-- **Modules:** `{count}`
-- **Total Resources:** `{count across all modules}`
+The primary section — tells the operator exactly what to register:
 
-### 2. Module Map
+```markdown
+## Tenant-Manager Configuration for: {service_name}
 
-One card per module:
+Service: {service_name}
+Type: {product | plugin}
+Isolation: database
+
+### Modules to Register
+
+| Module       | PostgreSQL | MongoDB | RabbitMQ | MongoDB Indexes (S3)                          |
+|--------------|------------|---------|----------|-----------------------------------------------|
+| onboarding   | ✅ primary | ✅      | ❌       | s3://{bucket}/{service}/onboarding/mongodb/    |
+| transaction  | ✅ primary | ✅      | ✅       | s3://{bucket}/{service}/transaction/mongodb/   |
+```
+
+For each module, show:
+- Which resources need to be registered (postgresql, mongodb, rabbitmq)
+- S3 path where MongoDB index scripts are available (if MongoDB detected)
+- If index scripts were not uploaded yet, show: "⚠️ Not uploaded"
+
+### 2. MongoDB Index Scripts
+
+Table showing what scripts exist and where they are:
 
 ```
-┌─────────────────────────────────────┐
-│ MODULE: onboarding                  │
-├─────────────────────────────────────┤
-│ PostgreSQL ✅  (7 repositories)     │
-│   organization, ledger, account,    │
-│   asset, portfolio, segment,        │
-│   accounttype                       │
-│                                     │
-│ MongoDB ✅  (metadata)              │
-│                                     │
-│ RabbitMQ ❌  (not detected)         │
-│                                     │
-│ Redis ℹ️  (detected — not a         │
-│   dispatch layer resource)          │
-└─────────────────────────────────────┘
+| Script                       | Module      | Indexes | S3 Status  | S3 Path                                       |
+|------------------------------|-------------|---------|------------|-----------------------------------------------|
+| create-metadata-indexes.js   | onboarding  | 7       | ✅ Uploaded | s3://{bucket}/{service}/onboarding/mongodb/    |
+| create-metadata-indexes.js   | transaction | 4       | ✅ Uploaded | s3://{bucket}/{service}/transaction/mongodb/   |
+| create-audit-indexes.js      | transaction | 2       | ⚠️ Missing  | (generated locally, not yet uploaded)          |
+```
+
+If there are indexes in code without scripts:
+```
+⚠️  {N} indexes detected in code without corresponding scripts.
+    Scripts were generated in scripts/mongodb/ — upload to S3 at
+    s3://{bucket}/{service}/{module}/mongodb/ to make them available
+    for dedicated tenant database provisioning.
 ```
 
 ### 3. Service Hierarchy Diagram
 
-Mermaid diagram:
+Mermaid diagram showing Service → Module → Resource tree:
 
 ```mermaid
 graph TD
     S["Service: ledger (product)"]
     S --> M1["Module: onboarding"]
     S --> M2["Module: transaction"]
-    M1 --> R1["PostgreSQL (7 repos)"]
+    M1 --> R1["PostgreSQL"]
     M1 --> R2["MongoDB"]
-    M2 --> R3["PostgreSQL (6 repos)"]
+    M2 --> R3["PostgreSQL"]
     M2 --> R4["MongoDB"]
     M2 --> R5["RabbitMQ"]
-```
-
-### 4. Tenant-Manager Registration Checklist
-
-```markdown
-## What to register in dispatch layer:
-
-- [ ] **Service:** `ledger` (type: product, isolation: database)
-
-- [ ] **Module:** `onboarding`
-  - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb
-
-- [ ] **Module:** `transaction`
-  - [ ] Resource: postgresql (primary)
-  - [ ] Resource: mongodb
-  - [ ] Resource: rabbitmq
 ```
 
 **Save to:** `docs/service-discovery.html` in the project root.
@@ -264,6 +293,8 @@ Linux: xdg-open docs/service-discovery.html
 | "Redis should be included as a resource" | Redis uses key prefixing (`GetKeyFromContext`), not per-tenant provisioning. It is not a dispatch layer resource. | **Exclude Redis from resources** |
 | "The report doesn't need to be visual" | Visual reports are for human decision-making. A JSON dump is not actionable. | **Generate HTML via ring:visual-explainer** |
 | "WithModule not found, so no modules" | Fall back to component structure or ApplicationName. A service always has at least one module. | **Use Strategy B or C** |
+| "No index scripts needed, EnsureIndexes handles it" | In-code indexes run at app startup — but only if the app has connected. Scripts are needed for pre-provisioning, CI/CD, and dedicated tenant databases where the app hasn't booted yet. | **Generate scripts for all in-code indexes** |
+| "I'll just run the indexes manually" | Manual index creation is error-prone and not reproducible. Scripts are idempotent, documented, and version-controlled. | **Generate scripts** |
 
 ---
 
