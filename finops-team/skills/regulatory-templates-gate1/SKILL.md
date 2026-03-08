@@ -1,8 +1,14 @@
 ---
 name: ring:regulatory-templates-gate1
 description: |
-  Gate 1 sub-skill - performs regulatory compliance analysis and field mapping
-  from template specifications.
+  Gate 1 sub-skill - performs regulatory compliance analysis, field mapping,
+  batch approval by confidence level, and auto-saves dictionary after approval.
+  Supports both pre-defined templates (dictionary exists) and new templates (any spec).
+
+dependencies:
+  - ring:finops-analyzer
+
+role: regulatory-analyst
 
 trigger: |
   - regulatory-templates-setup completed
@@ -235,7 +241,7 @@ This dramatically reduces the number of fields requiring MCP discovery or user i
 | Step | If Dictionary EXISTS | If Dictionary NOT EXISTS |
 |------|---------------------|--------------------------|
 | 1 | Load YAML, use field_mappings | Run Pre-Step 0c (pattern matching) first |
-| 2 | Apply transformations | Query MCP: `mcp__apidog_midaz/crm__read_project_oas()` for remaining fields |
+| 2 | Apply transformations | Query MCP: `mcp__apidog_midaz__read_project_oas()` for remaining fields |
 | 3 | Use existing mappings | Group fields by confidence → **Batch Approval** (see below) |
 | 4 | Return | Auto-save dictionary (see Auto-Save section below) |
 | 5 | — | Update registry.yaml with new entry |
@@ -254,7 +260,9 @@ Consulte os dicionários existentes antes de iniciar o mapeamento de campos.
 
 ---
 
-### Batch Approval Process (replaces field-by-field AskUserQuestion)
+### Batch Approval Process (supersedes field-by-field AskUserQuestion for HIGH/MEDIUM)
+
+> **Reconciliation note:** This section supersedes any earlier instruction in this document that requires AskUserQuestion per-field for HIGH or MEDIUM confidence fields. The batch flow below is the authoritative approval process for templates without dictionary. Per-field AskUserQuestion applies ONLY to LOW confidence fields (< 60%). Each field is still presented and user-approved — just in groups rather than one at a time. This reduces interaction from 40–100 min to 10–15 min without removing user control.
 
 **After MCP discovery and pattern matching, group fields by confidence level:**
 
@@ -289,11 +297,15 @@ Aprovar TODOS os 23 campos acima? [Sim / Não — revisar um a um]
 Create a complete dictionary file following the format of existing dictionaries (check `.claude/docs/regulatory/dictionaries/` for format reference).
 
 **STEP B: Save dictionary file**
+
+Save to the canonical registry path (so the registry entry and Setup discovery will find it):
 ```
-Path: .claude/docs/regulatory/dictionaries/{authority_lower}-{template_code_lower}.yaml
-Example: .claude/docs/regulatory/dictionaries/bacen-cadoc4030.yaml
-         .claude/docs/regulatory/dictionaries/rfb-evtmovopfin.yaml
+Path: finops-team/docs/regulatory/templates/{AUTHORITY}/{CATEGORY}/{CODE}/dictionary.yaml
+Example: finops-team/docs/regulatory/templates/BACEN/CADOC/4030/dictionary.yaml
+         finops-team/docs/regulatory/templates/RFB/EFINANCEIRA/evtMovOpFin/dictionary.yaml
 ```
+
+This path must match the `reference_files.dictionary` value added to `registry.yaml` in STEP C.
 
 **STEP C: Update registry.yaml**
 Append the new template entry to `finops-team/docs/regulatory/templates/registry.yaml`:
@@ -328,7 +340,7 @@ Append the new template entry to `finops-team/docs/regulatory/templates/registry
 |------|--------|---------|
 | **A** | Discover Fields | Read regulatory spec (XSD/PDF/URL) → Extract ALL required fields + types + formats |
 | **B** | Pattern Matching | Apply Pre-Step 0c patterns before MCP calls |
-| **C** | Query API Schemas | `mcp__apidog-midaz/crm__read_project_oas()` for fields not resolved by pattern matching |
+| **C** | Query API Schemas | `mcp__apidog_midaz__read_project_oas()` for fields not resolved by pattern matching |
 | **D** | Batch Approval | Group HIGH/MEDIUM/LOW → present by group (see Batch Approval above) |
 | **E** | Individual Validation | For LOW confidence only: AskUserQuestion with top 3-4 suggestions + "Skip" + "Other" |
 | **F** | Validate Transformations | If field needs transform: confirm filter (e.g., `slice:':8'`, `floatformat:2`) |
@@ -396,7 +408,7 @@ Append the new template entry to `finops-team/docs/regulatory/templates/registry
 
 | Step | Action | Priority Paths |
 |------|--------|----------------|
-| **1** | Query MCP schemas | `mcp__apidog_crm/midaz__read_project_oas()` |
+| **1** | Query MCP schemas | `mcp__apidog_midaz__read_project_oas()` |
 | **2** | Search CRM first | holder.document, holder.name, holder.type, holder.addresses.*, holder.contact.*, holder.naturalPerson.*, holder.legalPerson.*, alias.bankingDetails.*, alias.metadata.* |
 | **3** | Search Midaz second | account.name, account.alias, account.metadata.*, account.status, transaction.metadata.*, balance.amount, organization.legalDocument |
 | **4** | Check metadata | crm.holder/alias.metadata.*, midaz.account/transaction.metadata.* |

@@ -145,4 +145,4 @@ Clientes da Lerian podem registrar data sources adicionais no Reporter além dos
 
 ---
 
-*Última atualização: 2026-03-08 | Maintainer: ring-finops-team*
+*Última atualização: 2026-03-08 | Maintainer: ring:finops-team*

@@ -120,15 +120,16 @@ Before running any MCP discovery, search existing dictionaries in `.claude/docs/
 
 **HARD GATES (STOP immediately):**
 
-1. **Template Not Found:** Template missing from registry.yaml
-2. **Incomplete Dictionary:** Data dictionary missing required fields
+1. **Template Not Found:** Template missing from registry.yaml — **EXCEPT when `is_new_template: true`** (proceed without registry entry; dictionary will be created by Gate 1)
+2. **Incomplete Dictionary:** Data dictionary missing required fields — **EXCEPT when `is_new_template: true`** (no dictionary expected; batch approval flow creates it)
 3. **Unmapped Mandatory Fields:** ANY mandatory regulatory field without valid source
 4. **Format Ambiguity:** Official specification contradicts system capability
 5. **Compliance Risk:** Mapping would violate regulatory requirement
 
 **When to STOP:**
 ```markdown
-IF template.status != "active" in registry.yaml → STOP
+IF is_new_template == true → SKIP registry check and dictionary check; proceed to field extraction from spec
+IF is_new_template != true AND template.status != "active" in registry.yaml → STOP
 IF mandatory_field.source == NOT_FOUND → STOP
 IF transformation_rule.compliance_risk == "CRITICAL" → STOP
 IF dictionary.coverage < 100% for mandatory fields → STOP
