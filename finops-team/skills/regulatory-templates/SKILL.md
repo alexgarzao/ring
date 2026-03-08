@@ -161,26 +161,104 @@ The workflow exists specifically to prevent these exact thoughts from leading to
 | Phase | Sub-skill | Purpose | Agent |
 |-------|-----------|---------|-------|
 | Setup | `regulatory-templates-setup` | Template selection, context init | — |
-| Gate 1 | `regulatory-templates-gate1` | Regulatory analysis, field mapping | `finops-analyzer` (opus) |
+| Gate 1 | `regulatory-templates-gate1` | Regulatory analysis, field mapping, auto-save dict | `finops-analyzer` (opus) |
 | Gate 2 | `regulatory-templates-gate2` | Validate mappings, test transformations | `finops-analyzer` (opus) |
 | Gate 3 | `regulatory-templates-gate3` | Generate .tpl template file | `finops-automation` (sonnet) |
+| Gate Teste *(optional)* | — | Validate template in dev environment | — |
+| Contribution Gate *(optional)* | — | Open PR to Ring (new templates only) | — |
 
 ---
 
 ## Orchestration Process
 
-**Step 1:** Initialize TodoWrite with 5 tasks (setup, gate1, gate2, gate3, verify)
+**Step 1:** Initialize TodoWrite with tasks (setup, gate1, gate2, gate3, + optional: gate_test, contribution)
 
-**Step 2-5:** Execute each sub-skill using Skill tool:
+**Steps 2–5:** Execute mandatory gates using Skill tool:
 
 | Step | Skill | On PASS | On FAIL |
 |------|-------|---------|---------|
 | 2 | `regulatory-templates-setup` | Store context → Gate 1 | Fix selection issues |
-| 3 | `regulatory-templates-gate1` | Store spec report → Gate 2 | Address critical gaps, retry |
+| 3 | `regulatory-templates-gate1` | Store spec report + auto-saved dict → Gate 2 | Address critical gaps, retry |
 | 4 | `regulatory-templates-gate2` | Store finalized report → Gate 3 | Resolve uncertainties, retry |
-| 5 | `regulatory-templates-gate3` | Template complete | 401=refresh token, 500/503=wait+retry |
+| 5 | `regulatory-templates-gate3` | Template complete → Gate Teste (if configured) | 401=refresh token, 500/503=wait+retry |
+
+**Steps 6–7 (optional):** Execute only when conditions are met:
+
+| Step | Gate | Condition | On PASS | On FAIL |
+|------|------|-----------|---------|---------|
+| 6 | Gate Teste | `reporter_dev_url` set AND user opts in | Mark `gate_test_passed: true` → Contribution Gate | Feedback → retry Gate 3 |
+| 7 | Contribution Gate | `is_new_template: true` AND user opts in | PR opened, URL reported | Provide manual instructions |
 
 **Context flows in memory** - no intermediate files created
+
+---
+
+## Gate Teste — Validação no Ambiente Dev (Opcional)
+
+**Triggered when:** `reporter_dev_url` is set in context (configured during Setup)
+
+**Process:**
+1. Check if `reporter_dev_url` is available in context
+2. If available → Ask: "Quer validar o template gerado no ambiente de desenvolvimento agora?"
+3. **If YES:**
+   - Submit the generated `.tpl` to `reporter_dev_url` with available test data
+   - Display the rendered output to the user
+   - Ask: "O output está correto? Deseja fazer algum ajuste?"
+   - If adjustments needed: return feedback to Gate 3 with specific corrections → re-run Gate 3 → re-run Gate Teste
+   - If correct: mark `gate_test_passed: true`, proceed
+4. **If NO or `reporter_dev_url` not configured:** mark `gate_test_passed: skipped`, proceed
+
+**Output context addition:** `gate_test: { passed: true|false|skipped }`
+
+---
+
+## Contribution Gate — PR para o Ring (Opcional)
+
+**Triggered when:** `is_new_template: true` is in context (set during Setup when user selects "Novo template")
+
+**Process:**
+1. Ask: "Quer contribuir este template de volta para a comunidade Ring? Isso abre um PR público no repositório LerianStudio/ring."
+2. **If NO:**
+   - Inform: "Template e dicionário salvos localmente. Disponíveis para uso imediato."
+   - Mark `contribution: skipped`
+3. **If YES:**
+   - Verify user has GitHub token configured (via environment or user input)
+   - Fork `LerianStudio/ring` to user's GitHub account (if not already forked)
+   - Create branch: `feat/regulatory-template-{template_code_lower}` (ex: `feat/regulatory-template-cadoc4030`)
+   - Commit the following files (signed via GitHub API with **user's own token**):
+     - New dictionary YAML: `finops-team/docs/regulatory/templates/{authority}/{category}/{code}/dictionary.yaml`
+     - Updated `registry.yaml` with new template entry
+     - Generated `.tpl` file in appropriate directory
+   - Open PR to `LerianStudio/ring` with auto-generated description:
+     ```
+     feat(finops): add {Template Name} regulatory template
+
+     - Authority: {BACEN|RFB|other}
+     - Format: {XML|TXT|HTML}
+     - Fields mapped: {N} ({HIGH}H / {MEDIUM}M / {LOW}L confidence)
+     - Dictionary: auto-generated via ring:regulatory-templates workflow
+
+     Contributed via ring-finops-team regulatory-templates workflow
+     ```
+   - Report PR URL: "✅ PR aberto: {url}"
+   - Mark `contribution: { pr_url: "{url}", status: "open" }`
+4. **If GitHub token unavailable:**
+   - Provide manual instructions:
+     ```bash
+     cd <ring-repo>
+     git checkout -b feat/regulatory-template-{code}
+     # Copy dictionary and .tpl files shown above
+     git add . && git commit -S -m "feat(finops): add {name} template"
+     gh pr create --title "feat(finops): add {name} template"
+     ```
+
+**🔴 CRITICAL — Commit signing:**
+- Commits MUST be signed with the **user's own GitHub token** via GitHub API
+- **NEVER use agent credentials** for commits
+- The contribution must be attributed to the human contributor
+- If unable to sign as user → provide manual `git commit -S` instructions
+
+**BLOCKER:** If fork or branch creation fails → provide manual git instructions. Do NOT attempt workarounds using agent credentials.
 
 ---
 
