@@ -252,19 +252,6 @@ If the user requests execution of detected or generated index scripts:
 
 Upload all index scripts to S3 so they are available for automated provisioning of dedicated tenant databases. Uses the AWS CLI installed on the local machine.
 
-### S3 Path Convention
-
-```
-s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/{script_filename}
-```
-
-Example:
-```
-s3://midaz-cloudformation-foundation/scripts/mongodb/dispatch layer/create-service-indexes.js
-s3://midaz-cloudformation-foundation/scripts/mongodb/dispatch layer/create-resource-indexes.js
-s3://midaz-cloudformation-foundation/scripts/mongodb/ledger/create-metadata-indexes.js
-```
-
 ### Upload Flow
 
 ```text
@@ -278,24 +265,35 @@ s3://midaz-cloudformation-foundation/scripts/mongodb/ledger/create-metadata-inde
    - Run: aws --version
    - If not found → ERROR: "AWS CLI not installed. Install with: brew install awscli"
 
-4. Verify S3 access:
-   - Run: aws s3 ls s3://midaz-cloudformation-foundation/scripts/ 2>&1
-   - If access denied → ERROR: "No S3 access. Check AWS credentials (aws configure)"
+4. ASK the user which S3 bucket to use:
+   "Found {N} index scripts to upload for service '{service_name}'.
+    Which S3 bucket should I upload to?
+    
+    Example: my-bucket-name
+    (scripts will be placed at: s3://{bucket}/scripts/mongodb/{service_name}/)"
 
-5. Upload each script:
+   - Wait for user response
+   - Store as: s3_bucket = "{user_response}"
+
+5. Verify S3 access:
+   - Run: aws s3 ls s3://{s3_bucket}/ 2>&1
+   - If access denied → ERROR: "No access to bucket '{s3_bucket}'. Check AWS credentials (aws configure)"
+   - If bucket not found → ERROR: "Bucket '{s3_bucket}' not found."
+
+6. Upload each script:
    - For each script in scripts/mongodb/*.js:
-     aws s3 cp {script_path} s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/{filename}
-   - Use --content-type "application/javascript"
+     aws s3 cp {script_path} s3://{s3_bucket}/scripts/mongodb/{service_name}/{filename} \
+       --content-type "application/javascript"
 
-6. Verify upload:
-   - Run: aws s3 ls s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/
+7. Verify upload:
+   - Run: aws s3 ls s3://{s3_bucket}/scripts/mongodb/{service_name}/
    - List uploaded files with sizes
    - Confirm count matches local scripts
 
-7. Report results:
+8. Report results:
    "Uploaded {N} index scripts to S3:
-    ✅ s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/create-service-indexes.js
-    ✅ s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/create-resource-indexes.js"
+    ✅ s3://{s3_bucket}/scripts/mongodb/{service_name}/create-service-indexes.js
+    ✅ s3://{s3_bucket}/scripts/mongodb/{service_name}/create-resource-indexes.js"
 ```
 
 ### Report Section Addition
@@ -313,7 +311,7 @@ Add to the Phase 4 HTML report:
 │ create-audit-indexes     │ ⚠️  Generated (not yet    │
 │                          │    uploaded — run again)   │
 └──────────────────────────┴───────────────────────────┘
-S3 prefix: s3://midaz-cloudformation-foundation/scripts/mongodb/{service_name}/
+S3 prefix: s3://{bucket}/scripts/mongodb/{service_name}/
 ```
 
 ---
