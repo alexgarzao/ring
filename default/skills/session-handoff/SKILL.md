@@ -15,21 +15,6 @@ allowed-tools:
 
 Creates a comprehensive handoff document that captures the current session's context, progress, decisions, and next steps. Uses Claude Code's **Plan Mode** to deliver the handoff as a native plan, giving the user a seamless "clear context and continue implementing" option without any manual steps.
 
-## Why Plan Mode?
-
-The old workflow required three separate steps: `create-handoff` then `/clear` then `resume-handoff`. Plan Mode collapses this into a single command.
-
-| Aspect | Old Workflow | Plan Mode Workflow |
-|--------|-------------|-------------------|
-| **Steps required** | 3 (`create-handoff` + `/clear` + `resume-handoff`) | 1 (`create-handoff`) |
-| **Context clearing** | Manual (`/clear`) | Native option presented by Plan Mode |
-| **Resumption** | Required separate command or hook | Built-in "continue implementing" |
-| **User review** | Had to open the file separately | Plan is displayed inline for review |
-| **Breadcrumb files** | Required `.pending` file | Not needed - plan mode handles persistence |
-| **Integration** | Custom workflow bolted on | Native Claude Code feature |
-
-Plan Mode provides the ideal handoff mechanism: it presents the handoff content as a reviewable plan, then offers the user a native "clear context and continue implementing" option. The system handles context clearing and plan persistence automatically.
-
 ## Arguments
 
 | Argument | Required | Description |
@@ -67,41 +52,26 @@ Before entering plan mode, collect all session information needed for the handof
 - Determine the session name (from argument or infer from the work done)
 - Determine the description (from argument or infer from current state)
 
-### Step 2: Save Archival Copy
-
-MUST save the handoff document to the project's handoff archive **before** entering plan mode, because plan mode restricts tool usage.
-
-**Archival path:** `docs/handoffs/{session-name}/{timestamp}_{description}.md`
-
-- `{session-name}`: The session-name argument, or inferred name (kebab-case)
-- `{timestamp}`: Format `YYYY-MM-DD_HH-MM-SS` (use `date '+%Y-%m-%d_%H-%M-%S'`)
-- `{description}`: The description argument slugified to kebab-case, or `session` if not provided
-
-Use the `Write` tool to save the archival copy. This file persists in the repository and can be referenced later regardless of plan mode state. Ensure the `docs/handoffs/` directory structure exists (create with `Bash` if needed).
-
-### Step 3: Enter Plan Mode
+### Step 2: Enter Plan Mode
 
 MUST call `EnterPlanMode` tool. This switches the session to plan mode where the handoff will be presented as a native plan.
 
-### Step 4: Write the Handoff as the Plan
+### Step 3: Write the Handoff as the Plan
 
 MUST write the handoff content to the plan file. When plan mode is active, the system message specifies the plan file path. Write the full handoff document (using the template below) to that path using the `Write` tool.
 
 The handoff IS the plan. The user will see it displayed inline and can review every detail before deciding to continue.
 
-### Step 5: Exit Plan Mode
+### Step 4: Exit Plan Mode
 
 MUST call `ExitPlanMode` tool. This presents the user with native options including "clear context and continue implementing" - which is the seamless handoff resume.
 
-### Step 6: Confirm to User
+### Step 5: Confirm to User
 
 After exiting plan mode, inform the user:
 
 ```
 Handoff created and loaded as plan.
-
-- Archival copy: docs/handoffs/{session-name}/{timestamp}_{description}.md
-- Plan mode: Active - you can review the handoff above
 
 You can now choose "clear context and continue implementing" to seamlessly
 resume in a fresh context with the handoff loaded as your plan.
@@ -109,7 +79,7 @@ resume in a fresh context with the handoff loaded as your plan.
 
 ## Handoff Template
 
-When creating the handoff document (both the archival copy and the plan file), use this structure:
+When creating the handoff document (the plan file), use this structure:
 
 ````markdown
 # Handoff: {Session Name}
@@ -175,7 +145,6 @@ When creating the handoff document (both the archival copy and the plan file), u
 
 | Rationalization | Why It's WRONG | Required Action |
 |----------------|----------------|-----------------|
-| "I'll skip the archival copy since plan mode saves it" | Plan files are ephemeral and may not persist across sessions. The archival copy is the permanent record. | **MUST save archival copy before entering plan mode** |
 | "I'll enter plan mode first, then gather context" | Plan mode restricts tool usage. Context gathering requires Read, Glob, and Bash. | **MUST gather all context before calling EnterPlanMode** |
 | "The handoff doesn't need all template sections" | Incomplete handoffs cause information loss. Every section exists for a reason. | **MUST fill every section of the template** |
 | "I'll just summarize briefly" | Brief summaries lose critical context. The whole point is comprehensive capture. | **MUST provide detailed content in each section** |
@@ -190,11 +159,10 @@ When creating the handoff document (both the archival copy and the plan file), u
 User: /ring:create-handoff
 Assistant: I will create a handoff document for the current session.
 [Step 1: Gathers context from conversation history]
-[Step 2: Saves archival copy to docs/handoffs/current-session/2026-03-08_15-45-00_session.md]
-[Step 3: Calls EnterPlanMode]
-[Step 4: Writes handoff to plan file path]
-[Step 5: Calls ExitPlanMode]
-[Step 6: User sees handoff and native options]
+[Step 2: Calls EnterPlanMode]
+[Step 3: Writes handoff to plan file path]
+[Step 4: Calls ExitPlanMode]
+[Step 5: User sees handoff and native options]
 ```
 
 ### With Session Name and Description
@@ -202,12 +170,9 @@ Assistant: I will create a handoff document for the current session.
 ```
 User: /ring:create-handoff auth-refactor "OAuth provider integration"
 Assistant: I will create a handoff document for the auth-refactor session.
-[Gathers all context, writes archival copy, enters plan mode, writes plan, exits plan mode]
+[Gathers all context, enters plan mode, writes plan, exits plan mode]
 
 Handoff created and loaded as plan.
-
-- Archival copy: docs/handoffs/auth-refactor/2026-03-08_15-45-00_oauth-provider-integration.md
-- Plan mode: Active - you can review the handoff above
 
 You can now choose "clear context and continue implementing" to seamlessly
 resume in a fresh context with the handoff loaded as your plan.
@@ -221,4 +186,4 @@ After the command completes, the user sees the full handoff document displayed a
 2. **"Continue without clearing"** - Keeps the current context and the plan. Useful if the user wants to keep working in the same session.
 3. **Edit the plan** - The user can modify the handoff before proceeding.
 
-The archival copy in `docs/handoffs/` remains available regardless of which option the user chooses.
+The plan persists across context clears, so the user can always review it regardless of which option they choose.
