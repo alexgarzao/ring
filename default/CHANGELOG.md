@@ -1,5 +1,24 @@
 # Ring-default Changelog
 
+## [1.14.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.2)
+
+- **Features:**
+  - Added session-handoff skill to enable seamless context resume.
+  - Added skill to formalize git commit generation process.
+
+- **Refactor:**
+  - Replaced custom handoff workflow with native Plan Mode.
+  - Pruned granular skills to focus core library on workflows.
+
+- **Documentation:**
+  - Updated all documentation to reflect major skill refactoring.
+
+Contributors: @fred, @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.14.1...ring-default@1.14.2)
+
+---
+
 ## [1.14.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.1)
 
 - Refactor: Decouple agents from specific model requirements

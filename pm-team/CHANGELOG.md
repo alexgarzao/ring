@@ -1,5 +1,16 @@
 # Ring-pm-team Changelog
 
+## [0.19.3](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.3)
+
+- **Features:**
+  - Added orchestrator skills for pre-development planning workflows.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.2...ring-pm-team@0.19.3)
+
+---
+
 ## [0.19.2](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.19.2)
 
 - Improvements:
