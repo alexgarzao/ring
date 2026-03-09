@@ -1,5 +1,15 @@
 # Ring-default Changelog
 
+## [1.14.3](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.3)
+
+- Refactor(session-handoff): Remove redundant archival copy step
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.14.2...ring-default@1.14.3)
+
+---
+
 ## [1.14.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.2)
 
 - **Features:**
