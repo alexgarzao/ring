@@ -20,7 +20,7 @@
 
   // Commands to disable. Allowed: "brainstorm", "codereview", "commit", "create-handoff",
   // "dev-cancel", "dev-cycle", "dev-refactor", "dev-report", "dev-status", "execute-plan",
-  // "explore-codebase", "lint", "resume-handoff", "worktree", "write-plan".
+  // "explore-codebase", "lint", "worktree", "write-plan".
   "disabled_commands": [],
 
   "experimental": {

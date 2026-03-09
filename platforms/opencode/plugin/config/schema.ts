@@ -76,7 +76,6 @@ export const CommandNameSchema = z.enum([
   "execute-plan",
   "explore-codebase",
   "lint",
-  "resume-handoff",
   "worktree",
   "write-plan",
 ])

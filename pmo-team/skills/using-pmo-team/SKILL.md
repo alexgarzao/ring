@@ -258,7 +258,7 @@ Remember:
 - `dependency-mapping` - Cross-project dependency analysis
 - `executive-reporting` - Executive communication for portfolio/project status (PMO focus)
 - `delivery-reporting` - Visual executive presentations of squad deliveries from Git analysis (engineering focus)
-- `pmo-retrospective` - Portfolio retrospectives and lessons learned
+- `ring:pmo-retrospective` - Portfolio retrospectives and lessons learned
 
 **Commands:**
 - `/portfolio-review` - Conduct portfolio review

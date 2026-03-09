@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 86 skills, 35 agents, and 33 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 83 skills, 35 agents, and 32 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,9 +13,9 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(27)   │  │  Skills(23)   │  │  Skills(13)   │  │  team         │      │
+│  │  Skills(21)   │  │  Skills(24)   │  │  Skills(15)   │  │  team         │      │
 │  │  Agents(8)    │  │  Agents(11)   │  │  Agents(4)    │  │  Skills(7)    │      │
-│  │  Cmds(15)     │  │  Cmds(8)      │  │  Cmds(3)      │  │  Agents(3)    │      │
+│  │  Cmds(14)     │  │  Cmds(8)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐                                            │
 │  │ ring-tw-team  │  │ ring-pmo-team │                                            │
@@ -106,10 +106,9 @@ Commands are invoked directly: `/command-name`.
 
 ### Session Management
 
-| Command                       | Use Case                              | Example                                                |
-| ----------------------------- | ------------------------------------- | ------------------------------------------------------ |
-| `/ring:create-handoff [name]` | Create handoff document before /clear | `/ring:create-handoff auth-refactor`                   |
-| `/ring:resume-handoff [path]` | Resume from handoff after /clear      | `/ring:resume-handoff docs/handoffs/auth-refactor/...` |
+| Command                       | Use Case                                                      | Example                              |
+| ----------------------------- | ------------------------------------------------------------- | ------------------------------------ |
+| `/ring:create-handoff [name]` | Create handoff document before /clear (auto-resumes via hook) | `/ring:create-handoff auth-refactor` |
 
 ### Development Cycle (ring-dev-team)
 
@@ -145,7 +144,7 @@ Commands are invoked directly: `/command-name`.
 
 ## 💡 About Skills
 
-Skills (86) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
+Skills (83) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
 
 Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
@@ -391,7 +390,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 86 skills are auto-discovered and available
+2. All 83 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

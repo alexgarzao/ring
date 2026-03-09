@@ -93,7 +93,6 @@
           "explore-codebase",
           "lint",
           "md-to-html",
-          "resume-handoff",
           "worktree",
           "write-plan"
         ]
