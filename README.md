@@ -22,7 +22,7 @@ Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
 - **Providing 83 specialized skills** (21 core + 24 dev-team + 15 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
-- **35 specialized agents** - 8 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
+- **37 specialized agents** - 10 review/planning + 11 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -36,6 +36,8 @@ Ring solves this by:
 - `ring:test-reviewer` - Test quality review (coverage, edge cases, assertions, test anti-patterns)
 - `ring:nil-safety-reviewer` - Nil/null safety review (traces pointer risks, missing guards, panic paths)
 - `ring:consequences-reviewer` - Ripple effect review (traces how changes propagate beyond modified files - caller chains, consumer contracts, downstream breakage)
+- `ring:dead-code-reviewer` - Dead code review (orphaned code detection, reachability analysis, dead dependency chains)
+- `ring:review-slicer` - Review slicer (groups large multi-themed PRs into thematic slices for focused parallel review)
 - `ring:write-plan` - Implementation planning agent
 - `ring:codebase-explorer` - Deep architecture analysis (deep-analysis, complements built-in Explore)
 - Use `/ring:codereview` command to orchestrate parallel review workflow
@@ -565,13 +567,15 @@ ring/                                  # Monorepo root
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
-│   ├── agents/                      # 9 specialized agents
+│   ├── agents/                      # 10 specialized agents
 │   │   ├── code-reviewer.md             # Foundation review (`ring:code-reviewer`)
 │   │   ├── business-logic-reviewer.md   # Correctness review (`ring:business-logic-reviewer`)
 │   │   ├── security-reviewer.md         # Safety review (`ring:security-reviewer`)
 │   │   ├── test-reviewer.md             # Test quality review (`ring:test-reviewer`)
 │   │   ├── nil-safety-reviewer.md       # Nil/null safety review (`ring:nil-safety-reviewer`)
 │   │   ├── consequences-reviewer.md     # Ripple effect review (`ring:consequences-reviewer`)
+│   │   ├── dead-code-reviewer.md        # Dead code analysis (`ring:dead-code-reviewer`)
+│   │   ├── review-slicer.md             # Review slicing for large PRs (`ring:review-slicer`)
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation

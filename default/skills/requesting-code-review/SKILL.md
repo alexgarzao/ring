@@ -60,6 +60,10 @@ input_schema:
       type: integer
       default: 300000
       description: "Timeout for pre-analysis pipeline in milliseconds (default: 5 minutes)"
+    - name: skip_slicing
+      type: boolean
+      default: false
+      description: "Skip review slicing step (force full-diff review even for large PRs)"
 
 output_schema:
   format: markdown
@@ -252,7 +256,13 @@ review_state = {
     cosmetic: []
   },
   iterations: 0,
-  max_iterations: 3
+  max_iterations: 3,
+  slicing: {
+    enabled: false,
+    slice_count: 0,
+    slices: [],
+    cross_cutting_issues: []
+  }
 }
 ```
 
@@ -335,9 +345,226 @@ preanalysis_state = {
 }
 ```
 
+## Step 2.7: Review Slicing (Thematic Grouping for Large PRs)
+
+**See [shared-patterns/reviewer-slicing-strategy.md](../shared-patterns/reviewer-slicing-strategy.md) for full rationale, cost analysis, and dedup strategy.**
+
+This step decides whether the PR should be sliced into thematic groups for focused review. For small/focused PRs, this adds ~5 seconds and changes nothing. For large multi-themed PRs, it dramatically improves review depth.
+
+**Skip Override:** The `skip_slicing` parameter allows bypassing this step. When skipped, the standard full-diff flow is used regardless of PR size.
+
+```text
+IF skip_slicing == true:
+  → review_state.slicing.enabled = false
+  → Display: "Review slicing skipped by parameter. Using full-diff review."
+  → Skip to Step 3
+```
+
+### Step 2.7.1: Collect File List and Diff Stats
+
+```bash
+# Collect changed file list
+FILE_LIST=$(git diff --name-only $BASE_SHA $HEAD_SHA)
+
+# Collect diff stats (insertions/deletions per file)
+DIFF_STATS=$(git diff --stat $BASE_SHA $HEAD_SHA)
+```
+
+### Step 2.7.2: Dispatch Review Slicer Agent
+
+```yaml
+Task:
+  subagent_type: "ring:review-slicer"
+  description: "Classify PR files for review slicing"
+  prompt: |
+    ## Review Slicing Request
+
+    Decide whether this PR should be sliced into thematic groups for review.
+
+    ## Changed Files
+    ```
+    [FILE_LIST]
+    ```
+
+    ## Diff Stats
+    ```
+    [DIFF_STATS]
+    ```
+
+    ## Mithril Context (if available)
+    [IF preanalysis_state.success == true:]
+    [Brief summary of Mithril findings — file-level, not full content]
+    [ELSE:]
+    _No pre-analysis context available._
+
+    ## Instructions
+    Apply the slicing heuristic and return structured JSON.
+    See your agent prompt for heuristic thresholds and grouping strategy.
+```
+
+### Step 2.7.3: Parse Slicer Response and Update State
+
+```text
+Parse JSON response from ring:review-slicer.
+
+IF slicer_response.shouldSlice == false:
+  → review_state.slicing.enabled = false
+  → Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ REVIEW SLICING: NOT NEEDED                                      │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Reason: [slicer_response.reasoning]                             │
+  │ Proceeding with full-diff review (standard flow).               │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  → Continue to Step 3 as-is (no change to current flow)
+
+IF slicer_response.shouldSlice == true:
+  → review_state.slicing.enabled = true
+  → review_state.slicing.slice_count = slicer_response.slices.length
+  → review_state.slicing.slices = slicer_response.slices (each with empty results initially)
+  → Display:
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ REVIEW SLICING: ACTIVE                                          │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │ Reason: [slicer_response.reasoning]                             │
+  │ Slices: [N]                                                     │
+  │                                                                 │
+  │ ┌──────────────────┬──────────────────────────┬───────┐         │
+  │ │ Slice            │ Description              │ Files │         │
+  │ ├──────────────────┼──────────────────────────┼───────┤         │
+  │ │ api-handlers     │ HTTP handlers, middleware │ 12    │         │
+  │ │ domain-models    │ Entities, business rules  │ 8     │         │
+  │ │ infrastructure   │ Helm charts, CI/CD        │ 5     │         │
+  │ └──────────────────┴──────────────────────────┴───────┘         │
+  │                                                                 │
+  │ Dispatching 7 reviewers x [N] slices = [7*N] review tasks...   │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+  → Continue to Step 3 (Sliced Dispatch variant)
+```
+
+### Step 2.7.4: Slicer Failure Handling
+
+```text
+IF slicer agent fails (timeout, error, malformed JSON):
+  → Log warning: "Review slicer failed: [error]. Falling back to full-diff review."
+  → review_state.slicing.enabled = false
+  → Continue to Step 3 as-is (graceful degradation, not a blocker)
+```
+
+---
+
 ## Step 3: Dispatch All 7 Reviewers in Parallel
 
 **⛔ CRITICAL: All 7 reviewers MUST be dispatched in a SINGLE message with 7 Task calls.**
+
+### Step 3 Mode Selection
+
+```text
+IF review_state.slicing.enabled == false:
+  → STANDARD MODE: Dispatch 7 reviewers on full diff (unchanged from current flow)
+  → Continue with Step 3 dispatch below as-is
+
+IF review_state.slicing.enabled == true:
+  → SLICED MODE: Skip standard dispatch. Go to Step 3-S (Sliced Dispatch) below.
+```
+
+### Step 3-S: Sliced Dispatch (When Slicing Is Active)
+
+**⛔ CRITICAL: All 7 reviewers run on ALL slices. No "relevant reviewer" routing. More eyes = more safety.**
+
+```text
+FOR EACH slice IN review_state.slicing.slices:
+
+  1. Generate scoped diff for this slice:
+     git diff [base_sha] [head_sha] -- [slice.files...]
+
+  2. Filter Mithril context for this slice:
+     FOR EACH reviewer_context IN preanalysis_state.context:
+       → Extract only sections/paragraphs that mention files in slice.files
+       → Store as slice_filtered_context[reviewer_name]
+     (If a context section mentions no files in this slice, exclude it entirely)
+
+  3. Dispatch all 7 reviewers with slice-scoped context:
+     ⛔ All 7 MUST be dispatched in a SINGLE message with 7 Task calls (per slice)
+
+     The prompt for each reviewer is IDENTICAL to the standard Step 3 prompts below,
+     with these substitutions:
+
+     - [implementation_files] → slice.files (not full file list)
+     - Git diff content → scoped diff from step 1 above
+     - Pre-Analysis Context → slice_filtered_context[reviewer_name]
+     - Add to prompt header:
+       "**Review Scope:** Slice '[slice.name]' — [slice.description]
+        **Files in this slice:** [slice.files.join(', ')]
+        **Note:** This is a thematic slice of a larger PR. Focus your review
+        on these files. Other files in this PR are being reviewed separately."
+
+  4. Collect results per slice:
+     review_state.slicing.slices[i].reviewer_results = {
+       code_reviewer: {verdict, issues},
+       business_logic_reviewer: {verdict, issues},
+       ... (all 7)
+     }
+
+AFTER ALL SLICES COMPLETE:
+  → Merge and deduplicate (Step 3-S-Merge below)
+  → Continue to Step 4 with merged results
+```
+
+### Step 3-S-Merge: Merge and Deduplicate Slice Results
+
+```text
+⛔ MANDATORY: Dedup MUST run before presenting results to Step 4.
+
+1. COLLECT all issues from all slices into a single list:
+   all_issues = []
+   FOR EACH slice IN review_state.slicing.slices:
+     FOR EACH reviewer IN slice.reviewer_results:
+       FOR EACH issue IN reviewer.issues:
+         all_issues.push({
+           ...issue,
+           source_slice: slice.name,
+           source_reviewer: reviewer.name
+         })
+
+2. EXACT MATCH DEDUP:
+   Group by (reviewer_name + file + line).
+   If duplicates exist → keep one instance.
+
+3. FUZZY MATCH DEDUP:
+   For issues at the same file:line from DIFFERENT reviewers or slices:
+   IF description_similarity(issue_a, issue_b) > 80%:
+     → Keep the issue with the longer/more detailed description
+     → Add metadata: "Also flagged by: [other_reviewer] in [other_slice]"
+     → This indicates higher confidence (multiple independent detections)
+
+4. CROSS-CUTTING DETECTION:
+   Issues found across 2+ slices (same file:line, similar description):
+   → Tag as "cross-cutting concern"
+   → Add to review_state.slicing.cross_cutting_issues
+   → Surface prominently in consolidated report — cross-cutting issues
+     often signal architectural problems
+
+5. MERGE VERDICTS:
+   Per reviewer, final verdict = worst verdict across all slices.
+   (If ring:security-reviewer PASSes on slice A but FAILs on slice B,
+    the merged verdict is FAIL.)
+
+6. POPULATE review_state:
+   review_state.reviewers = merged verdicts + merged issues (deduped)
+   review_state.aggregated_issues = all issues categorized by severity (deduped)
+
+7. ADD SLICING NOTE to output:
+   "Review was sliced into [N] thematic groups for deeper analysis."
+```
+
+### Standard Mode Dispatch (When Slicing Is NOT Active)
+
+The following dispatch is used when `review_state.slicing.enabled == false` (unchanged from current flow):
 
 ```yaml
 # Task 1: Code Reviewer
@@ -771,7 +998,22 @@ Task:
 ## Step 4: Wait for All Reviewers and Parse Output
 
 ```text
-Wait for all 7 Task calls to complete.
+IF review_state.slicing.enabled == true:
+  → Results already merged and deduped in Step 3-S-Merge
+  → review_state.reviewers and review_state.aggregated_issues are populated
+  → Include cross-cutting issues in report:
+    IF review_state.slicing.cross_cutting_issues.length > 0:
+      → Add section to consolidated output:
+        "### Cross-Cutting Concerns (found across multiple slices)"
+        FOR EACH cross_cutting_issue:
+          → "[severity] [description] at [file:line]
+             Found in slices: [slice_a], [slice_b]
+             Flagged by: [reviewer_a], [reviewer_b]
+             This may indicate an architectural issue."
+  → Skip to verdict aggregation below
+
+IF review_state.slicing.enabled == false (STANDARD MODE):
+  → Wait for all 7 Task calls to complete.
 
 For each reviewer:
 1. Extract VERDICT (PASS/FAIL)
@@ -2088,6 +2330,14 @@ Generate skill output:
 | ring:consequences-reviewer | ✅ PASS | [count] |
 | ring:dead-code-reviewer | ✅ PASS | [count] |
 
+## Review Slicing
+[IF review_state.slicing.enabled:]
+**Sliced:** Yes — [review_state.slicing.slice_count] thematic groups
+**Slices:** [slice names with file counts]
+**Cross-Cutting Concerns:** [count]
+[ELSE:]
+**Sliced:** No — full-diff review
+
 ## Low/Cosmetic Issues (TODO/FIXME added)
 [list with file locations]
 
@@ -2235,6 +2485,10 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 | ring:consequences-reviewer | ✅/❌ |
 | ring:dead-code-reviewer | ✅/❌ |
 
+## Review Slicing
+**Sliced:** [Yes — N thematic groups | No — full-diff review]
+**Cross-Cutting Concerns:** [N] (if sliced)
+
 ## CodeRabbit External Review (MANDATORY if installed, Optional to install)
 **Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
 **Validation Mode:** [SUBTASK-LEVEL|TASK-LEVEL]
@@ -2258,6 +2512,7 @@ See [dev-team/skills/shared-patterns/shared-anti-rationalization.md](../../dev-t
 ## Handoff to Next Gate
 - Review status: [COMPLETE|FAILED]
 - Blocking issues: [resolved|N remaining]
+- Review slicing: [N slices | not sliced]
 - CodeRabbit: [PASS|SKIPPED|N issues acknowledged]
 - CodeRabbit validation: [N]/[N] units passed
 - Ready for Gate 5: [YES|NO]

@@ -54,9 +54,67 @@ fi
 
 ---
 
+### Step 0.5: Review Slicing (Thematic Grouping for Large PRs)
+
+**See [shared-patterns/reviewer-slicing-strategy.md](../skills/shared-patterns/reviewer-slicing-strategy.md) for full rationale.**
+
+After Mithril completes, determine whether the PR should be sliced into thematic groups for focused review. This reuses the same logic as `ring:requesting-code-review` Step 2.7.
+
+```bash
+# Reuse BASE_REF from Step 0 (already computed as git merge-base HEAD main)
+FILE_LIST=$(git diff --name-only "$BASE_REF" HEAD)
+DIFF_STATS=$(git diff --stat "$BASE_REF" HEAD)
+```
+
+**Dispatch the slicer agent:**
+
+```
+Task tool (ring:review-slicer):
+  subagent_type: "ring:review-slicer"
+  description: "Classify PR files for review slicing"
+  prompt: |
+    ## Review Slicing Request
+
+    Decide whether this PR should be sliced into thematic groups for review.
+
+    ## Changed Files
+    [FILE_LIST]
+
+    ## Diff Stats
+    [DIFF_STATS]
+
+    Apply the slicing heuristic and return structured JSON.
+```
+
+**Parse the slicer response:**
+
+```text
+IF slicer_response.shouldSlice == false:
+  → Proceed to Step 1 as-is (standard full-diff dispatch)
+  → Display: "Review slicing: not needed ([reasoning])"
+
+IF slicer_response.shouldSlice == true:
+  → Store slices for use in Step 1
+  → Display: "Review sliced into [N] thematic groups: [slice names]"
+  → Step 1 uses Sliced Dispatch mode (see conditional in Step 1 below)
+
+IF slicer agent fails:
+  → Log warning, fall back to standard full-diff dispatch
+```
+
+---
+
 ### Step 1: Dispatch All Seven Reviewers in Parallel
 
 **CRITICAL: Use a single message with 7 Task tool calls to launch all reviewers simultaneously.**
+
+**If slicing is NOT active:** Use the standard dispatch below as-is.
+
+**If slicing IS active:** For EACH slice, dispatch all 7 reviewers with:
+- Scoped diff: `git diff [BASE_REF] HEAD -- [slice files...]`
+- Filtered Mithril context: only sections mentioning files in the slice
+- Add to each reviewer prompt: `"Review Scope: Slice '[name]' — [description]"`
+- After all slices complete, merge results and deduplicate per Step 3-S-Merge in `ring:requesting-code-review` SKILL.md
 
 Gather the required context first:
 - WHAT_WAS_IMPLEMENTED: Summary of changes made
@@ -132,6 +190,13 @@ Each reviewer returns:
 - **Recommendations:** Specific actionable feedback
 
 Consolidate all issues by severity across all seven reviewers.
+
+**If slicing was active:** Results are already merged and deduplicated per Step 3-S-Merge in `ring:requesting-code-review`. The dedup logic:
+- **Exact match:** Same reviewer + same file:line = keep one
+- **Fuzzy match:** Different reviewers/slices + same file:line + similar description = keep the more detailed one, note multi-reviewer confidence
+- **Cross-cutting:** Issues found across 2+ slices are tagged as cross-cutting concerns and surfaced prominently
+
+Add a note to the report: "Review was sliced into [N] thematic groups for deeper analysis."
 
 ### Conflict Resolution
 

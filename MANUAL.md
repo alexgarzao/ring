@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 83 skills, 36 agents, and 32 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 83 skills, 37 agents, and 32 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -14,7 +14,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
 │  │  Skills(21)   │  │  Skills(24)   │  │  Skills(15)   │  │  team         │      │
-│  │  Agents(8)    │  │  Agents(11)   │  │  Agents(4)    │  │  Skills(7)    │      │
+│  │  Agents(10)   │  │  Agents(11)   │  │  Agents(4)    │  │  Skills(7)    │      │
 │  │  Cmds(14)     │  │  Cmds(8)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
 │  ┌───────────────┐  ┌───────────────┐                                            │
@@ -189,6 +189,12 @@ Invoke via `Task tool with subagent_type: "..."`.
 
 **Example:** Before merging, run all 7 parallel reviewers via `/ring:codereview src/`
 
+### Orchestration (ring-default)
+
+| Agent                  | Purpose                                                            |
+| ---------------------- | ------------------------------------------------------------------ |
+| `ring:review-slicer`   | Groups large multi-themed PRs into thematic slices for focused review |
+
 ### Planning & Analysis (ring-default)
 
 | Agent                    | Purpose                                                  |
@@ -355,6 +361,7 @@ These enforce quality standards:
 | Need                              | Agent to Use                                |
 | --------------------------------- | ------------------------------------------- |
 | General code quality review       | 7 parallel reviewers via `/ring:codereview` |
+| Large PR review (15+ files)       | Auto-sliced via `ring:review-slicer`        |
 | Implementation planning           | `ring:write-plan`                           |
 | Deep codebase analysis            | `ring:codebase-explorer`                    |
 | Go backend expertise              | `ring:backend-engineer-golang`              |

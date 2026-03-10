@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **6 active plugins** (83 skills, 36 agents, 32 commands). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **6 active plugins** (83 skills, 37 agents, 32 commands). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
 
 ### Architecture Philosophy
 
@@ -33,7 +33,7 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(21) Agents(9) │  │ Skills(24) Agents(11)│                       │  │
+│  │  │ Skills(21) Agents(10)│  │ Skills(24) Agents(11)│                       │  │
 │  │  │ Cmds(14) Hooks/Lib   │  │ Cmds(8)              │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
@@ -74,7 +74,7 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
-| **ring-default**     | Core skills library                  | 21 skills, 9 agents, 14 commands |
+| **ring-default**     | Core skills library                  | 21 skills, 10 agents, 14 commands |
 | **ring-dev-team**    | Developer agents                     | 24 skills, 11 agents, 8 commands |
 | **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
 | **ring-pm-team**     | Product planning workflows           | 15 skills, 4 agents, 3 commands  |
@@ -122,6 +122,7 @@ default/agents/
 ├── nil-safety-reviewer.md     # Null/nil safety analysis (`ring:nil-safety-reviewer`)
 ├── consequences-reviewer.md   # Ripple effect review (`ring:consequences-reviewer`)
 ├── dead-code-reviewer.md      # Dead code analysis (`ring:dead-code-reviewer`)
+├── review-slicer.md           # Thematic file grouping for large PRs (`ring:review-slicer`)
 ├── write-plan.md              # Implementation planning (`ring:write-plan`)
 └── codebase-explorer.md       # Deep architecture analysis (`ring:codebase-explorer`)
 ```
@@ -532,17 +533,19 @@ User Request → ring:using-ring check → Relevant skill?
 ### Pattern 2: Parallel Review Execution
 
 ```
-Review Request → /ring:codereview → Dispatch 7 Tasks (parallel)
-    ├─ ring:code-reviewer           ─┐
-    ├─ ring:business-logic-reviewer  │
-    ├─ ring:security-reviewer        │
-    ├─ ring:test-reviewer            ┼─→ Aggregate findings → Handle by severity
-    ├─ ring:nil-safety-reviewer      │
-    ├─ ring:dead-code-reviewer       │
-    └─ ring:consequences-reviewer   ─┘
+Review Request → /ring:codereview → ring:review-slicer (classify)
+    ├─ Small/focused PR → 7 Tasks in parallel (full diff)
+    └─ Large/multi-theme PR → For EACH slice:
+        ├─ ring:code-reviewer           ─┐
+        ├─ ring:business-logic-reviewer  │
+        ├─ ring:security-reviewer        │
+        ├─ ring:test-reviewer            ┼─→ Merge + dedup → Handle by severity
+        ├─ ring:nil-safety-reviewer      │
+        ├─ ring:dead-code-reviewer       │
+        └─ ring:consequences-reviewer   ─┘
 ```
 
-**Implementation:** Single message with 7 Task tool calls ensures parallel execution. All reviewers work independently and return simultaneously.
+**Implementation:** The `ring:review-slicer` agent classifies files into thematic slices for large PRs (15+ files). For each slice, all 7 reviewers dispatch in parallel via a single message with 7 Task tool calls. Results are merged and deduplicated before consolidation. Small PRs skip slicing entirely (zero overhead).
 
 ### Pattern 3: Skill-to-Command Mapping
 
@@ -812,13 +815,13 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | Skills (ring-pmo-team)    | 9          | `pmo-team/skills/`     |
 | Skills (ring-tw-team)     | 7          | `tw-team/skills/`      |
 | **Total Skills**          | **83**     | **All plugins**        |
-| Agents (ring-default)     | 9          | `default/agents/`      |
+| Agents (ring-default)     | 10         | `default/agents/`      |
 | Agents (ring-dev-team)    | 11         | `dev-team/agents/`     |
 | Agents (ring-finops-team) | 3          | `finops-team/agents/`  |
 | Agents (ring-pm-team)     | 4          | `pm-team/agents/`      |
 | Agents (ring-pmo-team)    | 6          | `pmo-team/agents/`     |
 | Agents (ring-tw-team)     | 3          | `tw-team/agents/`      |
-| **Total Agents**          | **36**     | **All plugins**        |
+| **Total Agents**          | **37**     | **All plugins**        |
 | Commands (ring-default)   | 14         | `default/commands/`    |
 | Commands (ring-dev-team)  | 8          | `dev-team/commands/`   |
 | Commands (ring-pm-team)   | 3          | `pm-team/commands/`    |
