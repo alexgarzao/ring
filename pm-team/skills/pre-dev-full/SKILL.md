@@ -593,7 +593,7 @@ Formula:
 5. Calculate realistic timeline with period boundaries
 6. Identify parallelization opportunities and resource allocation
 7. Create delivery roadmap with Gantt-style timeline
-8. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+8. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md` + `delivery-roadmap.json`
 9. Run Gate 9 validation checklist
 10. Get human approval
 
@@ -634,14 +634,15 @@ Artifacts created (paths depend on topology.structure):
 - tasks.md (Gate 7)
 - subtasks.md (Gate 8)
 - delivery-roadmap.md (Gate 9)
+- delivery-roadmap.json (Gate 9)
 
 **For monorepo (distributed by module):**
-*Root (shared):* research.md, prd.md, feature-map.md, trd.md, tasks.md (index)
+*Root (shared):* research.md, prd.md, feature-map.md, trd.md, tasks.md (index), delivery-roadmap.md, delivery-roadmap.json
 *Backend module:* api-design.md, data-model.md, dependency-map.md, tasks.md
 *Frontend module:* ux-criteria.md, user-flows.md, wireframes/, design-validation.md, dependency-map.md, tasks.md
 
 **For multi-repo (per-repository):**
-*Both repos:* research.md, prd.md, trd.md (synchronized)
+*Both repos:* research.md, prd.md, trd.md (synchronized), delivery-roadmap.md, delivery-roadmap.json
 *Backend repo:* api-design.md, data-model.md, dependency-map.md, tasks.md
 *Frontend repo:* ux-criteria.md, user-flows.md, wireframes/, design-validation.md, dependency-map.md, tasks.md
 
@@ -690,7 +691,7 @@ Next steps:
 | 6 | `ring:pre-dev-dependency-map` | Technology selection | dependency-map.md |
 | 7 | `ring:pre-dev-task-breakdown` | Task decomposition | tasks.md |
 | 8 | `ring:pre-dev-subtask-creation` | Implementation steps | subtasks.md |
-| 9 | `ring:pre-dev-delivery-planning` | Delivery roadmap | delivery-roadmap.md |
+| 9 | `ring:pre-dev-delivery-planning` | Delivery roadmap | delivery-roadmap.md, .json |
 
 ### Execution Pattern
 

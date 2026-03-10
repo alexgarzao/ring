@@ -34,7 +34,7 @@ Orchestrates 10 sequential gates with human approval at each:
 | 6 | Dependency Map | dependency-map.md |
 | 7 | Task Breakdown | tasks.md |
 | 8 | Subtask Creation | subtasks.md |
-| 9 | Delivery Planning | delivery-roadmap.md |
+| 9 | Delivery Planning | delivery-roadmap.md, .json |
 
 All artifacts saved to `docs/pre-dev/<feature-name>/`.
 

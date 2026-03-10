@@ -54,7 +54,7 @@ Pre-dev workflow ensures:
 | 1    | ring:pre-dev-prd-creation   | PRD.md      |
 | 2    | ring:pre-dev-trd-creation   | TRD.md      |
 | 3    | ring:pre-dev-task-breakdown | tasks.md    |
-| 4    | ring:pre-dev-delivery-planning | delivery-roadmap.md |
+| 4    | ring:pre-dev-delivery-planning | delivery-roadmap.md, .json |
 
 **Planning time:** 60-90 minutes
 
@@ -80,7 +80,7 @@ Pre-dev workflow ensures:
 | 6    | ring:pre-dev-dependency-map   | dependencies.md |
 | 7    | ring:pre-dev-task-breakdown   | tasks.md        |
 | 8    | ring:pre-dev-subtask-creation | subtasks/       |
-| 9    | ring:pre-dev-delivery-planning | delivery-roadmap.md |
+| 9    | ring:pre-dev-delivery-planning | delivery-roadmap.md, .json |
 
 **Planning time:** 2.5-5 hours
 
