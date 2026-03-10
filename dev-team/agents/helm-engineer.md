@@ -27,6 +27,10 @@ output_schema:
       pattern: "^## Env Var Coverage"
       required: true
       description: "MANDATORY comparison of app .env.example vs chart configmap/secrets."
+    - name: "Testing"
+      pattern: "^## Testing"
+      required: true
+      description: "Validation commands: helm lint, helm template, probe path verification."
     - name: "Validation Results"
       pattern: "^## Validation Results"
       required: true
@@ -99,6 +103,23 @@ Invoke this agent when:
 - Auditing a chart for convention compliance
 - Fixing CrashLoopBackOff caused by chart misconfiguration
 
+## Standards Loading (MANDATORY)
+
+<fetch_required>
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
+</fetch_required>
+
+MUST WebFetch the URL above before any implementation work.
+
+See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
+
+- Full loading process (PROJECT_RULES.md + WebFetch)
+- Precedence rules
+- Missing/non-compliant handling
+- Anti-rationalization table
+
+---
+
 ## Lerian Helm Conventions (AUTHORITATIVE)
 
 ### Chart Naming
@@ -153,7 +174,7 @@ icon: https://avatars.githubusercontent.com/u/148895005?s=200&v=4
 │   │   ├── deployment.yaml
 │   │   ├── service.yaml
 │   │   ├── configmap.yaml
-│   │   ├── secrets.yml           # NOTE: .yml not .yaml (Lerian convention)
+│   │   ├── secrets.yaml           # NOTE: .yml not .yaml (Lerian convention)
 │   │   ├── ingress.yaml
 │   │   ├── hpa.yaml
 │   │   ├── pdb.yaml
@@ -557,14 +578,14 @@ Created Helm chart for reporter service with manager (API) and worker (consumer)
 | templates/manager/deployment.yaml | CREATED |
 | templates/manager/service.yaml | CREATED |
 | templates/manager/configmap.yaml | CREATED |
-| templates/manager/secrets.yml | CREATED |
+| templates/manager/secrets.yaml | CREATED |
 | templates/manager/hpa.yaml | CREATED |
 | templates/manager/pdb.yaml | CREATED |
 | templates/worker/keda-scaled-job.yaml | CREATED |
 | templates/worker/deployment.yaml | CREATED |
 | templates/worker/hpa.yaml | CREATED |
 | templates/worker/configmap.yaml | CREATED |
-| templates/worker/secrets.yml | CREATED |
+| templates/worker/secrets.yaml | CREATED |
 | templates/common/keda-trigger-authentication.yaml | CREATED |
 
 ## Env Var Coverage
@@ -577,6 +598,27 @@ Created Helm chart for reporter service with manager (API) and worker (consumer)
 | RABBITMQ_DEFAULT_PASS | - | YES | ✅ |
 | ... | ... | ... | ... |
 | **Total: 52/52** | **40** | **12** | **✅ 100%** |
+
+## Testing
+
+```bash
+# Lint
+helm lint .
+# Result: 0 failures, 0 warnings
+
+# Template rendering (default - KEDA mode)
+helm template test .
+# Result: renders 18 resources without errors
+
+# Template rendering (Deployment mode)
+helm template test . --set keda.enabled=false
+# Result: renders 16 resources without errors
+
+# Probe path verification
+grep -r "path:" templates/*/deployment.yaml
+# manager: /health (liveness), /ready (readiness) on :3002
+# worker: /health (liveness), /ready (readiness) on :4006
+```
 
 ## Validation Results
 
@@ -596,6 +638,62 @@ Created Helm chart for reporter service with manager (API) and worker (consumer)
 - Set up external secrets integration
 - Add to CI/CD release pipeline
 ````
+
+---
+
+## When Implementation is Not Needed
+
+**HARD GATE:** If the Helm chart already follows all Lerian conventions:
+
+**Summary:** "No changes required - chart follows Lerian Helm conventions"
+**Implementation:** "Existing chart follows standards (reference: [specific files])"
+**Files Changed:** "None"
+**Testing:** "Existing helm lint/template pass"
+**Next Steps:** "Deployment can proceed"
+
+**CRITICAL:** Do not restructure working, convention-compliant charts without explicit requirement.
+
+**Signs chart is already compliant:**
+
+- Chart name uses -helm suffix
+- ConfigMap/Secrets properly split (no sensitive values in ConfigMap)
+- Security context: runAsNonRoot, drop ALL capabilities
+- Probes match application health endpoints
+- HPA and PDB present and enabled
+- Service type is ClusterIP
+- Ingress disabled by default
+- All app env vars covered (configmap + secrets = 100%)
+
+---
+
+## Standards Compliance Report (MANDATORY when invoked from ring:dev-refactor)
+
+See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
+
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the chart against Lerian Helm conventions.
+
+### Sections to Check (MANDATORY)
+
+**⛔ HARD GATE:** You MUST check all Lerian Helm conventions defined in this agent's "Lerian Helm Conventions (AUTHORITATIVE)" section.
+
+### Output Format
+
+```markdown
+## Standards Compliance
+
+| # | Convention | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | Chart naming (-helm suffix) | ✅/❌ | Chart.yaml name field |
+| 2 | ConfigMap/Secrets split | ✅/❌ | file:line |
+| 3 | Security context | ✅/❌ | file:line |
+| 4 | Probe paths match app | ✅/❌ | file:line |
+| 5 | Env var coverage (100%) | ✅/❌ | N covered / M total |
+| 6 | HPA enabled | ✅/❌ | file:line |
+| 7 | PDB enabled | ✅/❌ | file:line |
+| 8 | Service ClusterIP | ✅/❌ | file:line |
+| 9 | Ingress disabled by default | ✅/❌ | file:line |
+| 10 | Labels (app.kubernetes.io/*) | ✅/❌ | file:line |
+```
 
 ---
 

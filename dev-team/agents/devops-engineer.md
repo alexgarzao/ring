@@ -103,7 +103,7 @@ Invoke this agent when the task involves:
 
 ### Helm (Deep Expertise)
 
-> **⚠️ DELEGATION:** For Lerian-specific Helm chart creation/modification, MUST delegate to `ring:helm-engineer` via the `ring:dev-helm` skill. This agent handles generic Helm knowledge; Lerian conventions (naming, ConfigMap/Secrets split, dual-mode KEDA/Deployment, AWS RolesAnywhere sidecar, port allocation) are encoded in the specialist agent.
+> **⚠️ DELEGATION:** MUST delegate Lerian-specific Helm chart creation/modification to `ring:helm-engineer` via the `ring:dev-helm` skill. This agent handles generic Helm knowledge; Lerian conventions (naming, ConfigMap/Secrets split, dual-mode KEDA/Deployment, AWS RolesAnywhere sidecar, port allocation) are encoded in the specialist agent.
 
 - Helm chart development from scratch
 - Chart templating (values, helpers, named templates)
