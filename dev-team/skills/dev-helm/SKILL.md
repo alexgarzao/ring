@@ -25,6 +25,9 @@ sequence:
   after: [ring:dev-devops]
   before: [ring:dev-sre]
 
+dependencies: [ring:dev-devops]
+role: orchestrator
+
 related:
   complementary: [ring:dev-devops, ring:dev-sre, ring:dev-implementation]
   similar: [ring:dev-devops]
@@ -143,7 +146,7 @@ MUST create the following directory structure:
 │   │   ├── deployment.yaml
 │   │   ├── service.yaml
 │   │   ├── configmap.yaml
-│   │   ├── secrets.yaml        # Use secrets.yml (Lerian convention)
+│   │   ├── secrets.yaml
 │   │   ├── ingress.yaml
 │   │   ├── hpa.yaml
 │   │   ├── pdb.yaml
