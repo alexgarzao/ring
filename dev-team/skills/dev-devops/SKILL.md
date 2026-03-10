@@ -101,13 +101,13 @@ verification:
   automated:
     - command: "docker-compose build"
       description: "Docker images build successfully"
-      success_pattern: "Successfully built|successfully"
+      success_pattern: 'Successfully built|successfully'
     - command: "docker-compose up -d && sleep 10 && docker-compose ps"
       description: "All services start and are healthy"
-      success_pattern: "Up|running|healthy"
+      success_pattern: 'Up|running|healthy'
     - command: "docker-compose logs app | head -5 | jq -e '.level'"
       description: "Structured JSON logging works"
-      success_pattern: "info|debug|warn|error"
+      success_pattern: 'info|debug|warn|error'
   manual:
     - "Verify docker-compose ps shows all services as 'Up (healthy)'"
     - "Verify .env.example documents all required environment variables"
