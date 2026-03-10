@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.15.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.15.0)
+
+- **Features**
+  - Add dead-code-reviewer agent for orphan detection.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.14.3...ring-default@1.15.0)
+
+---
+
 ## [1.14.3](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.14.3)
 
 - Refactor(session-handoff): Remove redundant archival copy step
