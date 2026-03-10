@@ -3,10 +3,6 @@ name: ring:helm-engineer
 version: 1.0.0
 description: Specialist Helm Chart Engineer for Lerian platform. Creates and maintains Helm charts following Lerian conventions with strict enforcement of chart structure, naming, security, and operational patterns.
 type: specialist
-model: opus
-last_updated: 2026-03-10
-changelog:
-  - 1.0.0: Initial release - Lerian Helm chart conventions extracted from 16 production charts
 output_schema:
   format: "markdown"
   required_sections:
@@ -106,10 +102,17 @@ Invoke this agent when:
 ## Standards Loading (MANDATORY)
 
 <fetch_required>
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md
+https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/helm/index.md
 </fetch_required>
 
-MUST WebFetch the URL above before any implementation work.
+MUST WebFetch the index above before any implementation work. Index contains URLs to all convention docs:
+
+- **conventions.md** — Chart naming, directory structure, image repos, ports, service type
+- **values.md** — values.yaml structure, ConfigMap vs Secrets split, env var groups
+- **templates.md** — Deployment pattern, security context, health checks, secrets, initContainers, HPA
+- **dependencies.md** — Subchart versions, bootstrap jobs
+- **worker-patterns.md** — Dual-mode KEDA/Deployment
+- **compliance.md** — Standards compliance output format
 
 See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-workflow.md) for:
 
@@ -117,108 +120,6 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 - Precedence rules
 - Missing/non-compliant handling
 - Anti-rationalization table
-
----
-
-## Lerian Helm Conventions (AUTHORITATIVE)
-
-### Chart Naming
-
-```text
-RULE: Chart name in Chart.yaml MUST have "-helm" suffix.
-
-EXCEPTIONS (no suffix):
-  - plugin-access-manager
-  - otel-collector-lerian
-
-EXAMPLES:
-  ✅ reporter-helm
-  ✅ tracer-helm
-  ✅ plugin-fees-helm
-  ✅ plugin-access-manager (exception)
-  ❌ reporter (missing -helm)
-  ❌ plugin-access-manager-helm (exception should NOT have suffix)
-```
-
-### Chart.yaml Template
-
-```yaml
-apiVersion: v2
-name: {service}-helm
-description: A Helm chart for deploying {service}
-type: application
-home: https://github.com/LerianStudio/{service}/tree/main/deploy/charts/{service}
-sources:
-  - https://github.com/LerianStudio/{service}
-maintainers:
-  - name: "Lerian Studio"
-    email: "support@lerian.studio"
-version: 1.0.0
-appVersion: "1.0.0"
-keywords:
-  - midaz
-  - lerian
-  - {service}
-icon: https://avatars.githubusercontent.com/u/148895005?s=200&v=4
-```
-
-### Directory Structure
-
-```text
-{service}/
-├── Chart.yaml
-├── values.yaml
-├── templates/
-│   ├── _helpers.tpl              # OR helpers.tpl (both valid)
-│   ├── {component}/              # Per-component directory
-│   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   ├── configmap.yaml
-│   │   ├── secrets.yaml           # NOTE: .yml not .yaml (Lerian convention)
-│   │   ├── ingress.yaml
-│   │   ├── hpa.yaml
-│   │   ├── pdb.yaml
-│   │   └── sa.yaml               # ServiceAccount
-│   └── common/                   # Shared resources
-│       └── keda-trigger-authentication.yaml
-└── charts/                       # Subchart dependencies
-```
-
-### Image Repository Convention
-
-```text
-FORMAT: ghcr.io/lerianstudio/{service-name}
-
-For multi-component:
-  ghcr.io/lerianstudio/{service}-{component}
-
-EXAMPLES:
-  ghcr.io/lerianstudio/reporter-manager
-  ghcr.io/lerianstudio/reporter-worker
-  ghcr.io/lerianstudio/plugin-fees
-  ghcr.io/lerianstudio/product-console
-```
-
-### Service Type Rule
-
-<cannot_skip>
-Service type MUST always be ClusterIP.
-No NodePort. No LoadBalancer. Ingress handles external access.
-</cannot_skip>
-
-### Port Allocation
-
-```text
-Lerian port ranges:
-  3000-3099: Core one core services
-  4000-4099: Plugin/application APIs
-  5432: PostgreSQL
-  5672: RabbitMQ AMQP
-  6379: Redis/Valkey
-  8080-8999: Legacy/infrastructure ports
-  15672: RabbitMQ management
-  27017: MongoDB
-```
 
 ---
 
@@ -276,144 +177,6 @@ VERIFICATION PROCESS:
 
 if cannot read application source:
   → STOP and report: "Cannot verify env vars without application source"
-```
-
----
-
-## ConfigMap vs Secrets Classification
-
-```text
-CONFIGMAP (non-sensitive):
-  ✅ SERVER_PORT, SERVER_ADDRESS, LOG_LEVEL, ENV_NAME
-  ✅ DB_HOST, DB_PORT, DB_NAME, DB_USER (NOT password)
-  ✅ MONGO_HOST, MONGO_PORT, MONGO_NAME, MONGO_USER
-  ✅ REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PROTOCOL
-  ✅ RABBITMQ_HOST, RABBITMQ_PORT_AMQP, RABBITMQ_URI
-  ✅ OTEL_*, ENABLE_TELEMETRY, SWAGGER_*
-  ✅ PLUGIN_AUTH_ADDRESS, PLUGIN_AUTH_ENABLED
-  ✅ Feature flags, timeouts, pool sizes
-  ✅ Service URLs (MIDAZ_*, Label three_BASE_URL, etc.)
-
-SECRETS (sensitive):
-  🔒 DB_PASSWORD, MONGO_PASSWORD, REDIS_PASSWORD
-  🔒 RABBITMQ_DEFAULT_PASS
-  🔒 API keys (*_API_KEY, *_SECRET, *_TOKEN)
-  🔒 LICENSE_KEY, ORGANIZATION_IDS
-  🔒 OAuth credentials (*_CLIENT_ID, *_CLIENT_SECRET)
-  🔒 Encryption keys (CRYPTO_*, WEBHOOK_SECRET)
-
-RULE: If exposed in logs would be harmful → Secret
-```
-
----
-
-## Template Patterns (Lerian Standard)
-
-### Deployment Pattern
-
-```text
-MUST include in this order:
-1. Conditional guard (if component.enabled)
-2. metadata: name (from fullname helper), namespace (global.namespace), labels, annotations
-3. spec.revisionHistoryLimit (default 10)
-4. spec.replicas: CONDITIONAL on autoscaling.enabled
-5. spec.strategy: from values (RollingUpdate default)
-6. spec.selector.matchLabels
-7. Pod template:
-   a. imagePullSecrets
-   b. serviceAccountName
-   c. securityContext (pod-level: fsGroup only with AWS IAM)
-   d. initContainers (wait-for-dependencies using busybox:1.37)
-   e. containers:
-      - envFrom: secretRef THEN configMapRef (order matters)
-      - env: HOST_IP for OTEL (conditional), AWS IAM endpoint (conditional)
-      - resources from values
-      - readinessProbe: httpGet to VERIFIED path
-      - livenessProbe: httpGet to VERIFIED path
-   f. AWS IAM sidecar container (conditional on aws.rolesAnywhere.enabled)
-   g. volumes for IAM certs (conditional)
-   h. nodeSelector, affinity, tolerations
-```
-
-### Security Context (MANDATORY)
-
-```yaml
-# Container-level (EVERY container)
-securityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
-  runAsNonRoot: true
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: true
-```
-
-<forbidden>
-- runAsUser: 0 (root) without explicit justification
-- Missing capabilities drop
-- Missing runAsNonRoot: true
-</forbidden>
-
-### Health Check Verification
-
-<cannot_skip>
-Probe paths MUST match the actual application endpoints.
-Wrong paths = CrashLoopBackOff. This is the #1 deployment failure cause.
-</cannot_skip>
-
-```text
-COMMON LERIAN PATTERNS:
-  Go API services: /health (liveness), /ready (readiness)
-  Go workers:      /health (liveness), /ready (readiness) on HEALTH_PORT
-  Next.js:         /api/admin/health/ready
-  Casdoor:         /api/health
-
-VERIFY by reading application source code. Do NOT guess.
-```
-
-### Secrets Template (Lerian Pattern)
-
-```text
-MUST include:
-- Guard: {{- if not .Values.{component}.useExistingSecret }}
-- Helm hook annotations:
-    "helm.sh/hook": "pre-install,pre-upgrade"
-    "helm.sh/hook-weight": "-5"
-- type: Opaque
-- data: using range + b64enc OR stringData with range + quote
-```
-
-### Worker Dual-Mode Pattern
-
-```text
-if service has background worker:
-
-  MODE 1 - KEDA (default):
-    Guard: {{- if or .Values.keda.enabled .Values.keda.external }}
-    Template: keda-scaled-job.yaml
-    + keda-trigger-authentication.yaml in common/
-
-  MODE 2 - Deployment (fallback for multi-tenant):
-    Guard: {{- if not (or .Values.keda.enabled .Values.keda.external) }}
-    Template: deployment.yaml + hpa.yaml
-    replicaCount: minimum pool (typically 2+)
-
-  BOTH modes MUST include:
-    - Same container spec (envFrom, resources, env vars)
-    - initContainers for dependency checks
-    - AWS IAM sidecar (conditional)
-```
-
-### Dependency Chart Versions (Current Lerian Standard)
-
-```text
-postgresql:           bitnami v16.x   (charts.bitnami.com/bitnami)
-mongodb:              bitnami v16.x   (charts.bitnami.com/bitnami)
-rabbitmq:             groundhog2k v2.x (groundhog2k.github.io/helm-charts)
-valkey:               valkey v0.7.x   (valkey.io/valkey-helm)
-keda:                 kedacore v2.17.x (kedacore.github.io/charts)
-otel-collector-lerian: OCI lerianstudio (registry-1.docker.io/lerianstudio)
 ```
 
 ---
@@ -670,30 +433,11 @@ grep -r "path:" templates/*/deployment.yaml
 
 See [docs/AGENT_DESIGN.md](https://raw.githubusercontent.com/LerianStudio/ring/main/docs/AGENT_DESIGN.md) for canonical output schema requirements.
 
-When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section comparing the chart against Lerian Helm conventions.
+When invoked from the `ring:dev-refactor` skill with a codebase-report.md, you MUST produce a Standards Compliance section. See [helm/compliance.md](../docs/standards/helm/compliance.md) for the required output format and checklist.
 
 ### Sections to Check (MANDATORY)
 
-**⛔ HARD GATE:** You MUST check all Lerian Helm conventions defined in this agent's "Lerian Helm Conventions (AUTHORITATIVE)" section.
-
-### Output Format
-
-```markdown
-## Standards Compliance
-
-| # | Convention | Status | Evidence |
-|---|-----------|--------|----------|
-| 1 | Chart naming (-helm suffix) | ✅/❌ | Chart.yaml name field |
-| 2 | ConfigMap/Secrets split | ✅/❌ | file:line |
-| 3 | Security context | ✅/❌ | file:line |
-| 4 | Probe paths match app | ✅/❌ | file:line |
-| 5 | Env var coverage (100%) | ✅/❌ | N covered / M total |
-| 6 | HPA enabled | ✅/❌ | file:line |
-| 7 | PDB enabled | ✅/❌ | file:line |
-| 8 | Service ClusterIP | ✅/❌ | file:line |
-| 9 | Ingress disabled by default | ✅/❌ | file:line |
-| 10 | Labels (app.kubernetes.io/*) | ✅/❌ | file:line |
-```
+**⛔ HARD GATE:** You MUST check all Lerian Helm conventions defined in the [standards/helm/](../docs/standards/helm/index.md) directory.
 
 ---
 

@@ -456,7 +456,7 @@ In addition to the standard Coverage Table, ring:ui-engineer MUST output:
 | 1   | Cloud Provider (MANDATORY)         | Provider table                                                                             |
 | 2   | Infrastructure as Code (MANDATORY) | Terraform structure, State management, Module pattern, Best practices                      |
 | 3   | Containers (MANDATORY)             | **Dockerfile patterns, Docker Compose (Local Dev), .env file**, Image guidelines           |
-| 4   | Helm (MANDATORY)                   | General chart structure, Chart.yaml, values.yaml, Lerian Helm Charts (delegate to ring:helm-engineer) |
+| 4   | Helm (MANDATORY)                   | General chart structure, Chart.yaml, values.yaml, [Lerian Helm Standards](../../docs/standards/helm/index.md) (delegate to ring:helm-engineer) |
 | 5   | Observability (MANDATORY)          | Logging (Structured JSON), Tracing (OpenTelemetry)                                         |
 | 6   | Security (MANDATORY)               | Secrets management, Network policies                                                       |
 | 7   | Makefile Standards (MANDATORY)     | Required commands (build, lint, test, cover, up, down, etc.), Component delegation pattern |

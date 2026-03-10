@@ -94,7 +94,7 @@ verification:
 
 This skill enforces Lerian's Helm chart conventions across all services. Every Helm chart MUST follow these patterns to ensure consistency, security, and operability across the platform.
 
-**Reference repository:** `Documents/Lerian/helm/charts/`
+**Reference standards:** [`dev-team/docs/standards/helm/`](../../docs/standards/helm/index.md)
 **Executor agent:** `ring:helm-engineer`
 
 ## CRITICAL: Role Clarification
@@ -133,59 +133,16 @@ if any REQUIRED input is missing:
 
 ## Step 2: Scaffold Chart Structure
 
-MUST create the following directory structure:
+MUST create the standard directory structure. See [helm/conventions.md](../../docs/standards/helm/conventions.md) for:
 
-```text
-{service_name}/
-├── Chart.yaml
-├── values.yaml
-├── templates/
-│   ├── _helpers.tpl
-│   │
-│   ├── {component}/            # One directory per component
-│   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   ├── configmap.yaml
-│   │   ├── secrets.yaml
-│   │   ├── ingress.yaml
-│   │   ├── hpa.yaml
-│   │   ├── pdb.yaml
-│   │   └── sa.yaml             # ServiceAccount (if needed)
-│   │
-│   └── common/                 # Shared resources (if multi-component)
-│       └── (shared templates)
-│
-└── charts/                     # Populated by helm dependency build
-```
+- Chart naming convention (`-helm` suffix rule and exceptions)
+- Chart.yaml template with all required fields
+- Directory structure (per-component directories, common/ for shared resources)
+- Image repository naming convention
+- Service type rule (always ClusterIP)
+- Port allocation ranges
 
-### Chart.yaml Convention
-
-```yaml
-apiVersion: v2
-name: {service_name}-helm              # ALWAYS suffix with -helm
-description: A Helm chart for deploying {service_name}
-type: application
-home: https://github.com/LerianStudio/{service_name}/tree/main/deploy/charts/{service_name}
-sources:
-  - https://github.com/LerianStudio/{service_name}
-maintainers:
-  - name: "Lerian Studio"
-    email: "support@lerian.studio"
-version: 1.0.0
-appVersion: "1.0.0"
-keywords:
-  - midaz
-  - lerian
-  - {service_name}
-icon: https://avatars.githubusercontent.com/u/148895005?s=200&v=4
-```
-
-<cannot_skip>
-Chart name MUST have `-helm` suffix.
-Exceptions ONLY for: `plugin-access-manager`, `otel-collector-lerian`.
-</cannot_skip>
-
-### Naming Convention Exceptions
+### Naming Convention Quick Reference
 
 ```text
 CHART NAME RULES:
@@ -201,244 +158,29 @@ if service_name is NOT in exception list:
 
 ## Step 3: Create _helpers.tpl
 
-MUST define these helper functions per component:
+MUST define helper functions per component. See [helm/templates.md](../../docs/standards/helm/templates.md#helpers-_helperstpl) for:
 
-```text
-FOR EACH component in components:
-  DEFINE:
-    - {component}.name          → truncated to 63 chars
-    - {component}.fullname      → truncated to 63 chars
-    - {component}.chart         → {chartName}-{version} replacing + with _
-    - {component}.labels        → standard Kubernetes labels
-    - {component}.selectorLabels → app.kubernetes.io/name + instance
-    - {component}.versionLabelValue → truncated to 63 chars
-
-  ALSO DEFINE (if applicable):
-    - {component}.serviceAccountName
-    - global.namespace          → from namespaceOverride or Release.Namespace
-    - plugin.version            → from Chart.AppVersion
-```
-
-### Mandatory Labels
-
-```yaml
-labels:
-  helm.sh/chart: {{ include "{component}.chart" .context }}
-  app.kubernetes.io/name: {{ .name }}
-  app.kubernetes.io/instance: {{ .context.Release.Name }}
-  app.kubernetes.io/version: {{ include "{component}.versionLabelValue" .context }}
-  app.kubernetes.io/managed-by: {{ .context.Release.Service }}
-```
-
-For multi-component charts, ALSO add:
-```yaml
-  app.kubernetes.io/component: {component-name}
-  app.kubernetes.io/part-of: {service_name}
-```
+- Required helper functions (name, fullname, chart, labels, selectorLabels, versionLabelValue)
+- Mandatory Kubernetes labels (app.kubernetes.io/*)
+- Multi-component additional labels (component, part-of)
 
 ---
 
 ## Step 4: Create values.yaml
 
 <cannot_skip>
-values.yaml MUST follow this exact structure. Do NOT invent custom structures.
+values.yaml MUST follow the exact Lerian structure.
 </cannot_skip>
 
-### Top-Level Structure
+See [helm/values.md](../../docs/standards/helm/values.md) for:
 
-```yaml
-# 1. Global overrides
-nameOverride: ""
-fullnameOverride: ""
-namespaceOverride: "{namespace}"
-
-# 2. Global external dependency configuration (if applicable)
-global:
-  externalPostgresDefinitions:
-    enabled: false
-    connection:
-      host: ""
-      port: "5432"
-    postgresAdminLogin:
-      useExistingSecret:
-        name: ""
-      username: ""
-      password: ""
-    credentials:
-      useExistingSecret:
-        name: ""
-      username: ""
-      password: ""
-
-# 3. Per-component configuration (REPEAT for each component)
-{component}:
-  name: "{service_name}-{component}"
-  enabled: true
-  replicaCount: 1
-  revisionHistoryLimit: 10
-
-  image:
-    repository: ghcr.io/lerianstudio/{service_name}-{component}
-    pullPolicy: IfNotPresent
-    tag: "1.0.0"
-  imagePullSecrets: []
-
-  nameOverride: ""
-  fullnameOverride: ""
-
-  annotations: {}
-  podAnnotations: {}
-
-  deploymentStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-
-  service:
-    type: ClusterIP                    # ALWAYS ClusterIP
-    port: {assigned_port}
-    annotations: {}
-
-  ingress:
-    enabled: false
-    className: "nginx"
-    annotations: {}
-    hosts: []
-    tls: []
-
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-
-  autoscaling:
-    enabled: true
-    minReplicas: 1
-    maxReplicas: 10
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-    scaleDownStabilizationSeconds: 300
-
-  pdb:
-    enabled: true
-    maxUnavailable: 1
-    minAvailable: 0
-    annotations: {}
-
-  readinessProbe:
-    initialDelaySeconds: 10
-    periodSeconds: 5
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-
-  livenessProbe:
-    initialDelaySeconds: 15
-    periodSeconds: 20
-    timeoutSeconds: 5
-    successThreshold: 1
-    failureThreshold: 3
-
-  nodeSelector: {}
-  tolerations: {}
-  affinity: {}
-
-  useExistingSecret: false
-  existingSecretName: ""
-
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
-
-  configmap:
-    annotations: {}
-    # Non-sensitive configuration
-    ENV_NAME: "development"
-    VERSION: "v1.0.0"
-    SERVER_PORT: "{port}"
-    SERVER_ADDRESS: ":{port}"
-    LOG_LEVEL: "debug"
-    # ... service-specific vars
-
-  secrets: {}
-    # Sensitive configuration (passwords, keys, tokens)
-    # DB_PASSWORD: ""
-    # API_KEY: ""
-
-  extraEnvVars: {}
-
-# 4. Common shared configuration (if multi-component)
-common:
-  configmap:
-    ENV_NAME: "development"
-    # Shared vars across all components
-
-# 5. Dependency configurations
-# ... (postgresql, mongodb, rabbitmq, valkey, keda)
-```
-
-### ConfigMap vs Secrets Split Rule
-
-```text
-CONFIGMAP (non-sensitive):
-  - Server settings (port, address, log level)
-  - Database hosts, names, users (NOT passwords)
-  - Service URLs and endpoints
-  - Feature flags and timeouts
-  - Swagger/documentation config
-  - Telemetry settings
-
-SECRETS (sensitive):
-  - Database passwords
-  - API keys and secrets
-  - OAuth client ID/secret pairs
-  - License keys
-  - Webhook secrets
-  - Encryption keys
-  - RabbitMQ passwords
-
-RULE: If exposed in a log or error message would be "bad" → Secret
-```
-
-### Mandatory Environment Variable Groups
-
-```text
-FOR EVERY service, MUST include:
-
-1. APP CONFIG:
-   ENV_NAME, VERSION, SERVER_PORT, SERVER_ADDRESS, LOG_LEVEL
-
-2. TELEMETRY (if applicable):
-   ENABLE_TELEMETRY, OTEL_RESOURCE_SERVICE_NAME, OTEL_LIBRARY_NAME,
-   OTEL_RESOURCE_SERVICE_VERSION, OTEL_RESOURCE_DEPLOYMENT_ENVIRONMENT,
-   OTEL_EXPORTER_OTLP_ENDPOINT
-
-3. HEALTH (if service has health endpoint):
-   HEALTH_PORT (for workers without HTTP server)
-
-4. AUTH (if applicable):
-   PLUGIN_AUTH_ENABLED, PLUGIN_AUTH_ADDRESS
-
-5. DATABASE (per type used):
-   PostgreSQL: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, DB_SSL_MODE
-   MongoDB: MONGO_URI, MONGO_HOST, MONGO_PORT, MONGO_NAME, MONGO_USER, MONGO_PASSWORD
-   Redis/Valkey: REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD, REDIS_PROTOCOL
-   RabbitMQ: RABBITMQ_URI, RABBITMQ_HOST, RABBITMQ_PORT_AMQP, RABBITMQ_DEFAULT_USER,
-             RABBITMQ_DEFAULT_PASS
-
-VERIFY: Compare with application's .env.example or config struct to ensure
-        ALL env vars are covered. Missing vars cause runtime failures.
-```
+- Complete top-level structure (global overrides, per-component config, common shared, dependencies)
+- ConfigMap vs Secrets classification rules
+- Mandatory environment variable groups (app config, telemetry, health, auth, database)
 
 <block_condition>
-HARD GATE: MUST read the application's .env.example or config.go to extract
-ALL expected environment variables. Do NOT guess. Missing env vars are the
-#1 cause of CrashLoopBackOff in production.
+HARD GATE: MUST read the application's .env.example or config.go to extract ALL expected
+environment variables. Do NOT guess. Missing env vars are the #1 cause of CrashLoopBackOff.
 </block_condition>
 
 ---
@@ -483,298 +225,28 @@ if agent returns helm_lint_status == FAIL:
   → Re-dispatch agent with specific lint errors
 
 if all checks PASS:
-  → Proceed to Step 6 (Validation)
+  → Proceed to Step 6 (Worker) or Step 7 (Validation)
 ```
 
 ---
 
-## Step 6: Templates Reference
-
-### Deployment Template
-
-MUST include these sections in order:
-
-```text
-1. Conditional guard: {{- if .Values.{component}.enabled }}
-2. metadata: name, namespace, labels, annotations
-3. spec.replicas: conditional on autoscaling.enabled
-4. spec.strategy: from values
-5. spec.selector.matchLabels
-6. spec.template.metadata: labels + podAnnotations
-7. spec.template.spec:
-   a. imagePullSecrets
-   b. serviceAccountName
-   c. securityContext (pod-level)
-   d. initContainers (wait-for-dependencies if needed)
-   e. containers:
-      - name, image, imagePullPolicy
-      - ports (containerPort, named "http")
-      - envFrom (secretRef + configMapRef)
-      - env (dynamic: HOST_IP for OTEL, AWS IAM endpoint)
-      - resources
-      - readinessProbe (httpGet to /health)
-      - livenessProbe (httpGet to /health)
-      - securityContext (container-level)
-   f. AWS IAM sidecar (conditional)
-   g. volumes (conditional)
-   h. nodeSelector, affinity, tolerations
-```
-
-### Health Check Path Convention
-
-<cannot_skip>
-MUST verify health check paths against the actual application code.
-Do NOT assume paths. Common patterns:
-</cannot_skip>
-
-```text
-VERIFY health endpoints by reading application source code:
-  - Go: Look for mux.HandleFunc("/health", ...) or router.GET("/health", ...)
-  - Node.js: Look for app.get("/health", ...) or app.get("/api/admin/health/ready", ...)
-
-COMMON PATHS:
-  - /health           → Most Go services (liveness)
-  - /ready            → Readiness with dependency checks
-  - /healthz          → Alternative convention
-  - /api/admin/health/ready → Next.js services (product-console)
-
-NEVER use paths that don't exist in the application.
-Wrong probe paths = CrashLoopBackOff.
-```
-
-### initContainers Pattern (wait-for-dependencies)
-
-```yaml
-initContainers:
-  - name: wait-for-dependencies
-    image: busybox:1.37
-    envFrom:
-    - configMapRef:
-        name: {{ include "{component}.fullname" . }}
-    command:
-      - /bin/sh
-      - -c
-      - >
-        for svc in "$DB_HOST:$DB_PORT" "$RABBITMQ_HOST:$RABBITMQ_PORT_AMQP";
-        do
-          echo "Checking $svc...";
-          while ! nc -z $(echo $svc | cut -d: -f1) $(echo $svc | cut -d: -f2); do
-            echo "$svc is not ready yet, waiting...";
-            sleep 5;
-          done;
-          echo "$svc is ready!";
-        done;
-```
-
-### envFrom Pattern (Bulk Injection)
-
-```yaml
-envFrom:
-- secretRef:
-    name: {{ if .Values.{component}.useExistingSecret }}{{ .Values.{component}.existingSecretName }}{{ else }}{{ include "{component}.fullname" . }}{{ end }}
-- configMapRef:
-    name: {{ include "{component}.fullname" . }}
-```
-
-### Dynamic Environment Variables
-
-```yaml
-# OpenTelemetry (only when enabled)
-{{- if eq (toString .Values.{component}.configmap.ENABLE_TELEMETRY) "true" }}
-env:
-- name: "HOST_IP"
-  valueFrom:
-    fieldRef:
-      fieldPath: status.hostIP
-- name: "OTEL_EXPORTER_OTLP_ENDPOINT"
-  value: "$(HOST_IP):4317"
-{{- end }}
-
-# AWS IAM Roles Anywhere (only when enabled)
-{{- if and .Values.aws .Values.aws.rolesAnywhere .Values.aws.rolesAnywhere.enabled }}
-- name: AWS_EC2_METADATA_SERVICE_ENDPOINT
-  value: "http://127.0.0.1:{{ .Values.aws.rolesAnywhere.sidecar.port | default 9911 }}"
-- name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
-  value: "IPv4"
-{{- end }}
-```
-
-### Security Context Defaults
-
-```yaml
-# Pod-level
-securityContext:
-  fsGroup: 65532                    # Only with AWS IAM sidecar
-
-# Container-level (MANDATORY)
-securityContext:
-  runAsUser: 1000                   # NEVER 0 (root)
-  runAsGroup: 1000
-  runAsNonRoot: true
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: true      # When possible
-```
-
-<forbidden>
-Running containers as root (runAsUser: 0) unless explicitly justified
-(e.g., reconciliation workers needing log file writes).
-</forbidden>
-
-### HPA Template
-
-```text
-CONDITIONAL: Only render when autoscaling.enabled AND not using KEDA
-
-Guard: {{- if .Values.{component}.autoscaling.enabled }}
-
-MUST use apiVersion: autoscaling/v2
-MUST include both CPU and memory metrics (conditional on values)
-MUST include scaleDown stabilization window
-```
-
-### ConfigMap Template
-
-```text
-MUST include:
-1. Common shared values: {{- range $key, $value := .Values.common.configmap }}
-2. Component-specific values: {{- range $key, $value := .Values.{component}.configmap }}
-3. Extra env vars: {{- with .Values.{component}.extraEnvVars }}
-
-ALL values MUST be quoted: {{ $value | quote }}
-```
-
-### Secrets Template
-
-```text
-TWO valid patterns:
-
-Pattern 1 (b64enc - explicit encoding):
-  data:
-    KEY: {{ .Values.secrets.KEY | default "" | b64enc | quote }}
-
-Pattern 2 (stringData - auto encoding, Lerian preferred):
-  stringData:
-    {{- range $key, $value := .Values.{component}.secrets }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-
-MUST have helm hook annotations:
-  annotations:
-    "helm.sh/hook": "pre-install,pre-upgrade"
-    "helm.sh/hook-weight": "-5"
-
-MUST support existing secrets:
-  {{- if not .Values.{component}.useExistingSecret }}
-```
-
----
-
-## Step 7: Worker Component (if has_worker)
+## Step 6: Worker Component (if has_worker)
 
 <verify_before_proceed>
 - Is there a background worker/consumer component?
 - Does it use KEDA ScaledJob or standard Deployment?
 </verify_before_proceed>
 
-### Dual-Mode Worker Pattern
+See [helm/worker-patterns.md](../../docs/standards/helm/worker-patterns.md) for:
 
-MUST support both KEDA (default) and Deployment modes:
-
-```text
-MODE SELECTION:
-  if keda.enabled OR keda.external:
-    → Render ScaledJob (keda-scaled-job.yaml)
-    → Render TriggerAuthentication (common/keda-trigger-authentication.yaml)
-  else:
-    → Render Deployment (deployment.yaml)
-    → Render HPA (hpa.yaml)
-
-GUARD in templates:
-  ScaledJob:   {{- if or .Values.keda.enabled .Values.keda.external }}
-  Deployment:  {{- if not (or .Values.keda.enabled .Values.keda.external) }}
-```
-
-### ScaledJob Template (KEDA mode)
-
-```text
-MUST include:
-- jobTargetRef with backoffLimit, ttlSecondsAfterFinished, activeDeadlineSeconds
-- Container spec matching Deployment pattern (envFrom, resources, etc.)
-- restartPolicy: Never
-- Triggers with authenticationRef
-- Polling interval, history limits, maxReplicaCount
-```
-
-### Worker Deployment Template (non-KEDA mode)
-
-```text
-MUST include:
-- Same container spec as ScaledJob
-- initContainers for dependency checks
-- readinessProbe and livenessProbe
-- VERIFY health endpoint paths against application code
-- replicaCount as minimum pool size (typically 2+)
-```
+- Dual-mode pattern (KEDA default + Deployment fallback)
+- Template guards for mode selection
+- ScaledJob template requirements
+- Worker Deployment template requirements
 
 ---
 
-## Step 8: Dependencies Configuration
-
-### Supported Dependencies
-
-```text
-FOR EACH dependency in dependencies:
-
-  postgresql:
-    Chart: bitnami/postgresql (version 16.x)
-    Condition: postgresql.enabled
-    Values: auth.username, auth.password, auth.database, persistence.size
-
-  mongodb:
-    Chart: bitnami/mongodb (version 16.x)
-    Condition: mongodb.enabled
-    Values: auth.rootUser, auth.rootPassword, persistence.size
-
-  rabbitmq:
-    Chart: groundhog2k/rabbitmq (version 2.x)
-    Condition: rabbitmq.enabled
-    Values: authentication, persistence.size
-
-  valkey:
-    Chart: valkey/valkey (version 0.7.x)
-    Condition: valkey.enabled
-    Values: auth.enabled, auth.password
-
-  keda:
-    Chart: kedacore/keda (version 2.17.x)
-    Condition: keda.enabled
-    Tags: [keda-operator]
-    Values: crds.install, webhookCerts.generate, operator.resources
-
-  otel-collector-lerian:
-    Chart: oci://registry-1.docker.io/lerianstudio/otel-collector-lerian
-    Condition: otel-collector-lerian.enabled
-```
-
-### Bootstrap Jobs (External Dependencies)
-
-```text
-if global.externalPostgresDefinitions.enabled:
-  → Create bootstrap-postgres.yaml Job
-  → Idempotent: Check if DB exists before creating
-  → Use initContainer to wait for DB availability
-  → Create role, database, grant privileges
-
-if global.externalRabbitmqDefinitions.enabled:
-  → Create bootstrap-rabbitmq.yaml Job
-  → Create vhost, user, permissions
-```
-
----
-
-## Step 9: Validate Chart
+## Step 7: Validate Chart
 
 <cannot_skip>
 ALL checks MUST pass before chart is considered complete.
