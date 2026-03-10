@@ -393,7 +393,7 @@ With 1 dev:  Fully sequential (slowest)
 
 ## Roadmap Template Structure
 
-**Output to:** `docs/pre-dev/{feature-name}/delivery-roadmap.md`
+**Output to:** See [Output & After Approval](#output--after-approval) for dual output paths (MD + JSON).
 
 ### Section 1: Executive Summary
 ```markdown
@@ -653,7 +653,19 @@ Legend:
 
 ## Output & After Approval
 
-**Output to:** `docs/pre-dev/{feature-name}/delivery-roadmap.md`
+**Output to:**
+- `docs/pre-dev/{feature-name}/delivery-roadmap.md` — Human-readable roadmap (existing behavior)
+- `docs/pre-dev/{feature-name}/delivery-roadmap.json` — Machine-readable structured data (see [JSON Output Schema](#json-output-schema-mandatory))
+
+**MUST generate both files.** The MD is for humans to read; the JSON is for programmatic consumption by tools (e.g., lerian-map). The JSON MUST be generated alongside the MD every time — it is not optional.
+
+**Topology-aware output paths:**
+
+| Structure | Files Generated |
+|-----------|-----------------|
+| single-repo | `docs/pre-dev/{feature}/delivery-roadmap.md` + `docs/pre-dev/{feature}/delivery-roadmap.json` |
+| monorepo | Index files + `{module.path}/docs/pre-dev/{feature}/delivery-roadmap.md` + `{module.path}/docs/pre-dev/{feature}/delivery-roadmap.json` per module |
+| multi-repo | `{repo.path}/docs/pre-dev/{feature}/delivery-roadmap.md` + `{repo.path}/docs/pre-dev/{feature}/delivery-roadmap.json` per repo |
 
 **After user approves roadmap:**
 
@@ -668,6 +680,167 @@ Legend:
 - Use `/ring:worktree` to create isolated workspace
 - Use `/ring:dev-cycle` to execute tasks with AI-assisted gates
 - Use roadmap to prioritize which tasks to pull next
+
+## JSON Output Schema (MANDATORY)
+
+**MUST generate `delivery-roadmap.json` with this EXACT schema every time a delivery roadmap is created.**
+
+The JSON provides a stable, predictable contract for programmatic consumers. Unlike the MD (which has flexible formatting for human readability), the JSON MUST follow this schema exactly — field names, types, and structure are non-negotiable.
+
+### Schema Definition
+
+```json
+{
+  "version": "1.0.0",
+  "gate": 9,
+  "feature": "{feature-name}",
+  "generatedAt": "ISO-8601 timestamp (e.g., 2026-03-10T14:30:00Z)",
+  "dates": {
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD",
+    "mvpEndDate": "YYYY-MM-DD or null",
+    "totalDuration": "5.5 weeks"
+  },
+  "velocity": {
+    "teamSize": 2,
+    "utilizationRate": 0.9,
+    "humanValidationMultiplier": 1.5,
+    "multiplierSource": "default | custom"
+  },
+  "deliveryCadence": {
+    "type": "sprint | cycle | continuous",
+    "periodDuration": "2 weeks | 1 month | null (if continuous)",
+    "periodStartDate": "YYYY-MM-DD or null (if continuous)"
+  },
+  "tasks": [
+    {
+      "id": "T-001",
+      "description": "Task description from tasks.md",
+      "aiEstimate": "2h",
+      "adjusted": "3.0h",
+      "calendar": "3.3h",
+      "days": "0.4d",
+      "dependencies": ["T-002"],
+      "assignee": "Backend | Frontend | DevOps | QA",
+      "status": "ready | blocked | in_progress | completed",
+      "onCriticalPath": true
+    }
+  ],
+  "milestones": [
+    {
+      "name": "Milestone or Sprint/Cycle name",
+      "type": "sprint | cycle | milestone",
+      "startDate": "YYYY-MM-DD",
+      "targetDate": "YYYY-MM-DD",
+      "taskIds": ["T-001", "T-002"],
+      "deliverable": "What ships to users",
+      "spillOvers": ["T-003"]
+    }
+  ],
+  "criticalPath": {
+    "taskIds": ["T-001", "T-002", "T-007"],
+    "totalDuration": "5.5 weeks",
+    "minimumProjectDuration": "5.5 weeks"
+  },
+  "risks": [
+    {
+      "taskIds": ["T-001"],
+      "level": "high | medium | low",
+      "impact": "Blocks T-002, T-003, T-007",
+      "mitigation": "Start immediately, daily progress checks"
+    }
+  ],
+  "contingencyBuffer": {
+    "percentage": 15,
+    "days": 4
+  },
+  "confidenceScore": 85
+}
+```
+
+### Field Reference
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `version` | string | yes | Schema version for forward compatibility. Currently `"1.0.0"` |
+| `gate` | number | yes | Gate number (9 for Full Track, 4 for Small Track) |
+| `feature` | string | yes | Feature name matching the pre-dev folder name |
+| `generatedAt` | string | yes | ISO-8601 timestamp of generation |
+| `dates.startDate` | string | yes | Project start date (YYYY-MM-DD) |
+| `dates.endDate` | string | yes | Project end date including buffer (YYYY-MM-DD) |
+| `dates.mvpEndDate` | string | no | MVP end date if different from full end date |
+| `dates.totalDuration` | string | yes | Total project duration in working weeks (e.g., "5.5 weeks") |
+| `velocity.teamSize` | number | yes | Number of developers |
+| `velocity.utilizationRate` | number | yes | Capacity utilization (always 0.9 for AI Agent) |
+| `velocity.humanValidationMultiplier` | number | yes | User-selected multiplier (1.2x to 2.5x) |
+| `velocity.multiplierSource` | string | yes | `"default"` or `"custom"` |
+| `deliveryCadence.type` | string | yes | `"sprint"`, `"cycle"`, or `"continuous"` |
+| `deliveryCadence.periodDuration` | string | no | Period duration (null if continuous) |
+| `deliveryCadence.periodStartDate` | string | no | First period start date (null if continuous) |
+| `tasks[]` | array | yes | all tasks from tasks.md with calculated estimates |
+| `tasks[].id` | string | yes | Task ID matching tasks.md (e.g., `"T-001"`) |
+| `tasks[].description` | string | yes | Task description/title |
+| `tasks[].aiEstimate` | string | yes | Original AI estimate from tasks.md. Format: `{number}h` (e.g., `"2h"`, `"4.5h"`) |
+| `tasks[].adjusted` | string | yes | After applying human validation multiplier. Format: `{number}h` (e.g., `"3.0h"`, `"6.75h"`) |
+| `tasks[].calendar` | string | yes | After applying capacity utilization. Format: `{number}h` (e.g., `"3.3h"`, `"7.5h"`) |
+| `tasks[].days` | string | yes | Calendar days (accounting for team size). Format: `{number}d` (e.g., `"0.4d"`, `"1.1d"`) |
+| `tasks[].dependencies` | array | yes | Task IDs this task depends on (empty array if none) |
+| `tasks[].assignee` | string | yes | Role assigned to this task |
+| `tasks[].status` | string | yes | Current status |
+| `tasks[].onCriticalPath` | boolean | yes | Whether task is on the critical path |
+| `milestones[]` | array | yes | Delivery milestones (sprints, cycles, or milestones) |
+| `milestones[].name` | string | yes | Sprint/Cycle/Milestone name |
+| `milestones[].type` | string | yes | `"sprint"`, `"cycle"`, or `"milestone"` |
+| `milestones[].startDate` | string | yes | Period start date |
+| `milestones[].targetDate` | string | yes | Period end date |
+| `milestones[].taskIds` | array | yes | Tasks allocated to this period |
+| `milestones[].deliverable` | string | yes | What ships to users in this period |
+| `milestones[].spillOvers` | array | yes | Task IDs that spill over from/into this period |
+| `criticalPath.taskIds` | array | yes | Ordered list of tasks on critical path |
+| `criticalPath.totalDuration` | string | yes | Total critical path duration |
+| `criticalPath.minimumProjectDuration` | string | yes | Minimum possible project duration |
+| `risks[]` | array | yes | Risk items (empty array if none) |
+| `risks[].taskIds` | array | yes | Task IDs affected by this risk |
+| `contingencyBuffer.percentage` | number | yes | Buffer percentage (10-20) |
+| `contingencyBuffer.days` | number | yes | Buffer in calendar days |
+| `confidenceScore` | number | yes | Confidence score (0-100) from scoring rubric |
+
+### Validation Rules
+
+MUST validate the JSON before writing:
+
+1. **`dates.startDate` and `dates.endDate` are REQUIRED** — MUST NOT be empty or null
+2. **`tasks` array MUST have at least 1 item** — empty roadmap is invalid
+3. **Every task MUST have `id`, `description`, `aiEstimate`, `adjusted`, `calendar`, `days`** — these fields match lerian-map's `RoadmapTask` interface exactly
+4. **`confidenceScore` MUST be 0-100** — matches the scoring rubric in this skill
+5. **`milestones` array MUST have at least 1 item** — every roadmap has at least one delivery milestone
+6. **`criticalPath.taskIds` MUST reference valid task IDs** — all IDs must exist in `tasks[]`
+7. **`version` MUST be `"1.0.0"`** — update when schema changes
+8. **`milestones[].taskIds` MUST reference valid task IDs** from `tasks[]`
+9. **`milestones[].spillOvers` MUST reference valid task IDs** from `tasks[]`
+10. **`risks[].taskIds` MUST reference valid task IDs** from `tasks[]`
+11. **`velocity.teamSize` MUST be greater than 0** — zero team size causes division-by-zero
+
+### Continuous Cadence Rules
+
+When `deliveryCadence.type` is `"continuous"`, the following rules apply:
+
+- `deliveryCadence.periodDuration` MUST be `null`
+- `deliveryCadence.periodStartDate` MUST be `null`
+- `milestones[].type` MUST be `"milestone"` (not `"sprint"` or `"cycle"`)
+- `milestones[].startDate` MUST be the earliest start date of any task in that milestone's `taskIds`
+- `milestones[].targetDate` MUST be the latest end date of any task in that milestone's `taskIds`
+- `milestones[].spillOvers` MUST be an empty array `[]` (no period boundaries to spill over)
+
+### Anti-Rationalization (JSON Output)
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "JSON is redundant, MD has the same data" | MD format varies per generation; JSON is the stable contract | **MUST generate both files** |
+| "I'll generate the JSON later" | Later = never. Generate alongside MD | **MUST generate in the same step as the MD** |
+| "Schema is too detailed, I'll simplify" | Consumers depend on exact field names | **MUST follow schema exactly as defined** |
+| "Some fields are optional, I'll skip them" | Only `mvpEndDate` and cadence fields are nullable | **MUST include all required fields** |
+| "The MD is enough for this small feature" | Feature size is irrelevant. Contract is universal | **MUST generate JSON for every roadmap** |
 
 ## Pressure Resistance Scenarios
 
