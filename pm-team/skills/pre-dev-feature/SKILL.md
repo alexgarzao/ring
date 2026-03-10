@@ -434,7 +434,7 @@ Even small features benefit from quick research:
 5. Calculate realistic timeline with period boundaries
 6. Identify parallelization opportunities and resource allocation
 7. Create delivery roadmap with Gantt-style timeline
-8. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md`
+8. Save to: `docs/pre-dev/<feature-name>/delivery-roadmap.md` + `delivery-roadmap.json`
 9. Run Gate 4 validation checklist
 10. Get human approval
 
@@ -466,12 +466,16 @@ Artifacts created (paths depend on topology.structure):
 - docs/pre-dev/<feature-name>/design-validation.md (if UI)
 - docs/pre-dev/<feature-name>/trd.md
 - docs/pre-dev/<feature-name>/tasks.md
+- docs/pre-dev/<feature-name>/delivery-roadmap.md
+- docs/pre-dev/<feature-name>/delivery-roadmap.json
 
 **For monorepo:**
 - docs/pre-dev/<feature-name>/research.md (root - shared)
 - docs/pre-dev/<feature-name>/prd.md (root - shared)
 - docs/pre-dev/<feature-name>/trd.md (root - shared)
 - docs/pre-dev/<feature-name>/tasks.md (root - index)
+- docs/pre-dev/<feature-name>/delivery-roadmap.md (root - shared)
+- docs/pre-dev/<feature-name>/delivery-roadmap.json (root - shared)
 - {frontend.path}/docs/pre-dev/<feature-name>/ux-criteria.md
 - {frontend.path}/docs/pre-dev/<feature-name>/wireframes/
 - {frontend.path}/docs/pre-dev/<feature-name>/design-validation.md (if UI)
@@ -479,7 +483,7 @@ Artifacts created (paths depend on topology.structure):
 - {backend.path}/docs/pre-dev/<feature-name>/tasks.md (filtered)
 
 **For multi-repo:**
-- Both repos: research.md, prd.md, trd.md (synchronized)
+- Both repos: research.md, prd.md, trd.md (synchronized), delivery-roadmap.md, delivery-roadmap.json
 - Frontend repo: ux-criteria.md, wireframes/, design-validation.md, tasks.md
 - Backend repo: tasks.md
 
@@ -525,7 +529,7 @@ Next steps:
 | 1.5 | `ring:pre-dev-design-validation` | Verify UX specs complete (if UI) | design-validation.md |
 | 2 | `ring:pre-dev-trd-creation` | Technical requirements | trd.md |
 | 3 | `ring:pre-dev-task-breakdown` | Task decomposition | tasks.md |
-| 4 | `ring:pre-dev-delivery-planning` | Delivery roadmap | delivery-roadmap.md |
+| 4 | `ring:pre-dev-delivery-planning` | Delivery roadmap | delivery-roadmap.md, .json |
 
 ### Execution Pattern
 

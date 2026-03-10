@@ -29,7 +29,7 @@ Orchestrates 5 sequential gates with human approval at each:
 | 1.5 | Design Validation (if UI) | design-validation.md |
 | 2 | TRD (skips Feature Map) | trd.md |
 | 3 | Task Breakdown (skips API/Data/Deps) | tasks.md |
-| 4 | Delivery Planning | delivery-roadmap.md |
+| 4 | Delivery Planning | delivery-roadmap.md, .json |
 
 All artifacts saved to `docs/pre-dev/<feature-name>/`.
 

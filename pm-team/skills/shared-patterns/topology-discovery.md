@@ -390,7 +390,8 @@ def get_doc_path(doc_type: str, feature_name: str, topology: dict) -> str | list
 
     Args:
         doc_type: One of 'research', 'prd', 'trd', 'ux-criteria', 'wireframes',
-                  'api-design', 'data-model', 'dependency-map', 'tasks'
+                  'api-design', 'data-model', 'dependency-map', 'tasks',
+                  'delivery-roadmap', 'delivery-roadmap-json'
         feature_name: The feature name in kebab-case
         topology: The TopologyConfig dictionary
 
@@ -404,8 +405,8 @@ def get_doc_path(doc_type: str, feature_name: str, topology: dict) -> str | list
     if structure == 'single-repo':
         return f"docs/pre-dev/{feature_name}/"
 
-    # Shared documents (research, prd, trd)
-    if doc_type in ['research', 'prd', 'trd']:
+    # Shared documents (research, prd, trd, delivery-roadmap)
+    if doc_type in ['research', 'prd', 'trd', 'delivery-roadmap', 'delivery-roadmap-json']:
         if structure == 'monorepo':
             return f"docs/pre-dev/{feature_name}/"
         else:  # multi-repo
@@ -463,6 +464,8 @@ def get_doc_path(doc_type: str, feature_name: str, topology: dict) -> str | list
 | data-model.md | Backend | Backend module/repo path |
 | dependency-map.md | Split | Index at root, module-specific at module paths |
 | tasks.md | Split | Index at root, filtered tasks at module paths |
+| delivery-roadmap.md | Shared | Root (monorepo) or both repos (multi-repo) |
+| delivery-roadmap.json | Shared | Root (monorepo) or both repos (multi-repo) |
 
 ### Multi-Repo Document Synchronization
 
