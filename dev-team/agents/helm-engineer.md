@@ -408,10 +408,13 @@ grep -r "path:" templates/*/deployment.yaml
 
 **HARD GATE:** If the Helm chart already follows all Lerian conventions:
 
+**Standards Verification:** "Existing chart verified — app env vars and health endpoints confirmed"
 **Summary:** "No changes required - chart follows Lerian Helm conventions"
 **Implementation:** "Existing chart follows standards (reference: [specific files])"
 **Files Changed:** "None"
+**Env Var Coverage:** "All application env vars present in configmap/secrets (N/N = 100%)"
 **Testing:** "Existing helm lint/template pass"
+**Validation Results:** "All mandatory checks PASS"
 **Next Steps:** "Deployment can proceed"
 
 **CRITICAL:** Do not restructure working, convention-compliant charts without explicit requirement.
