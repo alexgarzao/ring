@@ -16,7 +16,7 @@ This file defines the specific standards for DevOps, SRE, and infrastructure.
 | 1   | [Cloud Provider](#cloud-provider)                 | AWS, GCP, Azure services                           |
 | 2   | [Infrastructure as Code](#infrastructure-as-code) | Terraform patterns and best practices              |
 | 3   | [Containers](#containers)                         | Dockerfile, Docker Compose, .env                   |
-| 4   | [Helm](#helm)                                     | Chart structure and configuration                  |
+| 4   | [Helm](#helm)                                     | Chart structure, configuration, Lerian delegation  |
 | 5   | [Observability](#observability)                   | Logging and tracing standards                      |
 | 6   | [Security](#security)                             | Secrets management, network policies               |
 | 7   | [Makefile Standards](#makefile-standards)         | Required commands and patterns                     |
@@ -288,10 +288,10 @@ ENABLE_TELEMETRY=false
 
 ## Helm
 
-### Chart Structure
+### General Chart Structure
 
 ```
-/charts/api
+/charts/{service-name}
   Chart.yaml
   values.yaml
   values-dev.yaml
@@ -325,7 +325,6 @@ dependencies:
 ### values.yaml
 
 ```yaml
-# values.yaml
 replicaCount: 3
 
 image:
@@ -367,6 +366,17 @@ autoscaling:
 postgresql:
   enabled: false # Use external database
 ```
+
+### Lerian Helm Charts
+
+For Lerian-specific Helm chart creation (naming conventions, directory structure, ConfigMap/Secrets split, dual-mode KEDA/Deployment, AWS RolesAnywhere sidecar, port allocation, and all production patterns), use the dedicated skill and agent:
+
+- **Skill:** `ring:dev-helm` — Orchestrates Helm chart creation following Lerian conventions
+- **Agent:** `ring:helm-engineer` — Specialist agent with all Lerian Helm patterns
+- **Standards:** [`dev-team/docs/standards/helm/`](helm/index.md) — Complete Lerian Helm conventions (conventions, values, templates, dependencies, worker patterns)
+- **Reference charts:** `Documents/Lerian/helm/charts/` (production charts as source of truth)
+
+> **⚠️ DELEGATION:** When creating or modifying Helm charts for Lerian services, `ring:devops-engineer` MUST delegate to `ring:helm-engineer` via the `ring:dev-helm` skill. The generic patterns above apply to non-Lerian charts only.
 
 ---
 
