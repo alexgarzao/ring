@@ -295,7 +295,7 @@ No "should work" → Only "does work" with proof
 - `ring:interviewing-user` - Proactive requirements gathering through structured interview
 - `ring:writing-plans` - Zero-context implementation plans
 - `ring:executing-plans` - Batch execution with checkpoints
-- `ring:requesting-code-review` - **Parallel 6-reviewer dispatch** with severity-based handling
+- `ring:requesting-code-review` - **Parallel 7-reviewer dispatch** with severity-based handling
 - `ring:using-git-worktrees` - Isolated development
 - `ring:git-commit` - Smart commit organization with atomic grouping, conventional commits, and trailers
 
@@ -432,7 +432,7 @@ Ring provides 32 slash commands across 5 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
-- `/ring:codereview [files-or-paths]` - Dispatch 6 parallel code reviewers for comprehensive review
+- `/ring:codereview [files-or-paths]` - Dispatch 7 parallel code reviewers for comprehensive review
 - `/ring:commit [message]` - Create git commit with AI identification via Git trailers
 - `/ring:worktree [branch-name]` - Create isolated git workspace for parallel development
 - `/ring:brainstorm [topic]` - Interactive design refinement using Socratic method
@@ -513,13 +513,14 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
         ... [Through all 8 gates]
 ```
 
-### Code Review (Parallel, 6 Reviewers!)
+### Code Review (Parallel, 7 Reviewers!)
 
 ```
 User: "Review my authentication implementation"
-Claude: Dispatching all 6 reviewers in parallel...
+Claude: Dispatching all 7 reviewers in parallel...
         [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer,
-         ring:test-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer simultaneously]
+         ring:test-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer,
+         ring:dead-code-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).
@@ -535,7 +536,7 @@ Claude: Dispatching all 6 reviewers in parallel...
         Dispatching fix subagent to address Critical/High issues...
         [Fixes applied]
 
-        Re-running all 6 reviewers in parallel...
+        Re-running all 7 reviewers in parallel...
         All reviewers: PASS. Ready for production.
 ```
 
@@ -564,7 +565,7 @@ ring/                                  # Monorepo root
 │   │   ├── hooks.json              # Hook configuration
 │   │   ├── session-start.sh        # Loads skills at startup
 │   │   └── generate-skills-ref.py  # Auto-generates quick reference
-│   ├── agents/                      # 8 specialized agents
+│   ├── agents/                      # 9 specialized agents
 │   │   ├── code-reviewer.md             # Foundation review (`ring:code-reviewer`)
 │   │   ├── business-logic-reviewer.md   # Correctness review (`ring:business-logic-reviewer`)
 │   │   ├── security-reviewer.md         # Safety review (`ring:security-reviewer`)

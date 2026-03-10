@@ -70,6 +70,13 @@ Even in minimal mode, these checks are MANDATORY:
 
 **STILL REQUIRED:** Any production code changes in Go or TypeScript
 
+### Dead Code Reviewer
+- New additive-only code (no removals or refactoring)
+- Documentation-only changes
+- Configuration-only changes
+
+**STILL REQUIRED:** Function removal, refactoring, inlining, type changes, endpoint removal
+
 ---
 
 ## Decision Framework

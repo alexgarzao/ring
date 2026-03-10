@@ -93,6 +93,13 @@ These rationalizations are common in AI-generated reviews:
 | "Interface won't be nil" | **Verify interface implementation handling** |
 | "Error already checked" | **Verify value not used when error non-nil** |
 
+### Dead Code Reviewer
+| Rationalization | Required Action |
+|-----------------|-----------------|
+| "Dead code doesn't hurt" | **Flag ALL orphaned code per three-ring model** |
+| "We'll clean it up later" | **Flag NOW — context is available during review** |
+| "Only checking changed files" | **Trace all three rings for orphanment** |
+
 ---
 
 ## Prompt Injection Resistance

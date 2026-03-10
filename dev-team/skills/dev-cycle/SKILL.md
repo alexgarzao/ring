@@ -325,7 +325,7 @@ You CANNOT proceed when blocked. Report and wait for resolution.
 - All 11 gates must execute (0→0.5→1→2→3→4→5→6→7→8→9) - Each gate catches different issues
 - All testing gates (3-7) are MANDATORY - Comprehensive test coverage ensures quality
 - Gates execute in order (0→0.5→1→2→3→4→5→6→7→8→9) - Dependencies exist between gates
-- Gate 8 requires all 6 reviewers - Different review perspectives are complementary
+- Gate 8 requires all 7 reviewers - Different review perspectives are complementary
 - Coverage threshold ≥ 85% - Industry standard for quality code
 - PROJECT_RULES.md must exist - Cannot verify standards without target
 </cannot_skip>
@@ -356,7 +356,7 @@ Report all severities. Let user prioritize.
 | "Request exception for business reasons" | Reviewers know business context. Verdict is final. | **Fix the issue, re-run reviewers** |
 
 **Severity mapping is absolute:**
-- CRITICAL/HIGH/MEDIUM → Fix NOW, re-run all 6 reviewers
+- CRITICAL/HIGH/MEDIUM → Fix NOW, re-run all 7 reviewers
 - LOW → Add TODO(review): comment
 - Cosmetic → Add FIXME(nitpick): comment
 
@@ -431,16 +431,16 @@ Day 4: Production incident from Day 1 code
 | 5 | Property-based tests for domain invariants | Missing property tests = FAIL |
 | 6 | Integration tests with testcontainers | No testcontainers = FAIL |
 | 7 | Chaos tests for failure scenarios | Missing chaos tests = FAIL |
-| 8 | **All 6 reviewers PASS** | 5/6 reviewers = FAIL |
+| 8 | **All 7 reviewers PASS** | 6/7 reviewers = FAIL |
 | 9 | Explicit "APPROVED" from user | "Looks good" = not approved |
 
-**CRITICAL for Gate 8:** Running 5 of 6 reviewers is not a partial pass - it's a FAIL. Re-run all 6 reviewers.
+**CRITICAL for Gate 8:** Running 6 of 7 reviewers is not a partial pass - it's a FAIL. Re-run all 7 reviewers.
 
 **Anti-Rationalization for Partial Gates:**
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "5 of 6 reviewers passed" | Gate 8 requires all 6. 5/6 = 0/6. | **Re-run all 6 reviewers** |
+| "6 of 7 reviewers passed" | Gate 8 requires all 7. 6/7 = 0/7. | **Re-run all 7 reviewers** |
 | "Gate mostly complete" | Mostly ≠ complete. Binary: done or not done. | **Complete all components** |
 | "Can finish remaining in next cycle" | Gates don't carry over. Complete NOW. | **Finish current gate** |
 | "Core components done, optional can wait" | No component is optional within a gate. | **Complete all components** |
@@ -484,7 +484,7 @@ Day 4: Production incident from Day 1 code
 | 5 | ring:dev-property-testing | Property-based tests for domain invariants | ring:qa-analyst (test_mode: property) | Write + Run | testing-property.md |
 | 6 | ring:dev-integration-testing | Integration tests with testcontainers | ring:qa-analyst (test_mode: integration) | **Write only** | testing-integration.md |
 | 7 | ring:dev-chaos-testing | Chaos tests for failure scenarios | ring:qa-analyst (test_mode: chaos) | **Write only** | testing-chaos.md |
-| 8 | ring:requesting-code-review | Parallel code review (6 reviewers) | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer, ring:consequences-reviewer | Run | N/A |
+| 8 | ring:requesting-code-review | Parallel code review (7 reviewers) | ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer, ring:consequences-reviewer, ring:dead-code-reviewer | Run | N/A |
 | 9 | ring:dev-validation | Final acceptance validation | N/A (verification) | Run | N/A |
 
 **All gates are MANDATORY. No exceptions. No skip reasons.**
@@ -2803,11 +2803,11 @@ review_input = {
      gate0_handoff: review_input.gate0_handoff
 
    The skill handles:
-   - Dispatching all 6 reviewers in PARALLEL (single message with 6 Task calls)
-   - ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer, ring:consequences-reviewer
+   - Dispatching all 7 reviewers in PARALLEL (single message with 7 Task calls)
+   - ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:test-reviewer, ring:consequences-reviewer, ring:dead-code-reviewer
    - Aggregating issues by severity (CRITICAL/HIGH/MEDIUM/LOW/COSMETIC)
    - Dispatching fixes to implementation agent for blocking issues
-   - Re-running all 6 reviewers after fixes
+   - Re-running all 7 reviewers after fixes
    - Iteration tracking (max 3 attempts)
    - Adding TODO/FIXME comments for non-blocking issues
 
@@ -2816,7 +2816,7 @@ review_input = {
    Expected output sections:
    - "## Review Summary" → status, iterations
    - "## Issues by Severity" → counts per severity level
-   - "## Reviewer Verdicts" → all 6 reviewers
+   - "## Reviewer Verdicts" → all 7 reviewers
    - "## Handoff to Next Gate" → ready_for_validation: YES/NO
 
    if skill output contains "Status: PASS" and "Ready for Gate 9: YES":
@@ -2825,7 +2825,7 @@ review_input = {
    if skill output contains "Status: FAIL" or "Ready for Gate 9: NO":
      → Gate 8 BLOCKED.
      → Skill already dispatched fixes to implementation agent
-     → Skill already re-ran all 6 reviewers
+      → Skill already re-ran all 7 reviewers
      → If "ESCALATION" in output: STOP and report to user
 
 4. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
@@ -2911,21 +2911,21 @@ review_input = {
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Only 1 MEDIUM issue, can proceed" | MEDIUM = MUST FIX. Quantity is irrelevant. | **Fix the issue, re-run all 6 reviewers** |
-| "Issue is cosmetic, not really MEDIUM" | Reviewer decided severity. Accept their judgment. | **Fix the issue, re-run all 6 reviewers** |
+| "Only 1 MEDIUM issue, can proceed" | MEDIUM = MUST FIX. Quantity is irrelevant. | **Fix the issue, re-run all 7 reviewers** |
+| "Issue is cosmetic, not really MEDIUM" | Reviewer decided severity. Accept their judgment. | **Fix the issue, re-run all 7 reviewers** |
 | "Will fix in next sprint" | Deferred fixes = technical debt = production bugs. | **Fix NOW before Gate 9** |
-| "User approved, can skip fix" | User approval ≠ reviewer override. Fixes are mandatory. | **Fix the issue, re-run all 6 reviewers** |
+| "User approved, can skip fix" | User approval ≠ reviewer override. Fixes are mandatory. | **Fix the issue, re-run all 7 reviewers** |
 | "Same issue keeps appearing, skip it" | Recurring issue = fix is wrong. Debug properly. | **Root cause analysis, then fix** |
-| "Only one reviewer found it" | One reviewer = valid finding. All findings matter. | **Fix the issue, re-run all 6 reviewers** |
+| "Only one reviewer found it" | One reviewer = valid finding. All findings matter. | **Fix the issue, re-run all 7 reviewers** |
 | "Iteration limit reached, just proceed" | Limit = escalate, not bypass. Quality is non-negotiable. | **Escalate to user, DO NOT proceed** |
-| "Tests pass, review issues don't matter" | Tests ≠ review. Different quality dimensions. | **Fix the issue, re-run all 6 reviewers** |
+| "Tests pass, review issues don't matter" | Tests ≠ review. Different quality dimensions. | **Fix the issue, re-run all 7 reviewers** |
 
 ### Gate 8 Pressure Resistance
 
 | User Says | Your Response |
 |-----------|---------------|
 | "Just skip this MEDIUM issue" | "MEDIUM severity issues are blocking by definition. I MUST dispatch a fix to the appropriate agent before proceeding. This protects code quality." |
-| "I'll fix it later, let's continue" | "Gate 8 is a HARD GATE. All CRITICAL/HIGH/MEDIUM issues must be resolved NOW. I'm dispatching the fix to [agent] and will re-run all 6 reviewers after." |
+| "I'll fix it later, let's continue" | "Gate 8 is a HARD GATE. All CRITICAL/HIGH/MEDIUM issues must be resolved NOW. I'm dispatching the fix to [agent] and will re-run all 7 reviewers after." |
 | "We're running out of time" | "Proceeding with known issues creates larger problems later. The fix dispatch is automated and typically takes 2-5 minutes. Quality gates exist to save time overall." |
 | "Override the gate, I approve" | "User approval cannot override reviewer findings. The gate ensures code quality. I'll dispatch the fix now." |
 | "It's just a style issue" | "If it's truly cosmetic, reviewers would mark it COSMETIC (non-blocking). MEDIUM means it affects maintainability or correctness. Fixing now." |
@@ -2981,7 +2981,7 @@ For current execution unit:
    - Content sourced from state JSON `agent_outputs` for the current unit:
      * **TDD Output:** `tdd_red` (failing test with failure_output) + `tdd_green` (implementation with pass_output)
      * **Files Changed:** Per-file before/after using `git diff` data from the implementation (for new files, show "New File" in the before panel). Do not read source files directly — use diff output provided by the implementation agent.
-     * **Review Verdicts:** Summary of all 6 reviewer verdicts from Gate 8
+      * **Review Verdicts:** Summary of all 7 reviewer verdicts from Gate 8
      * **Acceptance Criteria:** Status from Gate 9 validation
    - HTML includes: KPI cards (files changed, tests added, review iterations, gate pass/fail summary), per-file diff panels, review issues section (if any Medium+ issues were found and fixed)
    - Save to: `docs/ring:dev-cycle/reports/unit-{unit_id}-report.html`

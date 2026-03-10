@@ -30,6 +30,8 @@
           "business-logic-reviewer",
           "test-reviewer",
           "nil-safety-reviewer",
+          "consequences-reviewer",
+          "dead-code-reviewer",
           "codebase-explorer",
           "write-plan",
           "backend-engineer-golang",

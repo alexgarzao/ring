@@ -223,7 +223,7 @@ The **ring:dev-cycle** skill orchestrates task execution through **10 gates** (G
 
 ## Parallel Code Review
 
-### Instead of sequential (100 min)
+### Instead of sequential (140 min)
 
 ```python
 review1 = Task("ring:code-reviewer")           # 20 min
@@ -231,6 +231,8 @@ review2 = Task("ring:business-logic-reviewer") # 20 min
 review3 = Task("ring:security-reviewer")       # 20 min
 review4 = Task("ring:test-reviewer")           # 20 min
 review5 = Task("ring:nil-safety-reviewer")     # 20 min
+review6 = Task("ring:consequences-reviewer")   # 20 min
+review7 = Task("ring:dead-code-reviewer")      # 20 min
 ```
 
 ### Run parallel (20 min total)
@@ -242,13 +244,14 @@ Task.parallel([
     ("ring:security-reviewer", prompt),
     ("ring:nil-safety-reviewer", prompt),
     ("ring:test-reviewer", prompt),
-    ("ring:consequences-reviewer", prompt)
-])  # Single message, 6 tool calls
+    ("ring:consequences-reviewer", prompt),
+    ("ring:dead-code-reviewer", prompt)
+])  # Single message, 7 tool calls
 ```
 
 ### Key rule
 
-Always dispatch all 6 reviewers in a single message with multiple Task tool calls.
+Always dispatch all 7 reviewers in a single message with multiple Task tool calls.
 
 ---
 

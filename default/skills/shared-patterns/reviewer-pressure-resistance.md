@@ -95,6 +95,12 @@ When facing pressure, use this framework:
 | "Go's panic recovery handles it" | "Panic recovery is not a substitute for nil guards. Will document nil risks." |
 | "We check for nil elsewhere" | "Each layer must validate. Defense in depth requires nil checks at usage point." |
 
+### Dead Code Reviewer
+| Pressure | Response |
+|----------|----------|
+| "Dead code doesn't matter" | "Orphaned code creates phantom safety and false test coverage. All three rings MUST be analyzed." |
+| "We'll clean it up later" | "Dead code accumulates silently. Flagging NOW with full context prevents technical debt." |
+
 ---
 
 ## Escalation Path

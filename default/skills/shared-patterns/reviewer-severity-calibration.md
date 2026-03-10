@@ -89,6 +89,14 @@ Each reviewer applies these levels to their domain:
 | MEDIUM | Nil risk with partial guards, could be improved |
 | LOW | Style issues, redundant nil checks, defensive improvements |
 
+### Dead Code (ring:dead-code-reviewer)
+| Severity | Examples |
+|----------|----------|
+| CRITICAL | Orphaned validation/security logic in financial paths creating phantom safety, dead auth middleware |
+| HIGH | Entire orphaned packages, dead test infrastructure giving false coverage confidence |
+| MEDIUM | Orphaned helper functions, dead constants, unused type definitions |
+| LOW | Commented-out code, dead internal test utilities, minor implementation remnants |
+
 ---
 
 ## Anti-Downgrade Rules

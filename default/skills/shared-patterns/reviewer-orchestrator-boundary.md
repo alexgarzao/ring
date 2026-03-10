@@ -28,6 +28,7 @@ This document defines the mandatory separation of responsibilities between revie
 │ • ring:security-reviewer     │          │ • ring:frontend-engineer            │
 │ • ring:test-reviewer         │          │ • ring:devops-engineer              │
 │ • ring:nil-safety-reviewer   │          │ • ring:qa-analyst                   │
+│ • ring:dead-code-reviewer    │          │                                 │
 │                             │          │                                 │
 │ OUTPUT: Report              │          │ OUTPUT: Code changes            │
 │ ACTION: NONE                │          │ ACTION: Edit, Create, Delete    │
@@ -83,9 +84,9 @@ This document defines the mandatory separation of responsibilities between revie
 - Enables proper accountability and learning
 
 ### 4. Parallel Execution
-- Reviewers run in parallel (code, business-logic, security, test, nil-safety)
+- Reviewers run in parallel (code, business-logic, security, test, nil-safety, dead-code)
 - If reviewers also fixed, they'd need sequential execution
-- Separation enables 5x faster review cycles
+- Separation enables faster review cycles
 
 ---
 
@@ -144,7 +145,7 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 
 The `ring:dev-cycle` skill enforces this boundary at Gate 4 (Review):
 
-1. **Dispatch reviewers in parallel** (code, business-logic, security, test, nil-safety)
+1. **Dispatch reviewers in parallel** (code, business-logic, security, test, nil-safety, dead-code, consequences)
 2. **Collect structured reports** from each reviewer
 3. **If any reviewer returns FAIL:**
    - Extract issues from report

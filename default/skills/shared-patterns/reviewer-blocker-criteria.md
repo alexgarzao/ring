@@ -97,6 +97,12 @@ Each reviewer has additional non-negotiable requirements:
 - Missing nil guards on critical paths = HIGH
 - Call chain tracing REQUIRED
 
+### Dead Code Reviewer
+- Orphaned validation/security logic = CRITICAL
+- Three-ring analysis REQUIRED (cannot check only target files)
+- Caller count evidence REQUIRED for every orphan
+- Root set verification REQUIRED (no false positives)
+
 ---
 
 ## Escalation Protocol

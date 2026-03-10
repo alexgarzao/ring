@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 83 skills, 35 agents, and 32 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 83 skills, 36 agents, and 32 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -100,7 +100,7 @@ Commands are invoked directly: `/command-name`.
 
 | Command                             | Use Case                                       | Example                                              |
 | ----------------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| `/ring:codereview [files-or-paths]` | Dispatch 6 parallel code reviewers             | `/ring:codereview src/auth/`                         |
+| `/ring:codereview [files-or-paths]` | Dispatch 7 parallel code reviewers             | `/ring:codereview src/auth/`                         |
 | `/ring:commit [message]`            | Create git commit with AI trailers             | `/ring:commit "fix(auth): improve token validation"` |
 | `/ring:lint [path]`                 | Run lint and dispatch agents to fix all issues | `/ring:lint src/`                                    |
 
@@ -175,7 +175,7 @@ Invoke via `Task tool with subagent_type: "..."`.
 
 ### Code Review (ring-default)
 
-**Always dispatch all 6 in parallel** (single message, 6 Task calls):
+**Always dispatch all 7 in parallel** (single message, 7 Task calls):
 
 | Agent                          | Purpose                                      |
 | ------------------------------ | -------------------------------------------- |
@@ -185,8 +185,9 @@ Invoke via `Task tool with subagent_type: "..."`.
 | `ring:test-reviewer`           | Test coverage, quality, and completeness     |
 | `ring:nil-safety-reviewer`     | Nil/null pointer safety analysis             |
 | `ring:consequences-reviewer`   | Ripple effect, caller impact, downstream consequences |
+| `ring:dead-code-reviewer`      | Unused code, unreachable paths, dead exports          |
 
-**Example:** Before merging, run all 6 parallel reviewers via `/ring:codereview src/`
+**Example:** Before merging, run all 7 parallel reviewers via `/ring:codereview src/`
 
 ### Planning & Analysis (ring-default)
 
@@ -294,7 +295,7 @@ For portfolio-level project management and oversight:
 2. **Plan** → `/ring:pre-dev-feature feature-name` (or `ring:pre-dev-full` if complex)
 3. **Isolate** → `/ring:worktree feature-branch`
 4. **Implement** → Use `ring:test-driven-development` skill
-5. **Review** → `/ring:codereview src/` (dispatches 6 reviewers)
+5. **Review** → `/ring:codereview src/` (dispatches 7 reviewers)
 6. **Commit** → `/ring:commit "message"`
 
 ### Bug Investigation
@@ -317,6 +318,7 @@ Runs in parallel:
   • ring:test-reviewer
   • ring:nil-safety-reviewer
   • ring:consequences-reviewer
+  • ring:dead-code-reviewer
     ↓
 Consolidated report with recommendations
 ```
@@ -352,7 +354,7 @@ These enforce quality standards:
 
 | Need                              | Agent to Use                                |
 | --------------------------------- | ------------------------------------------- |
-| General code quality review       | 6 parallel reviewers via `/ring:codereview` |
+| General code quality review       | 7 parallel reviewers via `/ring:codereview` |
 | Implementation planning           | `ring:write-plan`                           |
 | Deep codebase analysis            | `ring:codebase-explorer`                    |
 | Go backend expertise              | `ring:backend-engineer-golang`              |
@@ -408,7 +410,7 @@ Returns structured output per agent's output_schema
 ### Parallel Review Pattern
 
 ```
-Single message with 6 Task calls (not sequential):
+Single message with 7 Task calls (not sequential):
 
 Task #1: ring:code-reviewer
 Task #2: ring:business-logic-reviewer
@@ -416,6 +418,7 @@ Task #3: ring:security-reviewer
 Task #4: ring:test-reviewer
 Task #5: ring:nil-safety-reviewer
 Task #6: ring:consequences-reviewer
+Task #7: ring:dead-code-reviewer
     ↓
 All run in parallel (saves ~15 minutes vs sequential)
     ↓

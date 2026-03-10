@@ -91,7 +91,7 @@ output_schema:
       required: true
 ```
 
-**Used by:** `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`
+**Used by:** `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:dead-code-reviewer`
 
 **Note:** `ring:business-logic-reviewer` and `ring:security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
 - `ring:business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
