@@ -81,7 +81,7 @@ verification:
       success_pattern: "0 chart\\(s\\) failed"
     - command: "helm template test . 2>&1 | head -5"
       description: "Template renders without errors"
-      success_pattern: "^(apiVersion|---)"
+      success_pattern: '^(apiVersion|-{3})'
   manual:
     - "All values.yaml fields follow Lerian naming conventions"
     - "Secrets do not contain real credentials"

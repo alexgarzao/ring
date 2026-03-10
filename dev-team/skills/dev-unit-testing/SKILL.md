@@ -86,10 +86,10 @@ verification:
   automated:
     - command: "go test ./... -covermode=atomic -coverprofile=coverage.out && go tool cover -func=coverage.out | grep total"
       description: "Go tests pass with coverage"
-      success_pattern: "total:.*[8-9][0-9]|100"
+      success_pattern: 'total:.*[8-9][0-9]|100'
     - command: "npm test -- --coverage | grep -E 'All files|Statements'"
       description: "TypeScript tests pass with coverage"
-      success_pattern: "[8-9][0-9]|100"
+      success_pattern: '[8-9][0-9]|100'
   manual:
     - "Every acceptance criterion has at least one test"
     - "No skipped or pending tests"

@@ -90,7 +90,7 @@ verification:
   automated:
     - command: "docker-compose logs app 2>&1 | head -5 | jq -e '.level'"
       description: "Logs are JSON structured"
-      success_pattern: "info|debug|warn|error"
+      success_pattern: 'info|debug|warn|error'
   manual:
     - "Verify logs include trace_id when tracing is enabled"
 

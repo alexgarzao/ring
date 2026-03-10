@@ -74,10 +74,10 @@ verification:
   automated:
     - command: "grep -rn 'toHaveNoViolations\\|axe(' --include='*.test.tsx' --include='*.test.ts' ."
       description: "axe-core tests exist"
-      success_pattern: "toHaveNoViolations\\|axe("
+      success_pattern: 'toHaveNoViolations\|axe('
     - command: "grep -rn 'getByRole\\|getByLabel' --include='*.test.tsx' --include='*.test.ts' ."
       description: "Semantic selector tests exist"
-      success_pattern: "getByRole\\|getByLabel"
+      success_pattern: 'getByRole\|getByLabel'
   manual:
     - "axe-core scans return 0 WCAG AA violations"
     - "Keyboard navigation tests cover all interactive elements"

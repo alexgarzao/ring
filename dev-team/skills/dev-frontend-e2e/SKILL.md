@@ -81,7 +81,7 @@ verification:
       success_pattern: "test("
     - command: "grep -rn 'getByRole\\|getByTestId\\|getByLabel' --include='*.spec.ts' ."
       description: "Semantic selectors used"
-      success_pattern: "getByRole\\|getByTestId\\|getByLabel"
+      success_pattern: 'getByRole\|getByTestId\|getByLabel'
   manual:
     - "All user flows from product-designer have E2E tests"
     - "Error paths tested (API 500, timeout, validation)"
