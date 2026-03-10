@@ -56,7 +56,7 @@ icon: https://avatars.githubusercontent.com/u/148895005?s=200&v=4
 │   │   ├── deployment.yaml
 │   │   ├── service.yaml
 │   │   ├── configmap.yaml
-│   │   ├── secrets.yaml           # NOTE: .yml not .yaml (Lerian convention)
+│   │   ├── secrets.yaml
 │   │   ├── ingress.yaml
 │   │   ├── hpa.yaml
 │   │   ├── pdb.yaml
