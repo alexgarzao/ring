@@ -1,18 +1,22 @@
 ---
 name: ring:dev-service-discovery
 slug: dev-service-discovery
-version: 1.1.0
+version: 1.2.0
 type: skill
 description: |
   Scans the current Go project and identifies the Service → Module → Resource
   hierarchy for tenant-manager registration. Detects service name and type,
-  modules (via WithModule or component structure), and resources per module
-  (PostgreSQL, MongoDB, RabbitMQ). Redis is excluded (managed via key prefixing).
+  modules (via WithModule or component structure), resources per module
+  (PostgreSQL, MongoDB, RabbitMQ), and database names for each resource.
+  Redis is excluded (managed via key prefixing).
   Produces a visual HTML report for human decision-making.
-  
+
   Additionally detects MongoDB index definitions (both in-code EnsureIndexes and
   scripts/mongodb/*.js files), generates index creation scripts for any gaps,
   and uploads them to S3 for use during dedicated tenant database provisioning.
+
+  Also detects database names per module, cross-references them across modules
+  to find shared databases, and flags them for single-provision in tenant-manager.
 
 trigger: |
   - User wants to know what to provision in tenant-manager for a service
@@ -45,9 +49,11 @@ examples:
       1. Detect service identity (ApplicationName, type)
       2. Detect modules (WithModule calls, component structure)
       3. Detect resources per module (PostgreSQL, MongoDB, RabbitMQ)
-      4. Detect MongoDB indexes (in-code + scripts)
-      5. Generate visual HTML report
-      6. Open in browser for review
+      4. Detect database names per module (from bootstrap config + .env.example)
+      5. Cross-module analysis: detect shared databases across modules
+      6. Detect MongoDB indexes (in-code + scripts)
+      7. Generate visual HTML report with shared database warnings
+      8. Open in browser for review
 ---
 
 # Service Discovery for Tenant-Manager
@@ -180,7 +186,116 @@ Store per module:
 
 ---
 
-## Phase 3.5: MongoDB Index Detection & Script Generation
+## Phase 3.5: Database Name Detection per Module
+
+```text
+For EACH detected module, extract the actual database names from configuration:
+
+config_path = module.component_path + "internal/bootstrap/config.go"
+env_path    = module.component_path + ".env.example"
+// For single-component: config_path = "internal/bootstrap/config.go", env_path = ".env.example"
+
+DETECT database names (run in parallel per module):
+
+1. Bootstrap config struct (source of truth for env var names):
+   - Read config_path
+   - Grep for env tags matching database name patterns:
+     a. PostgreSQL: env:"DB_NAME" or env:"DB_<MODULE_UPPER>_NAME"
+     b. MongoDB:    env:"MONGO_NAME" or env:"MONGO_<MODULE_UPPER>_NAME"
+   - Extract the Go struct field name and env var name
+   - Note: Prefixed variants (DB_<MODULE>_NAME) are used in unified services
+     where a parent component composes child modules (e.g., ledger composing
+     onboarding + transaction). Non-prefixed (DB_NAME) is the standard form.
+
+2. .env.example (source of truth for default values):
+   - Read env_path
+   - For each env var name found in step 1, extract the default value:
+     a. PostgreSQL: DB_NAME=<value> or DB_<MODULE_UPPER>_NAME=<value>
+     b. MongoDB:    MONGO_NAME=<value> or MONGO_<MODULE_UPPER>_NAME=<value>
+   - These are the actual database names used in development
+
+3. External datasources (DATASOURCE_* pattern):
+   - Grep in env_path for: DATASOURCE_*_DATABASE=<value>
+   - Each match = one external database connection
+   - Extract: datasource name (from env var), database name (from value), type (from DATASOURCE_*_TYPE)
+   - These represent read-only connections to OTHER services' databases
+
+4. Fallback (if .env.example not found or value empty):
+   - Use the module name as likely database name (common convention)
+   - Flag as "inferred — verify manually"
+
+Store per module:
+  module.databases = {
+    postgresql: {env_var: "DB_NAME", default_value: "onboarding", source: ".env.example"},
+    mongodb:    {env_var: "MONGO_NAME", default_value: "onboarding", source: ".env.example"},
+  }
+  module.external_datasources = [
+    {name: "onboarding", env_prefix: "DATASOURCE_ONBOARDING", database: "onboarding", type: "postgresql"},
+  ]
+```
+
+---
+
+## Phase 3.6: Shared Database Detection (Cross-Module Analysis)
+
+```text
+AFTER all modules have been scanned (Phases 3 + 3.5 complete), cross-reference
+database names across ALL modules to detect shared databases.
+
+This is CRITICAL for tenant-manager: when two modules point to the same database,
+tenant-manager must provision ONE database (not two) and grant access to both modules.
+
+DETECT shared databases:
+
+1. Internal databases (same DB name across modules):
+   - Group all module.databases entries by (resource_type, default_value)
+   - If 2+ modules share the same (type, db_name) → mark as SHARED
+   - Example: module-a.mongodb.default_value == module-b.mongodb.default_value == "myservice-db"
+     → shared_databases.mongodb["myservice-db"] = ["module-a", "module-b"]
+   - Example: module-a.postgresql.default_value == module-b.postgresql.default_value == "myservice"
+     → shared_databases.postgresql["myservice"] = ["module-a", "module-b"]
+
+2. External datasources (same DATASOURCE_*_DATABASE across modules):
+   - Group all module.external_datasources by (database, type)
+   - If 2+ modules reference the same external DB → mark as SHARED
+   - Example: module-a and module-b both have DATASOURCE_FOO_DATABASE=foo
+     → shared_external["foo"] = ["module-a", "module-b"]
+
+TENANT-MANAGER IMPLICATIONS (include in report):
+
+For shared MongoDB:
+  - Tenant-manager provisions ONE MongoDB database per tenant
+  - Both modules receive their own credentials to the SAME tenant database
+  - Collections are shared — both modules read/write the same collections
+
+For shared PostgreSQL:
+  - Tenant-manager provisions ONE PostgreSQL database per tenant
+  - Both modules connect to the SAME database
+  - Each module may use the same schema or have its own schema within the
+    shared database (depends on service design — check DATASOURCE_*_SCHEMAS)
+  - Tenant-manager creates the schema(s) with tables inside the single database
+  - Each module gets its own credentials with appropriate schema access
+
+The registration checklist must list the database ONCE with all modules
+that access it. DO NOT create duplicate databases.
+
+Store results:
+  shared_databases = {
+    mongodb: {
+      "myservice-db": {modules: ["module-a", "module-b"], provision_once: true}
+    },
+    postgresql: {
+      // empty if no shared PG databases detected in this example
+    }
+  }
+  shared_external = {
+    "foo": {modules: ["module-a", "module-b"], type: "postgresql"}
+  }
+```
+
+---
+
+## Phase 3.7: MongoDB Index Detection & Script Generation
 
 **Only execute this phase if MongoDB was detected in any module during Phase 3.**
 
@@ -216,27 +331,70 @@ Read `default/skills/visual-explainer/templates/data-table.html` first to absorb
 
 ### 1. Tenant-Manager Configuration Summary
 
-The primary section — tells the operator exactly what to register:
+Card showing:
+- **Service Name:** `{service_name}`
+- **Service Type:** `product` | `plugin`
+- **Modules:** `{count}`
+- **Total Resources:** `{count across all modules}`
+- **Shared Databases:** `{count}` (databases accessed by 2+ modules — provision once)
+- **External Datasources:** `{count}` (read-only connections to other services)
 
 ```markdown
 ## Tenant-Manager Configuration for: {service_name}
 
-Service: {service_name}
-Type: {product | plugin}
-Isolation: database
+One card per module. When a resource is shared with another module, display a
+**SHARED** badge and list the other modules that access it.
 
-### Modules to Register
+**Example A — Shared database (two modules pointing to the same DB):**
 
-| Module       | PostgreSQL | MongoDB | RabbitMQ | MongoDB Indexes (S3)                          |
-|--------------|------------|---------|----------|-----------------------------------------------|
-| onboarding   | ✅ primary | ✅      | ❌       | s3://{bucket}/{service}/onboarding/mongodb/    |
-| transaction  | ✅ primary | ✅      | ✅       | s3://{bucket}/{service}/transaction/mongodb/   |
+```
+┌─────────────────────────────────────────────────┐
+│ MODULE: module-a                                │
+├─────────────────────────────────────────────────┤
+│ MongoDB ✅                                      │
+│   DB name: "myservice-db" (MONGO_NAME)          │
+│   🔗 SHARED DB with: module-b                  │
+│   ⚠ Provision ONCE — both modules get           │
+│     credentials to the same tenant database     │
+│                                                 │
+│ RabbitMQ ✅  (producer)                         │
+└─────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────┐
+│ MODULE: module-b                                │
+├─────────────────────────────────────────────────┤
+│ MongoDB ✅                                      │
+│   DB name: "myservice-db" (MONGO_NAME)          │
+│   🔗 SHARED DB with: module-a                  │
+│   ⚠ Provision ONCE — see module-a               │
+│                                                 │
+│ RabbitMQ ✅  (consumer)                         │
+└─────────────────────────────────────────────────┘
 ```
 
-For each module, show:
-- Which resources need to be registered (postgresql, mongodb, rabbitmq)
-- S3 path where MongoDB index scripts are available (if MongoDB detected)
-- If index scripts were not uploaded yet, show: "⚠️ Not uploaded"
+**Example B — Separate databases (ledger-style: each module has its own DB):**
+
+```
+┌──────────────────────────────────────────┐
+│ MODULE: onboarding                       │
+├──────────────────────────────────────────┤
+│ PostgreSQL ✅  (7 repositories)          │
+│   DB name: "onboarding" (DB_NAME)        │
+│   organization, ledger, account,         │
+│   asset, portfolio, segment,             │
+│   accounttype                            │
+│                                          │
+│ MongoDB ✅  (metadata)                   │
+│   DB name: "onboarding" (MONGO_NAME)     │
+└──────────────────────────────────────────┘
+```
+
+**Database name display rules:**
+- Show the default value from `.env.example` in quotes
+- Show the env var name in parentheses for reference
+- If inferred (no `.env.example`), show with "(inferred)" suffix
+- External datasources appear in a separate sub-section per module
+- **SHARED databases** get a `🔗 SHARED DB with: <modules>` line and a `⚠ Provision ONCE` warning
 
 ### 2. MongoDB Index Scripts
 
@@ -258,21 +416,109 @@ If there are indexes in code without scripts:
     for dedicated tenant database provisioning.
 ```
 
+### 2.5. Shared Databases Summary
+
+**Only display this section if shared databases were detected in Phase 3.6.**
+
+Table format:
+
+```
+| DB Type     | Database Name    | Shared By              | Provision Strategy              |
+|-------------|------------------|------------------------|---------------------------------|
+| MongoDB     | "myservice-db"   | module-a, module-b     | 1 database, 2 credential sets   |
+| PostgreSQL  | "myservice"      | module-x, module-y     | 1 database, shared schema       |
+```
+
+**Provision strategy explanations:**
+- **1 database, N credential sets** — tenant-manager creates ONE database per tenant; each module gets its own credentials to the same DB. For MongoDB: shared collections. For PostgreSQL: shared schema or separate schemas within the same database.
+- **1 database, separate schemas** — when 2 modules share a PostgreSQL DB but use different schemas, tenant-manager creates ONE database with all schemas inside; each module accesses its own schema with its own credentials
+- **Read-only, shared credentials** — external datasource (not tenant-managed); modules connect with the same read-only credentials
+
 ### 3. Service Hierarchy Diagram
 
-Mermaid diagram showing Service → Module → Resource tree:
+Mermaid diagram. Shared databases use a single node with connections from multiple modules:
+
+**Example A — Shared database (two modules, same DB):**
+
+```mermaid
+graph TD
+    S["Service: myservice (product)"]
+    S --> M1["Module: module-a"]
+    S --> M2["Module: module-b"]
+    DB1[("MongoDB\nDB: myservice-db\n🔗 SHARED")]
+    M1 --> DB1
+    M2 --> DB1
+    M1 --> Q1["RabbitMQ"]
+    M2 --> Q2["RabbitMQ"]
+```
+
+**Example B — Separate databases (ledger-style):**
 
 ```mermaid
 graph TD
     S["Service: ledger (product)"]
     S --> M1["Module: onboarding"]
     S --> M2["Module: transaction"]
-    M1 --> R1["PostgreSQL"]
-    M1 --> R2["MongoDB"]
-    M2 --> R3["PostgreSQL"]
-    M2 --> R4["MongoDB"]
+    M1 --> R1["PostgreSQL (7 repos)\nDB: onboarding"]
+    M1 --> R2["MongoDB\nDB: onboarding"]
+    M2 --> R3["PostgreSQL (6 repos)\nDB: transaction"]
+    M2 --> R4["MongoDB\nDB: transaction"]
     M2 --> R5["RabbitMQ"]
 ```
+
+**Diagram rules:**
+- Shared databases use a SINGLE cylindrical node connected to ALL modules that access it
+- Shared nodes include `🔗 SHARED` label
+- Non-shared databases are drawn per module as before
+- RabbitMQ is always drawn per module (no shared analysis needed for queues)
+
+### 4. Tenant-Manager Registration Checklist
+
+**Example A — With shared databases (two modules, same DB):**
+
+```markdown
+## What to register in tenant-manager:
+
+- [ ] **Service:** `myservice` (type: product, isolation: database)
+
+- [ ] **Module:** `module-a`
+  - [ ] Resource: mongodb (DB: "myservice-db", env: MONGO_NAME)
+        ⚠ SHARED DB with module-b — provision ONCE, grant access to both
+  - [ ] Resource: rabbitmq
+
+- [ ] **Module:** `module-b`
+  - [ ] Resource: mongodb → SAME DB as module-a ("myservice-db")
+        DO NOT create a second database — reuse module-a's
+  - [ ] Resource: rabbitmq
+
+## Shared databases (provision ONCE, access by multiple modules):
+| DB Type  | Database Name   | Modules              | Action                        |
+|----------|-----------------|----------------------|-------------------------------|
+| mongodb  | "myservice-db"  | module-a, module-b   | 1 database, 2 credential sets |
+```
+
+**Example B — Without shared databases (ledger-style):**
+
+```markdown
+## What to register in tenant-manager:
+
+- [ ] **Service:** `ledger` (type: product, isolation: database)
+
+- [ ] **Module:** `onboarding`
+  - [ ] Resource: postgresql (DB: "onboarding", env: DB_NAME)
+  - [ ] Resource: mongodb (DB: "onboarding", env: MONGO_NAME)
+
+- [ ] **Module:** `transaction`
+  - [ ] Resource: postgresql (DB: "transaction", env: DB_NAME)
+  - [ ] Resource: mongodb (DB: "transaction", env: MONGO_NAME)
+  - [ ] Resource: rabbitmq
+```
+
+**Checklist rules:**
+- Shared databases appear with `⚠ SHARED DB` warning on FIRST module and `→ SAME DB as <module>` reference on subsequent modules
+- A dedicated "Shared databases" summary table lists all shared DBs with provisioning action
+- External datasources note which modules access them
+- MongoDB index S3 paths are listed per module when available
 
 **Save to:** `docs/service-discovery.html` in the project root.
 
@@ -295,6 +541,8 @@ Linux: xdg-open docs/service-discovery.html
 | "WithModule not found, so no modules" | Fall back to component structure or ApplicationName. A service always has at least one module. | **Use Strategy B or C** |
 | "No index scripts needed, EnsureIndexes handles it" | In-code indexes run at app startup — but only if the app has connected. Scripts are needed for pre-provisioning, CI/CD, and dedicated tenant databases where the app hasn't booted yet. | **Generate scripts for all in-code indexes** |
 | "I'll just run the indexes manually" | Manual index creation is error-prone and not reproducible. Scripts are idempotent, documented, and version-controlled. | **Generate scripts** |
+| "Same DB name = probably a mistake" | Multiple modules sharing a database is a deliberate architecture pattern. Two modules may read/write the same tables. Detect and flag it, don't ignore it. | **Run Phase 3.6 cross-module analysis** |
+| "Each module gets its own database, always" | Not true. Two modules often share the same database (same tables, same schema). Creating duplicates breaks tenant isolation — tenant-manager must provision ONE database and grant both modules access. | **Detect shared databases and mark provision-once** |
 
 ---
 
