@@ -246,9 +246,11 @@ Search for these import patterns and count occurrences:
 - `InitServers() *Service` (returns value, not error)
 - `bootstrap.InitServers().Run()` in main.go
 
-### Category 5: Context Tracking
-- `libCommons.NewTrackingFromContext(ctx)`
+### Category 5: Context Tracking (BREAKING — highest impact, affects every layer)
+- `libCommons.NewTrackingFromContext(ctx)` — count ALL occurrences, this is the core v2 pattern
+- `logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)` — the 4-return destructuring
 - Logger recovered from context instead of dependency injection
+- Structs that DON'T have a `logger` field but call `NewTrackingFromContext` in methods
 
 ### Category 6: Telemetry
 - `libOpentelemetry.InitializeTelemetry(` (panics on error)
@@ -320,13 +322,13 @@ Using the scan results from Step 2, build a structured migration map:
 #### 1. Import Aliases ({count} files)
 | File | Current Import | v4 Import | v4 Alias |
 |------|---------------|-----------|----------|
-| {file}:{line} | `libCommons "lib-commons/v2/commons"` | `libUncommons "lib-commons/v4/commons"` | `libUncommons` |
+| {file}:{line} | `libCommons "lib-commons/v2/commons"` | `libCommons "lib-commons/v4/commons"` | `libCommons` |
 | ... | ... | ... | ... |
 
 #### 2. Configuration Loading ({count} files)
 | File | Current Pattern | v4 Pattern |
 |------|----------------|------------|
-| {file}:{line} | `libCommons.SetConfigFromEnvVars(&cfg)` | `libUncommons.InitLocalEnvConfig()` + `env.Parse(&cfg)` |
+| {file}:{line} | `libCommons.SetConfigFromEnvVars(&cfg)` | `libCommons.InitLocalEnvConfig()` + `env.Parse(&cfg)` |
 | ... | ... | ... |
 
 #### 3. Logging API ({count} calls)
@@ -461,7 +463,8 @@ Verify: go build ./...
 Replace all lib-commons v2/v3 import aliases with v4 `c` prefix convention.
 
 ### Acceptance Criteria
-- [ ] All `libCommons` aliases replaced with `libUncommons`
+- [ ] All import paths changed from `/v2/` or `/v3/` to `/v4/`
+- [ ] `libCommons` alias kept for root `commons` package (path changes, alias stays)
 - [ ] All `libZap` aliases replaced with `czap`
 - [ ] All `libLog` aliases replaced with `clog`
 - [ ] All `libOpentelemetry` aliases replaced with `cotel`
@@ -470,54 +473,88 @@ Replace all lib-commons v2/v3 import aliases with v4 `c` prefix convention.
 - [ ] All `libMongo` aliases replaced with `cmongo`
 - [ ] All `libRedis` aliases replaced with `credis`
 - [ ] All `libServer` / `libCommonsServer` imports removed (v4 uses manual lifecycle)
-- [ ] Import paths changed from `/v2/` or `/v3/` to `/v4/`
+- [ ] **Test files (`_test.go`) updated with same import changes**
 - [ ] `go build ./...` compiles successfully
+- [ ] `go test ./...` passes
 
 ### Files
-{list every file with lib-commons imports, with line numbers}
+{list every file with lib-commons imports — including _test.go files — with line numbers}
 
 ---
 
 ## Task: MIG-003 - Migrate configuration loading
 
-Replace `libCommons.SetConfigFromEnvVars` with `libUncommons.InitLocalEnvConfig()` and nested config structs.
+Replace `libCommons.SetConfigFromEnvVars` with `libCommons.InitLocalEnvConfig()` and nested config structs.
 
 ### Acceptance Criteria
-- [ ] `libUncommons.InitLocalEnvConfig()` called in main.go (replaces `SetConfigFromEnvVars`)
+- [ ] `libCommons.InitLocalEnvConfig()` called in main.go (replaces `SetConfigFromEnvVars`)
 - [ ] Config struct uses nested pattern (`AppConfig`, `ServerConfig`, `PostgresConfig`, etc.)
 - [ ] Nested structs use `envPrefix:` tags
 - [ ] All fields have `envDefault:` tags with sensible defaults
 - [ ] Config validation returns errors (no panics in config loading)
 - [ ] Production-specific validation present (TLS checks, secret strength, etc.)
+- [ ] **Config test files (`_test.go`) updated to use v4 patterns**
+- [ ] `go test ./internal/bootstrap/...` passes
 
 ### Files
-{config files}
+{config files — including _test.go}
 
 ### Context for Agent
 Reference: golang.md §4 Configuration
 
 ---
 
-## Task: MIG-004 - Migrate logging to structured fields
+## Task: MIG-004 - Migrate logging and context tracking
 
-Replace all Printf-style logging with v4 structured field pattern.
+Replace Printf-style logging AND `NewTrackingFromContext` pattern with v4 dependency-injected structured logging.
+
+**This is the highest-impact task.** In v2, every service/handler/repository method calls `libCommons.NewTrackingFromContext(ctx)` to get logger+tracer. In v4, logger is a struct field injected at construction. This change affects every layer.
+
+### v2 pattern (REMOVE):
+```go
+func (s *MyService) DoSomething(ctx context.Context) error {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    ctx, span := tracer.Start(ctx, "service.do_something")
+    defer span.End()
+    logger.Infof("Processing: %s", id)
+}
+```
+
+### v4 pattern (REPLACE WITH):
+```go
+type MyService struct {
+    logger clog.Logger  // injected at construction
+}
+
+func (s *MyService) DoSomething(ctx context.Context) error {
+    s.logger.Log(ctx, clog.LevelInfo, "Processing", clog.String("id", id))
+}
+```
 
 ### Acceptance Criteria
+- [ ] **All `libCommons.NewTrackingFromContext(ctx)` calls removed** — this is the core v2→v4 change
+- [ ] Logger added as struct field (`logger clog.Logger`) to every service, handler, and repository that used `NewTrackingFromContext`
+- [ ] Logger injected via constructor in bootstrap/DI wiring
 - [ ] All `logger.Infof("msg: %s", val)` replaced with `s.logger.Log(ctx, clog.LevelInfo, "msg", clog.String("key", val))`
 - [ ] All `logger.Errorf("msg: %v", err)` replaced with `s.logger.Log(ctx, clog.LevelError, "msg", clog.Err(err))`
 - [ ] All `logger.Warnf(...)` replaced with `s.logger.Log(ctx, clog.LevelWarn, ...)`
 - [ ] All `logger.WithFields(...)` calls replaced with typed field constructors
 - [ ] `logger.Sync()` replaced with `logger.Sync(ctx)` (takes context)
-- [ ] Logger is dependency-injected via struct fields, NOT recovered from context
-- [ ] `libCommons.NewTrackingFromContext(ctx)` calls removed
+- [ ] Core three from `NewTrackingFromContext` replaced with global OTel tracer (`otel.Core three(tracerName).Start(ctx, name)`) — set by `cotel.NewTelemetry()` + `tl.ApplyGlobals()` at bootstrap
+- [ ] Zero `NewTrackingFromContext` calls remain in codebase
 - [ ] Zero `logger.Infof` / `logger.Errorf` calls remain in codebase
+- [ ] **Test files updated: mock loggers use `clog.NewNop()`, struct constructors pass logger**
+- [ ] `go test ./...` passes
 
 ### Files
-{every file with logging calls, sorted by call count descending}
+{every file with `NewTrackingFromContext` OR logging calls — including _test.go — sorted by call count descending}
 
 ### Context for Agent
+v2 recovery pattern to search for: `logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)`
+v4 replacement: add `logger clog.Logger` field to struct, inject in constructor, use `s.logger.Log(ctx, level, msg, fields...)`
 Field constructors: `clog.String(k,v)`, `clog.Int(k,v)`, `clog.Err(err)`, `clog.Bool(k,v)`, `clog.Float64(k,v)`, `clog.Duration(k,v)`
 Levels: `clog.LevelInfo`, `clog.LevelError`, `clog.LevelWarn`, `clog.LevelDebug`
+Test logger: `clog.NewNop()` for unit tests
 
 ---
 
@@ -535,9 +572,12 @@ Replace Launcher/ServerManager pattern with v4 explicit lifecycle.
 - [ ] `Service.Shutdown(ctx context.Context) error` method with ordered cleanup
 - [ ] 30-second graceful shutdown timeout
 - [ ] No `libCommons.Launcher`, `libCommons.RunApp`, `libServer.StartWithGracefulShutdown`
+- [ ] **Bootstrap test files updated to use v4 initialization pattern**
+- [ ] `go test ./internal/bootstrap/...` passes
+- [ ] `go test ./cmd/...` passes
 
 ### Files
-{bootstrap files: main.go, service.go, config.go}
+{bootstrap files — including _test.go: main.go, main_test.go, service.go, service_test.go, config.go, config_test.go}
 
 ### Context for Agent
 Reference: golang.md §6 Bootstrap — complete main.go, service.go, config.go templates
@@ -555,9 +595,11 @@ Replace `InitializeTelemetry` with `NewTelemetry` + `ApplyGlobals`.
 - [ ] `cotel.HandleSpanError` replaces `libOpentelemetry.HandleSpanError`
 - [ ] `cotel.HandleSpanBusinessErrorEvent` replaces `libOpentelemetry.HandleSpanBusinessErrorEvent`
 - [ ] Telemetry middleware uses `chttp.NewTelemetryMiddleware(tl)`
+- [ ] **Test files with span assertions updated to use `cotel` API**
+- [ ] `go test ./...` passes
 
 ### Files
-{telemetry init files + all files with span error handling}
+{telemetry init files + all files with span error handling — including _test.go}
 
 ---
 
@@ -600,11 +642,12 @@ When generating the actual tasks file for a specific repository:
 
 1. **Only findings from Categories 1-8 generate tasks** — Category 9 (v4 Opportunities) is informational only
 2. **Files list MUST be concrete** — actual file paths with line numbers, not placeholders
-3. **Acceptance criteria MUST be verifiable** — agent can grep/build to confirm
-4. **Task ordering matters** — MIG-001 (go.mod) MUST execute before MIG-002 (imports)
-5. **Context for Agent section** — include enough detail for `ring:backend-engineer-golang` to execute without additional codebase exploration
-6. **Skip tasks where pattern is not found** — if service has no RabbitMQ, do not generate MIG for RabbitMQ migration
-7. **MIG-FINAL is always the last task** — verifies entire migration compiles and passes tests
+3. **Files list MUST include `_test.go` files** — test files use the same imports, loggers, and patterns. Migrating production code without tests will break the build.
+4. **Acceptance criteria MUST be verifiable** — agent can grep/build to confirm
+5. **Task ordering matters** — MIG-001 (go.mod) MUST execute before MIG-002 (imports)
+6. **Context for Agent section** — include enough detail for `ring:backend-engineer-golang` to execute without additional codebase exploration
+7. **Skip tasks where pattern is not found** — if service has no RabbitMQ, do not generate MIG for RabbitMQ migration
+8. **MIG-FINAL is always the last task** — verifies entire migration compiles and passes tests
 
 **TodoWrite:** Mark as `completed`
 
@@ -705,7 +748,7 @@ These are the canonical v4 patterns from `golang.md`. Agents dispatched by this 
 ```go
 import (
     // Core
-    libUncommons "github.com/LerianStudio/lib-commons/v4/commons"
+    libCommons "github.com/LerianStudio/lib-commons/v4/commons"
     clog "github.com/LerianStudio/lib-commons/v4/commons/log"
     czap "github.com/LerianStudio/lib-commons/v4/commons/zap"
     cconst "github.com/LerianStudio/lib-commons/v4/commons/constants"
@@ -747,9 +790,8 @@ import (
 ```go
 // Initialization (bootstrap only)
 logger, err := czap.New(czap.Config{
-    Environment:     czap.EnvironmentProduction,
-    Level:           "info",
-    OTelLibraryName: "github.com/LerianStudio/your-service",
+    Level:       cfg.App.LogLevel,
+    Development: cfg.App.EnvName != "production",
 })
 
 // Usage (any layer) — structured fields, context-first
@@ -768,7 +810,7 @@ logger.Sync(ctx)
 ### Configuration
 ```go
 // main.go
-libUncommons.InitLocalEnvConfig()
+libCommons.InitLocalEnvConfig()
 
 // Nested config structs
 type Config struct {
@@ -793,7 +835,7 @@ type AppConfig struct {
 func main() { os.Exit(run()) }
 
 func run() int {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
     svc, err := bootstrap.InitServersWithOptions(nil)
     if err != nil { return 1 }
 

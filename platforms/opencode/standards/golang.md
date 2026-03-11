@@ -60,7 +60,7 @@ All Lerian Studio Go projects **MUST** use `lib-commons/v4` as the foundation li
 
 ```go
 import (
-    libUncommons "github.com/LerianStudio/lib-commons/v4/commons"
+    libCommons "github.com/LerianStudio/lib-commons/v4/commons"
     clog "github.com/LerianStudio/lib-commons/v4/commons/log"
     czap "github.com/LerianStudio/lib-commons/v4/commons/zap"
     cassert "github.com/LerianStudio/lib-commons/v4/commons/assert"
@@ -74,13 +74,13 @@ import (
 )
 ```
 
-> **Note:** v4 uses `c` prefix aliases (e.g., `clog`, `czap`, `cotel`) except for the root commons package which uses `libUncommons`. This distinguishes lib-commons packages from standard library and other imports.
+> **Note:** v4 uses `c` prefix aliases (e.g., `clog`, `czap`, `cotel`) except for the root commons package which uses `libCommons`. This distinguishes lib-commons packages from standard library and other imports.
 
 ### What lib-commons v4 Provides
 
 | Package | Alias | Purpose | Where Used |
 |---------|-------|---------|------------|
-| `commons` | `libUncommons` | Config loading (`InitLocalEnvConfig`), UUID validation, safe math | Bootstrap, utilities |
+| `commons` | `libCommons` | Config loading (`InitLocalEnvConfig`), UUID validation, safe math | Bootstrap, utilities |
 | `commons/log` | `clog` | Logger interface, Level types, Field constructors | **Everywhere** |
 | `commons/zap` | `czap` | Logger initialization/configuration | **Bootstrap only** |
 | `commons/assert` | `cassert` | Domain validation (returns errors, NEVER panics) | Domain, config validation |
@@ -153,7 +153,7 @@ import (
 
 ## Configuration
 
-All services **MUST** use `libUncommons.InitLocalEnvConfig()` for configuration loading. v4 uses **nested config structs** that group related settings together.
+All services **MUST** use `libCommons.InitLocalEnvConfig()` for configuration loading. v4 uses **nested config structs** that group related settings together.
 
 ### 1. Define Configuration Struct (Nested Pattern)
 
@@ -244,7 +244,7 @@ type AuthConfig struct {
 // bootstrap/config.go
 func InitServersWithOptions(opts ...Option) (*Service, error) {
     // Load .env file for local development (no-op in production)
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -255,7 +255,7 @@ func InitServersWithOptions(opts ...Option) (*Service, error) {
 }
 ```
 
-> **Note:** `libUncommons.InitLocalEnvConfig()` loads `.env` files for local development. In production (containers), environment variables are injected directly and the function is a no-op. The `env.Parse()` call uses the `caarlos0/env` library to populate the struct from environment variables, respecting `envPrefix` tags for nested structs.
+> **Note:** `libCommons.InitLocalEnvConfig()` loads `.env` files for local development. In production (containers), environment variables are injected directly and the function is a no-op. The `env.Parse()` call uses the `caarlos0/env` library to populate the struct from environment variables, respecting `envPrefix` tags for nested structs.
 
 ### Supported Types
 
@@ -297,7 +297,7 @@ type DBConfig struct {
     Host string `env:"HOST"`  // Reads DB_HOST (prefix + field)
 }
 
-// Load with: libUncommons.InitLocalEnvConfig() + env.Parse(&cfg)
+// Load with: libCommons.InitLocalEnvConfig() + env.Parse(&cfg)
 ```
 
 ---
@@ -338,8 +338,8 @@ Understanding how traces propagate is critical for proper instrumentation.
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  HANDLER LAYER (optional child spans - for complex handlers)                │
 │                                                                             │
-│  // Logger is dependency-injected (field on handler struct)                 │
-│  ctx, span := h.tracer.Start(ctx, "handler.create_tenant")                  │
+│  // Logger is dependency-injected; tracer via global wrapper                │
+│  ctx, span := telemetry.StartSpan(ctx, "handler.create_tenant")             │
 │  defer span.End()                                                           │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -347,19 +347,17 @@ Understanding how traces propagate is critical for proper instrumentation.
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  SERVICE LAYER (MANDATORY child spans for all methods)                      │
 │                                                                             │
-│  // Logger and tracer are dependency-injected (fields on service struct)    │
-│  ctx, span := s.tracer.Start(ctx, "service.tenant.create")                  │
+│  // Logger is dependency-injected; tracer via global wrapper                │
+│  ctx, span := telemetry.StartSpan(ctx, "service.tenant.create")             │
 │  defer span.End()                                                           │
 │                                                                             │
 │  // Structured logging with fields (v4 pattern)                             │
 │  s.logger.Log(ctx, clog.LevelInfo, "Creating tenant",                       │
 │      clog.String("name", req.Name))                                         │
 │                                                                             │
-│  // Business errors → AddEvent (span status stays OK)                       │
-│  cotel.HandleSpanBusinessErrorEvent(&span, "Validation", err)               │
-│                                                                             │
-│  // Technical errors → SetStatus ERROR + RecordError                        │
-│  cotel.HandleSpanError(&span, "DB connection failed", err)                  │
+│  // Business errors → span status stays OK                                  │
+│  telemetry.HandleSpanError(span, err) // for technical errors               │
+│  telemetry.SetSpanSuccess(span)       // for success                        │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -407,8 +405,8 @@ Understanding how traces propagate is critical for proper instrumentation.
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. any LAYER (handlers, services, repositories)                 │
-│    // Logger and tracer are dependency-injected fields           │
-│    ctx, span := s.tracer.Start(ctx, "operation_name")           │
+│    // Logger is DI field; tracer via global wrapper              │
+│    ctx, span := telemetry.StartSpan(ctx, "operation_name")      │
 │    defer span.End()                                              │
 │    s.logger.Log(ctx, clog.LevelInfo, "Processing...",           │
 │        clog.String("key", "value"))                              │
@@ -431,8 +429,8 @@ Understanding how traces propagate is critical for proper instrumentation.
 
 | # | Step | Code Pattern | Purpose |
 |---|------|--------------|---------|
-| 1 | Logger/tracer as struct fields | `s.logger`, `s.tracer` (dependency-injected) | Injected at construction time |
-| 2 | Create child span | `ctx, span := s.tracer.Start(ctx, "service.{domain}.{operation}")` | Create traceable operation |
+| 1 | Logger as struct field | `s.logger clog.Logger` (dependency-injected) | Injected at construction time |
+| 2 | Create child span | `ctx, span := telemetry.StartSpan(ctx, "service.{domain}.{operation}")` | Create traceable operation via global wrapper |
 | 3 | Defer span end | `defer span.End()` | Ensure span closes even on panic |
 | 4 | Use structured logger with fields | `s.logger.Log(ctx, clog.LevelInfo, "msg", clog.String("key", "val"))` | Logs correlated with trace |
 | 5 | Handle business errors | `cotel.HandleSpanBusinessErrorEvent(&span, msg, err)` | Expected errors (validation, not found) |
@@ -459,12 +457,11 @@ Understanding how traces propagate is critical for proper instrumentation.
 
 ```go
 func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, error) {
-    // 1. Logger and tracer are struct fields (dependency-injected at construction)
-    // s.logger clog.Logger
-    // s.tracer trace.Core three
+    // 1. Logger is a struct field (dependency-injected at construction)
+    // Core three is accessed via global wrapper (set by cotel.ApplyGlobals at bootstrap)
 
     // 2. Create child span for this operation
-    ctx, span := s.tracer.Start(ctx, "service.my_service.do_something")
+    ctx, span := telemetry.StartSpan(ctx, "service.my_service.do_something")
     defer span.End()
 
     // 3. Structured logging with typed fields (v4 pattern)
@@ -501,6 +498,70 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
     return result, nil
 }
 ```
+
+---
+
+### Telemetry Wrapper Package (MANDATORY)
+
+Every service MUST create a thin telemetry wrapper at `internal/shared/telemetry/tracer.go`. This wrapper accesses the global tracer (registered by `cotel.NewTelemetry()` + `tl.ApplyGlobals()` at bootstrap) and provides domain-specific helpers.
+
+```go
+// internal/shared/telemetry/tracer.go
+package telemetry
+
+import (
+    "context"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/codes"
+    "go.opentelemetry.io/otel/trace"
+)
+
+// tracerName identifies this service in distributed traces.
+const tracerName = "github.com/LerianStudio/your-service"
+
+// StartSpan creates a new span using the global tracer provider.
+func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+    return otel.Core three(tracerName).Start(ctx, name, opts...)
+}
+
+// HandleSpanError records an error on the span and sets status to Error.
+func HandleSpanError(span trace.Span, err error) {
+    if span == nil || err == nil {
+        return
+    }
+    span.RecordError(err)
+    span.SetStatus(codes.Error, err.Error())
+}
+
+// SetSpanSuccess sets the span status to OK.
+func SetSpanSuccess(span trace.Span) {
+    if span == nil {
+        return
+    }
+    span.SetStatus(codes.Ok, "")
+}
+
+// SpanFromContext returns the current span from context.
+func SpanFromContext(ctx context.Context) trace.Span {
+    return trace.SpanFromContext(ctx)
+}
+```
+
+**Why a wrapper instead of direct `otel.Core three()` calls:**
+- Single place to change the `tracerName` constant
+- Domain-specific helpers (`HandleSpanError`, `SetSpanSuccess`) reduce boilerplate
+- The wrapper uses the global provider set by `cotel.ApplyGlobals()` — no struct injection needed for tracer
+
+**Span Naming Conventions:**
+
+| Layer | Pattern | Examples |
+|-------|---------|----------|
+| HTTP Handler | `handler.{resource}.{action}` | `handler.tenant.create`, `handler.agent.list` |
+| Service | `service.{domain}.{operation}` | `service.tenant.create`, `service.agent.register` |
+| Repository | `repository.{entity}.{operation}` | `repository.tenant.get_by_id`, `repository.agent.list` |
+| External Call | `external.{service}.{operation}` | `external.payment.process`, `external.auth.validate` |
+| Queue Consumer | `consumer.{queue}.{operation}` | `consumer.balance_create.process` |
 
 ---
 
@@ -550,8 +611,8 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 |--------------|---------|-----------------|
 | `import "go.opentelemetry.io/otel"` | Direct OTel usage bypasses lib-commons wrappers | Use dependency-injected `trace.Core three` from `cotel` |
 | `import "go.opentelemetry.io/otel/trace"` | Direct tracer access without lib-commons | Use `cotel` package from lib-commons |
-| `otel.Core three("name")` | Creates standalone tracer, no context integration | Use tracer from `cotel.NewTelemetry()` |
-| `trace.SpanFromContext(ctx)` | Raw OTel API, inconsistent with lib-commons | Use dependency-injected tracer |
+| `otel.Core three("name")` in service code | Scattered tracer creation, no single tracerName | Use `telemetry.StartSpan()` from shared wrapper package |
+| `trace.SpanFromContext(ctx)` in service code | Raw OTel API, bypasses wrapper | Use `telemetry.SpanFromContext(ctx)` from shared wrapper |
 | Custom error handler | Inconsistent error format across services | Use `chttp.HandleFiberError` in fiber.Config |
 | Manual pagination logic | Reinvents cursor/offset pagination | Use `chttp.Pagination`, `chttp.CursorPagination` |
 | Custom logging middleware | Inconsistent request logging | Use chttp OTel middleware |
@@ -566,7 +627,7 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 | Not injecting trace context for outgoing HTTP/gRPC | Remote traces disconnected | Use `cotel.InjectHTTPContext` / `cotel.InjectGRPCContext` |
 | `go func() { ... }()` | No panic recovery, no observability | Use `cruntime.SafeGoWithContextAndComponent` |
 | `logger.Infof("msg: %s", val)` | v2 format-based logging | Use `s.logger.Log(ctx, level, "msg", clog.String(...))` |
-| `libCommons.SetConfigFromEnvVars(&cfg)` | v2 config loading, removed in v4 | Use `libUncommons.InitLocalEnvConfig()` + `env.Parse()` |
+| `libCommons.SetConfigFromEnvVars(&cfg)` | v2 config loading, removed in v4 | Use `libCommons.InitLocalEnvConfig()` + `env.Parse()` |
 | `libOpentelemetry.InitializeTelemetry()` | v2 telemetry init, panics on error | Use `cotel.NewTelemetry()` + `tl.ApplyGlobals()` |
 | `libZap.InitializeLogger()` | v2 logger init, no config options | Use `czap.New(czap.Config{...})` |
 | `libCommons.NewTrackingFromContext(ctx)` | v2 context tracking, removed in v4 | Use dependency-injected logger |
@@ -584,7 +645,7 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 ```go
 // bootstrap/config.go
 func InitServersWithOptions(opts ...Option) (*Service, error) {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -687,16 +748,18 @@ The `chttp` OTel middleware from lib-commons v4 provides HTTP metrics collection
 
 ```go
 // any file in any layer (handler, service, repository)
-// Logger and tracer are dependency-injected struct fields
+// Logger is dependency-injected; tracer via global wrapper
 type Service struct {
     logger clog.Logger
-    tracer trace.Core three
     repo   Repository
 }
 
 func (s *Service) ProcessEntity(ctx context.Context, id string) error {
-    // Create child span using injected tracer
-    ctx, span := s.tracer.Start(ctx, "service.process_entity")
+    // Logger is a struct field (dependency-injected)
+    // Core three via global wrapper
+
+    // Create child span for this operation
+    ctx, span := telemetry.StartSpan(ctx, "service.process_entity")
     defer span.End()
 
     // Structured logging with typed fields
@@ -801,7 +864,7 @@ import (
     "strings"
     "time"
 
-    libUncommons "github.com/LerianStudio/lib-commons/v4/commons"
+    libCommons "github.com/LerianStudio/lib-commons/v4/commons"
     clog "github.com/LerianStudio/lib-commons/v4/commons/log"
     czap "github.com/LerianStudio/lib-commons/v4/commons/zap"
     cotel "github.com/LerianStudio/lib-commons/v4/commons/opentelemetry"
@@ -841,7 +904,7 @@ type Config struct {
 func InitServersWithOptions(opts ...Option) (*Service, error) {
     // 1. LOAD CONFIGURATION
     // InitLocalEnvConfig loads .env for local dev (no-op in production)
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -1227,7 +1290,7 @@ type AuthConfig struct {
 ```go
 // bootstrap/config.go
 func InitServersWithOptions(opts ...Option) (*Service, error) {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -1498,7 +1561,7 @@ import (
 )
 
 func InitServersWithOptions(opts ...Option) (*Service, error) {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -1985,7 +2048,7 @@ Use for: Transactions, Operations, Balances, Audit logs, Events
 func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
     ctx := c.UserContext()
 
-    ctx, span := h.tracer.Start(ctx, "handler.get_all_transactions")
+    ctx, span := telemetry.StartSpan(ctx, "handler.get_all_transactions")
     defer span.End()
 
     // Parse and validate query parameters
@@ -2023,7 +2086,7 @@ func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
 ```go
 func (r *Repository) FindAll(ctx context.Context, filter chttp.Pagination) ([]Entity, chttp.CursorPagination, error) {
 
-    ctx, span := r.tracer.Start(ctx, "postgres.find_all")
+    ctx, span := telemetry.StartSpan(ctx, "postgres.find_all")
     defer span.End()
 
     // Decode cursor if provided
@@ -2112,7 +2175,7 @@ Use for: Organizations, Ledgers, Assets, Portfolios, Accounts
 func (h *Handler) GetAllOrganizations(c *fiber.Ctx) error {
     ctx := c.UserContext()
 
-    ctx, span := h.tracer.Start(ctx, "handler.get_all_organizations")
+    ctx, span := telemetry.StartSpan(ctx, "handler.get_all_organizations")
     defer span.End()
 
     headerParams, err := chttp.ValidateParameters(c.Queries())
@@ -3139,7 +3202,7 @@ When producing a Standards Compliance report (used by ring:dev-refactor workflow
 | Category | Current Pattern | Expected Pattern | Status | Evidence |
 |----------|----------------|------------------|--------|----------|
 | Config Struct | Nested `Config` struct with `envPrefix` tags | Nested structs with `envPrefix` tags | ✅ Compliant | `internal/bootstrap/config.go:15` |
-| Config Loading | `libUncommons.InitLocalEnvConfig()` + `env.Parse(&cfg)` | `libUncommons.InitLocalEnvConfig()` + `env.Parse()` | ✅ Compliant | `internal/bootstrap/config.go:42` |
+| Config Loading | `libCommons.InitLocalEnvConfig()` + `env.Parse(&cfg)` | `libCommons.InitLocalEnvConfig()` + `env.Parse()` | ✅ Compliant | `internal/bootstrap/config.go:42` |
 | Logger Init | `czap.New(czap.Config{...})` | `czap.New()` (bootstrap only) | ✅ Compliant | `internal/bootstrap/config.go:45` |
 | Telemetry Init | `cotel.NewTelemetry()` + `tl.ApplyGlobals()` | `cotel.NewTelemetry()` + `ApplyGlobals()` | ✅ Compliant | `internal/bootstrap/config.go:48` |
 | ... | ... | ... | ✅ Compliant | ... |
@@ -3175,7 +3238,7 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
 | Config Struct | Scattered `os.Getenv()` calls | Nested structs with `envPrefix` tags | ⚠️ Non-Compliant | `cmd/api/main.go` |
-| Config Loading | Manual env parsing | `libUncommons.InitLocalEnvConfig()` + `env.Parse()` | ⚠️ Non-Compliant | `cmd/api/main.go:25` |
+| Config Loading | Manual env parsing | `libCommons.InitLocalEnvConfig()` + `env.Parse()` | ⚠️ Non-Compliant | `cmd/api/main.go:25` |
 | Logger Init | `czap.New(czap.Config{...})` | `czap.New()` (bootstrap only) | ✅ Compliant | `cmd/api/main.go:30` |
 | ... | ... | ... | ... | ... |
 
@@ -3191,8 +3254,8 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 1. **Config Struct Migration**
    - Replace: Direct `os.Getenv()` calls scattered across files
    - With: Nested `Config` struct with `envPrefix` tags in `/internal/bootstrap/config.go`
-   - Import: `libUncommons "github.com/LerianStudio/lib-commons/v4/commons"`
-   - Usage: `libUncommons.InitLocalEnvConfig()` + `env.Parse(&cfg)`
+   - Import: `libCommons "github.com/LerianStudio/lib-commons/v4/commons"`
+   - Usage: `libCommons.InitLocalEnvConfig()` + `env.Parse(&cfg)`
    - Files affected: `cmd/api/main.go`, `internal/service/user.go`
 
 2. **Logger Migration**
@@ -3230,7 +3293,7 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 Before submitting Go code, verify:
 
 - [ ] Using lib-commons v4 for infrastructure
-- [ ] Configuration loaded via `libUncommons.InitLocalEnvConfig()` + `env.Parse()` with nested config structs
+- [ ] Configuration loaded via `libCommons.InitLocalEnvConfig()` + `env.Parse()` with nested config structs
 - [ ] Telemetry initialized via `cotel.NewTelemetry()` + `tl.ApplyGlobals()`
 - [ ] Logger initialized via `czap.New()` and dependency-injected (not recovered from context)
 - [ ] **No direct imports of `go.opentelemetry.io/otel/*` packages** (use lib-commons wrappers)
