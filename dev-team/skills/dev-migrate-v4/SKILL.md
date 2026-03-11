@@ -64,15 +64,15 @@ You orchestrate. Agents execute. Do NOT read source code directly — dispatch `
 
 ## Standards Loading (MANDATORY)
 
-Before analysis, load the current v4 standards:
+Before analysis, load the v4 standards from the bundled file in this repository:
 
 ```yaml
-WebFetch:
-  url: "https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang.md"
+Read:
+  path: "platforms/opencode/standards/golang.md"
   extract: "Core Dependency: lib-commons" section — full package table with aliases
 ```
 
-MUST use the fetched standards as the source of truth for v4 patterns. CANNOT rely on hardcoded patterns alone — golang.md may be updated with new packages or changed aliases.
+MUST use the bundled `golang.md` as the source of truth for v4 patterns. This file is versioned alongside the skill, ensuring deterministic migrations. CANNOT rely on hardcoded patterns alone — the bundled file may be updated with new packages or changed aliases.
 
 ---
 
@@ -83,7 +83,7 @@ MUST use the fetched standards as the source of truth for v4 patterns. CANNOT re
 | No `go.mod` found in target path | **STOP** — "Not a Go project. Cannot migrate." |
 | `go.mod` does not contain `lib-commons` | **STOP** — "No lib-commons dependency found. Nothing to migrate." |
 | Already on v4 with full compliance | **STOP** — "Already on v4 and compliant. No migration needed." Report compliance status only. |
-| WebFetch fails to load golang.md | **STOP** — "Cannot load current standards. Retry or check network." |
+| `golang.md` not found at `platforms/opencode/standards/golang.md` | **STOP** — "Standards file not found. Ensure Ring repository is accessible." |
 | Target path is not readable | **STOP** — "Cannot access target path." |
 
 ---
