@@ -540,6 +540,7 @@ func (s *MyService) DoSomething(ctx context.Context) error {
 - [ ] All `logger.Warnf(...)` replaced with `s.logger.Log(ctx, clog.LevelWarn, ...)`
 - [ ] All `logger.WithFields(...)` calls replaced with typed field constructors
 - [ ] `logger.Sync()` replaced with `logger.Sync(ctx)` (takes context)
+- [ ] Tracer from `NewTrackingFromContext` replaced with dependency-injected `trace.Tracer` from `cotel.NewTelemetry()` (stored as struct field alongside logger)
 - [ ] Zero `NewTrackingFromContext` calls remain in codebase
 - [ ] Zero `logger.Infof` / `logger.Errorf` calls remain in codebase
 - [ ] **Test files updated: mock loggers use `clog.NewNop()`, struct constructors pass logger**
@@ -643,10 +644,10 @@ When generating the actual tasks file for a specific repository:
 2. **Files list MUST be concrete** — actual file paths with line numbers, not placeholders
 3. **Files list MUST include `_test.go` files** — test files use the same imports, loggers, and patterns. Migrating production code without tests will break the build.
 4. **Acceptance criteria MUST be verifiable** — agent can grep/build to confirm
-4. **Task ordering matters** — MIG-001 (go.mod) MUST execute before MIG-002 (imports)
-5. **Context for Agent section** — include enough detail for `ring:backend-engineer-golang` to execute without additional codebase exploration
-6. **Skip tasks where pattern is not found** — if service has no RabbitMQ, do not generate MIG for RabbitMQ migration
-7. **MIG-FINAL is always the last task** — verifies entire migration compiles and passes tests
+5. **Task ordering matters** — MIG-001 (go.mod) MUST execute before MIG-002 (imports)
+6. **Context for Agent section** — include enough detail for `ring:backend-engineer-golang` to execute without additional codebase exploration
+7. **Skip tasks where pattern is not found** — if service has no RabbitMQ, do not generate MIG for RabbitMQ migration
+8. **MIG-FINAL is always the last task** — verifies entire migration compiles and passes tests
 
 **TodoWrite:** Mark as `completed`
 
@@ -789,9 +790,8 @@ import (
 ```go
 // Initialization (bootstrap only)
 logger, err := czap.New(czap.Config{
-    Environment:     czap.EnvironmentProduction,
-    Level:           "info",
-    OTelLibraryName: "github.com/LerianStudio/your-service",
+    Level:       cfg.App.LogLevel,
+    Development: cfg.App.EnvName != "production",
 })
 
 // Usage (any layer) — structured fields, context-first
