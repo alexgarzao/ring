@@ -246,9 +246,11 @@ Search for these import patterns and count occurrences:
 - `InitServers() *Service` (returns value, not error)
 - `bootstrap.InitServers().Run()` in main.go
 
-### Category 5: Context Tracking
-- `libCommons.NewTrackingFromContext(ctx)`
+### Category 5: Context Tracking (BREAKING — highest impact, affects every layer)
+- `libCommons.NewTrackingFromContext(ctx)` — count ALL occurrences, this is the core v2 pattern
+- `logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)` — the 4-return destructuring
 - Logger recovered from context instead of dependency injection
+- Structs that DON'T have a `logger` field but call `NewTrackingFromContext` in methods
 
 ### Category 6: Telemetry
 - `libOpentelemetry.InitializeTelemetry(` (panics on error)
@@ -502,28 +504,56 @@ Reference: golang.md §4 Configuration
 
 ---
 
-## Task: MIG-004 - Migrate logging to structured fields
+## Task: MIG-004 - Migrate logging and context tracking
 
-Replace all Printf-style logging with v4 structured field pattern.
+Replace Printf-style logging AND `NewTrackingFromContext` pattern with v4 dependency-injected structured logging.
+
+**This is the highest-impact task.** In v2, every service/handler/repository method calls `libCommons.NewTrackingFromContext(ctx)` to get logger+tracer. In v4, logger is a struct field injected at construction. This change affects every layer.
+
+### v2 pattern (REMOVE):
+```go
+func (s *MyService) DoSomething(ctx context.Context) error {
+    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    ctx, span := tracer.Start(ctx, "service.do_something")
+    defer span.End()
+    logger.Infof("Processing: %s", id)
+}
+```
+
+### v4 pattern (REPLACE WITH):
+```go
+type MyService struct {
+    logger clog.Logger  // injected at construction
+}
+
+func (s *MyService) DoSomething(ctx context.Context) error {
+    s.logger.Log(ctx, clog.LevelInfo, "Processing", clog.String("id", id))
+}
+```
 
 ### Acceptance Criteria
+- [ ] **All `libCommons.NewTrackingFromContext(ctx)` calls removed** — this is the core v2→v4 change
+- [ ] Logger added as struct field (`logger clog.Logger`) to every service, handler, and repository that used `NewTrackingFromContext`
+- [ ] Logger injected via constructor in bootstrap/DI wiring
 - [ ] All `logger.Infof("msg: %s", val)` replaced with `s.logger.Log(ctx, clog.LevelInfo, "msg", clog.String("key", val))`
 - [ ] All `logger.Errorf("msg: %v", err)` replaced with `s.logger.Log(ctx, clog.LevelError, "msg", clog.Err(err))`
 - [ ] All `logger.Warnf(...)` replaced with `s.logger.Log(ctx, clog.LevelWarn, ...)`
 - [ ] All `logger.WithFields(...)` calls replaced with typed field constructors
 - [ ] `logger.Sync()` replaced with `logger.Sync(ctx)` (takes context)
-- [ ] Logger is dependency-injected via struct fields, NOT recovered from context
-- [ ] `libCommons.NewTrackingFromContext(ctx)` calls removed
+- [ ] Zero `NewTrackingFromContext` calls remain in codebase
 - [ ] Zero `logger.Infof` / `logger.Errorf` calls remain in codebase
-- [ ] **Test files updated: mock loggers use `clog.NewNop()`, assertions use v4 types**
+- [ ] **Test files updated: mock loggers use `clog.NewNop()`, struct constructors pass logger**
 - [ ] `go test ./...` passes
 
 ### Files
-{every file with logging calls — including _test.go — sorted by call count descending}
+{every file with `NewTrackingFromContext` OR logging calls — including _test.go — sorted by call count descending}
 
 ### Context for Agent
+v2 recovery pattern to search for: `logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)`
+v4 replacement: add `logger clog.Logger` field to struct, inject in constructor, use `s.logger.Log(ctx, level, msg, fields...)`
 Field constructors: `clog.String(k,v)`, `clog.Int(k,v)`, `clog.Err(err)`, `clog.Bool(k,v)`, `clog.Float64(k,v)`, `clog.Duration(k,v)`
 Levels: `clog.LevelInfo`, `clog.LevelError`, `clog.LevelWarn`, `clog.LevelDebug`
+Test logger: `clog.NewNop()` for unit tests
 
 ---
 
