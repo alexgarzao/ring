@@ -540,7 +540,7 @@ func (s *MyService) DoSomething(ctx context.Context) error {
 - [ ] All `logger.Warnf(...)` replaced with `s.logger.Log(ctx, clog.LevelWarn, ...)`
 - [ ] All `logger.WithFields(...)` calls replaced with typed field constructors
 - [ ] `logger.Sync()` replaced with `logger.Sync(ctx)` (takes context)
-- [ ] Core three from `NewTrackingFromContext` replaced with dependency-injected `trace.Core three` from `cotel.NewTelemetry()` (stored as struct field alongside logger)
+- [ ] Core three from `NewTrackingFromContext` replaced with global OTel tracer (`otel.Core three(tracerName).Start(ctx, name)`) — set by `cotel.NewTelemetry()` + `tl.ApplyGlobals()` at bootstrap
 - [ ] Zero `NewTrackingFromContext` calls remain in codebase
 - [ ] Zero `logger.Infof` / `logger.Errorf` calls remain in codebase
 - [ ] **Test files updated: mock loggers use `clog.NewNop()`, struct constructors pass logger**

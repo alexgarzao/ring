@@ -338,8 +338,8 @@ Understanding how traces propagate is critical for proper instrumentation.
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  HANDLER LAYER (optional child spans - for complex handlers)                │
 │                                                                             │
-│  // Logger is dependency-injected (field on handler struct)                 │
-│  ctx, span := h.tracer.Start(ctx, "handler.create_tenant")                  │
+│  // Logger is dependency-injected; tracer via global wrapper                │
+│  ctx, span := telemetry.StartSpan(ctx, "handler.create_tenant")             │
 │  defer span.End()                                                           │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -347,19 +347,17 @@ Understanding how traces propagate is critical for proper instrumentation.
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  SERVICE LAYER (MANDATORY child spans for all methods)                      │
 │                                                                             │
-│  // Logger and tracer are dependency-injected (fields on service struct)    │
-│  ctx, span := s.tracer.Start(ctx, "service.tenant.create")                  │
+│  // Logger is dependency-injected; tracer via global wrapper                │
+│  ctx, span := telemetry.StartSpan(ctx, "service.tenant.create")             │
 │  defer span.End()                                                           │
 │                                                                             │
 │  // Structured logging with fields (v4 pattern)                             │
 │  s.logger.Log(ctx, clog.LevelInfo, "Creating tenant",                       │
 │      clog.String("name", req.Name))                                         │
 │                                                                             │
-│  // Business errors → AddEvent (span status stays OK)                       │
-│  cotel.HandleSpanBusinessErrorEvent(&span, "Validation", err)               │
-│                                                                             │
-│  // Technical errors → SetStatus ERROR + RecordError                        │
-│  cotel.HandleSpanError(&span, "DB connection failed", err)                  │
+│  // Business errors → span status stays OK                                  │
+│  telemetry.HandleSpanError(span, err) // for technical errors               │
+│  telemetry.SetSpanSuccess(span)       // for success                        │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -407,8 +405,8 @@ Understanding how traces propagate is critical for proper instrumentation.
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. any LAYER (handlers, services, repositories)                 │
-│    // Logger and tracer are dependency-injected fields           │
-│    ctx, span := s.tracer.Start(ctx, "operation_name")           │
+│    // Logger is DI field; tracer via global wrapper              │
+│    ctx, span := telemetry.StartSpan(ctx, "operation_name")      │
 │    defer span.End()                                              │
 │    s.logger.Log(ctx, clog.LevelInfo, "Processing...",           │
 │        clog.String("key", "value"))                              │
@@ -431,8 +429,8 @@ Understanding how traces propagate is critical for proper instrumentation.
 
 | # | Step | Code Pattern | Purpose |
 |---|------|--------------|---------|
-| 1 | Logger/tracer as struct fields | `s.logger`, `s.tracer` (dependency-injected) | Injected at construction time |
-| 2 | Create child span | `ctx, span := s.tracer.Start(ctx, "service.{domain}.{operation}")` | Create traceable operation |
+| 1 | Logger as struct field | `s.logger clog.Logger` (dependency-injected) | Injected at construction time |
+| 2 | Create child span | `ctx, span := telemetry.StartSpan(ctx, "service.{domain}.{operation}")` | Create traceable operation via global wrapper |
 | 3 | Defer span end | `defer span.End()` | Ensure span closes even on panic |
 | 4 | Use structured logger with fields | `s.logger.Log(ctx, clog.LevelInfo, "msg", clog.String("key", "val"))` | Logs correlated with trace |
 | 5 | Handle business errors | `cotel.HandleSpanBusinessErrorEvent(&span, msg, err)` | Expected errors (validation, not found) |
@@ -459,12 +457,11 @@ Understanding how traces propagate is critical for proper instrumentation.
 
 ```go
 func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, error) {
-    // 1. Logger and tracer are struct fields (dependency-injected at construction)
-    // s.logger clog.Logger
-    // s.tracer trace.Core three
+    // 1. Logger is a struct field (dependency-injected at construction)
+    // Core three is accessed via global wrapper (set by cotel.ApplyGlobals at bootstrap)
 
     // 2. Create child span for this operation
-    ctx, span := s.tracer.Start(ctx, "service.my_service.do_something")
+    ctx, span := telemetry.StartSpan(ctx, "service.my_service.do_something")
     defer span.End()
 
     // 3. Structured logging with typed fields (v4 pattern)
@@ -501,6 +498,70 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
     return result, nil
 }
 ```
+
+---
+
+### Telemetry Wrapper Package (MANDATORY)
+
+Every service MUST create a thin telemetry wrapper at `internal/shared/telemetry/tracer.go`. This wrapper accesses the global tracer (registered by `cotel.NewTelemetry()` + `tl.ApplyGlobals()` at bootstrap) and provides domain-specific helpers.
+
+```go
+// internal/shared/telemetry/tracer.go
+package telemetry
+
+import (
+    "context"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/codes"
+    "go.opentelemetry.io/otel/trace"
+)
+
+// tracerName identifies this service in distributed traces.
+const tracerName = "github.com/LerianStudio/your-service"
+
+// StartSpan creates a new span using the global tracer provider.
+func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+    return otel.Core three(tracerName).Start(ctx, name, opts...)
+}
+
+// HandleSpanError records an error on the span and sets status to Error.
+func HandleSpanError(span trace.Span, err error) {
+    if span == nil || err == nil {
+        return
+    }
+    span.RecordError(err)
+    span.SetStatus(codes.Error, err.Error())
+}
+
+// SetSpanSuccess sets the span status to OK.
+func SetSpanSuccess(span trace.Span) {
+    if span == nil {
+        return
+    }
+    span.SetStatus(codes.Ok, "")
+}
+
+// SpanFromContext returns the current span from context.
+func SpanFromContext(ctx context.Context) trace.Span {
+    return trace.SpanFromContext(ctx)
+}
+```
+
+**Why a wrapper instead of direct `otel.Core three()` calls:**
+- Single place to change the `tracerName` constant
+- Domain-specific helpers (`HandleSpanError`, `SetSpanSuccess`) reduce boilerplate
+- The wrapper uses the global provider set by `cotel.ApplyGlobals()` — no struct injection needed for tracer
+
+**Span Naming Conventions:**
+
+| Layer | Pattern | Examples |
+|-------|---------|----------|
+| HTTP Handler | `handler.{resource}.{action}` | `handler.tenant.create`, `handler.agent.list` |
+| Service | `service.{domain}.{operation}` | `service.tenant.create`, `service.agent.register` |
+| Repository | `repository.{entity}.{operation}` | `repository.tenant.get_by_id`, `repository.agent.list` |
+| External Call | `external.{service}.{operation}` | `external.payment.process`, `external.auth.validate` |
+| Queue Consumer | `consumer.{queue}.{operation}` | `consumer.balance_create.process` |
 
 ---
 
@@ -550,8 +611,8 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 |--------------|---------|-----------------|
 | `import "go.opentelemetry.io/otel"` | Direct OTel usage bypasses lib-commons wrappers | Use dependency-injected `trace.Core three` from `cotel` |
 | `import "go.opentelemetry.io/otel/trace"` | Direct tracer access without lib-commons | Use `cotel` package from lib-commons |
-| `otel.Core three("name")` | Creates standalone tracer, no context integration | Use tracer from `cotel.NewTelemetry()` |
-| `trace.SpanFromContext(ctx)` | Raw OTel API, inconsistent with lib-commons | Use dependency-injected tracer |
+| `otel.Core three("name")` in service code | Scattered tracer creation, no single tracerName | Use `telemetry.StartSpan()` from shared wrapper package |
+| `trace.SpanFromContext(ctx)` in service code | Raw OTel API, bypasses wrapper | Use `telemetry.SpanFromContext(ctx)` from shared wrapper |
 | Custom error handler | Inconsistent error format across services | Use `chttp.HandleFiberError` in fiber.Config |
 | Manual pagination logic | Reinvents cursor/offset pagination | Use `chttp.Pagination`, `chttp.CursorPagination` |
 | Custom logging middleware | Inconsistent request logging | Use chttp OTel middleware |
@@ -687,16 +748,18 @@ The `chttp` OTel middleware from lib-commons v4 provides HTTP metrics collection
 
 ```go
 // any file in any layer (handler, service, repository)
-// Logger and tracer are dependency-injected struct fields
+// Logger is dependency-injected; tracer via global wrapper
 type Service struct {
     logger clog.Logger
-    tracer trace.Core three
     repo   Repository
 }
 
 func (s *Service) ProcessEntity(ctx context.Context, id string) error {
-    // Create child span using injected tracer
-    ctx, span := s.tracer.Start(ctx, "service.process_entity")
+    // Logger is a struct field (dependency-injected)
+    // Core three via global wrapper
+
+    // Create child span for this operation
+    ctx, span := telemetry.StartSpan(ctx, "service.process_entity")
     defer span.End()
 
     // Structured logging with typed fields
@@ -1985,7 +2048,7 @@ Use for: Transactions, Operations, Balances, Audit logs, Events
 func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
     ctx := c.UserContext()
 
-    ctx, span := h.tracer.Start(ctx, "handler.get_all_transactions")
+    ctx, span := telemetry.StartSpan(ctx, "handler.get_all_transactions")
     defer span.End()
 
     // Parse and validate query parameters
@@ -2023,7 +2086,7 @@ func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
 ```go
 func (r *Repository) FindAll(ctx context.Context, filter chttp.Pagination) ([]Entity, chttp.CursorPagination, error) {
 
-    ctx, span := r.tracer.Start(ctx, "postgres.find_all")
+    ctx, span := telemetry.StartSpan(ctx, "postgres.find_all")
     defer span.End()
 
     // Decode cursor if provided
@@ -2112,7 +2175,7 @@ Use for: Organizations, Ledgers, Assets, Portfolios, Accounts
 func (h *Handler) GetAllOrganizations(c *fiber.Ctx) error {
     ctx := c.UserContext()
 
-    ctx, span := h.tracer.Start(ctx, "handler.get_all_organizations")
+    ctx, span := telemetry.StartSpan(ctx, "handler.get_all_organizations")
     defer span.End()
 
     headerParams, err := chttp.ValidateParameters(c.Queries())
