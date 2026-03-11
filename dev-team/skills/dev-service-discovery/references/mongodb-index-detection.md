@@ -98,6 +98,56 @@ Generate gap analysis:
 
 ---
 
+## Step 3.5: Validate Existing S3 Migration JSON Files
+
+**Execute BEFORE generating new scripts. Checks that existing `.up.json` and `.down.json` files in S3 follow the canonical format.**
+
+```text
+For EACH existing S3 migration file (downloaded in Step 2 or fetched now):
+
+1. Verify AWS CLI + bucket access (same as Step 5 checks)
+2. List existing migrations: aws s3 ls s3://{bucket}/{service}/ --recursive | grep mongodb
+3. Download each .up.json and .down.json for comparison
+
+VALIDATE each .up.json:
+
+V1. Index name present:
+    - Every index in "indexes" array MUST have "name" in "options"
+    - Name MUST follow idx_* convention
+    - ⛔ FAIL: {"keys": {"field": 1}, "options": {"unique": true}}  ← missing "name"
+    - ✅ PASS: {"keys": {"field": 1}, "options": {"unique": true, "name": "idx_field_unique"}}
+
+V2. Key order matches code:
+    - For compound indexes, the key order in the JSON MUST match the order
+      in the Go source code (bson.D is ordered)
+    - JSON object key order matters for MongoDB compound indexes (ESR rule)
+    - ⛔ FAIL: code has {search.document: 1, external_id: 1} but JSON has {external_id: 1, search.document: 1}
+    - ✅ PASS: both code and JSON have {search.document: 1, external_id: 1}
+
+V3. Index count matches code:
+    - Number of indexes in .up.json MUST match number of in-code indexes for that collection
+    - Missing indexes → report as "S3 migration outdated — missing N indexes"
+    - Extra indexes → report as "S3 migration has N extra indexes not in code — review"
+
+VALIDATE each .down.json:
+
+V4. Down references match up:
+    - Every "name" in the .up.json MUST appear in the .down.json "indexNames" array
+    - ⛔ FAIL: .up.json has "idx_field_unique" but .down.json has "field_1" (auto-generated name)
+    - ✅ PASS: .down.json has ["idx_field_unique"] matching .up.json
+
+OUTPUT format:
+  S3 Migration Validation:
+  | File | V1 (names) | V2 (key order) | V3 (count) | V4 (down match) | Status |
+  |------|------------|----------------|------------|-----------------|--------|
+  | holder/000001_holders_indexes | ✅ | ✅ | ✅ | ✅ | PASS |
+  | alias/000001_aliases_indexes  | ⛔ missing names | ⛔ key order | ✅ | ⛔ auto-gen names | FAIL |
+
+If ANY validation fails → fix the JSON files and re-upload BEFORE generating new scripts.
+```
+
+---
+
 ## Step 4: Generate Index Scripts for Missing Coverage
 
 **Only if `missing_script` entries exist.**
@@ -114,6 +164,12 @@ For each missing index, generate a `mongosh`-compatible script following the ten
 - Compound: `idx_{field1}_{field2}` (e.g., `idx_tenant_service`)
 - Unique: append `_unique` (e.g., `idx_tenant_service_unique`)
 - Nested fields: replace dots with underscores (e.g., `modules.name` → `idx_modules_name`)
+
+**⛔ HARD GATE: Index naming is MANDATORY in S3 migration JSON files.**
+Every index in a `.up.json` file MUST have an explicit `"name": "idx_..."` in its `options`.
+The corresponding `.down.json` MUST use those exact names in `indexNames`.
+Indexes without explicit names use MongoDB's auto-generated names (e.g., `field_1`),
+which are inconsistent across environments and break down migrations.
 
 ### Script Template
 

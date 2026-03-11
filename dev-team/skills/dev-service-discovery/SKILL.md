@@ -543,6 +543,9 @@ Linux: xdg-open docs/service-discovery.html
 | "I'll just run the indexes manually" | Manual index creation is error-prone and not reproducible. Scripts are idempotent, documented, and version-controlled. | **Generate scripts** |
 | "Same DB name = probably a mistake" | Multiple modules sharing a database is a deliberate architecture pattern. Two modules may read/write the same tables. Detect and flag it, don't ignore it. | **Run Phase 3.6 cross-module analysis** |
 | "Each module gets its own database, always" | Not true. Two modules often share the same database (same tables, same schema). Creating duplicates breaks tenant isolation — tenant-manager must provision ONE database and grant both modules access. | **Detect shared databases and mark provision-once** |
+| "Index names aren't needed, MongoDB auto-generates them" | Auto-generated names (e.g., `field_1`) are inconsistent across environments and break down migrations. The `.down.json` needs explicit names to drop indexes reliably. | **Every index in `.up.json` MUST have `"name": "idx_..."` in options. `.down.json` MUST reference the same names.** |
+| "Key order in JSON doesn't matter" | MongoDB compound index key order determines query optimization (ESR rule). JSON key order in `.up.json` MUST match the `bson.D` order in Go source code. Wrong order = wrong index = degraded queries. | **Validate key order against code (Step 3.5 V2). Fix and re-upload if mismatched.** |
+| "The S3 migrations are already there, skip validation" | Existing ≠ correct. S3 migrations may have missing names, wrong key order, or stale index counts. Step 3.5 validates all four dimensions before proceeding. | **Run Step 3.5 validation on ALL existing S3 migration files.** |
 
 ---
 
