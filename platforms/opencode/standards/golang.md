@@ -60,7 +60,7 @@ All Lerian Studio Go projects **MUST** use `lib-commons/v4` as the foundation li
 
 ```go
 import (
-    libUncommons "github.com/LerianStudio/lib-commons/v4/commons"
+    libCommons "github.com/LerianStudio/lib-commons/v4/commons"
     clog "github.com/LerianStudio/lib-commons/v4/commons/log"
     czap "github.com/LerianStudio/lib-commons/v4/commons/zap"
     cassert "github.com/LerianStudio/lib-commons/v4/commons/assert"
@@ -74,13 +74,13 @@ import (
 )
 ```
 
-> **Note:** v4 uses `c` prefix aliases (e.g., `clog`, `czap`, `cotel`) except for the root commons package which uses `libUncommons`. This distinguishes lib-commons packages from standard library and other imports.
+> **Note:** v4 uses `c` prefix aliases (e.g., `clog`, `czap`, `cotel`) except for the root commons package which uses `libCommons`. This distinguishes lib-commons packages from standard library and other imports.
 
 ### What lib-commons v4 Provides
 
 | Package | Alias | Purpose | Where Used |
 |---------|-------|---------|------------|
-| `commons` | `libUncommons` | Config loading (`InitLocalEnvConfig`), UUID validation, safe math | Bootstrap, utilities |
+| `commons` | `libCommons` | Config loading (`InitLocalEnvConfig`), UUID validation, safe math | Bootstrap, utilities |
 | `commons/log` | `clog` | Logger interface, Level types, Field constructors | **Everywhere** |
 | `commons/zap` | `czap` | Logger initialization/configuration | **Bootstrap only** |
 | `commons/assert` | `cassert` | Domain validation (returns errors, NEVER panics) | Domain, config validation |
@@ -153,7 +153,7 @@ import (
 
 ## Configuration
 
-All services **MUST** use `libUncommons.InitLocalEnvConfig()` for configuration loading. v4 uses **nested config structs** that group related settings together.
+All services **MUST** use `libCommons.InitLocalEnvConfig()` for configuration loading. v4 uses **nested config structs** that group related settings together.
 
 ### 1. Define Configuration Struct (Nested Pattern)
 
@@ -244,7 +244,7 @@ type AuthConfig struct {
 // bootstrap/config.go
 func InitServersWithOptions(opts ...Option) (*Service, error) {
     // Load .env file for local development (no-op in production)
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -255,7 +255,7 @@ func InitServersWithOptions(opts ...Option) (*Service, error) {
 }
 ```
 
-> **Note:** `libUncommons.InitLocalEnvConfig()` loads `.env` files for local development. In production (containers), environment variables are injected directly and the function is a no-op. The `env.Parse()` call uses the `caarlos0/env` library to populate the struct from environment variables, respecting `envPrefix` tags for nested structs.
+> **Note:** `libCommons.InitLocalEnvConfig()` loads `.env` files for local development. In production (containers), environment variables are injected directly and the function is a no-op. The `env.Parse()` call uses the `caarlos0/env` library to populate the struct from environment variables, respecting `envPrefix` tags for nested structs.
 
 ### Supported Types
 
@@ -297,7 +297,7 @@ type DBConfig struct {
     Host string `env:"HOST"`  // Reads DB_HOST (prefix + field)
 }
 
-// Load with: libUncommons.InitLocalEnvConfig() + env.Parse(&cfg)
+// Load with: libCommons.InitLocalEnvConfig() + env.Parse(&cfg)
 ```
 
 ---
@@ -566,7 +566,7 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 | Not injecting trace context for outgoing HTTP/gRPC | Remote traces disconnected | Use `cotel.InjectHTTPContext` / `cotel.InjectGRPCContext` |
 | `go func() { ... }()` | No panic recovery, no observability | Use `cruntime.SafeGoWithContextAndComponent` |
 | `logger.Infof("msg: %s", val)` | v2 format-based logging | Use `s.logger.Log(ctx, level, "msg", clog.String(...))` |
-| `libCommons.SetConfigFromEnvVars(&cfg)` | v2 config loading, removed in v4 | Use `libUncommons.InitLocalEnvConfig()` + `env.Parse()` |
+| `libCommons.SetConfigFromEnvVars(&cfg)` | v2 config loading, removed in v4 | Use `libCommons.InitLocalEnvConfig()` + `env.Parse()` |
 | `libOpentelemetry.InitializeTelemetry()` | v2 telemetry init, panics on error | Use `cotel.NewTelemetry()` + `tl.ApplyGlobals()` |
 | `libZap.InitializeLogger()` | v2 logger init, no config options | Use `czap.New(czap.Config{...})` |
 | `libCommons.NewTrackingFromContext(ctx)` | v2 context tracking, removed in v4 | Use dependency-injected logger |
@@ -584,7 +584,7 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 ```go
 // bootstrap/config.go
 func InitServersWithOptions(opts ...Option) (*Service, error) {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -801,7 +801,7 @@ import (
     "strings"
     "time"
 
-    libUncommons "github.com/LerianStudio/lib-commons/v4/commons"
+    libCommons "github.com/LerianStudio/lib-commons/v4/commons"
     clog "github.com/LerianStudio/lib-commons/v4/commons/log"
     czap "github.com/LerianStudio/lib-commons/v4/commons/zap"
     cotel "github.com/LerianStudio/lib-commons/v4/commons/opentelemetry"
@@ -841,7 +841,7 @@ type Config struct {
 func InitServersWithOptions(opts ...Option) (*Service, error) {
     // 1. LOAD CONFIGURATION
     // InitLocalEnvConfig loads .env for local dev (no-op in production)
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -1227,7 +1227,7 @@ type AuthConfig struct {
 ```go
 // bootstrap/config.go
 func InitServersWithOptions(opts ...Option) (*Service, error) {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -1498,7 +1498,7 @@ import (
 )
 
 func InitServersWithOptions(opts ...Option) (*Service, error) {
-    libUncommons.InitLocalEnvConfig()
+    libCommons.InitLocalEnvConfig()
 
     cfg := &Config{}
     if err := env.Parse(cfg); err != nil {
@@ -3139,7 +3139,7 @@ When producing a Standards Compliance report (used by ring:dev-refactor workflow
 | Category | Current Pattern | Expected Pattern | Status | Evidence |
 |----------|----------------|------------------|--------|----------|
 | Config Struct | Nested `Config` struct with `envPrefix` tags | Nested structs with `envPrefix` tags | ✅ Compliant | `internal/bootstrap/config.go:15` |
-| Config Loading | `libUncommons.InitLocalEnvConfig()` + `env.Parse(&cfg)` | `libUncommons.InitLocalEnvConfig()` + `env.Parse()` | ✅ Compliant | `internal/bootstrap/config.go:42` |
+| Config Loading | `libCommons.InitLocalEnvConfig()` + `env.Parse(&cfg)` | `libCommons.InitLocalEnvConfig()` + `env.Parse()` | ✅ Compliant | `internal/bootstrap/config.go:42` |
 | Logger Init | `czap.New(czap.Config{...})` | `czap.New()` (bootstrap only) | ✅ Compliant | `internal/bootstrap/config.go:45` |
 | Telemetry Init | `cotel.NewTelemetry()` + `tl.ApplyGlobals()` | `cotel.NewTelemetry()` + `ApplyGlobals()` | ✅ Compliant | `internal/bootstrap/config.go:48` |
 | ... | ... | ... | ✅ Compliant | ... |
@@ -3175,7 +3175,7 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
 | Config Struct | Scattered `os.Getenv()` calls | Nested structs with `envPrefix` tags | ⚠️ Non-Compliant | `cmd/api/main.go` |
-| Config Loading | Manual env parsing | `libUncommons.InitLocalEnvConfig()` + `env.Parse()` | ⚠️ Non-Compliant | `cmd/api/main.go:25` |
+| Config Loading | Manual env parsing | `libCommons.InitLocalEnvConfig()` + `env.Parse()` | ⚠️ Non-Compliant | `cmd/api/main.go:25` |
 | Logger Init | `czap.New(czap.Config{...})` | `czap.New()` (bootstrap only) | ✅ Compliant | `cmd/api/main.go:30` |
 | ... | ... | ... | ... | ... |
 
@@ -3191,8 +3191,8 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 1. **Config Struct Migration**
    - Replace: Direct `os.Getenv()` calls scattered across files
    - With: Nested `Config` struct with `envPrefix` tags in `/internal/bootstrap/config.go`
-   - Import: `libUncommons "github.com/LerianStudio/lib-commons/v4/commons"`
-   - Usage: `libUncommons.InitLocalEnvConfig()` + `env.Parse(&cfg)`
+   - Import: `libCommons "github.com/LerianStudio/lib-commons/v4/commons"`
+   - Usage: `libCommons.InitLocalEnvConfig()` + `env.Parse(&cfg)`
    - Files affected: `cmd/api/main.go`, `internal/service/user.go`
 
 2. **Logger Migration**
@@ -3230,7 +3230,7 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 Before submitting Go code, verify:
 
 - [ ] Using lib-commons v4 for infrastructure
-- [ ] Configuration loaded via `libUncommons.InitLocalEnvConfig()` + `env.Parse()` with nested config structs
+- [ ] Configuration loaded via `libCommons.InitLocalEnvConfig()` + `env.Parse()` with nested config structs
 - [ ] Telemetry initialized via `cotel.NewTelemetry()` + `tl.ApplyGlobals()`
 - [ ] Logger initialized via `czap.New()` and dependency-injected (not recovered from context)
 - [ ] **No direct imports of `go.opentelemetry.io/otel/*` packages** (use lib-commons wrappers)
