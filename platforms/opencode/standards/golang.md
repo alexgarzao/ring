@@ -491,7 +491,7 @@ func (s *myService) DoSomething(ctx context.Context, req *Request) (*Response, e
 
         // TECHNICAL error - unexpected failure, span marked ERROR
         s.logger.Log(ctx, clog.LevelError, "Failed to create entity",
-            clog.Any("error", err))
+            clog.Err(err))
         cotel.HandleSpanError(&span, "Repository create failed", err)
         return nil, fmt.Errorf("failed to create: %w", err)
     }
@@ -577,6 +577,8 @@ headers := cotel.PrepareQueueHeaders(ctx, map[string]any{
 
 > **⛔ CRITICAL:** Raw goroutines (`go func() { ... }()`) are **FORBIDDEN** in production code. All goroutines MUST use `cruntime.SafeGoWithContextAndComponent` for panic recovery and observability.
 
+> **⛔ CRITICAL:** Direct Fiber response methods (`c.JSON()`, `c.Status().JSON()`, `c.SendString()`) are **FORBIDDEN**. All HTTP responses MUST use `chttp` wrappers (`chttp.OK()`, `chttp.Created()`, `chttp.WithError()`, etc.) to ensure consistent response format across all Lerian services.
+
 ### 1. Bootstrap Initialization
 
 ```go
@@ -646,7 +648,8 @@ func NewRouter(lg clog.Logger, tl *cotel.Telemetry, ...) *fiber.App {
     // f.Use(rateLimiting())                       // 4. Rate limiting (if applicable)
     f.Use(cors.New())                              // 5. CORS
     // f.Use(sandbox())                            // 6. Sandbox mode (if applicable)
-    // OTel middleware (creates root span)          // 7. OpenTelemetry
+    tm := chttp.NewTelemetryMiddleware(tl)
+    f.Use(tm.WithTelemetry(tl, "/health"))         // 7. OpenTelemetry (creates root span)
     // f.Use(tenantMiddleware())                   // 8. Tenant resolution (if multi-tenant)
     // f.Use(orgValidation())                      // 9. Organization validation (if applicable)
     // f.Use(licenseMiddleware())                  // 10. License check (if applicable)
@@ -712,7 +715,7 @@ func (s *Service) ProcessEntity(ctx context.Context, id string) error {
 if err != nil {
     cotel.HandleSpanError(&span, "Failed to connect database", err)
     s.logger.Log(ctx, clog.LevelError, "Database error",
-        clog.Any("error", err))
+        clog.Err(err))
     return nil, err
 }
 
@@ -720,7 +723,7 @@ if err != nil {
 if err != nil {
     cotel.HandleSpanBusinessErrorEvent(&span, "Validation failed", err)
     s.logger.Log(ctx, clog.LevelWarn, "Validation error",
-        clog.Any("error", err))
+        clog.Err(err))
     return nil, err
 }
 ```
@@ -738,7 +741,7 @@ func (svc *Service) Run(ctx context.Context) {
         func(goCtx context.Context) {
             if err := svc.app.Listen(svc.serverAddress); err != nil {
                 svc.logger.Log(goCtx, clog.LevelError, "HTTP server failed",
-                    clog.Any("error", err))
+                    clog.Err(err))
             }
         },
     )
@@ -1011,7 +1014,7 @@ func (svc *Service) Run(ctx context.Context) {
         func(goCtx context.Context) {
             if err := svc.app.Listen(svc.serverAddress); err != nil {
                 svc.logger.Log(goCtx, clog.LevelError, "HTTP server failed",
-                    clog.Any("error", err))
+                    clog.Err(err))
             }
         },
     )
@@ -1024,12 +1027,12 @@ func (svc *Service) Shutdown(ctx context.Context) {
 
     if err := svc.app.ShutdownWithContext(ctx); err != nil {
         svc.logger.Log(ctx, clog.LevelError, "HTTP shutdown error",
-            clog.Any("error", err))
+            clog.Err(err))
     }
 
     if err := svc.telemetry.Shutdown(ctx); err != nil {
         svc.logger.Log(ctx, clog.LevelError, "Telemetry shutdown error",
-            clog.Any("error", err))
+            clog.Err(err))
     }
 
     _ = svc.logger.Sync(ctx)
@@ -1057,7 +1060,7 @@ func (svc *Service) Run(ctx context.Context) {
         func(goCtx context.Context) {
             if err := svc.app.Listen(svc.serverAddress); err != nil {
                 svc.logger.Log(goCtx, clog.LevelError, "HTTP server failed",
-                    clog.Any("error", err))
+                    clog.Err(err))
             }
         },
     )
@@ -1069,7 +1072,7 @@ func (svc *Service) Run(ctx context.Context) {
         func(goCtx context.Context) {
             if err := svc.grpcServer.Serve(svc.grpcListener); err != nil {
                 svc.logger.Log(goCtx, clog.LevelError, "gRPC server failed",
-                    clog.Any("error", err))
+                    clog.Err(err))
             }
         },
     )
@@ -1569,7 +1572,7 @@ func (svc *Service) Shutdown(ctx context.Context) {
 
     if err := svc.app.ShutdownWithContext(ctx); err != nil {
         svc.logger.Log(ctx, clog.LevelError, "HTTP shutdown error",
-            clog.Any("error", err))
+            clog.Err(err))
     }
 
     // Stop license manager background refresh
@@ -1579,7 +1582,7 @@ func (svc *Service) Shutdown(ctx context.Context) {
 
     if err := svc.telemetry.Shutdown(ctx); err != nil {
         svc.logger.Log(ctx, clog.LevelError, "Telemetry shutdown error",
-            clog.Any("error", err))
+            clog.Err(err))
     }
 
     _ = svc.logger.Sync(ctx)
@@ -2020,7 +2023,7 @@ func (h *Handler) GetAllTransactions(c *fiber.Ctx) error {
 ```go
 func (r *Repository) FindAll(ctx context.Context, filter chttp.Pagination) ([]Entity, chttp.CursorPagination, error) {
 
-    ctx, span := tracer.Start(ctx, "postgres.find_all")
+    ctx, span := r.tracer.Start(ctx, "postgres.find_all")
     defer span.End()
 
     // Decode cursor if provided
@@ -2343,7 +2346,7 @@ s.logger.Log(ctx, clog.LevelInfo, "Processing entity",
 s.logger.Log(ctx, clog.LevelWarn, "Rate limit approaching",
     clog.Int("current", current), clog.Int("limit", limit))
 s.logger.Log(ctx, clog.LevelError, "Failed to save entity",
-    clog.Any("error", err))
+    clog.Err(err))
 ```
 
 ### Migration Examples
@@ -2368,7 +2371,7 @@ log.Printf("[ERROR] Failed to connect: %v", err)
 
 // ✅ REQUIRED: lib-commons logger with span error
 s.logger.Log(ctx, clog.LevelError, "Failed to connect",
-    clog.Any("error", err))
+    clog.Err(err))
 cotel.HandleSpanError(&span, "Connection failed", err)
 
 // ❌ FORBIDDEN: log.Fatal (breaks graceful shutdown)
@@ -2769,7 +2772,7 @@ func (svc *Service) Run(ctx context.Context) {
         func(goCtx context.Context) {
             if err := svc.app.Listen(svc.serverAddress); err != nil {
                 svc.logger.Log(goCtx, clog.LevelError, "HTTP server failed",
-                    clog.Any("error", err))
+                    clog.Err(err))
             }
         },
     )

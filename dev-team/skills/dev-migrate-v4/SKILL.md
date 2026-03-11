@@ -487,7 +487,7 @@ Replace `libCommons.SetConfigFromEnvVars` with `libUncommons.InitLocalEnvConfig(
 - [ ] Config struct uses nested pattern (`AppConfig`, `ServerConfig`, `PostgresConfig`, etc.)
 - [ ] Nested structs use `envPrefix:` tags
 - [ ] All fields have `envDefault:` tags with sensible defaults
-- [ ] Config validation uses `cassert` (no panics)
+- [ ] Config validation returns errors (no panics in config loading)
 - [ ] Production-specific validation present (TLS checks, secret strength, etc.)
 
 ### Files
