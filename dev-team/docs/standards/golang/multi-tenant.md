@@ -1,6 +1,6 @@
 # Go Standards - Multi-Tenant
 
-> **Module:** multi-tenant.md | **Sections:** §26 | **Parent:** [index.md](index.md)
+> **Module:** multi-tenant.md | **Sections:** §27 | **Parent:** [index.md](index.md)
 
 This module covers multi-tenant patterns with Tenant Manager.
 
@@ -17,6 +17,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 3 | [Route-Level Auth-Before-Tenant Ordering (MANDATORY)](#route-level-auth-before-tenant-ordering-mandatory) | Auth MUST validate JWT before tenant middleware calls Tenant Manager API |
 | 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
 | 25 | [M2M Credentials via Secret Manager (Plugin-Only)](#m2m-credentials-via-secret-manager-plugin-only) | AWS Secrets Manager integration for plugin-to-product authentication per tenant |
+| 26 | [Service Authentication (MANDATORY)](#service-authentication-mandatory) | API key authentication for tenant-manager /settings endpoint via X-API-Key header |
 
 ---
 
@@ -36,8 +37,9 @@ The only valid multi-tenant implementation uses:
 - `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v3/commons/tenant-manager/valkey`)
 - `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v3/commons/tenant-manager/s3`)
 - `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v3/commons/tenant-manager/rabbitmq`)
-- The 7 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
+- The 8 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
+- `client.WithServiceAPIKey` on the Tenant Manager HTTP client for `/settings` endpoint authentication
 
 MUST correct any deviation from these patterns before the service can be considered multi-tenant.
 
@@ -52,7 +54,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | File | Gate | What Changes |
 |------|------|-------------|
 | `go.mod` | 2 | lib-commons v3, lib-auth v2 |
-| `internal/bootstrap/config.go` | 3 | 7 canonical `MULTI_TENANT_*` env vars in Config struct |
+| `internal/bootstrap/config.go` | 3 | 8 canonical `MULTI_TENANT_*` env vars in Config struct |
 | `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
 | `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttHandler)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
 
@@ -144,6 +146,7 @@ go build ./...
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
 | `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
+| `MULTI_TENANT_SERVICE_API_KEY` | API key for authenticating with tenant-manager `/settings` endpoint. Generated via service catalog. | - | Yes |
 
 **Example `.env` for multi-tenant:**
 ```bash
@@ -154,6 +157,7 @@ MULTI_TENANT_MAX_TENANT_POOLS=100
 MULTI_TENANT_IDLE_TIMEOUT_SEC=300
 MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD=5
 MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC=30
+MULTI_TENANT_SERVICE_API_KEY=your-service-api-key-here
 ```
 
 ### Configuration
@@ -171,6 +175,7 @@ type Config struct {
     MultiTenantIdleTimeoutSec           int    `env:"MULTI_TENANT_IDLE_TIMEOUT_SEC" default:"300"`
     MultiTenantCircuitBreakerThreshold  int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD" default:"5"`
     MultiTenantCircuitBreakerTimeoutSec int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC" default:"30"`
+    MultiTenantServiceAPIKey            string `env:"MULTI_TENANT_SERVICE_API_KEY"`
 
     // PostgreSQL Primary (used as default connection in single-tenant mode)
     PrimaryDBHost     string `env:"DB_HOST"`
@@ -365,6 +370,11 @@ func initService(cfg *Config) {
                 cfg.MultiTenantCircuitBreakerThreshold,
                 time.Duration(cfg.MultiTenantCircuitBreakerTimeoutSec)*time.Second,
             ),
+        )
+    }
+    if cfg.MultiTenantServiceAPIKey != "" {
+        clientOpts = append(clientOpts,
+            client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
         )
     }
     tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
@@ -1343,9 +1353,11 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://tenant-manager:4003 go test ./
 - [ ] `MULTI_TENANT_IDLE_TIMEOUT_SEC` in config struct (default: `300`)
 - [ ] `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` in config struct (default: `5`)
 - [ ] `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` in config struct (default: `30`)
+- [ ] `MULTI_TENANT_SERVICE_API_KEY` in config struct (required)
 
 **Architecture:**
 - [ ] `client.NewClient(url, logger)` for Tenant Manager HTTP client
+- [ ] `client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey)` on Tenant Manager HTTP client
 - [ ] `tmpostgres.NewManager(client, service, WithModule(...), WithLogger(...), WithMaxTenantPools(...), WithIdleTimeout(...))` for PostgreSQL pool
 - [ ] Each manager has `Stats()`, `IsMultiTenant()`, and `ApplyConnectionSettings()` methods
 
@@ -1919,7 +1931,7 @@ tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials
 
 ### Environment Variables (Plugin-Only)
 
-In addition to the 7 canonical multi-tenant env vars, plugins MUST add:
+In addition to the 8 canonical multi-tenant env vars, plugins MUST add:
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
@@ -2269,3 +2281,54 @@ Labels: `tenant_org_id`, `target_service`, `environment`.
 | "Caching is optional, we'll add it later" | Every request hitting AWS adds ~50-100ms latency + cost. | **MUST implement caching from day one** |
 | "We'll use env vars for client credentials" | Env vars are shared across tenants. M2M is per-tenant. | **MUST use Secrets Manager per tenant** |
 | "Single-tenant plugins don't need this" | Correct if MULTI_TENANT_ENABLED=false. | **Skip when single-tenant** |
+
+---
+
+## Service Authentication (MANDATORY)
+
+Consumer services that call the Tenant Manager `/settings` endpoint MUST authenticate using an API key sent via the `X-API-Key` HTTP header. Without this header, the Tenant Manager rejects requests to protected endpoints.
+
+### How It Works
+
+1. **Key generation:** API keys are generated per-service via the service catalog endpoint `POST /services/:name/api-keys`.
+2. **Key limit:** Maximum 2 keys per environment per service, enabling zero-downtime rotation (create new key, roll out, revoke old key).
+3. **Header injection:** The lib-commons Tenant Manager HTTP client sends the `X-API-Key` header automatically when configured with `client.WithServiceAPIKey()`.
+4. **Consumer configuration:** Consumer services set the `MULTI_TENANT_SERVICE_API_KEY` environment variable. The bootstrap code passes it to the client via `WithServiceAPIKey`.
+
+### Configuration
+
+Add `MULTI_TENANT_SERVICE_API_KEY` to the Config struct (see [Environment Variables](#environment-variables)):
+
+```go
+MultiTenantServiceAPIKey string `env:"MULTI_TENANT_SERVICE_API_KEY"`
+```
+
+Wire it when creating the Tenant Manager HTTP client:
+
+```go
+if cfg.MultiTenantServiceAPIKey != "" {
+    clientOpts = append(clientOpts,
+        client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
+    )
+}
+tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+```
+
+### Key Rotation
+
+Zero-downtime rotation flow:
+
+1. Generate a new API key: `POST /services/:name/api-keys`
+2. Deploy the new key to the consumer service (`MULTI_TENANT_SERVICE_API_KEY`)
+3. Verify the service authenticates successfully with the new key
+4. Revoke the old key: `DELETE /services/:name/api-keys/:keyId`
+
+The service catalog enforces a maximum of 2 active keys per environment, so both old and new keys work simultaneously during the rollout window.
+
+### Anti-Rationalization
+
+| Rationalization | Why It's WRONG | Required Action |
+|-----------------|----------------|-----------------|
+| "We don't need API key auth for internal services" | The `/settings` endpoint returns database credentials. Unauthenticated access is a security risk. | **MUST configure `WithServiceAPIKey`** |
+| "We'll add the API key later" | Without authentication, the Tenant Manager rejects `/settings` requests. The service cannot resolve tenant connections. | **MUST configure before enabling multi-tenant** |
+| "We can use a shared API key across services" | Each service MUST have its own API key for audit trail and independent revocation. | **MUST generate per-service keys via service catalog** |

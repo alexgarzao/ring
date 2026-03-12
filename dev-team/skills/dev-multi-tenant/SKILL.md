@@ -150,7 +150,7 @@ Multi-tenant isolation is 100% based on `tenantId` from JWT → tenant-manager m
 
 ### MANDATORY: Canonical Environment Variables
 
-See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi-tenant.md#environment-variables) for the complete table of 7 canonical `MULTI_TENANT_*` env vars with descriptions, defaults, and required status.
+See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi-tenant.md#environment-variables) for the complete table of 8 canonical `MULTI_TENANT_*` env vars with descriptions, defaults, and required status.
 
 MUST NOT use any other names (e.g., `TENANT_MANAGER_ADDRESS` is WRONG — the correct name is `MULTI_TENANT_URL`).
 
@@ -169,6 +169,14 @@ See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi
 The Tenant Manager HTTP client MUST enable `WithCircuitBreaker`. MUST NOT create the client without it.
 
 HARD GATE: A client without circuit breaker can cascade failures across all tenants.
+
+### MANDATORY: Service API Key
+
+See [multi-tenant.md § Service Authentication](../../docs/standards/golang/multi-tenant.md#service-authentication-mandatory) for the authentication flow.
+
+The Tenant Manager HTTP client MUST be configured with `client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey)`. Without this, the Tenant Manager rejects requests to the `/settings` endpoint with `401 Unauthorized`.
+
+HARD GATE: A client without `WithServiceAPIKey` cannot resolve tenant connections.
 
 ### MANDATORY: Sub-Package Import Reference
 
@@ -391,6 +399,11 @@ A7. Circuit breaker compliance:
 A8. Backward compatibility compliance:
     - grep -rn "TestMultiTenant_BackwardCompatibility" internal/
     - (no backward compat test = NON-COMPLIANT → Gate 7 MUST fix)
+
+A9. Service API key compliance:
+    - grep -rn "MULTI_TENANT_SERVICE_API_KEY" internal/
+    - grep -rn "WithServiceAPIKey" internal/
+    - (MULTI_TENANT_SERVICE_API_KEY missing from config OR WithServiceAPIKey not called on client = NON-COMPLIANT → Gate 3/4 MUST fix)
 ```
 
 **Output format for compliance audit:**
@@ -407,6 +420,7 @@ COMPLIANCE AUDIT RESULTS:
 | RabbitMQ | COMPLIANT / NON-COMPLIANT / N/A | {grep results} | Gate 6: SKIP / MUST FIX |
 | Circuit breaker | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 4: SKIP / MUST FIX |
 | Backward compat test | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 7: SKIP / MUST FIX |
+| Service API key | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 3/4: SKIP / MUST FIX |
 ```
 
 **HARD GATE: A gate can only be marked as SKIP when ALL its compliance checks are COMPLIANT with evidence. One NON-COMPLIANT row → gate MUST execute.**
@@ -515,7 +529,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
 | 2 | `go.mod` | lib-commons v2 → v3 + lib-auth v2, import paths | All files |
-| 3 | `config.go` | Add the 7 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
+| 3 | `config.go` | Add the 8 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
 | 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `core.ResolveModuleDB(ctx, module, r.connection)` | ~3 lines per method |
@@ -610,7 +624,7 @@ Table showing what gets added to go.mod and which sub-packages are imported:
 - etc.
 
 ### 6. Environment Variables
-The exact 7 canonical env vars from the "Canonical Environment Variables" table (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC). MUST NOT use alternative names.
+The exact 8 canonical env vars from the "Canonical Environment Variables" table (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY). MUST NOT use alternative names.
 
 ### 7. Risk Assessment
 Table with: Risk, Mitigation, Verification. Examples:
@@ -674,11 +688,11 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 ## Gate 3: Multi-Tenant Configuration
 
-**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 7 canonical env vars are present with correct names, types, and defaults. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 8 canonical env vars are present with correct names, types, and defaults. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Verify and ensure all 7 canonical multi-tenant environment variables exist in the Config struct with correct names and defaults. If any are missing, misnamed, or have wrong defaults — fix them.
+> TASK: Verify and ensure all 8 canonical multi-tenant environment variables exist in the Config struct with correct names and defaults. If any are missing, misnamed, or have wrong defaults — fix them.
 > CONTEXT FROM GATE 1: {Config struct location and current fields from analysis report}
 > Follow multi-tenant.md sections "Environment Variables", "Configuration", and "Conditional Initialization".
 >
@@ -690,12 +704,15 @@ HARD GATE: MUST pass build and tests before proceeding.
 > - MULTI_TENANT_IDLE_TIMEOUT_SEC (int, default 300)
 > - MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD (int, default 5)
 > - MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC (int, default 30)
+> - MULTI_TENANT_SERVICE_API_KEY (string, required — API key for tenant-manager /settings endpoint)
 >
 > MUST NOT use alternative names (e.g., TENANT_MANAGER_ADDRESS, TENANT_MANAGER_URL are WRONG).
 > Add conditional log: "Multi-tenant mode enabled" vs "Running in SINGLE-TENANT MODE".
 > DO NOT implement TenantMiddleware yet — only configuration.
 
-**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `go build ./...`
+**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `go build ./...`
+
+**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY`. If missing, add it.
 
 ---
 
@@ -724,9 +741,11 @@ HARD GATE: MUST pass build and tests before proceeding.
 > Public endpoints (/health, /version, /swagger) MUST bypass tenant middleware.
 > When MULTI_TENANT_ENABLED=false, middleware calls c.Next() immediately (single-tenant passthrough).
 >
+> **Service API Key Authentication (MANDATORY):** The Tenant Manager HTTP client MUST be configured with `client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey)` so that `X-API-Key` header is sent in requests to the `/settings` endpoint. Follow multi-tenant.md § "Service Authentication (MANDATORY)".
+>
 > **IF RabbitMQ DETECTED:** Follow multi-tenant.md § "ConsumerTrigger interface" for the wiring pattern.
 
-**Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `go build ./...`
+**Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `go build ./...`
 
 <block_condition>
 HARD GATE: CANNOT proceed without TenantMiddleware.
@@ -999,7 +1018,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
-2. **Environment variables**: the 7 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC) with required/default/description
+2. **Environment variables**: the 8 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY) with required/default/description
 3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
@@ -1041,7 +1060,7 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
 | "Agent says out of scope" | Skill defines scope, not agent. | **Re-dispatch with gate context** |
 | "Skip tests" | Gate 8 proves isolation works. | **MANDATORY** |
 | "Skip review" | Security implications. One mistake = data leak. | **MANDATORY** |
-| "Using TENANT_MANAGER_ADDRESS instead" | Non-standard name. Only the 7 canonical MULTI_TENANT_* vars are valid. | **STOP. Use MULTI_TENANT_URL** |
+| "Using TENANT_MANAGER_ADDRESS instead" | Non-standard name. Only the 8 canonical MULTI_TENANT_* vars are valid. | **STOP. Use MULTI_TENANT_URL** |
 | "The service already uses a different env name" | Legacy names are non-compliant. Rename to canonical names. | **Replace with canonical env vars** |
 | "Plugin doesn't need Secret Manager for M2M" | If multi-tenant is active, each tenant has different credentials. Env vars can't hold per-tenant secrets. | **MUST use Secret Manager for per-tenant M2M** |
 | "We'll add M2M caching later" | Without caching, every request hits AWS (~50-100ms + cost). This is a production blocker. | **MUST implement caching from day one** |
