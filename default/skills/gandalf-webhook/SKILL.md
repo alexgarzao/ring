@@ -43,6 +43,7 @@ curl -s -X POST http://gandalf.heron-justitia.ts.net:18792/task \
 |-------|----------|-------------|
 | `message` | Yes | What you want Gandalf to do. Be specific. |
 | `context` | No | What you're working on (repo, PR, feature). Helps Gandalf prioritize and contextualize. |
+| `content` | No | Inline content (HTML, markdown, text) for Gandalf to process. Max 5MB. Use this instead of file uploads. |
 
 **Response (202):**
 ```json
@@ -105,11 +106,27 @@ done
 
 ### Publish a report to Alfarrábio
 ```bash
+# Build your HTML/markdown content, then send inline via `content` field
+CONTENT=$(cat my-report.html)
+curl -s -X POST http://gandalf.heron-justitia.ts.net:18792/task \
+  -H "Content-Type: application/json" \
+  --data-binary @- << EOF
+{
+  "message": "Publish this as an Alfarrábio report titled 'API Coverage Analysis'. Return the URL.",
+  "context": "midaz API audit",
+  "content": $(echo "$CONTENT" | jq -Rs .)
+}
+EOF
+```
+
+### Publish markdown (Gandalf converts to HTML)
+```bash
 curl -s -X POST http://gandalf.heron-justitia.ts.net:18792/task \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "Create an Alfarrábio report with this content:\n\n# API Coverage Analysis\n\n...(your content)...\n\nPublish it and return the URL.",
-    "context": "midaz API audit"
+    "message": "Convert this markdown to a styled Alfarrábio report and publish it. Return the URL.",
+    "context": "PR #1900 analysis",
+    "content": "# Analysis\n\n## Findings\n\n- Point 1\n- Point 2\n\n## Conclusion\n\nAll good."
   }'
 ```
 
@@ -137,9 +154,11 @@ curl -s -X POST http://gandalf.heron-justitia.ts.net:18792/task \
 
 - **Rate limit:** 10 requests/min per Tailscale node
 - **Timeout:** 120s per task
+- **Content limit:** 5MB inline (use `content` field, not file uploads)
 - **One-way initiation:** you send, Gandalf processes. No streaming.
 - **Tailscale only:** not accessible from the public internet
 - **Identity:** your Tailscale node identity is attached automatically. No spoofing.
+- **No file uploads:** send content inline as JSON string. Safer, simpler.
 
 ## Health Check
 
