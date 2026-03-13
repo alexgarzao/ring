@@ -392,11 +392,13 @@ func InitServers() *Service {
 
     // Load all environment variables into config struct
     if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        // bootstrap-only: panic is acceptable in main/init; NEVER use panic in business logic
         panic(err)
     }
 
     // Validate required fields
     if cfg.PrimaryDBHost == "" || cfg.PrimaryDBName == "" {
+        // bootstrap-only: panic is acceptable in main/init; NEVER use panic in business logic
         panic("DB_HOST and DB_NAME must be configured")
     }
 
