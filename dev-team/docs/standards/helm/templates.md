@@ -87,6 +87,57 @@ securityContext:
 
 ---
 
+## Image Declaration Pattern (MANDATORY)
+
+All container image references in templates (Deployments, Jobs, CronJobs, initContainers) MUST use the structured `repository/tag/pullPolicy` format from values.yaml AND include a `kindIs` backward-compatibility guard.
+
+### Why
+
+The CI `gitops-update` workflow uses `yq` to update image tags independently. A flat string like `image: "repo/name:tag"` cannot be targeted by tag alone — the tag field must be a separate key. Additionally, existing gitops values files may still use the old string format during migration, so templates must handle both.
+
+### values.yaml Structure
+
+```yaml
+{component}:
+  image:
+    repository: ghcr.io/lerianstudio/{service-name}
+    pullPolicy: IfNotPresent
+    tag: "1.0.0"
+```
+
+### Template Pattern (with kindIs guard)
+
+```yaml
+{{- $img := .Values.{component}.image -}}
+{{- if kindIs "string" $img }}
+image: {{ $img | quote }}
+imagePullPolicy: Always
+{{- else }}
+image: "{{ $img.repository | default "ghcr.io/lerianstudio/{service-name}" }}:{{ $img.tag | default "latest" }}"
+imagePullPolicy: {{ $img.pullPolicy | default "IfNotPresent" }}
+{{- end }}
+```
+
+### Rules
+
+```text
+1. EVERY container spec (main, sidecar, init, migration, job) MUST use this pattern
+2. The `kindIs "string"` branch provides backward compatibility during migration
+3. The `else` branch (map format) is the target state — new charts MUST use map format in values.yaml
+4. Default repository MUST match the ghcr.io/lerianstudio/{service-name} convention
+5. Default tag SHOULD be "latest" for jobs/migrations, specific version for app containers
+6. Default pullPolicy: IfNotPresent for app containers, Always for jobs/migrations
+7. initContainers using well-known images (e.g., busybox:1.37) MAY use inline strings
+```
+
+<forbidden>
+- Flat string image values in new charts (use structured repository/tag/pullPolicy)
+- Templates that access .image.repository without kindIs guard
+- Hardcoded image tags in templates (always read from values)
+</forbidden>
+
+---
+
 ## Health Check Verification
 
 <cannot_skip>

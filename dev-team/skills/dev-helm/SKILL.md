@@ -283,6 +283,7 @@ RUN in order:
 CHECK each item:
 
 [ ] Chart.yaml name has -helm suffix (unless exception)
+[ ] Image declarations use structured repository/tag/pullPolicy with kindIs guard ([pattern](../../docs/standards/helm/templates.md#image-declaration-pattern-mandatory))
 [ ] All values quoted in ConfigMap ({{ $value | quote }})
 [ ] No hardcoded credentials in values.yaml (use placeholders)
 [ ] Security context: runAsNonRoot: true, drop ALL capabilities
@@ -324,6 +325,7 @@ See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pr
 | "One configmap for everything" | Sensitive data MUST be in Secrets, not ConfigMap | **Split per ConfigMap vs Secrets rule** |
 | "The chart works, so it's done" | Must validate against app env vars AND lint AND template render | **Run ALL validation steps** |
 | "initContainers are overkill" | Without dependency checks, pods crash before DB is ready | **Add wait-for-dependencies** |
+| "Just use a flat string for the image" | CI gitops-update can't target the tag independently; breaks automated deploys | **Use structured repository/tag/pullPolicy with kindIs guard** |
 
 ---
 
