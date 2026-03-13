@@ -8,6 +8,20 @@
 - **Improvements:**
   - Updated output references for dual MD+JSON delivery roadmap.
 
+Contributors: @rsane.melo,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.3...ring-pm-team@0.20.0)
+
+---
+
+## [0.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.0)
+
+- **Features:**
+  - Added JSON output schema to the delivery-planning skill.
+
+- **Improvements:**
+  - Updated output references for dual MD+JSON delivery roadmap.
+
 Contributors: @rsane.melo
 
 [Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.3...ring-pm-team@0.20.0)
