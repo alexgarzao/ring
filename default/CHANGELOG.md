@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.17.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.17.0)
+
+- **Features:**
+  - Added gandalf-webhook skill.
+
+Contributors: @fred, @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.16.0...ring-default@1.17.0)
+
+---
+
 ## [1.16.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.16.0)
 
 - Introduce review slicing for large pull requests
