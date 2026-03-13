@@ -624,7 +624,7 @@ Table showing what gets added to go.mod and which sub-packages are imported:
 - etc.
 
 ### 6. Environment Variables
-The exact 8 canonical env vars from the "Canonical Environment Variables" table (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY). MUST NOT use alternative names.
+The exact 8 canonical env vars from the "Canonical Environment Variables" table in [multi-tenant.md](../../docs/standards/golang/multi-tenant.md#environment-variables). MUST NOT use alternative names. MUST NOT duplicate the list inline — reference the canonical table.
 
 ### 7. Risk Assessment
 Table with: Risk, Mitigation, Verification. Examples:
@@ -688,7 +688,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 ## Gate 3: Multi-Tenant Configuration
 
-**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 8 canonical env vars are present with correct names, types, and defaults. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 8 canonical env vars are present with correct names, types, and defaults where applicable. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 

@@ -146,7 +146,7 @@ go build ./...
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
 | `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
-| `MULTI_TENANT_SERVICE_API_KEY` | API key for authenticating with dispatch layer `/settings` endpoint. Generated via service catalog. | - | Yes |
+| `MULTI_TENANT_SERVICE_API_KEY` | API key for authenticating with dispatch layer `/settings` endpoint. Generated via service catalog. | - | If multi-tenant |
 
 **Example `.env` for multi-tenant:**
 ```bash
@@ -2306,13 +2306,16 @@ MultiTenantServiceAPIKey string `env:"MULTI_TENANT_SERVICE_API_KEY"`
 Wire it when creating the Tenant Manager HTTP client:
 
 ```go
-if cfg.MultiTenantServiceAPIKey != "" {
-    clientOpts = append(clientOpts,
-        client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
-    )
+if cfg.MultiTenantServiceAPIKey == "" {
+    return fmt.Errorf("MULTI_TENANT_SERVICE_API_KEY is required when multi-tenant is enabled")
 }
+clientOpts = append(clientOpts,
+    client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
+)
 tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
 ```
+
+> **Fail-fast:** The service MUST refuse to start if `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_SERVICE_API_KEY` is empty. Silent startup without the key leads to runtime 401 errors on `/settings` calls that are hard to diagnose.
 
 ### Key Rotation
 
