@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.18.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.18.0)
+
+- Features:
+  - Add inline content field to gandalf-webhook.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.17.0...ring-default@1.18.0)
+
+---
+
 ## [1.17.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.17.0)
 
 - **Features:**
