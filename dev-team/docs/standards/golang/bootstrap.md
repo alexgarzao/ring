@@ -367,6 +367,7 @@ headers := libOpentelemetry.PrepareQueueHeaders(ctx, map[string]any{
 func InitServers() *Service {
     cfg := &Config{}
     if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        // bootstrap-only: panic is acceptable in main/init; NEVER use panic in business logic
         panic(err)
     }
 
@@ -666,6 +667,7 @@ func InitServers() *Service {
     // All environment variables are loaded into the Config struct
     cfg := &Config{}
     if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        // bootstrap-only: panic is acceptable in main/init; NEVER use panic in business logic
         panic(err)
     }
 
