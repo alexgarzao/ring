@@ -372,12 +372,13 @@ func initService(cfg *Config) {
             ),
         )
     }
-    if cfg.MultiTenantServiceAPIKey != "" {
-        clientOpts = append(clientOpts,
-            client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
-        )
+    clientOpts = append(clientOpts,
+        client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
+    )
+    tmClient, err := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+    if err != nil {
+        return fmt.Errorf("creating dispatch layer client: %w", err)
     }
-    tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
 
     idleTimeout := time.Duration(cfg.MultiTenantIdleTimeoutSec) * time.Second
 
@@ -1356,8 +1357,8 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `MULTI_TENANT_SERVICE_API_KEY` in config struct (required)
 
 **Architecture:**
-- [ ] `client.NewClient(url, logger)` for Tenant Manager HTTP client
-- [ ] `client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey)` on Tenant Manager HTTP client
+- [ ] `client.NewClient(url, logger, opts...)` returns `(*Client, error)` — handle error for fail-fast
+- [ ] `client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey)` always passed (lib-commons validates internally)
 - [ ] `tmpostgres.NewManager(client, service, WithModule(...), WithLogger(...), WithMaxTenantPools(...), WithIdleTimeout(...))` for PostgreSQL pool
 - [ ] Each manager has `Stats()`, `IsMultiTenant()`, and `ApplyConnectionSettings()` methods
 
@@ -2306,16 +2307,16 @@ MultiTenantServiceAPIKey string `env:"MULTI_TENANT_SERVICE_API_KEY"`
 Wire it when creating the Tenant Manager HTTP client:
 
 ```go
-if cfg.MultiTenantServiceAPIKey == "" {
-    return fmt.Errorf("MULTI_TENANT_SERVICE_API_KEY is required when multi-tenant is enabled")
-}
 clientOpts = append(clientOpts,
     client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey),
 )
-tmClient := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+tmClient, err := client.NewClient(cfg.MultiTenantURL, logger, clientOpts...)
+if err != nil {
+    return fmt.Errorf("creating dispatch layer client: %w", err)
+}
 ```
 
-> **Fail-fast:** The service MUST refuse to start if `MULTI_TENANT_ENABLED=true` and `MULTI_TENANT_SERVICE_API_KEY` is empty. Silent startup without the key leads to runtime 401 errors on `/settings` calls that are hard to diagnose.
+> **Fail-fast:** `NewClient` returns `core.ErrServiceAPIKeyRequired` if the API key is empty. The service refuses to start with a clear error instead of failing with runtime 401 errors on `/settings` calls.
 
 ### Key Rotation
 
