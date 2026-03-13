@@ -3,6 +3,17 @@
 ## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
 
 - Fixes:
+  - Added bootstrap-only comments to `panic()` examples.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- Fixes:
   - Added bootstrap-only comments to panic() examples for improved clarity and standardization.
 
 Contributors: @gandalf
