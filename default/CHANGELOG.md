@@ -2,6 +2,17 @@
 
 ## [1.19.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.19.0)
 
+- Features:
+  - v3 with fast paths (publish, notify, ask)
+
+Contributors: @gandalf,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.18.0...ring-default@1.19.0)
+
+---
+
+## [1.19.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.19.0)
+
 - Contributors: @gandalf
 
 [Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.18.0...ring-default@1.19.0)
