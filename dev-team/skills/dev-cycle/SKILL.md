@@ -1782,7 +1782,7 @@ detected_dependencies = []
 ### ⛔ MANDATORY: Multi-Tenant Detection & Compliance Audit
 
 <cannot_skip>
-MANDATORY: Multi-tenant dual-mode applies to all Go services (no exceptions). Gate 0 implements dual-mode from the start using lib-commons v3 resolvers. Gate 0.5G verifies compliance. This detection captures the CURRENT state of the codebase for context.
+MANDATORY: Multi-tenant dual-mode applies to all Go services (no exceptions). Gate 0 implements dual-mode from the start using lib-commons v4 resolvers. Gate 0.5G verifies compliance. This detection captures the CURRENT state of the codebase for context.
 
 See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical model and [dev-delivery-verification](../dev-delivery-verification/SKILL.md) Step 3.5G for the verification checks.
 </cannot_skip>
