@@ -63,6 +63,8 @@ output_schema:
 
 ## Overview
 
+> General Dockerfile patterns are documented in [dev-team/docs/standards/devops.md#containers](../../docs/standards/devops.md#containers). This skill focuses specifically on Docker Hub Health Score compliance.
+
 This skill creates or audits Dockerfiles and image configurations to achieve **Docker Hub Health Score grade A**.
 
 ## Docker Hub Health Score Policies
