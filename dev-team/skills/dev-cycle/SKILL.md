@@ -2169,7 +2169,7 @@ After ring:dev-devops PASSES, run Docker Hub Health Score compliance audit
 on the created/updated Dockerfile:
 
    Skill("ring:dev-docker-security") with input:
-     dockerfile_path: [path to Dockerfile created in Step 3.2]
+     dockerfile_path: [extract from devops "## Files Changed" table, or default to "Dockerfile"]
      language: devops_input.language
      service_type: devops_input.service_type
      mode: "audit"
@@ -2187,7 +2187,7 @@ on the created/updated Dockerfile:
    if skill output contains "Result: FAIL":
      → Re-dispatch ring:devops-engineer with the failing policies
      → Re-run ring:dev-docker-security audit
-     → If still FAIL after 2 attempts: STOP and report to user
+     → Max 2 total attempts (1 retry). If still FAIL: STOP and report to user
 ```
 
 ### Step 3.3: Gate 1 Complete
