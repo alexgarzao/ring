@@ -2187,7 +2187,7 @@ on the created/updated Dockerfile:
    if skill output contains "Result: FAIL":
      → Re-dispatch ring:devops-engineer with the failing policies
      → Re-run ring:dev-docker-security audit
-     → Max 2 total attempts (1 retry). If still FAIL: STOP and report to user
+     → Max 3 total attempts (2 retries). If still FAIL: STOP and report to user
 ```
 
 ### Step 3.3: Gate 1 Complete
