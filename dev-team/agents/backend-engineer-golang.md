@@ -199,7 +199,7 @@ Invoke this agent when the task involves:
 ## Technical Expertise
 
 - **Language**: Go 1.21+
-- **Frameworks**: Fiber, Gin, Echo, Chi
+- **Frameworks**: Fiber (ONLY — Gin, Echo, Chi are NOT used at Lerian)
 - **Databases**: PostgreSQL, MongoDB, MySQL
 - **Caching**: Redis, Valkey, Memcached
 - **Messaging**: RabbitMQ, Valkey Streams
@@ -776,6 +776,7 @@ If code is ALREADY compliant with all standards:
 - Auth provider choice needed (OAuth2 vs WorkOS vs Auth0)
 - Message queue choice needed (RabbitMQ vs Kafka vs NATS)
 - Architecture choice needed (monolith vs microservices)
+- **HTTP framework is NOT Fiber** — if generated code uses Gin, Echo, Chi, or any other framework, STOP and correct immediately: Lerian's standard HTTP framework is `gofiber/fiber/v2`. Do NOT generate code with any other HTTP framework.
   </block_condition>
 
 If any condition applies, STOP and wait for user decision.
@@ -789,6 +790,7 @@ If any condition applies, STOP and wait for user decision.
 | **Auth Provider** | OAuth2 vs WorkOS vs Auth0     | STOP. Report options. Wait for user.      |
 | **Message Queue** | RabbitMQ vs Kafka vs NATS     | STOP. Report options. Wait for user.      |
 | **Architecture**  | Monolith vs microservices     | STOP. Report implications. Wait for user. |
+| **Wrong HTTP framework** | Gin, Echo, Chi instead of Fiber | STOP. Correct to `gofiber/fiber/v2`. Do not proceed with wrong framework. |
 
 **You CANNOT make architectural decisions autonomously. STOP and ask.**
 
