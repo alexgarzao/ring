@@ -303,6 +303,7 @@ import (
 func InitServers() *Service {
     cfg := &Config{}
     if err := libCommons.SetConfigFromEnvVars(cfg); err != nil {
+        // bootstrap-only: panic is acceptable in main/init; NEVER use panic in business logic
         panic(err)
     }
 

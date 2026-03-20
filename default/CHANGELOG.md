@@ -1,5 +1,89 @@
 # Ring-default Changelog
 
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features:**
+  - Upgrade to adaptive cohesion-based slicing (v2)
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features:**
+  - Upgrade to adaptive cohesion-based slicing (v2).
+
+Contributors: @fred,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.19.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.19.0)
+
+- Features:
+  - v3 with fast paths (publish, notify, ask)
+
+Contributors: @gandalf,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.18.0...ring-default@1.19.0)
+
+---
+
+## [1.19.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.19.0)
+
+- Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.18.0...ring-default@1.19.0)
+
+---
+
+## [1.18.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.18.0)
+
+- Features:
+  - Add inline content field to gandalf-webhook.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.17.0...ring-default@1.18.0)
+
+---
+
+## [1.17.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.17.0)
+
+- **Features:**
+  - Added gandalf-webhook skill.
+
+Contributors: @fred, @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.16.0...ring-default@1.17.0)
+
+---
+
+## [1.16.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.16.0)
+
+- Introduce review slicing for large pull requests
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.15.0...ring-default@1.16.0)
+
+---
+
+## [1.16.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.16.0)
+
+- **Features**
+  - Introduce review slicing for large pull requests
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.15.0...ring-default@1.16.0)
+
+---
+
 ## [1.16.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.16.0)
 
 - **Features**

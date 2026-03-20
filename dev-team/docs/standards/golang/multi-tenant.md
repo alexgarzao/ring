@@ -29,14 +29,14 @@ This module covers multi-tenant patterns with Tenant Manager.
 
 **Existence ≠ Compliance.** A service that has "some multi-tenant code" is NOT considered multi-tenant unless every component matches the canonical patterns defined in this document exactly.
 
-MUST replace multi-tenant implementations that use custom middleware, manual DB switching, non-standard env var names, or any mechanism other than the lib-commons v3 dispatch layer sub-packages — they are **non-compliant**. Not patched, not adapted, **replaced**.
+MUST replace multi-tenant implementations that use custom middleware, manual DB switching, non-standard env var names, or any mechanism other than the lib-commons v4 dispatch layer sub-packages — they are **non-compliant**. Not patched, not adapted, **replaced**.
 
 The only valid multi-tenant implementation uses:
-- `tenantId` from JWT via `TenantMiddleware` or `MultiPoolMiddleware` (from `lib-commons/v3/commons/dispatch layer/middleware`), registered per-route using a local `WhenEnabled` helper
-- `core.ResolvePostgres` / `core.ResolveMongo` / `core.ResolveModuleDB` for database resolution (from `lib-commons/v3/commons/dispatch layer/core`)
-- `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v3/commons/dispatch layer/valkey`)
-- `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v3/commons/dispatch layer/s3`)
-- `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v3/commons/dispatch layer/rabbitmq`)
+- `tenantId` from JWT via `TenantMiddleware` or `MultiPoolMiddleware` (from `lib-commons/v4/commons/dispatch layer/middleware`), registered per-route using a local `WhenEnabled` helper
+- `core.ResolvePostgres` / `core.ResolveMongo` / `core.ResolveModuleDB` for database resolution (from `lib-commons/v4/commons/dispatch layer/core`)
+- `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v4/commons/dispatch layer/valkey`)
+- `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v4/commons/dispatch layer/s3`)
+- `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v4/commons/dispatch layer/rabbitmq`)
 - The 8 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
 - `client.WithServiceAPIKey` on the Tenant Manager HTTP client for `/settings` endpoint authentication
@@ -53,7 +53,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 
 | File | Gate | What Changes |
 |------|------|-------------|
-| `go.mod` | 2 | lib-commons v3, lib-auth v2 |
+| `go.mod` | 2 | lib-commons v4, lib-auth v2 |
 | `internal/bootstrap/config.go` | 3 | 8 canonical `MULTI_TENANT_*` env vars in Config struct |
 | `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
 | `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttHandler)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
@@ -96,31 +96,38 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | `docs/multi-tenant-guide.md` | Activation guide: env vars, how to enable/disable, verification steps |
 | `docs/multi-tenant-preview.html` | Visual implementation preview (generated at Gate 1.5, kept for reference) |
 
-**HARD GATE: Files outside this map that contain multi-tenant logic are non-compliant.** If a service has custom files like `internal/tenant/resolver.go`, `internal/middleware/tenant_middleware.go`, `pkg/multitenancy/pool.go` or similar — these MUST be removed and replaced with the canonical lib-commons v3 dispatch layer sub-packages wired through the files listed above.
+**HARD GATE: Files outside this map that contain multi-tenant logic are non-compliant.** If a service has custom files like `internal/tenant/resolver.go`, `internal/middleware/tenant_middleware.go`, `pkg/multitenancy/pool.go` or similar — these MUST be removed and replaced with the canonical lib-commons v4 dispatch layer sub-packages wired through the files listed above.
 
 ### Required lib-commons Version
 
-Multi-tenant support requires **lib-commons v3** (`github.com/LerianStudio/lib-commons/v3`). The `dispatch layer` package does not exist in v2.
+Multi-tenant support requires **lib-commons v4** (`github.com/LerianStudio/lib-commons/v4`). The `dispatch layer` package does not exist in v2.
 
 | lib-commons version | Multi-tenant support | Package path |
 |--------------------|-----------------------|-------------|
 | **v2** (`lib-commons/v2`) | Not available | N/A — no `dispatch layer` package |
-| **v3** (`lib-commons/v3`) | Full support | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/...` (sub-packages: `core`, `client`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains both `TenantMiddleware` (single-module) and `MultiPoolMiddleware` (multi-module). Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
+| **v3** (`lib-commons/v3`) | Legacy | Same sub-packages as v4 but without `dispatch layer/cache`. Upgrade to v4. |
+| **v4** (`lib-commons/v4`) | Full support (current) | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/...` (sub-packages: `core`, `client`, `cache`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains both `TenantMiddleware` (single-module) and `MultiPoolMiddleware` (multi-module). Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
 
-**Migration from v2 to v3:**
+**Migration to v4:**
 
-Services currently on lib-commons v2 MUST upgrade to v3 before implementing multi-tenant. The upgrade involves:
+Services on lib-commons v2 or v3 MUST upgrade to v4 before implementing multi-tenant. The upgrade involves:
 
-1. Update `go.mod`: `github.com/LerianStudio/lib-commons/v2` -> `github.com/LerianStudio/lib-commons/v3`
-2. Update all import paths: `lib-commons/v2/commons/...` -> `lib-commons/v3/commons/...`
+1. Update `go.mod` to the latest v4 tag (currently beta — use latest beta until stable is released)
+2. Update all import paths to v4
 3. Add the `dispatch layer` package imports where needed
 
 ```bash
-# Update go.mod
-go get github.com/LerianStudio/lib-commons/v3@latest
+# Check latest v4 tag
+git ls-remote --tags https://github.com/LerianStudio/lib-commons.git | grep "v4" | sort -V | tail -1
+
+# Update go.mod (use latest beta until stable is released)
+go get github.com/LerianStudio/lib-commons/v4@v4.1.0-beta.4
 
 # Update import paths across the codebase (portable — works on macOS and Linux)
-find . -name "*.go" -exec perl -pi -e 's|lib-commons/v2|lib-commons/v3|g' {} +
+# From v2:
+find . -name "*.go" -exec perl -pi -e 's|lib-commons/v2|lib-commons/v4|g' {} +
+# From v3:
+find . -name "*.go" -exec perl -pi -e 's|lib-commons/v3|lib-commons/v4|g' {} +
 
 # Verify build
 go build ./...
@@ -355,10 +362,10 @@ func extractTenantIDFromToken(c *fiber.Ctx) (string, error) {
 ```go
 // internal/bootstrap/config.go
 import (
-    "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/client"
-    tmpostgres "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/postgres"
-    tmmongo "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/mongo"
-    "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
+    "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/client"
+    tmpostgres "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/postgres"
+    tmmongo "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/mongo"
+    "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware"
 )
 
 func initService(cfg *Config) {
@@ -423,8 +430,8 @@ func initService(cfg *Config) {
 
 ```go
 import (
-    "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/core"
-    "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/valkey"
+    "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core"
+    "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/valkey"
 )
 
 // Single-module service: use generic getter
@@ -451,7 +458,7 @@ tenantID := core.GetTenantID(ctx)
 
 ```go
 import (
-    tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
+    tmmiddleware "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware"
 )
 ```
 
@@ -479,7 +486,7 @@ import (
 ```go
 // config.go - Multi-module service (e.g., unified ledger with onboarding + transaction)
 import (
-    tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
+    tmmiddleware "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware"
 )
 
 transactionPaths := []string{"/transactions", "/operations", "/balances", "/asset-rates"}
@@ -511,7 +518,7 @@ multiMid := tmmiddleware.NewMultiPoolMiddleware(
 **In repositories for multi-module services, use module-scoped getters:**
 
 ```go
-import "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/core"
+import "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core"
 
 // Multi-module: use module-specific getter
 db, err := core.ResolveModuleDB(ctx, "transaction", r.connection)
@@ -524,7 +531,7 @@ db, err := core.ResolveModuleDB(ctx, "onboarding", r.connection)
 // config.go - Single-module service (e.g., CRM, plugin, reporter)
 // Just use TenantMiddleware directly — no need for MultiPoolMiddleware
 import (
-    tmmiddleware "github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware"
+    tmmiddleware "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware"
 )
 
 ttMid := tmmiddleware.NewTenantMiddleware(
@@ -554,7 +561,7 @@ ttMid := tmmiddleware.NewTenantMiddleware(
 The `ErrorMapper` type lets you customize how dispatch layer errors are converted into HTTP responses. When not set, the built-in default mapper handles standard cases (401, 403, 404, 503).
 
 ```go
-// Defined in github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware
+// Defined in github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware
 type ErrorMapper func(c *fiber.Ctx, err error, tenantID string) error
 ```
 
@@ -1224,8 +1231,8 @@ Services implementing multi-tenant MUST expose these metrics:
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Service already has multi-tenant code" | Existence ≠ compliance. Code that doesn't match the Ring canonical model (lib-commons v3 dispatch layer sub-packages) is non-compliant and MUST be replaced entirely. | **STOP. Run compliance audit against this document. Replace every non-compliant component.** |
-| "Our custom multi-tenant approach works" | Working ≠ compliant. Custom implementations create drift, block lib-commons upgrades, prevent standardized tooling, and cannot be validated by automated compliance checks. | **STOP. Replace with canonical lib-commons v3 implementation.** |
+| "Service already has multi-tenant code" | Existence ≠ compliance. Code that doesn't match the Ring canonical model (lib-commons v4 dispatch layer sub-packages) is non-compliant and MUST be replaced entirely. | **STOP. Run compliance audit against this document. Replace every non-compliant component.** |
+| "Our custom multi-tenant approach works" | Working ≠ compliant. Custom implementations create drift, block lib-commons upgrades, prevent standardized tooling, and cannot be validated by automated compliance checks. | **STOP. Replace with canonical lib-commons v4 implementation.** |
 | "Just need to adapt/patch the existing code" | Non-standard implementations cannot be patched into compliance. The patterns are structurally different (context-based resolution vs static connections, lib-commons middleware vs custom middleware). | **STOP. Replace, do not patch.** |
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
 | "Tenant Manager adds complexity" | Complexity is in connection management anyway. Tenant Manager standardizes it. | **Use Tenant Manager for multi-tenant** |
@@ -1849,7 +1856,7 @@ When `MULTI_TENANT_ENABLED=true`, each tenant has its own M2M credentials stored
 
 ```go
 import (
-    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+    secretsmanager "github.com/LerianStudio/lib-commons/v4/commons/secretsmanager"
 )
 ```
 
@@ -1891,7 +1898,7 @@ import (
 
     awsconfig "github.com/aws/aws-sdk-go-v2/config"
     awssm "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
-    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+    secretsmanager "github.com/LerianStudio/lib-commons/v4/commons/secretsmanager"
 )
 
 // FetchCredentials retrieves M2M credentials from AWS Secrets Manager for a specific tenant.
@@ -1925,7 +1932,7 @@ import (
     "sync"
     "time"
 
-    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+    secretsmanager "github.com/LerianStudio/lib-commons/v4/commons/secretsmanager"
 )
 
 type cachedCredentials struct {
@@ -2089,7 +2096,7 @@ The `secretsmanager` package provides sentinel errors for precise error handling
 ```go
 import (
     "errors"
-    secretsmanager "github.com/LerianStudio/lib-commons/v3/commons/secretsmanager"
+    secretsmanager "github.com/LerianStudio/lib-commons/v4/commons/secretsmanager"
 )
 
 creds, err := secretsmanager.GetM2MCredentials(ctx, client, env, tenantOrgID, appName, target)

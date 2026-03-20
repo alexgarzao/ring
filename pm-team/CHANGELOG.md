@@ -1,5 +1,96 @@
 # Ring-pm-team Changelog
 
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- Fixes:
+  - Added bootstrap-only comments to `panic()` examples to adhere to standards.
+
+Contributors: @gandalf,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- **Fixes:**
+  - Added bootstrap-only comments to `panic()` examples to enhance code clarity and maintainability.
+
+Contributors: @gandalf,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- Fixes:
+  - Added bootstrap-only comments to `panic()` examples to align with standards.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- Fixes:
+  - Added bootstrap-only comments to `panic()` examples.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- Fixes:
+  - Added bootstrap-only comments to panic() examples for improved clarity and standardization.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- **Fixes**
+  - Added bootstrap-only comments to `panic()` examples to enhance clarity and maintain code standards.
+
+Contributors: @gandalf,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.1)
+
+- Fixes:
+  - Added bootstrap-only comments to `panic()` examples to align with standards.
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.0...ring-pm-team@0.20.1)
+
+---
+
+## [0.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.0)
+
+- Features:
+  - Add JSON output schema to delivery-planning skill.
+
+- Improvements:
+  - Update output references for dual MD+JSON delivery roadmap.
+
+Contributors: @rsane.melo
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.19.3...ring-pm-team@0.20.0)
+
+---
+
 ## [0.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.0)
 
 - **Features:**

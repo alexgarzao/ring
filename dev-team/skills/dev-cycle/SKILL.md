@@ -1782,7 +1782,7 @@ detected_dependencies = []
 ### ⛔ MANDATORY: Multi-Tenant Detection & Compliance Audit
 
 <cannot_skip>
-MANDATORY: Multi-tenant dual-mode applies to all Go services (no exceptions). Gate 0 implements dual-mode from the start using lib-commons v3 resolvers. Gate 0.5G verifies compliance. This detection captures the CURRENT state of the codebase for context.
+MANDATORY: Multi-tenant dual-mode applies to all Go services (no exceptions). Gate 0 implements dual-mode from the start using lib-commons v4 resolvers. Gate 0.5G verifies compliance. This detection captures the CURRENT state of the codebase for context.
 
 See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canonical model and [dev-delivery-verification](../dev-delivery-verification/SKILL.md) Step 3.5G for the verification checks.
 </cannot_skip>
@@ -2072,7 +2072,7 @@ implementation_input = {
 
 ## Step 3: Gate 1 - DevOps (Per Execution Unit)
 
-**REQUIRED SUB-SKILL:** Use ring:dev-devops
+**REQUIRED SUB-SKILLS:** Use ring:dev-devops, then ring:dev-docker-security (audit)
 
 ### ⛔ HARD GATE: Required Artifacts MUST Be Created
 
@@ -2160,6 +2160,34 @@ devops_input = {
      → If "ESCALATION" in output: STOP and report to user
 
 4. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
+```
+
+### Step 3.2.1: Docker Security Audit
+
+```text
+After ring:dev-devops PASSES, run Docker Hub Health Score compliance audit
+on the created/updated Dockerfile:
+
+   Skill("ring:dev-docker-security") with input:
+     dockerfile_path: [extract from devops "## Files Changed" table, or default to "Dockerfile"]
+     language: devops_input.language
+     service_type: devops_input.service_type
+     mode: "audit"
+
+   The skill validates:
+   - Non-root USER directive
+   - Minimal base image (distroless/alpine)
+   - No AGPL v3 license risk
+   - Supply chain attestations in pipeline
+   - Audit checklist compliance
+
+   if skill output contains "Result: PASS":
+     → Proceed to Step 3.3.
+
+   if skill output contains "Result: FAIL":
+     → Re-dispatch ring:devops-engineer with the failing policies
+     → Re-run ring:dev-docker-security audit
+     → Max 3 total attempts (2 retries). If still FAIL: STOP and report to user
 ```
 
 ### Step 3.3: Gate 1 Complete
