@@ -186,11 +186,11 @@ Agents must use these exact import paths. Include this table in every gate dispa
 |-------|-------------|---------|
 | `client` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/client` | Tenant Manager HTTP client with circuit breaker |
 | `core` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/core` | Context helpers, resolvers, errors, types |
-| `tmmiddleware` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware` | TenantMiddleware, MultiPoolMiddleware, ConsumerTrigger |
+| `tmmiddleware` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware` | TenantMiddleware, MultiPoolMiddleware |
 | `tmpostgres` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/postgres` | PostgresManager (per-tenant PG pools) |
 | `tmmongo` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/mongo` | MongoManager (per-tenant Mongo pools) |
 | `tmrabbitmq` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/rabbitmq` | RabbitMQ Manager (per-tenant vhosts) |
-| `tmconsumer` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/consumer` | MultiTenantConsumer (lazy mode) |
+| `tmconsumer` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/consumer` | MultiTenantConsumer (on-demand initialization) |
 | `valkey` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/valkey` | Redis key prefixing (GetKeyFromContext) |
 | `s3` | `github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/s3` | S3 key prefixing (GetObjectStorageKeyForTenant) |
 | `secretsmanager` | `github.com/LerianStudio/lib-commons/v3/commons/secretsmanager` | M2M credential retrieval (plugin only) |
@@ -540,7 +540,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | 5.5 | `config.go` | Add M2M_TARGET_SERVICE, cache TTL, AWS_REGION env vars (plugin only) | ~10 lines added |
 | 5.5 | `bootstrap.go` | Conditional M2M wiring when multi-tenant + plugin (plugin only) | ~20 lines added |
 | 6 | `producer.rabbitmq.go` | Dual constructor (single-tenant + multi-tenant) | ~20 lines added |
-| 6 | `rabbitmq.server.go` | MultiTenantConsumer setup with lazy mode | ~40 lines added |
+| 6 | `rabbitmq.server.go` | MultiTenantConsumer setup with on-demand initialization | ~40 lines added |
 | 7 | `config.go` | Backward compat validation | ~10 lines added |
 
 **MANDATORY: Below the summary table, show per-file code diff panels for every file that will be modified.**
@@ -630,7 +630,7 @@ The exact 8 canonical env vars from the "Canonical Environment Variables" table 
 Table with: Risk, Mitigation, Verification. Examples:
 - Single-tenant regression → Backward compat gate (Gate 7) → `MULTI_TENANT_ENABLED=false go test ./...`
 - Cross-tenant data leak → Context-based isolation → Tenant isolation integration tests (Gate 8)
-- Startup performance → Lazy consumer mode → `consumer.Run(ctx)` returns in <1s
+- Startup performance → On-demand consumer initialization → `consumer.Run(ctx)` returns in <1s
 
 ### 8. Retro Compatibility Guarantee
 
@@ -743,7 +743,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 >
 > **Service API Key Authentication (MANDATORY):** The Tenant Manager HTTP client MUST be configured with `client.WithServiceAPIKey(cfg.MultiTenantServiceAPIKey)` so that `X-API-Key` header is sent in requests to the `/settings` endpoint. Follow multi-tenant.md § "Service Authentication (MANDATORY)".
 >
-> **IF RabbitMQ DETECTED:** Follow multi-tenant.md § "ConsumerTrigger interface" for the wiring pattern.
+> **IF RabbitMQ DETECTED:** Follow multi-tenant.md § "Multi-Tenant Message Queue Consumers" for the consumer wiring pattern.
 
 **Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `go build ./...`
 
@@ -863,7 +863,7 @@ MANDATORY: RabbitMQ multi-tenant requires **TWO complementary layers** — both 
 > **Layer 1 — Vhost Isolation (MANDATORY):**
 > - MUST use `tmrabbitmq.Manager` for per-tenant vhost connections with LRU eviction
 > - MUST call `tmrabbitmq.Manager.GetChannel(ctx, tenantID)` for tenant-specific channel (Producer)
-> - MUST use `tmconsumer.MultiTenantConsumer` with lazy initialization — no startup connections (Consumer)
+> - MUST use `tmconsumer.MultiTenantConsumer` with on-demand initialization — no startup connections (Consumer)
 > - MUST branch on `cfg.MultiTenantEnabled` in bootstrap (CONFIG SPLIT with dual constructors)
 > - MUST keep existing single-tenant code path untouched
 >
@@ -877,8 +877,7 @@ MANDATORY: RabbitMQ multi-tenant requires **TWO complementary layers** — both 
 >
 > Follow multi-tenant.md sections:
 > - "RabbitMQ Multi-Tenant Producer" for dual constructor pattern with both layers
-> - "Multi-Tenant Message Queue Consumers (Lazy Mode)" for lazy initialization
-> - "ConsumerTrigger Interface" for the trigger wiring
+> - "Multi-Tenant Message Queue Consumers" for on-demand consumer initialization
 >
 > Gate-specific constraints:
 > 1. MANDATORY: CONFIG SPLIT — branch on `cfg.MultiTenantEnabled` for both producer and consumer in bootstrap
@@ -888,7 +887,7 @@ MANDATORY: RabbitMQ multi-tenant requires **TWO complementary layers** — both 
 > 5. MUST implement both layers together — one without the other is non-compliant
 
 **Verification:**
-1. `grep "tmrabbitmq.Manager\|NewProducerMultiTenant\|EnsureConsumerStarted\|tmmiddleware.ConsumerTrigger" internal/` + `go build ./...`
+1. `grep "tmrabbitmq.Manager\|NewProducerMultiTenant\|tmconsumer.NewMultiTenantConsumer" internal/` + `go build ./...`
 2. **Vhost isolation (Layer 1):** `grep -rn "tmrabbitmq.NewManager\|tmrabbitmq.Manager" internal/` MUST return results.
 3. **X-Tenant-ID header (Layer 2):** `grep -rn "X-Tenant-ID" internal/` MUST return results in both producer AND consumer.
 4. **Shared connection rejection:** If RabbitMQ multi-tenant uses a shared connection with only `X-Tenant-ID` headers (no `tmrabbitmq.Manager`), this gate FAILS.

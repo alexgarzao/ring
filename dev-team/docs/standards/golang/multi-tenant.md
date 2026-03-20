@@ -15,7 +15,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 1b | [Multi-module middleware (MultiPoolMiddleware)](#multi-module-middleware-multipoolmiddleware) | Multi-module unified services (midaz ledger) |
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
 | 3 | [Route-Level Auth-Before-Tenant Ordering (MANDATORY)](#route-level-auth-before-tenant-ordering-mandatory) | Auth MUST validate JWT before tenant middleware calls Tenant Manager API |
-| 24 | [Multi-Tenant Message Queue Consumers (Lazy Mode)](#multi-tenant-message-queue-consumers-lazy-mode) | Lazy consumer initialization, on-demand connection, exponential backoff |
+| 24 | [Multi-Tenant Message Queue Consumers](#multi-tenant-message-queue-consumers) | Multi-tenant consumer initialization, on-demand connection, exponential backoff |
 | 25 | [M2M Credentials via Secret Manager (Plugin-Only)](#m2m-credentials-via-secret-manager-plugin-only) | AWS Secrets Manager integration for plugin-to-product authentication per tenant |
 | 26 | [Service Authentication (MANDATORY)](#service-authentication-mandatory) | API key authentication for dispatch layer /settings endpoint via X-API-Key header |
 
@@ -79,7 +79,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | File Pattern | What Changes |
 |-------------|-------------|
 | `internal/adapters/rabbitmq/producer*.go` | Dual constructor: single-tenant (direct connection) + multi-tenant (`tmrabbitmq.Manager.GetChannel`). `X-Tenant-ID` header injection |
-| `internal/adapters/rabbitmq/consumer*.go` (or `internal/bootstrap/`) | `tmconsumer.MultiTenantConsumer` with lazy initialization. `X-Tenant-ID` header extraction |
+| `internal/adapters/rabbitmq/consumer*.go` (or `internal/bootstrap/`) | `tmconsumer.MultiTenantConsumer` with on-demand initialization. `X-Tenant-ID` header extraction |
 
 **Tests (Gate 7-8):**
 
@@ -141,7 +141,7 @@ go build ./...
 | `APPLICATION_NAME` | Service name for Tenant Manager API (`/tenants/{id}/services/{service}/settings`) | - | Yes |
 | `MULTI_TENANT_ENABLED` | Enable multi-tenant mode | `false` | Yes |
 | `MULTI_TENANT_URL` | Tenant Manager service URL | - | If multi-tenant |
-| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (lazy consumer tenant discovery) | `staging` | Only if RabbitMQ |
+| `MULTI_TENANT_ENVIRONMENT` | Deployment environment for cache key segmentation (consumer tenant discovery) | `staging` | Only if RabbitMQ |
 | `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
@@ -243,7 +243,7 @@ The Tenant Manager is an external service that stores database credentials per t
 | `GET` | `/tenants/{tenantID}/services/{service}/settings` | `TenantConfig` | Full tenant configuration with DB credentials |
 | `GET` | `/tenants/active?service={service}` | `[]*TenantSummary` | List of active tenants (fallback for discovery) |
 
-**Tenant Discovery (for lazy consumer mode):**
+**Tenant Discovery (for consumer mode):**
 1. Primary: Redis `SMEMBERS "dispatch layer:tenants:active"` (fast, <1ms)
 2. Fallback: HTTP `GET /tenants/active?service={service}` (slower, network call)
 
@@ -461,7 +461,6 @@ import (
 |------|---------|
 | `MultiPoolMiddleware` | Routes requests to module-specific tenant pools based on URL path matching |
 | `MultiPoolOption` | Functional option for configuring `MultiPoolMiddleware` |
-| `ConsumerTrigger` | Interface for lazy consumer spawning (defined in middleware package) |
 | `ErrorMapper` | Function type for custom HTTP error responses |
 
 **Available options:**
@@ -471,7 +470,6 @@ import (
 | `WithRoute(paths, module, pgPool, mongoPool)` | Map URL path prefixes to a module's database pools | At least one route or default |
 | `WithDefaultRoute(module, pgPool, mongoPool)` | Fallback route when no path-based route matches | At least one route or default |
 | `WithPublicPaths(paths...)` | URL prefixes that bypass tenant resolution entirely | No |
-| `WithConsumerTrigger(ct)` | Enable lazy consumer spawning after tenant ID extraction | No (only if using lazy RabbitMQ mode) |
 | `WithCrossModuleInjection()` | Resolve PG connections for all registered modules, not just the matched one | No (only if handlers need cross-module DB access) |
 | `WithErrorMapper(fn)` | Custom function to convert dispatch layer errors into HTTP responses | No (built-in mapper is used by default) |
 | `WithMultiPoolLogger(logger)` | Set logger for the middleware (otherwise extracted from context) | No |
@@ -490,7 +488,6 @@ multiMid := tmmiddleware.NewMultiPoolMiddleware(
     tmmiddleware.WithRoute(transactionPaths, "transaction", txPGPool, txMongoPool),
     tmmiddleware.WithDefaultRoute("onboarding", onbPGPool, onbMongoPool),
     tmmiddleware.WithPublicPaths("/health", "/version", "/swagger"),
-    tmmiddleware.WithConsumerTrigger(consumerTrigger), // optional, for lazy RabbitMQ mode
     tmmiddleware.WithCrossModuleInjection(),            // enables cross-module PG connections
     tmmiddleware.WithErrorMapper(customErrorMapper),    // optional, for custom HTTP error responses
     tmmiddleware.WithMultiPoolLogger(logger),
@@ -506,11 +503,10 @@ multiMid := tmmiddleware.NewMultiPoolMiddleware(
 3. Checks if the matched route's PG pool is multi-tenant — if not, calls `c.Next()`
 4. Extracts `Authorization: Bearer {token}` header and parses JWT
 5. Extracts `tenantId` claim from JWT
-6. Calls `ConsumerTrigger.EnsureConsumerStarted(ctx, tenantID)` if configured
-7. Resolves PG connection via `route.pgPool.GetConnection(ctx, tenantID)` and stores it using module-scoped context keys
-8. If `WithCrossModuleInjection()` is enabled, resolves PG connections for all other routes too
-9. Resolves MongoDB connection if the route has a mongo pool
-10. Calls `c.Next()`
+6. Resolves PG connection via `route.pgPool.GetConnection(ctx, tenantID)` and stores it using module-scoped context keys
+7. If `WithCrossModuleInjection()` is enabled, resolves PG connections for all other routes too
+8. Resolves MongoDB connection if the route has a mongo pool
+9. Calls `c.Next()`
 
 **In repositories for multi-module services, use module-scoped getters:**
 
@@ -547,25 +543,11 @@ ttMid := tmmiddleware.NewTenantMiddleware(
 | Multiple PG pools (path-based) | No | Yes (via `WithRoute`) |
 | MongoDB support | Yes | Yes |
 | Cross-module injection | No | Yes (via `WithCrossModuleInjection`) |
-| Consumer trigger (lazy mode) | No | Yes (via `WithConsumerTrigger`) |
 | Custom error mapping | No | Yes (via `WithErrorMapper`) |
 | Public path bypass | No (handled externally) | Yes (via `WithPublicPaths`) |
 | When to use | Single-module services | Multi-module unified services |
 
 **Rule of thumb:** If your service has one database module, use `TenantMiddleware`. If your service combines multiple modules with different databases behind one HTTP port, use `MultiPoolMiddleware`.
-
-#### ConsumerTrigger interface
-
-The `ConsumerTrigger` interface is defined in the lib-commons middleware package. Services that process messages in multi-tenant mode implement this interface and pass it to the middleware for lazy consumer activation.
-
-```go
-// Defined in github.com/LerianStudio/lib-commons/v3/commons/dispatch layer/middleware
-type ConsumerTrigger interface {
-    EnsureConsumerStarted(ctx context.Context, tenantID string)
-}
-```
-
-The middleware calls `EnsureConsumerStarted` after extracting the tenant ID. The first request per tenant spawns the consumer (~500ms). Subsequent requests return immediately (<1ms). Import this interface from `tmmiddleware`, not from service-specific packages.
 
 #### ErrorMapper
 
@@ -805,7 +787,7 @@ func InitService(cfg *Config) (*Service, error) {
         if isUnifiedService {
             // Multi-module: use MultiPoolMiddleware
             // See "Multi-module middleware (MultiPoolMiddleware)" section above
-            multiMid := initMultiTenantMiddleware(cfg, logger, consumerTrigger)
+            multiMid := initMultiTenantMiddleware(cfg, logger)
             ttHandler = multiMid.Handle
         } else {
             // Single-module: use TenantMiddleware
@@ -1227,7 +1209,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Credential fetching** | HTTP call to Tenant Manager API | - |
 | **JWT parsing** | Extract `tenantId` from token (both middlewares) | - |
 | **Tenant discovery** | Redis -> API fallback, sync loop | - |
-| **Lazy consumer lifecycle** | On-demand spawn, backoff, degraded tracking | - |
+| **Consumer lifecycle** | On-demand spawn, backoff, degraded tracking | - |
 | **Path-based pool routing** | `MultiPoolMiddleware` matches URL to module pools | - |
 | **Cross-module connection injection** | `MultiPoolMiddleware` resolves PG for all modules when enabled | - |
 | **Error mapping** | Default error mapper in both middlewares; customizable via `ErrorMapper` in `MultiPoolMiddleware` | - |
@@ -1236,12 +1218,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Redis key prefixing** | - | Call `valkey.GetKeyFromContext(ctx, key)` for every Redis operation |
 | **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
-| **Consumer trigger** | - | Implement `ConsumerTrigger` interface (imported from `tmmiddleware`) and wire to middleware |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
-
-### ConsumerTrigger Wiring
-
-For `ConsumerTrigger` interface definition and usage, see [ConsumerTrigger interface](#consumertrigger-interface) in the Multi-module middleware section above. Import from `tmmiddleware`, not from service-specific packages. For `TenantMiddleware`, wire it externally. For `MultiPoolMiddleware`, pass it via `WithConsumerTrigger(ct)`.
 
 ### Anti-Rationalization Table (General)
 
@@ -1375,8 +1352,6 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `core.ErrTenantNotFound` → 404, `core.ErrManagerClosed` → 503, `core.ErrServiceNotConfigured` → 503
 - [ ] `core.IsTenantNotProvisionedError()` in error handler → 422
 - [ ] `core.ErrTenantContextRequired` handled in repositories
-- [ ] `ConsumerTrigger` imported from `tmmiddleware` (not from midaz pkg or service-specific packages)
-- [ ] `ConsumerTrigger.EnsureConsumerStarted()` called after tenant ID extraction (if using lazy mode)
 
 **Repositories:**
 - [ ] `core.ResolvePostgres(ctx, fallback)` in PostgreSQL repositories (single-module services)
@@ -1390,7 +1365,6 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `consumer.NewMultiTenantConsumer` with `consumer.WithPostgresManager` and `consumer.WithMongoManager`
 - [ ] `consumer.Register(queueName, handler)` for each queue
 - [ ] `consumer.Run(ctx)` at startup (non-blocking, <1s)
-- [ ] `ConsumerTrigger` interface implemented and wired to middleware
 
 **Testing:**
 - [ ] Unit tests with mock tenant context
@@ -1495,7 +1469,7 @@ grep -rnE '^\s*(app|f)\.(Get|Post|Put|Patch|Delete)\(.*auth\.Authorize\(.*WhenEn
 
 ---
 
-## Multi-Tenant Message Queue Consumers (Lazy Mode)
+## Multi-Tenant Message Queue Consumers
 
 ### When to Use
 
@@ -1525,7 +1499,7 @@ Startup Time = N tenants × 500ms per connection
 
 ---
 
-### Solution: Lazy Consumer Initialization
+### Solution: On-Demand Consumer Initialization
 
 **Pattern:** Decouple tenant discovery from consumer connection.
 
@@ -1572,7 +1546,7 @@ On First Request per Tenant:
 
 #### 2. Consumer Manager (lib-commons)
 
-**Responsibility:** Manage lifecycle of message consumers across tenants with lazy initialization.
+**Responsibility:** Manage lifecycle of message consumers across tenants with on-demand initialization.
 
 **Key methods:**
 ```go
@@ -1597,36 +1571,21 @@ func (c *MultiTenantConsumer) IsDegraded(tenantID string) bool
 func (c *MultiTenantConsumer) Stats() ConsumerStats
 ```
 
-#### 3. HTTP Middleware Trigger
+#### 3. Service Bootstrap Trigger
 
-**Responsibility:** Trigger lazy consumer spawn when requests arrive.
+**Responsibility:** Trigger consumer spawn for tenants during service initialization and via background sync.
 
 **Implementation pattern:**
 ```go
-func TenantMiddleware(consumer ConsumerTrigger) fiber.Handler {
-    return func(c *fiber.Ctx) error {
-        // Extract tenant ID from header or JWT
-        tenantID := c.Get("x-tenant-id")
-        if tenantID == "" {
-            return fiber.NewError(400, "x-tenant-id required")
-        }
-
-        // Lazy mode trigger: ensure consumer is active
-        // First time: spawns consumer (~500ms)
-        // Subsequent: fast path (<1ms)
-        if consumer != nil {  // Nil-safe for single-tenant mode
-            ctx := c.UserContext()
-            consumer.EnsureConsumerStarted(ctx, tenantID)
-            // Fire-and-forget: consumer retries via background sync if spawn fails
-        }
-
-        // Continue with request processing
-        return c.Next()
-    }
+// In bootstrap/config.go
+tmConsumer := consumer.NewMultiTenantConsumer(...)
+if err := tmConsumer.Run(ctx); err != nil {
+    logger.Errorf("tenant manager startup failed: %v", err)
+    // Startup continues - consumer will retry tenant discovery in background
 }
 ```
 
-**Placement:** After tenant ID extraction, before database connection resolution.
+The `MultiTenantConsumer.Run()` method discovers tenants and starts a background sync loop that spawns consumers for newly discovered tenants. Individual tenant consumers are started on-demand via `EnsureConsumerStarted()` which is called internally by the consumer manager.
 
 ---
 
@@ -1634,7 +1593,7 @@ func TenantMiddleware(consumer ConsumerTrigger) fiber.Handler {
 
 #### Step 1: Update Shared Library
 
-Implement lazy mode in your message queue consumer library:
+Implement on-demand consumer initialization in your message queue consumer library:
 
 1. **Add state tracking:**
 ```go
@@ -1717,7 +1676,7 @@ func GetActiveTenants(c *fiber.Ctx) error {
 app.Get("/tenants/active", GetActiveTenants)
 ```
 
-#### Step 3: Wire Trigger in Service Middleware
+#### Step 3: Wire Consumer in Service Bootstrap
 
 In each service consuming messages:
 
@@ -1725,33 +1684,19 @@ In each service consuming messages:
 // In bootstrap/config.go
 func InitServers() {
     // Create multi-tenant consumer
-    tmConsumer := consumer.NewMultiTenantConsumer(...)
+    tmConsumer := consumer.NewMultiTenantConsumer(
+        consumer.WithPostgresManager(pgManager),
+        consumer.WithMongoManager(mongoManager),
+    )
+
+    // Register message handlers
+    tmConsumer.Register("queue-name", handler)
+
+    // Start consumer (discovers tenants, starts background sync)
     if err := tmConsumer.Run(ctx); err != nil {
         logger.Errorf("tenant manager startup failed: %v", err)
         // Note: startup continues - consumer will retry tenant discovery in background
     }
-
-    // Create middleware with consumer trigger
-    svc.ttHandler = NewTenantMiddleware(tmConsumer)
-    // Register per-route in routes.go using WhenEnabled
-    // See "Route-Level Auth-Before-Tenant Ordering" section
-}
-
-// In middleware file
-type TenantMiddleware struct {
-    consumer ConsumerTrigger  // Interface with EnsureConsumerStarted method
-}
-
-func (m *TenantMiddleware) Handle(c *fiber.Ctx) error {
-    tenantID := extractTenantID(c)  // From header or JWT
-
-    // Lazy mode trigger (fire-and-forget, errors logged internally)
-    if m.consumer != nil {
-        ctx := c.UserContext()
-        m.consumer.EnsureConsumerStarted(ctx, tenantID)
-    }
-
-    return c.Next()
 }
 ```
 
@@ -1795,7 +1740,7 @@ if consumer.IsDegraded(tenantID) {
 **Enhanced Stats API:**
 ```go
 type ConsumerStats struct {
-    ConnectionMode   string   `json:"connectionMode"`    // "lazy"
+    ConnectionMode   string   `json:"connectionMode"`    // "on-demand"
     ActiveTenants    int      `json:"activeTenants"`     // Connected
     KnownTenants     int      `json:"knownTenants"`      // Discovered
     PendingTenants   []string `json:"pendingTenants"`    // Known but not active
@@ -1804,7 +1749,7 @@ type ConsumerStats struct {
 ```
 
 **Structured Logs:**
-- `connection_mode=lazy` at startup
+- `connection_mode=on-demand` at startup
 - `on-demand consumer start for tenant: {id}` when spawning
 - `connecting to vhost: tenant={id}` when connecting
 - `tenant {id} marked degraded` after max retries
@@ -1826,7 +1771,7 @@ type ConsumerStats struct {
 
 ---
 
-### When to Use Multi-Tenant Lazy Consumer
+### When to Use Multi-Tenant Consumer
 
 | Scenario | Recommended | Rationale |
 |----------|-------------|-----------|
@@ -1841,7 +1786,7 @@ type ConsumerStats struct {
 
 ### Common Pitfalls
 
-**❌ Don't:** Start consumers in discovery loop (defeats lazy purpose)
+**❌ Don't:** Start consumers in discovery loop (defeats on-demand purpose)
 **✅ Do:** Populate knownTenants only, defer connection to trigger
 
 **❌ Don't:** Use global mutex for all tenants (contention)
@@ -1866,19 +1811,12 @@ if !config.MultiTenantEnabled {
     // Single-tenant: static RabbitMQ connection (no tenant isolation)
     consumer = initSingleTenantConsumer(...)
 } else {
-    // Multi-tenant: lazy mode with per-tenant vhosts
+    // Multi-tenant: per-tenant vhosts with on-demand initialization
     consumer = initMultiTenantConsumer(...)
 }
 ```
 
-**Middleware trigger (multi-tenant only):**
-```go
-if m.consumerTrigger != nil {  // Nil in single-tenant mode
-    m.consumerTrigger.EnsureConsumerStarted(ctx, tenantID)
-}
-```
-
-**Note:** Single-tenant uses a different consumer implementation without tenant isolation. Multi-tenant consumers ALWAYS use lazy mode for optimal startup performance.
+**Note:** Single-tenant uses a different consumer implementation without tenant isolation. Multi-tenant consumers use on-demand initialization for optimal startup performance.
 
 ---
 
