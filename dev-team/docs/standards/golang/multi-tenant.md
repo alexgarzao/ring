@@ -1511,18 +1511,18 @@ Startup Time = N tenants × 500ms per connection
 **Pattern:** Decouple tenant discovery from consumer connection.
 
 ```
-Startup:
+Startup (MultiTenantConsumer.Run):
   1. Discover tenant list (Redis/API) - lightweight, <1s
   2. Track discovered tenants in memory (knownTenants map)
-  3. Do NOT start consumers yet
+  3. Start background sync loop (periodic re-discovery)
   4. Return immediately (startup complete)
 
-On First Request per Tenant:
-  1. HTTP middleware extracts tenant ID
-  2. Middleware calls consumer.EnsureConsumerStarted(ctx, tenantID)
+On-Demand Consumer Spawn (internal):
+  1. Background sync discovers new tenant
+  2. Calls EnsureConsumerStarted(ctx, tenantID) internally
   3. Consumer spawns on-demand (first time: ~500ms)
   4. Connection cached for reuse
-  5. Subsequent requests: fast path (<1ms)
+  5. Subsequent calls: fast path (<1ms)
 ```
 
 **Result:** Startup time O(1) regardless of tenant count, resources scale with active tenants only.
