@@ -767,6 +767,19 @@ See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-a
 | "This function is too simple for spans" | Simple ≠ exempt. all functions need spans. | **Add span to every function** |
 | "Telemetry adds overhead" | Observability is non-negotiable for production | **Instrument 100% of code paths** |
 
+### ⛔ Post-Generation Panic Check (MANDATORY)
+
+Before delivering ANY generated code, run these checks:
+
+| Check | Command | Expected | If Found |
+|-------|---------|----------|----------|
+| No panic() | `grep -rn "panic(" --include="*.go" --exclude="*_test.go"` | 0 results | Rewrite to return error |
+| No log.Fatal() | `grep -rn "log.Fatal" --include="*.go"` | 0 results | Rewrite to return error |
+| No Must* helpers | `grep -rn "Must[A-Z]" --include="*.go" \| grep -v "regexp\.MustCompile"` | 0 results | Rewrite to return (T, error) |
+| No os.Exit() | `grep -rn "os.Exit" --include="*.go" --exclude="main.go"` | 0 results | Move to main() or return error |
+
+**If any check fails: DO NOT deliver. Fix first.**
+
 ## Agent Selection Guide
 
 | Language | Service Type | Condition | Agent |

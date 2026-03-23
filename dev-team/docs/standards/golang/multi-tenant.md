@@ -154,6 +154,8 @@ go build ./...
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
 | `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
 | `MULTI_TENANT_SERVICE_API_KEY` | API key for authenticating with dispatch layer `/settings` endpoint. Generated via service catalog. | - | If multi-tenant |
+| `MULTI_TENANT_CACHE_TTL_SEC` | In-memory cache TTL for tenant config (0 = disabled). Acts as safety net; proactive refresh via settings check interval. | `120` | No |
+| `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` | Background goroutine interval to revalidate tenant status and refresh config if changed | `30` | No |
 
 **Example `.env` for multi-tenant:**
 ```bash
@@ -165,6 +167,8 @@ MULTI_TENANT_IDLE_TIMEOUT_SEC=300
 MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD=5
 MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC=30
 MULTI_TENANT_SERVICE_API_KEY=your-service-api-key-here
+MULTI_TENANT_CACHE_TTL_SEC=120
+MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC=30
 ```
 
 ### Configuration
@@ -2006,7 +2010,7 @@ if cfg.MultiTenantEnabled {
     // MULTI-TENANT: create credential provider that fetches from AWS Secrets Manager
     awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
     if err != nil {
-        logger.Fatalf("Failed to load AWS config for M2M: %v", err)
+        return nil, fmt.Errorf("failed to load AWS config for M2M: %w", err)
     }
     smClient := awssm.NewFromConfig(awsCfg)
 

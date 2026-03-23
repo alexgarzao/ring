@@ -30,7 +30,7 @@ When creating or modifying any agent in `*/agents/*.md`:
 2. **MUST NOT run reviewers sequentially** - dispatch in parallel
 3. **MUST NOT skip TDD's RED phase** - Test must fail before implementation
 4. **MUST NOT ignore skill when applicable** - "Simple task" is not an excuse
-5. **MUST NOT use panic() in Go** - Error handling required
+5. **ZERO PANIC POLICY** - `panic()`, `log.Fatal()`, and `Must*` helpers are FORBIDDEN everywhere (including bootstrap/init). Return `(T, error)` instead. Only exception: `regexp.MustCompile()` with compile-time constants.
 6. **MUST NOT commit manually** - use `/ring:commit` command
 7. **MUST NOT assume compliance** - VERIFY with evidence
 
