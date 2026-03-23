@@ -1942,7 +1942,7 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 tenant:{tenantOrgID}:m2m:{targetService}:credentials
 ```
 
-When the `tenantOrgID` is available directly (as in `M2MCredentialProvider`), construct the key with `fmt.Sprintf`. When working within a request context that has tenant info, use `valkey.GetKeyFromContext(ctx)` to derive the tenant prefix.
+Key prefixing uses `valkey.GetKeyFromContext(ctx, baseKey)` from lib-commons, which automatically applies the tenant prefix (e.g., `tenant:{tenantId}:m2m:{targetService}:credentials`). This is the same pattern used by all other Redis operations in the codebase.
 
 ##### Cache-Bust on Auth Failure (401)
 
@@ -1960,12 +1960,18 @@ package m2m
 
 import (
     "context"
+    "encoding/json"
     "fmt"
     "sync"
     "time"
 
+    libRedis "github.com/LerianStudio/lib-commons/v4/commons/redis"
     secretsmanager "github.com/LerianStudio/lib-commons/v4/commons/secretsmanager"
+    "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/valkey"
 )
+
+// l1CacheTTL is a fixed internal constant — not configurable via env var.
+const l1CacheTTL = 30 * time.Second
 
 type cachedCredentials struct {
     creds     *secretsmanager.M2MCredentials
@@ -1973,38 +1979,28 @@ type cachedCredentials struct {
 }
 
 // M2MCredentialProvider handles per-tenant M2M credential retrieval with two-level caching.
-// L1 (in-memory) provides fast path; L2 (Redis/Valkey) provides cross-pod consistency.
+// L1 (in-memory) provides fast path; L2 (Redis/Valkey via lib-commons) provides cross-pod consistency.
 // Token acquisition is handled by Plugin Access Manager — this only provides credentials.
 type M2MCredentialProvider struct {
     smClient        secretsmanager.SecretsManagerClient
     env             string
     applicationName string
     targetService   string
-    credCacheTTL time.Duration // L2 TTL (distributed, from M2M_CREDENTIAL_CACHE_TTL_SEC)
+    credCacheTTL    time.Duration // L2 TTL (from M2M_CREDENTIAL_CACHE_TTL_SEC)
 
     credCache sync.Map // L1: map[tenantOrgID]*cachedCredentials
 
-    // L2: Redis/Valkey client (nil = local-only mode)
-    redisClient RedisCredentialCache
-}
-
-// RedisCredentialCache abstracts the L2 distributed cache operations.
-type RedisCredentialCache interface {
-    Get(ctx context.Context, key string) (*secretsmanager.M2MCredentials, error)
-    Set(ctx context.Context, key string, creds *secretsmanager.M2MCredentials, ttl time.Duration) error
-    Delete(ctx context.Context, key string) error
+    // L2: lib-commons Redis connection (nil = local-only mode)
+    redisConn *libRedis.Connection
 }
 
 // NewM2MCredentialProvider creates a credential provider with two-level cache.
-// Pass nil for redisClient to use local-only mode (single-tenant or dev).
-// l1CacheTTL is a fixed internal constant — not configurable via env var.
-const l1CacheTTL = 30 * time.Second
-
+// Pass nil for redisConn to use local-only mode (single-tenant or dev).
 func NewM2MCredentialProvider(
     smClient secretsmanager.SecretsManagerClient,
     env, applicationName, targetService string,
     credCacheTTL time.Duration,
-    redisClient RedisCredentialCache,
+    redisConn *libRedis.Connection,
 ) *M2MCredentialProvider {
     return &M2MCredentialProvider{
         smClient:        smClient,
@@ -2012,17 +2008,20 @@ func NewM2MCredentialProvider(
         applicationName: applicationName,
         targetService:   targetService,
         credCacheTTL:    credCacheTTL,
-        redisClient:     redisClient,
+        redisConn:       redisConn,
     }
 }
 
-// m2mRedisKey returns the Redis key for a tenant's M2M credentials.
-func (p *M2MCredentialProvider) m2mRedisKey(tenantOrgID string) string {
-    return fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+// m2mRedisKey returns the tenant-prefixed Redis key for M2M credentials.
+// Uses valkey.GetKeyFromContext when ctx has tenant info, otherwise builds manually.
+func (p *M2MCredentialProvider) m2mRedisKey(ctx context.Context, tenantOrgID string) string {
+    baseKey := fmt.Sprintf("m2m:%s:credentials", p.targetService)
+    // Use valkey.GetKeyFromContext to apply tenant prefix consistently
+    return valkey.GetKeyFromContext(ctx, baseKey)
 }
 
 // GetCredentials returns M2M credentials for the given tenant using two-level cache.
-// Lookup order: L1 (memory) → L2 (Redis) → AWS Secrets Manager.
+// Lookup order: L1 (memory) → L2 (Redis via lib-commons) → AWS Secrets Manager.
 // The caller (Plugin Access Manager integration) handles token acquisition.
 func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID string) (*secretsmanager.M2MCredentials, error) {
     // L1: Check in-memory cache (fast path)
@@ -2033,16 +2032,23 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
         }
     }
 
-    // L2: Check distributed cache (Redis/Valkey)
-    if p.redisClient != nil {
-        key := p.m2mRedisKey(tenantOrgID)
-        if creds, err := p.redisClient.Get(ctx, key); err == nil && creds != nil {
-            // Populate L1 with short TTL
-            p.credCache.Store(tenantOrgID, &cachedCredentials{
-                creds:     creds,
-                expiresAt: time.Now().Add(l1CacheTTL),
-            })
-            return creds, nil
+    // L2: Check distributed cache (Redis/Valkey via lib-commons)
+    if p.redisConn != nil {
+        rds, err := p.redisConn.GetConnection(ctx)
+        if err == nil {
+            key := p.m2mRedisKey(ctx, tenantOrgID)
+            val, err := rds.Get(ctx, key).Bytes()
+            if err == nil {
+                var creds secretsmanager.M2MCredentials
+                if json.Unmarshal(val, &creds) == nil {
+                    // Populate L1 with short TTL
+                    p.credCache.Store(tenantOrgID, &cachedCredentials{
+                        creds:     &creds,
+                        expiresAt: time.Now().Add(l1CacheTTL),
+                    })
+                    return &creds, nil
+                }
+            }
         }
     }
 
@@ -2052,11 +2058,14 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
         return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
     }
 
-    // Store in L2 (distributed)
-    if p.redisClient != nil {
-        key := p.m2mRedisKey(tenantOrgID)
-        // NOTE: Log this error in production (e.g., logger.Warnf). Swallowed here for brevity.
-        _ = p.redisClient.Set(ctx, key, creds, p.credCacheTTL)
+    // Store in L2 (distributed via lib-commons)
+    if p.redisConn != nil {
+        if rds, err := p.redisConn.GetConnection(ctx); err == nil {
+            key := p.m2mRedisKey(ctx, tenantOrgID)
+            if data, err := json.Marshal(creds); err == nil {
+                _ = rds.Set(ctx, key, data, p.credCacheTTL).Err()
+            }
+        }
     }
 
     // Store in L1 (local)
@@ -2074,11 +2083,12 @@ func (p *M2MCredentialProvider) InvalidateCredentials(ctx context.Context, tenan
     // Delete from L1 (local — immediate effect)
     p.credCache.Delete(tenantOrgID)
 
-    // Delete from L2 (distributed — propagates to all pods)
-    if p.redisClient != nil {
-        key := p.m2mRedisKey(tenantOrgID)
-        // NOTE: Log this error in production (e.g., logger.Warnf). Swallowed here for brevity.
-        _ = p.redisClient.Delete(ctx, key)
+    // Delete from L2 (distributed — propagates to all pods via lib-commons)
+    if p.redisConn != nil {
+        if rds, err := p.redisConn.GetConnection(ctx); err == nil {
+            key := p.m2mRedisKey(ctx, tenantOrgID)
+            _ = rds.Del(ctx, key).Err()
+        }
     }
 }
 ```

@@ -813,15 +813,12 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >    if cfg.MultiTenantEnabled {
 >        awsCfg, _ := awsconfig.LoadDefaultConfig(ctx)
 >        smClient := awssm.NewFromConfig(awsCfg)
->        var redisCache m2m.RedisCredentialCache // see multi-tenant.md for interface definition
->        if valkeyPool != nil { // Redis/Valkey available
->            // Implement m2m.RedisCredentialCache wrapping the Valkey pool (Get/Set/Delete)
->            redisCache = m2m.NewRedisCredentialCache(valkeyPool)
->        }
+>        // redisConn is the lib-commons Redis connection (already initialized in bootstrap)
+>        // Pass nil if Redis is not available — falls back to L1-only (in-memory)
 >        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.MultiTenantEnvironment,
 >            constant.ApplicationName, cfg.M2MTargetService,
 >            time.Duration(cfg.M2MCredentialCacheTTLSec)*time.Second,
->            redisCache)
+>            redisConn) // *libRedis.Connection from lib-commons
 >        productClient = product.NewClient(cfg.ProductURL, m2mProvider)
 >    } else {
 >        productClient = product.NewClient(cfg.ProductURL, nil) // single-tenant: static auth
