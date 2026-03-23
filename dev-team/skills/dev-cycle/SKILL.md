@@ -1858,6 +1858,19 @@ See [shared-patterns/shared-orchestrator-principle.md](../shared-patterns/shared
 **⛔ FORBIDDEN: Executing TDD-RED/GREEN logic directly from this step.**
 MUST invoke the ring:dev-implementation skill via the Skill tool; it handles all TDD phases, agent selection, agent dispatch, standards verification, and fix iteration.
 
+### ⛔ Post-Generation Panic Check (MANDATORY)
+
+After ring:dev-implementation completes, verify generated code:
+
+| Check | Command | Expected | If Found |
+|-------|---------|----------|----------|
+| No panic() | `grep -rn "panic(" --include="*.go" --exclude="*_test.go"` | 0 results | Return to Gate 0 with fix instructions |
+| No log.Fatal() | `grep -rn "log.Fatal" --include="*.go"` | 0 results | Return to Gate 0 with fix instructions |
+| No Must* helpers | `grep -rn "Must[A-Z]" --include="*.go" \| grep -v "regexp\.MustCompile"` | 0 results | Return to Gate 0 with fix instructions |
+| No os.Exit() | `grep -rn "os.Exit" --include="*.go" --exclude="main.go"` | 0 results | Return to Gate 0 with fix instructions |
+
+**If any check fails: DO NOT proceed to Gate 0.5. Return to Gate 0 with specific fix instructions.**
+
 ### ⛔ File Size Enforcement (MANDATORY — All Gates)
 
 See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds, verification commands, split strategies, and agent instructions.
