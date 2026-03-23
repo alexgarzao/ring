@@ -35,6 +35,8 @@ related:
 
 ## API Quick Reference
 
+**Connectivity:** `map.clotilde.lerian.net` is on the internal Clotilde server — **Tailscale must be active** or all requests will fail (timeout / DNS not resolving).
+
 **Base URL:** `https://map.clotilde.lerian.net/api`
 **Auth:** `Authorization: Bearer $API_KEY`
 
