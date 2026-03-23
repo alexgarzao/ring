@@ -1,5 +1,5 @@
 ---
-name: ring:lerian-map-management
+name: ring:pm-team:lerian-map-management
 description: |
   Manage the Lerian Map platform — maintain products, features, iterations, and delivery roadmaps
   via REST API. Enforces Lerian naming/tagging standards, keeps map data in sync with repository
