@@ -792,7 +792,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > **What to implement:**
 >
-> 1. **M2M Authenticator struct** with two-level credential caching and token caching.
+> 1. **M2M Authenticator struct** with two-level credential caching (clientId/clientSecret only — token acquisition is handled by Plugin Access Manager).
 >    Use `secretsmanager.GetM2MCredentials()` from `github.com/LerianStudio/lib-commons/v4/commons/secretsmanager`.
 >    The function signature is:
 >    ```go
@@ -813,8 +813,9 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >    if cfg.MultiTenantEnabled {
 >        awsCfg, _ := awsconfig.LoadDefaultConfig(ctx)
 >        smClient := awssm.NewFromConfig(awsCfg)
->        var redisCache m2m.RedisCredentialCache
+>        var redisCache m2m.RedisCredentialCache // see multi-tenant.md for interface definition
 >        if valkeyPool != nil { // Redis/Valkey available
+>            // Implement m2m.RedisCredentialCache wrapping the Valkey pool (Get/Set/Delete)
 >            redisCache = m2m.NewRedisCredentialCache(valkeyPool)
 >        }
 >        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.MultiTenantEnvironment,

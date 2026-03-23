@@ -1944,7 +1944,7 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 tenant:{tenantOrgID}:m2m:{targetService}:credentials
 ```
 
-Uses the existing `valkey.GetKeyFromContext` for tenant key prefixing.
+When the `tenantOrgID` is available directly (as in `M2MCredentialProvider`), construct the key with `fmt.Sprintf`. When working within a request context that has tenant info, use `valkey.GetKeyFromContext(ctx)` to derive the tenant prefix.
 
 ##### Cache-Bust on Auth Failure (401)
 
@@ -2017,6 +2017,11 @@ func NewM2MCredentialProvider(
     }
 }
 
+// m2mRedisKey returns the Redis key for a tenant's M2M credentials.
+func (p *M2MCredentialProvider) m2mRedisKey(tenantOrgID string) string {
+    return fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+}
+
 // GetCredentials returns M2M credentials for the given tenant using two-level cache.
 // Lookup order: L1 (memory) → L2 (Redis) → AWS Secrets Manager.
 // The caller (Plugin Access Manager integration) handles token acquisition.
@@ -2031,7 +2036,7 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
 
     // L2: Check distributed cache (Redis/Valkey)
     if p.redisClient != nil {
-        key := fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+        key := p.m2mRedisKey(tenantOrgID)
         if creds, err := p.redisClient.Get(ctx, key); err == nil && creds != nil {
             // Populate L1 with short TTL
             p.credCache.Store(tenantOrgID, &cachedCredentials{
@@ -2042,7 +2047,7 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
         }
     }
 
-    // L3: Fetch from AWS Secrets Manager
+    // Source: Fetch from AWS Secrets Manager (authoritative source)
     creds, err := secretsmanager.GetM2MCredentials(ctx, p.smClient, p.env, tenantOrgID, p.applicationName, p.targetService)
     if err != nil {
         return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
@@ -2050,7 +2055,8 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
 
     // Store in L2 (distributed)
     if p.redisClient != nil {
-        key := fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+        key := p.m2mRedisKey(tenantOrgID)
+        // NOTE: Log this error in production (e.g., logger.Warnf). Swallowed here for brevity.
         _ = p.redisClient.Set(ctx, key, creds, p.credCacheTTL)
     }
 
@@ -2071,7 +2077,8 @@ func (p *M2MCredentialProvider) InvalidateCredentials(ctx context.Context, tenan
 
     // Delete from L2 (distributed — propagates to all pods)
     if p.redisClient != nil {
-        key := fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+        key := p.m2mRedisKey(tenantOrgID)
+        // NOTE: Log this error in production (e.g., logger.Warnf). Swallowed here for brevity.
         _ = p.redisClient.Delete(ctx, key)
     }
 }
