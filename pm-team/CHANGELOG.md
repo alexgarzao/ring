@@ -3,6 +3,17 @@
 ## [0.20.2](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.2)
 
 - Fixes:
+  - Removed data envelope from BFF Response Contract template
+
+Contributors: @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.20.1...ring-pm-team@0.20.2)
+
+---
+
+## [0.20.2](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.20.2)
+
+- Fixes:
   - Removed data envelope from BFF Response Contract template.
 
 Contributors: @gandalf,
