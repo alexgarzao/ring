@@ -1887,9 +1887,7 @@ In addition to the 8 canonical multi-tenant env vars, plugins MUST add:
 |---------|-------------|---------|----------|
 | `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for plugins) |
 | `M2M_TARGET_SERVICE` | Target product service name | - | Yes (for plugins) |
-| `M2M_CREDENTIAL_CACHE_TTL_SEC` | L2 (distributed) cache TTL for credentials | `300` | No |
-| `M2M_CREDENTIAL_CACHE_MODE` | Cache mode: `distributed` (Redis/Valkey) or `local` (in-memory only) | `distributed` | No |
-| `M2M_CREDENTIAL_L1_CACHE_TTL_SEC` | L1 (in-memory) cache TTL — short-lived fast path | `30` | No |
+| `M2M_CREDENTIAL_CACHE_TTL_SEC` | Cache TTL for credentials (L2 distributed; L1 uses fixed 30s) | `300` | No |
 
 ### Implementation Pattern
 
@@ -1933,10 +1931,10 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 
 | Level | Store | TTL | Purpose |
 |-------|-------|-----|---------|
-| L1 | In-memory (`sync.Map`) | Short (~30s, via `M2M_CREDENTIAL_L1_CACHE_TTL_SEC`) | Fast path, avoids Redis round-trip per request |
+| L1 | In-memory (`sync.Map`) | Fixed 30s | Fast path, avoids Redis round-trip per request |
 | L2 | Redis/Valkey (distributed) | `M2M_CREDENTIAL_CACHE_TTL_SEC` (default 300s) | Source of truth, shared across all pods |
 
-**Fallback:** If Redis is not available (dev, single-tenant, or `M2M_CREDENTIAL_CACHE_MODE=local`), in-memory becomes the only level (current behavior preserved).
+**Fallback:** If Redis is not available (dev, single-tenant), in-memory becomes the only level (current behavior preserved). Mode is auto-detected — no configuration needed.
 
 ##### Redis Key Structure
 
@@ -1982,8 +1980,7 @@ type M2MCredentialProvider struct {
     env             string
     applicationName string
     targetService   string
-    credCacheTTL    time.Duration   // L2 TTL (distributed)
-    l1CacheTTL      time.Duration   // L1 TTL (in-memory, short)
+    credCacheTTL time.Duration // L2 TTL (distributed, from M2M_CREDENTIAL_CACHE_TTL_SEC)
 
     credCache sync.Map // L1: map[tenantOrgID]*cachedCredentials
 
@@ -2000,10 +1997,13 @@ type RedisCredentialCache interface {
 
 // NewM2MCredentialProvider creates a credential provider with two-level cache.
 // Pass nil for redisClient to use local-only mode (single-tenant or dev).
+// l1CacheTTL is a fixed internal constant — not configurable via env var.
+const l1CacheTTL = 30 * time.Second
+
 func NewM2MCredentialProvider(
     smClient secretsmanager.SecretsManagerClient,
     env, applicationName, targetService string,
-    credCacheTTL, l1CacheTTL time.Duration,
+    credCacheTTL time.Duration,
     redisClient RedisCredentialCache,
 ) *M2MCredentialProvider {
     return &M2MCredentialProvider{
@@ -2012,7 +2012,6 @@ func NewM2MCredentialProvider(
         applicationName: applicationName,
         targetService:   targetService,
         credCacheTTL:    credCacheTTL,
-        l1CacheTTL:      l1CacheTTL,
         redisClient:     redisClient,
     }
 }
@@ -2041,7 +2040,7 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
             // Populate L1 with short TTL
             p.credCache.Store(tenantOrgID, &cachedCredentials{
                 creds:     creds,
-                expiresAt: time.Now().Add(p.l1CacheTTL),
+                expiresAt: time.Now().Add(l1CacheTTL),
             })
             return creds, nil
         }
@@ -2063,7 +2062,7 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
     // Store in L1 (local)
     p.credCache.Store(tenantOrgID, &cachedCredentials{
         creds:     creds,
-        expiresAt: time.Now().Add(p.l1CacheTTL),
+        expiresAt: time.Now().Add(l1CacheTTL),
     })
 
     return creds, nil

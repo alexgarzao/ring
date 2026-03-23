@@ -802,9 +802,9 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >    `tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials`
 >
 > 2. **Two-level credential cache** (see multi-tenant.md § "Credential Caching"):
->    - **L1:** In-memory (`sync.Map`), short TTL (~30s via `M2M_CREDENTIAL_L1_CACHE_TTL_SEC`)
+>    - **L1:** In-memory (`sync.Map`), fixed 30s TTL
 >    - **L2:** Redis/Valkey (distributed), TTL via `M2M_CREDENTIAL_CACHE_TTL_SEC` (default 300s)
->    - **Fallback:** If Redis not available or `M2M_CREDENTIAL_CACHE_MODE=local`, L1-only mode
+>    - **Fallback:** If Redis not available, L1-only mode (auto-detected)
 >    - **Cache-bust on 401:** Call `InvalidateCredentials()` when token exchange returns 401
 >    MUST NOT hit AWS on every request.
 >
@@ -821,7 +821,6 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.MultiTenantEnvironment,
 >            constant.ApplicationName, cfg.M2MTargetService,
 >            time.Duration(cfg.M2MCredentialCacheTTLSec)*time.Second,
->            time.Duration(cfg.M2MCredentialL1CacheTTLSec)*time.Second,
 >            redisCache)
 >        productClient = product.NewClient(cfg.ProductURL, m2mProvider)
 >    } else {
@@ -831,9 +830,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > 4. **Config env vars** — add to Config struct:
 >    - `M2M_TARGET_SERVICE` (string, required for plugins)
->    - `M2M_CREDENTIAL_CACHE_TTL_SEC` (int, default 300 — L2 distributed TTL)
->    - `M2M_CREDENTIAL_L1_CACHE_TTL_SEC` (int, default 30 — L1 in-memory TTL)
->    - `M2M_CREDENTIAL_CACHE_MODE` (string, default "distributed" — or "local" for dev)
+>    - `M2M_CREDENTIAL_CACHE_TTL_SEC` (int, default 300)
 >    - `AWS_REGION` (string, required for plugins)
 >
 > 5. **Error handling** using sentinel errors from lib-commons:
