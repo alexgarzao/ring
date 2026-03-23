@@ -1887,7 +1887,9 @@ In addition to the 8 canonical multi-tenant env vars, plugins MUST add:
 |---------|-------------|---------|----------|
 | `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for plugins) |
 | `M2M_TARGET_SERVICE` | Target product service name | - | Yes (for plugins) |
-| `M2M_CREDENTIAL_CACHE_TTL_SEC` | Local cache TTL for credentials | `300` | No |
+| `M2M_CREDENTIAL_CACHE_TTL_SEC` | L2 (distributed) cache TTL for credentials | `300` | No |
+| `M2M_CREDENTIAL_CACHE_MODE` | Cache mode: `distributed` (Redis/Valkey) or `local` (in-memory only) | `distributed` | No |
+| `M2M_CREDENTIAL_L1_CACHE_TTL_SEC` | L1 (in-memory) cache TTL — short-lived fast path | `30` | No |
 
 ### Implementation Pattern
 
@@ -1925,7 +1927,35 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 
 #### 2. Credential Caching (MANDATORY)
 
-**MUST cache credentials locally.** Hitting AWS Secrets Manager on every request is expensive and adds latency.
+**MUST cache credentials using a two-level cache architecture.** Hitting AWS Secrets Manager on every request is expensive and adds latency.
+
+##### Cache Architecture
+
+| Level | Store | TTL | Purpose |
+|-------|-------|-----|---------|
+| L1 | In-memory (`sync.Map`) | Short (~30s, via `M2M_CREDENTIAL_L1_CACHE_TTL_SEC`) | Fast path, avoids Redis round-trip per request |
+| L2 | Redis/Valkey (distributed) | `M2M_CREDENTIAL_CACHE_TTL_SEC` (default 300s) | Source of truth, shared across all pods |
+
+**Fallback:** If Redis is not available (dev, single-tenant, or `M2M_CREDENTIAL_CACHE_MODE=local`), in-memory becomes the only level (current behavior preserved).
+
+##### Redis Key Structure
+
+```
+tenant:{tenantOrgID}:m2m:{targetService}:credentials
+```
+
+Uses the existing `valkey.GetKeyFromContext` for tenant key prefixing.
+
+##### Cache-Bust on Auth Failure (401)
+
+When the token exchange (`client_credentials` grant) returns 401:
+1. Delete the entry from L2 (Redis) — propagates to all pods
+2. Delete the entry from L1 (local) — immediate effect on current pod
+3. Re-fetch from AWS Secrets Manager on next request
+
+This eliminates the up-to-5-minute window of using revoked credentials across pods.
+
+##### Implementation
 
 ```go
 package m2m
@@ -1944,23 +1974,37 @@ type cachedCredentials struct {
     expiresAt time.Time
 }
 
-// M2MCredentialProvider handles per-tenant M2M credential retrieval with caching.
+// M2MCredentialProvider handles per-tenant M2M credential retrieval with two-level caching.
+// L1 (in-memory) provides fast path; L2 (Redis/Valkey) provides cross-pod consistency.
 // Token acquisition is handled by Plugin Access Manager — this only provides credentials.
 type M2MCredentialProvider struct {
     smClient        secretsmanager.SecretsManagerClient
     env             string
     applicationName string
     targetService   string
-    credCacheTTL    time.Duration
+    credCacheTTL    time.Duration   // L2 TTL (distributed)
+    l1CacheTTL      time.Duration   // L1 TTL (in-memory, short)
 
-    credCache sync.Map // map[tenantOrgID]*cachedCredentials
+    credCache sync.Map // L1: map[tenantOrgID]*cachedCredentials
+
+    // L2: Redis/Valkey client (nil = local-only mode)
+    redisClient RedisCredentialCache
 }
 
-// NewM2MCredentialProvider creates a credential provider with configurable cache TTL.
+// RedisCredentialCache abstracts the L2 distributed cache operations.
+type RedisCredentialCache interface {
+    Get(ctx context.Context, key string) (*secretsmanager.M2MCredentials, error)
+    Set(ctx context.Context, key string, creds *secretsmanager.M2MCredentials, ttl time.Duration) error
+    Delete(ctx context.Context, key string) error
+}
+
+// NewM2MCredentialProvider creates a credential provider with two-level cache.
+// Pass nil for redisClient to use local-only mode (single-tenant or dev).
 func NewM2MCredentialProvider(
     smClient secretsmanager.SecretsManagerClient,
     env, applicationName, targetService string,
-    credCacheTTL time.Duration,
+    credCacheTTL, l1CacheTTL time.Duration,
+    redisClient RedisCredentialCache,
 ) *M2MCredentialProvider {
     return &M2MCredentialProvider{
         smClient:        smClient,
@@ -1968,12 +2012,16 @@ func NewM2MCredentialProvider(
         applicationName: applicationName,
         targetService:   targetService,
         credCacheTTL:    credCacheTTL,
+        l1CacheTTL:      l1CacheTTL,
+        redisClient:     redisClient,
     }
 }
 
-// GetCredentials returns M2M credentials for the given tenant, using cache when possible.
+// GetCredentials returns M2M credentials for the given tenant using two-level cache.
+// Lookup order: L1 (memory) → L2 (Redis) → AWS Secrets Manager.
 // The caller (Plugin Access Manager integration) handles token acquisition.
 func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID string) (*secretsmanager.M2MCredentials, error) {
+    // L1: Check in-memory cache (fast path)
     if cached, ok := p.credCache.Load(tenantOrgID); ok {
         cc := cached.(*cachedCredentials)
         if time.Now().Before(cc.expiresAt) {
@@ -1981,17 +2029,51 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
         }
     }
 
+    // L2: Check distributed cache (Redis/Valkey)
+    if p.redisClient != nil {
+        key := fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+        if creds, err := p.redisClient.Get(ctx, key); err == nil && creds != nil {
+            // Populate L1 with short TTL
+            p.credCache.Store(tenantOrgID, &cachedCredentials{
+                creds:     creds,
+                expiresAt: time.Now().Add(p.l1CacheTTL),
+            })
+            return creds, nil
+        }
+    }
+
+    // L3: Fetch from AWS Secrets Manager
     creds, err := secretsmanager.GetM2MCredentials(ctx, p.smClient, p.env, tenantOrgID, p.applicationName, p.targetService)
     if err != nil {
         return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
     }
 
+    // Store in L2 (distributed)
+    if p.redisClient != nil {
+        key := fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+        _ = p.redisClient.Set(ctx, key, creds, p.credCacheTTL)
+    }
+
+    // Store in L1 (local)
     p.credCache.Store(tenantOrgID, &cachedCredentials{
         creds:     creds,
-        expiresAt: time.Now().Add(p.credCacheTTL),
+        expiresAt: time.Now().Add(p.l1CacheTTL),
     })
 
     return creds, nil
+}
+
+// InvalidateCredentials removes cached credentials for a tenant from both cache levels.
+// Call this when a 401 is received during token exchange (credential revocation).
+func (p *M2MCredentialProvider) InvalidateCredentials(ctx context.Context, tenantOrgID string) {
+    // Delete from L1 (local — immediate effect)
+    p.credCache.Delete(tenantOrgID)
+
+    // Delete from L2 (distributed — propagates to all pods)
+    if p.redisClient != nil {
+        key := fmt.Sprintf("tenant:%s:m2m:%s:credentials", tenantOrgID, p.targetService)
+        _ = p.redisClient.Delete(ctx, key)
+    }
 }
 ```
 
@@ -2200,16 +2282,18 @@ func TestCredentialCacheExpiry(t *testing.T) {
 
 Test each sentinel error path (`ErrM2MCredentialsNotFound`, `ErrM2MVaultAccessDenied`, `ErrM2MInvalidCredentials`) by returning the corresponding error from the mock.
 
-### Observability & Metrics
+### Observability & Metrics (MANDATORY)
 
-Instrument `M2MCredentialProvider` to track credential retrieval health. Recommended counters and histogram:
+Instrument `M2MCredentialProvider` to track credential retrieval health. These 6 metrics are **mandatory** — without them, diagnosing per-tenant M2M issues in production is not feasible.
 
 | Metric | Type | Where to Increment | Description |
 |--------|------|-------------------|-------------|
-| `m2m_credential_cache_hits` | Counter | `GetCredentials` — cache hit path | Credential served from local cache |
-| `m2m_credential_cache_misses` | Counter | `GetCredentials` — cache miss path | Cache miss, fetching from AWS |
+| `m2m_credential_l1_cache_hits` | Counter | `GetCredentials` — L1 (memory) hit | Credential served from in-memory cache |
+| `m2m_credential_l2_cache_hits` | Counter | `GetCredentials` — L2 (Redis) hit | Credential served from distributed cache |
+| `m2m_credential_cache_misses` | Counter | `GetCredentials` — both L1 and L2 miss | Full miss, fetching from AWS Secrets Manager |
 | `m2m_credential_fetch_errors` | Counter | `GetCredentials` — error return | AWS Secrets Manager call failed |
-| `m2m_credential_fetch_duration_seconds` | Histogram | `GetCredentials` — around the `GetM2MCredentials` call | Latency of AWS Secrets Manager requests |
+| `m2m_credential_fetch_duration_seconds` | Histogram | `GetCredentials` — around `GetM2MCredentials` call | Latency of AWS Secrets Manager requests |
+| `m2m_credential_invalidations` | Counter | `InvalidateCredentials` — on 401 | Credential cache-bust triggered by auth failure |
 
 Labels: `tenant_org_id`, `target_service`, `environment`.
 
@@ -2219,8 +2303,9 @@ Labels: `tenant_org_id`, `target_service`, `environment`.
 
 1. **MUST NOT log credentials** — never log `clientId` or `clientSecret` values
 2. **MUST NOT store credentials in environment variables** — always fetch from Secrets Manager at runtime
-3. **MUST cache locally** — avoid per-request AWS API calls (latency + cost)
+3. **MUST use two-level cache** — L1 (in-memory) for fast path, L2 (Redis) for cross-pod consistency
 4. **MUST handle credential rotation** — cache TTL ensures stale credentials are refreshed automatically
+5. **MUST invalidate on 401** — call `InvalidateCredentials()` when token exchange returns 401 to propagate cache-bust across all pods
 
 ### Anti-Rationalization
 
@@ -2231,6 +2316,8 @@ Labels: `tenant_org_id`, `target_service`, `environment`.
 | "Caching is optional, we'll add it later" | Every request hitting AWS adds ~50-100ms latency + cost. | **MUST implement caching from day one** |
 | "We'll use env vars for client credentials" | Env vars are shared across tenants. M2M is per-tenant. | **MUST use Secrets Manager per tenant** |
 | "Single-tenant plugins don't need this" | Correct if MULTI_TENANT_ENABLED=false. | **Skip when single-tenant** |
+| "In-memory cache is good enough" | In-memory cache is per-pod — credential rotation or revocation won't propagate to other pods for up to 5 minutes. | **MUST use distributed cache (Redis) as L2** |
+| "Cache-bust on 401 is overkill" | Without it, revoked credentials remain cached for the full TTL, causing repeated auth failures across pods. | **MUST invalidate on 401** |
 
 ---
 
