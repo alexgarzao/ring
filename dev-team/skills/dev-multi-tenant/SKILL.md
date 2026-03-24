@@ -792,7 +792,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > **What to implement:**
 >
-> 1. **M2M Authenticator struct** with credential caching (`sync.Map`) and token caching.
+> 1. **M2M Authenticator struct** with two-level credential caching (clientId/clientSecret only — token acquisition is handled by Plugin Access Manager).
 >    Use `secretsmanager.GetM2MCredentials()` from `github.com/LerianStudio/lib-commons/v4/commons/secretsmanager`.
 >    The function signature is:
 >    ```go
@@ -801,16 +801,24 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >    It returns `*M2MCredentials{ClientID, ClientSecret}` fetched from path:
 >    `tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials`
 >
-> 2. **Credential cache** with configurable TTL (default 300s). MUST NOT hit AWS on every request.
+> 2. **Two-level credential cache** (see multi-tenant.md § "Credential Caching"):
+>    - **L1:** In-memory (`sync.Map`), fixed 30s TTL
+>    - **L2:** Redis/Valkey (distributed), TTL defined by each service
+>    - **Fallback:** If Redis not available, L1-only mode (auto-detected)
+>    - **Cache-bust on 401:** Call `InvalidateCredentials()` when token exchange returns 401
+>    MUST NOT hit AWS on every request.
 >
 > 3. **Bootstrap wiring** — conditional on `cfg.MultiTenantEnabled`:
 >    ```go
 >    if cfg.MultiTenantEnabled {
 >        awsCfg, _ := awsconfig.LoadDefaultConfig(ctx)
 >        smClient := awssm.NewFromConfig(awsCfg)
+>        // redisConn is the lib-commons Redis connection (already initialized in bootstrap)
+>        // Pass nil if Redis is not available — falls back to L1-only (in-memory)
 >        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.MultiTenantEnvironment,
 >            constant.ApplicationName, cfg.M2MTargetService,
->            time.Duration(cfg.M2MCredentialCacheTTLSec)*time.Second)
+>            time.Duration(cfg.M2MCredentialCacheTTLSec)*time.Second,
+>            redisConn) // *libRedis.Connection from lib-commons
 >        productClient = product.NewClient(cfg.ProductURL, m2mProvider)
 >    } else {
 >        productClient = product.NewClient(cfg.ProductURL, nil) // single-tenant: static auth
@@ -819,19 +827,25 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > 4. **Config env vars** — add to Config struct:
 >    - `M2M_TARGET_SERVICE` (string, required for plugins)
->    - `M2M_CREDENTIAL_CACHE_TTL_SEC` (int, default 300)
 >    - `AWS_REGION` (string, required for plugins)
 >
-> 6. **Error handling** using sentinel errors from lib-commons:
+> 5. **Error handling** using sentinel errors from lib-commons:
 >    - `secretsmanager.ErrM2MCredentialsNotFound` → tenant not provisioned
 >    - `secretsmanager.ErrM2MVaultAccessDenied` → IAM issue, alert ops
 >    - `secretsmanager.ErrM2MInvalidCredentials` → secret malformed, alert ops
 >
+> 6. **M2M metrics** (MANDATORY — 6 counters/histograms):
+>    - `m2m_credential_l1_cache_hits`, `m2m_credential_l2_cache_hits`, `m2m_credential_cache_misses`
+>    - `m2m_credential_fetch_errors`, `m2m_credential_fetch_duration_seconds`
+>    - `m2m_credential_invalidations`
+>    Labels: `tenant_org_id`, `target_service`, `environment`
+>
 > **SECURITY:**
 > - MUST NOT log clientId or clientSecret values
 > - MUST NOT store credentials in environment variables (fetch from Secrets Manager at runtime)
-> - MUST cache locally to avoid per-request AWS API calls
+> - MUST use two-level cache (L1 in-memory + L2 Redis) for cross-pod consistency
 > - MUST handle credential rotation via cache TTL expiry
+> - MUST invalidate on 401 to propagate cache-bust across all pods
 
 **Verification:** `grep "secretsmanager.GetM2MCredentials\|M2MAuthenticator\|NewM2MAuthenticator" internal/` + `go build ./...`
 
@@ -930,6 +944,14 @@ Both layers MUST be implemented together. MUST NOT connect directly to RabbitMQ 
 >
 > All 4 metrics are MANDATORY. When MULTI_TENANT_ENABLED=false, metrics MUST use no-op implementations (zero overhead).
 >
+> **For plugins with M2M (Gate 5.5 completed):** These 6 additional M2M metrics are also MANDATORY:
+> - `m2m_credential_l1_cache_hits` (Counter) — L1 in-memory cache hits
+> - `m2m_credential_l2_cache_hits` (Counter) — L2 distributed cache hits
+> - `m2m_credential_cache_misses` (Counter) — Full cache miss, fetching from AWS
+> - `m2m_credential_fetch_errors` (Counter) — AWS Secrets Manager call failed
+> - `m2m_credential_fetch_duration_seconds` (Histogram) — Latency of AWS requests
+> - `m2m_credential_invalidations` (Counter) — Cache-bust on auth failure (401)
+>
 > BACKWARD COMPATIBILITY IS NON-NEGOTIABLE:
 > - MUST start without any MULTI_TENANT_* env vars
 > - MUST start without Tenant Manager running
@@ -1018,7 +1040,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
 2. **Environment variables**: the 8 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY) with required/default/description
-3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
+3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
 6. **How to deactivate**: set MULTI_TENANT_ENABLED=false
