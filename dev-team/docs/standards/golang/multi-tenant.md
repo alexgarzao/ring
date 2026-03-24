@@ -1889,7 +1889,6 @@ In addition to the 8 canonical multi-tenant env vars, plugins MUST add:
 |---------|-------------|---------|----------|
 | `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for plugins) |
 | `M2M_TARGET_SERVICE` | Target product service name | - | Yes (for plugins) |
-| `M2M_CREDENTIAL_CACHE_TTL_SEC` | Cache TTL for credentials (L2 distributed; L1 uses fixed 30s) | `300` | No |
 
 ### Implementation Pattern
 
@@ -1934,7 +1933,7 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 | Level | Store | TTL | Purpose |
 |-------|-------|-----|---------|
 | L1 | In-memory (`sync.Map`) | Fixed 30s | Fast path, avoids Redis round-trip per request |
-| L2 | Redis/Valkey (distributed) | `M2M_CREDENTIAL_CACHE_TTL_SEC` (default 300s) | Source of truth, shared across all pods |
+| L2 | Redis/Valkey (distributed) | Service-defined (e.g., 300s) | Source of truth, shared across all pods |
 
 **Fallback:** If Redis is not available (dev, single-tenant), in-memory becomes the only level (current behavior preserved). Mode is auto-detected — no configuration needed.
 
@@ -1988,7 +1987,7 @@ type M2MCredentialProvider struct {
     env             string
     applicationName string
     targetService   string
-    credCacheTTL    time.Duration // L2 TTL (from M2M_CREDENTIAL_CACHE_TTL_SEC)
+    credCacheTTL    time.Duration // L2 TTL (service-defined)
 
     credCache sync.Map // L1: map[tenantOrgID]*cachedCredentials
 

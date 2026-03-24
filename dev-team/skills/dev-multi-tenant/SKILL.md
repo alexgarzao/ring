@@ -803,7 +803,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > 2. **Two-level credential cache** (see multi-tenant.md § "Credential Caching"):
 >    - **L1:** In-memory (`sync.Map`), fixed 30s TTL
->    - **L2:** Redis/Valkey (distributed), TTL via `M2M_CREDENTIAL_CACHE_TTL_SEC` (default 300s)
+>    - **L2:** Redis/Valkey (distributed), TTL defined by each service
 >    - **Fallback:** If Redis not available, L1-only mode (auto-detected)
 >    - **Cache-bust on 401:** Call `InvalidateCredentials()` when token exchange returns 401
 >    MUST NOT hit AWS on every request.
@@ -827,7 +827,6 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > 4. **Config env vars** — add to Config struct:
 >    - `M2M_TARGET_SERVICE` (string, required for plugins)
->    - `M2M_CREDENTIAL_CACHE_TTL_SEC` (int, default 300)
 >    - `AWS_REGION` (string, required for plugins)
 >
 > 5. **Error handling** using sentinel errors from lib-commons:
@@ -1041,7 +1040,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
 2. **Environment variables**: the 8 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_ENVIRONMENT, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY) with required/default/description
-3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
+3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
 6. **How to deactivate**: set MULTI_TENANT_ENABLED=false
