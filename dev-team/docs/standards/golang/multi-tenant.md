@@ -16,7 +16,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
 | 3 | [Route-Level Auth-Before-Tenant Ordering (MANDATORY)](#route-level-auth-before-tenant-ordering-mandatory) | Auth MUST validate JWT before tenant middleware calls Tenant Manager API |
 | 24 | [Multi-Tenant Message Queue Consumers](#multi-tenant-message-queue-consumers) | Multi-tenant consumer initialization, on-demand connection, exponential backoff |
-| 25 | [M2M Credentials via Secret Manager (Plugin-Only)](#m2m-credentials-via-secret-manager-plugin-only) | AWS Secrets Manager integration for plugin-to-product authentication per tenant |
+| 25 | [M2M Credentials via Secret Manager](#m2m-credentials-via-secret-manager) | AWS Secrets Manager integration for service-to-service authentication per tenant |
 | 26 | [Service Authentication (MANDATORY)](#service-authentication-mandatory) | API key authentication for dispatch layer /settings endpoint via X-API-Key header |
 
 ---
@@ -67,12 +67,12 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyFromContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
 | `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetObjectStorageKeyForTenant(ctx, key)` |
 
-**Conditional — plugin only (Gate 5.5):**
+**Conditional — services with targetServices (Gate 5.5):**
 
 | File | Condition | What Changes |
 |------|-----------|-------------|
-| `internal/adapters/product/client.go` (or equivalent product API client) | Plugin that calls product APIs | M2M authenticator with per-tenant credential caching via `secretsmanager.GetM2MCredentials` |
-| `internal/bootstrap/service.go` | Plugin | Conditional M2M wiring: `if cfg.MultiTenantEnabled` → AWS Secrets Manager client + M2M provider |
+| `internal/adapters/product/client.go` (or equivalent target service API client) | Service with targetServices declared | M2M authenticator with per-tenant credential caching via `secretsmanager.GetM2MCredentials` |
+| `internal/bootstrap/service.go` | Service with targetServices | Conditional M2M wiring: `if cfg.MultiTenantEnabled` → AWS Secrets Manager client + M2M provider |
 
 **Conditional — RabbitMQ only (Gate 6):**
 
@@ -1833,30 +1833,29 @@ if !config.MultiTenantEnabled {
 
 ---
 
-## M2M Credentials via Secret Manager (Plugin-Only)
+## M2M Credentials via Secret Manager
 
-**CONDITIONAL:** Only implement if the service is a **plugin** that needs to authenticate with a **product** (e.g., ledger, midaz, CRM). Products do NOT need this — only plugins that call product APIs.
+**CONDITIONAL:** Only implement if the service has **targetServices** declared (i.e., it calls other service APIs per tenant). Any service — plugin or product — that has targetServices needs M2M credential retrieval.
 
 ### When This Applies
 
-| Service Type | `MULTI_TENANT_ENABLED` | Needs Secret Manager? | Reason |
-|-------------|------------------------|----------------------|--------|
-| **Plugin** (plugin-pix, plugin-crm, etc.) | `true` | ✅ YES | Plugin must authenticate with product APIs per tenant |
-| **Plugin** (plugin-pix, plugin-crm, etc.) | `false` | ❌ NO | Single-tenant — plugin uses existing static auth, no Secrets Manager calls |
-| **Product** (midaz, ledger, CRM) | any | ❌ NO | Products don't call other products via M2M |
-| **Infrastructure** (dispatch layer, reporter) | any | ❌ NO | Infrastructure services use internal auth |
+| Service Type | `MULTI_TENANT_ENABLED` | Needs M2M? | Reason |
+|-------------|------------------------|------------|--------|
+| Any service **with** `targetServices` | `true` | ✅ YES | Service must authenticate with target service APIs per tenant |
+| Any service **with** `targetServices` | `false` | ❌ NO | Single-tenant — service uses existing static auth, no Secrets Manager calls |
+| Any service **without** `targetServices` | any | ❌ NO | No cross-service API calls requiring per-tenant credentials |
 
-**⛔ Backward Compatibility:** When `MULTI_TENANT_ENABLED=false` (the default), the plugin MUST continue working with its existing authentication mechanism — no AWS Secrets Manager calls, no M2M credential fetching. The Secret Manager path is activated **only** when multi-tenant mode is enabled. This follows the same conditional pattern as all other dispatch layer resources (PostgreSQL, MongoDB, Redis, S3, RabbitMQ).
+**⛔ Backward Compatibility:** When `MULTI_TENANT_ENABLED=false` (the default), the service MUST continue working with its existing authentication mechanism — no AWS Secrets Manager calls, no M2M credential fetching. The Secret Manager path is activated **only** when multi-tenant mode is enabled. This follows the same conditional pattern as all other dispatch layer resources (PostgreSQL, MongoDB, Redis, S3, RabbitMQ).
 
 ### How It Works
 
-When `MULTI_TENANT_ENABLED=true`, each tenant has its own M2M credentials stored in **AWS Secrets Manager**. When a plugin needs to call a product API (e.g., ledger), it must:
+When `MULTI_TENANT_ENABLED=true`, each tenant has its own M2M credentials stored in **AWS Secrets Manager**. When a service needs to call a target service API (e.g., ledger, plugin-fees), it must:
 
 1. Extract `tenantOrgID` from the JWT context (already available via tenant middleware)
 2. Call `secretsmanager.GetM2MCredentials()` to fetch `clientId` + `clientSecret` for that tenant
 3. Pass the credentials to the existing Plugin Access Manager integration (which handles JWT acquisition)
 
-**Note:** The plugin already handles JWT token acquisition via Plugin Access Manager. This section only covers **how to retrieve M2M credentials** from AWS Secrets Manager — not how to exchange them for tokens.
+**Note:** The service already handles JWT token acquisition via Plugin Access Manager. This section only covers **how to retrieve M2M credentials** from AWS Secrets Manager — not how to exchange them for tokens.
 
 ### Required lib-commons Package
 
@@ -1878,17 +1877,17 @@ tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials
 |---------|--------|---------|
 | `env` | `MULTI_TENANT_ENVIRONMENT` env var | `staging`, `production` |
 | `tenantOrgID` | JWT `owner` claim via `auth.GetTenantID(ctx)` | `org_01KHVKQQP6D2N4RDJK0ADEKQX1` |
-| `applicationName` | Plugin's own service name constant | `plugin-pix`, `plugin-crm` |
-| `targetService` | The product being called | `ledger`, `midaz` |
+| `applicationName` | Service's own name constant | `plugin-pix`, `midaz`, `ledger` |
+| `targetService` | The target service being called | `ledger`, `midaz`, `plugin-fees` |
 
-### Environment Variables (Plugin-Only)
+### Environment Variables (M2M)
 
-In addition to the 8 canonical multi-tenant env vars, plugins MUST add:
+In addition to the 8 canonical multi-tenant env vars, services with targetServices MUST add:
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
-| `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for plugins) |
-| `M2M_TARGET_SERVICE` | Target product service name | - | Yes (for plugins) |
+| `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for services with targetServices) |
+| `M2M_TARGET_SERVICE` | Target service name | - | Yes (for services with targetServices) |
 
 ### Implementation Pattern
 
@@ -2096,7 +2095,7 @@ func (p *M2MCredentialProvider) InvalidateCredentials(ctx context.Context, tenan
 
 #### 3. Single-Tenant vs Multi-Tenant: Conditional Flow
 
-This is the core pattern. The plugin MUST work in both modes — the `M2MCredentialProvider` is **nil** in single-tenant mode.
+This is the core pattern. The service MUST work in both modes — the `M2MCredentialProvider` is **nil** in single-tenant mode.
 
 **Few-shot 1 — Bootstrap wiring (picks the right path at startup):**
 
@@ -2328,7 +2327,7 @@ Labels: `tenant_org_id`, `target_service`, `environment`.
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Product service doesn't need M2M" | Correct. Only plugins need M2M. | **Skip this gate for products** |
+| "This service doesn't need M2M" | Correct if it has no targetServices declared. | **Skip this gate for services without targetServices** |
 | "We can hardcode credentials per tenant" | Hardcoded creds don't scale and are a security risk. | **MUST use Secrets Manager** |
 | "Caching is optional, we'll add it later" | Every request hitting AWS adds ~50-100ms latency + cost. | **MUST implement caching from day one** |
 | "We'll use env vars for client credentials" | Env vars are shared across tenants. M2M is per-tenant. | **MUST use Secrets Manager per tenant** |
