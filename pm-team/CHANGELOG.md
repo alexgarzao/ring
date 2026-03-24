@@ -3,6 +3,17 @@
 ## [0.21.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.21.1)
 
 - Fixes:
+  - Enforced zero panic policy across all standards and agents to improve stability and reliability.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.21.0...ring-pm-team@0.21.1)
+
+---
+
+## [0.21.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.21.1)
+
+- Fixes:
   - Enforced zero panic policy across all standards and agents to improve system stability and reliability.
 
 Contributors: @jeff, @jefferson.comff
