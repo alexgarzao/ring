@@ -381,6 +381,15 @@ S7. HTTP Mount compliance:
 S8. Swagger compliance:
     grep -rn "swagger.MergeInto\|systemswagger" internal/ --include="*.go"
     (no match = NON-COMPLIANT → Gate 7 MUST fix)
+
+S9. File structure compliance:
+    ls internal/bootstrap/systemplane_mount.go
+    ls internal/bootstrap/systemplane_authorizer.go
+    ls internal/bootstrap/systemplane_identity.go
+    ls internal/bootstrap/systemplane_factory.go
+    ls internal/bootstrap/active_bundle_state.go
+    (Each systemplane concern MUST have a dedicated file. Monolithic systemplane.go
+     files that combine mount + authorizer + identity = NON-COMPLIANT)
 ```
 
 **Output format for compliance audit:**
@@ -397,6 +406,7 @@ COMPLIANCE AUDIT RESULTS:
 | S6 | Config Bridge | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 6: SKIP / MUST FIX |
 | S7 | HTTP Mount | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 7: SKIP / MUST FIX |
 | S8 | Swagger | COMPLIANT / NON-COMPLIANT | {grep results} | Gate 7: SKIP / MUST FIX |
+| S9 | File Structure | COMPLIANT / NON-COMPLIANT | {ls results} | Gate 7: SKIP / MUST FIX |
 ```
 
 **⛔ HARD GATE: A gate can only be marked as SKIP when ALL its compliance checks are COMPLIANT with evidence. One NON-COMPLIANT row → gate MUST execute.**
@@ -704,6 +714,51 @@ HARD GATE: Developer MUST explicitly approve the implementation preview before a
 
 **Completion criteria:** All keys registered, `go build ./...` passes, key count matches inventory from Gate 1.5.
 
+**Catalog validation (MANDATORY):**
+Products MUST add a test that validates their KeyDefs against the lib-commons canonical catalog:
+
+```go
+func TestKeyDefs_MatchCanonicalCatalog(t *testing.T) {
+    reg := registry.New()
+    Register{Service}Keys(reg)
+    
+    var allDefs []domain.KeyDef
+    for _, def := range reg.List(domain.KindConfig) {
+        allDefs = append(allDefs, def)
+    }
+    for _, def := range reg.List(domain.KindSetting) {
+        allDefs = append(allDefs, def)
+    }
+    
+    mismatches := catalog.ValidateKeyDefs(allDefs, catalog.AllSharedKeys()...)
+    for _, m := range mismatches {
+        t.Errorf("catalog mismatch: %s", m)
+    }
+}
+```
+
+Any mismatch = NON-COMPLIANT. The canonical catalog in `lib-commons/commons/systemplane/catalog/` defines the source of truth for shared key names, tiers, and components.
+
+**KindSetting vs KindConfig decision tree:**
+
+```
+Is this a per-tenant business rule?
+  YES → KindSetting (AllowedScopes: [ScopeGlobal, ScopeTenant])
+  NO ↓
+
+Is this a product-wide feature flag or business parameter?
+  YES → KindSetting (AllowedScopes: [ScopeGlobal])
+  NO ↓
+
+Is this an infrastructure knob (DB, Redis, auth, telemetry)?
+  YES → KindConfig
+  NO ↓
+
+Default: KindConfig
+```
+
+Products MUST NOT leave the Settings API empty. If no per-tenant settings are identified, document the justification in `systemplane-guide.md`.
+
 **Verification:** `grep "Register.*Keys\|KeyDefs()" internal/bootstrap/` + `go build ./...`
 
 ---
@@ -912,6 +967,23 @@ HARD GATE: Developer MUST explicitly approve the implementation preview before a
 >
 > **When auth is disabled** (dev mode), authorizer returns nil for all permissions.
 > **When auth is enabled**, map systemplane permissions to the service's existing permission model.
+
+**Authorizer enforcement policy (MANDATORY):**
+
+The authorizer MUST perform real permission checking. Two approved patterns:
+
+1. **Granular delegation** (recommended): Use `ports.DelegatingAuthorizer` from lib-commons. Splits permission string and delegates to external auth service.
+2. **Admin-only with justification**: Use a binary admin check BUT document the justification in `systemplane-guide.md` and add a code comment explaining why granular is not used.
+
+**PROHIBITED patterns:**
+- No-op authorizer (always returns nil) = automatic Gate 5 FAILURE
+- Authorizer that ignores the permission string = NON-COMPLIANT
+- Authorizer with no auth-enabled check (must handle disabled auth)
+
+**Default implementations from lib-commons:**
+- `ports.AllowAllAuthorizer` — for auth-disabled mode
+- `ports.DelegatingAuthorizer` — for auth-enabled mode with per-permission delegation
+- `ports.FuncIdentityResolver` — adapts context extraction functions to IdentityResolver
 
 **Completion criteria:** Both interfaces implemented, `go build ./...` passes.
 
@@ -1239,6 +1311,8 @@ grep "DebouncedFeed\|Subscribe\|ApplyChangeSignal" internal/bootstrap/
 grep "swagger.MergeInto\|systemswagger" internal/bootstrap/ internal/
 grep "activeBundleState\|bundleState.Update\|bundleState.Current" internal/bootstrap/
 grep "cancelChangeFeed\|Supervisor.Stop\|Backend.Close" internal/bootstrap/
+# Verify active bundle state exists for thread-safe live-read
+grep -rn "activeBundleState\|bundleState" internal/bootstrap/ --include='*.go'
 go build ./...
 ```
 
@@ -1449,6 +1523,9 @@ Save to `docs/ring-systemplane-migration/current-cycle.json` for resume support:
 | "ChangeFeed can be added later" | Later = never. Without ChangeFeed, the database is a dead store — changes are invisible. | MUST start DebouncedFeed in Gate 7 |
 | "Agent says out of scope" | Skill defines scope, not agent. | Re-dispatch with gate context |
 | "Active bundle state is an implementation detail" | Without it, request handlers cannot safely read live config. Race conditions and nil panics. | MUST implement in Gate 7 |
+| "Key names don't matter, it's just a string" | Different names for the same config break cross-product dashboards, Helm overlays, and operator muscle memory. Names are the API. | MUST match canonical catalog names |
+| "Our tier classification is correct for our use case" | Products don't get to choose tiers independently. PG pool tuning is LiveRead everywhere or nowhere — mixed tiers break operator expectations | MUST match canonical tier classification |
+| "Admin-only auth is fine for now" | It's been "for now" across 3 products and 2 years. Granular permissions exist in lib-commons but are unused. | MUST implement granular or document justification |
 
 ---
 
@@ -2497,3 +2574,72 @@ curl -X PATCH http://localhost:4018/v1/system/settings \
 | `service.go` | Add systemplane shutdown sequence (5-step) |
 | `docker-compose.yml` | Remove `env_file`, inline defaults with `${VAR:-default}` |
 | `Makefile` | Remove `set-env`, `clear-envs` targets |
+
+---
+
+## Appendix M: Canonical Key Catalog
+
+The canonical key catalog is defined in `lib-commons/commons/systemplane/catalog/`. Products MUST match these names, tiers, and components for shared infrastructure keys.
+
+### Naming Conventions
+
+| Convention | Rule | Example |
+|-----------|------|---------|
+| SSL mode | `ssl_mode` (with underscore) | `postgres.primary_ssl_mode` |
+| Connection count | Plural `conns` | `postgres.max_open_conns`, `redis.min_idle_conns` |
+| CORS | `cors.*` namespace (NOT `server.cors_*`) | `cors.allowed_origins` |
+| RabbitMQ connection | `rabbitmq.url` (NOT `uri`) | `rabbitmq.url` |
+| Timeout unit suffix | MANDATORY `_ms` or `_sec` | `redis.read_timeout_ms`, `rate_limit.expiry_sec` |
+| Size unit suffix | MANDATORY `_bytes` | `server.body_limit_bytes` |
+
+### Tier Classification Standard
+
+| Config Category | Canonical Tier | Rationale |
+|----------------|---------------|-----------|
+| PG pool tuning (`max_open_conns`, etc.) | **LiveRead** | Go's `database/sql` supports `SetMaxOpenConns()` at runtime |
+| CORS settings | **LiveRead** | Middleware reads from snapshot per-request |
+| Log level | **LiveRead** | Use `zap.AtomicLevel.SetLevel()` |
+| Migration path | **BootstrapOnly** | Migrations only run at startup |
+| Body limit | **BootstrapOnly** | Set at Fiber server initialization |
+| DB connection strings | **BundleRebuild** | Requires new connection pool |
+| Redis connection | **BundleRebuild** | Requires new Redis client |
+| Worker enable/disable | **BundleRebuildAndReconcile** | Needs new connections + worker restart |
+| Worker intervals | **WorkerReconcile** | Needs worker restart only |
+| Rate limits, timeouts, TTLs | **LiveRead** | Read per-request from snapshot |
+
+### Enforcement
+
+Products run `catalog.ValidateKeyDefs()` in their test suite. Any mismatch is a test failure that blocks CI.
+
+---
+
+## Appendix N: Environment Variable Convention
+
+| Infrastructure | Prefix | Examples |
+|---------------|--------|---------|
+| PostgreSQL | `POSTGRES_*` | `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PASSWORD` |
+| Redis | `REDIS_*` | `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_DB` |
+| RabbitMQ | `RABBITMQ_*` | `RABBITMQ_URL`, `RABBITMQ_EXCHANGE` |
+| Auth | `PLUGIN_AUTH_*` | `PLUGIN_AUTH_ENABLED`, `PLUGIN_AUTH_ADDRESS` |
+| Telemetry | `OTEL_*` / `ENABLE_TELEMETRY` | `OTEL_RESOURCE_SERVICE_NAME` |
+| Server | `SERVER_*` | `SERVER_ADDRESS`, `SERVER_TLS_CERT_FILE` |
+
+**PROHIBITED:** `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` — use `POSTGRES_*` prefix.
+**PROHIBITED:** `AUTH_ENABLED` without `PLUGIN_` prefix — use `PLUGIN_AUTH_ENABLED`.
+
+---
+
+## Appendix O: Unit Suffix Standard
+
+All config keys with dimensional values MUST include a unit suffix:
+
+| Dimension | Suffix | Examples |
+|-----------|--------|---------|
+| Time (milliseconds) | `_ms` | `redis.read_timeout_ms`, `rabbitmq.publish_timeout_ms` |
+| Time (seconds) | `_sec` | `rate_limit.expiry_sec`, `auth.cache_ttl_sec` |
+| Time (minutes) | `_mins` | `postgres.conn_max_lifetime_mins` |
+| Size (bytes) | `_bytes` | `server.body_limit_bytes` |
+| Count | Plural noun | `postgres.max_open_conns`, `redis.min_idle_conns` |
+
+**PROHIBITED:** Dimensionless timeout keys like `webhook.timeout` — must be `webhook.timeout_ms` or `webhook.timeout_sec`.
+**PROHIBITED:** Mixed units — if one timeout in a group uses `_ms`, all timeouts in that group should use `_ms`.
