@@ -122,8 +122,8 @@ Services on lib-commons v2 or v3 MUST upgrade to v4 before implementing multi-te
 # Check latest v4 tag
 git ls-remote --tags https://github.com/LerianStudio/lib-commons.git | grep "v4" | sort -V | tail -1
 
-# Update go.mod (use latest beta until stable is released)
-go get github.com/LerianStudio/lib-commons/v4@v4.1.0-beta.4
+# Update go.mod
+go get github.com/LerianStudio/lib-commons/v4@v4.3.1
 
 # Update import paths across the codebase (portable — works on macOS and Linux)
 # From v2:
