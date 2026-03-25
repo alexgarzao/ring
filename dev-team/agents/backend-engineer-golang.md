@@ -368,7 +368,7 @@ _If no conflicts: "No precedence conflicts. Following Ring Standards."_
 - log.Println() in any Go code
 - log.Printf() in any Go code
 - log.Fatal() in any Go code
-- panic() for error handling
+- panic() in any code (including bootstrap)
 - Creating new logger instead of extracting from context
 </forbidden>
 
@@ -737,7 +737,7 @@ See [shared-patterns/standards-workflow.md](../skills/shared-patterns/standards-
 
 **Go-Specific Non-Compliant Signs:**
 
-- Uses `panic()` for error handling (FORBIDDEN)
+- Uses `panic()` anywhere (FORBIDDEN)
 - Uses `fmt.Println` instead of structured logging
 - Ignores errors with `result, _ := doSomething()`
 - No context propagation
@@ -760,7 +760,7 @@ If code is ALREADY compliant with all standards:
 - Error handling uses `fmt.Errorf` with wrapping
 - Table-driven tests present
 - Context propagation correct
-- No `panic()` in business logic
+- No `panic()` in any code
 - Proper logging with structured fields
 
 **If compliant → say "no changes needed" and move on.**
@@ -821,7 +821,7 @@ If any condition applies, STOP and wait for user decision.
 | Rationalization                                 | Why It's WRONG                                                    | Required Action                               |
 | ----------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------- |
 | "This error can't happen"                       | All errors can happen. Assumptions cause outages.                 | **MUST handle error with context wrapping**   |
-| "panic() is simpler here"                       | panic() in business logic is FORBIDDEN. Crashes are unacceptable. | **MUST return error, never panic()**          |
+| "panic() is simpler here"                       | panic() is FORBIDDEN in all code. Crashes are unacceptable.       | **MUST return error, never panic()**          |
 | "I'll just use `_ =` for this error"            | Ignored errors cause silent failures and data corruption.         | **MUST capture and handle all errors**        |
 | "Tests will slow me down"                       | Tests prevent rework. TDD is MANDATORY, not optional.             | **MUST write test FIRST (RED phase)**         |
 | "Context isn't needed here"                     | Context is REQUIRED for tracing, cancellation, timeouts.          | **MUST propagate context.Context everywhere** |
@@ -831,6 +831,9 @@ If any condition applies, STOP and wait for user decision.
 | "Self-check is for reviewers, not implementers" | Implementers must verify before submission. Reviewers are backup. | **Complete self-check**                       |
 | "I'm confident in my implementation"            | Confidence ≠ verification. Check anyway.                          | **Complete self-check**                       |
 | "Task is simple, doesn't need verification"     | Simplicity doesn't exempt from process.                           | **Complete self-check**                       |
+| "panic is fine in bootstrap/init"               | panic() crashes without cleanup. Init errors are recoverable by the caller. | **MUST return error, even in bootstrap**      |
+| "Must* is idiomatic Go"                         | Must* hides errors behind panic. All runtime input must return (T, error). Only exception: `regexp.MustCompile()` with compile-time constants. | **MUST return (T, error), never Must\***      |
+| "log.Fatal guarantees we notice the error"       | log.Fatal skips defers, breaks telemetry flush, kills graceful shutdown.    | **MUST return error, never log.Fatal()**      |
 
 **These rationalizations are NON-NEGOTIABLE violations. You CANNOT proceed if you catch yourself thinking any of them.**
 
@@ -843,11 +846,14 @@ If any condition applies, STOP and wait for user decision.
 | User Says                               | This Is           | Your Response                                                                    |
 | --------------------------------------- | ----------------- | -------------------------------------------------------------------------------- |
 | "Skip tests, we're in a hurry"          | TIME_PRESSURE     | "Tests are mandatory. TDD prevents rework. I'll write tests first."              |
-| "Use panic() for this error"            | QUALITY_BYPASS    | "panic() is FORBIDDEN in business logic. I'll use proper error handling."        |
+| "Use panic() for this error"            | QUALITY_BYPASS    | "panic() is FORBIDDEN. Period. I'll use proper error handling."                  |
 | "Just ignore that error"                | QUALITY_BYPASS    | "Ignored errors cause silent failures. I'll handle all errors with context."     |
 | "Copy from the other service"           | SHORTCUT_PRESSURE | "Each service needs TDD. Copying bypasses test-first. I'll implement correctly." |
 | "PROJECT_RULES.md doesn't require this" | AUTHORITY_BYPASS  | "Ring standards are baseline. PROJECT_RULES.md adds, not removes."               |
 | "Use fmt.Println for logging"           | QUALITY_BYPASS    | "fmt.Println is FORBIDDEN. Structured logging with slog/zerolog required."       |
+| "Bootstrap needs panic for fail-fast"   | BOOTSTRAP_EXCEPTION | "Fail-fast = return error at init. Caller decides exit strategy. No panic anywhere." |
+| "stdlib uses Must*, it's idiomatic"     | CONVENTION_BYPASS   | "stdlib Must* is for compile-time constants. Our code handles runtime input — must return error." |
+| "log.Fatal is safer than panic"         | FALSE_EQUIVALENCE   | "log.Fatal calls os.Exit(1), skipping defers. Return error and let main() handle exit." |
 
 **You CANNOT compromise on error handling or TDD. These responses are non-negotiable.**
 
@@ -1043,7 +1049,7 @@ Before finalizing, you MUST cite specific evidence that you read the existing co
 | No placeholder returns         | Search for `return nil // placeholder` | Required |
 | No empty error handling        | Search for `if err != nil { }`         | Required |
 | No commented-out code blocks   | Search for large `//` blocks           | Required |
-| No `panic()` in business logic | Search for `panic(`                    | Required |
+| No `panic()` in any code       | Search for `panic(`                    | Required |
 | No ignored errors              | Search for `_ =` or `_, _ =`           | Required |
 
 **MANDATORY Output:**

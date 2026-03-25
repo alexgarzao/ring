@@ -16,7 +16,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 2 | [Tenant Isolation Verification (⚠️ CONDITIONAL)](#tenant-isolation-verification-conditional) | Database-per-tenant verification, context-based connection checks |
 | 3 | [Route-Level Auth-Before-Tenant Ordering (MANDATORY)](#route-level-auth-before-tenant-ordering-mandatory) | Auth MUST validate JWT before tenant middleware calls Tenant Manager API |
 | 24 | [Multi-Tenant Message Queue Consumers](#multi-tenant-message-queue-consumers) | Multi-tenant consumer initialization, on-demand connection, exponential backoff |
-| 25 | [M2M Credentials via Secret Manager (Plugin-Only)](#m2m-credentials-via-secret-manager-plugin-only) | AWS Secrets Manager integration for plugin-to-product authentication per tenant |
+| 25 | [M2M Credentials via Secret Manager](#m2m-credentials-via-secret-manager) | AWS Secrets Manager integration for service-to-service authentication per tenant |
 | 26 | [Service Authentication (MANDATORY)](#service-authentication-mandatory) | API key authentication for dispatch layer /settings endpoint via X-API-Key header |
 | 27 | [SettingsWatcher (MANDATORY)](#settingswatcher-mandatory) | Standalone goroutine for revalidating connection pool settings across all connected tenants |
 
@@ -69,12 +69,12 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyFromContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
 | `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetObjectStorageKeyForTenant(ctx, key)` |
 
-**Conditional — plugin only (Gate 5.5):**
+**Conditional — services with targetServices (Gate 5.5):**
 
 | File | Condition | What Changes |
 |------|-----------|-------------|
-| `internal/adapters/product/client.go` (or equivalent product API client) | Plugin that calls product APIs | M2M authenticator with per-tenant credential caching via `secretsmanager.GetM2MCredentials` |
-| `internal/bootstrap/service.go` | Plugin | Conditional M2M wiring: `if cfg.MultiTenantEnabled` → AWS Secrets Manager client + M2M provider |
+| `internal/adapters/product/client.go` (or equivalent target service API client) | Service with targetServices declared | M2M authenticator with per-tenant credential caching via `secretsmanager.GetM2MCredentials` |
+| `internal/bootstrap/service.go` | Service with targetServices | Conditional M2M wiring: `if cfg.MultiTenantEnabled` → AWS Secrets Manager client + M2M provider |
 
 **Conditional — RabbitMQ only (Gate 6):**
 
@@ -1846,30 +1846,29 @@ if !config.MultiTenantEnabled {
 
 ---
 
-## M2M Credentials via Secret Manager (Plugin-Only)
+## M2M Credentials via Secret Manager
 
-**CONDITIONAL:** Only implement if the service is a **plugin** that needs to authenticate with a **product** (e.g., ledger, midaz, CRM). Products do NOT need this — only plugins that call product APIs.
+**CONDITIONAL:** Only implement if the service has **targetServices** declared (i.e., it calls other service APIs per tenant). Any service — plugin or product — that has targetServices needs M2M credential retrieval.
 
 ### When This Applies
 
-| Service Type | `MULTI_TENANT_ENABLED` | Needs Secret Manager? | Reason |
-|-------------|------------------------|----------------------|--------|
-| **Plugin** (plugin-pix, plugin-crm, etc.) | `true` | ✅ YES | Plugin must authenticate with product APIs per tenant |
-| **Plugin** (plugin-pix, plugin-crm, etc.) | `false` | ❌ NO | Single-tenant — plugin uses existing static auth, no Secrets Manager calls |
-| **Product** (midaz, ledger, CRM) | any | ❌ NO | Products don't call other products via M2M |
-| **Infrastructure** (dispatch layer, reporter) | any | ❌ NO | Infrastructure services use internal auth |
+| Service Type | `MULTI_TENANT_ENABLED` | Needs M2M? | Reason |
+|-------------|------------------------|------------|--------|
+| Any service **with** `targetServices` | `true` | ✅ YES | Service must authenticate with target service APIs per tenant |
+| Any service **with** `targetServices` | `false` | ❌ NO | Single-tenant — service uses existing static auth, no Secrets Manager calls |
+| Any service **without** `targetServices` | any | ❌ NO | No cross-service API calls requiring per-tenant credentials |
 
-**⛔ Backward Compatibility:** When `MULTI_TENANT_ENABLED=false` (the default), the plugin MUST continue working with its existing authentication mechanism — no AWS Secrets Manager calls, no M2M credential fetching. The Secret Manager path is activated **only** when multi-tenant mode is enabled. This follows the same conditional pattern as all other dispatch layer resources (PostgreSQL, MongoDB, Redis, S3, RabbitMQ).
+**⛔ Backward Compatibility:** When `MULTI_TENANT_ENABLED=false` (the default), the service MUST continue working with its existing authentication mechanism — no AWS Secrets Manager calls, no M2M credential fetching. The Secret Manager path is activated **only** when multi-tenant mode is enabled. This follows the same conditional pattern as all other dispatch layer resources (PostgreSQL, MongoDB, Redis, S3, RabbitMQ).
 
 ### How It Works
 
-When `MULTI_TENANT_ENABLED=true`, each tenant has its own M2M credentials stored in **AWS Secrets Manager**. When a plugin needs to call a product API (e.g., ledger), it must:
+When `MULTI_TENANT_ENABLED=true`, each tenant has its own M2M credentials stored in **AWS Secrets Manager**. When a service needs to call a target service API (e.g., ledger, plugin-fees), it must:
 
 1. Extract `tenantOrgID` from the JWT context (already available via tenant middleware)
 2. Call `secretsmanager.GetM2MCredentials()` to fetch `clientId` + `clientSecret` for that tenant
 3. Pass the credentials to the existing Plugin Access Manager integration (which handles JWT acquisition)
 
-**Note:** The plugin already handles JWT token acquisition via Plugin Access Manager. This section only covers **how to retrieve M2M credentials** from AWS Secrets Manager — not how to exchange them for tokens.
+**Note:** The service already handles JWT token acquisition via Plugin Access Manager. This section only covers **how to retrieve M2M credentials** from AWS Secrets Manager — not how to exchange them for tokens.
 
 ### Required lib-commons Package
 
@@ -1891,18 +1890,17 @@ tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials
 |---------|--------|---------|
 | `env` | `MULTI_TENANT_ENVIRONMENT` env var | `staging`, `production` |
 | `tenantOrgID` | JWT `owner` claim via `auth.GetTenantID(ctx)` | `org_01KHVKQQP6D2N4RDJK0ADEKQX1` |
-| `applicationName` | Plugin's own service name constant | `plugin-pix`, `plugin-crm` |
-| `targetService` | The product being called | `ledger`, `midaz` |
+| `applicationName` | Service's own name constant | `plugin-pix`, `midaz`, `ledger` |
+| `targetService` | The target service being called | `ledger`, `midaz`, `plugin-fees` |
 
-### Environment Variables (Plugin-Only)
+### Environment Variables (M2M)
 
 In addition to the 10 canonical multi-tenant env vars, plugins MUST add:
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
-| `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for plugins) |
-| `M2M_TARGET_SERVICE` | Target product service name | - | Yes (for plugins) |
-| `M2M_CREDENTIAL_CACHE_TTL_SEC` | Local cache TTL for credentials | `300` | No |
+| `AWS_REGION` | AWS region for Secrets Manager | - | Yes (for services with targetServices) |
+| `M2M_TARGET_SERVICE` | Target service name | - | Yes (for services with targetServices) |
 
 ### Implementation Pattern
 
@@ -1940,42 +1938,82 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 
 #### 2. Credential Caching (MANDATORY)
 
-**MUST cache credentials locally.** Hitting AWS Secrets Manager on every request is expensive and adds latency.
+**MUST cache credentials using a two-level cache architecture.** Hitting AWS Secrets Manager on every request is expensive and adds latency.
+
+##### Cache Architecture
+
+| Level | Store | TTL | Purpose |
+|-------|-------|-----|---------|
+| L1 | In-memory (`sync.Map`) | Fixed 30s | Fast path, avoids Redis round-trip per request |
+| L2 | Redis/Valkey (distributed) | Service-defined (e.g., 300s) | Source of truth, shared across all pods |
+
+**Fallback:** If Redis is not available (dev, single-tenant), in-memory becomes the only level (current behavior preserved). Mode is auto-detected — no configuration needed.
+
+##### Redis Key Structure
+
+```
+tenant:{tenantOrgID}:m2m:{targetService}:credentials
+```
+
+Key prefixing uses `valkey.GetKeyFromContext(ctx, baseKey)` from lib-commons, which automatically applies the tenant prefix (e.g., `tenant:{tenantId}:m2m:{targetService}:credentials`). This is the same pattern used by all other Redis operations in the codebase.
+
+##### Cache-Bust on Auth Failure (401)
+
+When the token exchange (`client_credentials` grant) returns 401:
+1. Delete the entry from L2 (Redis) — propagates to all pods
+2. Delete the entry from L1 (local) — immediate effect on current pod
+3. Re-fetch from AWS Secrets Manager on next request
+
+This eliminates the up-to-5-minute window of using revoked credentials across pods.
+
+##### Implementation
 
 ```go
 package m2m
 
 import (
     "context"
+    "encoding/json"
     "fmt"
     "sync"
     "time"
 
+    libRedis "github.com/LerianStudio/lib-commons/v4/commons/redis"
     secretsmanager "github.com/LerianStudio/lib-commons/v4/commons/secretsmanager"
+    "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/valkey"
 )
+
+// l1CacheTTL is a fixed internal constant — not configurable via env var.
+const l1CacheTTL = 30 * time.Second
 
 type cachedCredentials struct {
     creds     *secretsmanager.M2MCredentials
     expiresAt time.Time
 }
 
-// M2MCredentialProvider handles per-tenant M2M credential retrieval with caching.
+// M2MCredentialProvider handles per-tenant M2M credential retrieval with two-level caching.
+// L1 (in-memory) provides fast path; L2 (Redis/Valkey via lib-commons) provides cross-pod consistency.
 // Token acquisition is handled by Plugin Access Manager — this only provides credentials.
 type M2MCredentialProvider struct {
     smClient        secretsmanager.SecretsManagerClient
     env             string
     applicationName string
     targetService   string
-    credCacheTTL    time.Duration
+    credCacheTTL    time.Duration // L2 TTL (service-defined)
 
-    credCache sync.Map // map[tenantOrgID]*cachedCredentials
+    credCache sync.Map // L1: map[tenantOrgID]*cachedCredentials
+
+    // L2: lib-commons Redis connection (nil = local-only mode)
+    redisConn *libRedis.Connection
 }
 
-// NewM2MCredentialProvider creates a credential provider with configurable cache TTL.
+// NewM2MCredentialProvider creates a credential provider with two-level cache.
+// Pass nil for redisConn to use local-only mode (single-tenant or dev).
 func NewM2MCredentialProvider(
     smClient secretsmanager.SecretsManagerClient,
     env, applicationName, targetService string,
     credCacheTTL time.Duration,
+    redisConn *libRedis.Connection,
 ) *M2MCredentialProvider {
     return &M2MCredentialProvider{
         smClient:        smClient,
@@ -1983,12 +2021,23 @@ func NewM2MCredentialProvider(
         applicationName: applicationName,
         targetService:   targetService,
         credCacheTTL:    credCacheTTL,
+        redisConn:       redisConn,
     }
 }
 
-// GetCredentials returns M2M credentials for the given tenant, using cache when possible.
+// m2mRedisKey returns the tenant-prefixed Redis key for M2M credentials.
+// Uses valkey.GetKeyFromContext when ctx has tenant info, otherwise builds manually.
+func (p *M2MCredentialProvider) m2mRedisKey(ctx context.Context, tenantOrgID string) string {
+    baseKey := fmt.Sprintf("m2m:%s:credentials", p.targetService)
+    // Use valkey.GetKeyFromContext to apply tenant prefix consistently
+    return valkey.GetKeyFromContext(ctx, baseKey)
+}
+
+// GetCredentials returns M2M credentials for the given tenant using two-level cache.
+// Lookup order: L1 (memory) → L2 (Redis via lib-commons) → AWS Secrets Manager.
 // The caller (Plugin Access Manager integration) handles token acquisition.
 func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID string) (*secretsmanager.M2MCredentials, error) {
+    // L1: Check in-memory cache (fast path)
     if cached, ok := p.credCache.Load(tenantOrgID); ok {
         cc := cached.(*cachedCredentials)
         if time.Now().Before(cc.expiresAt) {
@@ -1996,23 +2045,70 @@ func (p *M2MCredentialProvider) GetCredentials(ctx context.Context, tenantOrgID 
         }
     }
 
+    // L2: Check distributed cache (Redis/Valkey via lib-commons)
+    if p.redisConn != nil {
+        rds, err := p.redisConn.GetConnection(ctx)
+        if err == nil {
+            key := p.m2mRedisKey(ctx, tenantOrgID)
+            val, err := rds.Get(ctx, key).Bytes()
+            if err == nil {
+                var creds secretsmanager.M2MCredentials
+                if json.Unmarshal(val, &creds) == nil {
+                    // Populate L1 with short TTL
+                    p.credCache.Store(tenantOrgID, &cachedCredentials{
+                        creds:     &creds,
+                        expiresAt: time.Now().Add(l1CacheTTL),
+                    })
+                    return &creds, nil
+                }
+            }
+        }
+    }
+
+    // Source: Fetch from AWS Secrets Manager (authoritative source)
     creds, err := secretsmanager.GetM2MCredentials(ctx, p.smClient, p.env, tenantOrgID, p.applicationName, p.targetService)
     if err != nil {
         return nil, fmt.Errorf("fetching M2M credentials for tenant %s: %w", tenantOrgID, err)
     }
 
+    // Store in L2 (distributed via lib-commons)
+    if p.redisConn != nil {
+        if rds, err := p.redisConn.GetConnection(ctx); err == nil {
+            key := p.m2mRedisKey(ctx, tenantOrgID)
+            if data, err := json.Marshal(creds); err == nil {
+                _ = rds.Set(ctx, key, data, p.credCacheTTL).Err()
+            }
+        }
+    }
+
+    // Store in L1 (local)
     p.credCache.Store(tenantOrgID, &cachedCredentials{
         creds:     creds,
-        expiresAt: time.Now().Add(p.credCacheTTL),
+        expiresAt: time.Now().Add(l1CacheTTL),
     })
 
     return creds, nil
+}
+
+// InvalidateCredentials removes cached credentials for a tenant from both cache levels.
+// Call this when a 401 is received during token exchange (credential revocation).
+func (p *M2MCredentialProvider) InvalidateCredentials(ctx context.Context, tenantOrgID string) {
+    // Delete from L1 (local — immediate effect)
+    p.credCache.Delete(tenantOrgID)
+
+    // Delete from L2 (distributed — propagates to all pods via lib-commons)
+    if p.redisConn != nil {
+        if rds, err := p.redisConn.GetConnection(ctx); err == nil {
+            key := p.m2mRedisKey(ctx, tenantOrgID)
+            _ = rds.Del(ctx, key).Err()
+        }
+    }
 }
 ```
 
 #### 3. Single-Tenant vs Multi-Tenant: Conditional Flow
 
-This is the core pattern. The plugin MUST work in both modes — the `M2MCredentialProvider` is **nil** in single-tenant mode.
+This is the core pattern. The service MUST work in both modes — the `M2MCredentialProvider` is **nil** in single-tenant mode.
 
 **Few-shot 1 — Bootstrap wiring (picks the right path at startup):**
 
@@ -2025,7 +2121,7 @@ if cfg.MultiTenantEnabled {
     // MULTI-TENANT: create credential provider that fetches from AWS Secrets Manager
     awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
     if err != nil {
-        logger.Fatalf("Failed to load AWS config for M2M: %v", err)
+        return nil, fmt.Errorf("failed to load AWS config for M2M: %w", err)
     }
     smClient := awssm.NewFromConfig(awsCfg)
 
@@ -2215,16 +2311,18 @@ func TestCredentialCacheExpiry(t *testing.T) {
 
 Test each sentinel error path (`ErrM2MCredentialsNotFound`, `ErrM2MVaultAccessDenied`, `ErrM2MInvalidCredentials`) by returning the corresponding error from the mock.
 
-### Observability & Metrics
+### Observability & Metrics (MANDATORY)
 
-Instrument `M2MCredentialProvider` to track credential retrieval health. Recommended counters and histogram:
+Instrument `M2MCredentialProvider` to track credential retrieval health. These 6 metrics are **mandatory** — without them, diagnosing per-tenant M2M issues in production is not feasible.
 
 | Metric | Type | Where to Increment | Description |
 |--------|------|-------------------|-------------|
-| `m2m_credential_cache_hits` | Counter | `GetCredentials` — cache hit path | Credential served from local cache |
-| `m2m_credential_cache_misses` | Counter | `GetCredentials` — cache miss path | Cache miss, fetching from AWS |
+| `m2m_credential_l1_cache_hits` | Counter | `GetCredentials` — L1 (memory) hit | Credential served from in-memory cache |
+| `m2m_credential_l2_cache_hits` | Counter | `GetCredentials` — L2 (Redis) hit | Credential served from distributed cache |
+| `m2m_credential_cache_misses` | Counter | `GetCredentials` — both L1 and L2 miss | Full miss, fetching from AWS Secrets Manager |
 | `m2m_credential_fetch_errors` | Counter | `GetCredentials` — error return | AWS Secrets Manager call failed |
-| `m2m_credential_fetch_duration_seconds` | Histogram | `GetCredentials` — around the `GetM2MCredentials` call | Latency of AWS Secrets Manager requests |
+| `m2m_credential_fetch_duration_seconds` | Histogram | `GetCredentials` — around `GetM2MCredentials` call | Latency of AWS Secrets Manager requests |
+| `m2m_credential_invalidations` | Counter | `InvalidateCredentials` — on 401 | Credential cache-bust triggered by auth failure |
 
 Labels: `tenant_org_id`, `target_service`, `environment`.
 
@@ -2234,18 +2332,21 @@ Labels: `tenant_org_id`, `target_service`, `environment`.
 
 1. **MUST NOT log credentials** — never log `clientId` or `clientSecret` values
 2. **MUST NOT store credentials in environment variables** — always fetch from Secrets Manager at runtime
-3. **MUST cache locally** — avoid per-request AWS API calls (latency + cost)
+3. **MUST use two-level cache** — L1 (in-memory) for fast path, L2 (Redis) for cross-pod consistency
 4. **MUST handle credential rotation** — cache TTL ensures stale credentials are refreshed automatically
+5. **MUST invalidate on 401** — call `InvalidateCredentials()` when token exchange returns 401 to propagate cache-bust across all pods
 
 ### Anti-Rationalization
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Product service doesn't need M2M" | Correct. Only plugins need M2M. | **Skip this gate for products** |
+| "This service doesn't need M2M" | Correct if it has no targetServices declared. | **Skip this gate for services without targetServices** |
 | "We can hardcode credentials per tenant" | Hardcoded creds don't scale and are a security risk. | **MUST use Secrets Manager** |
 | "Caching is optional, we'll add it later" | Every request hitting AWS adds ~50-100ms latency + cost. | **MUST implement caching from day one** |
 | "We'll use env vars for client credentials" | Env vars are shared across tenants. M2M is per-tenant. | **MUST use Secrets Manager per tenant** |
 | "Single-tenant plugins don't need this" | Correct if MULTI_TENANT_ENABLED=false. | **Skip when single-tenant** |
+| "In-memory cache is good enough" | In-memory cache is per-pod — credential rotation or revocation won't propagate to other pods for up to 5 minutes. | **MUST use distributed cache (Redis) as L2** |
+| "Cache-bust on 401 is overkill" | Without it, revoked credentials remain cached for the full TTL, causing repeated auth failures across pods. | **MUST invalidate on 401** |
 
 ---
 

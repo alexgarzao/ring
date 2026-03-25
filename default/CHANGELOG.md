@@ -1,5 +1,104 @@
 # Ring-default Changelog
 
+## [1.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.1)
+
+- Fixes:
+  - Use camelCase for JSON field naming in code examples.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.20.0...ring-default@1.20.1)
+
+---
+
+## [1.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.1)
+
+- Fixes:
+  - Use camelCase for JSON field naming in code examples.
+  
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.20.0...ring-default@1.20.1)
+
+---
+
+## [1.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.1)
+
+- Fixes:
+  - Use camelCase for JSON field naming in code examples.
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.20.0...ring-default@1.20.1)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features**
+  - Upgrade to adaptive cohesion-based slicing (v2)
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features**
+  - Upgrade to adaptive cohesion-based slicing (v2)
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features**
+  - Upgrade to adaptive cohesion-based slicing (v2).
+
+Contributors: @fred,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features**
+  - Upgrade to adaptive cohesion-based slicing (v2) in review-slicer.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- **Features**
+  - Upgrade to adaptive cohesion-based slicing (v2).
+
+Contributors: @fred,
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
+## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
+
+- Features:
+  - Upgrade to adaptive cohesion-based slicing (v2)
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.19.0...ring-default@1.20.0)
+
+---
+
 ## [1.20.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.0)
 
 - **Features**
