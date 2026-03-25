@@ -18,7 +18,7 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 24 | [Multi-Tenant Message Queue Consumers](#multi-tenant-message-queue-consumers) | Multi-tenant consumer initialization, on-demand connection, exponential backoff |
 | 25 | [M2M Credentials via Secret Manager](#m2m-credentials-via-secret-manager) | AWS Secrets Manager integration for service-to-service authentication per tenant |
 | 26 | [Service Authentication (MANDATORY)](#service-authentication-mandatory) | API key authentication for dispatch layer /settings endpoint via X-API-Key header |
-| 27 | [SettingsWatcher (MANDATORY)](#settingswatcher-mandatory) | Standalone goroutine for revalidating connection pool settings across all connected tenants |
+| 27 | [SettingsWatcher (MANDATORY — PostgreSQL only)](#settingswatcher-mandatory) | Standalone goroutine for revalidating PostgreSQL connection pool settings (maxOpenConns, maxIdleConns, statementTimeout) |
 
 ---
 
@@ -41,7 +41,7 @@ The only valid multi-tenant implementation uses:
 - The 10 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
 - `client.WithServiceAPIKey` on the Tenant Manager HTTP client for `/settings` endpoint authentication
-- `tmwatcher.NewSettingsWatcher` for connection pool settings revalidation (from `lib-commons/v4/commons/dispatch layer/watcher`)
+- `tmwatcher.NewSettingsWatcher` for PostgreSQL pool settings revalidation (from `lib-commons/v4/commons/dispatch layer/watcher`) — PostgreSQL only, MongoDB excluded
 
 MUST correct any deviation from these patterns before the service can be considered multi-tenant.
 
@@ -1233,7 +1233,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Redis key prefixing** | - | Call `valkey.GetKeyFromContext(ctx, key)` for every Redis operation |
 | **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
-| **Settings revalidation** | `SettingsWatcher` goroutine, `ApplyConnectionSettings()` | Instantiate `SettingsWatcher` in bootstrap with all configured managers, call `Start(ctx)` and `Stop()` |
+| **Settings revalidation (PostgreSQL only)** | `SettingsWatcher` goroutine, `ApplyConnectionSettings()` | Instantiate `SettingsWatcher` in bootstrap with PostgreSQL managers only, call `Start(ctx)` and `Stop()`. MongoDB excluded (driver cannot resize pools). |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
 
 ### Anti-Rationalization Table (General)
@@ -2404,7 +2404,7 @@ The service catalog enforces a maximum of 2 active keys per environment, so both
 
 ---
 
-## SettingsWatcher (MANDATORY)
+## SettingsWatcher (MANDATORY — PostgreSQL only)
 
 **MANDATORY:** Every multi-tenant service that uses PostgreSQL connection pools MUST instantiate a `SettingsWatcher` in its bootstrap. This is not optional regardless of whether the service uses RabbitMQ, HTTP-only, or any other transport. MongoDB-only services are exempt — the Go driver does not support pool resize after creation.
 
