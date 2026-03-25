@@ -538,7 +538,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
-| 2 | `go.mod` | lib-commons v2 → v3 + lib-auth v2, import paths | All files |
+| 2 | `go.mod` | lib-commons v2 → v4 + lib-auth v2, import paths | All files |
 | 3 | `config.go` | Add the 10 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
@@ -722,9 +722,9 @@ HARD GATE: MUST pass build and tests before proceeding.
 > Add conditional log: "Multi-tenant mode enabled" vs "Running in SINGLE-TENANT MODE".
 > DO NOT implement TenantMiddleware yet — only configuration.
 
-**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC" internal/bootstrap/config.go` + `go build ./...`
+**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CACHE_TTL_SEC" internal/bootstrap/config.go` + `go build ./...`
 
-**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY` and `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC`. If missing, add them.
+**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC`, and `MULTI_TENANT_CACHE_TTL_SEC`. If missing, add them.
 
 ---
 

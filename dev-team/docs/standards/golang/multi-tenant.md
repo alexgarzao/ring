@@ -2406,7 +2406,9 @@ The service catalog enforces a maximum of 2 active keys per environment, so both
 
 ## SettingsWatcher (MANDATORY)
 
-**MANDATORY:** Every multi-tenant service MUST instantiate a `SettingsWatcher` in its bootstrap. This is not optional regardless of whether the service uses RabbitMQ, HTTP-only, or any other transport.
+**MANDATORY:** Every multi-tenant service that uses PostgreSQL connection pools MUST instantiate a `SettingsWatcher` in its bootstrap. This is not optional regardless of whether the service uses RabbitMQ, HTTP-only, or any other transport. MongoDB-only services are exempt — the Go driver does not support pool resize after creation.
+
+Import path: `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/watcher`
 
 ### What It Does
 
