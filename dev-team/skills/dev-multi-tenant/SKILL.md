@@ -754,7 +754,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 >
 > **IF RabbitMQ DETECTED:** Follow multi-tenant.md § "Multi-Tenant Message Queue Consumers" for the consumer wiring pattern.
 >
-> **SettingsWatcher (MANDATORY):** MUST instantiate `tmwatcher.NewSettingsWatcher` in the bootstrap with all configured managers (PG, Mongo). MUST call `Start(ctx)` during initialization and `Stop()` on shutdown. Follow multi-tenant.md § "SettingsWatcher (MANDATORY)" for the bootstrap pattern with functional options.
+> **SettingsWatcher (MANDATORY — PostgreSQL only):** MUST instantiate `tmwatcher.NewSettingsWatcher` in the bootstrap with the PostgreSQL manager. MUST call `Start(ctx)` during initialization and `Stop()` on shutdown. MongoDB is excluded because the Go driver does not support pool resize after creation. Follow multi-tenant.md § "SettingsWatcher (MANDATORY)" for the bootstrap pattern with functional options.
 
 **Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `grep "NewSettingsWatcher" internal/bootstrap/` + `go build ./...`
 

@@ -1351,12 +1351,13 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `MULTI_TENANT_CACHE_TTL_SEC` in config struct (default: `120`)
 - [ ] `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` in config struct (default: `30`)
 
-**SettingsWatcher:**
+**SettingsWatcher (PostgreSQL only):**
 - [ ] `tmwatcher.NewSettingsWatcher(tenantClient, cfg.ApplicationName, opts...)` instantiated in bootstrap
 - [ ] `tmwatcher.WithPostgresManager(pgManager)` passed if PG is configured
-- [ ] `tmwatcher.WithMongoManager(mongoManager)` passed if Mongo is configured
 - [ ] `settingsWatcher.Start(ctx)` called during bootstrap
 - [ ] `settingsWatcher.Stop()` called on shutdown (via ServerManager hook or defer)
+
+> **Note:** MongoDB is excluded from SettingsWatcher because the Go driver does not support pool resize after creation.
 
 **Architecture:**
 - [ ] `client.NewClient(url, logger, opts...)` returns `(*Client, error)` — handle error for fail-fast
@@ -2308,7 +2309,9 @@ The service catalog enforces a maximum of 2 active keys per environment, so both
 
 ### What It Does
 
-`SettingsWatcher` is a standalone goroutine (from `lib-commons/v4/commons/dispatch layer/watcher`) that periodically revalidates connection pool settings for all connected tenants. It replaces the old settings revalidation that was coupled to the RabbitMQ consumer — the watcher is **independent of RabbitMQ** and works for any multi-tenant service with PostgreSQL or MongoDB.
+`SettingsWatcher` is a standalone goroutine (from `lib-commons/v4/commons/dispatch layer/watcher`) that periodically revalidates connection pool settings for all connected tenants. It replaces the old settings revalidation that was coupled to the RabbitMQ consumer — the watcher is **independent of RabbitMQ** and works for any multi-tenant service with PostgreSQL.
+
+> **PostgreSQL only:** MongoDB is excluded because the Go driver does not support pool resize after creation. MongoDB connection pool settings (maxPoolSize, minPoolSize) are fixed at `mongo.Connect()` time and cannot be changed dynamically.
 
 ### Why It Exists
 
@@ -2320,7 +2323,7 @@ Without `SettingsWatcher`, changes to connection pool settings (maxOpenConns, ma
 
 ### How It Works
 
-1. On each tick (configurable via `WithInterval`, default: 30s), the watcher calls `ConnectedTenantIDs()` on each registered manager (PG, Mongo) to discover which tenants currently have active connections
+1. On each tick (configurable via `WithInterval`, default: 30s), the watcher calls `ConnectedTenantIDs()` on the PostgreSQL manager to discover which tenants currently have active connections
 2. For each connected tenant, it fetches the current `TenantConfig` via the Tenant Manager API (using the same `client.Client` as the middleware)
 3. It compares the fetched `ConnectionSettings` (maxOpenConns, maxIdleConns, statementTimeout) with the previously known values
 4. If any setting has changed, it applies the new value immediately via the manager's `ApplyConnectionSettings()` method
@@ -2351,9 +2354,7 @@ if pgManager != nil {
     watcherOpts = append(watcherOpts, tmwatcher.WithPostgresManager(pgManager))
 }
 
-if mongoManager != nil {
-    watcherOpts = append(watcherOpts, tmwatcher.WithMongoManager(mongoManager))
-}
+// NOTE: MongoDB is excluded — the Go driver does not support pool resize after creation.
 
 settingsWatcher := tmwatcher.NewSettingsWatcher(tenantClient, cfg.ApplicationName, watcherOpts...)
 settingsWatcher.Start(ctx)
@@ -2379,6 +2380,6 @@ grep -rn "settingsWatcher.Start\|settingsWatcher.Stop" internal/ --include="*.go
 |-----------------|----------------|-----------------|
 | "We don't need settings revalidation" | Pool settings changes will not be detected without it. Tenant starvation risk. | **MUST instantiate SettingsWatcher** |
 | "RabbitMQ consumer already handles this" | Consumer revalidation was removed. SettingsWatcher is the only mechanism. | **MUST use SettingsWatcher** |
-| "Service doesn't use RabbitMQ so it doesn't apply" | SettingsWatcher is independent of RabbitMQ. It works for any service with PG/Mongo. | **MUST instantiate SettingsWatcher** |
+| "Service doesn't use RabbitMQ so it doesn't apply" | SettingsWatcher is independent of RabbitMQ. It works for any service with PostgreSQL. | **MUST instantiate SettingsWatcher** |
 | "Settings rarely change, not worth the overhead" | The watcher is a no-op when nothing changes. Zero overhead on stable configs. | **MUST instantiate SettingsWatcher** |
 | "We'll add it later" | Later means tenants run with stale pool settings until the next deploy. | **MUST instantiate SettingsWatcher NOW** |
