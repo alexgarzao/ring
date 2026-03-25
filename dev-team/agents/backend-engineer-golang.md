@@ -921,7 +921,7 @@ The Standards Compliance section exists to:
 
 **→ See [shared-patterns/standards-coverage-table.md](../skills/shared-patterns/standards-coverage-table.md) → "ring:backend-engineer-golang → golang.md" for:**
 
-- Complete list of sections to check (47 sections)
+- Complete list of sections to check (54 sections)
 - Section names (MUST use EXACT names from table)
 - Key subsections per section
 - Output table format
