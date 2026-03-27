@@ -728,15 +728,15 @@ HARD GATE: MUST pass build and tests before proceeding.
 > - MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC (int, default 30)
 > - MULTI_TENANT_SERVICE_API_KEY (string, required — API key for dispatch layer /settings endpoint)
 > - MULTI_TENANT_CACHE_TTL_SEC (int, default 120 — in-memory cache TTL for tenant config)
-> - MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC (int, default 30 — pgManager async settings revalidation interval via WithSettingsCheckInterval)
+> - MULTI_TENANT_CONNECTIONS_INTERVAL_SEC (int, default 30 — pgManager async settings revalidation interval via WithSettingsCheckInterval)
 >
 > MUST NOT use alternative names (e.g., TENANT_MANAGER_ADDRESS, TENANT_MANAGER_URL are WRONG).
 > Add conditional log: "Multi-tenant mode enabled" vs "Running in SINGLE-TENANT MODE".
 > DO NOT implement TenantMiddleware yet — only configuration.
 
-**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CACHE_TTL_SEC" internal/bootstrap/config.go` + `go build ./...`
+**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CONNECTIONS_INTERVAL_SEC" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CACHE_TTL_SEC" internal/bootstrap/config.go` + `go build ./...`
 
-**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC`, and `MULTI_TENANT_CACHE_TTL_SEC`. If missing, add them.
+**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_CONNECTIONS_INTERVAL_SEC`, and `MULTI_TENANT_CACHE_TTL_SEC`. If missing, add them.
 
 ---
 
@@ -1065,7 +1065,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
-2. **Environment variables**: the 12 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC) with required/default/description
+2. **Environment variables**: the 12 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_INTERVAL_SEC) with required/default/description
 3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
