@@ -605,12 +605,12 @@ if [ -n "$redis_hardcoded" ] || [ -n "$redis_hardcoded2" ]; then
   echo "$redis_hardcoded2"
 fi
 
-# Step G.5: Check S3 — keys must use GetObjectStorageKeyForTenant
+# Step G.5: Check S3 — keys must use GetS3KeyStorageContext
 s3_hardcoded=$(grep -rn 'PutObject\|GetObject\|DeleteObject' internal/ pkg/ --include="*.go" 2>/dev/null \
   | grep -v "_test.go" \
-  | grep -v "GetObjectStorageKeyForTenant\|s3\.")
+  | grep -v "GetS3KeyStorageContext\|s3\.")
 if [ -n "$s3_hardcoded" ]; then
-  echo "⚠️ WARNING: Possible hardcoded S3 keys — verify s3.GetObjectStorageKeyForTenant is used"
+  echo "⚠️ WARNING: Possible hardcoded S3 keys — verify s3.GetS3KeyStorageContext is used"
   echo "$s3_hardcoded"
 fi
 

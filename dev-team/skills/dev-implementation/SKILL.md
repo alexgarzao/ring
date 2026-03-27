@@ -426,7 +426,7 @@ Task:
     | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` |
     | **MongoDB** | `r.mongoConn.GetDatabase()` | `tmcore.GetMBContext(ctx)` or `tmcore.GetMBContext(ctx, module)` with fallback |
     | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyContext(ctx, "key"), val)` |
-    | **S3** | `s3.PutObject("path/obj")` | `s3.PutObject(s3.GetObjectStorageKeyForTenant(ctx, "path/obj"))` |
+    | **S3** | `s3.PutObject("path/obj")` | `s3.PutObject(s3.GetS3KeyStorageContext(ctx, "path/obj"))` |
     | **RabbitMQ** | `channel.Publish(exchange, ...)` | Use `tmrabbitmq.Manager` for vhost isolation + set `X-Tenant-ID` header |
     
     ### Route Registration with WhenEnabled
@@ -451,7 +451,7 @@ Task:
     The agent must verify before completing Gate 0:
     - No direct `r.connection.GetDB()` or `r.mongoConn.GetDatabase()` — must use resolvers
     - No hardcoded Redis keys — must use `valkey.GetKeyContext`
-    - No hardcoded S3 keys — must use `s3.GetObjectStorageKeyForTenant`
+    - No hardcoded S3 keys — must use `s3.GetS3KeyStorageContext`
     - No global DB singletons — connections injected via constructor
     - All methods accept `ctx context.Context` as first parameter
     - Routes use `WhenEnabled()` for tenant middleware (not global `app.Use`)

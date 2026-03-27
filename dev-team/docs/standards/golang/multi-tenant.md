@@ -35,7 +35,7 @@ The only valid multi-tenant implementation uses:
 - `tenantId` from JWT via `TenantMiddleware` with `WithPG`/`WithMB` options (from `lib-commons/v4/commons/dispatch layer/middleware`), registered per-route using a local `WhenEnabled` helper
 - `tmcore.GetPGContext(ctx)` / `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx)` / `tmcore.GetMBContext(ctx, module)` for database resolution (from `lib-commons/v4/commons/dispatch layer/core`)
 - `valkey.GetKeyContext` for Redis key prefixing (from `lib-commons/v4/commons/dispatch layer/valkey`)
-- `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v4/commons/dispatch layer/s3`)
+- `s3.GetS3KeyStorageContext` for S3 key prefixing (from `lib-commons/v4/commons/dispatch layer/s3`)
 - `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v4/commons/dispatch layer/rabbitmq`)
 - The 13 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
@@ -66,7 +66,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | `internal/adapters/postgres/**/*.postgresql.go` | PostgreSQL | `r.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGContext(ctx)` with fallback to `r.connection` |
 | `internal/adapters/mongodb/**/*.mongodb.go` | MongoDB | Static mongo connection → `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMBContext(ctx)` with fallback to `r.connection` |
 | `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
-| `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetObjectStorageKeyForTenant(ctx, key)` |
+| `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetS3KeyStorageContext(ctx, key)` |
 
 **Conditional — services with targetServices (Gate 5.5):**
 
@@ -665,14 +665,14 @@ Services that store files in S3 MUST prefix object keys with the tenant ID for t
 // In any service/adapter that uploads, downloads, or deletes files from S3:
 func (r *StorageRepository) Upload(ctx context.Context, originalKey, contentType string, data io.Reader) error {
     // Tenant-aware key prefixing: {tenantId}/{originalKey} in multi-tenant, {originalKey} in single-tenant
-    key := s3.GetObjectStorageKeyForTenant(ctx, originalKey)
+    key := s3.GetS3KeyStorageContext(ctx, originalKey)
 
     return r.s3Client.Upload(ctx, key, data, contentType)
 }
 
 func (r *StorageRepository) Download(ctx context.Context, originalKey string) (io.ReadCloser, error) {
     // MUST use the same prefixed key for reads and writes
-    key := s3.GetObjectStorageKeyForTenant(ctx, originalKey)
+    key := s3.GetS3KeyStorageContext(ctx, originalKey)
 
     return r.s3Client.Download(ctx, key)
 }
@@ -1400,7 +1400,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Middleware registration** | - | Register `TenantMiddleware` with `WithPG`/`WithMB` on routes |
 | **Repository adaptation** | - | Use `tmcore.GetPGContext(ctx)` / `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx)` / `tmcore.GetMBContext(ctx, module)` instead of global DB |
 | **Redis key prefixing** | - | Call `valkey.GetKeyContext(ctx, key)` for every Redis operation |
-| **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
+| **S3 key prefixing** | Tenant-aware key prefix (`s3.GetS3KeyStorageContext`) | Call `s3.GetS3KeyStorageContext(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
 | **Settings revalidation (PostgreSQL only)** | pgManager handles internally via `WithConnectionsCheckInterval`, `ApplyConnectionSettings()` | Pass `WithConnectionsCheckInterval` when creating pgManager. MongoDB excluded (driver cannot resize pools). |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
@@ -1546,7 +1546,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `tmcore.GetPGContext(ctx)` or `tmcore.GetPGContext(ctx, module)` in PostgreSQL repositories
 - [ ] `valkey.GetKeyContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
 - [ ] `tmcore.GetMBContext(ctx)` or `tmcore.GetMBContext(ctx, module)` in MongoDB repositories (if using MongoDB)
-- [ ] `s3.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
+- [ ] `s3.GetS3KeyStorageContext(ctx, key)` for ALL S3 operations (if using S3/object storage)
 
 **Async Processing:**
 - [ ] Tenant ID header (`X-Tenant-ID`) in RabbitMQ messages

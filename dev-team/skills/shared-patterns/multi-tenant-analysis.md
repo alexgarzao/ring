@@ -16,7 +16,7 @@ See [multi-tenant.md § Canonical Model Compliance](../../docs/standards/golang/
    - Route ordering: Auth MUST run before tenant middleware — per-route via `WhenEnabled` (not global `app.Use`)
    - Repositories: MUST use `tmcore.GetPGContext`/`tmcore.GetMBContext` (not static connections)
    - Redis: MUST use `valkey.GetKeyContext` for every key operation (including Lua script KEYS[]/ARGV[])
-   - S3: MUST use `s3.GetObjectStorageKeyForTenant` for every object key
+   - S3: MUST use `s3.GetS3KeyStorageContext` for every object key
    - RabbitMQ: MUST use `tmrabbitmq.Manager` (Layer 1 — vhost isolation) + `X-Tenant-ID` header (Layer 2 — audit)
    - Circuit breaker: MUST have `client.WithCircuitBreaker` on Tenant Manager client
    - Backward compat: MUST have `TestMultiTenant_BackwardCompatibility` test

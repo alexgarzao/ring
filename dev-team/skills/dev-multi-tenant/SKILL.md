@@ -195,7 +195,7 @@ Agents must use these exact import paths. Include this table in every gate dispa
 | `tmrabbitmq` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/rabbitmq` | RabbitMQ Manager (per-tenant vhosts) |
 | `tmconsumer` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/consumer` | MultiTenantConsumer (on-demand initialization) |
 | `valkey` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/valkey` | Redis key prefixing (GetKeyContext) |
-| `s3` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/s3` | S3 key prefixing (GetObjectStorageKeyForTenant) |
+| `s3` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/s3` | S3 key prefixing (GetS3KeyStorageContext) |
 | `secretsmanager` | `github.com/LerianStudio/lib-commons/v4/commons/secretsmanager` | M2M credential retrieval (services with targetServices) |
 
 **⛔ HARD GATE:** Agent must not use v2 import paths or invent sub-package paths. If WebFetch truncates, this table is the authoritative reference.
@@ -353,7 +353,7 @@ DETECT (run in parallel):
    - Config:     grep -rn "MULTI_TENANT_ENABLED" internal/
    - Middleware: grep -rn "dispatch layer/middleware\|WithTenantDB\|WithPG\|WithMB" internal/
    - Context:    grep -rn "dispatch layer/core\|GetPGContext\|GetMBContext" internal/
-   - S3 keys:    grep -rn "dispatch layer/s3\|GetObjectStorageKeyForTenant" internal/
+   - S3 keys:    grep -rn "dispatch layer/s3\|GetS3KeyStorageContext" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 8. Cross-service API calls (M2M detection):
    - M2M client: grep -rn "client_credentials\|M2M\|secretsmanager\|GetM2MCredentials" internal/ pkg/
@@ -399,8 +399,8 @@ A5. Redis compliance (if Redis detected):
     - (old key function = NON-COMPLIANT → Gate 5 MUST fix)
 
 A6. S3 compliance (if S3 detected):
-    - grep -rn "s3.GetObjectStorageKeyForTenant" internal/
-    - (S3 operations without GetObjectStorageKeyForTenant = NON-COMPLIANT → Gate 5 MUST fix)
+    - grep -rn "s3.GetS3KeyStorageContext" internal/
+    - (S3 operations without GetS3KeyStorageContext = NON-COMPLIANT → Gate 5 MUST fix)
 
 A7. RabbitMQ compliance (if RabbitMQ detected):
     - grep -rn "tmrabbitmq.NewManager\|tmrabbitmq.Manager" internal/
@@ -506,7 +506,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split? Are there dual constructors? Is there a RabbitMQManager pool? Does the service struct have both consumer types?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyContext be needed?
 > 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key. What bucket env var is used?
-> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware with WithPG/WithMB? `tmcore.GetPGContext`/`tmcore.GetMBContext`/`s3.GetObjectStorageKeyForTenant` calls? EventListener/TenantCache/TenantLoader? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
+> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware with WithPG/WithMB? `tmcore.GetPGContext`/`tmcore.GetMBContext`/`s3.GetS3KeyStorageContext` calls? EventListener/TenantCache/TenantLoader? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
 > 10. **M2M / Service authentication** (if service has targetServices): Does the service call other service APIs (ledger, midaz, plugin-fees)? How does it authenticate today (static token, env var, hardcoded)? Where is the HTTP client that calls the target service? Is there an existing M2M or `client_credentials` flow? Any `secretsmanager` imports? List every file:line where target service API calls are made and where authentication credentials are injected.
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
@@ -575,7 +575,7 @@ MultiTenantConnectionsCheckIntervalSec int `env:"MULTI_TENANT_CONNECTIONS_CHECK_
 | 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` | ~3 lines per method |
 | 5 | `metadata.mongodb.go` | Static mongo → `tmcore.GetMBContext(ctx, module)` or `tmcore.GetMBContext(ctx)` with fallback | ~2 lines per method |
 | 5 | `consumer.redis.go` | Key prefixing with `valkey.GetKeyContext(ctx, key)` | ~1 line per operation |
-| 5 | `storage.go` | S3 key prefixing with `s3.GetObjectStorageKeyForTenant(ctx, key)` | ~1 line per operation |
+| 5 | `storage.go` | S3 key prefixing with `s3.GetS3KeyStorageContext(ctx, key)` | ~1 line per operation |
 | 5.5 | `m2m/provider.go` | New file: M2MCredentialProvider with credential caching (if service has targetServices) | ~80 lines |
 | 5.5 | `config.go` | Add M2M_TARGET_SERVICE, cache TTL, AWS_REGION env vars (if service has targetServices) | ~10 lines added |
 | 5.5 | `bootstrap.go` | Conditional M2M wiring when multi-tenant + targetServices (if service has targetServices) | ~20 lines added |
@@ -811,7 +811,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 
 ## Gate 5: Repository Adaptation
 
-**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v4 functions (`tmcore.GetPGContext`, `tmcore.GetMBContext`, `valkey.GetKeyContext`, `s3.GetObjectStorageKeyForTenant`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v4 functions (`tmcore.GetPGContext`, `tmcore.GetMBContext`, `valkey.GetKeyContext`, `s3.GetS3KeyStorageContext`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
@@ -827,7 +827,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
-**Verification:** grep for `tmcore.GetPGContext` / `tmcore.GetMBContext` / `valkey.GetKeyContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
+**Verification:** grep for `tmcore.GetPGContext` / `tmcore.GetMBContext` / `valkey.GetKeyContext` / `s3.GetS3KeyStorageContext` in `internal/` + `go build ./...`
 
 ---
 

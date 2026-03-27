@@ -922,7 +922,7 @@ These packages do not manage connection pools — they provide key namespacing u
 
 **S3:**
 ```go
-key := s3.GetObjectStorageKeyForTenant(ctx, "my-file.pdf")
+key := s3.GetS3KeyStorageContext(ctx, "my-file.pdf")
 // returns "{tenantID}/my-file.pdf"
 ```
 
