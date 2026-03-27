@@ -577,7 +577,7 @@ pg_direct=$(grep -rn "\.GetDB()" internal/ pkg/ --include="*.go" 2>/dev/null \
   | grep -v "// deprecated\|// legacy\|// TODO" \
   | grep -v "core\.Resolve\|tmpostgres\|Manager")
 if [ -n "$pg_direct" ]; then
-  echo "⛔ BLOCKING: Direct .GetDB() calls found — must use tmcore.GetPG(ctx, module) or tmcore.GetPGConnectionFromContext(ctx)"
+  echo "⛔ BLOCKING: Direct .GetDB() calls found — must use tmcore.GetPGContext(ctx, module) or tmcore.GetPGConnectionContext(ctx)"
   echo "$pg_direct"
   blocking=1
 fi
@@ -587,7 +587,7 @@ mongo_direct=$(grep -rn "\.GetDatabase()\|\.Database()" internal/ pkg/ --include
   | grep -v "_test.go" \
   | grep -v "core\.Resolve\|tmmongo\|Manager")
 if [ -n "$mongo_direct" ]; then
-  echo "⛔ BLOCKING: Direct MongoDB access found — must use tmcore.GetMB(ctx, module) or tmcore.GetMongoFromContext(ctx)"
+  echo "⛔ BLOCKING: Direct MongoDB access found — must use tmcore.GetMBContext(ctx, module) or tmcore.GetMongoContext(ctx)"
   echo "$mongo_direct"
   blocking=1
 fi

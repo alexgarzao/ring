@@ -209,7 +209,7 @@ The Tenant Manager determines the isolation mode per tenant. Agents MUST handle 
 | `isolated` (default) | Separate DB per tenant | Default `public` | None | Strong isolation, recommended |
 | `schema` | Shared DB | Schema per tenant | `options=-csearch_path="{schema}"` | Cost optimization |
 
-The agent does not choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)` which handles both modes transparently.
+The agent does not choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` which handles both modes transparently.
 
 ### ConnectionSettings Override
 
@@ -352,7 +352,7 @@ DETECT (run in parallel):
 7. Existing multi-tenant:
    - Config:     grep -rn "MULTI_TENANT_ENABLED" internal/
    - Middleware: grep -rn "dispatch layer/middleware\|WithTenantDB\|WithPG\|WithMB" internal/
-   - Context:    grep -rn "dispatch layer/core\|GetPG\|GetPGConnectionFromContext\|GetMB\|GetMongoFromContext" internal/
+   - Context:    grep -rn "dispatch layer/core\|GetPGContext\|GetPGConnectionContext\|GetMBContext\|GetMongoContext" internal/
    - S3 keys:    grep -rn "dispatch layer/s3\|GetObjectStorageKeyForTenant" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 8. Cross-service API calls (M2M detection):
@@ -379,7 +379,7 @@ A2. Middleware compliance:
     - (no match but other tenant middleware exists = NON-COMPLIANT → Gate 4 MUST fix)
 
 A3. Repository compliance:
-    - grep -rn "tmcore.GetPG\|tmcore.GetPGConnectionFromContext\|tmcore.GetMB\|tmcore.GetMongoFromContext" internal/
+    - grep -rn "tmcore.GetPGContext\|tmcore.GetPGConnectionContext\|tmcore.GetMBContext\|tmcore.GetMongoContext" internal/
     - (repositories use static connections or custom pool lookup = NON-COMPLIANT → Gate 5 MUST fix)
 
 A4. Redis compliance (if Redis detected):
@@ -496,7 +496,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split? Are there dual constructors? Is there a RabbitMQManager pool? Does the service struct have both consumer types?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
 > 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key. What bucket env var is used?
-> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware with WithPG/WithMB? `tmcore.GetPG`/`tmcore.GetPGConnectionFromContext`/`tmcore.GetMB`/`tmcore.GetMongoFromContext`/`s3.GetObjectStorageKeyForTenant` calls? EventListener/TenantCache/TenantLoader? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
+> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware with WithPG/WithMB? `tmcore.GetPGContext`/`tmcore.GetPGConnectionContext`/`tmcore.GetMBContext`/`tmcore.GetMongoContext`/`s3.GetObjectStorageKeyForTenant` calls? EventListener/TenantCache/TenantLoader? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
 > 10. **M2M / Service authentication** (if service has targetServices): Does the service call other service APIs (ledger, midaz, plugin-fees)? How does it authenticate today (static token, env var, hardcoded)? Where is the HTTP client that calls the target service? Is there an existing M2M or `client_credentials` flow? Any `secretsmanager` imports? List every file:line where target service API calls are made and where authentication credentials are injected.
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
@@ -534,7 +534,7 @@ The HTML page MUST include these sections:
 ### 2. Target Architecture (After)
 - Mermaid diagram showing the multi-tenant request flow (JWT → middleware → tenant pool → handler)
 - Which middleware will be used: `TenantMiddleware` with unnamed `WithPG`/`WithMB` (single-module) or named `WithPG(mgr, "module")`/`WithMB(mgr, "module")` (multi-module)
-- How repositories will get DB connections (context-based: `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)`)
+- How repositories will get DB connections (context-based: `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)`)
 
 ### 3. Change Map (per gate)
 Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row per file that will be modified. Example:
@@ -545,8 +545,8 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | 3 | `config.go` | Add the 10 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware with WithPG/WithMB setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
-| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `tmcore.GetPG(ctx, module)` with fallback to `r.connection` | ~3 lines per method |
-| 5 | `metadata.mongodb.go` | Static mongo → `tmcore.GetMB(ctx, module)` or `tmcore.GetMongoFromContext(ctx)` with fallback | ~2 lines per method |
+| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` | ~3 lines per method |
+| 5 | `metadata.mongodb.go` | Static mongo → `tmcore.GetMBContext(ctx, module)` or `tmcore.GetMongoContext(ctx)` with fallback | ~2 lines per method |
 | 5 | `consumer.redis.go` | Key prefixing with `valkey.GetKeyFromContext(ctx, key)` | ~1 line per operation |
 | 5 | `storage.go` | S3 key prefixing with `s3.GetObjectStorageKeyForTenant(ctx, key)` | ~1 line per operation |
 | 5.5 | `m2m/provider.go` | New file: M2MCredentialProvider with credential caching (if service has targetServices) | ~80 lines |
@@ -585,7 +585,7 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 
 // Repository-scoped helper (add once per repository file):
 func (r *OrganizationPostgreSQLRepository) getDB(ctx context.Context) (*gorm.DB, error) {
-    db := tmcore.GetPG(ctx, "organization")
+    db := tmcore.GetPGContext(ctx, "organization")
     if db == nil {
         return nil, fmt.Errorf("tenant postgres connection missing from context for module organization")
     }
@@ -595,7 +595,7 @@ func (r *OrganizationPostgreSQLRepository) getDB(ctx context.Context) (*gorm.DB,
 
 The developer MUST be able to see the exact code that will be implemented to approve it. High-level descriptions alone are not sufficient for approval.
 
-**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to a `getDB(ctx)` helper wrapping `tmcore.GetPG(ctx, module)` with nil-check): show one representative diff panel including the helper, then list the remaining files with "Same pattern applied to: [file list]."
+**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to a `getDB(ctx)` helper wrapping `tmcore.GetPGContext(ctx, module)` with nil-check): show one representative diff panel including the helper, then list the remaining files with "Same pattern applied to: [file list]."
 
 ### 4. Backward Compatibility Analysis
 
@@ -781,7 +781,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware and SettingsWatcher.
 
 ## Gate 5: Repository Adaptation
 
-**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v4 functions (`tmcore.GetPG`, `tmcore.GetPGConnectionFromContext`, `tmcore.GetMB`, `tmcore.GetMongoFromContext`, `valkey.GetKeyFromContext`, `s3.GetObjectStorageKeyForTenant`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v4 functions (`tmcore.GetPGContext`, `tmcore.GetPGConnectionContext`, `tmcore.GetMBContext`, `tmcore.GetMongoContext`, `valkey.GetKeyFromContext`, `s3.GetObjectStorageKeyForTenant`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
@@ -797,7 +797,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware and SettingsWatcher.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
-**Verification:** grep for `tmcore.GetPG` / `tmcore.GetPGConnectionFromContext` / `tmcore.GetMB` / `tmcore.GetMongoFromContext` / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
+**Verification:** grep for `tmcore.GetPGContext` / `tmcore.GetPGConnectionContext` / `tmcore.GetMBContext` / `tmcore.GetMongoContext` / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
 
 ---
 

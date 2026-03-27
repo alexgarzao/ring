@@ -142,4 +142,4 @@ Before submitting Go code, verify:
 - [ ] POST endpoints that create resources implement idempotency (Redis SetNX pattern)
 - [ ] `IDEMPOTENCY_ENABLED` and `IDEMPOTENCY_DEFAULT_TTL_SEC` defined in Config struct
 - [ ] TTL precedence: `X-TTL` header > `IDEMPOTENCY_DEFAULT_TTL_SEC` env > `libRedis.TTL` fallback
-- [ ] If multi-tenant: JWT tenant extraction + appropriate context getter (`tmcore.GetPG(ctx, module)` for multi-module PG, `tmcore.GetPGConnectionFromContext(ctx)` for single-module PG, `tmcore.GetMB(ctx, module)` or `tmcore.GetMongoFromContext(ctx)` for MongoDB)
+- [ ] If multi-tenant: JWT tenant extraction + appropriate context getter (`tmcore.GetPGContext(ctx, module)` for multi-module PG, `tmcore.GetPGConnectionContext(ctx)` for single-module PG, `tmcore.GetMBContext(ctx, module)` or `tmcore.GetMongoContext(ctx)` for MongoDB)

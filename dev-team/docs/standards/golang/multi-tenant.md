@@ -34,7 +34,7 @@ MUST replace multi-tenant implementations that use custom middleware, manual DB 
 
 The only valid multi-tenant implementation uses:
 - `tenantId` from JWT via `TenantMiddleware` with `WithPG`/`WithMB` options (from `lib-commons/v4/commons/dispatch layer/middleware`), registered per-route using a local `WhenEnabled` helper
-- `tmcore.GetPG(ctx, module)` / `tmcore.GetMB(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)` / `tmcore.GetMongoFromContext(ctx)` for database resolution (from `lib-commons/v4/commons/dispatch layer/core`)
+- `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` / `tmcore.GetMongoContext(ctx)` for database resolution (from `lib-commons/v4/commons/dispatch layer/core`)
 - `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v4/commons/dispatch layer/valkey`)
 - `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v4/commons/dispatch layer/s3`)
 - `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v4/commons/dispatch layer/rabbitmq`)
@@ -64,8 +64,8 @@ These are the only files that require multi-tenant changes. The exact paths foll
 
 | File Pattern | Stack | What Changes |
 |-------------|-------|-------------|
-| `internal/adapters/postgres/**/*.postgresql.go` | PostgreSQL | `r.connection.GetDB()` → `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)` with fallback to `r.connection` |
-| `internal/adapters/mongodb/**/*.mongodb.go` | MongoDB | Static mongo connection → `tmcore.GetMB(ctx, module)` / `tmcore.GetMongoFromContext(ctx)` with fallback to `r.connection` |
+| `internal/adapters/postgres/**/*.postgresql.go` | PostgreSQL | `r.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` with fallback to `r.connection` |
+| `internal/adapters/mongodb/**/*.mongodb.go` | MongoDB | Static mongo connection → `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMongoContext(ctx)` with fallback to `r.connection` |
 | `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyFromContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
 | `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetObjectStorageKeyForTenant(ctx, key)` |
 
@@ -336,7 +336,7 @@ The `tenantId` identifies the client/customer. The lib-commons `TenantMiddleware
 |-----------------|----------------|-----------------|
 | "Adding organization_id filters = multi-tenant" | organization_id does NOT route to different databases. All data still in ONE database. | **MUST implement tenantId → TenantConnectionManager** |
 | "The codebase already has organization_id wiring" | organization_id is irrelevant for multi-tenant. tenantId from JWT is the mechanism. | **Implement TenantMiddleware with JWT tenantId extraction** |
-| "Core one uses organization_id for tenant isolation" | WRONG. Core one has ZERO organization_id in WHERE clauses. It uses tenantId → tmcore.GetPG(ctx, module). | **Follow the actual pattern: tenantId → context → database routing** |
+| "Core one uses organization_id for tenant isolation" | WRONG. Core one has ZERO organization_id in WHERE clauses. It uses tenantId → tmcore.GetPGContext(ctx, module). | **Follow the actual pattern: tenantId → context → database routing** |
 
 </cannot_skip>
 
@@ -452,23 +452,23 @@ import (
 )
 
 // Single-module service: use generic getter
-db := tmcore.GetPGConnectionFromContext(ctx)
+db := tmcore.GetPGConnectionContext(ctx)
 
 // Multi-module service: use module-specific getter
-db := tmcore.GetPG(ctx, constant.ModuleOnboarding)
+db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
 
 // MongoDB (single-module)
-mongoDB := tmcore.GetMongoFromContext(ctx)
+mongoDB := tmcore.GetMongoContext(ctx)
 
 // MongoDB (multi-module)
-mongoDB := tmcore.GetMB(ctx, constant.ModuleOnboarding)
+mongoDB := tmcore.GetMBContext(ctx, constant.ModuleOnboarding)
 
 // Redis key prefixing
 key := valkey.GetKeyFromContext(ctx, "cache-key")
 // -> "tenant:{tenantId}:cache-key"
 
 // Get tenant ID directly
-tenantID := tmcore.GetTenantID(ctx)
+tenantID := tmcore.GetTenantIDContext(ctx)
 ```
 
 ### Multi-module middleware (TenantMiddleware with multi-module)
@@ -538,8 +538,8 @@ middleware := tmmiddleware.NewTenantMiddleware(
 import tmcore "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core"
 
 // Multi-module: use module-specific getter
-db := tmcore.GetPG(ctx, constant.ModuleTransaction)
-db := tmcore.GetPG(ctx, constant.ModuleOnboarding)
+db := tmcore.GetPGContext(ctx, constant.ModuleTransaction)
+db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
 ```
 
 #### Simple single-module service example
@@ -567,8 +567,8 @@ ttMid := tmmiddleware.NewTenantMiddleware(
 |---------|--------------|-------------|
 | PG option | `WithPG(manager)` | `WithPG(manager, "module")` |
 | MB option | `WithMB(manager)` | `WithMB(manager, "module")` |
-| Context getter (PG) | `tmcore.GetPGConnectionFromContext(ctx)` | `tmcore.GetPG(ctx, module)` |
-| Context getter (MB) | `tmcore.GetMongoFromContext(ctx)` | `tmcore.GetMB(ctx, module)` |
+| Context getter (PG) | `tmcore.GetPGConnectionContext(ctx)` | `tmcore.GetPGContext(ctx, module)` |
+| Context getter (MB) | `tmcore.GetMongoContext(ctx)` | `tmcore.GetMBContext(ctx, module)` |
 | When to use | Single-module services | Multi-module unified services |
 
 **Rule of thumb:** If your service has one database module, use `WithPG(manager)` / `WithMB(manager)` (unnamed). If your service combines multiple modules with different databases behind one HTTP port, use `WithPG(manager, "module")` / `WithMB(manager, "module")` (named).
@@ -594,11 +594,11 @@ Repositories use a `getDB` helper that checks context for tenant connections wit
 // getDB resolves the database connection from tenant context with fallback to static connection.
 func (r *EntityPostgreSQLRepository) getDB(ctx context.Context) (dbresolver.DB, error) {
     // Multi-module: check module-specific context first
-    if db := tmcore.GetPG(ctx, constant.ModuleOnboarding); db != nil {
+    if db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding); db != nil {
         return db, nil
     }
     // Single-module: check generic context
-    if db := tmcore.GetPGConnectionFromContext(ctx); db != nil {
+    if db := tmcore.GetPGConnectionContext(ctx); db != nil {
         return db, nil
     }
     // Fallback to static connection (single-tenant mode)
@@ -726,7 +726,7 @@ func NewProducerMultiTenant(pool *tmrabbitmq.Manager) *ProducerRepository {
 
 func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, message []byte) error {
     // Inject tenant ID header
-    tenantID := core.GetTenantID(ctx)
+    tenantID := core.GetTenantIDContext(ctx)
     headers := amqp.Table{}
     if tenantID != "" {
         headers["X-Tenant-ID"] = tenantID
@@ -774,11 +774,11 @@ func NewMetadataMongoDBRepository(conn *libMongo.MongoConnection, dbName string)
 // getMongoDB resolves the MongoDB database from tenant context with fallback to static connection.
 func (r *MetadataMongoDBRepository) getMongoDB(ctx context.Context) (*mongo.Database, error) {
     // Multi-module: check module-specific context first
-    if db := tmcore.GetMB(ctx, constant.ModuleOnboarding); db != nil {
+    if db := tmcore.GetMBContext(ctx, constant.ModuleOnboarding); db != nil {
         return db, nil
     }
     // Single-module: check generic context
-    if db := tmcore.GetMongoFromContext(ctx); db != nil {
+    if db := tmcore.GetMongoContext(ctx); db != nil {
         return db, nil
     }
     // Fallback to static connection (single-tenant mode)
@@ -1196,7 +1196,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 
         // Assert tenant context injected
         require.NoError(t, err)
-        extractedTenant := core.GetTenantID(ctx)
+        extractedTenant := core.GetTenantIDContext(ctx)
         assert.Equal(t, tenantID, extractedTenant)
     })
 }
@@ -1268,7 +1268,7 @@ Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from
 |-----------|-------------|------------|
 | **JWT `tenantId` extraction** | `TenantMiddleware` extracts `tenantId` claim from JWT | Identifies the tenant |
 | **Database routing** | `TenantConnectionManager` resolves tenant-specific DB connection | Tenant A → Database A, Tenant B → Database B |
-| **Context injection** | Connection stored in request context | Repositories use `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)` / `tmcore.GetMB(ctx, module)` / `tmcore.GetMongoFromContext(ctx)` |
+| **Context injection** | Connection stored in request context | Repositories use `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` / `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMongoContext(ctx)` |
 | **Single-tenant passthrough** | `IsMultiTenant() == false` → `c.Next()` immediately | Backward compatibility |
 
 #### Why Tenant Isolation Verification Is MANDATORY
@@ -1283,7 +1283,7 @@ Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from
 ```bash
 # MANDATORY: Run before every PR in multi-tenant services
 # Verify all repositories use context-based connections (not static)
-grep -rn "GetPG\|GetPGConnectionFromContext\|GetMB\|GetMongoFromContext" internal/adapters/ --include="*.go"
+grep -rn "GetPGContext\|GetPGConnectionContext\|GetMBContext\|GetMongoContext" internal/adapters/ --include="*.go"
 
 # Verify no repositories use static/hardcoded connections when multi-tenant is enabled
 # Excludes tenant-aware variables (tenantDB, tenantmanager) to avoid false positives
@@ -1296,7 +1296,7 @@ grep -rn "\.DB\.\|\.Database\." internal/adapters/ --include="*.go" | grep -v "_
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use tmcore.GetPG(ctx, module) / tmcore.GetPGConnectionFromContext(ctx) / tmcore.GetMB(ctx, module) / tmcore.GetMongoFromContext(ctx)** |
+| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use tmcore.GetPGContext(ctx, module) / tmcore.GetPGConnectionContext(ctx) / tmcore.GetMBContext(ctx, module) / tmcore.GetMongoContext(ctx)** |
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
 | "organization_id filtering = tenant isolation" | organization_id does NOT route to different databases. It is NOT multi-tenant. | **Use tenantId from JWT → TenantConnectionManager** |
 
@@ -1308,17 +1308,17 @@ lib-commons provides two sets of context functions for database resolution. Use 
 
 | Function | Use When |
 |----------|----------|
-| `tmcore.GetPG(ctx, module)` | Multi-module — returns module-specific PG connection |
-| `tmcore.GetPGConnectionFromContext(ctx)` | Single-module — returns generic PG connection |
-| `tmcore.GetMB(ctx, module)` | Multi-module — returns module-specific MongoDB |
-| `tmcore.GetMongoFromContext(ctx)` | Single-module — returns generic MongoDB |
+| `tmcore.GetPGContext(ctx, module)` | Multi-module — returns module-specific PG connection |
+| `tmcore.GetPGConnectionContext(ctx)` | Single-module — returns generic PG connection |
+| `tmcore.GetMBContext(ctx, module)` | Multi-module — returns module-specific MongoDB |
+| `tmcore.GetMongoContext(ctx)` | Single-module — returns generic MongoDB |
 
 ```go
 // Multi-module: use module-specific getter
-db := tmcore.GetPG(ctx, constant.ModuleOnboarding)
+db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
 
 // Single-module: use generic getter
-db := tmcore.GetPGConnectionFromContext(ctx)
+db := tmcore.GetPGConnectionContext(ctx)
 ```
 
 **Context setters (used by middleware, not by service code):**
@@ -1396,7 +1396,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Multi-module connection injection** | `TenantMiddleware` resolves PG/MB for all registered modules | - |
 | **Error mapping** | Default error mapper in middleware | - |
 | **Middleware registration** | - | Register `TenantMiddleware` with `WithPG`/`WithMB` on routes |
-| **Repository adaptation** | - | Use `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)` / `tmcore.GetMB(ctx, module)` / `tmcore.GetMongoFromContext(ctx)` instead of global DB |
+| **Repository adaptation** | - | Use `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` / `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMongoContext(ctx)` instead of global DB |
 | **Redis key prefixing** | - | Call `valkey.GetKeyFromContext(ctx, key)` for every Redis operation |
 | **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
@@ -1549,9 +1549,9 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `core.ErrTenantContextRequired` handled in repositories
 
 **Repositories:**
-- [ ] `tmcore.GetPGConnectionFromContext(ctx)` or `tmcore.GetPG(ctx, module)` in PostgreSQL repositories
+- [ ] `tmcore.GetPGConnectionContext(ctx)` or `tmcore.GetPGContext(ctx, module)` in PostgreSQL repositories
 - [ ] `valkey.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
-- [ ] `tmcore.GetMongoFromContext(ctx)` or `tmcore.GetMB(ctx, module)` in MongoDB repositories (if using MongoDB)
+- [ ] `tmcore.GetMongoContext(ctx)` or `tmcore.GetMBContext(ctx, module)` in MongoDB repositories (if using MongoDB)
 - [ ] `s3.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
 
 **Async Processing:**

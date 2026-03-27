@@ -115,7 +115,7 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
 | `dispatch layer` | `commons/dispatch layer` | Complete database-per-tenant isolation system with sub-packages for each resource type |
-| `dispatch layer/core` | `...core` | Shared types: TenantConfig, context helpers (GetPG, GetPGConnectionFromContext, GetMB, GetMongoFromContext) |
+| `dispatch layer/core` | `...core` | Shared types: TenantConfig, context helpers (GetPGContext, GetPGConnectionContext, GetMBContext, GetMongoContext) |
 | `dispatch layer/client` | `...client` | HTTP client for Tenant Manager API with cache + circuit breaker |
 | `dispatch layer/postgres` | `...postgres` | Per-tenant PostgreSQL connection pool manager with LRU eviction |
 | `dispatch layer/mongo` | `...mongo` | Per-tenant MongoDB client manager |
@@ -901,7 +901,7 @@ app.Use(mw.WithTenantDB)
 
 // 4. In repositories, access tenant-scoped connections
 func (r *Repo) Get(ctx context.Context, id string) (*Entity, error) {
-    db := tmcore.GetPGConnectionFromContext(ctx)
+    db := tmcore.GetPGConnectionContext(ctx)
     if db == nil {
         return nil, fmt.Errorf("tenant postgres connection missing from context")
     }
@@ -944,8 +944,8 @@ consumer, _ := consumer.NewMultiTenantConsumerWithError(
 )
 
 consumer.Register("my-queue", func(ctx context.Context, d amqp.Delivery) error {
-    tenantID := tmcore.GetTenantID(ctx)             // auto-injected by consumer
-    db := tmcore.GetPGConnectionFromContext(ctx)     // auto-resolved for this tenant
+    tenantID := tmcore.GetTenantIDContext(ctx)        // auto-injected by consumer
+    db := tmcore.GetPGConnectionContext(ctx)          // auto-resolved for this tenant
     if db == nil {
         return fmt.Errorf("tenant postgres connection missing from context")
     }

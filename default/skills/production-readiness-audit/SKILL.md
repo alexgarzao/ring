@@ -3458,11 +3458,11 @@ func (m *DualPoolMiddleware) selectPool(path string) *tenantmanager.TenantConnec
 }
 
 // Module-specific connection from context
-db := tmcore.GetPG(ctx, constant.ModuleOnboarding)
+db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
 
 // Entity-scoped query — ALWAYS filter by organization_id + ledger_id
 func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity, error) {
-    db := tmcore.GetPG(ctx, constant.ModuleTransaction)
+    db := tmcore.GetPGContext(ctx, constant.ModuleTransaction)
     if db == nil {
         return nil, fmt.Errorf("tenant postgres connection missing from context for module %s", constant.ModuleTransaction)
     }
@@ -3480,7 +3480,7 @@ func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity
 ```go
 // BAD: Query without entity scoping — intra-tenant IDOR!
 func (r *Repo) FindByID(ctx context.Context, id uuid.UUID) (*Entity, error) {
-    db := tmcore.GetPG(ctx, constant.ModuleTransaction)
+    db := tmcore.GetPGContext(ctx, constant.ModuleTransaction)
     return db.QueryRowContext(ctx, "SELECT * FROM entities WHERE id = $1", id)
 }
 
@@ -3489,8 +3489,8 @@ func GetTenantID(c *fiber.Ctx) string {
     return c.Get("X-Tenant-ID")  // User-controlled!
 }
 
-// BAD: Using GetPGConnectionFromContext in multi-module service — must use GetPG with module name
-db := tmcore.GetPGConnectionFromContext(ctx)  // WRONG: use GetPG(ctx, module) for multi-module services
+// BAD: Using GetPGConnectionContext in multi-module service — must use GetPGContext with module name
+db := tmcore.GetPGConnectionContext(ctx)  // WRONG: use GetPGContext(ctx, module) for multi-module services
 ```
 
 **Check Against Ring Standards For:**
