@@ -40,7 +40,7 @@ The only valid multi-tenant implementation uses:
 - The 13 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
 - `client.WithServiceAPIKey` on the Tenant Manager HTTP client for `/settings` endpoint authentication
-- pgManager handles settings revalidation internally via `WithSettingsCheckInterval` — PostgreSQL only, MongoDB excluded
+- pgManager handles settings revalidation internally via `WithConnectionsCheckInterval` — PostgreSQL only, MongoDB excluded
 
 MUST correct any deviation from these patterns before the service can be considered multi-tenant.
 
@@ -159,7 +159,7 @@ go build ./...
 | `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
 | `MULTI_TENANT_SERVICE_API_KEY` | API key for authenticating with dispatch layer `/settings` endpoint. Generated via service catalog. | - | If multi-tenant |
 | `MULTI_TENANT_CACHE_TTL_SEC` | In-memory cache TTL for tenant config. Passed to the tenant client. | `120` | Yes |
-| `MULTI_TENANT_CONNECTIONS_INTERVAL_SEC` | pgManager async settings revalidation interval (via `WithSettingsCheckInterval`). | `30` | Yes |
+| `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC` | pgManager async settings revalidation interval (via `WithConnectionsCheckInterval`). | `30` | Yes |
 
 **Removed ENV vars (deprecated, no-op):**
 - `RABBITMQ_MULTI_TENANT_SYNC_INTERVAL` — replaced by event-driven discovery
@@ -180,7 +180,7 @@ MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD=5
 MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC=30
 MULTI_TENANT_SERVICE_API_KEY=your-service-api-key-here
 MULTI_TENANT_CACHE_TTL_SEC=120
-MULTI_TENANT_CONNECTIONS_INTERVAL_SEC=30
+MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC=30
 ```
 
 ### Configuration
@@ -202,7 +202,7 @@ type Config struct {
     MultiTenantCircuitBreakerTimeoutSec int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC" default:"30"`
     MultiTenantServiceAPIKey            string `env:"MULTI_TENANT_SERVICE_API_KEY"`
     MultiTenantCacheTTLSec              int    `env:"MULTI_TENANT_CACHE_TTL_SEC" default:"120"`
-    MultiTenantConnectionsIntervalSec int    `env:"MULTI_TENANT_CONNECTIONS_INTERVAL_SEC" default:"30"`
+    MultiTenantConnectionsCheckIntervalSec int    `env:"MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC" default:"30"`
 
     // PostgreSQL Primary (used as default connection in single-tenant mode)
     PrimaryDBHost     string `env:"DB_HOST"`
@@ -1400,7 +1400,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Redis key prefixing** | - | Call `valkey.GetKeyContext(ctx, key)` for every Redis operation |
 | **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
-| **Settings revalidation (PostgreSQL only)** | pgManager handles internally via `WithSettingsCheckInterval`, `ApplyConnectionSettings()` | Pass `WithSettingsCheckInterval` when creating pgManager. MongoDB excluded (driver cannot resize pools). |
+| **Settings revalidation (PostgreSQL only)** | pgManager handles internally via `WithConnectionsCheckInterval`, `ApplyConnectionSettings()` | Pass `WithConnectionsCheckInterval` when creating pgManager. MongoDB excluded (driver cannot resize pools). |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
 
 ### Anti-Rationalization Table (General)
@@ -1518,7 +1518,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` in config struct (default: `30`)
 - [ ] `MULTI_TENANT_SERVICE_API_KEY` in config struct (required)
 - [ ] `MULTI_TENANT_CACHE_TTL_SEC` in config struct (default: `120`)
-- [ ] `MULTI_TENANT_CONNECTIONS_INTERVAL_SEC` in config struct (default: `30`)
+- [ ] `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC` in config struct (default: `30`)
 
 **Architecture:**
 - [ ] `client.NewClient(url, logger, opts...)` returns `(*Client, error)` — handle error for fail-fast

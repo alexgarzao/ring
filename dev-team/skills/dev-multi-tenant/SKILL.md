@@ -408,8 +408,8 @@ A9. Service API key compliance:
     - (MULTI_TENANT_SERVICE_API_KEY missing from config OR WithServiceAPIKey not called on client = NON-COMPLIANT → Gate 3/4 MUST fix)
 
 A10. Settings revalidation compliance (PostgreSQL only):
-    - grep -rn "WithSettingsCheckInterval" internal/
-    - (no match = NON-COMPLIANT → Gate 4 MUST fix — pgManager MUST be created with WithSettingsCheckInterval)
+    - grep -rn "WithConnectionsCheckInterval" internal/
+    - (no match = NON-COMPLIANT → Gate 4 MUST fix — pgManager MUST be created with WithConnectionsCheckInterval)
 ```
 
 **Output format for compliance audit:**
@@ -728,15 +728,15 @@ HARD GATE: MUST pass build and tests before proceeding.
 > - MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC (int, default 30)
 > - MULTI_TENANT_SERVICE_API_KEY (string, required — API key for dispatch layer /settings endpoint)
 > - MULTI_TENANT_CACHE_TTL_SEC (int, default 120 — in-memory cache TTL for tenant config)
-> - MULTI_TENANT_CONNECTIONS_INTERVAL_SEC (int, default 30 — pgManager async settings revalidation interval via WithSettingsCheckInterval)
+> - MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC (int, default 30 — pgManager async settings revalidation interval via WithConnectionsCheckInterval)
 >
 > MUST NOT use alternative names (e.g., TENANT_MANAGER_ADDRESS, TENANT_MANAGER_URL are WRONG).
 > Add conditional log: "Multi-tenant mode enabled" vs "Running in SINGLE-TENANT MODE".
 > DO NOT implement TenantMiddleware yet — only configuration.
 
-**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CONNECTIONS_INTERVAL_SEC" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CACHE_TTL_SEC" internal/bootstrap/config.go` + `go build ./...`
+**Verification:** `grep "MULTI_TENANT_ENABLED" internal/bootstrap/config.go` + `grep "MULTI_TENANT_SERVICE_API_KEY" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC" internal/bootstrap/config.go` + `grep "MULTI_TENANT_CACHE_TTL_SEC" internal/bootstrap/config.go` + `go build ./...`
 
-**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_CONNECTIONS_INTERVAL_SEC`, and `MULTI_TENANT_CACHE_TTL_SEC`. If missing, add them.
+**HARD GATE: `.env.example` compliance.** If the project has a `.env.example` file, MUST verify it includes `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC`, and `MULTI_TENANT_CACHE_TTL_SEC`. If missing, add them.
 
 ---
 
@@ -769,9 +769,9 @@ HARD GATE: MUST pass build and tests before proceeding.
 >
 > **IF RabbitMQ DETECTED:** Follow multi-tenant.md § "Multi-Tenant Message Queue Consumers" for the consumer wiring pattern.
 >
-> **Settings Revalidation (PostgreSQL only):** pgManager handles settings revalidation internally via `WithSettingsCheckInterval`. Pass this option when creating the PostgreSQL manager. MongoDB is excluded because the Go driver does not support pool resize after creation.
+> **Settings Revalidation (PostgreSQL only):** pgManager handles settings revalidation internally via `WithConnectionsCheckInterval`. Pass this option when creating the PostgreSQL manager. MongoDB is excluded because the Go driver does not support pool resize after creation.
 
-**Verification:** `grep "tmmiddleware.NewTenantMiddleware" internal/bootstrap/` + `grep "WithPG\|WithMB" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `grep "WithSettingsCheckInterval" internal/bootstrap/` + `go build ./...`
+**Verification:** `grep "tmmiddleware.NewTenantMiddleware" internal/bootstrap/` + `grep "WithPG\|WithMB" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `grep "WithConnectionsCheckInterval" internal/bootstrap/` + `go build ./...`
 
 <block_condition>
 HARD GATE: CANNOT proceed without TenantMiddleware.
@@ -1065,7 +1065,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
-2. **Environment variables**: the 12 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_INTERVAL_SEC) with required/default/description
+2. **Environment variables**: the 12 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC) with required/default/description
 3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
