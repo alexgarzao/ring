@@ -373,6 +373,27 @@ NOTE: A1 is a NEGATIVE check (presence of wrong names = NON-COMPLIANT).
 A1. Config compliance:
     - grep -rn "TENANT_MANAGER_ADDRESS\|TENANT_URL\|TENANT_MANAGER_URL" internal/
     - (any match = NON-COMPLIANT config var names → Gate 3 MUST fix)
+    - NON-COMPLIANT ENV names that MUST be removed or renamed:
+      | NON-COMPLIANT ENV | Action | Replacement |
+      |---|---|---|
+      | `MULTI_TENANT_ENVIRONMENT` | REMOVE | Deprecated, no replacement |
+      | `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` | RENAME | `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC` |
+      | `RABBITMQ_MULTI_TENANT_SYNC_INTERVAL` | REMOVE | Deprecated, no replacement |
+      | `RABBITMQ_MULTI_TENANT_DISCOVERY_TIMEOUT` | REMOVE | Deprecated, no replacement |
+      | `BALANCE_SYNC_WORKER_ENABLED` | REMOVE | Deprecated, always enabled |
+      | `TENANT_MANAGER_ADDRESS` | RENAME | `MULTI_TENANT_URL` |
+      | `TENANT_MANAGER_URL` | RENAME | `MULTI_TENANT_URL` |
+      | `TENANT_URL` | RENAME | `MULTI_TENANT_URL` |
+    - NON-COMPLIANT ENV names in Config struct fields that MUST be renamed:
+      | NON-COMPLIANT Field | Replacement |
+      |---|---|
+      | `MultiTenantEnvironment` | REMOVE (field and env tag) |
+      | `MultiTenantSettingsCheckIntervalSec` | `MultiTenantConnectionsCheckIntervalSec` |
+      | `TenantManagerBaseURL` | `MultiTenantURL` |
+      | `TenantManagerAPIKey` | `MultiTenantServiceAPIKey` |
+      | `TenantCacheTTL` | `MultiTenantCacheTTLSec` |
+      | `InfraEnabled` | Not a canonical MULTI_TENANT var — verify if needed |
+    - If ANY of these are found → NON-COMPLIANT → Gate 3 MUST fix
 
 A2. Tenant ID context compliance:
     - MUST match: grep -rn "ContextWithTenantID\|GetTenantIDContext" internal/
