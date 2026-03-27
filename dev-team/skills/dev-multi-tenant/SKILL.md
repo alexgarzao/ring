@@ -9,6 +9,9 @@ description: |
   and whether the service has targetServices declared,
   then executes a gate-based implementation using tenantId from JWT
   for database-per-tenant isolation via lib-commons v4 dispatch layer sub-packages (postgres.Manager, mongo.Manager).
+  Uses event-driven tenant discovery (Redis Pub/Sub via EventListener, TenantCache, TenantLoader)
+  instead of polling-based discovery.
+  TenantMiddleware with WithPG/WithMB variadic options handles both single-module and multi-module services.
   For services with targetServices: includes mandatory M2M credential retrieval from AWS Secrets Manager
   via lib-commons v4 secretsmanager package (per-tenant authentication with target service APIs).
   MUST update lib-commons v4 first; lib-auth v2 depends on it. Both are required dependencies.
@@ -18,7 +21,7 @@ description: |
 trigger: |
   - User requests multi-tenant implementation for a Go service
   - User asks to add tenant isolation to an existing service
-  - Task mentions "multi-tenant", "tenant isolation", "dispatch layer", "postgres.Manager", "MultiPoolMiddleware"
+  - Task mentions "multi-tenant", "tenant isolation", "dispatch layer", "postgres.Manager", "WithPG", "WithMB", "EventListener", "TenantCache", "TenantLoader", "OnTenantAdded", "OnTenantRemoved"
 
 prerequisite: |
   - Go service with existing single-tenant functionality
@@ -186,7 +189,7 @@ Agents must use these exact import paths. Include this table in every gate dispa
 |-------|-------------|---------|
 | `client` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/client` | Tenant Manager HTTP client with circuit breaker |
 | `core` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core` | Context helpers, resolvers, errors, types |
-| `tmmiddleware` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware` | TenantMiddleware, MultiPoolMiddleware |
+| `tmmiddleware` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware` | TenantMiddleware (with WithPG/WithMB options) |
 | `tmpostgres` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/postgres` | PostgresManager (per-tenant PG pools) |
 | `tmmongo` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/mongo` | MongoManager (per-tenant Mongo pools) |
 | `tmrabbitmq` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/rabbitmq` | RabbitMQ Manager (per-tenant vhosts) |
@@ -206,7 +209,7 @@ The Tenant Manager determines the isolation mode per tenant. Agents MUST handle 
 | `isolated` (default) | Separate DB per tenant | Default `public` | None | Strong isolation, recommended |
 | `schema` | Shared DB | Schema per tenant | `options=-csearch_path="{schema}"` | Cost optimization |
 
-The agent does not choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `core.ResolvePostgres`/`core.ResolveModuleDB` which handles both modes transparently.
+The agent does not choose the mode — lib-commons `postgres.Manager` reads `TenantConfig.IsolationMode` from the Tenant Manager API and resolves the connection accordingly. The agent's responsibility is to use `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)` which handles both modes transparently.
 
 ### ConnectionSettings Override
 
@@ -273,7 +276,7 @@ MUST report all severities. CRITICAL: STOP immediately (security breach). HIGH: 
 | 1.5 | Implementation Preview (visual report) | Always | Orchestrator (ring:visual-explainer) |
 | 2 | lib-commons v4 + lib-auth v2 Upgrade | Skip only if `go.mod` contains `lib-commons/v4` AND `lib-auth/v2` (verified via grep) | ring:backend-engineer-golang |
 | 3 | Multi-Tenant Configuration | Always — verify compliance or implement/fix | ring:backend-engineer-golang |
-| 4 | Tenant Middleware (TenantMiddleware or MultiPoolMiddleware) | Always — verify compliance or implement/fix | ring:backend-engineer-golang |
+| 4 | Tenant Middleware (TenantMiddleware with WithPG/WithMB) | Always — verify compliance or implement/fix | ring:backend-engineer-golang |
 | 5 | Repository Adaptation | Always per detected DB/storage — verify compliance or implement/fix | ring:backend-engineer-golang |
 | 5.5 | M2M Secret Manager (if service has targetServices) | Skip if has_m2m = false | ring:backend-engineer-golang |
 | 6 | RabbitMQ Multi-Tenant | Skip if no RabbitMQ | ring:backend-engineer-golang |
@@ -348,8 +351,8 @@ DETECT (run in parallel):
 6. S3/Object Storage:    grep -rn "s3\|ObjectStorage\|PutObject\|GetObject\|Upload.*storage\|Download.*storage" internal/ pkg/ go.mod
 7. Existing multi-tenant:
    - Config:     grep -rn "MULTI_TENANT_ENABLED" internal/
-   - Middleware: grep -rn "dispatch layer/middleware\|WithTenantDB\|MultiPoolMiddleware" internal/
-   - Context:    grep -rn "dispatch layer/core\|ResolveMongo\|ResolvePostgres\|ResolveModuleDB" internal/
+   - Middleware: grep -rn "dispatch layer/middleware\|WithTenantDB\|WithPG\|WithMB" internal/
+   - Context:    grep -rn "dispatch layer/core\|GetPG\|GetPGConnectionFromContext\|GetMB\|GetMongoFromContext" internal/
    - S3 keys:    grep -rn "dispatch layer/s3\|GetObjectStorageKeyForTenant" internal/
    - RMQ:        grep -rn "X-Tenant-ID" internal/
 8. Cross-service API calls (M2M detection):
@@ -372,11 +375,11 @@ A1. Config compliance:
     - (any match = NON-COMPLIANT config var names → Gate 3 MUST fix)
 
 A2. Middleware compliance:
-    - grep -rn "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/
+    - grep -rn "tmmiddleware.NewTenantMiddleware" internal/
     - (no match but other tenant middleware exists = NON-COMPLIANT → Gate 4 MUST fix)
 
 A3. Repository compliance:
-    - grep -rn "core.ResolvePostgres\|core.ResolveMongo\|core.ResolveModuleDB" internal/
+    - grep -rn "tmcore.GetPG\|tmcore.GetPGConnectionFromContext\|tmcore.GetMB\|tmcore.GetMongoFromContext" internal/
     - (repositories use static connections or custom pool lookup = NON-COMPLIANT → Gate 5 MUST fix)
 
 A4. Redis compliance (if Redis detected):
@@ -493,7 +496,7 @@ MUST confirm: user explicitly approves detection results before proceeding.
 > 6. **RabbitMQ** (if detected): Where are producers? Where are consumers? How are messages published? Where would X-Tenant-ID header be injected? Are producer and consumer in the SAME process or SEPARATE components? Is there already a config split? Are there dual constructors? Is there a RabbitMQManager pool? Does the service struct have both consumer types?
 > 7. **Redis** (if detected): Where are Redis operations? Any Lua scripts? Where would GetKeyFromContext be needed?
 > 8. **S3/Object Storage** (if detected): Where are Upload/Download/Delete operations? How are object keys constructed? List every file:line that builds an S3 key. What bucket env var is used?
-> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware or MultiPoolMiddleware? `core.ResolvePostgres`/`core.ResolveMongo`/`core.ResolveModuleDB`/`s3.GetObjectStorageKeyForTenant` calls? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
+> 9. **Existing multi-tenant code**: Any dispatch layer sub-package imports (`dispatch layer/core`, `dispatch layer/middleware`, `dispatch layer/postgres`, etc.)? TenantMiddleware with WithPG/WithMB? `tmcore.GetPG`/`tmcore.GetPGConnectionFromContext`/`tmcore.GetMB`/`tmcore.GetMongoFromContext`/`s3.GetObjectStorageKeyForTenant` calls? EventListener/TenantCache/TenantLoader? MULTI_TENANT_ENABLED config? (NOTE: organization_id is NOT related to multi-tenant — ignore it completely)
 > 10. **M2M / Service authentication** (if service has targetServices): Does the service call other service APIs (ledger, midaz, plugin-fees)? How does it authenticate today (static token, env var, hardcoded)? Where is the HTTP client that calls the target service? Is there an existing M2M or `client_credentials` flow? Any `secretsmanager` imports? List every file:line where target service API calls are made and where authentication credentials are injected.
 >
 > OUTPUT FORMAT: Structured report with file:line references for every point above.
@@ -530,8 +533,8 @@ The HTML page MUST include these sections:
 
 ### 2. Target Architecture (After)
 - Mermaid diagram showing the multi-tenant request flow (JWT → middleware → tenant pool → handler)
-- Which middleware will be used: `TenantMiddleware` (single-module) or `MultiPoolMiddleware` (multi-module)
-- How repositories will get DB connections (context-based: `core.ResolvePostgres(ctx, fallback)`)
+- Which middleware will be used: `TenantMiddleware` with unnamed `WithPG`/`WithMB` (single-module) or named `WithPG(mgr, "module")`/`WithMB(mgr, "module")` (multi-module)
+- How repositories will get DB connections (context-based: `tmcore.GetPG(ctx, module)` / `tmcore.GetPGConnectionFromContext(ctx)`)
 
 ### 3. Change Map (per gate)
 Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row per file that will be modified. Example:
@@ -540,10 +543,10 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 |------|------|-------------|--------|
 | 2 | `go.mod` | lib-commons v2 → v4 + lib-auth v2, import paths | All files |
 | 3 | `config.go` | Add the 10 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
-| 4 | `config.go` | Add TenantMiddleware/MultiPoolMiddleware setup | ~30 lines added |
+| 4 | `config.go` | Add TenantMiddleware with WithPG/WithMB setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
-| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `core.ResolveModuleDB(ctx, module, r.connection)` | ~3 lines per method |
-| 5 | `metadata.mongodb.go` | Static mongo → `core.ResolveMongo(ctx, r.connection, r.dbName)` | ~2 lines per method |
+| 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `tmcore.GetPG(ctx, module)` with fallback to `r.connection` | ~3 lines per method |
+| 5 | `metadata.mongodb.go` | Static mongo → `tmcore.GetMB(ctx, module)` or `tmcore.GetMongoFromContext(ctx)` with fallback | ~2 lines per method |
 | 5 | `consumer.redis.go` | Key prefixing with `valkey.GetKeyFromContext(ctx, key)` | ~1 line per operation |
 | 5 | `storage.go` | S3 key prefixing with `s3.GetObjectStorageKeyForTenant(ctx, key)` | ~1 line per operation |
 | 5.5 | `m2m/provider.go` | New file: M2MCredentialProvider with credential caching (if service has targetServices) | ~80 lines |
@@ -572,7 +575,7 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 
 // AFTER: organization.postgresql.go
 func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Organization) error {
-    db, err := core.ResolveModuleDB(ctx, "organization", r.connection)
+    db := tmcore.GetPG(ctx, "organization")
     if err != nil {
         return fmt.Errorf("getting tenant db for organization: %w", err)
     }
@@ -583,7 +586,7 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 
 The developer MUST be able to see the exact code that will be implemented to approve it. High-level descriptions alone are not sufficient for approval.
 
-**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to `core.ResolvePostgres(ctx, r.connection)`): show one representative diff panel, then list the remaining files with "Same pattern applied to: [file list]."
+**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to `tmcore.GetPG(ctx, module)` with fallback): show one representative diff panel, then list the remaining files with "Same pattern applied to: [file list]."
 
 ### 4. Backward Compatibility Analysis
 
@@ -628,7 +631,7 @@ The developer MUST understand that:
 Table showing what gets added to go.mod and which sub-packages are imported:
 - `dispatch layer/core` — types, errors, context helpers
 - `dispatch layer/client` — Tenant Manager HTTP client
-- `dispatch layer/middleware` — TenantMiddleware or MultiPoolMiddleware
+- `dispatch layer/middleware` — TenantMiddleware with WithPG/WithMB
 - `dispatch layer/postgres` — PostgresManager (if PG detected)
 - `dispatch layer/mongo` — MongoManager (if Mongo detected)
 - etc.
@@ -730,7 +733,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 ## Gate 4: TenantMiddleware (Core)
 
-**Always executes.** If middleware already exists, this gate VERIFIES it uses the canonical lib-commons v4 dispatch layer sub-packages (`tmmiddleware.NewTenantMiddleware` or `tmmiddleware.NewMultiPoolMiddleware`). Custom middleware, inline JWT parsing, or any non-lib-commons implementation is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes.** If middleware already exists, this gate VERIFIES it uses the canonical lib-commons v4 dispatch layer sub-packages (`tmmiddleware.NewTenantMiddleware` with `WithPG`/`WithMB` options). Custom middleware, inline JWT parsing, or any non-lib-commons implementation is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **This is the CORE gate. Without compliant TenantMiddleware, there is no tenant isolation.**
 
@@ -741,8 +744,8 @@ HARD GATE: MUST pass build and tests before proceeding.
 > SERVICE ARCHITECTURE: {single-module OR multi-module} (from Gate 1)
 > CONTEXT FROM GATE 1: {Bootstrap location, middleware chain insertion point, service init from analysis report}
 >
-> **For single-module services:** Follow multi-tenant.md § "Generic TenantMiddleware (Standard Pattern)" for imports, constructor, and options.
-> **For multi-module services:** Follow multi-tenant.md § "Multi-module middleware (MultiPoolMiddleware)" for WithRoute/WithDefaultRoute pattern.
+> **For single-module services:** Follow multi-tenant.md § "Generic TenantMiddleware (Standard Pattern)" for imports, constructor, and WithPG/WithMB options.
+> **For multi-module services:** Follow multi-tenant.md § "Multi-module middleware (TenantMiddleware with multi-module)" for named WithPG(mgr, "module")/WithMB(mgr, "module") pattern.
 > **For sub-package import aliases:** See multi-tenant.md § sub-package import table.
 >
 > Follow multi-tenant.md § "JWT Tenant Extraction" for tenantId claim handling.
@@ -759,7 +762,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 >
 > **SettingsWatcher (MANDATORY — PostgreSQL only):** MUST instantiate `tmwatcher.NewSettingsWatcher` in the bootstrap with the PostgreSQL manager. MUST call `Start(ctx)` during initialization and `Stop()` on shutdown. MongoDB is excluded because the Go driver does not support pool resize after creation. Follow multi-tenant.md § "SettingsWatcher (MANDATORY)" for the bootstrap pattern with functional options.
 
-**Verification:** `grep "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `grep "NewSettingsWatcher" internal/bootstrap/` + `go build ./...`
+**Verification:** `grep "tmmiddleware.NewTenantMiddleware" internal/bootstrap/` + `grep "WithPG\|WithMB" internal/bootstrap/` + `grep "WithServiceAPIKey" internal/bootstrap/` + `grep "NewSettingsWatcher" internal/bootstrap/` + `go build ./...`
 
 <block_condition>
 HARD GATE: CANNOT proceed without TenantMiddleware and SettingsWatcher.
@@ -769,7 +772,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware and SettingsWatcher.
 
 ## Gate 5: Repository Adaptation
 
-**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v4 functions (`core.ResolvePostgres`, `core.ResolveMongo`, `core.ResolveModuleDB`, `valkey.GetKeyFromContext`, `s3.GetObjectStorageKeyForTenant`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes per detected DB/storage.** If repositories already use context-based connections, this gate VERIFIES they use the canonical lib-commons v4 functions (`tmcore.GetPG`, `tmcore.GetPGConnectionFromContext`, `tmcore.GetMB`, `tmcore.GetMongoFromContext`, `valkey.GetKeyFromContext`, `s3.GetObjectStorageKeyForTenant`). Custom pool lookups, manual DB switching, or any non-lib-commons resolution is NON-COMPLIANT and MUST be replaced. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
@@ -785,7 +788,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware and SettingsWatcher.
 >
 > MUST work in both modes: multi-tenant (prefixed keys / context connections) and single-tenant (unchanged keys / default connections).
 
-**Verification:** grep for `core.ResolvePostgres` / `core.ResolveMongo` / `core.ResolveModuleDB` (multi-module) / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
+**Verification:** grep for `tmcore.GetPG` / `tmcore.GetPGConnectionFromContext` / `tmcore.GetMB` / `tmcore.GetMongoFromContext` / `valkey.GetKeyFromContext` / `s3.GetObjectStorageKeyForTenant` in `internal/` + `go build ./...`
 
 ---
 
@@ -1004,13 +1007,13 @@ HARD GATE: Backward compatibility MUST pass.
 MUST include this context in ALL 7 reviewer dispatches:
 
 > **MULTI-TENANT REVIEW CONTEXT:**
-> - Multi-tenant isolation is based on `tenantId` from JWT → dispatch layer middleware (TenantMiddleware or MultiPoolMiddleware) → database-per-tenant.
+> - Multi-tenant isolation is based on `tenantId` from JWT → dispatch layer middleware (TenantMiddleware with WithPG/WithMB) → database-per-tenant.
 > - `organization_id` is NOT a tenant identifier. It is a business filter within the tenant's database. A single tenant can have multiple organizations. Do NOT flag organization_id as a multi-tenant issue.
 > - Backward compatibility is required: when `MULTI_TENANT_ENABLED=false`, the service MUST work exactly as before (single-tenant mode, no tenant context needed).
 
 | Reviewer | Focus |
 |----------|-------|
-| ring:code-reviewer | Architecture, lib-commons v4 usage, TenantMiddleware/MultiPoolMiddleware placement, sub-package usage |
+| ring:code-reviewer | Architecture, lib-commons v4 usage, TenantMiddleware with WithPG/WithMB placement, sub-package usage |
 | ring:business-logic-reviewer | Tenant context propagation via tenantId (NOT organization_id) |
 | ring:security-reviewer | Cross-tenant DB isolation, JWT tenantId validation, no data leaks between tenant databases |
 | ring:test-reviewer | Coverage, isolation tests between two tenants, backward compat tests |
@@ -1031,7 +1034,7 @@ MUST approve: present checklist for explicit user approval.
 
 - [ ] lib-commons v4
 - [ ] MULTI_TENANT_ENABLED config
-- [ ] Tenant middleware (TenantMiddleware or MultiPoolMiddleware for multi-module services)
+- [ ] Tenant middleware (TenantMiddleware with WithPG/WithMB)
 - [ ] Repositories use context-based connections
 - [ ] S3 keys prefixed with tenantId (if applicable)
 - [ ] RabbitMQ X-Tenant-ID (if applicable)

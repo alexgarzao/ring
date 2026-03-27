@@ -577,7 +577,7 @@ pg_direct=$(grep -rn "\.GetDB()" internal/ pkg/ --include="*.go" 2>/dev/null \
   | grep -v "// deprecated\|// legacy\|// TODO" \
   | grep -v "core\.Resolve\|tmpostgres\|Manager")
 if [ -n "$pg_direct" ]; then
-  echo "⛔ BLOCKING: Direct .GetDB() calls found — must use core.ResolvePostgres(ctx, r.connection)"
+  echo "⛔ BLOCKING: Direct .GetDB() calls found — must use tmcore.GetPG(ctx, module) or tmcore.GetPGConnectionFromContext(ctx)"
   echo "$pg_direct"
   blocking=1
 fi
@@ -587,7 +587,7 @@ mongo_direct=$(grep -rn "\.GetDatabase()\|\.Database()" internal/ pkg/ --include
   | grep -v "_test.go" \
   | grep -v "core\.Resolve\|tmmongo\|Manager")
 if [ -n "$mongo_direct" ]; then
-  echo "⛔ BLOCKING: Direct MongoDB access found — must use core.ResolveMongo(ctx, r.mongoConn)"
+  echo "⛔ BLOCKING: Direct MongoDB access found — must use tmcore.GetMB(ctx, module) or tmcore.GetMongoFromContext(ctx)"
   echo "$mongo_direct"
   blocking=1
 fi
@@ -627,7 +627,7 @@ if grep -rq "rabbitmq\|amqp" go.mod 2>/dev/null; then
 fi
 
 # Step G.7: Check route registration — tenant middleware must use WhenEnabled
-if grep -rq "TenantMiddleware\|MultiPoolMiddleware" internal/ pkg/ --include="*.go" 2>/dev/null; then
+if grep -rq "TenantMiddleware\|WithPG\|WithMB" internal/ pkg/ --include="*.go" 2>/dev/null; then
   global_use=$(grep -rn "app\.Use.*[Tt]enant\|app\.Use.*[Mm]ulti[Pp]ool" internal/ pkg/ --include="*.go" 2>/dev/null \
     | grep -v "_test.go")
   if [ -n "$global_use" ]; then

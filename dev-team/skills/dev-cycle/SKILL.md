@@ -1796,14 +1796,14 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
      // Phase 1: Detection
      - Grep tool: pattern "MULTI_TENANT_ENABLED" in internal/ --include="*.go" → multi_tenant_exists = true
      - Grep tool: pattern "dispatch layer" in go.mod → multi_tenant_exists = true
-     - Grep tool: pattern "TenantMiddleware\|MultiPoolMiddleware" in internal/ --include="*.go" → multi_tenant_exists = true
+     - Grep tool: pattern "TenantMiddleware\|WithPG\|WithMB" in internal/ --include="*.go" → multi_tenant_exists = true
 
      // Phase 2: Compliance audit (only if multi_tenant_exists = true)
      if multi_tenant_exists:
        compliance_checks = {}
        - Grep: "TENANT_MANAGER_ADDRESS\|TENANT_URL\|TENANT_MANAGER_URL" in internal/ → if match: compliance_checks.config = "NON-COMPLIANT"
-       - Grep: "tmmiddleware.NewTenantMiddleware\|tmmiddleware.NewMultiPoolMiddleware" in internal/ → if no match: compliance_checks.middleware = "NON-COMPLIANT"
-       - Grep: "core.ResolvePostgres\|core.ResolveMongo\|core.ResolveModuleDB" in internal/ → if no match: compliance_checks.repositories = "NON-COMPLIANT"
+       - Grep: "tmmiddleware.NewTenantMiddleware" in internal/ → if no match: compliance_checks.middleware = "NON-COMPLIANT"
+       - Grep: "tmcore.GetPG\|tmcore.GetPGConnectionFromContext\|tmcore.GetMB\|tmcore.GetMongoFromContext" in internal/ → if no match: compliance_checks.repositories = "NON-COMPLIANT"
        - Grep: "WithCircuitBreaker" in internal/ → if no match: compliance_checks.circuit_breaker = "NON-COMPLIANT"
        - Grep: "TestMultiTenant_BackwardCompatibility" in internal/ → if no match: compliance_checks.backward_compat = "NON-COMPLIANT"
 

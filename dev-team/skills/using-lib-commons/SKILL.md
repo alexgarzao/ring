@@ -115,7 +115,7 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
 | `dispatch layer` | `commons/dispatch layer` | Complete database-per-tenant isolation system with sub-packages for each resource type |
-| `dispatch layer/core` | `...core` | Shared types: TenantConfig, context helpers (GetPostgresForTenant, GetMongoForTenant) |
+| `dispatch layer/core` | `...core` | Shared types: TenantConfig, context helpers (GetPG, GetPGConnectionFromContext, GetMB, GetMongoFromContext) |
 | `dispatch layer/client` | `...client` | HTTP client for Tenant Manager API with cache + circuit breaker |
 | `dispatch layer/postgres` | `...postgres` | Per-tenant PostgreSQL connection pool manager with LRU eviction |
 | `dispatch layer/mongo` | `...mongo` | Per-tenant MongoDB client manager |
@@ -892,16 +892,18 @@ mongoManager := tmmongo.NewManager(tmClient, "my-service",
 
 // 3. Attach middleware
 mw := middleware.NewTenantMiddleware(
-    middleware.WithPostgresManager(pgManager),
-    middleware.WithMongoManager(mongoManager),
+    middleware.WithPG(pgManager),
+    middleware.WithMB(mongoManager),
+    middleware.WithTenantCache(tenantCache),
+    middleware.WithTenantLoader(tenantLoader),
 )
 app.Use(mw.WithTenantDB)
 
 // 4. In repositories, access tenant-scoped connections
 func (r *Repo) Get(ctx context.Context, id string) (*Entity, error) {
-    db, err := core.GetPostgresForTenant(ctx) // returns the tenant's dbresolver.DB
-    if err != nil {
-        return nil, err
+    db := tmcore.GetPGConnectionFromContext(ctx)
+    if db == nil {
+        return nil, fmt.Errorf("tenant postgres connection missing from context")
     }
     // use db for queries — automatically scoped to the tenant's database
 }
@@ -937,13 +939,13 @@ For processing messages across tenants with automatic tenant context injection:
 ```go
 consumer, _ := consumer.NewMultiTenantConsumerWithError(
     rmqManager, redisClient, config, logger,
-    consumer.WithPostgresManager(pgManager),
-    consumer.WithMongoManager(mongoManager),
+    consumer.WithPG(pgManager),
+    consumer.WithMB(mongoManager),
 )
 
 consumer.Register("my-queue", func(ctx context.Context, d amqp.Delivery) error {
-    tenantID := core.GetTenantIDFromContext(ctx) // auto-injected by consumer
-    db, _ := core.GetPostgresForTenant(ctx)      // auto-resolved for this tenant
+    tenantID := tmcore.GetTenantID(ctx)             // auto-injected by consumer
+    db := tmcore.GetPGConnectionFromContext(ctx)     // auto-resolved for this tenant
     // process message with tenant-scoped database
     return nil
 })

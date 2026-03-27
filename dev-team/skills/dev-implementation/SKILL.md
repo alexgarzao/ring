@@ -422,9 +422,9 @@ Task:
     
     | Resource | Single-Tenant Pattern (WRONG) | Dual-Mode Pattern (CORRECT) |
     |----------|-------------------------------|------------------------------|
-    | **PostgreSQL** | `r.connection.GetDB()` | `core.ResolvePostgres(ctx, r.connection)` |
-    | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `core.ResolveModuleDB(ctx, r.connection, "module")` |
-    | **MongoDB** | `r.mongoConn.GetDatabase()` | `core.ResolveMongo(ctx, r.mongoConn)` |
+    | **PostgreSQL** | `r.connection.GetDB()` | `tmcore.GetPGConnectionFromContext(ctx)` with fallback to `r.connection` |
+    | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `tmcore.GetPG(ctx, module)` with fallback to `r.connection` |
+    | **MongoDB** | `r.mongoConn.GetDatabase()` | `tmcore.GetMongoFromContext(ctx)` or `tmcore.GetMB(ctx, module)` with fallback |
     | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyFromContext(ctx, "key"), val)` |
     | **S3** | `s3.PutObject("path/obj")` | `s3.PutObject(s3.GetObjectStorageKeyForTenant(ctx, "path/obj"))` |
     | **RabbitMQ** | `channel.Publish(exchange, ...)` | Use `tmrabbitmq.Manager` for vhost isolation + set `X-Tenant-ID` header |

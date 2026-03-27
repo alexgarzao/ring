@@ -12,9 +12,9 @@ See [multi-tenant.md § Canonical Model Compliance](../../docs/standards/golang/
 2. **Detection:** Check if any multi-tenant code exists (`MULTI_TENANT_ENABLED`, `dispatch layer` in go.mod, `TenantMiddleware`)
 3. **If multi-tenant code exists → run compliance audit:**
    - Config vars: MUST use the 7 canonical `MULTI_TENANT_*` names (not `TENANT_MANAGER_ADDRESS`, `TENANT_URL`, etc.)
-   - Middleware: MUST use `tmmiddleware.NewTenantMiddleware` or `tmmiddleware.NewMultiPoolMiddleware` from lib-commons v4
+   - Middleware: MUST use `tmmiddleware.NewTenantMiddleware` with `WithPG`/`WithMB` options from lib-commons v4
    - Route ordering: Auth MUST run before tenant middleware — per-route via `WhenEnabled` (not global `app.Use`)
-   - Repositories: MUST use `core.ResolvePostgres`/`core.ResolveMongo`/`core.ResolveModuleDB` (not static connections)
+   - Repositories: MUST use `tmcore.GetPG`/`tmcore.GetPGConnectionFromContext`/`tmcore.GetMB`/`tmcore.GetMongoFromContext` (not static connections)
    - Redis: MUST use `valkey.GetKeyFromContext` for every key operation (including Lua script KEYS[]/ARGV[])
    - S3: MUST use `s3.GetObjectStorageKeyForTenant` for every object key
    - RabbitMQ: MUST use `tmrabbitmq.Manager` (Layer 1 — vhost isolation) + `X-Tenant-ID` header (Layer 2 — audit)
