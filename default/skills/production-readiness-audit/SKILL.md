@@ -3458,13 +3458,13 @@ func (m *DualPoolMiddleware) selectPool(path string) *tenantmanager.TenantConnec
 }
 
 // Module-specific connection from context
-db, err := tenantmanager.ResolveModuleDB(ctx, constant.ModuleOnboarding, r.connection)
+db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
 
 // Entity-scoped query — ALWAYS filter by organization_id + ledger_id
 func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity, error) {
-    db, err := tenantmanager.ResolveModuleDB(ctx, constant.ModuleTransaction, r.connection)
-    if err != nil {
-        return nil, err
+    db := tmcore.GetPGContext(ctx, constant.ModuleTransaction)
+    if db == nil {
+        return nil, fmt.Errorf("tenant postgres connection missing from context for module %s", constant.ModuleTransaction)
     }
     find := squirrel.Select(columnList...).
         From(r.tableName).
@@ -3480,7 +3480,7 @@ func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity
 ```go
 // BAD: Query without entity scoping — intra-tenant IDOR!
 func (r *Repo) FindByID(ctx context.Context, id uuid.UUID) (*Entity, error) {
-    db, _ := tenantmanager.ResolveModuleDB(ctx, constant.ModuleTransaction, r.connection)
+    db := tmcore.GetPGContext(ctx, constant.ModuleTransaction)
     return db.QueryRowContext(ctx, "SELECT * FROM entities WHERE id = $1", id)
 }
 
@@ -3489,17 +3489,17 @@ func GetTenantID(c *fiber.Ctx) string {
     return c.Get("X-Tenant-ID")  // User-controlled!
 }
 
-// BAD: Using ResolvePostgres in multi-module service — must use ResolveModuleDB
-db, err := tenantmanager.ResolvePostgres(ctx, r.connection)  // WRONG: use ResolveModuleDB(ctx, module, fallback)
+// BAD: Using GetPGContext without module in multi-module service — must use GetPGContext with module name
+db := tmcore.GetPGContext(ctx)  // WRONG: use GetPGContext(ctx, module) for multi-module services
 ```
 
 **Check Against Ring Standards For:**
 1. (HARD GATE) Tenant ID extracted from JWT claims (not user-controlled headers/params) per multi-tenant.md
 2. (HARD GATE) All database queries include entity scoping (organization_id + ledger_id)
-3. (HARD GATE) DualPoolMiddleware injects tenant into request context with module-specific connections
-4. TenantConnectionManager with dual-pool (onboarding + transaction) architecture
-5. Database-per-tenant isolation (separate databases per tenant via TenantConnectionManager)
-6. Tenant-scoped cache keys (Redis keys include tenant prefix via GetKeyFromContext)
+3. (HARD GATE) TenantMiddleware with WithPG/WithMB injects tenant into request context with module-specific connections
+4. Connection managers with multi-module (onboarding + transaction) architecture
+5. Database-per-tenant isolation (separate databases per tenant via connection managers)
+6. Tenant-scoped cache keys (Redis keys include tenant prefix via GetKeyContext)
 7. No cross-tenant data leakage in list/search operations
 8. Cross-module connection injection (both modules in context)
 9. ErrManagerClosed handling (503 SERVICE_UNAVAILABLE)
@@ -3507,8 +3507,8 @@ db, err := tenantmanager.ResolvePostgres(ctx, r.connection)  // WRONG: use Resol
 **Severity Ratings:**
 - CRITICAL: Queries without entity scoping — intra-tenant IDOR (HARD GATE violation per Ring standards)
 - CRITICAL: Tenant ID from user-controlled input (HARD GATE violation)
-- CRITICAL: Missing DualPoolMiddleware (HARD GATE violation)
-- HIGH: No TenantConnectionManager for connection management
+- CRITICAL: Missing TenantMiddleware with WithPG/WithMB (HARD GATE violation)
+- HIGH: No connection managers for multi-tenant pool management
 - HIGH: Cache keys not tenant-scoped
 - HIGH: Missing cross-module connection injection
 - MEDIUM: Inconsistent tenant extraction across modules

@@ -410,7 +410,7 @@ Task:
     
     | Alias | Import Path | Purpose |
     |-------|-------------|---------|
-    | `core` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core` | Resolvers, context helpers, types |
+    | `tmcore` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core` | Resolvers, context helpers, types |
     | `tmmiddleware` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware` | TenantMiddleware, WhenEnabled |
     | `tmpostgres` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/postgres` | PostgresManager |
     | `tmmongo` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/mongo` | MongoManager |
@@ -422,10 +422,10 @@ Task:
     
     | Resource | Single-Tenant Pattern (WRONG) | Dual-Mode Pattern (CORRECT) |
     |----------|-------------------------------|------------------------------|
-    | **PostgreSQL** | `r.connection.GetDB()` | `core.ResolvePostgres(ctx, r.connection)` |
-    | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `core.ResolveModuleDB(ctx, r.connection, "module")` |
-    | **MongoDB** | `r.mongoConn.GetDatabase()` | `core.ResolveMongo(ctx, r.mongoConn)` |
-    | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyFromContext(ctx, "key"), val)` |
+    | **PostgreSQL** | `r.connection.GetDB()` | `tmcore.GetPGContext(ctx)` with fallback to `r.connection` |
+    | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` |
+    | **MongoDB** | `r.mongoConn.GetDatabase()` | `tmcore.GetMBContext(ctx)` or `tmcore.GetMBContext(ctx, module)` with fallback |
+    | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyContext(ctx, "key"), val)` |
     | **S3** | `s3.PutObject("path/obj")` | `s3.PutObject(s3.GetObjectStorageKeyForTenant(ctx, "path/obj"))` |
     | **RabbitMQ** | `channel.Publish(exchange, ...)` | Use `tmrabbitmq.Manager` for vhost isolation + set `X-Tenant-ID` header |
     
@@ -450,7 +450,7 @@ Task:
     
     The agent must verify before completing Gate 0:
     - No direct `r.connection.GetDB()` or `r.mongoConn.GetDatabase()` — must use resolvers
-    - No hardcoded Redis keys — must use `valkey.GetKeyFromContext`
+    - No hardcoded Redis keys — must use `valkey.GetKeyContext`
     - No hardcoded S3 keys — must use `s3.GetObjectStorageKeyForTenant`
     - No global DB singletons — connections injected via constructor
     - All methods accept `ctx context.Context` as first parameter
