@@ -944,7 +944,6 @@ consumer, _ := consumer.NewMultiTenantConsumerWithError(
 )
 
 consumer.Register("my-queue", func(ctx context.Context, d amqp.Delivery) error {
-    tenantID := tmcore.GetTenantIDContext(ctx)        // auto-injected by consumer
     db := tmcore.GetPGContext(ctx)                     // auto-resolved for this tenant
     if db == nil {
         return fmt.Errorf("tenant postgres connection missing from context")
