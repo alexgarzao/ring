@@ -549,8 +549,25 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
 | 2 | `go.mod` | lib-commons v2 → v4 + lib-auth v2, import paths | All files |
-| 3 | `config.go` | Add the 13 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
+| 3 | `config.go` | Add the 13 canonical MULTI_TENANT_* env vars to Config struct (exact fields below) | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware with WithPG/WithMB setup | ~30 lines added |
+
+**Canonical Config struct fields (Gate 3 — use these exact names):**
+```go
+MultiTenantEnabled                  bool   `env:"MULTI_TENANT_ENABLED"`
+MultiTenantURL                      string `env:"MULTI_TENANT_URL"`
+MultiTenantRedisHost                string `env:"MULTI_TENANT_REDIS_HOST"`
+MultiTenantRedisPort                string `env:"MULTI_TENANT_REDIS_PORT"`
+MultiTenantRedisPassword            string `env:"MULTI_TENANT_REDIS_PASSWORD"`
+MultiTenantMaxTenantPools           int    `env:"MULTI_TENANT_MAX_TENANT_POOLS"`
+MultiTenantIdleTimeoutSec           int    `env:"MULTI_TENANT_IDLE_TIMEOUT_SEC"`
+MultiTenantTimeout                  int    `env:"MULTI_TENANT_TIMEOUT" default:"30"`
+MultiTenantCircuitBreakerThreshold  int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD"`
+MultiTenantCircuitBreakerTimeoutSec int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC"`
+MultiTenantServiceAPIKey            string `env:"MULTI_TENANT_SERVICE_API_KEY"`
+MultiTenantCacheTTLSec              int    `env:"MULTI_TENANT_CACHE_TTL_SEC" default:"120"`
+MultiTenantConnectionsCheckIntervalSec int `env:"MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC"`
+```
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
 | 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` | ~3 lines per method |
 | 5 | `metadata.mongodb.go` | Static mongo → `tmcore.GetMBContext(ctx, module)` or `tmcore.GetMBContext(ctx)` with fallback | ~2 lines per method |
