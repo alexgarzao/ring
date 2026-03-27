@@ -371,29 +371,11 @@ NOTE: A1 is a NEGATIVE check (presence of wrong names = NON-COMPLIANT).
       A2-A8 are POSITIVE checks (absence of canonical patterns = NON-COMPLIANT).
 
 A1. Config compliance:
-    - grep -rn "TENANT_MANAGER_ADDRESS\|TENANT_URL\|TENANT_MANAGER_URL" internal/
-    - (any match = NON-COMPLIANT config var names → Gate 3 MUST fix)
-    - NON-COMPLIANT ENV names that MUST be removed or renamed:
-      | NON-COMPLIANT ENV | Action | Replacement |
-      |---|---|---|
-      | `MULTI_TENANT_ENVIRONMENT` | REMOVE | Deprecated, no replacement |
-      | `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` | RENAME | `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC` |
-      | `RABBITMQ_MULTI_TENANT_SYNC_INTERVAL` | REMOVE | Deprecated, no replacement |
-      | `RABBITMQ_MULTI_TENANT_DISCOVERY_TIMEOUT` | REMOVE | Deprecated, no replacement |
-      | `BALANCE_SYNC_WORKER_ENABLED` | REMOVE | Deprecated, always enabled |
-      | `TENANT_MANAGER_ADDRESS` | RENAME | `MULTI_TENANT_URL` |
-      | `TENANT_MANAGER_URL` | RENAME | `MULTI_TENANT_URL` |
-      | `TENANT_URL` | RENAME | `MULTI_TENANT_URL` |
-    - NON-COMPLIANT ENV names in Config struct fields that MUST be renamed:
-      | NON-COMPLIANT Field | Replacement |
-      |---|---|
-      | `MultiTenantEnvironment` | REMOVE (field and env tag) |
-      | `MultiTenantSettingsCheckIntervalSec` | `MultiTenantConnectionsCheckIntervalSec` |
-      | `TenantManagerBaseURL` | `MultiTenantURL` |
-      | `TenantManagerAPIKey` | `MultiTenantServiceAPIKey` |
-      | `TenantCacheTTL` | `MultiTenantCacheTTLSec` |
-      | `InfraEnabled` | Not a canonical MULTI_TENANT var — verify if needed |
-    - If ANY of these are found → NON-COMPLIANT → Gate 3 MUST fix
+    - Extract all MULTI_TENANT_* env tags from the project's Config struct
+    - Compare against the 13 canonical ENVs defined in multi-tenant.md § Environment Variables:
+      `MULTI_TENANT_ENABLED`, `MULTI_TENANT_URL`, `MULTI_TENANT_REDIS_HOST`, `MULTI_TENANT_REDIS_PORT`, `MULTI_TENANT_REDIS_PASSWORD`, `MULTI_TENANT_MAX_TENANT_POOLS`, `MULTI_TENANT_IDLE_TIMEOUT_SEC`, `MULTI_TENANT_TIMEOUT`, `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD`, `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC`, `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_CACHE_TTL_SEC`, `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC`
+    - Any ENV not in this list = NON-COMPLIANT → Gate 3 MUST remove or rename to canonical name
+    - Any canonical ENV missing from Config struct = NON-COMPLIANT → Gate 3 MUST add
 
 A2. Tenant ID context compliance:
     - MUST match: grep -rn "ContextWithTenantID\|GetTenantIDContext" internal/
