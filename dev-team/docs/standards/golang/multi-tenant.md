@@ -34,8 +34,8 @@ MUST replace multi-tenant implementations that use custom middleware, manual DB 
 
 The only valid multi-tenant implementation uses:
 - `tenantId` from JWT via `TenantMiddleware` with `WithPG`/`WithMB` options (from `lib-commons/v4/commons/dispatch layer/middleware`), registered per-route using a local `WhenEnabled` helper
-- `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` / `tmcore.GetMongoContext(ctx)` for database resolution (from `lib-commons/v4/commons/dispatch layer/core`)
-- `valkey.GetKeyFromContext` for Redis key prefixing (from `lib-commons/v4/commons/dispatch layer/valkey`)
+- `tmcore.GetPGContext(ctx)` / `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx)` / `tmcore.GetMBContext(ctx, module)` for database resolution (from `lib-commons/v4/commons/dispatch layer/core`)
+- `valkey.GetKeyContext` for Redis key prefixing (from `lib-commons/v4/commons/dispatch layer/valkey`)
 - `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v4/commons/dispatch layer/s3`)
 - `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v4/commons/dispatch layer/rabbitmq`)
 - The 10 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
@@ -64,9 +64,9 @@ These are the only files that require multi-tenant changes. The exact paths foll
 
 | File Pattern | Stack | What Changes |
 |-------------|-------|-------------|
-| `internal/adapters/postgres/**/*.postgresql.go` | PostgreSQL | `r.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` with fallback to `r.connection` |
-| `internal/adapters/mongodb/**/*.mongodb.go` | MongoDB | Static mongo connection → `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMongoContext(ctx)` with fallback to `r.connection` |
-| `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyFromContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
+| `internal/adapters/postgres/**/*.postgresql.go` | PostgreSQL | `r.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGContext(ctx)` with fallback to `r.connection` |
+| `internal/adapters/mongodb/**/*.mongodb.go` | MongoDB | Static mongo connection → `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMBContext(ctx)` with fallback to `r.connection` |
+| `internal/adapters/redis/**/*.redis.go` | Redis | Every key operation → `valkey.GetKeyContext(ctx, key)` (including Lua script `KEYS[]` and `ARGV[]`) |
 | `internal/adapters/storage/**/*.go` (or S3 adapter) | S3 | Every object key → `s3.GetObjectStorageKeyForTenant(ctx, key)` |
 
 **Conditional — services with targetServices (Gate 5.5):**
@@ -452,19 +452,19 @@ import (
 )
 
 // Single-module service: use generic getter
-db := tmcore.GetPGConnectionContext(ctx)
+db := tmcore.GetPGContext(ctx)
 
 // Multi-module service: use module-specific getter
 db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
 
 // MongoDB (single-module)
-mongoDB := tmcore.GetMongoContext(ctx)
+mongoDB := tmcore.GetMBContext(ctx)
 
 // MongoDB (multi-module)
 mongoDB := tmcore.GetMBContext(ctx, constant.ModuleOnboarding)
 
 // Redis key prefixing
-key := valkey.GetKeyFromContext(ctx, "cache-key")
+key := valkey.GetKeyContext(ctx, "cache-key")
 // -> "tenant:{tenantId}:cache-key"
 
 // Get tenant ID directly
@@ -567,8 +567,8 @@ ttMid := tmmiddleware.NewTenantMiddleware(
 |---------|--------------|-------------|
 | PG option | `WithPG(manager)` | `WithPG(manager, "module")` |
 | MB option | `WithMB(manager)` | `WithMB(manager, "module")` |
-| Context getter (PG) | `tmcore.GetPGConnectionContext(ctx)` | `tmcore.GetPGContext(ctx, module)` |
-| Context getter (MB) | `tmcore.GetMongoContext(ctx)` | `tmcore.GetMBContext(ctx, module)` |
+| Context getter (PG) | `tmcore.GetPGContext(ctx)` | `tmcore.GetPGContext(ctx, module)` |
+| Context getter (MB) | `tmcore.GetMBContext(ctx)` | `tmcore.GetMBContext(ctx, module)` |
 | When to use | Single-module services | Multi-module unified services |
 
 **Rule of thumb:** If your service has one database module, use `WithPG(manager)` / `WithMB(manager)` (unnamed). If your service combines multiple modules with different databases behind one HTTP port, use `WithPG(manager, "module")` / `WithMB(manager, "module")` (named).
@@ -598,7 +598,7 @@ func (r *EntityPostgreSQLRepository) getDB(ctx context.Context) (dbresolver.DB, 
         return db, nil
     }
     // Single-module: check generic context
-    if db := tmcore.GetPGConnectionContext(ctx); db != nil {
+    if db := tmcore.GetPGContext(ctx); db != nil {
         return db, nil
     }
     // Fallback to static connection (single-tenant mode)
@@ -644,7 +644,7 @@ func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.D
     defer span.End()
 
     // Tenant-aware key prefixing (adds tenant:{tenantId}: prefix if multi-tenant)
-    key = valkey.GetKeyFromContext(ctx, key)
+    key = valkey.GetKeyContext(ctx, key)
 
     rds, err := r.conn.GetConnection(ctx)
     if err != nil {
@@ -778,7 +778,7 @@ func (r *MetadataMongoDBRepository) getMongoDB(ctx context.Context) (*mongo.Data
         return db, nil
     }
     // Single-module: check generic context
-    if db := tmcore.GetMongoContext(ctx); db != nil {
+    if db := tmcore.GetMBContext(ctx); db != nil {
         return db, nil
     }
     // Fallback to static connection (single-tenant mode)
@@ -1007,7 +1007,7 @@ func TestUserService_Create_WithTenantContext(t *testing.T) {
 
     // Mock database connection
     mockDB := setupMockDB(t)
-    ctx = tmcore.ContextWithPGConnection(ctx, mockDB)
+    ctx = tmcore.ContextWithPG(ctx, mockDB)
 
     // Create service with mock dependencies
     repo := repository.NewUserRepository()
@@ -1051,7 +1051,7 @@ func TestRepository_Create_TenantIsolation(t *testing.T) {
         t.Run(tt.name, func(t *testing.T) {
             // Inject tenant-specific context
             ctx := core.ContextWithTenantID(context.Background(), tt.tenantID)
-            ctx = tmcore.ContextWithPGConnection(ctx, mockDB)
+            ctx = tmcore.ContextWithPG(ctx, mockDB)
 
             _, err := repo.Create(ctx, tt.input)
 
@@ -1216,14 +1216,14 @@ func TestRedisRepository_MultiTenant_KeyPrefixing(t *testing.T) {
         require.NoError(t, err)
 
         // Verify key was prefixed
-        key := valkey.GetKeyFromContext(ctx, "user:session")
+        key := valkey.GetKeyContext(ctx, "user:session")
         assert.Equal(t, "tenant:tenant-789:user:session", key)
     })
 
     t.Run("single-tenant mode does not prefix keys", func(t *testing.T) {
         ctx := context.Background()
 
-        key := valkey.GetKeyFromContext(ctx, "user:session")
+        key := valkey.GetKeyContext(ctx, "user:session")
         assert.Equal(t, "user:session", key)
     })
 }
@@ -1268,7 +1268,7 @@ Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from
 |-----------|-------------|------------|
 | **JWT `tenantId` extraction** | `TenantMiddleware` extracts `tenantId` claim from JWT | Identifies the tenant |
 | **Database routing** | `TenantConnectionManager` resolves tenant-specific DB connection | Tenant A → Database A, Tenant B → Database B |
-| **Context injection** | Connection stored in request context | Repositories use `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` / `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMongoContext(ctx)` |
+| **Context injection** | Connection stored in request context | Repositories use `tmcore.GetPGContext(ctx)` / `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx)` / `tmcore.GetMBContext(ctx, module)` |
 | **Single-tenant passthrough** | `IsMultiTenant() == false` → `c.Next()` immediately | Backward compatibility |
 
 #### Why Tenant Isolation Verification Is MANDATORY
@@ -1283,7 +1283,7 @@ Multi-tenant isolation uses a **database-per-tenant** model. The `tenantId` from
 ```bash
 # MANDATORY: Run before every PR in multi-tenant services
 # Verify all repositories use context-based connections (not static)
-grep -rn "GetPGContext\|GetPGConnectionContext\|GetMBContext\|GetMongoContext" internal/adapters/ --include="*.go"
+grep -rn "GetPGContext\|GetMBContext" internal/adapters/ --include="*.go"
 
 # Verify no repositories use static/hardcoded connections when multi-tenant is enabled
 # Excludes tenant-aware variables (tenantDB, tenantmanager) to avoid false positives
@@ -1296,7 +1296,7 @@ grep -rn "\.DB\.\|\.Database\." internal/adapters/ --include="*.go" | grep -v "_
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use tmcore.GetPGContext(ctx, module) / tmcore.GetPGConnectionContext(ctx) / tmcore.GetMBContext(ctx, module) / tmcore.GetMongoContext(ctx)** |
+| "Static connection works fine" | Static connection goes to ONE database. All tenants share it. No isolation. | **Use tmcore.GetPGContext(ctx) / tmcore.GetPGContext(ctx, module) / tmcore.GetMBContext(ctx) / tmcore.GetMBContext(ctx, module)** |
 | "We only have one customer" | Requirements change. Multi-tenant is easy to add now, hard later. | **Design for multi-tenant, deploy as single** |
 | "organization_id filtering = tenant isolation" | organization_id does NOT route to different databases. It is NOT multi-tenant. | **Use tenantId from JWT → TenantConnectionManager** |
 
@@ -1308,25 +1308,25 @@ lib-commons provides two sets of context functions for database resolution. Use 
 
 | Function | Use When |
 |----------|----------|
+| `tmcore.GetPGContext(ctx)` | Single-module — returns generic PG connection |
 | `tmcore.GetPGContext(ctx, module)` | Multi-module — returns module-specific PG connection |
-| `tmcore.GetPGConnectionContext(ctx)` | Single-module — returns generic PG connection |
+| `tmcore.GetMBContext(ctx)` | Single-module — returns generic MongoDB |
 | `tmcore.GetMBContext(ctx, module)` | Multi-module — returns module-specific MongoDB |
-| `tmcore.GetMongoContext(ctx)` | Single-module — returns generic MongoDB |
 
 ```go
+// Single-module: use generic getter
+db := tmcore.GetPGContext(ctx)
+
 // Multi-module: use module-specific getter
 db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
-
-// Single-module: use generic getter
-db := tmcore.GetPGConnectionContext(ctx)
 ```
 
 **Context setters (used by middleware, not by service code):**
 - `tmcore.ContextWithTenantID(ctx, tenantID)` — stores tenant ID
-- `tmcore.ContextWithPGConnection(ctx, db)` — generic PG connection (set by TenantMiddleware for single-module)
-- `tmcore.ContextWithPG(ctx, module, db)` — module-specific PG (when service has multiple DB modules)
-- `tmcore.ContextWithMongo(ctx, mongoDB)` — generic MongoDB connection
-- `tmcore.ContextWithMB(ctx, module, mongoDB)` — module-specific MongoDB
+- `tmcore.ContextWithPG(ctx, db)` — generic PG connection (set by TenantMiddleware for single-module)
+- `tmcore.ContextWithPG(ctx, db, module)` — module-specific PG (when service has multiple DB modules; also sets generic)
+- `tmcore.ContextWithMB(ctx, db)` — generic MongoDB connection
+- `tmcore.ContextWithMB(ctx, db, module)` — module-specific MongoDB (also sets generic)
 
 ### Tenant ID Validation
 
@@ -1349,12 +1349,12 @@ Beyond simple `Set/Get` operations, Redis Lua scripts require special attention.
 
 ```go
 // ✅ CORRECT: Prefix keys in Go before Lua execution
-prefixedBackupQueue := valkey.GetKeyFromContext(ctx, TransactionBackupQueue)
-prefixedTransactionKey := valkey.GetKeyFromContext(ctx, transactionKey)
-prefixedBalanceSyncKey := valkey.GetKeyFromContext(ctx, utils.BalanceSyncScheduleKey)
+prefixedBackupQueue := valkey.GetKeyContext(ctx, TransactionBackupQueue)
+prefixedTransactionKey := valkey.GetKeyContext(ctx, transactionKey)
+prefixedBalanceSyncKey := valkey.GetKeyContext(ctx, utils.BalanceSyncScheduleKey)
 
 // Also prefix ARGV values that are used as keys inside the Lua script
-prefixedInternalKey := valkey.GetKeyFromContext(ctx, blcs.InternalKey)
+prefixedInternalKey := valkey.GetKeyContext(ctx, blcs.InternalKey)
 
 result, err := script.Run(ctx, rds,
     []string{prefixedBackupQueue, prefixedTransactionKey, prefixedBalanceSyncKey},
@@ -1396,8 +1396,8 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Multi-module connection injection** | `TenantMiddleware` resolves PG/MB for all registered modules | - |
 | **Error mapping** | Default error mapper in middleware | - |
 | **Middleware registration** | - | Register `TenantMiddleware` with `WithPG`/`WithMB` on routes |
-| **Repository adaptation** | - | Use `tmcore.GetPGContext(ctx, module)` / `tmcore.GetPGConnectionContext(ctx)` / `tmcore.GetMBContext(ctx, module)` / `tmcore.GetMongoContext(ctx)` instead of global DB |
-| **Redis key prefixing** | - | Call `valkey.GetKeyFromContext(ctx, key)` for every Redis operation |
+| **Repository adaptation** | - | Use `tmcore.GetPGContext(ctx)` / `tmcore.GetPGContext(ctx, module)` / `tmcore.GetMBContext(ctx)` / `tmcore.GetMBContext(ctx, module)` instead of global DB |
+| **Redis key prefixing** | - | Call `valkey.GetKeyContext(ctx, key)` for every Redis operation |
 | **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
 | **Settings revalidation (PostgreSQL only)** | `SettingsWatcher` goroutine, `ApplyConnectionSettings()` | Instantiate `SettingsWatcher` in bootstrap with PostgreSQL managers only, call `Start(ctx)` and `Stop()`. MongoDB excluded (driver cannot resize pools). |
@@ -1549,9 +1549,9 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `core.ErrTenantContextRequired` handled in repositories
 
 **Repositories:**
-- [ ] `tmcore.GetPGConnectionContext(ctx)` or `tmcore.GetPGContext(ctx, module)` in PostgreSQL repositories
-- [ ] `valkey.GetKeyFromContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
-- [ ] `tmcore.GetMongoContext(ctx)` or `tmcore.GetMBContext(ctx, module)` in MongoDB repositories (if using MongoDB)
+- [ ] `tmcore.GetPGContext(ctx)` or `tmcore.GetPGContext(ctx, module)` in PostgreSQL repositories
+- [ ] `valkey.GetKeyContext(ctx, key)` for ALL Redis keys (including Lua script KEYS[] and ARGV[])
+- [ ] `tmcore.GetMBContext(ctx)` or `tmcore.GetMBContext(ctx, module)` in MongoDB repositories (if using MongoDB)
 - [ ] `s3.GetObjectStorageKeyForTenant(ctx, key)` for ALL S3 operations (if using S3/object storage)
 
 **Async Processing:**
@@ -2155,7 +2155,7 @@ func FetchCredentials(ctx context.Context, env, tenantOrgID, applicationName, ta
 tenant:{tenantOrgID}:m2m:{targetService}:credentials
 ```
 
-Key prefixing uses `valkey.GetKeyFromContext(ctx, baseKey)` from lib-commons, which automatically applies the tenant prefix (e.g., `tenant:{tenantId}:m2m:{targetService}:credentials`). This is the same pattern used by all other Redis operations in the codebase.
+Key prefixing uses `valkey.GetKeyContext(ctx, baseKey)` from lib-commons, which automatically applies the tenant prefix (e.g., `tenant:{tenantId}:m2m:{targetService}:credentials`). This is the same pattern used by all other Redis operations in the codebase.
 
 ##### Cache-Bust on Auth Failure (401)
 
@@ -2226,11 +2226,11 @@ func NewM2MCredentialProvider(
 }
 
 // m2mRedisKey returns the tenant-prefixed Redis key for M2M credentials.
-// Uses valkey.GetKeyFromContext when ctx has tenant info, otherwise builds manually.
+// Uses valkey.GetKeyContext when ctx has tenant info, otherwise builds manually.
 func (p *M2MCredentialProvider) m2mRedisKey(ctx context.Context, tenantOrgID string) string {
     baseKey := fmt.Sprintf("m2m:%s:credentials", p.targetService)
-    // Use valkey.GetKeyFromContext to apply tenant prefix consistently
-    return valkey.GetKeyFromContext(ctx, baseKey)
+    // Use valkey.GetKeyContext to apply tenant prefix consistently
+    return valkey.GetKeyContext(ctx, baseKey)
 }
 
 // GetCredentials returns M2M credentials for the given tenant using two-level cache.

@@ -1803,7 +1803,7 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
        compliance_checks = {}
        - Grep: "TENANT_MANAGER_ADDRESS\|TENANT_URL\|TENANT_MANAGER_URL" in internal/ → if match: compliance_checks.config = "NON-COMPLIANT"
        - Grep: "tmmiddleware.NewTenantMiddleware" in internal/ → if no match: compliance_checks.middleware = "NON-COMPLIANT"
-       - Grep: "tmcore.GetPGContext\|tmcore.GetPGConnectionContext\|tmcore.GetMBContext\|tmcore.GetMongoContext" in internal/ → if no match: compliance_checks.repositories = "NON-COMPLIANT"
+       - Grep: "tmcore.GetPGContext\|tmcore.GetMBContext" in internal/ → if no match: compliance_checks.repositories = "NON-COMPLIANT"
        - Grep: "WithCircuitBreaker" in internal/ → if no match: compliance_checks.circuit_breaker = "NON-COMPLIANT"
        - Grep: "TestMultiTenant_BackwardCompatibility" in internal/ → if no match: compliance_checks.backward_compat = "NON-COMPLIANT"
 

@@ -422,10 +422,10 @@ Task:
     
     | Resource | Single-Tenant Pattern (WRONG) | Dual-Mode Pattern (CORRECT) |
     |----------|-------------------------------|------------------------------|
-    | **PostgreSQL** | `r.connection.GetDB()` | `tmcore.GetPGConnectionContext(ctx)` with fallback to `r.connection` |
+    | **PostgreSQL** | `r.connection.GetDB()` | `tmcore.GetPGContext(ctx)` with fallback to `r.connection` |
     | **PostgreSQL (multi-module)** | `r.connection.GetDB()` | `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` |
-    | **MongoDB** | `r.mongoConn.GetDatabase()` | `tmcore.GetMongoContext(ctx)` or `tmcore.GetMBContext(ctx, module)` with fallback |
-    | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyFromContext(ctx, "key"), val)` |
+    | **MongoDB** | `r.mongoConn.GetDatabase()` | `tmcore.GetMBContext(ctx)` or `tmcore.GetMBContext(ctx, module)` with fallback |
+    | **Redis/Valkey** | `redis.Set("key", val)` | `redis.Set(valkey.GetKeyContext(ctx, "key"), val)` |
     | **S3** | `s3.PutObject("path/obj")` | `s3.PutObject(s3.GetObjectStorageKeyForTenant(ctx, "path/obj"))` |
     | **RabbitMQ** | `channel.Publish(exchange, ...)` | Use `tmrabbitmq.Manager` for vhost isolation + set `X-Tenant-ID` header |
     
@@ -450,7 +450,7 @@ Task:
     
     The agent must verify before completing Gate 0:
     - No direct `r.connection.GetDB()` or `r.mongoConn.GetDatabase()` — must use resolvers
-    - No hardcoded Redis keys — must use `valkey.GetKeyFromContext`
+    - No hardcoded Redis keys — must use `valkey.GetKeyContext`
     - No hardcoded S3 keys — must use `s3.GetObjectStorageKeyForTenant`
     - No global DB singletons — connections injected via constructor
     - All methods accept `ctx context.Context` as first parameter

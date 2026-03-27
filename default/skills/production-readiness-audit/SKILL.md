@@ -3489,8 +3489,8 @@ func GetTenantID(c *fiber.Ctx) string {
     return c.Get("X-Tenant-ID")  // User-controlled!
 }
 
-// BAD: Using GetPGConnectionContext in multi-module service — must use GetPGContext with module name
-db := tmcore.GetPGConnectionContext(ctx)  // WRONG: use GetPGContext(ctx, module) for multi-module services
+// BAD: Using GetPGContext without module in multi-module service — must use GetPGContext with module name
+db := tmcore.GetPGContext(ctx)  // WRONG: use GetPGContext(ctx, module) for multi-module services
 ```
 
 **Check Against Ring Standards For:**
@@ -3499,7 +3499,7 @@ db := tmcore.GetPGConnectionContext(ctx)  // WRONG: use GetPGContext(ctx, module
 3. (HARD GATE) TenantMiddleware with WithPG/WithMB injects tenant into request context with module-specific connections
 4. Connection managers with multi-module (onboarding + transaction) architecture
 5. Database-per-tenant isolation (separate databases per tenant via connection managers)
-6. Tenant-scoped cache keys (Redis keys include tenant prefix via GetKeyFromContext)
+6. Tenant-scoped cache keys (Redis keys include tenant prefix via GetKeyContext)
 7. No cross-tenant data leakage in list/search operations
 8. Cross-module connection injection (both modules in context)
 9. ErrManagerClosed handling (503 SERVICE_UNAVAILABLE)
