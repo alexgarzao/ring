@@ -188,7 +188,7 @@ Agents must use these exact import paths. Include this table in every gate dispa
 | Alias | Import Path | Purpose |
 |-------|-------------|---------|
 | `client` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/client` | Tenant Manager HTTP client with circuit breaker |
-| `core` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core` | Context helpers, resolvers, errors, types |
+| `tmcore` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/core` | Context helpers, resolvers, errors, types |
 | `tmmiddleware` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/middleware` | TenantMiddleware (with WithPG/WithMB options) |
 | `tmpostgres` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/postgres` | PostgresManager (per-tenant PG pools) |
 | `tmmongo` | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/mongo` | MongoManager (per-tenant Mongo pools) |
@@ -575,18 +575,27 @@ func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Orga
 
 // AFTER: organization.postgresql.go
 func (r *OrganizationPostgreSQLRepository) Create(ctx context.Context, org *Organization) error {
-    db := tmcore.GetPG(ctx, "organization")
+    db, err := r.getDB(ctx)
     if err != nil {
-        return fmt.Errorf("getting tenant db for organization: %w", err)
+        return err
     }
     result := db.Model(&OrganizationPostgreSQLModel{}).Create(toModel(org))
     // ...
+}
+
+// Repository-scoped helper (add once per repository file):
+func (r *OrganizationPostgreSQLRepository) getDB(ctx context.Context) (*gorm.DB, error) {
+    db := tmcore.GetPG(ctx, "organization")
+    if db == nil {
+        return nil, fmt.Errorf("tenant postgres connection missing from context for module organization")
+    }
+    return db, nil
 }
 ```
 
 The developer MUST be able to see the exact code that will be implemented to approve it. High-level descriptions alone are not sufficient for approval.
 
-**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to `tmcore.GetPG(ctx, module)` with fallback): show one representative diff panel, then list the remaining files with "Same pattern applied to: [file list]."
+**When many files have identical changes** (e.g., 10+ repository files all changing `r.connection.GetDB()` to a `getDB(ctx)` helper wrapping `tmcore.GetPG(ctx, module)` with nil-check): show one representative diff panel including the helper, then list the remaining files with "Same pattern applied to: [file list]."
 
 ### 4. Backward Compatibility Analysis
 

@@ -3463,8 +3463,8 @@ db := tmcore.GetPG(ctx, constant.ModuleOnboarding)
 // Entity-scoped query — ALWAYS filter by organization_id + ledger_id
 func (r *Repo) Find(ctx context.Context, orgID, ledgerID, id uuid.UUID) (*Entity, error) {
     db := tmcore.GetPG(ctx, constant.ModuleTransaction)
-    if err != nil {
-        return nil, err
+    if db == nil {
+        return nil, fmt.Errorf("tenant postgres connection missing from context for module %s", constant.ModuleTransaction)
     }
     find := squirrel.Select(columnList...).
         From(r.tableName).
