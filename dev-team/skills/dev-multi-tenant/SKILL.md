@@ -374,44 +374,49 @@ A1. Config compliance:
     - grep -rn "TENANT_MANAGER_ADDRESS\|TENANT_URL\|TENANT_MANAGER_URL" internal/
     - (any match = NON-COMPLIANT config var names → Gate 3 MUST fix)
 
-A2. Middleware compliance:
+A2. Tenant ID context compliance:
+    - MUST match: grep -rn "ContextWithTenantID\|GetTenantIDContext" internal/
+    - NON-COMPLIANT if found: grep -rn "SetTenantIDInContext\|GetTenantIDFromContext\|core\.GetTenantID(" internal/
+    - (any old tenant ID function = NON-COMPLIANT → Gate 4 MUST fix)
+
+A3. Middleware compliance:
     - MUST match: grep -rn "tmmiddleware.NewTenantMiddleware" internal/
     - MUST match: grep -rn "WithPG\|WithMB" internal/
     - NON-COMPLIANT if found: grep -rn "WithPostgresManager\|WithMongoManager\|WithModule\|NewMultiPoolMiddleware\|DualPoolMiddleware" internal/
     - (any old middleware pattern = NON-COMPLIANT → Gate 4 MUST fix)
 
-A3. Repository compliance:
+A4. Repository compliance:
     - MUST match: grep -rn "tmcore.GetPGContext\|tmcore.GetMBContext" internal/
     - NON-COMPLIANT if found: grep -rn "GetPGConnectionFromContext\|GetPGConnectionContext\|GetMongoFromContext\|GetMongoContext\|GetModulePostgresForTenant\|ResolvePostgres\|ResolveMongo\|ResolveModuleDB\|GetPostgresForTenant\|GetMongoForTenant" internal/
     - (any old context getter = NON-COMPLIANT → Gate 5 MUST fix)
 
-A4. Redis compliance (if Redis detected):
+A5. Redis compliance (if Redis detected):
     - MUST match: grep -rn "valkey.GetKeyContext" internal/
     - NON-COMPLIANT if found: grep -rn "GetKeyFromContext" internal/
     - (old key function = NON-COMPLIANT → Gate 5 MUST fix)
 
-A5. S3 compliance (if S3 detected):
+A6. S3 compliance (if S3 detected):
     - grep -rn "s3.GetObjectStorageKeyForTenant" internal/
     - (S3 operations without GetObjectStorageKeyForTenant = NON-COMPLIANT → Gate 5 MUST fix)
 
-A6. RabbitMQ compliance (if RabbitMQ detected):
+A7. RabbitMQ compliance (if RabbitMQ detected):
     - grep -rn "tmrabbitmq.NewManager\|tmrabbitmq.Manager" internal/
     - (RabbitMQ multi-tenant without tmrabbitmq.Manager = NON-COMPLIANT → Gate 6 MUST fix)
 
-A7. Circuit breaker compliance:
+A8. Circuit breaker compliance:
     - grep -rn "WithCircuitBreaker" internal/
     - (Tenant Manager client without circuit breaker = NON-COMPLIANT → Gate 4 MUST fix)
 
-A8. Backward compatibility compliance:
+A9. Backward compatibility compliance:
     - grep -rn "TestMultiTenant_BackwardCompatibility" internal/
     - (no backward compat test = NON-COMPLIANT → Gate 7 MUST fix)
 
-A9. Service API key compliance:
+A10. Service API key compliance:
     - grep -rn "MULTI_TENANT_SERVICE_API_KEY" internal/
     - grep -rn "WithServiceAPIKey" internal/
     - (MULTI_TENANT_SERVICE_API_KEY missing from config OR WithServiceAPIKey not called on client = NON-COMPLIANT → Gate 3/4 MUST fix)
 
-A10. Settings revalidation compliance (PostgreSQL only):
+A11. Connections revalidation compliance (PostgreSQL only):
     - grep -rn "WithConnectionsCheckInterval" internal/
     - (no match = NON-COMPLIANT → Gate 4 MUST fix — pgManager MUST be created with WithConnectionsCheckInterval)
 ```
