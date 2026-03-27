@@ -63,7 +63,7 @@ Use this skill when:
 | 41 | **Data Encryption at Rest** | Field-level encryption, key management, password hashing, encrypted backups |
 | 43 | **Rate Limiting** | Three-tier strategy (Global/Export/Dispatch), Redis-backed storage, key generation, production safety |
 | 44 | **CORS Configuration** | Origin validation, middleware ordering, production wildcard prohibition, Helmet integration |
-| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Tenant Manager, DualPoolMiddleware, JWT tenantId, module-specific connections |
+| 33 | **Multi-Tenant Patterns** *(CONDITIONAL)* | Tenant Manager, TenantMiddleware with WithPG/WithMB, JWT tenantId, module-specific connections |
 
 ### Category C: Operational Readiness (7 dimensions)
 
@@ -3441,21 +3441,15 @@ If multi-tenant IS detected, audit multi-tenant architecture patterns for produc
 
 **Reference Implementation (GOOD):**
 ```go
-// DualPoolMiddleware routes to correct tenant connection pool per module
-type DualPoolMiddleware struct {
-    onboardingPool       *tenantmanager.TenantConnectionManager
-    transactionPool      *tenantmanager.TenantConnectionManager
-    onboardingMongoPool  *tenantmanager.MongoManager
-    transactionMongoPool *tenantmanager.MongoManager
-}
-
-// Path-based pool selection
-func (m *DualPoolMiddleware) selectPool(path string) *tenantmanager.TenantConnectionManager {
-    if m.isTransactionPath(path) {
-        return m.transactionPool
-    }
-    return m.onboardingPool
-}
+// TenantMiddleware with multi-module WithPG/WithMB options
+ttMiddleware := tmmiddleware.NewTenantMiddleware(
+    tmmiddleware.WithPG(pgOnboardingManager, constant.ModuleOnboarding),
+    tmmiddleware.WithPG(pgTransactionManager, constant.ModuleTransaction),
+    tmmiddleware.WithMB(mbOnboardingManager, constant.ModuleOnboarding),
+    tmmiddleware.WithMB(mbTransactionManager, constant.ModuleTransaction),
+    tmmiddleware.WithTenantCache(tenantCache),
+    tmmiddleware.WithTenantLoader(tenantClient),
+)
 
 // Module-specific connection from context
 db := tmcore.GetPGContext(ctx, constant.ModuleOnboarding)
@@ -3503,6 +3497,11 @@ db := tmcore.GetPGContext(ctx)  // WRONG: use GetPGContext(ctx, module) for mult
 7. No cross-tenant data leakage in list/search operations
 8. Cross-module connection injection (both modules in context)
 9. ErrManagerClosed handling (503 SERVICE_UNAVAILABLE)
+10. EventListener configured (Redis Pub/Sub subscription for tenant lifecycle events)
+11. TenantCache + TenantLoader wired to TenantMiddleware
+12. OnTenantAdded callback: invalidates cache + starts consumer for new tenant
+13. OnTenantRemoved callback: stops consumer + closes connections + invalidates cache
+14. StopConsumer called before CloseConnection on tenant removal (ordering matters)
 
 **Severity Ratings:**
 - CRITICAL: Queries without entity scoping — intra-tenant IDOR (HARD GATE violation per Ring standards)
@@ -3522,9 +3521,9 @@ db := tmcore.GetPGContext(ctx)  // WRONG: use GetPGContext(ctx, module) for mult
 ### Summary
 - Multi-tenant detection: Yes/No/N/A
 - Tenant extraction: JWT / Header / Missing
-- DualPoolMiddleware: Yes/No
+- TenantMiddleware (WithPG/WithMB): Yes/No
 - Tenant Manager: Yes/No
-- Dual-pool architecture: Yes/No
+- Multi-module architecture: Yes/No
 - Module-specific connections: Yes/No
 - Queries with entity scoping: X/Y
 

@@ -1,6 +1,6 @@
 # Go Standards - Multi-Tenant
 
-> **Module:** multi-tenant.md | **Sections:** §28 | **Parent:** [index.md](index.md)
+> **Module:** multi-tenant.md | **Sections:** §27 | **Parent:** [index.md](index.md)
 
 This module covers multi-tenant patterns with Tenant Manager.
 
@@ -18,7 +18,6 @@ This module covers multi-tenant patterns with Tenant Manager.
 | 24 | [Multi-Tenant Message Queue Consumers](#multi-tenant-message-queue-consumers) | Multi-tenant consumer initialization, on-demand connection, exponential backoff, cache invalidation, consumer lifecycle (StopConsumer) |
 | 25 | [M2M Credentials via Secret Manager](#m2m-credentials-via-secret-manager) | AWS Secrets Manager integration for service-to-service authentication per tenant |
 | 26 | [Service Authentication (MANDATORY)](#service-authentication-mandatory) | API key authentication for dispatch layer /settings endpoint via X-API-Key header |
-| 27 | [SettingsWatcher (MANDATORY — PostgreSQL only)](#settingswatcher-mandatory) | Standalone goroutine for revalidating PostgreSQL connection pool settings (maxOpenConns, maxIdleConns, statementTimeout) |
 
 ---
 
@@ -41,7 +40,7 @@ The only valid multi-tenant implementation uses:
 - The 10 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
 - `client.WithServiceAPIKey` on the Tenant Manager HTTP client for `/settings` endpoint authentication
-- `tmwatcher.NewSettingsWatcher` for PostgreSQL pool settings revalidation (from `lib-commons/v4/commons/dispatch layer/watcher`) — PostgreSQL only, MongoDB excluded
+- pgManager handles settings revalidation internally via `WithSettingsCheckInterval` — PostgreSQL only, MongoDB excluded
 
 MUST correct any deviation from these patterns before the service can be considered multi-tenant.
 
@@ -57,7 +56,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 |------|------|-------------|
 | `go.mod` | 2 | lib-commons v4, lib-auth v2 |
 | `internal/bootstrap/config.go` | 3 | 10 canonical `MULTI_TENANT_*` env vars in Config struct |
-| `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation, SettingsWatcher instantiation. Branch on `cfg.MultiTenantEnabled` |
+| `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
 | `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttHandler)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
 
 **Per detected database/storage (Gate 5):**
@@ -108,13 +107,13 @@ Multi-tenant support requires **lib-commons v4** (`github.com/LerianStudio/lib-c
 |--------------------|-----------------------|-------------|
 | **v2** (`lib-commons/v2`) | Not available | N/A — no `dispatch layer` package |
 | **v3** (`lib-commons/v3`) | Legacy | Same sub-packages as v4 but without `dispatch layer/cache`. Upgrade to v4. |
-| **v4** (`lib-commons/v4`) | Full support (current) | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/...` (sub-packages: `core`, `client`, `cache`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`, `watcher`). The `middleware` sub-package contains `TenantMiddleware` with `WithPG`/`WithMB` variadic options that handle both single-module and multi-module services. Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
+| **v4** (`lib-commons/v4`) | Full support (current) | `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/...` (sub-packages: `core`, `client`, `cache`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains `TenantMiddleware` with `WithPG`/`WithMB` variadic options that handle both single-module and multi-module services. Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
 
 **Migration to v4:**
 
 Services on lib-commons v2 or v3 MUST upgrade to v4 before implementing multi-tenant. The upgrade involves:
 
-1. Update `go.mod` to the latest v4 tag (currently beta — use latest beta until stable is released)
+1. Update `go.mod` to the latest v4 tag
 2. Update all import paths to v4
 3. Add the `dispatch layer` package imports where needed
 
@@ -123,7 +122,7 @@ Services on lib-commons v2 or v3 MUST upgrade to v4 before implementing multi-te
 git ls-remote --tags https://github.com/LerianStudio/lib-commons.git | grep "v4" | sort -V | tail -1
 
 # Update go.mod
-go get github.com/LerianStudio/lib-commons/v4@v4.3.1
+go get github.com/LerianStudio/lib-commons/v4@v4.5.0
 
 # Update import paths across the codebase (portable — works on macOS and Linux)
 # From v2:
@@ -158,8 +157,8 @@ go build ./...
 | `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` | Consecutive failures before circuit breaker opens | `5` | Yes |
 | `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC` | Seconds before circuit breaker resets (half-open) | `30` | Yes |
 | `MULTI_TENANT_SERVICE_API_KEY` | API key for authenticating with dispatch layer `/settings` endpoint. Generated via service catalog. | - | If multi-tenant |
-| `MULTI_TENANT_CACHE_TTL_SEC` | In-memory cache TTL for tenant config. Passed to both tenant client and SettingsWatcher's internal client. | `120` | Yes |
-| `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` | SettingsWatcher revalidation interval for connection pool settings (maxOpenConns, maxIdleConns, statementTimeout). | `30` | Yes |
+| `MULTI_TENANT_CACHE_TTL_SEC` | In-memory cache TTL for tenant config. Passed to the tenant client. | `120` | Yes |
+| `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` | pgManager async settings revalidation interval (via `WithSettingsCheckInterval`). | `30` | Yes |
 
 **Removed ENV vars (deprecated, no-op):**
 - `RABBITMQ_MULTI_TENANT_SYNC_INTERVAL` — replaced by event-driven discovery
@@ -726,7 +725,7 @@ func NewProducerMultiTenant(pool *tmrabbitmq.Manager) *ProducerRepository {
 
 func (p *ProducerRepository) Publish(ctx context.Context, exchange, key string, message []byte) error {
     // Inject tenant ID header
-    tenantID := core.GetTenantIDContext(ctx)
+    tenantID := tmcore.GetTenantIDContext(ctx)
     headers := amqp.Table{}
     if tenantID != "" {
         headers["X-Tenant-ID"] = tenantID
@@ -1196,7 +1195,7 @@ func TestRabbitMQConsumer_MultiTenant(t *testing.T) {
 
         // Assert tenant context injected
         require.NoError(t, err)
-        extractedTenant := core.GetTenantIDContext(ctx)
+        extractedTenant := tmcore.GetTenantIDContext(ctx)
         assert.Equal(t, tenantID, extractedTenant)
     })
 }
@@ -1400,7 +1399,7 @@ Services implementing multi-tenant MUST expose these metrics:
 | **Redis key prefixing** | - | Call `valkey.GetKeyContext(ctx, key)` for every Redis operation |
 | **S3 key prefixing** | Tenant-aware key prefix (`s3.GetObjectStorageKeyForTenant`) | Call `s3.GetObjectStorageKeyForTenant(ctx, key)` for every S3 operation |
 | **Consumer setup** | - | Register handlers, call `consumer.Run(ctx)` at startup |
-| **Settings revalidation (PostgreSQL only)** | `SettingsWatcher` goroutine, `ApplyConnectionSettings()` | Instantiate `SettingsWatcher` in bootstrap with PostgreSQL managers only, call `Start(ctx)` and `Stop()`. MongoDB excluded (driver cannot resize pools). |
+| **Settings revalidation (PostgreSQL only)** | pgManager handles internally via `WithSettingsCheckInterval`, `ApplyConnectionSettings()` | Pass `WithSettingsCheckInterval` when creating pgManager. MongoDB excluded (driver cannot resize pools). |
 | **Error handling** | Return sentinel errors | Map errors to HTTP status codes (or provide custom `ErrorMapper`) |
 
 ### Anti-Rationalization Table (General)
@@ -1519,14 +1518,6 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `MULTI_TENANT_SERVICE_API_KEY` in config struct (required)
 - [ ] `MULTI_TENANT_CACHE_TTL_SEC` in config struct (default: `120`)
 - [ ] `MULTI_TENANT_SETTINGS_CHECK_INTERVAL_SEC` in config struct (default: `30`)
-
-**SettingsWatcher (PostgreSQL only):**
-- [ ] `tmwatcher.NewSettingsWatcher(tenantClient, cfg.ApplicationName, opts...)` instantiated in bootstrap
-- [ ] `tmwatcher.WithPG(pgManager)` passed if PG is configured
-- [ ] `settingsWatcher.Start(ctx)` called during bootstrap
-- [ ] `settingsWatcher.Stop()` called on shutdown (via ServerManager hook or defer)
-
-> **Note:** MongoDB is excluded from SettingsWatcher because the Go driver does not support pool resize after creation.
 
 **Architecture:**
 - [ ] `client.NewClient(url, logger, opts...)` returns `(*Client, error)` — handle error for fail-fast
@@ -2601,88 +2592,3 @@ The service catalog enforces a maximum of 2 active keys per environment, so both
 | "We don't need API key auth for internal services" | The `/settings` endpoint returns database credentials. Unauthenticated access is a security risk. | **MUST configure `WithServiceAPIKey`** |
 | "We'll add the API key later" | Without authentication, the Tenant Manager rejects `/settings` requests. The service cannot resolve tenant connections. | **MUST configure before enabling multi-tenant** |
 | "We can use a shared API key across services" | Each service MUST have its own API key for audit trail and independent revocation. | **MUST generate per-service keys via service catalog** |
-
----
-
-## SettingsWatcher (MANDATORY — PostgreSQL only)
-
-**MANDATORY:** Every multi-tenant service that uses PostgreSQL connection pools MUST instantiate a `SettingsWatcher` in its bootstrap. This is not optional regardless of whether the service uses RabbitMQ, HTTP-only, or any other transport. MongoDB-only services are exempt — the Go driver does not support pool resize after creation.
-
-Import path: `github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/watcher`
-
-### What It Does
-
-`SettingsWatcher` is a standalone goroutine (from `lib-commons/v4/commons/dispatch layer/watcher`) that periodically revalidates connection pool settings for all connected tenants. It replaces the old settings revalidation that was coupled to the RabbitMQ consumer — the watcher is **independent of RabbitMQ** and works for any multi-tenant service with PostgreSQL.
-
-> **PostgreSQL only:** MongoDB is excluded because the Go driver does not support pool resize after creation. MongoDB connection pool settings (maxPoolSize, minPoolSize) are fixed at `mongo.Connect()` time and cannot be changed dynamically.
-
-### Why It Exists
-
-Without `SettingsWatcher`, changes to connection pool settings (maxOpenConns, maxIdleConns, statementTimeout) in the Tenant Manager are never detected after initial connection. This means:
-
-- A tenant's pool can become starved if the operations team increases `maxOpenConns` but the service never picks it up
-- Statement timeout changes (e.g., lowering timeout to prevent long-running queries) are not applied until a full service restart
-- There is no mechanism to dynamically tune per-tenant database pools without downtime
-
-### How It Works
-
-1. On each tick (configurable via `WithInterval`, default: 30s), the watcher calls `ConnectedTenantIDs()` on the PostgreSQL manager to discover which tenants currently have active connections
-2. For each connected tenant, it fetches the current `TenantConfig` via the Tenant Manager API (using the same `client.Client` as the middleware)
-3. It compares the fetched `ConnectionSettings` (maxOpenConns, maxIdleConns, statementTimeout) with the previously known values
-4. If any setting has changed, it applies the new value immediately via the manager's `ApplyConnectionSettings()` method
-5. If nothing changed, the tick is a no-op — zero overhead on stable configurations
-
-### Settings Detected and Applied
-
-| Setting | Detection | Application |
-|---------|-----------|-------------|
-| `maxOpenConns` | Compare with previous value | `db.SetMaxOpenConns()` (thread-safe, immediate) |
-| `maxIdleConns` | Compare with previous value | `db.SetMaxIdleConns()` (thread-safe, immediate) |
-| `statementTimeout` | Compare with previous value | `SET statement_timeout` via SQL (validated against PostgreSQL formats) |
-
-### Bootstrap Pattern (MANDATORY)
-
-MUST instantiate `SettingsWatcher` in the bootstrap after creating managers and the tenant client. Use functional options to compose the watcher with only the managers that are configured.
-
-```go
-import tmwatcher "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/watcher"
-
-// After creating managers and tenant client:
-watcherOpts := []tmwatcher.Option{
-    tmwatcher.WithInterval(time.Duration(cfg.MultiTenantSettingsCheckIntervalSec) * time.Second),
-    tmwatcher.WithLogger(logger),
-}
-
-if pgManager != nil {
-    watcherOpts = append(watcherOpts, tmwatcher.WithPG(pgManager))
-}
-
-// NOTE: MongoDB is excluded — the Go driver does not support pool resize after creation.
-
-settingsWatcher := tmwatcher.NewSettingsWatcher(tenantClient, cfg.ApplicationName, watcherOpts...)
-settingsWatcher.Start(ctx)
-// Stop on shutdown via ServerManager hook or defer
-defer settingsWatcher.Stop()
-```
-
-### Detection Commands (MANDATORY)
-
-```bash
-# MANDATORY: Verify SettingsWatcher is instantiated in bootstrap
-grep -rn "tmwatcher\|SettingsWatcher\|NewSettingsWatcher" internal/ --include="*.go"
-# Expected: 1+ matches in bootstrap/service.go (or equivalent init file)
-
-# Verify Start and Stop are called
-grep -rn "settingsWatcher.Start\|settingsWatcher.Stop" internal/ --include="*.go"
-# Expected: 1 Start() call and 1 Stop() call
-```
-
-### Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "We don't need settings revalidation" | Pool settings changes will not be detected without it. Tenant starvation risk. | **MUST instantiate SettingsWatcher** |
-| "RabbitMQ consumer already handles this" | Consumer revalidation was removed. SettingsWatcher is the only mechanism. | **MUST use SettingsWatcher** |
-| "Service doesn't use RabbitMQ so it doesn't apply" | SettingsWatcher is independent of RabbitMQ. It works for any service with PostgreSQL. | **MUST instantiate SettingsWatcher** |
-| "Settings rarely change, not worth the overhead" | The watcher is a no-op when nothing changes. Zero overhead on stable configs. | **MUST instantiate SettingsWatcher** |
-| "We'll add it later" | Later means tenants run with stale pool settings until the next deploy. | **MUST instantiate SettingsWatcher NOW** |
