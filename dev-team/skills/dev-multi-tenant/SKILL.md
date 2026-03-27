@@ -153,7 +153,7 @@ Multi-tenant isolation is 100% based on `tenantId` from JWT → dispatch layer m
 
 ### MANDATORY: Canonical Environment Variables
 
-See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi-tenant.md#environment-variables) for the complete table of 12 canonical `MULTI_TENANT_*` env vars with descriptions, defaults, and required status.
+See [multi-tenant.md § Environment Variables](../../docs/standards/golang/multi-tenant.md#environment-variables) for the complete table of 13 canonical `MULTI_TENANT_*` env vars with descriptions, defaults, and required status.
 
 MUST NOT use any other names (e.g., `TENANT_MANAGER_ADDRESS` is WRONG — the correct name is `MULTI_TENANT_URL`).
 
@@ -540,7 +540,7 @@ Table with columns: Gate, File, Current Code, New Code, Lines Changed. One row p
 | Gate | File | What Changes | Impact |
 |------|------|-------------|--------|
 | 2 | `go.mod` | lib-commons v2 → v4 + lib-auth v2, import paths | All files |
-| 3 | `config.go` | Add the 12 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
+| 3 | `config.go` | Add the 13 canonical MULTI_TENANT_* env vars (see "Canonical Environment Variables" table above) to Config struct | ~20 lines added |
 | 4 | `config.go` | Add TenantMiddleware with WithPG/WithMB setup | ~30 lines added |
 | 4 | `routes.go` | Register middleware in Fiber chain | ~5 lines added |
 | 5 | `organization.postgresql.go` | `c.connection.GetDB()` → `tmcore.GetPGContext(ctx, module)` with fallback to `r.connection` | ~3 lines per method |
@@ -644,7 +644,7 @@ Table showing what gets added to go.mod and which sub-packages are imported:
 - etc.
 
 ### 6. Environment Variables
-The exact 12 canonical env vars from the "Canonical Environment Variables" table in [multi-tenant.md](../../docs/standards/golang/multi-tenant.md#environment-variables). MUST NOT use alternative names. MUST NOT duplicate the list inline — reference the canonical table.
+The exact 13 canonical env vars from the "Canonical Environment Variables" table in [multi-tenant.md](../../docs/standards/golang/multi-tenant.md#environment-variables). MUST NOT use alternative names. MUST NOT duplicate the list inline — reference the canonical table.
 
 ### 7. Risk Assessment
 Table with: Risk, Mitigation, Verification. Examples:
@@ -708,11 +708,11 @@ HARD GATE: MUST pass build and tests before proceeding.
 
 ## Gate 3: Multi-Tenant Configuration
 
-**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 12 canonical env vars are present with correct names, types, and defaults where applicable. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
+**Always executes.** If config already has `MULTI_TENANT_ENABLED`, this gate VERIFIES that all 13 canonical env vars are present with correct names, types, and defaults where applicable. Non-compliant config (wrong names like `TENANT_MANAGER_ADDRESS`, missing vars, wrong defaults) MUST be fixed. Compliance audit from Gate 0 determines whether this is implement or fix.
 
 **Dispatch `ring:backend-engineer-golang` with context from Gate 1 analysis:**
 
-> TASK: Verify and ensure all 12 canonical multi-tenant environment variables exist in the Config struct with correct names and defaults. If any are missing, misnamed, or have wrong defaults — fix them.
+> TASK: Verify and ensure all 13 canonical multi-tenant environment variables exist in the Config struct with correct names and defaults. If any are missing, misnamed, or have wrong defaults — fix them.
 > CONTEXT FROM GATE 1: {Config struct location and current fields from analysis report}
 > Follow multi-tenant.md sections "Environment Variables", "Configuration", and "Conditional Initialization".
 >
@@ -724,6 +724,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 > - MULTI_TENANT_REDIS_PASSWORD (string, optional — Redis password for Pub/Sub)
 > - MULTI_TENANT_MAX_TENANT_POOLS (int, default 100)
 > - MULTI_TENANT_IDLE_TIMEOUT_SEC (int, default 300)
+> - MULTI_TENANT_TIMEOUT (int, default 30 — HTTP client timeout for dispatch layer API calls, passed to tmclient.WithTimeout)
 > - MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD (int, default 5)
 > - MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC (int, default 30)
 > - MULTI_TENANT_SERVICE_API_KEY (string, required — API key for dispatch layer /settings endpoint)
@@ -841,7 +842,7 @@ HARD GATE: CANNOT proceed without TenantMiddleware.
 >        smClient := awssm.NewFromConfig(awsCfg)
 >        // redisConn is the lib-commons Redis connection (already initialized in bootstrap)
 >        // Pass nil if Redis is not available — falls back to L1-only (in-memory)
->        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.MultiTenantEnvironment,
+>        m2mProvider := m2m.NewM2MCredentialProvider(smClient, cfg.EnvName,
 >            constant.ApplicationName, cfg.M2MTargetService,
 >            time.Duration(cfg.M2MCredentialCacheTTLSec)*time.Second,
 >            redisConn) // *libRedis.Connection from lib-commons
@@ -1065,7 +1066,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
-2. **Environment variables**: the 12 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC) with required/default/description
+2. **Environment variables**: the 13 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_TIMEOUT, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC) with required/default/description
 3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
@@ -1107,7 +1108,7 @@ See [multi-tenant.md](../../docs/standards/golang/multi-tenant.md) for the canon
 | "Agent says out of scope" | Skill defines scope, not agent. | **Re-dispatch with gate context** |
 | "Skip tests" | Gate 8 proves isolation works. | **MANDATORY** |
 | "Skip review" | Security implications. One mistake = data leak. | **MANDATORY** |
-| "Using TENANT_MANAGER_ADDRESS instead" | Non-standard name. Only the 12 canonical MULTI_TENANT_* vars are valid. | **STOP. Use MULTI_TENANT_URL** |
+| "Using TENANT_MANAGER_ADDRESS instead" | Non-standard name. Only the 13 canonical MULTI_TENANT_* vars are valid. | **STOP. Use MULTI_TENANT_URL** |
 | "The service already uses a different env name" | Legacy names are non-compliant. Rename to canonical names. | **Replace with canonical env vars** |
 | "Service doesn't need Secret Manager for M2M" | If multi-tenant is active and the service has targetServices, each tenant has different credentials. Env vars can't hold per-tenant secrets. | **MUST use Secret Manager for per-tenant M2M** |
 | "We'll add M2M caching later" | Without caching, every request hits AWS (~50-100ms + cost). This is a production blocker. | **MUST implement caching from day one** |

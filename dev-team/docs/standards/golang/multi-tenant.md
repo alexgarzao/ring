@@ -161,11 +161,6 @@ go build ./...
 | `MULTI_TENANT_CACHE_TTL_SEC` | In-memory cache TTL for tenant config. Passed to the tenant client. | `120` | Yes |
 | `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC` | pgManager async settings revalidation interval (via `WithConnectionsCheckInterval`). | `30` | Yes |
 
-**Removed ENV vars (deprecated, no-op):**
-- `RABBITMQ_MULTI_TENANT_SYNC_INTERVAL` — replaced by event-driven discovery
-- `RABBITMQ_MULTI_TENANT_DISCOVERY_TIMEOUT` — replaced by event-driven discovery
-- `MULTI_TENANT_ENVIRONMENT` — replaced by Redis Pub/Sub event channel
-- `BALANCE_SYNC_WORKER_ENABLED` — always true
 
 **Example `.env` for multi-tenant:**
 ```bash
@@ -176,6 +171,7 @@ MULTI_TENANT_REDIS_PORT=6379
 MULTI_TENANT_REDIS_PASSWORD=
 MULTI_TENANT_MAX_TENANT_POOLS=100
 MULTI_TENANT_IDLE_TIMEOUT_SEC=300
+MULTI_TENANT_TIMEOUT=30
 MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD=5
 MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC=30
 MULTI_TENANT_SERVICE_API_KEY=your-service-api-key-here
@@ -198,6 +194,7 @@ type Config struct {
     MultiTenantRedisPassword            string `env:"MULTI_TENANT_REDIS_PASSWORD"`
     MultiTenantMaxTenantPools           int    `env:"MULTI_TENANT_MAX_TENANT_POOLS" default:"100"`
     MultiTenantIdleTimeoutSec           int    `env:"MULTI_TENANT_IDLE_TIMEOUT_SEC" default:"300"`
+    MultiTenantTimeout                  int    `env:"MULTI_TENANT_TIMEOUT" default:"30"`
     MultiTenantCircuitBreakerThreshold  int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD" default:"5"`
     MultiTenantCircuitBreakerTimeoutSec int    `env:"MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC" default:"30"`
     MultiTenantServiceAPIKey            string `env:"MULTI_TENANT_SERVICE_API_KEY"`
@@ -392,6 +389,11 @@ func initService(cfg *Config) {
                 cfg.MultiTenantCircuitBreakerThreshold,
                 time.Duration(cfg.MultiTenantCircuitBreakerTimeoutSec)*time.Second,
             ),
+        )
+    }
+    if cfg.MultiTenantTimeout > 0 {
+        clientOpts = append(clientOpts,
+            client.WithTimeout(time.Duration(cfg.MultiTenantTimeout)*time.Second),
         )
     }
     clientOpts = append(clientOpts,
@@ -2319,7 +2321,7 @@ if cfg.MultiTenantEnabled {
 
     m2mProvider = m2m.NewM2MCredentialProvider(
         smClient,
-        cfg.MultiTenantEnvironment,
+        cfg.EnvName,
         constant.ApplicationName,
         cfg.M2MTargetService,
         time.Duration(cfg.M2MCredentialCacheTTLSec) * time.Second,
