@@ -37,7 +37,7 @@ The only valid multi-tenant implementation uses:
 - `valkey.GetKeyContext` for Redis key prefixing (from `lib-commons/v4/commons/dispatch layer/valkey`)
 - `s3.GetObjectStorageKeyForTenant` for S3 key prefixing (from `lib-commons/v4/commons/dispatch layer/s3`)
 - `tmrabbitmq.Manager` for RabbitMQ vhost isolation (from `lib-commons/v4/commons/dispatch layer/rabbitmq`)
-- The 10 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
+- The 13 canonical `MULTI_TENANT_*` environment variables with correct names and defaults
 - `client.WithCircuitBreaker` on the Tenant Manager HTTP client
 - `client.WithServiceAPIKey` on the Tenant Manager HTTP client for `/settings` endpoint authentication
 - pgManager handles settings revalidation internally via `WithSettingsCheckInterval` — PostgreSQL only, MongoDB excluded
@@ -55,7 +55,7 @@ These are the only files that require multi-tenant changes. The exact paths foll
 | File | Gate | What Changes |
 |------|------|-------------|
 | `go.mod` | 2 | lib-commons v4, lib-auth v2 |
-| `internal/bootstrap/config.go` | 3 | 10 canonical `MULTI_TENANT_*` env vars in Config struct |
+| `internal/bootstrap/config.go` | 3 | 13 canonical `MULTI_TENANT_*` env vars in Config struct |
 | `internal/bootstrap/service.go` (or equivalent init file) | 4 | Conditional initialization: Tenant Manager client, connection managers, middleware creation. Branch on `cfg.MultiTenantEnabled` |
 | `internal/bootstrap/routes.go` (or equivalent router file) | 4 | Per-route composition via `WhenEnabled(ttHandler)` — auth validates JWT before tenant resolves DB. Each project implements the `WhenEnabled` helper locally. See [Route-Level Auth-Before-Tenant Ordering](#route-level-auth-before-tenant-ordering-mandatory) |
 
@@ -1441,7 +1441,7 @@ if !pool.IsMultiTenant() {
 **Step 1 — Remove all multi-tenant env vars and start the service:**
 ```bash
 # Unset ALL multi-tenant variables
-unset MULTI_TENANT_ENABLED MULTI_TENANT_URL MULTI_TENANT_ENVIRONMENT
+unset MULTI_TENANT_ENABLED MULTI_TENANT_URL
 unset MULTI_TENANT_MAX_TENANT_POOLS MULTI_TENANT_IDLE_TIMEOUT_SEC
 unset MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC
 
@@ -2080,14 +2080,14 @@ tenants/{env}/{tenantOrgID}/{applicationName}/m2m/{targetService}/credentials
 
 | Segment | Source | Example |
 |---------|--------|---------|
-| `env` | `MULTI_TENANT_ENVIRONMENT` env var | `staging`, `production` |
+| `env` | `ENV_NAME` env var | `staging`, `production` |
 | `tenantOrgID` | JWT `owner` claim via `auth.GetTenantID(ctx)` | `org_01KHVKQQP6D2N4RDJK0ADEKQX1` |
 | `applicationName` | Service's own name constant | `plugin-pix`, `midaz`, `ledger` |
 | `targetService` | The target service being called | `ledger`, `midaz`, `plugin-fees` |
 
 ### Environment Variables (M2M)
 
-In addition to the 10 canonical multi-tenant env vars, plugins MUST add:
+In addition to the 13 canonical multi-tenant env vars, plugins MUST add:
 
 | Env Var | Description | Default | Required |
 |---------|-------------|---------|----------|
