@@ -3507,6 +3507,7 @@ db := tmcore.GetPGContext(ctx)  // WRONG: use GetPGContext(ctx, module) for mult
 - CRITICAL: Queries without entity scoping — intra-tenant IDOR (HARD GATE violation per Ring standards)
 - CRITICAL: Tenant ID from user-controlled input (HARD GATE violation)
 - CRITICAL: Missing TenantMiddleware with WithPG/WithMB (HARD GATE violation)
+- CRITICAL: Using deprecated functions (WithPostgresManager, WithMongoManager, WithModule, GetMongoFromContext, GetKeyFromContext, GetPGConnectionFromContext, GetPGConnectionContext, GetMongoContext, ResolvePostgres, ResolveMongo, ResolveModuleDB, SetTenantIDInContext, GetPostgresForTenant, GetMongoForTenant, ContextWithPGConnection, ContextWithMongo, ContextWithModulePGConnection, GetModulePostgresForTenant, MultiPoolMiddleware, DualPoolMiddleware, SettingsWatcher, NewSettingsWatcher) — NON-COMPLIANT, MUST migrate to current API
 - HIGH: No connection managers for multi-tenant pool management
 - HIGH: Cache keys not tenant-scoped
 - HIGH: Missing cross-module connection injection

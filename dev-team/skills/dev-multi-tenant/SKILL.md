@@ -375,16 +375,20 @@ A1. Config compliance:
     - (any match = NON-COMPLIANT config var names → Gate 3 MUST fix)
 
 A2. Middleware compliance:
-    - grep -rn "tmmiddleware.NewTenantMiddleware" internal/
-    - (no match but other tenant middleware exists = NON-COMPLIANT → Gate 4 MUST fix)
+    - MUST match: grep -rn "tmmiddleware.NewTenantMiddleware" internal/
+    - MUST match: grep -rn "WithPG\|WithMB" internal/
+    - NON-COMPLIANT if found: grep -rn "WithPostgresManager\|WithMongoManager\|WithModule\|NewMultiPoolMiddleware\|DualPoolMiddleware" internal/
+    - (any old middleware pattern = NON-COMPLIANT → Gate 4 MUST fix)
 
 A3. Repository compliance:
-    - grep -rn "tmcore.GetPGContext\|tmcore.GetMBContext" internal/
-    - (repositories use static connections or custom pool lookup = NON-COMPLIANT → Gate 5 MUST fix)
+    - MUST match: grep -rn "tmcore.GetPGContext\|tmcore.GetMBContext" internal/
+    - NON-COMPLIANT if found: grep -rn "GetPGConnectionFromContext\|GetPGConnectionContext\|GetMongoFromContext\|GetMongoContext\|GetModulePostgresForTenant\|ResolvePostgres\|ResolveMongo\|ResolveModuleDB\|GetPostgresForTenant\|GetMongoForTenant" internal/
+    - (any old context getter = NON-COMPLIANT → Gate 5 MUST fix)
 
 A4. Redis compliance (if Redis detected):
-    - grep -rn "valkey.GetKeyContext" internal/
-    - (Redis operations without GetKeyContext = NON-COMPLIANT → Gate 5 MUST fix)
+    - MUST match: grep -rn "valkey.GetKeyContext" internal/
+    - NON-COMPLIANT if found: grep -rn "GetKeyFromContext" internal/
+    - (old key function = NON-COMPLIANT → Gate 5 MUST fix)
 
 A5. S3 compliance (if S3 detected):
     - grep -rn "s3.GetObjectStorageKeyForTenant" internal/
