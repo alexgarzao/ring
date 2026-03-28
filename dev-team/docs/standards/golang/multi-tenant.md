@@ -852,7 +852,22 @@ tmRedisClient, err := tmredis.NewTenantPubSubRedisClient(ctx, tmredis.TenantPubS
 })
 ```
 
-Do NOT build `redis.UniversalClient` manually — use the centralized helper above.
+Do NOT build `redis.UniversalClient` manually — use the centralized helper above. NON-COMPLIANT if manual `libRedis.Config` setup is used instead.
+
+**Event listener initialization (MANDATORY: use `NewTenantEventListener`):**
+
+```go
+import tmevent "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/event"
+
+eventListener, err := tmevent.NewTenantEventListener(
+    tmRedisClient,
+    dispatcher.HandleEvent,
+    tmevent.WithListenerLogger(logger),
+    tmevent.WithService(tenantServiceName),
+)
+```
+
+NON-COMPLIANT if `NewTenantEventListener` is not wired with the `NewTenantPubSubRedisClient` output. Both are required for event-driven tenant discovery.
 
 **Callbacks (ordering is MANDATORY):**
 
@@ -1540,6 +1555,11 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `MULTI_TENANT_SERVICE_API_KEY` in config struct (required)
 - [ ] `MULTI_TENANT_CACHE_TTL_SEC` in config struct (default: `120`)
 - [ ] `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC` in config struct (default: `30`)
+
+**Event-Driven Discovery (required if multi-tenant):**
+- [ ] `tmredis.NewTenantPubSubRedisClient(ctx, cfg)` used to create Redis client (NOT manual `libRedis.Config`)
+- [ ] `tmevent.NewTenantEventListener(tmRedisClient, dispatcher.HandleEvent, ...)` wired with Pub/Sub Redis client
+- [ ] All 14 canonical `MULTI_TENANT_*` envs declared in `.env.example` (commented out with defaults)
 
 **Architecture:**
 - [ ] `client.NewClient(url, logger, opts...)` returns `(*Client, error)` — handle error for fail-fast

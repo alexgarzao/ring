@@ -422,6 +422,15 @@ A10. Service API key compliance:
 A11. Connections revalidation compliance (PostgreSQL only):
     - grep -rn "WithConnectionsCheckInterval" internal/
     - (no match = NON-COMPLIANT → Gate 4 MUST fix — pgManager MUST be created with WithConnectionsCheckInterval)
+
+A12. Event-driven discovery compliance:
+    - MUST match: grep -rn "tmredis.NewTenantPubSubRedisClient" internal/
+    - NON-COMPLIANT if found: grep -rn "libRedis\.Config.*MultiTenantRedis\|libRedis\.New.*MultiTenantRedis" internal/
+    - (manual Redis client setup for Pub/Sub = NON-COMPLIANT → MUST use tmredis.NewTenantPubSubRedisClient)
+    - MUST match: grep -rn "tmevent.NewTenantEventListener" internal/
+    - (no event listener = NON-COMPLIANT → MUST wire NewTenantEventListener with Pub/Sub Redis client)
+    - MUST match: grep -rn "MULTI_TENANT_REDIS_TLS" .env.example
+    - (MULTI_TENANT_REDIS_TLS missing from .env.example = NON-COMPLIANT → MUST declare all 14 canonical envs)
 ```
 
 **Output format for compliance audit:**
