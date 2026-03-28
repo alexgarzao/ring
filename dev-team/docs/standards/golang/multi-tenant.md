@@ -152,6 +152,7 @@ go build ./...
 | `MULTI_TENANT_REDIS_HOST` | Redis host for Pub/Sub event-driven tenant discovery (same Redis as dispatch layer) | - | If multi-tenant |
 | `MULTI_TENANT_REDIS_PORT` | Redis port for Pub/Sub | `6379` | If multi-tenant |
 | `MULTI_TENANT_REDIS_PASSWORD` | Redis password for Pub/Sub | - | If multi-tenant |
+| `MULTI_TENANT_REDIS_TLS` | Enable TLS for Pub/Sub Redis connection (AWS ElastiCache/Valkey) | `false` | If multi-tenant |
 | `MULTI_TENANT_MAX_TENANT_POOLS` | Soft limit for tenant connection pools (LRU eviction) | `100` | No |
 | `MULTI_TENANT_IDLE_TIMEOUT_SEC` | Seconds before idle tenant connection is eviction-eligible | `300` | No |
 | `MULTI_TENANT_TIMEOUT` | HTTP client timeout for dispatch layer API calls (seconds). Passed to `tmclient.WithTimeout`. | `30` | No |
@@ -169,6 +170,7 @@ MULTI_TENANT_URL=http://dispatch layer:4003
 MULTI_TENANT_REDIS_HOST=redis
 MULTI_TENANT_REDIS_PORT=6379
 MULTI_TENANT_REDIS_PASSWORD=
+MULTI_TENANT_REDIS_TLS=false
 MULTI_TENANT_MAX_TENANT_POOLS=100
 MULTI_TENANT_IDLE_TIMEOUT_SEC=300
 MULTI_TENANT_TIMEOUT=30
@@ -192,6 +194,7 @@ type Config struct {
     MultiTenantRedisHost                string `env:"MULTI_TENANT_REDIS_HOST"`
     MultiTenantRedisPort                string `env:"MULTI_TENANT_REDIS_PORT" default:"6379"`
     MultiTenantRedisPassword            string `env:"MULTI_TENANT_REDIS_PASSWORD"`
+    MultiTenantRedisTLS                 bool   `env:"MULTI_TENANT_REDIS_TLS"`
     MultiTenantMaxTenantPools           int    `env:"MULTI_TENANT_MAX_TENANT_POOLS" default:"100"`
     MultiTenantIdleTimeoutSec           int    `env:"MULTI_TENANT_IDLE_TIMEOUT_SEC" default:"300"`
     MultiTenantTimeout                  int    `env:"MULTI_TENANT_TIMEOUT" default:"30"`
@@ -835,6 +838,21 @@ func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection strin
 | `TenantCache` | Shared in-memory cache (12h TTL) |
 | `TenantLoader` | Lazy-load from dispatch layer API on cache miss |
 | `EventDispatcher` | Routes events to handlers (evict, reload, start consumer) |
+
+**Redis client for Pub/Sub (MANDATORY: use `NewTenantPubSubRedisClient`):**
+
+```go
+import tmredis "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/redis"
+
+tmRedisClient, err := tmredis.NewTenantPubSubRedisClient(ctx, tmredis.TenantPubSubRedisConfig{
+    Host:     cfg.MultiTenantRedisHost,
+    Port:     cfg.MultiTenantRedisPort,
+    Password: cfg.MultiTenantRedisPassword,
+    TLS:      cfg.MultiTenantRedisTLS,
+})
+```
+
+Do NOT build `redis.UniversalClient` manually — use the centralized helper above.
 
 **Callbacks (ordering is MANDATORY):**
 
@@ -1514,6 +1532,7 @@ MULTI_TENANT_ENABLED=true MULTI_TENANT_URL=http://dispatch layer:4003 go test ./
 - [ ] `MULTI_TENANT_REDIS_HOST` in config struct (required if multi-tenant)
 - [ ] `MULTI_TENANT_REDIS_PORT` in config struct (default: `6379`)
 - [ ] `MULTI_TENANT_REDIS_PASSWORD` in config struct
+- [ ] `MULTI_TENANT_REDIS_TLS` in config struct (default: `false`)
 - [ ] `MULTI_TENANT_MAX_TENANT_POOLS` in config struct (default: `100`)
 - [ ] `MULTI_TENANT_IDLE_TIMEOUT_SEC` in config struct (default: `300`)
 - [ ] `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD` in config struct (default: `5`)
