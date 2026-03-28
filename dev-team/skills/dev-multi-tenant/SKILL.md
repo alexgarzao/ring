@@ -372,8 +372,8 @@ NOTE: A1 is a NEGATIVE check (presence of wrong names = NON-COMPLIANT).
 
 A1. Config compliance:
     - Extract all MULTI_TENANT_* env tags from the project's Config struct
-    - Compare against the 13 canonical ENVs defined in multi-tenant.md § Environment Variables:
-      `MULTI_TENANT_ENABLED`, `MULTI_TENANT_URL`, `MULTI_TENANT_REDIS_HOST`, `MULTI_TENANT_REDIS_PORT`, `MULTI_TENANT_REDIS_PASSWORD`, `MULTI_TENANT_MAX_TENANT_POOLS`, `MULTI_TENANT_IDLE_TIMEOUT_SEC`, `MULTI_TENANT_TIMEOUT`, `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD`, `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC`, `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_CACHE_TTL_SEC`, `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC`
+    - Compare against the 14 canonical ENVs defined in multi-tenant.md § Environment Variables:
+      `MULTI_TENANT_ENABLED`, `MULTI_TENANT_URL`, `MULTI_TENANT_REDIS_HOST`, `MULTI_TENANT_REDIS_PORT`, `MULTI_TENANT_REDIS_PASSWORD`, `MULTI_TENANT_REDIS_TLS`, `MULTI_TENANT_MAX_TENANT_POOLS`, `MULTI_TENANT_IDLE_TIMEOUT_SEC`, `MULTI_TENANT_TIMEOUT`, `MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD`, `MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC`, `MULTI_TENANT_SERVICE_API_KEY`, `MULTI_TENANT_CACHE_TTL_SEC`, `MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC`
     - Any ENV not in this list = NON-COMPLIANT → Gate 3 MUST remove or rename to canonical name
     - Any canonical ENV missing from Config struct = NON-COMPLIANT → Gate 3 MUST add
 
@@ -422,6 +422,15 @@ A10. Service API key compliance:
 A11. Connections revalidation compliance (PostgreSQL only):
     - grep -rn "WithConnectionsCheckInterval" internal/
     - (no match = NON-COMPLIANT → Gate 4 MUST fix — pgManager MUST be created with WithConnectionsCheckInterval)
+
+A12. Event-driven discovery compliance:
+    - MUST match: grep -rn "tmredis.NewTenantPubSubRedisClient" internal/
+    - NON-COMPLIANT if found: grep -rn "libRedis\.Config.*MultiTenantRedis\|libRedis\.New.*MultiTenantRedis" internal/
+    - (manual Redis client setup for Pub/Sub = NON-COMPLIANT → MUST use tmredis.NewTenantPubSubRedisClient)
+    - MUST match: grep -rn "tmevent.NewTenantEventListener" internal/
+    - (no event listener = NON-COMPLIANT → MUST wire NewTenantEventListener with Pub/Sub Redis client)
+    - MUST match: grep -rn "MULTI_TENANT_REDIS_TLS" .env.example
+    - (MULTI_TENANT_REDIS_TLS missing from .env.example = NON-COMPLIANT → MUST declare all 14 canonical envs)
 ```
 
 **Output format for compliance audit:**
@@ -562,6 +571,7 @@ MultiTenantURL                      string `env:"MULTI_TENANT_URL"`
 MultiTenantRedisHost                string `env:"MULTI_TENANT_REDIS_HOST"`
 MultiTenantRedisPort                string `env:"MULTI_TENANT_REDIS_PORT"`
 MultiTenantRedisPassword            string `env:"MULTI_TENANT_REDIS_PASSWORD"`
+MultiTenantRedisTLS                 bool   `env:"MULTI_TENANT_REDIS_TLS"`
 MultiTenantMaxTenantPools           int    `env:"MULTI_TENANT_MAX_TENANT_POOLS"`
 MultiTenantIdleTimeoutSec           int    `env:"MULTI_TENANT_IDLE_TIMEOUT_SEC"`
 MultiTenantTimeout                  int    `env:"MULTI_TENANT_TIMEOUT" default:"30"`
@@ -751,6 +761,7 @@ HARD GATE: MUST pass build and tests before proceeding.
 > - MULTI_TENANT_REDIS_HOST (string, required when enabled — Redis host for Pub/Sub event-driven tenant discovery)
 > - MULTI_TENANT_REDIS_PORT (string, default "6379" — Redis port for Pub/Sub)
 > - MULTI_TENANT_REDIS_PASSWORD (string, optional — Redis password for Pub/Sub)
+> - MULTI_TENANT_REDIS_TLS (bool, default false — Enable TLS for Pub/Sub Redis connection)
 > - MULTI_TENANT_MAX_TENANT_POOLS (int, default 100)
 > - MULTI_TENANT_IDLE_TIMEOUT_SEC (int, default 300)
 > - MULTI_TENANT_TIMEOUT (int, default 30 — HTTP client timeout for dispatch layer API calls, passed to tmclient.WithTimeout)
@@ -1095,7 +1106,7 @@ The file is built from Gate 0 (stack) and Gate 1 (analysis). See [multi-tenant.m
 
 The guide MUST include:
 1. **Components table**: Component name, Service const, Module const, Resources, what was adapted
-2. **Environment variables**: the 13 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_TIMEOUT, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC) with required/default/description
+2. **Environment variables**: the 14 canonical MULTI_TENANT_* vars (MULTI_TENANT_ENABLED, MULTI_TENANT_URL, MULTI_TENANT_REDIS_HOST, MULTI_TENANT_REDIS_PORT, MULTI_TENANT_REDIS_PASSWORD, MULTI_TENANT_REDIS_TLS, MULTI_TENANT_MAX_TENANT_POOLS, MULTI_TENANT_IDLE_TIMEOUT_SEC, MULTI_TENANT_TIMEOUT, MULTI_TENANT_CIRCUIT_BREAKER_THRESHOLD, MULTI_TENANT_CIRCUIT_BREAKER_TIMEOUT_SEC, MULTI_TENANT_SERVICE_API_KEY, MULTI_TENANT_CACHE_TTL_SEC, MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC) with required/default/description
 3. **M2M environment variables (plugin only)**: If the service is a plugin, include M2M_TARGET_SERVICE, M2M_CREDENTIAL_CACHE_TTL_SEC, AWS_REGION
 4. **How to activate**: set envs + start alongside Tenant Manager (+ AWS credentials for plugins)
 5. **How to verify**: check logs, test with JWT tenantId (+ verify M2M credential retrieval for plugins)
