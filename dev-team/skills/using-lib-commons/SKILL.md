@@ -1,10 +1,11 @@
 ---
 name: ring:using-lib-commons
 description: |
-  Comprehensive reference for lib-commons v4 — Lerian's shared Go library providing
-  30 packages across database connections, messaging, multi-tenancy, runtime configuration,
-  observability, security, resilience, and HTTP tooling. Load this skill to discover
-  available APIs, find the right package, and learn correct initialization patterns.
+  Comprehensive reference for lib-commons v4.6.0 — Lerian's shared Go library providing
+  35+ packages across database connections, messaging, multi-tenancy, runtime configuration,
+  observability, security, resilience, HTTP tooling, and event-driven tenant discovery.
+  Load this skill to discover available APIs, find the right package, and learn correct
+  initialization patterns.
 
 trigger: |
   - Need to understand what lib-commons provides
@@ -12,8 +13,11 @@ trigger: |
   - Setting up a new service that uses lib-commons
   - Need to know correct constructor/initialization patterns
   - Working with multi-tenancy (dispatch layer)
+  - Working with event-driven tenant discovery
   - Working with runtime configuration (systemplane)
   - Need database, messaging, or infrastructure patterns
+  - Need rate limiting, context helpers, or string utilities
+  - Migrating from older lib-commons versions
 
 skip_when: |
   - Already know which package to use and how
@@ -24,9 +28,9 @@ related:
   similar: [ring:using-dev-team, ring:using-ring]
 ---
 
-# Using lib-commons v4 — Developer Reference
+# Using lib-commons v4.6.0 — Developer Reference
 
-lib-commons v4 is Lerian's foundational Go library. Every Lerian Go microservice depends on it for infrastructure, observability, security, multi-tenancy, and runtime configuration.
+lib-commons v4.6.0 is Lerian's foundational Go library. Every Lerian Go microservice depends on it for infrastructure, observability, security, multi-tenancy, event-driven tenant discovery, and runtime configuration.
 
 - **Module path**: `github.com/LerianStudio/lib-commons/v4`
 - **All packages live under**: `commons/`
@@ -40,22 +44,30 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 
 | # | Section | What You'll Find |
 |---|---------|-----------------|
-| 1 | [Package Catalog](#1-package-catalog-quick-reference) | All 30 packages organized by domain |
+| 1 | [Package Catalog](#1-package-catalog-quick-reference) | All 35+ packages organized by domain |
 | 2 | [Common Initialization Pattern](#2-common-initialization-pattern) | Typical service bootstrap sequence |
 | 3 | [Database Connections](#3-database-connections) | postgres, mongo, redis, rabbitmq deep-dive |
-| 4 | [HTTP Toolkit](#4-http-toolkit-nethttp) | Middleware, pagination, validation, health checks |
+| 4 | [HTTP Toolkit](#4-http-toolkit-nethttp) | Middleware, rate limiting, pagination, validation, response helpers, health checks |
 | 5 | [Observability](#5-observability) | Logger, tracing, metrics, **runtime** (panic pipeline), **assert** (observability trident) |
 | 6 | [Resilience & Utilities](#6-resilience--utilities) | Circuit breaker, backoff, safe math, pointers |
 | 7 | [Security](#7-security) | JWT, encryption, sensitive fields, AWS secrets |
 | 8 | [Transaction Domain](#8-transaction-domain) | Intent planning, balance posting, outbox |
-| 9 | [Tenant Manager](#9-dispatch layer-deep-reference) | Full multi-tenancy subsystem |
+| 9 | [Tenant Manager](#9-dispatch layer-deep-reference) | Full multi-tenancy subsystem with event-driven discovery |
 | 10 | [Systemplane](#10-systemplane-deep-reference) | Runtime configuration subsystem |
-| 11 | [Cross-Cutting Patterns](#11-cross-cutting-patterns) | Patterns shared across all packages |
-| 12 | [Which Package Do I Need?](#12-which-package-do-i-need) | Decision tree for package selection |
+| 11 | [Root Package & Utilities](#11-root-package--utilities) | App lifecycle, context helpers, business errors, string utilities, env vars |
+| 12 | [Cross-Cutting Patterns](#12-cross-cutting-patterns) | Patterns shared across all packages |
+| 13 | [Which Package Do I Need?](#13-which-package-do-i-need) | Decision tree for package selection |
+| 14 | [Breaking Changes](#14-breaking-changes) | Migration notes for v4.2.0 through v4.6.0 |
 
 ---
 
 ## 1. Package Catalog (Quick Reference)
+
+### Root Package
+
+| Package | Import Path Suffix | Purpose |
+|---|---|---|
+| `commons` | `commons` | App lifecycle (`Launcher`), request-scoped context helpers, business error mapping, UUID generation, struct-to-JSON, metrics, string utilities, date/time validation, env var helpers |
 
 ### Database & Data
 
@@ -84,8 +96,8 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
 | `log` | `commons/log` | Logger interface (`Logger`) — the universal logging contract across all packages |
-| `zap` | `commons/zap` | Zap-backed Logger implementation with OTel log bridge, runtime level adjustment |
-| `opentelemetry` | `commons/opentelemetry` | Full OTel lifecycle — Core threeProvider, MeterProvider, LoggerProvider, OTLP exporters, redaction |
+| `zap` | `commons/zap` | Zap-backed Logger implementation with OTel log bridge, runtime level adjustment. **v4.3.0+**: timestamp field changed from `"ts"` (Unix epoch) to `"timestamp"` (ISO 8601) |
+| `opentelemetry` | `commons/opentelemetry` | Full OTel lifecycle — Core threeProvider, MeterProvider, LoggerProvider, OTLP exporters, redaction. Registers noop global providers when collector endpoint is empty |
 | `opentelemetry/metrics` | `commons/opentelemetry/metrics` | Thread-safe metrics factory with builders (Counter, Gauge, Histogram) |
 | `runtime` | `commons/runtime` | Safe goroutine launching, panic recovery, production mode, error reporter integration |
 | `server` | `commons/server` | HTTP (Fiber) + gRPC graceful shutdown manager with ordered teardown |
@@ -95,8 +107,8 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
-| `net/http` | `commons/net/http` | Fiber HTTP toolkit: middleware (CORS, logging, telemetry, basic auth), validation, 3 cursor pagination styles, health checks, SSRF-safe reverse proxy, ownership verification |
-| `net/http/ratelimit` | `commons/net/http/ratelimit` | Redis-backed distributed fixed-window rate limiting with atomic Lua script |
+| `net/http` | `commons/net/http` | Fiber HTTP toolkit: middleware (CORS, logging, telemetry, basic auth), validation, 3 cursor pagination styles, health checks, SSRF-safe reverse proxy, ownership verification, response helpers, tenant-scoped ID parsing |
+| `net/http/ratelimit` | `commons/net/http/ratelimit` | Redis-backed distributed fixed-window rate limiting with atomic Lua script, tiered presets, dynamic tier selection, identity extractors, fail-open/fail-closed policy, `X-RateLimit-*` headers |
 
 ### Resilience & Utilities
 
@@ -115,15 +127,18 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
 | `dispatch layer` | `commons/dispatch layer` | Complete database-per-tenant isolation system with sub-packages for each resource type |
-| `dispatch layer/core` | `...core` | Shared types: TenantConfig, context helpers (GetPGContext, GetMBContext) |
-| `dispatch layer/client` | `...client` | HTTP client for Tenant Manager API with cache + circuit breaker |
+| `dispatch layer/core` | `...core` | Shared types: TenantConfig, **variadic** context helpers (`ContextWithPG(ctx, pg, ...module)`, `GetPGContext(ctx, ...module)`) |
+| `dispatch layer/client` | `...client` | HTTP client for Tenant Manager API with cache + circuit breaker. **v4.2.0+**: endpoint `/connections`, path prefix `/v1/associations/` |
 | `dispatch layer/postgres` | `...postgres` | Per-tenant PostgreSQL connection pool manager with LRU eviction |
 | `dispatch layer/mongo` | `...mongo` | Per-tenant MongoDB client manager |
 | `dispatch layer/rabbitmq` | `...rabbitmq` | Per-tenant RabbitMQ connection manager (vhost isolation) |
-| `dispatch layer/s3` | `...s3` | Tenant-aware S3 key namespacing (`{tenantID}/{key}`) |
+| `dispatch layer/s3` | `...s3` | Tenant-aware S3 key namespacing (`{tenantID}/{key}`). **v4.6.0**: `GetS3KeyStorageContext` (renamed from `GetObjectStorageKeyForTenant`) |
 | `dispatch layer/valkey` | `...valkey` | Tenant-aware Redis key namespacing (`tenant:{tenantID}:{key}`) |
-| `dispatch layer/middleware` | `...middleware` | Fiber middleware: JWT-to-tenantId extraction, DB resolution, context injection |
-| `dispatch layer/consumer` | `...consumer` | Multi-tenant RabbitMQ consumer with dynamic tenant discovery |
+| `dispatch layer/middleware` | `...middleware` | Fiber middleware: JWT-to-tenantId extraction, DB resolution, context injection. **v4.6.0**: unified `WithPG`/`WithMB` API (MultiPoolMiddleware removed) |
+| `dispatch layer/consumer` | `...consumer` | Multi-tenant RabbitMQ consumer with dynamic tenant discovery, `EnsureConsumerStarted` / `StopConsumer` lifecycle |
+| `dispatch layer/event` | `...event` | **v4.5.0**: Event-driven tenant discovery via Redis pub/sub. Events: `tenant.added`, `tenant.connections.updated`, `tenant.credentials.rotated`. `TenantEventListener` for HTTP-only services |
+| `dispatch layer/redis` | `...redis` | **v4.6.0**: `NewTenantPubSubRedisClient` helper for Redis pub/sub with TLS support |
+| `dispatch layer/tenantcache` | `...tenantcache` | **v4.6.0**: `TenantLoader` with `WithOnTenantLoaded` callback for event-driven tenant addition |
 
 ### Runtime Configuration (Major Subsystem)
 
@@ -143,6 +158,12 @@ This skill is a comprehensive catalog and quick-reference. Use it to discover wh
 | `systemplane/adapters/changefeed/mongodb` | `...adapters/changefeed/mongodb` | Change stream or polling change feed |
 | `systemplane/adapters/http/fiber` | `...adapters/http/fiber` | REST API for config/settings CRUD with optimistic concurrency |
 
+### Build & Shell Utilities
+
+| Package | Import Path Suffix | Purpose |
+|---|---|---|
+| `shell` | `commons/shell` | Build/shell utilities — Makefiles, shell scripts, ASCII art banners for Lerian services |
+
 ---
 
 ## 2. Common Initialization Pattern
@@ -158,6 +179,8 @@ logger, _ := zap.New(zap.Config{
 defer logger.Sync(ctx)
 
 // 2. Telemetry — second because DB/HTTP packages emit traces and metrics
+//    When CollectorExporterEndpoint is empty, noop global providers are registered
+//    so trace/metric calls are no-ops instead of errors.
 tl, _ := opentelemetry.NewTelemetry(opentelemetry.TelemetryConfig{
     LibraryName:               "my-service",
     ServiceName:               "my-service",
@@ -242,6 +265,23 @@ sm.StartWithGracefulShutdown()
 - All `defer` calls run in LIFO order, so the server shuts down before DB connections close.
 - Every infrastructure client accepts `MetricsFactory` (optional, nil disables metrics).
 - `tl.ApplyGlobals()` sets the global Core threeProvider/MeterProvider for libraries that use `otel.Core three()`.
+- When `CollectorExporterEndpoint` is empty, noop providers are registered globally so code that calls `otel.Core three()` or `otel.Meter()` does not error — it simply no-ops.
+
+### Alternative: Using the `Launcher` (Root Package)
+
+For services that want concurrent lifecycle management, the root `commons` package provides a `Launcher`:
+
+```go
+launcher := commons.NewLauncher(logger)
+launcher.Add("http-server", func(ctx context.Context) error {
+    return sm.StartWithGracefulShutdown()
+})
+launcher.Add("consumer", func(ctx context.Context) error {
+    return consumer.Run(ctx)
+})
+// Launcher starts all components concurrently, cancels all on first error
+err := launcher.Run(ctx)
+```
 
 ---
 
@@ -332,8 +372,146 @@ CORS → Logging → Telemetry → Rate Limit → Auth → Handler
 | CORS | `http.WithCORS()` | Cross-origin resource sharing |
 | Logging | `http.WithHTTPLogging(http.WithCustomLogger(logger))` | Request/response logging |
 | Telemetry | `http.NewTelemetryMiddleware(tl).WithTelemetry(tl, skipPaths...)` | OTel span creation, metrics |
-| Rate Limit | `ratelimit.New(redisConn).WithRateLimit(ratelimit.DefaultTier())` | Distributed rate limiting |
+| Rate Limit | `ratelimit.WithDefaultRateLimit(redisConn)` | Distributed rate limiting (one-liner setup) |
 | Basic Auth | `http.WithBasicAuth(username, password)` | HTTP Basic authentication |
+
+### Rate Limiting (`net/http/ratelimit`) — Deep Reference
+
+**Added in v4.2.0.** Redis-backed distributed fixed-window rate limiting with atomic Lua script (INCR + PEXPIRE in a single round-trip).
+
+#### Quick Setup (One-Liner)
+
+```go
+// WithDefaultRateLimit sets up rate limiting with sensible defaults.
+// Returns nil middleware (no-op) when RATE_LIMIT_ENABLED != "true".
+app.Use(ratelimit.WithDefaultRateLimit(redisConn))
+```
+
+#### Full Setup (Custom Configuration)
+
+```go
+// New returns *RateLimiter (nil when disabled — all methods are nil-safe)
+rl := ratelimit.New(redisConn,
+    ratelimit.WithTier(ratelimit.AggressiveTier()),
+    ratelimit.WithIdentityExtractor(ratelimit.IdentityFromIPAndHeader("X-API-Key")),
+    ratelimit.WithFailPolicy(ratelimit.FailOpen),
+    ratelimit.WithOnLimited(func(ctx *fiber.Ctx, identity string) {
+        logger.Warn("rate limited", "identity", identity, "path", ctx.Path())
+    }),
+)
+
+// Static tier — same limits for all requests
+app.Use(rl.WithRateLimit(ratelimit.DefaultTier()))
+
+// Dynamic tier — different limits based on request characteristics
+app.Use(rl.WithDynamicRateLimit(func(ctx *fiber.Ctx) ratelimit.Tier {
+    if ctx.Method() == "GET" {
+        return ratelimit.RelaxedTier()
+    }
+    return ratelimit.DefaultTier()
+}))
+
+// Method-based tier selector (convenience for write-vs-read split)
+app.Use(rl.WithDynamicRateLimit(ratelimit.MethodTierSelector))
+```
+
+#### Preset Tiers
+
+All tiers are configurable via environment variables:
+
+| Tier | Default Max | Default Window | Env Override (Max) | Env Override (Window) |
+|------|------------|---------------|--------------------|-----------------------|
+| `DefaultTier()` | 100 | 60s | `RATE_LIMIT_MAX` | `RATE_LIMIT_WINDOW_SEC` |
+| `AggressiveTier()` | 30 | 60s | `RATE_LIMIT_AGGRESSIVE_MAX` | `RATE_LIMIT_AGGRESSIVE_WINDOW_SEC` |
+| `RelaxedTier()` | 500 | 60s | `RATE_LIMIT_RELAXED_MAX` | `RATE_LIMIT_RELAXED_WINDOW_SEC` |
+
+#### Identity Extractors
+
+Determine who is being rate-limited:
+
+| Extractor | Identifies By | Use Case |
+|-----------|--------------|----------|
+| `IdentityFromIP` | Client IP address | Public APIs |
+| `IdentityFromHeader(name)` | Specific header value | API key-based limiting |
+| `IdentityFromIPAndHeader(name)` | IP + header combined | Defense-in-depth |
+
+#### Fail Policies
+
+| Policy | On Redis Error | Use Case |
+|--------|---------------|----------|
+| `FailOpen` | Allow request through | Availability-first services |
+| `FailClosed` | Reject request (429) | Security-first services |
+
+#### Response Headers
+
+When rate limiting is active, responses include:
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| `X-RateLimit-Limit` | Max requests | Tier's maximum requests per window |
+| `X-RateLimit-Remaining` | Remaining | Requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp | When the current window resets |
+| `Retry-After` | Seconds | Seconds until next request allowed (only on 429) |
+
+#### Environment Variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `RATE_LIMIT_ENABLED` | `"false"` | Master switch — `"true"` to enable |
+| `RATE_LIMIT_MAX` | `100` | Default tier max requests per window |
+| `RATE_LIMIT_WINDOW_SEC` | `60` | Default tier window in seconds |
+| `RATE_LIMIT_AGGRESSIVE_MAX` | `30` | Aggressive tier max |
+| `RATE_LIMIT_AGGRESSIVE_WINDOW_SEC` | `60` | Aggressive tier window |
+| `RATE_LIMIT_RELAXED_MAX` | `500` | Relaxed tier max |
+| `RATE_LIMIT_RELAXED_WINDOW_SEC` | `60` | Relaxed tier window |
+
+#### Third-Party Middleware Integration (`RedisStorage`)
+
+For integrating with other middleware that needs a rate-limit storage backend:
+
+```go
+storage := ratelimit.NewRedisStorage(redisConn)
+// Use storage with third-party rate-limit middleware that accepts a storage interface
+```
+
+### Response Helpers
+
+Standard response helpers for consistent API responses:
+
+| Helper | Purpose | Example |
+|--------|---------|---------|
+| `http.Respond(ctx, statusCode, body)` | Send JSON response with status code | `http.Respond(ctx, 200, entity)` |
+| `http.RespondStatus(ctx, statusCode)` | Send status-only response (no body) | `http.RespondStatus(ctx, 204)` |
+| `http.RespondError(ctx, err)` | Send error response with appropriate status | `http.RespondError(ctx, err)` |
+| `http.RenderError(ctx, statusCode, msg)` | Send error with custom status and message | `http.RenderError(ctx, 400, "invalid input")` |
+
+### Request Validation
+
+`http.ParseBodyAndValidate(ctx, &request)` parses the Fiber request body and runs struct tag validation.
+
+**Additional validation helpers:**
+
+| Helper | Purpose | Example |
+|--------|---------|---------|
+| `http.ValidateStruct(v)` | Validate any struct against its tags | `http.ValidateStruct(request)` |
+| `http.ValidateSortDirection(dir)` | Validate sort direction ("asc"/"desc") | `http.ValidateSortDirection(query.Sort)` |
+| `http.ValidateLimit(limit)` | Validate pagination limit is within bounds | `http.ValidateLimit(query.Limit)` |
+
+**Custom validation tags:**
+
+| Tag | Purpose | Example |
+|-----|---------|---------|
+| `positive_decimal` | Decimal > 0 | Amount fields |
+| `positive_amount` | Amount > 0 | Transaction values |
+| `nonnegative_amount` | Amount >= 0 | Balance fields |
+
+### Context & Ownership Verification
+
+| Helper | Purpose |
+|--------|---------|
+| `http.ParseAndVerifyTenantScopedID(ctx, paramName)` | Parse ID from path param and verify it belongs to the authenticated tenant |
+| `http.ParseAndVerifyResourceScopedID(ctx, paramName, ownerID)` | Parse ID and verify it belongs to the specified resource owner |
+| `http.VerifyOwnership(ctx, expectedOwnerID)` | Check that the authenticated user owns the requested resource (403 if not) |
 
 ### Pagination (Three Styles)
 
@@ -346,18 +524,6 @@ CORS → Logging → Telemetry → Rate Limit → Auth → Handler
 
 All pagination helpers return a standard `CursorPagination` response with `next` / `previous` links.
 
-### Request Validation
-
-`http.ParseBodyAndValidate(ctx, &request)` parses the Fiber request body and runs struct tag validation.
-
-**Custom validation tags:**
-
-| Tag | Purpose | Example |
-|-----|---------|---------|
-| `positive_decimal` | Decimal > 0 | Amount fields |
-| `positive_amount` | Amount > 0 | Transaction values |
-| `nonnegative_amount` | Amount >= 0 | Balance fields |
-
 ### Health Checks
 
 `http.HealthWithDependencies(deps...)` returns a handler that checks all dependencies and reports circuit breaker state.
@@ -367,10 +533,6 @@ All pagination helpers return a standard `CursorPagination` response with `next`
 ### SSRF-Safe Reverse Proxy
 
 `http.ServeReverseProxy(target, ctx)` proxies requests with DNS rebinding prevention — the target hostname is resolved and validated before the connection is established.
-
-### Ownership Verification
-
-`http.VerifyOwnership(ctx, expectedOwnerID)` checks that the authenticated user owns the requested resource. Returns a 403 if not.
 
 ---
 
@@ -386,6 +548,8 @@ All pagination helpers return a standard `CursorPagination` response with `next`
 - OTel log bridge (logs appear as OTel log records)
 - Runtime level adjustment (`logger.SetLevel("debug")`)
 - `logger.Sync(ctx)` flushes buffered logs on shutdown
+- **v4.3.0+**: Timestamp field changed from `"ts"` (Unix epoch float) to `"timestamp"` (ISO 8601 string). If you parse logs programmatically, update your parsers.
+- **Multi-tenant**: In multi-tenant contexts, `tenant_id` is automatically injected into log entries when the tenant context is present.
 
 ### Tracing (`commons/opentelemetry`)
 
@@ -394,6 +558,8 @@ Every I/O package in lib-commons auto-creates OTel spans. You rarely need to cre
 **Error recording**: Use `opentelemetry.HandleSpanError(&span, err)` to record errors on spans. This sets the span status and adds the error as an event.
 
 **Redaction**: The OTel setup automatically redacts sensitive fields from span attributes using the `security` package.
+
+**Noop providers**: When `CollectorExporterEndpoint` is empty, `NewTelemetry` registers noop global Core threeProvider, MeterProvider, and LoggerProvider. This means services can always call `otel.Core three()` and `otel.Meter()` without checking whether telemetry is configured — calls simply no-op.
 
 ### Metrics (`commons/opentelemetry/metrics`)
 
@@ -559,7 +725,7 @@ assert.BalanceSufficientForRelease(onHold, releaseAmt)
 
 // Transaction state machine
 assert.ValidTransactionStatus(status)             // CREATED, APPROVED, PENDING, CANCELED, NOTED
-assert.TransactionCanTransitionTo(current, target) // e.g., PENDING → APPROVED ✓, APPROVED → CREATED ✗
+assert.TransactionCanTransitionTo(current, target) // e.g., PENDING → APPROVED OK, APPROVED → CREATED NOT OK
 assert.TransactionCanBeReverted(status, hasParent) // only APPROVED + no parent
 assert.TransactionHasOperations(ops)
 assert.TransactionOperationsContain(ops, allowed)  // subset check
@@ -854,7 +1020,7 @@ dispatcher.Run(launcher)
 
 ## 9. Tenant Manager (Deep Reference)
 
-The dispatch layer subsystem provides complete database-per-tenant isolation. This is a major subsystem with its own middleware, connection pool managers, and consumer infrastructure.
+The dispatch layer subsystem provides complete database-per-tenant isolation. This is a major subsystem with its own middleware, connection pool managers, consumer infrastructure, and **event-driven tenant discovery** (v4.5.0+).
 
 ### Architecture Flow
 
@@ -865,12 +1031,19 @@ HTTP request
       → per-tenant connection pool (get or create DB connection)
         → context injection (db available via ctx)
           → repository layer (uses ctx to get tenant-scoped DB)
+
+Event-driven flow (v4.5.0+):
+  Redis pub/sub → TenantEventListener → callback
+    → tenant.added: provision new tenant connections
+    → tenant.connections.updated: refresh connection pools
+    → tenant.credentials.rotated: rotate credentials in pools
 ```
 
 ### Setup Pattern
 
 ```go
 // 1. Create the TM client
+//    v4.2.0+: endpoint is /connections, path prefix is /v1/associations/
 tmClient, _ := client.NewClient("https://dispatch layer:8080", logger,
     client.WithServiceAPIKey(os.Getenv("TM_API_KEY")),
     client.WithCache(cache.NewInMemoryCache()),
@@ -891,6 +1064,8 @@ mongoManager := tmmongo.NewManager(tmClient, "my-service",
 )
 
 // 3. Attach middleware
+//    v4.6.0: Use unified WithPG/WithMB API (MultiPoolMiddleware removed)
+//    WithPG/WithMB accept optional module parameter for multi-module services
 mw := middleware.NewTenantMiddleware(
     middleware.WithPG(pgManager),
     middleware.WithMB(mongoManager),
@@ -900,13 +1075,114 @@ mw := middleware.NewTenantMiddleware(
 app.Use(mw.WithTenantDB)
 
 // 4. In repositories, access tenant-scoped connections
+//    v4.6.0: Context functions are variadic — module parameter is optional
 func (r *Repo) Get(ctx context.Context, id string) (*Entity, error) {
-    db := tmcore.GetPGContext(ctx)
+    db := tmcore.GetPGContext(ctx)  // no module = default
     if db == nil {
         return nil, fmt.Errorf("tenant postgres connection missing from context")
     }
     // use db for queries — automatically scoped to the tenant's database
 }
+
+// For multi-module services, pass the module name:
+func (r *Repo) GetFromAudit(ctx context.Context, id string) (*AuditEntry, error) {
+    db := tmcore.GetPGContext(ctx, "audit")  // specific module
+    if db == nil {
+        return nil, fmt.Errorf("audit postgres connection missing from context")
+    }
+    // ...
+}
+```
+
+### Variadic Context API (v4.6.0)
+
+The context functions now use variadic module parameters instead of separate per-module functions:
+
+| Old API (pre-v4.6.0) | New API (v4.6.0) |
+|----------------------|-------------------|
+| `ContextWithTenantPG(ctx, pg)` | `ContextWithPG(ctx, pg)` (default module) |
+| `ContextWithTenantPG(ctx, pg)` for module X | `ContextWithPG(ctx, pg, "moduleX")` (specific module) |
+| `GetPGContext(ctx)` | `GetPGContext(ctx)` (default module) |
+| Per-module context function | `GetPGContext(ctx, "moduleX")` (specific module) |
+| `ContextWithTenantMB(ctx, mb)` | `ContextWithMB(ctx, mb)` (default module) |
+| Per-module MB context function | `GetMBContext(ctx, "moduleX")` (specific module) |
+
+### Event-Driven Tenant Discovery (v4.5.0+)
+
+**Replaces the watcher-based model** (watcher removed in v4.5.0). Tenants are discovered via Redis pub/sub events instead of polling.
+
+#### Events
+
+| Event | Channel | Payload | When |
+|-------|---------|---------|------|
+| `tenant.added` | `tenant-events` | Tenant config JSON | New tenant registered in TM |
+| `tenant.connections.updated` | `tenant-events` | Updated connection info | Tenant DB connection changed |
+| `tenant.credentials.rotated` | `tenant-events` | Rotation metadata | Credentials rotated (scheduled or emergency) |
+
+#### TenantEventListener (HTTP-Only Services)
+
+For services that only handle HTTP requests (no RabbitMQ consumer), use `TenantEventListener`:
+
+```go
+import tmevent "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/event"
+
+listener := tmevent.NewTenantEventListener(redisClient, logger,
+    tmevent.WithOnTenantAdded(func(ctx context.Context, tenant TenantConfig) {
+        // Provision connections for new tenant
+        pgManager.Provision(ctx, tenant.ID)
+        mongoManager.Provision(ctx, tenant.ID)
+        logger.Info("new tenant provisioned", "tenant_id", tenant.ID)
+    }),
+    tmevent.WithOnConnectionsUpdated(func(ctx context.Context, tenant TenantConfig) {
+        // Refresh connection pools with new connection info
+        pgManager.Refresh(ctx, tenant.ID)
+        mongoManager.Refresh(ctx, tenant.ID)
+    }),
+    tmevent.WithOnCredentialsRotated(func(ctx context.Context, tenant TenantConfig) {
+        // Rotate credentials in existing pools
+        pgManager.RotateCredentials(ctx, tenant.ID)
+    }),
+)
+
+// Start listening (blocks — run in a goroutine or via Launcher)
+runtime.SafeGoWithContextAndComponent(ctx, logger, "my-service", "tenant-listener",
+    runtime.KeepRunning, func(ctx context.Context) {
+        listener.Listen(ctx)
+    },
+)
+```
+
+#### NewTenantPubSubRedisClient (v4.6.0)
+
+Helper for creating a Redis client specifically configured for tenant pub/sub with TLS:
+
+```go
+import tmredis "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/redis"
+
+pubsubClient := tmredis.NewTenantPubSubRedisClient(
+    os.Getenv("MULTI_TENANT_REDIS_HOST"),
+    os.Getenv("MULTI_TENANT_REDIS_PORT"),
+    os.Getenv("MULTI_TENANT_REDIS_PASSWORD"),
+    logger,
+)
+// Use pubsubClient with TenantEventListener or consumer
+```
+
+**Environment variable**: `MULTI_TENANT_REDIS_TLS` — set to `"true"` to enable TLS for the pub/sub Redis connection.
+
+#### TenantLoader with Callback (v4.6.0 — `tenantcache` package)
+
+The `tenantcache` package provides `TenantLoader` with a callback for event-driven tenant addition:
+
+```go
+import "github.com/LerianStudio/lib-commons/v4/commons/dispatch layer/tenantcache"
+
+loader := tenantcache.NewTenantLoader(tmClient, logger,
+    tenantcache.WithOnTenantLoaded(func(ctx context.Context, tenant TenantConfig) {
+        // Called for each tenant loaded — useful for provisioning side effects
+        logger.Info("tenant loaded into cache", "tenant_id", tenant.ID)
+    }),
+)
 ```
 
 ### Isolation Modes
@@ -922,6 +1198,7 @@ These packages do not manage connection pools — they provide key namespacing u
 
 **S3:**
 ```go
+// v4.6.0: Renamed from GetObjectStorageKeyForTenant
 key := s3.GetS3KeyStorageContext(ctx, "my-file.pdf")
 // returns "{tenantID}/my-file.pdf"
 ```
@@ -952,10 +1229,36 @@ consumer.Register("my-queue", func(ctx context.Context, d amqp.Delivery) error {
     return nil
 })
 
-consumer.Run(ctx)
+// EnsureConsumerStarted starts the consumer if not already running
+consumer.EnsureConsumerStarted(ctx)
+
+// StopConsumer gracefully stops the consumer
+defer consumer.StopConsumer(ctx)
 ```
 
 The consumer dynamically discovers tenants and creates per-tenant connections on demand.
+
+### Unified Middleware API (v4.6.0)
+
+**MultiPoolMiddleware has been removed.** Use the unified `WithPG`/`WithMB` options on `NewTenantMiddleware`:
+
+```go
+// v4.6.0 — unified API with optional module parameter
+mw := middleware.NewTenantMiddleware(
+    middleware.WithPG(pgManager),              // default module
+    middleware.WithPG(auditPGManager, "audit"), // named module
+    middleware.WithMB(mongoManager),            // default module
+)
+app.Use(mw.WithTenantDB)
+```
+
+In request handlers, retrieve the correct connection by module:
+
+```go
+defaultDB := tmcore.GetPGContext(ctx)          // default module
+auditDB := tmcore.GetPGContext(ctx, "audit")    // "audit" module
+defaultMB := tmcore.GetMBContext(ctx)           // default module
+```
 
 ---
 
@@ -1057,7 +1360,134 @@ tenantLimit, _ := snap.GetInt("rate.limit", domain.ScopeTenant, tenantID)
 
 ---
 
-## 11. Cross-Cutting Patterns
+## 11. Root Package & Utilities
+
+The root `commons` package (`github.com/LerianStudio/lib-commons/v4/commons`) provides foundational utilities used across all Lerian services. These are building blocks that other packages and services depend on.
+
+### App Lifecycle (`app.go`)
+
+The `Launcher` provides concurrent app component lifecycle management:
+
+```go
+launcher := commons.NewLauncher(logger)
+
+// Add components — each runs concurrently
+launcher.Add("http-server", func(ctx context.Context) error {
+    return sm.StartWithGracefulShutdown()
+})
+launcher.Add("consumer", func(ctx context.Context) error {
+    return consumer.Run(ctx)
+})
+launcher.Add("event-listener", func(ctx context.Context) error {
+    return listener.Listen(ctx)
+})
+
+// Run blocks until all complete or first error — cancels remaining on error
+err := launcher.Run(ctx)
+```
+
+### Request-Scoped Context Helpers (`context.go`)
+
+Context utilities for carrying request-scoped data:
+
+```go
+// Attach values to context
+ctx = commons.ContextWithRequestID(ctx, requestID)
+ctx = commons.ContextWithTenantID(ctx, tenantID)
+ctx = commons.ContextWithUserID(ctx, userID)
+
+// Retrieve values from context
+requestID := commons.GetRequestID(ctx)
+tenantID := commons.GetTenantID(ctx)
+
+// Safe timeout — creates a derived context with timeout, returning cancel func
+ctx, cancel := commons.WithTimeoutSafe(ctx, 30*time.Second)
+defer cancel()
+```
+
+### Business Error Mapping (`errors.go`)
+
+Maps domain-level errors to HTTP status codes consistently:
+
+```go
+// ValidateBusinessError checks an error against known business error patterns
+// and returns the appropriate HTTP status code and user-friendly message
+statusCode, message := commons.ValidateBusinessError(err)
+
+// Common mappings:
+// ErrNotFound → 404
+// ErrConflict → 409
+// ErrValidation → 422
+// ErrUnauthorized → 401
+// ErrForbidden → 403
+```
+
+### UUID Generation (`utils.go`)
+
+```go
+// Generate a UUIDv7 (time-ordered, sortable)
+id := commons.GenerateUUIDv7()
+```
+
+**Why UUIDv7**: Time-ordered UUIDs improve database index locality and make natural ordering possible without additional timestamp columns.
+
+### Struct-to-JSON & Metrics Helpers (`utils.go`)
+
+```go
+// Convert any struct to JSON bytes (convenience wrapper)
+jsonBytes, err := commons.StructToJSON(entity)
+
+// Metrics registration helpers used internally by other packages
+```
+
+### String Utilities (`stringUtils.go`)
+
+```go
+// Remove accents from strings (useful for search normalization)
+normalized := commons.RemoveAccents("caf\u00e9")  // returns "cafe"
+
+// Case conversion
+snake := commons.ToSnakeCase("myFieldName")   // returns "my_field_name"
+camel := commons.ToCamelCase("my_field_name")  // returns "myFieldName"
+
+// Hashing utilities
+hash := commons.HashString("input-data")
+```
+
+### Date/Time Validation (`time.go`)
+
+```go
+// Validate date strings
+valid := commons.IsValidDate("2026-03-28")  // true
+valid = commons.IsValidDate("not-a-date")    // false
+
+// Parse dates with known formats
+t, err := commons.ParseDate("2026-03-28")
+
+// Validate and parse datetime
+t, err := commons.ParseDateTime("2026-03-28T10:30:00Z")
+```
+
+### Environment Variable Helpers (`os.go`)
+
+```go
+// Get environment variable with fallback default
+value := commons.GetenvOrDefault("PORT", "3000")
+
+// Set struct fields from environment variables using struct tags
+type Config struct {
+    Port     string `env:"PORT" default:"3000"`
+    LogLevel string `env:"LOG_LEVEL" default:"info"`
+    Debug    bool   `env:"DEBUG" default:"false"`
+}
+
+cfg := &Config{}
+commons.SetConfigFromEnvVars(cfg)
+```
+
+---
+
+## 12. Cross-Cutting Patterns
 
 These patterns appear consistently across all lib-commons packages. Understanding them helps predict how any package behaves.
 
@@ -1099,44 +1529,134 @@ All connection packages accept a `MetricsFactory` (optional — nil disables met
 
 Used for reconnect rate-limiting in `postgres`, `mongo`, `redis`, and `rabbitmq`. The backoff cap is 30 seconds. The jitter strategy is AWS Full Jitter: `sleep = random_between(0, min(cap, base * 2^attempt))`.
 
+### 8. Event-Driven Tenant Discovery (v4.5.0+)
+
+Instead of polling the Tenant Manager API for new tenants (watcher model, removed in v4.5.0), services now subscribe to Redis pub/sub events. This provides:
+
+- **Lower latency**: New tenants are discovered in milliseconds, not at the next poll interval
+- **Lower load**: No periodic HTTP calls to the Tenant Manager API
+- **Consistency**: All services receive tenant events simultaneously
+
+The pattern: `TenantEventListener` subscribes to Redis pub/sub, receives `tenant.added`, `tenant.connections.updated`, and `tenant.credentials.rotated` events, and invokes the registered callbacks.
+
+### 9. Variadic Context Pattern (v4.6.0)
+
+Context functions for tenant-scoped resources use variadic module parameters instead of separate per-module functions:
+
+```go
+// Without module — uses default
+db := tmcore.GetPGContext(ctx)
+
+// With module — explicit module scope
+db := tmcore.GetPGContext(ctx, "audit")
+```
+
+This pattern applies to both PG and MB context functions. The variadic approach allows a single middleware to inject multiple module-scoped connections, and repositories to retrieve the correct one without coupling to module-specific function names.
+
 ---
 
-## 12. Which Package Do I Need?
+## 13. Which Package Do I Need?
 
 Use this decision tree to find the right package quickly:
 
 | I need to... | Package |
 |-------------|---------|
+| **Database** | |
 | Connect to PostgreSQL | `postgres` |
 | Connect to MongoDB | `mongo` |
 | Connect to Redis/Valkey | `redis` |
+| Acquire a distributed lock | `redis` (RedisLockManager) |
+| **Messaging** | |
 | Publish messages to RabbitMQ | `rabbitmq` (ConfirmablePublisher) |
 | Consume messages from RabbitMQ (multi-tenant) | `rabbitmq` + `dispatch layer/consumer` |
-| Acquire a distributed lock | `redis` (RedisLockManager) |
+| **HTTP** | |
+| Add HTTP middleware (CORS, logging, telemetry) | `net/http` |
 | Rate-limit HTTP endpoints | `net/http/ratelimit` |
+| Paginate API responses | `net/http` (offset, UUID cursor, timestamp cursor, sort cursor) |
+| Validate HTTP request bodies | `net/http` (`ParseBodyAndValidate`, `ValidateStruct`) |
+| Send consistent API responses | `net/http` (`Respond`, `RespondStatus`, `RespondError`, `RenderError`) |
+| Add health checks | `net/http` (`HealthWithDependencies`) |
+| Parse and verify tenant-scoped IDs | `net/http` (`ParseAndVerifyTenantScopedID`, `ParseAndVerifyResourceScopedID`) |
+| **Resilience** | |
 | Add circuit breakers | `circuitbreaker` |
 | Add retry logic with backoff | `backoff` (compute delay) + your own loop |
 | Launch goroutines safely | `runtime` (`SafeGo`) |
-| Add HTTP middleware (CORS, logging, telemetry) | `net/http` |
-| Paginate API responses | `net/http` (offset, UUID cursor, timestamp cursor, sort cursor) |
-| Validate HTTP request bodies | `net/http` (`ParseBodyAndValidate`) |
-| Add health checks | `net/http` (`HealthWithDependencies`) |
+| Run concurrent tasks with error handling | `errgroup` (panic-safe, first-error cancellation) |
+| Do safe math (no panics) | `safe` (DivideOrZero, First, CachedRegexp) |
+| **Security** | |
 | Handle JWTs | `jwt` (Parse, Sign, ValidateTimeClaims) |
 | Encrypt/decrypt data | `crypto` (AES-GCM encrypt/decrypt, HMAC hash) |
 | Check if a field name is sensitive | `security` (`IsSensitiveField`) |
 | Fetch AWS secrets for M2M auth | `secretsmanager` (`GetM2MCredentials`) |
+| Handle license validation | `license` (fail-open/fail-closed policies) |
+| **Multi-Tenancy** | |
 | Add multi-tenancy (database-per-tenant) | `dispatch layer` (full isolation system) |
+| Discover tenants via events (HTTP services) | `dispatch layer/event` (`TenantEventListener`) |
+| Discover tenants via events (consumer services) | `dispatch layer/consumer` (built-in event support) |
+| Create Redis pub/sub client for tenant events | `dispatch layer/redis` (`NewTenantPubSubRedisClient`) |
+| Cache tenants with load callback | `dispatch layer/tenantcache` (`TenantLoader` with `WithOnTenantLoaded`) |
+| Get tenant-scoped PG/MB from context | `dispatch layer/core` (`GetPGContext(ctx, ...module)`, `GetMBContext(ctx, ...module)`) |
+| **Configuration** | |
 | Add hot-reloadable runtime config | `systemplane` (full config management plane) |
+| **Transactions** | |
 | Process financial transactions | `transaction` (intent planning, balance posting) |
 | Implement transactional outbox | `outbox` + `outbox/postgres` |
-| Parse cron expressions | `cron` (parse expression, compute next time) |
-| Do safe math (no panics) | `safe` (DivideOrZero, First, CachedRegexp) |
-| Create pointers from literals | `pointers` (String, Bool, Time, Int64, Float64) |
-| Add production-safe assertions | `assert` (with OTel observability) |
-| Manage graceful shutdown | `server` (ServerManager) |
+| **Observability** | |
 | Add structured logging | `log` (interface) + `zap` (implementation) |
 | Set up OpenTelemetry | `opentelemetry` (tracer, meter, logger providers) |
 | Build custom metrics | `opentelemetry/metrics` (Counter, Gauge, Histogram builders) |
-| Handle license validation | `license` (fail-open/fail-closed policies) |
+| Add production-safe assertions | `assert` (with OTel observability) |
+| Manage graceful shutdown | `server` (ServerManager) |
+| **Root Package Utilities** | |
+| Generate UUIDv7 | `commons` (`GenerateUUIDv7`) |
+| Map business errors to HTTP status | `commons` (`ValidateBusinessError`) |
+| Get env var with default | `commons` (`GetenvOrDefault`) |
+| Set config from env vars | `commons` (`SetConfigFromEnvVars`) |
+| Remove accents / convert case | `commons` (`RemoveAccents`, `ToSnakeCase`, `ToCamelCase`) |
+| Validate/parse dates | `commons` (`IsValidDate`, `ParseDate`, `ParseDateTime`) |
+| Manage concurrent app lifecycle | `commons` (`Launcher`) |
+| Carry request-scoped context | `commons` (`ContextWith*`, `WithTimeoutSafe`) |
+| **Other** | |
+| Parse cron expressions | `cron` (parse expression, compute next time) |
+| Create pointers from literals | `pointers` (String, Bool, Time, Int64, Float64) |
 | Use shared constants | `constants` (headers, error codes, OTel attributes) |
-| Run concurrent tasks with error handling | `errgroup` (panic-safe, first-error cancellation) |
+| Build scripts, Makefiles, ASCII banners | `shell` |
+
+---
+
+## 14. Breaking Changes
+
+This section documents breaking changes across lib-commons v4.x releases. Consult when upgrading.
+
+### v4.6.0
+
+| Change | Migration |
+|--------|-----------|
+| **MultiPoolMiddleware removed** | Use unified `WithPG`/`WithMB` API on `NewTenantMiddleware` with optional module parameter |
+| **Context API unified (PG)** | `ContextWithTenantPG(ctx, pg)` → `ContextWithPG(ctx, pg, ...module)` (variadic) |
+| **Context API unified (MB)** | `ContextWithTenantMB(ctx, mb)` → `ContextWithMB(ctx, mb, ...module)` (variadic) |
+| **GetPGContext variadic** | `GetPGContext(ctx)` still works; for modules use `GetPGContext(ctx, "module")` |
+| **GetMBContext variadic** | `GetMBContext(ctx)` still works; for modules use `GetMBContext(ctx, "module")` |
+| **S3 key function renamed** | `GetObjectStorageKeyForTenant` → `GetS3KeyStorageContext` |
+| **Settings option renamed** | `WithSettingsCheckInterval` → `WithConnectionsCheckInterval` |
+
+### v4.5.0
+
+| Change | Migration |
+|--------|-----------|
+| **Watcher removed** | Replace watcher-based tenant discovery with event-driven model using `TenantEventListener` (Redis pub/sub) |
+| **New dependency**: Redis pub/sub | Services discovering tenants now need a Redis connection for pub/sub |
+
+### v4.3.0
+
+| Change | Migration |
+|--------|-----------|
+| **Zap timestamp format** | `"ts"` field (Unix epoch float) → `"timestamp"` field (ISO 8601 string). Update log parsers, Fluentd/Logstash configs, and Grafana queries |
+
+### v4.2.0
+
+| Change | Migration |
+|--------|-----------|
+| **TM client endpoint** | `/settings` → `/connections` |
+| **TM client path prefix** | Added `/v1/associations/` prefix to all TM API calls |
+| **Rate limiting added** | New package `net/http/ratelimit` — not a breaking change but new capability with env vars |
