@@ -3,6 +3,17 @@
 ## [1.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.1)
 
 - **Fixes:**
+  - Resolved issue with JSON field naming by adopting camelCase in code examples. (#278)
+
+Contributors: @jeff, @jefferson.comff
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.20.0...ring-default@1.20.1)
+
+---
+
+## [1.20.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.20.1)
+
+- **Fixes:**
   - Resolved issue with JSON field naming by using camelCase in code examples. (Commit: 491f85dc)
 
 Contributors: @jeff, @jefferson.comff
