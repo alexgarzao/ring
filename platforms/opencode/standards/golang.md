@@ -1825,10 +1825,12 @@ const (
 var (
     ErrInvalidInput = &BusinessError{
         Code:    ErrCodeInvalidInput,
+        Title:   "Bad Request",
         Message: "Invalid input provided",
     }
     ErrNotFound = &BusinessError{
         Code:    ErrCodeNotFound,
+        Title:   "Not Found",
         Message: "Resource not found",
     }
 )
@@ -1840,6 +1842,7 @@ var (
 // pkg/errors.go
 type BusinessError struct {
     Code    string `json:"code"`
+    Title   string `json:"title"`
     Message string `json:"message"`
     Details any    `json:"details,omitempty"`
 }
