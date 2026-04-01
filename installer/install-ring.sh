@@ -208,7 +208,7 @@ if [[ "$dry_run" =~ ^[Yy]$ ]]; then
     echo ""
     echo "${YELLOW}=== Dry Run ===${RESET}"
     cd "$RING_ROOT"
-    "$PYTHON_CMD" -m installer.ring_installer install --platforms "$PLATFORMS" --dry-run "${EXTRA_ARGS[@]}"
+    "$PYTHON_CMD" -m installer.ring_installer install --platforms "$PLATFORMS" --dry-run "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
     echo ""
     read -p "Proceed with actual installation? (Y/n): " proceed
     if [[ "$proceed" =~ ^[Nn]$ ]]; then
@@ -221,7 +221,7 @@ fi
 echo ""
 echo "${GREEN}=== Installing ===${RESET}"
 cd "$RING_ROOT"
-"$PYTHON_CMD" -m installer.ring_installer install --platforms "$PLATFORMS" "${EXTRA_ARGS[@]}"
+"$PYTHON_CMD" -m installer.ring_installer install --platforms "$PLATFORMS" "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
 
 echo ""
 echo "${GREEN}================================================${RESET}"
