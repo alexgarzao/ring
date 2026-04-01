@@ -225,7 +225,9 @@ The app MUST run all readyz checks at boot and log results BEFORE accepting traf
 // cmd/app/main.go or internal/bootstrap/selfprobe.go
 
 func RunSelfProbe(ctx context.Context, deps Dependencies, logger Logger) error {
-    logger.Info("Running startup self-probe...")
+    logger.Infow("startup_self_probe_started",
+        "probe", "self",
+    )
     results := make(map[string]DependencyCheck)
     allHealthy := true
 
@@ -234,19 +236,37 @@ func RunSelfProbe(ctx context.Context, deps Dependencies, logger Logger) error {
         results[name] = check
 
         if check.Status == "up" {
-            logger.Infof("self-probe %s: UP (latency=%dms, tls=%v)", name, check.LatencyMs, check.TLS)
+            logger.Infow("self_probe_check",
+                "probe", "self",
+                "name", name,
+                "status", check.Status,
+                "duration_ms", check.LatencyMs,
+                "tls", check.TLS,
+            )
         } else {
-            logger.Errorf("self-probe %s: DOWN (error=%s)", name, check.Error)
+            logger.Errorw("self_probe_check",
+                "probe", "self",
+                "name", name,
+                "status", check.Status,
+                "duration_ms", check.LatencyMs,
+                "error", check.Error,
+            )
             allHealthy = false
         }
     }
 
     if !allHealthy {
-        logger.Error("Self-probe FAILED — service will report unhealthy")
+        logger.Errorw("startup_self_probe_failed",
+            "probe", "self",
+            "results", results,
+        )
         return fmt.Errorf("self-probe failed: one or more dependencies unreachable")
     }
 
-    logger.Info("Self-probe PASSED — all dependencies reachable")
+    logger.Infow("startup_self_probe_passed",
+        "probe", "self",
+        "results", results,
+    )
     return nil
 }
 ```
@@ -311,4 +331,4 @@ Verify `/readyz` endpoint, `RunSelfProbe` function, and `/health` self-probe wir
 | "TLS check is overhead" | TLS mismatch = silent failure for every query | **Check TLS per dependency** |
 | "Only backend needs this" | Console (frontend) caused the incident | **All apps, no exceptions** |
 | "Dependencies are reliable" | Networks partition. Configs drift. Certs expire. | **Check every time** |
-| "Too many checks slow startup" | 5 pings < 100ms total. Incident costs hours. | **No excuse** |
+| "Too many checks slow startup" | Bounded per-dependency timeouts keep overhead low. Incident costs hours. | **No excuse** |
