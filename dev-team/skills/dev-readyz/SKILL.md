@@ -154,6 +154,13 @@ type ReadyzResponse struct {
     DeploymentMode string                      `json:"deployment_mode"`
 }
 
+func isCacheDependency(name string) bool {
+    normalized := strings.ToLower(name)
+    return strings.Contains(normalized, "redis") ||
+        strings.Contains(normalized, "valkey") ||
+        strings.Contains(normalized, "cache")
+}
+
 func ReadyzHandler(deps Dependencies) fiber.Handler {
     return func(c *fiber.Ctx) error {
         ctx, cancel := context.WithTimeout(c.UserContext(), 5*time.Second)
@@ -169,7 +176,15 @@ func ReadyzHandler(deps Dependencies) fiber.Handler {
         // Each check: ping + measure latency + verify TLS
         // Use 2s timeout per dependency, 1s for cache
         for name, checker := range deps.HealthCheckers() {
-            check := checker.Check(ctx)
+            timeout := 2 * time.Second
+            if isCacheDependency(name) {
+                timeout = 1 * time.Second
+            }
+
+            depCtx, depCancel := context.WithTimeout(ctx, timeout)
+            check := checker.Check(depCtx)
+            depCancel()
+
             resp.Checks[name] = check
             if check.Status != "up" {
                 resp.Status = "not_ready"
@@ -258,11 +273,11 @@ f.Get("/health", func(c *fiber.Ctx) error {
     if !selfProbeOK.Load() {
         return libHTTP.ServiceUnavailable(c, "UNHEALTHY", "Self-probe failed", nil)
     }
-    return libHTTP.OK(c, fiber.Map{"status": "ok"})
+    return libHTTP.HealthWithDependencies(deps...)(c)
 })
 ```
 
-**This is the key insight:** `/health` is no longer just "process alive." It's "process alive AND dependencies verified at startup." A pod that starts but can't reach its databases will be restarted by K8s instead of silently serving errors.
+**This is the key insight:** `/health` is no longer just "process alive." It's "startup self-probe passed AND lib-commons runtime dependency state is healthy." A pod that starts but can't reach its databases will be restarted by K8s instead of silently serving errors, and runtime dependency or circuit-breaker failures are still surfaced through the standard lib-commons health handler.
 
 ### Self-Probe Lifecycle
 
