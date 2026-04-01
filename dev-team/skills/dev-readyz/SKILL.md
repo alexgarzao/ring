@@ -4,7 +4,7 @@ slug: dev-readyz
 version: 1.0.0
 type: skill
 description: |
-  Implements comprehensive readiness probes (/readyz) and startup self-probes for
+  Implements comprehensive readiness probes (/ready) and startup self-probes for
   Lerian services. Goes beyond basic K8s liveness: validates every external dependency
   (database, cache, queue, TLS handshakes) and exposes per-dependency status with
   latency and TLS info. Designed to be consumed by Tenant Manager post-provisioning.
@@ -17,14 +17,14 @@ trigger: |
   - New service being created
   - Service has external dependencies (DB, cache, queue)
   - Gate 0 (Implementation) added connection code
-  - Service lacks /readyz or has incomplete dependency checks
+  - Service lacks /ready or has incomplete dependency checks
   - Service missing startup self-probe
 
 NOT_skip_when: |
   - "K8s TCP probe is enough" → TCP ≠ app ready. Monetarie proved it.
-  - "/health already exists" → /health without self-probe = blind. /readyz validates ALL deps.
+  - "/health already exists" → /health without self-probe = blind. /ready validates ALL deps.
   - "TLS check is overkill" → TLS mismatch = silent failure. This incident exists because of it.
-  - "Frontend doesn't need readyz" → Console IS the product that broke. Every app needs it.
+  - "Frontend doesn't need /ready" → Console IS the product that broke. Every app needs it.
   - "We'll add checks later" → Later = client-facing incident. Add now.
   - "Service is simple" → Simple services still connect to databases. No exceptions.
 
@@ -86,7 +86,7 @@ examples:
     invocation: "/ring:dev-readyz"
     expected_flow: |
       1. Scan project for external dependencies
-      2. Validate /readyz endpoint covers all deps
+      2. Validate /ready endpoint covers all deps
       3. Generate missing checks
       4. Implement startup self-probe
       5. Verify /health reflects self-probe result
@@ -111,13 +111,13 @@ Build dependency map: PostgreSQL (pgx), MongoDB (mongo-driver), Redis/Valkey (go
 
 **SaaS deployment mode: TLS is MANDATORY for all database connections.** No exceptions.
 
-## Phase 2: /readyz Endpoint
+## Phase 2: /ready Endpoint
 
 ### Response Contract (MANDATORY)
 
 ```json
 {
-  "status": "ready",
+  "status": "healthy",
   "checks": {
     "postgres": { "status": "up", "latency_ms": 2, "tls": true },
     "mongodb":  { "status": "up", "latency_ms": 3, "tls": true },
@@ -129,7 +129,7 @@ Build dependency map: PostgreSQL (pgx), MongoDB (mongo-driver), Redis/Valkey (go
 }
 ```
 
-- `status`: `"ready"` if ALL checks pass, `"not_ready"` if ANY fails
+- `status`: `"healthy"` if ALL checks pass, `"unhealthy"` if ANY fails
 - Each check includes `latency_ms` (for connections with ping) and `tls` (boolean)
 - `deployment_mode`: from `DEPLOYMENT_MODE` env or inferred from config
 - `version`: from build info or `VERSION` env
@@ -137,7 +137,7 @@ Build dependency map: PostgreSQL (pgx), MongoDB (mongo-driver), Redis/Valkey (go
 ### Go Implementation (Fiber + lib-commons)
 
 ```go
-// internal/adapters/http/in/readyz.go
+// internal/adapters/http/in/ready.go
 
 type DependencyCheck struct {
     Status    string `json:"status"`
@@ -147,7 +147,7 @@ type DependencyCheck struct {
     Error     string `json:"error,omitempty"`
 }
 
-type ReadyzResponse struct {
+type ReadyResponse struct {
     Status         string                      `json:"status"`
     Checks         map[string]DependencyCheck  `json:"checks"`
     Version        string                      `json:"version"`
@@ -161,13 +161,13 @@ func isCacheDependency(name string) bool {
         strings.Contains(normalized, "cache")
 }
 
-func ReadyzHandler(deps Dependencies) fiber.Handler {
+func ReadyHandler(deps Dependencies) fiber.Handler {
     return func(c *fiber.Ctx) error {
         ctx, cancel := context.WithTimeout(c.UserContext(), 5*time.Second)
         defer cancel()
 
-        resp := ReadyzResponse{
-            Status:         "ready",
+        resp := ReadyResponse{
+            Status:         "healthy",
             Checks:         make(map[string]DependencyCheck),
             Version:        buildVersion,
             DeploymentMode: os.Getenv("DEPLOYMENT_MODE"),
@@ -187,12 +187,12 @@ func ReadyzHandler(deps Dependencies) fiber.Handler {
 
             resp.Checks[name] = check
             if check.Status != "up" {
-                resp.Status = "not_ready"
+                resp.Status = "unhealthy"
             }
         }
 
-        if resp.Status != "ready" {
-            return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Not Ready", resp)
+        if resp.Status != "healthy" {
+            return libHTTP.ServiceUnavailable(c, "UNHEALTHY", "Service Unhealthy", resp)
         }
         return libHTTP.OK(c, resp)
     }
@@ -205,19 +205,21 @@ Each checker MUST verify TLS state from the connection options (e.g., `connOpts.
 
 ### Next.js Implementation
 
-Same pattern at `app/api/admin/health/readyz/route.ts`: ping each dependency, measure latency, check TLS, return 200/503 with the same JSON contract. Use `Response.json()` with appropriate status code.
+Same pattern at `app/api/admin/health/ready/route.ts`: ping each dependency, measure latency, check TLS, return 200/503 with the same JSON contract. Use `Response.json()` with appropriate status code.
 
 ### Endpoint Paths
 
-| Stack | Readyz Path | Health Path |
+| Stack | Ready Path | Health Path |
 |-------|-------------|-------------|
-| Go API | `/readyz` | `/health` |
-| Go Worker | `/readyz` on `HEALTH_PORT` | `/health` on `HEALTH_PORT` |
-| Next.js | `/api/admin/health/readyz` | `/api/admin/health/ready` |
+| Go API | `/ready` | `/health` |
+| Go Worker | `/ready` on `HEALTH_PORT` | `/health` on `HEALTH_PORT` |
+| Next.js | `/api/admin/health/ready` | `/api/admin/health/ready` |
+
+Next.js commonly exposes a single `/api/admin/health/ready` route, so this skill treats that path as the readiness-facing health check for frontend services.
 
 ## Phase 3: Startup Self-Probe
 
-The app MUST run all readyz checks at boot and log results BEFORE accepting traffic.
+The app MUST run all readiness checks at boot and log results BEFORE accepting traffic.
 
 ### Go Implementation
 
@@ -293,7 +295,7 @@ f.Get("/health", func(c *fiber.Ctx) error {
     if !selfProbeOK.Load() {
         return libHTTP.ServiceUnavailable(c, "UNHEALTHY", "Self-probe failed", nil)
     }
-    return libHTTP.HealthWithDependencies(deps...)(c)
+    return libHTTP.HealthWithDependencies(deps)(c)
 })
 ```
 
@@ -302,31 +304,31 @@ f.Get("/health", func(c *fiber.Ctx) error {
 ### Self-Probe Lifecycle
 
 1. App starts → self-probe → logs each dep → `/health` reflects result
-2. ALL pass: 200 on `/health`, `/readyz` operates normally
+2. ALL pass: 200 on `/health`, `/ready` operates normally
 3. ANY fail: 503 on `/health`, K8s restarts pod via liveness probe
 4. Optional: periodic re-probe via `SELF_PROBE_INTERVAL` env
 
 ## Phase 4: Validation
 
-Verify `/readyz` endpoint, `RunSelfProbe` function, and `/health` self-probe wiring all exist.
+Verify `/ready` endpoint, `RunSelfProbe` function, and `/health` self-probe wiring all exist.
 
 ### Checklist
 
-- [ ] All detected dependencies have a checker in /readyz
+- [ ] All detected dependencies have a checker in /ready
 - [ ] Each checker validates TLS when TLS is configured
 - [ ] Each checker has a timeout (2s DB, 1s cache)
 - [ ] Response includes per-dep latency and TLS status
 - [ ] Startup self-probe runs before accepting traffic
 - [ ] Self-probe results logged as structured JSON
 - [ ] /health returns 503 if self-probe failed
-- [ ] Helm values use /readyz for readinessProbe
+- [ ] Helm values use /ready for readinessProbe
 - [ ] SaaS mode enforces TLS on all DB connections
 
 ### Anti-Rationalization Table
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "K8s TCP probe is enough" | TCP ≠ app ready. Monetarie incident: pod alive, Mongo dead. | **Implement /readyz** |
+| "K8s TCP probe is enough" | TCP ≠ app ready. Monetarie incident: pod alive, Mongo dead. | **Implement /ready** |
 | "/health covers it" | /health without self-probe is blind to dep failures | **Add self-probe, wire to /health** |
 | "TLS check is overhead" | TLS mismatch = silent failure for every query | **Check TLS per dependency** |
 | "Only backend needs this" | Console (frontend) caused the incident | **All apps, no exceptions** |
