@@ -1,5 +1,16 @@
 # Ring-pm-team Changelog
 
+## [0.22.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.22.0)
+
+- **Features**
+  - Added Operational Dashboard Discovery to Gate 1, enhancing project management capabilities.
+
+Contributors: @fred, @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.21.2...ring-pm-team@0.22.0)
+
+---
+
 ## [0.21.1](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.21.1)
 
 - Fixes:
