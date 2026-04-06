@@ -1,6 +1,5 @@
 ---
 name: ring:portfolio-manager
-version: 1.2.0
 description: Senior Portfolio Manager specialized in multi-project coordination, strategic alignment assessment, and portfolio optimization. Handles portfolio-level planning, prioritization, and health monitoring.
 type: specialist
 output_schema:

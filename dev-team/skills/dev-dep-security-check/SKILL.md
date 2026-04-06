@@ -13,6 +13,10 @@ trigger: |
   - Auditing existing dependencies for supply-chain risk
   - Reviewing a PR that adds or updates dependencies
   - Investigating a potential supply-chain compromise
+skip_when: |
+  - No dependencies are being added, updated, or audited
+  - Task involves only internal code changes with no new imports
+  - Dependency is already vetted and pinned in lockfile
 
 related:
   complementary: [ring:dev-docker-security, ring:dev-sre, ring:dev-implementation]

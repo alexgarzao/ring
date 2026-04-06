@@ -9,6 +9,12 @@ trigger: |
   - Task has acceptance criteria requiring test coverage
   - Need to verify implementation meets requirements
 
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Task is documentation-only, configuration-only, or non-code
+  - No code implementation was produced (nothing to test)
+  - Changes are limited to CI/CD, infrastructure, or deployment configuration
+
 NOT_skip_when: |
   - "Manual testing validates all criteria" → Manual tests are not executable. Gate 3 requires unit tests.
   - "Integration tests are better" → Gate 3 scope is unit tests only.
@@ -94,32 +100,6 @@ verification:
     - "Every acceptance criterion has at least one test"
     - "No skipped or pending tests"
 
-examples:
-  - name: "TDD for auth service"
-    input:
-      unit_id: "task-001"
-      acceptance_criteria: ["User can login with valid credentials", "Invalid password returns error"]
-      implementation_files: ["internal/service/auth.go"]
-      language: "go"
-    expected_output: |
-      ## Testing Summary
-      **Status:** PASS
-      **Coverage:** 89.5%
-      
-      ## Coverage Report
-      | Package | Coverage |
-      |
----------|----------|
-      | internal/service | 89.5% |
-      
-      ## Traceability Matrix
-      | AC | Test | Status |
-      |----|------|--------|
-      | AC-1 | TestAuthService_Login_ValidCredentials | ✅ |
-      | AC-2 | TestAuthService_Login_InvalidPassword | ✅ |
-      
-      ## Handoff to Next Gate
-      - Ready for Gate 4: YES
 ---
 
 # Dev Unit Testing (Gate 3)

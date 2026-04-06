@@ -1,8 +1,5 @@
 ---
 name: ring:dev-readyz
-slug: dev-readyz
-version: 1.0.0
-type: skill
 description: |
   Implements comprehensive readiness probes (/readyz) and startup self-probes for
   Lerian services. Goes beyond basic K8s liveness: validates every external dependency
@@ -19,6 +16,12 @@ trigger: |
   - Gate 0 (Implementation) added connection code
   - Service lacks /readyz or has incomplete dependency checks
   - Service missing startup self-probe
+
+skip_when: |
+  - Pure library package with no deployable service or HTTP server
+  - Task is documentation-only, configuration-only, or non-code
+  - Service has no external dependencies and no network listeners
+  - CLI tool or batch job that does not serve HTTP traffic
 
 NOT_skip_when: |
   - "K8s TCP probe is enough" → TCP ≠ app ready. Monetarie proved it.
@@ -81,15 +84,6 @@ output_schema:
     - name: dependencies_covered
       type: integer
 
-examples:
-  - name: "Go API service"
-    invocation: "/ring:dev-readyz"
-    expected_flow: |
-      1. Scan project for external dependencies
-      2. Validate /readyz endpoint covers all deps
-      3. Generate missing checks
-      4. Implement startup self-probe
-      5. Verify /health reflects self-probe result
 ---
 
 # Readyz & Self-Probe Implementation

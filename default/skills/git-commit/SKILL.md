@@ -1,13 +1,17 @@
 ---
 name: ring:git-commit
 description: Smart commit organization with atomic grouping, conventional commits, and trailer management
-user_invocable: false
-allowed-tools:
-  - Bash
-  - Read
-  - Glob
-  - Grep
-  - AskUserQuestion
+
+trigger: |
+  - User asks to commit changes or says "commit"
+  - Working directory has staged or unstaged changes ready to commit
+  - End of a development task where changes need to be recorded
+  - Need to organize messy working directory into clean commit history
+
+skip_when: |
+  - No changes in working directory (nothing to commit)
+  - Changes are still work-in-progress and not ready to commit
+  - User explicitly wants to use raw git commands without smart grouping
 ---
 
 Analyze changes, group them into coherent atomic commits, and create signed commits following repository conventions. This skill transforms a messy working directory into a clean, logical commit history.

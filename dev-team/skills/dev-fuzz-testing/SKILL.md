@@ -1,11 +1,5 @@
 ---
 name: ring:dev-fuzz-testing
-title: Development cycle fuzz testing (Gate 4)
-category: development-cycle
-tier: 1
-when_to_use: |
-  Use after unit testing (Gate 3) is complete.
-  MANDATORY for all development tasks - discovers edge cases and crashes.
 description: |
   Gate 4 of development cycle - ensures fuzz tests exist with proper seed corpus
   to discover edge cases, crashes, and unexpected input handling.
@@ -14,6 +8,12 @@ trigger: |
   - After unit testing complete (Gate 3)
   - MANDATORY for all development tasks
   - Discovers crashes and edge cases via random input generation
+
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Task is documentation-only, configuration-only, or non-code
+  - No functions accept external or user-controlled input
+  - Frontend-only project (fuzz testing applies to backend code)
 
 NOT_skip_when: |
   - "Unit tests cover edge cases" - Fuzz tests find cases you didn't think of.
@@ -83,28 +83,6 @@ verification:
     - "Seed corpus has at least 5 entries per function"
     - "No crashes found during 30s fuzz run"
 
-examples:
-  - name: "Fuzz tests for parser"
-    input:
-      unit_id: "task-001"
-      implementation_files: ["internal/parser/json.go"]
-      language: "go"
-    expected_output: |
-      ## Fuzz Testing Summary
-      **Status:** PASS
-      **Fuzz Functions:** 2
-      **Corpus Entries:** 12
-      **Crashes Found:** 0
-
-      ## Corpus Report
-      | Function | Entries | Crashes |
-      |
-----------|---------|---------|
-      | FuzzParseJSON | 6 | 0 |
-      | FuzzParseConfig | 6 | 0 |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 5 (Property Testing): YES
 ---
 
 # Dev Fuzz Testing (Gate 4)

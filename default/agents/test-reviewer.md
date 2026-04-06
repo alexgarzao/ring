@@ -1,6 +1,5 @@
 ---
 name: ring:test-reviewer
-version: 1.4.0
 description: "Test Quality Review: Reviews test coverage, edge cases, test independence, assertion quality, and test anti-patterns across unit, integration, and E2E tests. Runs in parallel with ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer, and ring:dead-code-reviewer for fast feedback."
 type: reviewer
 output_schema:

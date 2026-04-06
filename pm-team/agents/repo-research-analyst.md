@@ -4,12 +4,7 @@ description: |
   Codebase research specialist for pre-dev planning. Searches target repository
   for existing patterns, conventions, and prior solutions. Returns findings with
   exact file:line references for use in PRD/TRD creation.
-
-tools:
-  - Glob
-  - Grep
-  - Read
-  - Task
+type: analyst
 
 output_schema:
   format: "markdown"
@@ -30,7 +25,6 @@ output_schema:
       pattern: "^## RECOMMENDATIONS$"
       required: true
 
-version: 1.2.0
 ---
 
 # Repo Research Analyst

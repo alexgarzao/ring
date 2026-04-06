@@ -1,6 +1,5 @@
 ---
 name: ring:functional-writer
-version: 0.3.0
 description: Senior Technical Writer specialized in functional documentation including guides, conceptual explanations, tutorials, and best practices.
 type: specialist
 output_schema:

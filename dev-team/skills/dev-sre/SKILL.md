@@ -10,6 +10,12 @@ trigger: |
   - Gate 1 (DevOps) setup complete
   - Service needs observability validation (logging, tracing)
 
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Task is documentation-only, configuration-only, or non-code
+  - Pure library package with no deployable service
+  - Static frontend with no API calls or backend interactions
+
 NOT_skip_when: |
   - "Task says observability not required" → AI cannot self-exempt. all services need observability.
   - "Pure frontend" → If it calls any API, backend needs observability. Frontend-only = static HTML.
@@ -94,33 +100,6 @@ verification:
   manual:
     - "Verify logs include trace_id when tracing is enabled"
 
-examples:
-  - name: "API service observability validation"
-    input:
-      unit_id: "task-001"
-      language: "go"
-      service_type: "api"
-      implementation_agent: "ring:backend-engineer-golang"
-      implementation_files: ["internal/handler/user.go", "internal/service/user.go"]
-    expected_output: |
-      ## Validation Result
-      **Status:** PASS
-      **Iterations:** 1
-      
-      ## Instrumentation Coverage
-      | Layer | Instrumented | Total | Coverage |
-      |
--------|--------------|-------|----------|
-      | Handlers | 5 | 5 | 100% |
-      | Services | 8 | 8 | 100% |
-      | Repositories | 4 | 4 | 100% |
-      | **TOTAL** | 17 | 17 | **100%** |
-      
-      ## Issues Found
-      None
-      
-      ## Handoff to Next Gate
-      - Ready for Gate 3: YES
 ---
 
 # SRE Validation (Gate 2)

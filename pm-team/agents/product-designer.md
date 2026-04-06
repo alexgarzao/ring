@@ -4,12 +4,7 @@ description: |
   Product Designer agent for UX research, user validation, and design specifications.
   Accepts feature context and research findings. Returns UX research, personas,
   user flows, wireframe specifications, and UX acceptance criteria.
-tools:
-  - WebSearch
-  - WebFetch
-  - Read
-  - Glob
-  - Grep
+type: specialist
 
 output_schema:
   format: "markdown"
@@ -42,7 +37,6 @@ output_schema:
       pattern: "^## RECOMMENDATIONS$"
       required: true
 
-version: 1.0.0
 ---
 
 # Product Designer

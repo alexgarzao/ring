@@ -1,8 +1,5 @@
 ---
 name: ring:dev-multi-tenant
-slug: dev-multi-tenant
-version: 2.0.0
-type: skill
 description: |
   Multi-tenant development cycle orchestrator following Ring Standards.
   Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3)
@@ -23,7 +20,13 @@ trigger: |
   - User asks to add tenant isolation to an existing service
   - Task mentions "multi-tenant", "tenant isolation", "dispatch layer", "postgres.Manager", "WithPG", "WithMB", "EventListener", "TenantCache", "TenantLoader", "OnTenantAdded", "OnTenantRemoved"
 
-prerequisite: |
+skip_when: |
+  - Service is not a Go project
+  - Task does not involve multi-tenancy or tenant isolation
+  - Service is a shared infrastructure component that operates outside tenant context
+  - Task is documentation-only, configuration-only, or non-code
+
+prerequisites: |
   - Go service with existing single-tenant functionality
 
 NOT_skip_when: |
@@ -102,21 +105,6 @@ output_schema:
     - name: total_files_changed
       type: integer
 
-examples:
-  - name: "Add multi-tenant to a service"
-    invocation: "/ring:dev-multi-tenant"
-    expected_flow: |
-      1. Gate 0: Auto-detect stack + determine if service has targetServices
-      2. Gate 1: Analyze codebase (build implementation roadmap)
-      3. Gate 1.5: Visual implementation preview (HTML report for developer approval)
-      4. Gates 2-5: Implementation (agent loads multi-tenant.md, follows roadmap)
-      5. Gate 5.5: M2M Secret Manager (if service has targetServices)
-      6. Gate 6: RabbitMQ multi-tenant (if RabbitMQ detected)
-      7. Gate 7: Metrics & Backward compatibility
-      8. Gate 8: Tests
-      9. Gate 9: Code review
-      10. Gate 10: User validation
-      11. Gate 11: Activation guide
 ---
 
 # Multi-Tenant Development Cycle

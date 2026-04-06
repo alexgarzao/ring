@@ -4,14 +4,7 @@ description: |
   Tech stack analysis specialist for pre-dev planning. Detects project tech stack
   from manifest files and fetches relevant framework/library documentation.
   Identifies version constraints and implementation patterns from official docs.
-
-tools:
-  - Glob
-  - Grep
-  - Read
-  - mcp__context7__resolve-library-id
-  - mcp__context7__get-library-docs
-  - WebFetch
+type: specialist
 
 output_schema:
   format: "markdown"
@@ -32,7 +25,6 @@ output_schema:
       pattern: "^## VERSION CONSIDERATIONS$"
       required: true
 
-version: 1.2.0
 ---
 
 # Framework Docs Researcher

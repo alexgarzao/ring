@@ -9,6 +9,11 @@ trigger: |
   - Implementation and tests complete
   - Need user sign-off on acceptance criteria
 
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle or ring:dev-cycle-frontend)
+  - Task is documentation-only, configuration-only, or non-code
+  - No implementation or tests were produced in prior gates
+
 NOT_skip_when: |
   - "Already validated" → Each iteration needs fresh validation.
   - "User will validate manually" → Gate 5 IS user validation. Cannot skip.
@@ -32,23 +37,6 @@ verification:
     - "All acceptance criteria have verified evidence"
     - "Validation checklist presented to user"
 
-examples:
-  - name: "Successful validation"
-    context: "4 acceptance criteria, all tests pass"
-    expected_flow: |
-      1. Gather evidence for each criterion
-      2. Build validation checklist with evidence types
-      3. Present to user with APPROVED/REJECTED options
-      4. User selects APPROVED
-      5. Document approval, proceed to feedback loop
-  - name: "Validation rejection"
-    context: "AC-3 not met (response time too slow)"
-    expected_flow: |
-      1. Present validation checklist
-      2. User identifies AC-3 failure
-      3. User selects REJECTED with reason
-      4. Create remediation task
-      5. Return to Gate 0 for fixes
 ---
 
 # Dev Validation (Gate 5)

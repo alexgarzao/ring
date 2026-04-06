@@ -157,6 +157,7 @@ Before adding any content to prompts, skills, agents, or documentation:
 | Critical rules        | CLAUDE.md                                 |
 | Language patterns     | docs/PROMPT_ENGINEERING.md                |
 | Agent schemas         | docs/AGENT_DESIGN.md                      |
+| Frontmatter fields    | docs/FRONTMATTER_SCHEMA.md                |
 | Workflows             | docs/WORKFLOWS.md                         |
 | Plugin overview       | README.md                                 |
 | Agent requirements    | CLAUDE.md (Agent Modification section)    |
@@ -201,6 +202,7 @@ When content is reused across multiple skills within a plugin:
 | [Agent Output Schemas](#agent-output-schema-archetypes)                                   | Schema summary + [full docs](docs/AGENT_DESIGN.md) |
 | [Compliance Rules](#compliance-rules)                                                     | TDD, Review, Commit rules                          |
 | [Standards-Agent Synchronization](#5-standards-agent-synchronization-must-check)          | Standards ↔ Agent mapping                          |
+| [Frontmatter Schema](docs/FRONTMATTER_SCHEMA.md)                                         | Canonical YAML frontmatter field reference         |
 | [Documentation Sync](#documentation-sync-checklist)                                       | Files to update                                    |
 
 ---
@@ -495,7 +497,7 @@ python default/hooks/generate-skills-ref.py # Generate skill overview
 
 | Workflow | Quick Reference |
 |----------|-----------------|
-| Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter |
+| Add skill | `mkdir default/skills/name/` → create `SKILL.md` with frontmatter per [Frontmatter Schema](docs/FRONTMATTER_SCHEMA.md) |
 | Add agent | Create `*/agents/name.md` → verify required sections per [Agent Design](docs/AGENT_DESIGN.md) |
 | Modify hooks | Edit `*/hooks/hooks.json` → test with `bash */hooks/session-start.sh` |
 | Code review | `/ring:codereview` dispatches 7 parallel reviewers |
@@ -513,7 +515,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 
 ### Code Organization
 
-- **Skill Structure**: `default/skills/{name}/SKILL.md` with YAML frontmatter
+- **Skill Structure**: `default/skills/{name}/SKILL.md` with YAML frontmatter (see [Frontmatter Schema](docs/FRONTMATTER_SCHEMA.md))
 - **Agent Output**: Required markdown sections per `default/agents/*.md:output_schema`
 - **Hook Scripts**: Must output JSON with success/error fields
 - **Shared Patterns**: Reference via `default/skills/shared-patterns/*.md`
@@ -614,6 +616,7 @@ Root Documentation:
 Reference Documentation:
 ├── docs/PROMPT_ENGINEERING.md  # Assertive language patterns
 ├── docs/AGENT_DESIGN.md        # Output schemas, standards compliance
+├── docs/FRONTMATTER_SCHEMA.md  # Canonical YAML frontmatter fields
 └── docs/WORKFLOWS.md           # Detailed workflow instructions
 
 Plugin Hooks (inject context at session start):

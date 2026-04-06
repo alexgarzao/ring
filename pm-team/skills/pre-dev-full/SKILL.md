@@ -35,18 +35,6 @@ related:
     - ring:pre-dev-task-breakdown
     - ring:pre-dev-subtask-creation
     - ring:pre-dev-delivery-planning
-
-user_invocable: false
-
-allowed-tools:
-  - Skill
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - Agent
-  - AskUserQuestion
 ---
 
 # Full Track Pre-Dev Workflow (10 Gates)

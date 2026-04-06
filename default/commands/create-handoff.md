@@ -1,16 +1,7 @@
 ---
 name: ring:create-handoff
 description: Create a handoff document capturing current session state, with automatic context-clear and resume via Plan Mode
-user_invocable: true
-allowed-tools:
-  - Skill
-arguments:
-  - name: session-name
-    description: Short name for the session/feature (e.g., "auth-refactor")
-    required: false
-  - name: description
-    description: Brief description of current work
-    required: false
+argument-hint: "[session-name] [description]"
 ---
 
 # /ring:create-handoff Command

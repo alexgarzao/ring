@@ -1,14 +1,13 @@
 ---
 name: ring:cycle-management
 description: Development cycle state management — status reporting and cycle cancellation
-user_invocable: false
-allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Glob
-  - Grep
-  - AskUserQuestion
+trigger: |
+  - User wants to check the status of a running development cycle
+  - User wants to cancel an active development cycle
+  - Invoked by /ring:dev-status or /ring:dev-cancel commands
+skip_when: |
+  - No development cycle is active or was recently started
+  - User is asking about general project status (not cycle-specific)
 ---
 
 # Cycle Management

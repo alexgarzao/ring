@@ -87,9 +87,6 @@ class OpenCodeAdapter(PlatformAdapter):
     _OPENCODE_SKILL_ALLOWED_FIELDS: List[str] = [
         "name",  # Required: skill identifier
         "description",  # Optional: displayed in skill list
-        "license",  # Optional: license identifier (e.g., "MIT")
-        "compatibility",  # Optional: version constraints
-        "metadata",  # Optional: arbitrary key-value metadata
     ]
 
     # OpenCode agent allowed frontmatter fields

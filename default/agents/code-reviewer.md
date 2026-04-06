@@ -1,6 +1,5 @@
 ---
 name: ring:code-reviewer
-version: 4.4.0
 description: "Foundation Review: Reviews code quality, architecture, design patterns, algorithmic flow, and maintainability. Runs in parallel with ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer, and ring:dead-code-reviewer for fast feedback."
 type: reviewer
 output_schema:

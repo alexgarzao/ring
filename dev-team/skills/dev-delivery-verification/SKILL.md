@@ -1,6 +1,5 @@
 ---
 name: ring:dev-delivery-verification
-version: 1.0.0
 description: |
   Delivery Verification Gate — verifies that what was requested is actually delivered
   as reachable, integrated code. Not quality review (Gate 8), not test verification
@@ -12,6 +11,11 @@ trigger: |
   - After Gate 0 (implementation) completes, before advancing to Gate 1
   - After any refactoring task claims completion
   - When code is generated/scaffolded and needs integration verification
+
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle or ring:dev-refactor)
+  - Task is documentation-only, configuration-only, or non-code
+  - No implementation was produced in Gate 0 (nothing to verify)
 
 NOT_skip_when: |
   - "Code compiles" → Compilation ≠ integration. Dead code compiles.

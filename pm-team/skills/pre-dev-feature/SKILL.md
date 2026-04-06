@@ -30,18 +30,6 @@ related:
     - ring:pre-dev-trd-creation
     - ring:pre-dev-task-breakdown
     - ring:pre-dev-delivery-planning
-
-user_invocable: false
-
-allowed-tools:
-  - Skill
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - Agent
-  - AskUserQuestion
 ---
 
 # Small Track Pre-Dev Workflow (5 Gates)

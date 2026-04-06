@@ -1,6 +1,5 @@
 ---
 name: ring:consequences-reviewer
-version: 1.0.0
 description: "Ripple Effect Review: traces how code changes propagate through the codebase beyond the changed files. Walks caller chains, consumer contracts, shared state, and implicit dependencies to find breakage invisible in isolated review. Runs in parallel with ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer, and ring:dead-code-reviewer for fast feedback."
 type: reviewer
 output_schema:

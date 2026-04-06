@@ -1,11 +1,17 @@
 ---
 name: ring:gandalf-webhook
 description: Send tasks to Gandalf (AI team member) via webhook and get responses back. Publish to Alfarrábio, send Slack notifications, ask for business context, and more.
-user_invocable: true
-allowed-tools:
-  - Bash
-  - Read
-  - Write
+
+trigger: |
+  - Need to publish content to Alfarrábio (report server)
+  - Need to send Slack notifications via Gandalf
+  - Need to ask Gandalf for business context or information
+  - Need to delegate a task to Gandalf (AI team member on dedicated Mac mini)
+
+skip_when: |
+  - Not connected to Lerian's Tailscale network
+  - Task can be completed locally without Gandalf's capabilities
+  - Publishing to a destination other than Alfarrábio
 ---
 
 # Gandalf Webhook

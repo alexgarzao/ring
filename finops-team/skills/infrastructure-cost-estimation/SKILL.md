@@ -1,6 +1,5 @@
 ---
 name: ring:infrastructure-cost-estimation
-version: 6.0.0
 description: |
   Orchestrates infrastructure cost estimation with tier-based or custom TPS sizing.
   Offers pre-configured tiers (Starter/Growth/Business/Enterprise) or custom TPS input.

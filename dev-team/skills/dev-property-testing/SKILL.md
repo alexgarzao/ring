@@ -1,11 +1,5 @@
 ---
 name: ring:dev-property-testing
-title: Development cycle property-based testing (Gate 5)
-category: development-cycle
-tier: 1
-when_to_use: |
-  Use after fuzz testing (Gate 4) is complete.
-  MANDATORY for all development tasks - verifies domain invariants always hold.
 description: |
   Gate 5 of development cycle - ensures property-based tests exist
   to verify domain invariants hold for all randomly generated inputs.
@@ -14,6 +8,12 @@ trigger: |
   - After fuzz testing complete (Gate 4)
   - MANDATORY for all development tasks
   - Verifies domain invariants via testing/quick package
+
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Task is documentation-only, configuration-only, or non-code
+  - No domain logic with invariants was added or modified
+  - Frontend-only project (property testing applies to backend domain logic)
 
 NOT_skip_when: |
   - "Unit tests verify logic" - Property tests verify INVARIANTS across all inputs.
@@ -87,30 +87,6 @@ verification:
     - "At least one property per domain entity"
     - "No counterexamples found"
 
-examples:
-  - name: "Property tests for money calculations"
-    input:
-      unit_id: "task-001"
-      implementation_files: ["internal/domain/money.go"]
-      language: "go"
-      domain_invariants: ["Amount never negative", "Currency always valid"]
-    expected_output: |
-      ## Property Testing Summary
-      **Status:** PASS
-      **Properties Tested:** 3
-      **Properties Passed:** 3
-      **Counterexamples Found:** 0
-
-      ## Properties Report
-      | Property | Subject | Status |
-      |
-----------|---------|--------|
-      | TestProperty_Money_AmountNeverNegative | Money | PASS |
-      | TestProperty_Money_CurrencyAlwaysValid | Money | PASS |
-      | TestProperty_Money_AdditionCommutative | Money | PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 6 (Integration Testing): YES
 ---
 
 # Dev Property Testing (Gate 5)

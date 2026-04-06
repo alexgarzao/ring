@@ -10,6 +10,11 @@ trigger: |
   - Before merge to main branch
   - After fixing complex bug
 
+skip_when: |
+  - Task is purely conversational or informational with no code changes
+  - Changes are limited to documentation or comments with zero logic modifications
+  - Code has not been modified since the last completed review cycle
+
 NOT_skip_when: |
   - "Code is simple" → Simple code can have security issues. Review required.
   - "Just refactoring" → Refactoring may expose vulnerabilities. Review required.
@@ -117,41 +122,6 @@ output_schema:
       type: integer
       description: "Total number of issues found by CodeRabbit across all units (0 if skipped)"
 
-examples:
-  - name: "Feature review"
-    input:
-      unit_id: "task-001"
-      base_sha: "abc123"
-      head_sha: "def456"
-      implementation_summary: "Added user authentication with JWT"
-      requirements: "AC-1: User can login, AC-2: Invalid password returns error"
-    expected_output: |
-      ## Review Summary
-      **Status:** PASS
-      **Reviewers:** 7/7 PASS
-
-      ## Issues by Severity
-      | Severity | Count |
-      |
-----------|-------|
-      | Critical | 0 |
-      | High | 0 |
-      | Medium | 0 |
-      | Low | 2 |
-
-      ## Reviewer Verdicts
-      | Reviewer | Verdict |
-      |----------|---------|
-      | ring:code-reviewer | ✅ PASS |
-      | ring:business-logic-reviewer | ✅ PASS |
-      | ring:security-reviewer | ✅ PASS |
-      | ring:test-reviewer | ✅ PASS |
-      | ring:nil-safety-reviewer | ✅ PASS |
-      | ring:consequences-reviewer | ✅ PASS |
-      | ring:dead-code-reviewer | ✅ PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 5: YES
 ---
 
 # Code Review (Gate 4)

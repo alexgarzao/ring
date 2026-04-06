@@ -1,11 +1,5 @@
 ---
 name: ring:dev-frontend-accessibility
-title: Frontend development cycle accessibility testing (Gate 2)
-category: development-cycle-frontend
-tier: 1
-when_to_use: |
-  Use after DevOps setup (Gate 1) is complete in the frontend dev cycle.
-  MANDATORY for all frontend development tasks - ensures WCAG 2.1 AA compliance.
 description: |
   Gate 2 of frontend development cycle - ensures all components pass axe-core
   automated accessibility scans with zero WCAG 2.1 AA violations.
@@ -14,6 +8,12 @@ trigger: |
   - After DevOps setup complete (Gate 1)
   - MANDATORY for all frontend development tasks
   - Validates WCAG 2.1 AA compliance
+
+skip_when: |
+  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
+  - Backend-only project with no UI components
+  - Task is documentation-only, configuration-only, or non-code
+  - Changes are limited to build tooling, CI/CD, or infrastructure with no UI impact
 
 NOT_skip_when: |
   - "It's an internal tool" - WCAG compliance is mandatory for all applications.
@@ -83,27 +83,6 @@ verification:
     - "Keyboard navigation tests cover all interactive elements"
     - "Focus management tests exist for modals and dialogs"
 
-examples:
-  - name: "Accessibility tests for login form"
-    input:
-      unit_id: "task-001"
-      implementation_files: ["src/components/LoginForm.tsx"]
-      language: "typescript"
-    expected_output: |
-      ## Accessibility Testing Summary
-      **Status:** PASS
-      **Components Tested:** 1
-      **Violations Found:** 0
-      **Keyboard Nav Tests:** 3
-
-      ## Violations Report
-      | Component | Violations | Status |
-      |
------------|-----------|--------|
-      | LoginForm | 0 | PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 3 (Unit Testing): YES
 ---
 
 # Dev Frontend Accessibility Testing (Gate 2)

@@ -1,14 +1,17 @@
 ---
 name: ring:session-handoff
 description: Create handoff documents capturing session state for seamless context-clear and resume
-user_invocable: false
-allowed-tools:
-  - EnterPlanMode
-  - ExitPlanMode
-  - Write
-  - Bash
-  - Read
-  - Glob
+
+trigger: |
+  - User is ending a session and wants to preserve context for later
+  - Context window is getting large and a fresh start would be beneficial
+  - Handing off work to another person or AI session
+  - User says "handoff", "save session", "wrap up", or "context transfer"
+
+skip_when: |
+  - Session has minimal context that does not warrant a handoff document
+  - User simply wants to end the conversation without resuming later
+  - Work is fully complete with nothing pending for a future session
 ---
 
 # Session Handoff Skill

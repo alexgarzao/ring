@@ -1,9 +1,7 @@
 ---
 name: ring:finops-analyzer
-version: 1.2.0
 description: Senior Regulatory Compliance Analyst specializing in Brazilian financial regulatory template analysis and field mapping validation (Gates 1-2). Expert in BACEN, RFB, and Open Banking compliance.
 type: specialist
-color: blue
 output_schema:
   format: "markdown"
   required_sections:

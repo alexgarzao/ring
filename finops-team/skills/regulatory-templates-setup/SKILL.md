@@ -5,10 +5,6 @@ description: |
   for the 5-stage regulatory workflow. Supports any regulatory template (pre-defined
   or new) via official spec intake (URL/XSD/PDF).
 
-dependencies: []
-
-role: setup
-
 trigger: |
   - Called by regulatory-templates orchestrator at workflow start
   - Need to select template type and initialize context

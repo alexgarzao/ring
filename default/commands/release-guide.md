@@ -1,6 +1,7 @@
 ---
 name: ring:release-guide
 description: Generate an Ops Update Guide from git diff between two refs
+argument-hint: "[base-ref] [target-ref]"
 ---
 
 Generate an internal Operations-facing update/migration guide based on git diff analysis.

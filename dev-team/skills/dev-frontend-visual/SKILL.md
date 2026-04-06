@@ -1,11 +1,5 @@
 ---
 name: ring:dev-frontend-visual
-title: Frontend development cycle visual/snapshot testing (Gate 4)
-category: development-cycle-frontend
-tier: 1
-when_to_use: |
-  Use after unit testing (Gate 3) is complete in the frontend dev cycle.
-  MANDATORY for all frontend development tasks - ensures visual consistency.
 description: |
   Gate 4 of frontend development cycle - ensures all components have snapshot
   tests covering all states, viewports, and edge cases.
@@ -16,6 +10,12 @@ trigger: |
   - Catches visual regressions before review
 
 skip_when: |
+  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
+  - Backend-only project with no UI components
+  - Task is documentation-only, configuration-only, or non-code
+  - No new UI components were added or visual changes made in this cycle
+
+NOT_skip_when: |
   - "Snapshots are brittle" - Brittle snapshots catch unintended changes.
   - "We test visually in the browser" - Manual testing doesn't catch regressions.
   - "Only default state matters" - Users see error, loading, and empty states too.
@@ -85,31 +85,6 @@ verification:
     - "Responsive viewports covered (375px, 768px, 1280px)"
     - "No sindarian-ui component duplication in components/ui/"
 
-examples:
-  - name: "Snapshot tests for transaction list"
-    input:
-      unit_id: "task-001"
-      implementation_files: ["src/components/TransactionList.tsx"]
-    expected_output: |
-      ## Visual Testing Summary
-      **Status:** PASS
-      **Components with Snapshots:** 1
-      **Total Snapshots:** 8
-      **Snapshot Failures:** 0
-
-      ## Snapshot Coverage
-      | Component | States | Viewports | Edge Cases | Status |
-      |
------------|--------|-----------|------------|--------|
-      | TransactionList | 4/4 | 3/3 | Long text | PASS |
-
-      ## Component Duplication Check
-      | Component in components/ui/ | In sindarian-ui? | Status |
-      |-----------------------------|------------------|--------|
-      | _No duplications found_ | - | PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 5 (E2E Testing): YES
 ---
 
 # Dev Frontend Visual Testing (Gate 4)

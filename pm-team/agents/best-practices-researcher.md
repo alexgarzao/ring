@@ -4,12 +4,7 @@ description: |
   External research specialist for pre-dev planning. Searches web and documentation
   for industry best practices, open source examples, and authoritative guidance.
   Primary agent for greenfield features where codebase patterns don't exist.
-
-tools:
-  - WebSearch
-  - WebFetch
-  - mcp__context7__resolve-library-id
-  - mcp__context7__get-library-docs
+type: specialist
 
 output_schema:
   format: "markdown"
@@ -30,7 +25,6 @@ output_schema:
       pattern: "^## EXTERNAL REFERENCES$"
       required: true
 
-version: 1.2.0
 ---
 
 # Best Practices Researcher

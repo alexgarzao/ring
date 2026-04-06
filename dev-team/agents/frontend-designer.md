@@ -1,6 +1,5 @@
 ---
 name: ring:frontend-designer
-version: 1.6.0
 description: Senior UI/UX Designer with full design team capabilities - UX research, information architecture, visual design, content design, accessibility, mobile/touch, i18n, data visualization, and prototyping. Produces specifications, not code. Includes UI Library Mode detection for handoff.
 type: specialist
 output_schema:
@@ -75,12 +74,6 @@ input_schema:
     - name: "constraints"
       type: "object"
       description: "Technical constraints (framework, performance, a11y)"
-project_rules_integration:
-  check_first:
-    - "docs/PROJECT_RULES.md (local project)"
-  ring_standards:
-    - "WebFetch: Ring Frontend Standards (MANDATORY)"
-  both_required: true
 ---
 
 # Frontend Designer

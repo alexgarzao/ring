@@ -129,9 +129,7 @@ class FactoryAdapter(PlatformAdapter):
         return body
 
     def _qualify_droid_name(
-        self,
-        frontmatter: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]]
+        self, frontmatter: Dict[str, Any], metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Qualify droid name with plugin namespace.
 
@@ -172,7 +170,9 @@ class FactoryAdapter(PlatformAdapter):
         result["name"] = f"{plugin_id}-{name}"
         return result
 
-    def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_command(
+        self, command_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Transform a Ring command for Factory AI.
 
@@ -213,14 +213,8 @@ class FactoryAdapter(PlatformAdapter):
         """
         result = dict(frontmatter)
 
-        # Map 'args' or 'arguments' to 'argument-hint'
-        if "args" in result and "argument-hint" not in result:
-            result["argument-hint"] = result.pop("args")
-        elif "arguments" in result and "argument-hint" not in result:
-            result["argument-hint"] = result.pop("arguments")
-
         # Remove fields Factory doesn't use for commands
-        for field in ["name", "version", "type", "tags"]:
+        for field in ["name", "version", "type", "tags", "args", "arguments"]:
             result.pop(field, None)
 
         # Transform any agent terminology in string values
@@ -230,7 +224,9 @@ class FactoryAdapter(PlatformAdapter):
 
         return result
 
-    def transform_hook(self, hook_content: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    def transform_hook(
+        self, hook_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
         """
         Transform a Ring hook for Factory AI.
 
@@ -252,7 +248,7 @@ class FactoryAdapter(PlatformAdapter):
         # Also handle any remaining references
         result = result.replace("${CLAUDE_PLUGIN_ROOT}", "~/.factory")
         result = result.replace("$CLAUDE_PLUGIN_ROOT", "~/.factory")
-        
+
         return result
 
     def get_install_path(self) -> Path:
@@ -273,6 +269,7 @@ class FactoryAdapter(PlatformAdapter):
                     env_path = candidate
                 except ValueError:
                     import logging
+
                     logging.getLogger(__name__).warning(
                         "FACTORY_CONFIG_PATH=%s ignored: path must be under home", override
                     )
@@ -287,22 +284,13 @@ class FactoryAdapter(PlatformAdapter):
             Mapping of Ring components to Factory AI directories
         """
         return {
-            "agents": {
-                "target_dir": "droids",
-                "extension": ".md"
-            },
-            "commands": {
-                "target_dir": "commands",
-                "extension": ".md"
-            },
-            "skills": {
-                "target_dir": "skills",
-                "extension": ".md"
-            },
+            "agents": {"target_dir": "droids", "extension": ".md"},
+            "commands": {"target_dir": "commands", "extension": ".md"},
+            "skills": {"target_dir": "skills", "extension": ".md"},
             "hooks": {
                 "target_dir": "hooks",
-                "extension": ""  # Multiple extensions supported
-            }
+                "extension": "",  # Multiple extensions supported
+            },
         }
 
     def requires_hooks_in_settings(self) -> bool:
@@ -332,7 +320,7 @@ class FactoryAdapter(PlatformAdapter):
         self,
         hooks_config: Dict[str, Any],
         dry_run: bool = False,
-        install_path: Optional[Path] = None
+        install_path: Optional[Path] = None,
     ) -> bool:
         """
         Merge hooks configuration into Factory's settings.json.
@@ -351,7 +339,7 @@ class FactoryAdapter(PlatformAdapter):
         """
         import json
         import logging
-        
+
         logger = logging.getLogger(__name__)
         base_path = install_path or self.get_install_path()
         settings_path = base_path / "settings.json"
@@ -411,19 +399,14 @@ class FactoryAdapter(PlatformAdapter):
 
         try:
             # Write settings back
-            settings_path.write_text(
-                json.dumps(existing_settings, indent=2),
-                encoding="utf-8"
-            )
+            settings_path.write_text(json.dumps(existing_settings, indent=2), encoding="utf-8")
             return True
         except Exception as e:
             logger.error(f"Failed to write settings.json: {e}")
             return False
 
     def _transform_hook_entry(
-        self,
-        hook_entry: Dict[str, Any],
-        install_path: Path
+        self, hook_entry: Dict[str, Any], install_path: Path
     ) -> Dict[str, Any]:
         """
         Transform a hook entry's commands for Factory compatibility.
@@ -454,14 +437,8 @@ class FactoryAdapter(PlatformAdapter):
                     cmd = transformed_cmd["command"]
                     # Transform Claude plugin paths to Factory absolute paths
                     # Use absolute path with ~ expansion for portability
-                    cmd = cmd.replace(
-                        "${CLAUDE_PLUGIN_ROOT}/hooks/",
-                        f"{hooks_path}/"
-                    )
-                    cmd = cmd.replace(
-                        "$CLAUDE_PLUGIN_ROOT/hooks/",
-                        f"{hooks_path}/"
-                    )
+                    cmd = cmd.replace("${CLAUDE_PLUGIN_ROOT}/hooks/", f"{hooks_path}/")
+                    cmd = cmd.replace("$CLAUDE_PLUGIN_ROOT/hooks/", f"{hooks_path}/")
                     # Handle any remaining plugin root references
                     cmd = cmd.replace("${CLAUDE_PLUGIN_ROOT}", str(install_path))
                     cmd = cmd.replace("$CLAUDE_PLUGIN_ROOT", str(install_path))
@@ -494,12 +471,7 @@ class FactoryAdapter(PlatformAdapter):
         Returns:
             Mapping of Ring terms to Factory AI terms
         """
-        return {
-            "agent": "droid",
-            "skill": "skill",
-            "command": "command",
-            "hook": "trigger"
-        }
+        return {"agent": "droid", "skill": "skill", "command": "command", "hook": "trigger"}
 
     def is_native_format(self) -> bool:
         """
@@ -541,8 +513,7 @@ class FactoryAdapter(PlatformAdapter):
                 result[key] = self._replace_agent_references(value)
             elif isinstance(value, list):
                 result[key] = [
-                    self._replace_agent_references(v) if isinstance(v, str) else v
-                    for v in value
+                    self._replace_agent_references(v) if isinstance(v, str) else v for v in value
                 ]
 
         return result
@@ -713,7 +684,10 @@ class FactoryAdapter(PlatformAdapter):
         # NOTE: Factory droid names use hyphens, not colons (colons reserved for custom: prefix)
         ring_contexts = [
             # Task tool subagent_type references: ring-plugin:name -> ring-plugin-name
-            (r'subagent_type["\s]*[:=]["\s]*["\']?ring-([^:]+):([^"\'>\s]+)', r'subagent_type="\1-\2'),
+            (
+                r'subagent_type["\s]*[:=]["\s]*["\']?ring-([^:]+):([^"\'>\s]+)',
+                r'subagent_type="\1-\2',
+            ),
             (r'"ring-([^:]+):([^"]+)"', r'"ring-\1-\2"'),
             (r"'ring-([^:]+):([^']+)'", r"'ring-\1-\2'"),
             # Tool references with -agent suffix
@@ -721,8 +695,8 @@ class FactoryAdapter(PlatformAdapter):
             (r"'ring:([^']*)-agent'", r"'ring-\1-droid'"),
             # Don't rename subagent_type field name - Factory Task tool uses it
             # Only transform subagent -> subdroid in prose
-            (r'\bsubagent\b(?!_type)', 'subdroid'),
-            (r'\bSubagent\b(?!_type)', 'Subdroid'),
+            (r"\bsubagent\b(?!_type)", "subdroid"),
+            (r"\bSubagent\b(?!_type)", "Subdroid"),
         ]
 
         result = masked
@@ -732,12 +706,12 @@ class FactoryAdapter(PlatformAdapter):
         # General agent terminology (with exclusions)
         general_replacements = [
             # Skip "user agent" and similar patterns
-            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)agent\b(?!\s+string)(?!\s+header)', 'droid'),
-            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)Agent\b(?!\s+string)(?!\s+header)', 'Droid'),
-            (r'\bAGENT\b(?!\s+STRING)(?!\s+HEADER)', 'DROID'),
-            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)agents\b(?!\s+strings)(?!\s+headers)', 'droids'),
-            (r'\b(?<!user\s)(?<!User\s)(?<!USER\s)Agents\b(?!\s+strings)(?!\s+headers)', 'Droids'),
-            (r'\bAGENTS\b(?!\s+STRINGS)(?!\s+HEADERS)', 'DROIDS'),
+            (r"\b(?<!user\s)(?<!User\s)(?<!USER\s)agent\b(?!\s+string)(?!\s+header)", "droid"),
+            (r"\b(?<!user\s)(?<!User\s)(?<!USER\s)Agent\b(?!\s+string)(?!\s+header)", "Droid"),
+            (r"\bAGENT\b(?!\s+STRING)(?!\s+HEADER)", "DROID"),
+            (r"\b(?<!user\s)(?<!User\s)(?<!USER\s)agents\b(?!\s+strings)(?!\s+headers)", "droids"),
+            (r"\b(?<!user\s)(?<!User\s)(?<!USER\s)Agents\b(?!\s+strings)(?!\s+headers)", "Droids"),
+            (r"\bAGENTS\b(?!\s+STRINGS)(?!\s+HEADERS)", "DROIDS"),
         ]
 
         for pattern, replacement in general_replacements:
@@ -764,8 +738,8 @@ class FactoryAdapter(PlatformAdapter):
 
         # Remove -agent suffix (Factory uses the name field, not filename suffix)
         if component_type == "agent":
-            filename = re.sub(r'-agent\.md$', '.md', filename)
-            filename = re.sub(r'_agent\.md$', '.md', filename)
+            filename = re.sub(r"-agent\.md$", ".md", filename)
+            filename = re.sub(r"_agent\.md$", ".md", filename)
 
         return filename
 
@@ -776,7 +750,7 @@ class FactoryAdapter(PlatformAdapter):
         Factory/Droid only scans top-level .md files in:
         - ~/.factory/droids/ (agents)
         - ~/.factory/commands/ (commands)
-        
+
         Skills use ~/.factory/skills/<name>/SKILL.md structure.
 
         Args:
@@ -815,8 +789,8 @@ class FactoryAdapter(PlatformAdapter):
         # For agents/droids, remove -agent suffix and add prefix (no -droid suffix needed)
         # Factory expects filename to match the name field exactly
         if component_type == "agent":
-            stem = re.sub(r'-agent$', '', stem)
-            stem = re.sub(r'_agent$', '', stem)
+            stem = re.sub(r"-agent$", "", stem)
+            stem = re.sub(r"_agent$", "", stem)
             return f"ring-{plugin_name}-{stem}.md"
 
         # For other component types, just add prefix

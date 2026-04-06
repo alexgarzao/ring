@@ -25,9 +25,6 @@ sequence:
   after: [ring:dev-devops]
   before: [ring:dev-sre]
 
-dependencies: [ring:dev-devops]
-role: orchestrator
-
 related:
   complementary: [ring:dev-devops, ring:dev-sre, ring:dev-implementation]
   similar: [ring:dev-devops]

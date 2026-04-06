@@ -1,6 +1,5 @@
 ---
 name: ring:governance-specialist
-version: 1.2.0
 description: Project Governance Specialist for gate reviews, process compliance, audit readiness, and governance framework implementation across portfolio projects.
 type: specialist
 output_schema:

@@ -12,7 +12,14 @@ trigger: |
   - Resuming an interrupted development cycle (--resume flag)
   - Need structured, gate-based task execution with quality checkpoints
 
-prerequisite: |
+skip_when: |
+  - No tasks file exists or no structured subtasks to execute
+  - Task is documentation-only, research-only, or planning-only
+  - User explicitly requested manual workflow without gates
+  - Already inside a specific gate skill execution (avoid nesting)
+  - Frontend project (use ring:dev-cycle-frontend instead)
+
+prerequisites: |
   - Tasks file exists with structured subtasks
   - Not already in a specific gate skill execution
   - Human has not explicitly requested manual workflow
@@ -40,38 +47,6 @@ verification:
   manual:
     - "All gates for current task show PASS in state file"
     - "No tasks have status 'blocked' for more than 3 iterations"
-
-examples:
-  - name: "New feature from PM workflow"
-    invocation: "/ring:dev-cycle docs/pre-dev/auth/tasks.md"
-    expected_flow: |
-      1. Load tasks with subtasks from tasks.md
-      2. Ask user for checkpoint mode (per-task/per-gate/continuous)
-      3. Execute Gate 0→0.5→1→2→3→4→5→6→7→8→9 for each task sequentially
-      4. Generate feedback report after completion
-  - name: "Resume interrupted cycle"
-    invocation: "/ring:dev-cycle --resume"
-    expected_state: "Continues from last saved gate in current-cycle.json"
-  - name: "Execute with per-gate checkpoints"
-    invocation: "/ring:dev-cycle tasks.md --checkpoint per-gate"
-    expected_flow: |
-      1. Execute Gate 0, pause for approval
-      2. User approves, execute Gate 1, pause
-      3. Continue until all 11 gates complete
-  - name: "Execute with custom context for agents"
-    invocation: "/ring:dev-cycle tasks.md \"Focus on error handling. Use existing UserRepository.\""
-    expected_flow: |
-      1. Load tasks and store custom_prompt in state
-      2. All agent dispatches include custom instructions as context
-      3. Custom context visible in execution report
-  - name: "Instructions-only mode (no tasks file)"
-    invocation: "/ring:dev-cycle \"Add webhook notification support for account status changes\""
-    expected_flow: |
-      1. Detect prompt-only mode (no task file provided)
-      2. Dispatch ring:codebase-explorer to analyze project
-      3. Generate tasks internally from prompt + codebase analysis
-      4. Present generated tasks for user confirmation
-      5. Execute Gate 0→0.5→1→2→3→4→5→6→7→8→9 for each generated task
 ---
 
 # Development Cycle Orchestrator

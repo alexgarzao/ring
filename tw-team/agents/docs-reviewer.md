@@ -1,6 +1,5 @@
 ---
 name: ring:docs-reviewer
-version: 0.3.0
 description: Documentation Quality Reviewer specialized in checking voice, tone, structure, completeness, and technical accuracy of documentation.
 type: reviewer
 output_schema:

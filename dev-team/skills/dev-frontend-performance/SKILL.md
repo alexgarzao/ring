@@ -1,11 +1,5 @@
 ---
 name: ring:dev-frontend-performance
-title: Frontend development cycle performance testing (Gate 6)
-category: development-cycle-frontend
-tier: 1
-when_to_use: |
-  Use after E2E testing (Gate 5) is complete in the frontend dev cycle.
-  MANDATORY for all frontend development tasks - ensures performance meets thresholds.
 description: |
   Gate 6 of frontend development cycle - ensures Core Web Vitals compliance,
   Lighthouse performance score > 90, and bundle size within budget.
@@ -14,6 +8,12 @@ trigger: |
   - After E2E testing complete (Gate 5)
   - MANDATORY for all frontend development tasks
   - Validates performance before code review
+
+skip_when: |
+  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
+  - Backend-only project with no UI components
+  - Task is documentation-only, configuration-only, or non-code
+  - Changes are limited to test files, CI/CD, or non-rendered code
 
 NOT_skip_when: |
   - "Performance is fine on my machine" - Users have slower devices.
@@ -88,28 +88,6 @@ verification:
     - "Bundle size increase < 10%"
     - "No bare <img> tags (all use next/image)"
 
-examples:
-  - name: "Performance tests for dashboard"
-    input:
-      unit_id: "task-001"
-      implementation_files: ["src/app/dashboard/page.tsx"]
-    expected_output: |
-      ## Performance Testing Summary
-      **Status:** PASS
-      **LCP:** 1.8s (< 2.5s)
-      **CLS:** 0.03 (< 0.1)
-      **INP:** 95ms (< 200ms)
-      **Lighthouse:** 94 (> 90)
-      **Bundle Change:** +3.2% (< 10%)
-
-      ## Core Web Vitals Report
-      | Page | LCP | CLS | INP | Status |
-      |
-------|-----|-----|-----|--------|
-      | /dashboard | 1.8s | 0.03 | 95ms | PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 7 (Code Review): YES
 ---
 
 # Dev Frontend Performance Testing (Gate 6)

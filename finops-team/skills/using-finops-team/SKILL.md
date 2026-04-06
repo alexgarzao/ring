@@ -5,14 +5,6 @@ description: |
   Open Banking), 1 for infrastructure cost estimation when onboarding customers.
   Supports any regulatory template via open intake system.
 
-dependencies:
-  - ring:finops-analyzer
-  - ring:finops-automation
-  - ring:infrastructure-cost-estimator
-  - ring:regulatory-templates
-
-role: guide
-
 trigger: |
   - Brazilian regulatory reporting (BACEN, RFB)
   - Financial compliance requirements

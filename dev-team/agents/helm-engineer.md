@@ -1,6 +1,5 @@
 ---
 name: ring:helm-engineer
-version: 1.0.0
 description: Specialist Helm Chart Engineer for Lerian platform. Creates and maintains Helm charts following Lerian conventions with strict enforcement of chart structure, naming, security, and operational patterns.
 type: specialist
 output_schema:

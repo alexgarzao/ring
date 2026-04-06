@@ -1,6 +1,5 @@
 ---
 name: ring:devops-engineer
-version: 1.4.0
 description: Senior DevOps Engineer specialized in cloud infrastructure for financial services. Handles containerization, IaC, and local development environments.
 type: specialist
 output_schema:

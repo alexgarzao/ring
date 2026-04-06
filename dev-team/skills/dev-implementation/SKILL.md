@@ -9,16 +9,10 @@ trigger: |
   - Gate 0 of development cycle
   - Tasks loaded at initialization
   - Ready to write code
-
-tdd_policy:
-  anti_patterns: |
-    - "Code already exists" → DELETE it. TDD is test-first.
-    - "Simple feature" → Simple ≠ exempt. TDD for all behavioral components.
-    - "Time pressure" → TDD saves time. No shortcuts.
-    - "PROJECT_RULES.md doesn't require" → Ring always requires TDD.
-  exempt_when: |
-    - Visual/presentational components (layout, styling, animations, static display) are exempt from TDD-RED and deferred to Gate 4 snapshots.
-    - Behavioral components (hooks, forms, state, conditional rendering, API) still require TDD.
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle or ring:dev-refactor)
+  - Task is documentation-only, configuration-only, or non-code
+  - Implementation already completed for the current gate
 
 sequence:
   before: [ring:dev-devops]
@@ -89,26 +83,6 @@ output_schema:
     - name: tests_added
       type: integer
 
-agent_selection:
-  criteria:
-    - pattern: "*.go"
-      keywords: ["go.mod", "golang", "Go"]
-      agent: "ring:backend-engineer-golang"
-    - pattern: "*.ts"
-      keywords: ["express", "fastify", "nestjs", "backend", "api", "server"]
-      agent: "ring:backend-engineer-typescript"
-    - pattern: "*.tsx"
-      keywords: ["react", "next", "frontend", "component", "page"]
-      agent: "frontend-bff-engineer-typescript"
-    - pattern: "*.tsx"
-      keywords: ["ux-criteria", "wireframe", "user-flow", "design-spec", "product-designer"]
-      precondition: "docs/pre-dev/{feature}/ux-criteria.md exists"
-      agent: "ui-engineer"
-    - pattern: "*.css|*.scss"
-      keywords: ["design", "visual", "aesthetic", "styling", "ui"]
-      agent: "ring:frontend-designer"
-  fallback: "ASK_USER"
-
 verification:
   automated:
     - command: "go build ./... 2>&1 | grep -c 'error'"
@@ -121,33 +95,6 @@ verification:
     - "TDD RED phase failure output captured before implementation"
     - "Implementation follows project standards from PROJECT_RULES.md"
 
-examples:
-  - name: "Go backend implementation"
-    input:
-      unit_id: "task-001"
-      requirements: "Add user authentication endpoint with JWT"
-      language: "go"
-      service_type: "api"
-    expected_output: |
-      ## Implementation Summary
-      **Status:** PASS
-      **Agent:** ring:backend-engineer-golang
-      
-      ## TDD Results
-      | Phase | Status | Output |
-      |
--------|--------|--------|
-      | RED | ✅ | FAIL: TestUserAuth - expected token, got nil |
-      | GREEN | ✅ | PASS: TestUserAuth (0.003s) |
-      
-      ## Files Changed
-      | File | Action | Lines |
-      |------|--------|-------|
-      | internal/handler/auth.go | Created | +85 |
-      | internal/handler/auth_test.go | Created | +120 |
-      
-      ## Handoff to Next Gate
-      - Ready for Gate 1: YES
 ---
 
 # Code Implementation (Gate 0)

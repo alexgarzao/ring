@@ -1,6 +1,5 @@
 ---
 name: ring:dead-code-reviewer
-version: 1.0.0
 description: "Dead Code Review: identifies code that became orphaned, unreachable, or unnecessary as a consequence of changes. Walks the dependency graph outward from the diff to find abandoned helpers, unused types, orphaned modules, and zombie test infrastructure across three concentric rings: target files, first-derivative dependents, and transitive ripple effect. Runs in parallel with ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer, ring:test-reviewer, ring:nil-safety-reviewer, and ring:consequences-reviewer for fast feedback."
 type: reviewer
 output_schema:

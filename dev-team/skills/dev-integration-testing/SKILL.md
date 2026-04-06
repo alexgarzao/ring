@@ -1,11 +1,5 @@
 ---
 name: ring:dev-integration-testing
-title: Development cycle integration testing (Gate 6)
-category: development-cycle
-tier: 1
-when_to_use: |
-  Use after property-based testing (Gate 5) is complete.
-  MANDATORY for all development tasks - verifies real service integration.
 description: |
   Gate 6 of development cycle - ensures integration tests pass for all
   external dependency interactions using real containers via testcontainers.
@@ -14,6 +8,12 @@ trigger: |
   - After property-based testing complete (Gate 5)
   - MANDATORY for all development tasks
   - Verifies real service integration with testcontainers
+
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Task is documentation-only, configuration-only, or non-code
+  - Service has no external dependencies (no database, cache, queue, or external API)
+  - Pure library package with no integration points
 
 NOT_skip_when: |
   - "Unit tests cover it" - Unit tests mock. Integration tests verify real behavior.
@@ -95,37 +95,6 @@ verification:
     - "No flaky tests (run 3x, all pass)"
     - "All containers properly cleaned up"
 
-examples:
-  - name: "Integration tests for user repository"
-    input:
-      unit_id: "task-001"
-      integration_scenarios: ["Create user in DB", "Find user by email", "Update user"]
-      external_dependencies: ["postgres"]
-      language: "go"
-    expected_output: |
-      ## Integration Testing Summary
-      **Status:** PASS
-      **Scenarios:** 3 tested
-      **Tests:** 5 passed, 0 failed
-
-      ## Scenario Coverage
-      | Scenario | Test File | Tests | Status |
-      |
-----------|-----------|-------|--------|
-      | Create user in DB | user_integration_test.go | 2 | PASS |
-      | Find user by email | user_integration_test.go | 2 | PASS |
-      | Update user | user_integration_test.go | 1 | PASS |
-
-      ## Quality Gate Results
-      | Check | Status |
-      |-------|--------|
-      | Build tags | PASS |
-      | No hardcoded ports | PASS |
-      | Testcontainers | PASS |
-      | No t.Parallel() | PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 7 (Chaos Testing): YES
 ---
 
 # Dev Integration Testing (Gate 6)

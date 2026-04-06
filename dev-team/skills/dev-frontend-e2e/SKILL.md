@@ -1,11 +1,5 @@
 ---
 name: ring:dev-frontend-e2e
-title: Frontend development cycle E2E testing (Gate 5)
-category: development-cycle-frontend
-tier: 1
-when_to_use: |
-  Use after visual testing (Gate 4) is complete in the frontend dev cycle.
-  MANDATORY for all frontend development tasks - validates complete user flows.
 description: |
   Gate 5 of frontend development cycle - ensures all user flows from
   product-designer have passing E2E tests with Playwright across browsers.
@@ -14,6 +8,12 @@ trigger: |
   - After visual testing complete (Gate 4)
   - MANDATORY for all frontend development tasks
   - Validates user flows end-to-end
+
+skip_when: |
+  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
+  - Backend-only project with no UI components
+  - Task is documentation-only, configuration-only, or non-code
+  - No user-facing flows were added or changed in this cycle
 
 NOT_skip_when: |
   - "Unit tests cover the flow" - Unit tests don't test real browser + API interaction.
@@ -89,28 +89,6 @@ verification:
     - "Responsive viewports covered"
     - "3 consecutive passes without flaky failures"
 
-examples:
-  - name: "E2E tests for transaction flow"
-    input:
-      unit_id: "task-001"
-      implementation_files: ["src/app/transactions/page.tsx"]
-      user_flows_path: "docs/pre-dev/transactions/user-flows.md"
-    expected_output: |
-      ## E2E Testing Summary
-      **Status:** PASS
-      **Flows Tested:** 3/3
-      **Happy Path Tests:** 3
-      **Error Path Tests:** 6
-      **Browsers Passed:** 3/3
-
-      ## Flow Coverage
-      | User Flow | Happy Path | Error Paths | Browsers | Status |
-      |
------------|------------|-------------|----------|--------|
-      | Create Transaction | PASS | API 500, Validation | 3/3 | PASS |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 6 (Performance Testing): YES
 ---
 
 # Dev Frontend E2E Testing (Gate 5)

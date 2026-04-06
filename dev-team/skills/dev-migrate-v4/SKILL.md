@@ -16,7 +16,7 @@ skip_when: |
   - Project is not Go → Not applicable
   - Project does not use lib-commons → Not applicable
 
-prerequisite: |
+prerequisites: |
   - Go project with go.mod containing lib-commons/v2 or lib-commons/v3
   - docs/PROJECT_RULES.md exists (recommended but not blocking)
 
@@ -35,19 +35,6 @@ verification:
       description: "Zero v2/v3 direct imports remain"
       success_pattern: "^0$"
 
-examples:
-  - name: "Analyze and show visual report"
-    invocation: "/ring:migrate-v4"
-    expected_flow: "Scan → Map → Visual HTML report opened in browser"
-  - name: "Generate tasks for dev-cycle"
-    invocation: "/ring:migrate-v4 --tasks"
-    expected_flow: "Scan → Map → Visual report → migration-v4-tasks.md saved"
-  - name: "Full automatic migration"
-    invocation: "/ring:migrate-v4 --execute"
-    expected_flow: "Scan → Map → Visual report → tasks.md → ring:dev-cycle dispatched through all 10 gates"
-  - name: "Specific repository path"
-    invocation: "/ring:migrate-v4 /path/to/service --execute"
-    expected_flow: "Same as above but targets specific path"
 ---
 
 # Dev Migrate v4

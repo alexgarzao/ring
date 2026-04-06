@@ -1,6 +1,5 @@
 ---
 name: ring:qa-analyst
-version: 1.7.0
 description: Senior Quality Assurance Analyst specialized in testing financial systems. Handles test strategy, API testing, E2E automation, performance testing, and compliance validation. Supports unit (Gate 3), fuzz (Gate 4), property (Gate 5), integration (Gate 6), chaos (Gate 7), and goroutine-leak (detection) testing modes.
 type: specialist
 output_schema:

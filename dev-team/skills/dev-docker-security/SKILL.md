@@ -10,6 +10,10 @@ trigger: |
   - Auditing an existing Dockerfile for security
   - Preparing images for Docker Hub publication
   - Docker Hub health score is below grade A
+skip_when: |
+  - Project has no Dockerfile and none is being created
+  - Changes are application-code only with no Docker modifications
+  - Using pre-built images without custom Dockerfile
 
 related:
   complementary: [ring:dev-devops, ring:dev-sre]

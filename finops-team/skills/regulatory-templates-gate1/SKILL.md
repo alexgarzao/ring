@@ -5,11 +5,6 @@ description: |
   batch approval by confidence level, and auto-saves dictionary after approval.
   Supports both pre-defined templates (dictionary exists) and new templates (any spec).
 
-dependencies:
-  - ring:finops-analyzer
-
-role: regulatory-analyst
-
 trigger: |
   - regulatory-templates-setup completed
   - Need to analyze regulatory specification and map fields

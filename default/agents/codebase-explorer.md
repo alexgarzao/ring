@@ -1,6 +1,5 @@
 ---
 name: ring:codebase-explorer
-version: 1.5.0
 description: "Deep codebase exploration agent for architecture understanding, pattern discovery, and comprehensive code analysis. Deep codebase exploration agent for thorough analysis."
 type: exploration
 output_schema:

@@ -10,6 +10,12 @@ trigger: |
   - Implementation complete from Gate 0
   - Need containerization or environment setup
 
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Task is documentation-only, configuration-only, or non-code
+  - Project already has complete Docker and docker-compose setup unchanged by Gate 0
+  - Pure library package with no deployable service
+
 NOT_skip_when: |
   - "Application runs fine locally" → Docker ensures consistency across environments.
   - "Docker is overkill" → Docker is baseline, not overkill.
@@ -112,35 +118,6 @@ verification:
     - "Verify docker-compose ps shows all services as 'Up (healthy)'"
     - "Verify .env.example documents all required environment variables"
 
-examples:
-  - name: "New Go service"
-    input:
-      unit_id: "task-001"
-      language: "go"
-      service_type: "api"
-      implementation_files: ["cmd/api/main.go", "internal/handler/user.go"]
-      new_services: ["postgres", "redis"]
-    expected_output: |
-      ## DevOps Summary
-      **Status:** PASS
-      
-      ## Files Changed
-      | File | Action |
-      |
-------|--------|
-      | Dockerfile | Created |
-      | docker-compose.yml | Created |
-      | .env.example | Created |
-      
-      ## Verification Results
-      | Check | Status |
-      |-------|--------|
-      | Build | ✅ PASS |
-      | Services Start | ✅ PASS |
-      | Health Checks | ✅ PASS |
-      
-      ## Handoff to Next Gate
-      - Ready for Gate 2: YES
 ---
 
 # DevOps Setup (Gate 1)

@@ -5,16 +5,6 @@ description: |
   Gate 2 (validation), Gate 3 (generation), optional Test Gate, optional Contribution Gate.
   Supports any regulatory template (BACEN, RFB, CVM, SUSEP, COAF, or other).
 
-dependencies:
-  - ring:regulatory-templates-setup
-  - ring:regulatory-templates-gate1
-  - ring:regulatory-templates-gate2
-  - ring:regulatory-templates-gate3
-  - ring:finops-analyzer
-  - ring:finops-automation
-
-role: orchestrator
-
 trigger: |
   - Creating BACEN CADOCs (4010, 4016, 4111, or any other)
   - Mapping e-Financeira, DIMP, APIX templates

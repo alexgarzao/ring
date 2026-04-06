@@ -1,8 +1,5 @@
 ---
 name: ring:dev-service-discovery
-slug: dev-service-discovery
-version: 1.2.0
-type: skill
 description: |
   Scans the current Go project and identifies the Service → Module → Resource
   hierarchy for dispatch layer registration. Detects service name and type,
@@ -25,7 +22,13 @@ trigger: |
   - Before running ring:dev-multi-tenant on a new service
   - User asks about MongoDB indexes in a project
 
-prerequisite: |
+skip_when: |
+  - Not a Go project
+  - Task does not involve service discovery, dispatch layer, or resource mapping
+  - Task is documentation-only, configuration-only, or non-code
+  - Project has no external dependencies (no database, cache, or queue)
+
+prerequisites: |
   - Go project with go.mod in the current working directory
 
 NOT_skip_when: |
@@ -42,18 +45,6 @@ output_schema:
       pattern: "^## Service Discovery Report"
       required: true
 
-examples:
-  - name: "Scan current project"
-    invocation: "/ring:dev-service-discovery"
-    expected_flow: |
-      1. Detect service identity (ApplicationName, type)
-      2. Detect modules (WithModule calls, component structure)
-      3. Detect resources per module (PostgreSQL, MongoDB, RabbitMQ)
-      4. Detect database names per module (from bootstrap config + .env.example)
-      5. Cross-module analysis: detect shared databases across modules
-      6. Detect MongoDB indexes (in-code + scripts)
-      7. Generate visual HTML report with shared database warnings
-      8. Open in browser for review
 ---
 
 # Service Discovery for Tenant-Manager

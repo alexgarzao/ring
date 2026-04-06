@@ -11,6 +11,10 @@ trigger: |
   - Auditing an existing llms.txt for completeness
   - Generating CLAUDE.md or AGENTS.md for AI coding agents
   - Improving AI readability of a repository
+skip_when: |
+  - Repository already has a complete, up-to-date llms.txt
+  - Task is code implementation with no documentation scope
+  - Repository is private/internal and does not need LLM discoverability
 
 related:
   complementary: [ring:dev-cycle, ring:dev-implementation]

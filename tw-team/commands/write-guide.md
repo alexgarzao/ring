@@ -2,10 +2,6 @@
 name: ring:write-guide
 description: Start writing a functional guide with voice, tone, and structure guidance
 argument-hint: "[topic]"
-arguments:
-  - name: topic
-    description: The topic or feature to document
-    required: true
 ---
 
 # Write Guide Command

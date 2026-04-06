@@ -2,10 +2,6 @@
 name: ring:write-api
 description: Start writing API reference documentation for an endpoint
 argument-hint: "[endpoint]"
-arguments:
-  - name: endpoint
-    description: The API endpoint to document (e.g., POST /accounts)
-    required: true
 ---
 
 # Write API Reference Command

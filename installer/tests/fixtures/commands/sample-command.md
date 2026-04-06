@@ -3,18 +3,7 @@ name: sample-command
 description: |
   A sample slash command for testing platform transformations.
 
-args:
-  - name: target
-    description: The target file or directory to process
-    required: true
-  - name: format
-    description: Output format (json, yaml, markdown)
-    required: false
-    default: markdown
-  - name: verbose
-    description: Enable verbose output
-    required: false
-    default: false
+argument-hint: "[target] [--format=markdown] [--verbose]"
 ---
 
 # Sample Command

@@ -1,6 +1,5 @@
 ---
 name: ring:executive-reporter
-version: 1.3.0
 description: Executive Reporting Specialist for creating dashboards, status summaries, board packages, and stakeholder communications. Focuses on actionable insights for leadership.
 type: specialist
 output_schema:

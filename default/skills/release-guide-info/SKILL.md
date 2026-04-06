@@ -1,6 +1,5 @@
 ---
 name: ring:release-guide-info
-version: 1.2.0
 description: |
   Generate Ops Update Guide from Git Diff. Produces internal Operations-facing
   update/migration guides based on git diff analysis. Supports STRICT_NO_TOUCH (default)

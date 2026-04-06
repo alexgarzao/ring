@@ -1,8 +1,13 @@
 ---
-name: drawing-diagrams
+name: ring:drawing-diagrams
 description: Generate Mermaid diagrams from context and open them in mermaid.live in the browser. Use when the user asks for a diagram, visualization, flowchart, sequence diagram, ER diagram, or any visual representation of code, architecture, or processes. Produces lightweight, shareable mermaid.live URLs that open in the browser for interactive editing.
-license: MIT
-compatibility: Requires Python 3 (standard library only) and a browser. Uses `open` on macOS; Linux users need `xdg-open`.
+
+trigger: |
+  - User asks for a diagram, chart, flowchart, or visualization
+  - User says "draw", "diagram", "visualize", "chart", "show me"
+  - Need to visualize architecture, data flow, state machines, sequences, or relationships
+  - Explaining complex systems where a visual would be more effective than prose
+
 skip_when: The user needs a rich, branded, or styled HTML visualization (use ring:visual-explainer instead). This skill produces shareable mermaid.live URLs; visual-explainer produces self-contained Lerian-branded HTML files.
 ---
 

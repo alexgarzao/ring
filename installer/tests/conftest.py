@@ -22,6 +22,7 @@ if str(INSTALLER_ROOT) not in sys.path:
 # Path Fixtures
 # ==============================================================================
 
+
 @pytest.fixture
 def fixtures_path() -> Path:
     """
@@ -81,15 +82,15 @@ def tmp_ring_root(tmp_path: Path, fixtures_path: Path) -> Path:
                 "name": "ring-default",
                 "description": "Core Ring plugin",
                 "version": "1.0.0",
-                "source": "./default"
+                "source": "./default",
             },
             {
                 "name": "ring-test",
                 "description": "Test plugin",
                 "version": "0.1.0",
-                "source": "./test-plugin"
-            }
-        ]
+                "source": "./test-plugin",
+            },
+        ],
     }
 
     with open(marketplace_dir / "marketplace.json", "w") as f:
@@ -136,6 +137,7 @@ def tmp_install_dir(tmp_path: Path) -> Path:
 # ==============================================================================
 # Content Fixtures
 # ==============================================================================
+
 
 @pytest.fixture
 def sample_skill_content(fixtures_path: Path) -> str:
@@ -202,6 +204,7 @@ def sample_hooks_dict(fixtures_path: Path) -> Dict[str, Any]:
 # Minimal Content Fixtures (for unit tests)
 # ==============================================================================
 
+
 @pytest.fixture
 def minimal_skill_content() -> str:
     """
@@ -252,9 +255,7 @@ def minimal_command_content() -> str:
     return """---
 name: minimal-command
 description: A minimal command for testing.
-args:
-  - name: target
-    required: true
+argument-hint: "[target]"
 ---
 
 # Minimal Command
@@ -304,6 +305,7 @@ The frontmatter YAML is malformed.
 # Adapter Fixtures
 # ==============================================================================
 
+
 @pytest.fixture
 def mock_platform_adapter():
     """
@@ -350,10 +352,7 @@ def claude_adapter_config() -> Dict[str, Any]:
     Returns:
         Claude adapter configuration dictionary.
     """
-    return {
-        "install_path": "~/.claude",
-        "native": True
-    }
+    return {"install_path": "~/.claude", "native": True}
 
 
 @pytest.fixture
@@ -364,10 +363,7 @@ def factory_adapter_config() -> Dict[str, Any]:
     Returns:
         Factory adapter configuration dictionary.
     """
-    return {
-        "install_path": "~/.factory",
-        "native": False
-    }
+    return {"install_path": "~/.factory", "native": False}
 
 
 @pytest.fixture
@@ -378,10 +374,7 @@ def codex_adapter_config() -> Dict[str, Any]:
     Returns:
         Codex adapter configuration dictionary.
     """
-    return {
-        "install_path": "~/.codex",
-        "native": True
-    }
+    return {"install_path": "~/.codex", "native": True}
 
 
 @pytest.fixture
@@ -392,10 +385,7 @@ def cursor_adapter_config() -> Dict[str, Any]:
     Returns:
         Cursor adapter configuration dictionary.
     """
-    return {
-        "install_path": "~/.cursor",
-        "native": False
-    }
+    return {"install_path": "~/.cursor", "native": False}
 
 
 @pytest.fixture
@@ -406,10 +396,7 @@ def cline_adapter_config() -> Dict[str, Any]:
     Returns:
         Cline adapter configuration dictionary.
     """
-    return {
-        "install_path": "~/.cline",
-        "native": False
-    }
+    return {"install_path": "~/.cline", "native": False}
 
 
 @pytest.fixture
@@ -420,15 +407,13 @@ def opencode_adapter_config() -> Dict[str, Any]:
     Returns:
         OpenCode adapter configuration dictionary.
     """
-    return {
-        "install_path": "~/.config/opencode",
-        "native": True
-    }
+    return {"install_path": "~/.config/opencode", "native": True}
 
 
 # ==============================================================================
 # Transformer Fixtures
 # ==============================================================================
+
 
 @pytest.fixture
 def transform_context():
@@ -445,14 +430,14 @@ def transform_context():
         component_type: str = "skill",
         source_path: str = "",
         metadata: Dict[str, Any] = None,
-        options: Dict[str, Any] = None
+        options: Dict[str, Any] = None,
     ) -> TransformContext:
         return TransformContext(
             platform=platform,
             component_type=component_type,
             source_path=source_path,
             metadata=metadata or {},
-            options=options or {}
+            options=options or {},
         )
 
     return _create_context
@@ -462,6 +447,7 @@ def transform_context():
 # Platform Detection Fixtures
 # ==============================================================================
 
+
 @pytest.fixture
 def mock_platform_detection():
     """
@@ -470,45 +456,33 @@ def mock_platform_detection():
     Yields:
         Dictionary of mocked detection functions.
     """
-    with patch("ring_installer.utils.platform_detect._detect_claude") as mock_claude, \
-         patch("ring_installer.utils.platform_detect._detect_codex") as mock_codex, \
-         patch("ring_installer.utils.platform_detect._detect_factory") as mock_factory, \
-         patch("ring_installer.utils.platform_detect._detect_cursor") as mock_cursor, \
-         patch("ring_installer.utils.platform_detect._detect_cline") as mock_cline, \
-         patch("ring_installer.utils.platform_detect._detect_opencode") as mock_opencode:
-
+    with patch("ring_installer.utils.platform_detect._detect_claude") as mock_claude, patch(
+        "ring_installer.utils.platform_detect._detect_codex"
+    ) as mock_codex, patch(
+        "ring_installer.utils.platform_detect._detect_factory"
+    ) as mock_factory, patch(
+        "ring_installer.utils.platform_detect._detect_cursor"
+    ) as mock_cursor, patch(
+        "ring_installer.utils.platform_detect._detect_cline"
+    ) as mock_cline, patch(
+        "ring_installer.utils.platform_detect._detect_opencode"
+    ) as mock_opencode:
         from ring_installer.utils.platform_detect import PlatformInfo
 
         # Default: no platforms installed
         mock_claude.return_value = PlatformInfo(
-            platform_id="claude",
-            name="Claude Code",
-            installed=False
+            platform_id="claude", name="Claude Code", installed=False
         )
-        mock_codex.return_value = PlatformInfo(
-            platform_id="codex",
-            name="Codex",
-            installed=False
-        )
+        mock_codex.return_value = PlatformInfo(platform_id="codex", name="Codex", installed=False)
         mock_factory.return_value = PlatformInfo(
-            platform_id="factory",
-            name="Factory AI",
-            installed=False
+            platform_id="factory", name="Factory AI", installed=False
         )
         mock_cursor.return_value = PlatformInfo(
-            platform_id="cursor",
-            name="Cursor",
-            installed=False
+            platform_id="cursor", name="Cursor", installed=False
         )
-        mock_cline.return_value = PlatformInfo(
-            platform_id="cline",
-            name="Cline",
-            installed=False
-        )
+        mock_cline.return_value = PlatformInfo(platform_id="cline", name="Cline", installed=False)
         mock_opencode.return_value = PlatformInfo(
-            platform_id="opencode",
-            name="OpenCode",
-            installed=False
+            platform_id="opencode", name="OpenCode", installed=False
         )
 
         yield {
@@ -517,13 +491,14 @@ def mock_platform_detection():
             "factory": mock_factory,
             "cursor": mock_cursor,
             "cline": mock_cline,
-            "opencode": mock_opencode
+            "opencode": mock_opencode,
         }
 
 
 # ==============================================================================
 # Install Manifest Fixtures
 # ==============================================================================
+
 
 @pytest.fixture
 def sample_install_manifest() -> Dict[str, Any]:
@@ -542,11 +517,9 @@ def sample_install_manifest() -> Dict[str, Any]:
         "files": {
             "agents/sample-agent.md": "abc123hash",
             "commands/sample-command.md": "def456hash",
-            "skills/sample-skill/SKILL.md": "ghi789hash"
+            "skills/sample-skill/SKILL.md": "ghi789hash",
         },
-        "metadata": {
-            "installer_version": "0.1.0"
-        }
+        "metadata": {"installer_version": "0.1.0"},
     }
 
 
@@ -558,6 +531,7 @@ def create_manifest_file(tmp_path: Path):
     Returns:
         Function to create manifest files in tmp_path.
     """
+
     def _create(manifest_data: Dict[str, Any], filename: str = ".ring-manifest.json") -> Path:
         manifest_path = tmp_path / filename
         with open(manifest_path, "w") as f:
@@ -570,6 +544,7 @@ def create_manifest_file(tmp_path: Path):
 # ==============================================================================
 # Version Fixtures
 # ==============================================================================
+
 
 @pytest.fixture
 def version_test_cases() -> list:
@@ -589,14 +564,12 @@ def version_test_cases() -> list:
         ("1.1.0", "1.0.0", 1),
         ("1.0.0", "2.0.0", -1),
         ("2.0.0", "1.0.0", 1),
-
         # Prerelease versions
         ("1.0.0-alpha", "1.0.0", -1),
         ("1.0.0", "1.0.0-alpha", 1),
         ("1.0.0-alpha", "1.0.0-beta", -1),
         ("1.0.0-beta", "1.0.0-alpha", 1),
         ("1.0.0-alpha.1", "1.0.0-alpha.2", -1),
-
         # With v prefix
         ("v1.0.0", "1.0.0", 0),
         ("v1.0.0", "v1.0.1", -1),
@@ -606,6 +579,7 @@ def version_test_cases() -> list:
 # ==============================================================================
 # Cleanup Fixtures
 # ==============================================================================
+
 
 @pytest.fixture(autouse=True)
 def cleanup_temp_files(tmp_path: Path):
@@ -621,6 +595,7 @@ def cleanup_temp_files(tmp_path: Path):
 # ==============================================================================
 # Helper Functions (not fixtures, but available in tests)
 # ==============================================================================
+
 
 def assert_frontmatter_contains(content: str, expected_keys: list) -> None:
     """

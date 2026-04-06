@@ -2,10 +2,6 @@
 name: ring:review-docs
 description: Review existing documentation for quality, voice, tone, and completeness
 argument-hint: "[file]"
-arguments:
-  - name: file
-    description: Path to the documentation file to review
-    required: false
 ---
 
 # Review Documentation Command

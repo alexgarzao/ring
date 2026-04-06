@@ -10,7 +10,7 @@ trigger: |
   - Resuming an interrupted frontend development cycle (--resume flag)
   - After backend dev cycle completes (consuming handoff)
 
-prerequisite: |
+prerequisites: |
   - Tasks file exists with structured subtasks
   - Not already in a specific gate skill execution
 
@@ -33,20 +33,6 @@ verification:
   manual:
     - "All gates for current task show PASS in state file"
 
-examples:
-  - name: "New frontend from backend handoff"
-    invocation: "/ring:dev-cycle-frontend docs/pre-dev/auth/tasks-frontend.md"
-    expected_flow: |
-      1. Load tasks with subtasks
-      2. Detect UI library mode (sindarian-ui or fallback)
-      3. Load backend handoff if available
-      4. Ask user for execution mode
-      5. Execute Gate 0→1→2→3→4→5→6→7→8 for each task
-      6. Generate feedback report
-  - name: "Resume interrupted frontend cycle"
-    invocation: "/ring:dev-cycle-frontend --resume"
-  - name: "Direct prompt mode"
-    invocation: "/ring:dev-cycle-frontend Implement dashboard with transaction list and charts"
 ---
 
 # Frontend Development Cycle Orchestrator

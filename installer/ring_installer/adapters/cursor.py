@@ -70,7 +70,11 @@ class CursorAdapter(PlatformAdapter):
         normalized_name = normalize_cursor_name(name) or "untitled-skill"
 
         parts: List[str] = []
-        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc_single}).rstrip())
+        parts.append(
+            self.create_frontmatter(
+                {"name": normalized_name, "description": clean_desc_single}
+            ).rstrip()
+        )
         parts.append("")
 
         parts.append(f"# {self._to_title_case(name)}")
@@ -137,13 +141,17 @@ class CursorAdapter(PlatformAdapter):
         normalized_name = normalize_cursor_name(name) or "untitled-agent"
 
         parts: List[str] = []
-        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc}).rstrip())
+        parts.append(
+            self.create_frontmatter({"name": normalized_name, "description": clean_desc}).rstrip()
+        )
         parts.append("")
         parts.append(self._transform_body_for_cursor(body))
 
         return "\n".join(parts)
 
-    def transform_command(self, command_content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def transform_command(
+        self, command_content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Transform a Ring command to Cursor command format.
 
@@ -180,28 +188,36 @@ class CursorAdapter(PlatformAdapter):
         parts.append(f"/{cmd_name}")
         parts.append("")
 
-        raw_args = frontmatter.get("args", [])
-        if isinstance(raw_args, dict):
-            args: List[Any] = [raw_args]
-        elif isinstance(raw_args, list):
-            args = raw_args
-        else:
-            args = []
-
-        if args:
+        # Handle argument-hint (new schema) or args (legacy)
+        arg_hint = self._as_text(frontmatter.get("argument-hint", ""), "")
+        if arg_hint:
             parts.append("## Parameters")
             parts.append("")
-            for arg in args:
-                if not isinstance(arg, dict):
-                    continue
-                arg_name = self._as_text(arg.get("name", ""), "")
-                arg_desc = self._as_text(arg.get("description", ""), "")
-                required = "required" if arg.get("required", False) else "optional"
-                param_line = f"- **{arg_name}** ({required})"
-                if arg_desc:
-                    param_line += f": {arg_desc}"
-                parts.append(param_line)
+            parts.append(f"Usage: `/{cmd_name} {arg_hint}`")
             parts.append("")
+        else:
+            raw_args = frontmatter.get("args", [])
+            if isinstance(raw_args, dict):
+                args: List[Any] = [raw_args]
+            elif isinstance(raw_args, list):
+                args = raw_args
+            else:
+                args = []
+
+            if args:
+                parts.append("## Parameters")
+                parts.append("")
+                for arg in args:
+                    if not isinstance(arg, dict):
+                        continue
+                    arg_name = self._as_text(arg.get("name", ""), "")
+                    arg_desc = self._as_text(arg.get("description", ""), "")
+                    required = "required" if arg.get("required", False) else "optional"
+                    param_line = f"- **{arg_name}** ({required})"
+                    if arg_desc:
+                        param_line += f": {arg_desc}"
+                    parts.append(param_line)
+                parts.append("")
 
         parts.append("## Steps")
         parts.append("")
@@ -229,18 +245,9 @@ class CursorAdapter(PlatformAdapter):
             Mapping of Ring components to Cursor directories
         """
         return {
-            "agents": {
-                "target_dir": "agents",
-                "extension": ".md"
-            },
-            "commands": {
-                "target_dir": "commands",
-                "extension": ".md"
-            },
-            "skills": {
-                "target_dir": "skills",
-                "extension": ".md"
-            }
+            "agents": {"target_dir": "agents", "extension": ".md"},
+            "commands": {"target_dir": "commands", "extension": ".md"},
+            "skills": {"target_dir": "skills", "extension": ".md"},
         }
 
     def get_terminology(self) -> Dict[str, str]:
@@ -250,12 +257,7 @@ class CursorAdapter(PlatformAdapter):
         Returns:
             Mapping of Ring terms to Cursor terms
         """
-        return {
-            "agent": "agent",
-            "skill": "skill",
-            "command": "command",
-            "hook": "automation"
-        }
+        return {"agent": "agent", "skill": "skill", "command": "command", "hook": "automation"}
 
     def is_native_format(self) -> bool:
         """
@@ -292,7 +294,7 @@ class CursorAdapter(PlatformAdapter):
             Cleaned string
         """
         # Remove | and > markers
-        text = re.sub(r'^[|>]\s*', '', text)
+        text = re.sub(r"^[|>]\s*", "", text)
         # Clean up extra whitespace
         return text.strip()
 
@@ -311,7 +313,9 @@ class CursorAdapter(PlatformAdapter):
             result = result.replace(old, new)
 
         # Remove Ring-specific tool references that don't apply
-        result = re.sub(r'`ring:[^`]+`', lambda m: self._transform_ring_reference(m.group(0)), result)
+        result = re.sub(
+            r"`ring:[^`]+`", lambda m: self._transform_ring_reference(m.group(0)), result
+        )
 
         # Normalize /ring: command references for all component types
         result = result.replace("/ring:", "/")
@@ -329,7 +333,7 @@ class CursorAdapter(PlatformAdapter):
             Cursor-friendly reference
         """
         # Extract the name from the reference
-        match = re.match(r'`ring:([^`]+)`', ref)
+        match = re.match(r"`ring:([^`]+)`", ref)
         if match:
             name = match.group(1)
             # Convert to readable format

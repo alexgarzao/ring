@@ -1,6 +1,7 @@
 ---
 name: ring:dev-service-discovery
 description: Scan project and identify Service, Modules, and Resources for dispatch layer
+argument-hint: "[project-path]"
 ---
 
 Scan the current Go project and produce a visual report of the **Service → Module → Resource** hierarchy for dispatch layer registration.

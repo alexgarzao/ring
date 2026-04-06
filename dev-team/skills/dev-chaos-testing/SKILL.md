@@ -1,11 +1,5 @@
 ---
 name: ring:dev-chaos-testing
-title: Development cycle chaos testing (Gate 7)
-category: development-cycle
-tier: 1
-when_to_use: |
-  Use after integration testing (Gate 6) is complete.
-  MANDATORY for all development tasks with external dependencies - verifies graceful degradation under failure.
 description: |
   Gate 7 of development cycle - ensures chaos tests exist using Toxiproxy
   to verify graceful degradation under connection loss, latency, and partitions.
@@ -14,6 +8,12 @@ trigger: |
   - After integration testing complete (Gate 6)
   - MANDATORY for all development tasks with external dependencies
   - Verifies system behavior under failure conditions
+
+skip_when: |
+  - Not inside a development cycle (ring:dev-cycle)
+  - Service has no external dependencies (no database, cache, queue, or external API)
+  - Task is documentation-only, configuration-only, or non-code
+  - Frontend-only project with no backend service dependencies
 
 NOT_skip_when: |
   - "Infrastructure is reliable" - All infrastructure fails eventually. Be prepared.
@@ -83,32 +83,6 @@ verification:
     - "All external dependencies have failure scenarios"
     - "Recovery verified after each failure injection"
 
-examples:
-  - name: "Chaos tests for database operations"
-    input:
-      unit_id: "task-001"
-      external_dependencies: ["postgres", "redis"]
-      language: "go"
-    expected_output: |
-      ## Chaos Testing Summary
-      **Status:** PASS
-      **Dependencies Tested:** 2
-      **Scenarios Tested:** 6
-      **Recovery Verified:** Yes
-
-      ## Failure Scenarios
-      | Component | Scenario | Status | Recovery |
-      |
------------|----------|--------|----------|
-      | PostgreSQL | Connection Loss | PASS | Yes |
-      | PostgreSQL | High Latency | PASS | Yes |
-      | PostgreSQL | Network Partition | PASS | Yes |
-      | Redis | Connection Loss | PASS | Yes |
-      | Redis | High Latency | PASS | Yes |
-      | Redis | Network Partition | PASS | Yes |
-
-      ## Handoff to Next Gate
-      - Ready for Gate 8 (Code Review): YES
 ---
 
 # Dev Chaos Testing (Gate 7)

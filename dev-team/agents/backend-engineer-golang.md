@@ -1,6 +1,5 @@
 ---
 name: ring:backend-engineer-golang
-version: 1.7.0
 description: Senior Backend Engineer specialized in Go for high-demand financial systems. Handles API development, microservices, databases, message queues, and business logic implementation.
 type: specialist
 output_schema:

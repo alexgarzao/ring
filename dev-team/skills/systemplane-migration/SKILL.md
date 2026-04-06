@@ -1,29 +1,36 @@
-<!-- Copyright 2025 Lerian Studio. -->
 ---
-name: "ring:systemplane-migration"
-version: "2.0.0"
-type: skill
+name: ring:systemplane-migration
 description: >
   Gate-based systemplane migration orchestrator. Migrates Lerian Go services from
   .env/YAML-based configuration to the systemplane — a database-backed, hot-reloadable
   runtime configuration and settings management plane with full audit history, optimistic
   concurrency, change feeds, component-granular bundle rebuilds, and atomic infrastructure
   replacement. Requires lib-commons v4.3.0+.
-trigger_when:
-  - User requests systemplane migration/adoption
-  - Task mentions runtime configuration, hot-reload, config management
+
+trigger: |
+  - User requests systemplane migration or adoption
+  - Task mentions runtime configuration, hot-reload, or config management
   - Service needs database-backed configuration with audit trail
-  - BundleFactory or Reconciler development
-prerequisites:
+  - BundleFactory or Reconciler development is required
+
+skip_when: |
+  - Project is not a Go service
+  - Service does not use lib-commons v4
+  - Task is unrelated to configuration management or systemplane
+
+NOT_skip_when: |
+  - Service already has systemplane code (verify compliance, do not skip)
+  - "It looks like systemplane is already set up" (existence ≠ compliance)
+
+prerequisites: |
   - Go project
   - lib-commons/v4 dependency (v4.3.0+ required; upgrade first if older)
   - PostgreSQL or MongoDB backend available
-NOT_skip_when:
-  - Service already has systemplane code (verify compliance, do not skip)
-  - "It looks like systemplane is already set up" (existence ≠ compliance)
+
 sequence:
   after: ["ring:dev-cycle"]
-input:
+
+input_schema:
   type: object
   properties:
     execution_mode:
@@ -41,20 +48,22 @@ input:
       type: boolean
     existing_systemplane:
       type: boolean
-output:
-  type: object
-  properties:
-    gates_completed:
-      type: array
-      items: { type: string }
-    compliance_status:
-      type: string
-      enum: ["COMPLIANT", "NON-COMPLIANT", "NEW"]
-    key_count:
-      type: integer
-    files_created:
-      type: array
-      items: { type: string }
+
+output_schema:
+  format: markdown
+  required_sections:
+    - name: "Migration Summary"
+      pattern: "^## Migration Summary"
+      required: true
+    - name: "Gates Completed"
+      pattern: "^## Gates Completed"
+      required: true
+    - name: "Compliance Status"
+      pattern: "^## Compliance Status"
+      required: true
+    - name: "Files Created"
+      pattern: "^## Files Created"
+      required: true
 ---
 
 # Systemplane Migration Orchestrator

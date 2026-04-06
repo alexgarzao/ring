@@ -1,8 +1,5 @@
 ---
 name: ring:dev-goroutine-leak-testing
-type: testing
-author: ring-dev-team
-version: 0.1.0
 description: |
   Goroutine leak detection skill - detects goroutine usage in Go code, runs goleak 
   to identify memory leaks, and dispatches ring:backend-engineer-golang to fix leaks
@@ -13,6 +10,12 @@ trigger: |
   - After unit testing gate or during code review
   - Suspected memory leak in production
   - Need to verify goroutine-heavy code doesn't leak
+
+skip_when: |
+  - Codebase contains no goroutine usage (no go func(), no go methodCall())
+  - Not a Go project
+  - Task is documentation-only, configuration-only, or non-code
+  - Changes do not touch or add any concurrent code paths
 
 NOT_skip_when: |
   - "Unit tests cover this" → Unit tests don't detect goroutine leaks. goleak does.

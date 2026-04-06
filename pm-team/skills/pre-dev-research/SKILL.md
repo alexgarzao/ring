@@ -21,23 +21,6 @@ sequence:
 related:
   complementary: [ring:pre-dev-prd-creation, ring:pre-dev-trd-creation]
 
-research_modes:
-  greenfield:
-    description: "New feature with no existing patterns to follow"
-    primary_agents: [ring:best-practices-researcher, ring:framework-docs-researcher, ring:product-designer]
-    focus: "External best practices, framework patterns, and user problem validation"
-
-  modification:
-    description: "Changing or extending existing functionality"
-    primary_agents: [ring:repo-research-analyst]
-    secondary_agents: [ring:product-designer]
-    focus: "Existing codebase patterns and conventions, UX impact assessment"
-
-  integration:
-    description: "Connecting systems or adding external dependencies"
-    primary_agents: [ring:framework-docs-researcher, ring:best-practices-researcher, ring:repo-research-analyst]
-    secondary_agents: [ring:product-designer]
-    focus: "API documentation, integration patterns, and user experience considerations"
 ---
 
 # Pre-Dev Research Skill (Gate 0)
