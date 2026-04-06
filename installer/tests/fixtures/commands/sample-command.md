@@ -19,8 +19,6 @@ Execute this command to test the Ring installer.
 ## Description
 
 This command demonstrates:
-- Command to workflow transformation for Cursor
-- Command to prompt transformation for Cline
 - Argument parsing and validation
 
 ## Steps

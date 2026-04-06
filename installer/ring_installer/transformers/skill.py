@@ -63,10 +63,6 @@ class SkillTransformer(BaseTransformer):
             return self._transform_claude(frontmatter, body, context)
         elif self.platform == "factory":
             return self._transform_factory(frontmatter, body, context)
-        elif self.platform == "cursor":
-            return self._transform_cursor(frontmatter, body, context)
-        elif self.platform == "cline":
-            return self._transform_cline(frontmatter, body, context)
         else:
             # Default passthrough
             return TransformResult(content=content, success=True)
@@ -105,118 +101,6 @@ class SkillTransformer(BaseTransformer):
             content = transformed_body
 
         return TransformResult(content=content, success=True)
-
-    def _transform_cursor(
-        self,
-        frontmatter: Dict[str, Any],
-        body: str,
-        context: TransformContext
-    ) -> TransformResult:
-        """Transform skill to Cursor skill format with frontmatter."""
-        parts: List[str] = []
-
-        name = frontmatter.get("name", context.metadata.get("name", "untitled-skill"))
-        description = frontmatter.get("description", "")
-        clean_desc = self.clean_yaml_string(description)
-        clean_desc_single = clean_desc.replace("\n", " ").strip()[:1024]
-        normalized_name = self._normalize_cursor_name(name) or "untitled-skill"
-
-        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc_single}).rstrip())
-        parts.append("")
-
-        parts.append(f"# {self.to_title_case(name)}")
-        parts.append("")
-
-        if clean_desc:
-            parts.append(clean_desc)
-            parts.append("")
-
-        trigger = frontmatter.get("trigger", "")
-        if trigger:
-            parts.append("## When to Apply")
-            parts.append("")
-            self._add_list_section(parts, trigger)
-            parts.append("")
-
-        skip_when = frontmatter.get("skip_when", "")
-        if skip_when:
-            parts.append("## Skip When")
-            parts.append("")
-            self._add_list_section(parts, skip_when)
-            parts.append("")
-
-        parts.append("## Instructions")
-        parts.append("")
-        parts.append(self.transform_body_for_cursor(body))
-
-        return TransformResult(content="\n".join(parts), success=True)
-
-    def _transform_cline(
-        self,
-        frontmatter: Dict[str, Any],
-        body: str,
-        context: TransformContext
-    ) -> TransformResult:
-        """Transform skill to Cline prompt format."""
-        parts: List[str] = []
-
-        # Extract metadata
-        name = frontmatter.get("name", context.metadata.get("name", "Untitled"))
-        description = frontmatter.get("description", "")
-
-        # HTML comments for metadata
-        parts.append(f"<!-- Prompt: {name} -->")
-        parts.append("<!-- Type: skill -->")
-        if context.source_path:
-            parts.append(f"<!-- Source: {context.source_path} -->")
-        parts.append("")
-
-        # Title
-        parts.append(f"# {self.to_title_case(name)}")
-        parts.append("")
-
-        # Description as blockquote
-        if description:
-            clean_desc = self.clean_yaml_string(description)
-            parts.append(f"> {clean_desc}")
-            parts.append("")
-
-        # Trigger -> "Use When"
-        trigger = frontmatter.get("trigger", "")
-        if trigger:
-            parts.append("## Use This Prompt When")
-            parts.append("")
-            self._add_list_section(parts, trigger)
-            parts.append("")
-
-        # Skip -> "Do Not Use When"
-        skip_when = frontmatter.get("skip_when", "")
-        if skip_when:
-            parts.append("## Do Not Use When")
-            parts.append("")
-            self._add_list_section(parts, skip_when)
-            parts.append("")
-
-        # Related prompts
-        related = frontmatter.get("related", {})
-        if related:
-            similar = related.get("similar", [])
-            complementary = related.get("complementary", [])
-            if similar or complementary:
-                parts.append("## Related Prompts")
-                parts.append("")
-                if similar:
-                    parts.append("**Similar:** " + ", ".join(similar))
-                if complementary:
-                    parts.append("**Works well with:** " + ", ".join(complementary))
-                parts.append("")
-
-        # Main instructions
-        parts.append("## Instructions")
-        parts.append("")
-        parts.append(self.transform_body_for_cline(body))
-
-        return TransformResult(content="\n".join(parts), success=True)
 
     def _transform_frontmatter_terminology(
         self,
@@ -291,16 +175,6 @@ class SkillTransformerFactory:
             "agent": "droid",
             "skill": "skill",
             "command": "command",
-        },
-        "cursor": {
-            "agent": "agent",
-            "skill": "skill",
-            "command": "command",
-        },
-        "cline": {
-            "agent": "prompt",
-            "skill": "prompt",
-            "command": "prompt",
         },
     }
 

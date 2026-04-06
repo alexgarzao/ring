@@ -158,7 +158,7 @@ class InstallTarget:
     Represents a target platform for installation.
 
     Attributes:
-        platform: Platform identifier (claude, factory, cursor, cline)
+        platform: Platform identifier (claude, codex, factory, opencode, pi)
         path: Optional custom installation path (uses default if None)
         components: List of component types to install (agents, commands, skills)
                    If None, installs all components.
@@ -754,6 +754,16 @@ def install(
                             target_file = target_dir / skill_name / "SKILL.md"
                         else:
                             target_file = target_dir / skill_name / source_file.name
+                    elif adapter.platform_id == "pi" and component_type == "agents":
+                        # Pi: agents are flat .md files for $ persona activation
+                        # Result: ~/.pi/agent/agents/<agent-name>.md
+                        if adapter.requires_flat_components(component_type):
+                            target_filename = adapter.get_flat_filename(
+                                source_file.name, component_type, plugin_name
+                            )
+                            target_file = target_dir / target_filename
+                        else:
+                            target_file = target_dir / source_file.name
                     elif component_type == "hooks":
                         # Check if platform needs hooks.json merged into settings instead of installed as file
                         if hasattr(

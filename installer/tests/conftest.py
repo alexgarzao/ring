@@ -378,28 +378,6 @@ def codex_adapter_config() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def cursor_adapter_config() -> Dict[str, Any]:
-    """
-    Return configuration for Cursor adapter.
-
-    Returns:
-        Cursor adapter configuration dictionary.
-    """
-    return {"install_path": "~/.cursor", "native": False}
-
-
-@pytest.fixture
-def cline_adapter_config() -> Dict[str, Any]:
-    """
-    Return configuration for Cline adapter.
-
-    Returns:
-        Cline adapter configuration dictionary.
-    """
-    return {"install_path": "~/.cline", "native": False}
-
-
-@pytest.fixture
 def opencode_adapter_config() -> Dict[str, Any]:
     """
     Return configuration for OpenCode adapter.
@@ -461,10 +439,6 @@ def mock_platform_detection():
     ) as mock_codex, patch(
         "ring_installer.utils.platform_detect._detect_factory"
     ) as mock_factory, patch(
-        "ring_installer.utils.platform_detect._detect_cursor"
-    ) as mock_cursor, patch(
-        "ring_installer.utils.platform_detect._detect_cline"
-    ) as mock_cline, patch(
         "ring_installer.utils.platform_detect._detect_opencode"
     ) as mock_opencode:
         from ring_installer.utils.platform_detect import PlatformInfo
@@ -477,10 +451,6 @@ def mock_platform_detection():
         mock_factory.return_value = PlatformInfo(
             platform_id="factory", name="Factory AI", installed=False
         )
-        mock_cursor.return_value = PlatformInfo(
-            platform_id="cursor", name="Cursor", installed=False
-        )
-        mock_cline.return_value = PlatformInfo(platform_id="cline", name="Cline", installed=False)
         mock_opencode.return_value = PlatformInfo(
             platform_id="opencode", name="OpenCode", installed=False
         )
@@ -489,8 +459,6 @@ def mock_platform_detection():
             "claude": mock_claude,
             "codex": mock_codex,
             "factory": mock_factory,
-            "cursor": mock_cursor,
-            "cline": mock_cline,
             "opencode": mock_opencode,
         }
 

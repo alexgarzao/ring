@@ -5,7 +5,6 @@ Provides functions to detect which AI platforms are installed on the system
 and retrieve their version information.
 """
 
-import json
 import logging
 import os
 import re
@@ -57,7 +56,7 @@ def is_platform_installed(platform_id: str) -> bool:
     Check if a specific platform is installed.
 
     Args:
-        platform_id: Platform identifier (claude, factory, cursor, cline)
+        platform_id: Platform identifier (claude, codex, factory, opencode, pi)
 
     Returns:
         True if the platform is installed
@@ -124,8 +123,6 @@ def _detect_platform(platform_id: str) -> PlatformInfo:
         "claude": _detect_claude,
         "codex": _detect_codex,
         "factory": _detect_factory,
-        "cursor": _detect_cursor,
-        "cline": _detect_cline,
         "opencode": _detect_opencode,
     }
 
@@ -352,87 +349,6 @@ def _detect_factory() -> PlatformInfo:
     )
 
 
-def _detect_cursor() -> PlatformInfo:
-    """
-    Detect Cursor installation.
-
-    Checks for:
-    - ~/.cursor directory (or CURSOR_CONFIG_PATH env var)
-    - Cursor application in standard locations
-    """
-    # Allow environment variable override for config path
-    env_path = os.environ.get("CURSOR_CONFIG_PATH")
-    if env_path:
-        config_path = _validate_env_path("CURSOR_CONFIG_PATH", env_path, Path.home() / ".cursor")
-    else:
-        config_path = Path.home() / ".cursor"
-
-    info = PlatformInfo(
-        platform_id="cursor",
-        name="Cursor",
-        installed=False
-    )
-
-    # Check config directory
-    if config_path.exists():
-        info.config_path = config_path
-        info.install_path = config_path
-
-    # Check for application (environment variable override)
-    app_paths = _get_cursor_app_paths()
-    for app_path in app_paths:
-        if app_path.exists():
-            info.binary_path = app_path
-            info.installed = True
-
-            # Try to get version from package.json or similar
-            version = _get_cursor_version(app_path)
-            if version:
-                info.version = version
-            break
-
-    if not info.installed and config_path.exists():
-        info.partial = True
-        info.details["note"] = "Config directory exists but application not found"
-
-    return info
-
-
-def _detect_cline() -> PlatformInfo:
-    """
-    Detect Cline installation.
-
-    Checks for:
-    - ~/.cline directory (or CLINE_CONFIG_PATH env var)
-    - Cline VS Code extension
-    """
-    env_path = os.environ.get("CLINE_CONFIG_PATH")
-    if env_path:
-        config_path = _validate_env_path("CLINE_CONFIG_PATH", env_path, Path.home() / ".cline")
-    else:
-        config_path = Path.home() / ".cline"
-
-    info = PlatformInfo(
-        platform_id="cline",
-        name="Cline",
-        installed=False
-    )
-
-    if config_path.exists():
-        info.config_path = config_path
-        info.install_path = config_path
-        info.installed = True
-
-    extension_info = _find_vscode_extension("saoudrizwan.claude-dev")
-    if extension_info:
-        info.installed = True
-        info.version = extension_info.get("version")
-        info.details["extension_path"] = extension_info.get("path")
-        info.details["extension_id"] = "saoudrizwan.claude-dev"
-
-    return info
-
-
 def _detect_opencode() -> PlatformInfo:
     """
     Detect OpenCode installation.
@@ -447,134 +363,6 @@ def _detect_opencode() -> PlatformInfo:
         config_dir_name=".config/opencode",
         binary_name="opencode",
     )
-
-
-def _get_cursor_app_paths() -> List[Path]:
-    """Get potential Cursor application paths based on platform.
-
-    Supports CURSOR_APP_PATH environment variable override.
-    """
-    paths: List[Path] = []
-
-    # Allow environment variable override
-    env_path = os.environ.get("CURSOR_APP_PATH")
-    if env_path:
-        paths.append(Path(env_path).expanduser())
-
-    if sys.platform == "darwin":
-        paths.extend([
-            Path("/Applications/Cursor.app"),
-            Path.home() / "Applications/Cursor.app",
-        ])
-    elif sys.platform == "win32":
-        local_app_data = os.environ.get("LOCALAPPDATA", "")
-        if local_app_data:
-            paths.append(Path(local_app_data) / "Programs/cursor/Cursor.exe")
-        paths.append(Path("C:/Program Files/Cursor/Cursor.exe"))
-    else:  # Linux
-        paths.extend([
-            Path("/usr/bin/cursor"),
-            Path("/usr/local/bin/cursor"),
-            Path.home() / ".local/bin/cursor",
-            Path("/opt/Cursor/cursor"),
-        ])
-
-    return paths
-
-
-def _get_cursor_version(app_path: Path) -> Optional[str]:
-    """Try to extract Cursor version from application."""
-    if sys.platform == "darwin":
-        # Try Info.plist
-        plist_path = app_path / "Contents/Info.plist"
-        if plist_path.exists():
-            try:
-                import plistlib
-                with open(plist_path, "rb") as f:
-                    plist = plistlib.load(f)
-                    return plist.get("CFBundleShortVersionString")
-            except Exception:
-                pass
-
-        # Try package.json in resources
-        package_json = app_path / "Contents/Resources/app/package.json"
-        if package_json.exists():
-            try:
-                with open(package_json) as f:
-                    data = json.load(f)
-                    return data.get("version")
-            except Exception:
-                pass
-
-    elif sys.platform == "win32":
-        # Try version from executable (would need win32api)
-        # Fall back to checking package.json if available
-        pass
-
-    return None
-
-
-def _find_vscode_extension(extension_id: str) -> Optional[Dict[str, Any]]:
-    """
-    Find a VS Code extension and get its information.
-
-    Args:
-        extension_id: Extension identifier (publisher.name)
-
-    Returns:
-        Dictionary with extension info, or None if not found
-    """
-    extension_paths = _get_vscode_extension_paths()
-
-    for ext_dir in extension_paths:
-        if not ext_dir.exists():
-            continue
-
-        # Look for extension directory
-        for entry in ext_dir.iterdir():
-            if entry.is_dir() and entry.name.startswith(extension_id):
-                # Found the extension
-                package_json = entry / "package.json"
-                if package_json.exists():
-                    try:
-                        with open(package_json) as f:
-                            data = json.load(f)
-                            return {
-                                "path": str(entry),
-                                "version": data.get("version"),
-                                "name": data.get("displayName", data.get("name")),
-                            }
-                    except Exception:
-                        return {"path": str(entry)}
-                return {"path": str(entry)}
-
-    return None
-
-
-def _get_vscode_extension_paths() -> List[Path]:
-    """Get VS Code extension directories based on platform."""
-    paths = []
-
-    if sys.platform == "darwin":
-        paths.extend([
-            Path.home() / ".vscode/extensions",
-            Path.home() / ".vscode-insiders/extensions",
-        ])
-    elif sys.platform == "win32":
-        user_profile = os.environ.get("USERPROFILE", "")
-        if user_profile:
-            paths.extend([
-                Path(user_profile) / ".vscode/extensions",
-                Path(user_profile) / ".vscode-insiders/extensions",
-            ])
-    else:  # Linux
-        paths.extend([
-            Path.home() / ".vscode/extensions",
-            Path.home() / ".vscode-insiders/extensions",
-            Path.home() / ".vscode-server/extensions",
-        ])
-
-    return paths
 
 
 def get_system_info() -> Dict[str, Any]:

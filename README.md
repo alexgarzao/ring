@@ -6,7 +6,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** and **89 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** and **93 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -21,7 +21,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 89 specialized skills** (22 core + 29 dev-team + 15 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
+- **Providing 93 specialized skills** (22 core + 32 dev-team + 16 product planning + 7 FinOps regulatory + 7 technical writing + 9 PMO)
 - **38 specialized agents** - 10 review/planning + 12 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -242,7 +242,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 - ring:test-driven-development (RED-GREEN-REFACTOR cycle)
 - ring:systematic-debugging (4-phase root cause analysis)
 - ring:verification-before-completion (Evidence before claims)
-... and 85 more skills
+... and 89 more skills
 ```
 
 ## 🎯 Core Skills
@@ -281,7 +281,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 89 Skills (Across 6 Plugins)
+## 📚 All 93 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 22 skills)
 
@@ -325,7 +325,7 @@ No "should work" → Only "does work" with proof
 
 - `ring:production-readiness-audit` - 44-dimension production readiness audit; runs explorers in batches of up to 10, appends incrementally to a single report; output: scored report (0-430, max 440 with multi-tenant) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
 
-### Developer Skills (ring-dev-team plugin - 29 skills)
+### Developer Skills (ring-dev-team plugin - 32 skills)
 
 **Orchestration & Refactoring (6):**
 
@@ -336,7 +336,7 @@ No "should work" → Only "does work" with proof
 - `ring:dev-refactor-frontend` - Frontend standards analysis and task generation
 - `ring:cycle-management` - Development cycle state management (status reporting and cancellation)
 
-**Backend Gate Skills (8):**
+**Backend Gate Skills (9):**
 
 - `ring:dev-implementation` - Gate 0: TDD implementation
 - `ring:dev-delivery-verification` - Gate 0.5: Delivery verification (ensures requested features are reachable)
@@ -346,6 +346,7 @@ No "should work" → Only "does work" with proof
 - `ring:dev-helm` - Helm chart creation and maintenance following Lerian conventions
 - `ring:dev-sre` - Gate 2: Observability validation
 - `ring:dev-service-discovery` - Service/module/resource hierarchy scanner for dispatch layer
+- `ring:dev-readyz` - Comprehensive readiness probes (/readyz) with per-dependency status and TLS validation
 
 **Testing & Validation (8):**
 
@@ -358,11 +359,16 @@ No "should work" → Only "does work" with proof
 - `ring:dev-validation` - Gate 9: User approval
 - `ring:dev-feedback-loop` - Assertiveness scoring and metrics
 
-**Migration & Reference (3):**
+**Migration & Reference (4):**
 
 - `ring:using-lib-commons` - Comprehensive reference for lib-commons v4 (Lerian's shared Go library with 30+ packages)
 - `ring:dev-migrate-v4` - Analyze Go service for lib-commons v2/v3 patterns and generate visual migration report
 - `ring:systemplane-migration` - Migrate Lerian Go services from .env/YAML config to systemplane (database-backed hot-reloadable config)
+- `ring:dev-llms-txt` - Generate or audit llms.txt files following llmstxt.org spec for AI-friendly repository entry points
+
+**Security (1):**
+
+- `ring:dev-dep-security-check` - Supply-chain gate for dependency installations (validates identity, vulnerabilities, suspicious signals)
 
 **Frontend Gate Skills (4):**
 
@@ -373,7 +379,7 @@ No "should work" → Only "does work" with proof
 
 > Frontend and backend dev-cycle workflows both use `ring:requesting-code-review` (core plugin) as the review gate.
 
-### Product Planning Skills (ring-pm-team plugin - 15 skills)
+### Product Planning Skills (ring-pm-team plugin - 16 skills)
 
 **Pre-Development Workflow (includes ring:using-pm-team + 9 gates):**
 
@@ -399,6 +405,7 @@ No "should work" → Only "does work" with proof
 - `ring:pre-dev-design-validation` - Gate 1.5/2.5: Design validation for UI features
 - `ring:pre-dev-delivery-planning` - Gate 4 (Small) / Gate 9 (Large): Delivery roadmap and timeline
 - `ring:delivery-status-tracking` - Delivery progress tracking against roadmap
+- `ring:lerian-map-management` - Lerian Map platform management (products, features, iterations, roadmaps via REST API)
 
 ### Technical Writing Skills (ring-tw-team plugin - 7 skills)
 
@@ -443,7 +450,7 @@ No "should work" → Only "does work" with proof
 
 ## 🎮 Interactive Commands
 
-Ring provides 33 slash commands across 5 plugins for common workflows.
+Ring provides 33 slash commands across 6 plugins for common workflows.
 
 ### Core Workflows (ring-default)
 
@@ -593,7 +600,7 @@ ring/                                  # Monorepo root
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 29 skills, 12 agents, 9 commands
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 32 skills, 12 agents, 9 commands
 │   └── agents/                      # 12 specialized developer agents
 │       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
 │       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
@@ -608,7 +615,7 @@ ring/                                  # Monorepo root
 │       ├── sre.md                           # Site reliability engineer (`ring:sre`)
 │       └── ui-engineer.md                   # UI component specialist (`ring:ui-engineer`)
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
-│   └── skills/                      # 15 pre-dev workflow skills
+│   └── skills/                      # 16 pre-dev workflow skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── finops-team/                     # FinOps Regulatory plugin (ring-finops-team)
 │   ├── skills/                      # 7 regulatory skills

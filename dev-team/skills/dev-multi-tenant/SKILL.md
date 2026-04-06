@@ -1,19 +1,13 @@
 ---
 name: ring:dev-multi-tenant
 description: |
-  Multi-tenant development cycle orchestrator following Ring Standards.
-  Auto-detects the service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3)
-  and whether the service has targetServices declared,
-  then executes a gate-based implementation using tenantId from JWT
-  for database-per-tenant isolation via lib-commons v4 dispatch layer sub-packages (postgres.Manager, mongo.Manager).
-  Uses event-driven tenant discovery (Redis Pub/Sub via EventListener, TenantCache, TenantLoader)
-  instead of polling-based discovery.
-  TenantMiddleware with WithPG/WithMB variadic options handles both single-module and multi-module services.
-  For services with targetServices: includes mandatory M2M credential retrieval from AWS Secrets Manager
-  via lib-commons v4 secretsmanager package (per-tenant authentication with target service APIs).
-  MUST update lib-commons v4 first; lib-auth v2 depends on it. Both are required dependencies.
-  Each gate dispatches ring:backend-engineer-golang with context and section references.
-  The agent loads multi-tenant.md via WebFetch and has all code examples.
+  Multi-tenant development cycle orchestrator following Ring Standards. Auto-detects service stack
+  (PostgreSQL, MongoDB, Redis, RabbitMQ, S3) and targetServices, then executes gate-based implementation
+  using tenantId from JWT for database-per-tenant isolation via lib-commons v4 dispatch layer (postgres.Manager,
+  mongo.Manager). Uses event-driven tenant discovery (Redis Pub/Sub via EventListener, TenantCache, TenantLoader).
+  TenantMiddleware with WithPG/WithMB handles single-module and multi-module services. For targetServices:
+  M2M credentials from AWS Secrets Manager via secretsmanager package. Requires lib-commons v4 + lib-auth v2.
+  Each gate dispatches ring:backend-engineer-golang. Loads multi-tenant.md via WebFetch.
 
 trigger: |
   - User requests multi-tenant implementation for a Go service

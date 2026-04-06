@@ -18,18 +18,6 @@ except ImportError:
     YAML_AVAILABLE = False
 
 
-def normalize_cursor_name(name: str) -> str:
-    """
-    Normalize name for Cursor: lowercase, [a-z0-9-] only, max 64 chars.
-
-    Shared by transformers and Cursor adapter to avoid duplication.
-    """
-    normalized = name.lower().replace(":", "-")
-    normalized = re.sub(r"[^a-z0-9-]", "", normalized)
-    normalized = re.sub(r"-+", "-", normalized).strip("-")
-    return normalized[:64]
-
-
 @dataclass
 class TransformContext:
     """
@@ -83,21 +71,6 @@ class BaseTransformer(ABC):
     Transformers handle conversion of Ring component formats
     to platform-specific formats.
     """
-
-    # Class constants for platform-specific replacements
-    CURSOR_REPLACEMENTS = [
-        ("subagent", "sub-workflow"),
-        ("Subagent", "Sub-workflow"),
-        ("Task tool", "workflow step"),
-        ("Skill tool", "rule reference"),
-    ]
-
-    CLINE_REPLACEMENTS = [
-        ("Task tool", "sub-prompt"),
-        ("Skill tool", "prompt reference"),
-        ("subagent", "sub-prompt"),
-        ("Subagent", "Sub-prompt"),
-    ]
 
     def __init__(self):
         """Initialize the transformer."""
@@ -191,10 +164,6 @@ class BaseTransformer(ABC):
         yaml_str = yaml.dump(data, default_flow_style=False, allow_unicode=True, sort_keys=False)
         return f"---\n{yaml_str}---\n"
 
-    def _normalize_cursor_name(self, name: str) -> str:
-        """Normalize name for Cursor; delegates to shared function."""
-        return normalize_cursor_name(name)
-
     def clean_yaml_string(self, text: str) -> str:
         """
         Clean up YAML multi-line string markers.
@@ -224,62 +193,6 @@ class BaseTransformer(ABC):
         # Replace separators with spaces
         text = text.replace("-", " ").replace("_", " ")
         return text.title()
-
-    def transform_body_for_cursor(self, body: str) -> str:
-        """
-        Transform body content for Cursor compatibility.
-
-        Args:
-            body: Original body content
-
-        Returns:
-            Transformed content with Cursor-specific terminology
-        """
-        result = body
-
-        # Apply Cursor-specific replacements
-        for old, new in self.CURSOR_REPLACEMENTS:
-            result = result.replace(old, new)
-
-        # Transform ring: references
-        result = re.sub(
-            r'`ring:([^`]+)`',
-            lambda m: f"**{self.to_title_case(m.group(1))}**",
-            result
-        )
-
-        return result
-
-    def transform_body_for_cline(self, body: str) -> str:
-        """
-        Transform body content for Cline compatibility.
-
-        Args:
-            body: Original body content
-
-        Returns:
-            Transformed content with Cline-specific terminology
-        """
-        result = body
-
-        # Apply Cline-specific replacements
-        for old, new in self.CLINE_REPLACEMENTS:
-            result = result.replace(old, new)
-
-        # Transform ring: references to @ format
-        result = re.sub(
-            r'`ring:([^`]+)`',
-            lambda m: f"@{m.group(1).lower().replace('_', '-')}",
-            result
-        )
-
-        result = re.sub(
-            r'"ring:([^"]+)"',
-            lambda m: f'"@{m.group(1).lower().replace("_", "-")}"',
-            result
-        )
-
-        return result
 
     def add_list_items(self, parts: List[str], text: str) -> None:
         """

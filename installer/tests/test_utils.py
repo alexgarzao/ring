@@ -547,20 +547,20 @@ class TestGetPlatformVersion:
         """get_platform_version() should return version for installed platform."""
         from ring_installer.utils.platform_detect import PlatformInfo, get_platform_version
 
-        mock_platform_detection["cursor"].return_value = PlatformInfo(
-            platform_id="cursor",
-            name="Cursor",
+        mock_platform_detection["opencode"].return_value = PlatformInfo(
+            platform_id="opencode",
+            name="OpenCode",
             installed=True,
             version="0.42.0"
         )
 
-        assert get_platform_version("cursor") == "0.42.0"
+        assert get_platform_version("opencode") == "0.42.0"
 
     def test_returns_none_if_not_installed(self, mock_platform_detection):
         """get_platform_version() should return None for uninstalled platform."""
         from ring_installer.utils.platform_detect import get_platform_version
 
-        assert get_platform_version("cursor") is None
+        assert get_platform_version("opencode") is None
 
 
 class TestGetSystemInfo:
@@ -847,7 +847,7 @@ class TestInstallManifest:
             "version": "2.0.0",
             "installed_at": "2024-01-01T00:00:00",
             "source_path": "/path",
-            "platform": "cursor",
+            "platform": "opencode",
             "plugins": ["test"],
             "files": {},
             "metadata": {}
@@ -856,7 +856,7 @@ class TestInstallManifest:
         manifest = InstallManifest.from_dict(data)
 
         assert manifest.version == "2.0.0"
-        assert manifest.platform == "cursor"
+        assert manifest.platform == "opencode"
 
     def test_save_and_load(self, tmp_path):
         """InstallManifest should save and load from file."""
@@ -992,7 +992,7 @@ class TestSaveInstallManifest:
         save_install_manifest(
             install_path=tmp_path,
             source_path=Path("/source"),
-            platform="cursor",
+            platform="opencode",
             version="1.0.0",
             plugins=["default"],
             installed_files={"a.md": "hash1"}
@@ -1005,4 +1005,4 @@ class TestSaveInstallManifest:
         # Verify content
         loaded = InstallManifest.load(manifest_path)
         assert loaded.version == "1.0.0"
-        assert loaded.platform == "cursor"
+        assert loaded.platform == "opencode"

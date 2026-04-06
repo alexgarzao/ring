@@ -7,8 +7,6 @@ This module provides transformers for converting Ring components
 Supported Platforms:
 - Claude Code: Native Ring format (passthrough)
 - Factory AI: Agents -> Droids transformation
-- Cursor: Skills -> Skills, Agents -> Agents, Commands -> Commands
-- Cline: All components -> Prompts
 """
 
 from pathlib import Path
@@ -26,24 +24,10 @@ from ring_installer.transformers.base import (
     TransformContext,
     TransformerPipeline,
     TransformResult,
-    normalize_cursor_name,
-)
-from ring_installer.transformers.cline_prompts import (
-    ClinePromptsGenerator,
-    ClinePromptsTransformer,
-    generate_cline_prompt,
-    generate_prompts_index,
-    write_cline_prompts,
 )
 from ring_installer.transformers.command import (
     CommandTransformer,
     CommandTransformerFactory,
-)
-from ring_installer.transformers.cursor_rules import (
-    CursorRulesGenerator,
-    CursorRulesTransformer,
-    generate_cursorrules_from_skills,
-    write_cursorrules,
 )
 from ring_installer.transformers.hooks import (
     HookTransformer,
@@ -61,26 +45,18 @@ TRANSFORMER_FACTORIES: Dict[str, Dict[str, Type]] = {
     "skill": {
         "claude": SkillTransformer,
         "factory": SkillTransformer,
-        "cursor": SkillTransformer,
-        "cline": SkillTransformer,
     },
     "agent": {
         "claude": AgentTransformer,
         "factory": AgentTransformer,
-        "cursor": AgentTransformer,
-        "cline": AgentTransformer,
     },
     "command": {
         "claude": CommandTransformer,
         "factory": CommandTransformer,
-        "cursor": CommandTransformer,
-        "cline": CommandTransformer,
     },
     "hook": {
         "claude": HookTransformer,
         "factory": HookTransformer,
-        "cursor": HookTransformer,
-        "cline": HookTransformer,
     },
 }
 
@@ -93,7 +69,7 @@ def get_transformer(
     Get a transformer for the specified platform and component type.
 
     Args:
-        platform: Target platform (claude, factory, cursor, cline)
+        platform: Target platform (claude, factory)
         component_type: Component type (skill, agent, command, hook)
 
     Returns:
@@ -197,144 +173,6 @@ def create_pipeline(
     return pipeline
 
 
-# Platform-specific generator functions
-def generate_cursor_output(
-    skills: list,
-    agents: list = None,
-    commands: list = None,
-    include_metadata: bool = True
-) -> Dict[str, str]:
-    """
-    Generate all Cursor output files.
-
-    Args:
-        skills: List of skill content dicts
-        agents: Optional list of agent content dicts
-        commands: Optional list of command content dicts
-        include_metadata: Include source metadata
-
-    Returns:
-        Dict mapping output filenames to content
-    """
-    agents = agents or []
-    commands = commands or []
-    output = {}
-
-    for idx, skill in enumerate(skills, start=1):
-        transformer = get_transformer("cursor", "skill")
-        context = TransformContext(
-            platform="cursor",
-            component_type="skill",
-            source_path=skill.get("source", ""),
-            metadata={"name": skill.get("name", "unknown")}
-        )
-        result = transformer.transform(skill.get("content", ""), context)
-        if result.success:
-            raw_name = skill.get("name") or Path(skill.get("source", "")).stem or f"untitled-skill-{idx}"
-            safe_name = normalize_cursor_name(raw_name) or f"untitled-skill-{idx}"
-            filename = f"skills/{safe_name}.md"
-            output[filename] = result.content
-
-    for idx, agent in enumerate(agents, start=1):
-        transformer = get_transformer("cursor", "agent")
-        context = TransformContext(
-            platform="cursor",
-            component_type="agent",
-            source_path=agent.get("source", ""),
-            metadata={"name": agent.get("name", "unknown")}
-        )
-        result = transformer.transform(agent.get("content", ""), context)
-        if result.success:
-            raw_name = agent.get("name") or Path(agent.get("source", "")).stem or f"untitled-agent-{idx}"
-            safe_name = normalize_cursor_name(raw_name) or f"untitled-agent-{idx}"
-            filename = f"agents/{safe_name}.md"
-            output[filename] = result.content
-
-    for idx, command in enumerate(commands, start=1):
-        transformer = get_transformer("cursor", "command")
-        context = TransformContext(
-            platform="cursor",
-            component_type="command",
-            source_path=command.get("source", ""),
-            metadata={"name": command.get("name", "unknown")}
-        )
-        result = transformer.transform(command.get("content", ""), context)
-        if result.success:
-            cmd_name = command.get("name")
-            if cmd_name:
-                cmd_name = cmd_name.replace("/", "")
-            raw_name = cmd_name or Path(command.get("source", "")).stem or f"untitled-command-{idx}"
-            safe_name = normalize_cursor_name(raw_name) or f"untitled-command-{idx}"
-            filename = f"commands/{safe_name}.md"
-            output[filename] = result.content
-
-    return output
-
-
-def generate_cline_output(
-    skills: list = None,
-    agents: list = None,
-    commands: list = None
-) -> Dict[str, str]:
-    """
-    Generate all Cline output files.
-
-    Args:
-        skills: Optional list of skill content dicts
-        agents: Optional list of agent content dicts
-        commands: Optional list of command content dicts
-
-    Returns:
-        Dict mapping output filenames to content
-    """
-    skills = skills or []
-    agents = agents or []
-    commands = commands or []
-    output = {}
-
-    generator = ClinePromptsGenerator()
-
-    # Process skills
-    for skill in skills:
-        generator.add_component(
-            skill.get("content", ""),
-            "skill",
-            skill.get("name", "unknown"),
-            skill.get("source")
-        )
-
-    # Process agents
-    for agent in agents:
-        generator.add_component(
-            agent.get("content", ""),
-            "agent",
-            agent.get("name", "unknown"),
-            agent.get("source")
-        )
-
-    # Process commands
-    for command in commands:
-        generator.add_component(
-            command.get("content", ""),
-            "command",
-            command.get("name", "unknown"),
-            command.get("source")
-        )
-
-    # Generate all prompt files
-    for prompt_data in generator.prompts:
-        prompt_content = generator.generate_prompt(prompt_data)
-        prompt_type = prompt_data.get("type", "skill")
-        name = prompt_data.get("name", "unknown")
-        filename = f"prompts/{prompt_type}s/{name}.md"
-        output[filename] = prompt_content
-
-    # Generate index
-    output["prompts/index.md"] = generator.generate_index()
-
-    return output
-
-
 __all__ = [
     # Base classes
     "BaseTransformer",
@@ -353,23 +191,10 @@ __all__ = [
     "CommandTransformerFactory",
     "HookTransformer",
     "HookTransformerFactory",
-    # Cursor-specific
-    "CursorRulesGenerator",
-    "CursorRulesTransformer",
-    "generate_cursorrules_from_skills",
-    "write_cursorrules",
-    # Cline-specific
-    "ClinePromptsGenerator",
-    "ClinePromptsTransformer",
-    "generate_cline_prompt",
-    "generate_prompts_index",
-    "write_cline_prompts",
     # Factory functions
     "get_transformer",
     "transform_content",
     "create_pipeline",
-    "generate_cursor_output",
-    "generate_cline_output",
     # Hook utilities
     "generate_hooks_json",
     "parse_hooks_json",

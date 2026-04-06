@@ -33,8 +33,6 @@ You are a sample agent for testing the Ring installer.
 
 This agent demonstrates:
 - Agent to droid transformation for Factory AI
-- Agent to workflow transformation for Cursor
-- Agent to prompt transformation for Cline
 
 ## Capabilities
 

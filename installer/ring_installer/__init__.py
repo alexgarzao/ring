@@ -2,7 +2,7 @@
 Ring Installer - Multi-platform AI agent skill installer.
 
 This package provides tools to install Ring skills, agents, and commands
-across multiple AI platforms including Claude Code, Factory AI, Cursor, and Cline.
+across multiple AI platforms including Claude Code, Codex, Factory AI, OpenCode, and Pi.
 """
 
 __version__ = "0.1.0"
@@ -12,8 +12,6 @@ __license__ = "Apache-2.0"
 from ring_installer.adapters import (
     SUPPORTED_PLATFORMS,
     ClaudeAdapter,
-    ClineAdapter,
-    CursorAdapter,
     FactoryAdapter,
     PlatformAdapter,
     get_adapter,
@@ -59,8 +57,6 @@ __all__ = [
     "PlatformAdapter",
     "ClaudeAdapter",
     "FactoryAdapter",
-    "CursorAdapter",
-    "ClineAdapter",
     "get_adapter",
     "SUPPORTED_PLATFORMS",
 ]

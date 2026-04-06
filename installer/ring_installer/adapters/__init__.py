@@ -5,11 +5,10 @@ from typing import Dict, Optional, Type, TypeVar
 
 from ring_installer.adapters.base import PlatformAdapter
 from ring_installer.adapters.claude import ClaudeAdapter
-from ring_installer.adapters.cline import ClineAdapter
 from ring_installer.adapters.codex import CodexAdapter
-from ring_installer.adapters.cursor import CursorAdapter
 from ring_installer.adapters.factory import FactoryAdapter
 from ring_installer.adapters.opencode import OpenCodeAdapter
+from ring_installer.adapters.pi import PiAdapter
 
 # TypeVar for adapter type hints
 AdapterT = TypeVar("AdapterT", bound=PlatformAdapter)
@@ -28,14 +27,13 @@ class PlatformID:
     CLAUDE = "claude"
     CODEX = "codex"
     FACTORY = "factory"
-    CURSOR = "cursor"
-    CLINE = "cline"
     OPENCODE = "opencode"
+    PI = "pi"
 
     @classmethod
     def all(cls) -> list[str]:
         """Return all platform identifiers."""
-        return [cls.CLAUDE, cls.CODEX, cls.FACTORY, cls.CURSOR, cls.CLINE, cls.OPENCODE]
+        return [cls.CLAUDE, cls.CODEX, cls.FACTORY, cls.OPENCODE, cls.PI]
 
     @classmethod
     def is_valid(cls, platform: str) -> bool:
@@ -47,9 +45,8 @@ ADAPTER_REGISTRY: Dict[str, Type[PlatformAdapter]] = {
     PlatformID.CLAUDE: ClaudeAdapter,
     PlatformID.CODEX: CodexAdapter,
     PlatformID.FACTORY: FactoryAdapter,
-    PlatformID.CURSOR: CursorAdapter,
-    PlatformID.CLINE: ClineAdapter,
     PlatformID.OPENCODE: OpenCodeAdapter,
+    PlatformID.PI: PiAdapter,
 }
 
 # List of supported platform identifiers
@@ -65,7 +62,7 @@ def get_adapter(
     Get an adapter instance for the specified platform.
 
     Args:
-        platform: Platform identifier (claude, codex, factory, cursor, cline, opencode)
+        platform: Platform identifier (claude, codex, factory, opencode, pi)
         config: Optional platform-specific configuration
         adapter_class_override: Optional adapter class to use instead of registry
 
@@ -144,9 +141,8 @@ __all__ = [
     "ClaudeAdapter",
     "CodexAdapter",
     "FactoryAdapter",
-    "CursorAdapter",
-    "ClineAdapter",
     "OpenCodeAdapter",
+    "PiAdapter",
     # Registry and utilities
     "ADAPTER_REGISTRY",
     "SUPPORTED_PLATFORMS",

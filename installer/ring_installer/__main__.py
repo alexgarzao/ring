@@ -14,7 +14,7 @@ Examples:
     python -m ring_installer install
 
     # Install to specific platforms
-    python -m ring_installer install --platforms claude,cursor
+    python -m ring_installer install --platforms claude,opencode
 
     # Symlink install (builds in-repo, symlinks from config dir)
     python -m ring_installer install --platforms opencode --link
@@ -444,7 +444,7 @@ def cmd_sync(args: argparse.Namespace) -> int:
 
     if len(platforms) < 2:
         print("Sync requires at least 2 platforms.")
-        print("Specify platforms with --platforms (e.g., --platforms claude,cursor)")
+        print("Specify platforms with --platforms (e.g., --platforms claude,opencode)")
         return 1
 
     print(f"Syncing platforms: {', '.join(platforms)}")

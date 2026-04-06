@@ -421,15 +421,15 @@ Ring is a comprehensive skills library and workflow system for AI agents that en
 **Active Plugins:**
 
 - **ring-default**: 22 core skills, 14 slash commands, 10 specialized agents
-- **ring-dev-team**: 29 development skills, 9 slash commands, 12 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, Frontend Engineer, Helm, QA Backend, QA Frontend, SRE, UI Engineer, Prompt Quality Reviewer)
-- **ring-pm-team**: 15 product management skills, 4 research agents, 3 slash commands (includes delivery planning + status tracking + Product Designer)
+- **ring-dev-team**: 32 development skills, 9 slash commands, 12 developer agents (Backend Go, Backend TypeScript, DevOps, Frontend TypeScript, Frontend Designer, Frontend Engineer, Helm, QA Backend, QA Frontend, SRE, UI Engineer, Prompt Quality Reviewer)
+- **ring-pm-team**: 16 product management skills, 4 research agents, 3 slash commands (includes delivery planning + status tracking + Product Designer + Lerian Map Management)
 - **ring-pmo-team**: 9 PMO skills, 4 slash commands, 6 PMO agents (Portfolio Manager, Resource Planner, Risk Analyst, Governance Specialist, Executive Reporter, Delivery Reporter)
 - **ring-finops-team**: 7 regulatory skills, 3 FinOps agents (Analyzer, Automation, Infrastructure Cost Estimator)
 - **ring-tw-team**: 7 technical writing skills, 3 slash commands, 3 documentation agents (Functional Writer, API Writer, Docs Reviewer)
 
 **Note:** Plugin versions are managed in `.claude-plugin/marketplace.json`
 
-**Total: 89 skills (22 + 29 + 15 + 9 + 7 + 7) across 6 plugins**
+**Total: 93 skills (22 + 32 + 16 + 9 + 7 + 7) across 6 plugins**
 **Total: 38 agents (10 + 12 + 4 + 6 + 3 + 3) across 6 plugins**
 **Total: 33 commands (14 + 9 + 3 + 4 + 0 + 3) across 6 plugins**
 
@@ -452,8 +452,8 @@ See [README.md](README.md#installation) for detailed installation instructions.
 | Plugin           | Path           | Contents                         |
 | ---------------- | -------------- | -------------------------------- |
 | ring-default     | `default/`     | 22 skills, 10 agents, 14 commands |
-| ring-dev-team    | `dev-team/`    | 29 skills, 12 agents, 9 commands |
-| ring-pm-team     | `pm-team/`     | 15 skills, 4 agents, 3 commands  |
+| ring-dev-team    | `dev-team/`    | 32 skills, 12 agents, 9 commands |
+| ring-pm-team     | `pm-team/`     | 16 skills, 4 agents, 3 commands  |
 | ring-pmo-team    | `pmo-team/`    | 9 skills, 6 agents, 4 commands   |
 | ring-finops-team | `finops-team/` | 7 skills, 3 agents               |
 | ring-tw-team     | `tw-team/`     | 7 skills, 3 agents, 3 commands   |
@@ -592,8 +592,8 @@ The system loads at SessionStart (from `default/` plugin):
 - Active plugins: 6 (`ring-default`, `ring-dev-team`, `ring-pm-team`, `ring-pmo-team`, `ring-finops-team`, `ring-tw-team`)
 - Plugin versions: See `.claude-plugin/marketplace.json`
 - Core plugin: `default/` (22 skills, 10 agents, 14 commands)
-- Developer agents: `dev-team/` (29 skills, 12 agents, 9 commands)
-- Product planning: `pm-team/` (15 skills, 4 agents, 3 commands)
+- Developer agents: `dev-team/` (32 skills, 12 agents, 9 commands)
+- Product planning: `pm-team/` (16 skills, 4 agents, 3 commands)
 - PMO specialists: `pmo-team/` (9 skills, 6 agents, 4 commands)
 - FinOps regulatory: `finops-team/` (7 skills, 3 agents)
 - Technical writing: `tw-team/` (7 skills, 3 agents, 3 commands)

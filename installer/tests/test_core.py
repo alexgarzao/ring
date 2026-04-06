@@ -89,7 +89,7 @@ class TestInstallTarget:
         assert "~" not in str(target.path)
         assert target.path.is_absolute()
 
-    @pytest.mark.parametrize("platform", ["claude", "codex", "factory", "cursor", "cline"])
+    @pytest.mark.parametrize("platform", ["claude", "codex", "factory", "opencode", "pi"])
     def test_accepts_all_supported_platforms(self, platform):
         """InstallTarget should accept all supported platform identifiers."""
         from ring_installer.core import InstallTarget
@@ -1216,7 +1216,7 @@ class TestIntegration:
         """Test installing to multiple platforms simultaneously."""
         from ring_installer.core import InstallOptions, InstallTarget, install
 
-        platforms = ["claude", "factory", "cursor", "cline"]
+        platforms = ["claude", "factory", "opencode", "pi"]
         targets = []
 
         for platform in platforms:

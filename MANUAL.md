@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 89 skills, 38 agents, and 33 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 93 skills, 38 agents, and 33 slash commands for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,7 +13,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
 │  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(22)   │  │  Skills(29)   │  │  Skills(15)   │  │  team         │      │
+│  │  Skills(22)   │  │  Skills(32)   │  │  Skills(16)   │  │  team         │      │
 │  │  Agents(10)   │  │  Agents(12)   │  │  Agents(4)    │  │  Skills(7)    │      │
 │  │  Cmds(14)     │  │  Cmds(9)      │  │  Cmds(3)      │  │  Agents(3)    │      │
 │  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
@@ -145,7 +145,7 @@ Commands are invoked directly: `/command-name`.
 
 ## 💡 About Skills
 
-Skills (89) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
+Skills (93) are workflows that Claude Code invokes automatically when it detects they're applicable. They handle testing, debugging, verification, planning, and code review enforcement. You don't call them directly - Claude Code uses them internally to enforce best practices.
 
 Examples: ring:test-driven-development, ring:systematic-debugging, ring:requesting-code-review, ring:verification-before-completion, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
@@ -402,7 +402,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 89 skills are auto-discovered and available
+2. All 93 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

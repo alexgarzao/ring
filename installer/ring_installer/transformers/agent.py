@@ -5,7 +5,7 @@ Transforms Ring agent markdown files to platform-specific formats.
 """
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from ring_installer.transformers.base import (
     BaseTransformer,
@@ -21,8 +21,6 @@ class AgentTransformer(BaseTransformer):
     Handles transformation of agent definitions including:
     - Claude: passthrough (native format)
     - Factory: agent -> droid, update references
-    - Cursor: convert to agent format (frontmatter + body)
-    - Cline: convert to prompt template
     """
 
     def __init__(
@@ -63,10 +61,6 @@ class AgentTransformer(BaseTransformer):
             return self._transform_claude(frontmatter, body, context)
         elif self.platform == "factory":
             return self._transform_factory(frontmatter, body, context)
-        elif self.platform == "cursor":
-            return self._transform_cursor(frontmatter, body, context)
-        elif self.platform == "cline":
-            return self._transform_cline(frontmatter, body, context)
         else:
             return TransformResult(content=content, success=True)
 
@@ -107,98 +101,6 @@ class AgentTransformer(BaseTransformer):
             content = transformed_body
 
         return TransformResult(content=content, success=True)
-
-    def _transform_cursor(
-        self,
-        frontmatter: Dict[str, Any],
-        body: str,
-        context: TransformContext
-    ) -> TransformResult:
-        """
-        Transform agent to Cursor agent format.
-
-        Cursor agents use YAML frontmatter (name, description) plus body.
-        """
-        name = frontmatter.get("name", context.metadata.get("name", "untitled-agent"))
-        description = frontmatter.get("description", "")
-        clean_desc = self.clean_yaml_string(description).replace("\n", " ").strip()[:1024]
-        normalized_name = self._normalize_cursor_name(name) or "untitled-agent"
-
-        parts: List[str] = []
-        parts.append(self.create_frontmatter({"name": normalized_name, "description": clean_desc}).rstrip())
-        parts.append("")
-        parts.append(self.transform_body_for_cursor(body))
-
-        return TransformResult(content="\n".join(parts), success=True)
-
-    def _transform_cline(
-        self,
-        frontmatter: Dict[str, Any],
-        body: str,
-        context: TransformContext
-    ) -> TransformResult:
-        """
-        Transform agent to Cline prompt format.
-
-        Converts agent definition to prompt template with
-        role definition and capabilities.
-        """
-        parts: List[str] = []
-
-        # Extract metadata
-        name = frontmatter.get("name", context.metadata.get("name", "Untitled Agent"))
-        description = frontmatter.get("description", "")
-        model = frontmatter.get("model", "")
-
-        # HTML comments for metadata
-        parts.append(f"<!-- Prompt: {name} -->")
-        parts.append("<!-- Type: agent -->")
-        if model:
-            parts.append(f"<!-- Recommended Model: {model} -->")
-        if context.source_path:
-            parts.append(f"<!-- Source: {context.source_path} -->")
-        parts.append("")
-
-        # Title with role indicator
-        parts.append(f"# {self.to_title_case(name)} Agent")
-        parts.append("")
-
-        # Role description
-        if description:
-            clean_desc = self.clean_yaml_string(description)
-            parts.append("## Role")
-            parts.append("")
-            parts.append(clean_desc)
-            parts.append("")
-
-        # Model recommendation
-        if model:
-            parts.append(f"**Recommended Model:** `{model}`")
-            parts.append("")
-
-        # Output requirements
-        output_schema = frontmatter.get("output_schema", {})
-        if output_schema:
-            parts.append("## Expected Output Format")
-            parts.append("")
-            output_format = output_schema.get("format", "markdown")
-            parts.append(f"Format: {output_format}")
-            parts.append("")
-            required_sections = output_schema.get("required_sections", [])
-            if required_sections:
-                parts.append("Required sections:")
-                for section in required_sections:
-                    section_name = section.get("name", "")
-                    if section_name:
-                        parts.append(f"- {section_name}")
-                parts.append("")
-
-        # Behavior and capabilities
-        parts.append("## Behavior")
-        parts.append("")
-        parts.append(self.transform_body_for_cline(body))
-
-        return TransformResult(content="\n".join(parts), success=True)
 
     def _transform_factory_frontmatter(
         self,
@@ -279,8 +181,6 @@ class AgentTransformerFactory:
     PLATFORM_TERMINOLOGY = {
         "claude": {"agent": "agent"},
         "factory": {"agent": "droid"},
-        "cursor": {"agent": "agent"},
-        "cline": {"agent": "prompt"},
     }
 
     @classmethod

@@ -1,8 +1,7 @@
 """
 Tests for platform adapters.
 
-Tests ClaudeAdapter, FactoryAdapter, CursorAdapter, ClineAdapter,
-and the get_adapter() factory function.
+Tests ClaudeAdapter, FactoryAdapter, and the get_adapter() factory function.
 """
 
 from pathlib import Path
@@ -14,8 +13,6 @@ from ring_installer.adapters import (
     SUPPORTED_PLATFORMS,
     ClaudeAdapter,
     CodexAdapter,
-    ClineAdapter,
-    CursorAdapter,
     FactoryAdapter,
     OpenCodeAdapter,
     PlatformAdapter,
@@ -50,18 +47,6 @@ class TestGetAdapter:
         assert isinstance(adapter, CodexAdapter)
         assert adapter.platform_id == "codex"
 
-    def test_get_adapter_returns_cursor_adapter(self):
-        """get_adapter('cursor') should return CursorAdapter instance."""
-        adapter = get_adapter("cursor")
-        assert isinstance(adapter, CursorAdapter)
-        assert adapter.platform_id == "cursor"
-
-    def test_get_adapter_returns_cline_adapter(self):
-        """get_adapter('cline') should return ClineAdapter instance."""
-        adapter = get_adapter("cline")
-        assert isinstance(adapter, ClineAdapter)
-        assert adapter.platform_id == "cline"
-
     def test_get_adapter_returns_opencode_adapter(self):
         """get_adapter('opencode') should return OpenCodeAdapter instance."""
         adapter = get_adapter("opencode")
@@ -73,7 +58,6 @@ class TestGetAdapter:
         assert isinstance(get_adapter("CLAUDE"), ClaudeAdapter)
         assert isinstance(get_adapter("Claude"), ClaudeAdapter)
         assert isinstance(get_adapter("FACTORY"), FactoryAdapter)
-        assert isinstance(get_adapter("Cursor"), CursorAdapter)
 
     def test_get_adapter_with_config(self):
         """get_adapter() should accept optional configuration."""
@@ -91,7 +75,7 @@ class TestGetAdapter:
 
     def test_supported_platforms_list(self):
         """SUPPORTED_PLATFORMS should contain all expected platforms."""
-        expected = {"claude", "codex", "factory", "cursor", "cline", "opencode"}
+        expected = {"claude", "codex", "factory", "opencode", "pi"}
         assert set(SUPPORTED_PLATFORMS) == expected
 
 
@@ -158,8 +142,6 @@ class TestListPlatforms:
         assert "claude" in platform_ids
         assert "codex" in platform_ids
         assert "factory" in platform_ids
-        assert "cursor" in platform_ids
-        assert "cline" in platform_ids
         assert "opencode" in platform_ids
 
     def test_list_platforms_includes_required_fields(self):
@@ -691,231 +673,6 @@ Read-only droid.
         assert settings["enableHooks"] is True
         assert "SessionStart" in settings["hooks"]  # New hook added
         assert "UserPromptSubmit" in settings["hooks"]  # Existing preserved
-
-
-# ==============================================================================
-# Tests for CursorAdapter (skills, agents, and commands)
-# ==============================================================================
-
-class TestCursorAdapter:
-    """Tests for CursorAdapter skill/agent/command generation."""
-
-    @pytest.fixture
-    def adapter(self):
-        """Create a CursorAdapter instance."""
-        return CursorAdapter()
-
-    def test_platform_id(self, adapter):
-        """CursorAdapter should have correct platform_id."""
-        assert adapter.platform_id == "cursor"
-        assert adapter.platform_name == "Cursor"
-
-    def test_is_not_native_format(self, adapter):
-        """CursorAdapter should not report native format."""
-        assert adapter.is_native_format() is False
-
-    def test_get_terminology(self, adapter):
-        """get_terminology() should return Cursor-specific mapping."""
-        terminology = adapter.get_terminology()
-
-        assert terminology["agent"] == "agent"
-        assert terminology["skill"] == "skill"
-        assert terminology["command"] == "command"
-
-    def test_transform_skill_format(self, adapter, sample_skill_content):
-        """transform_skill() should convert skill to Cursor skill format with frontmatter."""
-        result = adapter.transform_skill(sample_skill_content)
-
-        assert result.startswith("---")
-        assert "name:" in result
-        assert "description:" in result
-        assert "# Sample Skill" in result or "# Sample-Skill" in result or "# sample" in result.lower()
-        assert "When to Apply" in result or "Instructions" in result
-
-    def test_transform_skill_with_frontmatter_extraction(self, adapter, minimal_skill_content):
-        """transform_skill() should extract and use frontmatter data."""
-        result = adapter.transform_skill(minimal_skill_content)
-
-        assert result.startswith("---")
-        assert "name: minimal-skill" in result
-        assert "Minimal Skill" in result or "minimal" in result.lower()
-
-    def test_transform_agent_format(self, adapter, sample_agent_content):
-        """transform_agent() should convert agent to Cursor agent format with frontmatter."""
-        result = adapter.transform_agent(sample_agent_content)
-
-        assert result.startswith("---")
-        assert "name:" in result
-        assert "description:" in result
-
-    def test_transform_command_format(self, adapter, sample_command_content):
-        """transform_command() should convert command to Cursor command format (plain markdown)."""
-        result = adapter.transform_command(sample_command_content)
-
-        assert not result.startswith("---")
-        assert "Parameters" in result
-        assert "Steps" in result
-        assert "/ring:" not in result
-        assert "## Usage" in result
-
-    def test_get_component_mapping(self, adapter):
-        """get_component_mapping() should map to Cursor directories."""
-        mapping = adapter.get_component_mapping()
-
-        assert mapping["agents"]["target_dir"] == "agents"
-        assert mapping["commands"]["target_dir"] == "commands"
-        assert mapping["skills"]["target_dir"] == "skills"
-
-    def test_transform_replaces_ring_terminology(self, adapter):
-        """CursorAdapter should replace Ring-specific terminology (CURSOR_REPLACEMENTS)."""
-        content = "Use the Skill tool to load a skill."
-        result = adapter.transform_skill(content)
-
-        assert "rule reference" in result.lower()
-
-    def test_transform_fallback_when_name_normalizes_to_empty(self, adapter):
-        """Adapter should use untitled-* fallbacks when name normalizes to empty (e.g. '!!!')."""
-        skill_content = '---\nname: "!!!"\ndescription: ""\n---\nbody'
-        agent_content = '---\nname: "!!!"\ndescription: ""\n---\nbody'
-        command_content = '---\nname: "!!!"\ndescription: ""\n---\nbody'
-
-        skill_result = adapter.transform_skill(skill_content)
-        agent_result = adapter.transform_agent(agent_content)
-        command_result = adapter.transform_command(command_content)
-
-        assert "untitled-skill" in skill_result
-        assert "untitled-agent" in agent_result
-        assert "untitled-command" in command_result
-
-    def test_get_cursorrules_path_default(self, adapter):
-        """get_cursorrules_path() should return default path."""
-        path = adapter.get_cursorrules_path()
-        assert path == Path.home() / ".cursor" / ".cursorrules"
-
-    def test_get_cursorrules_path_with_project(self, adapter, tmp_path):
-        """get_cursorrules_path() should return project-specific path."""
-        path = adapter.get_cursorrules_path(tmp_path)
-        assert path == tmp_path / ".cursorrules"
-
-
-# ==============================================================================
-# Tests for ClineAdapter (prompts)
-# ==============================================================================
-
-class TestClineAdapter:
-    """Tests for ClineAdapter prompt generation."""
-
-    @pytest.fixture
-    def adapter(self):
-        """Create a ClineAdapter instance."""
-        return ClineAdapter()
-
-    def test_platform_id(self, adapter):
-        """ClineAdapter should have correct platform_id."""
-        assert adapter.platform_id == "cline"
-        assert adapter.platform_name == "Cline"
-
-    def test_is_not_native_format(self, adapter):
-        """ClineAdapter should not report native format."""
-        assert adapter.is_native_format() is False
-
-    def test_get_terminology(self, adapter):
-        """get_terminology() should return Cline-specific mapping."""
-        terminology = adapter.get_terminology()
-
-        assert terminology["agent"] == "prompt"
-        assert terminology["skill"] == "prompt"
-        assert terminology["command"] == "prompt"
-
-    def test_transform_skill_to_prompt(self, adapter, sample_skill_content):
-        """transform_skill() should convert skill to Cline prompt format."""
-        result = adapter.transform_skill(sample_skill_content)
-
-        # Should have HTML comment metadata
-        assert "<!-- Prompt:" in result
-        assert "<!-- Type: skill -->" in result
-
-        # Should have title
-        assert "#" in result
-
-        # Should have Instructions section
-        assert "Instructions" in result
-
-        # Should not have YAML frontmatter
-        assert not result.startswith("---")
-
-    def test_transform_skill_with_metadata(self, adapter, minimal_skill_content):
-        """transform_skill() should include metadata in comments."""
-        metadata = {"source_path": "/path/to/skill.md"}
-        result = adapter.transform_skill(minimal_skill_content, metadata)
-
-        # Should include source path comment
-        assert "<!-- Source:" in result
-
-    def test_transform_agent_to_prompt(self, adapter, sample_agent_content):
-        """transform_agent() should convert agent to prompt format."""
-        result = adapter.transform_agent(sample_agent_content)
-
-        # Should have prompt metadata
-        assert "<!-- Prompt:" in result
-        assert "<!-- Type: agent -->" in result
-
-        # Should have Role section
-        assert "Role" in result or "Behavior" in result
-
-        # Should have model recommendation
-        assert "Recommended Model" in result or "claude" in result.lower()
-
-    def test_transform_command_to_prompt(self, adapter, sample_command_content):
-        """transform_command() should convert command to prompt format."""
-        result = adapter.transform_command(sample_command_content)
-
-        # Should have prompt metadata
-        assert "<!-- Prompt:" in result
-        assert "<!-- Type: command -->" in result
-
-        # Should have Parameters section
-        assert "Parameters" in result
-
-        # Should have Steps section
-        assert "Steps" in result
-
-    def test_get_component_mapping(self, adapter):
-        """get_component_mapping() should map to Cline prompt directories."""
-        mapping = adapter.get_component_mapping()
-
-        assert mapping["agents"]["target_dir"] == "prompts/agents"
-        assert mapping["commands"]["target_dir"] == "prompts/commands"
-        assert mapping["skills"]["target_dir"] == "prompts/skills"
-
-    def test_transform_replaces_ring_references(self, adapter):
-        """ClineAdapter should convert ring: references to @ format."""
-        content = "Use `ring:helper-skill` for context."
-        result = adapter.transform_skill(content)
-
-        # ring: references should become @ references
-        assert "@helper-skill" in result or "@" in result
-
-    def test_transform_replaces_ring_terminology(self, adapter):
-        """ClineAdapter should replace Ring-specific terminology."""
-        content = "Use the Task tool to dispatch subagent."
-        result = adapter.transform_skill(content)
-
-        # Ring terminology should be replaced
-        assert "sub-prompt" in result.lower() or "prompt" in result.lower()
-
-    def test_generate_prompt_index(self, adapter):
-        """generate_prompt_index() should create an index of prompts."""
-        prompts = [
-            {"name": "skill-1", "type": "skills", "description": "First skill"},
-            {"name": "agent-1", "type": "agents", "description": "First agent"},
-        ]
-
-        result = adapter.generate_prompt_index(prompts)
-
-        assert "Ring Prompts" in result
-        assert "skill-1" in result.lower() or "Skill 1" in result
-        assert "agent-1" in result.lower() or "Agent 1" in result
 
 
 # ==============================================================================

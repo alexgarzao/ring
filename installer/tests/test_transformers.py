@@ -50,14 +50,14 @@ class TestTransformContext:
     def test_create_context_full(self):
         """TransformContext should accept all parameters."""
         context = TransformContext(
-            platform="cursor",
+            platform="factory",
             component_type="agent",
             source_path="/path/to/agent.md",
             metadata={"name": "test-agent"},
             options={"verbose": True}
         )
 
-        assert context.platform == "cursor"
+        assert context.platform == "factory"
         assert context.component_type == "agent"
         assert context.source_path == "/path/to/agent.md"
         assert context.metadata["name"] == "test-agent"
@@ -420,34 +420,6 @@ class TestSkillTransformer:
         # Factory preserves frontmatter but changes terminology
         assert result.content.startswith("---")
 
-    def test_cursor_skill_format(self, sample_skill_content, transform_context):
-        """Cursor transformer should convert to skill format with frontmatter."""
-        transformer = SkillTransformerFactory.create("cursor")
-        context = transform_context(platform="cursor", component_type="skill")
-
-        result = transformer.transform(sample_skill_content, context)
-
-        assert result.success is True
-        assert result.content.startswith("---")
-        assert "name:" in result.content
-        assert "description:" in result.content
-        assert "# " in result.content
-        assert "When to Apply" in result.content or "Instructions" in result.content
-
-    def test_cline_prompt_format(self, sample_skill_content, transform_context):
-        """Cline transformer should convert to prompt format."""
-        transformer = SkillTransformerFactory.create("cline")
-        context = transform_context(platform="cline", component_type="skill")
-
-        result = transformer.transform(sample_skill_content, context)
-
-        assert result.success is True
-        # Cline removes frontmatter
-        assert not result.content.startswith("---")
-        # Should have prompt metadata
-        assert "<!-- Prompt:" in result.content
-        assert "<!-- Type: skill -->" in result.content
-
     def test_empty_content_fails(self, transform_context):
         """Transformer should fail on empty content."""
         transformer = SkillTransformerFactory.create("claude")
@@ -496,30 +468,6 @@ class TestAgentTransformer:
         # Should contain droid terminology
         assert "droid" in result.content.lower() or "Droid" in result.content
 
-    def test_cursor_agent_format(self, sample_agent_content, transform_context):
-        """Cursor transformer should convert agent to Cursor agent format with frontmatter."""
-        transformer = AgentTransformerFactory.create("cursor")
-        context = transform_context(platform="cursor", component_type="agent")
-
-        result = transformer.transform(sample_agent_content, context)
-
-        assert result.success is True
-        assert result.content.startswith("---")
-        assert "name:" in result.content
-        assert "description:" in result.content
-
-    def test_cline_prompt_format(self, sample_agent_content, transform_context):
-        """Cline transformer should convert agent to prompt."""
-        transformer = AgentTransformerFactory.create("cline")
-        context = transform_context(platform="cline", component_type="agent")
-
-        result = transformer.transform(sample_agent_content, context)
-
-        assert result.success is True
-        assert "<!-- Prompt:" in result.content
-        assert "<!-- Type: agent -->" in result.content
-        assert "Role" in result.content or "Behavior" in result.content
-
 
 # ==============================================================================
 # Tests for CommandTransformer
@@ -547,31 +495,6 @@ class TestCommandTransformer:
 
         assert result.success is True
 
-    def test_cursor_command_format(self, sample_command_content, transform_context):
-        """Cursor transformer should convert command to plain markdown (no frontmatter)."""
-        transformer = CommandTransformerFactory.create("cursor")
-        context = transform_context(platform="cursor", component_type="command")
-
-        result = transformer.transform(sample_command_content, context)
-
-        assert result.success is True
-        assert not result.content.startswith("---")
-        assert "Parameters" in result.content
-        assert "Steps" in result.content
-
-    def test_cline_prompt_format(self, sample_command_content, transform_context):
-        """Cline transformer should convert command to action prompt."""
-        transformer = CommandTransformerFactory.create("cline")
-        context = transform_context(platform="cline", component_type="command")
-
-        result = transformer.transform(sample_command_content, context)
-
-        assert result.success is True
-        assert "<!-- Prompt:" in result.content
-        assert "<!-- Type: command -->" in result.content
-        assert "Parameters" in result.content
-        assert "Steps" in result.content
-
 
 # ==============================================================================
 # Tests for get_transformer() Factory
@@ -580,19 +503,19 @@ class TestCommandTransformer:
 class TestGetTransformer:
     """Tests for get_transformer() factory function."""
 
-    @pytest.mark.parametrize("platform", ["claude", "factory", "cursor", "cline"])
+    @pytest.mark.parametrize("platform", ["claude", "factory"])
     def test_get_skill_transformer(self, platform):
         """get_transformer() should return skill transformer for each platform."""
         transformer = get_transformer(platform, "skill")
         assert isinstance(transformer, SkillTransformer)
 
-    @pytest.mark.parametrize("platform", ["claude", "factory", "cursor", "cline"])
+    @pytest.mark.parametrize("platform", ["claude", "factory"])
     def test_get_agent_transformer(self, platform):
         """get_transformer() should return agent transformer for each platform."""
         transformer = get_transformer(platform, "agent")
         assert isinstance(transformer, AgentTransformer)
 
-    @pytest.mark.parametrize("platform", ["claude", "factory", "cursor", "cline"])
+    @pytest.mark.parametrize("platform", ["claude", "factory"])
     def test_get_command_transformer(self, platform):
         """get_transformer() should return command transformer for each platform."""
         transformer = get_transformer(platform, "command")
@@ -633,7 +556,7 @@ class TestTransformContent:
         """transform_content() should transform skill content."""
         result = transform_content(
             content=sample_skill_content,
-            platform="cursor",
+            platform="factory",
             component_type="skill"
         )
 
@@ -644,14 +567,13 @@ class TestTransformContent:
         """transform_content() should pass metadata to transformer."""
         result = transform_content(
             content=minimal_skill_content,
-            platform="cline",
+            platform="claude",
             component_type="skill",
             metadata={"name": "custom-name"},
             source_path="/path/to/skill.md"
         )
 
         assert result.success is True
-        assert "<!-- Source:" in result.content
 
 
 # ==============================================================================
@@ -663,14 +585,14 @@ class TestCreatePipeline:
 
     def test_create_pipeline_default(self):
         """create_pipeline() should create pipeline with default component types."""
-        pipeline = create_pipeline("cursor")
+        pipeline = create_pipeline("factory")
 
         # Default includes skill, agent, command
         assert len(pipeline) >= 1
 
     def test_create_pipeline_specific_components(self):
         """create_pipeline() should accept specific component types."""
-        pipeline = create_pipeline("cursor", component_types=["skill"])
+        pipeline = create_pipeline("factory", component_types=["skill"])
 
         assert len(pipeline) == 1
 
@@ -679,7 +601,7 @@ class TestCreatePipeline:
 # Parametrized Tests Across All Platforms
 # ==============================================================================
 
-@pytest.mark.parametrize("platform", ["claude", "factory", "cursor", "cline"])
+@pytest.mark.parametrize("platform", ["claude", "factory"])
 class TestAllPlatformTransformers:
     """Tests that apply to all platform transformers."""
 
@@ -735,8 +657,8 @@ class TestTransformerEdgeCases:
 
     def test_content_without_frontmatter(self, content_without_frontmatter, transform_context):
         """Transformers should handle content without frontmatter."""
-        transformer = SkillTransformerFactory.create("cursor")
-        context = transform_context(platform="cursor", component_type="skill")
+        transformer = SkillTransformerFactory.create("factory")
+        context = transform_context(platform="factory", component_type="skill")
 
         result = transformer.transform(content_without_frontmatter, context)
 
@@ -767,8 +689,8 @@ This content has unicode: , ,
 Japanese:
 Emoji:
 """
-        transformer = SkillTransformerFactory.create("cursor")
-        context = transform_context(platform="cursor", component_type="skill")
+        transformer = SkillTransformerFactory.create("factory")
+        context = transform_context(platform="factory", component_type="skill")
 
         result = transformer.transform(content, context)
 
