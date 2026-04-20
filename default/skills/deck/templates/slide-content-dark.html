@@ -1,0 +1,53 @@
+<!-- ARCHETYPE: content-dark -->
+<!-- Use for: Statement slides + KPI walls. Near-black panel, Amarelo eyebrow, inverse text. -->
+<!-- Reserved for high-impact moments: financial KPIs, statement moments, single big question. -->
+<section data-label="Content Dark" class="slide dark">
+  <div class="meta">
+    <div class="left">
+      <span class="wordmark">lerian<span class="dot"></span></span>
+      <span>&middot; Act 05 &mdash; Closing</span>
+    </div>
+    <div class="right"><span class="num"><span class="page-num"></span> / <span class="page-total"></span></span></div>
+  </div>
+
+  <div class="body">
+    <div class="eyebrow">Strategic Moment &middot; Open Question</div>
+
+    <!-- Hero statement: 110px Poppins. Content drives height; flex:1 fills canvas. -->
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1700px;">
+      <div style="font-family: 'Poppins', sans-serif; font-size: 110px; font-weight: 500; line-height: 1.0; letter-spacing: -0.03em; color: var(--c-ink-inv);">
+        One big question on a dark surface<span style="color: var(--c-accent);">&mdash;</span>phrased as a single sentence.
+      </div>
+      <p class="lede" style="margin-top: 48px; color: rgba(255,255,255,0.7);">
+        Advisory tone. Sets up the room for open discussion without pre-loading the answer.
+      </p>
+    </div>
+
+    <!-- Bottom KPI strip: 4 metrics, last one accented. flex-shrink:0 so it pins to bottom. -->
+    <!-- Uses canonical .kpi.dark modifier — defined in deck.html primitives. -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; margin-top: 40px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;">
+      <div>
+        <div class="eyebrow" style="color: rgba(255,255,255,0.55);">Metric A</div>
+        <div class="kpi dark">Value A</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="color: rgba(255,255,255,0.55);">Metric B</div>
+        <div class="kpi dark">Value B</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="color: rgba(255,255,255,0.55);">Metric C</div>
+        <div class="kpi dark">Value C</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="color: var(--c-accent);">Highlight</div>
+        <div class="kpi dark">Value D</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>Your footer here</div>
+    <div>Month DD, YYYY</div>
+  </div>
+</section>
+<!-- END ARCHETYPE: content-dark -->
