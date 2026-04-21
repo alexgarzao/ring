@@ -63,7 +63,9 @@ if (lanIp) allowedOrigins.add(`http://${lanIp}:${PORT}`);
 const app = express();
 
 // Scoped JSON parsing — keep the attack surface minimal; only /feedback needs it.
+// Covers POST /feedback and PUT /feedback/:id. DELETE and GET carry no body.
 app.use('/feedback', express.json({ limit: '10kb' }));
+app.use('/feedback/:id', express.json({ limit: '10kb' }));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.get('/', (_req, res) => sendFile(res, 'deck.html'));
@@ -80,26 +82,167 @@ app.use(
 // Note: /scripts is deliberately NOT mounted — no browser code fetches server
 // source, and exposing it over LAN leaked dev-server.mjs + export-pdf.mjs.
 
+// ---------------------------------------------------------------------------
+// Tweaks layer (pins / flags / stickies) — append-only log, replayed on GET.
+// Log ops: create | update | delete. Old-schema entries (no `op` field) are
+// invisible to replay — zero migration.
+// ---------------------------------------------------------------------------
+
+const ALLOWED_KINDS = new Set(['pin', 'flag', 'sticky']);
+const FEEDBACK_LOG = join(ROOT, 'feedback.jsonl');
+
+function appendLogLine(obj) {
+  appendFileSync(FEEDBACK_LOG, JSON.stringify(obj) + '\n');
+}
+
+function validateAnchor(kind, anchor) {
+  if (!anchor || typeof anchor !== 'object') return 'anchor is required';
+  if (kind === 'pin' || kind === 'sticky') {
+    if (typeof anchor.x !== 'number' || typeof anchor.y !== 'number') {
+      return 'anchor.{x,y} must be numbers for pin/sticky';
+    }
+  } else if (kind === 'flag') {
+    if (typeof anchor.selector !== 'string' || !anchor.selector
+        || typeof anchor.elementText !== 'string') {
+      return 'anchor.{selector,elementText} must be strings for flag';
+    }
+  }
+  return null;
+}
+
+function replayLog(filterSlide) {
+  if (!existsSync(FEEDBACK_LOG)) return [];
+  const raw = readFileSync(FEEDBACK_LOG, 'utf8');
+  const map = new Map();
+  for (const line of raw.split('\n')) {
+    if (!line.trim()) continue;
+    let entry;
+    try { entry = JSON.parse(line); } catch { console.warn('[feedback] skipping malformed line'); continue; }
+    if (entry.op === 'create' && entry.id) {
+      map.set(entry.id, { ...entry });
+    } else if (entry.op === 'update' && map.has(entry.id)) {
+      const cur = map.get(entry.id);
+      if (entry.text !== undefined) cur.text = entry.text;
+      if (entry.anchor !== undefined) cur.anchor = entry.anchor;
+    } else if (entry.op === 'delete') {
+      map.delete(entry.id);
+    }
+    // Entries without a valid op (including legacy smoke-test lines) are ignored.
+  }
+  const all = [...map.values()];
+  return filterSlide === undefined ? all : all.filter(m => m.slideIndex === filterSlide);
+}
+
 app.post('/feedback', (req, res) => {
-  const { slideIndex, slideLabel, text } = req.body || {};
-  if (!Number.isInteger(slideIndex) || typeof text !== 'string' || text.trim() === '') {
-    return res.status(400).json({ ok: false, error: 'Invalid body: expected {slideIndex:int, slideLabel:string, text:string non-empty}' });
+  const { id, slideIndex, slideLabel, kind, anchor, text } = req.body || {};
+  if (typeof id !== 'string' || id === '' || /\s/.test(id)) {
+    return res.status(400).json({ ok: false, error: 'id must be a non-empty string without whitespace' });
+  }
+  if (!Number.isInteger(slideIndex) || slideIndex < 0) {
+    return res.status(400).json({ ok: false, error: 'slideIndex must be a non-negative integer' });
+  }
+  if (!ALLOWED_KINDS.has(kind)) {
+    return res.status(400).json({ ok: false, error: `kind must be one of: ${[...ALLOWED_KINDS].join(', ')}` });
+  }
+  const anchorErr = validateAnchor(kind, anchor);
+  if (anchorErr) return res.status(400).json({ ok: false, error: anchorErr });
+  if (typeof text !== 'string') {
+    return res.status(400).json({ ok: false, error: 'text must be a string (empty allowed)' });
   }
   if (text.length > 4000) {
     return res.status(400).json({ ok: false, error: 'Text too long (max 4000 chars)' });
   }
   const entry = {
     ts: new Date().toISOString(),
+    op: 'create',
+    id,
     slideIndex,
     slideLabel: typeof slideLabel === 'string' ? slideLabel : '',
-    text: text.trim(),
+    kind,
+    anchor,
+    text,
   };
   try {
-    appendFileSync(join(ROOT, 'feedback.jsonl'), JSON.stringify(entry) + '\n');
+    appendLogLine(entry);
     res.json({ ok: true });
   } catch (err) {
     console.error('[feedback] append failed:', err);
     res.status(500).json({ ok: false, error: 'Server error writing feedback' });
+  }
+});
+
+app.put('/feedback/:id', (req, res) => {
+  const { id } = req.params;
+  if (typeof id !== 'string' || id === '' || /\s/.test(id)) {
+    return res.status(400).json({ ok: false, error: 'id must be a non-empty string without whitespace' });
+  }
+  const body = req.body || {};
+  const hasText = Object.prototype.hasOwnProperty.call(body, 'text');
+  const hasAnchor = Object.prototype.hasOwnProperty.call(body, 'anchor');
+  if (!hasText && !hasAnchor) {
+    return res.status(400).json({ ok: false, error: 'At least one of {text, anchor} required' });
+  }
+  const patch = { ts: new Date().toISOString(), op: 'update', id };
+  if (hasText) {
+    if (typeof body.text !== 'string') {
+      return res.status(400).json({ ok: false, error: 'text must be a string' });
+    }
+    if (body.text.length > 4000) {
+      return res.status(400).json({ ok: false, error: 'Text too long (max 4000 chars)' });
+    }
+    patch.text = body.text;
+  }
+  if (hasAnchor) {
+    // PUT can't infer kind — accept either shape and trust the client.
+    const a = body.anchor;
+    if (!a || typeof a !== 'object') {
+      return res.status(400).json({ ok: false, error: 'anchor must be an object' });
+    }
+    const isXY = typeof a.x === 'number' && typeof a.y === 'number';
+    const isSelector = typeof a.selector === 'string' && a.selector && typeof a.elementText === 'string';
+    if (!isXY && !isSelector) {
+      return res.status(400).json({ ok: false, error: 'anchor must be {x,y} or {selector,elementText}' });
+    }
+    patch.anchor = a;
+  }
+  try {
+    appendLogLine(patch);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[feedback] append failed:', err);
+    res.status(500).json({ ok: false, error: 'Server error writing feedback' });
+  }
+});
+
+app.delete('/feedback/:id', (req, res) => {
+  const { id } = req.params;
+  if (typeof id !== 'string' || id === '' || /\s/.test(id)) {
+    return res.status(400).json({ ok: false, error: 'id must be a non-empty string without whitespace' });
+  }
+  try {
+    appendLogLine({ ts: new Date().toISOString(), op: 'delete', id });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[feedback] append failed:', err);
+    res.status(500).json({ ok: false, error: 'Server error writing feedback' });
+  }
+});
+
+app.get('/feedback', (req, res) => {
+  const { slide } = req.query;
+  if (slide === undefined || slide === '') {
+    return res.status(400).json({ ok: false, error: 'slide query param is required' });
+  }
+  const n = Number(slide);
+  if (!Number.isInteger(n) || n < 0) {
+    return res.status(400).json({ ok: false, error: 'slide must be a non-negative integer' });
+  }
+  try {
+    const markers = replayLog(n);
+    res.json({ markers });
+  } catch (err) {
+    console.error('[feedback] replay failed:', err);
+    res.status(500).json({ ok: false, error: 'Server error reading feedback' });
   }
 });
 
@@ -293,10 +436,13 @@ function printBanner() {
     `  Remote:     http://${lan}:${PORT}/remote   ← open this on your phone`,
     '',
     '  Endpoints:',
-    '    POST /feedback          append feedback.jsonl',
-    '    POST /export/pdf        trigger PDF export',
-    '    POST /export/pptx       trigger PPTX export',
-    '    GET  /lan-url           LAN URL for remote control',
+    '    POST   /feedback           add a tweak marker',
+    '    PUT    /feedback/:id       update marker text/position',
+    '    DELETE /feedback/:id       remove a marker',
+    '    GET    /feedback?slide=N   list markers for slide N',
+    '    POST   /export/pdf         trigger PDF export',
+    '    POST   /export/pptx        trigger PPTX export',
+    '    GET    /lan-url            LAN URL for remote control',
     '',
     '  Watching deck.html, presenter.html, remote.html, assets/, scripts/',
     '  Local network only — no authentication.',
