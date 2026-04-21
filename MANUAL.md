@@ -238,7 +238,7 @@ For portfolio-level project management and oversight:
 2. **Plan** → Use `ring:pre-dev-feature` skill (or `ring:pre-dev-full` if complex)
 3. **Isolate** → Use `ring:worktree` skill
 4. **Implement** → Use `ring:test-driven-development` skill
-5. **Review** → Use `ring:codereview` skill (dispatches 8 reviewers)
+5. **Review** → Use `ring:codereview` skill (dispatches 10 reviewers)
 6. **Commit** → Use `ring:commit` skill
 
 ### Bug Investigation

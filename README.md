@@ -497,7 +497,7 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
         ... [Through all 8 gates]
 ```
 
-### Code Review (Parallel, 8 Reviewers!)
+### Code Review (Parallel, 10 Reviewers!)
 
 ```
 User: "Review my authentication implementation"
