@@ -1,5 +1,16 @@
 # Ring-default Changelog
 
+## [1.29.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.0)
+
+- Features:
+  - Refine hover target selection for feedback.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.28.0...ring-default@1.29.0)
+
+---
+
 ## [1.28.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.28.0)
 
 - Features:
