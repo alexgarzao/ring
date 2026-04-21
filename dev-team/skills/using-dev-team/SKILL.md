@@ -266,7 +266,7 @@ Remember:
 - ring:sre (Structured logging, tracing, health checks, observability)
 - ring:ui-engineer (Wireframe-to-code, Design System compliance, UX criteria)
 
-**Skills (31):**
+**Skills (32):**
 
 *Cycle Orchestrators:*
 - ring:using-dev-team (this skill - plugin introduction and dispatch guide)
@@ -303,6 +303,7 @@ Remember:
 *Analysis & Refactoring:*
 - ring:dev-refactor (Analyzes backend codebase against standards, generates tasks)
 - ring:dev-refactor-frontend (Analyzes frontend codebase against standards, generates tasks)
+- ring:dev-simplify (Whole-codebase structural simplification sweep — hunts unjustified abstractions with KILL/REVIEW/KEEP output and DELETE-by-default burden of proof)
 - ring:dev-report (Cycle feedback - assertiveness scores, prompt quality, root cause analysis)
 
 *Specialized:*

@@ -6,7 +6,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** and **95 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** and **96 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -21,7 +21,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 95 specialized skills** (24 core + 33 dev-team + 16 product planning + 7 FinOps regulatory + 6 technical writing + 9 PMO)
+- **Providing 96 specialized skills** (24 core + 34 dev-team + 16 product planning + 7 FinOps regulatory + 6 technical writing + 9 PMO)
 - **41 specialized agents** - 10 review/planning + 15 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -292,7 +292,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 95 Skills (Across 6 Plugins)
+## 📚 All 96 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 24 skills)
 
@@ -338,15 +338,16 @@ No "should work" → Only "does work" with proof
 
 - `ring:production-readiness-audit` - 44-dimension production readiness audit; runs explorers in batches of up to 10, appends incrementally to a single report; output: scored report (0-430, max 440 with multi-tenant) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
 
-### Developer Skills (ring-dev-team plugin - 33 skills)
+### Developer Skills (ring-dev-team plugin - 34 skills)
 
-**Orchestration & Refactoring (6):**
+**Orchestration & Refactoring (7):**
 
 - `ring:using-dev-team` - Introduction to developer specialist agents
 - `ring:dev-cycle` - 10-gate development workflow orchestrator (Gates 0–9, with subtask/task/cycle cadence classification; Gate 0 includes inline delivery verification exit check)
 - `ring:dev-cycle-frontend` - 9-gate frontend development workflow orchestrator
 - `ring:dev-refactor` - Backend/codebase standards analysis
 - `ring:dev-refactor-frontend` - Frontend standards analysis and task generation
+- `ring:dev-simplify` - Whole-codebase structural simplification sweep (hunts unjustified abstractions, adapters, shims; KILL/REVIEW/KEEP output; DELETE-by-default burden of proof for pre-public applications)
 - `ring:dev-cycle-management` - Development cycle state management (status reporting and cancellation)
 
 **Backend Gate Skills (9):**
@@ -564,7 +565,7 @@ ring/                                  # Monorepo root
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 33 skills, 15 agents
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 34 skills, 15 agents
 │   └── agents/                      # 15 specialized developer agents
 │       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
 │       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
