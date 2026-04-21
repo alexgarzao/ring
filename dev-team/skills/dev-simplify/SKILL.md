@@ -86,6 +86,9 @@ output_schema:
     - name: "Cascade Chains"
       pattern: "^## Cascade Chains"
       required: true
+    - name: "Remaining Risks"
+      pattern: "^## Remaining Risks"
+      required: true
 ---
 
 # Dev Simplify — Whole-Codebase Structural Sweep
@@ -152,49 +155,103 @@ other indirection is under review.
 
 ## Dispatch Protocol
 
-Dispatch four explorer agents in **parallel** (single message, 4 Task calls).
-Each explorer handles one cluster of abstraction smells. Results are aggregated
+Dispatch six explorer agents in **parallel** (single message, 6 Task calls —
+or 5 if the branch has no commits ahead of main, skipping Task 5). Each
+explorer handles one cluster of abstraction smells. Results are aggregated
 into a single consolidated report.
 
-### Task 1 — Interface & Speculative Abstraction Hunter
+### Task 1a — Unexercised Seam Hunter
 
 ```yaml
 Task:
   subagent_type: "ring:codebase-explorer"
-  description: "Hunt single-impl interfaces and speculative abstractions"
+  description: "Hunt single-impl interfaces, ports, and repositories without swap pressure"
   prompt: |
-    ## Abstraction Hunt — Cluster 1: Interfaces & Speculation
+    ## Abstraction Hunt — Cluster 1a: Unexercised Seams
 
-    Scan this entire codebase (committed + dirty working tree) for abstractions
-    in the following smell categories. Default verdict for every finding is
-    DELETE — the abstraction must present concrete evidence to survive.
+    Scan this entire codebase (committed + dirty working tree) for declared
+    extension points — "seams" — where the swap the seam promises is not
+    actually exercised. A seam without swap pressure is scaffolding, not
+    architecture. Default verdict is DELETE.
 
     ### Smells to find
     | Smell | Signal |
     |---|---|
     | Single-implementation interface | Interface type with exactly one concrete impl; test doubles (if any) are identical to prod impl |
-    | Speculative factory | Factory function/class that always constructs the same concrete type |
-    | Speculative builder | Builder pattern where all callers set the same fields |
-    | One-strategy strategy | Strategy pattern dispatching over an enum with one case |
-    | One-consumer facade | Facade with a single call site |
     | Hexagonal port with one adapter | Ports-and-adapters scaffolding where no second adapter exists or is planned |
     | Repository over a single SQL backend | Repository pattern with no alternate store, no swap test |
 
+    ### Detection heuristic
+    Declared seams look identical whether exercised or not. The exercise test:
+    - Is there a second implementation in the repo, in a feature branch, or in an ADR?
+    - Is there a test that uses a divergent double (not an identical fake)?
+    - Is there commit history of swapping the impl?
+    All three "no" ⇒ the seam is declarative only.
+
     ### For each finding
-    Report: name, file:line, smell category, the abstraction's self-justification
-    (if any — read comments/docs), rebuttal given pre-public state, blast radius
-    (files/packages affected by collapse), public-API impact (none/indirect/at-boundary),
-    recommended action (delete / collapse-into-caller / merge-with-peer).
+    Report: name, file:line of the interface/port/repository declaration,
+    smell category, the seam's self-justification (if any — read comments,
+    docs, ADRs), rebuttal given pre-public state, blast radius (files/packages
+    affected by collapse), public-API impact (none/indirect/at-boundary),
+    recommended action (delete / collapse-into-caller / inline-to-single-consumer).
 
     ### Evidence requirement
-    Every finding MUST include: (a) exact file:line, (b) caller count via grep,
-    (c) evidence the swap is hypothetical (no second impl, no swap test,
-    no ADR justifying the seam).
+    Every finding MUST include: (a) exact file:line of the declaration,
+    (b) grep-counted impls AND call sites, (c) evidence the swap is hypothetical
+    (no second impl, no swap test, no ADR justifying the seam).
 
     ### Output
     Markdown table per smell category. Plus a "potentially justified" sub-list
-    for abstractions with suggestive evidence of real swappability — these feed
-    the KEEP list in the final report.
+    for seams with suggestive evidence of real swappability — these feed the
+    KEEP list in the final report.
+
+    Public API constraint: {hard_constraint}. Do not propose changes that affect it.
+```
+
+### Task 1b — Speculative Construction & Dispatch Hunter
+
+```yaml
+Task:
+  subagent_type: "ring:codebase-explorer"
+  description: "Hunt speculative factories, builders, strategies, and facades"
+  prompt: |
+    ## Abstraction Hunt — Cluster 1b: Speculative Construction & Dispatch
+
+    Scan this entire codebase (committed + dirty working tree) for construction
+    and dispatch patterns where the variation the pattern exists to handle does
+    not actually occur. These are different from seams (1a) — the concern is
+    not swappable implementations but over-engineered control flow.
+    Default verdict is DELETE or COLLAPSE.
+
+    ### Smells to find
+    | Smell | Signal |
+    |---|---|
+    | Speculative factory | Factory function/class that always constructs the same concrete type |
+    | Speculative builder | Builder pattern where all callers set the same fields in the same order |
+    | One-strategy strategy | Strategy pattern dispatching over an enum with one non-trivial case |
+    | One-consumer facade | Facade/aggregator with a single call site |
+
+    ### Detection heuristic
+    A construction/dispatch pattern is suspect when variation collapses:
+    - Factory: all call sites pass identical (or no) arguments and receive the same type
+    - Builder: all call sites chain the same methods in the same order
+    - Strategy: the dispatch-over-enum has only one non-trivial branch
+    - Facade: grep shows exactly one caller
+
+    ### For each finding
+    Report: name, file:line, smell category, self-justification (if any),
+    rebuttal, blast radius, public-API impact, recommended action
+    (delete / collapse-into-caller / inline-callers).
+
+    ### Evidence requirement
+    Every finding MUST include: (a) exact file:line, (b) caller count via grep,
+    (c) evidence variation does not occur — identical call sites, single case,
+    single consumer.
+
+    ### Output
+    Markdown table per smell category. Plus a "potentially justified" sub-list
+    for constructors/dispatch sites with suggestive evidence of real variation
+    needs.
 
     Public API constraint: {hard_constraint}. Do not propose changes that affect it.
 ```
@@ -327,17 +384,113 @@ Task:
     public API are REAL terminals; chains ending there are sustained.
 ```
 
+### Task 5 — Branch AI Slop Hunter (Diff vs Main)
+
+```yaml
+Task:
+  subagent_type: "ring:codebase-explorer"
+  description: "Hunt AI-generated residue introduced in branch diff vs main"
+  prompt: |
+    ## AI Slop Hunt — Cluster 5: Branch Diff vs Main
+
+    Scan `git diff main...HEAD` for AI-generated residue — code that a human
+    author writing the same change would not produce. The baseline is
+    literally main; every added line has an exact counterfactual. Default
+    verdict is DELETE (or revert-to-main-style).
+
+    ### Smells to find
+    | Smell | Signal |
+    |---|---|
+    | Narrating comment | Comment restates what the next line literally does; adds no WHY. Surrounding file has few/no comments of this density |
+    | Inconsistent comment density | Added block annotates steps with line-by-line comments in a file that otherwise uses none |
+    | Defensive check in trusted path | try/catch, nil guard, or input validation added where the caller is already validated (controller/service boundary already ran the check) |
+    | Redundant error wrapping | Wrapping an error that already carries full context, producing `"fetch failed: fetch failed: <root>"` |
+    | `any` / `unknown` / `interface{}` escape hatch | Cast used to bypass a type mismatch the AI could not resolve, not because the value is genuinely untyped |
+    | Style inconsistency with file | Naming, formatting, idiom, import ordering, or error-handling pattern diverges from the surrounding file's existing convention |
+    | Speculative error branch | Error handling for a case the upstream code already excludes (e.g., checking for nil on a value just constructed with `new`) |
+
+    ### For each finding
+    Report: file:line, smell category, exact diff hunk added, the pre-existing
+    file convention the change breaks with (cite surrounding lines as evidence),
+    for defensive checks — the caller that already validates the input,
+    recommended action (delete / revert-to-main-style / rewrite-to-match-file).
+
+    ### Evidence requirement
+    Every finding MUST cite BOTH:
+    1. The exact diff hunk from `git diff main...HEAD`
+    2. The pre-existing file style or caller contract it violates (grep the
+       surrounding file or call sites)
+
+    "Looks AI-generated" is not evidence. Name the convention broken.
+
+    ### Burden of proof (same inversion as other clusters)
+    An added line survives only with concrete evidence:
+
+    | Case | Evidence required |
+    |---|---|
+    | Comment explains a non-obvious WHY | Names a constraint, incident, or invariant not visible in the code |
+    | Defensive check at a system boundary | Input is from user/network/untrusted source, not an internal caller |
+    | `any` cast at a genuinely untyped boundary | Parsing JSON, reflection, external SDK with no types — not bridging internal types |
+    | Style "divergence" is newer preferred style | Named in a style guide or adopted in 2+ other recent files |
+
+    ### Rejected justifications
+    | Claim | Why rejected |
+    |---|---|
+    | "Defensive coding is good practice" | Defensive coding at trusted boundaries is noise. The trust boundary is where checks live. |
+    | "Comment makes it clearer" | If the code is unclear without the comment, rename the variable or extract the function |
+    | "`any` unblocks the feature" | `any` hides type errors, does not resolve them. The feature is not unblocked, it is fragile |
+    | "This is the style I prefer" | File convention beats author preference. Match the file. |
+
+    ### Behavior-preservation escape hatch (CRITICAL)
+    Some branch-slop findings *look* like noise but silently guard behavior
+    the test suite does not cover. Deleting them regresses production without
+    test failure.
+
+    Before marking a finding as KILL, apply this test:
+    1. Does the added code handle an input/error/state case? (try/catch, nil
+       guard, fallback value, retry, log)
+    2. If yes: is there a test that covers that case post-deletion?
+       (grep test files for the case description)
+    3. If no test covers it: route to **REVIEW** with recommended action
+       "write regression test, then delete". DO NOT mark KILL.
+
+    Pure-cosmetic findings (narrating comments, style divergence, `any` cast
+    that doesn't change runtime behavior) are exempt from this test — delete
+    them freely.
+
+    ### Output
+    Findings feed the Kill List with smell category prefix `[BRANCH-SLOP]`
+    to distinguish from structural findings. Severity is LOW by default
+    (localized, single-line edits) unless the slop touches an integration
+    point — then MEDIUM. Findings routed to REVIEW under the behavior-preservation
+    escape hatch go to the Review List with prefix `[BRANCH-SLOP-GUARDED]`.
+
+    Public API constraint: {hard_constraint}. Do not propose reverting changes
+    that touch the public surface, even if they look AI-generated — the branch
+    may legitimately be adding the public contract.
+
+    Diff base: `main`. Use `git diff main...HEAD -- '*.go' '*.ts' '*.tsx' '*.js'`
+    to scope to source files; exclude generated code (protobuf, OpenAPI stubs,
+    lockfiles).
+```
+
 ### Dispatch Notes
 
-- **Single message, 4 Task calls.** Parallel execution is non-negotiable —
-  sequential would 4x the wall time for the same work.
-- **For very large codebases (>50k files),** dispatch Task 1 and Task 2 once
-  per top-level module instead of once globally. The architecture mapper
+- **Single message, 6 Task calls.** Parallel execution is non-negotiable —
+  sequential would 6x the wall time for the same work. (5 Task calls if the
+  branch has no commits ahead of main — skip Task 5.)
+- **For very large codebases (>50k files),** dispatch Tasks 1a, 1b, and 2
+  once per top-level module instead of once globally. The architecture mapper
   (Task 3) produces the module list; use it to parameterize the per-module
   dispatches in a second round.
 - **Use `ring:codebase-explorer`** rather than diff-scoped reviewers
   (`ring:code-reviewer`, `ring:dead-code-reviewer`). Those reviewers expect
-  a diff; redirecting them here fights their wiring.
+  a diff; redirecting them here fights their wiring. Task 5 is the sole
+  exception — it is diff-scoped by design (branch vs main) and uses
+  `ring:codebase-explorer` configured for diff analysis.
+- **Task 5 skip condition:** if the current branch has no commits ahead of
+  main (`git rev-list --count main..HEAD` == 0), skip Task 5 and dispatch
+  only Tasks 1–4. Document the skip in the final report.
 
 ---
 
@@ -358,6 +511,14 @@ Individual explorer prompts reference subsets; this is the union.
 | 8 | Internal DTO ↔ entity with 1:1 fields | Translation across identical shapes | DELETE |
 | 9 | Hexagonal port with one adapter | Ports-and-adapters without the swap | COLLAPSE |
 | 10 | Repository over a single SQL backend | No alternate store, no swap pressure | REVIEW |
+| 11 | Narrating / inconsistent-density comments (branch diff) | Added lines annotate what the code literally does; surrounding file uses few/no such comments | DELETE |
+| 12 | Defensive check in trusted path (branch diff) | try/catch or guard added where caller is already validated | DELETE |
+| 13 | `any` / `interface{}` escape hatch (branch diff) | Cast bypasses a type mismatch rather than bridging a genuinely untyped boundary | DELETE |
+| 14 | Style inconsistency with file (branch diff) | Naming, formatting, idiom, or error-handling diverges from surrounding file | REWRITE TO MATCH |
+
+Rows 1–10 are structural (whole-codebase, detected by Tasks 1–4). Rows 11–14
+are branch-diff (detected by Task 5). Structural smells survive beyond the
+current branch; branch-diff smells are exactly what was just introduced.
 
 ---
 
@@ -428,8 +589,23 @@ Chains where killing one abstraction cascades through the codebase.
 | Chain ID | Leaf | Ring depth | Terminal type | Collapse blast radius |
 |---|---|---|---|---|
 
+## Remaining Risks
+Kills the report cannot fully characterize — flagged so execution doesn't
+silently inherit them.
+| Risk ID | Related finding(s) | Risk type | Why uncertain | Mitigation before execution |
+|---|---|---|---|---|
+
+Risk types:
+- **Coverage gap**: Kill removes code that lacks test coverage; behavior drift is invisible
+- **Cross-module coordination**: Kill requires synchronized changes across >1 module
+- **At-boundary adjacency**: Kill sits one hop from the public API surface
+- **Cascade fragility**: Cascade chain passes through a hot path or untested branch
+
 ## Next Steps
-- If executing: feed Kill List into `ring:dev-cycle` as one task per chain
+- If executing: feed Kill List into `ring:dev-cycle` as one task per chain,
+  ordered by smell type (dead code → duplicates → abstraction collapse)
+- Before executing items flagged under "Remaining Risks": apply the listed
+  mitigation (add regression test, coordinate with owning team, etc.)
 - Re-run this skill after any kill batch to detect newly-exposed cascade chains
 - Reassess the Hard Constraint surface before each release
 ```
@@ -450,7 +626,7 @@ Chains where killing one abstraction cascades through the codebase.
 
 | Requirement | Why |
 |---|---|
-| 4 explorer tasks dispatched in parallel | Sequential dispatch is 4x slower for the same work |
+| 6 explorer tasks dispatched in parallel (5 if branch has no commits ahead of main) | Sequential dispatch is 6x slower for the same work |
 | Hard constraint respected verbatim | Breaking the public API invalidates the entire sweep |
 | Evidence required for every finding | "Probably unused" is not evidence |
 | KEEP list populated with justification | Without it, re-runs re-flag the same earned abstractions |
@@ -499,7 +675,10 @@ CANNOT weaken the burden-of-proof inversion under any pressure scenario.
 | "Interface might be implemented externally" | Pre-public — external implementers don't exist yet. This only applies post-public. | **Confirm pre-public state, then flag** |
 | "Makes onboarding easier" | Onboarding is easier when there's less to learn, not more indirection to navigate. | **Flag as suspect** |
 | "Future-proofing is a valid reason" | Future-proofing is YAGNI rebranded. Real future-proofing tracks concrete anticipated swaps. | **Require anticipated swap to be named** |
-| "I found 3 obvious kills, that's enough" | Partial reports lose cascade chains. Scan completely. | **Complete all 4 explorer dispatches** |
+| "I found 3 obvious kills, that's enough" | Partial reports lose cascade chains. Scan completely. | **Complete all 6 explorer dispatches** |
+| "Branch-diff slop is just style, skip it" | Style inconsistency is where AI generation betrays itself. Skipping Task 5 is skipping the cheapest kills in the sweep. | **Run Task 5 whenever branch has commits ahead of main** |
+| "The defensive check is harmless, leave it" | Harmless noise is still noise. Defensive checks at trusted boundaries mislead future readers about where validation happens. | **Delete unless the caller contract actually permits the case being guarded** |
+| "We'll clean up the comments in a later pass" | Comment slop compounds — reviewers stop trusting comments, then real comments get ignored too. | **Delete now, while the diff is small** |
 | "The codebase looks clean already" | Clean code can still be over-abstracted. Clean over-abstraction is the failure mode this skill targets. | **Run the sweep regardless** |
 
 ---
@@ -540,6 +719,8 @@ When the skill completes, emit the following summary alongside the written repor
 - Review list: [N] items requiring coordination
 - Keep list: [N] earned abstractions documented
 - Cascade chains detected: [N] ([K] collapsible as units)
+- Branch-slop findings: [N] kills / [M] routed to review under behavior-preservation
+- Remaining risks flagged: [N] ([K] require regression tests before execution)
 
 **Next Actions**
 1. Review the Kill List in [output_path]
