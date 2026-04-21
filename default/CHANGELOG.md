@@ -2,6 +2,14 @@
 
 ## [1.29.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.1)
 
+- Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.29.0...ring-default@1.29.1)
+
+---
+
+## [1.29.1](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.1)
+
 - Features:
   - Flagship polish pass on skill.
 
