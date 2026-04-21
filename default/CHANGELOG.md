@@ -4,6 +4,25 @@
 
 - Features:
   - Add interactive toolbar and feedback panel.
+  - Add screenshots-mode PPTX export feature.
+  - Simplify setup with `npm start` and browser auto-open.
+  - Migrate runtime to auto-scaling Web Component.
+  
+- Improvements:
+  - Update documentation for new features.
+  - Add dependencies for PPTX export and auto-open.
+  - Update .gitignore for new artifacts and remove .DS_Store files.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.27.0...ring-default@1.28.0)
+
+---
+
+## [1.28.0](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.28.0)
+
+- Features:
+  - Add interactive toolbar and feedback panel.
   - Introduce screenshots-mode PPTX export feature.
   - Simplify setup with `npm start` and browser auto-open.
   - Migrate runtime to auto-scaling Web Component.
