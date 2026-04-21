@@ -1,6 +1,6 @@
 # Layout Rules — Editorial Deck Discipline
 
-**HARD GATE.** Every archetype, every slide, every card MUST obey these rules. Violations surface visually on the 1920×1080 canvas — cramped tiles, scrollbars, orphaned footers, ragged type. No rationalization clears a violation; the canvas is the referee.
+**HARD GATE.** Every archetype, every slide, every card MUST obey these rules. Violations surface on the 1920×1080 canvas as orphaned footers, horizontal scrollbars, text below the 24px floor, or grid collapse — all CRITICAL failures that ship if ignored. Violations surface visually on the 1920×1080 canvas — cramped tiles, scrollbars, orphaned footers, ragged type. No rationalization clears a violation; the canvas is the referee.
 
 ## Vertical-Canvas Rule
 

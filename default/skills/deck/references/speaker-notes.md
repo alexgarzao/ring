@@ -14,7 +14,7 @@ The speaker-notes block is a **flat array of strings**. Each array element is th
 ]
 ```
 
-**Array length SHOULD match `<section>` count inside `<deck-stage>`.** The runtime warns in the console (`[deck-stage] Speaker-notes length N != slide count M`) if the counts differ, but it does NOT throw — missing indices render as `(no notes)` in the presenter view and the deck keeps working. Treat the warning as a soft gate: match exactly for production decks; during authoring it's normal to be one off.
+**Array length MUST exactly match `<section>` count inside `<deck-stage>`.** The dev-server logs a warning on mismatch (`[deck-stage] Speaker-notes length N != slide count M`), but treat any mismatch as a production blocker: the presenter view will show wrong notes or `(no notes)`. The runtime does not throw — missing indices render as `(no notes)` and the deck keeps working — so the gate is yours to enforce. Being one-off during authoring is fine; shipping one-off is not.
 
 ### Embedded Entry Shape
 

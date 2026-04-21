@@ -55,7 +55,16 @@
       }
       return parsed;
     } catch (e) {
-      console.warn('[deck-controller] failed to parse speaker-notes JSON:', e);
+      // Non-fatal: deck renders without notes rather than blowing up the slideshow.
+      // Escalate to console.error (not warn) so the diagnostic is visible by default,
+      // and surface a useful location hint from the parser error.
+      var posMatch = e && e.message ? e.message.match(/position (\d+)/) : null;
+      var pos = posMatch ? posMatch[1] : '?';
+      console.error(
+        '[deck-controller] failed to parse <script id="speaker-notes"> JSON in deck.html: ' +
+        (e && e.message ? e.message : String(e)) +
+        ' — check for unescaped </script>, trailing commas, or broken strings near character ' + pos
+      );
       return [];
     }
   }

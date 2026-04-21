@@ -10,10 +10,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: dark;
+      /* Tokens mirror references/design-tokens.md — update both together.
+         #0A0B0C (chrome bg), #222 (chrome borders), #FFE000 (accent press state)
+         are local to presenter/remote and intentionally not in the editorial palette. */
+      --c-ink:       #191A1B;
+      --c-ink-3:     #8B877C;
+      --c-ink-inv:   #FFFFFF;
+      --c-panel:     #191A1B;
+      --c-accent:    #FEED02;
+      --c-green:     #50F769;
+      --c-red:       #FF6760;
+    }
     html, body {
       margin: 0; min-height: 100vh;
-      background: #0A0B0C; color: #FFF;
+      background: #0A0B0C; color: var(--c-ink-inv);
       font-family: 'Poppins', -apple-system, sans-serif;
       touch-action: manipulation;
       overscroll-behavior: none;
@@ -43,14 +55,14 @@
       font-family: 'JetBrains Mono', monospace;
       text-transform: uppercase;
       font-size: 12px; letter-spacing: 2px;
-      color: #8B877C;
+      color: var(--c-ink-3);
     }
     header .indicator {
       font-family: 'JetBrains Mono', monospace;
       font-size: 14px; font-weight: 500;
     }
     header .indicator .current {
-      color: #FEED02;
+      color: var(--c-accent);
       font-size: 18px;
     }
 
@@ -67,8 +79,8 @@
       border-radius: 4px;
       font-weight: 600;
       font-size: 20px;
-      color: #FFF;
-      background: #191A1B;
+      color: var(--c-ink-inv);
+      background: var(--c-panel);
       cursor: pointer;
       transition: transform 80ms, background 120ms;
       min-height: 96px;
@@ -76,17 +88,17 @@
       appearance: none;
     }
     button:active { transform: scale(0.97); background: #222; }
-    button:focus-visible { outline: 2px solid #FEED02; outline-offset: 2px; }
+    button:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
     button.primary {
-      background: #FEED02;
-      color: #191A1B;
-      border-color: #FEED02;
+      background: var(--c-accent);
+      color: var(--c-ink);
+      border-color: var(--c-accent);
     }
     button.primary:active { background: #FFE000; }
     button.danger.active {
-      background: #FF6760;
-      color: #191A1B;
-      border-color: #FF6760;
+      background: var(--c-red);
+      color: var(--c-ink);
+      border-color: var(--c-red);
     }
 
     .row {
@@ -119,8 +131,8 @@
       transform: translateY(-100%);
     }
     .status-banner.visible { transform: translateY(calc(env(safe-area-inset-top) + 0px)); }
-    .status-banner.error   { background: #FF6760; color: #191A1B; }
-    .status-banner.ok      { background: #50F769; color: #191A1B; }
+    .status-banner.error   { background: var(--c-red);   color: var(--c-ink); }
+    .status-banner.ok      { background: var(--c-green); color: var(--c-ink); }
 
     button[disabled] { opacity: 0.4; cursor: not-allowed; }
 
@@ -129,7 +141,7 @@
       margin-top: 4px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-      color: #8B877C;
+      color: var(--c-ink-3);
       min-height: 12px;
     }
   </style>

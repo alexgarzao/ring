@@ -8,10 +8,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: dark;
+      /* Tokens mirror references/design-tokens.md — update both together.
+         #0A0B0C (chrome bg) and #222 (chrome borders) are local to presenter/remote
+         and intentionally not in the editorial palette. */
+      --c-ink:       #191A1B;
+      --c-ink-3:     #8B877C;
+      --c-ink-inv:   #FFFFFF;
+      --c-accent:    #FEED02;
+      --c-green:     #50F769;
+      --c-red:       #FF6760;
+    }
     html, body {
       margin: 0; height: 100vh;
-      background: #0A0B0C; color: #FFF;
+      background: #0A0B0C; color: var(--c-ink-inv);
       font-family: 'IBM Plex Serif', Georgia, serif;
       overflow: hidden;
     }
@@ -26,8 +37,8 @@
       transform: translateY(-100%);
     }
     .status-banner.visible { transform: translateY(0); }
-    .status-banner.error   { background: #FF6760; color: #191A1B; }
-    .status-banner.ok      { background: #50F769; color: #191A1B; }
+    .status-banner.error   { background: var(--c-red);   color: var(--c-ink); }
+    .status-banner.ok      { background: var(--c-green); color: var(--c-ink); }
 
     .layout {
       display: grid;
@@ -48,10 +59,10 @@
       font-family: 'JetBrains Mono', monospace;
       text-transform: uppercase;
       font-size: 13px; letter-spacing: 2px;
-      color: #FEED02;
+      color: var(--c-accent);
       margin-bottom: 16px;
     }
-    .notes-panel .label .dim { color: #8B877C; }
+    .notes-panel .label .dim { color: var(--c-ink-3); }
 
     /* Right: current + next thumbnails + timer */
     .right-panel {
@@ -72,7 +83,7 @@
       font-family: 'JetBrains Mono', monospace;
       text-transform: uppercase;
       font-size: 11px; letter-spacing: 2px;
-      color: #FEED02;
+      color: var(--c-accent);
       background: rgba(10,11,12,0.8);
       padding: 4px 8px;
       z-index: 2;
@@ -85,10 +96,10 @@
       transform: scale(0.25);
       transform-origin: top left;
       pointer-events: none;
-      background: #FFF;
+      background: var(--c-ink-inv);
     }
     .thumb-wrap.dimmed { opacity: 0.5; transition: opacity 200ms; }
-    .thumb-wrap.end .thumb-label { color: #8B877C; }
+    .thumb-wrap.end .thumb-label { color: var(--c-ink-3); }
 
     .timer {
       font-family: 'JetBrains Mono', monospace;
@@ -102,7 +113,7 @@
       display: block;
       margin-top: 10px;
       font-size: 12px; letter-spacing: 2px;
-      color: #8B877C;
+      color: var(--c-ink-3);
       text-transform: uppercase;
     }
   </style>

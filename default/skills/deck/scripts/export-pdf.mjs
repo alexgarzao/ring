@@ -14,20 +14,34 @@ const BASE = `http://localhost:${PORT}`;
 const USE_SYSTEM_CHROME = process.argv.includes('--chrome');
 const OUT_PATH = resolve(process.cwd(), process.env.OUT || './deck.pdf');
 
+// Override with HEALTH_TIMEOUT=20000 when the dev server is slow to boot
+// (cold node_modules, low-CPU CI). NaN guard → fall back to default.
+const HEALTH_TIMEOUT_DEFAULT = 10_000;
+const parsedHealthTimeout = parseInt(process.env.HEALTH_TIMEOUT || '', 10);
+const HEALTH_TIMEOUT = Number.isFinite(parsedHealthTimeout) && parsedHealthTimeout > 0
+  ? parsedHealthTimeout
+  : HEALTH_TIMEOUT_DEFAULT;
+
 let devServer = null;
 let browser = null;
 let serverBootError = null;
+// Rolling buffer of child stderr so boot-failure messages can be included in
+// thrown errors, not just streamed past the user before the timeout fires.
+let serverStderrBuffer = '';
+const STDERR_BUFFER_MAX = 8192;
 
 function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
 
-async function waitForHealth(timeoutMs = 10_000) {
+async function waitForHealth(timeoutMs = HEALTH_TIMEOUT) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     // Fail fast if the child process has already errored or exited non-zero.
     if (serverBootError) {
-      throw new Error(`Dev server failed to start: ${serverBootError.message}`);
+      const tail = serverStderrBuffer.trim();
+      const suffix = tail ? `\n--- dev-server stderr ---\n${tail}` : '';
+      throw new Error(`Dev server failed to start: ${serverBootError.message}${suffix}`);
     }
     try {
       const ctrl = new AbortController();
@@ -41,11 +55,16 @@ async function waitForHealth(timeoutMs = 10_000) {
     await new Promise((r) => setTimeout(r, 100));
   }
   if (serverBootError) {
-    throw new Error(`Dev server failed to start: ${serverBootError.message}`);
+    const tail = serverStderrBuffer.trim();
+    const suffix = tail ? `\n--- dev-server stderr ---\n${tail}` : '';
+    throw new Error(`Dev server failed to start: ${serverBootError.message}${suffix}`);
   }
+  const tail = serverStderrBuffer.trim();
+  const suffix = tail ? `\n--- dev-server stderr ---\n${tail}` : '';
   throw new Error(
     `Dev server did not respond at ${BASE}/health within ${timeoutMs}ms. ` +
-    `Check that scripts/dev-server.mjs runs without errors.`
+    `Check that scripts/dev-server.mjs runs without errors. ` +
+    `Increase timeout with HEALTH_TIMEOUT=20000 npm run export.${suffix}`
   );
 }
 
@@ -59,7 +78,14 @@ function startDevServer() {
     env: { ...process.env, PORT: String(PORT) },
   });
   devServer.stderr.on('data', (chunk) => {
+    // Stream live so the user sees boot output in real time...
     process.stderr.write('[dev-server] ' + chunk);
+    // ...and also retain a rolling tail so health-check failures can include
+    // the actual error text in the thrown message (not just "server failed to boot").
+    serverStderrBuffer += chunk.toString();
+    if (serverStderrBuffer.length > STDERR_BUFFER_MAX) {
+      serverStderrBuffer = serverStderrBuffer.slice(-STDERR_BUFFER_MAX);
+    }
   });
   devServer.on('error', (err) => {
     serverBootError = err;
@@ -134,14 +160,16 @@ async function main() {
 
   // networkidle0 doesn't wait for DOMContentLoaded listeners to finish wiring
   // window.__deck. Poll until deck-stage.js has initialized before checking.
+  // Reuses HEALTH_TIMEOUT: both waits are bounded by the same "slow boot" root
+  // cause (cold CPU, network), so one knob covers both.
   try {
     await page.waitForFunction(
       'typeof window.__deck?.total === "function"',
-      { timeout: 10_000 }
+      { timeout: HEALTH_TIMEOUT }
     );
   } catch {
     throw new Error(
-      'deck-stage.js did not initialize window.__deck within 10s — ' +
+      `deck-stage.js did not initialize window.__deck within ${HEALTH_TIMEOUT}ms — ` +
       'check /assets/deck-stage.js is loaded, and Google Fonts are accessible.'
     );
   }

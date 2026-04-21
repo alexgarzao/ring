@@ -270,8 +270,8 @@ The Lerian wordmark has two canonical copies and two usage patterns inside the d
 
 **Two patterns inside the deck skill — both equally valid:**
 
-- **`<img>` pattern (archetype reuse).** `templates/slide-cover.html` uses `<img src="assets/lerian-wordmark.svg" alt="Lerian" …>`. Prefer this when the template is being reused as a detached archetype and the asset is served alongside it.
-- **Inline SVG pattern (self-contained baseline).** `templates/deck.html` inlines the `<svg viewBox="0 0 1090.88 280" …>` directly in its own cover slide. Prefer this when shipping a single-file baseline deck that must render without an external asset pipeline.
+- **`<img>` pattern (archetype reuse).** `templates/slide-cover.html` uses `<img src="/assets/lerian-wordmark.svg" alt="Lerian Studio wordmark" …>`. Prefer this when the template is being reused as a detached archetype and the asset is served alongside it.
+- **Inline SVG pattern (self-contained baseline).** `templates/deck.html` inlines the `<svg viewBox="0 0 1090.88 280" …>` directly in its own cover slide. Prefer this when shipping a single-file baseline deck that must render without an external asset pipeline. The inline SVG carries `role="img" aria-label="Lerian Studio wordmark"` for accessibility parity with the `<img>` pattern's alt text.
 
 If Lerian rebrands, MUST update all three locations (the standalone SVG file, `deck.html`'s inline cover SVG, and visualize's inline copy). The viewBox (`0 0 1090.88 280`) and path data MUST match byte-for-byte across all three. Any drift is a compliance failure.
 

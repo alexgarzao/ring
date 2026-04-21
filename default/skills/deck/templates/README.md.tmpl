@@ -7,7 +7,7 @@ Lerian-branded editorial presentation. Scaffolded with [`ring:deck`](https://git
 ```bash
 cd {{DECK_NAME}}
 pnpm install     # or: npm install
-pnpm dev         # boots http://localhost:7007
+pnpm start       # installs deps if needed, then boots http://localhost:7007
 ```
 
 ## Present
@@ -39,6 +39,10 @@ Find your machine's LAN IP (`ipconfig` on Windows, `ifconfig` on macOS/Linux), o
 ```bash
 pnpm export              # uses bundled Chromium (~200MB first run)
 pnpm export:chrome       # uses system Chrome (~50MB, faster)
+HEALTH_TIMEOUT=20000 pnpm export      # if dev server is slow to start
+SKIP_DEV_SERVER=true pnpm export      # assume dev server is already running
+OUT=./exports/deck.pdf pnpm export    # custom output path
+PORT=7008 pnpm export                 # use alternate dev server port
 ```
 
 Output: `./deck.pdf` at 1920×1080 per page.

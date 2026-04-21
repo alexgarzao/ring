@@ -3,6 +3,7 @@
 <!-- Once per deck. MUST reference /assets/lerian-wordmark.svg (not .png). -->
 <!-- Asset pattern: archetype uses <img src="/assets/..."> (absolute path, cacheable, simple). -->
 <!-- deck.html's cover slide inlines the SVG instead — both patterns are acceptable; pick one per deck. -->
+<!-- Padding override (64px 100px 40px): trims the standard 48px bottom to 40px so the wordmark + title stack centers vertically on the cover. Content slides keep the standard 64px top / 48px bottom. -->
 <section data-label="Cover" class="slide" style="padding: 64px 100px 40px;">
   <div class="meta">
     <div class="left">
@@ -16,7 +17,7 @@
     <div class="eyebrow" style="margin-bottom: 40px;">Session Materials &mdash; Template</div>
 
     <div style="display: flex; align-items: flex-end; gap: 56px;">
-      <img src="/assets/lerian-wordmark.svg" alt="Lerian" style="height: 220px; width: auto; display: block;" />
+      <img src="/assets/lerian-wordmark.svg" alt="Lerian Studio wordmark" style="height: 220px; width: auto; display: block;" />
     </div>
 
     <div style="font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 72px; line-height: 1.02; letter-spacing: -0.03em; margin-top: 56px; max-width: 1500px;">

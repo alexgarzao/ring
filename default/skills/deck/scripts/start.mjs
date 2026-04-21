@@ -14,15 +14,25 @@ const ROOT = join(__dirname, '..');
 
 function log(msg) { process.stdout.write(msg + '\n'); }
 
+// Detect the package manager from npm_config_user_agent so users on pnpm
+// don't silently get an `npm install` (and a rogue package-lock.json alongside
+// their pnpm-lock.yaml). Skill prerequisites are pnpm OR npm — everything
+// else falls to npm.
+function detectPackageManager() {
+  const ua = process.env.npm_config_user_agent || '';
+  return ua.startsWith('pnpm') ? 'pnpm' : 'npm';
+}
+
 async function runInstall() {
+  const pm = detectPackageManager();
   return new Promise((resolve, reject) => {
-    log('[start] node_modules missing — running `npm install`...');
-    // stdio:inherit streams npm's progress bars directly.
-    const child = spawn('npm', ['install'], { cwd: ROOT, stdio: 'inherit' });
+    log(`[start] node_modules missing — running \`${pm} install\`...`);
+    // stdio:inherit streams the installer's progress bars directly.
+    const child = spawn(pm, ['install'], { cwd: ROOT, stdio: 'inherit' });
     child.on('error', reject);
     child.on('exit', (code) => {
       if (code === 0) resolve();
-      else reject(new Error(`npm install exited ${code}`));
+      else reject(new Error(`${pm} install exited ${code}`));
     });
   });
 }

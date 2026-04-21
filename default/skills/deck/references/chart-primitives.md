@@ -504,7 +504,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
 .chart-funnel .stage .count.strong { font-weight: 600; }
 
 /* Stage temperature — warm = near-close, hot = signed */
-.chart-funnel .stage.warm { background: #F0EFE9; }
+.chart-funnel .stage.warm { background: var(--c-bg-warm); }
 .chart-funnel .stage.hot {
   background: var(--c-ink);
   color: var(--c-ink-inv);
