@@ -155,7 +155,6 @@
 
   function onMouseMove(e) {
     if (!state.on) return;
-    if (state.activeTool !== 'flag') { hideHoverOutline(); return; }
     const el = pickTweakable(e.target);
     if (el) showHoverOutline(el);
     else hideHoverOutline();
@@ -202,7 +201,10 @@
     if (!slide) return null;
     if (target === slide) return null;
     if (!slide.contains(target)) return null;
-    return target.closest('*');
+    // Climb to the nearest semantic block so hover zones track meaningful
+    // content (headings, paragraphs, cards, lists) rather than inline atoms
+    // (spans inside text runs, icon paths). Fall back to target itself.
+    return target.closest('h1,h2,h3,h4,h5,h6,p,ul,ol,li,table,tr,th,td,section,article,aside,header,footer,main,nav,figure,blockquote,div,button,a,img,svg') || target;
   }
 
   function insideSlide(target, slide) {
