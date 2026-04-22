@@ -1,6 +1,8 @@
-# Layout Rules — Editorial Deck Discipline
+# Engineering — Editorial Deck Canvas Rules
 
-**HARD GATE.** Every archetype, every slide, every card MUST obey these rules. Violations surface on the 1920×1080 canvas as orphaned footers, horizontal scrollbars, text below the 24px floor, or grid collapse — all CRITICAL failures that ship if ignored. Violations surface visually on the 1920×1080 canvas — cramped tiles, scrollbars, orphaned footers, ragged type. No rationalization clears a violation; the canvas is the referee.
+**HARD GATE.** Every slide, every card, every composition MUST obey these rules. Violations surface on the 1920×1080 canvas as orphaned footers, horizontal scrollbars, text below the 24px floor, or grid collapse — all CRITICAL failures that ship if ignored. No rationalization clears a violation; the canvas is the referee.
+
+This file is the engineering floor: canvas dimensions, flex behavior, pagination, overflow, the 24px text floor (accessibility). Composition above this floor — what goes on the canvas — is creative territory, not engineering.
 
 ## Vertical-Canvas Rule
 
@@ -232,7 +234,7 @@ If a body paragraph or list item is below 24px, **the content is too long.** Tri
 
 ## Slide Chrome Variants
 
-The reference ships three slide backgrounds. Archetypes MUST pick one.
+The reference ships four slide backgrounds. Each slide MUST pick one. Which one is a composition choice — the table below describes what each is typically for.
 
 | Class | Background | Text color | Use |
 | --- | --- | --- | --- |
@@ -241,7 +243,7 @@ The reference ships three slide backgrounds. Archetypes MUST pick one.
 | `.slide.dark` | `--c-panel` (#191A1B) | `--c-ink-inv` | Dark panel — act dividers, KPI walls, statement slides |
 | `.slide.accent` | `--c-accent` (#FEED02) | `--c-accent-ink` | Amarelo accent — reserved for act openers and section breaks, sparingly |
 
-`.slide.accent` is the rarest — use it for punctuation, not paragraphs.
+`.slide.accent` reads as Amarelo — strong visual signal. Typically used for punctuation rather than paragraphs; when and where is your call.
 
 ## Overlay Placement — `position: fixed` Inside a Slide Is Broken
 

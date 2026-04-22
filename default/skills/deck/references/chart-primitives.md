@@ -112,7 +112,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
 
 **Design calls:**
 - **No in-bar labels.** The reference puts labels in the legend below, not inside the segments. Rationale: at 8 segments, most segments are too narrow (<10% of 1920px-ish width) for readable Poppins-20px text. Legend pattern is canonical; segment-label pattern is v2 territory.
-- **Segment color ramp.** The reference uses a grayscale ramp (`#191A1B → #d4d4d4 → #f5f5f4`) for secondary segments, plus two accent segments (`--c-accent-2` Verde for a secondary emphasis, `--c-accent` Amarelo-with-border for the editorial highlight). Followers of the archetype SHOULD keep this pattern: grayscale for default segments, Amarelo + Preto border for the one segment the slide is about.
+- **Segment color ramp.** The reference uses a grayscale ramp (`#191A1B → #d4d4d4 → #f5f5f4`) for secondary segments, plus two accent segments (`--c-accent-2` Verde for a secondary emphasis, `--c-accent` Amarelo-with-border for the editorial highlight). Keeping this pattern — grayscale for default segments, Amarelo + Preto border for the one segment the slide is about — reads consistently across decks.
 
 **Accessibility:**
 - `role="img"` + `aria-label` listing every segment with its percentage — this is the HARD GATE.
@@ -242,7 +242,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
 - More than 8 bars — switch to line chart (v2).
 - Bars without numeric labels — audiences squint to estimate; defeats the editorial floor (24px body text principle).
 - Grid column count not matching bar count — axis labels misalign. `grid-template-columns: repeat(N, 1fr)` MUST be duplicated on `.bars` and `.axis` with the same N.
-- Using `.slide.accent` (Amarelo background) — chart readability collapses. See "Using charts inside archetypes" below.
+- Using `.slide.accent` (Amarelo background) — chart readability collapses. See "Charts on slide variants" below.
 
 ---
 
@@ -488,7 +488,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
 
 .chart-funnel .stage .label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;                              /* chrome — below 24px floor is OK per layout-rules */
+  font-size: 12px;                              /* chrome — below 24px floor is OK per engineering.md */
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--c-ink-3);
@@ -515,7 +515,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
 **Design calls:**
 - **Equal-width columns, not decreasing trapezoids.** The reference uses a `repeat(6, 1fr)` grid — every stage gets the same horizontal real estate. Rationale: the editorial reading is the *number* in each stage, not the *shape* of the funnel. A true narrowing-trapezoid funnel is a classic chart library feature (v2 Chart.js) and adds no information the numbers don't already carry. The grid-strip is cleaner and legible at projection distance.
 - **Temperature progression.** Early stages are default chrome (white bg, gray label). Middle stages (`.warm`) get a warm-paper tint (`#F0EFE9`) to signal "close to close." The final stage (`.hot`) inverts to Preto + Amarelo label — this is the slide's payoff. Authors override the cutoff per deck.
-- **Labels at 12px mono, counts at 72px Poppins.** This violates the 24px body-floor from `layout-rules.md` — deliberate and documented: mono chrome labels are allowed below 24px (see layout-rules "Minimum Text Size" exceptions). The count is the content; the label is chrome.
+- **Labels at 12px mono, counts at 72px Poppins.** This violates the 24px body-floor from `engineering.md` — deliberate and documented: mono chrome labels are allowed below 24px (see engineering.md "Minimum Text Size" exceptions). The count is the content; the label is chrome.
 
 **Accessibility:**
 - `role="img"` + `aria-label` listing every stage and count in order — critical because the visual reduction isn't conveyed by labels alone.
@@ -579,7 +579,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
   | Qualified | `var(--c-accent)` on `var(--c-accent-ink)` | `var(--c-ink)` | "Committed — real probability" |
   | Closed | `var(--c-ink)` on `var(--c-ink-inv)` with Amarelo eyebrow | white | "Already revenue" |
 
-- **Color-mix for the pale banner.** Use `color-mix(in oklab, var(--c-accent) 40%, white)` — see [`design-tokens.md` → Derived Tints](design-tokens.md#derived-tints--color-mix-technique). MUST NOT use a hardcoded hex like `#FFF7A0`. OKlab keeps the Amarelo hue true in the mix.
+- **Color-mix for the pale banner.** Use `color-mix(in oklab, var(--c-accent) 40%, white)` — see [`brand.md` → Derived Tints](brand.md#derived-tints--color-mix-technique). MUST NOT use a hardcoded hex like `#FFF7A0`. OKlab keeps the Amarelo hue true in the mix.
 - **Grid ratios reflect monetary weighting, not stage count.** `grid-template-columns: 3fr 2fr 1fr` is the reference — potential is the biggest zone because the unqualified pipeline is the largest dollar bucket, qualified is middle, closed is narrowest. MUST NOT use `1fr 1fr 1fr` — equal columns erase the signal.
 - **Thicker divider between qualified and closed.** `border-right: 3px solid var(--c-ink)` on the middle (qualified) cell. This visually separates committed from closed — the boundary that matters for the board. The divider between potential and qualified is the cells' own background contrast; no extra border needed.
 - **`pointer-events: none`** on the overlay — the overlay sits on top of the funnel cells visually, but the funnel is not interactive anyway (deck is projection chrome). The attribute prevents accidental text-selection weirdness in browsers during presentation.
@@ -597,7 +597,7 @@ Four chart types, all pure CSS/HTML — no Chart.js, no D3, no build step. Chart
 - Inline hex instead of `color-mix()` for the pale banner — creates a drift-prone tint. Derive it.
 - Overlay on a base funnel that already uses `.warm` and `.hot` temperature stages — three stacked signals is overload. Either use the base temperature OR the monetary overlay, not both.
 
-Pairs with: [`color-mix()` technique](design-tokens.md#derived-tints--color-mix-technique) for the pale banner; [`--c-bg-warm`](design-tokens.md#surfaces) is an alternative hardcoded surface when a single-use tint doesn't justify the mix.
+Pairs with: [`color-mix()` technique](brand.md#derived-tints--color-mix-technique) for the pale banner; [`--c-bg-warm`](brand.md#surfaces) is an alternative hardcoded surface when a single-use tint doesn't justify the mix.
 
 ---
 
@@ -614,7 +614,7 @@ Pairs with: [`color-mix()` technique](design-tokens.md#derived-tints--color-mix-
 **When NOT to use:**
 - For more than 2 segments per bar — use a full [`stacked-horizontal-bar`](#stacked-horizontal-bar) chart. Three segments in 18px of height is unreadable.
 - When absolute values (not percentages) are the story — the bars visualize share, not magnitude
-- Inside cells — labels at 10–12px inside 18px of height is illegible. Use an [`inline-mini-legend`](ui-primitives.md#inline-mini-legend) below the table instead.
+- Inside cells — labels at 10–12px inside 18px of height is illegible. Use an [`inline-mini-legend`](primitives.md#inline-mini-legend) below the table instead.
 - Without a border on the bar — empty/near-zero segments disappear into the cell background
 
 **HTML (one cell — single 2-segment mini-bar):**
@@ -654,12 +654,12 @@ Pairs with: [`color-mix()` technique](design-tokens.md#derived-tints--color-mix-
 - **Two segments maximum.** Top segment defaults to `background: transparent` (the "outline / empty / first category" state), bottom to `background: var(--c-ink)` (filled / second category). More segments fail at this scale — promote to a real chart.
 - **`flex:` values sum to 100.** Same pattern as [`stacked-horizontal-bar`](#stacked-horizontal-bar) — percentages go on `flex`, not on pixel widths. Lets the grid resize cleanly.
 - **Parent grid: `display: grid; grid-template-columns: repeat(N, 1fr); gap: 3px;`.** The 3px gap gives each period its own visual lane without crowding.
-- **No in-cell labels.** At 18px of height, any text becomes chrome noise. Pair with an [`inline-mini-legend`](ui-primitives.md#inline-mini-legend) below the table.
+- **No in-cell labels.** At 18px of height, any text becomes chrome noise. Pair with an [`inline-mini-legend`](primitives.md#inline-mini-legend) below the table.
 
 **Accessibility:**
 - The parent `table.grid` carries the aria-label on the `<table>` or via a visible caption. Example caption: "Monthly revenue mix: Category A (outlined) vs Category B (filled). P1 60/40, P2 55/45, …"
 - The micro-chart row does NOT need its own `role="img"` — it's a data visualization inside a semantic table; screen readers read the surrounding `<th>` + `<td>` structure. Add `aria-hidden="true"` to the mini-bars if the caption already enumerates the data.
-- Legend MUST appear (as [`inline-mini-legend`](ui-primitives.md#inline-mini-legend)) within the same visual block — color-only signal fails WCAG 1.4.1.
+- Legend MUST appear (as [`inline-mini-legend`](primitives.md#inline-mini-legend)) within the same visual block — color-only signal fails WCAG 1.4.1.
 
 **Anti-patterns:**
 - More than 2 segments — unreadable at 18px; use a real chart
@@ -668,25 +668,25 @@ Pairs with: [`color-mix()` technique](design-tokens.md#derived-tints--color-mix-
 - Variable heights across the row — breaks row rhythm; fix at 18px
 - Using for absolute-value comparison — this primitive shows *share*, not *magnitude*. If magnitude matters, the row above (numeric values) carries it.
 
-Pairs with: [`inline-mini-legend`](ui-primitives.md#inline-mini-legend) (typical pairing — micro-chart row + mini-legend caption, one visual unit).
+Pairs with: [`inline-mini-legend`](primitives.md#inline-mini-legend) (typical pairing — micro-chart row + mini-legend caption, one visual unit).
 
 ---
 
-## Using charts inside archetypes
+## Charts on slide variants
 
-- **`slide-content`** and **`slide-content-paper`** are the default home for charts. Light backgrounds, clear axes, full color contrast.
-- **`slide-content-dark`** — charts work and have explicit light-on-dark variants documented above (`vertical-bar-chart` ships dark-first; other primitives include `.slide.dark` overrides in archetype CSS). When authoring dark-variant charts:
+- **Light surfaces (`.slide`, `.slide.paper`)** — default home for charts. Clear axes, full color contrast.
+- **Dark surface (`.slide.dark`)** — charts work and have explicit light-on-dark variants documented above (`vertical-bar-chart` ships dark-first; other primitives include `.slide.dark` overrides). When authoring dark-variant charts:
   - Text: `--c-ink-inv` (white).
   - Bars/segments: `rgba(255,255,255,0.85)` default, `--c-accent` (Amarelo) for highlight.
   - Rules/axes: `rgba(255,255,255,0.18)`.
-- **`slide-content-accent`** (Amarelo background) — charts MUST NOT be placed here. Amarelo backgrounds are for headline statements only; the accent color is the chart's highlight signal, and placing a chart on Amarelo collapses the highlight contrast.
-- **Max one chart per slide.** Multiple charts = split into multiple slides. The editorial rhythm is "one idea per slide" — two charts means two ideas means two slides.
-- **Charts consume `.body`'s flex.** Every chart primitive's outer container is `display: flex; flex-direction: column; flex: 1; min-height: 0;` when placed as the main body element. Follow `layout-rules.md` — the chart expands into the canvas, chrome (meta bar, footer) pins.
+- **Accent surface (`.slide.accent`, Amarelo background)** — charts MUST NOT be placed here. Amarelo eats the chart's highlight signal; contrast collapses. This is an engineering/readability constraint, not an editorial preference.
+- **Charts consume `.body`'s flex (engineering).** Every chart primitive's outer container is `display: flex; flex-direction: column; flex: 1; min-height: 0;` when placed as the main body element. See `engineering.md` — the chart expands into the canvas; chrome (meta bar, footer) pins.
+- **One chart per slide reads cleanest.** Multiple charts on one slide tend to compete for attention; splitting is usually better, but your call.
 
 ## Future work (v2)
 
 - **Chart.js opt-in** — for scatter, multi-series line, stacked vertical with annotations, radar, treemap. Loaded via `package.json.tmpl` dependency and a `chart-js.html` partial. All opt-in; v1 primitives remain the default.
-- **Responsive chart sizing** — current primitives are tuned to the 1920×1080 fixed canvas. If the deck runtime adds a responsive mode (16:9 aspect-fit to viewport), font sizes and gaps MUST scale with `clamp()` or an archetype-level CSS var.
+- **Responsive chart sizing** — current primitives are tuned to the 1920×1080 fixed canvas. If the deck runtime adds a responsive mode (16:9 aspect-fit to viewport), font sizes and gaps MUST scale with `clamp()` or a chart-level CSS var.
 - **Animation on slide-enter** — staggered bar grow-in, funnel stage cascade, matrix dot fade-in. Triggered by a `deck-stage` slide-change event; out of v1 scope because PDF export ignores transitions anyway.
 - **Leader-line labels** — for stacked-horizontal-bar segments that need in-bar labels at <3% widths. Adds SVG complexity; deferred.
 - **Grouped vertical bars** — side-by-side comparison (e.g., Category A vs. Category B per period). Currently handled by splitting into two slides or by the secondary KPI row below the primary chart.

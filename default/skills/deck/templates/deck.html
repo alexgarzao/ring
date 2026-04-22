@@ -14,11 +14,11 @@
        See references/speaker-notes.md for schema and writing voice. -->
   <script type="application/json" id="speaker-notes">
   [
-    "Opening slide. Cover archetype &mdash; title, date, presenter, audience. The tagline under the logo is where the one-sentence framing of the deck lives. Keep it to a single idea; anything longer competes with the title. Replace the placeholder strings with your own content before presenting.",
-    "Agenda walkthrough. Five sections. The highlighted row marks the main content; the others frame it. Give the audience a map before going deep. This archetype uses a .grid table with a single .hl row &mdash; keep only one row highlighted per slide.",
-    "Act divider. Use this archetype whenever you want a visual pause between sections. The giant Poppins headline is the anchor; the lede underneath sets up what is about to be covered. The pills at the bottom are an optional nav hint showing which slides sit in this act.",
+    "Opening slide. Cover layout &mdash; title, date, presenter, audience. The tagline under the logo is where the one-sentence framing of the deck lives. Keep it to a single idea; anything longer competes with the title. Replace the placeholder strings with your own content before presenting.",
+    "Agenda walkthrough. Five sections. The highlighted row marks the main content; the others frame it. Give the audience a map before going deep. This slide uses a .grid table with a single .hl row &mdash; keep only one row highlighted per slide.",
+    "Act divider. Use this slide whenever you want a visual pause between sections. The giant Poppins headline is the anchor; the lede underneath sets up what is about to be covered. The pills at the bottom are an optional nav hint showing which slides sit in this act.",
     "Content slide with compact density. Three-column grid is useful when you have parallel categories to compare. The accent-green dots flag active columns; the muted third column signals an in-progress or future state. Replace the items with whatever fits your topic.",
-    "Discussion archetype. Paper background creates a visual pause. Two-column layout: context on the left as a ticks list, dark questions card on the right. Use this when you want the audience to debate, not just receive information. Three questions is the practical maximum.",
+    "Discussion slide. Paper background creates a visual pause. Two-column layout: context on the left as a ticks list, dark questions card on the right. Use this when you want the audience to debate, not just receive information. Three questions is the practical maximum.",
     "Dark content slide. Big single-question layout for moments you want the room to feel the weight of one decision. The KPI strip at the bottom gives the question its data footing &mdash; four slots is the maximum before the numbers start to crowd.",
     "Accent content slide. Amarelo is our boldest surface &mdash; reserve it for one slide per act at most. Mega Poppins statement at the top, KPI pair row below. Keep the headline to two short lines; a longer headline breaks the rhythm.",
     "Chart slide. Stacked horizontal bar with legend on the left, compact data table on the right. Use this when you want the audience to see composition at a glance and have the detail ready when they ask. Swap the numbers for your own before presenting.",
@@ -35,7 +35,7 @@
        default/skills/deck/references/*.md. Drift is a gate failure.
        ============================================================ */
 
-    /* Tokens mirror references/design-tokens.md — update both together. */
+    /* Tokens mirror references/brand.md — update both together. */
     :root {
       /* Ink */
       --c-ink:       #191A1B;
@@ -59,7 +59,7 @@
       --c-accent-ink:#191A1B;
       --c-accent-2:  #50F769;
 
-      /* Signal — canon tokens reserved for future archetypes; do NOT prune as lint dead-code */
+      /* Signal — canon tokens reserved for future compositions; do NOT prune as lint dead-code */
       --c-green:     #50F769;
       --c-red:       #FF6760;
       --c-blue:      #2ED8FE;
@@ -195,7 +195,7 @@
     }
 
     /* ================= UI PRIMITIVES =================
-       See references/ui-primitives.md — canonical definitions.
+       See references/primitives.md — canonical definitions.
        MUST NOT redefine with new base styles. Inline style="" allowed for positioning. */
 
     /* eyebrow */
@@ -500,7 +500,7 @@
 
     <!-- ======================================================
          SLIDE 1 — COVER
-         Archetype: cover (see templates/slide-cover.html)
+         Example: cover (see templates/slide-cover.html)
          Replace: {{DECK_TITLE}}, date, presenter, audience.
          ====================================================== -->
     <section data-label="Cover" class="slide" style="padding: 64px 100px 40px;">
@@ -546,7 +546,7 @@
 
     <!-- ======================================================
          SLIDE 2 — AGENDA
-         Archetype: agenda (see templates/slide-agenda.html)
+         Example: agenda (see templates/slide-agenda.html)
          ====================================================== -->
     <section data-label="Agenda" class="slide">
       <div class="meta">
@@ -615,7 +615,7 @@
 
     <!-- ======================================================
          SLIDE 3 — ACT DIVIDER
-         Archetype: act-divider (see templates/slide-act-divider.html)
+         Example: act-divider (see templates/slide-act-divider.html)
          Uses canonical .pill.solid with inline number chip.
          ====================================================== -->
     <section data-label="Act 01 &mdash; Overview" class="slide accent">
@@ -653,7 +653,7 @@
 
     <!-- ======================================================
          SLIDE 4 — CONTENT (default / white)
-         Archetype: content (see templates/slide-content.html)
+         Example: content (see templates/slide-content.html)
          Scoped class: .prod-tag
          data-density="compact" demonstrates the opt-in density override token.
          ====================================================== -->
@@ -740,7 +740,7 @@
         <div>Month DD, YYYY</div>
       </div>
 
-      <!-- Archetype-local classes: prefix with archetype name to avoid collision -->
+      <!-- Slide-local classes: prefix with slide name to avoid collision -->
       <style>
         .prod-tag {
           color: var(--c-ink-3);
@@ -752,7 +752,7 @@
 
     <!-- ======================================================
          SLIDE 5 — CONTENT PAPER
-         Archetype: content-paper (see templates/slide-content-paper.html)
+         Example: content-paper (see templates/slide-content-paper.html)
          Uses canonical ul.numbered.questions for the dark Questions card.
          ====================================================== -->
     <section data-label="Discussion Card" class="slide paper">
@@ -807,7 +807,7 @@
                 <span class="n">03</span>
                 <div>
                   <div class="t">Third question headline</div>
-                  <div class="b">One-sentence elaboration. Three is the practical maximum for this archetype.</div>
+                  <div class="b">One-sentence elaboration. Three is the practical maximum for this slide.</div>
                 </div>
               </li>
             </ul>
@@ -823,7 +823,7 @@
 
     <!-- ======================================================
          SLIDE 6 — CONTENT DARK
-         Archetype: content-dark (see templates/slide-content-dark.html)
+         Example: content-dark (see templates/slide-content-dark.html)
          Uses canonical .kpi.dark modifier for dark-strip KPIs.
          ====================================================== -->
     <section data-label="Content Dark" class="slide dark">
@@ -875,7 +875,7 @@
 
     <!-- ======================================================
          SLIDE 7 — CONTENT ACCENT
-         Archetype: content-accent (see templates/slide-content-accent.html)
+         Example: content-accent (see templates/slide-content-accent.html)
          Uses canonical .kpi.accent modifier for Amarelo-bg KPI pairs.
          ====================================================== -->
     <section data-label="Content Accent" class="slide accent">
@@ -987,7 +987,7 @@
 
     <!-- ======================================================
          SLIDE 9 — APPENDIX INTRO
-         Archetype: appendix-intro (see templates/slide-appendix-intro.html)
+         Example: appendix-intro (see templates/slide-appendix-intro.html)
          Meta.right reads "Appendix" — not paginated.
          ====================================================== -->
     <section data-label="Appendix" class="slide accent">
@@ -1016,7 +1016,7 @@
 
     <!-- ======================================================
          SLIDE 10 — APPENDIX CONTENT
-         Archetype: appendix-content (see templates/slide-appendix-content.html)
+         Example: appendix-content (see templates/slide-appendix-content.html)
          Meta.right uses static letter pagination (A1 / 8), NOT .page-num.
          Scoped classes: .appendix-card, .appendix-card-title
          ====================================================== -->
@@ -1057,7 +1057,7 @@
         <div>Month DD, YYYY</div>
       </div>
 
-      <!-- Archetype-local classes: prefix with archetype name to avoid collision -->
+      <!-- Slide-local classes: prefix with slide name to avoid collision -->
       <style>
         .appendix-card {
           background: var(--c-bg-2);

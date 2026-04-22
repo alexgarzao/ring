@@ -43,27 +43,32 @@ Use whenever the user asks for a branded slide deliverable: board deck, investor
 - **Non-presentational documents** — memos, one-pagers, exec emails, PR descriptions. These are written content, not sequenced slides.
 - **Single static HTML visualization** — a diagram, dashboard, or comparison table is `ring:visualize`. That skill produces one `.html` file; this skill produces a Node project.
 
+## Inviolable vs Creative
+
+**Inviolable (engineering + brand).** Canvas dimensions, flex layout, pagination, overflow, export pipeline — see `engineering.md`. Brand colors, typography, logo — see `brand.md`. These MUST NOT bend.
+
+**Creative (the canvas itself).** Slide composition, narrative arc, headline voice, content rhythm, layout imagination. Use the primitives; the composition is yours.
+
 ## Two Lerian Design Systems Side by Side
 
-**HARD GATE.** `ring:deck` uses editorial tokens (Amarelo `#FEED02`, Poppins + IBM Plex Serif, JetBrains Mono) intentionally separate from `ring:visualize`'s product-console tokens (`#FDCB28` sunglow, Inter). Both systems are canonical Lerian. MUST NOT cross-mix tokens. A deck with `ring:visualize`'s Inter + sunglow is wrong; a diagram with `ring:deck`'s Poppins + Amarelo is wrong. Keep the systems pure.
+**HARD GATE (brand).** `ring:deck` uses editorial tokens (Amarelo `#FEED02`, Poppins + IBM Plex Serif, JetBrains Mono) intentionally separate from `ring:visualize`'s product-console tokens (`#FDCB28` sunglow, Inter). Both systems are canonical Lerian. MUST NOT cross-mix tokens. A deck with `ring:visualize`'s Inter + sunglow is wrong; a diagram with `ring:deck`'s Poppins + Amarelo is wrong. Keep the systems pure.
 
 ## Mandatory Reading — HARD GATE
 
 Before writing any slide content, MUST read:
 
-1. `references/design-tokens.md` — all colors, fonts, spacing, radii
-2. `references/layout-rules.md` — **THE critical craft discipline** (vertical-canvas model, `flex: 1; min-height: 0`, no fixed-height cards, 24px text floor, dynamic pagination)
-3. `references/slide-archetypes.md` — when to use each of 9 archetypes
-4. `references/ui-primitives.md` — eyebrow, pill, kpi, ticks, numbered, table.grid, dashed-hairline, narrative-arc, transition-column, org-node-flag, dual-sided-argument, inline-mini-legend
-5. `references/chart-primitives.md` — stacked-horizontal-bar, vertical-bar-chart, 2x2-matrix, funnel (+ monetary overlay), inline-micro-chart
-6. `references/speaker-notes.md` — JSON schema + oral-delivery writing guidance
+1. `references/brand.md` — colors, typography, logo (inviolable)
+2. `references/engineering.md` — canvas, flex, pagination, 24px text floor, overflow (inviolable)
+3. `references/primitives.md` — the CSS atoms available: eyebrow, pill, kpi, ticks, numbered, table.grid, dashed-hairline, narrative-arc, transition-column, org-node-flag, dual-sided-argument, inline-mini-legend
+4. `references/chart-primitives.md` — stacked-horizontal-bar, vertical-bar-chart, 2x2-matrix, funnel (+ monetary overlay), inline-micro-chart
+5. `references/speaker-notes.md` — JSON schema + presenter voice
 
 Server + export references (read when tooling questions come up):
 
-7. `references/server.md` — dev server, WebSocket protocol, port override, trust model
-8. `references/export.md` — Puppeteer PDF export flow
+6. `references/server.md` — dev server, WebSocket protocol, port override, trust model
+7. `references/export.md` — Puppeteer PDF export flow
 
-Skipping any of refs 1-6 before writing slides is the #1 failure mode. The layout rules in particular encode years of craft discipline — reading the description below is NOT a substitute for reading the file.
+Skipping the engineering and brand files is the #1 failure mode — they encode the canvas physics and brand rigor that every deck must obey.
 
 ## Skill Workflow
 
@@ -73,14 +78,14 @@ MUST ask the user (skip questions already answered):
 
 1. **Deck title** — e.g., "Lerian Board Meeting Q2 2026"
 2. **Audience** — board, investors, conference, team, external partner
-3. **Rough slide count** — 10 / 20 / 30+
+3. **Rough slide count** — e.g., around 15
 4. **Directory name** — defaults to kebab-cased title
 
 MUST NOT ask about: tokens, fonts, layout, runtime, export. Those are fixed by the skill — asking is validation theater.
 
 ### Phase 2: Read mandatory references
 
-See Mandatory Reading above. HARD GATE — MUST NOT write slides without reading refs 1-6.
+See Mandatory Reading above. HARD GATE — MUST NOT write slides without reading refs 1-5.
 
 ### Phase 3: Scaffold project
 
@@ -109,14 +114,15 @@ Then create `<DECK_NAME>/` directory with these files (copy from the skill's `te
 
 ### Phase 4: Compose slides in deck.html
 
+Compose slides from the brand tokens and primitives to serve the deck's narrative. There is no required slide menu — use a cover when it serves the moment, a full-bleed accent slide when the message demands it, invent a layout when the content calls for something the primitives don't anticipate. The engineering and brand constraints are hard; the composition is yours.
+
 For each slide:
 
-1. Pick an archetype from `references/slide-archetypes.md`
-2. Inline the archetype body from `templates/slide-<name>.html`
-3. Replace placeholder content with actual content
-4. Obey `references/layout-rules.md` (`flex: 1`, `min-height: 0`, no fixed-height cards, 24px text floor)
-5. Use primitives from `references/ui-primitives.md`
-6. Use charts from `references/chart-primitives.md` where applicable
+1. Compose using primitives from `references/primitives.md` (and charts from `references/chart-primitives.md` where they fit)
+2. Borrow from the example slide templates in `templates/slide-*.html` when a composition there already fits — those are examples, not a required menu
+3. Replace any placeholder content with actual content
+4. Obey `references/engineering.md` (`flex: 1`, `min-height: 0`, no fixed-height cards, 24px text floor, overflow hidden)
+5. Obey `references/brand.md` (tokens, typography, logo)
 
 ### Phase 5: Write speaker notes
 
@@ -134,11 +140,10 @@ Print the Handoff Message Template (below). Do NOT run `pnpm install` or `pnpm d
 
 | Rationalization                                             | Why It's WRONG                                                                         | Required Action                                                  |
 | ----------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| "Content is simple, I can skip `layout-rules.md`"           | Simple content still breaks with fixed-height cards. Skipping the gate is the #1 failure mode. | **MUST read layout-rules.md**                                    |
-| "I'll pick colors that look nicer than Amarelo"             | `#FEED02` Amarelo is Lerian brand primary, not a style choice. Swapping is a rebrand, not a tweak. | **MUST use tokens from design-tokens.md**                        |
+| "Content is simple, I can skip `engineering.md`"            | Simple content still breaks with fixed-height cards. Skipping the canvas rules is the #1 failure mode. | **MUST read engineering.md**                                     |
+| "I'll pick colors that look nicer than Amarelo"             | `#FEED02` Amarelo is Lerian brand primary, not a style choice. Swapping is a rebrand, not a tweak. | **MUST use tokens from brand.md**                                |
 | "I can skip speaker notes"                                  | Notes surface in presenter view — presenters rely on them. Empty notes = unusable presenter view. | **MUST write notes for every slide**                             |
 | "Deck already has fonts — I'll skip the Google Fonts block" | Every scaffolded deck is self-contained. The fonts block in `deck.html` is mandatory.  | **MUST preserve the Google Fonts import block**                  |
-| "User said 'just a quick deck' — I can skip archetypes"     | Archetypes encode the layout discipline. "Quick" does not mean "worse."                | **MUST use archetypes from slide-archetypes.md**                 |
 | "I'll use Chart.js for richer charts"                       | v1 is pure CSS/HTML. Chart.js is v2 work.                                              | **MUST use only the 4 chart primitives**                         |
 | "I'll mix deck tokens and visualize tokens"                 | Editorial and product-console design systems are deliberately separate.                | **MUST keep deck tokens pure**                                   |
 | "I'll hardcode the slide count in pagination"               | `<section>` count is dynamic. `deck-stage.js` fills pagination at runtime.             | **MUST use `<span class="page-num">` + `<span class="page-total">` pattern** |
@@ -155,7 +160,7 @@ Print the Handoff Message Template (below). Do NOT run `pnpm install` or `pnpm d
 | "Skip the license file"                                   | "Cannot: Lerian open-source commitment is a third rail. Apache 2.0 license ships with every scaffold."                                                                                                                                     |
 | "Don't watch files, just write the deck once"             | "Cannot: dev server + chokidar is the scaffold default. For a static export, run `pnpm export` and distribute the PDF."                                                                                                                    |
 | "Host the deck online"                                    | "Out of scope. Scaffolded deck is local-network. Hosting is the user's choice — any static host (Vercel, Cloudflare Pages) serves `deck.html` + `assets/` + `scripts/` (minus `dev-server.mjs`). Document if the user asks."               |
-| "Build me a timeline/quote/org-chart slide"               | "Not in v1 archetype set. Options: (a) use `content` or `content-accent` with a close-enough layout, (b) flag as v2 candidate and proceed without it."                                                                                     |
+| "Build me a timeline/quote/org-chart slide"               | "Compose one from the primitives in `primitives.md` — eyebrow, pill, kpi, ticks, narrative-arc, transition-column, and friends are enough for most shapes. If a specific shape (e.g., image-hero, photo-grid) needs primitives that don't exist yet, flag as v2 and proceed with the closest composition."                                                                                     |
 
 ## Blocker Criteria — STOP and Report
 
@@ -165,15 +170,14 @@ STOP and report to the user if:
 | --------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Missing Runtime             | Node not installed, or Node version < 18.0.0                                                               | STOP — user must install Node 18+ before proceeding                                   |
 | Directory Collision         | Target directory exists and is non-empty                                                                   | STOP and ask: overwrite, rename, or cancel                                            |
-| Unsupported Archetype       | User asks for timeline, quote, org-chart, image-hero                                                       | STOP — report these are v2 candidates; offer alternatives from the 9 archetypes       |
 | Unsupported Export          | User asks for editable-PowerPoint PPTX (text + shapes, not screenshots)                                    | STOP — report v1 PPTX is screenshots mode only (PNG per slide + speaker notes via `addNotes()`); editable PPTX is deferred because CSS layout doesn't map cleanly to PowerPoint shapes. Offer: PDF + re-author manually, or accept screenshots-mode PPTX. |
 | Theme Customization         | User asks for accent override, density toggle, font swap                                                   | STOP — report v1 is locked to Lerian editorial tokens; customization is v2            |
 | Auth on Remote              | User asks for PIN or auth on the remote control                                                            | STOP — report v1 is local-network trust model; PIN auth is v2                         |
 
 HARD BLOCK — cannot proceed:
 
-- If the skill's `references/` directory is missing any mandatory file (any of the 8 refs) → report which is missing; instruct user to re-clone the plugin repo.
-- If the skill's `templates/` is missing any archetype or `deck.html` → same remediation.
+- If the skill's `references/` directory is missing any mandatory file (any of the 7 refs) → report which is missing; instruct user to re-clone the plugin repo.
+- If the skill's `templates/` is missing `deck.html` or the example slide templates → same remediation.
 
 ## Severity Calibration
 
@@ -181,15 +185,15 @@ HARD BLOCK — cannot proceed:
 | -------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | CRITICAL | Fixed-height cards used; hardcoded pagination `NN/17`; wrong color tokens; wrong fonts    | MUST fix before completing                                |
 | HIGH     | Text smaller than 24px floor; chart without `aria-label`; speaker notes missing           | SHOULD fix; warn user if shipping as-is                   |
-| MEDIUM   | Placeholder content not replaced; too many `content-accent` slides (more than 3)          | Warn user; user decides                                   |
+| MEDIUM   | Placeholder content not replaced; `content-accent` slides used so often they lose impact  | Warn user; user decides                                   |
 | LOW      | Minor typography drift (e.g., 80px hero where 96px would fit)                             | Mention; user decides                                     |
 
 ## Cannot Be Overridden (Non-Negotiable)
 
 - **Lerian brand tokens** — Amarelo `#FEED02`, Poppins + IBM Plex Serif, JetBrains Mono
 - **Apache 2.0 license** on scaffolded deck
-- **Dynamic pagination** via `<span class="page-num">` + `<span class="page-total">` (two documented exceptions: appendix letter pagination `A1 / 8` and main-deck companion letter-suffix `09b / 14` — both hardcoded without the `.page-num` class so the runtime leaves them alone, see [`references/slide-archetypes.md` → Pagination convention](references/slide-archetypes.md#pagination-convention))
-- **`flex: 1; min-height: 0`** on main content grids (layout-rules.md HARD GATE)
+- **Dynamic pagination** via `<span class="page-num">` + `<span class="page-total">` (two documented exceptions: appendix letter pagination `A1 / 8` and main-deck companion letter-suffix `09b / 14` — both hardcoded without the `.page-num` class so the runtime leaves them alone)
+- **`flex: 1; min-height: 0`** on main content grids (`engineering.md` HARD GATE)
 - **Speaker-notes JSON structure** — flat array of strings
 - **WebSocket protocol** — 5 message types (`nav`, `blank`, `state`, `hello`, `reload`) in v1. `state` and `nav` carry a `total` field so the remote can render `N / M` once the main deck has announced totals. See `references/server.md` for the full protocol.
 - **Self-contained scaffold** — every deck is an independent Node project; no shared workspace dependency
@@ -251,7 +255,7 @@ Local network only — no auth. Don't expose port 7007 publicly.
 - Editable PPTX export (text + shapes mapped from CSS layout, not screenshots) — v1 ships screenshots mode only
 - Data-driven mode: YAML/JSON content files + template binding
 - Theme customization: accent override, density toggle
-- Additional archetypes: timeline, quote, org-chart, image-hero, photo-grid
+- Additional primitives: timeline, quote block, org-chart, image-hero, photo-grid
 - Remote auth: short-lived rotating PIN displayed on main screen
 - Chart.js opt-in for richer analytics
 - Self-contained HTML bundle export (no-CDN offline package)

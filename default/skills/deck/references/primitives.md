@@ -1,8 +1,10 @@
-# UI Primitives
+# Primitives
 
-Eleven primitives that compose Lerian editorial slide content. All primitives use tokens from [`design-tokens.md`](design-tokens.md); don't reinvent colors, fonts, or spacing. Layout discipline (canvas size, flex, 24px floor) comes from [`layout-rules.md`](layout-rules.md) — primitives do not override it.
+These are the CSS primitives available. Compose them as the narrative requires. All primitives use tokens from [`brand.md`](brand.md); don't reinvent colors, fonts, or spacing. Canvas rules (dimensions, flex, 24px floor) come from [`engineering.md`](engineering.md) — primitives do not override them.
 
-**HARD GATE:** primitives MUST NOT be redefined with new base styles. Inline `style=""` tweaks are allowed for one-off positioning (margin, width, color override) but the class-level rules below are canon.
+**HARD GATE (engineering):** primitive CSS classes MUST NOT be redefined with new base styles — their class-level rules below are canon and load-bearing for visual consistency across decks. Inline `style=""` tweaks for one-off positioning (margin, width, color override) are fine.
+
+This is an inventory of atoms, not a prescription for composition. When and where to use them is a creative choice — the "When to use" / "When NOT to use" notes below are guidance based on what has worked, not rules you must obey.
 
 ## Table of Contents
 
@@ -27,21 +29,21 @@ Eleven primitives that compose Lerian editorial slide content. All primitives us
 
 **Purpose:** small uppercase monospace label that sits above every h1, every card title, every chart caption. It's the editorial anchor that tells the eye "this is a new unit."
 
-**When to use:**
-- Above the headline on every content slide (`.eyebrow` → `h1`)
+**Common uses:**
+- Above a headline (`.eyebrow` → `h1`) as an anchor label
 - As a section label inside a card or column ("Context", "Ownership", "Details")
 - As a caption above a chart, table, or micro-data block
-- Inside a meta-row (discussion timer pattern: `<div class="eyebrow">Discussion 01</div> ... <div class="eyebrow">~12 min</div>`)
+- Inside a meta-row (e.g., paired with a hairline: `<div class="eyebrow">Discussion 01</div> ... <div class="eyebrow">~12 min</div>`)
 
-**When NOT to use:**
+**Avoid:**
 - As a standalone headline — it is support text, not a title
 - Below the h1 (reverses the reading order)
 - For body copy — use IBM Plex Serif at `--t-body` instead
-- At sizes other than `--t-eyebrow` (22px) without deliberate override; sub-eyebrows at 14px are used inline in the reference for deep labels
+- At sizes other than `--t-eyebrow` (22px) without deliberate override; 14px sub-eyebrows are used inline for deep labels
 
 **HTML:**
 ```html
-<div class="eyebrow">Section — Where We Stand</div>
+<div class="eyebrow">{eyebrow text}</div>
 ```
 
 **CSS:**
@@ -70,8 +72,8 @@ Eleven primitives that compose Lerian editorial slide content. All primitives us
 
 **Composition example:**
 ```html
-<div class="eyebrow">Section Label</div>
-<h1 style="margin-top: 28px; max-width: 1600px;">Headline goes here. Three beats, one idea.</h1>
+<div class="eyebrow">{eyebrow text}</div>
+<h1 style="margin-top: 28px; max-width: 1600px;">{headline}</h1>
 ```
 
 **Timer-row pattern (paired eyebrows with hairline between):**
@@ -83,7 +85,7 @@ Eleven primitives that compose Lerian editorial slide content. All primitives us
 </div>
 ```
 
-The `.eyebrow` primitive is demonstrated in every content archetype — `../templates/slide-content.html`, `../templates/slide-content-paper.html`, `../templates/slide-content-dark.html`, `../templates/slide-content-accent.html`, `../templates/slide-agenda.html`, `../templates/slide-appendix-intro.html`, `../templates/slide-appendix-content.html` — and in `../templates/slide-cover.html` for the eyebrow above the title. The timer-row pattern above is built on the same primitive and is ready to drop into any content slide.
+The `.eyebrow` primitive is used across the example templates — `../templates/slide-content.html`, `../templates/slide-content-paper.html`, `../templates/slide-content-dark.html`, `../templates/slide-content-accent.html`, `../templates/slide-agenda.html`, `../templates/slide-appendix-intro.html`, `../templates/slide-appendix-content.html`, and `../templates/slide-cover.html`. The timer-row pattern shown above is a common composition on the same primitive.
 
 ---
 
@@ -91,17 +93,17 @@ The `.eyebrow` primitive is demonstrated in every content archetype — `../temp
 
 **Purpose:** rounded tag for category, segment, status, or short time-box label. Sits inline next to a Poppins name or inside a row flex.
 
-**When to use:**
+**Common uses:**
 - Tagging a row with a category ("Tier A", "Tier B")
 - Marking new items in a list ("New")
 - Short caption tags ("Segment A", "the majority of items")
 - Funnel-stage labels beside a headline ("Top of Funnel", "Cycle Mechanics")
 
-**When NOT to use:**
+**Avoid:**
 - As the primary headline — it is chrome, not content
 - As a button (deck is a projection surface; there are no clicks)
 - For multi-word copy that wraps — pills are single-line
-- More than ~6 in a single row (the `act-divider` uses 5; seven starts reading as chips, not pills)
+- Dense rows (beyond ~6) start reading as chips, not pills — consider splitting
 
 **HTML:**
 ```html
@@ -133,27 +135,25 @@ The `.eyebrow` primitive is demonstrated in every content archetype — `../temp
 
 **Observed inline override:** one-off pill with accent background + `white-space: nowrap` for a short stat caption. Prefer `.pill.accent` for that case going forward; the inline form is not a new variant.
 
-**Composition example — act-divider chip row (5 pills, wraps if tight):**
+**Composition example — chip row with wrapping:**
 ```html
 <div style="margin-top: 56px; display: flex; gap: 14px; flex-wrap: wrap;">
-  <span class="pill solid">01 · Section A</span>
-  <span class="pill solid">02 · Section B</span>
-  <span class="pill solid">03 · Section C</span>
-  <span class="pill solid">04 · Section D</span>
-  <span class="pill solid">05 · Section E</span>
+  <span class="pill solid">{chip 1}</span>
+  <span class="pill solid">{chip 2}</span>
+  <span class="pill solid">{chip 3}</span>
 </div>
 ```
 
 **Composition example — item row (name + pills):**
 ```html
 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-  <span style="font-family: 'Poppins'; font-weight: 500; font-size: 26px;">Item One</span>
-  <span class="pill">Tier A</span>
-  <span class="pill accent">New</span>
+  <span style="font-family: 'Poppins'; font-weight: 500; font-size: 26px;">{item name}</span>
+  <span class="pill">{tag}</span>
+  <span class="pill accent">{accent tag}</span>
 </div>
 ```
 
-`.pill.solid` is demonstrated in `../templates/slide-act-divider.html` — the act's chip row uses the dark-pill pattern (local class `.act-pill`) with an inverted number chip, which is the canonical reference rendering of the `.pill.solid` shape. The outline (`.pill`) and accent (`.pill.accent`) variants are not instantiated in the current archetype set; they're defined in the base stylesheet and available for reuse in any content archetype that needs an inline tag next to a Poppins name (e.g., a future item-row template).
+`.pill.solid` is used in `../templates/slide-act-divider.html` — the chip row there uses a local `.act-pill` class with an inverted number chip. The outline (`.pill`) and accent (`.pill.accent`) variants are defined in the base stylesheet and available for reuse wherever an inline tag next to a Poppins name fits.
 
 ---
 
@@ -161,14 +161,14 @@ The `.eyebrow` primitive is demonstrated in every content archetype — `../temp
 
 **Purpose:** the single-metric tile. Stacks a mono label over a big Poppins number over a small sub-caption. Composes into 3- or 4-column KPI walls.
 
-**When to use:**
-- KPI wall slides (3–4 metrics on one slide)
-- Inside a left column paired with a chart on the right (metric-summary slide)
+**Common uses:**
+- KPI walls (3–4 metrics on one slide)
+- Inside a left column paired with a chart on the right
 - Dark-panel summary rows on statement slides
 
-**When NOT to use:**
+**Avoid:**
 - For numbers that need to sit inline with sentence prose — use a Poppins `<span>` instead
-- For ultra-hero single numbers (180–240px) — those are standalone, not tiles; see `layout-rules.md` Hero Numbers
+- For ultra-hero single numbers (180–240px) — those are standalone, not tiles; see `engineering.md` Hero Numbers
 - When the caption is longer than ~80 chars — kpi.sub is designed for one short line
 
 **HTML:**
@@ -231,9 +231,9 @@ The `.eyebrow` primitive is demonstrated in every content archetype — `../temp
 </div>
 ```
 
-The dark-panel variant of this primitive is demonstrated in `../templates/slide-content-dark.html` — the local `.dark-kpi` class in that template is the canonical `.slide.dark .kpi` rendering (white value, 55%-white label/sub). The light-panel `.kpi` shape has no dedicated archetype in the current set; reuse it inside any `.slide` or `.slide.paper` content archetype when you need a metric tile or a 3-/4-up KPI row.
+The dark-panel variant of this primitive is used in `../templates/slide-content-dark.html` — the local `.dark-kpi` class in that template is the canonical `.slide.dark .kpi` rendering (white value, 55%-white label/sub). The light-panel `.kpi` shape composes cleanly inside any `.slide` or `.slide.paper` context when you need a metric tile or a 3-/4-up KPI row.
 
-**HARD GATE:** when three `.kpi` tiles stack vertically inside a column, reduce `.value` to 60–76px. The 96px default assumes one row of tiles, not three stacked.
+**HARD GATE (engineering):** when three `.kpi` tiles stack vertically inside a column, reduce `.value` to 60–76px. The 96px default assumes one row of tiles, not three stacked — keep it and the type overflows.
 
 ---
 
@@ -241,23 +241,21 @@ The dark-panel variant of this primitive is demonstrated in `../templates/slide-
 
 **Purpose:** custom-bulleted list. 10×10 Amarelo square marker replaces the dot bullet — Lerian's list fingerprint.
 
-**When to use:**
-- "Context" columns on strategic-discussion slides
-- Evidence blocks under a headline
+**Common uses:**
+- "Context" columns or evidence blocks under a headline
 - Any 3–6 item editorial list where each item is 1–3 lines
 
-**When NOT to use:**
-- For step-ordered content — use [`numbered`](#numbered) instead
-- For >6 items — split into columns or trim; long lists dilute the square rhythm
-- For single-line tag sequences — use [`pill`](#pill) in a flex row
+**Avoid:**
+- For step-ordered content — [`numbered`](#numbered) carries ordinal meaning; ticks don't
+- Long lists (>6) dilute the square rhythm — consider splitting or trimming
+- For single-line tag sequences — [`pill`](#pill) in a flex row reads better
 
 **HTML:**
 ```html
 <ul class="ticks">
-  <li><strong>The majority of new items</strong> enter directly through path A (vs. 100% path B 12 months ago).</li>
-  <li>Dispatch layer live since Q1. Users deploy products <strong>and their own apps</strong> on shared infrastructure.</li>
-  <li><strong>No comparable option exists</strong> in the category today.</li>
-  <li>Path B users already requesting migration to path A.</li>
+  <li>{tick item with optional <strong>emphasis</strong>}</li>
+  <li>{tick item}</li>
+  <li>{tick item}</li>
 </ul>
 ```
 
@@ -280,20 +278,19 @@ ul.ticks li::before {
 - Default is the only variant observed in the reference. No dark-slide override is defined — inherit body color from `.slide.dark p, .slide.dark li { color: rgba(255,255,255,0.78); }` in the base; the Amarelo square reads against both light and dark surfaces without a variant.
 - Common inline adjustment: `style="flex: 1;"` on the `<ul>` so it stretches when the parent column is a flex container (discussion slides).
 
-**Note on 22px font-size:** this is below the 24px body floor from `layout-rules.md`. The reference uses 22px intentionally for list density. When shipping new slides, prefer 24px. If sticking to 22px, treat it as a chrome-density exception (documented in `layout-rules.md` Minimum Text Size table, row "18–22px … small labels") and MUST NOT go lower.
+**Note on 22px font-size:** this is below the 24px body floor from `engineering.md`. The reference uses 22px intentionally for list density. Prefer 24px when shipping new slides. If staying at 22px, treat it as a chrome-density exception (documented in `engineering.md` Minimum Text Size table, row "18–22px … small labels") and MUST NOT go lower.
 
-**Composition example — Context column on a paper-variant slide:**
+**Composition example — list column with eyebrow:**
 ```html
-<div class="eyebrow" style="margin-bottom: 24px; color: var(--c-ink);">Context</div>
+<div class="eyebrow" style="margin-bottom: 24px; color: var(--c-ink);">{section label}</div>
 <ul class="ticks" style="flex: 1;">
-  <li>Item one sits at the edge of the category — <strong>proof of adaptability</strong>.</li>
-  <li><strong>Signal A</strong> observed in the field — organic demand.</li>
-  <li><strong>Entity B</strong> newly incorporated.</li>
-  <li>Reference model: <strong>Item two</strong> — same pattern, different market.</li>
+  <li>{tick item}</li>
+  <li>{tick item with optional <strong>emphasis</strong>}</li>
+  <li>{tick item}</li>
 </ul>
 ```
 
-The canonical instance lives in `../templates/slide-content-paper.html` — the "Context" column uses `<ul class="ticks">` against the paper surface. Reuse the primitive in any content archetype that needs a 3–6-item evidence list; the Amarelo square reads against `.slide` (white), `.slide.paper`, and `.slide.dark` without variant overrides.
+The Amarelo square reads against `.slide` (white), `.slide.paper`, and `.slide.dark` without variant overrides. See `../templates/slide-content-paper.html` for one example composition — a "Context" column of ticks on the paper surface.
 
 ---
 
@@ -301,13 +298,13 @@ The canonical instance lives in `../templates/slide-content-paper.html` — the 
 
 **Purpose:** ordinal list. Mono `01 / 02 / 03` gutter on the left, Poppins/Serif content on the right. For steps, questions, priorities where order matters.
 
-**When to use:**
-- "Questions for the audience" blocks
+**Common uses:**
 - Step-by-step process lists
 - Ranked priorities
+- Discussion-question blocks (one common pattern)
 
-**When NOT to use:**
-- Unordered lists — use [`ticks`](#ticks)
+**Avoid:**
+- Unordered lists — [`ticks`](#ticks) carries the "no order" meaning
 - When the numerals themselves need to be huge (20–150px) — use a hero-number layout, not a list gutter
 
 **HTML (canonical form, using the `ul.numbered` class):**
@@ -315,15 +312,11 @@ The canonical instance lives in `../templates/slide-content-paper.html` — the 
 <ul class="numbered">
   <li>
     <span class="n">01</span>
-    <div>First question. Framing and target profile.</div>
+    <div>{item one}</div>
   </li>
   <li>
     <span class="n">02</span>
-    <div>Second question. Timing and market signal.</div>
-  </li>
-  <li>
-    <span class="n">03</span>
-    <div>Third question. Pricing and positioning.</div>
+    <div>{item two}</div>
   </li>
 </ul>
 ```
@@ -354,30 +347,30 @@ ul.numbered li .n {
 
 **Two forms shipped.** (a) `ul.numbered` — canonical list form for simple ordered lists on light slides. (b) Inline dark-panel variant — dark `<div>` card with `display: flex` rows, `<span>` numeral in `JetBrains Mono` + Amarelo, `<div>` title/sub. Both are canonical. Prefer the class form for plain ordered lists; use the inline dark variant when each item needs title + body on a dark card (e.g., "Questions for the audience").
 
-**Composition example — dark "Questions for the audience" card (inline variant from reference):**
+**Composition example — dark numbered card (inline variant):**
 ```html
 <div style="background: var(--c-ink); color: var(--c-ink-inv); padding: 40px 44px;
             border-radius: 4px; display: flex; flex-direction: column; gap: 24px;
             justify-content: space-between;">
-  <div class="eyebrow" style="color: var(--c-accent);">Questions for the audience</div>
+  <div class="eyebrow" style="color: var(--c-accent);">{eyebrow text}</div>
 
   <div style="display: flex; gap: 14px;">
     <span style="font-family: 'JetBrains Mono'; color: var(--c-accent);
                  font-size: 16px; flex-shrink: 0; padding-top: 8px;">01</span>
     <div>
       <div style="font-family: 'Poppins'; font-size: 24px; font-weight: 500;
-                  color: var(--c-ink-inv); line-height: 1.25;">First question title</div>
+                  color: var(--c-ink-inv); line-height: 1.25;">{item title}</div>
       <div style="font-size: 17px; line-height: 1.5;
                   color: rgba(255,255,255,0.75); margin-top: 6px;">
-        One sentence of framing or context for the question.
+        {optional sub-copy}
       </div>
     </div>
   </div>
-  <!-- 02, 03 … -->
+  <!-- more items … -->
 </div>
 ```
 
-The dark-card "Questions for the audience" pattern is demonstrated in `../templates/slide-content-paper.html` — the right-column dark card composes the inline numbered variant (Amarelo numeral + Poppins title + Serif sub) on top of `background: var(--c-ink)`. That template is the reference rendering of this primitive's inline form. The light-slide `ul.numbered` class form is not instantiated in the current archetype set; use it inside any `.slide` content archetype when you need a ranked-step list.
+One example of the dark-card numbered variant (Amarelo numeral + Poppins title + Serif sub on `background: var(--c-ink)`) lives in `../templates/slide-content-paper.html`. The light-slide `ul.numbered` class form is equally valid for ranked-step lists on any light surface.
 
 ---
 
@@ -385,15 +378,15 @@ The dark-card "Questions for the audience" pattern is demonstrated in `../templa
 
 **Purpose:** the editorial data grid. Hairline rules top and bottom, generous row padding, JetBrains Mono column headers, tabular-nums for numeric cells, Amarelo highlight row for the emphatic line.
 
-**When to use:**
-- Agenda tables (act × theme × time × format)
+**Common uses:**
+- Agenda tables
 - Summary grids and numeric snapshots
 - Side-by-side comparisons with ≥3 columns
 - Any data set where row rhythm carries meaning
 
-**When NOT to use:**
-- 1-column or 2-column lists where an editorial row would read as overengineered — use [`ticks`](#ticks) or a `div` row
-- For layouts that need fixed column heights — `table.grid` is content-sized (see `layout-rules.md` Fixed-Height Cards — FORBIDDEN)
+**Avoid:**
+- 1-column or 2-column lists where an editorial row would read as overengineered — [`ticks`](#ticks) or a `div` row is lighter
+- For layouts that need fixed column heights — `table.grid` is content-sized (see `engineering.md` Fixed-Height Cards — FORBIDDEN)
 - Inside a scrollable container — the canvas is 1080px tall; rows MUST fit
 
 **HTML:**
@@ -401,25 +394,25 @@ The dark-card "Questions for the audience" pattern is demonstrated in `../templa
 <table class="grid" style="margin-top: 72px;">
   <thead>
     <tr>
-      <th style="width: 100px;">Act</th>
-      <th>Theme</th>
-      <th style="width: 160px; text-align: right;">Time</th>
-      <th style="width: 220px; text-align: right;">Format</th>
+      <th style="width: 100px;">{col 1}</th>
+      <th>{col 2}</th>
+      <th style="width: 160px; text-align: right;">{col 3}</th>
+      <th style="width: 220px; text-align: right;">{col 4}</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td class="num">01</td>
-      <td style="font-size: 28px; font-family: 'Poppins'; color: var(--c-ink);">Segment A — Context &amp; Positioning</td>
-      <td class="num" style="text-align: right;">20 min</td>
-      <td style="text-align: right; color: var(--c-ink-3);">Report</td>
+      <td style="font-size: 28px; font-family: 'Poppins'; color: var(--c-ink);">{row title}</td>
+      <td class="num" style="text-align: right;">{value}</td>
+      <td style="text-align: right; color: var(--c-ink-3);">{aux}</td>
     </tr>
     <tr class="hl">
       <td class="num">04</td>
-      <td style="font-size: 28px; font-family: 'Poppins';">Strategic Discussions
-        <span style="opacity: 0.62; font-weight: 400;">— the core of this session</span></td>
-      <td class="num" style="text-align: right;">45 min</td>
-      <td style="text-align: right; font-weight: 600;">Debate</td>
+      <td style="font-size: 28px; font-family: 'Poppins';">{highlight row title}
+        <span style="opacity: 0.62; font-weight: 400;">— {optional sub-copy}</span></td>
+      <td class="num" style="text-align: right;">{value}</td>
+      <td style="text-align: right; font-weight: 600;">{aux}</td>
     </tr>
   </tbody>
 </table>
@@ -469,35 +462,31 @@ table.grid.compact.tight td:last-child { font-size: 17px; color: var(--c-ink-2);
 
 **Density variants — compact and compact-tight.** `compact` (10px 16px padding, 14px/22px type) for grids where default density would overflow the canvas. `compact-tight` (7px 14px, 18px type, 17px last col) for dense grids with an axis-label last column — e.g., summary with Q1..Q4 + YoY.
 
-**Composition example — summary grid with a highlight Total row:**
+**Composition example — summary grid with a highlight row:**
 ```html
 <table class="grid">
   <thead><tr>
-    <th>Value (thousands)</th>
-    <th style="text-align: right;">Period 1</th>
-    <th style="text-align: right;">Period 2</th>
-    <th style="text-align: right;">Period 3</th>
+    <th>{row label col}</th>
+    <th style="text-align: right;">{col 1}</th>
+    <th style="text-align: right;">{col 2}</th>
+    <th style="text-align: right;">{col 3}</th>
   </tr></thead>
   <tbody>
-    <tr><td style="font-size: 22px; font-family: 'Poppins'; color: var(--c-ink);">Segment A</td>
-        <td class="num" style="text-align: right;">167</td>
-        <td class="num" style="text-align: right;">207</td>
-        <td class="num" style="text-align: right;">207</td></tr>
-    <tr><td style="color: var(--c-ink-3);">Segment B</td>
-        <td class="num" style="text-align: right;">(1,160)</td>
-        <td class="num" style="text-align: right;">(1,240)</td>
-        <td class="num" style="text-align: right;">(1,370)</td></tr>
-    <tr class="hl"><td style="font-size: 22px; font-family: 'Poppins';">Total</td>
-        <td class="num" style="text-align: right;">(1,590)</td>
-        <td class="num" style="text-align: right;">(1,520)</td>
-        <td class="num" style="text-align: right; font-weight: 600;">(1,390)</td></tr>
+    <tr><td style="font-size: 22px; font-family: 'Poppins'; color: var(--c-ink);">{row 1}</td>
+        <td class="num" style="text-align: right;">{n}</td>
+        <td class="num" style="text-align: right;">{n}</td>
+        <td class="num" style="text-align: right;">{n}</td></tr>
+    <tr class="hl"><td style="font-size: 22px; font-family: 'Poppins';">{highlight row}</td>
+        <td class="num" style="text-align: right;">{n}</td>
+        <td class="num" style="text-align: right;">{n}</td>
+        <td class="num" style="text-align: right; font-weight: 600;">{n}</td></tr>
   </tbody>
 </table>
 ```
 
-The canonical instance — including the `tr.hl` highlight row — lives in `../templates/slide-agenda.html`. Reuse the primitive in any content archetype that needs a summary table, side-by-side comparison, or ≥3-column data grid; the variant classes (`compact`, `compact.tight`) are defined in the base stylesheet and ready to use when a denser grid is needed.
+An example of `tr.hl` — the Amarelo highlight row — lives in `../templates/slide-agenda.html`. The variant classes (`compact`, `compact.tight`) are defined in the base stylesheet for denser grids.
 
-**HARD GATE:** no `height`, no `min-height` on rows. Row rhythm comes from padding, not fiat. Fixed cell heights are forbidden per `layout-rules.md`.
+**HARD GATE (engineering):** no `height`, no `min-height` on rows. Row rhythm comes from padding, not fiat. Fixed cell heights are forbidden per `engineering.md`.
 
 ---
 
@@ -505,15 +494,15 @@ The canonical instance — including the `tr.hl` highlight row — lives in `../
 
 **Purpose:** "related but secondary" divider. A softer cousin of the solid `.rule` hairline. The dashed edge reads as a semantic pause — "the thing below is connected to the thing above, but not continuous with it."
 
-**When to use:**
-- Separating a [`narrative-arc`](#narrative-arc) callout from the primary slide content
-- Marking a tangential footnote or caption that threads off the main argument
-- Between a card's main body and its "ownership" / "next steps" meta-row when a solid rule would feel too assertive
+**Common uses:**
+- Above a [`narrative-arc`](#narrative-arc) callout — "related but secondary"
+- Threading a tangential footnote or caption off the main argument
+- Between a card's main body and a meta-row when a solid rule would feel too assertive
 
-**When NOT to use:**
-- For structural separation — use a solid `.rule` (1px `--c-rule`) or a table border
-- As a decorative accent — dashes are semantic, not chrome. Overuse flattens the signal.
-- On `.slide.accent` backgrounds — Amarelo eats the dash rhythm; use a solid rule or drop the divider
+**Avoid:**
+- For structural separation — a solid `.rule` (1px `--c-rule`) or table border reads as structural
+- As generic decoration — the dash carries semantic weight; overuse flattens the signal
+- On `.slide.accent` backgrounds — Amarelo eats the dash rhythm; a solid rule or no divider reads better
 
 **HTML:**
 ```html
@@ -534,9 +523,9 @@ The canonical instance — including the `tr.hl` highlight row — lives in `../
 | Solid `.rule` | `border-top: 1px solid var(--c-rule)` | Structural — "new section," column divider, footer border |
 | Dashed hairline | `border-top: 1px dashed var(--c-rule)` | Semantic pause — "related but secondary," threads a callout off the main argument |
 
-**HARD GATE:** MUST NOT mix dashed and solid hairlines inside a single card without a reason. Inconsistent hairlines read as sloppy, not editorial.
+**Guidance:** don't mix dashed and solid hairlines inside a single card without a reason. Inconsistent hairlines read as sloppy, not editorial.
 
-**Anti-pattern:** using a dashed hairline as a generic "divider with visual interest" — it becomes noise. Reserve it for the callout-threading role.
+**Anti-pattern:** using a dashed hairline as a generic "divider with visual interest" — it flattens the signal. The callout-threading role is where it earns its weight.
 
 Pairs with: [`narrative-arc`](#narrative-arc) (dashed hairline sits directly above the arc callout).
 
@@ -546,18 +535,18 @@ Pairs with: [`narrative-arc`](#narrative-arc) (dashed hairline sits directly abo
 
 **Purpose:** cross-slide threading device. A small callout that names the current slide's relationship to another slide by name, letting the audience hold the deck's through-line across sections. One arc per slide at most.
 
-**When to use:**
-- A discussion slide that *depends on* a report slide from earlier acts — name both and the dependency relationship
-- A decision slide that *opens* an act the audience hasn't reached yet — name the forward link
-- A summary slide that *closes* a loop opened many slides earlier — name the callback
+**Common uses:**
+- A slide that *depends on* or *continues from* an earlier slide — name both and the relationship
+- A decision slide that *opens* a section the audience hasn't reached yet — name the forward link
+- A summary slide that *closes* a loop opened earlier — name the callback
 
-**When NOT to use:**
-- For vague relationships ("related to X") — arcs MUST be directional and specific
-- To summarize the current slide — the arc threads a *relationship*, not a recap
-- On every slide — the arc is a pacing device; using it more than 2–3 times per deck neutralizes the signal
+**Avoid:**
+- Vague relationships ("related to X") — the arc's value is directional specificity
+- As slide-summary chrome — the arc threads a *relationship*, not a recap
+- Everywhere — overused, it neutralizes itself
 - On `.slide.accent` or `.slide.dark` — the Amarelo pill + muted prose is tuned for light surfaces
 
-**Relationship vocabulary (REQUIRED — pick one):**
+**Relationship vocabulary — pick one:**
 
 | Word | Direction | Example |
 | --- | --- | --- |
@@ -571,17 +560,17 @@ Pairs with: [`narrative-arc`](#narrative-arc) (dashed hairline sits directly abo
 ```html
 <div style="margin-top: 26px; padding-top: 18px; border-top: 1px dashed var(--c-rule); display: flex; align-items: flex-start; gap: 12px;">
   <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent-ink); background: var(--c-accent); padding: 3px 8px; border-radius: 2px; white-space: nowrap; font-weight: 600; flex-shrink: 0;">Narrative arc</div>
-  <div style="font-size: 14px; line-height: 1.45; color: var(--c-ink-2);">Discussion <strong style="color: var(--c-ink);">01 · Topic A</strong> is the hinge into <strong style="color: var(--c-ink);">Act 05 · Topic B</strong>. If Topic A resolves, Topic B's timing moves up.</div>
+  <div style="font-size: 14px; line-height: 1.45; color: var(--c-ink-2);"><strong style="color: var(--c-ink);">{slide A}</strong> {relationship verb} <strong style="color: var(--c-ink);">{slide B}</strong>. {one-sentence consequence}.</div>
 </div>
 ```
 
-**Composition rules:**
+**Composition guidance:**
 
-- **Pill text is fixed.** Always "Narrative arc" (or the translated equivalent for non-English decks: `Arco narrativo`, `Fil narratif`). MUST NOT customize per slide — the label is the recognition pattern.
-- **Prose is subdued.** Body text at `var(--c-ink-2)` (14px IBM Plex Serif). Key slide names bolded in full `var(--c-ink)`. The bold is the only emphasis allowed — no italics, no underlines.
-- **Dashed hairline above is REQUIRED.** The dashed separator from `border-top: 1px dashed var(--c-rule)` tells the eye "this is related but secondary." A solid rule promotes the arc to primary content, which it is not.
-- **Directional statement.** The prose MUST name *both* slides and use one of the relationship words above. A non-directional arc ("related to slide 3") is a failed arc.
-- **One per slide.** Two arcs on a single slide overload the threading; split into sibling slides if both matter.
+- **Pill text is the recognition pattern.** "Narrative arc" (or the translated equivalent: `Arco narrativo`, `Fil narratif`) is the label the audience learns to recognize. Changing it per slide erases the pattern.
+- **Subdued prose.** Body text at `var(--c-ink-2)` (14px IBM Plex Serif); key slide names bolded in full `var(--c-ink)`. Bold is the primary emphasis — italics and underlines compete with the pill.
+- **Dashed hairline above.** The dashed separator from `border-top: 1px dashed var(--c-rule)` carries the "related but secondary" read. A solid rule promotes the arc to primary content.
+- **Directional statement.** Name both slides and use one of the relationship words above. A non-directional arc ("related to slide 3") loses its point.
+- **One per slide typically.** Two arcs stacked on one slide overload the threading.
 
 **Anti-patterns:**
 - Vague connection — "See also Discussion 01" is a breadcrumb, not an arc
@@ -597,24 +586,24 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 
 **Purpose:** a named narrow column that sits *between* two cards signaling a journey. Not a card, not a gap — a semantic hinge. The reader's eye crosses it and understands "the thing on the right is what the thing on the left becomes."
 
-**When to use:**
+**Common uses:**
 - Legacy → Modern migration narratives
-- Old → New architecture comparisons where the *transition* is part of the story
+- Old → New architecture comparisons where the *transition* is the story
 - Manual → Automated process diagrams
 - Any two-card pair where the relationship word ("migrating," "upgrading," "consolidating") is load-bearing
 
-**When NOT to use:**
-- For `vs.` comparisons — use the [`2x2-matrix`](chart-primitives.md#2x2-matrix) or a two-column `table.grid`. A transition column implies motion; comparisons don't move.
-- As a generic separator between any two cards — use a `.rule` or a grid `gap`
-- For three-way transitions (A → B → C) — the pattern is two-card only. Three stages is a [`funnel`](chart-primitives.md#funnel).
+**Avoid:**
+- For `vs.` comparisons — [`2x2-matrix`](chart-primitives.md#2x2-matrix) or a two-column `table.grid` reads better; a transition column implies motion
+- As a generic separator between any two cards — a `.rule` or a grid `gap` is lighter
+- For three-way transitions (A → B → C) — the pattern is two-card. Three stages is a [`funnel`](chart-primitives.md#funnel).
 - Inside columns narrower than ~80px — the arrow + dual-label stack collapses
 
 **HTML:**
 ```html
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 14px; position: relative; min-width: 80px;">
-  <div style="font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); text-align: center; line-height: 1.3; white-space: nowrap;">Migrating</div>
+  <div style="font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); text-align: center; line-height: 1.3; white-space: nowrap;">{verb/phase}</div>
   <div style="font-size: 42px; color: var(--c-ink); margin-top: 4px; line-height: 1;">→</div>
-  <div style="font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); text-align: center; line-height: 1.3; margin-top: 4px; white-space: nowrap;">to modern</div>
+  <div style="font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); text-align: center; line-height: 1.3; margin-top: 4px; white-space: nowrap;">{destination}</div>
 </div>
 ```
 
@@ -627,17 +616,17 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 </div>
 ```
 
-**Composition rules:**
+**Composition guidance:**
 
-- **`grid-template-columns: 1fr auto 1.15fr`.** Right card gets a slight size premium because it's the destination — the eye lands there. Adjust to `1fr auto 1fr` if both states carry equal weight.
-- **Arrow glyph is `→` at 42px.** Black arrow on white. MUST NOT substitute an SVG or an emoji — the Unicode arrow at 42px is the signature.
-- **Top and bottom mono labels answer "from what, to what."** Top label = verb/phase ("Migrating", "Upgrading", "Consolidating"). Bottom label = destination ("to modern", "to v5", "to one pipeline"). Both in JetBrains Mono 10px, `--c-ink-3`.
-- **Flanking cards share the paired-shape convention.** The left card rounds its outward corners (left-side) and squares its inward corners (right-side); the right card mirrors. Visual: the two cards read as one split shape with the transition column bridging. `border-radius: 4px 0 0 4px` on left, `0 4px 4px 0` on right, or use scoped classes.
+- **`grid-template-columns: 1fr auto 1.15fr`.** The right card gets a slight size premium when it's the destination — the eye lands there. `1fr auto 1fr` works when both states carry equal weight.
+- **Arrow glyph is `→` at 42px.** Unicode arrow, black on white. An SVG or emoji substitute reads different; the 42px mono arrow is the signature.
+- **Top and bottom mono labels answer "from what, to what."** Top = verb/phase ("Migrating", "Upgrading", "Consolidating"). Bottom = destination ("to modern", "to v5", "to one pipeline"). Both in JetBrains Mono 10px, `--c-ink-3`.
+- **Flanking cards share the paired-shape convention.** Left card rounds its outward corners, squares its inward; right card mirrors. Visual read: one split shape bridged by the transition column. `border-radius: 4px 0 0 4px` on left, `0 4px 4px 0` on right.
 
 **Anti-patterns:**
 - Transition column as "vs." separator — violates the directional contract
-- Arrow pointing left or bidirectional — the column is one-way. If the relationship is reciprocal, use a [`dual-sided-argument`](#dual-sided-argument) card instead.
-- Missing top or bottom label — the arrow alone is ambiguous; both labels are REQUIRED
+- Arrow pointing left or bidirectional — the column is one-way. For reciprocal relationships, [`dual-sided-argument`](#dual-sided-argument) reads better.
+- Missing top or bottom label — the arrow alone is ambiguous
 - Using `.rule` styling (solid border) between the cards instead of the column — loses the "hinge" semantics
 
 ---
@@ -646,18 +635,18 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 
 **Purpose:** tab-style status badge, absolute-positioned above an org-chart (or any entity) card. Hangs off the top edge like a file-tab — drawing the eye to a single card that needs special attention inside a grid of siblings.
 
-**When to use:**
-- Org charts: flagging a role that's open to hire, at risk, or the critical path
-- Product matrices: flagging a product area that's a pain point or newly shipped
-- Roadmap grids: flagging the one quarter or swim-lane the slide is about
+**Common uses:**
+- Org charts: flagging a role (open to hire, at risk, critical path)
+- Product matrices: flagging an area (pain point, newly shipped)
+- Roadmap grids: flagging the quarter or swim-lane the slide is about
 - Any uniform grid where one card needs "read me first" treatment without becoming a hero
 
-**When NOT to use:**
-- On more than one card in a grid — two flags cancel each other. If two cards need attention, flag one and bold the other.
-- On hero slides — the flag is a grid-level signal; hero slides don't have siblings to contrast against
-- As a decorative tag — use `.pill.accent` for tags; the flag is structural
+**Avoid:**
+- Multiple flags in a grid — two flags cancel each other. For two points of emphasis, flag one and bold the other.
+- On hero slides — the flag is a grid-level signal; hero slides have no siblings to contrast against
+- As a decorative tag — `.pill.accent` is the tag primitive; the flag is structural
 
-**Suggested values (REQUIRED — ALL CAPS, one or two words):**
+**Suggested values — ALL CAPS, one or two words:**
 
 | Value | Meaning |
 | --- | --- |
@@ -675,13 +664,13 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 </div>
 ```
 
-**Composition rules:**
+**Composition guidance:**
 
-- **Parent card MUST be `position: relative`.** The flag is absolute-positioned relative to its parent; non-relative parents break the layout.
-- **Parent card MUST gain `border: 2px solid var(--c-accent)`.** The Amarelo border visually binds the flag to the card. A flagged card without the accent border reads as a floating sticker.
-- **Flag text is ALL CAPS JetBrains Mono 10px.** Letter-spacing `0.12em`, font-weight 600. MUST NOT use mixed case or larger sizes — the tab shape depends on this density.
-- **Flag position is `top: -11px; left: 50%; transform: translateX(-50%)`.** The -11px offset hangs half the flag above the card edge, which is the "file-tab" signature. MUST NOT adjust to fully above or flush.
-- **Max one flag per card.** Two flags stack awkwardly and dilute the signal.
+- **Parent card MUST be `position: relative` (engineering).** The flag is absolute-positioned relative to its parent; non-relative parents break the layout.
+- **Parent card gains `border: 2px solid var(--c-accent)`.** The Amarelo border visually binds the flag to the card. Without the accent border, the flag reads as a floating sticker.
+- **Flag text is ALL CAPS JetBrains Mono 10px.** Letter-spacing `0.12em`, font-weight 600. Mixed case or larger sizes break the tab density.
+- **Flag position: `top: -11px; left: 50%; transform: translateX(-50%)`.** The -11px offset hangs half the flag above the card edge — the "file-tab" signature.
+- **One flag per card, typically.** Two flags stack awkwardly and dilute the signal.
 
 **Anti-patterns:**
 - Flag without Amarelo card border — the tab floats, loses its binding
@@ -695,42 +684,42 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 
 **Purpose:** a two-column symmetric-benefit card. The eyebrow on top names the relationship ("Works both ways"), two columns show the same argument from two stakeholder perspectives. Use when a decision genuinely cuts the same way for both sides.
 
-**When to use:**
+**Common uses:**
 - Users + Company benefits (a change that serves both)
 - Buyers + Sellers (marketplace decisions)
 - Devs + Ops (platform choices)
 - Present + Future (decision that compounds positively in both directions)
 
-**When NOT to use:**
-- When the benefits are asymmetric — forcing asymmetric content into symmetric columns creates false equivalence. Use a two-column layout with distinct eyebrows instead.
-- When one side has three bullets and the other has one — the visual weight mismatch undermines the "both ways" claim
-- For three or more stakeholders — the primitive is deliberately two-column. Three groups is a [`table.grid`](#tablegrid).
+**Avoid:**
+- Asymmetric benefits — forcing asymmetric content into symmetric columns creates false equivalence; a two-column layout with distinct eyebrows reads better
+- Visual-weight mismatch (three bullets on one side, one on the other) — undermines the "both ways" claim
+- Three or more stakeholders — the primitive is two-column by construction. Three groups is a [`table.grid`](#tablegrid).
 - As a generic two-column comparison — this is a specific rhetorical device, not a layout primitive
 
 **HTML:**
 ```html
 <div style="background: var(--c-card); border: 1px solid var(--c-rule); border-radius: 4px; padding: 14px 20px;">
-  <div class="eyebrow" style="margin-bottom: 6px;">Works both ways</div>
+  <div class="eyebrow" style="margin-bottom: 6px;">{relationship label}</div>
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
     <div>
-      <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 3px;">For users</div>
-      <div style="font-size: 16px; line-height: 1.35;">Enterprise-grade control without the operational burden.</div>
+      <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 3px;">{side A label}</div>
+      <div style="font-size: 16px; line-height: 1.35;">{side A benefit}</div>
     </div>
     <div>
-      <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 3px;">For the company</div>
-      <div style="font-size: 16px; line-height: 1.35;">Deployment A = N infras, N configs, N upgrade paths. Deployment B = one pipeline, one stack, one environment.</div>
+      <div style="font-family: 'JetBrains Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 3px;">{side B label}</div>
+      <div style="font-size: 16px; line-height: 1.35;">{side B benefit}</div>
     </div>
   </div>
 </div>
 ```
 
-**Composition rules:**
+**Composition guidance:**
 
-- **Eyebrow text names the relationship.** "Works both ways" is the reference default. Alternatives: "Cuts both ways," "Serves both sides," "Both sides win." MUST NOT use a generic label like "Benefits."
-- **Sub-eyebrows name the two stakeholders.** "For users" / "For the company" is the reference pattern. Sub-eyebrows are JetBrains Mono 11px `--c-ink-3` — smaller than the top eyebrow so the hierarchy reads as "one card, two sides."
-- **Columns are `1fr 1fr`.** Equal real estate. MUST NOT skew to `1fr 1.2fr` — asymmetric widths undermine the symmetric-benefit claim.
-- **Body text is 16px IBM Plex Serif.** This is below the 24px body floor — deliberate and documented, because this primitive is a supporting block inside a larger argument (strategic-discussion thesis column), not the primary content. Treat it as a chrome-density exception (see `layout-rules.md` Minimum Text Size).
-- **Each side is one sentence or one short paragraph.** If one side needs three bullets, this isn't a dual-sided argument — it's an asymmetric comparison. Pick a different primitive.
+- **Eyebrow text names the relationship.** "Works both ways," "Cuts both ways," "Serves both sides," "Both sides win." A generic label like "Benefits" loses the "both ways" signal.
+- **Sub-eyebrows name the two sides.** Common pattern: "For users" / "For the company." Sub-eyebrows are JetBrains Mono 11px `--c-ink-3` — smaller than the top eyebrow so the hierarchy reads as "one card, two sides."
+- **Columns are `1fr 1fr`.** Equal real estate. Asymmetric widths (`1fr 1.2fr`) undermine the symmetric-benefit claim.
+- **Body text is 16px IBM Plex Serif.** Below the 24px body floor — deliberate, because this primitive is a supporting block inside a larger argument, not the primary content. Treat it as a chrome-density exception (see `engineering.md` Minimum Text Size).
+- **Each side is one sentence or one short paragraph.** If one side needs three bullets and the other one, the primitive is being asked to do something it isn't for.
 
 **Anti-patterns:**
 - Asymmetric content forced into symmetric columns — defeats the whole point
@@ -744,13 +733,13 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 
 **Purpose:** legend dots embedded directly inside a caption sentence, using inline-block spans. Compresses a typical multi-line legend block into a single line of prose. Ideal for tiny charts (e.g., inline micro-charts in table cells) where a full legend block would outweigh the chart.
 
-**When to use:**
-- Paired with [`inline-micro-chart` in table cells](chart-primitives.md#inline-micro-chart) — the canonical pairing
+**Common uses:**
+- Paired with [`inline-micro-chart` in table cells](chart-primitives.md#inline-micro-chart) — a typical pairing
 - As a caption under a small `vertical-bar-chart` with 2 categories
 - For 2–3 categories where a stacked legend block would dominate visual weight
 
-**When NOT to use:**
-- For 4+ categories — readability breaks. Use a stacked legend block (see `chart-primitives.md` → `stacked-horizontal-bar` legend pattern).
+**Avoid:**
+- For 4+ categories — readability breaks; a stacked legend block reads better (see `chart-primitives.md` → `stacked-horizontal-bar` legend pattern)
 - When the chart is the slide's main content — a full legend with numeric values is clearer
 - Inside body paragraphs — this is caption chrome, not prose
 
@@ -763,13 +752,13 @@ Pairs with: [`dashed-hairline`](#dashed-hairline) (always sits above the arc).
 </div>
 ```
 
-**Composition rules:**
+**Composition guidance:**
 
 - **Dots are 7×7px, `border-radius: 999px` (circles).** Square dots read as data points; circles read as legend markers.
-- **Outline state: `border: 1.5px solid var(--c-ink)` with no background.** Use for the "empty/unfilled" category in a two-state split.
-- **Filled state: `background: var(--c-ink)` with no border.** Use for the "full/filled" category. MUST NOT add a border on the filled state — visually doubles the weight.
-- **Baseline alignment: `margin: 0 3px -1px 3px`.** The `-1px` bottom margin nudges the dot down so it sits on the text baseline. Without it, dots float above the line.
-- **`box-sizing: border-box` REQUIRED on the outline state.** Without it, the 1.5px border adds to the 7px width, making outlined dots visually larger than filled ones. (Filled dots need no `box-sizing` because they have no border.)
+- **Outline state: `border: 1.5px solid var(--c-ink)` with no background.** The "empty/unfilled" category in a two-state split.
+- **Filled state: `background: var(--c-ink)` with no border.** The "full/filled" category. A border on the filled state visually doubles the weight.
+- **Baseline alignment: `margin: 0 3px -1px 3px`.** The `-1px` bottom margin nudges the dot onto the text baseline. Without it, dots float above the line.
+- **`box-sizing: border-box` on the outline state.** Without it, the 1.5px border adds to the 7px width, making outlined dots visually larger than filled ones. (Filled dots need no `box-sizing`.)
 - **Category name precedes the dot.** "Category A ●" not "● Category A" — the text anchors the dot semantically.
 - **Categories separated by ` · `.** Mid-dot on spaces, not commas. Matches the eyebrow and meta-row cadence.
 
@@ -783,19 +772,18 @@ Pairs with: [`inline-micro-chart` in table cells](chart-primitives.md#inline-mic
 
 ---
 
-## Composition Rules
+## Composition Notes
 
-- **eyebrow is the anchor.** Every content slide has at least one `.eyebrow`. Headline goes right under it. Missing eyebrow = orphan headline.
-- **One primitive per role per slide.** A slide MUST NOT mix `ul.ticks` and `ul.numbered` in the same column — the bullet grammar conflicts. Split into siblings if you need both.
-- **Pills cluster, kpis breathe.** Pill rows flex-wrap tight (`gap: 10–14px`); kpi walls use `36–80px` column gaps. MUST NOT use pill density on kpis or vice versa.
-- **Max 6 pills per row.** The act-divider pattern uses 5. Beyond 6, the rhythm breaks into chip-noise; split the slide or drop the pill.
-- **Max 6 ticks per list.** Above 6, the square-bullet rhythm dilutes. Split into two columns (Context | Evidence) or trim.
-- **KPI value stack discipline.** Three stacked `.kpi` tiles → reduce `.value` to 60–76px. Four-up horizontal row → keep 96px default or reduce to 76px only if copy is long ("5.9 active").
-- **table.grid rules stay hairline.** MUST NOT add double borders, zebra stripes, or solid backgrounds beyond `tr.hl`. The rhythm is the white space between rows, not the lines.
-- **Dark-slide kpi wins.** `.slide.dark` + `.kpi` is the canonical summary layout (hero-summary slide). Eyebrows go Amarelo automatically; `.value` goes white.
-- **Accent-slide discipline.** `.slide.accent` pairs with eyebrow + big Poppins number + pill row (the act-divider template). MUST NOT put a table.grid on `.slide.accent` — the Amarelo background eats the hairline rules.
-- **Eyebrow color is editorial signal.** Default ink-3 = "label." Amarelo = "callout incoming" (Framing, Decision, Questions for the audience). Verde = "supporting signal." MUST NOT use Amarelo eyebrow for neutral labels — it loses meaning.
-- **numbered belongs in dark cards or as canonical light lists.** The Questions-for-the-audience pattern is the reference's de-facto `numbered` use. Light-slide `ul.numbered` is available per the CSS; use it for ranked steps.
+These are things that have worked well — not rules. Composition is yours.
+
+- **Eyebrows anchor headlines.** A common pattern is `.eyebrow` immediately above an `h1` — the mono label tells the eye "this is a new unit." Headlines without an eyebrow read as floating.
+- **Bullet grammars.** `ul.ticks` (unordered) and `ul.numbered` (ordinal) mixed in the same column tend to conflict — the bullet shapes compete. Splitting into siblings usually reads cleaner.
+- **Pills cluster; kpis breathe.** Pill rows flex-wrap tight (`gap: 10–14px`); kpi walls use `36–80px` column gaps. Pill density on kpis (or vice versa) looks off.
+- **Pill and tick density.** Beyond ~6 in one row/list, pill rhythm turns into chip noise and tick rhythm dilutes. Splitting or trimming usually helps.
+- **KPI value stack (engineering).** Three stacked `.kpi` tiles → reduce `.value` to 60–76px; at 96px they overflow. Four-up horizontal rows usually keep 96px.
+- **table.grid rhythm (engineering).** Double borders, zebra stripes, or solid backgrounds beyond `tr.hl` break the hairline rhythm — the white space between rows is the rhythm.
+- **`.slide.accent` + table.grid (engineering).** The Amarelo background eats the hairline rules — use a different slide variant or primitive.
+- **Eyebrow color carries meaning.** Default ink-3 = "label." Amarelo = "callout" (works well for framing, decision, question callouts). Verde = "supporting signal." Using Amarelo for neutral labels dilutes the signal.
 
 ## Dark vs Light Pairing
 
@@ -814,10 +802,10 @@ Pairs with: [`inline-micro-chart` in table cells](chart-primitives.md#inline-mic
 | dual-sided-argument | yes | yes | needs `background: rgba(255,255,255,0.06)` and inverted rule color | avoid — light card on Amarelo loses the card boundary |
 | inline-mini-legend | yes | yes | swap outline dot to `rgba(255,255,255,0.75)` border, filled dot to white | avoid — black dots on Amarelo read as noise |
 
-**HARD GATE:** if the pairing table says "avoid" or "FORBIDDEN," the archetype MUST pick a different primitive or a different slide variant. Do not patch with inline color overrides.
+**HARD GATE (engineering):** "FORBIDDEN" pairings break rendering (Amarelo-on-Amarelo is invisible, not just ugly). Pick a different primitive or slide variant rather than patching with inline color overrides. "Avoid" pairings are soft — legibility-dependent.
 
 ## Related
 
-- Tokens: [`design-tokens.md`](design-tokens.md)
-- Canvas + flex discipline: [`layout-rules.md`](layout-rules.md)
-- Archetype templates (what actually ships today): `../templates/slide-cover.html`, `../templates/slide-agenda.html`, `../templates/slide-act-divider.html`, `../templates/slide-content.html`, `../templates/slide-content-paper.html`, `../templates/slide-content-dark.html`, `../templates/slide-content-accent.html`, `../templates/slide-appendix-intro.html`, `../templates/slide-appendix-content.html`
+- Brand tokens: [`brand.md`](brand.md)
+- Canvas + flex engineering: [`engineering.md`](engineering.md)
+- Example templates: `../templates/slide-cover.html`, `../templates/slide-agenda.html`, `../templates/slide-act-divider.html`, `../templates/slide-content.html`, `../templates/slide-content-paper.html`, `../templates/slide-content-dark.html`, `../templates/slide-content-accent.html`, `../templates/slide-appendix-intro.html`, `../templates/slide-appendix-content.html` — compositions you can borrow from; not a required menu

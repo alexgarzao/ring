@@ -1,6 +1,8 @@
-# Design Tokens — Lerian Editorial Deck
+# Brand — Lerian Editorial Deck
 
-The canonical token set for every `ring:deck` output. These tokens are **editorial** — optimized for 1920×1080 projected/screened decks viewed from 15+ feet — and are **deliberately distinct** from `ring:visualize`'s product-console palette (sunglow `#FDCB28`, Inter). Ring canonicalizes two Lerian design systems side by side; MUST NOT cross-pollinate.
+The canonical brand token set for every `ring:deck` output — colors, typography, logo. These tokens are **editorial** — optimized for 1920×1080 projected/screened decks viewed from 15+ feet — and are **deliberately distinct** from `ring:visualize`'s product-console palette (sunglow `#FDCB28`, Inter). Ring canonicalizes two Lerian design systems side by side; MUST NOT cross-pollinate.
+
+Brand is rigid. Amarelo, Poppins, IBM Plex Serif, JetBrains Mono, and the Lerian wordmark are non-negotiable. Composition is not — see `engineering.md` for canvas rules and `primitives.md` for the inventory of atoms available.
 
 ## Color Palette
 
@@ -32,7 +34,7 @@ Every color used by the reference. MUST declare all of these on `:root`. Naming 
 | `--c-bg-2` `#F2F2F2` | Neutral paper — cool, stylistically flat | Whole-slide `.slide.paper` background; soft row dividers (`--c-rule-2`); unemphasized secondary surface |
 | `--c-bg-warm` `#F0EFE9` | Warm paper — hint of earth, earning-attention | Highlighted rows inside a cooler surface (e.g., `.warm` funnel stages between default and `.hot`); accent-adjacent tint states; "this is still paper but the reader should notice it" |
 
-MUST NOT redefine `--c-bg-2` as warm, and MUST NOT use `--c-bg-warm` as the whole-slide paper surface. `.slide.paper` is cool-paper by convention; warming it breaks the pacing signal (see `slide-archetypes.md` — `content-paper` uses the cool `#F2F2F2` to say "pause and discuss").
+MUST NOT redefine `--c-bg-2` as warm, and MUST NOT use `--c-bg-warm` as the whole-slide paper surface. `.slide.paper` is cool-paper by convention; warming it breaks the pacing signal. The cool `#F2F2F2` reads as "pause"; the warm `#F0EFE9` reads as "earn attention."
 
 ### Rules (dividers)
 
@@ -85,7 +87,7 @@ h1, h2, h3 { font-family: 'Poppins', -apple-system, sans-serif; font-weight: 600
 
 ## Type Scale
 
-Ranges cover hero/display through meta. The reference's `:root` defines the default set; archetypes MUST choose values within these ranges. Minimum text floor: **24px** on any body-weight content (deck is read from ≥15ft).
+Ranges cover hero/display through meta. The reference's `:root` defines the default set; slide compositions MUST choose values within these ranges. Minimum text floor: **24px** on any body-weight content (deck is read from ≥15ft).
 
 | Role | Range | Reference default | Usage |
 | --- | --- | --- | --- |
@@ -104,7 +106,7 @@ Ranges cover hero/display through meta. The reference's `:root` defines the defa
 
 ## Spacing Scale
 
-The reference uses two canvas-margin variables plus ad-hoc flex gaps. Archetypes MUST reuse them.
+The reference uses two canvas-margin variables plus ad-hoc flex gaps. Slide compositions MUST reuse them.
 
 | Token | Value | Role |
 | --- | --- | --- |
@@ -162,7 +164,7 @@ Every content slide MUST render this strip at the top. Three variants — defaul
 .slide.accent .meta { color: rgba(25,26,27,0.62); }
 ```
 
-- `.meta .num` — current/total slide index. MUST be populated by runtime (no hardcoded `NN / 17`). See `layout-rules.md`.
+- `.meta .num` — current/total slide index. MUST be populated by runtime (no hardcoded `NN / 17`). See `engineering.md`.
 - `.meta .dot` — 8×8 `border-radius: 999px` dot. Amarelo (`--c-accent`) on light variants.
 
 ## Footer Strip
@@ -270,7 +272,7 @@ The Lerian wordmark has two canonical copies and two usage patterns inside the d
 
 **Two patterns inside the deck skill — both equally valid:**
 
-- **`<img>` pattern (archetype reuse).** `templates/slide-cover.html` uses `<img src="/assets/lerian-wordmark.svg" alt="Lerian Studio wordmark" …>`. Prefer this when the template is being reused as a detached archetype and the asset is served alongside it.
+- **`<img>` pattern (template reuse).** `templates/slide-cover.html` uses `<img src="/assets/lerian-wordmark.svg" alt="Lerian Studio wordmark" …>`. Prefer this when the template is being reused as a detached example and the asset is served alongside it.
 - **Inline SVG pattern (self-contained baseline).** `templates/deck.html` inlines the `<svg viewBox="0 0 1090.88 280" …>` directly in its own cover slide. Prefer this when shipping a single-file baseline deck that must render without an external asset pipeline. The inline SVG carries `role="img" aria-label="Lerian Studio wordmark"` for accessibility parity with the `<img>` pattern's alt text.
 
 If Lerian rebrands, MUST update all three locations (the standalone SVG file, `deck.html`'s inline cover SVG, and visualize's inline copy). The viewBox (`0 0 1090.88 280`) and path data MUST match byte-for-byte across all three. Any drift is a compliance failure.
@@ -300,7 +302,7 @@ color: color-mix(in oklab, var(--c-ink) 60%, white);
 
 **Browser support is a deliberate non-concern.** The deck targets current Chrome via Puppeteer export (`references/export.md`) and evergreen browsers for the presenter runtime. `color-mix()` has been baseline-supported since 2023. MUST NOT add `@supports` fallbacks or inline the mixed hex — the whole point is avoiding token sprawl. If the runtime target changes, revisit this section.
 
-**Anti-pattern:** defining `--c-accent-pale: #FFF7A0` as a new token for one use. If the tint exists at a single point in the deck, derive it. If it shows up in 3+ places across archetypes, then promote it to a token and update this file.
+**Anti-pattern:** defining `--c-accent-pale: #FFF7A0` as a new token for one use. If the tint exists at a single point in the deck, derive it. If it shows up in 3+ places across slides, then promote it to a token and update this file.
 
 ## Provisional Home
 

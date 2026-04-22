@@ -74,25 +74,29 @@ async function loadNotes() {
 
 ## Writing Voice
 
-Speaker notes are **the script the presenter reads**, not a slide summary. Tone is first-person presenter voice, direct, concrete, ready to speak aloud.
+Speaker notes are **the script the presenter reads**, not a slide summary. Presenter voice — direct, concrete, ready to speak aloud.
 
-### Rules
+### Guidance
 
-| Rule | Reason |
+| Guidance | Why |
 | --- | --- |
 | Speaking voice, not bullets | The presenter reads this aloud. Fragments break cadence. |
-| One paragraph per slide, `\n\n` separators between paragraphs if >1 | Presenter scans paragraph-by-paragraph during delivery. |
-| Named concrete data first, abstractions second | "ARR is $4.2M" before "growth is strong" — the audience gets the fact before the gloss. |
-| Target ~90–120 words per slide | ~30 seconds of speech at a conference pace. |
-| Second-person tense for the audience; first-person for the speaker | "You'll see…" / "I want to flag…". Never third-person ("the presenter walks through"). |
+| One paragraph per slide; `\n\n` separators between paragraphs if more than one | Presenter scans paragraph-by-paragraph during delivery. |
+| Concrete data ahead of abstraction (one technique that lands well) | "ARR is $4.2M" before "growth is strong" — the audience gets the fact before the gloss. |
+| Target ~90–120 words per slide (a time budget, ~30 seconds of speech) | See "Word Budget" below. |
+| Second-person for the audience; first-person for the speaker | "You'll see…" / "I want to flag…". Third-person ("the presenter walks through") reads wrong. |
 | No self-reference to the slide | "Let me show you…" beats "On this slide…". The slide is the prop, not the subject. |
 
-### Word Budget — Why 90–120
+### Word Budget — Why 90–120 Is the Target
+
+This is a time budget, not a style rule. ~30 seconds of speech per slide at conference pace.
 
 - Public-speaking cadence ≈ 130–150 words/minute.
 - Slide-bound delivery ≈ 100–120 words/minute (pauses, gestures).
 - 30 seconds per slide × 3 words/second ≈ 90 words as the lower floor.
-- Above 120 words, the presenter reads instead of presents — hand the audience the deck and save 89 minutes.
+- Above 120 words, the presenter reads instead of presents — and the audience would rather have the deck.
+
+Shorter works for discussion openers and factual beats; longer belongs in the appendix, not the live notes. The 90–120 target is a presenter constraint, not deck aesthetic.
 
 ## Gold-Standard Examples
 
@@ -131,8 +135,8 @@ appendix.
 **Why it works:**
 - Names the concrete number ("three hundred fifteen to four hundred forty thousand") before the abstraction ("deliberate").
 - Cross-references the strategic discussion ("discussion number three") — gives the presenter a natural hand-off.
-- Numbers are written out as words — MUST for anything the presenter says aloud. Digits interrupt reading flow.
-- 76 words — short but complete. This is a factual slide; not every note needs 120 words.
+- Numbers are written out as words — a good default for anything said aloud, since digits interrupt reading flow.
+- 76 words — short but complete. Factual slides don't need to hit 120.
 
 ### Example 3 — Discussion opener (index 12)
 
@@ -154,14 +158,16 @@ company around it. Where are we wrong?
 ```
 Before committing speaker-notes JSON:
 
+Engineering (hard):
 [ ] 1. Array length matches <section> count inside <deck-stage>? (Soft gate — mismatch warns but doesn't throw; match for production.)
-[ ] 2. Every string is speaking voice (first-person presenter, not slide summary)?
-[ ] 3. Every slide has named data before abstraction?
-[ ] 4. Numbers expected to be spoken aloud are written as words, not digits?
-[ ] 5. Word count per slide is 60–120 (hit the target for content slides; shorter for discussion openers)?
-[ ] 6. Zero "on this slide…" / "in this diagram…" self-references?
-[ ] 7. Zero literal `</script>` substrings anywhere in any note (breaks inline-JSON extraction)?
-[ ] 8. JSON parses cleanly (test with JSON.parse in browser console)?
+[ ] 2. Zero literal `</script>` substrings anywhere in any note (breaks inline-JSON extraction)?
+[ ] 3. JSON parses cleanly (test with JSON.parse in browser console)?
 
-If any checkbox is no → Rewrite the note. Speaker notes ship once; redoing live is expensive.
+Craft (guidance):
+[ ] 4. Every string reads as speaking voice (presenter script, not slide summary)?
+[ ] 5. Numbers expected to be spoken aloud are written as words rather than digits?
+[ ] 6. Word count per slide is in the 60–120 time budget (shorter for discussion openers; longer belongs in the appendix)?
+[ ] 7. Zero "on this slide…" / "in this diagram…" self-references?
+
+Speaker notes ship once; redoing live is expensive.
 ```

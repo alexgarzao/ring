@@ -1,6 +1,13 @@
 # References
 
-Design-time references for composing a Lerian deck — tokens, layout rules, archetypes, primitives, speaker-notes guidance, server + export protocol.
+Design-time references for composing a Lerian deck.
+
+- `brand.md` — colors, typography, logo (inviolable)
+- `engineering.md` — canvas, flex, pagination, overflow (inviolable)
+- `primitives.md` — CSS atoms available for composition
+- `chart-primitives.md` — four v1 charts
+- `speaker-notes.md` — JSON schema and presenter voice
+- `server.md`, `export.md` — operational tooling
 
 ## Subfolders
 
