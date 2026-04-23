@@ -2,6 +2,15 @@
 
 ## [1.29.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.2)
 
+- Updated CHANGELOG for ring-default:v1.29.1.  
+- Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.29.1...ring-default@1.29.2)
+
+---
+
+## [1.29.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.2)
+
 - Improvements:
   - Refactor(deck): replace rigid archetypes with flexible composition model
 
