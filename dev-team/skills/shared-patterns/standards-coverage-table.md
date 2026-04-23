@@ -291,7 +291,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 22 | Error Handling | domain.md | `#error-handling` | **Sentinel errors (MANDATORY)**, error wrapping |
 | 23 | Exit/Fatal Location Rules | domain.md | `#exitfatal-location-rules-mandatory` | **panic() Detection Checklist (MANDATORY)**, **log.Fatal() Location Rules (MANDATORY)**, Anti-Rationalization Table |
 | 24 | Function Design | domain.md | `#function-design-mandatory` | Single responsibility |
-| 25 | File Organization | domain.md | `#file-organization-mandatory` | File-level SRP, max 200-300 lines |
+| 25 | File Organization | domain.md | `#file-organization-mandatory` | File-level SRP, max 1000 lines (hard block at 1500; cohesion judgment applies) |
 | 26 | JSON Naming Convention (camelCase) | api-patterns.md | `#json-naming-convention-camelcase-mandatory` | API response field naming |
 | 27 | Pagination Patterns | api-patterns.md | `#pagination-patterns` | **Offset & cursor strategies**, limit validation, response structure, lib-commons utilities |
 | 28 | HTTP Status Code Consistency | api-patterns.md | `#http-status-code-consistency-mandatory` | **201 for creation, 200 for update (MANDATORY)**, lib-commons response methods, detection commands |
@@ -358,7 +358,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 8   | Testing                       | `#testing`                             | Type-safe mocks, fixtures, edge cases         |
 | 9   | Error Handling                | `#error-handling`                      | Custom error classes                          |
 | 10  | Function Design               | `#function-design-mandatory`           | Single responsibility                         |
-| 11  | File Organization             | `#file-organization-mandatory`         | File-level SRP, max 200-300 lines             |
+| 11  | File Organization             | `#file-organization-mandatory`         | File-level SRP, max 1000 lines (hard block at 1500; cohesion judgment applies)             |
 | 12  | Naming Conventions            | `#naming-conventions`                  | Files, interfaces, types                      |
 | 13  | Directory Structure           | `#directory-structure`                 | Lerian pattern                                |
 | 14  | RabbitMQ Worker Pattern       | `#rabbitmq-worker-pattern`             | Async message processing                      |
@@ -382,7 +382,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 8   | Testing                       | `#testing`                             | Type-safe mocks, fixtures, edge cases                                      |
 | 9   | Error Handling                | `#error-handling`                      | Custom error classes                                                       |
 | 10  | Function Design               | `#function-design-mandatory`           | Single responsibility                                                      |
-| 11  | File Organization             | `#file-organization-mandatory`         | File-level SRP, max 200-300 lines                                          |
+| 11  | File Organization             | `#file-organization-mandatory`         | File-level SRP, max 1000 lines (hard block at 1500; cohesion judgment applies)                                          |
 | 12  | Naming Conventions            | `#naming-conventions`                  | Files, interfaces, types                                                   |
 | 13  | Directory Structure           | `#directory-structure`                 | Lerian pattern                                                             |
 | 14  | RabbitMQ Worker Pattern       | `#rabbitmq-worker-pattern`             | Async message processing                                                   |

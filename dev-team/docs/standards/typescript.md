@@ -637,7 +637,7 @@ function applyDiscount(total: number, couponCode?: string): number {
 | Rule | Description |
 |------|-------------|
 | **One concept per file** | A file groups functions/types for a single domain concept |
-| **Max 200-300 lines** | If longer, split by responsibility boundaries |
+| **Max 1000 lines (hard block at 1500)** | Cohesion judgment applies — see shared-patterns/file-size-enforcement.md |
 | **File name = content** | `user-validator.ts` MUST only contain user validation logic |
 | **One class per file** | Each class gets its own file |
 | **Co-locate types with usage** | Types used by one file live in that file, shared types in `/types` |
@@ -645,7 +645,7 @@ function applyDiscount(total: number, couponCode?: string): number {
 ### Examples
 
 ```typescript
-// ❌ BAD - transaction-service.ts (500 lines, multiple concerns)
+// ❌ BAD - transaction-service.ts (1200 lines, multiple concerns — fragmentable without artificial boundaries)
 export class TransactionService {
     constructor(
         private readonly repo: TransactionRepository,
@@ -727,7 +727,7 @@ export function exportToOFX(id: string): Promise<Buffer> { ... }
 
 | Sign | Action |
 |------|--------|
-| File exceeds 300 lines | Split at responsibility boundaries |
+| File exceeds 1000 lines (hard block at 1500) | Apply cohesion judgment; split at responsibility boundaries if fragmentable. See shared-patterns/file-size-enforcement.md |
 | Multiple exported classes | One class per file |
 | `// ===== Section =====` separator comments | Each section becomes its own file |
 | Mix of commands + queries in one service | Split into separate command/query files |

@@ -159,7 +159,7 @@ This is not negotiable:
 **Before dispatching any agent, you MUST load the corresponding sub-skill first.**
 
 <cannot_skip>
-- Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`. **Gate 0 includes delivery verification exit check inline** (a sub-check of ring:dev-implementation Step 7): verifies all requirements are DELIVERED (not just created), catches dead code, unwired structs, unregistered middleware, and runs 7 automated checks: (A) file size ≤300 lines, (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility, (G) multi-tenant dual-mode. FAIL → ring:dev-implementation re-iterates with fix instructions.
+- Gate 0: `Skill("ring:dev-implementation")` → then `Task(subagent_type="ring:backend-engineer-*", ...)`. **Gate 0 includes delivery verification exit check inline** (a sub-check of ring:dev-implementation Step 7): verifies all requirements are DELIVERED (not just created), catches dead code, unwired structs, unregistered middleware, and runs 7 automated checks: (A) file size ≤1000 lines soft / ≤1500 hard (cohesion review for 1001-1500), (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility, (G) multi-tenant dual-mode. FAIL → ring:dev-implementation re-iterates with fix instructions.
 - Gate 1: `Skill("ring:dev-devops")` → then `Task(subagent_type="ring:devops-engineer", ...)`
 - Gate 2: `Skill("ring:dev-sre")` → then `Task(subagent_type="ring:sre", ...)`
 - Gate 3: `Skill("ring:dev-unit-testing")` → then `Task(subagent_type="ring:qa-analyst", test_mode="unit", ...)`
@@ -2038,13 +2038,13 @@ After ring:dev-implementation completes, verify generated code:
 
 ### ⛔ File Size Enforcement (MANDATORY — All Gates)
 
-See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds, verification commands, split strategies, and agent instructions.
+See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds, cohesion judgment, verification commands, split strategies, and agent instructions.
 
-**Summary:** No source file may exceed 300 lines (>300 = loop back to agent; >500 = hard block). Implementation agents MUST split proactively. Enforcement points:
+**Summary:** Soft limit 1000 lines per file; hard block at 1500 lines. Files in the 1001-1500 band require cohesion review — keep if coherent (state machine, parser, schema, table-driven tests, tightly-coupled domain logic), split if fragmentable without artificial boundaries. Files > 1500 lines are hard-blocked unless explicit cohesion justification is documented in the PR description. Enforcement points:
 
-- **Gate 0:** Implementation agent receives file-size instructions; orchestrator runs verification command after agent completes and loops back if any file > 300 lines.
+- **Gate 0:** Implementation agent receives file-size instructions; orchestrator runs verification command after agent completes. Files 1001-1500 → cohesion review; files > 1500 → hard block.
 - **Gate 0 exit check (inline in ring:dev-implementation Step 7):** Delivery verification runs 7 checks as exit criteria: (A) file-size, (B) license headers, (C) linting, (D) migration safety, (E) vulnerability scanning, (F) API backward compatibility, (G) multi-tenant dual-mode. Any FAIL → ring:dev-implementation re-iterates with specific fix instructions.
-- **Gate 8:** Code reviewers MUST flag any file > 300 lines as a MEDIUM+ issue (blocking).
+- **Gate 8:** Code reviewers MUST flag any file > 1000 lines as a MEDIUM+ issue (apply cohesion judgment); files > 1500 lines are CRITICAL.
 
 ### Step 2.1: Prepare Input for ring:dev-implementation Skill
 

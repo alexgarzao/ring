@@ -518,14 +518,14 @@ func applyDiscount(total float64, couponCode string) float64 {
 | Rule                              | Description                                                   |
 | --------------------------------- | ------------------------------------------------------------- |
 | **One concept per file**          | A file groups functions/types for a single domain concept     |
-| **Max 200-300 lines**             | If longer, split by responsibility boundaries                 |
+| **Max 1000 lines (hard block at 1500)** | Cohesion judgment applies — see shared-patterns/file-size-enforcement.md |
 | **File name = content**           | `order_validator.go` MUST only contain order validation logic |
 | **Test file mirrors source file** | `order_service.go` → `order_service_test.go`                  |
 
 ### Examples
 
 ```go
-// ❌ BAD - account_service.go (450 lines, multiple concerns)
+// ❌ BAD - account_service.go (1200 lines, multiple concerns — fragmentable without artificial boundaries)
 package services
 
 type AccountService struct {
@@ -609,7 +609,7 @@ func ExportToCSV(ctx context.Context, id string) ([]byte, error) { ... }
 
 | Sign                                         | Action                                             |
 | -------------------------------------------- | -------------------------------------------------- |
-| File exceeds 300 lines                       | Split at responsibility boundaries                 |
+| File exceeds 1000 lines (hard block at 1500) | Apply cohesion judgment; split at responsibility boundaries if fragmentable. See shared-patterns/file-size-enforcement.md |
 | Multiple struct types with their own methods | One file per struct                                |
 | `// ===== Section =====` separator comments  | Each section becomes its own file                  |
 | Mix of CRUD + validation + business logic    | Separate into command, query, validation files     |

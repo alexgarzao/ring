@@ -289,12 +289,12 @@ find . -name "*.go" \
   ! -path "*/docs/*" \
   ! -path "*/mocks*" ! -path "*/generated/*" ! -path "*/gen/*" \
   ! -name "*.pb.go" ! -name "*.gen.go" \
-  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
+  -exec wc -l {} + | awk '$1 > 1000 && $NF != "total" {print}' | sort -rn
 
 # Also check test files separately (same threshold)
 find . -name "*_test.go" \
   ! -path "*/mocks*" \
-  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
+  -exec wc -l {} + | awk '$1 > 1000 && $NF != "total" {print}' | sort -rn
 ```
 
 **TypeScript** (matches shared-patterns/file-size-enforcement.md):
@@ -305,12 +305,13 @@ find . \( -name "*.ts" -o -name "*.tsx" \) \
   ! -path "*/generated/*" ! -path "*/__generated__/*" \
   ! -path "*/__mocks__/*" ! -path "*/mocks/*" \
   ! -name "*.d.ts" ! -name "*.gen.ts" ! -name "*.generated.ts" ! -name "*.mock.ts" \
-  -exec wc -l {} + | awk '$1 > 300 && $NF != "total" {print}' | sort -rn
+  -exec wc -l {} + | awk '$1 > 1000 && $NF != "total" {print}' | sort -rn
 ```
 
-- Any modified file > 500 lines → **FAIL** (hard block, return to Gate 0 with split instructions)
-- Any modified file > 300 lines → **PARTIAL** (return to Gate 0 with split instructions)
+- Any modified file > 1500 lines → **FAIL** (hard block, return to Gate 0 with split instructions unless cohesion justification is documented in the PR description)
+- Any modified file > 1000 lines → **PARTIAL** (return to Gate 0 with cohesion-judgment prompt — keep if coherent, split if fragmentable without artificial boundaries)
 - **This check applies to ALL files in the project, not just files changed by Gate 0.** Existing oversized files are flagged but do not block unless they were modified by Gate 0.
+- See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for cohesion judgment.
 
 #### B. License Header Verification
 **Reference:** core.md → License Headers (MANDATORY)
@@ -857,7 +858,7 @@ Build and output the full matrix — one row per requirement extracted in Step 1
 PASS: ALL requirements have status DELIVERED
       AND dead code count = 0
       AND all integration checks pass
-      AND no modified file exceeds 300 lines (file-size-enforcement.md)
+      AND no modified file exceeds 1500 lines, and files 1001-1500 pass cohesion review (file-size-enforcement.md)
       AND all modified source files have license headers (core.md)
       AND linting passes (quality.md)
 

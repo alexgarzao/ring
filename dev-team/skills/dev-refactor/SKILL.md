@@ -319,9 +319,9 @@ Write tool:
 
 ### ⛔ File Size Enforcement (MANDATORY)
 
-See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds and agent instructions.
+See [shared-patterns/file-size-enforcement.md](../shared-patterns/file-size-enforcement.md) for thresholds, cohesion judgment, and agent instructions.
 
-**All analysis agents MUST flag files exceeding 300 lines as ISSUE-XXX** (converted to FINDING-XXX during Step 4.1 mapping, like all other agent issues). Files > 500 lines are CRITICAL severity. Files > 1000 lines are CRITICAL with mandatory decomposition plan included in the finding. Each oversized file = one ISSUE-XXX (not grouped). **Test files are included** — large test files are equally hard to maintain.
+**All analysis agents MUST flag files exceeding 1000 lines as ISSUE-XXX** (converted to FINDING-XXX during Step 4.1 mapping, like all other agent issues). Files 1001-1500 lines = HIGH severity (subject to cohesion override — document reasoning if kept). Files > 1500 lines = CRITICAL with mandatory decomposition plan unless cohesion justification is documented. Each oversized file = one ISSUE-XXX (not grouped). **Test files are included** — large test files are equally hard to maintain.
 
 ### ⛔ HARD GATE: Verify codebase-report.md Exists
 
@@ -379,12 +379,12 @@ Task tool 1:
     4. any library not in standards that serves same purpose = ISSUE-XXX
 
     ⛔ FILE SIZE ENFORCEMENT (MANDATORY):
-    - Any source file > 300 lines (including test files, excluding auto-generated: *.pb.go, */generated/*, */mocks*) MUST be flagged as ISSUE-XXX
-    - 301-500 lines: severity HIGH
-    - > 500 lines: severity CRITICAL
-    - > 1000 lines: severity CRITICAL with explicit decomposition plan
-    - Include current line count and proposed split strategy in each finding
-    - See shared-patterns/file-size-enforcement.md for split patterns
+    - Any source file > 1000 lines (including test files, excluding auto-generated: *.pb.go, */generated/*, */mocks*) MUST be flagged as ISSUE-XXX
+    - 1001-1500 lines: severity HIGH (subject to cohesion override — document reasoning if kept)
+    - > 1500 lines: severity CRITICAL with explicit decomposition plan unless cohesion justification is documented
+    - Apply cohesion judgment: state machines, parsers, schemas, table-driven tests, tightly-coupled domain logic may remain whole if splitting creates artificial boundaries or import gymnastics
+    - Include current line count and proposed split strategy (or cohesion rationale to keep) in each finding
+    - See shared-patterns/file-size-enforcement.md for split patterns and cohesion judgment
     - Reference: golang/domain.md → File Organization (MANDATORY)
 
     Input:
@@ -506,12 +506,12 @@ Task tool 1:
     4. any library not in standards that serves same purpose = ISSUE-XXX
 
     ⛔ FILE SIZE ENFORCEMENT (MANDATORY):
-    - Any source file > 300 lines (including test files, excluding auto-generated: *.d.ts, *.gen.ts, *.generated.ts, */generated/*, */__generated__/*) MUST be flagged as ISSUE-XXX
-    - 301-500 lines: severity HIGH
-    - > 500 lines: severity CRITICAL
-    - > 1000 lines: severity CRITICAL with explicit decomposition plan
-    - Include current line count and proposed split strategy in each finding
-    - See shared-patterns/file-size-enforcement.md for split patterns
+    - Any source file > 1000 lines (including test files, excluding auto-generated: *.d.ts, *.gen.ts, *.generated.ts, */generated/*, */__generated__/*) MUST be flagged as ISSUE-XXX
+    - 1001-1500 lines: severity HIGH (subject to cohesion override — document reasoning if kept)
+    - > 1500 lines: severity CRITICAL with explicit decomposition plan unless cohesion justification is documented
+    - Apply cohesion judgment: state machines, parsers, schemas, table-driven tests, tightly-coupled domain logic may remain whole if splitting creates artificial boundaries or import gymnastics
+    - Include current line count and proposed split strategy (or cohesion rationale to keep) in each finding
+    - See shared-patterns/file-size-enforcement.md for split patterns and cohesion judgment
     - Reference: typescript.md → File Organization (MANDATORY)
 
     ⛔ MULTI-TENANT ANALYSIS (MANDATORY):

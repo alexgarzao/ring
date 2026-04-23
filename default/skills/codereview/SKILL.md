@@ -688,7 +688,7 @@ Task:
     - Naming conventions
     - Error handling patterns
     - Performance concerns
-    - **File size compliance** — Any file > 300 lines (excluding auto-generated: *.pb.go, *.d.ts, */generated/*, */mocks/*) MUST be flagged as MEDIUM+ issue. Files > 500 lines = CRITICAL. See shared-patterns/file-size-enforcement.md.
+    - **File size compliance** — Files > 1000 lines = MEDIUM+ (apply cohesion judgment). Files > 1500 lines = CRITICAL. Excludes auto-generated (*.pb.go, *.d.ts, */generated/*, */mocks/*). See shared-patterns/file-size-enforcement.md for cohesion judgment.
 
     ## ⛔ Ring Standards Verification (MANDATORY)
 
