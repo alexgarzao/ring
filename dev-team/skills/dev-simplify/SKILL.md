@@ -64,9 +64,15 @@ input_schema:
       type: string
       default: docs/dev-simplify/simplify-report-{timestamp}.md
       description: Where to write the consolidated KILL/REVIEW/KEEP report.
+    - name: tasks_output_path
+      type: string
+      default: docs/dev-simplify/simplify-tasks-{timestamp}.json
+      description: |
+        Where to write the ring:dev-cycle-compatible task JSON. MUST sit alongside
+        the markdown report — same timestamp, parallel directory.
 
 output_schema:
-  format: markdown
+  format: markdown+json
   required_sections:
     - name: "Simplify Summary"
       pattern: "^## Simplify Summary"
@@ -86,9 +92,18 @@ output_schema:
     - name: "Cascade Chains"
       pattern: "^## Cascade Chains"
       required: true
+    - name: "Cascade Execution Plan"
+      pattern: "^## Cascade Execution Plan"
+      required: true
     - name: "Remaining Risks"
       pattern: "^## Remaining Risks"
       required: true
+  required_artifacts:
+    - path: "{output_path}"
+      format: markdown
+    - path: "{tasks_output_path}"
+      format: json
+      description: ring:dev-cycle task array — see "Task JSON Schema" section
 ---
 
 # Dev Simplify — Whole-Codebase Structural Sweep
@@ -367,14 +382,23 @@ Task:
        more Ring N code, the whole chain is speculative
 
     ### Output per chain
+    MUST emit each chain as an ordered list, leaf first (Ring 1), so the
+    aggregator can decompose it into a task DAG. Ring N depends on Ring N-1.
+
     ```
-    Chain: [leaf_abstraction] @ file:line
-      Ring 2: [caller] @ file:line — serves only the leaf
-      Ring 3: [grandcaller] @ file:line — serves only Ring 2
-      Terminal: [consumer] — [REAL | SPECULATIVE]
+    Chain ID: cascade-{N} (sequential, 1-indexed)
+    Ring 1 (leaf):  [leaf_abstraction] @ file:line
+    Ring 2:         [caller] @ file:line — serves only Ring 1
+    Ring 3:         [grandcaller] @ file:line — serves only Ring 2
+    ...
+    Terminal: [consumer] — [REAL | SPECULATIVE]
       If SPECULATIVE: collapse blast radius = [N files, M lines]
       If REAL: chain is sustained; flag weakest link for review
     ```
+
+    MUST number rings starting at 1 (leaf = Ring 1). MUST list rings in
+    execution order — the order in which a refactor would remove them
+    (leaf first, then each caller in turn).
 
     ### Evidence requirement
     Every Ring assignment MUST include grep-based caller count. "Probably only
@@ -548,6 +572,131 @@ current branch; branch-diff smells are exactly what was just introduced.
 
 ---
 
+## Acceptance Criteria Templates
+
+MANDATORY: The aggregator MUST attach the matching template to every task's
+`acceptance_criteria[]` field AND to the Kill List table in the markdown report.
+Each template is the minimum bar — the aggregator may append task-specific
+criteria, but MUST NOT remove template rows.
+
+| Smell category | Default acceptance criteria |
+|---|---|
+| `unexercised-seam` | 1. all call sites refactored to use concrete type directly. 2. Interface file deleted. 3. Test files updated to construct the concrete type. 4. Mocks/fakes of the interface removed. 5. No public-API signature change (or explicitly acknowledged if one exists). |
+| `speculative-construction` | 1. Factory/Builder/Strategy removed. 2. Call sites construct the concrete type inline or via the simplest possible constructor. 3. Related tests removed or simplified. 4. No dead options/branches left behind. |
+| `translation-layer` | 1. Adapter/DTO removed. 2. Producers write the canonical shape directly; consumers read it directly. 3. Tests for translation logic removed. 4. Serialization boundary verified (wire format unchanged). |
+| `topology` | 1. Module/package removed or merged. 2. Imports updated across blast-radius. 3. No orphan helpers left. 4. Build graph verified (no circular/dangling deps). |
+| `cascade` | 1. Leaf item removed first. 2. Ring-2 callers refactored. 3. Ring-3 transitive dependents refactored. 4. Each ring verified green (tests + build) before advancing. |
+| `branch-slop` | 1. Unused helpers/types/files deleted. 2. Branch diff re-minimized against main. 3. No dead imports or references remain. |
+
+**Cascade scope note:** MUST scope each ring's task to its own ring only. Task
+for `simplify-cascade-1-ring-1` has acceptance criterion "Leaf item removed";
+task for `ring-2` has "Ring-2 callers refactored"; task for `ring-3` has
+"Ring-3 transitive dependents refactored". The "each ring verified green"
+criterion applies to every cascade task.
+
+---
+
+## Task JSON Schema (ring:dev-cycle Handoff)
+
+MANDATORY: The aggregator MUST emit `tasks_output_path` (default
+`docs/dev-simplify/simplify-tasks-{timestamp}.json`) alongside the markdown
+report. REQUIRED: Write BOTH the markdown report AND the JSON task file.
+FORBIDDEN: emitting one without the other — downstream `ring:dev-cycle`
+consumption depends on the JSON; reviewers depend on the markdown.
+
+### Mapping rules
+
+| Report classification | JSON task emission |
+|---|---|
+| KILL item | One task, `severity: "KILL"`, `rebuttal_if_kept: null` |
+| REVIEW item | One task, `severity: "REVIEW"`, `rebuttal_if_kept` populated with the surfaced justification (if any; `null` only when no rationale was surfaced) |
+| KEEP item | NO task emitted |
+| Cascade chain with N rings | N tasks, one per ring, chained via `depends_on` |
+
+### Schema
+
+```json
+{
+  "generated_at": "ISO-8601",
+  "source_report": "docs/dev-simplify/simplify-report-{timestamp}.md",
+  "hard_constraint": "<user-supplied constraint>",
+  "tasks": [
+    {
+      "id": "simplify-001",
+      "title": "Remove UserRepository single-impl interface",
+      "severity": "KILL | REVIEW",
+      "smell_category": "unexercised-seam | speculative-construction | translation-layer | topology | cascade | branch-slop",
+      "description": "Short explanation of what and why",
+      "files_affected": ["internal/repo/user.go:12", "internal/service/user.go:45"],
+      "blast_radius": {"files": 4, "lines": 120},
+      "acceptance_criteria": ["...", "..."],
+      "estimated_complexity": "trivial | moderate | complex",
+      "depends_on": [],
+      "rebuttal_if_kept": "Why the item survived (REVIEW items only) or null"
+    }
+  ]
+}
+```
+
+### Cascade → task DAG
+
+MANDATORY: Every cascade chain from Task 4 MUST decompose into an ordered
+task list with `depends_on` wiring. The refactor order is leaf-first:
+
+- Chain of length N produces N tasks.
+- Task IDs follow: `simplify-cascade-{chain-index}-ring-{ring-number}`
+  (e.g., `simplify-cascade-1-ring-1`, `simplify-cascade-1-ring-2`,
+  `simplify-cascade-1-ring-3`).
+- `depends_on` wires ring-N to ring-(N-1). Leaf (ring-1) has `depends_on: []`.
+- `smell_category` is `"cascade"` for every ring task.
+- `acceptance_criteria` uses the `cascade` template above, scoped per ring
+  (see "Cascade scope note" in Acceptance Criteria Templates).
+
+**Example** — chain of 3 rings (leaf → Ring-2 caller → Ring-3 transitive):
+
+```json
+[
+  {
+    "id": "simplify-cascade-1-ring-1",
+    "title": "Remove leaf: {leaf_abstraction}",
+    "severity": "KILL",
+    "smell_category": "cascade",
+    "depends_on": [],
+    "acceptance_criteria": ["Leaf item removed first", "Tests + build green"]
+  },
+  {
+    "id": "simplify-cascade-1-ring-2",
+    "title": "Refactor Ring-2 caller: {caller}",
+    "severity": "KILL",
+    "smell_category": "cascade",
+    "depends_on": ["simplify-cascade-1-ring-1"],
+    "acceptance_criteria": ["Ring-2 callers refactored", "Tests + build green"]
+  },
+  {
+    "id": "simplify-cascade-1-ring-3",
+    "title": "Refactor Ring-3 transitive dependents: {grandcaller}",
+    "severity": "KILL",
+    "smell_category": "cascade",
+    "depends_on": ["simplify-cascade-1-ring-2"],
+    "acceptance_criteria": ["Ring-3 transitive dependents refactored", "Tests + build green"]
+  }
+]
+```
+
+### Aggregator contract
+
+After the 6 (or 5) explorers complete, the orchestrator MUST synthesize
+findings into two artifacts. The aggregator's prompt MUST state verbatim:
+
+> Write BOTH the markdown report AND the JSON task file. Do not emit one
+> without the other. Map KILL findings to `severity: "KILL"`, REVIEW findings
+> to `severity: "REVIEW"` with `rebuttal_if_kept` populated, and KEEP findings
+> to NO task. Decompose every cascade chain into ordered per-ring tasks with
+> `depends_on` wiring (leaf = ring-1, depends_on: []). Attach the acceptance
+> criteria template matching each task's `smell_category`.
+
+---
+
 ## Output Schema
 
 One consolidated markdown file at `output_path` (default
@@ -571,8 +720,8 @@ One consolidated markdown file at `output_path` (default
 
 ## Kill List
 HIGH confidence, no public-API impact, ready for `ring:dev-cycle`.
-| Name | file:line | Smell | Rebuttal | Blast radius | Action |
-|---|---|---|---|---|---|
+| Name | file:line | Smell | Rebuttal | Blast radius | Action | Acceptance Criteria |
+|---|---|---|---|---|---|---|
 
 ## Review List
 MEDIUM confidence OR requires caller coordination OR touches a cascade chain.
@@ -588,6 +737,20 @@ Earned abstractions. Stop questioning these until evidence changes.
 Chains where killing one abstraction cascades through the codebase.
 | Chain ID | Leaf | Ring depth | Terminal type | Collapse blast radius |
 |---|---|---|---|---|
+
+## Cascade Execution Plan
+Per-chain DAG showing refactor order. Ring-1 (leaf) runs first; each
+subsequent ring depends on the previous. MUST match the `depends_on` wiring
+in the JSON task file.
+
+### Chain cascade-1
+| Ring | Task ID | Target | depends_on |
+|---|---|---|---|
+| 1 | simplify-cascade-1-ring-1 | [leaf_abstraction] @ file:line | [] |
+| 2 | simplify-cascade-1-ring-2 | [caller] @ file:line | [simplify-cascade-1-ring-1] |
+| 3 | simplify-cascade-1-ring-3 | [grandcaller] @ file:line | [simplify-cascade-1-ring-2] |
+
+(Repeat per chain.)
 
 ## Remaining Risks
 Kills the report cannot fully characterize — flagged so execution doesn't
@@ -631,6 +794,10 @@ Risk types:
 | Evidence required for every finding | "Probably unused" is not evidence |
 | KEEP list populated with justification | Without it, re-runs re-flag the same earned abstractions |
 | Output schema fully populated | Partial reports degrade to noise |
+| Both artifacts emitted (markdown report AND JSON task file) | `ring:dev-cycle` consumes the JSON; reviewers consume the markdown. Missing either breaks handoff. |
+| Cascade chains decomposed into per-ring tasks with `depends_on` wiring | Single-task chains erase leaf-first execution order |
+| Acceptance criteria template attached to every task by `smell_category` | Without templates, dev-cycle has no completion test |
+| `hard_constraint` user-supplied (never auto-inferred) | Auto-inference hides an AI guess as user intent — inverts the burden-of-proof pivot |
 
 User cannot waive these. Time pressure cannot waive these. "Simple codebase" cannot waive these.
 
@@ -680,6 +847,11 @@ CANNOT weaken the burden-of-proof inversion under any pressure scenario.
 | "The defensive check is harmless, leave it" | Harmless noise is still noise. Defensive checks at trusted boundaries mislead future readers about where validation happens. | **Delete unless the caller contract actually permits the case being guarded** |
 | "We'll clean up the comments in a later pass" | Comment slop compounds — reviewers stop trusting comments, then real comments get ignored too. | **Delete now, while the diff is small** |
 | "The codebase looks clean already" | Clean code can still be over-abstracted. Clean over-abstraction is the failure mode this skill targets. | **Run the sweep regardless** |
+| "Only emit the markdown report, skip the JSON" | `ring:dev-cycle` consumes the JSON. Markdown alone is a human read, not an executable handoff. | **REQUIRED: Emit both artifacts or neither** |
+| "Only emit the JSON, skip the markdown" | Reviewers and the user audit the markdown. JSON alone is opaque to humans. | **REQUIRED: Emit both artifacts or neither** |
+| "Skip acceptance criteria, the task title explains it" | Acceptance criteria are the execution contract. Without them, dev-cycle has no completion test. | **Attach template for every task's smell_category** |
+| "Cascade chain is obvious, skip the DAG decomposition" | An N-ring chain as a single task erases the leaf-first execution order. dev-cycle needs N ordered tasks. | **Decompose every chain into per-ring tasks with depends_on wiring** |
+| "Auto-detect hard_constraint from go.mod / Dockerfile" | Auto-inference hides an AI guess as user intent. The constraint is the burden-of-proof pivot — it must be declared. | **Keep hard_constraint user-supplied; STOP if ambiguous** |
 
 ---
 
@@ -713,19 +885,21 @@ When the skill completes, emit the following summary alongside the written repor
 **Scope:** [whole_codebase | module:{path}]
 **Hard Constraint:** [declared value]
 **Report:** [output_path]
+**Tasks:** [tasks_output_path] ([N] tasks)
 
 **Findings**
 - Kill list: [N] items, [M] files / [L] lines collapsible
 - Review list: [N] items requiring coordination
 - Keep list: [N] earned abstractions documented
-- Cascade chains detected: [N] ([K] collapsible as units)
+- Cascade chains detected: [N] → [M] ordered ring-tasks in DAG
 - Branch-slop findings: [N] kills / [M] routed to review under behavior-preservation
 - Remaining risks flagged: [N] ([K] require regression tests before execution)
 
 **Next Actions**
 1. Review the Kill List in [output_path]
-2. Batch items into cascade-aware tasks (one task per chain)
-3. Feed to `ring:dev-cycle` for execution with TDD and parallel review
+2. Feed [tasks_output_path] directly to `ring:dev-cycle` — tasks are pre-ordered
+   via `depends_on` (cascade chains refactor leaf-first)
+3. Execute with TDD and parallel review
 4. Re-run `ring:dev-simplify` after execution to detect newly-exposed cascades
 
 **Status:** COMPLETE
