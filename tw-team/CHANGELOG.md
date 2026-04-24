@@ -3,6 +3,21 @@
 ## [0.4.3](https://github.com/LerianStudio/ring/releases/tag/ring-tw-team@0.4.3)
 
 - **Improvements:**
+  - Refactored skills by removing the commands layer and renaming skills to match command names.
+  - Enhanced skill generation with schema validator and improved component alignment with the new frontmatter schema.
+  - Replaced arguments object with simple argument-hint in commands.
+  - Removed invalid version field from agent frontmatter.
+  - Added unit tests for frontmatter validation and generation.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-tw-team@0.4.2...ring-tw-team@0.4.3)
+
+---
+
+## [0.4.3](https://github.com/LerianStudio/ring/releases/tag/ring-tw-team@0.4.3)
+
+- **Improvements:**
   - Refactored skills by removing the commands layer and renaming skills to match command names for better alignment and clarity.
   - Enhanced skill generation with a new schema validator and improved frontmatter schema for standardizing component metadata.
   - Replaced arguments object with simple argument-hint in commands for streamlined functionality.

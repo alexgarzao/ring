@@ -2,6 +2,16 @@
 
 ## [1.29.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.2)
 
+- Refactor: Replaced rigid archetypes with a flexible composition model for improved adaptability and customization.
+
+Contributors: @fred
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-default@1.29.1...ring-default@1.29.2)
+
+---
+
+## [1.29.2](https://github.com/LerianStudio/ring/releases/tag/ring-default@1.29.2)
+
 - Improvements:
   - Refactor(deck): Replace rigid archetypes with flexible composition model.
 
