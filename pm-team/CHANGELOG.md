@@ -3,6 +3,17 @@
 ## [0.26.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.26.0)
 
 - **Features**
+  - Replace single multiplier with layered calculation model for delivery planning (#385)
+
+Contributors: @fred, @gandalf
+
+[Compare changes](https://github.com/LerianStudio/ring/compare/ring-pm-team@0.25.1...ring-pm-team@0.26.0)
+
+---
+
+## [0.26.0](https://github.com/LerianStudio/ring/releases/tag/ring-pm-team@0.26.0)
+
+- **Features**
   - Replace single multiplier with layered calculation model in delivery planning (#385)
 
 Contributors: @fred, @gandalf
