@@ -40,7 +40,7 @@ skip_when: |
   - Target codebase is Ring itself (no lib-commons dependency)
 
 related:
-  similar: [ring:using-dev-team, ring:dev-refactor, ring:production-readiness-audit]
+  similar: [ring:using-dev-team, ring:dev-refactor, ring:production-readiness-audit, ring:using-runtime, ring:using-assert]
 ---
 
 # ring:using-lib-commons
@@ -1112,6 +1112,8 @@ reliability baseline.
 > — silent goroutine crashes are the highest-signal reliability defect this sweep
 > catches.
 
+> **Scope note:** This is the breadth-first single-angle sweep. For a dedicated 6-angle deep audit of commons/runtime (naked goroutines, unobservable recover, missing InitPanicMetrics, production mode, framework integration, policy mismatch), dispatch `ring:using-runtime` in Sweep Mode.
+
 ---
 
 #### Angle 16: Assertions DIY
@@ -1163,6 +1165,8 @@ if err := a.DebitsEqualCredits(ctx, debits, credits); err != nil {
 > invariant checks that return errors without metric emission. For each finding record
 > file:line and the invariant being checked. Severity HIGH — panics crash services,
 > silent invariant violations corrupt state.
+
+> **Scope note:** This is the breadth-first single-angle sweep. For a dedicated 6-angle deep audit of commons/assert (panic in non-test code, defensive checks without metrics, hand-rolled predicates, missing InitAssertionMetrics, test-only invariants, AssertionError unwrapping), dispatch `ring:using-assert` in Sweep Mode.
 
 ---
 
@@ -2321,6 +2325,8 @@ runtime.SetProductionMode(true)
 runtime.SetErrorReporter(myReporter) // optional
 ```
 
+**For deep patterns, framework integration, testing approaches, and a dedicated 6-angle audit mode for this package, see `ring:using-runtime`.**
+
 ### Assertions (`commons/assert`) — Defense-in-Depth Crown Jewel
 
 The `assert` package provides **production-grade runtime assertions** — not test assertions, not debug-only checks. These assertions are designed to remain **permanently enabled in production** and fire a **three-layer observability trident** on every failure:
@@ -2472,6 +2478,8 @@ if errors.As(err, &assertErr) {
 ```go
 assert.InitAssertionMetrics(tl.MetricsFactory)
 ```
+
+**For the full domain predicate catalog (double-entry, transaction state machine, financial validations), AssertionError unwrapping patterns, panic-vs-assert-vs-error decision tree, and a dedicated 6-angle audit mode for this package, see `ring:using-assert`.**
 
 ---
 

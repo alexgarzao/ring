@@ -266,7 +266,7 @@ Remember:
 - ring:sre (Structured logging, tracing, health checks, observability)
 - ring:ui-engineer (Wireframe-to-code, Design System compliance, UX criteria)
 
-**Skills (32):**
+**Skills (36):**
 
 *Cycle Orchestrators:*
 - ring:using-dev-team (this skill - plugin introduction and dispatch guide)
@@ -278,6 +278,7 @@ Remember:
 - ring:dev-implementation (Gate 0 - code implementation with TDD RED-GREEN phases)
 - ring:dev-delivery-verification — DEPRECATED: functionality merged into ring:dev-implementation Step 7 (Delivery Verification Exit Check). Do not dispatch directly.
 - ring:dev-validation (Gate 9 - validates acceptance criteria met, requires user approval)
+- ring:dev-verify-code (Atomic Go pre-merge verification - parallel static analysis + sequential integration/E2E, MERGE_READY or NEEDS_FIX verdict)
 
 *Infrastructure & DevOps:*
 - ring:dev-devops (Gate 1 - Docker, docker-compose, environment variables)
@@ -312,7 +313,10 @@ Remember:
 - ring:dev-service-discovery (Scans Go project for service/module/resource hierarchy)
 - ring:dev-dep-security-check (Audits dependency installations before execution)
 - ring:dev-llms-txt (Generates/audits llms.txt files per llmstxt.org spec)
+- ring:dev-licensing (Apply or switch license: Apache 2.0, Elastic v2, or Lerian Proprietary - updates LICENSE, SPDX headers, source files)
 - ring:using-lib-commons (Reference for lib-commons v5.0.2, Lerian shared Go library)
+- ring:using-runtime (Deep reference + 6-angle audit for commons/runtime: panic recovery, SafeGo, observability trident)
+- ring:using-assert (Deep reference + 6-angle audit for commons/assert: domain predicates, financial invariants, AssertionError patterns)
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-dev-team plugin.
 
