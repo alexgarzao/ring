@@ -1861,7 +1861,7 @@ Sub-skills read from this cache instead of calling WebFetch themselves.
      - `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript/multi-tenant.md`
 3. `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md`
 4. `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md`
-5. `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/migration-safety.md` (if SQL migrations detected in project)
+5. `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/migration-safety.md` (if SQL migrations detected in project)
 
 **Protocol:**
 
