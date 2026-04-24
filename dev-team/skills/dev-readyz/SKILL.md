@@ -8,12 +8,6 @@ description: |
   graceful-drain coupling, circuit-breaker integration, and multi-tenant carve-out — then
   runs 10 parallel reviewers and generates an operator activation guide.
 
-  Origin: Monetarie SaaS incident — product-console started successfully but MongoDB was
-  silently unreachable (TLS mismatch with DocumentDB). K8s liveness passed, traffic routed,
-  clients hit errors. Two subsequent dogfood audits found /readyz implementations that
-  independently reinvented anti-patterns (response caching, substring TLS detection,
-  `/ready` alias paths, missing metrics). This skill ensures those failure modes never
-  reappear.
 
 trigger: |
   - New service being created
@@ -34,10 +28,10 @@ prerequisites: |
   - One or more external dependencies (DB, cache, queue, S3, HTTP upstream)
 
 NOT_skip_when: |
-  - "K8s TCP probe is enough" → TCP ≠ app ready. Monetarie proved it.
+  - "K8s TCP probe is enough" → TCP ≠ app ready. A passing TCP probe does not verify dependency reachability.
   - "/health already exists" → /health without self-probe = blind. /readyz validates ALL deps.
-  - "TLS check is overkill" → TLS mismatch = silent failure. This incident exists because of it.
-  - "Frontend doesn't need /readyz" → Console IS the product that broke. Every app needs it.
+  - "TLS check is overkill" → TLS mismatch = silent failure. Non-TLS connections in SaaS mode are a security and reliability risk.
+  - "Frontend doesn't need /readyz" → Frontends connect to databases and upstream services. Every app with deps needs /readyz.
   - "We'll add checks later" → Later = client-facing incident. Add now.
   - "Service is simple" → Simple services still connect to databases. No exceptions.
   - "We'll cache readyz to reduce load" → Caching defeats freshness. FORBIDDEN.
@@ -337,7 +331,7 @@ MUST report all severities. CRITICAL: STOP immediately. HIGH: Fix before gate pa
 
 | User Says | This Is | Response |
 |-----------|---------|----------|
-| "K8s TCP probe is enough, skip /readyz" | COMPLIANCE_BYPASS | "TCP ≠ app ready. Monetarie incident: pod alive, Mongo unreachable. Gate 2 is MANDATORY." |
+| "K8s TCP probe is enough, skip /readyz" | COMPLIANCE_BYPASS | "TCP ≠ app ready. A pod can be alive while its database is unreachable. Gate 2 is MANDATORY." |
 | "/health already exists, we're fine" | COMPLIANCE_BYPASS | "/health without self-probe is blind. /readyz validates deps. Both are MANDATORY." |
 | "We'll add metrics later" | QUALITY_BYPASS | "Metrics are NON-NEGOTIABLE. Readyz without metrics is operationally blind. Gate 5 is MANDATORY." |
 | "Cache /readyz for 5s to reduce load" | COMPLIANCE_BYPASS | "FORBIDDEN. Cache TTL + probe interval = blind window. Live checks are O(ms). Anti-pattern #1." |
@@ -346,7 +340,7 @@ MUST report all severities. CRITICAL: STOP immediately. HIGH: Fix before gate pa
 | "`strings.Contains(uri, \"tls=true\")` works" | COMPLIANCE_BYPASS | "Substring match fails on URL-encoded params. MUST use `url.Parse`. Anti-pattern #4." |
 | "Let's reflect on the live connection for TLS" | COMPLIANCE_BYPASS | "`amqp.Connection` does not reliably expose TLS after dial. URL scheme only. Anti-pattern #5." |
 | "Inline TLS check at each connection is clearer" | QUALITY_BYPASS | "Scattered checks drift. One miss = silent SaaS insecure start. Centralized `ValidateSaaSTLS()`. Anti-pattern #6." |
-| "Frontend doesn't need /readyz" | SCOPE_REDUCTION | "Console IS the product that broke (Monetarie). Every app with deps needs /readyz. MANDATORY." |
+| "Frontend doesn't need /readyz" | SCOPE_REDUCTION | "Frontends connect to databases and upstream services. Every app with deps needs /readyz. MANDATORY." |
 | "Existing /readyz is fine, skip compliance audit" | COMPLIANCE_BYPASS | "Existence ≠ compliance. Gate 0 Phase 2 runs S1-S9 audit. Partial compliance = NON-COMPLIANT." |
 | "process.exit() on probe fail in Next.js" | COMPLIANCE_BYPASS | "Prevents K8s log tail collection. Use module-level flag + 503 on /readyz. Anti-pattern #7." |
 | "Skip self-probe, /readyz covers it" | QUALITY_BYPASS | "/readyz runs per-request; self-probe gates traffic BEFORE first request. Both MANDATORY." |
@@ -414,7 +408,7 @@ If invoked standalone (no input_schema fields):
 
 **"The service already has /readyz" is NOT a reason to skip any gate.**
 
-Two real-world dogfood audits (matcher, plugin-br-bank-transfer) found /readyz implementations that were each ~20%-80% compliant with the canonical contract. Common gaps: missing metrics, substring TLS detection, response caching, `/ready` alias, missing `ValidateSaaSTLS`, missing graceful-drain coupling.
+Prior audits have found /readyz implementations that were only ~20%-80% compliant with the canonical contract. Common gaps: missing metrics, substring TLS detection, response caching, `/ready` alias, missing `ValidateSaaSTLS`, missing graceful-drain coupling.
 
 Compliance verification requires EVIDENCE via Gate 0 Phase 2 (S1-S9 audit) and Phase 3 (anti-pattern detection). Partial compliance = NON-COMPLIANT.
 
@@ -885,7 +879,7 @@ HARD GATE: Zero substring-match TLS detection. Zero reflection-based TLS detecti
 
 ## Gate 4: SaaS TLS Enforcement (ValidateSaaSTLS)
 
-**Always executes. NON-NEGOTIABLE.** A service that starts silently without TLS in SaaS mode IS the Monetarie failure mode.
+**Always executes. NON-NEGOTIABLE.** A service that starts silently without TLS in SaaS mode can serve traffic against an insecure database connection — a silent, client-facing failure.
 
 **Dispatch `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` with context:**
 
@@ -979,7 +973,7 @@ HARD GATE: Zero substring-match TLS detection. Zero reflection-based TLS detecti
 | "Inline TLS check at each connection site is clearer" | Scattered checks drift. One miss = SaaS silently insecure. Anti-pattern #6. | **MUST extract to `ValidateSaaSTLS()`.** |
 | "Check TLS at runtime in /readyz, not startup" | Runtime check = connections already open with non-TLS. Too late. | **MUST run BEFORE connection opens, at bootstrap.** |
 | "Skip enforcement for byoc — customer decides" | byoc is non-SaaS, enforcement is opt-in. But skip = byoc path silently works same as saas. Keep `DEPLOYMENT_MODE` check strict. | **MUST enforce ONLY when DEPLOYMENT_MODE=saas.** |
-| "We'll add enforcement after the service is stable" | Shipping without enforcement = shipping the Monetarie failure mode. | **MANDATORY NOW. No deferral.** |
+| "We'll add enforcement after the service is stable" | Shipping without enforcement = shipping a silent TLS failure mode. | **MANDATORY NOW. No deferral.** |
 
 <block_condition>
 HARD GATE: ValidateSaaSTLS exists as single function. Called from bootstrap before connections. Zero scattered DEPLOYMENT_MODE checks. Integration test: DEPLOYMENT_MODE=saas + non-TLS DSN refuses to start.
@@ -989,7 +983,7 @@ HARD GATE: ValidateSaaSTLS exists as single function. Called from bootstrap befo
 
 ## Gate 5: Metrics Emission
 
-**Always executes. NON-NEGOTIABLE.** Two dogfood audits found /readyz implementations that met every other gate EXCEPT metrics. A blind /readyz is not a /readyz.
+**Always executes. NON-NEGOTIABLE.** Prior audits have found /readyz implementations that met every other gate EXCEPT metrics. A blind /readyz is not a /readyz.
 
 **Dispatch `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` with context:**
 
@@ -1427,7 +1421,7 @@ MUST include this context in ALL 10 reviewer dispatches:
 
 > **/READYZ IMPLEMENTATION REVIEW CONTEXT:**
 >
-> - Service is implementing the canonical /readyz contract. Origin: Monetarie SaaS incident (silent MongoDB TLS mismatch caused client-facing outage while K8s liveness passed).
+> - Service is implementing the canonical /readyz contract. Purpose: prevent silent dependency failures where K8s liveness passes but the application cannot reach its databases or upstream services.
 > - Response shape: `{status, checks: {<dep>: {status, latency_ms, tls, error?, reason?, breaker_state?}}, version, deployment_mode}`. 200 if healthy, 503 if any check is `down` or `degraded`.
 > - Status vocabulary (closed set): `up`/`down`/`degraded`/`skipped`/`n/a`. Aggregation: ANY `down`/`degraded` → 503.
 > - Mount path: `/readyz` (no aliases like `/ready`, `/health/ready`). Mounted BEFORE auth middleware.
@@ -1645,8 +1639,8 @@ Save to `docs/ring-dev-readyz/current-cycle.json` for resume support:
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "K8s TCP probe is enough" | TCP ≠ app ready. Monetarie incident: pod alive, Mongo dead. | **STOP. Implement /readyz (Gate 2).** |
-| "Existing /readyz is fine, skip the skill" | Existence ≠ compliance. Two dogfood audits found 20%-80%-compliant implementations. | **STOP. Run Gate 0 compliance audit. Every NON-COMPLIANT S-check → corresponding gate executes.** |
+| "K8s TCP probe is enough" | TCP ≠ app ready. A pod can be alive while its database is unreachable. | **STOP. Implement /readyz (Gate 2).** |
+| "Existing /readyz is fine, skip the skill" | Existence ≠ compliance. Prior audits found 20%-80%-compliant implementations. | **STOP. Run Gate 0 compliance audit. Every NON-COMPLIANT S-check → corresponding gate executes.** |
 | "Cache /readyz to reduce load" | Cache TTL + probe interval = blind window. Anti-pattern #1. | **STOP. FORBIDDEN. Remove cache layer.** |
 | "`/ready` and `/readyz` are the same thing" | K8s, Tenant Manager, dashboards target exact paths. Drift. Anti-pattern #2. | **STOP. Exact `/readyz`. No alias.** |
 | "Split /health into /live and /ready" | /readyz covers readiness. Split adds surface, no benefit. Anti-pattern #3. | **STOP. Single /health + /readyz.** |
@@ -1663,5 +1657,5 @@ Save to `docs/ring-dev-readyz/current-cycle.json` for resume support:
 | "Skip code review, readyz is simple" | Silent failure modes are this skill's whole motivation. | **STOP. 10 reviewers MANDATORY (Gate 9).** |
 | "Skip TDD, manual testing is enough" | MANDATORY: RED→GREEN→REFACTOR. Manual testing does not count. | **STOP. TDD required for gates 2-8.** |
 | "DEPLOYMENT_MODE is runtime, not startup" | TLS enforcement must run BEFORE connections open. Runtime is too late. | **STOP. ValidateSaaSTLS at bootstrap.** |
-| "Frontend doesn't need /readyz" | Console caused Monetarie. Every app needs it. | **STOP. Gate 2 MANDATORY.** |
-| "We'll add [X] later" | "Later" = client-facing incident. This skill exists because of "later". | **STOP. Implement in the corresponding gate now.** |
+| "Frontend doesn't need /readyz" | Frontends connect to databases and upstream services. Every app with deps needs it. | **STOP. Gate 2 MANDATORY.** |
+| "We'll add [X] later" | "Later" = client-facing incident. Deferred readiness checks are silent failures waiting to happen. | **STOP. Implement in the corresponding gate now.** |
