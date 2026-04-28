@@ -67,6 +67,13 @@ The authoritative source of truth for lib-commons packages, APIs, and patterns i
 https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/using-lib-commons/SKILL.md
 ```
 
+**Version Resolution:** Always resolve the actual latest v5.x tag at runtime using:
+```bash
+gh api repos/LerianStudio/lib-commons/releases/latest --jq '.tag_name'
+# or
+git ls-remote --tags https://github.com/LerianStudio/lib-commons.git 'v5.*' | sort -V | tail -1
+```
+
 **Resolution protocol (MUST follow in this order):**
 
 1. **Cache hit.** If the dispatch prompt contains a `<standards>` block with a `<standard>` entry whose `url` matches the URL above and whose `<content>` is populated, use that content as the authoritative reference. No WebFetch needed.
@@ -507,8 +514,8 @@ Use the core output schema from [reviewer-output-schema-core.md](../../default/s
 **Recommendation:** [Specific fix]
 
 ### Version Consistency
-- `go.mod` version: `github.com/LerianStudio/lib-commons/v5 v5.0.2`
-- Organizational target: [from WebFetched skill frontmatter]
+- `go.mod` version: `github.com/LerianStudio/lib-commons/v5 <actual pinned version>`
+- Organizational target: latest v5.x (resolve via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`)
 - `replace` directives: [none / listed with severity]
 - Patch lag: [acceptable / flagged]
 
@@ -581,11 +588,11 @@ Diff reinvents connection-retry logic and uses deprecated v4 dispatch layer cont
 #### Deviation: dispatch layer/core.ContextWithTenantPG at internal/repo/account.go:45
 **Expected:** `tmcore.ContextWithPG(ctx, pg)` (v4.6.0+ variadic API)
 **Actual:** `tmcore.ContextWithTenantPG(ctx, pg)` (pre-v4.6.0, removed in v5)
-**Severity:** CRITICAL — will not compile on v5.0.2
+**Severity:** CRITICAL — will not compile on latest v5.x
 **Recommendation:** Replace with `tmcore.ContextWithPG(ctx, pg)`. For multi-module, use `tmcore.ContextWithPG(ctx, pg, "moduleName")`.
 
 ### Version Consistency
-- `go.mod` version: `github.com/LerianStudio/lib-commons/v5 v5.0.2` — MATCHES target
+- `go.mod` version: `github.com/LerianStudio/lib-commons/v5 <resolved latest v5.x>` — MATCHES target
 - No `replace` directives — OK
 
 ## Reinvented-Wheel Opportunities
@@ -633,7 +640,7 @@ Review failed: one deprecated API + two reinvented wheels. Skill loaded via WebF
 | Skill Loaded | PASS | Cache-miss → WebFetched `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/using-lib-commons/SKILL.md` |
 | API Usage Correctness | FAIL | `ContextWithTenantPG` is pre-v4.6.0 API |
 | Deprecated-API Freedom | FAIL | 1 deprecated API in `internal/repo/account.go:45` |
-| Version Consistency | PASS | `v5.0.2` matches target |
+| Version Consistency | PASS | `<resolved version>` matches latest v5.x target |
 | Opportunity Coverage | PASS | 2 opportunities detected (retry loop, bare goroutine) |
 | Initialization Order | PASS | Init sequence correct |
 | Financial-Path Escalation | PASS | Bare goroutine in financial path escalated to HIGH |

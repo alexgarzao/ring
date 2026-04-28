@@ -228,7 +228,7 @@ See [shared-patterns/standards-compliance-detection.md](../skills/shared-pattern
 
 **Example sections from golang.md to check:**
 
-- Core Dependency (lib-commons v5)
+- Core Dependency (lib-commons latest v5.x)
 - Configuration Loading
 - Logger Initialization
 - Telemetry/OpenTelemetry

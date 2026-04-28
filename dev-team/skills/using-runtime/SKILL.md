@@ -2,7 +2,7 @@
 name: ring:using-runtime
 description: |
   Dual-mode skill for commons/runtime — the panic observability trident inside
-  github.com/LerianStudio/lib-commons v5. Deep-dive companion to ring:using-lib-commons,
+  github.com/LerianStudio/lib-commons (latest v5.x). Deep-dive companion to ring:using-lib-commons,
   scoped entirely to the one package that turns silent goroutine deaths into
   observable production signal.
 
@@ -140,7 +140,7 @@ MANDATORY steps (orchestrator executes directly):
 1. **Read `go.mod`** at the target project root.
    - Extract the line matching `github.com/LerianStudio/lib-commons/vN` (or the
      unversioned module path if pre-v2).
-   - Capture the exact pinned version (e.g., `v5.0.2`, `v4.2.0`).
+   - Capture the exact pinned version (e.g., `v5.1.0`, `v4.2.0`).
    - If the dependency is absent, STOP and report: "Target is not a lib-commons consumer.
      Sweep not applicable."
 
@@ -150,7 +150,7 @@ MANDATORY steps (orchestrator executes directly):
    https://api.github.com/repos/LerianStudio/lib-commons/releases/latest
    ```
 
-   Extract `tag_name` (e.g., `v5.0.2`) and `published_at`.
+   Extract `tag_name` (the latest v5.x release) and `published_at`.
 
 3. **Compare versions** and flag drift:
 
@@ -721,7 +721,7 @@ section even if empty (use "None detected" placeholders).
 | Field                    | Value             |
 | ------------------------ | ----------------- |
 | Pinned version           | <v5.0.0>          |
-| Latest stable            | <v5.0.2>          |
+| Latest stable            | <resolved at runtime> |
 | Drift classification     | <minor-drift>     |
 | Major upgrade required   | <yes / no>        |
 | Module path              | <.../v5>          |
@@ -912,7 +912,7 @@ explorers receive extracts from these sections as context for their angle.
 
 ## 1. API Surface
 
-Full catalog of exported symbols in `commons/runtime` (lib-commons v5.0.2).
+Full catalog of exported symbols in `commons/runtime` (lib-commons latest v5.x).
 
 ### Goroutine Launchers
 
@@ -1603,7 +1603,7 @@ in recovered panics because the underlying code is drifting from its invariants.
 
 ## 9. Breaking Changes
 
-No API-breaking changes in `commons/runtime` across v4.2.0 → v5.0.2. The Go module
+No API-breaking changes in `commons/runtime` across v4.2.0 → v5.x. The Go module
 major-version bump v4 → v5 applies — imports change from
 `github.com/LerianStudio/lib-commons/v4/commons/runtime` to
 `github.com/LerianStudio/lib-commons/v5/commons/runtime`, but function signatures,

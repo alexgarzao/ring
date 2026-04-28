@@ -12,7 +12,7 @@ description: |
   identifies replacement opportunities with file:line precision, generates tasks compatible
   with ring:dev-cycle for batched fixes.
 
-  Reference Mode: Comprehensive catalog of commons/assert v5.0.2 — full API surface,
+  Reference Mode: Comprehensive catalog of commons/assert (latest v5.x) — full API surface,
   asserter lifecycle, instance method semantics, the complete domain predicate catalog
   (numeric, financial, transaction state machine, network, time), the observability trident
   (log + span event + metric), AssertionError unwrapping, decision tree for
@@ -134,7 +134,7 @@ MANDATORY steps (orchestrator executes directly):
 
 1. **Read `go.mod`** at the target project root.
    - Extract the line matching `github.com/LerianStudio/lib-commons/vN`.
-   - Capture the exact pinned version (e.g., `v5.0.2`, `v4.2.0`).
+   - Capture the exact pinned version (e.g., `v5.1.0`, `v4.2.0`).
    - If the dependency is absent, STOP and report: "Target is not a lib-commons consumer.
      Assert sweep not applicable."
 
@@ -144,7 +144,7 @@ MANDATORY steps (orchestrator executes directly):
    https://api.github.com/repos/LerianStudio/lib-commons/releases/latest
    ```
 
-   Extract `tag_name` (e.g., `v5.0.2`) and `published_at`.
+   Extract `tag_name` (the latest v5.x release) and `published_at`.
 
 3. **Compare versions** and flag drift:
 
@@ -769,7 +769,7 @@ section even if empty (use "None detected" placeholders).
 | Field                    | Value             |
 | ------------------------ | ----------------- |
 | Pinned version           | <v5.0.0>          |
-| Latest stable            | <v5.0.2>          |
+| Latest stable            | <resolved at runtime> |
 | Drift classification     | <minor-drift>     |
 | Major upgrade required   | <yes / no>        |
 | Module path              | <.../v5>          |
@@ -897,12 +897,12 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
 [
   {
     "id": "assert-sweep-001",
-    "title": "Upgrade lib-commons from v4.2.0 to v5.0.2",
+    "title": "Upgrade lib-commons from v4.2.0 to latest v5.x",
     "severity": "HIGH",
     "description": "Target service pins github.com/LerianStudio/lib-commons/v4 at v4.2.0. The commons/assert API surface is source-compatible across v4 → v5, but the module path bump requires updating all imports. All recommendations below assume v5 APIs are available. This task MUST complete before any other assert-sweep task lands.",
     "files_affected": ["go.mod", "go.sum", "<all Go files importing lib-commons/v4>"],
     "acceptance_criteria": [
-      "go.mod declares github.com/LerianStudio/lib-commons/v5 v5.0.2",
+      "go.mod declares github.com/LerianStudio/lib-commons/v5 at latest v5.x tag",
       "All imports updated from /v4 to /v5",
       "go build ./... passes",
       "go test ./... passes"
@@ -961,8 +961,9 @@ hand-rolled predicates) MUST be addressed before MEDIUM/LOW tiers.
 
 # REFERENCE MODE
 
-Sections 1–14 below catalog the `commons/assert` package at v5.0.2. Read the sections
-relevant to your current task. Sweep Mode explorers receive extracts from these sections
+Sections 1–14 below catalog the `commons/assert` package (latest v5.x). Resolve the
+actual version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`.
+Read the sections relevant to your current task. Sweep Mode explorers receive extracts from these sections
 as context for their angle.
 
 ## 1. API Surface
@@ -1910,17 +1911,17 @@ tight loops, request handlers, and message consumers.
 
 ## 14. Breaking Changes
 
-### v4.x → v5.0.2 (commons/assert)
+### v4.x → v5.x (commons/assert)
 
-No API-breaking changes in `commons/assert` across v4.2.0 → v5.0.2. All method
+No API-breaking changes in `commons/assert` across v4.2.0 → v5.x. All method
 signatures, predicate signatures, and error types are source-compatible.
 
 The module path bump from `github.com/LerianStudio/lib-commons/v4/...` to
 `github.com/LerianStudio/lib-commons/v5/...` applies. See `ring:using-lib-commons`
 Section 15 for the full module-bump migration checklist.
 
-### v5.0.1 / v5.0.2
+### v5.0.1+
 
-Patch releases — no API changes to `commons/assert`.
+Patch releases — no API changes to `commons/assert`. Check the latest v5.x tag for current patch level.
 
 ---

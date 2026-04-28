@@ -31,7 +31,7 @@ This module covers the foundational requirements for all Go projects.
 
 ## Core Dependency: lib-commons (MANDATORY)
 
-All Lerian Studio Go projects **MUST** use `lib-commons/v5` as the foundation library. This ensures consistency across all services.
+All Lerian Studio Go projects **MUST** use the latest v5.x release of `lib-commons/v5` as the foundation library. This ensures consistency across all services.
 
 ### Required Import (lib-commons v5)
 
@@ -1279,7 +1279,7 @@ module github.com/LerianStudio/your-service
 go 1.24
 
 require (
-    github.com/LerianStudio/lib-commons/v5 v5.0.2
+    github.com/LerianStudio/lib-commons/v5 v5.x.y  // use latest v5.x tag
     github.com/gofiber/fiber/v2 v2.52.0
     github.com/jackc/pgx/v5 v5.5.0
 )

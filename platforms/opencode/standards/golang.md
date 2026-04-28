@@ -54,7 +54,7 @@ This file defines the specific standards for Go development at Lerian Studio.
 
 ## Core Dependency: lib-commons (MANDATORY)
 
-All Lerian Studio Go projects **MUST** use `lib-commons/v5` as the foundation library. This ensures consistency across all services.
+All Lerian Studio Go projects **MUST** use the latest v5.x release of `lib-commons/v5` as the foundation library. This ensures consistency across all services. Resolve the actual latest tag using `gh api repos/LerianStudio/lib-commons/releases/latest --jq '.tag_name'` instead of hardcoding specific patch versions.
 
 ### Required Import (lib-commons v5)
 
@@ -113,7 +113,7 @@ import (
 
 | Library | Minimum Version | Purpose |
 |---------|-----------------|---------|
-| `lib-commons` | v5.0.2 | Core infrastructure |
+| `lib-commons` | latest v5.x (resolve via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`) | Core infrastructure |
 | `fiber/v2` | v2.52.0 | HTTP framework |
 | `pgx/v5` | v5.7.0 | PostgreSQL driver |
 | `go.opentelemetry.io/otel` | v1.42.0 | Telemetry |

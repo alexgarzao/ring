@@ -108,7 +108,7 @@ Multi-tenant support requires **lib-commons v5** (`github.com/LerianStudio/lib-c
 | **v2** (`lib-commons/v2`) | Not available | N/A — no `dispatch layer` package |
 | **v3** (`lib-commons/v3`) | Legacy | Same sub-packages as v5 but without `dispatch layer/cache`. Upgrade to v5. |
 | **v4** (`lib-commons/v4`) | Legacy | Superseded by v5. Upgrade to v5. |
-| **v5** (`lib-commons/v5`) | Full support (current) | `github.com/LerianStudio/lib-commons/v5/commons/dispatch layer/...` (sub-packages: `core`, `client`, `cache`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains `TenantMiddleware` with `WithPG`/`WithMB` variadic options that handle both single-module and multi-module services. Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
+| **v5** (`lib-commons/v5`) | Full support (check latest tag) | `github.com/LerianStudio/lib-commons/v5/commons/dispatch layer/...` (sub-packages: `core`, `client`, `cache`, `postgres`, `mongo`, `middleware`, `rabbitmq`, `consumer`, `valkey`, `s3`). The `middleware` sub-package contains `TenantMiddleware` with `WithPG`/`WithMB` variadic options that handle both single-module and multi-module services. Route-level composition uses a local `WhenEnabled` helper (not from lib-commons). |
 
 **Migration to v5:**
 
@@ -123,7 +123,7 @@ Services on lib-commons v2, v3, or v4 MUST upgrade to v5 before implementing mul
 git ls-remote --tags https://github.com/LerianStudio/lib-commons.git | grep "v5" | sort -V | tail -1
 
 # Update go.mod
-go get github.com/LerianStudio/lib-commons/v5@v5.0.2
+go get github.com/LerianStudio/lib-commons/v5@latest
 
 # Update import paths across the codebase (portable — works on macOS and Linux)
 # From v2:
