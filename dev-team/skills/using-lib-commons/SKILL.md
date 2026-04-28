@@ -128,7 +128,7 @@ MANDATORY steps (orchestrator executes directly):
 1. **Read `go.mod`** at the target project root.
    - Extract the line matching `github.com/LerianStudio/lib-commons/vN` (or the
      unversioned module path if pre-v2).
-   - Capture the exact pinned version (e.g., `v5.0.2`, `v4.2.0`).
+   - Capture the exact pinned version (e.g., `v5.1.0`, `v4.2.0`).
    - If the dependency is absent, STOP and report: "Target is not a lib-commons consumer.
      Sweep not applicable."
 
@@ -138,7 +138,7 @@ MANDATORY steps (orchestrator executes directly):
    https://api.github.com/repos/LerianStudio/lib-commons/releases/latest
    ```
 
-   Extract `tag_name` (e.g., `v5.0.2`) and `published_at`.
+   Extract `tag_name` (the latest v5.x release) and `published_at`.
 
 3. **Compare versions** and flag drift:
 
@@ -1504,7 +1504,7 @@ section even if empty (use "None detected" placeholders).
 | Field                    | Value             |
 | ------------------------ | ----------------- |
 | Pinned version           | <v5.0.0>          |
-| Latest stable            | <v5.0.2>          |
+| Latest stable            | <resolved at runtime> |
 | Drift classification     | <minor-drift>     |
 | Major upgrade required   | <yes / no>        |
 | Module path              | <.../v5>          |
@@ -1628,12 +1628,12 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
 [
   {
     "id": "libcommons-sweep-001",
-    "title": "Upgrade lib-commons from v4.2.0 to v5.0.2",
+    "title": "Upgrade lib-commons from v4.2.0 to latest v5.x",
     "severity": "HIGH",
-    "description": "Target service pins github.com/LerianStudio/lib-commons/v4 at v4.2.0. Latest stable is v5.0.2. Module path changes to v5 require go.mod update and import path rewrites. v5 introduces commons/webhook, commons/dlq, commons/certificate.Rotate, and tenant-manager subsystem — all unavailable in v4. This task MUST complete before any other sweep task lands (all recommendations below assume v5 APIs).",
+    "description": "Target service pins github.com/LerianStudio/lib-commons/v4 at v4.2.0. Resolve latest v5.x tag via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`. Module path changes to v5 require go.mod update and import path rewrites. v5 introduces commons/webhook, commons/dlq, commons/certificate.Rotate, and tenant-manager subsystem — all unavailable in v4. This task MUST complete before any other sweep task lands (all recommendations below assume v5 APIs).",
     "files_affected": ["go.mod", "go.sum", "<all Go files importing lib-commons>"],
     "acceptance_criteria": [
-      "go.mod declares github.com/LerianStudio/lib-commons/v5 v5.0.2",
+      "go.mod declares github.com/LerianStudio/lib-commons/v5 at latest v5.x tag",
       "All imports updated from /v4 to /v5",
       "go build ./... passes",
       "go test ./... passes",
@@ -1677,8 +1677,8 @@ before the HIGH/MEDIUM/LOW tier.
 
 # REFERENCE MODE
 
-Sections 1–15 below catalog lib-commons v5.0.2 packages, APIs, and initialization
-patterns. Read the sections relevant to your current task. Sweep Mode explorers receive
+Sections 1–15 below catalog lib-commons latest v5.x packages, APIs, and initialization
+patterns. Resolve the actual latest version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`. Read the sections relevant to your current task. Sweep Mode explorers receive
 extracts from these sections as context for their angle.
 
 ## 1. Package Catalog (Quick Reference)
@@ -3521,7 +3521,7 @@ Patch release — no API changes. Internal test improvements and minor fixes.
 
 | Change | Migration |
 |---|---|
-| **Go module major version bump** | Replace all `github.com/LerianStudio/lib-commons/v4/...` imports with `github.com/LerianStudio/lib-commons/v5/...`. Update `go.mod` to require `v5.0.2` (or latest). Run `go mod tidy`. |
+| **Go module major version bump** | Replace all `github.com/LerianStudio/lib-commons/v4/...` imports with `github.com/LerianStudio/lib-commons/v5/...`. Update `go.mod` to require the latest v5.x tag (resolve via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`). Run `go mod tidy`. |
 | **Minimum Go version** | Now `go 1.25` — update your service's `go.mod` if it was on an older Go toolchain. |
 
 #### New Packages

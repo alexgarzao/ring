@@ -323,7 +323,7 @@ Remember:
 - ring:dev-dep-security-check (Audits dependency installations before execution)
 - ring:dev-llms-txt (Generates/audits llms.txt files per llmstxt.org spec)
 - ring:dev-licensing (Apply or switch license: Apache 2.0, Elastic v2, or Lerian Proprietary - updates LICENSE, SPDX headers, source files)
-- ring:using-lib-commons (Reference for lib-commons v5.0.2, Lerian shared Go library)
+- ring:using-lib-commons (Reference for lib-commons latest v5.x, Lerian shared Go library)
 - ring:using-runtime (Deep reference + 6-angle audit for commons/runtime: panic recovery, SafeGo, observability trident)
 - ring:using-assert (Deep reference + 6-angle audit for commons/assert: domain predicates, financial invariants, AssertionError patterns)
 

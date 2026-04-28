@@ -113,7 +113,7 @@ import (
 
 | Library | Minimum Version | Purpose |
 |---------|-----------------|---------|
-| `lib-commons` | v5.0.2 | Core infrastructure |
+| `lib-commons` | latest v5.x (resolve via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`) | Core infrastructure |
 | `fiber/v2` | v2.52.0 | HTTP framework |
 | `pgx/v5` | v5.7.0 | PostgreSQL driver |
 | `go.opentelemetry.io/otel` | v1.42.0 | Telemetry |
