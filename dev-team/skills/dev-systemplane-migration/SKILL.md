@@ -1,14 +1,14 @@
 ---
 name: ring:dev-systemplane-migration
 description: |
-  Systemplane migration orchestrator for Lerian Go services using lib-commons v5. Migrates services from
+  Systemplane migration orchestrator for Lerian Go services using lib-commons (latest v5.x). Migrates services from
   .env/YAML-based configuration of operational knobs (log levels, feature flags, rate limits, timeouts,
   worker intervals) to the v5 systemplane runtime config client — a database-backed, hot-reloadable plane
   using Postgres LISTEN/NOTIFY or MongoDB change streams. v5 API surface: systemplane.NewPostgres /
   NewMongoDB → Register keys → Start → Get*/OnChange → admin.Mount with custom authorizer. Detects v4
   residue (Supervisor, BundleFactory, ApplyBehavior, SYSTEMPLANE_* env vars — all DELETED in v5.0.0) and
-  fails hard until removed. Each implementation gate dispatches ring:backend-engineer-golang. Loads v5
-  systemplane package docs via WebFetch of lib-commons repo commons/systemplane/doc.go.
+  fails hard until removed. Each implementation gate dispatches ring:backend-engineer-golang. Loads latest
+  v5 systemplane package docs via WebFetch of lib-commons repo commons/systemplane/doc.go.
 
 trigger: |
   - User requests systemplane integration for a Go service
@@ -1310,7 +1310,7 @@ Save to `docs/ring-dev-systemplane-migration/current-cycle.json` for resume supp
 ```json
 {
   "cycle": "systemplane-migration",
-  "lib_commons_version": "v5.0.2",
+  "lib_commons_version": "<resolved at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`>",
   "backend": "postgres",
   "v4_residue_files_pending": 0,
   "keys_registered": 12,

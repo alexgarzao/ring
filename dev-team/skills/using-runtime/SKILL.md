@@ -2,7 +2,7 @@
 name: ring:using-runtime
 description: |
   Dual-mode skill for commons/runtime — the panic observability trident inside
-  github.com/LerianStudio/lib-commons v5. Deep-dive companion to ring:using-lib-commons,
+  github.com/LerianStudio/lib-commons (latest v5.x). Deep-dive companion to ring:using-lib-commons,
   scoped entirely to the one package that turns silent goroutine deaths into
   observable production signal.
 

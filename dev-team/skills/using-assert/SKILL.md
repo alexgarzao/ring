@@ -12,7 +12,7 @@ description: |
   identifies replacement opportunities with file:line precision, generates tasks compatible
   with ring:dev-cycle for batched fixes.
 
-  Reference Mode: Comprehensive catalog of commons/assert v5.0.2 — full API surface,
+  Reference Mode: Comprehensive catalog of commons/assert (latest v5.x) — full API surface,
   asserter lifecycle, instance method semantics, the complete domain predicate catalog
   (numeric, financial, transaction state machine, network, time), the observability trident
   (log + span event + metric), AssertionError unwrapping, decision tree for

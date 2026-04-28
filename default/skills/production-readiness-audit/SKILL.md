@@ -52,7 +52,7 @@ Use this skill when:
 | 3 | **Route Organization** | Hexagonal structure, handler construction, route registration |
 | 4 | **Bootstrap & Initialization** | Staged startup, cleanup handlers, graceful shutdown |
 | 5 | **Runtime Safety** | Panic recovery, production mode handling |
-| 28 | **Core Dependencies & Frameworks** | lib-commons v5, framework version minimums, no custom utility duplication |
+| 28 | **Core Dependencies & Frameworks** | lib-commons latest v5.x, framework version minimums, no custom utility duplication |
 | 29 | **Naming Conventions** | snake_case DB, camelCase JSON body, snake_case query params |
 | 30 | **Domain Modeling** | ToEntity/FromEntity, always-valid constructors, private fields + getters |
 | 35 | **Nil/Null Safety** | Type assertions, nil map/pointer/channel, null guards, API response consistency |
@@ -2916,7 +2916,7 @@ module github.com/company/project
 go 1.24
 
 require (
-    github.com/LerianStudio/lib-commons/v5 v5.0.2   // lib-commons present
+    github.com/LerianStudio/lib-commons/v5 v5.x.y   // lib-commons present (resolve latest v5.x tag)
     github.com/gofiber/fiber/v2 v2.52.x               // Fiber v2
     gorm.io/gorm v1.25.x                              // GORM
     github.com/go-playground/validator/v10 v10.x.x     // Validator

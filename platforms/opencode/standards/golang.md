@@ -54,7 +54,7 @@ This file defines the specific standards for Go development at Lerian Studio.
 
 ## Core Dependency: lib-commons (MANDATORY)
 
-All Lerian Studio Go projects **MUST** use `lib-commons/v5` as the foundation library. This ensures consistency across all services.
+All Lerian Studio Go projects **MUST** use the latest v5.x release of `lib-commons/v5` as the foundation library. This ensures consistency across all services. Resolve the actual latest tag using `gh api repos/LerianStudio/lib-commons/releases/latest --jq '.tag_name'` instead of hardcoding specific patch versions.
 
 ### Required Import (lib-commons v5)
 

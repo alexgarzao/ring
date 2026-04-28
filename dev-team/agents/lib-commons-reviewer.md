@@ -67,6 +67,13 @@ The authoritative source of truth for lib-commons packages, APIs, and patterns i
 https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/using-lib-commons/SKILL.md
 ```
 
+**Version Resolution:** Always resolve the actual latest v5.x tag at runtime using:
+```bash
+gh api repos/LerianStudio/lib-commons/releases/latest --jq '.tag_name'
+# or
+git ls-remote --tags https://github.com/LerianStudio/lib-commons.git 'v5.*' | sort -V | tail -1
+```
+
 **Resolution protocol (MUST follow in this order):**
 
 1. **Cache hit.** If the dispatch prompt contains a `<standards>` block with a `<standard>` entry whose `url` matches the URL above and whose `<content>` is populated, use that content as the authoritative reference. No WebFetch needed.

@@ -1,14 +1,14 @@
 ---
 name: ring:using-lib-commons
 description: |
-  Dual-mode skill for github.com/LerianStudio/lib-commons v5.0.2 — Lerian's shared Go library.
+  Dual-mode skill for github.com/LerianStudio/lib-commons — latest v5.x release. Lerian's shared Go library.
 
   Sweep Mode (primary): Dispatches 22 parallel explorer subagents to sweep any Lerian Go
   codebase for DIY implementations that should use lib-commons. Detects version drift,
   identifies replacement opportunities with file:line precision, generates tasks compatible
   with ring:dev-cycle for batched fixes.
 
-  Reference Mode: Comprehensive catalog of lib-commons v5.0.2 packages — database
+  Reference Mode: Comprehensive catalog of lib-commons (latest v5.x) packages — database
   connections, messaging, multi-tenancy, observability, security, resilience, HTTP tooling,
   event-driven tenant discovery, webhook delivery, dead-letter queues, idempotency, TLS
   certificate management. Load for API discovery and initialization patterns.
@@ -91,7 +91,7 @@ relevant catalog entries for its angle so it knows the target API surface.
 | 12| Root Package & Utilities         | Reference | App lifecycle, context helpers, business errors, UUID, env vars           |
 | 13| Cross-Cutting Patterns           | Reference | Patterns shared across all packages                                       |
 | 14| Which Package Do I Need?         | Reference | Decision tree for package selection                                       |
-| 15| Breaking Changes                 | Reference | Migration notes for v4.2.0 through v5.0.2                                 |
+| 15| Breaking Changes                 | Reference | Migration notes from v4.2.0 through latest v5.x                          |
 
 ---
 
