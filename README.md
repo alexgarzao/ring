@@ -6,7 +6,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** and **98 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **6 active plugins** and **100 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -21,7 +21,7 @@ Without Ring, AI assistants often:
 Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
-- **Providing 98 specialized skills** (24 core + 36 dev-team + 16 product planning + 7 FinOps regulatory + 6 technical writing + 9 PMO)
+- **Providing 100 specialized skills** (24 core + 37 dev-team + 17 product planning + 7 FinOps regulatory + 6 technical writing + 9 PMO)
 - **41 specialized agents** - 10 review/planning + 15 developer + 4 product research + 3 FinOps regulatory + 3 technical writing + 6 PMO
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
@@ -292,7 +292,7 @@ Run command → Paste output → Then claim
 No "should work" → Only "does work" with proof
 ```
 
-## 📚 All 96 Skills (Across 6 Plugins)
+## 📚 All 100 Skills (Across 6 Plugins)
 
 ### Core Skills (ring-default plugin - 24 skills)
 
@@ -338,7 +338,7 @@ No "should work" → Only "does work" with proof
 
 - `ring:production-readiness-audit` - 44-dimension production readiness audit; runs explorers in batches of up to 10, appends incrementally to a single report; output: scored report (0-430, max 440 with multi-tenant) with severity ratings. See [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md) for invocation and implementation details.
 
-### Developer Skills (ring-dev-team plugin - 36 skills)
+### Developer Skills (ring-dev-team plugin - 37 skills)
 
 **Orchestration & Refactoring (7):**
 
@@ -396,7 +396,7 @@ No "should work" → Only "does work" with proof
 
 > Frontend and backend dev-cycle workflows both use `ring:codereview` (core plugin) as the review gate.
 
-### Product Planning Skills (ring-pm-team plugin - 16 skills)
+### Product Planning Skills (ring-pm-team plugin - 17 skills)
 
 **Pre-Development Workflow (includes ring:using-pm-team + 9 gates):**
 
@@ -567,7 +567,7 @@ ring/                                  # Monorepo root
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 36 skills, 15 agents
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 37 skills, 15 agents
 │   └── agents/                      # 15 specialized developer agents
 │       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
 │       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
@@ -585,7 +585,7 @@ ring/                                  # Monorepo root
 │       ├── sre.md                           # Site reliability engineer (`ring:sre`)
 │       └── ui-engineer.md                   # UI component specialist (`ring:ui-engineer`)
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
-│   └── skills/                      # 16 pre-dev workflow skills
+│   └── skills/                      # 17 product planning skills
 │       └── pre-dev-*/              # PRD, TRD, API, Data, Tasks
 ├── finops-team/                     # FinOps Regulatory plugin (ring-finops-team)
 │   ├── skills/                      # 7 regulatory skills

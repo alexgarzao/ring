@@ -31,7 +31,7 @@
     },
     {
       "name": "ring-dev-team",
-      "description": "15 specialized developer agents + 36 development skills: Backend 10-gate dev cycle + Frontend 9-gate dev cycle (accessibility, visual, E2E, performance) + Frontend refactoring + whole-codebase simplification sweep + delivery verification + service discovery + cycle management. Go/TypeScript Backend specialists, DevOps Engineer, Frontend TypeScript specialist, Frontend Designer, QA Backend Analyst, QA Frontend Analyst, SRE, Multi-Tenant Reviewer, and lib-commons Reviewer. Complete development team coverage with TDD, observability, and security best practices.",
+      "description": "15 specialized developer agents + 37 development skills: Backend 10-gate dev cycle + Frontend 9-gate dev cycle (accessibility, visual, E2E, performance) + Frontend refactoring + whole-codebase simplification sweep + delivery verification + service discovery + cycle management + lib-streaming end-to-end instrumentation. Go/TypeScript Backend specialists, DevOps Engineer, Frontend TypeScript specialist, Frontend Designer, QA Backend Analyst, QA Frontend Analyst, SRE, Multi-Tenant Reviewer, and lib-commons Reviewer. Complete development team coverage with TDD, observability, and security best practices.",
       "version": "1.64.1",
       "source": "./dev-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/dev-team",
@@ -63,7 +63,7 @@
     },
     {
       "name": "ring-pm-team",
-      "description": "Product team workflow: 16 skills + 4 research agents. Pre-dev planning with 5-gate (small features) and 10-gate (large features) orchestrators, delivery roadmap generation, plus delivery status tracking for evidence-based progress reporting. Includes parallel research agents, specialized code analysis, and Product Designer.",
+      "description": "Product team workflow: 17 skills + 4 research agents. Pre-dev planning with 5-gate (small features) and 10-gate (large features) orchestrators, delivery roadmap generation, delivery status tracking for evidence-based progress reporting, plus standalone streaming-event-mapping discovery. Includes parallel research agents, specialized code analysis, and Product Designer.",
       "version": "0.26.0",
       "source": "./pm-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pm-team",

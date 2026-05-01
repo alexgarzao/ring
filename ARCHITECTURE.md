@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **6 active plugins** (98 skills, 41 agents). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **6 active plugins** (100 skills, 41 agents). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
 
 ### Architecture Philosophy
 
@@ -33,12 +33,12 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(23) Agents(10)│  │ Skills(36) Agents(15)│                       │  │
+│  │  │ Skills(24) Agents(10)│  │ Skills(37) Agents(15)│                       │  │
 │  │  │ Hooks/Lib            │  │                      │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-pm-team         │  │ ring-tw-team         │                       │  │
-│  │  │ Skills(16) Agents(4) │  │ Skills(6) Agents(3)  │                       │  │
+│  │  │ Skills(17) Agents(4) │  │ Skills(6) Agents(3)  │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-finops-team     │  │ ring-pmo-team        │                       │  │
@@ -73,9 +73,9 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
 | **ring-default**     | Core skills library                  | 24 skills, 10 agents              |
-| **ring-dev-team**    | Developer agents                     | 36 skills, 15 agents              |
+| **ring-dev-team**    | Developer agents                     | 37 skills, 15 agents              |
 | **ring-finops-team** | FinOps regulatory compliance         | 7 skills, 3 agents               |
-| **ring-pm-team**     | Product planning workflows           | 16 skills, 4 agents               |
+| **ring-pm-team**     | Product planning workflows           | 17 skills, 4 agents               |
 | **ring-pmo-team**    | PMO portfolio management specialists | 9 skills, 6 agents                |
 | **ring-tw-team**     | Technical writing specialists        | 6 skills, 3 agents                |
 
@@ -719,12 +719,12 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | ------------------------- | ---------- | ---------------------- |
 | Active Plugins            | 6          | All plugin directories |
 | Skills (ring-default)     | 24         | `default/skills/`      |
-| Skills (ring-dev-team)    | 36         | `dev-team/skills/`     |
+| Skills (ring-dev-team)    | 37         | `dev-team/skills/`     |
 | Skills (ring-finops-team) | 7          | `finops-team/skills/`  |
-| Skills (ring-pm-team)     | 16         | `pm-team/skills/`      |
+| Skills (ring-pm-team)     | 17         | `pm-team/skills/`      |
 | Skills (ring-pmo-team)    | 9          | `pmo-team/skills/`     |
 | Skills (ring-tw-team)     | 6          | `tw-team/skills/`      |
-| **Total Skills**          | **98**     | **All plugins**        |
+| **Total Skills**          | **100**    | **All plugins**        |
 | Agents (ring-default)     | 10         | `default/agents/`      |
 | Agents (ring-dev-team)    | 15         | `dev-team/agents/`     |
 | Agents (ring-finops-team) | 3          | `finops-team/agents/`  |

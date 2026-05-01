@@ -1,8 +1,9 @@
 ---
 name: ring:using-pm-team
 description: |
-  12 pre-dev workflow skills + 4 research agents organized into Small Track (4 gates, <2 days) and
-  Large Track (9 gates, 2+ days) for systematic feature planning with research-first approach.
+  12 pre-dev workflow skills + 1 standalone discovery skill + 4 research agents organized into
+  Small Track (4 gates, <2 days) and Large Track (9 gates, 2+ days) for systematic feature
+  planning with research-first approach.
 
 trigger: |
   - Starting any feature implementation
@@ -287,7 +288,7 @@ These requirements are NON-NEGOTIABLE:
 - ring:framework-docs-researcher (Tech stack analysis - detects stack and fetches framework documentation)
 - ring:product-designer (UX research, user validation, design specifications for features)
 
-**Skills (15):**
+**Skills (17):**
 
 *Workflow Orchestrators:*
 - ring:using-pm-team (this skill - plugin introduction and workflow guide)
@@ -315,6 +316,9 @@ These requirements are NON-NEGOTIABLE:
 
 *Post-Planning:*
 - ring:delivery-status (Evidence-based progress tracking against delivery roadmap)
+
+*Standalone Discovery:*
+- ring:streaming-event-mapping (Three-pass discovery skill that maps eventable points in a Lerian Go service codebase; outputs event-catalog.md for PM validation and instrumentation-map.json for handoff to ring:dev-streaming-instrumentation)
 
 **Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-pm-team plugin.
 
