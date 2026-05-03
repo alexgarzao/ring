@@ -103,10 +103,8 @@ PASS: TestSpecificBehavior (0.003s)
 ```
 
 **Step 5: Commit**
-```bash
-git add path/to/file.go path/to/file_test.go
-git commit -m "feat: add specific feature"
-```
+
+Use `ring:commit` skill to stage and commit changes.
 
 **If Task Fails:**
 1. Test won't compile → Check imports and file paths
@@ -122,10 +120,7 @@ Insert after every 3-5 tasks:
 ### Task N: Code Review
 
 1. **REQUIRED SUB-SKILL:** Use ring:codereview — dispatch all reviewers in parallel
-2. **Handle findings by severity:**
-   - Critical/High/Medium: fix immediately, re-run review until zero remain
-   - Low: add `TODO(review): [description] (severity: Low)` at the relevant location
-   - Cosmetic: add `FIXME(nitpick): [description]` at the relevant location
+2. **Handle findings by severity:** see ring:codereview severity rules
 3. **Proceed only when:** zero Critical/High/Medium issues remain
 ```
 
@@ -238,10 +233,8 @@ PASS: TestTransactionService_GetByID_NotFound (0.001s)
 ```
 
 **Step 5: Commit**
-```bash
-git add internal/service/transaction_service.go internal/service/transaction_service_test.go
-git commit -m "feat: add GetTransactionByID service method"
-```
+
+Use `ring:commit` skill to stage and commit changes.
 
 **If Task Fails:**
 1. Compile errors → check `go build ./...` for missing imports

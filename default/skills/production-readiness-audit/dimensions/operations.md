@@ -77,7 +77,7 @@ func (c *Consumer) Handle(msg *Message) error {
 }
 
 // Trace sampling configuration
-func initCore three(env string) *trace.Core threeProvider {
+func initTracerProvider(env string) *trace.TracerProvider {
     var sampler trace.Sampler
     switch env {
     case "production":
@@ -118,7 +118,7 @@ func (c *Consumer) Handle(msg *Message) error {
 }
 
 // BAD: No sampling configuration (AlwaysSample in production)
-func initCore three() *trace.Core threeProvider {
+func initTracerProvider() *trace.TracerProvider {
     return trace.NewCore threeProvider()  // Default: AlwaysSample — 100% of traces stored
 }
 ```

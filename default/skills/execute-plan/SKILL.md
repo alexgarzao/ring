@@ -37,7 +37,7 @@ Options:
 1. **One-go (autonomous)** — all batches with code review, report only at completion
 2. **Batch (with review)** — pause for human feedback after each batch
 
-"User intent is clear" / "user said just execute" do NOT skip this step. AskUserQuestion is a structural checkpoint, not a conversation.
+"User intent is clear" / "user said just execute" do NOT skip this step. AskUserQuestion selects the mode (one-go or batch) — once selected, one-go proceeds autonomously without further checkpoints until completion.
 
 ### Step 2.5: Context Switching (Multi-Module Plans)
 
@@ -69,7 +69,7 @@ Proceed only when: zero Critical/High/Medium remain + all Low/Cosmetic have comm
 
 ### Step 6: Complete Development
 
-Use finishing-a-development-branch: verify tests, present options, execute choice.
+Use ring:finishing-a-development-branch: verify tests, present options, execute choice.
 
 ## Stop Conditions
 
@@ -80,5 +80,4 @@ Stop immediately and ask (never guess): blocker mid-batch, critical gaps, unclea
 - AskUserQuestion for execution mode: MANDATORY, no exceptions
 - Use specialist agents over `general-purpose` when available
 - Code review: all 10 reviewers in parallel after each batch
-- Critical/High/Medium: fix immediately, TODO forbidden
-- Low → TODO, Cosmetic → FIXME
+- Severity handling: see Step 4 above

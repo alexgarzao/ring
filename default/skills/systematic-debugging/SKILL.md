@@ -12,11 +12,11 @@ trigger: |
 
 skip_when: |
   - Root cause already known → just fix it
-  - Error deep in call stack, need to trace backward → use root-cause-tracing
+  - Error deep in call stack, need to trace backward → use ring:root-cause-tracing
   - Issue obviously caused by your last change → quick verification first
 
 related:
-  complementary: [root-cause-tracing]
+  complementary: [ring:root-cause-tracing]
 ---
 
 # Systematic Debugging
@@ -36,7 +36,7 @@ Complete ALL before Phase 2:
 - [ ] Evidence gathered from ALL components (log at each boundary)
 - [ ] Data flow traced (origin → error)
 
-Error deep in stack → **use root-cause-tracing skill.**
+Error deep in stack → **use ring:root-cause-tracing skill.**
 
 **Phase 1 Summary:** Error: [exact] | Reproduces: [steps] | Recent changes: [commits] | Component evidence: [each layer] | Data origin: [source]
 
@@ -89,5 +89,5 @@ User signals: "Is that not happening?" → you assumed without verifying. "Stop 
 
 ## Sub-Skills
 
-- **root-cause-tracing** — When error is deep in call stack (Phase 1)
+- **ring:root-cause-tracing** — When error is deep in call stack (Phase 1)
 - **ring:test-driven-development** — For failing test case (Phase 4)

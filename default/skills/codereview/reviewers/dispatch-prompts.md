@@ -80,7 +80,7 @@ Task:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Check the changed code against ALL applicable sections.** Use the section index from `standards-coverage-table.md`.
 
@@ -153,7 +153,7 @@ Task:
     TypeScript:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Focus areas from these standards:** domain modeling invariants, aggregate boundaries, entity/value-object distinctions, API contract fidelity, request/response validation semantics.
 
@@ -224,7 +224,7 @@ Task:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript/multi-tenant.md
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Check ALL applicable sections from standards-coverage-table.md → ring:backend-engineer-golang:**
     - #15 Access Manager Integration (if auth code changed)
@@ -317,7 +317,7 @@ Task:
     TypeScript:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Focus areas from these standards:** unit test coverage thresholds, fuzz corpus quality, property invariants, integration test isolation, chaos injection patterns.
 
@@ -563,7 +563,7 @@ Task:
     Layer 2 runtime/infra (both languages):
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Focus sections:** `architecture.md` (Performance Patterns, Concurrency Patterns, N+1 Query Detection, Goroutine Leak Detection); `core.md` (Dependency Management); `bootstrap.md` (Connection Management, Graceful Shutdown); `sre.md` (Health Checks, Observability).
 
@@ -642,7 +642,7 @@ Task:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/dev-multi-tenant/SKILL.md
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/using-lib-commons/SKILL.md (for multitenancy package)
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Scope exclusions (do NOT review):**
     - OWASP generic concerns → delegated to ring:security-reviewer
@@ -714,7 +714,7 @@ Task:
     **Standards:** Loaded at runtime via WebFetch from:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/using-lib-commons/SKILL.md
 
-    See [`shared-patterns/standards-cache-protocol.md`](../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
     **Scope exclusions (do NOT review):**
     - lib-commons/multitenancy specifically → delegated to ring:multi-tenant-reviewer

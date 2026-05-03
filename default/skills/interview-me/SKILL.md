@@ -17,7 +17,7 @@ skip_when: |
   - Single question would suffice (use doubt-triggered-questions instead)
 
 sequence:
-  before: [brainstorm, ring:write-plan]
+  before: [ring:brainstorm, ring:write-plan]
 ---
 
 # Interviewing User for Requirements

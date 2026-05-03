@@ -10,11 +10,11 @@ trigger: |
   - Writing new production code
 
 skip_when: |
-  - Reviewing/modifying existing tests → use testing-anti-patterns
+  - Reviewing/modifying existing tests → use ring:testing-anti-patterns
   - Exploratory/spike work → consider brainstorm first
 
 related:
-  complementary: [testing-anti-patterns, ring:systematic-debugging]
+  complementary: [ring:testing-anti-patterns, ring:systematic-debugging]
 ---
 
 # Test-Driven Development (TDD)

@@ -50,7 +50,7 @@ A stream is independent if: files don't import each other, fixes won't conflict,
 
 ## Phase 3: Parallel Agent Dispatch
 
-**Single message with multiple Task calls** — one `general-purpose` agent per stream.
+**Single message with multiple Task calls** — one `ring:general-purpose` agent per stream.
 
 Each agent receives: scope (files/dirs), issues (file:line:col + message), constraints (from above).
 
@@ -81,7 +81,7 @@ After 5 iterations: report remaining issues and ask user.
 
 | Issue Type | Agent |
 |------------|-------|
-| TypeScript/JavaScript | `general-purpose` |
+| TypeScript/JavaScript | `ring:general-purpose` |
 | Go | `ring:backend-engineer-golang` |
 | Security lints | `ring:security-reviewer` for analysis first |
-| Style/formatting | `general-purpose` |
+| Style/formatting | `ring:general-purpose` |

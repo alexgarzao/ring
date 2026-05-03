@@ -174,7 +174,7 @@ Linux: xdg-open docs/audits/production-readiness-{YYYY-MM-DDTHH:MM:SS}-dashboard
 
 **Tell the user** the file path. The dashboard opens before the verbal summary.
 
-See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
+See [dev-team/skills/shared-patterns/anti-rationalization-visual-report.md](../../../../dev-team/skills/shared-patterns/anti-rationalization-visual-report.md) for anti-rationalization table.
 
 ### Step 13: Present Summary
 
@@ -265,7 +265,6 @@ STOP and report if:
 | Decision Type | Blocker Condition | Required Action |
 |---|---|---|
 | Stack Detection | Cannot detect project stack (no go.mod, package.json, etc.) | STOP and ask user to specify stack |
-| Standards Loading | WebFetch fails for critical Ring standards | STOP and report - audit requires standards as source of truth |
 | Batch Failure | Entire batch of agents fails to complete | STOP and report - investigate infrastructure issue |
 | Report File | Cannot write to docs/audits/ directory | STOP and report - ensure directory exists and is writable |
 

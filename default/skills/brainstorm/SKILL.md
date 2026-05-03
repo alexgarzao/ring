@@ -33,7 +33,7 @@ Transform rough ideas into fully-formed designs through structured questioning a
 
 **Run ALL of these and paste evidence:**
 ```bash
-ls -la && git log --oneline -10 && head -50 README.md
+ls -la && git log --oneline -10 && (cat README.md 2>/dev/null || echo "No README") | head -50
 find . -name "*test*" | wc -l
 cat package.json 2>/dev/null || cat go.mod 2>/dev/null || cat requirements.txt 2>/dev/null
 ```

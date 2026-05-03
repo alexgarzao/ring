@@ -50,8 +50,8 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 **⛔ FOUR-FILE UPDATE RULE:**
 
-1. Edit `dev-team/docs/standards/{stack}/{module}.md` - Add your `## Section Name` in the appropriate module
-2. **Update `_index.md`** - Add/update the module entry in `dev-team/docs/standards/{stack}/_index.md` with correct "Load When" description
+1. Edit `platforms/opencode/standards/{stack}/{module}.md` - Add your `## Section Name` in the appropriate module
+2. **Update `_index.md`** - Add/update the module entry in `platforms/opencode/standards/{stack}/_index.md` with correct "Load When" description
 3. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
 4. Edit `dev-team/agents/{agent}.md` - Verify agent references `_index.md` for selective loading (not inline categories)
 

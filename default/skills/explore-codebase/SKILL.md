@@ -1,9 +1,9 @@
 ---
 name: ring:explore-codebase
 description: |
-  Autonomous two-phase codebase exploration - first discovers natural perspectives
-  (layers, components, boundaries), then dispatches adaptive deep-dive explorers
-  based on what was discovered. Synthesizes findings into actionable insights.
+  Autonomous multi-phase codebase exploration - scopes the target, discovers natural
+  perspectives (layers, components, boundaries), dispatches adaptive deep-dive explorers
+  based on what was discovered, then synthesizes findings into actionable insights.
 
 trigger: |
   - Need to understand how a feature/system works across the codebase
@@ -23,11 +23,11 @@ related:
   sequence_before: [ring:write-plan, ring:execute-plan]
 ---
 
-# Autonomous Two-Phase Codebase Exploration
+# Autonomous Multi-Phase Codebase Exploration
 
-Two-phase approach: **Phase 1 discovers** the natural structure of the codebase, **Phase 2 deep-dives** into each discovered area in parallel.
+Multi-phase approach: **Phase 0 scopes** the target, **Phase 1 discovers** the natural structure of the codebase, **Phase 2 deep-dives** into each discovered area in parallel, **Phase 3 collects** results, and **Phase 4 synthesizes** findings.
 
-**Announce at start:** "Using ring:explore-codebase for two-phase autonomous exploration."
+**Announce at start:** "Using ring:explore-codebase for multi-phase autonomous exploration."
 
 ## How It Works
 
