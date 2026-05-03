@@ -161,7 +161,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: securego/gosec@master
+      - uses: securego/gosec@v2.21.4
         with:
           args: ./...
 ```
@@ -432,7 +432,7 @@ logs: ## Tail local dependency logs
 
 setup: ## Initial project setup
 	go mod download
-	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/swaggo/swag/cmd/swag@v1.16.4
 
 migrate: ## Run database migrations
 	migrate -path migrations -database "$$DATABASE_URL" up

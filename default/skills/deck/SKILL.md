@@ -52,7 +52,7 @@ MUST NOT ask about tokens, fonts, layout, runtime, export — those are fixed by
 ### Phase 3: Scaffold Project
 
 Compute substitution variables first:
-- `DECK_TITLE` = user-supplied title verbatim (HTML-escape `<`, `>`, `&`)
+- `DECK_TITLE` = user-supplied title verbatim (HTML-escape `&`, `<`, `>`, `"`, and `'` as `&amp;` `&lt;` `&gt;` `&quot;` `&#39;`)
 - `DECK_NAME` = kebab-cased: `DECK_TITLE.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')`
 - `YEAR` = current 4-digit year
 - `COPYRIGHT_HOLDER` = "Lerian Studio" (unless user specifies otherwise)

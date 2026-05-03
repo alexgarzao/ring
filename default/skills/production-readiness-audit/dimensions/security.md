@@ -31,20 +31,10 @@ protected := func(resource, action string) fiber.Router {
 // All routes use protected
 protected("contexts", "create").Post("/v1/config/contexts", handler.Create)
 
-// JWT validation
-func parseTokenClaims(tokenString string, secret []byte) (jwt.MapClaims, error) {
-    parser := jwt.NewParser(jwt.WithValidMethods(validSigningMethods))
-    token, err := parser.ParseWithClaims(...)
-    if err != nil || !token.Valid {
-        return nil, ErrInvalidToken
-    }
-    // Check expiration
-    if exp, ok := claims["exp"].(float64); ok {
-        if time.Now().Unix() > int64(exp) {
-            return nil, ErrTokenExpired
-        }
-    }
-    return claims, nil
+// JWT validation via lib-auth (MANDATORY — do not use custom JWT parsing)
+claims, err := auth.ValidateAndExtractClaims(tokenString)
+if err != nil {
+    return nil, ErrInvalidToken
 }
 ```
 

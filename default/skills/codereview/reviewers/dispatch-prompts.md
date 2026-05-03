@@ -28,8 +28,8 @@ Task:
     [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
 
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
     
     ## What Was Implemented
     [implementation_summary]
@@ -615,8 +615,8 @@ Task:
     [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
 
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]
@@ -690,8 +690,8 @@ Task:
     [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
 
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]

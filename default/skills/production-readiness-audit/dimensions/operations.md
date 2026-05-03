@@ -31,12 +31,15 @@ func (h *Handler) DoSomething(c *fiber.Ctx) error {
 
     span.SetAttributes(attribute.String("request_id", headerID))
 
-    // On error
-    span.RecordError(err)
-    span.SetStatus(codes.Error, err.Error())
-    logger.Errorf("operation failed: %v", err)
+    result, err := doOperation(ctx)
+    if err != nil {
+        span.RecordError(err)
+        span.SetStatus(codes.Error, err.Error())
+        logger.Errorf("operation failed: %v", err)
+        return err
+    }
 
-    return err
+    return c.JSON(result)
 }
 ```
 

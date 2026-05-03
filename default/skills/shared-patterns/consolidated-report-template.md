@@ -751,7 +751,7 @@ MultiTenantCacheTTLSec                 int    `env:"MULTI_TENANT_CACHE_TTL_SEC" 
 MultiTenantConnectionsCheckIntervalSec int    `env:"MULTI_TENANT_CONNECTIONS_CHECK_INTERVAL_SEC" default:"30"`
 
 // TenantMiddleware with multi-module WithPG/WithMB options from lib-commons v5
-import tmmiddleware "github.com/LerianStudio/lib-commons/v5/commons/dispatch layer/middleware"
+import tmmiddleware "github.com/LerianStudio/lib-commons/v5/commons/tenant-manager/middleware"
 
 ttMiddleware := tmmiddleware.NewTenantMiddleware(
     tmmiddleware.WithPG(pgOnboardingManager, constant.ModuleOnboarding),
