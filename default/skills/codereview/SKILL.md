@@ -124,11 +124,13 @@ Send ALL Critical, High, Medium issues to implementation agent in one Task call.
 
 Generate HTML report via `Skill("ring:visualize")`. Save to `docs/codereview/review-report-{unit_id}.html`. Open in browser.
 
-Output: Review Summary (PASS), Issues by Severity table, Reviewer Verdicts table (10 rows), CodeRabbit status, Handoff to Gate 5.
+Output: Review Summary (PASS), Issues by Severity count table, **Aggregate Issues section with full per-issue details** (severity, description, file:line, reviewer, recommendation), Reviewer Verdicts table (10 rows), CodeRabbit status, Handoff to Gate 5.
+
+**⛔ The Aggregate Issues section MUST be populated with actual findings from reviewer output — not just counts. Collect all issues from `review_state.aggregated_issues` and emit one row per issue. If all reviewers passed with zero issues, emit: "No issues found across all 10 reviewers."**
 
 ## Step 9: Escalate — Max Iterations Reached
 
-Generate FAIL visual report. Output: unresolved issues, reviewer verdicts, `Ready for Gate 5: NO`, action required from user.
+Generate FAIL visual report. Output: unresolved issues (list ALL Critical/High/Medium with file:line, reviewer, and recommendation), reviewer verdicts, `Ready for Gate 5: NO`, action required from user.
 
 ## Completion Rules
 
@@ -153,6 +155,16 @@ Generate FAIL visual report. Output: unresolved issues, reviewer verdicts, `Read
 | High     | N |
 | Medium   | N |
 | Low      | N |
+
+## Aggregate Issues
+
+**⛔ MANDATORY: List every issue found across ALL reviewers with actual content. Never emit this section as empty or counts-only when issues exist.**
+
+| Severity | Description | File:Line | Reviewer | Recommendation |
+|----------|-------------|-----------|----------|----------------|
+| [CRITICAL/HIGH/MEDIUM/LOW] | [actual issue description] | [file:line] | [ring:xxx-reviewer] | [fix] |
+
+_If all reviewers PASSed with zero issues: "No issues found across all 10 reviewers."_
 
 ## Reviewer Verdicts
 | Reviewer | Verdict | Issues |

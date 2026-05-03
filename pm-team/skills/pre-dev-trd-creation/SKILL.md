@@ -25,6 +25,15 @@ sequence:
 
 The TRD defines HOW to architect the solution and WHERE components will live — using technology-agnostic patterns before concrete technology choices.
 
+## Handling Missing Information
+
+When specific details are not provided (tech stack, architecture, team size, deployment model, etc.):
+- Infer from project name, context, existing codebase patterns, and git history
+- Document assumptions explicitly in a `## Assumptions` section at the top of the TRD
+- **NEVER block execution to ask clarifying questions — assume and proceed**
+- Flag assumptions that carry high risk for the reader to validate (mark as `⚠️ Assumption:`)
+- The only valid exception: tech stack ambiguity in Step 0 when auto-detection fails and no codebase files exist to infer from
+
 ## Step -1: Design Validation Check (UI Features Only)
 
 Read PRD and detect UI indicators (user stories with "see", "view", "click", "page", "screen", "button", "form"; features involving login, dashboard, settings, reports, notifications).
