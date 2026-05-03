@@ -35,7 +35,7 @@ If TRD metadata missing → STOP: "Go back to TRD (Gate 3) and complete Step 0.4
 
 | Standard | URL |
 |----------|-----|
-| golang.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md` |
+| golang/_index.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/_index.md` |
 | typescript.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
 | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
 | devops.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |

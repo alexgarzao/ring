@@ -179,15 +179,3 @@ Write findings to `{output_dir or "docs/pmo/{date}"}`:
 - [Risk Summary](risk-summary.md)
 ```
 
----
-
-## Anti-Rationalization
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "I can do this analysis myself" | Specialists have PMO frameworks loaded | **Dispatch all 4 specialists** |
-| "Only review troubled projects" | Healthy projects can hide emerging issues | **Review ALL projects in scope** |
-| "Sequential dispatch is fine" | Parallel is faster, same quality | **Dispatch in parallel** |
-| "Portfolio is too small for full review" | Size doesn't determine complexity | **Run full review** |
-| "Governance check is optional" | Governance gaps cause downstream failures | **MUST include governance** |
-| "Risk assessment is obvious" | Obvious risks are the ones you miss | **Dispatch risk-analyst** |
