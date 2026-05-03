@@ -50,8 +50,9 @@ TARGET_SHA=$(git rev-parse --short TARGET_REF)
 ### Step 1.5: Version Detection
 ```bash
 # If TARGET_REF is a tag, extract version
+# Note: avoid /i flag (GNU-specific); use explicit case alternation for portability (macOS + Linux)
 if git tag -l "$TARGET_REF" | grep -q .; then
-    AUTO_VERSION=$(echo "$TARGET_REF" | sed -E 's/^(v|release[-_]?|version[-_]?)?//i')
+    AUTO_VERSION=$(echo "$TARGET_REF" | sed -E 's/^[Vv]//;s/^[Rr]elease[-_]?//;s/^[Vv]ersion[-_]?//')
 fi
 # Priority: explicit VERSION > auto-detected > none (omit from title)
 ```
@@ -143,11 +144,11 @@ Confirm after saving: file path(s), refs/SHAs used, version, language(s).
 
 | Rule | Requirement |
 |------|-------------|
-| No invented changes | Everything must be traceable to diff |
-| Uncertain info | Mark as ASSUMPTION + HOW TO VALIDATE |
-| Preview required | Always show before saving |
-| User confirmation | Always wait before writing files |
-| Special change types | DB migrations, breaking API, feature flags, security/auth, log level changes — all require explicit documentation |
+| No invented changes | MUST: All changes traceable to diff — nothing invented |
+| Uncertain info | MUST: Mark uncertain claims as ASSUMPTION + HOW TO VALIDATE |
+| Preview required | MUST: Show preview before saving — never skip |
+| User confirmation | MUST: Wait for explicit user confirmation before writing files |
+| Special change types | MUST: Explicitly document DB migrations, breaking API, feature flags, security/auth, log level changes |
 
 ## Blocker Conditions
 

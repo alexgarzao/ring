@@ -38,6 +38,8 @@ Analyze: what was explicitly stated, what the codebase implies, what remains amb
 
 ### Phase 2: Question Clustering
 
+> **Shared pattern:** For "when to ask vs proceed" criteria, genuine doubt definition, anti-patterns, and question quality guidelines, see [`shared-patterns/doubt-triggered-questions.md`](../shared-patterns/doubt-triggered-questions.md). This skill extends that pattern with structured multi-round interview flow.
+
 | Priority | Category | Criteria |
 |----------|----------|----------|
 | P0 | Blocking | Cannot proceed without answer |

@@ -94,7 +94,13 @@ Your job:
   1. Review CODE for issues in your domain
   2. For each existing comment in your domain: AGREE / CONTEST / ALREADY FIXED + justification
   3. Report NEW findings not covered by existing comments
-Output: ## New Findings (severity/file/line/description/recommendation) | ## Comment Evaluation
+Output: Follow the shared reviewer output contract defined in
+  shared-patterns/reviewer-output-schema-core.md.
+  Additional required section: ## Comment Evaluation
+    For each existing PR comment in your domain:
+    - AGREE: valid concern, describe why
+    - CONTEST: invalid/outdated, explain reasoning
+    - ALREADY FIXED: identify the commit/change that resolved it
 ```
 
 | Review Type | Agents |

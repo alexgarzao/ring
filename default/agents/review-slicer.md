@@ -51,16 +51,16 @@ Evaluate ALL available signals:
 2. Would full-diff cause context pollution? (reviewer wading through Helm charts to find an auth issue) → favors SLICE
 3. Is the overhead justified? (slicing multiplies reviewer dispatches — only worth it if quality measurably improves)
 
-## Decision Matrix (Guideline, Not Hard Gate)
+## Decision Matrix (REQUIRED: Apply These Rules)
 
-| Volume | Cohesion | Likely Decision |
+| Volume | Cohesion | REQUIRED Action |
 |--------|----------|----------------|
-| Low (5-8) | Any | No slice — overhead exceeds benefit |
-| Medium (8-20) | High | No slice — single logical change |
-| Medium (8-20) | Low | Slice — independent themes |
-| Medium (8-20) | Medium | Judgment call |
-| High (20-39) | High | Judgment call |
-| High (20-39) | Low/Medium | Slice |
+| Low (5-8) | Any | MUST NOT slice — overhead exceeds benefit |
+| Medium (8-20) | High | MUST NOT slice — single logical change |
+| Medium (8-20) | Low | MUST slice — independent themes |
+| Medium (8-20) | Medium | Judgment call (apply Phase 3 cost-benefit) |
+| High (20-39) | High | Judgment call (apply Phase 3 cost-benefit) |
+| High (20-39) | Low/Medium | MUST slice |
 
 ## Slicing Strategy
 
@@ -77,15 +77,15 @@ Evaluate ALL available signals:
 
 **Custom themes encouraged:** Name after what they represent semantically, not directories.
 
-### Co-Location Rules (NON-NEGOTIABLE)
+### Co-Location Rules (REQUIRED — NO EXCEPTIONS)
 
-Test files follow the slice of the production file they test. Strip `_test.go` / `.test.ts` / `.spec.ts` suffix to find the matching production file.
+Test files MUST follow the slice of the production file they test. Strip `_test.go` / `.test.ts` / `.spec.ts` suffix to find the matching production file.
 
 ### Constraints
 
-- Each file in exactly ONE slice
-- Target 2-5 slices (merge smallest if > 5 would result)
-- No empty slices
+- REQUIRED: Each file MUST appear in exactly ONE slice
+- REQUIRED: Target 2-5 slices; MUST merge smallest if > 5 would result
+- REQUIRED: No empty slices
 
 ### Ambiguity Resolution
 

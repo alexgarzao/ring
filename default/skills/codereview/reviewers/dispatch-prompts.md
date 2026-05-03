@@ -108,10 +108,12 @@ Task:
   description: "Business logic review for [unit_id]"
   prompt: |
     ## Business Logic Review Request
-    
+
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
     
     ## What Was Implemented
     [implementation_summary]
@@ -179,9 +181,11 @@ Task:
   prompt: |
     ## Security Review Request
 
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]
@@ -270,9 +274,11 @@ Task:
   prompt: |
     ## Test Quality Review Request
 
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]
@@ -345,9 +351,11 @@ Task:
   prompt: |
     ## Nil-Safety Review Request
 
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
     **Languages:** [Go|TypeScript|both - detect from files]
 
     ## What Was Implemented
@@ -397,9 +405,11 @@ Task:
   prompt: |
     ## Consequences Review Request
 
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]
@@ -448,9 +458,11 @@ Task:
   prompt: |
     ## Dead Code Review Request
 
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]
@@ -499,9 +511,11 @@ Task:
   prompt: |
     ## Performance Review Request
 
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
     **Unit ID:** [unit_id]
-    **Base SHA:** [base_sha]
-    **Head SHA:** [head_sha]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
 
     ## What Was Implemented
     [implementation_summary]

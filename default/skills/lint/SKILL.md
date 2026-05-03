@@ -32,8 +32,10 @@ Run lint checks, group issues into independent streams, dispatch parallel agents
 **Detect command:** `make lint` → `npm run lint` → `yarn lint` → `pnpm lint` → `golangci-lint run` → `cargo clippy` → `ruff check .` → `eslint .`
 
 ```bash
-<lint_command> 2>&1 | tee /tmp/lint-output.txt && echo "EXIT_CODE: $?"
+<lint_command> 2>&1 | tee /tmp/lint-output.txt; echo "EXIT_CODE: $?"
 ```
+
+If `EXIT_CODE` is non-zero, lint failed. Report failure clearly before proceeding to grouping.
 
 Parse: file path, line:column, error code/rule, message, severity.
 

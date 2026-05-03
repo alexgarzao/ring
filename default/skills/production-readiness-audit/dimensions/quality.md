@@ -818,11 +818,11 @@ CREATE INDEX CONCURRENTLY idx_orders_status ON orders(status);
 7. Migrations are additive (safe rollback)
 8. Sequential numbering (no gaps)
 9. Migration tool matches Ring standard (golang-migrate or lib-commons)
-10. NOT NULL columns MUST have DEFAULT values in ADD COLUMN migrations — adding a NOT NULL column without DEFAULT requires a full table rewrite lock on existing data, causing downtime on large tables
-11. CHECK constraints for domain-specific validation at database level — values validated only in application code MUST also have database-level CHECK constraints as a safety net
-12. Foreign key consistency — foreign keys MUST have matching column types and MUST define explicit cascading behavior (ON DELETE/ON UPDATE) rather than relying on database defaults
-13. Enum validation at database level — domain enums MUST be enforced via CHECK constraint or PostgreSQL enum type, not just application-level validation
-14. Data migration scripts MUST be separate from schema migrations — mixing data transformations with schema changes in the same migration file makes rollback unsafe
+10. MUST: NOT NULL columns have DEFAULT values in ADD COLUMN migrations — adding a NOT NULL column without DEFAULT requires a full table rewrite lock on existing data, causing downtime on large tables
+11. MUST: Add CHECK constraints for domain-specific validation at database level — values validated only in application code must also have database-level CHECK constraints as a safety net
+12. MUST: Ensure foreign key consistency — foreign keys must have matching column types and must define explicit cascading behavior (ON DELETE/ON UPDATE) rather than relying on database defaults
+13. MUST: Enforce enum validation at database level — domain enums must be enforced via CHECK constraint or PostgreSQL enum type, not just application-level validation
+14. MUST: Keep data migration scripts separate from schema migrations — mixing data transformations with schema changes in the same migration file makes rollback unsafe
 
 **Severity Ratings:**
 - CRITICAL: NOT NULL without default (HARD GATE violation per Ring standards)

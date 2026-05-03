@@ -56,12 +56,15 @@ RESP=$(curl -s -X POST http://gandalf.heron-justitia.ts.net:18792/task \
   -d '{"action": "ask", "message": "What is the status of Voluti integration?", "context": "investigating INC-72"}')
 TASK_ID=$(echo $RESP | jq -r .task_id)
 
-# Poll until done
+# Poll until done — exit ONLY on terminal states
 for i in $(seq 1 60); do
   RESULT=$(curl -s http://gandalf.heron-justitia.ts.net:18792/task/$TASK_ID)
   STATUS=$(echo $RESULT | jq -r .status)
-  [ "$STATUS" != "processing" ] && echo $RESULT | jq . && break
-  sleep 5
+  case "$STATUS" in
+    completed|failed|error) echo $RESULT | jq . && break ;;
+    processing) sleep 5 ;;
+    *) sleep 5 ;;  # transient/unknown state — keep polling
+  esac
 done
 ```
 
@@ -71,7 +74,7 @@ done
 |-------|----------|-------------|
 | `message` | Yes | What to do. For `publish`, becomes the report title. |
 | `action` | No | `publish`, `notify`, `ask` (default). |
-| `content` | No | HTML/markdown/text for `publish`. Max 5MB. |
+| `content` | **Required for `publish`** | HTML/markdown/text for `publish`. Max 5MB. Omit for `notify` and `ask`. |
 | `context` | No | What you're working on (repo, PR, feature). |
 
 `publish` and `notify` are synchronous — no polling needed.
@@ -87,11 +90,11 @@ done
 
 ## Constraints
 
-- Rate limit: 10 requests/min per Tailscale node
-- Content limit: 5MB inline
-- Agent timeout: 300s
-- Tailscale only — not accessible from public internet
-- No file uploads — content inline as JSON string
+- MUST respect rate limit: 10 requests/min per Tailscale node
+- MUST keep content under 5MB inline
+- MUST handle agent timeout: 300s maximum
+- REQUIRED: Tailscale network only — MUST NOT call from public internet
+- REQUIRED: No file uploads — content MUST be inline as JSON string
 
 ## Health Check
 
