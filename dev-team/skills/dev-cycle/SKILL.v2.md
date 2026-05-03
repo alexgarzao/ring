@@ -1,0 +1,193 @@
+---
+name: ring:dev-cycle
+description: |
+  10-gate development cycle orchestrator with subtask/task/cycle cadence.
+  Subtask-level: Gate 0 (implementation + delivery verification), Gate 3 (unit testing), Gate 9 (validation).
+  Task-level: Gates 1-2, 4-8 (devops, SRE, fuzz, property, integration write, chaos write, review).
+  Cycle-end: Gates 6-7 execute, multi-tenant verify, dev-report, final commit.
+
+trigger: |
+  - Starting a new development cycle with a task file
+  - Resuming an interrupted development cycle
+  - Need structured, gate-based task execution with quality checkpoints
+
+skip_when: |
+  - No tasks file exists
+  - Task is documentation-only or planning-only
+  - Frontend project (use ring:dev-cycle-frontend instead)
+---
+
+# Development Cycle Orchestrator
+
+You orchestrate. Agents execute. You NEVER read, write, or edit source code directly.
+
+## How This Works
+
+Load tasks from PM output, execute through 10 gates at three cadences. Each gate loads its own sub-skill which tells you how to dispatch the specialist agent.
+
+**Announce at start:** "Using ring:dev-cycle to orchestrate through 10 gates (0-9)."
+
+## Gate Map
+
+| Gate | Skill to Load | Agent to Dispatch | Cadence | Mode |
+|------|---------------|-------------------|---------|------|
+| 0 | ring:dev-implementation | ring:backend-engineer-* | Per subtask | Write + Run |
+| 1 | ring:dev-devops | ring:devops-engineer | Per task | Write + Run |
+| 2 | ring:dev-sre | ring:sre | Per task | Write + Run |
+| 3 | ring:dev-unit-testing | ring:qa-analyst (unit) | Per subtask | Write + Run |
+| 4 | ring:dev-fuzz-testing | ring:qa-analyst (fuzz) | Per task | Write + Run |
+| 5 | ring:dev-property-testing | ring:qa-analyst (property) | Per task | Write + Run |
+| 6 | ring:dev-integration-testing | ring:qa-analyst (integration) | Per task | Write only* |
+| 7 | ring:dev-chaos-testing | ring:qa-analyst (chaos) | Per task | Write only* |
+| 8 | ring:codereview | 10 reviewers in parallel | Per task | Run |
+| 9 | ring:dev-validation | N/A (verification) | Per subtask | Run |
+
+*Gates 6-7 write test code per task, execute once at end of cycle (containers spun up once).
+
+All gates are mandatory. No exceptions.
+
+## Execution Order
+
+```yaml
+for each task:
+
+  # SUBTASK-LEVEL (per subtask, or task-itself if no subtasks)
+  for each subtask:
+    Gate 0 → Gate 3 → Gate 9
+    [checkpoint if manual_per_subtask mode]
+
+  # TASK-LEVEL (once per task, after all subtasks done)
+  Gate 1 → Gate 2 → Gate 4 → Gate 5 → Gate 6 write → Gate 7 write → Gate 8
+
+# CYCLE-END (once, after all tasks done)
+Gate 6 execute → Gate 7 execute → Multi-Tenant Verify → dev-report → Final Commit
+```
+
+## Gate Execution Workflow
+
+For EVERY gate, follow this exact sequence:
+
+```
+1. Read gate-specific instructions  → Read("gates/gate-{N}.md") from this skill directory
+2. Load sub-skill                   → Skill("ring:{sub-skill-name}")
+3. Follow sub-skill dispatch rules  → Sub-skill tells you HOW to dispatch
+4. Dispatch agent                   → Task(subagent_type="ring:{agent}", ...)
+5. Validate agent output            → Per sub-skill validation rules
+6. Update state                     → Write to current-cycle.json
+7. Next gate or checkpoint
+```
+
+Never dispatch an agent without loading the sub-skill first.
+Never skip from standards → agent directly. Always: standards → sub-skill → agent.
+
+## Standards Loading
+
+At cycle start (Step 1.5), pre-cache Ring standards:
+
+1. WebFetch the standards index for the project language (e.g., `golang/_index.md`)
+2. Store cached standards in `state.cached_standards`
+3. Pass relevant modules to agents at dispatch time — do NOT re-fetch per gate
+
+## Orchestrator Boundaries
+
+**You CAN:** Read task/state files, write state files, track progress, dispatch agents, ask user questions, WebFetch standards.
+
+**You CANNOT:** Read/write/edit source code (*.go, *.ts, *.tsx), run tests, analyze code directly, make architectural decisions.
+
+If a task involves source code → dispatch specialist agent. No exceptions regardless of file count or simplicity.
+
+## State Management
+
+State lives in `docs/ring:dev-cycle/current-cycle.json` (or `docs/ring:dev-refactor/current-cycle.json`).
+
+For state schema, persistence rules, and initialization logic, read `gates/state-schema.md` from this skill directory.
+
+**Critical rule:** Write state after EVERY gate completion. If state write fails → STOP. Never proceed without persisted state.
+
+## PROJECT_RULES.md Check
+
+Before starting any gate execution, verify `docs/PROJECT_RULES.md` exists.
+
+For the full verification process and template creation flow, read `gates/project-rules-check.md` from this skill directory.
+
+If PROJECT_RULES.md doesn't exist → create it using the Ring template before proceeding.
+
+## Execution Modes
+
+Ask user at cycle start:
+
+| Mode | Behavior |
+|------|----------|
+| `automatic` | All gates execute, pause only on failure |
+| `manual_per_task` | Checkpoint after each task completes all gates |
+| `manual_per_subtask` | Checkpoint after each subtask completes subtask-level gates |
+
+Mode affects CHECKPOINTS (user approval pauses), not GATES. All gates execute regardless of mode.
+
+## Custom Instructions
+
+If user provides custom context at cycle start, store in `state.custom_prompt` and inject at the top of every agent dispatch:
+
+```
+**CUSTOM CONTEXT (from user):**
+{state.custom_prompt}
+
+---
+
+**Standard Instructions:**
+[... agent prompt ...]
+```
+
+## Commit Timing
+
+- Gate 0 (implementation): Commit after GREEN phase passes
+- Gates 1-7 (infra + testing): Commit after each gate passes
+- Gate 8 (review): Commit fixes after all reviewers pass
+- Gate 9 (validation): No commit (verification only)
+- Cycle-end: Final commit with cycle metadata
+
+Convention: `feat|fix|test|chore(scope): description` — keep commits atomic per gate.
+
+## Blocker Handling
+
+| Blocker | Action |
+|---------|--------|
+| Gate failure (tests not passing, review failed) | STOP. Cannot proceed to next gate. |
+| Missing PROJECT_RULES.md | STOP. Create using template. |
+| Agent error | STOP. Diagnose and report. |
+| Architectural decision needed | STOP. Present options to user. |
+
+## Gate Completion Rules
+
+A gate is complete ONLY when ALL components succeed:
+- Gate 0: TDD RED + GREEN + delivery verification (all requirements delivered, 0 dead code)
+- Gate 3: Coverage ≥ 85% + all acceptance criteria tested
+- Gate 8: ALL 10 reviewers pass. 9/10 = FAIL → re-run all 10.
+- Gate 9: Explicit "APPROVED" from user
+
+## Severity of Issues
+
+- CRITICAL/HIGH/MEDIUM found in review → Fix NOW, re-run all reviewers
+- LOW → Add `TODO(review):` comment
+- Cosmetic → Add `FIXME(nitpick):` comment
+
+## Error Recovery
+
+| Scenario | Recovery |
+|----------|----------|
+| Agent returns error | Retry with clearer instructions (max 3 attempts) |
+| State file corrupted | Rebuild from git log + last known state |
+| Gate stuck in loop | After 3 iterations, escalate to user |
+| Context limit reached | Use `/ring:create-handoff` → resume in new session |
+
+## Input Sources
+
+| Source | Path |
+|--------|------|
+| Tasks (PM output) | `docs/pre-dev/{feature}/tasks.md` |
+| Subtasks | `docs/pre-dev/{feature}/subtasks/{task-id}/ST-XXX-01.md` |
+| Refactor tasks | `docs/ring:dev-refactor/*/tasks.md` |
+
+## Frontend Handoff
+
+If frontend tasks are detected in a backend cycle → create a handoff file listing frontend requirements, API contracts, and test expectations. Frontend uses `ring:dev-cycle-frontend` separately.
