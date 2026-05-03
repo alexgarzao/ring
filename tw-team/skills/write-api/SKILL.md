@@ -25,22 +25,20 @@ related:
 
 # Writing API Reference Documentation
 
-API reference documentation describes what each endpoint does, its parameters, request/response formats, and error conditions. It focuses on the "what" rather than the "why."
+API reference documents what each endpoint does, its parameters, request/response formats, and error conditions. Focus on the "what" not the "why."
 
 ## API Reference Principles
 
-- **RESTful and Predictable:** Standard HTTP methods, consistent URL patterns, document idempotency
+- **RESTful and Predictable:** Standard HTTP methods, consistent URL patterns, idempotency documented
 - **Consistent Formats:** JSON requests/responses, clear typing, standard error format
 - **Explicit Versioning:** Version in URL path, backward compatibility notes, deprecated fields marked
-
----
 
 ## Endpoint Documentation Structure
 
 | Section | Content |
 |---------|---------|
 | **Title** | Endpoint name |
-| **Description** | Brief description of what the endpoint does |
+| **Description** | What the endpoint does |
 | **HTTP Method + Path** | `POST /v1/organizations/{orgId}/ledgers/{ledgerId}/accounts` |
 | **Path Parameters** | Table: Parameter, Type, Required, Description |
 | **Query Parameters** | Table: Parameter, Type, Default, Description |
@@ -48,18 +46,31 @@ API reference documentation describes what each endpoint does, its parameters, r
 | **Success Response** | Status code + JSON example + fields table |
 | **Errors** | Table: Status Code, Error Code, Description |
 
----
+## Field Descriptions
 
-## Field Description Patterns
+Every field needs: purpose, type, required (request only), constraints, example.
 
-| Type | Pattern |
-|------|---------|
-| Basic | `name: string — The name of the Account` |
-| With constraints | `code: string — The asset code (max 10 chars, uppercase)` |
-| With example | `email: string — Email address (e.g., "user@example.com")` |
-| Deprecated | `chartOfAccountsGroupName: string — **[Deprecated]** Use \`route\` instead` |
+| Type | Pattern | Example |
+|------|---------|---------|
+| UUID | "The unique identifier of the [Entity]" | `id: uuid — The unique identifier of the Account` |
+| String | "[Purpose] (constraints)" | `code: string — Asset code (max 10 chars, uppercase, e.g., "BRL")` |
+| Enum | "[Purpose]: `val1`, `val2`, `val3`" | `type: enum — Asset type: \`currency\`, \`crypto\`, \`commodity\`` |
+| Boolean | "If `true`, [what happens]. Default: `[value]`" | `allowSending: boolean — If \`true\`, sending permitted. Default: \`true\`` |
+| Integer | "[Purpose] (range)" | `scale: integer — Decimal places (0-18)` |
+| Timestamp | "Timestamp of [event] (UTC)" | `createdAt: timestamptz — Timestamp of creation (UTC)` |
+| Array | "List of [what it contains]" | `operations: array — List of operations in the transaction` |
 
----
+## Request/Response Table Format
+
+```markdown
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| id | uuid | — | The unique identifier of the Account |
+| name | string | Yes | The display name of the Account (max 255 chars) |
+| status | enum | — | Account status: `ACTIVE`, `INACTIVE`, `BLOCKED` |
+```
+
+Use `—` for response-only fields. Mark deprecated fields: `**[Deprecated]** Use \`route\` instead`
 
 ## Data Types Reference
 
@@ -74,20 +85,9 @@ API reference documentation describes what each endpoint does, its parameters, r
 | `array` | List of values | `["item1", "item2"]` |
 | `enum` | Predefined values | `currency`, `crypto` |
 
----
+## Errors
 
-## Request/Response Examples
-
-**Rules:**
-- Show realistic, working examples (not "foo", "bar")
-- Show all fields that would be returned
-- Use actual UUIDs, timestamps, realistic data
-
----
-
-## Error Documentation
-
-**Standard error format:**
+Standard format:
 ```json
 {
   "code": "ACCOUNT_NOT_FOUND",
@@ -96,7 +96,7 @@ API reference documentation describes what each endpoint does, its parameters, r
 }
 ```
 
-**Error table:**
+Error table:
 
 | Status | Code | Description | Resolution |
 |--------|------|-------------|------------|
@@ -108,8 +108,6 @@ API reference documentation describes what each endpoint does, its parameters, r
 | 422 | UNPROCESSABLE_ENTITY | Business rule violation | Check constraints |
 | 500 | INTERNAL_ERROR | Server error | Retry or contact support |
 
----
-
 ## HTTP Status Codes
 
 **Success:** 200 (GET/PUT/PATCH), 201 (POST creates), 204 (DELETE)
@@ -118,28 +116,80 @@ API reference documentation describes what each endpoint does, its parameters, r
 
 **Server errors:** 500 (internal)
 
----
+## Example Endpoint Documentation
 
-## Pagination Documentation
+```markdown
+## Create Account
 
-For paginated endpoints, document query parameters:
+Create a new Account in a Ledger.
+
+**POST** `/v1/organizations/{orgId}/ledgers/{ledgerId}/accounts`
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| orgId | uuid | Yes | Organization ID |
+| ledgerId | uuid | Yes | Ledger ID |
+
+### Request Body
+
+```json
+{
+  "name": "My Bank Account",
+  "code": "ACC001",
+  "status": "ACTIVE"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Display name (max 255 chars) |
+| code | string | Yes | Account code (max 50 chars, uppercase) |
+| status | enum | No | `ACTIVE`, `INACTIVE`. Default: `ACTIVE` |
+
+### Success Response
+
+**200 OK**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "My Bank Account",
+  "code": "ACC001",
+  "status": "ACTIVE",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | uuid | The unique identifier of the Account |
+| name | string | The display name of the Account |
+| code | string | The account code |
+| status | enum | Account status: `ACTIVE`, `INACTIVE`, `BLOCKED` |
+| createdAt | timestamptz | Timestamp of creation (UTC) |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | INVALID_REQUEST | Validation failed (e.g., missing name) |
+| 401 | UNAUTHORIZED | Missing or invalid API key |
+| 409 | CONFLICT | Account code already exists in this Ledger |
+| 500 | INTERNAL_ERROR | Server error |
+```
+
+## Pagination
+
+For paginated endpoints, document:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | limit | integer | 10 | Results per page (max 100) |
 | page | integer | 1 | Page number |
 
-Response includes: `items`, `page`, `limit`, `totalItems`, `totalPages`
-
----
-
-## Versioning Notes
-
-> **Note:** You're viewing documentation for the **current version** (v3).
-
-For deprecated: `> **Deprecated:** This endpoint will be removed in v4. Use [/v3/accounts](link) instead.`
-
----
+Response: `items`, `page`, `limit`, `totalItems`, `totalPages`
 
 ## Quality Checklist
 
@@ -153,154 +203,3 @@ For deprecated: `> **Deprecated:** This endpoint will be removed in v4. Use [/v3
 - [ ] All error codes documented
 - [ ] Deprecated fields marked
 - [ ] Links to related endpoints included
-
----
-
-## Field Description Patterns (Detailed)
-
-Field descriptions are the most-read part of API documentation. Users scan for specific fields and need clear, consistent information.
-
-Every field description answers: **What is it?** (purpose), **What type?** (data type), **Required?** (mandatory), **Constraints?** (limits/validations), **Example?** (valid data)
-
-### Table Format (Preferred)
-
-```markdown
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| id | uuid | — | The unique identifier of the Account |
-| name | string | Yes | The display name of the Account (max 255 chars) |
-| status | enum | — | Account status: `ACTIVE`, `INACTIVE`, `BLOCKED` |
-```
-
-**Note:** Use `—` for response-only fields (not applicable for requests).
-
-For nested objects: `status.code`, `status.description`
-
-### Description Patterns by Type
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| UUID | "The unique identifier of the [Entity]" | `id: uuid — The unique identifier of the Account` |
-| String | "[Purpose] (constraints)" | `code: string — The asset code (max 10 chars, uppercase, e.g., "BRL")` |
-| String (format) | "[Purpose] (format example)" | `email: string — Email address (e.g., "user@example.com")` |
-| Enum | "[Purpose]: `val1`, `val2`, `val3`" | `type: enum — Asset type: \`currency\`, \`crypto\`, \`commodity\`` |
-| Boolean | "If `true`, [what happens]. Default: `[value]`" | `allowSending: boolean — If \`true\`, sending permitted. Default: \`true\`` |
-| Integer | "[Purpose] (range)" | `scale: integer — Decimal places (0-18)` |
-| Timestamp | "Timestamp of [event] (UTC)" | `createdAt: timestamptz — Timestamp of creation (UTC)` |
-| Object (jsonb) | "[Purpose] including [fields]" | `status: jsonb — Status information including code and description` |
-| Array | "List of [what it contains]" | `operations: array — List of operations in the transaction` |
-
-### Required vs Optional
-
-**In Requests:**
-- `Yes` = Must be provided
-- `No` = Optional
-- `Conditional` = Required in specific scenarios (explain in description)
-
-**In Responses:** Use `—` (response fields are always returned or null)
-
-### Special Field Documentation
-
-| Pattern | Format |
-|---------|--------|
-| Default values | "Results per page. Default: 10" |
-| Nullable fields | "Soft deletion timestamp, or `null` if not deleted" |
-| Deprecated fields | "**[Deprecated]** Use `route` instead" |
-| Read-only fields | "**Read-only.** Generated by the system" |
-| Relationships | "References an Asset code. Must exist in the Ledger" |
-
-### Writing Good Descriptions
-
-| Don't | Do |
-|-------|-----|
-| "The name" | "The display name of the Account" |
-| "Status info" | "Account status: `ACTIVE`, `INACTIVE`, `BLOCKED`" |
-| "A number" | "Balance version, incremented with each transaction" |
-| "The code" | "The asset code (max 10 chars, uppercase)" |
-| "The timestamp" | "Timestamp of creation (UTC)" |
-
----
-
-## Standards Loading (MANDATORY)
-
-Before writing any API documentation, MUST load relevant standards:
-
-1. **Voice and Tone Guidelines** - Load `ring:voice-and-tone` skill
-2. **Documentation Structure** - Load `ring:documentation-structure` skill
-
-**HARD GATE:** CANNOT proceed with API documentation without loading these standards.
-
----
-
-## Blocker Criteria - STOP and Report
-
-| Condition | Decision | Action |
-|-----------|----------|--------|
-| API endpoint not implemented | STOP | Report: "Cannot document non-existent endpoint" |
-| API behavior undetermined | STOP | Report: "Need confirmed API behavior before documenting" |
-| Response schema unknown | STOP | Report: "Need response schema to document fields" |
-| Error codes undefined | STOP | Report: "Need error code list before completing" |
-| Voice/tone guidelines unclear | STOP | Report: "Need style guide clarification" |
-
-### Cannot Be Overridden
-
-These requirements are NON-NEGOTIABLE:
-
-- MUST document ALL fields (request and response)
-- MUST include realistic examples (not "foo", "bar")
-- MUST document ALL error codes
-- MUST use present tense and active voice
-- MUST use sentence case for headings
-- CANNOT skip required vs optional indicators
-
----
-
-## Severity Calibration
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Missing core sections, incorrect API paths | No request/response examples, wrong HTTP method |
-| **HIGH** | Missing field documentation, no error codes | Undocumented required fields, missing error table |
-| **MEDIUM** | Voice/tone violations, structure issues | Passive voice, title case headings |
-| **LOW** | Minor clarity improvements, formatting | Could add more context, spacing issues |
-
----
-
-## Pressure Resistance
-
-| User Says | Your Response |
-|-----------|---------------|
-| "Skip the examples, developers will figure it out" | "CANNOT skip examples. Realistic examples are REQUIRED for every endpoint. I'll add complete request/response examples." |
-| "Just document the happy path, errors are rare" | "MUST document all error codes. Error handling is critical for developers. I'll include the complete error table." |
-| "The code is the documentation" | "Code is NOT documentation. API reference MUST explain purpose, constraints, and behavior. I'll write proper field descriptions." |
-| "We'll add docs later, ship the feature first" | "Documentation is part of the feature. CANNOT ship undocumented APIs. I'll complete the documentation now." |
-| "Copy the schema, that's enough" | "Schema alone is insufficient. MUST add descriptions, examples, and context. I'll write complete documentation." |
-
----
-
-## Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Field name is self-explanatory" | Self-explanatory to you ≠ self-explanatory to users | **MUST write explicit description** |
-| "Simple API doesn't need extensive docs" | Simplicity doesn't reduce documentation need | **Document ALL fields completely** |
-| "Error codes are standard HTTP" | Each error needs context and resolution guidance | **MUST document all errors with resolutions** |
-| "Examples slow down documentation" | Examples are the most-read part of API docs | **MUST include realistic examples** |
-| "Internal API, limited audience" | Internal users deserve quality docs too | **Apply same standards as public APIs** |
-| "Schema is generated, no need to write" | Generated schemas lack context and guidance | **MUST add human-written descriptions** |
-
----
-
-## When This Skill is Not Needed
-
-Signs that API documentation already meets standards:
-
-- ALL endpoints have HTTP method, path, and description
-- ALL request fields documented with type, required status, constraints
-- ALL response fields documented with type and description
-- ALL error codes listed with descriptions and resolutions
-- Realistic JSON examples for every request and response
-- Links to related endpoints included
-- Voice and tone guidelines followed consistently
-
-**If all above are true:** Documentation is complete, no changes needed.
