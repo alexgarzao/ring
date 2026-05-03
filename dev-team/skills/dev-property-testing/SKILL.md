@@ -1,260 +1,137 @@
 ---
 name: ring:dev-property-testing
 description: |
-  Gate 5 of development cycle - ensures property-based tests exist
-  to verify domain invariants hold for all randomly generated inputs.
-  Runs at TASK cadence (after all subtasks complete Gate 0 + Gate 3 + Gate 9).
+  Gate 5 of development cycle — ensures property-based tests exist to verify
+  domain invariants hold for all randomly generated inputs (testing/quick package for Go).
 
 trigger: |
-  - After fuzz testing complete (Gate 4)
-  - MANDATORY for all development tasks
-  - Verifies domain invariants via testing/quick package
+  - Gate 5 (after fuzz testing)
+  - Backend tasks with domain logic containing invariants
 
 skip_when: |
   - Not inside a development cycle (ring:dev-cycle)
   - Task is documentation-only, configuration-only, or non-code
   - No domain logic with invariants was added or modified
-  - Frontend-only project (property testing applies to backend domain logic)
-
-NOT_skip_when: |
-  - "Unit tests verify logic" - Property tests verify INVARIANTS across all inputs.
-  - "No domain invariants" - Every domain has invariants. Find them.
-  - "Too abstract" - Properties are concrete: "balance never negative", "IDs always unique".
+  - Frontend-only project
 
 sequence:
   after: [ring:dev-fuzz-testing]
   before: [ring:dev-integration-testing]
 
 related:
-  complementary: [ring:dev-cycle, ring:dev-fuzz-testing, ring:qa-analyst]
-
-input_schema:
-  required:
-    - name: unit_id
-      type: string
-      description: "TASK identifier (not a subtask id). This skill runs at TASK cadence — unit_id is always a task id."
-    - name: implementation_files
-      type: array
-      items: string
-      description: "Union of changed files across all subtasks of this task."
-    - name: language
-      type: string
-      enum: [go]
-      description: "Programming language"
-    - name: gate0_handoffs
-      type: array
-      description: "Array of per-subtask implementation handoffs (one entry per subtask). NOT a single gate0_handoff object."
-  optional:
-    - name: domain_invariants
-      type: array
-      items: string
-      description: "Domain invariants to verify"
-    - name: gate4_handoff
-      type: object
-      description: "Full handoff from Gate 4 (fuzz testing)"
-
-output_schema:
-  format: markdown
-  required_sections:
-    - name: "Property Testing Summary"
-      pattern: "^## Property Testing Summary"
-      required: true
-    - name: "Properties Report"
-      pattern: "^## Properties Report"
-      required: true
-    - name: "Handoff to Next Gate"
-      pattern: "^## Handoff to Next Gate"
-      required: true
-  metrics:
-    - name: result
-      type: enum
-      values: [PASS, FAIL]
-    - name: properties_tested
-      type: integer
-    - name: properties_passed
-      type: integer
-    - name: counterexamples_found
-      type: integer
-    - name: iterations
-      type: integer
-
-verification:
-  automated:
-    - command: "grep -rn 'TestProperty_' --include='*_test.go' ."
-      description: "Property test functions exist"
-      success_pattern: "TestProperty_"
-    - command: "grep -rn 'quick.Check' --include='*_test.go' ."
-      description: "quick.Check used"
-      success_pattern: "quick.Check"
-  manual:
-    - "Properties follow TestProperty_{Subject}_{Property} naming"
-    - "At least one property per domain entity"
-    - "No counterexamples found"
-
+  complementary: [ring:dev-cycle, ring:qa-analyst]
 ---
 
-# Dev Property Testing (Gate 5)
+# Property-Based Testing (Gate 5)
 
-## Overview
+Unit tests verify specific examples. Property tests verify invariants across all inputs.
 
-Ensure domain logic has **property-based tests** to verify invariants hold for all randomly generated inputs.
+Examples of domain invariants:
+- Balance is never negative
+- Account IDs are always unique
+- Debit + Credit entries always balance
+- Currency conversions are reversible
 
-**Core principle:** Property tests verify universal truths about your domain. If "balance is never negative" is a rule, test it with thousands of random inputs.
-
-<block_condition>
-- No property functions = FAIL
-- Any counterexample found = FAIL (fix and re-run)
-- No quick.Check usage = FAIL
-</block_condition>
-
-## CRITICAL: Role Clarification
-
-**This skill ORCHESTRATES. QA Analyst Agent (property mode) EXECUTES.**
-
-| Who | Responsibility |
-|-----|----------------|
-| **This Skill** | Gather requirements, dispatch agent, track iterations |
-| **QA Analyst Agent** | Write property tests, run quick.Check, report counterexamples |
-
----
-
-## Standards Source (Cache-First Pattern)
-
-**Standards Source (Cache-First Pattern):** This sub-skill reads standards from `state.cached_standards` populated by dev-cycle Step 1.5. If invoked outside a cycle (standalone), it falls back to direct WebFetch with a warning. See `shared-patterns/standards-cache-protocol.md` for protocol details.
-
-## Standards Reference
-
-**MANDATORY:** Load testing-property.md standards via the cache-first pattern below.
-
-URL: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-property.md
-
-**Cache-first loading protocol:**
-For each required standards URL:
-  IF state.cached_standards[url] exists:
-    → Read content from state.cached_standards[url].content
-    → Log: "Using cached standard: {url} (fetched {state.cached_standards[url].fetched_at})"
-  ELSE:
-    → WebFetch url (fallback — should not happen if orchestrator ran Step 1.5)
-    → Log warning: "Standard {url} was not pre-cached; fetched inline"
-
-<fetch_required>
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-property.md
-</fetch_required>
-
----
+**Block conditions:**
+- Domain with invariants but no property tests = FAIL
+- Property test doesn't cover the invariant = FAIL
 
 ## Step 1: Validate Input
 
-```text
-REQUIRED INPUT:
-- unit_id: [TASK id — runs at task cadence, not per subtask]
-- implementation_files: [union of changed files across all subtasks of this task]
-- language: [go]
-- gate0_handoffs: [array of per-subtask Gate 0 handoffs — one entry per subtask]
+Required: `unit_id` (TASK id), `language` (go), `implementation_files`, `gate0_handoffs`.
+Optional: `domain_invariants`, `gate4_handoff`.
 
-OPTIONAL INPUT:
-- domain_invariants: [list of invariants to verify]
-- gate4_handoff: [full Gate 4 output]
+## Step 2: Identify Domain Invariants
 
-if any REQUIRED input is missing:
-  → STOP and report: "Missing required input: [field]"
+If `domain_invariants` not provided, dispatch `ring:codebase-explorer` to identify:
+
+```
+Scan implementation_files for:
+- Domain entities with constraints (min/max values, non-null fields)
+- Business rules with "always", "never", "must", "cannot"
+- Mathematical relationships (sum, balance, totals)
+- Ordering properties (created_at < updated_at)
+- Uniqueness constraints
+Output: list of testable invariants with property description
 ```
 
-## Step 2: Dispatch QA Analyst Agent (Property Mode)
+If no invariants found → SKIP (document reason).
 
-```text
-Task tool:
+## Step 3: Dispatch QA Analyst
+
+```yaml
+Task:
   subagent_type: "ring:qa-analyst"
+  description: "Write property-based tests for {unit_id}"
   prompt: |
-    **MODE:** PROPERTY-BASED TESTING (Gate 5)
+    ## Property-Based Testing — Gate 5
 
-    **Standards:** Load testing-property.md
+    unit_id: {unit_id}
+    language: {language}
+    domain_invariants: {invariants}
+    implementation_files: {implementation_files}
 
-    **Input:**
-    - Unit ID: {unit_id}
-    - Implementation Files: {implementation_files}
-    - Language: {language}
-    - Domain Invariants: {domain_invariants}
+    Standards: Load via cached_standards or WebFetch Ring testing standards.
 
-    **Requirements:**
-    1. Identify domain invariants from code
-    2. Create property functions (TestProperty_{Subject}_{Property} naming)
-    3. Use testing/quick.Check for verification
-    4. Report any counterexamples found
+    ## Go: testing/quick package
+    ```go
+    import "testing/quick"
 
-    **Output Sections Required:**
-    - ## Property Testing Summary
-    - ## Properties Report
-    - ## Handoff to Next Gate
+    func TestProperty_{InvariantName}(t *testing.T) {
+      property := func({args with types}) bool {
+        // setup
+        result, err := domain.{Operation}({args})
+        if err != nil {
+          return true // valid error is ok
+        }
+        // verify invariant
+        return {invariant_condition}
+      }
+      if err := quick.Check(property, &quick.Config{MaxCount: 1000}); err != nil {
+        t.Errorf("invariant violated: %v", err)
+      }
+    }
+    ```
+
+    ## Invariants to Test
+    For each invariant in domain_invariants:
+    - Write a property function that returns bool (true = invariant holds)
+    - Use quick.Config{MaxCount: 1000} for thorough testing
+    - Include specific counter-examples in error messages
+
+    ## Invariants Coverage Table (MANDATORY)
+    | Invariant | Property Function | MaxCount | Status |
+
+    ## Required Output
+    - Test files with property tests
+    - go test -v output showing all properties pass
+    - Invariants coverage table
 ```
 
-## Step 3: Evaluate Results
+## Step 4: Validate Results
 
-```text
-Parse agent output:
+```
+if all invariants covered AND all properties pass:
+  → PASS → proceed to Gate 6
 
-if "Status: PASS" in output:
-  → Gate 5 PASSED
-  → Return success with metrics
-
-if "Status: FAIL" in output:
-  → Dispatch fix to implementation agent
-  → Re-run property tests (max 3 iterations)
-  → If still failing: ESCALATE to user
+if any invariant without test OR property violation found:
+  → Re-dispatch with gaps
+  → iterations++
 ```
 
-## Step 4: Generate Output
+## Output Format
 
-```text
-## Property Testing Summary
-**Status:** {PASS|FAIL}
-**Properties Tested:** {count}
-**Properties Passed:** {count}
-**Counterexamples Found:** {count}
+```markdown
+## Property Testing Result
+unit_id | result: PASS/SKIP/FAIL | iterations
 
-## Properties Report
-| Property | Subject | Status |
-|----------|---------|--------|
-| {property_name} | {subject} | {PASS|FAIL} |
+## Invariants Coverage
+| Invariant | Property | MaxCount | Violations Found | Status |
 
-## Handoff to Next Gate
-- Ready for Gate 6 (Integration Testing): {YES|NO}
-- Iterations: {count}
+## Skip Reason (if applicable)
+{no domain invariants found in: files}
+
+## Handoff
+gate5_result: PASS | SKIP | ESCALATED
+test_files: [list]
 ```
-
----
-
-## Common Properties to Test
-
-| Domain | Example Properties |
-|--------|-------------------|
-| Money/Currency | Amount never negative, currency always valid, addition commutative |
-| User/Account | Email always valid format, password meets policy, status transitions valid |
-| Order/Transaction | Total equals sum of items, quantity always positive, state machine valid |
-| Date/Time | Start before end, duration always positive, timezone valid |
-
----
-
-## Severity Calibration
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Counterexample found, invariant violated | quick.Check finds input that breaks property |
-| **HIGH** | No property tests, missing quick.Check | Zero TestProperty_ functions, no testing/quick usage |
-| **MEDIUM** | Incomplete properties, naming issues | Missing domain invariants, non-standard names |
-| **LOW** | Documentation, optimization | Missing property descriptions, generator tuning |
-
-Report all severities. CRITICAL = immediate fix (invariant broken). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
-
----
-
-## Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Unit tests verify logic" | Unit tests verify SPECIFIC cases. Properties verify ALL cases. | **Write property tests** |
-| "No domain invariants" | Every domain has rules. "ID is unique", "amount > 0", etc. | **Identify and test invariants** |
-| "Too abstract" | Properties are concrete: "user.age >= 0 for all users". | **Write property tests** |
-| "quick.Check is slow" | Milliseconds to find bugs that would take hours to discover. | **Write property tests** |
-
----
