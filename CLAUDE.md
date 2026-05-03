@@ -13,8 +13,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 When creating or modifying any agent in `*/agents/*.md`:
 
 - **MUST** verify agent has all required sections (see "Agent Modification Verification")
-- **MUST** use STRONG language (MUST, REQUIRED, CANNOT, FORBIDDEN)
-- **MUST** include anti-rationalization tables
+- **MUST** include positive `<example>` blocks showing correct behavior (replaces anti-rationalization tables)
+- **MUST** use selective standards loading via `_index.md` manifesto (not monolithic WebFetch)
+- **MUST** keep agents under 300 lines (implementation agents) or 200 lines (reviewers)
 - If any section is missing → Agent is INCOMPLETE
 
 ### 2. Agents are EXECUTORS, Not DECISION-MAKERS
@@ -49,10 +50,10 @@ When modifying standards files (`dev-team/docs/standards/*.md`):
 
 **⛔ FOUR-FILE UPDATE RULE:**
 
-1. Edit `dev-team/docs/standards/{file}.md` - Add your `## Section Name`
-2. **Update TOC** - Add section to the `## Table of Contents` at the top of the same file
+1. Edit `dev-team/docs/standards/{stack}/{module}.md` - Add your `## Section Name` in the appropriate module
+2. **Update `_index.md`** - Add/update the module entry in `dev-team/docs/standards/{stack}/_index.md` with correct "Load When" description
 3. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` - Add section to agent's index table
-4. Edit `dev-team/agents/{agent}.md` - Verify agent references coverage table (not inline categories)
+4. Edit `dev-team/agents/{agent}.md` - Verify agent references `_index.md` for selective loading (not inline categories)
 
 **All files in same commit** - MUST NOT update one without the others.
 
@@ -96,13 +97,13 @@ If any checkbox is no → Fix before committing.
 - `## Standards Compliance` - Output format examples
 - `## Standards Compliance Output Format` - Output templates
 
-| Standards File  | Agents That Use It                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------- |
-| `golang.md`     | `ring:backend-engineer-golang`, `ring:qa-analyst`                                              |
-| `typescript.md` | `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`, `ring:qa-analyst` |
-| `frontend.md`   | `ring:frontend-engineer`, `ring:frontend-designer`                                             |
-| `devops.md`     | `ring:devops-engineer`                                                                         |
-| `sre.md`        | `ring:sre`                                                                                     |
+| Standards Directory        | Agents That Use It                                                                             |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| `golang/` (30 modules)     | `ring:backend-engineer-golang`, `ring:qa-analyst`                                              |
+| `typescript/` (21 modules) | `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`, `ring:qa-analyst` |
+| `frontend/` (21 modules)   | `ring:frontend-engineer`, `ring:frontend-designer`                                             |
+| `devops/` (9 modules)      | `ring:devops-engineer`                                                                         |
+| `sre/` (7 modules)         | `ring:sre`                                                                                     |
 
 **Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md` → "Agent → Standards Section Index"
 
@@ -110,16 +111,16 @@ If any checkbox is no → Fix before committing.
 
 MUST match `dev-team/skills/shared-patterns/standards-coverage-table.md`. See the coverage table for current counts per agent.
 
-| Agent                                   | Standards File             |
+| Agent                                   | Standards Directory        |
 | --------------------------------------- | -------------------------- |
-| `ring:backend-engineer-golang`          | golang.md                  |
-| `ring:backend-engineer-typescript`      | typescript.md              |
-| `ring:frontend-bff-engineer-typescript` | typescript.md              |
-| `ring:frontend-engineer`                | frontend.md                |
-| `ring:frontend-designer`                | frontend.md                |
-| `ring:devops-engineer`                  | devops.md                  |
-| `ring:sre`                              | sre.md                     |
-| `ring:qa-analyst`                       | golang.md or typescript.md |
+| `ring:backend-engineer-golang`          | `golang/` (30 modules)     |
+| `ring:backend-engineer-typescript`      | `typescript/` (21 modules) |
+| `ring:frontend-bff-engineer-typescript` | `typescript/` (21 modules) |
+| `ring:frontend-engineer`                | `frontend/` (21 modules)   |
+| `ring:frontend-designer`                | `frontend/` (21 modules)   |
+| `ring:devops-engineer`                  | `devops/` (9 modules)      |
+| `ring:sre`                              | `sre/` (7 modules)         |
+| `ring:qa-analyst`                       | `golang/` or `typescript/` |
 
 **⛔ If section counts in skills don't match the coverage table → Update the skill.**
 
@@ -152,16 +153,18 @@ Before adding any content to prompts, skills, agents, or documentation:
 3. **If adding new content** → Add to the canonical source per table below
 4. **MUST NOT copy** content between files - link to the single source of truth
 
-| Information Type      | Canonical Source (Single Source of Truth) |
-| --------------------- | ----------------------------------------- |
-| Critical rules        | CLAUDE.md                                 |
-| Language patterns     | docs/PROMPT_ENGINEERING.md                |
-| Agent schemas         | docs/AGENT_DESIGN.md                      |
-| Frontmatter fields    | docs/FRONTMATTER_SCHEMA.md                |
-| Workflows             | docs/WORKFLOWS.md                         |
-| Plugin overview       | README.md                                 |
-| Agent requirements    | CLAUDE.md (Agent Modification section)    |
-| Shared skill patterns | `{plugin}/skills/shared-patterns/*.md`    |
+| Information Type      | Canonical Source (Single Source of Truth)                |
+| --------------------- | -------------------------------------------------------- |
+| Critical rules        | CLAUDE.md                                                |
+| Language patterns     | docs/PROMPT_ENGINEERING.md                               |
+| Agent schemas         | docs/AGENT_DESIGN.md                                     |
+| Frontmatter fields    | docs/FRONTMATTER_SCHEMA.md                               |
+| Workflows             | docs/WORKFLOWS.md                                        |
+| Plugin overview       | README.md                                                |
+| Agent requirements    | CLAUDE.md (Agent Modification section)                   |
+| Shared skill patterns | `{plugin}/skills/shared-patterns/*.md`                   |
+| Standards modules     | `platforms/opencode/standards/{stack}/{module}.md`       |
+| Standards manifesto   | `platforms/opencode/standards/{stack}/_index.md`         |
 
 **Shared Patterns Rule (MANDATORY):**
 When content is reused across multiple skills within a plugin:
@@ -237,15 +240,77 @@ If any checkbox is no → Fix before committing.
 
 ---
 
+## Selective Context Loading (Agentic Search)
+
+Standards are modularized into focused files. Each stack has an `_index.md` manifesto that agents read to determine which modules to load.
+
+**How it works:**
+
+1. Agent reads `platforms/opencode/standards/{stack}/_index.md`
+2. `_index.md` lists all modules with their "Load When" descriptions
+3. Agent matches the current task against those descriptions
+4. Agent loads only the relevant modules (not all 30/21/9)
+
+This replaces monolithic WebFetch of entire standards files. Based on Anthropic's context engineering guide: loading less, targeted context outperforms loading everything.
+
+**Structure:**
+
+```
+platforms/opencode/standards/
+├── golang/
+│   ├── _index.md          ← Manifesto: module list + "Load When" descriptions
+│   ├── error-handling.md
+│   ├── concurrency.md
+│   └── ... (30 modules)
+├── typescript/
+│   ├── _index.md
+│   └── ... (21 modules)
+├── frontend/
+│   ├── _index.md
+│   └── ... (21 modules)
+├── devops/
+│   ├── _index.md
+│   └── ... (9 modules)
+└── sre/
+    ├── _index.md
+    └── ... (7 modules)
+```
+
+**`_index.md` format:**
+
+```markdown
+# Golang Standards Index
+
+| Module | File | Load When |
+|--------|------|-----------|
+| Error Handling | error-handling.md | Task involves error returns, wrapping, or propagation |
+| Concurrency | concurrency.md | Task involves goroutines, channels, or sync primitives |
+| HTTP Handlers | http-handlers.md | Task involves HTTP endpoints or middleware |
+```
+
+**Agent Standards Loading section (new pattern):**
+
+```markdown
+## Standards Loading
+
+1. Read `platforms/opencode/standards/golang/_index.md`
+2. Match current task against "Load When" column
+3. Fetch only matching module files
+4. Apply those standards during implementation
+```
+
+---
+
 ## Quick Navigation
 
 | Section                                                                                   | Content                                            |
 | ----------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | [CRITICAL RULES](#-critical-rules-read-first)                                             | Non-negotiable requirements                        |
+| [Selective Context Loading](#selective-context-loading-agentic-search)                    | _index.md manifesto + selective module loading     |
 | [CLAUDE.md ↔ AGENTS.md Sync](#6-claudemd--agentsmd-synchronization-automatic-via-symlink) | Symlink ensures sync                               |
 | [Content Duplication Prevention](#7-content-duplication-prevention-must-check)            | Canonical sources + reference pattern              |
 | [Reviewer-Pool Synchronization](#8-reviewer-pool-synchronization-must-check)              | Seven-file update rule for codereview pool changes |
-| [Anti-Rationalization Tables](#anti-rationalization-tables-mandatory-for-all-agents)      | Prevent AI from assuming/skipping                  |
+| [Positive Example Blocks](#positive-example-blocks-replaces-anti-rationalization-tables)  | `<example>` pattern for agents                     |
 | [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory)                     | Selective emphasis for effective prompts           |
 | [Agent Modification Verification](#agent-modification-verification-mandatory)             | Checklist for agent changes                        |
 | [Repository Overview](#repository-overview)                                               | What Ring is                                       |
@@ -259,57 +324,51 @@ If any checkbox is no → Fix before committing.
 
 ---
 
-## Anti-Rationalization Tables (MANDATORY for All Agents)
+## Positive Example Blocks (Replaces Anti-Rationalization Tables)
 
-**MANDATORY: Every agent must include an anti-rationalization table.** This is a HARD GATE for agent design.
+**Anti-rationalization tables are no longer mandatory.** Based on Anthropic's research, positive `<example>` blocks showing correct behavior outperform prohibition-based tables.
 
-**Why This Is Mandatory:**
-AI models naturally attempt to be "helpful" by making autonomous decisions. This is dangerous in structured workflows. Agents MUST NOT rationalize skipping gates, assuming compliance, or making decisions that belong to users or orchestrators.
+**Why the pattern changed:**
+Anthropological research on LLM prompt engineering shows that "positive examples outperform prohibitions." Telling a model what to do correctly — with a concrete example — is more effective than enumerating what it must not rationalize. Long anti-rationalization tables also increase prompt length without proportional benefit, and can inadvertently prime models to consider the wrong patterns.
 
-**Anti-rationalization tables use selective emphasis.** Place enforcement words (MUST, STOP, FORBIDDEN) at the beginning of instructions for maximum impact. See [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory).
+**The new `<example>` pattern:**
 
-**Required Table Structure:**
-
-```markdown
-| Rationalization                     | Why It's WRONG                   | Required Action                |
-| ----------------------------------- | -------------------------------- | ------------------------------ |
-| "[Common excuse AI might generate]" | [Why this thinking is incorrect] | **[MANDATORY action in bold]** |
-```
-
-**Example from ring:backend-engineer-golang.md:**
+Instead of a "Rationalization / Why It's WRONG / Required Action" table, agents should include a positive example block that demonstrates the correct behavior:
 
 ```markdown
-| Rationalization                          | Why It's WRONG                                     | Required Action           |
-| ---------------------------------------- | -------------------------------------------------- | ------------------------- |
-| "Codebase already uses lib-commons"      | Partial usage ≠ full compliance. Check everything. | **Verify all categories** |
-| "Already follows Lerian standards"       | Assumption ≠ verification. Prove it with evidence. | **Verify all categories** |
-| "Only checking what seems relevant"      | You don't decide relevance. The checklist does.    | **Verify all categories** |
-| "Code looks correct, skip verification"  | Looking correct ≠ being correct. Verify.           | **Verify all categories** |
-| "Previous refactor already checked this" | Each refactor is independent. Check again.         | **Verify all categories** |
-| "Small codebase, not all applies"        | Size is irrelevant. Standards apply uniformly.     | **Verify all categories** |
+<example>
+Scenario: You are asked to implement an endpoint but the task lacks acceptance criteria.
+
+Correct behavior:
+1. STOP before writing any code
+2. Report to orchestrator: "Blocker: Missing acceptance criteria for [endpoint]. Cannot proceed."
+3. Wait for clarification — do not guess or assume
+
+Incorrect behavior:
+- Inferring acceptance criteria from context and proceeding
+- Writing "placeholder" code "just to get started"
+- Asking the user directly instead of reporting to orchestrator
+</example>
 ```
 
 **Mandatory Sections Every Agent MUST Have:**
 
-| Section                        | Purpose                           | Language Requirements                            |
-| ------------------------------ | --------------------------------- | ------------------------------------------------ |
-| **Blocker Criteria**           | Define when to STOP and report    | Use "STOP", "CANNOT proceed", "HARD BLOCK"       |
-| **Cannot Be Overridden**       | List non-negotiable requirements  | Use "CANNOT be waived", "NON-NEGOTIABLE"         |
-| **Severity Calibration**       | Define issue severity levels      | Use "CRITICAL", "MUST be fixed"                  |
-| **Pressure Resistance**        | Handle user pressure to skip      | Use "Cannot proceed", "I'll implement correctly" |
-| **Anti-Rationalization Table** | Prevent AI from assuming/skipping | Use "Why It's WRONG", "REQUIRED action"          |
+| Section              | Purpose                        | Language Requirements                      |
+| -------------------- | ------------------------------ | ------------------------------------------ |
+| **Blocker Criteria** | Define when to STOP and report | Use "STOP", "CANNOT proceed", "HARD BLOCK" |
+| **`<example>` block** | Show correct behavior          | Positive scenario with correct vs wrong    |
 
 **Language Guidelines for Agent Prompts:**
 
 See [Lexical Salience Guidelines](#lexical-salience-guidelines-mandatory) for the complete weak→strong transformation rules and enforcement word positioning.
-
-**HARD GATE: If an agent lacks anti-rationalization tables, it is incomplete and must be updated.**
 
 ---
 
 ## Lexical Salience Guidelines (MANDATORY)
 
 **Effective prompts use selective emphasis.** When too many words are in CAPS, none stand out - the AI treats all as equal priority.
+
+> **Note:** Prefer showing correct behavior via `<example>` blocks over repeating prohibitions. A single example of correct output teaches more than five anti-rationalization table rows. Use CAPS enforcement words for critical gates; use `<example>` for behavioral guidance.
 
 ### Principle: Less is More
 
@@ -419,45 +478,22 @@ Before any agent work, re-read this CLAUDE.md section to understand current requ
 
 **Step 2: Verify Agent Has all Required Sections**
 
-| Required Section                       | Pattern to Check                  | If Missing                                      |
-| -------------------------------------- | --------------------------------- | ----------------------------------------------- |
-| **Standards Loading (MANDATORY)**      | `## Standards Loading`            | MUST add with WebFetch instructions             |
-| **Blocker Criteria - STOP and Report** | `## Blocker Criteria`             | MUST add with decision type table               |
-| **Cannot Be Overridden**               | `### Cannot Be Overridden`        | MUST add with non-negotiable requirements       |
-| **Severity Calibration**               | `## Severity Calibration`         | MUST add with CRITICAL/HIGH/MEDIUM/LOW table    |
-| **Pressure Resistance**                | `## Pressure Resistance`          | MUST add with "User Says / Your Response" table |
-| **Anti-Rationalization Table**         | `Rationalization.*Why It's WRONG` | MUST add in Standards Compliance section        |
-| **When Implementation is Not Needed**  | `## When.*Not Needed`             | MUST add with compliance signs                  |
-| **Standards Compliance Report**        | `## Standards Compliance Report`  | MUST add for dev-team agents                    |
+| Required Section                              | Pattern to Check                 | If Missing                                                          |
+| --------------------------------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| **Standards Loading (MANDATORY)**             | `## Standards Loading`           | MUST add with `_index.md` + selective module loading instructions   |
+| **Blocker Criteria - STOP and Report**        | `## Blocker Criteria`            | MUST add with decision type table                                   |
+| **Positive `<example>` block**                | `<example>`                      | MUST add at least one block showing correct vs incorrect behavior   |
+| **Standards Compliance Report** (dev-team)    | `## Standards Compliance Report` | MUST add for dev-team agents                                        |
 
-**Step 3: Verify Language Strength**
-
-Check agent uses STRONG language, not weak:
-
-```text
-SCAN for weak phrases → REPLACE with strong:
-- "should" → "MUST"
-- "recommended" → "REQUIRED"
-- "consider" → "MANDATORY"
-- "can skip" → "CANNOT skip"
-- "optional" → "NON-NEGOTIABLE"
-- "try to" → "HARD GATE:"
-```
-
-**Step 4: Before Completing Agent Modification**
+**Step 3: Before Completing Agent Modification**
 
 ```text
 CHECKLIST (all must be YES):
-[ ] Does agent have Standards Loading section?
+[ ] Does agent have Standards Loading section referencing _index.md?
 [ ] Does agent have Blocker Criteria table?
-[ ] Does agent have Cannot Be Overridden table?
-[ ] Does agent have Severity Calibration table?
-[ ] Does agent have Pressure Resistance table?
-[ ] Does agent have Anti-Rationalization table?
-[ ] Does agent have When Not Needed section?
-[ ] Does agent use STRONG language (MUST, REQUIRED, CANNOT)?
+[ ] Does agent have at least one positive <example> block?
 [ ] Does agent define when to STOP and report?
-[ ] Does agent define non-negotiable requirements?
+[ ] Is agent within line budget: ≤300 lines (implementation) or ≤200 lines (reviewer)?
 
 If any checkbox is no → Agent is INCOMPLETE. Add missing sections.
 ```
