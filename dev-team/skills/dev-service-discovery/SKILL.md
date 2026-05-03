@@ -2,551 +2,173 @@
 name: ring:dev-service-discovery
 description: |
   Scans the current Go project and identifies the Service → Module → Resource
-  hierarchy for dispatch layer registration. Detects service name and type,
-  modules (via WithModule or component structure), resources per module
-  (PostgreSQL, MongoDB, RabbitMQ), and database names for each resource.
-  Redis is excluded (managed via key prefixing).
-  Produces a visual HTML report for human decision-making.
-
-  Additionally detects MongoDB index definitions (both in-code EnsureIndexes and
-  scripts/mongodb/*.js files), generates index creation scripts for any gaps,
-  and uploads them to S3 for use during dedicated tenant database provisioning.
-
-  Also detects database names per module, cross-references them across modules
-  to find shared databases, and flags them for single-provision in dispatch layer.
+  hierarchy for dispatch layer registration. Detects service name/type, modules
+  (via WithModule or component structure), resources per module (PostgreSQL, MongoDB,
+  RabbitMQ), database names, MongoDB indexes, and cross-module shared databases.
+  Produces a visual HTML report and MongoDB index creation scripts uploaded to S3.
 
 trigger: |
   - User wants to know what to provision in dispatch layer for a service
   - User asks "what services/modules/resources does this project have?"
-  - User needs to register a service in the dispatch layer catalog
   - Before running ring:dev-multi-tenant on a new service
   - User asks about MongoDB indexes in a project
 
 skip_when: |
   - Not a Go project
   - Task does not involve service discovery, dispatch layer, or resource mapping
-  - Task is documentation-only, configuration-only, or non-code
-  - Project has no external dependencies (no database, cache, or queue)
+  - Project has no external dependencies
 
 prerequisites: |
   - Go project with go.mod in the current working directory
 
-NOT_skip_when: |
-  - "Service is simple, I can see the structure" → Detection must be evidence-based, not assumed.
-  - "Already know the modules" → Knowledge ≠ verified. Run the scan.
-
 related:
-  complementary: [ring:dev-multi-tenant, ring:dev-devops, ring:explore-codebase]
-
-output_schema:
-  format: html
-  required_sections:
-    - name: "Service Discovery Report"
-      pattern: "^## Service Discovery Report"
-      required: true
-
+  complementary: [ring:dev-multi-tenant, ring:dev-devops]
 ---
 
-# Service Discovery for Tenant-Manager
+# Service Discovery
 
-Scans the current project and produces a visual report of the **Service → Module → Resource** hierarchy. This report tells you exactly what needs to be registered in the dispatch layer (pool-manager) to provision tenants for this service.
-
----
-
-## How It Works
-
-The dispatch layer has three entities that must be registered before provisioning tenants:
-
-1. **Service** — the application (e.g., "ledger", "plugin-crm"). Has a type: `product` or `plugin`.
-2. **Module** — a logical grouping within the service (e.g., "onboarding", "transaction"). Each module gets its own database pool per tenant.
-3. **Resource** — infrastructure a module needs: `postgresql`, `mongodb`, or `rabbitmq`. Each resource gets provisioned per tenant per module.
-
-Redis is **not** a dispatch layer resource — it uses key prefixing via `GetKeyContext` and does not need registration.
-
----
+Scans Go project to produce dispatch layer registration data. Orchestrator executes all detection phases directly.
 
 ## Phase 1: Service Detection
 
-**Orchestrator executes directly. No agent dispatch.**
+```bash
+# Service name
+grep "ApplicationName\|ServiceName" internal/bootstrap/config.go 2>/dev/null | head -5
+cat .env.example 2>/dev/null | grep -i "APPLICATION_NAME\|SERVICE_NAME" | head -3
 
-```text
-Detect service identity (run in parallel):
+# Service type
+test -f go.mod && cat go.mod | head -3  # module path hints service purpose
+ls internal/adapters/ 2>/dev/null       # adapters reveal type
 
-1. Service name:
-   - Grep tool: pattern "const ApplicationName" in internal/bootstrap/ cmd/ --include="*.go"
-   - Extract the string value (e.g., "ledger", "plugin-crm", "onboarding")
-
-2. Service type:
-   - Read go.mod first line (module path)
-   - If module path contains "plugin-" → serviceType = "plugin"
-   - Else → serviceType = "product"
-
-3. Project structure:
-   - Glob tool: pattern "components/*/cmd/app/main.go"
-   - If multiple matches → unified service with multiple components (like ledger)
-   - If no matches → Glob: "cmd/app/main.go" or "cmd/*/main.go" → single-component service
-
-4. Unified service detection (if multiple components found):
-   - Glob tool: pattern "components/*/internal/bootstrap/config.go"
-   - For each component, grep "const ApplicationName" → collect module names
-   - Check if a "parent" component imports and composes the others
-     (grep "InitServiceWithOptions\|InitServersWithOptions" in each component's bootstrap)
-   - The parent component's ApplicationName = service name
-   - Each child component's ApplicationName = module name
-
-Store results:
-  service_name = "{detected name}"
-  service_type = "product" | "plugin"
-  is_unified = true | false
-  components = [{name, path, applicationName}]  // if unified
+# Unified service check
+ls components/ 2>/dev/null              # multiple components = unified service
 ```
 
----
+Output:
+```
+service_name: "my-service"
+is_unified: true | false
+components: [{name, path, applicationName}]  # if unified
+```
 
 ## Phase 2: Module Detection
 
-```text
-Detect modules (run in parallel):
+```bash
+# Strategy A: Explicit WithModule calls (preferred)
+grep -rn "WithModule(" internal/ components/ 2>/dev/null
+# Extract string arg: WithModule("onboarding") → module "onboarding"
 
-Strategy A — Explicit WithModule calls (preferred):
-   - Grep tool: pattern "WithModule\(" in internal/ components/ --include="*.go"
-   - Extract module names from the string argument: WithModule("onboarding") → "onboarding"
-   - Deduplicate (same module name used in tmpostgres, tmmongo, tmrabbitmq = one module)
+# Strategy B: Component-based (if no WithModule found)
+ls components/  # each component = one module
+# module_name = component's ApplicationName
 
-Strategy B — Component-based (if no WithModule found):
-   - Each component with its own internal/bootstrap/ and ApplicationName = one module
-   - module_name = ApplicationName of that component
-
-Strategy C — Single-component service (no components/ directory):
-   - module_name = service ApplicationName
-   - This service has exactly 1 module
-
-Merge strategies (A takes precedence, B fills gaps, C is fallback):
-  modules = [
-    {name: "onboarding", component_path: "components/onboarding/"},
-    {name: "transaction", component_path: "components/transaction/"},
-  ]
-  // or for single-component:
-  modules = [
-    {name: "my-service", component_path: "./"}
-  ]
+# Strategy C: Single-component fallback
+# module_name = service ApplicationName
 ```
 
----
+Merge: Strategy A → B fills gaps → C fallback.
 
 ## Phase 3: Resource Detection per Module
 
-```text
-For EACH detected module, scan its adapter directory:
+For each module, scan `{component_path}/internal/adapters/`:
 
-base_path = module.component_path + "internal/adapters/"
-// For single-component: base_path = "internal/adapters/"
+```bash
+# PostgreSQL: subdirectory existence
+ls {base_path}postgres/ 2>/dev/null
 
-Detect resources (run in parallel per module):
+# MongoDB
+ls {base_path}mongodb/ 2>/dev/null || ls {base_path}mongo/ 2>/dev/null
 
-1. PostgreSQL:
-   - Glob tool: pattern "{base_path}postgres/*" (directories)
-   - If any subdirectory exists → resource "postgresql" detected
-   - Count subdirectories = repository count
-   - List subdirectory names = repository names (e.g., "organization", "ledger", "account")
+# RabbitMQ
+ls {base_path}rabbitmq/ 2>/dev/null
+grep -l "producer\|Producer" {base_path}rabbitmq/ 2>/dev/null
+grep -l "consumer\|Consumer" {base_path}rabbitmq/ 2>/dev/null
 
-2. MongoDB:
-   - Glob tool: pattern "{base_path}mongodb/*" OR "{base_path}mongo/*" (directories)
-   - If any subdirectory or file exists → resource "mongodb" detected
-   - Note: metadata repositories use collection-per-entity pattern
-
-3. RabbitMQ:
-   - Glob tool: pattern "{base_path}rabbitmq/*" (files)
-   - If any file exists → resource "rabbitmq" detected
-   - Grep: "producer\|Producer" in matched files → has producer
-   - Grep: "consumer\|Consumer" in matched files → has consumer
-   - Grep: "QUEUE\|queue" in the module's bootstrap config → extract queue names
-
-4. Redis (informational only — NOT a dispatch layer resource):
-   - Glob tool: pattern "{base_path}redis/*" (files)
-   - If exists → note "Redis detected — managed via key prefixing, no dispatch layer registration needed"
-
-Store per module:
-  module.resources = [
-    {type: "postgresql", repos: ["organization", "ledger", ...], count: 7},
-    {type: "mongodb", collections_info: "metadata (collection-per-entity)"},
-    {type: "rabbitmq", has_producer: true, has_consumer: true, queues: ["BTO"]},
-  ]
-  module.redis_detected = true | false  // informational only
+# Redis (informational only — NOT a dispatch layer resource)
+ls {base_path}redis/ 2>/dev/null
 ```
-
----
 
 ## Phase 3.5: Database Name Detection per Module
 
-```text
-For EACH detected module, extract the actual database names from configuration:
+```bash
+# From bootstrap config
+grep -E 'env:"POSTGRES_NAME|env:"DB_.*_NAME|env:"MONGO_NAME|env:"MONGO_.*_NAME' \
+  {component_path}/internal/bootstrap/config.go
 
-config_path = module.component_path + "internal/bootstrap/config.go"
-env_path    = module.component_path + ".env.example"
-// For single-component: config_path = "internal/bootstrap/config.go", env_path = ".env.example"
+# From .env.example (actual values)
+grep -E "POSTGRES_NAME=|DB_.*_NAME=|MONGO_NAME=|MONGO_.*_NAME=" {component_path}/.env.example
 
-DETECT database names (run in parallel per module):
-
-1. Bootstrap config struct (source of truth for env var names):
-   - Read config_path
-   - Grep for env tags matching database name patterns:
-     a. PostgreSQL: env:"POSTGRES_NAME" or env:"DB_<MODULE_UPPER>_NAME"
-     b. MongoDB:    env:"MONGO_NAME" or env:"MONGO_<MODULE_UPPER>_NAME"
-   - Extract the Go struct field name and env var name
-   - Note: Prefixed variants (DB_<MODULE>_NAME) are used in unified services
-     where a parent component composes child modules (e.g., ledger composing
-     onboarding + transaction). Non-prefixed (POSTGRES_NAME) is the standard form.
-
-2. .env.example (source of truth for default values):
-   - Read env_path
-   - For each env var name found in step 1, extract the default value:
-     a. PostgreSQL: POSTGRES_NAME=<value> or DB_<MODULE_UPPER>_NAME=<value>
-     b. MongoDB:    MONGO_NAME=<value> or MONGO_<MODULE_UPPER>_NAME=<value>
-   - These are the actual database names used in development
-
-3. External datasources (DATASOURCE_* pattern):
-   - Grep in env_path for: DATASOURCE_*_DATABASE=<value>
-   - Each match = one external database connection
-   - Extract: datasource name (from env var), database name (from value), type (from DATASOURCE_*_TYPE)
-   - These represent read-only connections to OTHER services' databases
-
-4. Fallback (if .env.example not found or value empty):
-   - Use the module name as likely database name (common convention)
-   - Flag as "inferred — verify manually"
-
-Store per module:
-  module.databases = {
-    postgresql: {env_var: "POSTGRES_NAME", default_value: "onboarding", source: ".env.example"},
-    mongodb:    {env_var: "MONGO_NAME", default_value: "onboarding", source: ".env.example"},
-  }
-  module.external_datasources = [
-    {name: "onboarding", env_prefix: "DATASOURCE_ONBOARDING", database: "onboarding", type: "postgresql"},
-  ]
+# External datasources
+grep -E "DATASOURCE_.*_DATABASE=" {component_path}/.env.example
 ```
 
----
+Cross-reference across modules: same database name in 2+ modules = shared (provision once).
 
-## Phase 3.6: Shared Database Detection (Cross-Module Analysis)
+## Phase 4: MongoDB Index Detection
 
-```text
-AFTER all modules have been scanned (Phases 3 + 3.5 complete), cross-reference
-database names across ALL modules to detect shared databases.
+```bash
+# In-code EnsureIndexes
+grep -rn "EnsureIndexes\|CreateIndexes" {component_path}/internal/ 2>/dev/null
 
-This is CRITICAL for dispatch layer: when two modules point to the same database,
-dispatch layer must provision ONE database (not two) and grant access to both modules.
+# Script-based indexes
+ls scripts/mongodb/*.js 2>/dev/null
+```
 
-DETECT shared databases:
+For each module with MongoDB and no index script → generate `scripts/mongodb/{module}.js`:
+```javascript
+// Index creation for {module} module
+db = db.getSiblingDB('{database_name}');
+db.{collection}.createIndex({field: 1}, {background: true, name: "idx_{field}"});
+```
 
-1. Internal databases (same DB name across modules):
-   - Group all module.databases entries by (resource_type, default_value)
-   - If 2+ modules share the same (type, db_name) → mark as SHARED
-   - Example: module-a.mongodb.default_value == module-b.mongodb.default_value == "myservice-db"
-     → shared_databases.mongodb["myservice-db"] = ["module-a", "module-b"]
-   - Example: module-a.postgresql.default_value == module-b.postgresql.default_value == "myservice"
-     → shared_databases.postgresql["myservice"] = ["module-a", "module-b"]
+Upload to S3: `s3://lerian-dispatch-layer/indexes/{service_name}/{module}.js`
 
-2. External datasources (same DATASOURCE_*_DATABASE across modules):
-   - Group all module.external_datasources by (database, type)
-   - If 2+ modules reference the same external DB → mark as SHARED
-   - Example: module-a and module-b both have DATASOURCE_FOO_DATABASE=foo
-     → shared_external["foo"] = ["module-a", "module-b"]
+## Phase 5: Generate HTML Report
 
-TENANT-MANAGER IMPLICATIONS (include in report):
+Dispatch `ring:visualize`:
 
-For shared MongoDB:
-  - Tenant-manager provisions ONE MongoDB database per tenant
-  - Both modules receive their own credentials to the SAME tenant database
-  - Collections are shared — both modules read/write the same collections
+```
+Generate HTML report showing:
+- Service: {service_name} | Unified: {is_unified}
+- For each module:
+  - Resources table: type, repositories/collections, has_producer, has_consumer, queues
+  - Database names: postgres_db, mongo_db (with env var names)
+  - Redis: detected / not detected (note: key prefixing only)
+- Shared databases: list with modules that share them
+- Dispatch layer registration template (JSON)
+- MongoDB index scripts: generated / none needed
 
-For shared PostgreSQL:
-  - Tenant-manager provisions ONE PostgreSQL database per tenant
-  - Both modules connect to the SAME database
-  - Each module may use the same schema or have its own schema within the
-    shared database (depends on service design — check DATASOURCE_*_SCHEMAS)
-  - Tenant-manager creates the schema(s) with tables inside the single database
-  - Each module gets its own credentials with appropriate schema access
+Style: clean, data-dense table layout
+```
 
-The registration checklist must list the database ONCE with all modules
-that access it. DO NOT create duplicate databases.
+## Output: Dispatch Layer Registration Template
 
-Store results:
-  shared_databases = {
-    mongodb: {
-      "myservice-db": {modules: ["module-a", "module-b"], provision_once: true}
-    },
-    postgresql: {
-      // empty if no shared PG databases detected in this example
+```json
+{
+  "service": "{service_name}",
+  "modules": [
+    {
+      "name": "{module_name}",
+      "resources": [
+        {
+          "type": "postgresql",
+          "database": "{db_name}",
+          "env_var": "POSTGRES_NAME"
+        },
+        {
+          "type": "mongodb",
+          "database": "{db_name}",
+          "env_var": "MONGO_NAME"
+        },
+        {
+          "type": "rabbitmq",
+          "has_producer": true,
+          "has_consumer": true,
+          "queues": ["{queue_name}"]
+        }
+      ]
     }
-  }
-  shared_external = {
-    "foo": {modules: ["module-a", "module-b"], type: "postgresql"}
-  }
+  ],
+  "shared_databases": []
+}
 ```
-
----
-
-## Phase 3.7: MongoDB Index Detection & Script Generation
-
-**Only execute this phase if MongoDB was detected in any module during Phase 3.**
-
-**Read the full reference:** `references/mongodb-index-detection.md` (in this skill's directory)
-
-Summary of steps:
-1. **Detect in-code indexes** — scan `EnsureIndexes()` / `IndexModel{}` in MongoDB adapter files. Store keys as flat objects (e.g., `{"tenant_id": 1, "service_name": 1}`) — same format used by migration files
-2. **Detect existing migration files** — scan `scripts/mongodb/*.up.json` and `*.down.json` for existing per-index migration pairs
-3. **Cross-reference** — match in-code indexes against migration files (covered / missing_migration / migration_only)
-4. **Generate missing migration files** — for each missing index, create a `.up.json` and `.down.json` file pair. Each index is an atomic migration (one pair per index, NOT grouped by collection). Naming: `{NNNNNN}_{index_name}.up.json` / `.down.json` (index_name already includes collection prefix, e.g., `idx_connection_org_config_name`). Optionally generate convenience `.js` scripts for manual `mongosh` execution (NOT uploaded to S3)
-5. **Upload to S3** — asks which bucket to use, then uploads `.up.json`/`.down.json` pairs following the migrations bucket convention: `s3://{bucket}/{service}/{module}/mongodb/`. The dispatch layer reads these files from S3 and applies them automatically — `.up.json` to create indexes when provisioning tenant databases, `.down.json` to drop indexes when rolling back or deprovisioning. Requires valid AWS credentials (verify with `aws sts get-caller-identity`). S3 upload failures are non-blocking — skill continues to Phase 4 with upload status reported in the HTML report
-
-Store results for Phase 4 report:
-```text
-  index_coverage = {
-    covered: [{collection, keys, index_name, in_code_file, migration_file}],
-    missing_migration: [{collection, keys, index_name, in_code_file}],
-    migration_only: [{collection, keys, index_name, migration_file}],
-  }
-```
-
----
-
-## Phase 4: Generate Visual Report
-
-**MANDATORY: Invoke `Skill("ring:visualize")` to produce the report.**
-
-Read `default/skills/visualize/templates/data-table.html` first to absorb table patterns.
-
-**The report is focused on what needs to be configured in the dispatch layer for multi-tenant to work for this service.**
-
-**The HTML report MUST include these sections:**
-
-### 1. Tenant-Manager Configuration Summary
-
-Card showing:
-- **Service Name:** `{service_name}`
-- **Service Type:** `product` | `plugin`
-- **Modules:** `{count}`
-- **Total Resources:** `{count across all modules}`
-- **Shared Databases:** `{count}` (databases accessed by 2+ modules — provision once)
-- **External Datasources:** `{count}` (read-only connections to other services)
-
-```markdown
-## Tenant-Manager Configuration for: {service_name}
-
-One card per module. When a resource is shared with another module, display a
-**SHARED** badge and list the other modules that access it.
-
-**Example A — Shared database (two modules pointing to the same DB):**
-
-```
-┌─────────────────────────────────────────────────┐
-│ MODULE: module-a                                │
-├─────────────────────────────────────────────────┤
-│ MongoDB ✅                                      │
-│   DB name: "myservice-db" (MONGO_NAME)          │
-│   🔗 SHARED DB with: module-b                  │
-│   ⚠ Provision ONCE — both modules get           │
-│     credentials to the same tenant database     │
-│                                                 │
-│ RabbitMQ ✅  (producer)                         │
-└─────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────┐
-│ MODULE: module-b                                │
-├─────────────────────────────────────────────────┤
-│ MongoDB ✅                                      │
-│   DB name: "myservice-db" (MONGO_NAME)          │
-│   🔗 SHARED DB with: module-a                  │
-│   ⚠ Provision ONCE — see module-a               │
-│                                                 │
-│ RabbitMQ ✅  (consumer)                         │
-└─────────────────────────────────────────────────┘
-```
-
-**Example B — Separate databases (ledger-style: each module has its own DB):**
-
-```
-┌──────────────────────────────────────────┐
-│ MODULE: onboarding                       │
-├──────────────────────────────────────────┤
-│ PostgreSQL ✅  (7 repositories)          │
-│   DB name: "onboarding" (POSTGRES_NAME)   │
-│   organization, ledger, account,         │
-│   asset, portfolio, segment,             │
-│   accounttype                            │
-│                                          │
-│ MongoDB ✅  (metadata)                   │
-│   DB name: "onboarding" (MONGO_NAME)     │
-└──────────────────────────────────────────┘
-```
-
-**Database name display rules:**
-- Show the default value from `.env.example` in quotes
-- Show the env var name in parentheses for reference
-- If inferred (no `.env.example`), show with "(inferred)" suffix
-- External datasources appear in a separate sub-section per module
-- **SHARED databases** get a `🔗 SHARED DB with: <modules>` line and a `⚠ Provision ONCE` warning
-
-### 2. MongoDB Index Migrations
-
-Table showing per-index migration file pairs and their S3 status:
-
-```
-| Migration File                             | Module      | Collection | S3 Status  | S3 Path                                       |
-|--------------------------------------------|-------------|------------|------------|-----------------------------------------------|
-| 000001_metadata_idx_tenant_id              | onboarding  | metadata   | ✅ Uploaded | s3://{bucket}/{service}/onboarding/mongodb/    |
-| 000002_metadata_idx_key_unique             | onboarding  | metadata   | ✅ Uploaded | s3://{bucket}/{service}/onboarding/mongodb/    |
-| 000003_metadata_idx_entity_type            | onboarding  | metadata   | ⚠️ Missing  | (generated locally, not yet uploaded)          |
-```
-
-Each row = one `.up.json` + one `.down.json` file pair (one index per pair).
-
-If there are indexes in code without migration files:
-```
-⚠️  {N} indexes detected in code without corresponding .up.json/.down.json pairs.
-    Migration files were generated in scripts/mongodb/ — upload to S3 at
-    s3://{bucket}/{service}/{module}/mongodb/ so the dispatch layer can
-    apply them when provisioning new tenant databases.
-    Without these files, new tenant databases will have NO indexes.
-```
-
-### 2.5. Shared Databases Summary
-
-**Only display this section if shared databases were detected in Phase 3.6.**
-
-Table format:
-
-```
-| DB Type     | Database Name    | Shared By              | Provision Strategy              |
-|-------------|------------------|------------------------|---------------------------------|
-| MongoDB     | "myservice-db"   | module-a, module-b     | 1 database, 2 credential sets   |
-| PostgreSQL  | "myservice"      | module-x, module-y     | 1 database, shared schema       |
-```
-
-**Provision strategy explanations:**
-- **1 database, N credential sets** — dispatch layer creates ONE database per tenant; each module gets its own credentials to the same DB. For MongoDB: shared collections. For PostgreSQL: shared schema or separate schemas within the same database.
-- **1 database, separate schemas** — when 2 modules share a PostgreSQL DB but use different schemas, dispatch layer creates ONE database with all schemas inside; each module accesses its own schema with its own credentials
-- **Read-only, shared credentials** — external datasource (not tenant-managed); modules connect with the same read-only credentials
-
-### 3. Service Hierarchy Diagram
-
-Mermaid diagram. Shared databases use a single node with connections from multiple modules:
-
-**Example A — Shared database (two modules, same DB):**
-
-```mermaid
-graph TD
-    S["Service: myservice (product)"]
-    S --> M1["Module: module-a"]
-    S --> M2["Module: module-b"]
-    DB1[("MongoDB\nDB: myservice-db\n🔗 SHARED")]
-    M1 --> DB1
-    M2 --> DB1
-    M1 --> Q1["RabbitMQ"]
-    M2 --> Q2["RabbitMQ"]
-```
-
-**Example B — Separate databases (ledger-style):**
-
-```mermaid
-graph TD
-    S["Service: ledger (product)"]
-    S --> M1["Module: onboarding"]
-    S --> M2["Module: transaction"]
-    M1 --> R1["PostgreSQL (7 repos)\nDB: onboarding"]
-    M1 --> R2["MongoDB\nDB: onboarding"]
-    M2 --> R3["PostgreSQL (6 repos)\nDB: transaction"]
-    M2 --> R4["MongoDB\nDB: transaction"]
-    M2 --> R5["RabbitMQ"]
-```
-
-**Diagram rules:**
-- Shared databases use a SINGLE cylindrical node connected to ALL modules that access it
-- Shared nodes include `🔗 SHARED` label
-- Non-shared databases are drawn per module as before
-- RabbitMQ is always drawn per module (no shared analysis needed for queues)
-
-### 4. Tenant-Manager Registration Checklist
-
-**Example A — With shared databases (two modules, same DB):**
-
-```markdown
-## What to register in dispatch layer:
-
-- [ ] **Service:** `myservice` (type: product, isolation: database)
-
-- [ ] **Module:** `module-a`
-  - [ ] Resource: mongodb (DB: "myservice-db", env: MONGO_NAME)
-        ⚠ SHARED DB with module-b — provision ONCE, grant access to both
-  - [ ] Resource: rabbitmq
-
-- [ ] **Module:** `module-b`
-  - [ ] Resource: mongodb → SAME DB as module-a ("myservice-db")
-        DO NOT create a second database — reuse module-a's
-  - [ ] Resource: rabbitmq
-
-## Shared databases (provision ONCE, access by multiple modules):
-| DB Type  | Database Name   | Modules              | Action                        |
-|----------|-----------------|----------------------|-------------------------------|
-| mongodb  | "myservice-db"  | module-a, module-b   | 1 database, 2 credential sets |
-```
-
-**Example B — Without shared databases (ledger-style):**
-
-```markdown
-## What to register in dispatch layer:
-
-- [ ] **Service:** `ledger` (type: product, isolation: database)
-
-- [ ] **Module:** `onboarding`
-  - [ ] Resource: postgresql (DB: "onboarding", env: POSTGRES_NAME)
-  - [ ] Resource: mongodb (DB: "onboarding", env: MONGO_NAME)
-
-- [ ] **Module:** `transaction`
-  - [ ] Resource: postgresql (DB: "transaction", env: POSTGRES_NAME)
-  - [ ] Resource: mongodb (DB: "transaction", env: MONGO_NAME)
-  - [ ] Resource: rabbitmq
-```
-
-**Checklist rules:**
-- Shared databases appear with `⚠ SHARED DB` warning on FIRST module and `→ SAME DB as <module>` reference on subsequent modules
-- A dedicated "Shared databases" summary table lists all shared DBs with provisioning action
-- External datasources note which modules access them
-- MongoDB index S3 paths are listed per module when available
-
-**Save to:** `docs/service-discovery.html` in the project root.
-
-**Open in browser:**
-```text
-macOS: open docs/service-discovery.html
-Linux: xdg-open docs/service-discovery.html
-```
-
----
-
-## Anti-Rationalization Table
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "I already know the modules" | Knowledge ≠ evidence. The scan catches things you miss. | **Run the scan** |
-| "This service is simple, just one module" | Simple services may still have multiple resource types. | **Run the scan** |
-| "Redis should be included as a resource" | Redis uses key prefixing (`GetKeyContext`), not per-tenant provisioning. It is not a dispatch layer resource. | **Exclude Redis from resources** |
-| "The report doesn't need to be visual" | Visual reports are for human decision-making. A JSON dump is not actionable. | **Generate HTML via ring:visualize** |
-| "WithModule not found, so no modules" | Fall back to component structure or ApplicationName. A service always has at least one module. | **Use Strategy B or C** |
-| "No migration files needed, EnsureIndexes handles it" | In-code indexes run at app startup — but only if the app has connected. The dispatch layer reads `.up.json`/`.down.json` from S3 and applies them automatically when provisioning dedicated tenant databases. Without these files, new tenant databases have no indexes. | **Generate .up.json/.down.json pairs for all in-code indexes** |
-| "I'll just run the indexes manually" | Manual index creation is error-prone and not reproducible. Migration file pairs are atomic, idempotent, documented, and version-controlled. | **Generate migration files** |
-| "Same DB name = probably a mistake" | Multiple modules sharing a database is a deliberate architecture pattern. Two modules may read/write the same tables. Detect and flag it, don't ignore it. | **Run Phase 3.6 cross-module analysis** |
-| "Each module gets its own database, always" | Not true. Two modules often share the same database (same tables, same schema). Creating duplicates breaks tenant isolation — dispatch layer must provision ONE database and grant both modules access. | **Detect shared databases and mark provision-once** |
-| "Index names aren't needed, MongoDB auto-generates them" | Auto-generated names (e.g., `field_1`) are inconsistent across environments and break down migrations. The `.down.json` needs explicit names to drop indexes reliably. | **Every index in `.up.json` MUST have `"name"` in options (`idx_*` or `uniq_*`). `.down.json` MUST reference the same names.** |
-| "Key order in JSON doesn't matter" | MongoDB compound index key order determines query optimization (ESR rule). JSON key order in `.up.json` MUST match the `bson.D` order in Go source code. Wrong order = wrong index = degraded queries. | **Validate key order against code (Step 3.5 V2). Fix and re-upload if mismatched.** |
-| "The S3 migrations are already there, skip validation" | Existing ≠ correct. S3 migrations may have missing names, wrong key order, or stale index counts. Step 3.5 validates all four dimensions before proceeding. | **Run Step 3.5 validation on ALL existing S3 migration files.** |
-
----
-
-## Pressure Resistance
-
-| User Says | This Is | Response |
-|-----------|---------|----------|
-| "Just tell me the modules, no report" | SCOPE_REDUCTION | "The visual report takes seconds and gives you a complete checklist for dispatch layer registration. Generating it." |
-| "Include Redis as a resource" | SCOPE_EXPANSION | "Redis is managed via key prefixing and does not require dispatch layer registration. Excluding it." |
-| "Skip the PostgreSQL repo count" | SCOPE_REDUCTION | "Repository count helps you understand the scope of each module. Including it." |

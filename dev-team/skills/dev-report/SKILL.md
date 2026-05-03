@@ -1,666 +1,126 @@
 ---
 name: ring:dev-report
 description: |
-  Development cycle feedback system - calculates assertiveness scores, analyzes prompt
-  quality for all agents executed, aggregates cycle metrics, performs root cause analysis
-  on failures, and generates improvement reports to docs/feedbacks/cycle-{date}/.
+  Feedback loop skill — collects task metrics, calculates quality scores, and writes
+  a structured development report for continuous improvement tracking.
 
 trigger: |
-  - Invoked EXACTLY ONCE per dev-cycle at Step 12.1 of ring:dev-cycle (and equivalent in ring:dev-cycle-frontend).
-  - Per-task metrics are accumulated into state.tasks[*].accumulated_metrics during the cycle and analyzed here in aggregate at cycle end.
+  - After task completion in any dev cycle
+  - User requests a development report or feedback summary
+  - ring:dev-cycle Gate 10 handoff
 
 skip_when: |
-  - Cycle still in progress -> wait for Step 12.1 (cycle completion)
-  - Feedback already recorded for this cycle -> proceed
-
-NOT_skip_when: |
-  - "Exploratory/spike work" → all work produces learnings. Track metrics for spikes too.
-  - "Just experimenting" → Experiments need metrics to measure success. No exceptions.
-
-sequence:
-  after: [ring:dev-validation]
-
-related:
-  complementary: [ring:dev-cycle, ring:dev-validation]
+  - Task was documentation-only with no code changes
+  - Not inside a development cycle
 ---
 
-# Dev Feedback Loop
+# Dev Report — Feedback Loop
 
-## Overview
+Collects metrics and writes a structured report for completed development tasks.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) for canonical validation and gate requirements. This skill collects metrics and generates improvement reports.
+## Step 1: Collect Metrics
 
-**Invocation Contract:** This skill is invoked EXACTLY ONCE per dev-cycle, at Step 12.1 of ring:dev-cycle (and equivalent in ring:dev-cycle-frontend). Per-task invocations are NOT supported. This skill expects aggregated data spanning ALL tasks in the cycle.
-
-Continuous improvement system that tracks development cycle effectiveness through assertiveness scores, identifies recurring failure patterns, and generates actionable improvement suggestions.
-
-**Core principle:** What gets measured gets improved. Track every gate transition to identify systemic issues.
-
-## Step 0: TodoWrite Tracking (MANDATORY FIRST ACTION)
-
-<cannot_skip>
-- MUST add feedback-loop to todo list before any other action
-- MUST execute TodoWrite IMMEDIATELY when skill starts
-- CANNOT proceed to Step 1 without TodoWrite execution
-</cannot_skip>
-
-**⛔ HARD GATE: Before any other action, you MUST add feedback-loop to todo list.**
-
-**Execute this TodoWrite call IMMEDIATELY when this skill starts:**
+Gather the following from the completed task:
 
 ```yaml
-TodoWrite tool:
-  todos:
-    - id: "feedback-loop-execution"
-      content: "Execute ring:dev-report: collect metrics, calculate scores, write report"
-      status: "in_progress"
-      priority: "high"
+task_id: {unit_id}
+completed_at: {ISO timestamp}
+agent_used: {ring:backend-engineer-golang | ring:frontend-engineer | etc.}
+language: {go | typescript | python}
+service_type: {api | worker | batch | cli | frontend | bff}
+
+tdd:
+  red_status: completed | skipped | failed
+  green_status: completed | skipped | failed
+
+coverage:
+  actual_percent: {float}
+  threshold: {float}
+  verdict: PASS | FAIL
+
+delivery:
+  requirements_total: {int}
+  requirements_delivered: {int}
+  verdict: PASS | PARTIAL | FAIL
+
+quality:
+  lint_pass: true | false
+  file_size_violations: {int}
+  license_violations: {int}
+  migration_safety: PASS | FAIL | N/A
 ```
 
-**Why this is mandatory:**
-- TodoWrite creates visible tracking of feedback-loop execution
-- Prevents skill from being "forgotten" mid-execution
-- Creates audit trail that feedback was collected
-- Hook enforcer checks for this todo item
+## Step 2: Calculate Score
 
-**After completing all feedback-loop steps, mark as completed:**
+```
+score = 0
 
-```yaml
-TodoWrite tool:
-  todos:
-    - id: "feedback-loop-execution"
-      content: "Execute ring:dev-report: collect metrics, calculate scores, write report"
-      status: "completed"
-      priority: "high"
+TDD RED completed:    +20
+TDD GREEN completed:  +20
+Coverage ≥ threshold: +20
+Delivery PASS:        +20
+Lint pass:            +10
+No file size violations: +5
+License headers OK:   +5
+
+Total: 100 possible
 ```
 
-**Anti-Rationalization:**
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "TodoWrite slows things down" | 1 tool call = 2 seconds. Not an excuse. | **Execute TodoWrite NOW** |
-| "I'll remember to complete it" | Memory is unreliable. Todo is proof. | **Execute TodoWrite NOW** |
-| "Skill is simple, no tracking needed" | Simple ≠ optional. all skills get tracked. | **Execute TodoWrite NOW** |
-
-**You CANNOT proceed to Step 1 without executing TodoWrite above.**
-
----
-
-## Severity Calibration
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Score 0 (rejected), system failure | User rejected validation, complete workflow failure |
-| **HIGH** | Score < 70, threshold breach | Assertiveness below 70, recurring pattern unresolved |
-| **MEDIUM** | Score 70-79, pattern emerging | Acceptable but degraded, same issue twice |
-| **LOW** | Score 80-89, minor improvements | Good but not excellent, optimization opportunity |
-
-Report all severities. CRITICAL = mandatory post-mortem. HIGH = root cause analysis. MEDIUM = track pattern. LOW = document.
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
-
-**Feedback-specific note:** Feedback MUST be collected for every completed task, regardless of outcome or complexity. "Simple tasks" and "perfect scores" still need tracking.
-
-## Common Rationalizations - REJECTED
-
-See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
-
-**Feedback-specific rationalizations:**
-
-| Excuse | Reality |
-|--------|---------|
-| "It was just a spike/experiment" | Spikes produce learnings. Track what worked and what didn't. |
-| "Perfect score, no insights" | Perfect scores reveal what works. Document for replication. |
-| "Reporting my own failures reflects badly" | Unreported failures compound. Self-reporting is professional. |
-| "Round up to passing threshold" | Rounding is falsification. Report exact score. |
-
-## Red Flags - STOP
-
-See [shared-patterns/shared-red-flags.md](../shared-patterns/shared-red-flags.md) for universal red flags.
-
-If you catch yourself thinking any of those patterns, STOP immediately. Collect metrics for every task.
-
----
-
-## Self-Preservation Bias Prevention
-
-**Agents must report accurately, even when scores are low:**
-
-| Bias Pattern | Why It's Wrong | Correct Behavior |
-|-------------|----------------|------------------|
-| "Round up score" | Falsifies data, masks trends | Report exact: 68, not 70 |
-| "Skip failed task" | Selection bias, incomplete picture | Report all tasks |
-| "Blame external factors" | Avoids actionable insights | Document factors + still log score |
-| "Report only successes" | Survivorship bias | Success and failure needed |
-
-**Reporting protocol:**
-1. Calculate score using exact formula (no rounding)
-2. Report score regardless of value
-3. If score < 70, mandatory root cause analysis
-4. Document honestly - "I made this mistake" not "mistake was made"
-5. Patterns in low scores = improvement opportunities, not blame
-
-**Self-interest check:** If you're tempted to adjust a score, ask: "Would I report this score if someone else achieved it?" If yes, report as-is.
-
-## Mandatory Feedback Collection
-
-<cannot_skip>
-- Feedback collection for EVERY completed task
-- No exemptions for task complexity, outcome, or time pressure
-- "Nothing to report" is still data that must be recorded
-</cannot_skip>
-
-**Non-negotiable:** Feedback MUST be collected for every completed task, regardless of:
-
-| Factor | Still Collect? | Reason |
-|--------|---------------|--------|
-| Task complexity | ✅ YES | Simple tasks reveal patterns |
-| Outcome quality | ✅ YES | 100-score tasks need tracking |
-| User satisfaction | ✅ YES | Approval ≠ process quality |
-| Time pressure | ✅ YES | Metrics take <5 min |
-| "Nothing to report" | ✅ YES | Absence of issues is data |
-
-**Consequence:** Skipping feedback breaks continuous improvement loop and masks systemic issues.
-
----
-
-## Repeated Feedback Detection
-
-**When the same feedback appears multiple times:**
-
-| Repetition | Classification | Action |
-|------------|----------------|--------|
-| 2nd occurrence | RECURRING | Flag as recurring issue. Add to patterns. |
-| 3rd occurrence | UNRESOLVED | Escalate. Stop current work. Report blocker. |
-
-**Recurring feedback indicates systemic issue not being addressed.**
-
-**Escalation format:**
-```markdown
-## RECURRING ISSUE - Escalation Required
-
-**Issue:** [Description]
-**Occurrences:** [Count] times across [N] tasks
-**Pattern:** [What triggers this issue]
-**Previous Responses:** [What was tried]
-
-**Recommendation:** [Systemic fix needed]
-**Awaiting:** User decision on root cause resolution
-```
-
----
-
-## Threshold Alerts - MANDATORY RESPONSE
-
-<block_condition>
-- Task score < 70 → Root cause analysis required
-- Gate iterations > 3 → STOP, request human intervention
-- Cycle average < 80 → Deep analysis required
-</block_condition>
-
-**When thresholds are breached, response is REQUIRED:**
-
-| Alert | Threshold | Required Action |
-|-------|-----------|-----------------|
-| Task score | < 70 | Document what went wrong. Identify root cause. |
-| Gate iterations | > 3 | STOP. Request human intervention. Document blocker. |
-| Cycle average | < 80 | Deep analysis required. Pattern identification mandatory. |
-
-**You CANNOT proceed past threshold without documented response.**
-
-## Blocker Criteria - STOP and Report
-
-**always pause and report blocker for:**
-
-| Decision Type | Examples | Action |
-|--------------|----------|--------|
-| **Score interpretation** | "Is 65 acceptable?" | STOP. Follow interpretation table. |
-| **Threshold override** | "Skip analysis for this task" | STOP. Analysis is MANDATORY for low scores. |
-| **Pattern judgment** | "Is this pattern significant?" | STOP. Document pattern, let user decide significance. |
-| **Improvement priority** | "Which fix first?" | STOP. Report all findings, let user prioritize. |
-
-**Before skipping any feedback collection:**
-1. Check if task is complete (feedback required for all completed tasks)
-2. Check threshold status (alerts are mandatory)
-3. If in doubt → STOP and report blocker
-
-**You CANNOT skip feedback collection. Period.**
-
----
-
-## Assertiveness Score Calculation
-
-Base score of 100 points, with deductions for inefficiencies:
-
-### Penalty Matrix
-
-| Event | Penalty | Max Penalty | Rationale |
-|-------|---------|-------------|-----------|
-| Extra iteration (beyond 1) | -10 per iteration | -30 | Each iteration = rework |
-| Review FAIL verdict | -20 | -20 | Critical/High issues found |
-| Review NEEDS_DISCUSSION | -10 | -10 | Uncertainty in implementation |
-| Unmet criterion at validation | -10 per criterion | -40 | Requirements gap |
-| User REJECTED validation | -100 (score = 0) | -100 | Complete failure |
-
-### Score Calculation Formula
-
-`score = 100 - min(30, extra_iterations*10) - review_fail*20 - needs_discussion*10 - min(40, unmet_criteria*10)` | User rejected → score = 0
-
-### Score Interpretation
-
-| Score Range | Rating | Action Required |
-|-------------|--------|-----------------|
-| 90-100 | Excellent | No action needed |
-| 80-89 | Good | Minor improvements possible |
-| 70-79 | Acceptable | Review patterns, optimize |
-| 60-69 | Needs Improvement | Root cause analysis required |
-| < 60 | Poor | Mandatory deep analysis |
-| 0 | Failed | Full post-mortem required |
-
-## Step 1: Collect Cycle Metrics
-
-**MANDATORY: Execute this step for all tasks, regardless of:**
-- Score value (even 100%)
-- User satisfaction (even immediate approval)
-- Outcome quality (even perfect)
-
-**Anti-exemption check:**
-If you're thinking "perfect outcome, skip metrics" → STOP. This is Red Flag at line 75 ("Perfect outcome, skip the metrics").
-
-**After cycle completion, gather from `agent_outputs` in state file:**
-
-### Aggregated Task Metrics: `state.tasks[*].accumulated_metrics`
-
-Per-task metrics accumulated during the cycle at each task's approval checkpoint (Step 11.2 of ring:dev-cycle). Use these to construct the cycle-wide analysis instead of single-task analysis.
-
-**Semantic shift:** Analyze ALL tasks' aggregated metrics + the full `agent_outputs` for the cycle, not a single task's data.
-
-Per-task fields under `state.tasks[i].accumulated_metrics`:
-- `gate_durations_ms`: {gate_name: duration_ms for each completed gate}
-- `review_iterations`: review iterations for this task
-- `testing_iterations`: sum across all testing gates (unit, fuzz, property, integration, chaos)
-- `issues_by_severity`: {CRITICAL, HIGH, MEDIUM, LOW counts from Gate 8 output}
-
-**Aggregation pattern for cycle-wide analysis:**
-
-```yaml
-# Sum across all tasks in the cycle:
-cycle_gate_durations_ms = sum(t.accumulated_metrics.gate_durations_ms for t in state.tasks)
-cycle_review_iterations = sum(t.accumulated_metrics.review_iterations for t in state.tasks)
-cycle_testing_iterations = sum(t.accumulated_metrics.testing_iterations for t in state.tasks)
-cycle_issues_by_severity = {
-  "CRITICAL": sum(t.accumulated_metrics.issues_by_severity.CRITICAL for t in state.tasks),
-  "HIGH":     sum(t.accumulated_metrics.issues_by_severity.HIGH     for t in state.tasks),
-  "MEDIUM":   sum(t.accumulated_metrics.issues_by_severity.MEDIUM   for t in state.tasks),
-  "LOW":      sum(t.accumulated_metrics.issues_by_severity.LOW      for t in state.tasks),
-}
-```
-
-### Structured Data Fields (NEW)
-
-The state file now contains structured error/issue data for direct analysis:
-
-| Gate | Structured Fields | Use For |
-|------|-------------------|---------|
-| Gate 0 | `implementation.standards_compliance`, `implementation.iterations` | Implementation standards patterns |
-| Gate 1 | `devops.standards_compliance`, `devops.verification_errors[]` | DevOps standards + build/deploy failures |
-| Gate 2 | `ring:sre.standards_compliance`, `ring:sre.validation_errors[]` | SRE standards + observability gaps |
-| Gate 3 | `testing.standards_compliance`, `testing.failures[]`, `testing.uncovered_criteria[]` | Testing standards + test failures + coverage |
-| Gate 4 | `review.{reviewer}.standards_compliance`, `review.{reviewer}.issues[]` | Review standards + issues by category/severity |
-
-**All gates have `standards_compliance` with:**
-- `total_sections`, `compliant`, `not_applicable`, `non_compliant`
-- `gaps[]` - array of non-compliant sections with details
-
-### Reading Structured Data
-
-```yaml
-# From state file, extract standards compliance from all gates:
-all_standards_gaps = [
-  ...agent_outputs.implementation.standards_compliance.gaps,
-  ...agent_outputs.devops.standards_compliance.gaps,
-  ...agent_outputs.ring:sre.standards_compliance.gaps,
-  ...agent_outputs.testing.standards_compliance.gaps,
-  ...agent_outputs.review.code_reviewer.standards_compliance.gaps,
-  ...agent_outputs.review.business_logic_reviewer.standards_compliance.gaps,
-  ...agent_outputs.review.security_reviewer.standards_compliance.gaps
-]
-
-# Gate-specific errors/issues:
-devops_errors = agent_outputs.devops.verification_errors
-sre_errors = agent_outputs.ring:sre.validation_errors
-test_failures = agent_outputs.testing.failures
-uncovered_acs = agent_outputs.testing.uncovered_criteria
-review_issues = [
-  ...agent_outputs.review.code_reviewer.issues,
-  ...agent_outputs.review.business_logic_reviewer.issues,
-  ...agent_outputs.review.security_reviewer.issues
-]
-
-# Aggregate standards compliance metrics:
-total_standards_sections = sum(all_gates.standards_compliance.total_sections)
-total_compliant = sum(all_gates.standards_compliance.compliant)
-overall_compliance_rate = total_compliant / total_standards_sections * 100
-```
-
-### Iteration Penalty Calculation
-
-```yaml
-# Total extra iterations across all gates:
-extra_iterations = (
-  max(0, implementation.iterations - 1) +
-  max(0, devops.iterations - 1) +
-  max(0, ring:sre.iterations - 1) +
-  max(0, testing.iterations - 1) +
-  max(0, review.iterations - 1)
-)
-```
-
-## Step 2: Calculate Assertiveness Score
-
-**Apply formula:** Base 100 - deductions (extra iterations, review failures, unmet criteria) = Final Score / 100. Map to rating per interpretation table.
-
-## Step 3: Analyze Prompt Quality (Agents Only)
-
-After calculating assertiveness, analyze prompt quality for all **agents** that executed in the cycle (across all tasks).
-
-### 3.1 Load Agent Outputs
-
-Read `agent_outputs` from state file (`docs/ring:dev-cycle/current-cycle.json` or `docs/ring:dev-refactor/current-cycle.json`):
-
-```text
-Agents to analyze (if executed, not null):
-  - implementation: ring:backend-engineer-golang | ring:backend-engineer-typescript
-  - devops: ring:devops-engineer
-  - ring:sre: ring:sre
-  - testing: ring:qa-analyst
-  - review: ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer
-```
-
-### 3.2 Dispatch Prompt Quality Reviewer
-
-<dispatch_required agent="prompt-quality-reviewer">
-Analyze prompt quality for all agents executed in this task.
-</dispatch_required>
-
-```text
-Task tool:
-  subagent_type: "ring:prompt-quality-reviewer"
-  prompt: |
-    CONTEXT: You are analyzing a COMPLETE dev-cycle across N tasks (not a single task).
-    The data you receive spans all tasks in the cycle. ring:dev-report is invoked
-    exactly ONCE per cycle (Step 12.1 of ring:dev-cycle), so aggregate-level analysis
-    is the expected mode.
-
-    Cycle: [cycle_id]
-    Tasks analyzed: [task_ids] (N total)
-
-    Aggregated cycle metrics (sum across all tasks' accumulated_metrics):
-      gate_durations_ms: [cycle_gate_durations_ms]
-      review_iterations: [cycle_review_iterations]
-      testing_iterations: [cycle_testing_iterations]
-      issues_by_severity: [cycle_issues_by_severity]
-
-    Full agent_outputs history for the cycle (all tasks, all gates):
-    [agent_outputs]   # from state.tasks[*].agent_outputs (not a single task subset)
-
-    For each agent that executed in the cycle:
-    1. Load definition from dev-team/agents/ or default/agents/
-    2. Extract rules: MUST, MUST not, ask_when, output_schema
-    3. Compare each output invocation vs rules (across all tasks)
-    4. Calculate aggregate score (average across invocations)
-    5. Identify recurring gaps with evidence (quote task IDs + gate)
-    6. Generate cycle-level improvements prioritized by occurrence count
-
-    Return structured analysis per agent, with per-task evidence rolled into
-    cycle-wide patterns.
-```
-
-### 3.3 Write Feedback Files
-
-**Directory:** `docs/feedbacks/cycle-YYYY-MM-DD/`
-
-**One file per agent**, accumulating all tasks that used that agent.
-
-**File:** `docs/feedbacks/cycle-YYYY-MM-DD/{agent-name}.md`
+Score tiers:
+- 90-100: Excellent
+- 80-89: Good
+- 70-79: Acceptable
+- < 70: Needs attention → root cause required
+
+## Step 3: Write Report
+
+Save to `docs/ring:dev-report/{task_id}-{timestamp}.md`:
 
 ```markdown
-# Prompt Feedback: {agent-name}
+# Dev Report: {task_id}
 
-**Cycle:** YYYY-MM-DD
-**Total Executions:** N
-**Average Score:** XX%
+**Completed:** {timestamp}
+**Agent:** {agent_used}
+**Language:** {language} | **Service Type:** {service_type}
 
----
+## Score: {score}/100 ({tier})
 
-## Task T-001 (Gate X)
+## Metrics
 
-**Score:** XX/100
-**Rating:** {rating}
+| Metric | Value | Status |
+|--------|-------|--------|
+| TDD RED | {status} | ✅/❌ |
+| TDD GREEN | {status} | ✅/❌ |
+| Coverage | {actual}% (threshold: {threshold}%) | ✅/❌ |
+| Delivery | {delivered}/{total} requirements | ✅/⚠️/❌ |
+| Lint | {pass/fail} | ✅/❌ |
+| File Size | {violations} violations | ✅/❌ |
+| License | {violations} violations | ✅/❌ |
 
-### Gaps Found
+## Delivery Traceability
 
-| Category | Rule | Evidence | Impact |
-|----------|------|----------|--------|
-| MUST | [rule text] | [quote from output] | -X |
+| Requirement | Status | Evidence |
+|-------------|--------|----------|
+{per-requirement rows}
 
-### What Went Well
+## Issues Found
 
-- [positive observation]
+{list of ISSUE-XXX with severity and description}
 
----
+## Root Cause (if score < 70)
 
-## Task T-002 (Gate X)
+{mandatory analysis: what caused the gaps, pattern identification}
 
-**Score:** XX/100
-...
+## Improvements for Next Cycle
 
----
-
-## Consolidated Improvements
-
-### Priority 1: [Title]
-
-**Occurrences:** X/Y tasks
-**Impact:** +X points expected
-**File:** dev-team/agents/{agent}.md
-
-**Current text (line ~N):**
-```
-[existing prompt]
+{1-3 concrete, actionable improvements}
 ```
 
-**Suggested addition:**
-```markdown
-[new prompt text]
-```
+## Severity Reference
 
-### Priority 2: [Title]
-...
-```
-
-### 3.4 Append to Existing File
-
-If file already exists (from previous task in same cycle), **append** the new task section before "## Consolidated Improvements" and update:
-- Total Executions count
-- Average Score
-- Consolidated Improvements (re-analyze patterns)
-
-## Step 3.5: Pattern Analysis from Structured Data (NEW)
-
-**Analyze structured error/issue data to identify recurring patterns:**
-
-### 3.5.1 Standards Compliance Patterns
-
-```yaml
-# Group gaps by section name
-standards_gaps_by_section = group(all_implementation_gaps, by: "section")
-
-# Identify recurring gaps (same section fails across tasks)
-recurring_standards_gaps = filter(standards_gaps_by_section, count >= 2)
-
-# Output pattern
-For each recurring gap:
-  - Section: [section name]
-  - Occurrences: [N] tasks
-  - Common reason: [most frequent reason]
-  - Recommendation: [agent prompt improvement]
-```
-
-### 3.5.2 Review Issue Patterns
-
-```yaml
-# Group review issues by category
-issues_by_category = group(all_review_issues, by: "category")
-
-# Group by severity for prioritization
-issues_by_severity = group(all_review_issues, by: "severity")
-
-# Identify top recurring categories
-top_categories = sort(issues_by_category, by: count, descending).take(5)
-
-# Output pattern
-For each top category:
-  - Category: [category name]
-  - Occurrences: [N] issues across [M] tasks
-  - Severity breakdown: [CRITICAL: X, HIGH: Y, MEDIUM: Z]
-  - Most common: [most frequent description pattern]
-  - Fix rate: [fixed_count / total_count]%
-```
-
-### 3.5.3 Test Failure Patterns
-
-```yaml
-# Group failures by error_type
-failures_by_type = group(all_test_failures, by: "error_type")
-
-# Identify flaky tests (same test fails multiple times)
-flaky_tests = filter(all_test_failures, count_by_test_name >= 2)
-
-# Output pattern
-For each error type:
-  - Type: [assertion|panic|timeout|compilation]
-  - Occurrences: [N] failures
-  - Fix iterations: avg [X] iterations to fix
-```
-
-### 3.5.4 Cross-Gate Pattern Correlation
-
-```yaml
-# Correlate: Do standards gaps predict review issues?
-correlation_standards_review = correlate(
-  implementation.standards_compliance.gaps[].section,
-  review.*.issues[].category
-)
-
-# Output insight
-If correlation > 0.5:
-  "Standards gap in [section] correlates with review issues in [category]"
-  → Recommendation: Strengthen agent prompt for [section]
-```
-
-## Step 4: Threshold Alerts
-
-| Alert | Trigger | Action | Report Contents |
-|-------|---------|--------|-----------------|
-| **Score < 70** | Individual task assertiveness < 70 | Mandatory root cause analysis | Failure events, "5 Whys" per event, Corrective actions, Prevention measures |
-| **Iterations > 3** | Any gate exceeds 3 iterations | STOP + human intervention | Iteration history, Recurring issue, Options: [Continue/Reassign/Descope/Cancel] |
-| **Avg < 80** | Cycle average below 80 | Deep analysis report | Score distribution, Failure patterns (freq/cause/fix), Improvement plan |
-| **Recurring Pattern** | Same issue category in 3+ tasks | Pattern alert | Category, frequency, suggested prompt fix |
-
-**Report formats:** RCA = Score → Failure Events → 5 Whys → Root cause → Corrective action | Gate Blocked = History → Issue → BLOCKED UNTIL human decision | Deep Analysis = Distribution → Patterns → Improvement Plan
-
-## Step 5: Write Feedback Report
-
-**Location:** `docs/dev-team/feedback/cycle-YYYY-MM-DD.md`
-
-**Required sections:**
-
-| Section | Content |
-|---------|---------|
-| **Header** | Date, Tasks Completed, Average Assertiveness |
-| **Task Summary** | Table: Task ID, Score, Rating, Key Issue |
-| **By Gate** | Table: Gate, Avg Iterations, Avg Duration, Pass Rate |
-| **By Penalty** | Table: Penalty type, Occurrences, Points Lost |
-| **Patterns** | Positive patterns (what works) + Negative patterns (what needs improvement) |
-| **Recommendations** | Immediate (this sprint), Short-term (this month), Long-term (this quarter) |
-| **Next Review** | Date, Target assertiveness, Focus areas |
-
-## Step 6: Generate Improvement Suggestions
-
-**Improvement types based on pattern analysis:**
-
-| Target | When to Suggest | Format |
-|--------|-----------------|--------|
-| **Agents** | Same issue type recurring in reviews | Agent name → Issue → Suggestion → Specific addition to prompt |
-| **Skills** | Gate consistently needs iterations | Skill name → Issue → Suggestion → Specific change to skill |
-| **Process** | Pattern spans multiple tasks | Process area → Issue → Suggestion → Implementation |
-
-## Step 7: Complete TodoWrite Tracking (MANDATORY FINAL ACTION)
-
-**⛔ HARD GATE: After all steps complete, you MUST mark feedback-loop todo as completed.**
-
-**Execute this TodoWrite call to finalize:**
-
-```yaml
-TodoWrite tool:
-  todos:
-    - id: "feedback-loop-execution"
-      content: "Execute ring:dev-report: collect metrics, calculate scores, write report"
-      status: "completed"
-      priority: "high"
-```
-
-**Verification before marking complete:**
-- [ ] Step 1: Metrics collected from state file
-- [ ] Step 2: Assertiveness score calculated
-- [ ] Step 3: Prompt quality analyzed (if agents executed)
-- [ ] Step 4: Threshold alerts checked
-- [ ] Step 5: Feedback report written to `docs/dev-team/feedback/`
-- [ ] Step 6: Improvement suggestions generated
-
-**You CANNOT mark todo as completed until all steps above are done.**
-
----
-
-## Execution Report
-
-Base metrics per [shared-patterns/output-execution-report.md](../shared-patterns/output-execution-report.md).
-
-| Metric | Value |
-|--------|-------|
-| Tasks Analyzed | N |
-| Average Assertiveness | XX.X% |
-| Threshold Alerts | X |
-| Root Cause Analyses | Y |
-| Improvement Suggestions | Z |
-| Report Location | docs/dev-team/feedback/cycle-YYYY-MM-DD.md |
-
-## Anti-Patterns
-
-**Never:**
-- Skip feedback collection for "simple" tasks
-- Ignore threshold alerts
-- Accept low scores without analysis
-- Generate suggestions without data
-- Blame individuals instead of process
-
-**Always:**
-- Track every gate transition
-- Calculate score for every task
-- Investigate scores < 70
-- Document root causes
-- Generate actionable improvements
-- Review trends over time
-
-## Feedback Loop Integration
-
-| Integration | Process |
-|-------------|---------|
-| **Retrospectives** | Share metrics → Discuss trends → Prioritize improvements → Assign actions |
-| **Skill Updates** | Document gap → Update skill → Track improvement → Iterate |
-| **Agent Updates** | Identify behavior → Update prompt → Track change → Validate |
+| Severity | Criteria |
+|----------|----------|
+| CRITICAL | Score 0 (rejected), complete workflow failure |
+| HIGH | Score < 70, threshold breach |
+| MEDIUM | Score 70-79, recurring pattern emerging |
+| LOW | Score 80-89, minor improvements available |

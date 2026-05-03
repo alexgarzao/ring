@@ -2,7 +2,7 @@
 name: ring:using-pm-team
 description: |
   12 pre-dev workflow skills + 1 standalone discovery skill + 4 research agents organized into
-  Small Track (4 gates, <2 days) and Large Track (9 gates, 2+ days) for systematic feature
+  Small Track (5 gates, <2 days) and Large Track (10 gates, 2+ days) for systematic feature
   planning with research-first approach.
 
 trigger: |
@@ -20,315 +20,80 @@ skip_when: |
 
 The ring-pm-team plugin provides 12 pre-development planning skills and 4 research agents. Use them via `Skill tool: "ring:gate-name"`.
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
-
-## Pre-Dev Philosophy
-
-**Before you code, you plan. Every time.**
-
-Pre-dev workflow ensures:
-
-- ✅ Requirements are clear (WHAT/WHY)
-- ✅ Architecture is sound (HOW)
-- ✅ APIs are contracts (boundaries)
-- ✅ Data models are explicit (entities)
-- ✅ Dependencies are known (tech choices)
-- ✅ Tasks are atomic (2-5 min each)
-- ✅ Implementation is execution, not design
+Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch pre-dev workflow to handle planning; plan thoroughly before coding.
 
 ## Two Tracks: Choose Your Path
 
-### Small Track (5 Gates) – <2 Day Features
+### Small Track (5 Gates) — <2 Day Features
 
-**Use when ALL criteria met:**
+Use when ALL criteria met: implementation <2 days, no new external dependencies, no new data models, no multi-service integration, uses existing architecture, single developer.
 
-- ✅ Implementation <2 days
-- ✅ No new external dependencies
-- ✅ No new data models
-- ✅ No multi-service integration
-- ✅ Uses existing architecture
-- ✅ Single developer
-
-| Gate | Skill                       | Output      |
-| ---- | --------------------------- | ----------- |
-| 0    | ring:pre-dev-research       | research.md |
-| 1    | ring:pre-dev-prd-creation   | PRD.md      |
-| 2    | ring:pre-dev-trd-creation   | TRD.md      |
-| 3    | ring:pre-dev-task-breakdown | tasks.md    |
-| 4    | ring:pre-dev-delivery-planning | delivery-roadmap.md, .json |
+| Gate | Skill | Output |
+|------|-------|--------|
+| 0 | ring:pre-dev-research | research.md |
+| 1 | ring:pre-dev-prd-creation | prd.md |
+| 2 | ring:pre-dev-trd-creation | trd.md |
+| 3 | ring:pre-dev-task-breakdown | tasks.md |
+| 4 | ring:pre-dev-delivery-planning | delivery-roadmap.md + .json |
 
 **Planning time:** 60-90 minutes
 
-### Large Track (10 Gates) – ≥2 Day Features
+### Large Track (10 Gates) — ≥2 Day Features
 
-**Use when ANY criteria met:**
+Use when ANY criteria met: implementation ≥2 days, new external dependencies, new data models/entities, multi-service integration, new architecture patterns, team collaboration needed.
 
-- ❌ Implementation ≥2 days
-- ❌ New external dependencies
-- ❌ New data models/entities
-- ❌ Multi-service integration
-- ❌ New architecture patterns
-- ❌ Team collaboration needed
-
-| Gate | Skill                         | Output          |
-| ---- | ----------------------------- | --------------- |
-| 0    | ring:pre-dev-research         | research.md     |
-| 1    | ring:pre-dev-prd-creation     | PRD.md          |
-| 2    | ring:pre-dev-feature-map      | feature-map.md  |
-| 3    | ring:pre-dev-trd-creation     | TRD.md          |
-| 4    | ring:pre-dev-api-design       | API.md          |
-| 5    | ring:pre-dev-data-model       | data-model.md   |
-| 6    | ring:pre-dev-dependency-map   | dependencies.md |
-| 7    | ring:pre-dev-task-breakdown   | tasks.md        |
-| 8    | ring:pre-dev-subtask-creation | subtasks/       |
-| 9    | ring:pre-dev-delivery-planning | delivery-roadmap.md, .json |
+| Gate | Skill | Output |
+|------|-------|--------|
+| 0 | ring:pre-dev-research | research.md |
+| 1 | ring:pre-dev-prd-creation | prd.md |
+| 1.5 | ring:pre-dev-design-validation | design-validation.md (if UI) |
+| 2 | ring:pre-dev-feature-map | feature-map.md |
+| 2.5 | ring:pre-dev-design-validation | design-validation.md (if UI, Large) |
+| 3 | ring:pre-dev-trd-creation | trd.md |
+| 4 | ring:pre-dev-api-design | api-design.md |
+| 5 | ring:pre-dev-data-model | data-model.md |
+| 6 | ring:pre-dev-dependency-map | dependencies.md |
+| 7 | ring:pre-dev-task-breakdown | tasks.md |
+| 8 | ring:pre-dev-subtask-creation | subtasks/ |
+| 9 | ring:pre-dev-delivery-planning | delivery-roadmap.md + .json |
 
 **Planning time:** 2.5-5 hours
 
 ## Gate Summaries
 
-| Gate | Skill                         | What It Does                                                         |
-| ---- | ----------------------------- | -------------------------------------------------------------------- |
-| 0    | ring:pre-dev-research         | Parallel research: codebase patterns, best practices, framework docs |
-| 1    | ring:pre-dev-prd-creation     | Business requirements (WHAT/WHY), user stories, success metrics      |
-| 2    | ring:pre-dev-feature-map      | Feature relationships, dependencies, deployment order (Large only)   |
-| 3    | ring:pre-dev-trd-creation     | Technical architecture, technology-agnostic patterns                 |
-| 4    | ring:pre-dev-api-design       | API contracts, operations, error handling (Large only)               |
-| 5    | ring:pre-dev-data-model       | Entities, relationships, ownership (Large only)                      |
-| 6    | ring:pre-dev-dependency-map   | Explicit tech choices, versions, licenses (Large only)               |
-| 7    | ring:pre-dev-task-breakdown   | Value-driven tasks with success criteria                             |
-| 8    | ring:pre-dev-subtask-creation | Zero-context 2-5 min implementation steps (Large only)               |
-| 9    | ring:pre-dev-delivery-planning | Delivery roadmap with timeline, critical path, resource allocation (MANDATORY for both tracks) |
-
-## Research Agents (Gate 0)
-
-| Agent                            | Focus                                             |
-| -------------------------------- | ------------------------------------------------- |
-| `ring:repo-research-analyst`     | Codebase patterns, docs/solutions/ knowledge base |
-| `ring:best-practices-researcher` | Web search, Context7 for best practices           |
-| `ring:framework-docs-researcher` | Tech stack versions, official patterns            |
-
-**Research Modes:**
-
-- **greenfield**: Web research primary (new capability)
-- **modification**: Codebase research primary (extending existing)
-- **integration**: All agents equally weighted (connecting systems)
-
-## Delivery Status Tracking (Post-Planning)
-
-After planning and during execution, track progress:
-
-| Skill                           | Command                 | Purpose                                                   |
-| ------------------------------- | ----------------------- | --------------------------------------------------------- |
-| `ring:delivery-status` | `/ring:delivery-status` | Evidence-based progress analysis against delivery roadmap |
-
-**What it does:**
-
-- Scans repository (ALL branches, commits, PRs, releases)
-- Matches work to tasks (pattern + semantic analysis)
-- Calculates % completion via specialized agents
-- Identifies delays, blockers, critical path issues
-- Extracts insights (velocity, quality trends, patterns)
-
-**When to use:**
-
-- Weekly checkpoints during execution
-- Sprint/cycle end retrospectives
-- Before stakeholder status meetings
-- When roadmap shows signs of deviation
-
-**Output:** `docs/pre-dev/{feature}/delivery-status-{date}.md`
-
-## Using Pre-Dev Workflow
-
-### Via Slash Commands
-
-```
-/ring:pre-dev-feature logout-button    # Small track (5 gates)
-/ring:pre-dev-full payment-system      # Large track (10 gates)
-```
-
-### Via Skills (Manual)
-
-```
-Skill tool: "ring:pre-dev-prd-creation"
-(Review output)
-Skill tool: "ring:pre-dev-trd-creation"
-(Review output)
-```
-
-## Output Structure
-
-```
-docs/pre-dev/{feature}/
-├── research.md        # Gate 0
-├── prd.md             # Gate 1
-├── feature-map.md     # Gate 2 (large only)
-├── trd.md             # Gate 3
-├── api-design.md      # Gate 4 (large only)
-├── data-model.md      # Gate 5 (large only)
-├── dependency-map.md  # Gate 6 (large only)
-├── tasks.md           # Gate 7
-└── subtasks/          # Gate 8 (large only)
-```
-
-## Decision: Small or Large Track?
-
-**When in doubt: Use Large Track.** Better to over-plan than discover mid-implementation that feature is larger.
-
-**You can switch:** If Small Track feature grows, pause and complete Large Track gates.
-
-## Integration with Other Plugins
-
-| Plugin                    | Use For                                     |
-| ------------------------- | ------------------------------------------- |
-| ring:using-ring (default) | ORCHESTRATOR principle for ALL tasks        |
-| ring:using-dev-team       | Developer specialists for reviewing designs |
-| ring:using-finops-team    | Regulatory compliance planning              |
-| ring:using-tw-team        | Documentation for features                  |
-
-**Combined with:**
-
-- `ring:execute-plan` – Run tasks in batches
-- `ring:write-plan` – Generate plan from scratch
-- `*-engineer` – Specialist review of design
-- `ring:codereview` – Post-implementation review
-
-## ORCHESTRATOR Principle
-
-- **You're the orchestrator** – Dispatch pre-dev skills, don't plan manually
-- **Don't skip gates** – Each gate adds clarity
-- **Don't code without planning** – Plan first, code second
-- **Use agents for specialist review** – Dispatch engineers to review TRD
-
-### Good (ORCHESTRATOR):
-
-> "I need to plan payment system. Let me run /ring:pre-dev-full, then dispatch ring:backend-engineer-golang to review the architecture."
-
-### Bad (OPERATOR):
-
-> "I'll start coding and plan as I go."
-
----
-
-## Standards Loading (MANDATORY)
-
-This skill is an orchestration/navigation skill for the pm-team plugin. It does NOT require WebFetch of language-specific standards.
-
-**However**, when dispatching implementation agents (e.g., `ring:backend-engineer-golang`), those agents MUST load their respective standards via WebFetch before proceeding.
-
----
-
-## Blocker Criteria - STOP and Report
-
-| Condition | Action | Severity |
-|-----------|--------|----------|
-| No project scope or feature defined | STOP and report to user | CRITICAL |
-| User requests to skip all planning | STOP and report - planning is mandatory | CRITICAL |
-| PRD/TRD already exists but user wants to start over | STOP and confirm user intent | HIGH |
-| Unclear whether Small or Large Track applies | STOP and ask clarifying questions | MEDIUM |
-| Missing prerequisite gate artifacts | STOP and complete previous gate first | HIGH |
-
----
-
-## Cannot Be Overridden
-
-These requirements are NON-NEGOTIABLE:
-
-- MUST use ORCHESTRATOR principle - dispatch skills, don't plan manually
-- MUST complete gates in sequence - CANNOT skip gates
-- MUST validate gate outputs before proceeding to next gate
-- MUST create planning artifacts before implementation
-- MUST use Large Track when feature exceeds Small Track criteria
-- CANNOT proceed to implementation without completing mandatory gates
-
----
-
-## Severity Calibration
-
-| Severity | Definition | Example |
-|----------|------------|---------|
-| **CRITICAL** | Blocks all progress, fundamental violation | Attempting to code without any planning artifacts |
-| **HIGH** | Significant risk, must address before continuing | Skipping a mandatory gate in the workflow |
-| **MEDIUM** | Quality impact, should address soon | Choosing wrong track (Small vs Large) |
-| **LOW** | Minor issue, track for improvement | Incomplete gate documentation |
-
----
-
-## Pressure Resistance
-
-| User Says | Your Response |
-|-----------|---------------|
-| "Skip planning, just start coding" | "Cannot proceed. Planning prevents 10x rework cost. I'll start with ring:pre-dev-research to gather context first." |
-| "We don't need PRD, requirements are obvious" | "Cannot skip PRD. 'Obvious' requirements cause scope creep. I'll create a focused PRD documenting what we're building and why." |
-| "Use Small Track, we're in a hurry" | "Cannot compromise on track selection. If feature meets Large Track criteria, I MUST use Large Track. Shortcuts now = rework later." |
-| "Skip research, we know the codebase" | "Cannot skip Gate 0. Research validates assumptions and finds existing patterns. Takes 30 mins, saves hours of reinvention." |
-| "Just give me tasks, skip the architecture" | "Cannot skip TRD. Architecture decisions affect all tasks. I'll create TRD first to ensure tasks are correctly scoped." |
-
----
-
-## Anti-Rationalization
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "This feature is simple, skip planning" | Simple features still have requirements and architecture | **Use at minimum Small Track (5 gates)** |
-| "We already know what to build" | Knowing ≠ documenting. Documentation prevents drift | **Create PRD regardless of certainty** |
-| "Planning slows us down" | Unplanned work slows down 10x more during implementation | **Complete all gates in sequence** |
-| "I can plan in my head while coding" | Mental planning isn't verifiable or shareable | **Create written artifacts for each gate** |
-| "Previous similar feature didn't need this" | Each feature is independent. Past shortcuts don't justify current ones | **Evaluate each feature independently** |
-| "User is experienced, they know what they want" | Experience doesn't replace systematic planning | **Follow the workflow regardless** |
-
----
-
-## Available in This Plugin
-
-**Agents (4):**
-- ring:repo-research-analyst (Codebase research - searches repository for existing patterns and conventions)
-- ring:best-practices-researcher (External research - web search for industry best practices and guidance)
-- ring:framework-docs-researcher (Tech stack analysis - detects stack and fetches framework documentation)
-- ring:product-designer (UX research, user validation, design specifications for features)
-
-**Skills (17):**
-
-*Workflow Orchestrators:*
-- ring:using-pm-team (this skill - plugin introduction and workflow guide)
-- ring:pre-dev-feature (Small Track 5-gate orchestrator for features <2 days)
-- ring:pre-dev-full (Large Track 10-gate orchestrator for features >=2 days)
-
-*Research & Discovery:*
-- ring:pre-dev-research (Gate 0 - parallel research agents for codebase, best practices, frameworks)
-
-*Requirements & Design:*
-- ring:pre-dev-prd-creation (Gate 1 - business requirements, user stories, success metrics)
-- ring:pre-dev-feature-map (Gate 2 - feature relationships and interactions, Large Track only)
-- ring:pre-dev-design-validation (Gate 1.5/2.5 - verifies UX specifications are complete)
-
-*Architecture & Contracts:*
-- ring:pre-dev-trd-creation (Gate 3 - technical architecture with technology-agnostic patterns)
-- ring:pre-dev-api-design (Gate 4 - API contracts and data contracts, Large Track only)
-- ring:pre-dev-data-model (Gate 5 - entities, relationships, ownership, Large Track only)
-- ring:pre-dev-dependency-map (Gate 6 - explicit versioned technology selections, Large Track only)
-
-*Task Planning & Delivery:*
-- ring:pre-dev-task-breakdown (Gate 7 - value-driven decomposition into working increments)
-- ring:pre-dev-subtask-creation (Gate 8 - zero-context 2-5 min atomic subtasks, Large Track only)
-- ring:pre-dev-delivery-planning (Gate 9/4 - delivery roadmap with timeline and critical path)
-
-*Post-Planning:*
-- ring:delivery-status (Evidence-based progress tracking against delivery roadmap)
-
-*Standalone Discovery:*
-- ring:streaming-event-mapping (Three-pass discovery skill that maps eventable points in a Lerian Go service codebase; outputs event-catalog.md for PM validation and instrumentation-map.json for handoff to ring:dev-streaming-instrumentation)
-
-**Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-pm-team plugin.
-
----
-
-## When This Skill Is Not Needed
-
-- Quick exploratory work where `ring:brainstorm` suffices
-- Bug fix with known solution requiring no design changes
-- Trivial changes that take less than 1 hour
-- Documentation-only updates
-- Configuration changes with no code impact
-- Direct implementation after planning is already complete (use `ring:execute-plan` or `ring:dev-cycle` instead)
+| Gate | Skill | What It Does |
+|------|-------|-------------|
+| 0 | ring:pre-dev-research | Parallel research: codebase patterns, best practices, framework docs |
+| 1 | ring:pre-dev-prd-creation | Business requirements (WHAT/WHY), user stories, success metrics |
+| 1.5/2.5 | ring:pre-dev-design-validation | UX completeness check: screens, states, responsive, a11y |
+| 2 | ring:pre-dev-feature-map | Feature relationships, dependencies, deployment order (Large only) |
+| 3 | ring:pre-dev-trd-creation | Technical architecture, technology-agnostic patterns |
+| 4 | ring:pre-dev-api-design | API contracts, operations, error handling (Large only) |
+| 5 | ring:pre-dev-data-model | Entities, relationships, ownership (Large only) |
+| 6 | ring:pre-dev-dependency-map | Explicit tech choices, versions, licenses (Large only) |
+| 7 | ring:pre-dev-task-breakdown | Value-driven tasks with success criteria |
+| 8 | ring:pre-dev-subtask-creation | Zero-context 2-5 min implementation steps (Large only) |
+| 9/4 | ring:pre-dev-delivery-planning | Realistic schedule with critical path + JSON output |
+
+## Standalone Skills
+
+| Skill | When to Use |
+|-------|-------------|
+| ring:deep-doc-review | Before dev-cycle to catch doc contradictions |
+| ring:delivery-status | Progress tracking against approved roadmap |
+| ring:streaming-event-mapping | Map eventable points in Go service for lib-streaming |
+
+## Research Agents (dispatched by Gate 0)
+
+| Agent | Specialization |
+|-------|---------------|
+| ring:repo-research-analyst | Codebase patterns, existing solutions |
+| ring:best-practices-researcher | External best practices, industry standards |
+| ring:framework-docs-researcher | Tech stack docs, version constraints |
+| ring:product-designer | UX research, personas, competitive analysis |
+
+## Entry Points
+
+- **Small Track:** Invoke `ring:pre-dev-feature`
+- **Large Track:** Invoke `ring:pre-dev-full`
+- **Specific gate:** Invoke the gate's skill directly if prior gates are done

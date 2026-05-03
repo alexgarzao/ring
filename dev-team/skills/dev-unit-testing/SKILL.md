@@ -1,599 +1,134 @@
 ---
 name: ring:dev-unit-testing
 description: |
-  Gate 3 of development cycle - ensures unit test coverage meets threshold (85%+)
+  Gate 3 of development cycle — ensures unit test coverage meets 85%+ threshold
   for all acceptance criteria using TDD methodology.
 
 trigger: |
-  - After implementation and SRE complete (Gate 0/1/2)
-  - Task has acceptance criteria requiring test coverage
-  - Need to verify implementation meets requirements
+  - Gate 3 of development cycle
+  - After Gates 0, 1, 2 complete
+  - Need to verify implementation meets requirements via unit tests
 
 skip_when: |
   - Not inside a development cycle (ring:dev-cycle)
   - Task is documentation-only, configuration-only, or non-code
-  - No code implementation was produced (nothing to test)
-  - Changes are limited to CI/CD, infrastructure, or deployment configuration
-
-NOT_skip_when: |
-  - "Manual testing validates all criteria" → Manual tests are not executable. Gate 3 requires unit tests.
-  - "Integration tests are better" → Gate 3 scope is unit tests only.
-  - "Coverage is close to 85%" → Close enough is not passing. Meet exact threshold.
+  - No code implementation was produced
+  - Changes limited to CI/CD, infrastructure, or deployment configuration
 
 sequence:
-  after: [ring:dev-implementation, ring:dev-devops, ring:dev-ring:sre]
+  after: [ring:dev-implementation, ring:dev-devops, ring:dev-sre]
   before: [ring:codereview]
 
 related:
   complementary: [ring:test-driven-development, ring:qa-analyst]
 
-input_schema:
-  required:
-    - name: unit_id
-      type: string
-      description: "Task or subtask identifier"
-    - name: acceptance_criteria
-      type: array
-      items: string
-      description: "List of acceptance criteria to test"
-    - name: implementation_files
-      type: array
-      items: string
-      description: "Files from Gate 0 implementation"
-    - name: language
-      type: string
-      enum: [go, typescript, python]
-      description: "Programming language"
-  optional:
-    - name: coverage_threshold
-      type: float
-      default: 85.0
-      description: "Minimum coverage percentage (cannot be below 85)"
-    - name: gate0_handoff
-      type: object
-      description: "Full handoff from Gate 0"
-    - name: existing_tests
-      type: array
-      items: string
-      description: "Existing test files"
-
 output_schema:
-  format: markdown
-  required_sections:
-    - name: "Testing Summary"
-      pattern: "^## Testing Summary"
-      required: true
-    - name: "Coverage Report"
-      pattern: "^## Coverage Report"
-      required: true
-    - name: "Traceability Matrix"
-      pattern: "^## Traceability Matrix"
-      required: true
-    - name: "Handoff to Next Gate"
-      pattern: "^## Handoff to Next Gate"
-      required: true
   metrics:
-    - name: result
-      type: enum
-      values: [PASS, FAIL]
-    - name: coverage_actual
-      type: float
-    - name: coverage_threshold
-      type: float
-    - name: tests_written
-      type: integer
-    - name: criteria_covered
-      type: string
-      description: "X/Y format"
-    - name: iterations
-      type: integer
-
-verification:
-  automated:
-    - command: "go test ./... -covermode=atomic -coverprofile=coverage.out && go tool cover -func=coverage.out | grep total"
-      description: "Go tests pass with coverage"
-      success_pattern: 'total:.*[8-9][0-9]|100'
-    - command: "npm test -- --coverage | grep -E 'All files|Statements'"
-      description: "TypeScript tests pass with coverage"
-      success_pattern: '[8-9][0-9]|100'
-  manual:
-    - "Every acceptance criterion has at least one test"
-    - "No skipped or pending tests"
-
+    result: PASS | FAIL | NEEDS_FIXES
+    coverage_actual: float
+    coverage_threshold: float
+    tests_written: integer
+    criteria_covered: "X/Y"
+    iterations: integer
 ---
 
-# Dev Unit Testing (Gate 3)
+# Unit Testing (Gate 3)
 
-## Overview
-
-Ensure every acceptance criterion has at least one **unit test** proving it works. Follow TDD methodology: RED (failing test) -> GREEN (implementation) -> REFACTOR.
-
-**Core principle:** Untested acceptance criteria are unverified claims. Each criterion MUST map to at least one executable unit test.
-
-<block_condition>
-- Coverage below 85% = FAIL
-- Any acceptance criterion without test = FAIL
-</block_condition>
-
-**Coverage threshold:** 85% minimum (Ring standard). PROJECT_RULES.md can raise, not lower.
-
-## CRITICAL: Role Clarification
-
-**This skill ORCHESTRATES. QA Analyst Agent EXECUTES.**
-
-| Who | Responsibility |
-|-----|----------------|
-| **This Skill** | Gather requirements, dispatch agent, track iterations |
-| **QA Analyst Agent** | Write tests, run coverage, report results |
-
----
+Every acceptance criterion must have at least one executable unit test. Coverage threshold: **85%** minimum (PROJECT_RULES.md can raise, not lower).
 
 ## Step 1: Validate Input
 
-```text
-REQUIRED INPUT (from ring:dev-cycle orchestrator):
-<verify_before_proceed>
-- unit_id exists
-- acceptance_criteria is not empty
-- implementation_files is not empty
-- language is valid (go|typescript|python)
-</verify_before_proceed>
+Required: `unit_id`, `acceptance_criteria` (non-empty), `implementation_files` (non-empty), `language`.
+Optional: `coverage_threshold` (default 85.0), `gate0_handoff`, `existing_tests`.
 
-```text
-- unit_id: [task/subtask being tested]
-- acceptance_criteria: [list of ACs to test]
-- implementation_files: [files from Gate 0]
-- language: [go|typescript|python]
+Reject `coverage_threshold < 85` — use 85% instead.
 
-OPTIONAL INPUT:
-- coverage_threshold: [default 85.0, cannot be lower]
-- gate0_handoff: [full Gate 0 output]
-- existing_tests: [existing test files]
-
-if any REQUIRED input is missing:
-  → STOP and report: "Missing required input: [field]"
-  → Return to orchestrator with error
-
-if coverage_threshold < 85:
-  → STOP and report: "Coverage threshold cannot be below Ring minimum (85%)"
-  → Use 85% as threshold
-```
-
-## Step 2: Initialize Testing State
-
-```text
-testing_state = {
-  unit_id: [from input],
-  coverage_threshold: max(85, [from input]),
-  coverage_actual: null,
-  verdict: null,
-  iterations: 0,
-  max_iterations: 3,
-  traceability_matrix: [],
-  tests_written: 0,
-  # Goroutine leak detection (Go only)
-  goroutine_check: null,       # NOT_APPLICABLE | REQUIRED
-  goroutine_files: 0,          # Count of files with goroutines
-  goleak_coverage: null,       # "X/Y" packages with goleak
-  leaks_detected: 0,           # Count of actual leaks
-  goroutine_verdict: null      # PASS | NEEDS_ACTION | FAIL
-}
-```
-
-## Step 3: Dispatch QA Analyst Agent
-
-<dispatch_required agent="ring:qa-analyst">
-Write unit tests for all acceptance criteria with 85%+ coverage.
-</dispatch_required>
+## Step 2: Dispatch QA Analyst
 
 ```yaml
 Task:
   subagent_type: "ring:qa-analyst"
-  description: "Write unit tests for [unit_id]"
+  description: "Write unit tests for {unit_id}"
   prompt: |
-    ⛔ WRITE UNIT TESTS for All Acceptance Criteria
+    ## Write Unit Tests
 
-    ## Input Context
-    - **Unit ID:** [unit_id]
-    - **Language:** [language]
-    - **Coverage Threshold:** [coverage_threshold]%
+    unit_id: {unit_id}
+    language: {language}
+    coverage_threshold: {coverage_threshold}%
+    acceptance_criteria: {acceptance_criteria}
+    implementation_files: {implementation_files}
 
-    ## Acceptance Criteria to Test
-    [list acceptance_criteria with AC-1, AC-2, etc.]
+    Standards: Load via cached_standards or WebFetch Ring quality standards.
 
-    ## Implementation Files to Test
-    [list implementation_files]
+    ## Traceability Matrix (MANDATORY)
+    Map every AC to at least one test:
+    | AC-N | Test Function | File | Coverage |
 
-    ## Standards Source (Cache-First Pattern)
+    ## Go: Goroutine Leak Detection (MANDATORY if goroutines present)
+    1. Scan for `go func()`, `go methodCall()`, `for range channel`, worker pools
+    2. If goroutines found: add `goleak.VerifyNone(t)` to all test packages with goroutines
+    3. Pattern:
+       func TestMain(m *testing.M) {
+         goleak.VerifyTestMain(m)
+       }
+    4. Report: goroutine_files count, goleak_coverage "X/Y packages", leaks_detected
 
-    **Standards Source (Cache-First Pattern):** This sub-skill reads standards from `state.cached_standards` populated by dev-cycle Step 1.5. If invoked outside a cycle (standalone), it falls back to direct WebFetch with a warning. See `shared-patterns/standards-cache-protocol.md` for protocol details.
+    ## Go Standards
+    - Table-driven tests (`tests := []struct{...}`)
+    - Subtests: `t.Run(tc.name, func(t *testing.T))`
+    - Use testify/assert, not raw `if` checks
+    - Test naming: `Test{FunctionName}_{Scenario}_{ExpectedBehavior}`
 
-    ## Standards Reference
-
-    For Go: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-    For TS: https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-
-    **Cache-first loading protocol:**
-    For each required standards URL:
-      IF state.cached_standards[url] exists:
-        → Read content from state.cached_standards[url].content
-        → Log: "Using cached standard: {url} (fetched {state.cached_standards[url].fetched_at})"
-      ELSE:
-        → WebFetch url (fallback — should not happen if orchestrator ran Step 1.5)
-        → Log warning: "Standard {url} was not pre-cached; fetched inline"
-
-    Focus on: Testing Patterns section
-
-    ## Requirements
-
-    ### Test Coverage
-    - Minimum: [coverage_threshold]% branch coverage
-    - Every AC MUST have at least one test
-    - Edge cases REQUIRED (null, empty, boundary, error conditions)
-
-    ### Test Naming
-    - Go: `Test{Unit}_{Method}_{Scenario}`
-    - TS: `describe('{Unit}', () => { it('should {scenario}', ...) })`
-
-    ### Test Structure
-    - One behavior per test
-    - Arrange-Act-Assert pattern
-    - Mock all external dependencies
-    - no database/API calls (unit tests only)
-
-    ### Edge Cases Required per AC Type
-
-    <cannot_skip>
-    - Minimum 3 edge cases per AC type
-    - null, empty, boundary conditions required
-    - Error conditions required
-    </cannot_skip>
-
-    | AC Type | Required Edge Cases | Minimum |
-    |---------|---------------------|---------|
-    | Input validation | null, empty, boundary, invalid format | 3+ |
-    | CRUD operations | not found, duplicate, concurrent | 3+ |
-    | Business logic | zero, negative, overflow, boundary | 3+ |
-    | Error handling | timeout, connection failure, retry | 2+ |
-
-    ### Multi-Tenant Dual-Mode Testing (Go backend only)
-
-    Every repository/service test that accesses a resource (PostgreSQL, MongoDB, Redis, S3, RabbitMQ) must verify BOTH modes. The resolvers in lib-commons v5 work transparently — the same code path handles both modes. Tests verify this contract.
-
-    **Required pattern:** Add dual-mode sub-tests for any test that touches a resource:
-
-    ```go
-    func TestCreateAccount(t *testing.T) {
-        modes := []struct {
-            name         string
-            multiTenant  string
-        }{
-            {"single-tenant", "false"},
-            {"multi-tenant", "true"},
-        }
-        for _, mode := range modes {
-            t.Run(mode.name, func(t *testing.T) {
-                t.Setenv("MULTI_TENANT_ENABLED", mode.multiTenant)
-                // ... same test logic, same assertions
-                // Resolvers handle the connection routing transparently
-            })
-        }
-    }
-    ```
-
-    **What to verify in multi-tenant mode:**
-    - Context contains tenant ID → resolver returns tenant-specific connection
-    - Context WITHOUT tenant ID → resolver returns error (not default connection)
-    - Backward compat: no MULTI_TENANT_* env vars → works as single-tenant
-
-    **What does NOT need dual-mode tests:**
-    - Pure business logic (no resource access)
-    - Utility/helper functions
-    - Frontend/TypeScript tests
-
-    ## Required Output Format
-
-    ### Test Files Created
-    | File | Tests | Lines |
-    |------|-------|-------|
-    | [path] | [count] | +N |
-
-    ### Coverage Report
-    **Command:** [coverage command]
-    **Result:**
-    ```
-    [paste actual coverage output]
-    ```
-
-    | Package/File | Coverage |
-    |--------------|----------|
-    | [name] | [X%] |
-    | **TOTAL** | **[X%]** |
-
-    ### Traceability Matrix
-    | AC ID | Criterion | Test File | Test Function | Status |
-    |-------|-----------|-----------|---------------|--------|
-    | AC-1 | [criterion text] | [file] | [function] | ✅/❌ |
-    | AC-2 | [criterion text] | [file] | [function] | ✅/❌ |
-
-    ### Quality Checks
-    | Check | Status |
-    |-------|--------|
-    | No skipped tests | ✅/❌ |
-    | No assertion-less tests | ✅/❌ |
-    | Edge cases per AC | ✅/❌ |
-    | Test isolation | ✅/❌ |
-
-    ### VERDICT
-    **Coverage:** [X%] vs Threshold [Y%]
-    **VERDICT:** PASS / FAIL
-    
-    If FAIL:
-    - **Gap Analysis:** [what needs more tests]
-    - **Files needing coverage:** [list with line numbers]
-```
-
-## Step 3.5: Goroutine Leak Detection (Go only)
-
-**⛔ CONDITIONAL: Only execute if `language == "go"`**
-
-After unit tests pass, detect goroutine usage and verify goleak coverage.
-
-See [ring:dev-goroutine-leak-testing](../dev-goroutine-leak-testing/SKILL.md) for full detection patterns and dispatch templates.
-See [architecture.md](../../docs/standards/golang/architecture.md#goroutine-leak-detection-mandatory) for goleak standards.
-
-### Detection Logic
-
-```text
-if language != "go":
-  → Skip to Step 4
-
-# Detect goroutine patterns: "go func(", "go methodCall("
-if no goroutine patterns found:
-  → testing_state.goroutine_check = "NOT_APPLICABLE"
-  → Skip to Step 4
-
-# Goroutines detected
-→ testing_state.goroutine_check = "REQUIRED"
-→ Dispatch ring:qa-analyst with test_mode="goroutine-leak"
-```
-
-### Dispatch
-
-<dispatch_required agent="ring:qa-analyst" test_mode="goroutine-leak">
-MUST dispatch with test_mode="goroutine-leak" to detect leaks and verify goleak coverage.
-</dispatch_required>
-
-### Parse Output and Handle Verdict
-
-| Verdict | Action |
-|---------|--------|
-| PASS | Proceed to Step 4 |
-| NEEDS_ACTION | Dispatch `ring:backend-engineer-golang` to add goleak tests, re-run |
-| FAIL | Dispatch `ring:backend-engineer-golang` to fix leaks, re-run |
-
----
-
-## Step 4: Parse QA Analyst Output
-
-```text
-Parse agent output:
-
-1. Extract coverage percentage from Coverage Report
-2. Extract traceability matrix
-3. Extract verdict
-
-testing_state.coverage_actual = [extracted coverage]
-testing_state.traceability_matrix = [extracted matrix]
-testing_state.tests_written = [count from Test Files Created]
-
-if verdict == "PASS" and coverage_actual >= coverage_threshold:
-  → testing_state.verdict = "PASS"
-  → Proceed to Step 6
-
-if verdict == "FAIL" or coverage_actual < coverage_threshold:
-  → testing_state.verdict = "FAIL"
-  → testing_state.iterations += 1
-  → if iterations >= max_iterations: Go to Step 7 (Escalate)
-  → Go to Step 5 (Dispatch Fix)
-```
-
-## Step 5: Dispatch Fix to Implementation Agent
-
-**Coverage below threshold → Return to Gate 0 for more tests**
-
-```yaml
-Task:
-  subagent_type: "[implementation_agent from Gate 0]"  # e.g., "ring:backend-engineer-golang"
-  description: "Add tests to meet coverage threshold for [unit_id]"
-  prompt: |
-    ⛔ COVERAGE BELOW THRESHOLD - Add More Tests
-
-    ## Current Status
-    - **Coverage Actual:** [coverage_actual]%
-    - **Coverage Threshold:** [coverage_threshold]%
-    - **Gap:** [threshold - actual]%
-    - **Iteration:** [iterations] of [max_iterations]
-
-    ## Gap Analysis (from QA)
-    [paste gap analysis from QA output]
-
-    ## Files Needing Coverage
-    [paste files list from QA output]
-
-    ## Requirements
-    1. Add tests to cover the identified gaps
-    2. Focus on edge cases and error paths
-    3. Run coverage after each addition
-    4. Stop when coverage >= [threshold]%
+    ## TypeScript Standards
+    - describe/it blocks with meaningful names
+    - Use jest/vitest matchers
+    - Mock external dependencies
 
     ## Required Output
-    - Tests added: [list]
-    - New coverage: [X%]
-    - Coverage command output
+    - Test files created/modified
+    - Coverage command + actual output (must show % ≥ threshold)
+    - Traceability matrix (all ACs covered)
+    - Goroutine verdict (Go only): PASS | NEEDS_ACTION | FAIL
 ```
 
-After fix → Go back to Step 3 (Re-dispatch QA Analyst)
+## Step 3: Validate Output
 
-## Step 6: Prepare Success Output
+```
+if coverage_actual >= coverage_threshold AND all ACs covered:
+  → PASS → proceed to Gate 4
 
-```text
-Generate skill output:
+if coverage_actual < coverage_threshold OR any AC uncovered:
+  → Re-dispatch with explicit gap list
+  → iterations++
 
-## Testing Summary
-**Status:** PASS
-**Unit ID:** [unit_id]
-**Iterations:** [testing_state.iterations]
-
-## Coverage Report
-**Threshold:** [coverage_threshold]%
-**Actual:** [coverage_actual]%
-**Status:** ✅ PASS
-
-| Package/File | Coverage |
-|--------------|----------|
-[from QA output]
-| **TOTAL** | **[coverage_actual]%** |
-
-## Traceability Matrix
-| AC ID | Criterion | Test | Status |
-|-------|-----------|------|--------|
-[from testing_state.traceability_matrix]
-
-**Criteria Covered:** [X]/[Y] (100%)
-
-## Quality Checks
-| Check | Status |
-|-------|--------|
-| Coverage ≥ threshold | ✅ |
-| All ACs tested | ✅ |
-| No skipped tests | ✅ |
-| Edge cases present | ✅ |
-| Goroutine leak check (Go only) | [✅/N/A] |
-
-## Goroutine Leak Report (Go only)
-[If language == "go" and goroutines detected]
-
-| Metric | Value |
-|--------|-------|
-| Goroutines detected | [count] |
-| Packages with goleak | [X]/[Y] |
-| Leaks found | 0 |
-| Status | ✅ PASS |
-
-[If language != "go" or no goroutines: "N/A - No goroutines detected"]
-
-## Handoff to Next Gate
-- Testing status: COMPLETE
-- Coverage: [coverage_actual]% (threshold: [coverage_threshold]%)
-- All criteria tested: ✅
-- Ready for Gate 4 (Review): YES
+if iterations >= 3:
+  → Escalate to user
 ```
 
-## Step 7: Escalate - Max Iterations Reached
+**Gate conditions:**
+- Coverage below threshold = FAIL
+- Any AC without test = FAIL
+- (Go) goroutine leak detected = NEEDS_ACTION (dispatch fix before proceeding)
 
-```text
-Generate skill output:
-
-## Testing Summary
-**Status:** FAIL
-**Unit ID:** [unit_id]
-**Iterations:** [max_iterations] (MAX REACHED)
-
-## Coverage Report
-**Threshold:** [coverage_threshold]%
-**Actual:** [coverage_actual]%
-**Gap:** [threshold - actual]%
-**Status:** ❌ FAIL
-
-## Gap Analysis
-[from last QA output]
-
-## Files Still Needing Coverage
-[from last QA output]
-
-## Handoff to Next Gate
-- Testing status: FAILED
-- Ready for Gate 4: no
-- **Action Required:** User must manually add tests or adjust scope
-
-⛔ ESCALATION: Max iterations (3) reached. Coverage still below threshold.
-User intervention required.
-```
-
----
-
-## Severity Calibration
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Test infrastructure broken, no coverage possible | Test framework failure, build broken |
-| **HIGH** | Coverage below threshold, missing AC tests | 84% coverage (below 85%), untested acceptance criteria |
-| **MEDIUM** | Test quality issues, edge case gaps | Missing edge case tests, poor assertion messages |
-| **LOW** | Test naming, documentation gaps | Non-standard test names, missing test descriptions |
-
-Report all severities. CRITICAL/HIGH = immediate fix. MEDIUM = fix in iteration. LOW = document for follow-up.
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios.
-
-| User Says | Your Response |
-|-----------|---------------|
-| "84% is close enough" | "85% is minimum threshold. 84% = FAIL. Adding more tests." |
-| "Manual testing covers it" | "Gate 3 requires executable unit tests. Dispatching QA analyst." |
-| "Skip testing, deadline" | "Testing is MANDATORY. Untested code = unverified claims." |
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations.
-
-### Gate 3-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Tool shows 83% but real is 90%" | Tool output IS real. Your belief is not. | **Fix issue, re-measure** |
-| "Excluding dead code gets us to 85%" | Delete dead code, don't exclude it. | **Delete dead code** |
-| "84.5% rounds to 85%" | Rounding is not allowed. 84.5% < 85%. | **Write more tests** |
-| "Close enough with all AC tested" | "Close enough" is not passing. | **Meet exact threshold** |
-| "Integration tests cover this" | Gate 3 = unit tests only. Different scope. | **Write unit tests** |
-
-## Unit Test vs Integration Test
-
-| Type | Characteristics | Gate 3? |
-|------|----------------|---------|
-| **Unit** ✅ | Mocks all external deps, tests single function | YES |
-| **Integration** ❌ | Hits real database/API/filesystem | no |
-
----
-
-## Execution Report Format
+## Output Format
 
 ```markdown
-## Testing Summary
-**Status:** [PASS|FAIL]
-**Unit ID:** [unit_id]
-**Duration:** [Xm Ys]
-**Iterations:** [N]
-
-## Coverage Report
-**Threshold:** [X%]
-**Actual:** [Y%]
-**Status:** [✅ PASS | ❌ FAIL]
+## Validation Result
+unit_id | result: PASS/FAIL | iterations | coverage: X%
 
 ## Traceability Matrix
-| AC ID | Criterion | Test | Status |
-|-------|-----------|------|--------|
-| AC-1 | [text] | [test] | ✅/❌ |
+| AC-N | Test Function | File | Status |
 
-**Criteria Covered:** [X/Y]
+## Goroutine Analysis (Go only)
+- Files with goroutines: N
+- goleak coverage: X/Y packages
+- Leaks detected: N
+- Verdict: PASS | NEEDS_ACTION | FAIL
+
+## Files Changed
+[list]
 
 ## Handoff to Next Gate
-- Testing status: [COMPLETE|FAILED]
-- Coverage: [X%]
-- Ready for Gate 4: [YES|no]
+gate3_result: PASS | ESCALATED
+test_files: [list]
 ```

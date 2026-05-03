@@ -1,258 +1,145 @@
 ---
 name: ring:dev-frontend-accessibility
 description: |
-  Gate 2 of frontend development cycle - ensures all components pass axe-core
+  Gate 2 of frontend development cycle — ensures all components pass axe-core
   automated accessibility scans with zero WCAG 2.1 AA violations.
-  Runs at TASK cadence (after all subtasks complete Gate 0 + Gate 3 + Gate 8).
 
 trigger: |
-  - After DevOps setup complete (Gate 1)
-  - MANDATORY for all frontend development tasks
-  - Validates WCAG 2.1 AA compliance
+  - Gate 2 (after DevOps setup)
+  - Frontend tasks with UI components
 
 skip_when: |
   - Not inside a frontend development cycle (ring:dev-cycle-frontend)
   - Backend-only project with no UI components
   - Task is documentation-only, configuration-only, or non-code
-  - Changes are limited to build tooling, CI/CD, or infrastructure with no UI impact
-
-NOT_skip_when: |
-  - "It's an internal tool" - WCAG compliance is mandatory for all applications.
-  - "The component library handles accessibility" - Library components can be misused.
-  - "We'll add accessibility later" - Retrofitting costs 10x more.
+  - Changes limited to build tooling, CI/CD, or infrastructure
 
 sequence:
   after: [ring:dev-devops]
   before: [ring:dev-unit-testing]
 
 related:
-  complementary: [ring:dev-cycle-frontend, ring:dev-devops, ring:qa-analyst-frontend]
-
-input_schema:
-  required:
-    - name: unit_id
-      type: string
-      description: "Task identifier (always a TASK id; runs at task cadence)"
-    - name: implementation_files
-      type: array
-      items: string
-      description: "Union of changed files across all subtasks of this task"
-    - name: gate0_handoffs
-      type: array
-      items: object
-      description: "Array of per-subtask implementation handoffs (one per subtask). NOT a single gate0_handoff object."
-    - name: language
-      type: string
-      enum: [typescript]
-      description: "Programming language (TypeScript only)"
-  optional:
-    - name: gate1_handoff
-      type: object
-      description: "Full handoff from Gate 1 (DevOps)"
-
-output_schema:
-  format: markdown
-  required_sections:
-    - name: "Accessibility Testing Summary"
-      pattern: "^## Accessibility Testing Summary"
-      required: true
-    - name: "Violations Report"
-      pattern: "^## Violations Report"
-      required: true
-    - name: "Handoff to Next Gate"
-      pattern: "^## Handoff to Next Gate"
-      required: true
-  metrics:
-    - name: result
-      type: enum
-      values: [PASS, FAIL]
-    - name: components_tested
-      type: integer
-    - name: violations_found
-      type: integer
-    - name: keyboard_nav_tests
-      type: integer
-    - name: iterations
-      type: integer
-
-verification:
-  automated:
-    - command: "grep -rn 'toHaveNoViolations\\|axe(' --include='*.test.tsx' --include='*.test.ts' ."
-      description: "axe-core tests exist"
-      success_pattern: 'toHaveNoViolations\|axe('
-    - command: "grep -rn 'getByRole\\|getByLabel' --include='*.test.tsx' --include='*.test.ts' ."
-      description: "Semantic selector tests exist"
-      success_pattern: 'getByRole\|getByLabel'
-  manual:
-    - "axe-core scans return 0 WCAG AA violations"
-    - "Keyboard navigation tests cover all interactive elements"
-    - "Focus management tests exist for modals and dialogs"
-
+  complementary: [ring:dev-cycle-frontend, ring:qa-analyst-frontend]
 ---
 
-# Dev Frontend Accessibility Testing (Gate 2)
+# Frontend Accessibility Testing (Gate 2)
 
-## Overview
+WCAG 2.1 AA compliance is mandatory for all applications. No exceptions.
 
-Ensure all frontend components meet **WCAG 2.1 AA** accessibility standards through automated axe-core scanning, keyboard navigation testing, and focus management validation.
+**Block conditions:**
+- Any axe-core CRITICAL violation = FAIL
+- Any axe-core SERIOUS violation = FAIL
+- Missing keyboard navigation = FAIL
+- Missing focus management = FAIL
 
-**Core principle:** Accessibility is not optional. All components MUST be accessible to all users, including those using keyboard navigation, screen readers, and assistive technologies.
+## WCAG 2.1 AA Core Requirements
 
-<block_condition>
-- Any WCAG AA violation = FAIL
-- Missing keyboard navigation tests = FAIL
-- Missing focus management for modals = FAIL
-</block_condition>
-
-## CRITICAL: Role Clarification
-
-**This skill ORCHESTRATES. Frontend QA Analyst Agent (accessibility mode) EXECUTES.**
-
-| Who | Responsibility |
-|-----|----------------|
-| **This Skill** | Gather requirements, dispatch agent, track iterations |
-| **QA Analyst Frontend Agent** | Run axe-core, write keyboard tests, verify ARIA |
-
----
-
-## Standards Reference
-
-> **Standards Source (Cache-First Pattern):** This sub-skill reads standards from `state.cached_standards` populated by dev-cycle Step 1.5. If invoked outside a cycle (standalone), it falls back to direct WebFetch with a warning. See `shared-patterns/standards-cache-protocol.md` for protocol details.
-
-**MANDATORY:** Load testing-accessibility.md standards using the cache-first pattern below.
-
-Required URL: `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-accessibility.md`
-
-```yaml
-For the required standards URL above:
-  IF state.cached_standards[url] exists:
-    → Read content from state.cached_standards[url].content
-    → Log: "Using cached standard: {url} (fetched {state.cached_standards[url].fetched_at})"
-  ELSE:
-    → WebFetch url (fallback — should not happen if orchestrator ran Step 1.5)
-    → Log warning: "Standard {url} was not pre-cached; fetched inline"
-```
-
-<fetch_required>
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-accessibility.md
-</fetch_required>
-
----
+| Criterion | Requirement |
+|-----------|-------------|
+| Color contrast | Text ≥ 4.5:1, large text ≥ 3:1 |
+| Keyboard navigation | All interactive elements reachable by Tab |
+| Focus visibility | Focus indicator visible on all elements |
+| Semantic HTML | Proper heading hierarchy, landmark regions |
+| Form labels | All inputs have associated labels |
+| Images | All `<img>` have meaningful `alt` attributes |
+| Error messages | Errors announced to screen readers |
+| Link purpose | Links describe destination (not "click here") |
 
 ## Step 1: Validate Input
 
-```text
-REQUIRED INPUT:
-- unit_id: [TASK id — this gate runs at task cadence, aggregating all subtasks]
-- implementation_files: [union of changed files across all subtasks of the task]
-- gate0_handoffs: [array of per-subtask implementation handoffs, one per subtask]
-- language: [typescript only]
+Required: `unit_id` (TASK id), `implementation_files`, `gate0_handoffs`.
+Optional: `components_list`, `gate1_handoff`.
 
-OPTIONAL INPUT:
-- gate1_handoff: [full Gate 1 output]
+## Step 2: Dispatch Frontend QA Analyst
 
-if any REQUIRED input is missing:
-  → STOP and report: "Missing required input: [field]"
-
-if gate0_handoffs is not an array:
-  → STOP and report: "gate0_handoffs must be an array of per-subtask handoffs"
-
-if language != "typescript":
-  → STOP and report: "Frontend accessibility testing only supported for TypeScript/React"
-```
-
-## Step 2: Dispatch Frontend QA Analyst Agent (Accessibility Mode)
-
-```text
-Task tool:
+```yaml
+Task:
   subagent_type: "ring:qa-analyst-frontend"
+  description: "Accessibility testing for {unit_id}"
   prompt: |
-    **MODE:** ACCESSIBILITY TESTING (Gate 2)
+    ## Accessibility Testing — Gate 2
 
-    **Standards:** Load testing-accessibility.md
+    unit_id: {unit_id}
+    components changed: {implementation_files filtered to .tsx}
 
-    **Input:**
-    - Task ID: {unit_id} (task-level — aggregates all subtasks)
-    - Implementation Files (union across all subtasks): {implementation_files}
-    - Per-Subtask Gate 0 Handoffs: {gate0_handoffs}
-    - Language: typescript
+    Standards: Load via cached_standards or WebFetch:
+    https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend/testing-accessibility.md
 
-    **Scope:** Validate accessibility for the task (all subtasks aggregated), not a single subtask.
+    ## Required Checks
 
-    **Requirements:**
-    1. Run axe-core scans on all components (all states: default, loading, error, empty, disabled)
-    2. Test keyboard navigation (Tab, Enter, Escape, Arrow keys)
-    3. Test focus management (trap, restoration, auto-focus)
-    4. Verify semantic HTML usage
-    5. Check ARIA attributes
-    6. Verify color contrast
+    ### 1. axe-core Automated Scan (per component)
+    ```typescript
+    import { render } from '@testing-library/react';
+    import { axe, toHaveNoViolations } from 'jest-axe';
+    expect.extend(toHaveNoViolations);
 
-    **Output Sections Required:**
-    - ## Accessibility Testing Summary
-    - ## Violations Report
-    - ## Handoff to Next Gate
+    it('has no accessibility violations', async () => {
+      const { container } = render(<ComponentName />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+    ```
+    Run on ALL states: default, loading, error, empty, interactive.
+
+    ### 2. Keyboard Navigation
+    - Tab order follows visual order
+    - All interactive elements reachable (buttons, links, inputs, selects)
+    - No keyboard traps
+    - Escape key closes modals/dropdowns
+
+    ### 3. Focus Management
+    - Focus visible on all interactive elements
+    - Focus moves to new content after navigation
+    - Modal: focus trapped inside when open, restored when closed
+
+    ### 4. Semantic HTML Verification
+    ```bash
+    # Check heading hierarchy
+    grep -rn "<h[1-6]" --include='*.tsx' src/
+    # Check landmark regions
+    grep -rn "role=\"main\"\|<main\|<nav\|<header\|<footer\|<aside" --include='*.tsx' src/
+    ```
+
+    ### 5. Color Contrast (spot check)
+    Use browser DevTools accessibility panel or contrast checking tool.
+    Flag any computed contrast below 4.5:1 for normal text, 3:1 for large.
+
+    ## Violations Report Template
+    | Component | Violation | Severity | WCAG Criterion | Fix Required |
+
+    ## Required Output
+    - axe-core test files
+    - Violations table (zero critical/serious required)
+    - Keyboard navigation checklist
+    - All tests pass
 ```
 
-## Step 3: Evaluate Results
+## Step 3: Validate Results
 
-```text
-Parse agent output:
+```
+if zero critical/serious violations AND keyboard nav passes:
+  → PASS → proceed to Gate 3
 
-if "Status: PASS" in output:
-  → Gate 2 PASSED
-  → Return success with metrics
-
-if "Status: FAIL" in output:
-  → Dispatch fix to implementation agent (ring:frontend-engineer or ring:ui-engineer)
-  → Re-run accessibility tests (max 3 iterations)
-  → If still failing: ESCALATE to user
+if any critical/serious violation:
+  → Dispatch ring:frontend-engineer to fix
+  → Re-run accessibility tests
+  → iterations++
 ```
 
-## Step 4: Generate Output
+## Output Format
 
-```text
-## Accessibility Testing Summary
-**Status:** {PASS|FAIL}
-**Components Tested:** {count}
-**Violations Found:** {count}
-**Keyboard Nav Tests:** {count}
-**Focus Management Tests:** {count}
+```markdown
+## Accessibility Testing Result
+unit_id | result: PASS/FAIL | iterations | violations: N
 
-## Violations Report
-| Component | States Scanned | Violations | Status |
-|-----------|---------------|------------|--------|
-| {component} | {states} | {count} | {PASS|FAIL} |
+## Violations Found
+| Component | Type | Severity | WCAG | Fixed |
 
-## Handoff to Next Gate
-- Ready for Gate 3 (Unit Testing): {YES|NO}
-- Iterations: {count}
+## Keyboard Navigation
+| Component | Keyboard Reachable | Focus Visible | Status |
+
+## Handoff
+gate2_result: PASS | ESCALATED
+violations_critical: 0
+violations_serious: 0
 ```
-
----
-
-## Severity Calibration
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Legal compliance risk, users blocked | Missing alt text on images, no keyboard access, form without labels |
-| **HIGH** | WCAG AA violation, significant barrier | Color contrast fails, missing focus indicators, no skip links |
-| **MEDIUM** | Minor accessibility gaps | Non-semantic HTML, missing ARIA on complex widgets |
-| **LOW** | Best practices, enhancements | Optional ARIA improvements, landmark suggestions |
-
-Report all severities. CRITICAL = immediate fix (legal risk). HIGH = fix before gate pass. MEDIUM = fix in iteration. LOW = document.
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations. Gate-specific:
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "It's an internal tool" | WCAG compliance is mandatory for all applications. | **Run accessibility tests** |
-| "The library handles it" | Components can be misused. axe-core catches misuse. | **Run axe-core scans** |
-| "We'll fix accessibility later" | Retrofitting costs 10x. Fix now. | **Fix violations now** |
-| "Only one violation, it's minor" | One violation = FAIL. No exceptions. | **Fix all violations** |
-| "Keyboard nav works, I tested manually" | Manual ≠ automated. Tests must be repeatable. | **Write automated tests** |
-
----

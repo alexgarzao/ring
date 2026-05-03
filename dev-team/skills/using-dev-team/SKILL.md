@@ -2,7 +2,8 @@
 name: ring:using-dev-team
 description: |
   12 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
-  design, Helm charts, UI implementation, QA (backend + frontend), SRE, and prompt quality review. Dispatch when you need deep technology expertise.
+  design, Helm charts, UI implementation, QA (backend + frontend), SRE, and prompt quality review.
+  Dispatch when you need deep technology expertise.
 
 trigger: |
   - Need deep expertise for specific technology (Go, TypeScript)
@@ -23,392 +24,85 @@ skip_when: |
 
 related:
   similar: [ring:using-ring]
-
-## Runtime Version Resolution
-
-**IMPORTANT:** Always resolve lib-commons to the latest v5.x tag at runtime:
-```bash
-gh api repos/LerianStudio/lib-commons/releases/latest --jq '.tag_name'
-```
-
-Do NOT hardcode specific patch versions (v5.0.2, etc). This ensures your work uses the most current lib-commons features and fixes.
 ---
 
 # Using Ring Developer Specialists
 
-The ring-dev-team plugin provides 12 specialized developer agents. Use them via `Task tool with subagent_type:`.
+12 specialized developer agents. Dispatch via `Task tool with subagent_type:`.
 
-See [CLAUDE.md](https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md) and [ring:using-ring](https://raw.githubusercontent.com/LerianStudio/ring/main/default/skills/using-ring/SKILL.md) for canonical workflow requirements and ORCHESTRATOR principle. This skill introduces dev-team-specific agents.
+## Runtime Version Resolution
 
-**Remember:** Follow the **ORCHESTRATOR principle** from `ring:using-ring`. Dispatch agents to handle complexity; don't operate tools directly.
-
----
-
-## Blocker Criteria - STOP and Report
-
-<block_condition>
-
-- Technology Stack decision needed (Go vs TypeScript)
-- Architecture decision needed (monolith vs microservices)
-- Infrastructure decision needed (cloud provider)
-- Testing strategy decision needed (unit vs E2E)
-  </block_condition>
-
-If any condition applies, STOP and ask user.
-
-**always pause and report blocker for:**
-
-| Decision Type        | Examples                         | Action                                         |
-| -------------------- | -------------------------------- | ---------------------------------------------- |
-| **Technology Stack** | Go vs TypeScript for new service | STOP. Check existing patterns. Ask user.       |
-| **Architecture**     | Monolith vs microservices        | STOP. This is a business decision. Ask user.   |
-| **Infrastructure**   | Cloud provider choice            | STOP. Check existing infrastructure. Ask user. |
-| **Testing Strategy** | Unit vs E2E vs both              | STOP. Check QA requirements. Ask user.         |
-
-**You CANNOT make technology decisions autonomously. STOP and ask.**
-
----
-
-## Common Misconceptions - REJECTED
-
-See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section).
-
-**Self-sufficiency bias check:** If you're tempted to implement directly, ask:
-
-1. Is there a specialist for this? (Check the 12 specialists below)
-2. Would a specialist follow standards I might miss?
-3. Am I avoiding dispatch because it feels like "overhead"?
-
-**If any answer is yes → You MUST DISPATCH the specialist. This is NON-NEGOTIABLE.**
-
----
-
-## Severity Calibration
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Wrong agent dispatched, security risk | Backend agent for frontend task, skipped security review |
-| **HIGH** | Missing specialist dispatch, sequential reviewers | Implemented directly without agent, reviewers run one-by-one |
-| **MEDIUM** | Suboptimal agent selection, missing context | Used general agent when specialist exists |
-| **LOW** | Documentation gaps, minor dispatch issues | Missing agent context, unclear prompt |
-
-Report all severities. CRITICAL = immediate correction. HIGH = fix before continuing. MEDIUM = note for next dispatch. LOW = document.
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/shared-anti-rationalization.md](../shared-patterns/shared-anti-rationalization.md) for universal anti-rationalizations (including Specialist Dispatch section and Universal section).
-
----
-
-### Cannot Be Overridden
-
-<cannot_skip>
-
-- Dispatch to specialist (standards loading required)
-- 10-gate development cycle (quality gates)
-- Parallel reviewer dispatch (not sequential)
-- TDD in Gate 0 (test-first)
-- User approval in Gate 9
-  </cannot_skip>
-
-**These requirements are NON-NEGOTIABLE:**
-
-| Requirement                    | Why It Cannot Be Waived                       |
-| ------------------------------ | --------------------------------------------- |
-| **Dispatch to specialist**     | Specialists have standards loading, you don't |
-| **10-gate development cycle**  | Gates prevent quality regressions             |
-| **Parallel reviewer dispatch** | Sequential review = 3x slower, same cost      |
-| **TDD in Gate 0**              | Test-first ensures testability                |
-| **User approval in Gate 9**    | Only users can approve completion             |
-
-**User cannot override these. Time pressure cannot override these. "Simple task" cannot override these.**
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) for universal pressure scenarios (including Combined Pressure Scenarios and Emergency Response).
-
-**Critical Reminder:**
-
-- **Urgency ≠ Permission to bypass** - Emergencies require MORE care, not less
-- **Authority ≠ Permission to bypass** - Ring standards override human preferences
-- **Sunk Cost ≠ Permission to bypass** - Wrong approach stays wrong at 80% completion
-
----
-
-## Emergency Response Protocol
-
-See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) → Emergency Response section for the complete protocol.
-
-**Emergency Dispatch Template:**
-
+Always resolve lib-commons to latest v5.x at runtime:
+```bash
+gh api repos/LerianStudio/lib-commons/releases/latest --jq '.tag_name'
 ```
-Task tool:
-  subagent_type: "ring:backend-engineer-golang"
-  prompt: "URGENT PRODUCTION INCIDENT: [brief context]. [Your specific request]"
-```
+Do NOT hardcode specific patch versions.
 
-**IMPORTANT:** Specialist dispatch takes 5-10 minutes, not hours. This is NON-NEGOTIABLE even under CEO pressure.
+## Specialists
 
----
+| Agent | Specializations | Use When |
+|-------|----------------|----------|
+| `ring:backend-engineer-golang` | Go microservices, PostgreSQL/MongoDB, RabbitMQ, OAuth2/JWT, gRPC, concurrency | Go services, DB optimization, auth/authz, concurrency |
+| `ring:backend-engineer-typescript` | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, Jest/Vitest | TS backends, NestJS design, JS→TS migration |
+| `ring:devops-engineer` | Docker/Compose, Terraform/Helm, cloud infra, secrets management | Containerization, local dev setup, IaC, Helm charts |
+| `ring:frontend-bff-engineer-typescript` | Next.js BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI | BFF layer, Clean Architecture, DDD domains, API orchestration |
+| `ring:frontend-designer` | Bold typography, color systems, animations, unexpected layouts | Landing pages, portfolios, design systems |
+| `ring:frontend-engineer` | React/Next.js, App Router, Server Components, accessibility, performance | Financial dashboards, enterprise apps, modern React |
+| `ring:helm-engineer` | Helm charts, Lerian conventions, chart structure, security, operational patterns | Creating/maintaining Helm charts, platform deployments |
+| `ring:ui-engineer` | Wireframe-to-code, Design System compliance, UI states implementation | Implementing from product-designer specs |
+| `ring:prompt-quality-reviewer` | Agent quality analysis, prompt deficiency detection, quality scoring | Evaluating agent executions, identifying prompt gaps |
+| `ring:qa-analyst` | Test strategy, coverage analysis, fuzz/property/integration/chaos testing (Go) | Backend test planning, coverage gaps, quality gates |
+| `ring:qa-analyst-frontend` | Vitest, Testing Library, axe-core, Playwright, Lighthouse, snapshot testing | Frontend test planning, accessibility, E2E, performance |
+| `ring:sre` | Structured logging, tracing, health checks, observability | Logging validation, tracing setup, health endpoints |
 
-## Combined Pressure Scenarios
+## Dispatch Template
 
-See [shared-patterns/shared-pressure-resistance.md](../shared-patterns/shared-pressure-resistance.md) → Combined Pressure Scenarios section.
-
----
-
-## 12 Developer Specialists
-
-<dispatch_required agent="{specialist}">
-Use Task tool to dispatch appropriate specialist based on technology need.
-</dispatch_required>
-
-| Agent                                       | Specializations                                                                                      | Use When                                                                              |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **`ring:backend-engineer-golang`**          | Go microservices, PostgreSQL/MongoDB, Kafka/RabbitMQ, OAuth2/JWT, gRPC, concurrency                  | Go services, DB optimization, auth/authz, concurrency issues                          |
-| **`ring:backend-engineer-typescript`**      | TypeScript/Node.js, Express/Fastify/NestJS, Prisma/TypeORM, async patterns, Jest/Vitest              | TS backends, JS→TS migration, NestJS design, full-stack TS                            |
-| **`ring:devops-engineer`**                  | Docker/Compose, Terraform/Helm, cloud infra, secrets management                                      | Containerization, local dev setup, IaC provisioning, Helm charts                      |
-| **`ring:frontend-bff-engineer-typescript`** | Next.js API Routes BFF, Clean/Hexagonal Architecture, DDD patterns, Inversify DI, repository pattern | BFF layer, Clean Architecture, DDD domains, API orchestration                         |
-| **`ring:frontend-designer`**                | Bold typography, color systems, animations, unexpected layouts, textures/gradients                   | Landing pages, portfolios, distinctive dashboards, design systems                     |
-| **`ring:frontend-engineer`**                | React/Next.js, App Router, Server Components, accessibility, performance optimization, dual-mode UI library support | Financial dashboards, enterprise apps, frontend UI development, modern React patterns |
-| **`ring:helm-engineer`**                    | Helm charts, Lerian conventions, chart structure, naming, security, operational patterns             | Creating/maintaining Helm charts, chart audits, Lerian platform deployments           |
-| **`ring:ui-engineer`**                      | Wireframe-to-code, Design System compliance, UX criteria satisfaction, UI states implementation      | Implementing from product-designer specs (ux-criteria.md, user-flows.md, wireframes/) |
-| **`ring:prompt-quality-reviewer`**          | Agent quality analysis, prompt deficiency detection, quality scoring, improvement suggestions        | Evaluating agent executions, identifying prompt gaps, continuous agent improvement     |
-| **`ring:qa-analyst`**                       | Test strategy, coverage analysis, API testing, fuzz/property/integration/chaos testing (Go)          | Backend test planning, coverage gaps, quality gates (Go-focused)                      |
-| **`ring:qa-analyst-frontend`**              | Vitest, Testing Library, axe-core, Playwright, Lighthouse, Core Web Vitals, snapshot testing         | Frontend test planning, accessibility, visual, E2E, performance testing               |
-| **`ring:sre`**                              | Structured logging, tracing, health checks, observability                                            | Logging validation, tracing setup, health endpoint verification                       |
-
-**Dispatch template:**
-
-```
-Task tool:
+```yaml
+Task:
   subagent_type: "ring:{agent-name}"
-  prompt: "{Your specific request with context}"
+  description: "{Brief task description}"
+  prompt: |
+    {Your specific request with full context}
 ```
 
-**Frontend Agent Selection:**
+## Frontend Agent Selection Guide
 
-- `ring:frontend-designer` = visual aesthetics, design specifications (no code)
-- `ring:frontend-engineer` = frontend UI development, React/Next.js, financial dashboards, enterprise apps
-- `ring:frontend-bff-engineer-typescript` = business logic/architecture, BFF layer
-- `ring:ui-engineer` = implementing UI from product-designer specs (ux-criteria.md, user-flows.md, wireframes/)
+| Need | Agent |
+|------|-------|
+| Visual aesthetics, design specs (no code) | `ring:frontend-designer` |
+| React/Next.js UI development | `ring:frontend-engineer` |
+| Business logic, BFF, Clean Architecture | `ring:frontend-bff-engineer-typescript` |
+| Implementing from wireframes/ux-criteria | `ring:ui-engineer` |
 
-**When to use ring:ui-engineer:**
-Use `ring:ui-engineer` when product-designer outputs exist in `docs/pre-dev/{feature}/`. The ring:ui-engineer specializes in translating design specifications into production code while ensuring all UX criteria are satisfied.
+## Parallelization
 
----
+When tasks are independent, dispatch multiple agents in ONE message:
 
-## When to Use Developer Specialists vs General Review
-
-### Use Developer Specialists for:
-
-- ✅ **Deep technical expertise needed** – Architecture decisions, complex implementations
-- ✅ **Technology-specific guidance** – "How do I optimize this Go service?"
-- ✅ **Specialized domains** – Infrastructure, SRE, testing strategy
-- ✅ **Building from scratch** – New service, new pipeline, new testing framework
-
-### Use General Review Agents for:
-
-- ✅ **Code quality assessment** – Architecture, patterns, maintainability
-- ✅ **Correctness & edge cases** – Business logic verification
-- ✅ **Security review** – OWASP, auth, validation
-- ✅ **Post-implementation** – Before merging existing code
-
-**Both can be used together:** Get developer specialist guidance during design, then run general reviewers before merge.
-
----
-
-## Dispatching Multiple Specialists
-
-If you need multiple specialists (e.g., backend engineer + DevOps engineer), dispatch in **parallel** (single message, multiple Task calls):
-
-```
-✅ CORRECT:
-Task #1: ring:backend-engineer-golang
-Task #2: ring:devops-engineer
-(Both run in parallel)
-
-❌ WRONG:
-Task #1: ring:backend-engineer-golang
-(Wait for response)
-Task #2: ring:devops-engineer
-(Sequential = 2x slower)
+```yaml
+# All in one Task call block
+Task 1: ring:backend-engineer-golang - analyze X
+Task 2: ring:qa-analyst - write tests for Y  
+Task 3: ring:devops-engineer - update Dockerfile
 ```
 
----
+Sequential dispatch triples execution time for the same cost.
 
-## ORCHESTRATOR Principle
+## Example
 
-Remember:
-
-- **You're the orchestrator** – Dispatch specialists, don't implement directly
-- **Don't read specialist docs yourself** – Dispatch to specialist, they know their domain
-- **Combine with ring:using-ring principle** – Skills + Specialists = complete workflow
-
-### Good Example (ORCHESTRATOR):
-
-> "I need a Go service. Let me dispatch `ring:backend-engineer-golang` to design it."
-
-### Bad Example (OPERATOR):
-
-> "I'll manually read Go best practices and design the service myself."
-
----
-
-## Available in This Plugin
-
-**Agents (12):** See "12 Developer Specialists" table above.
-- ring:backend-engineer-golang (Go microservices, PostgreSQL/MongoDB, concurrency)
-- ring:backend-engineer-typescript (TypeScript/Node.js backends, NestJS, Prisma)
-- ring:devops-engineer (Docker, Terraform, Helm, cloud infrastructure)
-- ring:frontend-bff-engineer-typescript (Next.js BFF, Clean Architecture, DDD)
-- ring:frontend-designer (Bold typography, color systems, animations, design systems)
-- ring:frontend-engineer (React/Next.js, App Router, Server Components, accessibility)
-- ring:helm-engineer (Helm charts, Lerian conventions, chart audits)
-- ring:prompt-quality-reviewer (Agent quality analysis, prompt deficiency detection)
-- ring:qa-analyst (Backend test strategy, coverage, fuzz/property/integration/chaos)
-- ring:qa-analyst-frontend (Vitest, Playwright, axe-core, Lighthouse, visual testing)
-- ring:sre (Structured logging, tracing, health checks, observability)
-- ring:ui-engineer (Wireframe-to-code, Design System compliance, UX criteria)
-
-**Skills (37):**
-
-*Cycle Orchestrators:*
-- ring:using-dev-team (this skill - plugin introduction and dispatch guide)
-- ring:dev-cycle (10-gate backend development cycle orchestrator)
-- ring:dev-cycle-frontend (9-gate frontend development cycle orchestrator)
-- ring:dev-cycle-management (Development cycle state management - status reporting and cancellation)
-
-*Implementation & Verification:*
-- ring:dev-implementation (Gate 0 - code implementation with TDD RED-GREEN phases)
-- ring:dev-delivery-verification — DEPRECATED: functionality merged into ring:dev-implementation Step 7 (Delivery Verification Exit Check). Do not dispatch directly.
-- ring:dev-validation (Gate 9 - validates acceptance criteria met, requires user approval)
-- ring:dev-verify-code (Atomic Go pre-merge verification - parallel static analysis + sequential integration/E2E, MERGE_READY or NEEDS_FIX verdict)
-
-*Infrastructure & DevOps:*
-- ring:dev-devops (Gate 1 - Docker, docker-compose, environment variables)
-- ring:dev-sre (Gate 2 - validates observability: logging, tracing, health checks)
-- ring:dev-helm (Helm chart creation/maintenance following Lerian conventions)
-- ring:dev-docker-security (Dockerfile auditing for Docker Hub Health Score grade A)
-- ring:dev-readyz (Readiness probes and startup self-probes for Lerian services)
-
-*Backend Testing Gates:*
-- ring:dev-unit-testing (Gate 3 - unit test coverage 85%+ with TDD)
-- ring:dev-fuzz-testing (Gate 4 - fuzz tests for edge cases and crashes)
-- ring:dev-property-testing (Gate 5 - property-based tests for domain invariants)
-- ring:dev-integration-testing (Gate 6 - integration tests with testcontainers)
-- ring:dev-chaos-testing (Gate 7 - chaos tests with Toxiproxy for graceful degradation)
-- ring:dev-goroutine-leak-testing (Goroutine leak detection with goleak)
-
-*Frontend Testing Gates:*
-- ring:dev-frontend-accessibility (Gate 2 - axe-core WCAG 2.1 AA compliance)
-- ring:dev-frontend-visual (Gate 4 - snapshot tests for all component states)
-- ring:dev-frontend-e2e (Gate 5 - Playwright E2E tests across browsers)
-- ring:dev-frontend-performance (Gate 6 - Core Web Vitals, Lighthouse > 90)
-
-*Analysis & Refactoring:*
-- ring:dev-refactor (Analyzes backend codebase against standards, generates tasks)
-- ring:dev-refactor-frontend (Analyzes frontend codebase against standards, generates tasks)
-- ring:dev-simplify (Whole-codebase structural simplification sweep — hunts unjustified abstractions with KILL/REVIEW/KEEP output and DELETE-by-default burden of proof)
-- ring:dev-report (Cycle feedback - assertiveness scores, prompt quality, root cause analysis)
-
-*Specialized:*
-- ring:dev-multi-tenant (Multi-tenant development orchestrator with auto-detected stack)
-- ring:dev-systemplane-migration (Gate-based migration to database-backed runtime configuration)
-- ring:dev-streaming-instrumentation (Gate-based lib-streaming end-to-end wiring orchestrator: consumes instrumentation-map.json from ring:streaming-event-mapping, instruments emit sites with feature-flag-gated lifecycle, NoopEmitter fallback, MockEmitter unit tests, testcontainers Redpanda integration, Toxiproxy chaos tests, and 10-reviewer code review)
-- ring:dev-service-discovery (Scans Go project for service/module/resource hierarchy)
-- ring:dev-dep-security-check (Audits dependency installations before execution)
-- ring:dev-llms-txt (Generates/audits llms.txt files per llmstxt.org spec)
-- ring:dev-licensing (Apply or switch license: Apache 2.0, Elastic v2, or Lerian Proprietary - updates LICENSE, SPDX headers, source files)
-- ring:using-lib-commons (Reference for lib-commons latest v5.x, Lerian shared Go library)
-- ring:using-runtime (Deep reference + 6-angle audit for commons/runtime: panic recovery, SafeGo, observability trident)
-- ring:using-assert (Deep reference + 6-angle audit for commons/assert: domain predicates, financial invariants, AssertionError patterns)
-
-**Note:** Missing agents? Check `.claude-plugin/marketplace.json` for ring-dev-team plugin.
-
----
-
-## Development Workflows
-
-All workflows converge to the 10-gate development cycle:
-
-| Workflow         | Entry Point                           | Output                                        | Then                         |
-| ---------------- | ------------------------------------- | --------------------------------------------- | ---------------------------- |
-| **New Feature**  | `/ring:pre-dev-feature "description"` | `docs/pre-dev/{feature}/tasks.md`             | → `/ring:dev-cycle tasks.md` |
-| **Direct Tasks** | `/ring:dev-cycle tasks.md`            | —                                             | Execute 6 gates directly     |
-| **Refactoring**  | `/ring:dev-refactor`                  | `docs/ring:dev-refactor/{timestamp}/tasks.md` | → `/ring:dev-cycle tasks.md` |
-| **Frontend Refactoring** | `/ring:dev-refactor-frontend` | `docs/ring:dev-refactor-frontend/{timestamp}/tasks.md` | → `/ring:dev-cycle-frontend tasks.md` |
-
-**10-Gate Backend Development Cycle (+ post-cycle multi-tenant):**
-
-| Gate                       | Focus                            | Agent(s)                                                                               |
-| -------------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
-| **0: Implementation**      | TDD: RED→GREEN→REFACTOR (single-tenant) | `ring:backend-engineer-*`, `ring:frontend-bff-engineer-typescript`, `ring:ui-engineer` |
-| **1: DevOps**              | Dockerfile, docker-compose, .env | `ring:devops-engineer`                                                                 |
-| **2: SRE**                 | Health checks, logging, tracing  | `ring:sre`                                                                             |
-| **3: Unit Testing**        | Unit tests, coverage ≥85%        | `ring:qa-analyst`                                                                      |
-| **4: Fuzz Testing**        | Fuzz tests for edge cases        | `ring:qa-analyst`                                                                      |
-| **5: Property Testing**    | Property-based tests for invariants | `ring:qa-analyst`                                                                   |
-| **6: Integration Testing** | Integration tests (write per unit, execute at end) | `ring:qa-analyst`                                                   |
-| **7: Chaos Testing**       | Chaos tests (write per unit, execute at end) | `ring:qa-analyst`                                                         |
-| **8: Review**              | 10 reviewers IN PARALLEL         | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:nil-safety-reviewer`, `ring:consequences-reviewer`, `ring:dead-code-reviewer`, `ring:performance-reviewer`, `ring:multi-tenant-reviewer`, `ring:lib-commons-reviewer` |
-| **9: Validation**          | User approval: APPROVED/REJECTED | User decision                                                                          |
-| **Post-cycle: Multi-Tenant** | Adapt all code for multi-tenant | `ring:backend-engineer-golang` (via `ring:dev-multi-tenant`)                          |
-
-**Note: Review ≠ Adaptation.**
-The `ring:multi-tenant-reviewer` in Gate 8 **audits** multi-tenant compliance but does NOT adapt code. The **Post-cycle: Multi-Tenant** step (via `ring:dev-multi-tenant`) is still required to **actually adapt** code for multi-tenancy — tenant context propagation, database-per-tenant wiring, event-driven tenant discovery registration. The two steps are complementary:
-
-- **Gate 8 (review)**: detects non-compliance in the task's diff.
-- **Post-cycle (adaptation)**: performs the actual code changes for multi-tenancy.
-
-Removing the Post-cycle step because "we have a reviewer now" would be a functional regression — reviewers detect, they do not adapt.
-
-**Gate 0 Agent Selection for Frontend:**
-
-- If `docs/pre-dev/{feature}/ux-criteria.md` exists → use `ring:ui-engineer`
-- Otherwise → use `ring:frontend-bff-engineer-typescript`
-
-**Key Principle:** Backend follows the 10-gate process. Frontend follows the 9-gate process.
-
-### Frontend Development Cycle (9 Gates)
-
-**Use `/ring:dev-cycle-frontend` for frontend-specific development:**
-
-| Gate                      | Focus                                | Agent(s)                        |
-| ------------------------- | ------------------------------------ | ------------------------------- |
-| **0: Implementation**     | TDD: RED→GREEN→REFACTOR              | `ring:frontend-engineer`, `ring:ui-engineer`, `ring:frontend-bff-engineer-typescript` |
-| **1: DevOps**             | Dockerfile, docker-compose, .env     | `ring:devops-engineer`          |
-| **2: Accessibility**      | WCAG 2.1 AA, axe-core, keyboard nav | `ring:qa-analyst-frontend`      |
-| **3: Unit Testing**       | Vitest + Testing Library, ≥85%       | `ring:qa-analyst-frontend`      |
-| **4: Visual Testing**     | Snapshots, states, responsive        | `ring:qa-analyst-frontend`      |
-| **5: E2E Testing**        | Playwright, cross-browser, user flows| `ring:qa-analyst-frontend`      |
-| **6: Performance**        | Core Web Vitals, Lighthouse > 90     | `ring:qa-analyst-frontend`      |
-| **7: Review**             | 10 reviewers IN PARALLEL             | `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:test-reviewer`, `ring:nil-safety-reviewer`, `ring:consequences-reviewer`, `ring:dead-code-reviewer`, `ring:performance-reviewer`, `ring:multi-tenant-reviewer`, `ring:lib-commons-reviewer` |
-| **8: Validation**         | User approval: APPROVED/REJECTED     | User decision                   |
-
-**Backend → Frontend Handoff:**
-When backend dev cycle completes, it produces a handoff with endpoints, types, and contracts. The frontend dev cycle consumes this handoff to verify E2E tests exercise the correct API endpoints.
-
-| Step | Command | Output |
-|------|---------|--------|
-| 1. Backend | `/ring:dev-cycle tasks.md` | Backend code + handoff (endpoints, contracts) |
-| 2. Frontend | `/ring:dev-cycle-frontend tasks-frontend.md` | Frontend code consuming backend endpoints |
-
----
-
-## Integration with Other Plugins
-
-- **ring:using-ring** (default) – ORCHESTRATOR principle for all agents
-- **ring:using-pm-team** – Pre-dev workflow agents
-- **ring:using-finops-team** – Financial/regulatory agents
-
-Dispatch based on your need:
-
-- General code review → default plugin agents
-- Specific domain expertise → ring-dev-team agents
-- Feature planning → ring-pm-team agents
-- Regulatory compliance → ring-finops-team agents
+```yaml
+Task:
+  subagent_type: "ring:backend-engineer-golang"
+  description: "Implement multi-tenant repository for accounts"
+  prompt: |
+    Implement a multi-tenant PostgreSQL repository for the accounts domain.
+    
+    Standards: Load golang.md and multi-tenant.md via WebFetch.
+    Project rules: docs/PROJECT_RULES.md
+    
+    Requirements:
+    - Use tmcore.GetPGContext(ctx) for tenant context resolution
+    - Table: accounts, tenant isolation via schema-per-tenant
+    - TDD: write failing test first, then implement
+    
+    Output: files created, test results, acceptance criteria checklist
+```

@@ -6,162 +6,67 @@ trigger: |
   - User asks for a diagram, chart, flowchart, or visualization
   - User says "draw", "diagram", "visualize", "chart", "show me"
   - Need to visualize architecture, data flow, state machines, sequences, or relationships
-  - Explaining complex systems where a visual would be more effective than prose
 
-skip_when: The user needs a rich, branded, or styled HTML visualization (use ring:visualize instead). This skill produces shareable mermaid.live URLs; visualize produces self-contained Lerian-branded HTML files.
+skip_when: User needs a rich, branded, styled HTML visualization → use ring:visualize instead.
 ---
 
 # Mermaid Live Diagram Generator
 
-Generate Mermaid diagrams and open them directly in mermaid.live in the user's browser.
+Generate Mermaid diagrams and open them in mermaid.live.
 
-## When to Use
+## Step 1: Choose Diagram Type
 
-- User explicitly asks for a diagram, chart, or visualization
-- User asks to visualize architecture, data flow, state machines, sequences, relationships
-- When explaining complex systems where a visual would be more effective than prose
-- User says "draw", "diagram", "visualize", "chart", "flowchart", "show me"
-
-## Workflow
-
-### Step 1: Determine Diagram Type
-
-Choose the most appropriate Mermaid diagram type:
-
-| Need | Diagram Type | Keyword |
-|------|-------------|---------|
-| Process flow, decision trees | Flowchart | `flowchart TD` or `flowchart LR` |
+| Need | Type | Keyword |
+|------|------|---------|
+| Process flow, decisions | Flowchart | `flowchart TD` / `flowchart LR` |
 | API calls, message passing | Sequence | `sequenceDiagram` |
-| OOP structure, interfaces | Class | `classDiagram` |
-| Database schema, entities | ER | `erDiagram` |
-| State machines, lifecycles | State | `stateDiagram-v2` |
+| OOP structure | Class | `classDiagram` |
+| Database schema | ER | `erDiagram` |
+| State machines | State | `stateDiagram-v2` |
 | Project timelines | Gantt | `gantt` |
-| Distribution/proportions | Pie | `pie` |
 | Git branch strategy | Git Graph | `gitGraph` |
-| User experience mapping | Journey | `journey` |
-| Prioritization matrix | Quadrant | `quadrantChart` |
-| Data over time | XY Chart | `xychart-beta` |
-| Chronological events | Timeline | `timeline` |
 | Brainstorming | Mindmap | `mindmap` |
 
-### Step 2: Write the Mermaid Code
+## Step 2: Write Mermaid Code
 
-Write clean, well-structured Mermaid code. Key syntax rules:
+**Flowchart nodes:** `A[Rectangle]` `A(Rounded)` `A{Diamond}` `A((Circle))` `A[(Database)]`  
+**Edges:** `-->` (arrow), `-.->` (dotted), `==>` (thick), `|label|` for text  
+**Subgraphs:** `subgraph title ... end`
 
-**Flowchart nodes:**
-- `A[Rectangle]` `A(Rounded)` `A{Diamond}` `A((Circle))` `A[(Database)]`
-- Edges: `-->` (arrow), `-.->` (dotted), `==>` (thick), `~~~` (invisible)
-- Link text: `A -->|label| B`
-- Subgraphs: `subgraph title ... end`
+**Sequence:** `->>` (solid+arrow), `-->>` (dotted+arrow). Blocks: `loop`, `alt/else`, `opt`, `par`. `autonumber` for numbering.
 
-**Sequence diagrams:**
-- `participant A` or `actor A`
-- Arrows: `->>` (solid+arrow), `-->>` (dotted+arrow), `-x` (destroy), `-)` (async)
-- Blocks: `loop`, `alt/else`, `opt`, `par/and`, `critical/option`, `break`
-- Notes: `Note right of A: text`
-- `autonumber` for sequence numbers
+**ER:** `||--o{` (one-to-many), `||--||` (one-to-one), `}o--o{` (many-to-many)
 
-**ER diagrams:**
-- Relationships: `||--o{` (one to many), `||--||` (one to one), `}o--o{` (many to many)
-- `--` (identifying/solid), `..` (non-identifying/dashed)
-- Attributes: `ENTITY { type name PK/FK/UK "comment" }`
+**State:** `[*]` for start/end, `<<choice>>`, `<<fork>>`, `<<join>>`
 
-**Class diagrams:**
-- Visibility: `+` public, `-` private, `#` protected, `~` package
-- Relations: `<|--` inheritance, `*--` composition, `o--` aggregation, `-->` association
-- `<<interface>>`, `<<abstract>>` annotations
+⚠️ **Avoid lowercase `end` inside node labels** — reserved keyword. Use `End`, `END`, or quotes.
 
-**State diagrams:**
-- `[*]` for start/end states
-- `state "description" as s1`
-- `<<choice>>`, `<<fork>>`, `<<join>>`
-- `--` separator for concurrent states
+⚠️ **`stateDiagram-v2` label caveat:** Colons, parentheses, HTML entities cause silent parse failures. Use `flowchart LR` with quoted edge labels (`|"label text"|`) for special characters.
 
-**CRITICAL: Avoid the word `end` in lowercase inside node labels** -- it's a reserved keyword. Use `End`, `END`, or wrap in quotes.
-
-### Step 3: Encode and Open in Browser
-
-Write the mermaid code to a temp file, then use the bundled encoder script:
+## Step 3: Encode and Open
 
 ```bash
-# macOS: uses `open`. On Linux, replace `open` with `xdg-open`.
 cat <<'MERMAID_EOF' | python3 ~/.claude/skills/diagram/mermaid-encode.py | xargs open
 <mermaid code here>
 MERMAID_EOF
 ```
 
-Options:
-- `--theme dark` -- use dark theme (options: default, dark, forest, neutral)
-- `--view` -- open in view-only mode (no editor)
-- `--rough` -- hand-drawn/sketchy style
+Options: `--theme dark|forest|neutral`, `--view` (view-only), `--rough` (hand-drawn style)
 
-Example with options:
-```bash
-cat <<'MERMAID_EOF' | python3 ~/.claude/skills/diagram/mermaid-encode.py --theme forest --rough | xargs open
-flowchart LR
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Do thing]
-    B -->|No| D[Other thing]
-MERMAID_EOF
-```
+## Step 4: Inform the User
 
-### Step 4: Inform the User
+Tell the user: diagram type chosen and why, brief description of what it shows, that it's open in mermaid.live for editing, and the URL (for sharing).
 
-After opening the browser, tell the user:
-- What diagram type was chosen and why
-- A brief description of what the diagram shows
-- That it's open in mermaid.live where they can edit it further
-- The mermaid.live URL (so they can share it)
+## Design Guidelines
 
-## Diagram Design Guidelines
+- **Readable labels:** Short, descriptive text. No full sentences in nodes.
+- **Flow direction:** TD for hierarchies, LR for sequences/timelines.
+- **Subgraphs:** Group related nodes for complex diagrams.
+- **Color with purpose:** Use `classDef` to highlight key nodes (errors red, success green).
+- **One idea per diagram:** Split complex systems into multiple focused diagrams.
 
-1. **Readable labels**: Use short, descriptive text. No full sentences in nodes.
-2. **Logical flow direction**: TD for hierarchies, LR for sequences/timelines.
-3. **Use subgraphs**: Group related nodes for clarity in complex diagrams.
-4. **Color with purpose**: Use `classDef` to highlight important nodes (errors in red, success in green, etc.)
-5. **Keep it focused**: A diagram should communicate ONE main idea. Split complex systems into multiple diagrams.
+## Notes
 
-## Quick Reference: Common Patterns
-
-### Architecture Diagram
-```
-flowchart TD
-    subgraph Client
-        A[Browser] --> B[Mobile App]
-    end
-    subgraph API["API Gateway"]
-        C[Load Balancer]
-    end
-    subgraph Services
-        D[Auth Service]
-        E[Core Service]
-        F[Notification Service]
-    end
-    Client --> API --> Services
-```
-
-### Database Schema
-```
-erDiagram
-    USER ||--o{ ORDER : places
-    ORDER ||--|{ LINE_ITEM : contains
-    PRODUCT ||--o{ LINE_ITEM : "ordered in"
-```
-
-### API Flow
-```
-sequenceDiagram
-    autonumber
-    Client->>+API: POST /resource
-    API->>+DB: INSERT
-    DB-->>-API: OK
-    API-->>-Client: 201 Created
-```
-
-## Important Notes
-
-- The encoder script uses ONLY Python standard library -- no pip install needed
-- Works on macOS (uses `open` command) -- for Linux, users would need `xargs xdg-open`
-- URLs have no expiry -- they're self-contained (the diagram state IS the URL)
-- Very large diagrams may exceed URL length limits (~2000 chars for some browsers, ~65K for most modern ones)
-- The `--rough` flag gives a hand-drawn sketchy look (nice for presentations)
+- Encoder uses only Python standard library — no pip install needed
+- URLs are permanent — diagram state IS the URL
+- Very large diagrams may exceed URL limits in some browsers

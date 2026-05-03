@@ -272,3 +272,71 @@ No migration actions required.
 - [CLAUDE.md](../CLAUDE.md) - Main project instructions (references this document)
 - [PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) - Language patterns for agent prompts
 - [WORKFLOWS.md](WORKFLOWS.md) - How to add/modify agents
+
+---
+
+## Positive Example Blocks (Replaces Anti-Rationalization Tables)
+
+**Anti-rationalization tables are no longer mandatory.** Based on Anthropic's research, positive `<example>` blocks showing correct behavior outperform prohibition-based tables.
+
+**Why the pattern changed:**
+Positive examples outperform prohibitions in prompt design. Telling a model what to do correctly — with a concrete example — is more effective than enumerating what it must not rationalize. Long anti-rationalization tables also increase prompt length without proportional benefit, and can inadvertently prime models to consider the wrong patterns.
+
+**The new `<example>` pattern:**
+
+Instead of a "Rationalization / Why It's WRONG / Required Action" table, agents should include a positive example block that demonstrates the correct behavior:
+
+```markdown
+<example>
+Scenario: You are asked to implement an endpoint but the task lacks acceptance criteria.
+
+Correct behavior:
+1. STOP before writing any code
+2. Report to orchestrator: "Blocker: Missing acceptance criteria for [endpoint]. Cannot proceed."
+3. Wait for clarification — do not guess or assume
+
+Incorrect behavior:
+- Inferring acceptance criteria from context and proceeding
+- Writing "placeholder" code "just to get started"
+- Asking the user directly instead of reporting to orchestrator
+</example>
+```
+
+**Mandatory Sections Every Agent MUST Have:**
+
+| Section              | Purpose                        | Language Requirements                      |
+| -------------------- | ------------------------------ | ------------------------------------------ |
+| **Blocker Criteria** | Define when to STOP and report | Use "STOP", "CANNOT proceed", "HARD BLOCK" |
+| **`<example>` block** | Show correct behavior          | Positive scenario with correct vs wrong    |
+
+See [docs/PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) for language guidelines (Lexical Salience, enforcement word positioning).
+
+---
+
+## Agent Modification Verification (MANDATORY)
+
+**HARD GATE: Before creating or modifying any agent file, MUST verify compliance with this checklist.**
+
+**Step 1: Verify Agent Has All Required Sections**
+
+| Required Section                              | Pattern to Check                 | If Missing                                                        |
+| --------------------------------------------- | -------------------------------- | ----------------------------------------------------------------- |
+| **Standards Loading (MANDATORY)**             | `## Standards Loading`           | MUST add with `_index.md` + selective module loading instructions |
+| **Blocker Criteria - STOP and Report**        | `## Blocker Criteria`            | MUST add with decision type table                                 |
+| **Positive `<example>` block**                | `<example>`                      | MUST add at least one block showing correct vs incorrect behavior |
+| **Standards Compliance Report** (dev-team)    | `## Standards Compliance Report` | MUST add for dev-team agents                                      |
+
+**Step 2: Pre-Completion Checklist**
+
+```text
+CHECKLIST (all must be YES):
+[ ] Does agent have Standards Loading section referencing _index.md?
+[ ] Does agent have Blocker Criteria table?
+[ ] Does agent have at least one positive <example> block?
+[ ] Does agent define when to STOP and report?
+[ ] Is agent within line budget: ≤300 lines (implementation) or ≤200 lines (reviewer)?
+
+If any checkbox is no → Agent is INCOMPLETE. Add missing sections.
+```
+
+**This verification is not optional. This is a HARD GATE for all agent modifications.**
