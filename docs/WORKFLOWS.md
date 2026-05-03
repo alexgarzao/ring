@@ -289,3 +289,144 @@ Always dispatch all 10 reviewers in a single message with multiple Task tool cal
 - [CLAUDE.md](../CLAUDE.md) - Main project instructions (references this document)
 - [AGENT_DESIGN.md](AGENT_DESIGN.md) - Agent output schemas
 - [PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) - Language patterns
+
+---
+
+## Reviewer-Pool Synchronization
+
+When adding or removing a code review agent in the `ring:codereview` pool:
+
+**⛔ SEVEN-FILE UPDATE RULE:**
+
+1. Edit `default/skills/codereview/SKILL.md` — update dispatch step (add/remove Task block), state initialization (review_state.reviewers keys), count references ("N reviewers" throughout), output schema Reviewer Verdicts table
+2. Edit frontmatter `description` in EVERY peer reviewer agent (`default/agents/*-reviewer.md` and `dev-team/agents/*-reviewer.md`) — "Runs in parallel with..." list must reflect new peer set
+3. Edit body prose `## Your Role` section in EVERY peer reviewer agent — `**Position:**` and `**Critical:** You are one of N parallel reviewers` must reflect new count and peer list
+4. Edit `dev-team/hooks/validate-gate-progression.sh` — reviewer array and count threshold
+5. Edit `dev-team/skills/dev-cycle/SKILL.md` — Gate 8 table, agent list, and "N reviewers" references throughout (~15 occurrences typical)
+6. Edit `dev-team/skills/using-dev-team/SKILL.md` — gate tables (backend Gate 8 + frontend Gate 7) with reviewer count and peer enumeration
+7. Edit shared-patterns that enumerate reviewers — `default/skills/shared-patterns/reviewer-slicing-strategy.md`, `dev-team/skills/shared-patterns/shared-anti-rationalization.md`, `dev-team/skills/shared-patterns/gate-cadence-classification.md`, `dev-team/skills/shared-patterns/custom-prompt-validation.md`
+
+**All files in same commit** — MUST NOT update one without the others.
+
+**⛔ ADDITIONAL SWEEP (secondary consumers, should also update same commit):**
+
+- `default/skills/pr-review-multi-source/SKILL.md` — Final-tier reviewer list
+- `default/skills/execute-plan/SKILL.md` — review dispatch instructions
+- `default/skills/using-ring/SKILL.md` — entry-point skill reminder
+- `default/agents/write-plan.md` — output schema instructing plans to dispatch reviewers
+- `install-symlinks.sh` — user-facing install advertisement
+- `docs/PROMPT_ENGINEERING.md` — canonical example of strong language
+- `docs/WORKFLOWS.md` — workflow documentation
+- `MANUAL.md`, `README.md`, `ARCHITECTURE.md` — public-facing docs
+- `.claude-plugin/marketplace.json` — plugin descriptions + keywords
+- Any dev-team skill that dispatches `ring:codereview` (e.g., `dev-multi-tenant`, `dev-systemplane-migration`)
+
+**⛔ CHECKLIST: Adding/Removing a Reviewer**
+
+```
+Before committing changes to the codereview pool:
+
+[ ] 1. Updated codereview/SKILL.md (dispatch + state + output schema)?
+[ ] 2. Updated frontmatter description in ALL peer reviewer agents?
+[ ] 3. Updated body prose Position/Critical in ALL peer reviewer agents?
+[ ] 4. Updated validate-gate-progression.sh (array + threshold)?
+[ ] 5. Updated dev-cycle/SKILL.md (Gate 8 + all "N reviewers" refs)?
+[ ] 6. Updated using-dev-team/SKILL.md (both gate tables)?
+[ ] 7. Updated shared-patterns files enumerating reviewers?
+[ ] 8. Swept secondary consumers (pr-review-multi-source, execute-plan, using-ring, write-plan, docs, marketplace.json)?
+[ ] 9. Grep sanity: grep -rn "N reviewer|all N" --include="*.md" --include="*.sh" returns zero stale counts?
+
+If any checkbox is no → Fix before committing.
+```
+
+**Why this rule exists:** In 2026-04-18 dogfood, we discovered that when `performance-reviewer` was added to the pool some time prior, 7+ files were never updated. Adding 2 more reviewers then cascaded into ~65 stale references across 22 files. This rule makes the propagation explicit.
+
+---
+
+## Documentation Sync Checklist
+
+**When modifying agents, skills, or hooks, check all these files for consistency:**
+
+```
+Root Documentation:
+├── CLAUDE.md              # Project instructions (source of truth)
+├── MANUAL.md              # Team quick reference guide
+├── README.md              # Public documentation
+└── ARCHITECTURE.md        # Architecture diagrams
+
+Reference Documentation:
+├── docs/PROMPT_ENGINEERING.md  # Assertive language patterns
+├── docs/AGENT_DESIGN.md        # Output schemas, standards compliance
+├── docs/FRONTMATTER_SCHEMA.md  # Canonical YAML frontmatter fields
+└── docs/WORKFLOWS.md           # Detailed workflow instructions
+
+Plugin Hooks (inject context at session start):
+├── default/hooks/session-start.sh
+├── dev-team/hooks/session-start.sh
+├── pm-team/hooks/session-start.sh
+├── pmo-team/hooks/session-start.sh
+├── finops-team/hooks/session-start.sh
+└── tw-team/hooks/session-start.sh
+
+Using-* Skills (plugin introductions):
+├── default/skills/using-ring/SKILL.md
+├── dev-team/skills/using-dev-team/SKILL.md
+├── pm-team/skills/using-pm-team/SKILL.md
+├── pmo-team/skills/using-pmo-team/SKILL.md
+├── finops-team/skills/using-finops-team/SKILL.md
+└── tw-team/skills/using-tw-team/SKILL.md
+```
+
+**Checklist when adding/modifying:**
+
+- [ ] CLAUDE.md updated? → AGENTS.md auto-updates (symlink)
+- [ ] AGENTS.md symlink broken? → Restore with `ln -sf CLAUDE.md AGENTS.md`
+- [ ] Agent added? Update hooks, using-\* skills, MANUAL.md, README.md
+- [ ] Skill added? Update CLAUDE.md architecture, hooks if plugin-specific
+- [ ] Plugin added? Create hooks/, using-\* skill, update marketplace.json
+- [ ] Names changed? Search repo: `grep -r "old-name" --include="*.md" --include="*.sh"`
+
+**Naming Convention Enforcement:**
+
+- [ ] All agent invocations use `ring:agent-name` format
+- [ ] All skill invocations use `ring:skill-name` format
+- [ ] No bare agent/skill names in invocation contexts (must have ring: prefix)
+- [ ] No deprecated `ring-{plugin}:` format used
+
+---
+
+## Content Duplication Prevention
+
+Before adding any content to prompts, skills, agents, or documentation:
+
+1. **SEARCH FIRST**: `grep -r "keyword" --include="*.md"` — Check if content already exists
+2. **If content exists** → **REFERENCE it**, DO NOT duplicate. Use: `See [file](path) for details`
+3. **If adding new content** → Add to the canonical source per table below
+4. **MUST NOT copy** content between files — link to the single source of truth
+
+| Information Type      | Canonical Source                                         |
+| --------------------- | -------------------------------------------------------- |
+| Critical rules        | CLAUDE.md                                                |
+| Language patterns     | docs/PROMPT_ENGINEERING.md                               |
+| Agent schemas         | docs/AGENT_DESIGN.md                                     |
+| Frontmatter fields    | docs/FRONTMATTER_SCHEMA.md                               |
+| Workflows             | docs/WORKFLOWS.md                                        |
+| Plugin overview       | README.md                                                |
+| Agent requirements    | CLAUDE.md (Agent Modification section)                   |
+| Shared skill patterns | `{plugin}/skills/shared-patterns/*.md`                   |
+| Standards modules     | `platforms/opencode/standards/{stack}/{module}.md`       |
+| Standards manifesto   | `platforms/opencode/standards/{stack}/_index.md`         |
+
+**Shared Patterns Rule (MANDATORY):**
+When content is reused across multiple skills within a plugin:
+
+1. **Extract to shared-patterns**: Create `{plugin}/skills/shared-patterns/{pattern-name}.md`
+2. **Reference from skills**: Use `See [shared-patterns/{name}.md](../shared-patterns/{name}.md)`
+3. **MUST NOT duplicate**: If the same table/section appears in 2+ skills → extract to shared-patterns
+
+| Shared Pattern Type           | Location                                                      |
+| ----------------------------- | ------------------------------------------------------------- |
+| Pressure resistance scenarios | `{plugin}/skills/shared-patterns/pressure-resistance.md`      |
+| Anti-rationalization tables   | `{plugin}/skills/shared-patterns/anti-rationalization.md`     |
+| Execution report format       | `{plugin}/skills/shared-patterns/execution-report.md`         |
+| Standards coverage table      | `{plugin}/skills/shared-patterns/standards-coverage-table.md` |
