@@ -329,7 +329,7 @@ platforms/opencode/standards/
 **Anti-rationalization tables are no longer mandatory.** Based on Anthropic's research, positive `<example>` blocks showing correct behavior outperform prohibition-based tables.
 
 **Why the pattern changed:**
-Anthropological research on LLM prompt engineering shows that "positive examples outperform prohibitions." Telling a model what to do correctly — with a concrete example — is more effective than enumerating what it must not rationalize. Long anti-rationalization tables also increase prompt length without proportional benefit, and can inadvertently prime models to consider the wrong patterns.
+Positive examples outperform prohibitions in prompt design. Telling a model what to do correctly — with a concrete example — is more effective than enumerating what it must not rationalize. Long anti-rationalization tables also increase prompt length without proportional benefit, and can inadvertently prime models to consider the wrong patterns.
 
 **The new `<example>` pattern:**
 
