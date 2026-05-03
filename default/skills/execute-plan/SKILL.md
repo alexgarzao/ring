@@ -78,6 +78,6 @@ Stop immediately and ask (never guess): blocker mid-batch, critical gaps, unclea
 ## Quick Reference
 
 - AskUserQuestion for execution mode: MANDATORY, no exceptions
-- Use specialist agents over `general-purpose` when available
+- Use specialist agents over `ring:general-purpose` when available
 - Code review: all 10 reviewers in parallel after each batch
 - Severity handling: see Step 4 above
