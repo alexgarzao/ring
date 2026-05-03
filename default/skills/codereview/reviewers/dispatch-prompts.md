@@ -69,16 +69,16 @@ Task:
 
     Go:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/core.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/quality.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/api-patterns.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/bootstrap.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/_index.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/core.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/quality.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/domain.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/api-patterns.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/bootstrap.md
 
     TypeScript:
     - https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/typescript/_index.md
 
     See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
@@ -146,12 +146,12 @@ Task:
     **Standards slice for this reviewer** (orchestrator emits one `<standard>` per URL, filtered by detected language):
 
     Go:
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/domain-modeling.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/api-patterns.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/domain.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/domain-modeling.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/api-patterns.md
 
     TypeScript:
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/typescript/_index.md
 
     See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
@@ -216,13 +216,13 @@ Task:
     **Standards slice for this reviewer** (orchestrator emits one `<standard>` per URL, filtered by detected language):
 
     Go:
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/security.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/api-patterns.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/security.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/multi-tenant.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/api-patterns.md
 
     TypeScript:
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript/multi-tenant.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/typescript/_index.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/typescript/multi-tenant.md
 
     See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
@@ -308,14 +308,14 @@ Task:
     **Standards slice for this reviewer** (orchestrator emits one `<standard>` per URL, filtered by detected language):
 
     Go:
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/quality.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-fuzz.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-property.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-integration.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/testing-chaos.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/quality.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/testing-fuzz.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/testing-property.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/testing-integration.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/testing-chaos.md
 
     TypeScript:
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/typescript/_index.md
 
     See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
 
@@ -553,12 +553,12 @@ Task:
     **Standards slice for this reviewer** (orchestrator emits one `<standard>` per URL, filtered by detected language; Layer 2 URLs apply to both languages):
 
     Go (Layer 1 code-level):
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/core.md
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/bootstrap.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/architecture.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/core.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/golang/bootstrap.md
 
     TypeScript (Layer 1):
-    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/platforms/opencode/standards/typescript/_index.md
 
     Layer 2 runtime/infra (both languages):
     - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md

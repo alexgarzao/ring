@@ -45,7 +45,7 @@ All Ring components use the unified `ring:` prefix.
 
 ### 5. Standards-Agent Synchronization (MUST CHECK)
 
-When modifying `dev-team/docs/standards/*.md` files:
+When modifying `platforms/opencode/standards/{stack}/*.md` files:
 
 **⛔ FOUR-FILE UPDATE RULE** (all in same commit):
 
