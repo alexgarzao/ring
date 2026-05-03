@@ -19,7 +19,7 @@ skip_when: |
 
 related:
   similar: [dispatching-parallel-agents, systematic-debugging]
-  sequence_after: [brainstorm]
+  sequence_after: [ring:brainstorm]
   sequence_before: [ring:write-plan, ring:execute-plan]
 ---
 

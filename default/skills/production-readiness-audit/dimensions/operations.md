@@ -36,7 +36,7 @@ func (h *Handler) DoSomething(c *fiber.Ctx) error {
     span.SetStatus(codes.Error, err.Error())
     logger.Errorf("operation failed: %v", err)
 
-    return nil
+    return err
 }
 ```
 
