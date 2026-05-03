@@ -19,379 +19,108 @@ related:
   complementary: [portfolio-planning, project-health-check]
 ---
 
-# PMO Retrospective Skill
+# PMO Retrospective
 
 Systematic capture and application of lessons learned at portfolio level.
 
-## Purpose
-
-This skill provides a framework for:
-- Lessons learned capture
-- Pattern identification
-- Process improvement
-- Organizational learning
-- Knowledge transfer
-
----
-
 ## Retrospective Types
 
-### Type 1: Project Closure Retrospective
-
-**Trigger:** Project completion or termination
-**Scope:** Single project
-**Participants:** Project team, sponsor, key stakeholders
-
----
-
-### Type 2: Portfolio Period Review
-
-**Trigger:** Quarterly or annual review
-**Scope:** All projects in period
-**Participants:** PMO, project managers, executives
-
----
-
-### Type 3: Thematic Retrospective
-
-**Trigger:** Recurring pattern observed
-**Scope:** Projects sharing the pattern
-**Participants:** Affected project managers, PMO, subject matter experts
-
----
+| Type | Trigger | Scope | Participants |
+|------|---------|-------|-------------|
+| Project Closure | Project completion/termination | Single project | Project team, sponsor, key stakeholders |
+| Portfolio Period Review | Quarterly or annual | All projects in period | PMO, PMs, executives |
+| Thematic | Recurring pattern observed | Projects sharing the pattern | Affected PMs, PMO, SMEs |
 
 ## Retrospective Gates
 
 ### Gate 1: Context Setting
 
-**Objective:** Establish retrospective scope and participants
-
-**Actions:**
-1. Define retrospective type and scope
-2. Identify participants
-3. Gather project data
-4. Schedule sessions
-
-**Context Template:**
-
-| Element | Value |
-|---------|-------|
-| Type | Project/Portfolio/Thematic |
-| Scope | [Projects/Period] |
-| Participants | [List] |
-| Data Sources | [List] |
-
-**Output:** `docs/pmo/{date}/retro-context.md`
-
----
-
-### Gate 2: Data Collection
-
-**Objective:** Gather objective data about performance
-
-**Actions:**
-1. Collect final project metrics
-2. Gather variance explanations
-3. Document scope changes
-4. Compile risk/issue history
-
-**Data Points:**
-
-| Category | Data |
-|----------|------|
-| Schedule | Planned vs actual duration |
-| Cost | Budget vs actual spend |
-| Scope | Baseline vs final scope |
-| Quality | Defects, rework |
-| Risks | Risks that materialized |
-| Changes | Number and impact |
-
-**Output:** `docs/pmo/{date}/retro-data.md`
-
----
-
-### Gate 3: Reflection
-
-**Objective:** Identify what worked, what didn't, and why
-
-**Actions:**
-1. Conduct retrospective session
-2. Identify successes to repeat
-3. Identify failures to prevent
-4. Analyze root causes
-
-**Reflection Framework:**
-
-| Category | Question |
-|----------|----------|
-| **What went well?** | What should we keep doing? |
-| **What didn't go well?** | What should we stop doing? |
-| **What was confusing?** | What needs clarification? |
-| **What was missing?** | What should we start doing? |
-| **What surprised us?** | What assumptions were wrong? |
-
-**Output:** `docs/pmo/{date}/retro-reflection.md`
-
----
-
-### Gate 4: Pattern Analysis
-
-**Objective:** Identify patterns across projects/time
-
-**Actions:**
-1. Compare with previous retrospectives
-2. Identify recurring themes
-3. Assess systemic vs isolated issues
-4. Prioritize improvement areas
-
-**Pattern Types:**
-
-| Type | Indicator | Action |
-|------|-----------|--------|
-| **Systemic** | Same issue in 3+ projects | Process change required |
-| **Capability** | Same team struggle repeating | Training/hiring needed |
-| **Tool** | Tool-related friction | Tool improvement/replacement |
-| **Communication** | Stakeholder issues recurring | Communication improvement |
-| **Estimation** | Consistent over/under estimation | Estimation process improvement |
-
-**Output:** `docs/pmo/{date}/retro-patterns.md`
-
----
-
-### Gate 5: Action Planning
-
-**Objective:** Create actionable improvement plan
-
-**Actions:**
-1. Define specific improvements
-2. Assign owners
-3. Set timelines
-4. Define success criteria
-
-**Action Template:**
-
-| Improvement | Owner | Timeline | Success Criteria | Status |
-|-------------|-------|----------|------------------|--------|
-| [Improvement] | [Owner] | [Date] | [Criteria] | [Status] |
-
-**Priority Framework:**
-
-| Impact / Effort | Low Effort | High Effort |
-|-----------------|------------|-------------|
-| **High Impact** | Do First | Plan Carefully |
-| **Low Impact** | Quick Wins | Don't Do |
-
-**Output:** `docs/pmo/{date}/retro-actions.md`
-
----
-
-### Gate 6: Knowledge Sharing
-
-**Objective:** Distribute lessons to organization
-
-**Actions:**
-1. Document lessons learned
-2. Update PMO knowledge base
-3. Present to relevant teams
-4. Update templates/processes
-
-**Knowledge Sharing Channels:**
-
-| Channel | Audience | Content |
-|---------|----------|---------|
-| PMO Wiki | All PMs | Full lessons |
-| Newsletter | Organization | Summary |
-| Training | New PMs | Incorporated |
-| Templates | All projects | Updated |
-| Playbooks | Specific scenarios | Detailed guidance |
-
-**Output:** `docs/pmo/{date}/lessons-learned.md`
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
-
-### Retrospective-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "We're too busy for retrospectives" | Learning gaps cost more than retrospective time. | **Schedule and conduct retrospective** |
-| "We know what went wrong" | Assumptions miss root causes. | **Formal analysis required** |
-| "It was a unique situation" | Patterns hide in "unique" situations. | **Document and compare** |
-| "People will be defensive" | Blame-free culture enables learning. | **Focus on process, not people** |
-| "Lessons will be ignored anyway" | Track action completion to ensure learning. | **Follow up on actions** |
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
-
-### Retrospective-Specific Pressures
-
-| Pressure Type | Request | Agent Response |
-|---------------|---------|----------------|
-| "Skip retro, team already on next project" | "Learning before moving on prevents repeating mistakes. Conducting abbreviated retrospective." |
-| "Don't document that failure" | "Failures are learning opportunities. Documenting with constructive framing." |
-| "Just move on, it's in the past" | "Past informs future. Retrospective protects future projects." |
-
----
-
-## Blocker Criteria - STOP and Report
-
-**ALWAYS pause and report blocker for:**
-
-| Situation | Required Action |
-|-----------|-----------------|
-| Key participants unavailable | STOP. Incomplete retrospective misses perspectives. Reschedule. |
-| Data unavailable | STOP. Data-free retrospective is opinion session. Get data. |
-| Blame culture emerging | STOP. Reset to blameless framework. Not about individuals. |
-| No action ownership | STOP. Lessons without owners become forgotten. Assign owners. |
-
-### Cannot Be Overridden
-
-**The following requirements are NON-NEGOTIABLE:**
-
-| Requirement | Cannot Override Because |
-|-------------|------------------------|
-| **Blameless approach** | Blame prevents learning. Fear prevents honesty. |
-| **Action owner assignment** | Unowned actions are never completed. |
-| **Data-driven analysis** | Opinions without data lead to wrong conclusions. |
-| **Participant inclusion** | Missing perspectives create incomplete learning. |
-| **Follow-up tracking** | Lessons without follow-up are forgotten. |
-
-**If user insists on violating these:**
-1. Escalate to orchestrator
-2. Do NOT proceed with incomplete retrospective
-3. Document the request and your refusal
-
----
-
-## Severity Calibration
-
-When assessing retrospective findings:
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Systemic issue affecting multiple projects | Process failure causing 3+ project delays, compliance violation pattern |
-| **HIGH** | Significant recurring problem | Same estimation error in 2+ projects, repeated resource conflicts |
-| **MEDIUM** | Notable improvement opportunity | Communication gaps, tool friction, documentation quality |
-| **LOW** | Minor optimization | Template improvements, minor process tweaks |
-
-**Document ALL severities. Prioritize action on CRITICAL and HIGH.**
-
----
-
-## Output Format
-
-### Lessons Learned Report
-
-```markdown
-# Lessons Learned - [Project/Period] - [Date]
-
-## Context
-
-| Element | Value |
-|---------|-------|
-| Scope | [Project(s)/Period] |
-| Participants | [List] |
-| Facilitator | [Name] |
-
-## Performance Summary
-
-| Metric | Target | Actual | Variance |
-|--------|--------|--------|----------|
-| Duration | X months | X months | +/- X% |
-| Budget | $X | $X | +/- X% |
-| Scope | X features | X features | +/- X |
-| Quality | X defects | X defects | +/- X |
-
-## What Went Well
-
-| Success | Why It Worked | How to Repeat |
-|---------|---------------|---------------|
-| [Success] | [Root cause] | [Action to sustain] |
-
-## What Didn't Go Well
-
-| Issue | Root Cause | How to Prevent |
-|-------|------------|----------------|
-| [Issue] | [Root cause] | [Action to prevent] |
-
-## Patterns Identified
-
-| Pattern | Frequency | Systemic? | Action |
-|---------|-----------|-----------|--------|
-| [Pattern] | X occurrences | Yes/No | [Action] |
-
-## Improvement Actions
-
-| # | Improvement | Owner | Due | Status |
-|---|-------------|-------|-----|--------|
-| 1 | [Improvement] | [Owner] | [Date] | [Status] |
-
-## Key Lessons (Top 5)
-
-1. **[Lesson Title]:** [Description and application guidance]
-2. **[Lesson Title]:** [Description and application guidance]
-3. **[Lesson Title]:** [Description and application guidance]
-4. **[Lesson Title]:** [Description and application guidance]
-5. **[Lesson Title]:** [Description and application guidance]
-
-## Knowledge Sharing Plan
-
-| Audience | Channel | Date | Owner |
-|----------|---------|------|-------|
-| [Audience] | [Channel] | [Date] | [Owner] |
+Define scope, participants, and gather data.
+
+| Output | Content |
+|--------|---------|
+| Scope statement | Type, projects included, timeframe |
+| Participant list | Names and roles |
+| Data package | Health reports, metrics, timeline, cost actuals |
+| Scheduled sessions | Dates, format (in-person/remote) |
+
+### Gate 2: Data Gathering (Pre-Session)
+
+Collect inputs before the retrospective session:
+- Survey participants: "What went well? What didn't? What should we change?"
+- Extract quantitative metrics: SPI, CPI, schedule variance, defect rates
+- Review project artifacts: health check reports, change log, risk register
+- Compile timeline of key events
+
+### Gate 3: Analysis Session
+
+Facilitate structured discussion:
+
+**Retrospective Canvas:**
+```
+| Went Well ✅ | Challenges ❌ | Root Causes 🔍 | Improvements 💡 |
+|-------------|--------------|----------------|----------------|
+| [items]     | [items]      | [causes]       | [actions]      |
 ```
 
----
+**Root Cause Analysis (for challenges):**
+- 5 Whys technique for recurring issues
+- Pattern identification across multiple projects
+- Distinguish symptoms from root causes
 
-## Execution Report
+### Gate 4: Action Planning
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
+For each improvement identified:
 
-| Metric | Value |
-|--------|-------|
-| Analysis Date | YYYY-MM-DD |
-| Scope | [Project(s)/Period] |
-| Duration | Xh Ym |
-| Result | COMPLETE/PARTIAL/BLOCKED |
+| Action | Owner | Due Date | Success Metric | Priority |
+|--------|-------|----------|---------------|----------|
+| [Action] | [Name] | [Date] | [Measurable outcome] | High/Med/Low |
 
-### Retrospective-Specific Details
+Only commit to actions with clear owners and deadlines.
 
-| Metric | Value |
-|--------|-------|
-| period_covered | [Description] |
-| projects_completed | N |
-| lessons_captured | N |
-| process_improvements | N |
+### Gate 5: Knowledge Capture
 
----
+Document findings in the PMO knowledge base:
 
-## When Retrospective Is Not Needed
+**File:** `docs/pmo/retrospectives/{YYYY-MM}-{type}-retrospective.md`
 
-<MANDATORY>
-MUST: Retrospective is minimal only when ALL conditions are met:
-</MANDATORY>
+```markdown
+# PMO Retrospective: {Type} — {Period/Project}
+**Date:** {YYYY-MM-DD}
+**Type:** Project Closure | Portfolio Period | Thematic
+**Scope:** {Projects/Period}
 
-| Condition | Verification |
-|-----------|-------------|
-| Project was trivial (<1 week, <3 people) | Verify scope and team size |
-| No significant issues occurred | Confirm no deviations from plan |
-| Team explicitly requested skip | Written confirmation required |
-| Previous recent retrospective covers patterns | Reference recent retro that applies |
+## Summary
+{2-3 sentences on key findings}
 
-**MUST: Full retrospective REQUIRED for the following conditions:**
+## What Went Well
+- [item with evidence]
 
-| Condition | Why Required |
-|-----------|-------------|
-| Any project completion | Learning opportunity, even for successful projects |
-| Any project termination | Understanding failure prevents repetition |
-| Significant budget/schedule variance | Root cause analysis prevents recurrence |
-| Team or stakeholder conflicts | Relationship and process lessons critical |
-| Process improvement identified | Must capture and act on improvement |
+## Key Challenges
+- [challenge + root cause]
 
-**MUST: When in doubt, conduct the retrospective. Skipped retrospectives become repeated failures.**
+## Lessons Learned
+| Lesson | Context | Recommended Change |
+|--------|---------|-------------------|
+| [Lesson] | [When this applies] | [Process/template/checklist change] |
+
+## Action Items
+| Action | Owner | Due | Status |
+|--------|-------|-----|--------|
+
+## Patterns Identified (if recurring)
+[Cross-project patterns that indicate systemic issues]
+```
+
+### Gate 6: Organizational Learning
+
+Apply lessons to PMO standards:
+- Update process templates affected by lessons
+- Update onboarding materials with new knowledge
+- Schedule follow-up to verify action item completion
+- Feed patterns into risk register for future projects
+
+## Output
+
+**Primary output:** `docs/pmo/retrospectives/{date}-retrospective.md`
+**Secondary output:** Updated process templates, risk register entries, checklist improvements

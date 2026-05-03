@@ -19,326 +19,123 @@ related:
   complementary: [portfolio-planning, project-health-check]
 ---
 
-# Risk Management Skill
+# Risk Management
 
 Systematic portfolio-level risk identification, assessment, and mitigation.
 
-## Purpose
-
-This skill provides a framework for:
-- Portfolio risk identification
-- Risk assessment and scoring
-- Risk correlation analysis
-- Mitigation planning
-- RAID log management
-
----
-
 ## Prerequisites
 
-Before risk assessment, ensure:
+| Prerequisite | Source |
+|--------------|--------|
+| Project risk registers | Project managers |
+| Historical risk data | Previous projects |
+| Stakeholder input | Key stakeholders |
+| Impact criteria | PMO standards |
 
-| Prerequisite | Required For | Source |
-|--------------|--------------|--------|
-| Project risk registers | Risk aggregation | Project managers |
-| Historical risk data | Pattern identification | Previous projects |
-| Stakeholder input | Risk identification | Key stakeholders |
-| Impact criteria | Risk scoring | PMO standards |
+## Risk Categories
 
----
+| Category | Examples |
+|----------|---------|
+| Strategic | Market changes, competition, regulation |
+| Resource | Key person departure, skill shortage, capacity |
+| Technical | Technology obsolescence, integration, security |
+| Financial | Budget cuts, cost overruns, currency |
+| Schedule | Dependencies, delays, scope creep |
+| External | Vendor, regulatory, geopolitical |
 
 ## Risk Management Gates
 
 ### Gate 1: Risk Identification
 
-**Objective:** Identify all portfolio-level risks
+**Objective:** Identify all portfolio-level risks.
 
-**Actions:**
-1. Collect project-level risks
-2. Identify cross-project risks
-3. Capture portfolio-level risks
-4. Document assumptions and dependencies
-
-**Risk Categories:**
-
-| Category | Examples |
-|----------|----------|
-| **Strategic** | Market changes, competition, regulation |
-| **Resource** | Key person departure, skill shortage, capacity |
-| **Technical** | Technology obsolescence, integration, security |
-| **Financial** | Budget cuts, cost overruns, currency |
-| **Schedule** | Dependencies, delays, scope creep |
-| **External** | Vendor, regulatory, geopolitical |
+Actions:
+1. Collect project-level risks from PMs
+2. Identify cross-project risks (risks affecting multiple projects)
+3. Identify portfolio-level risks (strategy, governance, capacity)
+4. Document assumptions and their risks
 
 **Output:** `docs/pmo/{date}/risk-register.md`
 
----
-
 ### Gate 2: Risk Assessment
 
-**Objective:** Assess probability and impact of each risk
+**Objective:** Score probability and impact.
 
-**Actions:**
-1. Assess probability (1-5 scale)
-2. Assess impact (1-5 scale)
-3. Calculate risk score (P x I)
-4. Assign severity level
+| Score | Probability | Impact |
+|-------|-------------|--------|
+| 1 | Rare (<10%) | Negligible |
+| 2 | Unlikely (10-30%) | Minor |
+| 3 | Possible (30-50%) | Moderate |
+| 4 | Likely (50-70%) | Major |
+| 5 | Almost certain (>70%) | Critical |
 
-**Risk Severity Matrix:**
+**Risk Score = Probability × Impact**
 
-See [shared-patterns/pmo-metrics.md](../shared-patterns/pmo-metrics.md) for risk severity matrix.
+| Score | Category | Action |
+|-------|----------|--------|
+| 15-25 | Critical | Immediate action, sponsor escalation |
+| 8-14 | High | Mitigation plan, weekly tracking |
+| 4-7 | Medium | Monitor, contingency plan |
+| 1-3 | Low | Accept, periodic review |
 
-| Impact / Likelihood | Low (1-2) | Medium (3) | High (4-5) |
-|---------------------|-----------|------------|------------|
-| **High (4-5)** | Medium | High | Critical |
-| **Medium (3)** | Low | Medium | High |
-| **Low (1-2)** | Low | Low | Medium |
+### Gate 3: Risk Response Planning
 
-**Output:** `docs/pmo/{date}/risk-assessment.md`
+For each Medium+ risk, define response:
 
----
-
-### Gate 3: Risk Correlation
-
-**Objective:** Identify correlated risks across portfolio
-
-**Actions:**
-1. Identify shared risk factors
-2. Map risk dependencies
-3. Calculate compound risk exposure
-4. Flag correlated critical risks
-
-**Correlation Types:**
-
-| Type | Description | Action |
-|------|-------------|--------|
-| **Shared cause** | Same root cause affects multiple projects | Mitigate root cause |
-| **Sequential** | One risk triggers another | Plan cascade response |
-| **Resource** | Same resource/skill shortage | Diversify or hire |
-| **Vendor** | Same vendor dependency | Diversify suppliers |
-
-**Output:** `docs/pmo/{date}/risk-correlation.md`
-
----
-
-### Gate 4: Response Planning
-
-**Objective:** Create mitigation plans for significant risks
-
-**Actions:**
-1. Select response strategy per risk
-2. Define mitigation actions
-3. Assign owners and dates
-4. Allocate contingency
-
-**Response Strategies:**
-
-See [shared-patterns/pmo-metrics.md](../shared-patterns/pmo-metrics.md) for response types.
-
-| Response | When to Use | Example |
+| Strategy | When to Use | Example |
 |----------|-------------|---------|
-| **Avoid** | Risk unacceptable, can change scope | Remove risky feature |
-| **Transfer** | Risk better managed by others | Insurance, outsource |
-| **Mitigate** | Reduce probability or impact | Testing, redundancy |
-| **Accept** | Cost of mitigation > impact | Document and monitor |
+| Avoid | Eliminate the cause | Change project approach |
+| Transfer | Share with third party | Insurance, contract terms |
+| Mitigate | Reduce probability/impact | Add buffer, prototype |
+| Accept | Acknowledge, monitor | Low-impact risks |
 
-**Output:** `docs/pmo/{date}/risk-response-plan.md`
+### Gate 4: Risk Correlation Analysis
 
----
+Identify risks that affect multiple projects or amplify each other:
 
-### Gate 5: RAID Log Update
+| Risk Cluster | Projects Affected | Combined Impact | Priority |
+|-------------|------------------|-----------------|---------|
+| Key-person dependency | A, B, C | Schedule slip across all | Critical |
+| Vendor X delays | A, D | Integration delays in 2 projects | High |
 
-**Objective:** Maintain comprehensive RAID log
+### Gate 5: RAID Log
 
-**Actions:**
-1. Update Risk section
-2. Update Assumptions section
-3. Update Issues section
-4. Update Dependencies section
+Maintain combined RAID (Risks, Assumptions, Issues, Dependencies) log:
 
-**RAID Categories:**
-
-| Category | Contents | Review Frequency |
-|----------|----------|------------------|
-| **R**isks | Potential future issues | Weekly |
-| **A**ssumptions | Believed true, not verified | At milestones |
-| **I**ssues | Current problems requiring action | Daily |
-| **D**ependencies | External inputs/outputs | Weekly |
-
-**Output:** `docs/pmo/{date}/raid-log.md`
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
-
-### Risk-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "We've seen this risk before" | Context changes. Each occurrence needs fresh assessment. | **Assess current state** |
-| "Low probability, don't document" | Low probability × high impact = significant risk. | **Document ALL identified risks** |
-| "Team will handle it" | Unplanned handling = crisis response. Plan required. | **Document response plan** |
-| "Risk register is up to date" | Registers decay. Continuous validation required. | **Validate at every review** |
-| "That won't happen" | Famous last words. Document and monitor. | **Document ALL risks** |
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
-
-### Risk-Specific Pressures
-
-| Pressure Type | Request | Agent Response |
-|---------------|---------|----------------|
-| "Don't include that risk, it will worry people" | "Risk transparency is non-negotiable. Including with mitigation plan to provide balanced view." |
-| "That's been mitigated, remove it" | "Mitigated risks remain in register until formally closed with evidence. Updating status, not removing." |
-| "Risk assessment takes too long" | "Unassessed risks cause larger delays when they materialize. Completing assessment." |
-
----
-
-## Blocker Criteria - STOP and Report
-
-**ALWAYS pause and report blocker for:**
-
-| Situation | Required Action |
-|-----------|-----------------|
-| Critical risk without mitigation plan | STOP. Escalate. Risk cannot be accepted without plan. |
-| Multiple correlated critical risks | STOP. Report compound exposure. Wait for portfolio decision. |
-| Risk owner not identified | STOP. Unowned risks are unmanaged. Require owner assignment. |
-| Assumption invalidated | STOP. Trigger re-planning based on new reality. |
-
-### Cannot Be Overridden
-
-**The following requirements are NON-NEGOTIABLE:**
-
-| Requirement | Cannot Override Because |
-|-------------|------------------------|
-| **Risk documentation** | Undocumented risks cannot be managed or communicated |
-| **Owner assignment** | Unowned risks never get mitigated |
-| **Response plans for CRITICAL/HIGH** | High severity demands action, not just awareness |
-| **Regular risk review** | Risks change; stale assessments mislead decisions |
-| **Correlation analysis** | Isolated analysis misses compound risk exposure |
-
-**If user insists on violating these:**
-1. Escalate to orchestrator
-2. Do NOT proceed with incomplete risk management
-3. Document the request and your refusal
-
----
-
-## Severity Calibration
-
-Risk severity based on probability × impact matrix:
-
-| Severity | Criteria | Response Required |
-|----------|----------|-------------------|
-| **CRITICAL** | Score 16-25 (High P × High I) | Immediate escalation, active mitigation, daily monitoring |
-| **HIGH** | Score 10-15 | Active mitigation plan, weekly monitoring, owner accountability |
-| **MEDIUM** | Score 5-9 | Documented response plan, bi-weekly monitoring |
-| **LOW** | Score 1-4 | Monitor and review quarterly, accept with documentation |
-
-**Report all severities. Escalate CRITICAL immediately. Act on HIGH this week.**
-
----
-
-## Output Format
-
-### Risk Summary
+**File:** `docs/pmo/{date}/raid-log.md`
 
 ```markdown
-# Portfolio Risk Summary - [Date]
+# RAID Log — {Portfolio} — {Date}
 
-## Risk Overview
+## Risks
+| ID | Description | Category | Score | Owner | Response | Status |
+|----|-------------|----------|-------|-------|----------|--------|
+| R-001 | Key engineer leaving | Resource | 12 | HR | Succession plan | Active |
 
-| Metric | Value |
-|--------|-------|
-| Total Risks | N |
-| Critical | N |
-| High | N |
-| Medium | N |
-| Low | N |
-| Mitigations Defined | N/N |
-| Overdue Actions | N |
+## Assumptions
+| ID | Assumption | If Wrong | Owner | Validation Date |
+|----|-----------|----------|-------|----------------|
 
-## Top Risks
+## Issues
+| ID | Description | Impact | Owner | Resolution | Target Date |
+|----|-------------|--------|-------|------------|-------------|
 
-| ID | Risk | Severity | Owner | Status |
-|----|------|----------|-------|--------|
-| R-001 | [Description] | Critical/High | [Owner] | [Status] |
-
-## Risk Correlations
-
-| Correlation | Risks | Combined Exposure | Action |
-|-------------|-------|-------------------|--------|
-| [ID] | [Risk IDs] | [Exposure] | [Action] |
-
-## RAID Summary
-
-| Category | Total | New | Closed | Overdue |
-|----------|-------|-----|--------|---------|
-| Risks | N | N | N | N |
-| Assumptions | N | N | N | N |
-| Issues | N | N | N | N |
-| Dependencies | N | N | N | N |
-
-## Recommendations
-
-1. [Recommendation with rationale]
-2. [Recommendation with rationale]
-
-## Decisions Required
-
-1. [Decision needed: Accept/Mitigate/Avoid risk X]
+## Dependencies
+[Cross-reference with dependency-analysis output]
 ```
 
----
+### Gate 6: Risk Tracking
 
-## Execution Report
+- Critical/High risks: reviewed weekly
+- Medium risks: reviewed bi-weekly
+- Low risks: reviewed monthly
+- Trigger: immediate review on any risk materialization
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
+## Risk Escalation Criteria
 
-| Metric | Value |
-|--------|-------|
-| Analysis Date | YYYY-MM-DD |
-| Scope | [Portfolio/Projects] |
-| Duration | Xh Ym |
-| Result | COMPLETE/PARTIAL/BLOCKED |
-
-### Risk-Specific Details
-
-| Metric | Value |
-|--------|-------|
-| risks_identified | N |
-| risks_by_severity | C/H/M/L |
-| mitigation_plans | N |
-| overdue_actions | N |
-
----
-
-## When Risk Analysis Is Not Needed
-
-<MANDATORY>
-MUST: Risk analysis is minimal only when ALL conditions are met:
-</MANDATORY>
-
-| Condition | Verification |
-|-----------|-------------|
-| Recent analysis exists (<14 days) | Reference existing risk register |
-| No new projects or changes | Verify portfolio unchanged |
-| No risks materialized | Confirm no issues since last review |
-| No external changes | Verify market/vendor/regulatory stability |
-
-**MUST: Full risk analysis REQUIRED for the following conditions:**
-
-| Condition | Why Required |
-|-----------|-------------|
-| New project added | Unknown risks must be identified |
-| Risk materialized | Response effectiveness must be assessed |
-| External change occurred | Market, vendor, or regulatory changes create new risks |
-| Milestone approaching | Risk posture must be current for decisions |
-| Stakeholder requests update | Stale risk data undermines trust |
-
-**MUST: When in doubt, refresh the risk analysis. Outdated risk data causes preventable failures.**
+| Condition | Action |
+|-----------|--------|
+| Risk score increases to Critical | Immediate sponsor escalation |
+| Risk materializes (becomes issue) | Move to Issues, activate contingency |
+| Mitigation not working | Escalate + revise response |
+| New portfolio-wide risk identified | Emergency PMO session |

@@ -20,250 +20,152 @@ sequence:
   before: [ring:execute-plan, ring:subagent-driven-development]
 ---
 
-# Subtask Creation - Bite-Sized, Zero-Context Steps
+# Subtask Creation — Zero-Context Implementation Steps
 
-## Overview
+Write comprehensive implementation subtasks for engineers with zero context of the codebase. Each subtask follows RED-GREEN-REFACTOR: 2-5 minute steps with complete code, exact commands, and explicit verification.
 
-Write comprehensive implementation subtasks assuming the engineer has zero context for our codebase. Each subtask breaks down into 2-5 minute steps following RED-GREEN-REFACTOR. Complete code, exact commands, explicit verification. **DRY. YAGNI. TDD. Frequent commits.**
+**Output path:** `docs/pre-dev/{feature}/subtasks/T-[task-id]/ST-[task-id]-[number]-[description].md`
 
-**Save subtasks to:** `docs/pre-dev/{feature-name}/subtasks/T-[task-id]/ST-[task-id]-[number]-[description].md`
+## Step Granularity
 
-## Foundational Principle
-
-**Every subtask must be completable by anyone with zero context about the system.**
-
-Requiring context creates bottlenecks, onboarding friction, and integration failures.
-
-**Subtasks answer**: Exactly what to create/modify, with complete code and verification.
-**Subtasks never answer**: Why the system works this way (context is removed).
-
-## Bite-Sized Step Granularity
-
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
+Each step is ONE action (2-5 minutes):
+- "Write the failing test" → one step
+- "Run it to confirm it fails" → one step
+- "Implement minimal code to pass" → one step
+- "Run tests and confirm pass" → one step
+- "Commit" → one step
 
 ## Subtask Document Structure
 
-**Header (required):**
+**Header:**
+```markdown
+# ST-[task-id]-[number]: [Subtask Name]
 
-| Field | Content |
-|-------|---------|
-| Title | `# ST-[task-id]-[number]: [Subtask Name]` |
-| Agent Note | `> **For Agents:** REQUIRED SUB-SKILL: Use ring:execute-plan` |
-| Goal | One sentence describing what this builds |
-| Prerequisites | Verification commands with expected output |
-| Files | Create: `exact/path`, Modify: `exact/path:lines`, Test: `tests/path` |
+> **For Agents:** REQUIRED SUB-SKILL: Use ring:execute-plan
 
-**Step Structure (TDD Cycle):**
+**Goal:** One sentence — what this builds.
+**Prerequisites:** Verification commands with expected output.
+**Files:** Create: `exact/path`, Modify: `exact/path:lines`, Test: `tests/path`
+```
+
+**TDD Cycle Steps:**
 
 | Step | Content |
 |------|---------|
-| Step 1: Write failing test | Complete test file with imports |
-| Step 2: Run test to verify fail | Command + expected failure output |
+| Step 1: Write failing test | Complete test file with all imports |
+| Step 2: Run test → confirm fail | Command + expected failure output |
 | Step 3: Write minimal implementation | Complete implementation file |
-| Step 4: Run test to verify pass | Command + expected success output |
-| Step 5: Update exports (if needed) | Exact modification to index files |
+| Step 4: Run test → confirm pass | Command + expected success output |
+| Step 5: Update exports (if needed) | Exact modification to index/route files |
 | Step 6: Verify type checking | Command + expected output |
-| Step 7: Commit | Exact git commands with message |
+| Step 7: Commit | Exact git commands with commit message |
 | Rollback | Exact commands to undo if issues |
 
-## Explicit Rules
+## Rules
 
-### ✅ DO Include in Subtasks
-Exact file paths (absolute or from root), complete file contents (if creating), complete code snippets (if modifying), all imports and dependencies, step-by-step TDD cycle (numbered), verification commands (copy-pasteable), expected output (exact), rollback procedures (exact commands), prerequisites (what must exist first)
+### Include in Subtasks
+- Exact file paths (absolute or from repo root)
+- Complete file contents (if creating) or complete code snippets (if modifying)
+- All imports and dependencies
+- All step numbering (TDD cycle)
+- Verification commands (copy-pasteable)
+- Expected output (exact strings)
+- Rollback procedure (exact commands)
+- Prerequisites with verification commands
 
-### ❌ NEVER Include in Subtasks
-Placeholders: "...", "TODO", "implement here"; vague instructions: "update the service", "add validation"; assumptions: "assuming setup is done"; context requirements: "you need to understand X first"; incomplete code: "add the rest yourself"; missing imports: "import necessary packages"; undefined success: "make sure it works"; no verification: "test it manually"
+### Never Include
+- Placeholders: `...`, `TODO`, `implement here`
+- Vague instructions: "update the service", "add validation"
+- Assumptions: "assuming setup is done"
+- Context requirements: "you need to understand X first"
+- Incomplete code: "add the rest yourself"
+- Missing imports: "import necessary packages"
+- Undefined success: "make sure it works"
+- No verification: "test it manually"
 
-<cannot_skip>
+## Multi-Module Subtasks
 
-### ⛔ HARD GATE: lib-commons in Go Code Examples
+If topology is monorepo or multi-repo, each subtask must specify:
+- `Target:` backend | frontend | shared
+- `Working Directory:` absolute path from topology config
+- `Agent:` ring:backend-engineer-* or ring:frontend-*-engineer-*
 
-MUST: For Go projects, code examples use lib-commons instead of custom utilities.
+## Example Subtask Fragment
 
-See **[shared-patterns/code-example-standards.md](../shared-patterns/code-example-standards.md)** for:
-- Complete list of what lib-commons provides
-- Forbidden patterns (custom loggers, config loaders, HTTP helpers)
-- Correct import patterns with `lib` prefix aliases
-- Anti-rationalization table
+```markdown
+# ST-T001-01: Write failing test for Account repository
 
-**Quick Reference - DO NOT Create Custom:**
+**Goal:** Create failing test for AccountRepository.Create that verifies it persists an account.
+**Prerequisites:**
+  - `ls internal/repositories/` shows existing repo files
+  - `go build ./...` passes without errors
+**Files:**
+  - Create: `internal/repositories/account_test.go`
+  - Modify: None (test file is new)
 
-| Category | Use lib-commons |
-|----------|-----------------|
-| Logging | `libLog "github.com/LerianStudio/lib-commons/v5/commons/log"` |
-| Config | `libCommons.SetConfigFromEnvVars()` |
-| HTTP | `libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"` |
-| Telemetry | `libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"` |
-| PostgreSQL | `libPostgres "github.com/LerianStudio/lib-commons/v5/commons/postgres"` |
+---
 
-MUST NOT: Create custom logger, config loader, or HTTP helper in subtasks—use lib-commons.
+### Step 1: Write the failing test
 
-</cannot_skip>
+Create `internal/repositories/account_test.go`:
 
-## Rationalization Table
+\`\`\`go
+package repositories_test
 
-| Excuse | Reality |
-|--------|---------|
-| "The developer will figure out imports" | Imports are context. Provide them explicitly. |
-| "TODO comments are fine for simple parts" | TODOs require decisions. Make them now. |
-| "They'll know which service to update" | They won't. Specify the exact file path. |
-| "The verification steps are obvious" | Obvious ≠ documented. Write exact commands. |
-| "Rollback isn't needed for simple changes" | Simple changes fail too. Always provide rollback. |
-| "This needs system understanding" | Then you haven't removed context. Simplify more. |
-| "I'll provide the template, they fill it" | Templates are incomplete. Provide full code. |
-| "The subtask description explains it" | Descriptions need interpretation. Give exact steps. |
-| "They can look at similar code for reference" | That's context. Make subtask self-contained. |
-| "This is too detailed, we're not that formal" | Detailed = parallelizable = faster. Be detailed. |
-| "Steps are too small, feels like hand-holding" | Small steps = verifiable progress. Stay small. |
-| "Custom logger is simpler for this example" | Examples teach patterns. Teach lib-commons. |
-| "lib-commons import is too verbose" | Verbosity shows correct dependencies. Keep it. |
-| "I'll use lib-commons in the real code" | Subtask is real code. Use lib-commons now. |
+import (
+    "context"
+    "testing"
+    "github.com/stretchr/testify/assert"
+    "github.com/LerianStudio/myservice/internal/repositories"
+)
 
-## Red Flags - STOP
+func TestAccountRepository_Create(t *testing.T) {
+    repo := repositories.NewAccountRepository(testDB)
+    account := &model.Account{Name: "Test Account", Status: "ACTIVE"}
 
-If you catch yourself writing any of these in a subtask, **STOP and rewrite**:
+    err := repo.Create(context.Background(), account)
 
-- Code placeholders: `...`, `// TODO`, `// implement X here`
-- Vague file references: "the user service", "the auth module"
-- Assumption phrases: "assuming you have", "make sure you"
-- Incomplete imports: "import required packages"
-- Missing paths: Not specifying where files go
-- Undefined verification: "test that it works"
-- Steps longer than 5 minutes
-- Context dependencies: "you need to understand X"
-- No TDD cycle in implementation steps
-- Use `libZap.NewLogger()` instead of custom `func NewLogger()` (Go)
-- Use `libCommons.SetConfigFromEnvVars()` instead of scattered `os.Getenv()` (Go)
-- Use `libHTTP` utilities instead of custom `func JSONResponse()` (Go)
-- Check lib-commons first before creating files in `utils/`, `helpers/`, `pkg/common/` (Go)
+    assert.NoError(t, err)
+    assert.NotEmpty(t, account.ID)
+}
+\`\`\`
 
-**When you catch yourself**: Expand the subtask until it's completely self-contained.
+### Step 2: Run to confirm it fails
+
+\`\`\`bash
+go test ./internal/repositories/... -run TestAccountRepository_Create -v
+\`\`\`
+
+Expected output:
+\`\`\`
+--- FAIL: TestAccountRepository_Create
+    account_test.go:15: undefined: repositories.NewAccountRepository
+FAIL
+\`\`\`
+
+### Step 7: Commit
+
+\`\`\`bash
+git add internal/repositories/account_test.go
+git commit -m "test(account): add failing test for AccountRepository.Create"
+\`\`\`
+
+### Rollback
+
+\`\`\`bash
+git reset HEAD~1
+rm internal/repositories/account_test.go
+\`\`\`
+```
 
 ## Gate 8 Validation Checklist
 
 | Category | Requirements |
 |----------|--------------|
-| **Atomicity** | Each step 2-5 minutes; no system architecture understanding required; assignable to anyone |
-| **Completeness** | All code provided in full; all file paths explicit; all imports listed; all prerequisites documented; TDD cycle followed |
-| **Verifiability** | Test commands copy-pasteable; expected output exact; commands run from project root |
-| **Reversibility** | Rollback commands provided; rollback doesn't require system knowledge |
+| **Coverage** | All tasks from Gate 7 have subtasks; every task's scope items have at least one subtask |
+| **Completeness** | Every subtask has complete code (no placeholders); exact commands; expected output |
+| **TDD Compliance** | Every subtask follows RED-GREEN-REFACTOR cycle |
+| **Zero Context** | Subtask is completable without reading any other file or asking questions |
+| **Verifiability** | Every step has a verification command with expected output |
 
-**Gate Result:** ✅ PASS → Ready for implementation | ⚠️ CONDITIONAL (add details) | ❌ FAIL (decompose further)
-
-## Confidence Scoring
-
-| Factor | Points | Criteria |
-|--------|--------|----------|
-| Step Atomicity | 0-30 | All 2-5 minutes: 30, Most sized right: 20, Too large/vague: 10 |
-| Code Completeness | 0-30 | Zero placeholders: 30, Mostly complete: 15, Significant TODOs: 5 |
-| Context Independence | 0-25 | Anyone can execute: 25, Minor context: 15, Significant knowledge: 5 |
-| TDD Coverage | 0-15 | All RED-GREEN-REFACTOR: 15, Most have tests: 10, Limited: 5 |
-
-**Action:** 80+ autonomous | 50-79 present options | <50 ask about structure
-
-## Execution Handoff
-
-After creating subtasks, offer execution choice:
-
-**"Subtasks complete. Two execution options:**
-1. **Subagent-Driven** - Fresh subagent per subtask, review between, fast iteration → Use `ring:subagent-driven-development`
-2. **Parallel Session** - New session with ring:execute-plan, batch with checkpoints → Use `ring:execute-plan`
-
-**Which approach?"**
-
-## The Bottom Line
-
-**If you wrote a subtask with "TODO" or "..." or "add necessary imports", delete it and rewrite with complete code.**
-
-Subtasks are not instructions. Subtasks are complete, copy-pasteable implementations following TDD.
-
-- "Add validation" is not a step. [Complete validation code with test] is a step.
-- "Update the service" is not a step. [Exact file path + exact code changes with test] is a step.
-- "Import necessary packages" is not a step. [Complete list of imports] is a step.
-
-Every subtask must be completable by someone who:
-- Just joined the team yesterday
-- Has never seen the codebase before
-- Doesn't know the business domain
-- Won't ask questions (you're unavailable)
-- Follows TDD religiously
-
-If they can't complete it with zero questions while following RED-GREEN-REFACTOR, **it's not atomic enough.**
-
-**Remember: DRY. YAGNI. TDD. Frequent commits.**
-
----
-
-## Standards Loading (MANDATORY)
-
-This skill creates implementation subtasks. While it does NOT require direct WebFetch of standards, subtasks MUST reference lib-commons patterns for Go projects.
-
-**For Go projects:** All code examples in subtasks MUST use lib-commons imports. See [shared-patterns/code-example-standards.md](../shared-patterns/code-example-standards.md) for required patterns.
-
-**HARD GATE:** Subtasks with custom logger, config loader, or HTTP helper implementations are INVALID. Use lib-commons.
-
----
-
-## Blocker Criteria - STOP and Report
-
-| Condition | Action | Severity |
-|-----------|--------|----------|
-| Tasks (Gate 7) not validated | STOP and complete Gate 7 first | CRITICAL |
-| Subtask contains TODO or placeholder | STOP and expand with complete code | HIGH |
-| Subtask requires context not provided | STOP and add missing context to subtask | HIGH |
-| Step exceeds 5 minutes | STOP and break into smaller steps | MEDIUM |
-| Missing TDD cycle (no RED phase) | STOP and add failing test first | HIGH |
-| Go subtask uses custom logger instead of lib-commons | STOP and replace with lib-commons | HIGH |
-
----
-
-## Cannot Be Overridden
-
-These requirements are NON-NEGOTIABLE:
-
-- MUST NOT include placeholders (TODO, ..., "implement here")
-- MUST NOT include vague instructions ("update the service")
-- MUST provide complete file paths (absolute or from root)
-- MUST provide all imports explicitly
-- MUST follow TDD cycle: RED (failing test) → GREEN (implementation) → REFACTOR
-- MUST include verification commands with expected output
-- MUST include rollback procedures
-- MUST use lib-commons for Go code examples (no custom utilities)
-
----
-
-## Severity Calibration
-
-| Severity | Definition | Example |
-|----------|------------|---------|
-| **CRITICAL** | Subtask cannot be executed | Missing prerequisite, no file paths |
-| **HIGH** | Subtask requires interpretation | TODO placeholder, vague description |
-| **MEDIUM** | Subtask quality degraded | Missing verification command |
-| **LOW** | Minor documentation gaps | Rollback could be more detailed |
-
----
-
-## Pressure Resistance
-
-| User Says | Your Response |
-|-----------|---------------|
-| "Developer will figure out imports" | "Cannot assume imports. Imports ARE context. I'll provide explicit import statements." |
-| "TODO comments are fine for simple parts" | "Cannot use TODOs. TODOs require decisions. I'll make those decisions now and provide complete code." |
-| "Steps are too detailed, feels like hand-holding" | "Cannot reduce detail. Small steps = verifiable progress. Detail enables parallelization." |
-| "Skip TDD for this simple change" | "Cannot skip TDD. Every subtask follows RED-GREEN-REFACTOR. I'll write the failing test first." |
-| "Custom logger is simpler for this example" | "Cannot use custom logger. Subtasks teach patterns. lib-commons is the pattern." |
-
----
-
-## When This Skill Is Not Needed
-
-- Small Track workflow (execute tasks directly without subtask breakdown)
-- Tasks are simple enough without fine-grained breakdown
-- Tasks (Gate 7) not yet validated (complete Gate 7 first)
-- Implementation already in progress (use ring:execute-plan)
-- Proof-of-concept work without formal process needs
+**Gate Result:** ✅ PASS → Delivery Planning | ⚠️ CONDITIONAL (incomplete subtasks) | ❌ FAIL (placeholders or missing TDD cycle)

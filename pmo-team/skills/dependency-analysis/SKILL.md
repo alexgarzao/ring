@@ -19,349 +19,97 @@ related:
   complementary: [portfolio-planning, risk-management]
 ---
 
-# Dependency Mapping Skill
+# Dependency Mapping
 
 Systematic identification and management of cross-project dependencies.
 
-## Purpose
-
-This skill provides a framework for:
-- Dependency identification
-- Dependency classification
-- Impact analysis
-- Critical path identification
-- Dependency tracking and management
-
----
-
-## Prerequisites
-
-Before dependency mapping, ensure:
-
-| Prerequisite | Required For | Source |
-|--------------|--------------|--------|
-| Project schedules | Timeline analysis | Project managers |
-| Project deliverables | Dependency identification | Project plans |
-| External contracts | Vendor dependencies | Procurement |
-| Integration points | Technical dependencies | Architecture |
-
----
-
 ## Dependency Types
 
-### Internal Dependencies
+### Internal (between tasks/projects)
 
 | Type | Definition | Example |
 |------|------------|---------|
-| **Finish-to-Start (FS)** | B starts when A finishes | Development → Testing |
-| **Start-to-Start (SS)** | B starts when A starts | Parallel workstreams |
-| **Finish-to-Finish (FF)** | B finishes when A finishes | Code freeze → Doc freeze |
-| **Start-to-Finish (SF)** | B finishes when A starts | Rare, shift handoff |
+| Finish-to-Start (FS) | B starts when A finishes | Development → Testing |
+| Start-to-Start (SS) | B starts when A starts | Parallel workstreams |
+| Finish-to-Finish (FF) | B finishes when A finishes | Code freeze → Doc freeze |
 
-### External Dependencies
+### External
 
-| Type | Definition | Risk Level |
-|------|------------|------------|
-| **Vendor** | Third-party delivery | Medium-High |
-| **Regulatory** | Approval or certification | High |
-| **Infrastructure** | Environment availability | Medium |
-| **Integration** | API or system availability | Medium-High |
-| **Resource** | Shared resource availability | Medium |
-
----
+| Type | Risk Level |
+|------|------------|
+| Vendor delivery | Medium-High |
+| Regulatory approval | High |
+| Infrastructure availability | Medium |
+| API/integration readiness | Medium-High |
+| Shared resource availability | Medium |
 
 ## Dependency Mapping Gates
 
 ### Gate 1: Dependency Identification
 
-**Objective:** Identify all dependencies across portfolio
+**Objective:** Identify all cross-portfolio dependencies.
 
-**Actions:**
+Actions:
 1. Review project schedules for cross-project links
-2. Interview project managers
-3. Document deliverable handoffs
-4. Identify external dependencies
+2. Interview project managers for undocumented dependencies
+3. Map integration points between projects
+4. Identify external vendor/regulatory dependencies
 
-**Identification Questions:**
-- What does this project need from other projects?
-- What does this project provide to other projects?
-- What external inputs are needed?
-- What must be complete before this can start?
-
-**Output:** `docs/pmo/{date}/dependency-inventory.md`
-
----
-
-### Gate 2: Dependency Classification
-
-**Objective:** Classify dependencies by type and criticality
-
-**Actions:**
-1. Classify by dependency type (FS, SS, FF, SF)
-2. Classify by source (internal/external)
-3. Assess criticality (critical path/slack)
-4. Document constraints and assumptions
-
-**Criticality Assessment:**
-
-| Level | Criteria | Management |
-|-------|----------|------------|
-| **Critical** | On critical path, no slack | Daily monitoring |
-| **High** | < 1 week slack | Weekly monitoring |
-| **Medium** | 1-4 weeks slack | Bi-weekly monitoring |
-| **Low** | > 4 weeks slack | Monthly monitoring |
-
-**Output:** `docs/pmo/{date}/dependency-classification.md`
-
----
-
-### Gate 3: Impact Analysis
-
-**Objective:** Understand impact of dependency failure
-
-**Actions:**
-1. Analyze schedule impact
-2. Analyze cost impact
-3. Identify cascade effects
-4. Document mitigation options
-
-**Impact Assessment Template:**
-
-| Dependency | If Delayed By | Schedule Impact | Cost Impact | Cascade To |
-|------------|---------------|-----------------|-------------|------------|
-| [Dep] | 1 week | [Impact] | [Impact] | [Projects] |
-| [Dep] | 2 weeks | [Impact] | [Impact] | [Projects] |
-| [Dep] | 1 month | [Impact] | [Impact] | [Projects] |
-
-**Output:** `docs/pmo/{date}/dependency-impact.md`
-
----
-
-### Gate 4: Critical Path Analysis
-
-**Objective:** Identify and protect the critical path
-
-**Actions:**
-1. Map critical path across projects
-2. Identify dependencies on critical path
-3. Analyze buffer/slack
-4. Recommend protection measures
-
-**Critical Path Visualization:**
-```
-Project A: [Task A1] → [Task A2] → [Deliverable A]
-                                          ↓
-Project B:                        [Task B1] → [Task B2] → [Deliverable B]
-                                                                  ↓
-Project C:                                               [Task C1] → [Task C2] → [Final]
-```
-
-**Protection Measures:**
-- Buffer allocation
-- Parallel path development
-- Early warning triggers
-- Contingency plans
-
-**Output:** `docs/pmo/{date}/critical-path-analysis.md`
-
----
-
-### Gate 5: Dependency Tracking Plan
-
-**Objective:** Create ongoing tracking and management plan
-
-**Actions:**
-1. Define tracking frequency per criticality
-2. Assign dependency owners
-3. Create communication plan
-4. Define escalation triggers
-
-**Tracking Template:**
-
-| Dependency | Owner | Update Freq | Status | Next Milestone | Risk |
-|------------|-------|-------------|--------|----------------|------|
-| [Dep] | [Owner] | [Freq] | [Status] | [Date: Milestone] | [Risk] |
-
-**Escalation Triggers:**
-- Critical dependency at risk
-- External dependency delayed
-- Cascade impact identified
-- Owner not responding
-
-**Output:** `docs/pmo/{date}/dependency-tracking-plan.md`
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
-
-### Dependency-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "We've documented the main dependencies" | Undocumented dependencies cause surprise delays. | **Document ALL dependencies** |
-| "That's a soft dependency, not critical" | Soft dependencies become hard when they fail. | **Classify and track all** |
-| "External vendor always delivers" | Past performance ≠ future guarantee. | **Track and verify externals** |
-| "Projects will coordinate directly" | Ad-hoc coordination fails under pressure. | **Formal tracking required** |
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
-
-### Dependency-Specific Pressures
-
-| Pressure Type | Request | Agent Response |
-|---------------|---------|----------------|
-| "We trust the other team, don't track" | "Trust doesn't prevent delays. Tracking enables early action." |
-| "Too many dependencies to track" | "Complexity requires MORE tracking, not less. Will prioritize by criticality." |
-| "Vendor said it's on track" | "Vendor assurance needs verification. Confirming with evidence." |
-
----
-
-## Blocker Criteria - STOP and Report
-
-**ALWAYS pause and report blocker for:**
-
-| Situation | Required Action |
-|-----------|-----------------|
-| Critical dependency at risk | STOP. Immediate escalation. Cascade impact pending. |
-| Circular dependency identified | STOP. Architectural issue requires resolution. |
-| External dependency failed | STOP. Contingency activation required. |
-| Dependency owner unresponsive | STOP. Escalate for owner assignment. |
-
-### Cannot Be Overridden
-
-**The following requirements are NON-NEGOTIABLE:**
-
-| Requirement | Cannot Override Because |
-|-------------|------------------------|
-| **Complete dependency inventory** | Hidden dependencies cause surprise delays |
-| **Owner assignment** | Unowned dependencies are unmanaged |
-| **External verification** | Vendor assurance without evidence is unreliable |
-| **Critical path protection** | Critical path delays affect entire portfolio |
-| **Cascade impact documentation** | Unknown cascades become crisis |
-
-**If user insists on violating these:**
-1. Escalate to orchestrator
-2. Do NOT proceed with incomplete mapping
-3. Document the request and your refusal
-
----
-
-## Severity Calibration
-
-When assessing dependency risks:
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | On critical path, no slack, high impact | Core API dependency blocking 3+ projects, vendor at risk of bankruptcy |
-| **HIGH** | < 1 week slack, significant impact | Integration dependency with tight timeline, key resource dependency |
-| **MEDIUM** | 1-4 weeks slack, moderate impact | Supporting service dependency, documentation dependency |
-| **LOW** | > 4 weeks slack, minor impact | Nice-to-have integration, optional feature dependency |
-
-**Track all severities. Actively manage CRITICAL and HIGH.**
-
----
-
-## Output Format
-
-### Dependency Map Summary
+**Output:** `docs/pmo/{date}/dependency-register.md`
 
 ```markdown
-# Cross-Project Dependency Map - [Date]
-
-## Dependency Overview
-
-| Metric | Value |
-|--------|-------|
-| Total Dependencies | N |
-| Internal | N |
-| External | N |
-| On Critical Path | N |
-| At Risk | N |
-
-## Dependency Matrix
-
-| From Project | To Project | Dependency | Type | Criticality | Status |
-|--------------|------------|------------|------|-------------|--------|
-| [Project] | [Project] | [Description] | [FS/SS/FF/SF] | [Crit/High/Med/Low] | [On Track/At Risk/Blocked] |
-
-## Critical Path Dependencies
-
-```
-[Visual representation of critical path]
+## Dependency Register
+| ID | From | To | Type | Description | Risk Level | Owner |
+|----|------|----|------|-------------|------------|-------|
+| DEP-001 | Project A: API v2 | Project B: Integration | FS | B needs A's API before integration testing | High | {Owner} |
 ```
 
-## External Dependencies
+### Gate 2: Impact Analysis
 
-| Vendor/Source | Dependency | Due Date | Status | Contingency |
-|---------------|------------|----------|--------|-------------|
-| [Vendor] | [Dependency] | [Date] | [Status] | [Plan] |
+For each dependency, assess:
 
-## At-Risk Dependencies
+| Dependency | If Delayed | Impact on Portfolio | Mitigation Available |
+|------------|-----------|--------------------|--------------------|
+| DEP-001 | Project B delayed 3 weeks | Blocks Q3 delivery | Mock API available? |
 
-| Dependency | Risk | Impact | Mitigation |
-|------------|------|--------|------------|
-| [Dep] | [Risk description] | [Impact] | [Mitigation] |
+**Critical path dependencies:** Those where delay propagates to project end date with zero slack.
 
-## Recommendations
+### Gate 3: Dependency Matrix
 
-1. [Recommendation with rationale]
-2. [Recommendation with rationale]
+Build cross-project dependency matrix:
 
-## Decisions Required
-
-1. [Decision needed with options]
+```
+         | Project A | Project B | Project C | Vendor X |
+---------|-----------|-----------|-----------|----------|
+Project A | —         | Provides  | Provides  | Receives |
+Project B | Receives  | —         | —         | —        |
+Project C | Receives  | —         | —         | —        |
 ```
 
----
+Highlight: Critical (🔴), At-Risk (🟡), Healthy (🟢)
 
-## Execution Report
+### Gate 4: Resolution Planning
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
+For each HIGH or CRITICAL dependency:
 
-| Metric | Value |
-|--------|-------|
-| Analysis Date | YYYY-MM-DD |
-| Scope | [Portfolio/Projects] |
-| Duration | Xh Ym |
-| Result | COMPLETE/PARTIAL/BLOCKED |
+| Dependency | Resolution Option | Owner | Target Date | Contingency |
+|------------|------------------|-------|-------------|-------------|
+| DEP-001 | Accelerate Project A API | PM-A | 2026-04-01 | Mock API for testing |
 
-### Dependency-Specific Details
+### Gate 5: Tracking Setup
 
-| Metric | Value |
-|--------|-------|
-| dependencies_total | N |
-| critical_path_deps | N |
-| external_deps | N |
-| at_risk_deps | N |
+Create monitoring cadence:
+- Weekly: review status of HIGH/CRITICAL dependencies
+- Bi-weekly: full dependency register review
+- Trigger: immediate review if any dependency status changes
 
----
+**Output:** `docs/pmo/{date}/dependency-matrix.md` + tracking schedule
 
-## When Dependency Mapping Is Not Needed
+## Early Warning Indicators
 
-<MANDATORY>
-MUST: Dependency mapping is minimal only when all conditions are met:
-</MANDATORY>
-
-| Condition | Verification |
-|-----------|-------------|
-| Single isolated project | Verify no cross-project dependencies |
-| No external dependencies | Confirm all resources internal |
-| No shared resources | Verify team is dedicated |
-| Previous mapping is current (<30 days) | Reference existing map |
-
-**MUST: Full dependency mapping REQUIRED for the following conditions:**
-
-| Condition | Why Required |
-|-----------|-------------|
-| Multiple projects share resources | Resource conflicts cause delays |
-| External vendor dependencies exist | Vendor delays cascade to projects |
-| Integration points between projects | Technical dependencies create coupling |
-| New project added to portfolio | Impact on existing dependencies unknown |
-| Critical milestone approaching | Risk assessment needs current dependencies |
-
-**MUST: When in doubt, update the dependency map. Stale dependency information causes crisis.**
+| Signal | Action |
+|--------|--------|
+| Dependency owner not responding | Escalate to sponsor |
+| Dependency delayed >1 week | Update critical path, notify impacted PMs |
+| New dependency discovered late | Emergency planning session |
+| External vendor behind schedule | Activate contingency |

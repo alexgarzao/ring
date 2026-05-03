@@ -19,309 +19,114 @@ related:
   complementary: [portfolio-planning, risk-management]
 ---
 
-# Resource Allocation Skill
+# Resource Allocation
 
 Systematic resource planning across portfolio for optimal utilization.
 
-## Purpose
-
-This skill provides a framework for:
-- Capacity planning across projects
-- Resource conflict identification
-- Skills gap analysis
-- Allocation optimization
-- Utilization monitoring
-
----
-
 ## Prerequisites
 
-Before resource allocation, ensure:
-
-| Prerequisite | Required For | Source |
-|--------------|--------------|--------|
-| Resource inventory | Capacity baseline | HR/Resource management |
-| Project demands | Allocation needs | Project managers |
-| Skills matrix | Gap analysis | HR/Training |
-| Availability calendar | Time planning | Team calendars |
-
----
+| Prerequisite | Source |
+|--------------|--------|
+| Resource inventory | HR/Resource management |
+| Project demands | Project managers |
+| Skills matrix | HR/Training |
+| Availability calendar | Team calendars |
 
 ## Resource Allocation Gates
 
 ### Gate 1: Resource Inventory
 
-**Objective:** Establish baseline of available resources
-
-**Actions:**
-1. List all available resources (people, teams)
-2. Document skills per resource
-3. Capture availability (FTE, dates)
-4. Note constraints (PTO, training, etc.)
+**Objective:** Establish baseline of available resources.
 
 **Output:** `docs/pmo/{date}/resource-inventory.md`
 
-**Inventory Template:**
+```markdown
+## Resource Inventory
+| Resource | Role | Skills | Availability (FTE) | Current Allocation | Location |
+|----------|------|--------|-------------------|-------------------|---------|
+| [Name] | Backend Eng | Go, PostgreSQL | 1.0 | Project A (60%) | Remote |
+```
 
-| Resource | Role | Skills | Availability | Current Allocation |
-|----------|------|--------|--------------|-------------------|
-| [Name] | [Role] | [Skills] | [FTE] | [Projects] |
-
----
+Actions:
+1. List all available resources
+2. Document skills matrix per resource
+3. Capture availability (FTE, dates, known constraints: PTO, training)
+4. Note existing project allocations
 
 ### Gate 2: Demand Analysis
 
-**Objective:** Understand resource demand across portfolio
+**Objective:** Understand resource demand across portfolio.
 
-**Actions:**
-1. Collect resource requests from projects
-2. Categorize by role/skill
+```markdown
+## Resource Demand
+| Project | Role Needed | Skills | Start | End | FTE Required |
+|---------|-------------|--------|-------|-----|-------------|
+| Project B | Backend Eng | Go, gRPC | 2026-04-01 | 2026-06-30 | 0.8 |
+```
+
+Actions:
+1. Collect resource requests from all projects
+2. Categorize by role and skill requirements
 3. Map to timeline
-4. Aggregate total demand
-
-**Demand Template:**
-
-| Project | Role/Skill | FTE Needed | Start | End | Priority |
-|---------|-----------|------------|-------|-----|----------|
-| [Project] | [Role] | [FTE] | [Date] | [Date] | [1-5] |
-
-**Output:** `docs/pmo/{date}/resource-demand.md`
-
----
+4. Identify peak demand periods
 
 ### Gate 3: Gap Analysis
 
-**Objective:** Identify mismatches between supply and demand
+**Objective:** Identify conflicts and gaps.
 
-**Actions:**
-1. Compare inventory to demand
-2. Identify capacity gaps (over/under)
-3. Identify skill gaps
-4. Document timeline conflicts
+```markdown
+## Capacity vs Demand
+| Role | Available FTE | Demanded FTE | Gap | Risk |
+|------|--------------|--------------|-----|------|
+| Backend Eng | 2.5 | 3.2 | -0.7 | 🔴 High |
+| Frontend Eng | 1.5 | 1.2 | +0.3 | 🟢 OK |
+```
 
-**Gap Types:**
+**Conflict detection:** Same person over-allocated in overlapping periods.
 
-| Gap Type | Definition | Impact |
-|----------|------------|--------|
-| **Capacity Gap** | More work than people | Project delays, burnout |
-| **Skill Gap** | Work requires unavailable skills | Quality issues, training need |
-| **Timeline Gap** | Resources available wrong time | Schedule conflicts |
-| **Quality Gap** | Available skills below required level | Supervision needed |
+| Resource | Project A | Project B | Total | Status |
+|----------|-----------|-----------|-------|--------|
+| Dev 1 | 60% (Apr-Jun) | 80% (May-Jul) | 140% May-Jun | ⚠️ Conflict |
 
-**Output:** `docs/pmo/{date}/resource-gaps.md`
+### Gate 4: Allocation Optimization
 
----
+For each conflict or gap, present options:
 
-### Gate 4: Conflict Resolution
+| Issue | Option A | Option B | Option C |
+|-------|---------|---------|---------|
+| Dev 1 over-allocated | Delay Project B start | Reduce Project A scope | Hire contractor |
+| Backend Eng gap -0.7 FTE | Upskill Frontend Eng | Delay Project B | Hire new engineer |
 
-**Objective:** Resolve resource conflicts across projects
-
-**Actions:**
-1. List all conflicts
-2. Analyze priority-based resolution
-3. Propose alternatives (hire, defer, redistribute)
-4. Document trade-offs
-
-**Resolution Options:**
-
-| Option | When to Use | Trade-off |
-|--------|-------------|-----------|
-| **Prioritize** | Clear priority difference | Lower priority project delayed |
-| **Share** | Skills transferable | Context switching cost |
-| **Hire** | Long-term need | Time to onboard, cost |
-| **Contract** | Short-term need | Cost, knowledge transfer |
-| **Defer** | Flexibility exists | Opportunity cost |
-| **Descope** | Scope flexibility | Feature reduction |
-
-**Output:** `docs/pmo/{date}/conflict-resolution.md`
-
----
+User selects resolution per issue.
 
 ### Gate 5: Allocation Plan
 
-**Objective:** Create optimal resource allocation plan
-
-**Actions:**
-1. Assign resources to projects
-2. Document allocation percentages
-3. Define handoff points
-4. Create monitoring plan
-
-**Allocation Template:**
-
-| Resource | Project | Allocation % | Start | End | Notes |
-|----------|---------|--------------|-------|-----|-------|
-| [Name] | [Project] | [%] | [Date] | [Date] | [Notes] |
-
-**Utilization Target:** 70-85% (leaves buffer for issues)
-
-**Output:** `docs/pmo/{date}/allocation-plan.md`
-
----
-
-## Anti-Rationalization Table
-
-See [shared-patterns/anti-rationalization.md](../shared-patterns/anti-rationalization.md) for universal anti-rationalizations.
-
-### Resource-Specific Anti-Rationalizations
-
-| Rationalization | Why It's WRONG | Required Action |
-|-----------------|----------------|-----------------|
-| "Team said they can handle it" | Optimism bias is real. Validate with data. | **Verify against utilization data** |
-| "We'll figure it out as we go" | Resource chaos causes project failure. Plan upfront. | **Complete allocation plan** |
-| "100% utilization is optimal" | 100% = no buffer for issues, burnout. 70-85% is optimal. | **Plan for sustainable utilization** |
-| "Sharing resources is fine" | Context switching costs 20-40% productivity. Account for it. | **Include switching cost in allocation** |
-
----
-
-## Pressure Resistance
-
-See [shared-patterns/pressure-resistance.md](../shared-patterns/pressure-resistance.md) for universal pressure scenarios.
-
-### Resource-Specific Pressures
-
-| Pressure Type | Request | Agent Response |
-|---------------|---------|----------------|
-| "Just assign everyone to both projects" | "100% allocation to multiple projects is impossible. Creating realistic allocation plan." |
-| "We don't have time to document skills" | "Skills documentation prevents misallocation. Completing skills inventory." |
-| "The team lead said resources are available" | "Trust and verify. Confirming with actual utilization data before committing." |
-
----
-
-## Blocker Criteria - STOP and Report
-
-**ALWAYS pause and report blocker for:**
-
-| Situation | Required Action |
-|-----------|-----------------|
-| Demand exceeds capacity by >20% | STOP. Report gap. Wait for prioritization or hiring decision. |
-| Critical skill unavailable | STOP. Report skill gap. Wait for training/hiring decision. |
-| Key person single point of failure | STOP. Report risk. Wait for mitigation decision. |
-| Conflicting executive commitments | STOP. Escalate conflict. Wait for resolution. |
-
-### Cannot Be Overridden
-
-**The following requirements are NON-NEGOTIABLE:**
-
-| Requirement | Cannot Override Because |
-|-------------|------------------------|
-| **Utilization limits (≤95%)** | >95% sustained causes burnout and quality issues |
-| **Conflict documentation** | Unresolved conflicts cause project failures |
-| **Skills verification** | Assumed skills lead to delivery problems |
-| **Availability confirmation** | Committed resources must be verified before allocation |
-| **Context switching accounting** | Multi-project allocation must account for overhead |
-
-**If user insists on violating these:**
-1. Escalate to orchestrator
-2. Do NOT proceed with unrealistic allocation
-3. Document the request and your refusal
-
----
-
-## Severity Calibration
-
-When reporting resource issues:
-
-| Severity | Criteria | Examples |
-|----------|----------|----------|
-| **CRITICAL** | Delivery at risk, burnout imminent | >110% sustained utilization, critical skill gap, key person leaving |
-| **HIGH** | Significant risk if not addressed | >100% temporary utilization, conflict between priority projects |
-| **MEDIUM** | Optimization opportunity | Suboptimal allocation, minor skill gaps, unbalanced teams |
-| **LOW** | Minor improvements possible | Process refinements, training opportunities |
-
-**Report ALL severities. Escalate CRITICAL immediately. Address HIGH this week.**
-
----
-
-## Output Format
-
-### Resource Allocation Summary
+**Output:** `docs/pmo/{date}/resource-allocation-plan.md`
 
 ```markdown
-# Resource Allocation Summary - [Date]
+# Resource Allocation Plan — Q2 2026
 
-## Capacity Overview
+## Allocation Matrix
+| Resource | Apr | May | Jun | Jul |
+|----------|-----|-----|-----|-----|
+| Dev 1 | A(60%)+B(40%) | A(100%) | B(80%) | B(80%) |
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Total FTE Available | X | - |
-| Total FTE Demanded | X | - |
-| Utilization Rate | X% | Green/Yellow/Red |
-| Open Positions | N | - |
-
-## Allocation by Project
-
-| Project | FTE Allocated | Utilization | Status |
-|---------|--------------|-------------|--------|
-| [Project] | X | X% | Green/Yellow/Red |
-
-## Gaps Identified
-
-| Gap Type | Description | Impact | Resolution |
-|----------|-------------|--------|------------|
-| [Type] | [Description] | [Impact] | [Proposed] |
-
-## Conflicts
-
-| Conflict | Projects | Resource | Proposed Resolution |
-|----------|----------|----------|---------------------|
-| [ID] | [Projects] | [Resource] | [Resolution] |
+## Unresolved Conflicts
+[List any conflicts pending resolution with options presented]
 
 ## Recommendations
+[Actions for leadership on hiring, training, or scope adjustments]
 
-1. [Recommendation with rationale]
-2. [Recommendation with rationale]
-
-## Decisions Required
-
-1. [Decision needed with options]
+## Review Date
+{Next review date — monthly recommended}
 ```
 
----
+### Gate 6: Utilization Monitoring
 
-## Execution Report
+Track actual vs planned utilization weekly:
 
-Base metrics per [shared-patterns/execution-report.md](../shared-patterns/execution-report.md):
+| Resource | Planned % | Actual % | Variance | Action Needed |
+|----------|-----------|---------|---------|--------------|
+| Dev 1 | 80% | 95% | +15% | 🟡 Monitor |
 
-| Metric | Value |
-|--------|-------|
-| Analysis Date | YYYY-MM-DD |
-| Scope | [Portfolio/Projects] |
-| Duration | Xh Ym |
-| Result | COMPLETE/PARTIAL/BLOCKED |
-
-### Resource-Specific Details
-
-| Metric | Value |
-|--------|-------|
-| roles_analyzed | N |
-| allocation_conflicts | N |
-| utilization_average | X% |
-| gap_count | N |
-
----
-
-## When Resource Allocation Is Not Needed
-
-<MANDATORY>
-MUST: Resource allocation is minimal only when ALL conditions are met:
-</MANDATORY>
-
-| Condition | Verification |
-|-----------|-------------|
-| Recent allocation exists (<14 days) | Reference existing allocation plan |
-| No new projects started | Verify no new resource demands |
-| No resource changes | Confirm no departures, hires, or availability changes |
-| Utilization within targets (70-85%) | Verify no over/under allocation |
-
-**MUST: Full resource allocation REQUIRED for the following conditions:**
-
-| Condition | Why Required |
-|-----------|-------------|
-| New project starting | Resource demand must be planned |
-| Resource conflict identified | Resolution needed before escalation |
-| Team member departure/arrival | Reallocation required |
-| Utilization outside targets | Optimization or intervention needed |
-| Quarterly planning cycle | Regular capacity review required |
-
-**MUST: When in doubt, refresh the allocation plan. Stale resource data causes delivery failures.**
+Target utilization: 70-85% (below = underutilized, above = burnout risk)
