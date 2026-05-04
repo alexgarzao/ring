@@ -5,7 +5,9 @@ description: |
   hierarchy for dispatch layer registration. Detects service name/type, modules
   (via WithModule or component structure), resources per module (PostgreSQL, MongoDB,
   RabbitMQ), database names, MongoDB indexes, and cross-module shared databases.
-  Produces a visual HTML report and MongoDB index creation scripts uploaded to S3.
+  Generates MongoDB index migration file pairs (.up.json / .down.json) and detects existing
+  PostgreSQL migration files (.up.sql / .down.sql). Produces a visual HTML report and offers
+  an opt-in S3 upload at the end (path: {bucket}/{env}/{service}/{module}/{mongodb|postgresql}/).
 
 trigger: |
   - User wants to know what to provision in dispatch layer for a service
@@ -104,24 +106,46 @@ grep -E "DATASOURCE_.*_DATABASE=" {component_path}/.env.example
 
 Cross-reference across modules: same database name in 2+ modules = shared (provision once).
 
-## Phase 4: MongoDB Index Detection
+## Phase 4: MongoDB Index Detection & Migration File Generation
+
+**Only execute if MongoDB was detected in any module during Phase 3.**
+
+Execute the procedure in `references/mongodb-index-detection.md` — Steps 1, 2, 3, 4 only.
+Do NOT execute Step 3.5 (S3 validation) — skipped per design.
+Do NOT execute Step 5 (S3 upload) — handled in Phase 6 (opt-in).
+
+1. **Step 1** — Detect in-code index definitions (`EnsureIndexes`, `IndexModel`, `CreateIndex`) per module.
+2. **Step 2** — Detect existing local migration files in `scripts/mongodb/*.up.json` + `*.down.json` (fallback legacy `*.js`). LOCAL ONLY — no S3 lookup.
+3. **Step 3** — Cross-reference code vs. local migration files, classify each as `covered` / `missing_migration` / `migration_only`.
+4. **Step 4** — Generate one `.up.json` + `.down.json` file pair per missing index (atomic per index, NOT grouped by collection):
+   - Path: `scripts/mongodb/{NNNNNN}_{index_name}.up.json` / `.down.json`
+   - Naming: `idx_{collection}_{fields}` (or `uniq_*` for uniqueness business rules)
+   - HARD GATE: every `.up.json` MUST have explicit `"options.name"` matching the file name
+
+**Format reminder:** the dispatch layer reads `.up.json` / `.down.json` from S3 and applies indexes on tenant provisioning. The service does NOT execute these files. Legacy `.js` scripts are NOT uploaded — only JSON migrations.
+
+## Phase 4.5: PostgreSQL Migration Detection
+
+**Only execute if PostgreSQL was detected in any module during Phase 3.**
+
+Detection only — Postgres migrations are written by developers; this skill does NOT generate `.sql` files.
 
 ```bash
-# In-code EnsureIndexes
-grep -rn "EnsureIndexes\|CreateIndexes" {component_path}/internal/ 2>/dev/null
-
-# Script-based indexes
-ls scripts/mongodb/*.js 2>/dev/null
+# Common golang-migrate locations (per module path resolved in Phase 3)
+ls {component_path}/scripts/postgres/*.up.sql 2>/dev/null
+ls {component_path}/scripts/postgresql/*.up.sql 2>/dev/null
+ls {component_path}/db/migrations/*.up.sql 2>/dev/null
+ls {component_path}/migrations/*.up.sql 2>/dev/null
 ```
 
-For each module with MongoDB and no index script → generate `scripts/mongodb/{module}.js`:
-```javascript
-// Index creation for {module} module
-db = db.getSiblingDB('{database_name}');
-db.{collection}.createIndex({field: 1}, {background: true, name: "idx_{field}"});
-```
+For each `.up.sql` file found:
+- Verify the matching `.down.sql` exists (golang-migrate convention).
+- Map it to its module (by directory path).
+- Track for the Phase 6 upload.
 
-Upload to S3: `s3://lerian-dispatch-layer/indexes/{service_name}/{module}.js`
+Store: `module.postgres_migrations = [{up_file, down_file, sequence, description}]`
+
+If a `.up.sql` exists without `.down.sql` → flag in Phase 5 HTML report (golang-migrate requires pairs).
 
 ## Phase 5: Generate HTML Report
 
@@ -136,10 +160,50 @@ Generate HTML report showing:
   - Redis: detected / not detected (note: key prefixing only)
 - Shared databases: list with modules that share them
 - Dispatch layer registration template (JSON)
-- MongoDB index scripts: generated / none needed
+- MongoDB index coverage table (collection / keys / code / migration / index name) per `references/mongodb-index-detection.md` "Report Section: MongoDB Index Coverage"
+- PostgreSQL migration table per module: file count, missing-pair warnings (`.up.sql` without `.down.sql`)
+- Upload-ready summary: total Mongo pairs and Postgres pairs to be offered for upload in Phase 6
 
 Style: clean, data-dense table layout
 ```
+
+## Phase 6: Optional S3 Upload
+
+**Execute after Phase 5. Always opt-in — never upload without explicit user confirmation.**
+
+```text
+1. Print summary and ask:
+   "Ready to upload to S3:
+    - MongoDB: {N} index migration pairs (.up.json/.down.json) across {M} modules
+    - PostgreSQL: {P} migration pairs (.up.sql/.down.sql) across {Q} modules
+    Upload to S3? (y/n)"
+
+2. If user declines → done. Files remain local. Report status: "Upload skipped by user."
+
+3. If user accepts:
+   a. Verify AWS CLI: `aws --version`. If absent → abort, report "AWS CLI not installed."
+   b. Ask: "Which S3 bucket? (e.g., lerian-development-migrations)"
+   c. Ask: "Which environment? (staging / production)"
+   d. Verify access: `aws s3 ls s3://{bucket}/{env}/ 2>&1`. If access denied or 404 → abort, report error.
+
+4. Upload Mongo files (per module, best-effort — continue on individual failures):
+   for each .up.json/.down.json pair in scripts/mongodb/ that maps to {module}:
+     aws s3 cp {file} s3://{bucket}/{env}/{service}/{module}/mongodb/$(basename {file}) \
+       --content-type "application/json"
+
+5. Upload Postgres files (per module, best-effort):
+   for each .up.sql/.down.sql pair found in Phase 4.5 that maps to {module}:
+     aws s3 cp {file} s3://{bucket}/{env}/{service}/{module}/postgresql/$(basename {file}) \
+       --content-type "application/sql"
+
+6. Verify per module:
+   aws s3 ls s3://{bucket}/{env}/{service}/{module}/mongodb/
+   aws s3 ls s3://{bucket}/{env}/{service}/{module}/postgresql/
+
+7. Report uploaded files (full s3:// paths) and any errors. Do NOT abort the whole run if a single file fails — list failures at the end.
+```
+
+**Path convention (matches actual bucket layout):** `s3://{bucket}/{env}/{service}/{module}/{mongodb|postgresql}/{filename}`
 
 ## Output: Dispatch Layer Registration Template
 
