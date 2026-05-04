@@ -1,9 +1,10 @@
 ---
 name: ring:dev-k6-load-testing
 description: |
-  Load testing skill using k6 — ensures services meet performance SLOs under
-  realistic load before merging. Validates throughput, latency percentiles,
-  error rates, and resource behavior under stress.
+  Load testing skill using k6 — generates tests following the Lerian k6 platform
+  conventions for execution on Palantir (Self-Service Testing).
+  Produces product directories, scenario YAMLs, helper clients, and bundleable
+  test scripts compatible with the LerianStudio/k6 platform/ structure.
   Standalone skill, not gated — invoke on demand or as part of CI.
 
 trigger: |
@@ -11,7 +12,7 @@ trigger: |
   - Before production deploy of performance-sensitive changes
   - New API endpoints or significant throughput-path changes
   - Need to validate SLOs under load (latency, error rate, throughput)
-  - CI pipeline requires load test gate
+  - CI pipeline requires load test gate via Palantir
 
 skip_when: |
   - Task is documentation-only, configuration-only, or non-code
@@ -28,320 +29,522 @@ output_schema:
     - name: "Load Test Summary"
       pattern: "^## Load Test Summary"
       required: true
-    - name: "Scenario Results"
-      pattern: "^## Scenario Results"
+    - name: "Files Created"
+      pattern: "^## Files Created"
       required: true
-    - name: "Thresholds"
-      pattern: "^## Thresholds"
+    - name: "Palantir Integration"
+      pattern: "^## Palantir Integration"
       required: true
   metrics:
     - name: result
       type: enum
       values: [PASS, FAIL]
-    - name: scenarios_run
+    - name: scenarios_created
       type: integer
-    - name: peak_vus
-      type: integer
-    - name: p95_latency_ms
-      type: float
-    - name: p99_latency_ms
-      type: float
-    - name: error_rate_pct
-      type: float
-    - name: rps_peak
-      type: float
+    - name: bundle_verified
+      type: boolean
 ---
 
-# k6 Load Testing
+# k6 Load Testing (Palantir Platform)
 
-Performance under load is non-negotiable. This skill generates and runs k6 test scripts that validate service SLOs before code ships.
+This skill generates k6 load tests following the Lerian k6 platform conventions.
+Tests are structured for execution via Palantir (Self-Service Testing) and are
+bundled by webpack into self-contained scripts deployed to EKS via k6-operator.
+
+**Reference repository:** `LerianStudio/k6` — specifically `platform/` directory.
 
 **Block conditions:**
-- p95 latency > threshold = FAIL
-- Error rate > 1% under normal load = FAIL
-- No load tests for new endpoints = FAIL
-- Thresholds not defined in script = FAIL
+- Test script missing `handleSummary` export = FAIL (Palantir can't collect results)
+- `scenario.yaml` param names don't match `__ENV` vars in test.js = FAIL
+- Test doesn't read VUS/DURATION from `__ENV` = FAIL
+- No `checkResponse()` from shared utils = FAIL
+- Missing `product.yaml` = FAIL
 
 ## Step 1: Validate Input
 
 Required:
-- `target_url` — base URL of the service under test (e.g. `http://localhost:3000`)
+- `product` — product name in lowercase (e.g., `midaz`, `tracer`, `reporter`, `matcher`)
 - `endpoints` — list of endpoints to test, each with method, path, and optional payload
-- `language` — project language (go | typescript) for framework-specific guidance
+- `base_port` — local dev port for the product (e.g., 3000 for midaz, 4020 for tracer)
 
 Optional:
-- `scenarios` — custom scenario definitions (default: smoke → load → stress → soak)
-- `thresholds` — custom thresholds (defaults below)
-- `vus_max` — maximum virtual users (default: 100)
-- `duration` — test duration per stage (default: 30s per stage)
-- `auth_header` — authorization header if endpoints require auth
-- `existing_tests` — path to existing k6 scripts to extend
+- `scenario_types` — which scenarios to generate (default: `[smoke, load, stress]`)
+- `auth_type` — `bearer` (default, uses `shared/auth.js`) | `api-key` | `none`
+- `api_key_header` — header name for API key auth (default: `X-API-Key`)
+- `custom_thresholds` — override default thresholds
+- `existing_product` — if true, extend existing product directory
 
-## Step 2: Generate k6 Test Script
+## Step 2: Understand the Platform Structure
 
-Create test file at `load-tests/k6/{service-name}.js` (or `load-tests/k6/{service-name}.ts` for TypeScript projects using k6 with bundler).
+All test code lives under `platform/` in the `LerianStudio/k6` repo:
 
-### Default Thresholds
-
-```javascript
-export const options = {
-  thresholds: {
-    http_req_duration: ['p(95)<500', 'p(99)<1000'],  // ms
-    http_req_failed: ['rate<0.01'],                    // <1% errors
-    http_reqs: ['rate>10'],                            // minimum throughput
-  },
-};
+```
+platform/
+├── products/{product}/
+│   ├── product.yaml              # Product metadata (read by Palantir)
+│   ├── helpers/
+│   │   └── client.js             # HTTP client for this product's API
+│   └── scenarios/
+│       └── {scenario}/
+│           ├── scenario.yaml     # Catalog metadata (read by Palantir)
+│           └── test.js           # k6 test script (webpack entry point)
+├── shared/
+│   ├── auth.js                   # getAuthHeaders(), authenticate()
+│   ├── utils.js                  # checkResponse(), sleepWithJitter(), defaultHandleSummary()
+│   └── palantir/                 # SDK for complex scenarios (fixtures, runtime)
+│       ├── index.js              # scenario(), fixture(), createTestExports()
+│       ├── runtime.js            # Builds k6 exports from config
+│       ├── scenario.js           # Declarative scenario config builder
+│       └── templates.js          # Built-in test type templates (smoke/quick/full/breakpoint/soak)
+├── dist/                         # Webpack output (git-ignored)
+├── build.js                      # Bundler entry point
+├── webpack.config.js             # Auto-discovers products/*/scenarios/*/test.js
+├── config.yaml                   # Platform-level test catalog metadata
+└── package.json
 ```
 
-Override with project-specific values from `PROJECT_RULES.md` or input `thresholds`.
+### Two Patterns for Writing Tests
 
-### Default Scenarios
+**Pattern A: Simple client (recommended for most tests)**
 
-Generate four progressive scenarios:
+Product `helpers/client.js` provides `get()`, `post()`, `patch()`, `del()` scoped to
+the product's base URL. Scenarios import the client and `shared/utils.js` directly.
+
+Used by: smoke, load, stress, soak scenarios for midaz, console, pix.
+
+**Pattern B: Palantir SDK (for complex scenarios with fixtures)**
+
+For scenarios that need declarative fixture setup (create rules, limits, etc.),
+sanity checks, and built-in metric tracking, use the Palantir SDK:
 
 ```javascript
-export const options = {
-  scenarios: {
-    smoke: {
-      executor: 'constant-vus',
-      vus: 1,
-      duration: '30s',
-      tags: { scenario: 'smoke' },
-    },
-    load: {
-      executor: 'ramping-vus',
-      startVUs: 0,
-      stages: [
-        { duration: '30s', target: 50 },
-        { duration: '1m', target: 50 },
-        { duration: '30s', target: 0 },
-      ],
-      startTime: '30s',
-      tags: { scenario: 'load' },
-    },
-    stress: {
-      executor: 'ramping-vus',
-      startVUs: 0,
-      stages: [
-        { duration: '30s', target: 100 },
-        { duration: '1m', target: 100 },
-        { duration: '30s', target: 0 },
-      ],
-      startTime: '3m',
-      tags: { scenario: 'stress' },
-    },
-    soak: {
-      executor: 'constant-vus',
-      vus: 30,
-      duration: '5m',
-      startTime: '5m30s',
-      tags: { scenario: 'soak' },
-    },
-  },
-};
+import { scenario, fixture, createTestExports } from '../../../../shared/palantir/index.js';
 ```
 
-### Script Structure
+Used by: tracer scenarios (pass-through, denied-by-limit, denied-by-rule, complex-approval).
+
+**Choose Pattern A** unless the product requires setup fixtures (rules, limits, etc.) that
+must be created and activated before load can run.
+
+## Step 3: Create Product Files
+
+### 3a. product.yaml
+
+Create `platform/products/{product}/product.yaml`:
+
+```yaml
+product: {product}
+description: "{Product description} - performance tests"
+base_url_env: {PRODUCT}_BASE_URL
+
+defaults:
+  thresholds:
+    http_req_duration: ["p(95)<500", "p(99)<1000"]
+    http_req_failed: ["rate<0.01"]
+  env:
+    API_VERSION: "v1"
+
+tags:
+  - {product}
+  - {relevant-tags}
+```
+
+### 3b. helpers/client.js
+
+Create `platform/products/{product}/helpers/client.js`:
+
+For **bearer auth** (most products):
 
 ```javascript
 import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
+import { getAuthHeaders } from '../../../shared/auth.js';
 
-// Custom metrics
-const errorRate = new Rate('custom_error_rate');
-const latencyTrend = new Trend('custom_latency');
+const BASE_URL = __ENV.{PRODUCT}_BASE_URL || __ENV.TARGET_URL || 'http://localhost:{base_port}';
+const API_VERSION = __ENV.API_VERSION || 'v1';
 
-// Thresholds and scenarios (see above)
-export const options = { /* ... */ };
+export function apiUrl(path) {
+  return `${BASE_URL}/${API_VERSION}${path}`;
+}
 
-// Setup — runs once before test
-export function setup() {
-  // Health check: verify service is reachable
-  const healthRes = http.get(`${BASE_URL}/health`);
-  check(healthRes, {
-    'service is up': (r) => r.status === 200,
+export function get(path, params = {}) {
+  const { headers: extraHeaders, ...restParams } = params;
+  return http.get(apiUrl(path), {
+    ...restParams,
+    headers: { ...getAuthHeaders(), ...extraHeaders },
   });
-  if (healthRes.status !== 200) {
-    throw new Error(`Service not reachable at ${BASE_URL}`);
-  }
-  return { baseUrl: BASE_URL };
 }
 
-// Default function — runs per VU iteration
-export default function (data) {
-  // Group requests by endpoint
-  // Add checks for each response
-  // Track custom metrics
-  // Sleep between iterations (think time)
+export function post(path, body, params = {}) {
+  const { headers: extraHeaders, ...restParams } = params;
+  return http.post(apiUrl(path), JSON.stringify(body), {
+    ...restParams,
+    headers: { ...getAuthHeaders(), ...extraHeaders },
+  });
 }
 
-// Teardown — runs once after test
-export function teardown(data) {
-  // Cleanup if needed
+export function patch(path, body, params = {}) {
+  const { headers: extraHeaders, ...restParams } = params;
+  return http.patch(apiUrl(path), JSON.stringify(body), {
+    ...restParams,
+    headers: { ...getAuthHeaders(), ...extraHeaders },
+  });
+}
+
+export function del(path, params = {}) {
+  const { headers: extraHeaders, ...restParams } = params;
+  return http.del(apiUrl(path), null, {
+    ...restParams,
+    headers: { ...getAuthHeaders(), ...extraHeaders },
+  });
 }
 ```
 
-### Per-Endpoint Pattern
-
-For each endpoint in `endpoints`:
+For **API key auth** (e.g., tracer):
 
 ```javascript
-import { group } from 'k6';
+import http from 'k6/http';
 
-group('POST /api/v1/resource', () => {
-  const payload = JSON.stringify({
-    // From endpoint definition or generated
+const BASE_URL = __ENV.{PRODUCT}_BASE_URL || __ENV.TARGET_URL || 'http://localhost:{base_port}';
+const API_VERSION = __ENV.API_VERSION || 'v1';
+
+function getHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const apiKey = __ENV.{PRODUCT}_API_KEY;
+  if (apiKey) {
+    headers['{api_key_header}'] = apiKey;
+  }
+  return headers;
+}
+
+export function apiUrl(path) {
+  return `${BASE_URL}/${API_VERSION}${path}`;
+}
+
+// ... same get/post/patch/del pattern with getHeaders() ...
+
+export function readiness() {
+  return http.get(`${BASE_URL}/health`, {
+    tags: { name: '{product}_readiness' },
   });
-
-  const params = {
-    headers: {
-      'Content-Type': 'application/json',
-      // auth_header if provided
-    },
-    tags: { endpoint: 'POST /api/v1/resource' },
-  };
-
-  const res = http.post(`${data.baseUrl}/api/v1/resource`, payload, params);
-
-  check(res, {
-    'status is 201': (r) => r.status === 201,
-    'response has id': (r) => r.json('id') !== undefined,
-    'latency < 500ms': (r) => r.timings.duration < 500,
-  });
-
-  errorRate.add(res.status >= 400);
-  latencyTrend.add(res.timings.duration);
-
-  sleep(1); // Think time between requests
-});
+}
 ```
 
-## Step 3: Run Tests
+**Key rules for the client:**
+- `__ENV.TARGET_URL` is the primary URL injected by Palantir SST — always include as fallback
+- Product-specific env var (`{PRODUCT}_BASE_URL`) allows override in multi-product environments
+- Never hardcode auth credentials — read from `__ENV`
 
-### Prerequisites Check
+## Step 4: Create Scenario Files
 
-```bash
-# Verify k6 is installed
-which k6 || echo "k6 not found — install: brew install k6 | go install go.k6.io/k6@latest | docker pull grafana/k6"
+### 4a. scenario.yaml (per scenario)
 
-# Verify target service is running
-curl -sf ${TARGET_URL}/health || echo "Service not reachable"
-```
-
-### Execution
-
-```bash
-# Run with JSON output for parsing
-k6 run load-tests/k6/${SERVICE_NAME}.js \
-  --out json=load-tests/k6/results/${SERVICE_NAME}-$(date +%Y%m%d-%H%M%S).json \
-  --summary-trend-stats="avg,min,med,max,p(90),p(95),p(99)" \
-  2>&1 | tee load-tests/k6/results/${SERVICE_NAME}-latest.log
-```
-
-If k6 is not installed locally, use Docker:
-
-```bash
-docker run --rm -i \
-  --network=host \
-  -v $(pwd)/load-tests/k6:/scripts \
-  grafana/k6 run /scripts/${SERVICE_NAME}.js
-```
-
-### CI Integration (optional)
+Create `platform/products/{product}/scenarios/{type}/scenario.yaml`:
 
 ```yaml
-# GitHub Actions example
-load-test:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - uses: grafana/setup-k6-action@v1
-    - uses: grafana/run-k6-action@v1
-      with:
-        path: load-tests/k6/${{ matrix.service }}.js
+name: "{Scenario Display Name}"
+description: "{What this scenario validates}"
+type: {smoke|load|stress|soak|functional}
+tags: [{type}, {relevant-tags}]
+
+defaults:
+  vus: {default_vus}
+  duration: "{default_duration}"
+  parallelism: 1
+
+params:
+  - name: VUS
+    label: "Virtual Users"
+    type: number
+    default: "{default_vus}"
+    description: "Number of concurrent virtual users"
+  - name: DURATION
+    label: "Test Duration"
+    type: string
+    default: "{default_duration}"
+    description: "How long the test runs (e.g. 1m, 5m, 30s)"
 ```
 
-## Step 4: Analyze Results
+**Rules:**
+- Every `params[].name` MUST match a `__ENV.XXX` variable read in test.js
+- `type` must be one of: smoke, load, stress, soak, breakpoint, capacity, functional
+- `defaults` define what Palantir pre-fills in the form
 
-Parse k6 output and evaluate against thresholds.
+### Default values per scenario type
 
-### Pass Criteria
+| Type | VUs | Duration | Thresholds |
+|------|-----|----------|------------|
+| smoke | 3-5 | 1m | p(95)<500 |
+| load | 50 | 10m | p(95)<300, p(99)<500 |
+| stress | 100-200 | 5m | p(95)<500, p(99)<1000 |
+| soak | 30 | 30m-2h | p(95)<300, p(99)<500 |
 
-| Metric | Default Threshold | Result |
-|--------|-------------------|--------|
-| p95 latency | < 500ms | PASS/FAIL |
-| p99 latency | < 1000ms | PASS/FAIL |
-| Error rate | < 1% | PASS/FAIL |
-| Min throughput | > 10 req/s | PASS/FAIL |
+### 4b. test.js (Pattern A — Simple)
 
-### Failure Analysis
+Create `platform/products/{product}/scenarios/{type}/test.js`:
 
-If any threshold fails:
-1. Identify which scenario triggered the failure (smoke/load/stress/soak)
-2. Check if failure is at specific VU count (capacity limit) or gradual degradation
-3. Correlate with endpoint — which endpoints are slowest?
-4. Check error types — timeouts vs 5xx vs connection refused
-5. Recommend: profile endpoint, check DB queries, review connection pool sizing
+**Smoke test:**
 
-## Step 5: Output Report
+```javascript
+import { sleep } from 'k6';
+import { get } from '../../helpers/client.js';
+import { checkResponse, sleepWithJitter, defaultHandleSummary } from '../../../../shared/utils.js';
+
+export const options = {
+  vus: __ENV.VUS ? parseInt(__ENV.VUS) : 5,
+  duration: __ENV.DURATION || '1m',
+  thresholds: {
+    http_req_duration: ['p(95)<500'],
+    http_req_failed: ['rate<0.01'],
+  },
+};
+
+export default function () {
+  // Health/readiness check
+  const healthRes = get('/health');
+  checkResponse(healthRes, 200, 'health check');
+
+  // Representative API calls for this product
+  const res = get('/{resource}');
+  checkResponse(res, 200, 'list {resource}');
+
+  sleep(sleepWithJitter(1));
+}
+
+// MANDATORY: Palantir results collection
+export { defaultHandleSummary as handleSummary };
+```
+
+**Load test (with ramp-up stages):**
+
+```javascript
+import { sleep } from 'k6';
+import { get, post } from '../../helpers/client.js';
+import { checkResponse, sleepWithJitter, randomString, defaultHandleSummary } from '../../../../shared/utils.js';
+
+const VUS = __ENV.VUS ? parseInt(__ENV.VUS) : 50;
+const DURATION = __ENV.DURATION || '10m';
+const RAMP_UP = __ENV.RAMP_UP || '2m';
+
+export const options = {
+  stages: [
+    { duration: RAMP_UP, target: VUS },
+    { duration: DURATION, target: VUS },
+    { duration: '1m', target: 0 },
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<300', 'p(99)<500'],
+    http_req_failed: ['rate<0.01'],
+  },
+};
+
+export default function () {
+  // Product-specific API flow
+  // Example: list → get → create cycle
+  const listRes = get('/{resource}');
+  checkResponse(listRes, 200, 'list {resource}');
+
+  if (listRes.status === 200) {
+    const items = JSON.parse(listRes.body);
+    if (items.items && items.items.length > 0) {
+      const id = items.items[0].id;
+      const detailRes = get(`/{resource}/${id}`);
+      checkResponse(detailRes, 200, 'get {resource}');
+    }
+  }
+
+  sleep(sleepWithJitter(0.5, 0.3));
+}
+
+export { defaultHandleSummary as handleSummary };
+```
+
+**Stress test:**
+
+```javascript
+import { sleep } from 'k6';
+import { get, post } from '../../helpers/client.js';
+import { checkResponse, sleepWithJitter, randomString, defaultHandleSummary } from '../../../../shared/utils.js';
+
+const VUS = __ENV.VUS ? parseInt(__ENV.VUS) : 100;
+const DURATION = __ENV.DURATION || '5m';
+const RAMP_UP = __ENV.RAMP_UP || '1m';
+
+export const options = {
+  stages: [
+    { duration: RAMP_UP, target: VUS },
+    { duration: DURATION, target: VUS },
+    { duration: '30s', target: 0 },
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500', 'p(99)<1000'],
+    http_req_failed: ['rate<0.02'],
+  },
+};
+
+export default function () {
+  // Higher-intensity flow: mixed reads + writes
+  // Adapt to product's critical path
+
+  sleep(sleepWithJitter(0.3, 0.2));
+}
+
+export { defaultHandleSummary as handleSummary };
+```
+
+### 4c. test.js (Pattern B — Palantir SDK with Fixtures)
+
+For products that need fixture setup (like Tracer with rules/limits):
+
+```javascript
+import { scenario, fixture, createTestExports } from '../../../../shared/palantir/index.js';
+import * as client from '../../helpers/client.js';
+
+const config = scenario({
+  name: '{Scenario Name}',
+  fixtures: [
+    fixture.rule({
+      expression: '{CEL expression}',
+      action: 'ALLOW',
+      description: '{rule description}',
+    }),
+    fixture.limit({
+      limitType: 'DAILY',
+      maxAmount: 999000000,
+      description: '{limit description}',
+    }),
+  ],
+  sanity: {
+    expectedDecision: 'ALLOW',
+  },
+  thresholds: {
+    'http_req_duration': ['p(95)<500', 'p(99)<1000'],
+    'txn_correctness_rate': ['rate>0.99'],
+    'txn_error_rate': ['rate<0.01'],
+  },
+});
+
+function buildPayload() {
+  return {
+    // Product-specific payload
+  };
+}
+
+function checks(body) {
+  return {
+    'decision is ALLOW': () => body.decision === 'ALLOW',
+    // Product-specific checks
+  };
+}
+
+const test = createTestExports({ config, client, buildPayload, checks });
+export const options = test.options;
+export const setup = test.setup;
+export default test.default;
+export const handleSummary = test.handleSummary;
+```
+
+## Step 5: Build and Verify
+
+```bash
+cd platform
+npm install          # first time only
+npm run build        # webpack bundles all scenarios
+```
+
+Verify bundle was created:
+
+```bash
+ls -la dist/{product}/
+# Expected: {scenario}.bundle.js for each scenario
+```
+
+Verify bundle runs locally:
+
+```bash
+# With product running locally
+k6 run dist/{product}/smoke.bundle.js
+
+# Override target URL
+k6 run -e TARGET_URL=http://localhost:{port} dist/{product}/smoke.bundle.js
+```
+
+## Step 6: Mandatory Checklist
+
+Before marking complete, verify ALL items:
+
+- [ ] `products/{product}/product.yaml` exists with `base_url_env` and default thresholds
+- [ ] `products/{product}/helpers/client.js` exists with `TARGET_URL` fallback
+- [ ] At least `scenarios/smoke/` exists with both `scenario.yaml` and `test.js`
+- [ ] Every `scenario.yaml` param `name` matches a `__ENV.XXX` in `test.js`
+- [ ] Every `test.js` exports `handleSummary` (re-export `defaultHandleSummary`)
+- [ ] Every `test.js` reads `VUS` and `DURATION` from `__ENV`
+- [ ] Every `test.js` defines `thresholds` in `options`
+- [ ] Every `test.js` uses `checkResponse()` from `shared/utils.js`
+- [ ] `npm run build` succeeds and produces bundles in `dist/{product}/`
+- [ ] Bundle runs locally with `k6 run dist/{product}/smoke.bundle.js`
+
+## Environment Variables Reference
+
+### Injected by Palantir SST (available in all tests)
+
+| Variable | Description |
+|----------|-------------|
+| `TARGET_URL` | Base URL of the product under test |
+| `VUS` | Number of virtual users |
+| `DURATION` | Test duration (e.g., `30s`, `5m`) |
+| `ENVIRONMENT_ID` | SST environment UUID |
+| `K6_TESTID` | Test run UUID (for Grafana filtering) |
+
+### Authentication (from shared/auth.js)
+
+| Variable | Description |
+|----------|-------------|
+| `AUTH_TOKEN` | Bearer token (takes priority) |
+| `AUTH_USER` / `AUTH_PASS` | Basic auth credentials |
+| `AUTH_URL` | OAuth token endpoint |
+| `AUTH_CLIENT_ID` | OAuth client ID |
+| `AUTH_CLIENT_SECRET` | OAuth client secret |
+
+### Shared Utilities (from shared/utils.js)
+
+| Function | Description |
+|----------|-------------|
+| `checkResponse(res, status?, label?)` | Asserts status + duration <5s, tracks `custom_error_rate` and `custom_request_duration` |
+| `sleepWithJitter(base?, jitter?)` | Returns `base + random(0, jitter)` — avoids thundering herd |
+| `defaultHandleSummary(data)` | Writes summary JSON to `/tmp/summary.json` + stdout markers for SST collection |
+| `randomString(length?)` | Random alphanumeric string |
+
+## Output Report
 
 ```markdown
 ## Load Test Summary
 
 | Metric | Value |
 |--------|-------|
-| Result | PASS/FAIL |
-| Scenarios | smoke ✅, load ✅, stress ⚠️, soak ✅ |
-| Peak VUs | 100 |
-| Total Requests | 12,345 |
-| Duration | 10m 30s |
+| Result | PASS |
+| Product | {product} |
+| Scenarios Created | smoke, load, stress |
+| Pattern | A (Simple client) / B (Palantir SDK) |
 
-## Scenario Results
+## Files Created
 
-### Smoke (1 VU, 30s)
-- Avg latency: 45ms | p95: 82ms | p99: 120ms
-- Error rate: 0%
-- RPS: 22
+| File | Purpose |
+|------|---------|
+| `platform/products/{product}/product.yaml` | Product metadata |
+| `platform/products/{product}/helpers/client.js` | HTTP client |
+| `platform/products/{product}/scenarios/smoke/scenario.yaml` | Smoke catalog |
+| `platform/products/{product}/scenarios/smoke/test.js` | Smoke test |
+| `platform/products/{product}/scenarios/load/scenario.yaml` | Load catalog |
+| `platform/products/{product}/scenarios/load/test.js` | Load test |
 
-### Load (50 VUs, 2m)
-- Avg latency: 120ms | p95: 280ms | p99: 450ms
-- Error rate: 0.2%
-- RPS: 850
+## Palantir Integration
 
-### Stress (100 VUs, 2m)
-- Avg latency: 350ms | p95: 680ms | p99: 1200ms
-- Error rate: 1.5%
-- RPS: 1100
+- Bundle path: `dist/{product}/{scenario}.bundle.js`
+- Build verified: ✅
+- Local run verified: ✅ (smoke @ localhost:{port})
 
-### Soak (30 VUs, 5m)
-- Avg latency: 95ms | p95: 210ms | p99: 380ms
-- Error rate: 0.1%
-- RPS: 520
-
-## Thresholds
-
-| Threshold | Target | Actual | Status |
-|-----------|--------|--------|--------|
-| http_req_duration p(95) | < 500ms | 680ms | ❌ FAIL |
-| http_req_duration p(99) | < 1000ms | 1200ms | ❌ FAIL |
-| http_req_failed | < 1% | 1.5% | ❌ FAIL |
-| http_reqs rate | > 10/s | 1100/s | ✅ PASS |
-
-## Recommendations
-- Stress scenario exceeded latency thresholds at 100 VUs
-- Investigate: [specific endpoint] accounts for 60% of p99 latency
-- Consider: connection pool sizing, query optimization, caching
+## Next Steps
+- Push to `LerianStudio/k6` repository
+- Verify in Palantir UI: product appears in catalog with all scenarios
+- Run smoke test via SST to validate end-to-end flow
 ```
-
-## Conventions
-
-- **File location:** `load-tests/k6/` directory at project root
-- **Naming:** `{service-name}.js` or `{service-name}.{scenario}.js` for split files
-- **Results:** `load-tests/k6/results/` — gitignored
-- **Shared utilities:** `load-tests/k6/lib/` for auth helpers, data generators
-- **Environment config:** use k6 `__ENV` for target URL, auth tokens
-- **Think time:** always include `sleep()` between iterations to simulate real users
-- **Checks:** every request must have at least one `check()` assertion
-- **Tags:** tag requests with endpoint name for per-endpoint analysis
-- **Idempotency:** tests should be safe to run repeatedly (use unique IDs, clean up in teardown)
