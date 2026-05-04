@@ -132,7 +132,10 @@ Generate gap analysis:
 
 For each missing index, generate a `.up.json` and `.down.json` file pair. Each index is an atomic migration — one file pair per index, NOT grouped by collection.
 
-**Directory:** `scripts/mongodb/` (create if it doesn't exist)
+**Directory (per module):** `{component_path}/scripts/mongodb/` (create if it doesn't exist)
+For single-component services this resolves to `scripts/mongodb/` at the repo root. For unified services with multiple components, each module writes to its own component path so Phase 6 can map files back to modules unambiguously.
+
+**Module tracking (MANDATORY):** as files are written, append each pair to `module.generated_migration_files = [{up_file, down_file, index_name}, ...]`. Phase 6 (S3 upload, opt-in) iterates this array per module — without it, the upload phase has no reliable file→module mapping in multi-component services.
 
 **Index naming convention:**
 - Standard: `idx_{collection}_{field1}_{field2}` (e.g., `idx_connection_org_config_name`)
@@ -155,12 +158,14 @@ which are inconsistent across environments and break down migrations.
 ### Generation Flow
 
 ```text
-1. Determine next sequence number:
-   - Glob: scripts/mongodb/*.up.json
+For EACH module with `missing_migration` entries (sequence is per-module):
+
+1. Determine next sequence number for this module:
+   - Glob: {component_path}/scripts/mongodb/*.up.json
    - Extract highest NNNNNN from existing files
    - next_seq = highest + 1 (or 1 if no files exist)
 
-2. For EACH missing index (from index_coverage.missing_migration):
+2. For EACH missing index in this module (from index_coverage.missing_migration):
    a. Compute index_name from keys using naming convention above
    b. Generate .up.json (MUST use "indexes" array wrapper):
       {
@@ -183,15 +188,19 @@ which are inconsistent across environments and break down migrations.
         "collection": "{collection}",
         "indexNames": ["{index_name}"]
       }
-   d. Write both files to scripts/mongodb/
-   e. Increment sequence number
+   d. Write both files to {component_path}/scripts/mongodb/
+   e. Append {up_file, down_file, index_name} to module.generated_migration_files
+   f. Increment sequence number
 
-3. Example output for 2 missing indexes:
-   scripts/mongodb/
-   ├── 000001_idx_connection_org_config_name.up.json
-   ├── 000001_idx_connection_org_config_name.down.json
-   ├── 000002_idx_connection_org_created.up.json
-   └── 000002_idx_connection_org_created.down.json
+3. Example output for a unified service with 2 modules (onboarding, transaction):
+   components/onboarding/scripts/mongodb/
+   ├── 000001_idx_metadata_tenant_id.up.json
+   ├── 000001_idx_metadata_tenant_id.down.json
+   components/transaction/scripts/mongodb/
+   ├── 000001_idx_account_external_id.up.json
+   └── 000001_idx_account_external_id.down.json
+
+   For a single-component service, files land at scripts/mongodb/ at the repo root.
 ```
 
 ### .up.json Template

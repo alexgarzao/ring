@@ -111,16 +111,16 @@ Cross-reference across modules: same database name in 2+ modules = shared (provi
 **Only execute if MongoDB was detected in any module during Phase 3.**
 
 Execute the procedure in `references/mongodb-index-detection.md` — Steps 1, 2, 3, 4 only.
-Do NOT execute Step 3.5 (S3 validation) — skipped per design.
-Do NOT execute Step 5 (S3 upload) — handled in Phase 6 (opt-in).
+(Detection and local generation only; S3 upload is handled in Phase 6.)
 
 1. **Step 1** — Detect in-code index definitions (`EnsureIndexes`, `IndexModel`, `CreateIndex`) per module.
-2. **Step 2** — Detect existing local migration files in `scripts/mongodb/*.up.json` + `*.down.json` (fallback legacy `*.js`). LOCAL ONLY — no S3 lookup.
+2. **Step 2** — Detect existing local migration files in `{component_path}/scripts/mongodb/*.up.json` + `*.down.json` (fallback legacy `*.js`). LOCAL ONLY — no S3 lookup.
 3. **Step 3** — Cross-reference code vs. local migration files, classify each as `covered` / `missing_migration` / `migration_only`.
 4. **Step 4** — Generate one `.up.json` + `.down.json` file pair per missing index (atomic per index, NOT grouped by collection):
-   - Path: `scripts/mongodb/{NNNNNN}_{index_name}.up.json` / `.down.json`
+   - Path: `{component_path}/scripts/mongodb/{NNNNNN}_{index_name}.up.json` / `.down.json` — per-module directory preserves ownership for Phase 6 upload (single-component services resolve `{component_path}` to repo root)
    - Naming: `idx_{collection}_{fields}` (or `uniq_*` for uniqueness business rules)
    - HARD GATE: every `.up.json` MUST have explicit `"options.name"` matching the file name
+   - **Track per module:** populate `module.generated_migration_files = [{up_file, down_file, index_name}, ...]` so Phase 6 knows exactly which files belong to which module
 
 **Format reminder:** the dispatch layer reads `.up.json` / `.down.json` from S3 and applies indexes on tenant provisioning. The service does NOT execute these files. Legacy `.js` scripts are NOT uploaded — only JSON migrations.
 
@@ -187,14 +187,16 @@ Style: clean, data-dense table layout
    d. Verify access: `aws s3 ls s3://{bucket}/{env}/ 2>&1`. If access denied or 404 → abort, report error.
 
 4. Upload Mongo files (per module, best-effort — continue on individual failures):
-   for each .up.json/.down.json pair in scripts/mongodb/ that maps to {module}:
-     aws s3 cp {file} s3://{bucket}/{env}/{service}/{module}/mongodb/$(basename {file}) \
-       --content-type "application/json"
+   for each module with module.generated_migration_files populated in Phase 4:
+     for each {up_file, down_file} in module.generated_migration_files:
+       aws s3 cp {up_file}   s3://{bucket}/{env}/{service}/{module}/mongodb/$(basename {up_file})   --content-type "application/json"
+       aws s3 cp {down_file} s3://{bucket}/{env}/{service}/{module}/mongodb/$(basename {down_file}) --content-type "application/json"
 
 5. Upload Postgres files (per module, best-effort):
-   for each .up.sql/.down.sql pair found in Phase 4.5 that maps to {module}:
-     aws s3 cp {file} s3://{bucket}/{env}/{service}/{module}/postgresql/$(basename {file}) \
-       --content-type "application/sql"
+   for each module with module.postgres_migrations populated in Phase 4.5:
+     for each {up_file, down_file} in module.postgres_migrations:
+       aws s3 cp {up_file}   s3://{bucket}/{env}/{service}/{module}/postgresql/$(basename {up_file})   --content-type "application/sql"
+       aws s3 cp {down_file} s3://{bucket}/{env}/{service}/{module}/postgresql/$(basename {down_file}) --content-type "application/sql"
 
 6. Verify per module:
    aws s3 ls s3://{bucket}/{env}/{service}/{module}/mongodb/
