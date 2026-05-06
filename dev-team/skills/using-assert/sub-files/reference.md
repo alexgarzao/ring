@@ -862,6 +862,56 @@ Expected failures use normal error returns. They do NOT need the trident because
 - They are not bugs (no operator action needed for each occurrence)
 - They are already handled by domain-level metrics (e.g., HTTP error rate, DB error counter)
 
+### The additive mode — `assert` AND `error` together
+
+A choice the three-way table doesn't capture: when the same call site benefits from
+BOTH the trident (operator dashboard signal) AND the returned sentinel (caller can
+`errors.Is` and recover). The trident is purely additive — it logs / traces / increments
+the metric, then the caller's documented sentinel propagates unchanged.
+
+This mode is the right call when **all three** conditions hold:
+
+| Condition | What it means |
+|-----------|---------------|
+| **Deploy-bound firing** | The check runs at construction / bootstrap / config-load — once per process startup, not once per request. A misconfiguration fires the trident exactly once until an operator fixes it. |
+| **Operator-actionable** | The signal points at something an operator can fix in env vars, build wiring, or catalog construction — not something a user needs to retry differently. |
+| **Sentinel still propagates** | The asserter call is purely additive; the original caller-correctable sentinel (`errors.Is` matchable, `IsCallerError`-classified) still flows back up the stack. |
+
+When all three hold, asserting on a caller-correctable sentinel is correct, even though
+the strict reading of the three-way table ("user input → error") would suggest otherwise.
+The trident is a **deploy-time loud signal**, not per-request noise — its cardinality is
+bounded by misconfiguration count, not request volume.
+
+Examples that fit additive mode:
+
+- `LoadConfig()` rejecting `STREAMING_CB_FAILURE_RATIO=2.5` — env-var typo, fires once
+  at bootstrap, sentinel `ErrInvalidConfigField` still wraps the failure.
+- `Builder.Target("primary\nattacker").Build()` — control-char in target name, fires
+  once at construction, sentinel `ErrInvalidRouteDefinition` still propagates.
+- `NewCatalog(...)` rejecting duplicate `(ResourceType, EventType, SchemaVersion)` —
+  caller wired the catalog wrong, fires once at construction, sentinel
+  `ErrDuplicateEventDefinition` still propagates.
+- `NewEventDefinition` with malformed semver in `SchemaVersion` — caller's catalog row
+  is wrong, fires at catalog construction, sentinel still propagates.
+
+Examples that do NOT fit additive mode (use plain `error`, no trident):
+
+- `Emit(req)` rejecting an oversized payload on every call — traffic-bound; would burn
+  metric volume proportional to QPS for a misbehaving client. The transport / domain
+  error counter already covers this shape with better labels.
+- `validateRequestBody` at an HTTP edge — user input, expected at any rate.
+- A per-request status-transition predicate failing — the domain-level error metric
+  already counts it.
+
+★ Insight ─────────────────────────────────────
+The diagnostic question is not "did the caller make a mistake?" — it's "**how many times
+will this fire if the mistake exists?**" Once-per-deploy = trident is value-add.
+Once-per-request = trident is noise. The original three-way decision tree collapses
+these into one cell; real systems have both shapes, and treating them the same either
+gives up dashboard signal at deploy time (too strict) or floods dashboards during
+incidents (too loose).
+─────────────────────────────────────────────────
+
 ### Worked examples
 
 | Scenario                                                       | Choice | Reasoning                                                                                                                                   |
@@ -879,6 +929,12 @@ Expected failures use normal error returns. They do NOT need the trident because
 | Impossible `default:` branch in exhaustive switch over enum      | assert | Invariant via `a.Never(ctx, ...)`                                                                                                            |
 | JWT signature invalid                                            | error  | Expected failure — auth boundary rejection                                                                                                   |
 | Double-entry debits != credits at posting time                   | assert | Invariant — accounting law                                                                                                                   |
+| `STREAMING_CB_FAILURE_RATIO=2.5` rejected at `LoadConfig`        | assert AND error | Additive mode — construction-time, deploy-bound, operator-actionable. Sentinel `ErrInvalidConfigField` still propagates.          |
+| `Builder.Target("name\nattacker")` rejected at construction      | assert AND error | Additive mode — construction-time, deploy-bound. Sentinel `ErrInvalidRouteDefinition` still propagates.                           |
+| `NewCatalog` rejects duplicate `(Resource, Event, Version)`      | assert AND error | Additive mode — construction-time, deploy-bound. Sentinel `ErrDuplicateEventDefinition` still propagates.                         |
+| `NewEventDefinition` rejects malformed semver SchemaVersion      | assert AND error | Additive mode — construction-time. Catches the misconfiguration once at deploy instead of once per Emit.                          |
+| `Emit(req)` rejects oversized payload (per-request)              | error  | Traffic-bound caller mistake — plain error, no trident. See anti-pattern #7. Use a domain-level counter at the edge if you need a metric. |
+| Per-request status-transition predicate fails on user input      | error  | Traffic-bound — domain error metric already counts it.                                                                                       |
 
 ★ Insight ─────────────────────────────────────
 The question "panic, assert, or error?" has a simple diagnostic: **who is responsible
@@ -982,7 +1038,7 @@ sweeps surface across a whole codebase.
 
 ## 10. Anti-Pattern Catalog
 
-Six anti-patterns with consequences. Each is a one-way door — once in production, the
+Seven anti-patterns with consequences. Each is a one-way door — once in production, the
 damage compounds.
 
 ### 1. `panic()` for invariants
@@ -1065,6 +1121,42 @@ ErrorHandler: func(c *fiber.Ctx, err error) error {
 embedded in the string, not as log fields. Operators cannot filter/group logs by these
 dimensions. Incident triage requires correlating by timestamp to the span event to
 recover the structure.
+
+### 7. Asserter on hot-path-evaluated caller input
+
+```go
+// BEFORE — anti-pattern: asserter on per-request caller input:
+func (p *Producer) Emit(ctx context.Context, req EmitRequest) error {
+    a := assert.New(ctx, p.logger, "producer", "emit-payload-cap")
+    if err := a.That(ctx, len(req.Payload) <= maxBytes,
+        "payload exceeds cap",
+        "size", len(req.Payload), "cap", maxBytes); err != nil {
+        return ErrPayloadTooLarge
+    }
+    // ...
+}
+```
+
+**Consequence:** A misbehaving client sending oversized payloads at full request rate
+fires `assertion_failed_total` at `req/s × bad-client-share` for the lifetime of the
+problem. The signal is real but redundant — the existing transport / domain error
+counter already captures the same shape with better labels (per-client, per-resource,
+per-event). The asserter trident becomes incident-time noise that must be filtered out
+of dashboards, and at high QPS it allocates one `*AssertionError` per bad request.
+
+**The fix:** Use plain error returns for traffic-bound caller mistakes. Reserve the
+trident for **deploy-bound** caller mistakes (Section 8 "additive mode") and for
+invariant violations (the original three-way table). If you need a metric for "how
+often clients send bad input," create a domain-specific counter at the edge — don't
+repurpose `assertion_failed_total` for it.
+
+★ Insight ─────────────────────────────────────
+This is the mirror image of Anti-Pattern #2 (silent invariant return). #2 is "no
+trident where there should be one"; #7 is "trident where there shouldn't be one." Both
+end with operators unable to trust the dashboard: #2 hides bugs, #7 buries them in
+noise. The discriminator between #7 and Section 8's additive mode is firing rate —
+not whether the caller made the mistake.
+─────────────────────────────────────────────────
 
 ---
 
