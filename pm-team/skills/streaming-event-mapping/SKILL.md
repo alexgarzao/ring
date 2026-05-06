@@ -43,10 +43,11 @@ Orchestrates 3-pass codebase discovery to produce an event catalog and instrumen
 
 ## Streaming Architecture
 
-lib-streaming is a producer-only, write-only event-emission library for Lerian Go services. Events are emitted via `producer.Emit(ctx, EmitRequest{DefinitionKey, TenantID, Subject, Payload})`. Wire format: CloudEvents 1.0 binary mode for Kafka. Topics shared across tenants; tenant carried on `ce-tenantid` header.
+lib-streaming is a producer-only, write-only event-emission library for Lerian Go services. Events are emitted via `emitter.Emit(ctx, EmitRequest{DefinitionKey, TenantID, Subject, Payload})` against the `streaming.Emitter` interface (constructed via `streaming.NewBuilder().Catalog(...).Build(ctx)`). Wire format: CloudEvents 1.0 binary mode. Each `RouteDefinition` selects a transport — Kafka, SQS, RabbitMQ, EventBridge, or Custom. Per-tenant SaaS subscription remains the primary delivery model regardless of transport; Kafka topic naming is `lerian.streaming.<resource>.<event>[.vN]` with tenant carried on the `ce-tenantid` CloudEvents header.
 
 **WebFetch canonical docs:** `https://raw.githubusercontent.com/LerianStudio/lib-streaming/main/doc.go`
 **WebFetch agent constraints:** `https://raw.githubusercontent.com/LerianStudio/lib-streaming/main/AGENTS.md`
+**WebFetch changelog:** `https://raw.githubusercontent.com/LerianStudio/lib-streaming/main/CHANGELOG.md`
 
 ## Scope Fence
 
@@ -171,6 +172,7 @@ Orchestrator merges all `_pass3-*.json` events into `docs/streaming/instrumentat
 - `description` ≥40 chars, `payload_sketch` ≥1 field
 - Delivery policy matches canonical posture mapping for non-CUSTOM
 - CUSTOM has `posture_rationale` ≥80 chars
+- `delivery_policy.enabled` present and boolean (typically `true`); `direct ∈ {"direct","skip"}`, `outbox ∈ {"never","fallback_on_circuit_open","always"}`, `dlq ∈ {"never","on_routable_failure"}` — these are the lib-streaming mode strings the dev skill will emit verbatim
 
 Validation failures → re-dispatch failing segment's Pass 3 with correction notes. Do NOT manually edit JSON.
 

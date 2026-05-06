@@ -13,7 +13,7 @@ trigger: |
   - User requests streaming instrumentation for a Go service with a validated
     docs/streaming/instrumentation-map.json from ring:streaming-event-mapping
   - Task mentions "wire lib-streaming", "instrument streaming events", "implement event emission",
-    "add streaming.NewProducer", "Emit business events", "lib-streaming bootstrap"
+    "add streaming.NewBuilder", "Emit business events", "lib-streaming bootstrap"
 
 skip_when: |
   - Service is not a Go project
@@ -30,15 +30,18 @@ TDD mandatory for all implementation gates (RED → GREEN → REFACTOR).
 
 lib-streaming: producer-only event-emission library. Three-step lifecycle:
 
-1. `streaming.NewCatalog([]EventDefinition)` — declare every event up-front (immutable)
-2. `streaming.NewProducer(ctx, cfg, opts...)` with `WithCatalog(catalog)` — opens connections
-3. `producer.Emit(ctx, EmitRequest{DefinitionKey, TenantID, Subject, Payload})` from handlers/workers
+1. `streaming.NewCatalog(definitions ...EventDefinition) (Catalog, error)` — declare every event up-front (immutable)
+2. `streaming.NewBuilder().Source(...).Catalog(catalog).Routes(...).Target(...).Logger(...).MetricsFactory(...).Tracer(...).CircuitBreakerManager(...).OutboxRepository(...).Build(ctx)` — Builder pattern returns `(Emitter, error)`. There is NO `NewProducer` constructor; `*streaming.Producer` is reachable only by type-asserting the `Emitter` returned from `Build(ctx)`, and only when lifecycle methods (`Run`, `RunContext`, `RegisterOutboxRelay`) are needed.
+3. `emitter.Emit(ctx, EmitRequest{DefinitionKey, TenantID, Subject, Payload})` from handlers/workers
 
-Wire format: CloudEvents 1.0 binary mode for Kafka. Topic: `lerian.streaming.<resource>.<event>[.vN]`.
+The `Emitter` interface has THREE methods — `Emit(ctx, EmitRequest) error`, `Close() error`, `Healthy(ctx) error`. Mocks and adapters MUST implement all three.
+
+Wire format: CloudEvents 1.0 binary mode. Each `RouteDefinition` picks a transport: Kafka (topic `lerian.streaming.<resource>.<event>[.vN]`), SQS (queue URL), RabbitMQ (exchange + routing key), EventBridge (bus name), or Custom. Tenant carried on `ce-tenantid` header for CloudEvents-binary transports.
 
 **WebFetch URLs (include in every gate dispatch):**
 - `https://raw.githubusercontent.com/LerianStudio/lib-streaming/main/doc.go`
 - `https://raw.githubusercontent.com/LerianStudio/lib-streaming/main/AGENTS.md`
+- `https://raw.githubusercontent.com/LerianStudio/lib-streaming/main/CHANGELOG.md`
 
 **Three delivery postures:**
 
@@ -61,11 +64,11 @@ Wire format: CloudEvents 1.0 binary mode for Kafka. Topic: `lerian.streaming.<re
 
 | Implementation | When | Construction |
 |----------------|------|--------------|
-| `*streaming.Producer` | `STREAMING_ENABLED=true` | `streaming.NewProducer(ctx, cfg, opts...)` |
+| `*streaming.Producer` (returned as `Emitter`) | `STREAMING_ENABLED=true` | `streaming.NewBuilder().Catalog(catalog).Source(src).Routes(routes...).Target(target).Logger(log).MetricsFactory(mf).Tracer(tr).Build(ctx)` |
 | NoopEmitter | `STREAMING_ENABLED=false` | `streaming.NewNoopEmitter()` |
 | `*streamingtest.MockEmitter` | Tests | `streamingtest.NewMockEmitter()` |
 
-Service code depends on `streaming.Emitter` INTERFACE. MUST NOT use `*Producer` directly.
+Service code depends on `streaming.Emitter` INTERFACE. MUST NOT type-assert to `*Producer` except in bootstrap to wire `Run(launcher)` / `RunContext(ctx, launcher)` / `RegisterOutboxRelay(registry)`. All three implementations satisfy the full three-method interface (`Emit`, `Close`, `Healthy`).
 
 **Mandatory agent instruction (include in EVERY dispatch):**
 
@@ -82,7 +85,7 @@ Service code depends on `streaming.Emitter` INTERFACE. MUST NOT use `*Producer` 
 | 1 | Codebase Analysis | Always | ring:codebase-explorer |
 | 1.5 | Visual Implementation Preview | Always; user must approve | ring:visualize |
 | 2 | lib-streaming Dependency + Non-Canonical Removal | Skip only if lib-streaming pinned AND zero non-canonical detected | ring:backend-engineer-golang |
-| 3 | Catalog Construction + Producer Bootstrap | Always | ring:backend-engineer-golang |
+| 3 | Catalog Construction + Builder Bootstrap | Always | ring:backend-engineer-golang |
 | 4 | Emit Instrumentation per Eventable Point | Always | ring:backend-engineer-golang |
 | 5 | Outbox Wiring | Required if any event has `outbox != "never"` | ring:backend-engineer-golang |
 | 6 | Manifest HTTP Mount | Required unless service has zero HTTP surface | ring:backend-engineer-golang |
@@ -106,7 +109,7 @@ grep -rn "postgresql\|pgx" internal/ go.mod
 grep -rn "outbox" go.mod
 grep -rn "fiber\|gin\|echo\|net/http" internal/
 # Existing lib-streaming code:
-grep -rn "streaming.New\|streaming.Emitter\|streaming.Producer" internal/
+grep -rn "streaming.NewBuilder\|streaming.NewCatalog\|streaming.NewNoopEmitter\|streaming.Emitter\|streaming.Producer" internal/
 # Non-canonical (must remove):
 grep -rn "sarama\|watermill\|segmentio/kafka-go\|amqp091.Publish\|franz-go" internal/
 ```
@@ -121,9 +124,13 @@ CRITICAL events must have outbox = "always"
 ```
 
 **Phase 3: Existing Compliance Audit** (if lib-streaming code detected)
-- `WithCatalog` used at Producer construction
+- Construction uses `streaming.NewBuilder()...Build(ctx)` — NOT a hand-rolled `NewProducer` shim
+- `.Catalog(catalog)` builder method invoked before `.Build(ctx)`
+- `.Source(...)`, `.Routes(...)`, `.Target(...)` configured (Builder fails fast on missing required wiring)
+- Target names contain no control characters and are ≤256 bytes (Builder validates; service must construct safe names)
 - `STREAMING_ENABLED` feature flag present
-- `commons.Launcher.Add` lifecycle wiring
+- `commons.Launcher.Add` (or `Run`/`RunContext`) lifecycle wiring; `Close()` on shutdown
+- `Healthy(ctx)` wired into readiness probe
 - No non-canonical alternatives
 
 ## State Management
@@ -147,7 +154,7 @@ Write state after EVERY gate. If write fails → STOP.
 
 | Severity | Criteria |
 |----------|----------|
-| CRITICAL | Producer without WithCatalog; CRITICAL event with outbox=never; manifest unauthenticated; pre-commit emission |
-| HIGH | No Launcher.Add; no Close(); non-canonical code present; STREAMING_ENABLED missing |
-| MEDIUM | Missing WithLogger/WithTracer; no MockEmitter unit tests |
+| CRITICAL | Builder without `.Catalog()`; CRITICAL event with `outbox=never`; manifest unauthenticated; pre-commit emission; service code type-asserting `*Producer` outside bootstrap |
+| HIGH | No `Launcher.Add` / `Run` / `RunContext`; no `Close()`; `Healthy()` not wired to readiness; non-canonical code present; `STREAMING_ENABLED` missing; target name with control chars or >256 bytes |
+| MEDIUM | Missing `.Logger()` / `.Tracer()` / `.MetricsFactory()` on Builder; no MockEmitter unit tests; no chaos coverage when outbox required |
 | LOW | Documentation gaps, missing comments |
