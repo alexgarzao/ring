@@ -48,8 +48,26 @@ if ! echo "$NEW_STATE" | jq empty 2>/dev/null; then
 fi
 
 # ─── Gate ordering map ───
-# Maps gate index to the gate_progress field name and required evidence checks
-# Gate order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
+# Maps gate index to the gate_progress field name and required evidence checks.
+#
+# Cadence model (per dev-cycle/SKILL.md "Gate Map" + state-schema.md):
+#   • Subtask-cadence gates: 0 (implementation), 3 (unit testing), 9 (validation).
+#     Run once per subtask. Status lives at
+#     state.tasks[i].subtasks[j].gate_progress.<gate>.
+#   • Task-cadence gates: 1 (devops), 2 (sre), 4 (fuzz), 5 (property),
+#     6 (integration write), 7 (chaos write), 8 (review). Run once per task,
+#     ONLY after every subtask has completed Gate 9. Status lives at
+#     state.tasks[i].gate_progress.<gate>.
+#
+# Progression dispatch must be cadence-aware: while ANY subtask has
+# current_gate < 9, the active task is in subtask cadence and task-cadence gates
+# (1, 2, 4-8) are legitimately pending — the hook must NOT demand them.
+# See is_in_subtask_cadence() below.
+#
+# Tasks with no subtasks (frontend-cycle safety paths, refactor cycles without
+# decomposition) fall back to treating all 9 gates as task-cadence — preserving
+# the historical strictly-monotonic ladder for those shapes.
+#
 # Note: Delivery Verification is an inline exit check for Gate 0, tracked per-subtask
 # at state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified
 # and validated by validate_delivery_verification() alongside Gate 0.
@@ -354,6 +372,28 @@ gate_to_num() {
   esac
 }
 
+# ─── Cadence detection ───
+# A task is in "subtask cadence" while any of its subtasks still has
+# current_gate < 9 (i.e., hasn't passed Gate 9 / Validation yet). In that mode,
+# only subtask-cadence gates (0, 3, 9) are expected to have run; task-cadence
+# gates (1, 2, 4-8) are legitimately pending and must NOT be enforced by the
+# progression dispatch.
+#
+# Tasks with zero subtasks (or a missing/empty subtasks array) fall back to
+# task cadence, preserving the historical strictly-monotonic ladder.
+#
+# Returns 0 (true, in subtask cadence) or 1 (false, in task cadence).
+is_in_subtask_cadence() {
+  local in_subtask
+  in_subtask=$(echo "$NEW_STATE" | jq -r --argjson ti "$CURRENT_TASK_INDEX" '
+    (.tasks[$ti].subtasks // []) as $subs
+    | if ($subs | length) == 0 then "false"
+      else (any($subs[]; (.current_gate // 0) < 9) | tostring)
+      end
+  ')
+  [[ "$in_subtask" == "true" ]]
+}
+
 TARGET_NUM=$(gate_to_num "$TARGET_GATE")
 
 # Reject unrecognized gate values
@@ -386,45 +426,73 @@ if [[ -f "$FILE_PATH" ]]; then
 fi
 
 # ─── Progressive validation ───
-# Validate all gates that should be completed before TARGET_GATE
+# Cadence-aware: only enforce gates whose cadence applies in the active task's
+# current cadence mode.
+#
+# Subtask cadence (any subtask has current_gate < 9):
+#   Validate ONLY the subtask-cadence gates (0, 3). Task-cadence gates (1, 2,
+#   4-8) are legitimately pending until every subtask passes Gate 9.
+#
+# Task cadence (all subtasks past Gate 9, or no subtasks at all):
+#   Validate Gate 0 + delivery verification, then progressively validate the
+#   task-cadence ladder 1→8 as before.
 
-# Gate 0 completion (TDD RED/GREEN) AND its inline delivery verification exit
-# criterion are both required before progressing to Gate 1.
-if [[ "$TARGET_NUM" -ge 1 ]]; then
-  validate_gate_0
-  validate_delivery_verification
-fi
+if is_in_subtask_cadence; then
+  # Subtask-cadence: 0 → 3 (→ 9, user-approved, not validated here).
+  # Treat any TARGET_NUM ≥ 1 as "Gate 0 must hold" — same as before.
+  if [[ "$TARGET_NUM" -ge 1 ]]; then
+    validate_gate_0
+    validate_delivery_verification
+  fi
+  # Per the gate map, Gate 3 follows Gate 0 inside subtask cadence. Enforce
+  # Gate 3 once TARGET_NUM ≥ 4 (i.e., the orchestrator claims it's moving past
+  # Gate 3). TARGET_NUMs 1–3 within subtask cadence are passes "around" the
+  # ladder — only Gate 0 holds.
+  if [[ "$TARGET_NUM" -ge 4 ]]; then
+    validate_gate_3
+  fi
+  # Task-cadence gates (1, 2, 4-8) intentionally NOT validated in this branch.
+else
+  # Task-cadence: full strictly-monotonic 0→8 ladder (Gate 9 is user approval).
 
-if [[ "$TARGET_NUM" -ge 2 ]]; then
-  validate_gate_1
-fi
+  # Gate 0 completion (TDD RED/GREEN) AND its inline delivery verification exit
+  # criterion are both required before progressing to Gate 1.
+  if [[ "$TARGET_NUM" -ge 1 ]]; then
+    validate_gate_0
+    validate_delivery_verification
+  fi
 
-if [[ "$TARGET_NUM" -ge 3 ]]; then
-  validate_gate_2
-fi
+  if [[ "$TARGET_NUM" -ge 2 ]]; then
+    validate_gate_1
+  fi
 
-if [[ "$TARGET_NUM" -ge 4 ]]; then
-  validate_gate_3
-fi
+  if [[ "$TARGET_NUM" -ge 3 ]]; then
+    validate_gate_2
+  fi
 
-if [[ "$TARGET_NUM" -ge 5 ]]; then
-  validate_gate_4
-fi
+  if [[ "$TARGET_NUM" -ge 4 ]]; then
+    validate_gate_3
+  fi
 
-if [[ "$TARGET_NUM" -ge 6 ]]; then
-  validate_gate_5
-fi
+  if [[ "$TARGET_NUM" -ge 5 ]]; then
+    validate_gate_4
+  fi
 
-if [[ "$TARGET_NUM" -ge 7 ]]; then
-  validate_gate_6
-fi
+  if [[ "$TARGET_NUM" -ge 6 ]]; then
+    validate_gate_5
+  fi
 
-if [[ "$TARGET_NUM" -ge 8 ]]; then
-  validate_gate_7
-fi
+  if [[ "$TARGET_NUM" -ge 7 ]]; then
+    validate_gate_6
+  fi
 
-if [[ "$TARGET_NUM" -ge 9 ]]; then
-  validate_gate_8
+  if [[ "$TARGET_NUM" -ge 8 ]]; then
+    validate_gate_7
+  fi
+
+  if [[ "$TARGET_NUM" -ge 9 ]]; then
+    validate_gate_8
+  fi
 fi
 
 # Note: Gate 9 (Validation) is user approval — cannot be automated
@@ -509,25 +577,42 @@ if [[ ${#errors[@]} -gt 0 ]]; then
       end
   ')
 
-  LAST_COMPLETED_GATE=$(echo "$TASK_GATES" | jq -r \
-    --arg dv "$DELIVERY_VERIFIED_ALL" \
-    --arg tdd "$TDD_COMPLETED_ALL" \
-    --arg ut "$UNIT_TESTING_COMPLETED_ALL" '
-    if $tdd != "true" then "none"
-    elif $dv != "true" then "0"
-    elif .devops.status != "completed" then "0"
-    elif .sre.status != "completed" then "1"
-    elif $ut != "true" then "2"
-    elif .fuzz_testing.status != "completed" then "3"
-    elif (.fuzz_testing.corpus_entries // 0) < 5 then "3"
-    elif .property_testing.status != "completed" then "4"
-    elif (.property_testing.properties_tested // 0) < 1 then "4"
-    elif .integration_testing.status != "completed" then "5"
-    elif .chaos_testing.status != "completed" then "6"
-    elif .review.status != "completed" then "7"
-    else "8"
-    end
-  ')
+  # Cadence-aware last-completed-gate derivation. In subtask cadence, only the
+  # subtask-cadence ladder (0 → 3) applies; reporting task-cadence gates as
+  # "completed/pending" would mislead recovery instructions because those gates
+  # haven't run by design yet.
+  if is_in_subtask_cadence; then
+    LAST_COMPLETED_GATE=$(jq -nr \
+      --arg dv "$DELIVERY_VERIFIED_ALL" \
+      --arg tdd "$TDD_COMPLETED_ALL" \
+      --arg ut "$UNIT_TESTING_COMPLETED_ALL" '
+      if $tdd != "true" then "none"
+      elif $dv != "true" then "0 (delivery verification pending)"
+      elif $ut != "true" then "0"
+      else "3"
+      end
+    ')
+  else
+    LAST_COMPLETED_GATE=$(echo "$TASK_GATES" | jq -r \
+      --arg dv "$DELIVERY_VERIFIED_ALL" \
+      --arg tdd "$TDD_COMPLETED_ALL" \
+      --arg ut "$UNIT_TESTING_COMPLETED_ALL" '
+      if $tdd != "true" then "none"
+      elif $dv != "true" then "0"
+      elif .devops.status != "completed" then "0"
+      elif .sre.status != "completed" then "1"
+      elif $ut != "true" then "2"
+      elif .fuzz_testing.status != "completed" then "3"
+      elif (.fuzz_testing.corpus_entries // 0) < 5 then "3"
+      elif .property_testing.status != "completed" then "4"
+      elif (.property_testing.properties_tested // 0) < 1 then "4"
+      elif .integration_testing.status != "completed" then "5"
+      elif .chaos_testing.status != "completed" then "6"
+      elif .review.status != "completed" then "7"
+      else "8"
+      end
+    ')
+  fi
 
   jq -n \
     --arg task "$TASK_ID" \
