@@ -134,13 +134,13 @@ platforms/opencode/standards/
 | Plugin           | Path           | Skills | Agents |
 | ---------------- | -------------- | ------ | ------ |
 | ring-default     | `default/`     | 24     | 10     |
-| ring-dev-team    | `dev-team/`    | 37     | 15     |
-| ring-pm-team     | `pm-team/`     | 17     | 4      |
+| ring-dev-team    | `dev-team/`    | 38     | 15     |
+| ring-pm-team     | `pm-team/`     | 18     | 4      |
 | ring-pmo-team    | `pmo-team/`    | 9      | 6      |
 | ring-finops-team | `finops-team/` | 7      | 3      |
 | ring-tw-team     | `tw-team/`     | 6      | 3      |
 
-**Total: 100 skills, 41 agents across 6 plugins.** Plugin versions in `.claude-plugin/marketplace.json`.
+**Total: 102 skills, 41 agents across 6 plugins.** Plugin versions in `.claude-plugin/marketplace.json`.
 
 Each plugin contains: `skills/`, `agents/`, `hooks/`. See [README.md](README.md#architecture) for full directory structure.
 

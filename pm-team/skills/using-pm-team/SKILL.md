@@ -1,7 +1,7 @@
 ---
 name: ring:using-pm-team
 description: |
-  12 pre-dev workflow skills + 1 standalone discovery skill + 4 research agents organized into
+  12 pre-dev workflow skills + 2 standalone discovery skills + 1 standalone dashboard skill + 4 research agents organized into
   Small Track (5 gates, <2 days) and Large Track (10 gates, 2+ days) for systematic feature
   planning with research-first approach.
 
@@ -82,6 +82,7 @@ Use when ANY criteria met: implementation ≥2 days, new external dependencies, 
 | ring:deep-doc-review | Before dev-cycle to catch doc contradictions |
 | ring:delivery-status | Progress tracking against approved roadmap |
 | ring:streaming-event-mapping | Map eventable points in Go service for lib-streaming |
+| ring:creating-grafana-dashboards | Sweep telemetry → telemetry-dictionary.md → PM iterates themes → Grafonnet dashboards + blocking drift CI |
 
 ## Research Agents (dispatched by Gate 0)
 
