@@ -64,7 +64,7 @@
     {
       "name": "ring-pm-team",
       "description": "Product team workflow: 17 skills + 4 research agents. Pre-dev planning with 5-gate (small features) and 10-gate (large features) orchestrators, delivery roadmap generation, delivery status tracking for evidence-based progress reporting, plus standalone streaming-event-mapping discovery. Includes parallel research agents, specialized code analysis, and Product Designer.",
-      "version": "0.27.1",
+      "version": "0.28.0",
       "source": "./pm-team",
       "homepage": "https://github.com/lerianstudio/ring/tree/pm-team",
       "repository": "https://github.com/lerianstudio/ring/tree/pm-team",
@@ -141,5 +141,5 @@
       ]
     }
   ],
-  "version": "0.352.0"
+  "version": "0.353.0"
 }
