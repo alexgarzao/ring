@@ -1,8 +1,8 @@
 # Frontmatter Schema Reference
 
-Canonical source of truth for YAML frontmatter fields in Ring skills, commands, and agents. The validator script (`default/hooks/validate-frontmatter.py`) checks against this schema.
+Canonical source of truth for YAML frontmatter fields in Ring skills, agents, and commands. Aligned with the Anthropic-canonical loader: anything outside the fields documented here is silently ignored at load time.
 
-All frontmatter uses standard YAML between `---` delimiters at the top of each `.md` file. The session-start hook (`default/hooks/generate-skills-ref.py`) parses skill frontmatter at load time to build the skills quick reference.
+The validator (`default/hooks/validate-frontmatter.py`) enforces this schema. The session-start hook (`default/hooks/generate-skills-ref.py`) parses skill `name` and `description` to build the skills quick reference.
 
 ---
 
@@ -12,77 +12,45 @@ Skills live in `{plugin}/skills/{name}/SKILL.md`.
 
 ### Required Fields
 
-| Field | Type | Parsed by Hooks | Description |
-|-------|------|-----------------|-------------|
-| `name` | string | YES | Skill identifier. MUST use `ring:` prefix (e.g., `ring:brainstorm`) |
-| `description` | string | YES | What the skill does -- method or technique. Supports block scalar (`\|`) |
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Skill identifier. MUST use `ring:` prefix (e.g., `ring:codereview`). Lerian convention is mandatory per CLAUDE.md. |
+| `description` | string | WHAT the skill does + WHEN to invoke + WHEN to skip, condensed. Anthropic loader caps `description` at **1,536 characters**. Target ≤500 chars to leave headroom. |
 
-### Recommended Fields
+### Optional Fields
 
-Parsed by hooks and used for skill discovery/routing. Skills should define these.
-
-| Field | Type | Parsed by Hooks | Description |
-|-------|------|-----------------|-------------|
-| `trigger` | string | YES | WHEN to use this skill -- primary decision field. Replaces deprecated `when_to_use` |
-| `skip_when` | string | YES | WHEN NOT to use -- differentiates from similar skills |
-| `NOT_skip_when` | string | YES | Override for `skip_when` -- cases where the skill MUST still be used despite skip signals |
-| `prerequisites` | string/list | YES | What must be true before using this skill (e.g., test framework installed) |
-| `verification` | string | YES | How to verify the skill's gate passed (e.g., coverage thresholds, build success) |
-
-### Optional Fields (Parsed by Hooks)
-
-| Field | Type | Parsed by Hooks | Description |
-|-------|------|-----------------|-------------|
-| `when_to_use` | string | YES | **DEPRECATED** -- use `trigger` instead. Kept for backward compatibility; hook falls back to this if `trigger` is absent |
-| `sequence.after` | list | YES | Skills that should come before this one (e.g., `[ring:dev-implementation]`) |
-| `sequence.before` | list | YES | Skills that typically follow this one (e.g., `[ring:write-plan]`) |
-| `related.similar` | list | YES | Skills that seem similar but differ (helps differentiation) |
-| `related.complementary` | list | YES | Skills that pair well with this one |
-
-### Optional Fields (Not Parsed by Hooks)
-
-These are defined in skill frontmatter but not read by `generate-skills-ref.py`. They serve as structured metadata for agents and validation tooling.
+Include only if the skill actually uses them.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `compliance_rules` | list of objects | Validation rules with `id`, `description`, `check_type`, `pattern`, `severity`, `failure_message` |
-| `composition` | object | How the skill works with others: `works_well_with`, `conflicts_with`, `typical_workflow` |
-| `input_schema` | object | Expected input context: `required` and `optional` fields with `name`, `type`, `description` |
-| `output_schema` | object | Expected output format: `format` (always `"markdown"`), `required_sections` with `name`, `pattern`, `required` |
+| `argument-hint` | string | Short syntax hint shown in the skill picker |
+| `allowed-tools` | list | Restricts tool access for the skill invocation |
+| `disable-model-invocation` | bool | If true, skill must be explicitly invoked (not auto-selected) |
+| `user-invocable` | bool | Marks skills the user can invoke directly via slash command |
+| `paths` | list | Path globs scoping the skill to specific files |
+| `model` | string | Override model for the skill |
 
-### Explicitly NOT Valid for Skills
+### Removed Fields
 
-| Field | Reason |
-|-------|--------|
-| `version` | Use git history for versioning |
-| `allowed-tools` | Define tool access in the skill body, not frontmatter |
-| `examples` | Include examples in the skill body |
-| `category` | Not part of the schema -- categories are derived by hooks from directory name patterns |
-| `tier` | Not part of the schema |
-| `slug` | Not part of the schema |
-| `user_invocable` | Not part of the schema -- invocability is implicit from skill structure |
-| `title` | Not part of the schema -- use `name` |
-| `type` | Not part of the schema for skills -- `type` is an agent-only field |
-| `role` | Not part of the schema -- define role context in the skill body |
-| `dependencies` | Not part of the schema -- use `prerequisites` for preconditions |
-| `author` | Not part of the schema -- use git history |
-| `license` | Not part of the schema -- repo-level license applies |
-| `compatibility` | Not part of the schema |
-| `metadata` | Not part of the schema -- use specific top-level fields instead |
-| `agent_selection` | Not part of the schema -- define agent routing in the skill body |
-| `tdd_policy` | Not part of the schema -- TDD is enforced by workflow, not frontmatter |
-| `research_modes` | Not part of the schema -- define modes in the skill body |
-| `trigger_when` | Not part of the schema -- use `trigger` |
+Stripped during the 2026-05 Anthropic-canonical refactor. The loader silently ignores them; the validator no longer warns about their absence.
+
+| Field | Migrated To |
+|-------|-------------|
+| `trigger` | `## When to use` body section |
+| `skip_when` | `## Skip when` body section |
+| `NOT_skip_when` | `## Skip when` body section (as exception bullets) |
+| `prerequisites` | `## Prerequisites` body section |
+| `verification` | Body content (typically inside `## Skip when` or step-level checks) |
+| `sequence` | `## Sequence` body section |
+| `related` | `## Related` body section |
+| `type` | Removed entirely (was skill-irrelevant) |
+| `tags` | Removed entirely |
+| `when_to_use` | Folded into `description` |
+| `output_schema` / `input_schema` | Removed (skill-level schemas were unused by the loader) |
 
 ---
 
-## Commands (Removed)
-
-Commands have been removed from Ring. All workflows are now invoked via skills.
-
----
-
-## Agents (`*.md` in `agents/`)
+## Agents (`agents/*.md`)
 
 Agents live in `{plugin}/agents/{name}.md`.
 
@@ -91,75 +59,95 @@ Agents live in `{plugin}/agents/{name}.md`.
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Agent identifier. MUST use `ring:` prefix (e.g., `ring:code-reviewer`) |
-| `description` | string | What the agent does -- role and scope |
-| `type` | enum | Agent classification. Values in use: `specialist`, `reviewer`, `orchestrator`, `planning`, `exploration`, `analyst`, `calculator` |
-| `output_schema` | object | Defines required output sections (see sub-fields below) |
-
-**`output_schema` sub-fields:**
-
-| Sub-field | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `output_schema.format` | string | YES | Always `"markdown"` |
-| `output_schema.required_sections` | list | YES | List of section definitions |
-| `output_schema.required_sections[].name` | string | YES | Section display name |
-| `output_schema.required_sections[].pattern` | string | YES | Regex pattern to match the section heading |
-| `output_schema.required_sections[].required` | boolean | YES | Whether the section is mandatory |
-| `output_schema.required_sections[].description` | string | no | When/why this section is needed |
-| `output_schema.required_sections[].required_when` | object | no | Conditional requirement (e.g., `invocation_context`, `prompt_contains`) |
-| `output_schema.verdict_values` | list | no | Valid verdict values for reviewer agents (e.g., `["PASS", "FAIL", "NEEDS_DISCUSSION"]`) |
+| `description` | string | What the agent does — role and scope |
 
 ### Optional Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `input_schema` | object | Expected input context with `required` and `optional` sub-fields, each a list of `{name, type, description}` |
+| `model` | string | Override model for this agent |
+| `tools` | list | Restricts tool access for the agent invocation |
+| `color` | string | Display color in the agent picker |
 
-### Explicitly NOT Valid for Agents
+### Removed Fields
 
-| Field | Reason |
-|-------|--------|
-| `version` | Use git history |
-| `color` | Not part of the schema |
-| `project_rules_integration` | Not part of the schema |
-| `allowed-tools` | Define tool access in the agent body, not frontmatter |
-| `tools` | Not part of the schema -- define tool access in the agent body, not frontmatter |
+| Field | Notes |
+|-------|-------|
+| `type` | Was used to label specialist/reviewer/orchestrator. Silently ignored by the loader; removed in the 2026-05 refactor. Express role in `description` instead. |
 
 ---
 
-## Deprecated Fields
+## Commands (`commands/*.md`)
 
-| Deprecated Field | Replaced By | Migration |
-|------------------|-------------|-----------|
-| `when_to_use` | `trigger` | Rename field. Hook falls back to `when_to_use` if `trigger` is absent, but new skills MUST use `trigger` |
-| `prerequisite` (singular) | `prerequisites` (plural) | Rename to plural form |
-| `arguments` | `argument-hint` | Use `argument-hint` for syntax hint; document full argument details in the command body |
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Command identifier. MUST use `ring:` prefix (e.g., `ring:my-command`) |
+| `description` | string | What the command does |
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `argument-hint` | string | Short syntax hint |
+| `allowed-tools` | list | Restricts tool access |
+| `model` | string | Override model |
 
 ---
 
-## Validation
+## Validator
 
-**Validator script:** `default/hooks/validate-frontmatter.py`
+`default/hooks/validate-frontmatter.py` checks:
 
-| Condition | Validator Behavior |
-|-----------|--------------------|
+| Condition | Behavior |
+|-----------|----------|
 | Missing required field (`name`, `description`) | Error |
-| Unknown/unrecognized field | Warning |
-| Deprecated field present | Warning with migration guidance |
-| Skill missing `trigger` | Warning (recommended field) |
-| Agent missing `type` or `output_schema` | Error |
+| Skill `name` missing `ring:` prefix | Error |
+| Unknown field | Warning |
 
-**Parser script:** `default/hooks/generate-skills-ref.py`
+The validator was simplified in the 2026-05 refactor to align with Anthropic-canonical fields only — it no longer warns about missing `trigger`/`skip_when`.
 
-- Tries `pyyaml` first, falls back to regex parser
-- Extracts first meaningful line from block scalars for quick reference display
-- Groups skills into categories based on directory name patterns
-- Handles backward compatibility: `when_to_use` -> `trigger` -> `description` fallback chain
+---
+
+## Generator
+
+`default/hooks/generate-skills-ref.py` parses skill frontmatter (`name` + `description` only post-refactor) to build the SessionStart skills quick reference. It groups skills into categories from directory name patterns.
+
+---
+
+## Body Section Convention
+
+Trigger-style content that used to live in frontmatter now lives in body markdown sections, immediately after the H1, in this canonical order (omit any section without source content):
+
+```markdown
+## When to use
+- {bullets describing trigger conditions}
+
+## Skip when
+- {bullets describing exclusions}
+
+## Sequence
+**Runs before:** ring:foo, ring:bar
+**Runs after:** ring:baz
+
+## Related
+**Complementary:** ring:x
+**Similar:** ring:y
+**Skills orchestrated:**
+- ring:z
+
+## Prerequisites
+{content}
+```
+
+If you want to express WHEN/WHEN-NOT/SEQUENCE/RELATED/PREREQUISITE semantics in a skill, put them here — not in frontmatter.
 
 ---
 
 ## Related Documents
 
-- [CLAUDE.md](../CLAUDE.md) -- Main project instructions
-- [AGENT_DESIGN.md](AGENT_DESIGN.md) -- Agent output schema archetypes and standards compliance
-- [WORKFLOWS.md](WORKFLOWS.md) -- How to add skills, agents, and commands
-- [PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) -- Language patterns for agent prompts
+- [CLAUDE.md](../CLAUDE.md) — Main project instructions
+- [AGENT_DESIGN.md](AGENT_DESIGN.md) — Agent design and verification checklist
+- [WORKFLOWS.md](WORKFLOWS.md) — How to add skills, agents, and commands
+- [PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) — Language patterns for agent prompts

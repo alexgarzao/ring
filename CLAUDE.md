@@ -14,8 +14,8 @@ When creating or modifying any agent in `*/agents/*.md`:
 
 - MUST verify agent has all required sections — see [docs/AGENT_DESIGN.md](docs/AGENT_DESIGN.md#agent-modification-verification-mandatory)
 - MUST include positive `<example>` blocks showing correct behavior
-- MUST use selective standards loading via `_index.md` manifesto (not monolithic WebFetch)
 - MUST keep agents under 300 lines (implementation) or 200 lines (reviewers)
+- MUST use selective standards loading via `index.md` (selective sections only, not monolithic WebFetch).
 - If any section is missing → Agent is INCOMPLETE
 
 ### 2. Agents are EXECUTORS, Not DECISION-MAKERS
@@ -43,34 +43,7 @@ All Ring components use the unified `ring:` prefix.
 - ❌ omitting `ring:` prefix (FORBIDDEN)
 - ❌ `ring-default:ring:code-reviewer` (deprecated plugin-specific prefix)
 
-### 5. Standards-Agent Synchronization (MUST CHECK)
-
-When modifying `platforms/opencode/standards/{stack}/*.md` files:
-
-**⛔ FOUR-FILE UPDATE RULE** (all in same commit):
-
-1. Edit `platforms/opencode/standards/{stack}/{module}.md` — add `## Section Name`
-2. Update `platforms/opencode/standards/{stack}/_index.md` — add module entry with "Load When"
-3. Edit `dev-team/skills/shared-patterns/standards-coverage-table.md` — add section to agent index
-4. Edit `dev-team/agents/{agent}.md` — verify agent references `_index.md` for selective loading
-
-**⛔ TOC MAINTENANCE RULE:** Every standards file has a `## Table of Contents` that MUST stay in sync. Section count in TOC MUST match `standards-coverage-table.md`.
-
-**⛔ AGENT INLINE CATEGORIES ARE FORBIDDEN:** Agents MUST reference `standards-coverage-table.md`, not inline comparison tables.
-
-**Standards Directory → Agent Mapping:**
-
-| Standards Directory        | Agents That Use It                                                                              |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `golang/` (30 modules)     | `ring:backend-engineer-golang`, `ring:qa-analyst`                                               |
-| `typescript/` (21 modules) | `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`, `ring:qa-analyst`  |
-| `frontend/` (21 modules)   | `ring:frontend-engineer`, `ring:frontend-designer`                                              |
-| `devops/` (9 modules)      | `ring:devops-engineer`                                                                          |
-| `sre/` (7 modules)         | `ring:sre`                                                                                      |
-
-**Section Index Location:** `dev-team/skills/shared-patterns/standards-coverage-table.md`
-
-### 6. CLAUDE.md ↔ AGENTS.md Synchronization
+### 5. CLAUDE.md ↔ AGENTS.md Synchronization
 
 **⛔ AGENTS.md IS A SYMLINK TO CLAUDE.md — MUST NOT break:**
 
@@ -78,7 +51,7 @@ When modifying `platforms/opencode/standards/{stack}/*.md` files:
 - MUST NOT delete the AGENTS.md symlink or replace it with a regular file
 - If symlink is broken → restore with: `ln -sf CLAUDE.md AGENTS.md`
 
-### 7. Content Duplication Prevention (MUST CHECK)
+### 6. Content Duplication Prevention (MUST CHECK)
 
 Before adding any content: **SEARCH FIRST** with `grep -r "keyword" --include="*.md"`.
 
@@ -87,31 +60,11 @@ Before adding any content: **SEARCH FIRST** with `grep -r "keyword" --include="*
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md#content-duplication-prevention) for canonical source table and shared patterns rule.
 
-### 8. Reviewer-Pool Synchronization (MUST CHECK)
+### 7. Reviewer-Pool Synchronization (MUST CHECK)
 
 When adding/removing a code review agent in `ring:codereview` pool:
 
 **⛔ SEVEN-FILE UPDATE RULE** (all in same commit) — see [docs/WORKFLOWS.md](docs/WORKFLOWS.md#reviewer-pool-synchronization) for the complete checklist and secondary consumers sweep.
-
----
-
-## Selective Context Loading (Agentic Search)
-
-Standards are modularized into focused files. Each stack has an `_index.md` manifesto:
-
-```
-platforms/opencode/standards/
-├── golang/_index.md          ← Module list + "Load When" descriptions (30 modules)
-├── typescript/_index.md      ← (21 modules)
-├── frontend/_index.md        ← (21 modules)
-├── devops/_index.md          ← (9 modules)
-└── sre/_index.md             ← (7 modules)
-```
-
-**Agent Standards Loading pattern:**
-1. Read `platforms/opencode/standards/{stack}/_index.md`
-2. Match current task against "Load When" column
-3. Fetch only matching module files — do NOT load all modules
 
 ---
 
@@ -133,14 +86,12 @@ platforms/opencode/standards/
 
 | Plugin           | Path           | Skills | Agents |
 | ---------------- | -------------- | ------ | ------ |
-| ring-default     | `default/`     | 24     | 10     |
+| ring-default     | `default/`     | 14     | 10     |
 | ring-dev-team    | `dev-team/`    | 38     | 15     |
 | ring-pm-team     | `pm-team/`     | 18     | 4      |
-| ring-pmo-team    | `pmo-team/`    | 9      | 6      |
-| ring-finops-team | `finops-team/` | 7      | 3      |
 | ring-tw-team     | `tw-team/`     | 6      | 3      |
 
-**Total: 102 skills, 41 agents across 6 plugins.** Plugin versions in `.claude-plugin/marketplace.json`.
+**Total: 76 skills, 32 agents across 4 plugins.** Plugin versions in `.claude-plugin/marketplace.json`.
 
 Each plugin contains: `skills/`, `agents/`, `hooks/`. See [README.md](README.md#architecture) for full directory structure.
 
@@ -180,11 +131,9 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for detailed instructions.
 - Check for applicable skills before any task
 - If skill exists for task → MUST use it
 
-# Commit compliance (default/skills/commit/SKILL.md)
+# Commit compliance: see default/skills/commit/SKILL.md (canonical source).
 - MUST use ring:commit skill for all commits
 - MUST NOT write git commit commands manually
-- Format: git commit -m "msg" --trailer "Generated-by: Claude" --trailer "AI-Model: <model>"
-- MUST NOT use HEREDOC to include trailers in message body
 ```
 
 ---

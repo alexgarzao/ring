@@ -9,7 +9,7 @@ This is a markdown/documentation project for AI agent skills.
 
 ## Standards
 - Skills use YAML frontmatter
-- Agents follow output_schema patterns
+- Agents document their output structure in a body `## Output Format` section
 - All agents must load standards via WebFetch
 
 ## Testing Focus

@@ -1,157 +1,91 @@
 # Agent Design Reference
 
-This document contains agent output schema archetypes and standards compliance requirements for Ring agents.
+This document contains agent output format archetypes and standards compliance requirements for Ring agents.
 
 ---
 
-## Agent Output Schema Archetypes
+## Agent Output Format Archetypes
 
-Agents use standard output schema patterns based on their purpose:
+Agents document their output structure in a body `## Output Format` section (not in frontmatter — `output_schema` is no longer a recognized frontmatter field). The archetypes below describe the canonical body sections each agent type MUST produce.
 
-### Implementation Schema
+### Implementation Archetype
 
 **For agents that write code/configs:**
 
-```yaml
-output_schema:
-  format: "markdown"
-  required_sections:
-    - name: "Summary"
-      pattern: "^## Summary"
-      required: true
-    - name: "Implementation"
-      pattern: "^## Implementation"
-      required: true
-    - name: "Files Changed"
-      pattern: "^## Files Changed"
-      required: true
-    - name: "Testing"
-      pattern: "^## Testing"
-      required: true
-    - name: "Next Steps"
-      pattern: "^## Next Steps"
-      required: true
-```
+The agent's body `## Output Format` section MUST instruct the agent to produce these top-level markdown sections:
 
-**Used by:** `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, `frontend-bff-engineer-typescript`, `ring:devops-engineer`, `ring:qa-analyst`, `ring:sre`, `finops-automation`
+- `## Summary`
+- `## Implementation`
+- `## Files Changed`
+- `## Testing`
+- `## Next Steps`
+
+**Used by:** `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`, `ring:devops-engineer`, `ring:qa-analyst`, `ring:sre`
 
 ---
 
-### Analysis Schema
+### Analysis Archetype
 
 **For agents that analyze and recommend:**
 
-```yaml
-output_schema:
-  format: "markdown"
-  required_sections:
-    - name: "Analysis"
-      pattern: "^## Analysis"
-      required: true
-    - name: "Findings"
-      pattern: "^## Findings"
-      required: true
-    - name: "Recommendations"
-      pattern: "^## Recommendations"
-      required: true
-    - name: "Next Steps"
-      pattern: "^## Next Steps"
-      required: true
-```
+The agent's body `## Output Format` section MUST instruct the agent to produce:
 
-**Used by:** `ring:frontend-designer`, `finops-analyzer`
+- `## Analysis`
+- `## Findings`
+- `## Recommendations`
+- `## Next Steps`
+
+**Used by:** `ring:frontend-designer`
 
 ---
 
-### Reviewer Schema
+### Reviewer Archetype
 
 **For code review agents:**
 
-```yaml
-output_schema:
-  format: "markdown"
-  required_sections:
-    - name: "VERDICT"
-      pattern: "^## VERDICT: (PASS|FAIL|NEEDS_DISCUSSION)$"
-      required: true
-    - name: "Summary"
-      pattern: "^## Summary"
-      required: true
-    - name: "Issues Found"
-      pattern: "^## Issues Found"
-      required: true
-    - name: "Categorized Issues"
-      pattern: "^### (Critical|High|Medium|Low)"
-      required: false
-    - name: "What Was Done Well"
-      pattern: "^## What Was Done Well"
-      required: true
-    - name: "Next Steps"
-      pattern: "^## Next Steps"
-      required: true
-```
+The agent's body `## Output Format` section MUST instruct the agent to produce:
+
+- `## VERDICT: PASS | FAIL | NEEDS_DISCUSSION` (heading line carries the verdict)
+- `## Summary`
+- `## Issues Found` (with optional `### Critical | High | Medium | Low` subsections)
+- `## What Was Done Well`
+- `## Next Steps`
 
 **Used by:** `ring:code-reviewer`, `ring:business-logic-reviewer`, `ring:security-reviewer`, `ring:dead-code-reviewer`
 
-**Note:** `ring:business-logic-reviewer` and `ring:security-reviewer` extend the base Reviewer Schema with additional domain-specific required sections:
-- `ring:business-logic-reviewer` adds: "Mental Execution Analysis", "Business Requirements Coverage", "Edge Cases Analysis"
-- `ring:security-reviewer` adds: "OWASP Top 10 Coverage", "Compliance Status"
+**Note:** `ring:business-logic-reviewer` and `ring:security-reviewer` extend the base Reviewer archetype with additional domain-specific sections:
+- `ring:business-logic-reviewer` adds: `## Mental Execution Analysis`, `## Business Requirements Coverage`, `## Edge Cases Analysis`
+- `ring:security-reviewer` adds: `## OWASP Top 10 Coverage`, `## Compliance Status`
 
 ---
 
-### Exploration Schema
+### Exploration Archetype
 
 **For deep codebase analysis:**
 
-```yaml
-output_schema:
-  format: "markdown"
-  required_sections:
-    - name: "EXPLORATION SUMMARY"
-      pattern: "^## EXPLORATION SUMMARY$"
-      required: true
-    - name: "KEY FINDINGS"
-      pattern: "^## KEY FINDINGS$"
-      required: true
-    - name: "ARCHITECTURE INSIGHTS"
-      pattern: "^## ARCHITECTURE INSIGHTS$"
-      required: true
-    - name: "RELEVANT FILES"
-      pattern: "^## RELEVANT FILES$"
-      required: true
-    - name: "RECOMMENDATIONS"
-      pattern: "^## RECOMMENDATIONS$"
-      required: true
-```
+The agent's body `## Output Format` section MUST instruct the agent to produce:
+
+- `## EXPLORATION SUMMARY`
+- `## KEY FINDINGS`
+- `## ARCHITECTURE INSIGHTS`
+- `## RELEVANT FILES`
+- `## RECOMMENDATIONS`
 
 **Used by:** `ring:codebase-explorer`
 
 ---
 
-### Planning Schema
+### Planning Archetype
 
 **For implementation planning:**
 
-```yaml
-output_schema:
-  format: "markdown"
-  required_sections:
-    - name: "Goal"
-      pattern: "^\\*\\*Goal:\\*\\*"
-      required: true
-    - name: "Architecture"
-      pattern: "^\\*\\*Architecture:\\*\\*"
-      required: true
-    - name: "Tech Stack"
-      pattern: "^\\*\\*Tech Stack:\\*\\*"
-      required: true
-    - name: "Global Prerequisites"
-      pattern: "^\\*\\*Global Prerequisites:\\*\\*"
-      required: true
-    - name: "Task"
-      pattern: "^### Task \\d+:"
-      required: true
-```
+The agent's body `## Output Format` section MUST instruct the agent to produce:
+
+- `**Goal:**` line
+- `**Architecture:**` line
+- `**Tech Stack:**` line
+- `**Global Prerequisites:**` line
+- One `### Task N:` heading per task
 
 **Used by:** `ring:write-plan`
 
@@ -163,14 +97,11 @@ The `ring-dev-team` agents include a **Standards Compliance** output section tha
 
 ### Schema Definition
 
-All ring-dev-team agents include this in their `output_schema`:
+All ring-dev-team agents document a `## Standards Compliance` section in their body `## Output Format`:
 
-```yaml
-- name: "Standards Compliance"
-  pattern: "^## Standards Compliance"
-  required: false  # In schema, but MANDATORY when invoked from ring:dev-refactor
-  description: "Comparison of codebase against Lerian/Ring standards. MANDATORY when invoked from ring:dev-refactor skill."
-```
+- Section name: `## Standards Compliance`
+- Required: optional by default; MANDATORY when invoked from `ring:dev-refactor`
+- Purpose: comparison of codebase against Lerian/Ring standards
 
 ### Conditional Requirement: `invoked_from_dev_refactor`
 
@@ -207,7 +138,7 @@ All ring-dev-team agents support Standards Compliance:
 | `ring:backend-engineer-golang` | `golang.md` | lib-commons, Error Handling, Logging, Config |
 | `ring:backend-engineer-typescript` | `typescript.md` | Type Safety, Error Handling, Validation |
 | `ring:devops-engineer` | `devops.md` | Dockerfile, docker-compose, CI/CD |
-| `frontend-bff-engineer-typescript` | `frontend.md` | Component patterns, State management |
+| `ring:frontend-bff-engineer-typescript` | `frontend.md` | Component patterns, State management |
 | `ring:frontend-designer` | `frontend.md` | Accessibility, Design patterns |
 | `ring:qa-analyst` | `qa.md` | Test coverage, Test patterns |
 | `ring:sre` | `sre.md` | Health endpoints, Logging, Tracing |
@@ -262,7 +193,7 @@ No migration actions required.
 |----------|----------|-----------------|
 | **Skill Definition** | `dev-team/skills/dev-refactor/SKILL.md` | HARD GATES requiring Standards Compliance |
 | **Standards Source** | `dev-team/docs/standards/*.md` | Source of truth for compliance checks |
-| **Agent Definitions** | `dev-team/agents/*.md` | output_schema includes Standards Compliance |
+| **Agent Definitions** | `dev-team/agents/*.md` | Body `## Output Format` section documents Standards Compliance |
 | **Session Hook** | `dev-team/hooks/session-start.sh` | Injects Standards Compliance guidance |
 
 ---
@@ -321,7 +252,7 @@ See [docs/PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) for language guidelines 
 
 | Required Section                              | Pattern to Check                 | If Missing                                                        |
 | --------------------------------------------- | -------------------------------- | ----------------------------------------------------------------- |
-| **Standards Loading (MANDATORY)**             | `## Standards Loading`           | MUST add with `_index.md` + selective module loading instructions |
+| **Standards Loading (MANDATORY)**             | `## Standards Loading`           | MUST add with `index.md` + selective module loading instructions |
 | **Blocker Criteria - STOP and Report**        | `## Blocker Criteria`            | MUST add with decision type table                                 |
 | **Positive `<example>` block**                | `<example>`                      | MUST add at least one block showing correct vs incorrect behavior |
 | **Standards Compliance Report** (dev-team)    | `## Standards Compliance Report` | MUST add for dev-team agents                                      |
@@ -330,7 +261,7 @@ See [docs/PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) for language guidelines 
 
 ```text
 CHECKLIST (all must be YES):
-[ ] Does agent have Standards Loading section referencing _index.md?
+[ ] Does agent have Standards Loading section referencing index.md?
 [ ] Does agent have Blocker Criteria table?
 [ ] Does agent have at least one positive <example> block?
 [ ] Does agent define when to STOP and report?

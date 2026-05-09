@@ -236,7 +236,7 @@ link_hooks() {
 }
 
 install_symlinks() {
-  local plugins=("default" "dev-team" "pm-team" "pmo-team" "finops-team" "tw-team")
+  local plugins=("default" "dev-team" "pm-team" "tw-team")
 
   for plugin in "${plugins[@]}"; do
     log_section "$plugin"

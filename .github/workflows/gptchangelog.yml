@@ -21,8 +21,6 @@ jobs:
         default
         dev-team
         pm-team
-        pmo-team
-        finops-team
         tw-team
       path_level: '1'
       tag_separator: '@'

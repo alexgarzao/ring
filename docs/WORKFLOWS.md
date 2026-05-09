@@ -18,27 +18,22 @@ This document contains detailed workflow instructions for adding skills, agents,
 
    ```yaml
    ---
-   name: your-skill-name
-   description: |
-     Brief description of WHAT the skill does (method/technique).
-
-   trigger: |
-     - Specific condition that mandates this skill
-     - Another trigger condition
-
-   skip_when: |
-     - When NOT to use → alternative skill
-     - Another exclusion
-
-   sequence:
-     after: [prerequisite-skill] # Optional: ordering
-     before: [following-skill]
-
-   related:
-     similar: [differentiate-from] # Optional: disambiguation
-     complementary: [pairs-well-with]
+   name: ring:your-skill-name
+   description: Single paragraph (≤500 chars target, 1,536 cap). States WHAT the skill does, WHEN to invoke, and WHEN to skip.
    ---
+
+   # Your Skill Name
+
+   ## When to use
+   - Specific condition that mandates this skill
+   - Another trigger condition
+
+   ## Skip when
+   - When NOT to use → alternative skill
+   - Another exclusion
    ```
+
+   Required frontmatter fields: `name`, `description`. Optional: `argument-hint`, `allowed-tools`, `model`, `disable-model-invocation`, `user-invocable`, `paths`. Trigger/skip/sequence/related content lives in body H2 sections — see [docs/FRONTMATTER_SCHEMA.md](FRONTMATTER_SCHEMA.md) for the full schema.
 
 3. Test with:
 
@@ -50,7 +45,7 @@ This document contains detailed workflow instructions for adding skills, agents,
 
 ### Production Readiness Audit (ring-default)
 
-The **production-readiness-audit** skill (`ring:production-readiness-audit`) evaluates codebase production readiness across **27 dimensions** in 5 categories. **Invocation:** use the Skill tool or the `/ring:production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** 27-dimension scored report (0–270) with severity ratings and standards cross-reference. Implementation details: [default/skills/production-readiness-audit/SKILL.md](../default/skills/production-readiness-audit/SKILL.md).
+The **production-readiness-audit** skill (`ring:production-readiness-audit`) evaluates codebase production readiness across **44 dimensions** (43 base + 1 conditional multi-tenant) in 5 categories. **Invocation:** use the Skill tool or the `/ring:production-readiness-audit` command when preparing for production, conducting security/quality reviews, or assessing technical debt. **Batch behavior:** runs 10 explorer agents per batch and appends results incrementally to a single report file (`docs/audits/production-readiness-{date}-{time}.md`) to avoid context bloat. **Output:** scored report (0–430 base, max 440 with multi-tenant) with severity ratings and standards cross-reference. Implementation details: [default/skills/production-readiness-audit/SKILL.md](../default/skills/production-readiness-audit/SKILL.md).
 
 ### For Product/Team-Specific Skills
 
@@ -146,16 +141,6 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
   - ring:docs-reviewer (quality review)
 - Commands: write-guide, write-api, review-docs
 
-### Ring FinOps Team Plugin
-
-- `using-finops-team` → 3 FinOps agents for Brazilian compliance and cost estimation
-- Auto-loads when ring-finops-team plugin is enabled
-- Located: `finops-team/skills/using-finops-team/SKILL.md`
-- Agents (invoke as `{agent-name}`):
-  - finops-analyzer (compliance analysis)
-  - infrastructure-cost-estimator (cost estimation)
-  - finops-automation (template generation)
-
 ### Hook Configuration
 
 - Each plugin has: `{plugin}/hooks/hooks.json` + `{plugin}/hooks/session-start.sh`
@@ -166,9 +151,9 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Creating Review Agents
 
-1. Add to `default/agents/your-reviewer.md` with output_schema (see [AGENT_DESIGN.md](AGENT_DESIGN.md))
+1. Add to `default/agents/your-reviewer.md` with a documented `## Output Format` body section (see [AGENT_DESIGN.md](AGENT_DESIGN.md))
 
-2. Reference in `default/skills/codereview/SKILL.md:85`
+2. Reference in `default/skills/codereview/SKILL.md` (Reviewers table, lines 33-46)
 
 3. Dispatch via Task tool:
 
@@ -287,7 +272,7 @@ Always dispatch all 10 reviewers in a single message with multiple Task tool cal
 ## Related Documents
 
 - [CLAUDE.md](../CLAUDE.md) - Main project instructions (references this document)
-- [AGENT_DESIGN.md](AGENT_DESIGN.md) - Agent output schemas
+- [AGENT_DESIGN.md](AGENT_DESIGN.md) - Agent output formats
 - [PROMPT_ENGINEERING.md](PROMPT_ENGINEERING.md) - Language patterns
 
 ---
@@ -298,7 +283,7 @@ When adding or removing a code review agent in the `ring:codereview` pool:
 
 **⛔ SEVEN-FILE UPDATE RULE:**
 
-1. Edit `default/skills/codereview/SKILL.md` — update dispatch step (add/remove Task block), state initialization (review_state.reviewers keys), count references ("N reviewers" throughout), output schema Reviewer Verdicts table
+1. Edit `default/skills/codereview/SKILL.md` — update dispatch step (add/remove Task block), state initialization (review_state.reviewers keys), count references ("N reviewers" throughout), output format Reviewer Verdicts table
 2. Edit frontmatter `description` in EVERY peer reviewer agent (`default/agents/*-reviewer.md` and `dev-team/agents/*-reviewer.md`) — "Runs in parallel with..." list must reflect new peer set
 3. Edit body prose `## Your Role` section in EVERY peer reviewer agent — `**Position:**` and `**Critical:** You are one of N parallel reviewers` must reflect new count and peer list
 4. Edit `dev-team/hooks/validate-gate-progression.sh` — reviewer array and count threshold
@@ -310,10 +295,8 @@ When adding or removing a code review agent in the `ring:codereview` pool:
 
 **⛔ ADDITIONAL SWEEP (secondary consumers, should also update same commit):**
 
-- `default/skills/pr-review-multi-source/SKILL.md` — Final-tier reviewer list
-- `default/skills/execute-plan/SKILL.md` — review dispatch instructions
 - `default/skills/using-ring/SKILL.md` — entry-point skill reminder
-- `default/agents/write-plan.md` — output schema instructing plans to dispatch reviewers
+- `default/agents/write-plan.md` — output format instructing plans to dispatch reviewers
 - `install-symlinks.sh` — user-facing install advertisement
 - `docs/PROMPT_ENGINEERING.md` — canonical example of strong language
 - `docs/WORKFLOWS.md` — workflow documentation
@@ -326,14 +309,14 @@ When adding or removing a code review agent in the `ring:codereview` pool:
 ```
 Before committing changes to the codereview pool:
 
-[ ] 1. Updated codereview/SKILL.md (dispatch + state + output schema)?
+[ ] 1. Updated codereview/SKILL.md (dispatch + state + output format)?
 [ ] 2. Updated frontmatter description in ALL peer reviewer agents?
 [ ] 3. Updated body prose Position/Critical in ALL peer reviewer agents?
 [ ] 4. Updated validate-gate-progression.sh (array + threshold)?
 [ ] 5. Updated dev-cycle/SKILL.md (Gate 8 + all "N reviewers" refs)?
 [ ] 6. Updated using-dev-team/SKILL.md (both gate tables)?
 [ ] 7. Updated shared-patterns files enumerating reviewers?
-[ ] 8. Swept secondary consumers (pr-review-multi-source, execute-plan, using-ring, write-plan, docs, marketplace.json)?
+[ ] 8. Swept secondary consumers (using-ring, write-plan, docs, marketplace.json)?
 [ ] 9. Grep sanity: grep -rn "N reviewer|all N" --include="*.md" --include="*.sh" returns zero stale counts?
 
 If any checkbox is no → Fix before committing.
@@ -356,7 +339,7 @@ Root Documentation:
 
 Reference Documentation:
 ├── docs/PROMPT_ENGINEERING.md  # Assertive language patterns
-├── docs/AGENT_DESIGN.md        # Output schemas, standards compliance
+├── docs/AGENT_DESIGN.md        # Output formats, standards compliance
 ├── docs/FRONTMATTER_SCHEMA.md  # Canonical YAML frontmatter fields
 └── docs/WORKFLOWS.md           # Detailed workflow instructions
 
@@ -364,16 +347,12 @@ Plugin Hooks (inject context at session start):
 ├── default/hooks/session-start.sh
 ├── dev-team/hooks/session-start.sh
 ├── pm-team/hooks/session-start.sh
-├── pmo-team/hooks/session-start.sh
-├── finops-team/hooks/session-start.sh
 └── tw-team/hooks/session-start.sh
 
 Using-* Skills (plugin introductions):
 ├── default/skills/using-ring/SKILL.md
 ├── dev-team/skills/using-dev-team/SKILL.md
 ├── pm-team/skills/using-pm-team/SKILL.md
-├── pmo-team/skills/using-pmo-team/SKILL.md
-├── finops-team/skills/using-finops-team/SKILL.md
 └── tw-team/skills/using-tw-team/SKILL.md
 ```
 
@@ -414,8 +393,7 @@ Before adding any content to prompts, skills, agents, or documentation:
 | Plugin overview       | README.md                                                |
 | Agent requirements    | CLAUDE.md (Agent Modification section)                   |
 | Shared skill patterns | `{plugin}/skills/shared-patterns/*.md`                   |
-| Standards modules     | `platforms/opencode/standards/{stack}/{module}.md`       |
-| Standards manifesto   | `platforms/opencode/standards/{stack}/_index.md`         |
+| Standards modules     | `dev-team/docs/standards/{stack}/{module}.md`            |
 
 **Shared Patterns Rule (MANDATORY):**
 When content is reused across multiple skills within a plugin:

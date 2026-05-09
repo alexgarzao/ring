@@ -157,7 +157,7 @@ flowchart LR
     agent -.->|"testing tasks"| qa
     agent -.->|"frontend/UI tasks"| bff
     agent --> pr
-    agent -.->|"when from ring:execute-plan"| predev
+    agent -.->|"when from ring:dev-cycle"| predev
 ```
 
 ### 3.2 ring:backend-engineer-typescript
@@ -232,7 +232,7 @@ flowchart LR
     agent --> sw & sct & sar & asd & sbe
     agent -.->|"when ANALYSIS mode"| scd
     agent --> pr
-    agent -.->|"when from ring:execute-plan"| predev
+    agent -.->|"when from ring:dev-cycle"| predev
     agent --> pkg
     pkg --> mode
     mode -->|"YES"| deco

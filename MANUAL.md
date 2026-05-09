@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 6 plugins with 102 skills and 41 agents for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 4 plugins with 76 skills and 32 agents for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -8,21 +8,19 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────┐
-│                              MARKETPLACE (6 PLUGINS)                               │
+│                              MARKETPLACE (4 PLUGINS)                               │
 │                     (monorepo: .claude-plugin/marketplace.json)                    │
 │                                                                                    │
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐      │
-│  │ ring-default  │  │ ring-dev-team │  │ ring-pm-team  │  │ring-finops-   │      │
-│  │  Skills(24)   │  │  Skills(38)   │  │  Skills(18)   │  │  team         │      │
-│  │  Agents(10)   │  │  Agents(15)   │  │  Agents(4)    │  │  Skills(7)    │      │
-│  │               │  │               │  │               │  │  Agents(3)    │      │
-│  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘      │
-│  ┌───────────────┐  ┌───────────────┐                                            │
-│  │ ring-tw-team  │  │ ring-pmo-team │                                            │
-│  │  Skills(6)    │  │  Skills(9)    │                                            │
-│  │  Agents(3)    │  │  Agents(6)    │                                            │
-│  │               │  │               │                                            │
-│  └───────────────┘  └───────────────┘                                            │
+│  ┌───────────────┐  ┌───────────────┐                                              │
+│  │ ring-default  │  │ ring-dev-team │                                              │
+│  │  Skills(14)   │  │  Skills(38)   │                                              │
+│  │  Agents(10)   │  │  Agents(15)   │                                              │
+│  └───────────────┘  └───────────────┘                                              │
+│  ┌───────────────┐  ┌───────────────┐                                              │
+│  │ ring-pm-team  │  │ ring-tw-team  │                                              │
+│  │  Skills(18)   │  │  Skills(6)    │                                              │
+│  │  Agents(4)    │  │  Agents(3)    │                                              │
+│  └───────────────┘  └───────────────┘                                              │
 └────────────────────────────────────────────────────────────────────────────────────┘
 
                               HOW IT WORKS
@@ -74,28 +72,15 @@ Ring is auto-loaded at session start. Two ways to invoke Ring capabilities:
 
 ## 💡 About Skills
 
-Skills (100) are the primary invocation mechanism for Ring. They can be invoked directly by users (`Skill tool: "ring:skill-name"`) or applied automatically by Claude Code when it detects they're applicable. They handle testing, debugging, verification, planning, code review enforcement, and more.
+Skills (76) are the primary invocation mechanism for Ring. They can be invoked directly by users (`Skill tool: "ring:skill-name"`) or applied automatically by Claude Code when it detects they're applicable. They handle testing, debugging, verification, planning, code review enforcement, and more.
 
-Examples: ring:test-driven-development, ring:systematic-debugging, ring:codereview, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
+Examples: ring:test-driven-development, ring:codereview, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
 ### Skill Selection Criteria
 
-Each skill has structured frontmatter that helps Claude Code determine which skill to use:
+See [docs/FRONTMATTER_SCHEMA.md](docs/FRONTMATTER_SCHEMA.md) for the canonical schema. Skill selection now relies on the condensed `description` field plus body sections like `## When to use` / `## Skip when` / `## Sequence` / `## Related`.
 
-| Field         | Purpose                           | Example                                  |
-| ------------- | --------------------------------- | ---------------------------------------- |
-| `description` | WHAT the skill does               | "Four-phase debugging framework..."      |
-| `trigger`     | WHEN to use (specific conditions) | "Bug reported", "Test failure observed"  |
-| `skip_when`   | WHEN NOT to use (exclusions)      | "Root cause already known → just fix it" |
-| `sequence`    | Workflow ordering (optional)      | `after: [prd-creation]`                  |
-| `related`     | Similar/complementary skills      | `similar: [systematic-debugging]`        |
-
-**How Claude Code chooses skills:**
-
-1. Checks `trigger` conditions against current context
-2. Uses `skip_when` to differentiate from similar skills
-3. Considers `sequence` for workflow ordering
-4. References `related` for disambiguation when multiple skills match
+Claude Code matches user intent against the skill's `description` field at SessionStart; body sections provide additional context once the skill is invoked.
 
 ---
 
@@ -205,47 +190,22 @@ For documentation creation and review:
 | `ring:api-writer`        | API reference documentation  | Endpoints, schemas, examples         |
 | `ring:docs-reviewer`     | Documentation quality review | Voice, tone, structure, completeness |
 
-### Regulatory & FinOps (ring-finops-team)
-
-For Brazilian financial compliance workflows and cost analysis:
-
-| Agent                                | Purpose                        | Use For                                         |
-| ------------------------------------ | ------------------------------ | ----------------------------------------------- |
-| `ring:finops-analyzer`               | Regulatory compliance analysis | Field mapping, BACEN/RFB validation (Gates 1-2) |
-| `ring:finops-automation`             | Template generation            | Create .tpl files (Gate 3)                      |
-| `ring:infrastructure-cost-estimator` | Cost estimation and analysis   | Infrastructure cost planning and optimization   |
-
-### PMO Specialists (ring-pmo-team)
-
-For portfolio-level project management and oversight:
-
-| Agent                        | Purpose                   | Use For                                         |
-| ---------------------------- | ------------------------- | ----------------------------------------------- |
-| `ring:portfolio-manager`     | Portfolio-level planning  | Multi-project coordination, strategic alignment |
-| `ring:resource-planner`      | Capacity planning         | Resource allocation, conflict resolution        |
-| `ring:risk-analyst`          | Portfolio risk management | Risk identification, mitigation planning        |
-| `ring:governance-specialist` | Process compliance        | Gate reviews, audit readiness                   |
-| `ring:executive-reporter`    | Executive communications  | Dashboards, board packages, status summaries    |
-| `ring:delivery-reporter`     | Delivery reporting        | Delivery status reports and tracking            |
-
 ---
 
 ## 📖 Common Workflows
 
 ### New Feature Development
 
-1. **Design** → Use `ring:brainstorm` skill
-2. **Plan** → Use `ring:pre-dev-feature` skill (or `ring:pre-dev-full` if complex)
-3. **Isolate** → Use `ring:worktree` skill
-4. **Implement** → Use `ring:test-driven-development` skill
-5. **Review** → Use `ring:codereview` skill (dispatches 10 reviewers)
-6. **Commit** → Use `ring:commit` skill
+1. **Plan** → Use `ring:pre-dev-feature` skill (or `ring:pre-dev-full` if complex)
+2. **Isolate** → Use `ring:worktree` skill
+3. **Implement** → Use `ring:test-driven-development` skill
+4. **Review** → Use `ring:codereview` skill (dispatches 10 reviewers)
+5. **Commit** → Use `ring:commit` skill
 
 ### Bug Investigation
 
-1. **Investigate** → Use `ring:systematic-debugging` skill
-2. **Implement** → Use `ring:test-driven-development` skill
-3. **Review & Merge** → Use `ring:codereview` + `ring:commit` skills
+1. **Implement fix** → Use `ring:test-driven-development` skill
+2. **Review & Merge** → Use `ring:codereview` + `ring:commit` skills
 
 ### Code Review
 
@@ -266,22 +226,6 @@ Runs in parallel:
     ↓
 Consolidated report with recommendations
 ```
-
-### Creating a Lerian-branded presentation
-
-`ring:deck` scaffolds a self-contained Node project with dev server, presenter view, mobile remote, and PDF export. Use for board decks, investor updates, conference talks, all-hands presentations.
-
-**Trigger phrases:** "make a deck", "board deck", "investor deck", "slide deck"
-
-**Example:**
-
-> **User:** Build me a board deck for Q2 — 15 slides, strategic overview + financials + product roadmap.
->
-> **Claude:** [invokes ring:deck, scaffolds `2026-q2-board/`, composes 15 slides across cover/agenda/act-divider/content/content-dark/appendix archetypes, embeds speaker notes, prints next-steps]
-
-**Output:** `<deck-name>/deck.html` + tooling. `pnpm dev` to present; `pnpm export` for PDF.
-
-See [default/skills/deck/SKILL.md](default/skills/deck/SKILL.md) for the full reference.
 
 ---
 
@@ -304,7 +248,6 @@ These enforce quality standards:
 
 | Situation                                              | Use This                       |
 | ------------------------------------------------------ | ------------------------------ |
-| New feature, unsure about design                       | `ring:brainstorm` (skill)      |
 | Feature will take < 2 days                             | `ring:pre-dev-feature` (skill) |
 | Feature will take ≥ 2 days or has complex dependencies | `ring:pre-dev-full` (skill)    |
 | Need implementation tasks                              | `ring:write-plan` (skill)      |
@@ -341,15 +284,6 @@ These enforce quality standards:
 | Functional documentation (guides) | `ring:functional-writer`                    |
 | API reference documentation       | `ring:api-writer`                           |
 | Documentation quality review      | `ring:docs-reviewer`                        |
-| Regulatory compliance analysis    | `ring:finops-analyzer`                      |
-| Regulatory template generation    | `ring:finops-automation`                    |
-| Infrastructure cost estimation    | `ring:infrastructure-cost-estimator`        |
-| Portfolio-level planning          | `ring:portfolio-manager`                    |
-| Resource capacity planning        | `ring:resource-planner`                     |
-| Portfolio risk assessment         | `ring:risk-analyst`                         |
-| Governance and compliance         | `ring:governance-specialist`                |
-| Executive reporting               | `ring:executive-reporter`                   |
-| Delivery status reporting         | `ring:delivery-reporter`                    |
 
 ---
 
@@ -358,7 +292,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 102 skills are auto-discovered and available
+2. All 76 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching
@@ -370,7 +304,7 @@ Task tool:
     ↓
 Runs agent
     ↓
-Returns structured output per agent's output_schema
+Returns structured markdown output per the agent's documented sections
 ```
 
 ### Parallel Review Pattern
