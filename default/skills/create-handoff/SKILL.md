@@ -1,20 +1,20 @@
 ---
 name: ring:create-handoff
 description: Create handoff documents capturing session state for seamless context-clear and resume
-
-trigger: |
-  - User is ending a session and wants to preserve context for later
-  - Context window is getting large and a fresh start would be beneficial
-  - Handing off work to another person or AI session
-  - User says "handoff", "save session", "wrap up", or "context transfer"
-
-skip_when: |
-  - Session has minimal context that does not warrant a handoff document
-  - User simply wants to end the conversation without resuming later
-  - Work is fully complete with nothing pending
 ---
 
 # Session Handoff Skill
+
+## When to use
+- User is ending a session and wants to preserve context for later
+- Context window is getting large and a fresh start would be beneficial
+- Handing off work to another person or AI session
+- User says "handoff", "save session", "wrap up", or "context transfer"
+
+## Skip when
+- Session has minimal context that does not warrant a handoff document
+- User simply wants to end the conversation without resuming later
+- Work is fully complete with nothing pending
 
 Creates a handoff document capturing session context, delivered via Claude Code's Plan Mode so the user gets a native "clear context and continue implementing" option.
 

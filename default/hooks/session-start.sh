@@ -173,7 +173,6 @@ else
 fi
 
 # Escape outputs for JSON using RFC 8259 compliant escaping
-# Note: using-ring content is already included in skills_overview via generate-skills-ref.py
 overview_escaped=$(json_escape "$skills_overview")
 critical_rules_escaped=$(json_escape "$CRITICAL_RULES")
 doubt_questions_escaped=$(json_escape "$DOUBT_QUESTIONS")

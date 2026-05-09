@@ -1,23 +1,30 @@
 ---
 name: ring:production-readiness-audit
-description: Comprehensive Ring-standards-aligned 44-dimension production readiness audit. Detects project stack, loads Ring standards via WebFetch, and runs in batches of 10 explorers appending incrementally to a single report file. Categories - Structure (pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks), Security (auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors), Operations (telemetry, health, config, connections, logging, resilience, graceful-degradation), Quality (idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching), Infrastructure (containers, hardening, cicd, async, makefile, license). Produces scored report (0-430, max 440 with multi-tenant) with severity ratings and standards cross-reference.
-
-trigger: |
-  - Preparing a service for production deployment
-  - Conducting periodic security or quality review of a codebase
-  - Onboarding to assess codebase health and maturity
-  - Evaluating technical debt before a major release
-  - Validating compliance with Ring engineering standards
-
-skip_when: |
-  - Project is a prototype or throwaway proof-of-concept not heading to production
-  - Codebase is a library or SDK with no deployable service component
-  - User only needs a single-dimension check (use targeted review instead)
+description: Ring-standards-aligned production readiness audit across Structure, Security, Operations, Quality, and Infrastructure — 43 base dimensions + 1 conditional (multi-tenant) = up to 44 dimensions. Use before production deployment, periodic reviews, onboarding, or major releases. Skip for prototypes, libraries, or single-dimension checks. Runs explorers in batches of 10 and produces a scored report (0-430 base, max 440 with multi-tenant) with severity ratings.
 ---
 
 # Production Readiness Audit
 
-A multi-agent audit system evaluating 44 dimensions across 5 categories, aligned with Ring development standards. Detects project stack, loads relevant standards via WebFetch, runs explorers in **batches of 10**, appending results incrementally to a single report file.
+## When to use
+- Preparing a service for production deployment
+- Conducting periodic security or quality review of a codebase
+- Onboarding to assess codebase health and maturity
+- Evaluating technical debt before a major release
+- Validating compliance with Ring engineering standards
+
+## Skip when
+- Project is a prototype or throwaway proof-of-concept not heading to production
+- Codebase is a library or SDK with no deployable service component
+- User only needs a single-dimension check (use targeted review instead)
+
+## Audit categories
+- **Structure** (11): pagination, errors, routes, bootstrap, runtime, core deps, naming, domain modeling, nil-safety, api-versioning, resource-leaks
+- **Security** (9): auth, IDOR, SQL, validation, secret-scanning, data-encryption, multi-tenant, rate-limiting, cors
+- **Operations** (7): telemetry, health, config, connections, logging, resilience, graceful-degradation
+- **Quality** (10): idempotency, docs, debt, testing, dependencies, performance, concurrency, migrations, linting, caching
+- **Infrastructure** (6): containers, hardening, cicd, async, makefile, license
+
+A multi-agent audit system evaluating **43 base dimensions + 1 conditional (multi-tenant) = up to 44 dimensions** across 5 categories, aligned with Ring development standards. Detects project stack, loads relevant standards via WebFetch, runs explorers in **batches of 10**, appending results incrementally to a single report file.
 
 **Announce at start:** "Using ring:production-readiness-audit to audit {N} dimensions in 5 batches."
 

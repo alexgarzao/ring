@@ -4,23 +4,24 @@ description: |
   Creates or audits Dockerfiles to achieve Docker Hub Health Score grade A.
   Enforces non-root user, minimal base images, supply chain attestations,
   and zero fixable CVEs.
-
-trigger: |
-  - Creating a new Dockerfile
-  - Auditing an existing Dockerfile for security
-  - Preparing images for Docker Hub publication
-  - Docker Hub health score is below grade A
-
-skip_when: |
-  - Project has no Dockerfile and none is being created
-  - Changes are application-code only with no Docker modifications
-  - Using pre-built images without custom Dockerfile
-
-related:
-  complementary: [ring:dev-devops, ring:dev-sre]
 ---
 
 # Docker Security (Health Score Grade A)
+
+## When to use
+- Creating a new Dockerfile
+- Auditing an existing Dockerfile for security
+- Preparing images for Docker Hub publication
+- Docker Hub health score is below grade A
+
+## Skip when
+- Project has no Dockerfile and none is being created
+- Changes are application-code only with no Docker modifications
+- Using pre-built images without custom Dockerfile
+
+## Related
+**Complementary:** ring:dev-devops, ring:dev-sre
+
 
 General Dockerfile patterns: `dev-team/docs/standards/devops.md#containers`.
 This skill focuses on Docker Hub Health Score compliance.

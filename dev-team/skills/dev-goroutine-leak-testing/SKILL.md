@@ -4,28 +4,29 @@ description: |
   Goroutine leak detection skill — detects goroutine usage in Go code, runs goleak
   to identify memory leaks, and dispatches ring:backend-engineer-golang to fix leaks
   and create regression tests.
-
-trigger: |
-  - Code contains goroutine patterns (go func(), go methodCall())
-  - After unit testing gate or during code review
-  - Suspected memory leak in production
-  - Need to verify goroutine-heavy code doesn't leak
-
-skip_when: |
-  - Codebase contains no goroutine usage
-  - Not a Go project
-  - Task is documentation-only, configuration-only, or non-code
-  - Changes do not touch any concurrent code paths
-
-sequence:
-  after: [ring:dev-unit-testing]
-  before: [ring:codereview]
-
-related:
-  complementary: [ring:qa-analyst, ring:backend-engineer-golang]
 ---
 
 # Goroutine Leak Testing
+
+## When to use
+- Code contains goroutine patterns (go func(), go methodCall())
+- After unit testing gate or during code review
+- Suspected memory leak in production
+- Need to verify goroutine-heavy code doesn't leak
+
+## Skip when
+- Codebase contains no goroutine usage
+- Not a Go project
+- Task is documentation-only, configuration-only, or non-code
+- Changes do not touch any concurrent code paths
+
+## Sequence
+**Runs before:** ring:codereview
+**Runs after:** ring:dev-unit-testing
+
+## Related
+**Complementary:** ring:qa-analyst, ring:backend-engineer-golang
+
 
 Standards: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md` → "Goroutine Leak Detection" section.
 

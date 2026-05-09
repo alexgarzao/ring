@@ -3,27 +3,27 @@
 Generate skills quick reference from skill frontmatter.
 Scans skills/ directory and extracts metadata from SKILL.md files.
 
-New schema fields:
+Anthropic-canonical schema:
 - name: Skill identifier
-- description: WHAT the skill does (method/technique)
-- trigger: WHEN to use (specific conditions) - primary decision field
-- skip_when: WHEN NOT to use (exclusions) - differentiation field
-- NOT_skip_when: WHEN to STILL use despite skip_when signals - override field
-- prerequisites: What must be true/done before using this skill
-- verification: HOW to verify the skill's gate passed (e.g., coverage thresholds, build success)
-- sequence.after: Skills that should come before
-- sequence.before: Skills that typically follow
-- related.similar: Skills that seem similar but differ
-- related.complementary: Skills that pair well
+- description: WHAT the skill does and WHEN to use it (the description
+  itself self-contains the trigger essence)
+
+Output: one line per skill, grouped by category. Each line is
+"- **name**: description" with the description condensed to a single
+line (whitespace collapsed).
 """
 
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+# Plugin directories to scan.
+# MUST stay in sync with validate-frontmatter.py:ALL_PLUGINS
+ALL_PLUGINS = ["default", "dev-team", "pm-team", "tw-team"]
 
 # Category patterns for grouping skills
+# MUST stay in sync with generate-skills-ref.sh categorize_skill case statement.
 CATEGORIES = {
     "Pre-Dev Workflow": [r"^pre-dev-"],
     "Testing & Debugging": [
@@ -66,24 +66,10 @@ class Skill:
         name: str,
         description: str,
         directory: str,
-        trigger: str = "",
-        skip_when: str = "",
-        not_skip_when: str = "",
-        prerequisites: Any = "",
-        verification: Any = "",
-        sequence: Optional[Dict[str, List[str]]] = None,
-        related: Optional[Dict[str, List[str]]] = None,
     ):
         self.name = name
         self.description = description
         self.directory = directory
-        self.trigger = trigger or ""
-        self.skip_when = skip_when or ""
-        self.not_skip_when = not_skip_when or ""
-        self.prerequisites = prerequisites if prerequisites is not None else ""
-        self.verification = verification if verification is not None else ""
-        self.sequence = sequence or {}
-        self.related = related or {}
         self.category = self._categorize()
 
     def _categorize(self) -> str:
@@ -98,20 +84,15 @@ class Skill:
         return f"Skill(name={self.name}, category={self.category})"
 
 
-def first_line(text: str) -> str:
-    """Extract first meaningful line from multi-line text."""
+def condense_description(text: str) -> str:
+    """Collapse a (possibly multi-line block-scalar) description into a
+    single readable line for the quick reference.
+    """
     if not text:
         return ""
-    # Remove leading/trailing whitespace, take first line
-    lines = text.strip().split("\n")
-    for line in lines:
-        line = line.strip()
-        # Skip list markers and empty lines
-        if line and not line.startswith("-"):
-            return line
-        elif line.startswith("- "):
-            return line[2:]  # Return first list item without marker
-    return lines[0].strip() if lines else ""
+    # Replace newlines with spaces, then collapse runs of whitespace.
+    one_line = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
+    return one_line
 
 
 def parse_frontmatter_yaml(content: str) -> Optional[Dict[str, Any]]:
@@ -136,9 +117,8 @@ def parse_frontmatter_fallback(content: str) -> Optional[Dict[str, Any]]:
     """Fallback parser using regex when pyyaml unavailable.
 
     Handles:
-    - Simple scalar fields: name, description, trigger, skip_when, NOT_skip_when, when_to_use, prerequisites, verification
-    - Multi-line block scalars (|) - extracts first meaningful line
-    - Nested structures: sequence, related - parses sub-fields with arrays
+    - Simple scalar fields: name, description
+    - Multi-line block scalars (|) for description
     """
     match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
     if not match:
@@ -155,25 +135,13 @@ def parse_frontmatter_fallback(content: str) -> Optional[Dict[str, Any]]:
 
     result = {}
 
-    # Extract simple/block scalar fields
-    # Known top-level field names (prevents false matches on "error:" etc in values)
-    simple_fields = [
-        "name",
-        "description",
-        "trigger",
-        "skip_when",
-        "NOT_skip_when",
-        "when_to_use",
-        "prerequisites",
-        "verification",
-    ]
-    all_fields = simple_fields + ["sequence", "related"]
-    fields_pattern = "|".join(all_fields)
+    # Known top-level field names — Anthropic-canonical schema for skills.
+    simple_fields = ["name", "description"]
+    fields_pattern = "|".join(simple_fields)
 
     for field in simple_fields:
         # Match field: value OR field: | followed by indented content
         # Capture until next known top-level field or end of frontmatter
-        # Using explicit field list prevents matching "error:" inside values
         pattern = rf"^{field}:\s*\|?\s*\n?(.*?)(?=^(?:{fields_pattern}):|\Z)"
         field_match = re.search(pattern, frontmatter_text, re.MULTILINE | re.DOTALL)
         if field_match:
@@ -189,35 +157,12 @@ def parse_frontmatter_fallback(content: str) -> Optional[Dict[str, Any]]:
                     if cleaned and not cleaned.startswith("#"):
                         lines.append(cleaned)
                 if lines:
-                    # For quick reference, use first meaningful line
-                    result[field] = lines[0]
-
-    # Handle nested structures: sequence and related
-    for nested_field in ["sequence", "related"]:
-        # Match the nested block (indented content under field:)
-        pattern = rf"^{nested_field}:\s*\n((?:[ \t]+[^\n]*\n?)+)"
-        nested_match = re.search(pattern, frontmatter_text, re.MULTILINE)
-        if nested_match:
-            nested_text = nested_match.group(1)
-            result[nested_field] = {}
-
-            # Parse sub-fields: after, before, similar, complementary
-            # Format: subfield: [item1, item2] or subfield: [item1]
-            subfields = ["after", "before", "similar", "complementary"]
-            for subfield in subfields:
-                # Match: subfield: [contents]
-                sub_pattern = rf"^\s*{subfield}:\s*\[([^\]]*)\]"
-                sub_match = re.search(sub_pattern, nested_text, re.MULTILINE)
-                if sub_match:
-                    items_str = sub_match.group(1)
-                    # Parse comma-separated items, strip whitespace
-                    items = [s.strip() for s in items_str.split(",") if s.strip()]
-                    if items:
-                        result[nested_field][subfield] = items
-
-            # Remove empty nested dicts
-            if not result[nested_field]:
-                del result[nested_field]
+                    # For description, join all lines with spaces (block scalar);
+                    # for name, the first line is the value.
+                    if field == "description":
+                        result[field] = " ".join(lines)
+                    else:
+                        result[field] = lines[0]
 
     return result if result else None
 
@@ -237,31 +182,13 @@ def parse_skill_file(skill_path: Path) -> Optional[Skill]:
             print(f"Warning: Missing name in {skill_path}", file=sys.stderr)
             return None
 
-        # Handle backward compatibility: use when_to_use as trigger if trigger not set
-        trigger = frontmatter.get("trigger", "")
-        if not trigger:
-            trigger = frontmatter.get("when_to_use", "")
-        if not trigger:
-            # Fall back to description for old-style skills
-            trigger = frontmatter.get("description", "")
-
-        # Get description - prefer dedicated description field
-        description = frontmatter.get("description", "")
+        description = frontmatter.get("description", "") or ""
 
         directory = skill_path.parent.name
         return Skill(
             name=frontmatter["name"],
             description=description,
             directory=directory,
-            trigger=trigger,
-            skip_when=frontmatter.get("skip_when") or "",
-            not_skip_when=frontmatter.get("NOT_skip_when") or "",
-            prerequisites=frontmatter.get("prerequisites")
-            or frontmatter.get("prerequisite")
-            or "",
-            verification=frontmatter.get("verification") or "",
-            sequence=frontmatter.get("sequence") or {},
-            related=frontmatter.get("related") or {},
         )
 
     except Exception as e:
@@ -281,6 +208,9 @@ def scan_skills_directory(skills_dir: Path) -> List[Skill]:
         if not skill_dir.is_dir():
             continue
 
+        if skill_dir.name == "shared-patterns":
+            continue
+
         skill_file = skill_dir / "SKILL.md"
         if not skill_file.exists():
             print(f"Warning: No SKILL.md in {skill_dir.name}", file=sys.stderr)
@@ -293,67 +223,11 @@ def scan_skills_directory(skills_dir: Path) -> List[Skill]:
     return skills
 
 
-def _safe_display_text(value: Any) -> str:
-    """Extract a single display line from a value that may be str, dict, list, or None."""
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        return first_line(value)
-    if isinstance(value, list):
-        items = [
-            item.get("name", str(item)) if isinstance(item, dict) else str(item)
-            for item in value
-            if item is not None
-        ]
-        return ", ".join(items) if items else ""
-    # dict or other types — not suitable for one-line display
-    return ""
-
-
-def _format_prerequisites(value: Any) -> str:
-    """Format prerequisites which may be a string, list of dicts, or list of strings."""
-    if value is None:
-        return ""
-    if isinstance(value, list):
-        names = [
-            item.get("name", str(item)) if isinstance(item, dict) else str(item)
-            for item in value
-            if item is not None
-        ]
-        return ", ".join(names) if names else ""
-    if isinstance(value, str):
-        return first_line(value)
-    return ""
-
-
-def _format_verification(value: Any) -> str:
-    """Format verification which may be a string, nested dict, or None."""
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        return first_line(value)
-    if isinstance(value, dict):
-        # Extract first automated command description for display
-        automated = value.get("automated", [])
-        if automated and isinstance(automated, list):
-            first = automated[0]
-            if isinstance(first, dict):
-                return first.get("description", first.get("command", ""))
-        manual = value.get("manual", [])
-        if manual and isinstance(manual, list):
-            first_manual = manual[0]
-            return str(first_manual) if first_manual else ""
-        return ""
-    return ""
-
-
 def generate_markdown(skills: List[Skill]) -> str:
     """Generate markdown quick reference from skills list.
 
-    New format is decision-focused:
-    - Shows trigger (WHEN to use) as primary decision criteria
-    - Shows skip_when to differentiate from similar skills
-    - Shows sequence for workflow ordering
+    Single-line per skill: `- **name**: description`. The description
+    self-contains the trigger essence in the Anthropic-canonical schema.
     """
     if not skills:
         return "# Ring Skills Quick Reference\n\n**No skills found.**\n"
@@ -378,21 +252,8 @@ def generate_markdown(skills: List[Skill]) -> str:
         lines.append(f"## {category} ({len(category_skills)} skills)\n")
 
         for skill in sorted(category_skills, key=lambda s: s.name):
-            # Skill name and description
-            lines.append(f"- **{skill.name}**: {first_line(skill.description)}")
-            # Optional decision fields (only shown when present)
-            skip_text = _safe_display_text(skill.skip_when)
-            not_skip_text = _safe_display_text(skill.not_skip_when)
-            prereq_text = _format_prerequisites(skill.prerequisites)
-            verification_text = _format_verification(skill.verification)
-            if skip_text:
-                lines.append(f"  - Skip when: {skip_text}")
-            if not_skip_text:
-                lines.append(f"  - NOT skip when: {not_skip_text}")
-            if prereq_text:
-                lines.append(f"  - Prerequisites: {prereq_text}")
-            if verification_text:
-                lines.append(f"  - Verification: {verification_text}")
+            desc = condense_description(skill.description)
+            lines.append(f"- **{skill.name}**: {desc}")
 
         lines.append("")  # Blank line between categories
 
@@ -404,15 +265,29 @@ def generate_markdown(skills: List[Skill]) -> str:
     return "\n".join(lines)
 
 
+def scan_all_plugins(repo_root: Path, plugins: List[str]) -> List[Skill]:
+    """Aggregate skills across every plugin in `plugins`.
+
+    Plugin directories without a `skills/` subdirectory are skipped silently
+    (matches validate-frontmatter.py behavior).
+    """
+    aggregated: List[Skill] = []
+    for plugin in plugins:
+        skills_dir = repo_root / plugin / "skills"
+        if not skills_dir.is_dir():
+            continue
+        aggregated.extend(scan_skills_directory(skills_dir))
+    return aggregated
+
+
 def main():
     """Main entry point."""
-    # Determine plugin root (parent of hooks directory)
+    # This script lives in default/hooks/, so the marketplace root is two up.
     script_dir = Path(__file__).parent.resolve()
-    plugin_root = script_dir.parent
-    skills_dir = plugin_root / "skills"
+    repo_root = script_dir.parent.parent
 
-    # Scan and parse skills
-    skills = scan_skills_directory(skills_dir)
+    # Scan and parse skills across every active plugin
+    skills = scan_all_plugins(repo_root, ALL_PLUGINS)
 
     if not skills:
         print("Error: No valid skills found", file=sys.stderr)

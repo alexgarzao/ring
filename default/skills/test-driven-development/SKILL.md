@@ -3,21 +3,18 @@ name: ring:test-driven-development
 description: |
   RED-GREEN-REFACTOR implementation methodology - write failing test first,
   minimal implementation to pass, then refactor. Ensures tests verify behavior.
-
-trigger: |
-  - Starting implementation of new feature
-  - Starting implementation of bugfix
-  - Writing new production code
-
-skip_when: |
-  - Reviewing/modifying existing tests → use ring:testing-anti-patterns
-  - Exploratory/spike work → consider brainstorm first
-
-related:
-  complementary: [ring:testing-anti-patterns, ring:systematic-debugging]
 ---
 
 # Test-Driven Development (TDD)
+
+## When to use
+- Starting implementation of new feature
+- Starting implementation of bugfix
+- Writing new production code
+
+## Skip when
+- Reviewing/modifying existing tests
+- Exploratory/spike work — TDD is for known requirements, not exploration.
 
 Write the test first. Watch it fail. Write minimal code to pass.
 
@@ -70,7 +67,9 @@ Next failing test for next feature.
 **Only one action: DELETE IT. Immediately.**
 
 ```bash
-rm <files>   # or git reset --hard
+rm <files>                                  # remove new files
+git restore --staged --worktree <files>     # discard changes to tracked files
+# Destructive operations (e.g., git reset --hard) require user confirmation.
 ```
 
 **Delete means gone forever.** These are NOT deleting: git stash, mv to .bak, commenting out, keeping as "reference."

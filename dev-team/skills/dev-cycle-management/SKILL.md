@@ -1,16 +1,19 @@
 ---
 name: ring:dev-cycle-management
 description: Development cycle state management — status reporting and cycle cancellation
-trigger: |
-  - User wants to check the status of a running development cycle
-  - User wants to cancel an active development cycle
-  - Invoked with mode=status or mode=cancel
-skip_when: |
-  - No development cycle is active or was recently started
-  - User is asking about general project status (not cycle-specific)
 ---
 
 # Cycle Management
+
+## When to use
+- User wants to check the status of a running development cycle
+- User wants to cancel an active development cycle
+- Invoked with mode=status or mode=cancel
+
+## Skip when
+- No development cycle is active or was recently started
+- User is asking about general project status (not cycle-specific)
+
 
 Unified skill for managing development cycle state. Provides two modes: **status** (read-only inspection) and **cancel** (state mutation with confirmation).
 

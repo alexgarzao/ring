@@ -4,24 +4,25 @@ description: |
   Intercepts and audits dependency installations (pip, npm, go) before they execute.
   Validates package identity, checks vulnerabilities, flags supply-chain risk signals,
   and enforces hash pinning in lockfiles.
-
-trigger: |
-  - Adding a new dependency to any project
-  - Running pip install, npm install, go get, or equivalent
-  - Auditing existing dependencies for supply-chain risk
-  - Reviewing a PR that adds or updates dependencies
-  - Investigating a potential supply-chain compromise
-
-skip_when: |
-  - No dependencies are being added, updated, or audited
-  - Task involves only internal code changes with no new imports
-  - Dependency is already vetted and pinned in lockfile
-
-related:
-  complementary: [ring:dev-docker-security, ring:dev-implementation]
 ---
 
 # Dependency Security Check
+
+## When to use
+- Adding a new dependency to any project
+- Running pip install, npm install, go get, or equivalent
+- Auditing existing dependencies for supply-chain risk
+- Reviewing a PR that adds or updates dependencies
+- Investigating a potential supply-chain compromise
+
+## Skip when
+- No dependencies are being added, updated, or audited
+- Task involves only internal code changes with no new imports
+- Dependency is already vetted and pinned in lockfile
+
+## Related
+**Complementary:** ring:dev-docker-security, ring:dev-implementation
+
 
 Supply-chain gate for every install command in a Lerian codebase.
 

@@ -1,27 +1,31 @@
 ---
 name: ring:pre-dev-trd-creation
 description: |
-  Gate 3: Technical architecture document - defines HOW/WHERE with technology-agnostic
+  Gate 3 (Full Track) / Gate 2 (Small Track): Technical architecture document - defines HOW/WHERE with technology-agnostic
   patterns before concrete implementation choices.
-
-trigger: |
-  - PRD passed Gate 1 (required)
-  - Feature Map passed Gate 2 (if Large Track)
-  - Design Validation passed Gate 1.5/2.5 (if feature has UI)
-  - About to design technical architecture
-
-skip_when: |
-  - PRD not validated → complete Gate 1 first
-  - Design Validation not passed (for UI features) → complete Gate 1.5/2.5 first
-  - Architecture already documented → proceed to API Design
-  - Pure business requirement change → update PRD
-
-sequence:
-  after: [ring:pre-dev-prd-creation, ring:pre-dev-feature-map, ring:pre-dev-design-validation]
-  before: [ring:pre-dev-api-design, ring:pre-dev-task-breakdown]
 ---
 
 # TRD Creation — Architecture Before Implementation
+
+## When to use
+
+- PRD passed Gate 1
+- Feature Map passed Gate 2 (Full Track only)
+- Design Validation passed Gate 1.5 (Small Track) / Gate 2.5 (Full Track) (if feature has UI)
+- About to design technical architecture
+
+## Skip when
+
+- PRD not validated → complete Gate 1 first
+- Design Validation not passed (for UI features) → complete Gate 1.5/2.5 first
+- Architecture already documented → proceed to API Design
+- Pure business requirement change → update PRD
+
+## Sequence
+
+**Runs before:** ring:pre-dev-api-design, ring:pre-dev-task-breakdown
+**Runs after:** ring:pre-dev-prd-creation, ring:pre-dev-feature-map, ring:pre-dev-design-validation
+
 
 The TRD defines HOW to architect the solution and WHERE components will live — using technology-agnostic patterns before concrete technology choices.
 

@@ -1,51 +1,53 @@
 ---
 name: ring:creating-grafana-dashboards
 description: |
-  Discovery, deliberation, and authoring skill for Lerian PM teams to produce Grafana dashboards
-  rooted in the actual telemetry shipped by a Go service. Three layered phases: Sweep (parallel
-  codebase walk via lib-commons/opentelemetry to inventory metrics, traces, log fields, and
-  cross-cutting concerns), Iterate (PM-facing deliberation on themes, audiences, SLIs/SLOs,
-  alert posture), Author (Grafonnet libsonnet generation per approved theme, compiled to JSON
-  in CI). Produces THREE artifacts: docs/dashboards/telemetry-dictionary.md (machine-parseable
-  contract), docs/dashboards/{theme}/dashboard-plan.md (PM-validated panel layout per theme),
-  and docs/dashboards/{theme}/*.libsonnet (Grafonnet sources). Installs a blocking CI gate
-  enforcing zero drift between code-emitted telemetry and the committed dictionary from day 1.
-
-trigger: |
-  Sweep mode:
-  - "Create / scaffold Grafana dashboards for this service"
-  - "Inventory telemetry / build telemetry dictionary"
-  - "Audit observability before designing dashboards"
-  - "Produce dashboards as code for {service}"
-  - "PM wants visibility into {domain} — what dashboards do we need?"
-
-  Reference mode:
-  - "What's the right panel for HTTP request latency?"
-  - "RED vs USE methodology for this metric type?"
-  - "How do I compose Grafonnet panels?"
-  - "Which Grafonnet template fits a counter / histogram / gauge?"
-
-skip_when: |
-  - Service is not a Go project (lib-commons opentelemetry is Go-only at this skill's scope)
-  - Service emits no telemetry (pre-instrumentation; run ring:dev-sre first)
-  - Task is purely Grafana folder organization or dashboard import (no authoring)
-  - Service is consumer-only sidecar with no metrics surface
-
-prerequisites: |
-  - Go service with lib-commons/v5 opentelemetry initialized in bootstrap
-  - At least one metric, span, or structured log emission point present
-  - docs/ directory writable
-  - Grafonnet toolchain available in CI (jsonnet + grafonnet-lib) — installer instructions in ci-drift-check.md
-
-sequence:
-  before: [ring:dev-cycle, ring:dev-cycle-frontend]
-
-related:
-  complementary: [ring:dev-sre, ring:codebase-explorer, ring:streaming-event-mapping]
-  similar: [ring:using-runtime, ring:using-assert]
+  Author Grafana dashboards for Lerian Go services rooted in real lib-commons/opentelemetry
+  telemetry. Three phases — Sweep (telemetry inventory), Iterate (PM deliberation on SLIs/SLOs
+  and alerts), Author (Grafonnet libsonnet → JSON in CI) — and installs a blocking CI drift gate.
+  Use when scaffolding dashboards, building a telemetry dictionary, or auditing observability.
+  Skip if service is non-Go, emits no telemetry, or task is just folder organization.
 ---
 
 # Creating Grafana Dashboards (lib-commons/opentelemetry, PM-team)
+
+## When to use
+
+Sweep mode:
+- "Create / scaffold Grafana dashboards for this service"
+- "Inventory telemetry / build telemetry dictionary"
+- "Audit observability before designing dashboards"
+- "Produce dashboards as code for {service}"
+- "PM wants visibility into {domain} — what dashboards do we need?"
+
+Reference mode:
+- "What's the right panel for HTTP request latency?"
+- "RED vs USE methodology for this metric type?"
+- "How do I compose Grafonnet panels?"
+- "Which Grafonnet template fits a counter / histogram / gauge?"
+
+## Skip when
+
+- Service is not a Go project (lib-commons opentelemetry is Go-only at this skill's scope)
+- Service emits no telemetry (pre-instrumentation; run ring:dev-sre first)
+- Task is purely Grafana folder organization or dashboard import (no authoring)
+- Service is consumer-only sidecar with no metrics surface
+
+## Sequence
+
+**Runs before:** ring:dev-cycle, ring:dev-cycle-frontend
+
+## Related
+
+**Complementary:** ring:dev-sre, ring:codebase-explorer, ring:streaming-event-mapping
+**Similar:** ring:using-runtime, ring:using-assert
+
+## Prerequisites
+
+- Go service with lib-commons/v5 opentelemetry initialized in bootstrap
+- At least one metric, span, or structured log emission point present
+- docs/ directory writable
+- Grafonnet toolchain available in CI (jsonnet + grafonnet-lib) — installer instructions in ci-drift-check.md
+
 
 Orchestrates a 3-phase, 8-gate workflow to produce Grafana dashboards grounded in real telemetry. You orchestrate. Agents explore. PM iterates. You NEVER read, write, or edit source code directly during the sweep.
 

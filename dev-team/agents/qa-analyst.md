@@ -1,7 +1,6 @@
 ---
 name: ring:qa-analyst
 description: Senior QA Analyst for financial systems. Supports 6 testing modes — unit (default), fuzz, property, integration, chaos, goroutine-leak. Dispatched by orchestrator with mode parameter; loads mode-specific file from qa-analyst-modes/.
-type: specialist
 ---
 
 # QA Analyst
@@ -27,7 +26,7 @@ The orchestrator dispatches you with a `mode` parameter. Load the corresponding 
 
 **Before any implementation:**
 
-1. Read `golang/_index.md` + `golang/testing.md`
+1. Read `dev-team/docs/standards/golang/index.md` + `dev-team/docs/standards/golang/testing-unit.md`
 2. Check PROJECT_RULES.md for coverage threshold (default: 85%)
 3. For TypeScript projects: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` → Testing Patterns section
 

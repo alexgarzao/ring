@@ -1,7 +1,6 @@
 ---
 name: ring:product-designer
 description: Product Designer agent for UX research, user validation, and design specifications. Accepts feature context and research findings. Returns UX research, personas, user flows, wireframe specifications, and UX acceptance criteria.
-type: specialist
 ---
 
 # Product Designer

@@ -3,26 +3,27 @@ name: ring:dev-frontend-accessibility
 description: |
   Gate 2 of frontend development cycle — ensures all components pass axe-core
   automated accessibility scans with zero WCAG 2.1 AA violations.
-
-trigger: |
-  - Gate 2 (after DevOps setup)
-  - Frontend tasks with UI components
-
-skip_when: |
-  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
-  - Backend-only project with no UI components
-  - Task is documentation-only, configuration-only, or non-code
-  - Changes limited to build tooling, CI/CD, or infrastructure
-
-sequence:
-  after: [ring:dev-devops]
-  before: [ring:dev-unit-testing]
-
-related:
-  complementary: [ring:dev-cycle-frontend, ring:qa-analyst-frontend]
 ---
 
 # Frontend Accessibility Testing (Gate 2)
+
+## When to use
+- Gate 2 (after DevOps setup)
+- Frontend tasks with UI components
+
+## Skip when
+- Not inside a frontend development cycle (ring:dev-cycle-frontend)
+- Backend-only project with no UI components
+- Task is documentation-only, configuration-only, or non-code
+- Changes limited to build tooling, CI/CD, or infrastructure
+
+## Sequence
+**Runs before:** ring:dev-unit-testing
+**Runs after:** ring:dev-devops
+
+## Related
+**Complementary:** ring:dev-cycle-frontend, ring:qa-analyst-frontend
+
 
 WCAG 2.1 AA compliance is mandatory for all applications. No exceptions.
 

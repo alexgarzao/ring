@@ -6,35 +6,33 @@ description: |
   across PRD, TRD, API design, data model, and other pre-dev artifacts.
   Cross-references information between docs — not just reviewing one doc
   in isolation — to catch mismatches that cause implementation failures.
-
-trigger: |
-  - Before starting dev-cycle (validate doc quality as a pre-gate)
-  - After completing pre-dev workflow (ring:pre-dev-feature or ring:pre-dev-full)
-  - When user requests project documentation review
-  - After significant changes to reference docs (PRD, TRD, API design, data model)
-
-skip_when: |
-  - Code review needed (use ring:requesting-code-review instead)
-  - Docs do not exist yet (run pre-dev workflow first)
-  - Reviewing a single simple file (do it directly without the skill)
-
-sequence:
-  after: [ring:pre-dev-feature, ring:pre-dev-full]
-  before: [ring:dev-cycle, ring:write-plan]
-
-related:
-  complementary:
-    - ring:pre-dev-prd-creation
-    - ring:pre-dev-trd-creation
-    - ring:pre-dev-api-design
-    - ring:pre-dev-data-model
-    - ring:pre-dev-task-breakdown
-  differentiation:
-    - name: ring:requesting-code-review
-      difference: "ring:requesting-code-review reviews code. ring:deep-doc-review reviews documentation artifacts against each other."
 ---
 
 # Deep Doc Review
+
+## When to use
+
+- Before starting dev-cycle (validate doc quality as a pre-gate)
+- After completing pre-dev workflow (ring:pre-dev-feature or ring:pre-dev-full)
+- When user requests project documentation review
+- After significant changes to reference docs (PRD, TRD, API design, data model)
+
+## Skip when
+
+- Code review needed (use ring:codereview instead)
+- Docs do not exist yet (run pre-dev workflow first)
+- Reviewing a single simple file (do it directly without the skill)
+
+## Sequence
+
+**Runs before:** ring:dev-cycle, ring:write-plan
+**Runs after:** ring:pre-dev-feature, ring:pre-dev-full
+
+## Related
+
+**Complementary:** ring:pre-dev-prd-creation, ring:pre-dev-trd-creation, ring:pre-dev-api-design, ring:pre-dev-data-model, ring:pre-dev-task-breakdown
+**Differentiation:** ring:codereview reviews code. ring:deep-doc-review reviews documentation artifacts against each other.
+
 
 > Adapted from alexgarzao/optimus (optimus-deep-doc-review)
 

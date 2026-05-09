@@ -1,43 +1,33 @@
 ---
 name: ring:using-lib-commons
-description: |
-  Dual-mode skill for github.com/LerianStudio/lib-commons — latest v5.x release. Lerian's shared Go library.
-
-  Sweep Mode (primary): Dispatches 22 parallel explorer subagents to sweep any Lerian Go
-  codebase for DIY implementations that should use lib-commons. Detects version drift,
-  identifies replacement opportunities with file:line precision, generates tasks compatible
-  with ring:dev-cycle for batched fixes.
-
-  Reference Mode: Comprehensive catalog of lib-commons (latest v5.x) packages — database
-  connections, messaging, multi-tenancy, observability, security, resilience, HTTP tooling,
-  event-driven tenant discovery, webhook delivery, dead-letter queues, idempotency, TLS
-  certificate management. Load for API discovery and initialization patterns.
-
-trigger: |
-  Sweep mode:
-  - "Sweep the codebase for lib-commons opportunities"
-  - "Find where we could use lib-commons instead of DIY"
-  - "Audit this service for lib-commons compliance"
-  - "Identify lib-commons migration opportunities"
-
-  Reference mode:
-  - Need to understand what lib-commons provides
-  - Looking for the right package/API for a task
-  - Setting up a new service that uses lib-commons
-  - Need correct constructor/initialization patterns
-  - Working with multi-tenancy (tenant-manager subsystem)
-  - Working with event-driven tenant discovery
-
-skip_when: |
-  - Working on non-Go services
-  - Working on frontend code
-  - Target codebase is Ring itself (no lib-commons dependency)
-
-related:
-  similar: [ring:using-dev-team, ring:dev-refactor, ring:using-runtime, ring:using-assert]
+description: Dual-mode skill for github.com/LerianStudio/lib-commons v5, Lerian's shared Go library. Sweep Mode dispatches 22 parallel explorers to detect DIY implementations that should use lib-commons, with file:line replacement precision. Reference Mode catalogs all lib-commons packages (database, messaging, multi-tenancy, observability, security, resilience, HTTP, idempotency, TLS) for API discovery. Skip for non-Go code or Ring itself.
 ---
 
 # ring:using-lib-commons
+
+## When to use
+Sweep mode:
+- "Sweep the codebase for lib-commons opportunities"
+- "Find where we could use lib-commons instead of DIY"
+- "Audit this service for lib-commons compliance"
+- "Identify lib-commons migration opportunities"
+
+Reference mode:
+- Need to understand what lib-commons provides
+- Looking for the right package/API for a task
+- Setting up a new service that uses lib-commons
+- Need correct constructor/initialization patterns
+- Working with multi-tenancy (tenant-manager subsystem)
+- Working with event-driven tenant discovery
+
+## Skip when
+- Working on non-Go services
+- Working on frontend code
+- Target codebase is Ring itself (no lib-commons dependency)
+
+## Related
+**Similar:** ring:using-dev-team, ring:dev-refactor, ring:using-runtime, ring:using-assert
+
 
 ## Mode Selection
 

@@ -4,26 +4,27 @@ description: |
   Mandatory skill for creating and maintaining Helm charts following Lerian conventions.
   Enforces standardized chart structure, values organization, template patterns,
   security defaults, and dependency management.
-
-trigger: |
-  - Creating a new Helm chart for any Lerian service
-  - Modifying an existing Helm chart (adding components, dependencies, templates)
-  - Reviewing a Helm chart PR for convention compliance
-  - Migrating a docker-compose setup to Helm
-
-skip_when: |
-  - Modifying only application code (no chart changes)
-  - Working on non-Helm deployment (docker-compose only) → use ring:dev-devops
-
-sequence:
-  after: [ring:dev-devops]
-  before: [ring:dev-sre]
-
-related:
-  complementary: [ring:dev-devops, ring:dev-sre, ring:dev-implementation]
 ---
 
 # Helm Chart Creation & Maintenance
+
+## When to use
+- Creating a new Helm chart for any Lerian service
+- Modifying an existing Helm chart (adding components, dependencies, templates)
+- Reviewing a Helm chart PR for convention compliance
+- Migrating a docker-compose setup to Helm
+
+## Skip when
+- Modifying only application code (no chart changes)
+- Working on non-Helm deployment (docker-compose only) → use ring:dev-devops
+
+## Sequence
+**Runs before:** ring:dev-sre
+**Runs after:** ring:dev-devops
+
+## Related
+**Complementary:** ring:dev-devops, ring:dev-sre, ring:dev-implementation
+
 
 **Standards reference:** `dev-team/docs/standards/helm/`
 **Executor agent:** `ring:helm-engineer`

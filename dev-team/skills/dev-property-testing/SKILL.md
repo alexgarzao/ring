@@ -3,26 +3,27 @@ name: ring:dev-property-testing
 description: |
   Gate 5 of development cycle — ensures property-based tests exist to verify
   domain invariants hold for all randomly generated inputs (testing/quick package for Go).
-
-trigger: |
-  - Gate 5 (after fuzz testing)
-  - Backend tasks with domain logic containing invariants
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Task is documentation-only, configuration-only, or non-code
-  - No domain logic with invariants was added or modified
-  - Frontend-only project
-
-sequence:
-  after: [ring:dev-fuzz-testing]
-  before: [ring:dev-integration-testing]
-
-related:
-  complementary: [ring:dev-cycle, ring:qa-analyst]
 ---
 
 # Property-Based Testing (Gate 5)
+
+## When to use
+- Gate 5 (after fuzz testing)
+- Backend tasks with domain logic containing invariants
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Task is documentation-only, configuration-only, or non-code
+- No domain logic with invariants was added or modified
+- Frontend-only project
+
+## Sequence
+**Runs before:** ring:dev-integration-testing
+**Runs after:** ring:dev-fuzz-testing
+
+## Related
+**Complementary:** ring:dev-cycle, ring:qa-analyst
+
 
 Unit tests verify specific examples. Property tests verify invariants across all inputs.
 

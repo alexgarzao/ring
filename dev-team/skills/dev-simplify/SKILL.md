@@ -6,25 +6,26 @@ description: |
   layers, and speculative abstractions. Applies dead-code Three-Rings cascade
   analysis across the live codebase. Produces KILL / REVIEW / KEEP classification
   with an inverted burden of proof — every abstraction must justify itself or be removed.
-
-trigger: |
-  - User asks to simplify, flatten, or audit architecture of a whole codebase
-  - User mentions "too much indirection", "kill shims", "unnecessary abstractions"
-  - Pre-public application where break-compatibility refactor is cheap
-  - Post-pivot cleanup: speculative scaffolding accumulated during exploration
-
-skip_when: |
-  - Diff review on a feature branch → use ring:codereview
-  - Standards-conformance refactor → use ring:dev-refactor
-  - Dead code from a specific change → use ring:dead-code-reviewer in ring:codereview
-  - Application already has external clients depending on internals
-
-related:
-  similar: [ring:dev-refactor, ring:production-readiness-audit]
-  complementary: [ring:codereview, ring:codebase-explorer]
 ---
 
 # Dev Simplify — Whole-Codebase Structural Sweep
+
+## When to use
+- User asks to simplify, flatten, or audit architecture of a whole codebase
+- User mentions "too much indirection", "kill shims", "unnecessary abstractions"
+- Pre-public application where break-compatibility refactor is cheap
+- Post-pivot cleanup: speculative scaffolding accumulated during exploration
+
+## Skip when
+- Diff review on a feature branch → use ring:codereview
+- Standards-conformance refactor → use ring:dev-refactor
+- Dead code from a specific change → use ring:dead-code-reviewer in ring:codereview
+- Application already has external clients depending on internals
+
+## Related
+**Complementary:** ring:codereview, ring:codebase-explorer
+**Similar:** ring:dev-refactor, ring:production-readiness-audit
+
 
 **Core principle:** DELETE is the default verdict. An abstraction survives only with concrete evidence of the swap it enables.
 
@@ -87,7 +88,7 @@ Dispatch synthesizer to read all explorer files and emit:
 
 MUST emit both artifacts. MUST include cascade chains decomposed into per-ring tasks with `depends_on` wiring.
 
-## Output Schema
+## Output Format
 
 ```markdown
 ## Simplify Summary

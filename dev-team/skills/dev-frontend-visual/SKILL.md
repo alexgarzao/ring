@@ -3,26 +3,27 @@ name: ring:dev-frontend-visual
 description: |
   Gate 4 of frontend development cycle — ensures all components have snapshot tests
   covering all states, viewports, and edge cases.
-
-trigger: |
-  - Gate 4 (after unit testing complete)
-  - Frontend tasks with new or changed UI components
-
-skip_when: |
-  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
-  - Backend-only project with no UI components
-  - Task is documentation-only, configuration-only, or non-code
-  - No new UI components added or visual changes made
-
-sequence:
-  after: [ring:dev-unit-testing]
-  before: [ring:dev-frontend-e2e]
-
-related:
-  complementary: [ring:dev-cycle-frontend, ring:qa-analyst-frontend]
 ---
 
 # Frontend Visual Testing (Gate 4)
+
+## When to use
+- Gate 4 (after unit testing complete)
+- Frontend tasks with new or changed UI components
+
+## Skip when
+- Not inside a frontend development cycle (ring:dev-cycle-frontend)
+- Backend-only project with no UI components
+- Task is documentation-only, configuration-only, or non-code
+- No new UI components added or visual changes made
+
+## Sequence
+**Runs before:** ring:dev-frontend-e2e
+**Runs after:** ring:dev-unit-testing
+
+## Related
+**Complementary:** ring:dev-cycle-frontend, ring:qa-analyst-frontend
+
 
 Snapshot tests catch visual regressions. Every component state must be captured.
 

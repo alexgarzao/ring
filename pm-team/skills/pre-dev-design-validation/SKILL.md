@@ -4,24 +4,28 @@ description: |
   Gate 1.5/2.5: Design Validation - verifies UX specifications are complete
   before proceeding to technical architecture. Checklist-based validation
   that prevents incomplete designs from reaching implementation.
-
-trigger: |
-  - After PRD + UX criteria created (Gate 1)
-  - After Feature Map + UX Design created (Gate 2, Large track)
-  - Before starting TRD (Gate 3)
-  - User asks to "validate design" or "check if design is complete"
-
-skip_when: |
-  - Feature is backend-only with no UI
-  - Pure API/infrastructure task
-  - Bug fix with no UX changes
-
-sequence:
-  after: [ring:pre-dev-prd-creation, ring:pre-dev-feature-map]
-  before: [ring:pre-dev-trd-creation]
 ---
 
 # Design Validation Gate
+
+## When to use
+
+- After PRD + UX criteria created (Gate 1)
+- After Feature Map + UX Design created (Gate 2, Large track)
+- Before starting TRD (Gate 3)
+- User asks to "validate design" or "check if design is complete"
+
+## Skip when
+
+- Feature is backend-only with no UI
+- Pure API/infrastructure task
+- Bug fix with no UX changes
+
+## Sequence
+
+**Runs before:** ring:pre-dev-trd-creation
+**Runs after:** ring:pre-dev-prd-creation, ring:pre-dev-feature-map
+
 
 Verifies that UX specifications are COMPLETE before investing in technical architecture. This is a VALIDATION gate — it checks existing artifacts, does not create new ones.
 

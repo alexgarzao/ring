@@ -4,27 +4,27 @@ description: |
   Generate Ops Update Guide from Git Diff. Produces internal Operations-facing
   update/migration guides based on git diff analysis. Supports STRICT_NO_TOUCH (default)
   and TEMP_CLONE_FOR_FRESH_REFS modes. Includes tag auto-detection and commit log analysis.
-
-trigger: |
-  - Preparing to release a new version
-  - Need to document what changed between refs
-  - Creating operational update guide
-  - Communicating version updates to Ops team
-
-skip_when: |
-  - No git repository available
-  - Single file change (too small for formal guide)
-  - Customer-facing release notes only (use simpler template)
-
-input_schema:
-  BASE_REF: { type: string, required: true, examples: ["main", "v1.0.0"] }
-  TARGET_REF: { type: string, required: true, examples: ["HEAD", "v1.1.0"] }
-  VERSION: { type: string, required: false, description: "Auto-detected from tags if not provided" }
-  LANGUAGE: { type: enum, required: false, default: "en", values: ["en", "pt-br", "both"] }
-  MODE: { type: enum, required: false, default: "STRICT_NO_TOUCH", values: ["STRICT_NO_TOUCH", "TEMP_CLONE_FOR_FRESH_REFS"] }
 ---
 
 # Release Guide — Ops Update Guide Generator
+
+## When to use
+- Preparing to release a new version
+- Need to document what changed between refs
+- Creating operational update guide
+- Communicating version updates to Ops team
+
+## Skip when
+- No git repository available
+- Single file change (too small for formal guide)
+- Customer-facing release notes only (use simpler template)
+
+## Inputs
+- `BASE_REF` (string, required): e.g. `main`, `v1.0.0`
+- `TARGET_REF` (string, required): e.g. `HEAD`, `v1.1.0`
+- `VERSION` (string, optional): auto-detected from tags if not provided
+- `LANGUAGE` (enum, optional, default `en`): `en`, `pt-br`, `both`
+- `MODE` (enum, optional, default `STRICT_NO_TOUCH`): `STRICT_NO_TOUCH`, `TEMP_CLONE_FOR_FRESH_REFS`
 
 Produce an **internal** Operations-facing update/migration guide from git diff analysis.
 

@@ -3,23 +3,22 @@ name: ring:worktree
 description: |
   Isolated workspace creation - creates git worktrees with smart directory selection
   and safety verification for parallel feature development.
-
-trigger: |
-  - Starting feature that needs isolation from main workspace
-  - Before executing implementation plan
-  - Working on multiple features simultaneously
-
-skip_when: |
-  - Quick fix in current branch → stay in place
-  - Already in isolated worktree for this feature → continue
-  - Repository doesn't use worktrees → use standard branch workflow
-
-sequence:
-  after: [brainstorm]
-  before: [ring:write-plan, ring:execute-plan]
 ---
 
 # Using Git Worktrees
+
+## When to use
+- Starting feature that needs isolation from main workspace
+- Before executing implementation plan
+- Working on multiple features simultaneously
+
+## Skip when
+- Quick fix in current branch → stay in place
+- Already in isolated worktree for this feature → continue
+- Repository doesn't use worktrees → use standard branch workflow
+
+## Sequence
+**Runs before:** ring:write-plan
 
 Git worktrees create isolated workspaces sharing the same repository for parallel branch work.
 
@@ -89,4 +88,4 @@ npm test / cargo test / pytest / go test ./...
 
 ## Integration
 
-Called by **brainstorm** (Phase 5). Pairs with **finishing-a-development-branch** for cleanup and **ring:execute-plan** / **ring:subagent-driven-development** for work.
+Pairs with **finishing-a-development-branch** for cleanup and **ring:dev-cycle** for work.

@@ -1,17 +1,19 @@
 ---
 name: ring:commit
 description: Smart commit organization with atomic grouping, conventional commits, and trailer management
-
-trigger: |
-  - User asks to commit changes or says "commit"
-  - Working directory has staged or unstaged changes ready to commit
-  - End of a development task where changes need to be recorded
-
-skip_when: |
-  - No changes in working directory
-  - Changes are still work-in-progress
-  - User explicitly wants raw git commands without smart grouping
 ---
+
+# Smart Commit Organization
+
+## When to use
+- User asks to commit changes or says "commit"
+- Working directory has staged or unstaged changes ready to commit
+- End of a development task where changes need to be recorded
+
+## Skip when
+- No changes in working directory
+- Changes are still work-in-progress
+- User explicitly wants raw git commands without smart grouping
 
 Analyze changes, group into coherent atomic commits, create signed commits following repository conventions.
 

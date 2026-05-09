@@ -5,39 +5,44 @@ description: |
   Orchestrates topology discovery, research, PRD, feature map, design validation,
   TRD, API design, data model, dependency map, task breakdown, subtask creation,
   and delivery planning in a sequential gated process with human approval at each gate.
-
-trigger: |
-  - Feature takes >=2 days to implement
-  - Adds new external dependencies (APIs, databases, libraries)
-  - Creates new data models or entities
-  - Requires multi-service integration
-  - Uses new architecture patterns
-  - Requires team collaboration
-
-skip_when: |
-  - Feature is simple (<2 days, existing patterns) - use ring:pre-dev-feature instead
-  - No new dependencies, data models, or architecture patterns needed
-
-sequence:
-  before: [ring:write-plan, ring:dev-cycle]
-
-related:
-  complementary: [ring:pre-dev-feature, ring:write-plan, ring:worktree]
-  skills_orchestrated:
-    - ring:pre-dev-research
-    - ring:pre-dev-prd-creation
-    - ring:pre-dev-feature-map
-    - ring:pre-dev-design-validation
-    - ring:pre-dev-trd-creation
-    - ring:pre-dev-api-design
-    - ring:pre-dev-data-model
-    - ring:pre-dev-dependency-map
-    - ring:pre-dev-task-breakdown
-    - ring:pre-dev-subtask-creation
-    - ring:pre-dev-delivery-planning
 ---
 
 # Full Track Pre-Dev Workflow (10 Gates)
+
+## When to use
+
+- Feature takes >=2 days to implement
+- Adds new external dependencies (APIs, databases, libraries)
+- Creates new data models or entities
+- Requires multi-service integration
+- Uses new architecture patterns
+- Requires team collaboration
+
+## Skip when
+
+- Feature is simple (<2 days, existing patterns) - use ring:pre-dev-feature instead
+- No new dependencies, data models, or architecture patterns needed
+
+## Sequence
+
+**Runs before:** ring:write-plan, ring:dev-cycle
+
+## Related
+
+**Complementary:** ring:pre-dev-feature, ring:write-plan, ring:worktree
+**Skills orchestrated:**
+- ring:pre-dev-research
+- ring:pre-dev-prd-creation
+- ring:pre-dev-feature-map
+- ring:pre-dev-design-validation
+- ring:pre-dev-trd-creation
+- ring:pre-dev-api-design
+- ring:pre-dev-data-model
+- ring:pre-dev-dependency-map
+- ring:pre-dev-task-breakdown
+- ring:pre-dev-subtask-creation
+- ring:pre-dev-delivery-planning
+
 
 Running the **Full Track** pre-development workflow for features that take ≥2 days, add new external dependencies, create new data models, require multi-service integration, use new architecture patterns, or require team collaboration.
 

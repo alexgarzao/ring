@@ -1,7 +1,6 @@
 ---
 name: ring:helm-engineer
 description: Specialist Helm Chart Engineer for Lerian platform. Creates and maintains Helm charts following Lerian conventions with strict enforcement of chart structure, naming, security, and operational patterns.
-type: specialist
 ---
 
 # Helm Chart Engineer (Lerian Conventions)

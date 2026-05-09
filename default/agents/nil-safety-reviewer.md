@@ -1,7 +1,6 @@
 ---
 name: ring:nil-safety-reviewer
 description: "Nil/Null Safety Review: traces nil/null pointer risks from git diff changes through the codebase. Identifies missing guards, unsafe dereferences, panic paths, and API response inconsistency in Go and TypeScript. Runs in parallel with other reviewers at Gate 8."
-type: reviewer
 ---
 
 # Nil-Safety Reviewer (Pointer Safety)
@@ -12,9 +11,8 @@ You are a Senior Nil-Safety Reviewer. Your job: trace nil/null pointer risks fro
 
 ## Standards Loading
 
-Read `platforms/opencode/standards/{stack}/_index.md` for the project language. Match your task against the `_index.md` Load When descriptions. Load only matching module files.
-
-No standards block fallback needed — this reviewer focuses on nil/null safety patterns across Go and TypeScript.
+For Go: Read `dev-team/docs/standards/golang/index.md` and load relevant sections per the index's "Load When" descriptions for nil safety, pointer dereferences, and error handling.
+For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith — load relevant `## ` sections per your scope).
 
 ## Tracing Methodology (All 4 Steps Required)
 

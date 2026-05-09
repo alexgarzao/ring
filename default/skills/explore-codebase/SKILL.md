@@ -4,26 +4,27 @@ description: |
   Autonomous multi-phase codebase exploration - scopes the target, discovers natural
   perspectives (layers, components, boundaries), dispatches adaptive deep-dive explorers
   based on what was discovered, then synthesizes findings into actionable insights.
-
-trigger: |
-  - Need to understand how a feature/system works across the codebase
-  - Starting work on unfamiliar codebase or component
-  - Planning changes that span multiple layers/components
-  - User asks "how does X work?" for non-trivial X
-  - Need architecture understanding before implementation
-
-skip_when: |
-  - Pure reference lookup (function signature, type definition)
-  - Checking if specific file exists (yes/no question)
-  - Reading error message from known file location
-
-related:
-  similar: [dispatching-parallel-agents, systematic-debugging]
-  sequence_after: [ring:brainstorm]
-  sequence_before: [ring:write-plan, ring:execute-plan]
 ---
 
 # Autonomous Multi-Phase Codebase Exploration
+
+## When to use
+- Need to understand how a feature/system works across the codebase
+- Starting work on unfamiliar codebase or component
+- Planning changes that span multiple layers/components
+- User asks "how does X work?" for non-trivial X
+- Need architecture understanding before implementation
+
+## Skip when
+- Pure reference lookup (function signature, type definition)
+- Checking if specific file exists (yes/no question)
+- Reading error message from known file location
+
+## Sequence
+**Runs before:** ring:write-plan
+
+## Related
+**Similar:** dispatching-parallel-agents
 
 Multi-phase approach: **Phase 0 scopes** the target, **Phase 1 discovers** the natural structure of the codebase, **Phase 2 deep-dives** into each discovered area in parallel, **Phase 3 collects** results, and **Phase 4 synthesizes** findings.
 

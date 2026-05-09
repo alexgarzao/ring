@@ -5,24 +5,29 @@ description: |
   to gather codebase patterns, external best practices, framework documentation,
   and UX/product research BEFORE creating PRD/TRD. Outputs research.md with
   file:line references and user research findings.
-
-trigger: |
-  - Before any pre-dev workflow (Gate 0)
-  - When planning new features or modifications
-  - Invoked by /ring:pre-dev-full and /ring:pre-dev-feature
-
-skip_when: |
-  - Trivial changes that don't need planning
-  - Research already completed (research.md exists and is recent)
-
-sequence:
-  before: [ring:pre-dev-prd-creation, ring:pre-dev-feature-map]
-
-related:
-  complementary: [ring:pre-dev-prd-creation, ring:pre-dev-trd-creation]
 ---
 
 # Pre-Dev Research Skill (Gate 0)
+
+## When to use
+
+- Before any pre-dev workflow (Gate 0)
+- When planning new features or modifications
+- Invoked by /ring:pre-dev-full and /ring:pre-dev-feature
+
+## Skip when
+
+- Trivial changes that don't need planning
+- Research already completed (research.md exists and is recent)
+
+## Sequence
+
+**Runs before:** ring:pre-dev-prd-creation, ring:pre-dev-feature-map
+
+## Related
+
+**Complementary:** ring:pre-dev-prd-creation, ring:pre-dev-trd-creation
+
 
 Gathers comprehensive research BEFORE writing planning documents, ensuring PRDs and TRDs are grounded in codebase reality and industry best practices.
 

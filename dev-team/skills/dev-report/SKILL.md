@@ -3,18 +3,19 @@ name: ring:dev-report
 description: |
   Feedback loop skill — collects task metrics, calculates quality scores, and writes
   a structured development report for continuous improvement tracking.
-
-trigger: |
-  - After task completion in any dev cycle
-  - User requests a development report or feedback summary
-  - ring:dev-cycle Gate 10 handoff
-
-skip_when: |
-  - Task was documentation-only with no code changes
-  - Not inside a development cycle
 ---
 
 # Dev Report — Feedback Loop
+
+## When to use
+- After task completion in any dev cycle
+- User requests a development report or feedback summary
+- ring:dev-cycle Gate 10 handoff
+
+## Skip when
+- Task was documentation-only with no code changes
+- Not inside a development cycle
+
 
 Collects metrics and writes a structured report for completed development tasks.
 

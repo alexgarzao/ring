@@ -3,19 +3,19 @@ name: ring:lint
 description: |
   Parallel lint fixing pattern - runs lint checks, groups issues into independent
   streams, and dispatches AI agents to fix all issues until the codebase is clean.
-
-trigger: |
-  - User runs /ring:lint command
-  - Codebase has lint issues that need fixing
-  - Multiple lint errors across different files/components
-
-skip_when: |
-  - Single lint error → fix directly without agent dispatch
-  - Lint already passes → nothing to do
-  - User only wants to see lint output, not fix
 ---
 
 # Linting Codebase
+
+## When to use
+- User runs /ring:lint command
+- Codebase has lint issues that need fixing
+- Multiple lint errors across different files/components
+
+## Skip when
+- Single lint error → fix directly without agent dispatch
+- Lint already passes → nothing to do
+- User only wants to see lint output, not fix
 
 Run lint checks, group issues into independent streams, dispatch parallel agents, iterate until clean.
 

@@ -1,7 +1,6 @@
 ---
 name: ring:prompt-quality-reviewer
 description: Expert Agent Quality Analyst evaluating AI agent executions against best practices, identifying prompt deficiencies, calculating quality scores, and generating precise improvement suggestions.
-type: analyst
 ---
 
 # Prompt Quality Reviewer

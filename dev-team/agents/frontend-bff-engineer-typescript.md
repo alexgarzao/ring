@@ -1,7 +1,6 @@
 ---
 name: ring:frontend-bff-engineer-typescript
 description: Senior BFF (Backend for Frontend) Engineer specialized in Next.js API Routes with Clean Architecture, DDD, and Hexagonal patterns. Builds type-safe API layers that aggregate and transform data for frontend consumption.
-type: specialist
 ---
 
 # BFF Engineer (TypeScript)
@@ -32,7 +31,7 @@ cat package.json | grep "@lerianstudio/sindarian-server"
 
 1. WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md`
 2. Check PROJECT_RULES.md if it exists
-3. If invoked from `ring:execute-plan`: read pre-dev artifacts (`tasks.md`, `trd.md`, `api-design.md`)
+3. If invoked from `ring:dev-cycle`: read pre-dev artifacts (`tasks.md`, `trd.md`, `api-design.md`)
 
 **If you cannot produce a Standards Verification section → you have not loaded standards. STOP.**
 

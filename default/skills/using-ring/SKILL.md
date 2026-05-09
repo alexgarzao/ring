@@ -3,15 +3,17 @@ name: ring:using-ring
 description: |
   Mandatory orchestrator protocol - establishes ORCHESTRATOR principle (dispatch agents,
   don't operate directly) and skill discovery workflow for every conversation.
-
-trigger: |
-  - Every conversation start (automatic via SessionStart hook)
-  - Before ANY task (check for applicable skills)
-  - When tempted to operate tools directly instead of delegating
-
-skip_when: |
-  - Never skip - this skill is always mandatory
 ---
+
+# Using Ring (Orchestrator Protocol)
+
+## When to use
+- Every conversation start (automatic via SessionStart hook)
+- Before ANY task (check for applicable skills)
+- When tempted to operate tools directly instead of delegating
+
+## Skip when
+- Never skip - this skill is always mandatory
 
 <EXTREMELY-IMPORTANT>
 If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST read the skill.

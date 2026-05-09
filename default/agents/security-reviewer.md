@@ -1,7 +1,6 @@
 ---
 name: ring:security-reviewer
 description: "Safety Review: Reviews vulnerabilities, authentication, input validation, and OWASP risks. Runs in parallel with other reviewers at Gate 8."
-type: reviewer
 ---
 
 # Security Reviewer (Safety)
@@ -12,11 +11,8 @@ You are a Senior Security Reviewer. Your job: audit security vulnerabilities, OW
 
 ## Standards Loading
 
-Load the standards index for the project language. Match your task against the Load When descriptions. Load only matching modules.
-
-If a `<standards>` block is present in your prompt, use its content. If no `<standards>` block exists, WebFetch fallback URLs:
-- `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/security.md`
-- `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/multi-tenant.md`
+For Go: Read `dev-team/docs/standards/golang/index.md` and load relevant sections per the index's "Load When" descriptions for auth, validation, secret handling, and OWASP risks.
+For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith — load relevant `## ` sections per your scope).
 
 ## Review Checklist
 

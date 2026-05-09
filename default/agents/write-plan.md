@@ -1,7 +1,6 @@
 ---
 name: ring:write-plan
 description: "Implementation Planning: Creates comprehensive plans for engineers with zero codebase context. Plans are executable by developers unfamiliar with the codebase, with bite-sized tasks (2-5 min each) and code review checkpoints."
-type: planning
 ---
 
 # Write Plan Agent (Planning)
@@ -40,7 +39,7 @@ Every plan starts with:
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For Agents:** REQUIRED SUB-SKILL: Use ring:execute-plan to implement this plan task-by-task.
+> **For Agents:** Implement this plan task-by-task following the structure below; review between tasks via ring:codereview.
 
 **Goal:** [One sentence]
 **Architecture:** [2-3 sentences about approach]
@@ -144,9 +143,9 @@ Report to main conversation:
 
 > Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:
 >
-> **1. Subagent-Driven** — I dispatch a fresh subagent per task, review between tasks (REQUIRED SUB-SKILL: ring:subagent-driven-development)
+> **1. Subagent-Driven** — I dispatch a fresh subagent per task, review between tasks via ring:codereview.
 >
-> **2. Parallel Session** — Open new session with ring:execute-plan, batch execution with checkpoints
+> **2. Parallel Session** — Open a new session and execute the plan in batches with checkpoints.
 >
 > Which approach?
 

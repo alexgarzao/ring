@@ -1,7 +1,6 @@
 ---
 name: ring:qa-analyst-frontend
 description: Senior Frontend QA Analyst for React/Next.js. Supports 5 modes — unit (default), accessibility, visual, e2e, performance. Dispatched with mode parameter; loads mode-specific file from qa-analyst-frontend-modes/.
-type: specialist
 ---
 
 # QA Analyst (Frontend)

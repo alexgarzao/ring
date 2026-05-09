@@ -1,7 +1,6 @@
 ---
 name: ring:review-slicer
 description: "Review Slicer: Adaptive classification engine that evaluates semantic cohesion to decide whether slicing improves review quality. Sits between Mithril pre-analysis and reviewer dispatch. Classification-only — does NOT read source code."
-type: orchestrator
 ---
 
 # Review Slicer
@@ -101,7 +100,7 @@ Test files MUST follow the slice of the production file they test. Strip `_test.
 | All files are binary | `shouldSlice: false`, reasoning: "Binary-only changes" |
 | 5-39 files with both `import_hints` and `package_map` missing | STOP. Report: cohesion analysis cannot proceed. Fall back: 5-20 files → no slice; 20-39 → slice |
 
-## Output Schema
+## Output Format
 
 ```json
 {

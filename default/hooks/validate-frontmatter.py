@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Validate YAML frontmatter in Ring skill, command, and agent files against
-the canonical schema defined in docs/FRONTMATTER_SCHEMA.md.
+the Anthropic-canonical schema.
 
-Scans all 6 plugins (default/, dev-team/, pm-team/, pmo-team/, finops-team/,
-tw-team/) and reports errors and warnings.
+Scans all 4 plugins (default/, dev-team/, pm-team/, tw-team/) and reports
+errors and warnings.
 
 Usage:
     python default/hooks/validate-frontmatter.py
@@ -25,81 +25,45 @@ except ImportError:
     YAML_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
-# Schema definitions (derived from docs/FRONTMATTER_SCHEMA.md)
+# Schema definitions (Anthropic-canonical)
 # ---------------------------------------------------------------------------
 
 # -- Skills --
 
 SKILL_REQUIRED = {"name", "description"}
 
-SKILL_RECOMMENDED = {"trigger", "skip_when"}
-
-SKILL_VALID = (
-    SKILL_REQUIRED
-    | SKILL_RECOMMENDED
-    | {
-        "NOT_skip_when",
-        "prerequisites",
-        "verification",
-        "when_to_use",        # deprecated but still valid
-        "prerequisite",       # deprecated but still valid
-        "sequence",
-        "related",
-        "compliance_rules",
-        "composition",
-        "input_schema",
-        "output_schema",
-    }
-)
-
-SKILL_DEPRECATED = {
-    "when_to_use": "trigger",
-    "prerequisite": "prerequisites",
-}
-
-SKILL_INVALID = {
-    "version", "allowed-tools", "examples", "category", "tier", "slug",
-    "user_invocable", "title", "type", "role", "dependencies", "author",
-    "license", "compatibility", "metadata", "agent_selection", "tdd_policy",
-    "research_modes", "trigger_when",
+SKILL_VALID = SKILL_REQUIRED | {
+    "argument-hint",
+    "allowed-tools",
+    "disable-model-invocation",
+    "user-invocable",
+    "paths",
+    "model",
 }
 
 # -- Commands --
 
 COMMAND_REQUIRED = {"name", "description"}
 
-COMMAND_RECOMMENDED = {"argument-hint"}
-
-COMMAND_VALID = COMMAND_REQUIRED | COMMAND_RECOMMENDED
-
-COMMAND_DEPRECATED: Dict[str, str] = {
-    "arguments": "argument-hint",
-    "args": "argument-hint",
+COMMAND_VALID = COMMAND_REQUIRED | {
+    "argument-hint",
+    "allowed-tools",
+    "model",
 }
-
-COMMAND_INVALID = {"arguments", "args", "version"}
 
 # -- Agents --
 
-AGENT_REQUIRED = {"name", "description", "type", "output_schema"}
+AGENT_REQUIRED = {"name", "description"}
 
-AGENT_TYPE_ENUM = {
-    "reviewer",
-    "specialist",
-    "orchestrator",
-    "planning",
-    "exploration",
-    "analyst",
-    "calculator",
+AGENT_VALID = AGENT_REQUIRED | {
+    "model",
+    "tools",
+    "color",
 }
-
-AGENT_VALID = AGENT_REQUIRED | {"input_schema"}
-
-AGENT_INVALID = {"version", "color", "project_rules_integration", "allowed-tools", "tools"}
 
 # -- Plugin directories --
 
-ALL_PLUGINS = ["default", "dev-team", "pm-team", "pmo-team", "finops-team", "tw-team"]
+ALL_PLUGINS = ["default", "dev-team", "pm-team", "tw-team"]
 
 # ---------------------------------------------------------------------------
 # Frontmatter parsing
@@ -191,118 +155,29 @@ class Issue:
         return f"[{self.level}] {self.path}: {self.message}"
 
 
-def validate_skill(file_path: str, fm: Dict[str, Any]) -> List[Issue]:
-    """Validate a skill frontmatter dict."""
-    issues: List[Issue] = []
-
-    # Required fields
-    for field in sorted(SKILL_REQUIRED):
-        if field not in fm:
-            issues.append(Issue("ERROR", file_path, f"missing required field '{field}'"))
-
-    # Recommended fields
-    for field in sorted(SKILL_RECOMMENDED):
-        if field not in fm:
-            issues.append(Issue("WARNING", file_path, f"missing recommended field '{field}'"))
-
-    # Deprecated fields
-    for old_field, new_field in sorted(SKILL_DEPRECATED.items()):
-        if old_field in fm:
-            issues.append(
-                Issue(
-                    "WARNING",
-                    file_path,
-                    f"deprecated field '{old_field}' -- use '{new_field}' instead",
-                )
-            )
-
-    # Unknown / explicitly invalid fields
-    for field in sorted(fm.keys()):
-        if field in SKILL_INVALID:
-            issues.append(
-                Issue("WARNING", file_path, f"invalid field '{field}' (not part of the schema)")
-            )
-        elif field not in SKILL_VALID:
-            issues.append(
-                Issue("WARNING", file_path, f"unknown field '{field}'")
-            )
-
+def validate_fm(file_path, fm, required, valid, kind):
+    issues = []
+    for f in sorted(required):
+        if f not in fm:
+            issues.append(Issue("ERROR", file_path, f"missing required {kind} field '{f}'"))
+    if "name" in fm and not str(fm["name"]).startswith("ring:"):
+        issues.append(Issue("ERROR", file_path, f"{kind} name '{fm['name']}' missing required 'ring:' prefix"))
+    for f in sorted(fm):
+        if f not in valid:
+            issues.append(Issue("WARNING", file_path, f"unknown {kind} field '{f}'"))
     return issues
+
+
+def validate_skill(file_path: str, fm: Dict[str, Any]) -> List[Issue]:
+    return validate_fm(file_path, fm, SKILL_REQUIRED, SKILL_VALID, "skill")
 
 
 def validate_command(file_path: str, fm: Dict[str, Any]) -> List[Issue]:
-    """Validate a command frontmatter dict."""
-    issues: List[Issue] = []
-
-    # Required fields
-    for field in sorted(COMMAND_REQUIRED):
-        if field not in fm:
-            issues.append(Issue("ERROR", file_path, f"missing required field '{field}'"))
-
-    # Recommended fields
-    for field in sorted(COMMAND_RECOMMENDED):
-        if field not in fm:
-            issues.append(Issue("WARNING", file_path, f"missing recommended field '{field}'"))
-
-    # Deprecated / invalid fields
-    for old_field, new_field in sorted(COMMAND_DEPRECATED.items()):
-        if old_field in fm:
-            issues.append(
-                Issue(
-                    "WARNING",
-                    file_path,
-                    f"invalid field '{old_field}' -- use '{new_field}' instead",
-                )
-            )
-
-    # Unknown fields
-    for field in sorted(fm.keys()):
-        if field in COMMAND_INVALID:
-            # Already covered by deprecated check above for args/arguments
-            if field not in COMMAND_DEPRECATED:
-                issues.append(
-                    Issue("WARNING", file_path, f"invalid field '{field}' (not part of the schema)")
-                )
-        elif field not in COMMAND_VALID:
-            issues.append(
-                Issue("WARNING", file_path, f"unknown field '{field}'")
-            )
-
-    return issues
+    return validate_fm(file_path, fm, COMMAND_REQUIRED, COMMAND_VALID, "command")
 
 
 def validate_agent(file_path: str, fm: Dict[str, Any]) -> List[Issue]:
-    """Validate an agent frontmatter dict."""
-    issues: List[Issue] = []
-
-    # Required fields
-    for field in sorted(AGENT_REQUIRED):
-        if field not in fm:
-            issues.append(Issue("ERROR", file_path, f"missing required field '{field}'"))
-
-    # Type enum check
-    agent_type = fm.get("type")
-    if agent_type is not None and agent_type not in AGENT_TYPE_ENUM:
-        issues.append(
-            Issue(
-                "WARNING",
-                file_path,
-                f"type '{agent_type}' not in allowed values: {sorted(AGENT_TYPE_ENUM)}",
-            )
-        )
-
-    # Explicitly invalid fields
-    for field in sorted(fm.keys()):
-        if field in AGENT_INVALID:
-            issues.append(
-                Issue("WARNING", file_path, f"invalid field '{field}' (not part of the schema)")
-            )
-        elif field not in AGENT_VALID:
-            issues.append(
-                Issue("WARNING", file_path, f"unknown field '{field}'")
-            )
-
-    return issues
+    return validate_fm(file_path, fm, AGENT_REQUIRED, AGENT_VALID, "agent")
 
 
 # ---------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 ---
 name: ring:backend-engineer-golang
 description: Senior Backend Engineer specialized in Go for high-demand financial systems. Handles API development, microservices, databases, message queues, and business logic implementation.
-type: specialist
 ---
 
 # Backend Engineer (Go)
@@ -22,7 +21,7 @@ You are a Senior Backend Engineer specialized in Go at Lerian Studio. You build 
 
 **Before writing any code, load the relevant Go standards modules.**
 
-1. **Always load:** Read `golang/_index.md` + `golang/core-deps.md`
+1. **Always load:** Read `dev-team/docs/standards/golang/index.md` + `dev-team/docs/standards/golang/core.md`
 2. **Match task to modules:** Use the index keywords to select ONLY the modules your task needs
 3. **Check PROJECT_RULES.md:** If it exists in the target project, load it. PROJECT_RULES overrides Ring standards where they conflict.
 
@@ -30,7 +29,7 @@ You are a Senior Backend Engineer specialized in Go at Lerian Studio. You build 
 Task: "Add rate limiting to the login endpoint"
 
 Modules to load:
-- core-deps.md (always)
+- core.md (always)
 - auth.md (auth middleware)
 - circuit-breaker.md (resilience patterns)
 - error-handling.md (error codes for rate limit exceeded)
@@ -44,7 +43,7 @@ NOT loaded (irrelevant to this task):
 Task: "Create the reconciliation microservice from scratch"
 
 Modules to load:
-- core-deps.md (always)
+- core.md (always)
 - bootstrap.md (new project initialization)
 - architecture.md (directory structure, hexagonal pattern)
 - configuration.md (env vars, config structs)
@@ -161,7 +160,7 @@ If existing code follows all standards: say "no changes needed" and move on. Do 
 |-------|--------|---------|
 | PROJECT_RULES.md | Found | docs/PROJECT_RULES.md |
 | Ring Standards | Loaded | index.md + 4 modules |
-| Modules loaded | core-deps, auth, error-handling, observability | Based on auth task |
+| Modules loaded | core, auth, error-handling, observability | Based on auth task |
 
 ### Precedence Decisions
 No conflicts. Following Ring Standards.

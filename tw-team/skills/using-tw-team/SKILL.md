@@ -4,23 +4,23 @@ description: |
   Technical writing specialists for functional and API documentation. Dispatch when
   you need to create guides, conceptual docs, or API references following established
   documentation standards.
-
-trigger: |
-  - Need to write functional documentation (guides, conceptual docs, tutorials)
-  - Need to write API reference documentation
-  - Need to review existing documentation quality
-  - Writing or updating product documentation
-
-skip_when: |
-  - Writing code → use dev-team agents
-  - Writing plans → use pm-team agents
-  - General code review → use default plugin reviewers
-
-related:
-  similar: [ring:using-ring, ring:using-dev-team]
 ---
 
 # Using Ring Technical Writing Specialists
+
+## When to use
+- Need to write functional documentation (guides, conceptual docs, tutorials)
+- Need to write API reference documentation
+- Need to review existing documentation quality
+- Writing or updating product documentation
+
+## Skip when
+- Writing code → use dev-team agents
+- Writing plans → use pm-team agents
+- General code review → use default plugin reviewers
+
+## Related
+**Similar:** ring:using-ring, ring:using-dev-team
 
 The ring-tw-team plugin provides specialized agents for technical documentation. Use them via `Task tool with subagent_type:`.
 

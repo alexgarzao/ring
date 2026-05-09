@@ -1,26 +1,29 @@
 ---
 name: ring:pre-dev-task-breakdown
 description: |
-  Gate 7: Implementation tasks - value-driven decomposition into working increments
+  Gate 7 (Full Track) / Gate 3 (Small Track): Implementation tasks - value-driven decomposition into working increments
   that deliver measurable user value.
-
-trigger: |
-  - PRD passed Gate 1 (required)
-  - TRD passed Gate 3 (required)
-  - All Large Track gates passed (if applicable)
-  - Ready to create sprint/iteration tasks
-
-skip_when: |
-  - PRD or TRD not validated → complete earlier gates
-  - Tasks already exist → proceed to Subtask Creation
-  - Trivial change → direct implementation
-
-sequence:
-  after: [ring:pre-dev-trd-creation, ring:pre-dev-dependency-map]
-  before: [ring:pre-dev-subtask-creation, ring:execute-plan]
 ---
 
 # Task Breakdown — Value-Driven Decomposition
+
+## When to use
+
+- TRD passed Gate 3 (Full Track) / Gate 2 (Small Track)
+- Dependency Map passed Gate 6 (Full Track only)
+- Ready to create sprint/iteration tasks
+
+## Skip when
+
+- TRD not validated → complete earlier gates
+- Tasks already exist → proceed to Subtask Creation
+- Trivial change → direct implementation
+
+## Sequence
+
+**Runs before:** ring:pre-dev-subtask-creation (Full Track), ring:pre-dev-delivery-planning (Small Track)
+**Runs after:** ring:pre-dev-dependency-map (Full Track), ring:pre-dev-trd-creation (Small Track)
+
 
 Every task must deliver working software with measurable user value. Tasks answer WHAT working increment is delivered, never HOW it's implemented (that's subtasks).
 

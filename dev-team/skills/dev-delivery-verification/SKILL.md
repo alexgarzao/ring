@@ -4,20 +4,23 @@ description: |
   Delivery Verification Gate — verifies that what was requested is actually delivered
   as reachable, integrated code. Answers: "Is every requirement from the original task
   actually functioning in the running application?"
-
-trigger: "Deprecated — use ring:dev-implementation instead (includes these checks as Gate 0 exit criteria)."
-
-skip_when: "always — this skill is preserved but not dispatched in normal cycles."
-
-sequence:
-  after: [ring:dev-implementation]
-  before: [ring:dev-devops]
-
-related:
-  complementary: [ring:dev-cycle, ring:dev-implementation, ring:codereview]
 ---
 
 # Delivery Verification (Gate 0 Exit)
+
+## When to use
+- Deprecated — use ring:dev-implementation instead (includes these checks as Gate 0 exit criteria).
+
+## Skip when
+- always — this skill is preserved but not dispatched in normal cycles.
+
+## Sequence
+**Runs before:** ring:dev-devops
+**Runs after:** ring:dev-implementation
+
+## Related
+**Complementary:** ring:dev-cycle, ring:dev-implementation, ring:codereview
+
 
 > **Status: Deprecated.** These checks are now embedded as Gate 0 exit criteria in ring:dev-implementation.
 > This skill is preserved for reference and legacy cycles.

@@ -3,21 +3,21 @@ name: ring:testing-skills-with-subagents
 description: |
   Skill testing methodology - run scenarios without skill (RED), observe failures,
   write skill (GREEN), close loopholes (REFACTOR).
-
-trigger: |
-  - Before deploying a new skill
-  - After editing an existing skill
-  - Skill enforces discipline that could be rationalized away
-
-skip_when: |
-  - Pure reference skill → no behavior to test
-  - No rules that agents have incentive to bypass
-
-related:
-  complementary: [ring:writing-skills, ring:test-driven-development]
 ---
 
 # Testing Skills With Subagents
+
+## When to use
+- Before deploying a new skill
+- After editing an existing skill
+- Skill enforces discipline that could be rationalized away
+
+## Skip when
+- Pure reference skill → no behavior to test
+- No rules that agents have incentive to bypass
+
+## Related
+**Complementary:** ring:writing-skills, ring:test-driven-development
 
 **Testing skills is TDD applied to process documentation.**
 

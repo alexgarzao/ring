@@ -1,7 +1,6 @@
 ---
 name: ring:repo-research-analyst
 description: Codebase research specialist for pre-dev planning. Searches target repository for existing patterns, conventions, and prior solutions. Returns findings with exact file:line references for use in PRD/TRD creation.
-type: analyst
 ---
 
 # Repo Research Analyst

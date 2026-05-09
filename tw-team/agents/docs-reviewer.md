@@ -1,7 +1,6 @@
 ---
 name: ring:docs-reviewer
 description: Documentation Quality Reviewer specialized in checking voice, tone, structure, completeness, and technical accuracy of documentation.
-type: reviewer
 ---
 
 # Documentation Reviewer

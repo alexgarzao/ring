@@ -1,42 +1,30 @@
 ---
 name: ring:using-runtime
-description: |
-  Dual-mode skill for commons/runtime — the panic observability trident inside
-  github.com/LerianStudio/lib-commons (latest v5.x). Deep-dive companion to ring:using-lib-commons,
-  scoped entirely to the one package that turns silent goroutine deaths into
-  observable production signal.
-
-  Sweep Mode (primary): Dispatches 6 parallel explorer subagents to sweep any Lerian Go
-  codebase for panic-handling DIY — naked goroutines, unobservable defer recover(), missing
-  panic-metric initialization, missing production mode, framework handlers bypassing the
-  trident, policy mismatches. Generates tasks compatible with ring:dev-cycle.
-
-  Reference Mode: Full API surface of commons/runtime — SafeGo variants, RecoverWithPolicy
-  variants, HandlePanicValue, InitPanicMetrics, SetProductionMode, policy constants,
-  ErrorReporter interface, framework integrations (Fiber, gRPC, RabbitMQ), testing patterns.
-
-trigger: |
-  Sweep mode:
-  - "Sweep / audit panic handling"
-  - "Find naked goroutines"
-  - "Migrate this service to commons/runtime"
-  - "Are our defer recover() calls observable?"
-
-  Reference mode:
-  - "Which SafeGo variant do I use for X?"
-  - "How does the observability trident fire on panic?"
-  - "Show me the policy decision tree"
-  - "How do I wire runtime into Fiber / gRPC / RabbitMQ?"
-
-skip_when: |
-  - Working on non-Go services
-  - Working on frontend code
-
-related:
-  similar: [ring:using-lib-commons, ring:using-assert]
+description: Dual-mode skill for lib-commons/v5/commons/runtime — the panic observability trident that turns silent goroutine deaths into production signal. Sweep Mode dispatches 6 parallel explorers to find naked goroutines, unobservable defer recover(), and missing panic-metric init. Reference Mode catalogs the API (SafeGo, RecoverWithPolicy, InitPanicMetrics) and framework integrations (Fiber, gRPC, RabbitMQ). Skip for non-Go or frontend code.
 ---
 
 # ring:using-runtime
+
+## When to use
+Sweep mode:
+- "Sweep / audit panic handling"
+- "Find naked goroutines"
+- "Migrate this service to commons/runtime"
+- "Are our defer recover() calls observable?"
+
+Reference mode:
+- "Which SafeGo variant do I use for X?"
+- "How does the observability trident fire on panic?"
+- "Show me the policy decision tree"
+- "How do I wire runtime into Fiber / gRPC / RabbitMQ?"
+
+## Skip when
+- Working on non-Go services
+- Working on frontend code
+
+## Related
+**Similar:** ring:using-lib-commons, ring:using-assert
+
 
 Extends `ring:using-lib-commons` Angle 15 (Panic handling DIY) into 6 focused sub-angles
 with deeper detection patterns, full API reference, policy decision tree, and framework integrations.

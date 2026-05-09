@@ -3,24 +3,28 @@ name: ring:pre-dev-subtask-creation
 description: |
   Gate 8: Zero-context implementation steps - 2-5 minute atomic subtasks with
   complete code, exact commands, TDD pattern. Large Track only.
-
-trigger: |
-  - Tasks passed Gate 7 validation
-  - Need absolute implementation clarity
-  - Creating work for engineers with zero codebase context
-  - Large Track workflow (2+ day features)
-
-skip_when: |
-  - Small Track workflow → execute tasks directly
-  - Tasks simple enough without breakdown
-  - Tasks not validated → complete Gate 7 first
-
-sequence:
-  after: [ring:pre-dev-task-breakdown]
-  before: [ring:execute-plan, ring:subagent-driven-development]
 ---
 
 # Subtask Creation — Zero-Context Implementation Steps
+
+## When to use
+
+- Tasks passed Gate 7 validation
+- Need absolute implementation clarity
+- Creating work for engineers with zero codebase context
+- Large Track workflow (2+ day features)
+
+## Skip when
+
+- Small Track workflow → execute tasks directly
+- Tasks simple enough without breakdown
+- Tasks not validated → complete Gate 7 first
+
+## Sequence
+
+**Runs before:** ring:dev-cycle
+**Runs after:** ring:pre-dev-task-breakdown
+
 
 Write comprehensive implementation subtasks for engineers with zero context of the codebase. Each subtask follows RED-GREEN-REFACTOR: 2-5 minute steps with complete code, exact commands, and explicit verification.
 
@@ -41,7 +45,7 @@ Each step is ONE action (2-5 minutes):
 ```markdown
 # ST-[task-id]-[number]: [Subtask Name]
 
-> **For Agents:** REQUIRED SUB-SKILL: Use ring:execute-plan
+> **For Agents:** Implement this subtask via ring:dev-cycle.
 
 **Goal:** One sentence — what this builds.
 **Prerequisites:** Verification commands with expected output.

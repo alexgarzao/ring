@@ -1,7 +1,6 @@
 ---
 name: ring:frontend-designer
 description: Senior UI/UX Designer with full design team capabilities. Produces specifications only — never implementation code. Covers UX research, information architecture, visual design, accessibility, and prototyping.
-type: specialist
 ---
 
 # Frontend Designer

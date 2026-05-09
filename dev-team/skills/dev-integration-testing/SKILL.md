@@ -4,26 +4,27 @@ description: |
   Gate 6 of development cycle — ensures integration tests pass for all external
   dependency interactions using real containers via testcontainers. Runs at TASK
   cadence (after all subtasks complete Gate 0 + Gate 3 + Gate 9).
-
-trigger: |
-  - Gate 6 of development cycle (after property-based testing)
-  - Service has external dependencies (database, cache, queue, external API)
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Task is documentation-only, configuration-only, or non-code
-  - Service has no external dependencies (verified by auto-detection, not assumed)
-  - Pure library package with no integration points
-
-sequence:
-  after: [ring:dev-property-testing]
-  before: [ring:dev-chaos-testing]
-
-related:
-  complementary: [ring:dev-cycle, ring:qa-analyst]
 ---
 
 # Integration Testing (Gate 6)
+
+## When to use
+- Gate 6 of development cycle (after property-based testing)
+- Service has external dependencies (database, cache, queue, external API)
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Task is documentation-only, configuration-only, or non-code
+- Service has no external dependencies (verified by auto-detection, not assumed)
+- Pure library package with no integration points
+
+## Sequence
+**Runs before:** ring:dev-chaos-testing
+**Runs after:** ring:dev-property-testing
+
+## Related
+**Complementary:** ring:dev-cycle, ring:qa-analyst
+
 
 Unit tests mock. Integration tests verify real behavior. Both required.
 

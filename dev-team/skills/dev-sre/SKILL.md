@@ -4,38 +4,28 @@ description: |
   Gate 2 of the development cycle. Validates observability implementation:
   structured logging with trace correlation, OpenTelemetry tracing, 90%+ code
   instrumentation coverage, context propagation.
-
-trigger: |
-  - Gate 2 of development cycle
-  - After Gate 0 (implementation) and Gate 1 (devops) complete
-  - Need to validate observability implementation
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Task is documentation-only, configuration-only, or non-code
-  - Pure library package with no runtime behavior
-  - Changes are limited to CI/CD or infrastructure configuration
-
-sequence:
-  after: [ring:dev-devops]
-  before: [ring:dev-unit-testing]
-
-related:
-  complementary: [ring:dev-cycle, ring:dev-implementation, ring:sre]
-
-output_schema:
-  required_sections:
-    - "Validation Result"
-    - "Instrumentation Coverage"
-    - "Issues Found"
-    - "Handoff to Next Gate"
-  metrics:
-    result: PASS | FAIL | NEEDS_FIXES
-    instrumentation_coverage_percent: float
-    iterations: integer
 ---
 
 # SRE Validation (Gate 2)
+
+## When to use
+- Gate 2 of development cycle
+- After Gate 0 (implementation) and Gate 1 (devops) complete
+- Need to validate observability implementation
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Task is documentation-only, configuration-only, or non-code
+- Pure library package with no runtime behavior
+- Changes are limited to CI/CD or infrastructure configuration
+
+## Sequence
+**Runs before:** ring:dev-unit-testing
+**Runs after:** ring:dev-devops
+
+## Related
+**Complementary:** ring:dev-cycle, ring:dev-implementation, ring:sre
+
 
 **Developers IMPLEMENT observability. SRE VALIDATES it.**
 

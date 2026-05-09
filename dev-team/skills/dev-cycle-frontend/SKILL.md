@@ -4,22 +4,23 @@ description: |
   Frontend development cycle orchestrator with 9 gates. Loads tasks from PM team output
   or backend handoff and executes through implementation → devops → accessibility →
   unit testing → visual testing → E2E testing → performance testing → review → validation.
-
-trigger: |
-  - Starting a new frontend development cycle with a task file
-  - Resuming an interrupted frontend development cycle (--resume flag)
-  - After backend dev cycle completes (consuming handoff)
-
-skip_when: |
-  - No tasks file exists
-  - Task is documentation-only or planning-only
-  - Backend project — use ring:dev-cycle instead
-
-sequence:
-  before: [ring:dev-report]
 ---
 
 # Frontend Development Cycle Orchestrator
+
+## When to use
+- Starting a new frontend development cycle with a task file
+- Resuming an interrupted frontend development cycle (--resume flag)
+- After backend dev cycle completes (consuming handoff)
+
+## Skip when
+- No tasks file exists
+- Task is documentation-only or planning-only
+- Backend project — use ring:dev-cycle instead
+
+## Sequence
+**Runs before:** ring:dev-report
+
 
 You orchestrate. Agents execute. NEVER read/write/edit source files (*.ts, *.tsx, *.jsx, *.css) directly.
 All code changes go through `Task(subagent_type=...)`. Announce at start: "Using ring:dev-cycle-frontend through 9 gates (Gate 0-8)."
@@ -56,7 +57,7 @@ All code changes go through `Task(subagent_type=...)`. Announce at start: "Using
 | 4 | task | ring:dev-frontend-visual | ring:qa-analyst-frontend (visual) | Snapshot tests |
 | 5 | task | ring:dev-frontend-e2e | ring:qa-analyst-frontend (e2e) | Playwright E2E |
 | 6 | task | ring:dev-frontend-performance | ring:qa-analyst-frontend (performance) | Core Web Vitals + Lighthouse ≥ 90 |
-| 7 | task | ring:codereview | 5 parallel reviewers | Code review |
+| 7 | task | ring:codereview | 10 parallel reviewers via ring:codereview | Code review |
 | 8 | subtask | ring:dev-validation | User | Acceptance sign-off |
 
 All 9 gates are MANDATORY. No exceptions.
@@ -112,14 +113,7 @@ Sub-skill MUST be loaded before dispatching the agent.
 
 ## Gate 7: Reviewers
 
-Dispatch all 5 in parallel (single message):
-1. ring:code-reviewer — quality, patterns, React best practices
-2. ring:business-logic-reviewer — business logic, AC
-3. ring:security-reviewer — XSS, CSRF, auth, CSP
-4. ring:test-reviewer — test quality, coverage gaps
-5. ring:frontend-engineer (review mode) — accessibility compliance, frontend standards
-
-ALL 5 must pass. 4/5 = FAIL → re-run all 5.
+Invoke `Skill("ring:codereview")`. The codereview skill dispatches its 10-reviewer pool in parallel and applies its own pass/fail rules.
 
 ## Gate Completion Criteria
 
@@ -132,7 +126,7 @@ ALL 5 must pass. 4/5 = FAIL → re-run all 5.
 | 4 | All snapshots pass + responsive breakpoints |
 | 5 | All user flows + cross-browser (Chromium/Firefox/WebKit) + 3x stable |
 | 6 | LCP < 2.5s, CLS < 0.1, INP < 200ms, Lighthouse ≥ 90 |
-| 7 | All 5 reviewers PASS |
+| 7 | ring:codereview PASS (all 10 reviewers) |
 | 8 | Explicit "APPROVED" from user |
 
 ## State Management

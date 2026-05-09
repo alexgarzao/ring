@@ -3,25 +3,25 @@ name: ring:review-docs
 description: |
   Comprehensive checklist and process for reviewing documentation quality
   including voice, tone, structure, completeness, and technical accuracy.
-
-trigger: |
-  - Reviewing draft documentation
-  - Pre-publication quality check
-  - Documentation audit
-  - Ensuring style guide compliance
-
-skip_when: |
-  - Writing new documentation → use write-guide or write-api
-  - Only checking voice → use voice-and-tone
-
-sequence:
-  after: [write-guide, write-api]
-
-related:
-  complementary: [voice-and-tone, documentation-structure]
 ---
 
 # Documentation Review Process
+
+## When to use
+- Reviewing draft documentation
+- Pre-publication quality check
+- Documentation audit
+- Ensuring style guide compliance
+
+## Skip when
+- Writing new documentation → use write-guide or write-api
+- Only checking voice → use voice-and-tone
+
+## Sequence
+**Runs after:** ring:write-guide, ring:write-api
+
+## Related
+**Complementary:** ring:voice-and-tone, ring:documentation-structure
 
 Review documentation systematically across multiple dimensions. A thorough review catches issues before they reach users.
 

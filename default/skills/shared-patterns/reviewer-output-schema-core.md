@@ -1,4 +1,4 @@
-# Reviewer Output Schema (Core Sections)
+# Reviewer Output Format (Core Sections)
 
 **Version:** 1.0.0
 **Applies to:** All reviewer agents

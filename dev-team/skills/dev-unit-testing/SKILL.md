@@ -3,36 +3,28 @@ name: ring:dev-unit-testing
 description: |
   Gate 3 of development cycle — ensures unit test coverage meets 85%+ threshold
   for all acceptance criteria using TDD methodology.
-
-trigger: |
-  - Gate 3 of development cycle
-  - After Gates 0, 1, 2 complete
-  - Need to verify implementation meets requirements via unit tests
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Task is documentation-only, configuration-only, or non-code
-  - No code implementation was produced
-  - Changes limited to CI/CD, infrastructure, or deployment configuration
-
-sequence:
-  after: [ring:dev-implementation, ring:dev-devops, ring:dev-sre]
-  before: [ring:codereview]
-
-related:
-  complementary: [ring:test-driven-development, ring:qa-analyst]
-
-output_schema:
-  metrics:
-    result: PASS | FAIL | NEEDS_FIXES
-    coverage_actual: float
-    coverage_threshold: float
-    tests_written: integer
-    criteria_covered: "X/Y"
-    iterations: integer
 ---
 
 # Unit Testing (Gate 3)
+
+## When to use
+- Gate 3 of development cycle
+- After Gates 0, 1, 2 complete
+- Need to verify implementation meets requirements via unit tests
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Task is documentation-only, configuration-only, or non-code
+- No code implementation was produced
+- Changes limited to CI/CD, infrastructure, or deployment configuration
+
+## Sequence
+**Runs before:** ring:codereview
+**Runs after:** ring:dev-implementation, ring:dev-devops, ring:dev-sre
+
+## Related
+**Complementary:** ring:test-driven-development, ring:qa-analyst
+
 
 Every acceptance criterion must have at least one executable unit test. Coverage threshold: **85%** minimum (PROJECT_RULES.md can raise, not lower).
 

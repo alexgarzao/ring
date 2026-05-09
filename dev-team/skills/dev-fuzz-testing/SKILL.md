@@ -4,92 +4,28 @@ description: |
   Gate 4 of development cycle - ensures fuzz tests exist with proper seed corpus
   to discover edge cases, crashes, and unexpected input handling.
   Runs at TASK cadence (after all subtasks complete Gate 0 + Gate 3 + Gate 9).
-
-trigger: |
-  - After unit testing complete (Gate 3)
-  - MANDATORY for all development tasks
-  - Discovers crashes and edge cases via random input generation
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Task is documentation-only, configuration-only, or non-code
-  - No functions accept external or user-controlled input
-  - Frontend-only project (fuzz testing applies to backend code)
-
-NOT_skip_when: |
-  - "Unit tests cover edge cases" - Fuzz tests find cases you didn't think of.
-  - "No time for fuzz testing" - Fuzz tests catch crashes before production.
-  - "Code is simple" - Simple code can still crash on unexpected input.
-
-sequence:
-  after: [ring:dev-unit-testing]
-  before: [ring:dev-property-testing]
-
-related:
-  complementary: [ring:dev-cycle, ring:dev-unit-testing, ring:qa-analyst]
-
-input_schema:
-  required:
-    - name: unit_id
-      type: string
-      description: "TASK identifier (not a subtask id). This skill runs at TASK cadence — unit_id is always a task id."
-    - name: implementation_files
-      type: array
-      items: string
-      description: "Union of changed files across all subtasks of this task."
-    - name: language
-      type: string
-      enum: [go]
-      description: "Programming language (Go only for native fuzz)"
-    - name: gate0_handoffs
-      type: array
-      description: "Array of per-subtask implementation handoffs (one entry per subtask). NOT a single gate0_handoff object."
-  optional:
-    - name: gate3_handoff
-      type: object
-      description: "Full handoff from Gate 3 (unit testing)"
-
-output_schema:
-  format: markdown
-  required_sections:
-    - name: "Fuzz Testing Summary"
-      pattern: "^## Fuzz Testing Summary"
-      required: true
-    - name: "Corpus Report"
-      pattern: "^## Corpus Report"
-      required: true
-    - name: "Handoff to Next Gate"
-      pattern: "^## Handoff to Next Gate"
-      required: true
-  metrics:
-    - name: result
-      type: enum
-      values: [PASS, FAIL]
-    - name: fuzz_functions
-      type: integer
-    - name: corpus_entries
-      type: integer
-    - name: crashes_found
-      type: integer
-    - name: iterations
-      type: integer
-
-verification:
-  automated:
-    - command: "grep -rn 'func Fuzz' --include='*_test.go' ."
-      description: "Fuzz functions exist"
-      success_pattern: "func Fuzz"
-    - command: "grep -rn 'f.Add' --include='*_test.go' ."
-      description: "Seed corpus entries exist"
-      success_pattern: "f.Add"
-  manual:
-    - "Fuzz functions follow FuzzXxx naming convention"
-    - "Seed corpus has at least 5 entries per function"
-    - "No crashes found during 30s fuzz run"
-
 ---
 
 # Dev Fuzz Testing (Gate 4)
+
+## When to use
+- After unit testing complete (Gate 3)
+- MANDATORY for all development tasks
+- Discovers crashes and edge cases via random input generation
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Task is documentation-only, configuration-only, or non-code
+- No functions accept external or user-controlled input
+- Frontend-only project (fuzz testing applies to backend code)
+
+## Sequence
+**Runs before:** ring:dev-property-testing
+**Runs after:** ring:dev-unit-testing
+
+## Related
+**Complementary:** ring:dev-cycle, ring:dev-unit-testing, ring:qa-analyst
+
 
 ## Overview
 

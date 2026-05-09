@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Evaluate codebase production readiness before deployment, during security/quality reviews, or when assessing technical debt. The audit covers 27 dimensions in 5 categories (Structure, Security, Operations, Quality, Infrastructure).
+Evaluate codebase production readiness before deployment, during security/quality reviews, or when assessing technical debt. The audit covers **43 base dimensions + 1 conditional (multi-tenant) = up to 44 dimensions** across 5 categories (Structure, Security, Operations, Quality, Infrastructure).
 
 ## Invocation
 
@@ -19,7 +19,7 @@ Evaluate codebase production readiness before deployment, during security/qualit
 
 ## Output format
 
-- **27-dimension** scored report (**0–270**) with severity ratings (CRITICAL/HIGH/MEDIUM/LOW).
+- **43 base dimensions + 1 conditional (multi-tenant) = up to 44 dimensions** scored report (**0–430 base, max 440 with multi-tenant**) with severity ratings (CRITICAL/HIGH/MEDIUM/LOW).
 - Categories: Code Structure & Patterns, Security & Access Control, Operational Readiness, Quality & Maintainability, Infrastructure & Hardening.
 
 For full protocol, dimensions, and execution steps, see [SKILL.md](SKILL.md).

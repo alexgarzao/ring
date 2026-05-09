@@ -89,13 +89,6 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 ✅ Task(subagent_type="ring:docs-reviewer", ...)
 ```
 
-### ring-finops-team Agents (Regulatory Compliance)
-
-```
-✅ Task(subagent_type="ring:finops-analyzer", ...)
-✅ Task(subagent_type="ring:finops-automation", ...)
-```
-
 ## Gate Cadence Classification
 
 Gates in dev-cycle operate at three cadences:

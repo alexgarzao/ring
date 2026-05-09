@@ -3,26 +3,27 @@ name: ring:dev-frontend-performance
 description: |
   Gate 6 of frontend development cycle — ensures Core Web Vitals compliance,
   Lighthouse performance score > 90, and bundle size within budget.
-
-trigger: |
-  - Gate 6 (after E2E testing complete)
-  - Frontend development tasks requiring performance validation
-
-skip_when: |
-  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
-  - Backend-only project with no UI components
-  - Task is documentation-only, configuration-only, or non-code
-  - Changes limited to test files, CI/CD, or non-rendered code
-
-sequence:
-  after: [ring:dev-frontend-e2e]
-  before: [ring:codereview]
-
-related:
-  complementary: [ring:dev-cycle-frontend, ring:qa-analyst-frontend]
 ---
 
 # Frontend Performance Testing (Gate 6)
+
+## When to use
+- Gate 6 (after E2E testing complete)
+- Frontend development tasks requiring performance validation
+
+## Skip when
+- Not inside a frontend development cycle (ring:dev-cycle-frontend)
+- Backend-only project with no UI components
+- Task is documentation-only, configuration-only, or non-code
+- Changes limited to test files, CI/CD, or non-rendered code
+
+## Sequence
+**Runs before:** ring:codereview
+**Runs after:** ring:dev-frontend-e2e
+
+## Related
+**Complementary:** ring:dev-cycle-frontend, ring:qa-analyst-frontend
+
 
 Performance is a feature. Budgets are enforced, not suggested.
 

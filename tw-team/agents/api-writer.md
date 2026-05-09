@@ -1,7 +1,6 @@
 ---
 name: ring:api-writer
 description: Senior Technical Writer specialized in API reference documentation including endpoint descriptions, request/response schemas, and error documentation.
-type: specialist
 ---
 
 # API Writer

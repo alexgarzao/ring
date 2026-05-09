@@ -4,22 +4,23 @@ description: |
   Apply or switch the license for a Lerian service repository. Supports Apache 2.0,
   Elastic License v2, and Proprietary (Lerian Studio General License). Replaces/creates
   LICENSE file, updates source file headers, updates SPDX identifiers, validates consistency.
-
-trigger: |
-  - User requests to set, apply, or switch a license on a repository
-  - Scaffolding a new service from the boilerplate
-  - Task mentions "license", "licensing", "license header", "Apache 2.0", "ELv2", "proprietary"
-  - Gate 0 of dev-cycle when no LICENSE file exists
-
-skip_when: |
-  - Repository already has requested license AND all headers match AND SPDX is correct (verified)
-  - Non-code repositories (documentation-only, design assets)
-
-related:
-  complementary: [ring:dev-cycle, ring:dev-implementation]
 ---
 
 # License Management
+
+## When to use
+- User requests to set, apply, or switch a license on a repository
+- Scaffolding a new service from the boilerplate
+- Task mentions "license", "licensing", "license header", "Apache 2.0", "ELv2", "proprietary"
+- Gate 0 of dev-cycle when no LICENSE file exists
+
+## Skip when
+- Repository already has requested license AND all headers match AND SPDX is correct (verified)
+- Non-code repositories (documentation-only, design assets)
+
+## Related
+**Complementary:** ring:dev-cycle, ring:dev-implementation
+
 
 You orchestrate. Agents update source headers. NEVER apply a license without user confirmation.
 

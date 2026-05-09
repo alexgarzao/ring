@@ -3,22 +3,22 @@ name: ring:documentation-structure
 description: |
   Patterns for organizing and structuring documentation including hierarchy,
   navigation, and information architecture.
-
-trigger: |
-  - Planning documentation structure
-  - Organizing content hierarchy
-  - Deciding how to split content across pages
-  - Creating navigation patterns
-
-skip_when: |
-  - Writing content → use write-guide or write-api
-  - Checking voice → use voice-and-tone
-
-related:
-  complementary: [write-guide, write-api]
 ---
 
 # Documentation Structure
+
+## When to use
+- Planning documentation structure
+- Organizing content hierarchy
+- Deciding how to split content across pages
+- Creating navigation patterns
+
+## Skip when
+- Writing content → use write-guide or write-api
+- Checking voice → use voice-and-tone
+
+## Related
+**Complementary:** ring:write-guide, ring:write-api
 
 Good structure helps users find what they need quickly. Organize content by user tasks and mental models, not by internal system organization.
 

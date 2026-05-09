@@ -4,23 +4,27 @@ description: |
   Gate 6: Technology choices document - explicit, versioned, validated technology
   selections with justifications. Large Track only. HARD BLOCK: Must load Ring Standards
   and PROJECT_RULES.md before proceeding.
-
-trigger: |
-  - Data Model passed Gate 5 validation
-  - About to select specific technologies
-  - Large Track workflow (2+ day features)
-
-skip_when: |
-  - Small Track workflow → skip to Task Breakdown
-  - Technologies already locked → skip to Task Breakdown
-  - Data Model not validated → complete Gate 5 first
-
-sequence:
-  after: [ring:pre-dev-data-model]
-  before: [ring:pre-dev-task-breakdown]
 ---
 
 # Dependency Map — Explicit Technology Choices
+
+## When to use
+
+- Data Model passed Gate 5 validation
+- About to select specific technologies
+- Large Track workflow (2+ day features)
+
+## Skip when
+
+- Small Track workflow → skip to Task Breakdown
+- Technologies already locked → skip to Task Breakdown
+- Data Model not validated → complete Gate 5 first
+
+## Sequence
+
+**Runs before:** ring:pre-dev-task-breakdown
+**Runs after:** ring:pre-dev-data-model
+
 
 Every technology choice must be explicit, versioned, validated against Ring Standards, and justified. The Dependency Map answers WHAT specific products, versions, packages, and infrastructure will be used.
 
@@ -35,7 +39,7 @@ If TRD metadata missing → STOP: "Go back to TRD (Gate 3) and complete Step 0.4
 
 | Standard | URL |
 |----------|-----|
-| golang/_index.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/_index.md` |
+| golang/index.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/index.md` |
 | typescript.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md` |
 | frontend.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/frontend.md` |
 | devops.md | `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/devops.md` |

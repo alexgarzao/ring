@@ -4,27 +4,28 @@ description: |
   Gate 7 of development cycle — ensures chaos tests exist using Toxiproxy to verify
   graceful degradation under connection loss, latency, and network partitions.
   Runs at TASK cadence.
-
-trigger: |
-  - Gate 7 (after integration testing)
-  - Service has external dependencies
-  - Verify graceful degradation under failure conditions
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Service has no external dependencies
-  - Task is documentation-only, configuration-only, or non-code
-  - Frontend-only project with no backend service dependencies
-
-sequence:
-  after: [ring:dev-integration-testing]
-  before: [ring:dev-goroutine-leak-testing]
-
-related:
-  complementary: [ring:dev-cycle, ring:qa-analyst]
 ---
 
 # Chaos Testing (Gate 7)
+
+## When to use
+- Gate 7 (after integration testing)
+- Service has external dependencies
+- Verify graceful degradation under failure conditions
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Service has no external dependencies
+- Task is documentation-only, configuration-only, or non-code
+- Frontend-only project with no backend service dependencies
+
+## Sequence
+**Runs before:** ring:dev-goroutine-leak-testing
+**Runs after:** ring:dev-integration-testing
+
+## Related
+**Complementary:** ring:dev-cycle, ring:qa-analyst
+
 
 All infrastructure fails eventually. Gate 7 verifies graceful degradation.
 

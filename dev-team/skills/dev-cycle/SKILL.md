@@ -5,19 +5,20 @@ description: |
   Subtask-level: Gate 0 (implementation + delivery verification), Gate 3 (unit testing), Gate 9 (validation).
   Task-level: Gates 1-2, 4-8 (devops, SRE, fuzz, property, integration write, chaos write, review).
   Cycle-end: Gates 6-7 execute, multi-tenant verify, dev-report, final commit.
-
-trigger: |
-  - Starting a new development cycle with a task file
-  - Resuming an interrupted development cycle
-  - Need structured, gate-based task execution with quality checkpoints
-
-skip_when: |
-  - No tasks file exists
-  - Task is documentation-only or planning-only
-  - Frontend project (use ring:dev-cycle-frontend instead)
 ---
 
 # Development Cycle Orchestrator
+
+## When to use
+- Starting a new development cycle with a task file
+- Resuming an interrupted development cycle
+- Need structured, gate-based task execution with quality checkpoints
+
+## Skip when
+- No tasks file exists
+- Task is documentation-only or planning-only
+- Frontend project (use ring:dev-cycle-frontend instead)
+
 
 You orchestrate. Agents execute. You NEVER read, write, or edit source code directly.
 
@@ -84,7 +85,7 @@ Never skip from standards → agent directly. Always: standards → sub-skill �
 
 At cycle start (Step 1.5), pre-cache Ring standards:
 
-1. WebFetch the standards index for the project language (e.g., `golang/_index.md`)
+1. WebFetch the standards index for the project language (e.g., `golang/index.md`)
 2. Store cached standards in `state.cached_standards`
 3. Pass relevant modules to agents at dispatch time — do NOT re-fetch per gate
 

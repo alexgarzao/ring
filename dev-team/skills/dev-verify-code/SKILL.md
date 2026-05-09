@@ -5,22 +5,23 @@ description: |
   verdict. Phase 1 runs static analysis in parallel (lint, vet, imports, format, docs, unit
   tests). Phase 2 runs integration and E2E tests sequentially. Phase 3 presents a summary.
   Works OUTSIDE the full dev-cycle for quick pre-merge checks.
-
-trigger: |
-  - Before creating a pull request
-  - After completing implementation and wanting to confirm everything passes
-  - When user wants a quick "is this ready?" check
-
-skip_when: |
-  - Project is not Go (no go.mod found)
-  - User only wants to run a single specific command
-  - Already inside a ring:dev-cycle execution (use the cycle gates instead)
-
-related:
-  complementary: [ring:dev-cycle, ring:codereview]
 ---
 
 # Code Verification
+
+## When to use
+- Before creating a pull request
+- After completing implementation and wanting to confirm everything passes
+- When user wants a quick "is this ready?" check
+
+## Skip when
+- Project is not Go (no go.mod found)
+- User only wants to run a single specific command
+- Already inside a ring:dev-cycle execution (use the cycle gates instead)
+
+## Related
+**Complementary:** ring:dev-cycle, ring:codereview
+
 
 Run everything. Get a verdict. **This skill only REPORTS — it does NOT fix anything.**
 

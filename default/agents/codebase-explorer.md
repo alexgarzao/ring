@@ -1,7 +1,6 @@
 ---
 name: ring:codebase-explorer
 description: "Deep codebase exploration agent for architecture understanding, pattern discovery, and comprehensive code analysis. Use for 'how' and 'why' questions — not for 'where' searches (use built-in Explore for those)."
-type: exploration
 ---
 
 # Codebase Explorer (Discovery)

@@ -1,26 +1,18 @@
 ---
 name: ring:dev-streaming-instrumentation
-description: |
-  lib-streaming instrumentation orchestrator for Lerian Go services. Consumes the validated
-  instrumentation-map.json produced by ring:streaming-event-mapping (Skill #1) and wires lib-streaming
-  end-to-end: Catalog construction, Producer bootstrap, Emit instrumentation per eventable point,
-  Outbox wiring (conditional on per-event posture), Manifest HTTP mount (conditional on HTTP surface),
-  feature-flag-gated lifecycle with NoopEmitter fallback, MockEmitter-backed unit tests, Redpanda
-  integration tests via testcontainers, and Toxiproxy chaos tests when outbox is wired. 13 gates
-  mirroring systemplane's structure.
-
-trigger: |
-  - User requests streaming instrumentation for a Go service with a validated
-    docs/streaming/instrumentation-map.json from ring:streaming-event-mapping
-  - Task mentions "wire lib-streaming", "instrument streaming events", "implement event emission",
-    "add streaming.NewBuilder", "Emit business events", "lib-streaming bootstrap"
-
-skip_when: |
-  - Service is not a Go project
-  - No instrumentation-map.json present (run ring:streaming-event-mapping first)
+description: lib-streaming instrumentation orchestrator for Lerian Go services. Consumes the validated instrumentation-map.json produced by ring:streaming-event-mapping and wires lib-streaming end-to-end via a 13-gate cycle (catalog, producer bootstrap, emit instrumentation, outbox wiring, HTTP manifest, NoopEmitter fallback, integration and chaos tests). Use after streaming-event-mapping has produced its map and you need to implement event emission.
 ---
 
 # Streaming Instrumentation (lib-streaming)
+
+## When to use
+- User requests streaming instrumentation for a Go service with a validated docs/streaming/instrumentation-map.json from ring:streaming-event-mapping
+- Task mentions "wire lib-streaming", "instrument streaming events", "implement event emission", "add streaming.NewBuilder", "Emit business events", "lib-streaming bootstrap"
+
+## Skip when
+- Service is not a Go project
+- No instrumentation-map.json present (run ring:streaming-event-mapping first)
+
 
 You orchestrate. Agents implement. NEVER use Edit/Write/Bash on Go source files.
 All code changes go through `Task(subagent_type="ring:backend-engineer-golang")`.

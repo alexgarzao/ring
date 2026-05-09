@@ -3,22 +3,23 @@ name: ring:dev-refactor-frontend
 description: |
   Analyzes frontend codebase against Ring standards and generates refactoring tasks
   for ring:dev-cycle-frontend. Dispatches frontend-specific agents in ANALYSIS mode.
-
-trigger: |
-  - User wants to refactor existing frontend project to follow standards
-  - Legacy React/Next.js codebase needs modernization
-  - Frontend project audit requested
-
-skip_when: |
-  - Greenfield project → Use /ring:pre-dev-* instead
-  - Single file fix → Use ring:dev-cycle-frontend directly
-  - Backend-only project → Use ring:dev-refactor instead
-
-sequence:
-  before: [ring:dev-cycle-frontend]
 ---
 
 # Dev Refactor Frontend
+
+## When to use
+- User wants to refactor existing frontend project to follow standards
+- Legacy React/Next.js codebase needs modernization
+- Frontend project audit requested
+
+## Skip when
+- Greenfield project → Use /ring:pre-dev-* instead
+- Single file fix → Use ring:dev-cycle-frontend directly
+- Backend-only project → Use ring:dev-refactor instead
+
+## Sequence
+**Runs before:** ring:dev-cycle-frontend
+
 
 Analyzes existing frontend codebase against Ring/Lerian standards and generates refactoring tasks for ring:dev-cycle-frontend.
 

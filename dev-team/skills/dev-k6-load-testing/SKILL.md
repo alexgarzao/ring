@@ -6,46 +6,26 @@ description: |
   Produces product directories, scenario YAMLs, helper clients, and bundleable
   test scripts compatible with the LerianStudio/k6 platform/ structure.
   Standalone skill, not gated — invoke on demand or as part of CI.
-
-trigger: |
-  - After integration testing passes
-  - Before production deploy of performance-sensitive changes
-  - New API endpoints or significant throughput-path changes
-  - Need to validate SLOs under load (latency, error rate, throughput)
-  - CI pipeline requires load test gate via Palantir
-
-skip_when: |
-  - Task is documentation-only, configuration-only, or non-code
-  - No HTTP/gRPC endpoints affected by the change
-  - Changes limited to static assets, configs, or non-runtime code
-  - Service has no network-facing interface
-
-related:
-  complementary: [ring:dev-integration-testing, ring:dev-chaos-testing, ring:dev-sre]
-
-output_schema:
-  format: markdown
-  required_sections:
-    - name: "Load Test Summary"
-      pattern: "^## Load Test Summary"
-      required: true
-    - name: "Files Created"
-      pattern: "^## Files Created"
-      required: true
-    - name: "Palantir Integration"
-      pattern: "^## Palantir Integration"
-      required: true
-  metrics:
-    - name: result
-      type: enum
-      values: [PASS, FAIL]
-    - name: scenarios_created
-      type: integer
-    - name: bundle_verified
-      type: boolean
 ---
 
 # k6 Load Testing (Palantir Platform)
+
+## When to use
+- After integration testing passes
+- Before production deploy of performance-sensitive changes
+- New API endpoints or significant throughput-path changes
+- Need to validate SLOs under load (latency, error rate, throughput)
+- CI pipeline requires load test gate via Palantir
+
+## Skip when
+- Task is documentation-only, configuration-only, or non-code
+- No HTTP/gRPC endpoints affected by the change
+- Changes limited to static assets, configs, or non-runtime code
+- Service has no network-facing interface
+
+## Related
+**Complementary:** ring:dev-integration-testing, ring:dev-chaos-testing, ring:dev-sre
+
 
 This skill generates k6 load tests following the Lerian k6 platform conventions.
 Tests are structured for execution via Palantir (Self-Service Testing) and are

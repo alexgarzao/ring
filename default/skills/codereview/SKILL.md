@@ -1,30 +1,30 @@
 ---
 name: ring:codereview
 description: |
-  Gate 4 of development cycle - dispatches 10 specialized reviewers (code, business-logic,
+  Gate 8 of development cycle - dispatches 10 specialized reviewers (code, business-logic,
   security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons) in parallel for comprehensive code review feedback.
   Runs at TASK cadence — reviewers see cumulative diff, not per-subtask fragments.
-
-trigger: |
-  - Gate 4 of development cycle
-  - After completing major feature implementation
-  - Before merge to main branch
-  - After fixing complex bug
-
-skip_when: |
-  - Task is purely conversational or informational with no code changes
-  - Changes are limited to documentation or comments with zero logic modifications
-  - Code has not been modified since the last completed review cycle
-
-sequence:
-  after: [ring:dev-testing]
-  before: [ring:dev-validation]
-
-related:
-  complementary: [ring:dev-cycle, ring:dev-implementation, ring:dev-testing]
 ---
 
-# Code Review (Gate 4)
+# Code Review (Gate 8)
+
+## When to use
+- Gate 8 of development cycle
+- After completing major feature implementation
+- Before merge to main branch
+- After fixing complex bug
+
+## Skip when
+- Task is purely conversational or informational with no code changes
+- Changes are limited to documentation or comments with zero logic modifications
+- Code has not been modified since the last completed review cycle
+
+## Sequence
+**Runs after:** ring:dev-unit-testing
+**Runs before:** ring:dev-validation
+
+## Related
+**Complementary:** ring:dev-cycle, ring:dev-implementation, ring:dev-unit-testing
 
 Dispatch all 10 reviewer subagents in **parallel** for fast, comprehensive feedback.
 
@@ -100,7 +100,7 @@ Parse VERDICT and Issues for all 10 reviewers. Aggregate by severity. If sliced,
 
 ```
 blocking = critical + high + medium
-IF blocking == 0 → Step 8 (Success)
+IF blocking == 0 → Step 7.5 (CodeRabbit) → Step 8 (Success)
 IF blocking > 0  → iterations++; IF iterations >= 3 → Step 9 (Escalate); ELSE Step 6 (Fix)
 ```
 
@@ -124,17 +124,17 @@ Send ALL Critical, High, Medium issues to implementation agent in one Task call.
 
 Generate HTML report via `Skill("ring:visualize")`. Save to `docs/codereview/review-report-{unit_id}.html`. Open in browser.
 
-Output: Review Summary (PASS), Issues by Severity count table, **Aggregate Issues section with full per-issue details** (severity, description, file:line, reviewer, recommendation), Reviewer Verdicts table (10 rows), CodeRabbit status, Handoff to Gate 5.
+Output: Review Summary (PASS), Issues by Severity count table, **Aggregate Issues section with full per-issue details** (severity, description, file:line, reviewer, recommendation), Reviewer Verdicts table (10 rows), CodeRabbit status, Handoff to next gate.
 
 **⛔ The Aggregate Issues section MUST be populated with actual findings from reviewer output — not just counts. Collect all issues from `review_state.aggregated_issues` and emit one row per issue. If all reviewers passed with zero issues, emit: "No issues found across all 10 reviewers."**
 
 ## Step 9: Escalate — Max Iterations Reached
 
-Generate FAIL visual report. Output: unresolved issues (list ALL Critical/High/Medium with file:line, reviewer, and recommendation), reviewer verdicts, `Ready for Gate 5: NO`, action required from user.
+Generate FAIL visual report. Output: unresolved issues (list ALL Critical/High/Medium with file:line, reviewer, and recommendation), reviewer verdicts, `Ready for next gate: NO`, action required from user.
 
 ## Completion Rules
 
-- Gate 4 complete ONLY when ALL 10 reviewers PASS
+- Gate 8 complete ONLY when ALL 10 reviewers PASS
 - 9/10 = FAIL → re-run all 10
 - Critical/High/Medium MUST be fixed before proceeding
 - Low/Cosmetic → add `// TODO(review):` / `// FIXME(nitpick):` comments
@@ -179,5 +179,5 @@ _If all reviewers PASSed with zero issues: "No issues found across all 10 review
 ## Handoff to Next Gate
 - Review status: [COMPLETE|FAILED]
 - Blocking issues: [resolved|N remaining]
-- Ready for Gate 5: [YES|NO]
+- Ready for next gate: [YES|NO]
 ```

@@ -1,27 +1,22 @@
 ---
 name: ring:dev-systemplane-migration
-description: |
-  Systemplane migration orchestrator for Lerian Go services using lib-commons (latest v5.x). Migrates services from
-  .env/YAML-based configuration of operational knobs (log levels, feature flags, rate limits, timeouts,
-  worker intervals) to the v5 systemplane runtime config client — a database-backed, hot-reloadable plane
-  using Postgres LISTEN/NOTIFY or MongoDB change streams. v5 API: systemplane.NewPostgres /
-  NewMongoDB → Register keys → Start → Get*/OnChange → admin.Mount with custom authorizer.
-  Detects v4 residue (Supervisor, BundleFactory, ApplyBehavior, SYSTEMPLANE_* env vars — all DELETED in v5.0.0).
-
-trigger: |
-  - User requests systemplane integration for a Go service
-  - User asks to add hot-reloadable runtime configuration
-  - Task mentions "systemplane", "runtime config", "hot reload", "LISTEN/NOTIFY config", "admin.Mount"
-  - User asks to migrate from v4 systemplane to v5
-
-skip_when: |
-  - Service is not a Go project
-  - Task does not involve runtime configuration
-  - Service has zero hot-reloadable knobs (everything is static env-var-at-startup config)
-  - Task is documentation-only or non-code
+description: Migrates Lerian Go services from .env/YAML configuration of operational knobs (log levels, feature flags, rate limits, timeouts) to the lib-commons v5 systemplane runtime config client — a hot-reloadable plane using Postgres LISTEN/NOTIFY or MongoDB change streams. Use when adding hot-reloadable runtime configuration or migrating from v4 systemplane. Detects deleted v4 residue (Supervisor, BundleFactory, SYSTEMPLANE_* env vars).
 ---
 
 # Systemplane Migration (lib-commons v5)
+
+## When to use
+- User requests systemplane integration for a Go service
+- User asks to add hot-reloadable runtime configuration
+- Task mentions "systemplane", "runtime config", "hot reload", "LISTEN/NOTIFY config", "admin.Mount"
+- User asks to migrate from v4 systemplane to v5
+
+## Skip when
+- Service is not a Go project
+- Task does not involve runtime configuration
+- Service has zero hot-reloadable knobs (everything is static env-var-at-startup config)
+- Task is documentation-only or non-code
+
 
 You orchestrate. Agents implement. NEVER use Edit/Write/Bash on Go source files.
 All code changes go through `Task(subagent_type="ring:backend-engineer-golang")`.

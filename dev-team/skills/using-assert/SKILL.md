@@ -1,42 +1,31 @@
 ---
 name: ring:using-assert
-description: |
-  Dual-mode skill for github.com/LerianStudio/lib-commons/v5/commons/assert — Lerian's
-  production-grade runtime assertion package.
-
-  Sweep Mode (primary): Dispatches 6 parallel explorer subagents to sweep any Lerian Go
-  codebase for DIY invariant checks, zero-panic policy violations, hand-rolled domain
-  predicates, missing metric initialization, and unstructured error-boundary logging.
-  Generates tasks compatible with ring:dev-cycle for batched fixes.
-
-  Reference Mode: Full API surface of commons/assert — asserter lifecycle, instance method
-  semantics, complete domain predicate catalog (numeric, financial, transaction state
-  machine, network, time), observability trident, AssertionError unwrapping, decision tree
-  for panic-vs-assert-vs-error, testing patterns.
-
-trigger: |
-  Sweep mode:
-  - "Sweep the codebase for commons/assert opportunities"
-  - "Audit this service for zero-panic policy compliance"
-  - "Find panic()/log.Fatal violations"
-  - "Replace DIY invariant checks with commons/assert"
-
-  Reference mode:
-  - "What's the signature for assert.DebitsEqualCredits?"
-  - "How do I initialize assertion metrics?"
-  - "Should I panic, assert, or return an error here?"
-  - "How do I unwrap AssertionError in a Fiber error handler?"
-
-skip_when: |
-  - Working on non-Go services
-  - Working on frontend code
-  - Target codebase is Ring itself
-
-related:
-  similar: [ring:using-lib-commons, ring:using-runtime]
+description: Dual-mode skill for lib-commons/v5/commons/assert — Lerian's production-grade runtime assertion package. Sweep Mode dispatches 6 parallel explorers to find DIY invariant checks, zero-panic violations, hand-rolled domain predicates, and missing metric initialization. Reference Mode catalogs the full API (asserter lifecycle, domain predicates, observability trident, AssertionError unwrapping) and the panic-vs-assert-vs-error decision tree. Skip for non-Go or frontend code.
 ---
 
 # ring:using-assert
+
+## When to use
+Sweep mode:
+- "Sweep the codebase for commons/assert opportunities"
+- "Audit this service for zero-panic policy compliance"
+- "Find panic()/log.Fatal violations"
+- "Replace DIY invariant checks with commons/assert"
+
+Reference mode:
+- "What's the signature for assert.DebitsEqualCredits?"
+- "How do I initialize assertion metrics?"
+- "Should I panic, assert, or return an error here?"
+- "How do I unwrap AssertionError in a Fiber error handler?"
+
+## Skip when
+- Working on non-Go services
+- Working on frontend code
+- Target codebase is Ring itself
+
+## Related
+**Similar:** ring:using-lib-commons, ring:using-runtime
+
 
 ## Mode Selection
 

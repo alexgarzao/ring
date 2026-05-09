@@ -3,26 +3,27 @@ name: ring:dev-frontend-e2e
 description: |
   Gate 5 of frontend development cycle — ensures all user flows from product-designer
   have passing Playwright E2E tests across Chromium, Firefox, and WebKit.
-
-trigger: |
-  - Gate 5 (after visual testing complete)
-  - Frontend development tasks with user-facing flows
-
-skip_when: |
-  - Not inside a frontend development cycle (ring:dev-cycle-frontend)
-  - Backend-only project with no UI components
-  - Task is documentation-only, configuration-only, or non-code
-  - No user-facing flows were added or changed
-
-sequence:
-  after: [ring:dev-frontend-visual]
-  before: [ring:dev-frontend-performance]
-
-related:
-  complementary: [ring:dev-cycle-frontend, ring:qa-analyst-frontend]
 ---
 
 # Frontend E2E Testing (Gate 5)
+
+## When to use
+- Gate 5 (after visual testing complete)
+- Frontend development tasks with user-facing flows
+
+## Skip when
+- Not inside a frontend development cycle (ring:dev-cycle-frontend)
+- Backend-only project with no UI components
+- Task is documentation-only, configuration-only, or non-code
+- No user-facing flows were added or changed
+
+## Sequence
+**Runs before:** ring:dev-frontend-performance
+**Runs after:** ring:dev-frontend-visual
+
+## Related
+**Complementary:** ring:dev-cycle-frontend, ring:qa-analyst-frontend
+
 
 Every user flow from product-designer must have a passing Playwright test.
 Every error state users can encounter must be tested.

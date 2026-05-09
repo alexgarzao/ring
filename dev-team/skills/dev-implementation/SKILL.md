@@ -5,24 +5,26 @@ description: |
   specialized agent based on task content and project language. Handles TDD workflow
   with RED-GREEN phases. Follows project standards defined in docs/PROJECT_RULES.md.
   Includes delivery verification exit criteria integrated into Gate 0.
-
-trigger: |
-  - Gate 0 of development cycle
-  - Tasks loaded at initialization
-  - Ready to write code
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle or ring:dev-refactor)
-  - Task is documentation-only, configuration-only, or non-code
-  - Implementation already completed for the current gate
-
-sequence:
-  before: [ring:dev-devops]
-
-related:
-  complementary: [ring:dev-cycle, ring:test-driven-development, ring:codereview]
 ---
 
 # Code Implementation (Gate 0)
+
+## When to use
+- Gate 0 of development cycle
+- Tasks loaded at initialization
+- Ready to write code
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle or ring:dev-refactor)
+- Task is documentation-only, configuration-only, or non-code
+- Implementation already completed for the current gate
+
+## Sequence
+**Runs before:** ring:dev-devops
+
+## Related
+**Complementary:** ring:dev-cycle, ring:test-driven-development, ring:codereview
+
 
 You orchestrate. Agents implement. Select the agent, prepare the prompt, track state, validate outputs.
 

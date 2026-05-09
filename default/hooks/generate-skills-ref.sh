@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034  # Unused variables OK for exported config
 # Fallback skill reference generator when Python is unavailable
-# Requires bash 3.2+ (uses [[ ]], ${BASH_SOURCE}, ${var:0:n})
-# Tools used: sed, awk, grep (standard on macOS/Linux/Git Bash)
+# Requires bash 3.2+ (uses [[ ]], ${BASH_SOURCE})
+# Tools used: sed, awk, grep, sort, cut (standard on macOS/Linux/Git Bash)
 #
 # This script provides a degraded but functional skills quick reference
 # when Python or PyYAML are not available on the system.
@@ -10,8 +10,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SKILLS_DIR="${PLUGIN_ROOT}/skills"
+# Script lives in default/hooks/, so repo root is two levels up.
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+# MUST stay in sync with generate-skills-ref.py ALL_PLUGINS list.
+PLUGINS=("default" "dev-team" "pm-team" "tw-team")
 
 # Parse a single field from YAML frontmatter
 # Uses portable sed pattern for YAML parsing
@@ -79,15 +81,9 @@ parse_skill() {
     fi
 
     # Extract fields
-    local name description trigger
+    local name description
     name=$(extract_field "$frontmatter" "name")
     description=$(extract_field "$frontmatter" "description")
-    trigger=$(extract_field "$frontmatter" "trigger")
-
-    # Fallback: use when_to_use if trigger not set (backward compat)
-    if [[ -z "$trigger" ]]; then
-        trigger=$(extract_field "$frontmatter" "when_to_use")
-    fi
 
     # Use directory name if name field missing
     if [[ -z "$name" ]]; then
@@ -99,16 +95,14 @@ parse_skill() {
         description="(no description)"
     fi
 
-    # Truncate long descriptions for quick reference
-    if [[ ${#description} -gt 100 ]]; then
-        description="${description:0:97}..."
-    fi
+    # No truncation: matches generate-skills-ref.py condense_description behavior.
 
-    # Output as TSV for reliable parsing (dir, name, description, trigger)
-    printf '%s\t%s\t%s\t%s\n' "$skill_dir" "$name" "$description" "$trigger"
+    # Output as TSV for reliable parsing (dir, name, description)
+    printf '%s\t%s\t%s\n' "$skill_dir" "$name" "$description"
 }
 
 # Categorize skill based on directory name
+# MUST stay in sync with generate-skills-ref.py CATEGORIES dict.
 categorize_skill() {
     local dir="$1"
     case "$dir" in
@@ -133,7 +127,7 @@ generate_markdown() {
     local current_category=""
 
     # Sort by category, then by name
-    while IFS=$'\t' read -r dir name desc trigger; do
+    while IFS=$'\t' read -r dir name desc; do
         local category
         category=$(categorize_skill "$dir")
 
@@ -147,13 +141,7 @@ generate_markdown() {
             current_category="$category"
         fi
 
-        # Combine description with trigger hint if available
-        local display_desc="$desc"
-        if [[ -n "$trigger" && "$trigger" != "$desc" ]]; then
-            display_desc="$trigger"
-        fi
-
-        echo "- **${name}**: ${display_desc}"
+        echo "- **${name}**: ${desc}"
         skill_count=$((skill_count + 1))
     done
 
@@ -170,11 +158,6 @@ generate_markdown() {
 
 # Main execution
 main() {
-    if [[ ! -d "$SKILLS_DIR" ]]; then
-        echo "Error: Skills directory not found: $SKILLS_DIR" >&2
-        exit 1
-    fi
-
     # Collect all skills with categories, then sort and generate markdown
     local tmpfile
     # Set restrictive umask before creating temp file (prevents race condition)
@@ -185,27 +168,53 @@ main() {
     umask "$old_umask"
     trap "rm -f '$tmpfile'" EXIT INT TERM HUP
 
-    for skill_dir in "$SKILLS_DIR"/*/; do
-        # Skip if not a directory
-        [[ -d "$skill_dir" ]] || continue
-
-        local skill_file="${skill_dir}SKILL.md"
-        if [[ -f "$skill_file" ]]; then
-            local skill_line
-            skill_line=$(parse_skill "$skill_file")
-            if [[ -n "$skill_line" ]]; then
-                # Add category as first field for sorting
-                local dir name desc trigger cat
-                IFS=$'\t' read -r dir name desc trigger <<< "$skill_line"
-                cat=$(categorize_skill "$dir")
-                printf '%s\t%s\t%s\t%s\t%s\n' "$cat" "$dir" "$name" "$desc" "$trigger" >> "$tmpfile"
-            fi
-        else
-            echo "Warning: No SKILL.md in $(basename "$skill_dir")" >&2
+    local found_any_plugin=0
+    local plugin
+    for plugin in "${PLUGINS[@]}"; do
+        local skills_dir="${REPO_ROOT}/${plugin}/skills"
+        # Mirror Python behavior: silently skip plugins without a skills/ dir.
+        if [[ ! -d "$skills_dir" ]]; then
+            continue
         fi
+        found_any_plugin=1
+
+        for skill_dir in "$skills_dir"/*/; do
+            # Skip if not a directory (handles empty glob)
+            [[ -d "$skill_dir" ]] || continue
+
+            # Skip shared-patterns directory (mirrors Python script)
+            local dirname
+            dirname=$(basename "$skill_dir")
+            if [[ "$dirname" == "shared-patterns" ]]; then
+                continue
+            fi
+
+            local skill_file="${skill_dir}SKILL.md"
+            if [[ -f "$skill_file" ]]; then
+                local skill_line
+                skill_line=$(parse_skill "$skill_file")
+                if [[ -n "$skill_line" ]]; then
+                    # Add category as first field for sorting
+                    local dir name desc cat
+                    IFS=$'\t' read -r dir name desc <<< "$skill_line"
+                    cat=$(categorize_skill "$dir")
+                    printf '%s\t%s\t%s\t%s\n' "$cat" "$dir" "$name" "$desc" >> "$tmpfile"
+                fi
+            else
+                echo "Warning: No SKILL.md in $(basename "$skill_dir")" >&2
+            fi
+        done
     done
 
-    # Sort by category, then by name, remove category column, generate markdown
+    if [[ "$found_any_plugin" -eq 0 ]]; then
+        echo "Error: No plugin skills directory found under: $REPO_ROOT" >&2
+        exit 1
+    fi
+
+    # Sort by category, then by name (matches Python: predefined-category order
+    # is approximated here by alphabetic — Python's deterministic group order
+    # is not perfectly reproducible in pure sort(1), but skills within each
+    # category are sorted by name identically).
     sort -t$'\t' -k1,1 -k3,3 "$tmpfile" | cut -f2- | generate_markdown
 }
 

@@ -1,7 +1,6 @@
 ---
 name: ring:performance-reviewer
 description: Performance Reviewer covering code-level hotspots (allocations, goroutine leaks, N+1 queries, event loop blocking) and runtime/infra misconfigurations (GOMAXPROCS, GC tuning, CFS throttling, connection pool sizing). Runs in parallel with other reviewers.
-type: reviewer
 ---
 
 # Performance Reviewer
@@ -13,24 +12,8 @@ You are a Senior Performance Engineer reviewing code and infrastructure configur
 
 ## Standards Loading
 
-**Before starting review:**
-
-Detect project language, then load relevant standards:
-
-| Language | Standards to Load |
-|----------|-----------------|
-| Go | `golang/architecture.md`, `golang/core.md`, `golang/bootstrap.md` |
-| TypeScript | `typescript.md` (relevant sections) |
-| Infra | `sre.md` (health checks, observability) |
-
-Use cache-first protocol: check `<standards>` block in dispatch prompt → WebFetch on miss → WebFetch fallback URLs if no `<standards>` block at all.
-
-Fallback WebFetch URLs:
-```
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/typescript.md
-https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/sre.md
-```
+For Go: Read `dev-team/docs/standards/golang/index.md` and load relevant sections per the index's "Load When" descriptions for performance, allocations, hotspots, and N+1 queries.
+For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith — load relevant `## ` sections per your scope).
 
 ## Layer 1: Code Checks
 

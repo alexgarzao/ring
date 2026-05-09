@@ -4,24 +4,28 @@ description: |
   Gate 9 (Full Track) / Gate 4 (Small Track): Delivery roadmap and timeline planning.
   Transforms tasks into realistic delivery schedule with critical path analysis,
   resource allocation, and delivery breakdown. MANDATORY gate for both workflows.
-
-trigger: |
-  - Tasks passed Gate 7 validation (Full Track) OR Gate 3 (Small Track)
-  - Need realistic delivery timeline with dates
-  - Ready to convert tasks into delivery schedule
-  - Team composition known or determinable
-
-skip_when: |
-  - Tasks not validated → complete task breakdown first
-  - Proof-of-concept without delivery commitment
-  - Research/exploration work without delivery deadline
-
-sequence:
-  after: [ring:pre-dev-task-breakdown, ring:pre-dev-subtask-creation]
-  before: [ring:execute-plan, ring:dev-cycle]
 ---
 
 # Delivery Planning — Realistic Roadmap with Critical Path
+
+## When to use
+
+- Tasks passed Gate 7 validation (Full Track) OR Gate 3 (Small Track)
+- Need realistic delivery timeline with dates
+- Ready to convert tasks into delivery schedule
+- Team composition known or determinable
+
+## Skip when
+
+- Tasks not validated → complete task breakdown first
+- Proof-of-concept without delivery commitment
+- Research/exploration work without delivery deadline
+
+## Sequence
+
+**Runs before:** ring:dev-cycle
+**Runs after:** ring:pre-dev-task-breakdown, ring:pre-dev-subtask-creation
+
 
 Every roadmap must be grounded in reality, not optimism. Tasks not validated, team composition unknown, or start date absent → STOP and gather the missing input before proceeding.
 

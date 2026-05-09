@@ -1,41 +1,44 @@
 ---
 name: ring:streaming-event-mapping
 description: |
-  Discovery and mapping skill for Lerian PM teams to identify "eventable points" in a Go service codebase
-  where lib-streaming should emit business events to third-party clients (typically per-tenant SaaS
-  subscribers). Produces TWO artifacts: a PM-validated event catalog (Markdown) AND a machine-readable
-  instrumentation map (JSON) consumed directly by ring:dev-streaming-instrumentation. Three layered
-  passes: Survey (service understanding + entry-point inventory), Slice (segment + commit boundaries +
-  scope-fence pre-filter), Mark (parallel deep walk per segment proposing file:line + posture). Enforces
-  the lib-streaming scope fence (past-tense, durable, broadcastable, tenant-scoped business facts only)
-  and three named delivery postures — CRITICAL (atomic with DB), IMPORTANT (resilient, broker-outage
-  surviving), OBSERVATIONAL (best-effort) — plus CUSTOM with mandatory written justification.
-
-trigger: |
-  - User requests an event catalog, eventable-point inventory, or "where should we emit events" map
-  - PM team prepares a Lerian Go service for client-facing event streaming subscriptions
-  - Pre-flight to ring:dev-streaming-instrumentation
-  - Task mentions "event mapping", "streaming inventory", "eventable points", "client event subscription"
-
-skip_when: |
-  - Service is not a Go project (lib-streaming is Go-only)
-  - Service has no business logic to emit events about (pure infrastructure, gateway, sidecar, proxy)
-  - Task is purely documentation, configuration, or non-discovery
-  - Service is consumer-only with no outbound business event surface
-
-prerequisites: |
-  - Go service codebase available for read access
-  - At least one entry point present (HTTP route, gRPC method, RabbitMQ consumer, scheduled job, webhook)
-  - Tenant identity resolvable from request context
-
-sequence:
-  before: [ring:dev-streaming-instrumentation]
-
-related:
-  complementary: [ring:dev-streaming-instrumentation, ring:codebase-explorer, ring:pre-dev-feature-map]
+  Identify "eventable points" in a Lerian Go service where lib-streaming should emit business
+  events to per-tenant SaaS subscribers. Three passes (Survey, Slice, Mark) produce a
+  PM-validated event catalog (Markdown) and instrumentation map (JSON) for
+  ring:dev-streaming-instrumentation. Enforces the past-tense durable tenant-scoped scope fence
+  and CRITICAL/IMPORTANT/OBSERVATIONAL/CUSTOM postures. Skip on non-Go, infra-only, or
+  consumer-only services.
 ---
 
 # Streaming Event Mapping (lib-streaming, PM-team)
+
+## When to use
+
+- User requests an event catalog, eventable-point inventory, or "where should we emit events" map
+- PM team prepares a Lerian Go service for client-facing event streaming subscriptions
+- Pre-flight to ring:dev-streaming-instrumentation
+- Task mentions "event mapping", "streaming inventory", "eventable points", "client event subscription"
+
+## Skip when
+
+- Service is not a Go project (lib-streaming is Go-only)
+- Service has no business logic to emit events about (pure infrastructure, gateway, sidecar, proxy)
+- Task is purely documentation, configuration, or non-discovery
+- Service is consumer-only with no outbound business event surface
+
+## Sequence
+
+**Runs before:** ring:dev-streaming-instrumentation
+
+## Related
+
+**Complementary:** ring:dev-streaming-instrumentation, ring:codebase-explorer, ring:pre-dev-feature-map
+
+## Prerequisites
+
+- Go service codebase available for read access
+- At least one entry point present (HTTP route, gRPC method, RabbitMQ consumer, scheduled job, webhook)
+- Tenant identity resolvable from request context
+
 
 Orchestrates 3-pass codebase discovery to produce an event catalog and instrumentation map for lib-streaming. You orchestrate. Agents explore. You NEVER read, write, or edit source code directly.
 

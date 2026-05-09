@@ -1,7 +1,6 @@
 ---
 name: ring:ui-engineer
 description: UI Implementation Engineer specialized in translating product-designer outputs (ux-criteria.md, user-flows.md, wireframes/) into production-ready React/Next.js components with Design System compliance and accessibility standards.
-type: specialist
 ---
 
 # UI Engineer

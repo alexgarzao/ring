@@ -1,27 +1,21 @@
 ---
 name: ring:dev-multi-tenant
-description: |
-  Multi-tenant development cycle orchestrator following Ring Standards. Auto-detects service stack
-  (PostgreSQL, MongoDB, Redis, RabbitMQ, S3) and executes gate-based implementation using tenantId
-  from JWT for database-per-tenant isolation via lib-commons v5 dispatch layer. Uses event-driven
-  tenant discovery via Redis Pub/Sub. TenantMiddleware with WithPG/WithMB handles single-module
-  and multi-module services. M2M credentials from AWS Secrets Manager for targetServices.
-  Requires lib-commons v5 + lib-auth v2.
-
-trigger: |
-  - User requests multi-tenant implementation for a Go service
-  - User asks to add tenant isolation to an existing service
-  - Task mentions "multi-tenant", "tenant isolation", "dispatch layer", "postgres.Manager",
-    "WithPG", "WithMB", "EventListener", "TenantCache", "TenantLoader"
-
-skip_when: |
-  - Service is not a Go project
-  - Task does not involve multi-tenancy or tenant isolation
-  - Service is a shared infrastructure component operating outside tenant context
-  - Task is documentation-only or non-code
+description: Multi-tenant development cycle orchestrator following Ring Standards. Auto-detects service stack (PostgreSQL, MongoDB, Redis, RabbitMQ, S3) and executes gate-based implementation using tenantId from JWT for database-per-tenant isolation via the lib-commons v5 dispatch layer with event-driven tenant discovery (Redis Pub/Sub). Use to add tenant isolation to a Go service. Requires lib-commons v5 + lib-auth v2.
 ---
 
 # Multi-Tenant Development Cycle
+
+## When to use
+- User requests multi-tenant implementation for a Go service
+- User asks to add tenant isolation to an existing service
+- Task mentions "multi-tenant", "tenant isolation", "dispatch layer", "postgres.Manager", "WithPG", "WithMB", "EventListener", "TenantCache", "TenantLoader"
+
+## Skip when
+- Service is not a Go project
+- Task does not involve multi-tenancy or tenant isolation
+- Service is a shared infrastructure component operating outside tenant context
+- Task is documentation-only or non-code
+
 
 You orchestrate. Agents implement. NEVER use Edit/Write/Bash on Go source files.
 All code changes go through `Task(subagent_type="ring:backend-engineer-golang")`.

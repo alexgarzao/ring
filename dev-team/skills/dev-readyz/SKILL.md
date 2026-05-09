@@ -6,21 +6,22 @@ description: |
   (Go / TypeScript / Next.js) to implement the canonical /readyz contract, ValidateSaaSTLS()
   enforcement, metrics emission, startup self-probe, graceful-drain coupling, circuit-breaker
   integration, and multi-tenant carve-out — then runs 10 parallel reviewers.
-
-trigger: |
-  - New service being created
-  - Service has external dependencies (DB, cache, queue, HTTP upstreams)
-  - Service lacks /readyz or has incomplete dependency checks
-  - Service missing startup self-probe, SaaS TLS enforcement, or metrics
-
-skip_when: |
-  - Pure library package with no deployable service or HTTP server
-  - Task is documentation-only, configuration-only, or non-code
-  - Service has no external dependencies AND no network listeners
-  - CLI tool or batch job that does not serve HTTP traffic
 ---
 
 # Readyz & Self-Probe Development Cycle
+
+## When to use
+- New service being created
+- Service has external dependencies (DB, cache, queue, HTTP upstreams)
+- Service lacks /readyz or has incomplete dependency checks
+- Service missing startup self-probe, SaaS TLS enforcement, or metrics
+
+## Skip when
+- Pure library package with no deployable service or HTTP server
+- Task is documentation-only, configuration-only, or non-code
+- Service has no external dependencies AND no network listeners
+- CLI tool or batch job that does not serve HTTP traffic
+
 
 You orchestrate. Agents implement. NEVER use Edit/Write/Bash on source files.
 All code changes go through `Task(subagent_type="ring:backend-engineer-{language}")`.

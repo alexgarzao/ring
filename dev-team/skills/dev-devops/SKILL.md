@@ -4,27 +4,28 @@ description: |
   Gate 1 of the development cycle. Creates/updates Dockerfile, docker-compose setup,
   and environment variables for local development and deployment readiness.
   Runs at TASK cadence (after all subtasks complete Gate 0 + Gate 3 + Gate 9).
-
-trigger: |
-  - Gate 1 of development cycle
-  - Implementation complete from Gate 0
-  - Need containerization or environment setup
-
-skip_when: |
-  - Not inside a development cycle (ring:dev-cycle)
-  - Task is documentation-only, configuration-only, or non-code
-  - Project already has complete Docker setup unchanged by Gate 0
-  - Pure library package with no deployable service
-
-sequence:
-  after: [ring:dev-implementation]
-  before: [ring:dev-sre]
-
-related:
-  complementary: [ring:dev-implementation, ring:dev-unit-testing]
 ---
 
 # DevOps Setup (Gate 1)
+
+## When to use
+- Gate 1 of development cycle
+- Implementation complete from Gate 0
+- Need containerization or environment setup
+
+## Skip when
+- Not inside a development cycle (ring:dev-cycle)
+- Task is documentation-only, configuration-only, or non-code
+- Project already has complete Docker setup unchanged by Gate 0
+- Pure library package with no deployable service
+
+## Sequence
+**Runs before:** ring:dev-sre
+**Runs after:** ring:dev-implementation
+
+## Related
+**Complementary:** ring:dev-implementation, ring:dev-unit-testing
+
 
 Creates or updates containerization artifacts: Dockerfile, docker-compose.yml, .env.example.
 

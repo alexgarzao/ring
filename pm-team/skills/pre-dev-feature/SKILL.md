@@ -5,34 +5,39 @@ description: |
   Orchestrates topology discovery, research, PRD with UX validation,
   design validation, TRD, task breakdown, and delivery planning
   in a sequential gated process with human approval at each gate.
-
-trigger: |
-  - Feature takes <2 days to implement
-  - Uses existing architecture patterns
-  - Doesn't add new external dependencies
-  - Doesn't create new data models/entities
-  - Doesn't require multi-service integration
-  - Can be completed by a single developer
-
-skip_when: |
-  - Feature is complex (>=2 days) - use ring:pre-dev-full instead
-  - Adds new dependencies, data models, or architecture patterns
-
-sequence:
-  before: [ring:write-plan, ring:dev-cycle]
-
-related:
-  complementary: [ring:pre-dev-full, ring:write-plan, ring:worktree]
-  skills_orchestrated:
-    - ring:pre-dev-research
-    - ring:pre-dev-prd-creation
-    - ring:pre-dev-design-validation
-    - ring:pre-dev-trd-creation
-    - ring:pre-dev-task-breakdown
-    - ring:pre-dev-delivery-planning
 ---
 
 # Small Track Pre-Dev Workflow (5 Gates)
+
+## When to use
+
+- Feature takes <2 days to implement
+- Uses existing architecture patterns
+- Doesn't add new external dependencies
+- Doesn't create new data models/entities
+- Doesn't require multi-service integration
+- Can be completed by a single developer
+
+## Skip when
+
+- Feature is complex (>=2 days) - use ring:pre-dev-full instead
+- Adds new dependencies, data models, or architecture patterns
+
+## Sequence
+
+**Runs before:** ring:write-plan, ring:dev-cycle
+
+## Related
+
+**Complementary:** ring:pre-dev-full, ring:write-plan, ring:worktree
+**Skills orchestrated:**
+- ring:pre-dev-research
+- ring:pre-dev-prd-creation
+- ring:pre-dev-design-validation
+- ring:pre-dev-trd-creation
+- ring:pre-dev-task-breakdown
+- ring:pre-dev-delivery-planning
+
 
 Running the **Small Track** pre-development workflow for features that take <2 days, use existing patterns, add no new external dependencies, create no new data models, require no multi-service integration, and can be completed by a single developer.
 

@@ -4,19 +4,22 @@ description: |
   12 pre-dev workflow skills + 2 standalone discovery skills + 1 standalone dashboard skill + 4 research agents organized into
   Small Track (5 gates, <2 days) and Large Track (10 gates, 2+ days) for systematic feature
   planning with research-first approach.
-
-trigger: |
-  - Starting any feature implementation
-  - Need systematic planning before coding
-  - User requests "plan a feature"
-
-skip_when: |
-  - Quick exploratory work → ring:brainstorm may suffice
-  - Bug fix with known solution → direct implementation
-  - Trivial change (<1 hour) → skip formal planning
 ---
 
 # Using Ring Team-Product: Pre-Dev Workflow & Delivery Tracking
+
+## When to use
+
+- Starting any feature implementation
+- Need systematic planning before coding
+- User requests "plan a feature"
+
+## Skip when
+
+- Quick exploratory work → skip formal planning
+- Bug fix with known solution → direct implementation
+- Trivial change (<1 hour) → skip formal planning
+
 
 The ring-pm-team plugin provides 12 pre-development planning skills and 4 research agents. Use them via `Skill tool: "ring:gate-name"`.
 

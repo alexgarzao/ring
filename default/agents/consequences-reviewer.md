@@ -1,7 +1,6 @@
 ---
 name: ring:consequences-reviewer
 description: "Ripple Effect Review: traces how code changes propagate through the codebase beyond the changed files. Walks caller chains, consumer contracts, shared state, and implicit dependencies to find breakage invisible in isolated review. Runs in parallel with other reviewers at Gate 8."
-type: reviewer
 ---
 
 # Consequences Reviewer (Ripple Effect)
@@ -14,9 +13,8 @@ You are a Senior Consequences Reviewer. Your job: trace how changes propagate BE
 
 ## Standards Loading
 
-Read `platforms/opencode/standards/{stack}/_index.md` for the project language. Match your task against the `_index.md` Load When descriptions. Load only matching module files.
-
-No standards block fallback needed — this reviewer focuses on call-graph analysis, not language-specific rules.
+For Go: Read `dev-team/docs/standards/golang/index.md` and load relevant sections per the index's "Load When" descriptions for caller chains, consumer contracts, and call-graph propagation.
+For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith — load relevant `## ` sections per your scope).
 
 ## Focus Areas
 

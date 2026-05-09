@@ -3,27 +3,27 @@ name: ring:write-guide
 description: |
   Patterns and structure for writing functional documentation including guides,
   conceptual explanations, tutorials, and best practices documentation.
-
-trigger: |
-  - Writing a new guide or tutorial
-  - Creating conceptual documentation
-  - Documenting best practices
-  - Writing "how to" content
-
-skip_when: |
-  - Writing API reference → use write-api
-  - Reviewing documentation → use review-docs
-  - Writing code → use dev-team agents
-
-sequence:
-  before: [review-docs]
-
-related:
-  similar: [write-api]
-  complementary: [voice-and-tone, documentation-structure]
 ---
 
 # Writing Functional Documentation
+
+## When to use
+- Writing a new guide or tutorial
+- Creating conceptual documentation
+- Documenting best practices
+- Writing "how to" content
+
+## Skip when
+- Writing API reference → use write-api
+- Reviewing documentation → use review-docs
+- Writing code → use dev-team agents
+
+## Sequence
+**Runs before:** ring:review-docs
+
+## Related
+**Similar:** ring:write-api
+**Complementary:** ring:voice-and-tone, ring:documentation-structure
 
 Functional documentation explains concepts, guides users through workflows, and helps them understand "why" and "how" things work. This differs from API reference, which documents "what" each endpoint does.
 

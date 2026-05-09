@@ -1,33 +1,27 @@
 ---
 name: ring:dev-service-discovery
-description: |
-  Scans the current Go project and identifies the Service → Module → Resource
-  hierarchy for dispatch layer registration. Detects service name/type, modules
-  (via WithModule or component structure), resources per module (PostgreSQL, MongoDB,
-  RabbitMQ), database names, MongoDB indexes, and cross-module shared databases.
-  Generates MongoDB index migration file pairs (.up.json / .down.json) and detects existing
-  PostgreSQL migration files (.up.sql / .down.sql). Produces a visual HTML report and offers
-  an opt-in S3 upload at the end (path: {bucket}/{env}/{service}/{module}/{mongodb|postgresql}/).
-
-trigger: |
-  - User wants to know what to provision in dispatch layer for a service
-  - User asks "what services/modules/resources does this project have?"
-  - Before running ring:dev-multi-tenant on a new service
-  - User asks about MongoDB indexes in a project
-
-skip_when: |
-  - Not a Go project
-  - Task does not involve service discovery, dispatch layer, or resource mapping
-  - Project has no external dependencies
-
-prerequisites: |
-  - Go project with go.mod in the current working directory
-
-related:
-  complementary: [ring:dev-multi-tenant, ring:dev-devops]
+description: Scans a Go project and identifies the Service → Module → Resource hierarchy for dispatch layer registration. Detects modules, resources per module (PostgreSQL, MongoDB, RabbitMQ), database names, MongoDB indexes, and shared databases. Generates MongoDB index migration pairs (.up.json/.down.json), detects existing PostgreSQL migrations, produces a visual HTML report, and offers opt-in S3 upload. Use before ring:dev-multi-tenant on a new service or when mapping resources for dispatch.
 ---
 
 # Service Discovery
+
+## When to use
+- User wants to know what to provision in dispatch layer for a service
+- User asks "what services/modules/resources does this project have?"
+- Before running ring:dev-multi-tenant on a new service
+- User asks about MongoDB indexes in a project
+
+## Skip when
+- Not a Go project
+- Task does not involve service discovery, dispatch layer, or resource mapping
+- Project has no external dependencies
+
+## Related
+**Complementary:** ring:dev-multi-tenant, ring:dev-devops
+
+## Prerequisites
+- Go project with go.mod in the current working directory
+
 
 Scans Go project to produce dispatch layer registration data. Orchestrator executes all detection phases directly.
 

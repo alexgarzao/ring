@@ -4,29 +4,29 @@ description: |
   12 specialist developer agents for backend (Go/TypeScript), DevOps, frontend,
   design, Helm charts, UI implementation, QA (backend + frontend), SRE, and prompt quality review.
   Dispatch when you need deep technology expertise.
-
-trigger: |
-  - Need deep expertise for specific technology (Go, TypeScript)
-  - Building infrastructure/CI-CD → ring:devops-engineer
-  - Frontend with design focus → ring:frontend-designer
-  - Frontend UI development (React/Next.js) → ring:frontend-engineer
-  - Frontend from product-designer specs → ring:ui-engineer
-  - Helm chart creation/maintenance → ring:helm-engineer
-  - Backend test strategy → ring:qa-analyst
-  - Frontend test strategy → ring:qa-analyst-frontend
-  - Reliability/monitoring → ring:sre
-  - Agent/prompt quality evaluation → ring:prompt-quality-reviewer
-
-skip_when: |
-  - General code review → use default plugin reviewers
-  - Planning/design → use brainstorm
-  - Debugging → use ring:systematic-debugging
-
-related:
-  similar: [ring:using-ring]
 ---
 
 # Using Ring Developer Specialists
+
+## When to use
+- Need deep expertise for specific technology (Go, TypeScript)
+- Building infrastructure/CI-CD → ring:devops-engineer
+- Frontend with design focus → ring:frontend-designer
+- Frontend UI development (React/Next.js) → ring:frontend-engineer
+- Frontend from product-designer specs → ring:ui-engineer
+- Helm chart creation/maintenance → ring:helm-engineer
+- Backend test strategy → ring:qa-analyst
+- Frontend test strategy → ring:qa-analyst-frontend
+- Reliability/monitoring → ring:sre
+- Agent/prompt quality evaluation → ring:prompt-quality-reviewer
+
+## Skip when
+- General code review → use default plugin reviewers
+- Debugging → trace from logs / metrics / telemetry
+
+## Related
+**Similar:** ring:using-ring
+
 
 12 specialized developer agents. Dispatch via `Task tool with subagent_type:`.
 
