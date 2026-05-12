@@ -31,9 +31,21 @@ For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith �
 - [ ] SSRF prevented (URL validation)
 
 ### 3. Data Protection
+
+**Sensitive data taxonomy — apply this before flagging any log statement:**
+
+| Category | Examples | Log rule |
+|----------|----------|----------|
+| Customer PII | CPF, email, full name, phone, address | ❌ Never log |
+| Financial data | Balance, transaction amount, card number, bank account | ❌ Never log |
+| Auth material | Passwords, JWT tokens, API keys, session tokens | ❌ Never log |
+| Internal identifiers | UUID, operationId, accountId, tenantId, traceId, correlationId | ✅ Must log (observability) |
+
+**Correct posture: omission by design, not runtime redaction.** If a sensitive field reached a log statement, the bug is in the data model or handler — not in the logger. Flag the source, not the symptom.
+
 - [ ] Sensitive data encrypted at rest (AES-256)
 - [ ] TLS 1.2+ enforced in transit
-- [ ] No PII in logs, error messages, or URLs
+- [ ] No customer PII or financial data in logs, error messages, or URLs — internal UUIDs and system identifiers are expected and must NOT be flagged
 - [ ] Encryption keys from env vars/key vault, not hardcoded
 - [ ] Certificate validation not disabled
 
@@ -41,29 +53,32 @@ For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith �
 - [ ] All new packages verified to exist in registry (`npm view <pkg>` / `pip index versions <pkg>`)
 - [ ] No typo-adjacent package names (e.g., `lodahs`, `expresss`)
 - [ ] No morpheme-spliced suspicious names (e.g., `fast-json-parser`, `wave-socket` — verify in registry)
-- [ ] Packages < 30 days old require justification
+- [ ] New packages with no prior release history, zero/minimal downloads, or name similar to a well-known package → flag as supply chain risk
 - [ ] Phantom dependency (doesn't exist) → **CRITICAL** auto-FAIL
 
 ### 5. Cryptography
 - [ ] Strong algorithms only (AES-256, RSA-2048+, SHA-256+, Argon2id)
 - [ ] No weak crypto: MD5, SHA1, DES, RC4
 - [ ] IVs/nonces random and not reused
-- [ ] Secure random generator (crypto/rand in Go, crypto.randomBytes in Node)
+- [ ] Cryptographic operations use secure random generator (crypto/rand in Go, crypto.randomBytes in Node)
+- [ ] `math/rand` / `Math.random()` not used for security operations (token generation, IVs, nonces, key material)
 - [ ] No custom crypto implementations
+
+**`math/rand` context rule:** Banned for security-sensitive operations. Acceptable for non-security use: retry jitter, test fixtures, log sampling, display shuffles. Verify whether the output flows into an auth, crypto, or token context before flagging.
 
 ## OWASP Top 10 (2021) — Verify All
 
 | Category | Check |
 |----------|-------|
 | A01: Broken Access Control | Authorization on all endpoints, no IDOR |
-| A02: Cryptographic Failures | Strong algorithms, no PII exposure |
+| A02: Cryptographic Failures | Strong algorithms, no customer PII/financial data exposure |
 | A03: Injection | Parameterized queries, output encoding |
 | A04: Insecure Design | Secure design patterns |
 | A05: Security Misconfiguration | Headers present, defaults changed |
 | A06: Vulnerable Components | No CVEs, all new dependencies verified |
 | A07: Auth Failures | Strong passwords, token expiry, brute force protection |
 | A08: Data Integrity Failures | Signed updates, integrity checks |
-| A09: Logging Failures | Security events logged, no sensitive data in logs |
+| A09: Logging Failures | Security events logged; no customer PII or financial data in logs — internal identifiers (UUIDs, tenantId, traceId) are expected and correct |
 | A10: SSRF | URL validation, destination whitelisting |
 
 ## Non-Negotiables (Auto-FAIL)
@@ -80,14 +95,14 @@ For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith �
 | Level | Examples |
 |-------|---------|
 | **CRITICAL** | SQL injection, RCE, auth bypass, hardcoded secrets, phantom dependencies |
-| **HIGH** | XSS, CSRF, PII exposure, broken access control, SSRF, missing input validation |
+| **HIGH** | XSS, CSRF, customer PII/financial data exposure, broken access control, SSRF, missing input validation |
 | **MEDIUM** | Weak cryptography, missing security headers, verbose error messages |
 | **LOW** | Missing optional headers, suboptimal configs |
 
 ## Cryptographic Standards
 
 **Approved:** SHA-256+, Argon2id, bcrypt (12+), AES-256-GCM, ChaCha20-Poly1305, RSA-2048+, Ed25519, crypto/rand
-**Banned:** MD5, SHA1, DES, 3DES, RC4, RSA-1024, Math.random(), rand.Intn()
+**Banned for security operations:** MD5, SHA1, DES, 3DES, RC4, RSA-1024, Math.random(), math/rand (when generating tokens, keys, IVs, or nonces — see Section 5 context rule)
 
 ## Output Format
 
@@ -129,9 +144,11 @@ For TypeScript: Read `dev-team/docs/standards/typescript.md` (single monolith �
 | A09: Logging Failures | ✅ PASS / ❌ ISSUES |
 | A10: SSRF | ✅ PASS / ❌ ISSUES |
 
-## Compliance Status
-**GDPR:** [ ] PII encrypted [ ] No PII in logs
-**PCI-DSS:** [ ] Card data not stored [ ] Encrypted transmission
+## PCI-DSS Compliance (financial services)
+- [ ] Cardholder data (PAN, CVV, expiry) not stored after authorization
+- [ ] Card data encrypted in transit (TLS 1.2+)
+- [ ] No card data in logs at any verbosity level
+- [ ] Access to cardholder data scoped to least privilege
 
 ## Dependency Security Verification
 
@@ -168,5 +185,42 @@ jwtSecret := os.Getenv("JWT_SECRET")
 if jwtSecret == "" {
     return fmt.Errorf("JWT_SECRET not configured")
 }
+```
+</example>
+
+<example title="PII in logs — correct vs incorrect">
+```go
+// ❌ HIGH: customer PII in log — CWE-532, A09:2021
+log.Info("payment processed",
+    "customer_email", payment.Email,      // PII — must not log
+    "cpf", payment.CPF,                   // PII — must not log
+    "amount", payment.Amount,             // financial data — must not log
+)
+
+// ✅ Internal identifiers only — correct and necessary for observability
+log.Info("payment processed",
+    "operation_id", payment.OperationID,  // internal UUID — log this
+    "account_id", payment.AccountID,      // internal ID — log this
+    "tenant_id", payment.TenantID,        // system identifier — log this
+)
+// If sensitive fields are reaching log statements, the fix is in the
+// data model or handler — not in the logger.
+```
+</example>
+
+<example title="math/rand — contextual use">
+```go
+// ❌ HIGH: math/rand for token generation — CWE-338, A02:2021
+token := fmt.Sprintf("%d", rand.Intn(1000000))
+
+// ✅ crypto/rand for any security-sensitive value
+b := make([]byte, 32)
+if _, err := crypto_rand.Read(b); err != nil {
+    return "", err
+}
+token := hex.EncodeToString(b)
+
+// ✅ math/rand is fine for non-security use
+jitter := time.Duration(rand.Intn(500)) * time.Millisecond  // retry jitter — not a security operation
 ```
 </example>
