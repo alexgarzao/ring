@@ -2,9 +2,9 @@
 name: ring:dev-implementation
 description: |
   Gate 0 of the development cycle. Executes code implementation using the appropriate
-  specialized agent based on task content and project language. Handles TDD workflow
-  with RED-GREEN phases. Follows project standards defined in docs/PROJECT_RULES.md.
-  Includes delivery verification exit criteria integrated into Gate 0.
+  specialized backend agent based on task content and project language. Handles TDD,
+  coverage, docker-compose/local runtime, basic health/observability verification,
+  and delivery verification inside one backend-owned gate.
 ---
 
 # Code Implementation (Gate 0)
@@ -20,7 +20,7 @@ description: |
 - Implementation already completed for the current gate
 
 ## Sequence
-**Runs before:** ring:dev-devops
+**Runs before:** ring:codereview
 
 ## Related
 **Complementary:** ring:dev-cycle, ring:test-driven-development, ring:codereview
@@ -68,7 +68,7 @@ Task:
 
     ## Frontend TDD Policy (React/Next.js only)
     Visual-only components (layout, styling, animations): TDD-RED not required.
-    Report "Visual-only component → TDD-RED skipped, Gate 4 snapshots apply."
+    Report "Visual-only component → TDD-RED skipped; frontend visual checks apply in frontend flow."
     Behavioral components (hooks, validation, state, conditional rendering, API): MUST use TDD-RED.
 
     ## Your Task
@@ -114,13 +114,20 @@ Task:
     ## Your Task
     1. Implement minimum code to make tests pass
     2. Run tests — all must pass
-    3. Write delivery verification results
-    4. Commit with message: "{feat|fix|test|chore}(scope): description"
+    3. Enforce coverage threshold (Ring minimum 85%, PROJECT_RULES may raise it)
+    4. Create/update docker-compose and .env.example when the service needs local dependencies
+    5. Verify local runtime starts cleanly enough for the changed service path
+    6. Verify basic health/observability expectations for the changed code
+    7. Write delivery verification results
+    8. Commit with message: "{feat|fix|test|chore}(scope): description"
 
     ## Required Output
     - Implementation files created/modified
     - Test execution output (must show PASS)
-    - Delivery verification: coverage %, files changed
+    - Coverage report (must meet threshold)
+    - Local runtime verification: docker-compose/.env.example status or explicit "not required"
+    - Basic health/observability verification
+    - Delivery verification: requirements delivered, dead code check, files changed
     - Git commit SHA
 ```
 
@@ -143,7 +150,14 @@ done
 # C. Lint (go: golangci-lint; ts: eslint)
 golangci-lint run ./... || echo "LINT FAILED"
 
-# D. Migration safety (if SQL migrations changed)
+# D. Coverage (Ring minimum 85%; PROJECT_RULES.md can raise)
+# Go example: go test ./... -cover
+# TypeScript example: npm test -- --coverage
+
+# E. Local runtime / docker-compose
+# If docker-compose.yml is required, verify it can config and start the changed service dependencies.
+
+# F. Migration safety (if SQL migrations changed)
 # Check for blocking ops: ADD COLUMN NOT NULL without DEFAULT, DROP COLUMN,
 # CREATE INDEX without CONCURRENTLY, ALTER COLUMN TYPE, TRUNCATE
 ```
@@ -171,6 +185,7 @@ golangci-lint run ./... || echo "LINT FAILED"
 - Automated checks: PASS/FAIL per check
 
 ## Handoff to Next Gate
-- files_changed list for Gate 1
+- files_changed list for Gate 8 review
+- ready_for_review: YES or NO
 - Verdict: PASS | PARTIAL | FAIL
 ```

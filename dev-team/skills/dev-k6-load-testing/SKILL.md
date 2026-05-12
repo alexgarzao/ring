@@ -24,7 +24,7 @@ description: |
 - Service has no network-facing interface
 
 ## Related
-**Complementary:** ring:dev-integration-testing, ring:dev-chaos-testing, ring:dev-sre
+**Complementary:** ring:dev-implementation, ring:codereview
 
 
 This skill generates k6 load tests following the Lerian k6 platform conventions.

@@ -90,15 +90,7 @@ Task 2: ring:qa-analyst-frontend (MODE: ANALYSIS only)
   - UI Library Mode: {ui_library_mode}
   - Output: Standards Coverage Table + ISSUE-XXX for gaps
 
-Task 3: ring:devops-engineer (MODE: ANALYSIS only)
-  - Check Dockerfile, docker-compose, CI/CD, Nginx
-  - Output: Standards Coverage Table + ISSUE-XXX for gaps
-
-Task 4: ring:sre (MODE: ANALYSIS only)
-  - Check observability, monitoring, health checks
-  - Output: Standards Coverage Table + ISSUE-XXX for gaps
-
-Task 5: ring:ui-engineer (MODE: ANALYSIS only, if ui_library_mode = "sindarian-ui")
+Task 3: ring:ui-engineer (MODE: ANALYSIS only, if ui_library_mode = "sindarian-ui")
   - Check Sindarian UI component usage compliance
   - Output: ISSUE-XXX for non-compliant usage
 ```

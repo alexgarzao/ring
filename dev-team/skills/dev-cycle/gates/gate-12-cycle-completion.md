@@ -1,59 +1,25 @@
 ## Step 12: Cycle Completion
 
-### Step 12.0: Deferred Test Execution (Gates 6-7)
-
-**⛔ MANDATORY: Execute integration and chaos tests before final commit.**
-
-All units have written/updated test code during their Gate 6-7 passes. Now execute all tests once.
+### Step 12.0: Final Test Confirmation
 
 ```text
-1. Record deferred execution start timestamp
+1. Confirm every Gate 0 handoff includes passing tests, coverage >= threshold,
+   and docker-compose/local runtime verification when required.
 
-2. REQUIRED: Invoke ring:dev-integration-testing skill in EXECUTE mode:
-
-   Skill("ring:dev-integration-testing") with input:
-     mode: "execute"
-     all_test_files: [aggregate gate_progress.integration_testing.test_files from all units]
-     language: state.language
-
-   The skill handles:
-   - Spinning up testcontainers for all external dependencies
-   - Running ALL integration tests across all units
-   - Reporting pass/fail per test file
-   - If failures: dispatching fixes and re-running (max 3 iterations)
-
-3. REQUIRED: Invoke ring:dev-chaos-testing skill in EXECUTE mode:
-
-   Skill("ring:dev-chaos-testing") with input:
-     mode: "execute"
-     all_test_files: [aggregate gate_progress.chaos_testing.test_files from all units]
-     language: state.language
-
-   The skill handles:
-   - Starting Toxiproxy
-   - Running ALL chaos tests across all units
-   - Verifying recovery for all failure scenarios
-   - If failures: dispatching fixes and re-running (max 3 iterations)
-
-4. Update state:
-   - gate_progress.integration_testing.execution_status = "completed" (or "failed")
-   - gate_progress.chaos_testing.execution_status = "completed" (or "failed")
-
-5. if any test FAILS after 3 iterations:
+2. if any required Gate 0 quality check is missing or failed:
    → HARD BLOCK. Cannot complete cycle.
-   → Report failures to user.
+   → Return to Gate 0 for the affected unit.
 
-6. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
+3. **MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]**
 ```
 
 ### Step 12.0 Anti-Rationalization
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "All unit/fuzz/property tests passed, skip integration" | Different test types catch different bugs. All are MANDATORY. | **Execute deferred tests** |
-| "Tests were written, that's enough" | Written ≠ passing. Execution verifies real behavior. | **Execute deferred tests** |
-| "Containers are slow, let CI handle it" | CI is backup, not replacement. Verify locally first. | **Execute deferred tests** |
-| "One test failed but it's flaky" | Flaky = unreliable = fix it. No exceptions. | **Fix and re-run** |
+| "Gate 0 said PASS but coverage is missing" | Gate 0 is incomplete without coverage evidence. | **Return to Gate 0** |
+| "docker-compose can wait" | Backend owns local runtime in this flow. | **Return to Gate 0 if local dependencies exist** |
+| "CI will catch it" | CI is backup, not replacement. Verify locally first. | **Return to Gate 0** |
 
 ### Step 12.0.5: Multi-Tenant Verification (Post-Cycle — Verification Only)
 
@@ -219,4 +185,3 @@ state.gate_progress.migration_safety_verification = {
    | "All tasks passed, no insights" | Pass patterns need documentation too | **Execute Skill tool** |
 
 5. **Report:** "Cycle completed. Tasks X/X, Subtasks Y, Time Xh Xm, Review iterations X"
-

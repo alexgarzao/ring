@@ -4,7 +4,7 @@
 
 This module covers property-based testing patterns. Property-based tests verify that **invariants always hold** across many generated inputs.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 5 (Property-Based Testing).
+> **Gate Reference:** This module is available to backend engineers during Gate 0 quality verification when property testing is required.
 
 ---
 
@@ -304,7 +304,7 @@ go test ./... -run Property -v
 
 ---
 
-## Output Format (Gate 5 - Property-Based Testing)
+## Output Format (Gate 0 - Property-Based Testing)
 
 ```markdown
 ## Property-Based Testing Summary

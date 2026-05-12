@@ -22,10 +22,10 @@ description: |
 
 ## Sequence
 **Runs before:** ring:codereview
-**Runs after:** ring:dev-unit-testing
+**Runs after:** ring:dev-implementation
 
 ## Related
-**Complementary:** ring:qa-analyst, ring:backend-engineer-golang
+**Complementary:** ring:backend-engineer-golang
 
 
 Standards: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md` → "Goroutine Leak Detection" section.

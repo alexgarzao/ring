@@ -128,15 +128,12 @@ Use when you need expert depth in specific domains:
 | --------------------------------------- | ---------------------------- | -------------------------------------------------- |
 | `ring:backend-engineer-golang`          | Go microservices & APIs      | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2    |
 | `ring:backend-engineer-typescript`      | TypeScript/Node.js backend   | Express, NestJS, Prisma, TypeORM, GraphQL          |
-| `ring:devops-engineer`                  | Infrastructure & CI/CD       | Docker, Kubernetes, Terraform, GitHub Actions      |
 | `ring:frontend-bff-engineer-typescript` | BFF & React/Next.js frontend | Next.js API Routes, Clean Architecture, DDD, React |
 | `ring:frontend-designer`                | Visual design & aesthetics   | Typography, motion, CSS, distinctive UI            |
 | `ring:frontend-engineer`                | General frontend development | React, TypeScript, CSS, component architecture     |
 | `ring:helm-engineer`                    | Helm chart specialist        | Helm charts, Kubernetes, Lerian conventions        |
 | `ring:prompt-quality-reviewer`          | AI prompt quality review     | Prompt engineering, clarity, effectiveness         |
-| `ring:qa-analyst`                       | Quality assurance            | Test strategy, automation, coverage                |
 | `ring:qa-analyst-frontend`              | Frontend QA specialist       | Accessibility, visual regression, E2E, performance |
-| `ring:sre`                              | Site reliability & ops       | Monitoring, alerting, incident response, SLOs      |
 | `ring:performance-reviewer`             | Performance review           | Go, TypeScript, Python, GOMAXPROCS, GC tuning      |
 | `ring:multi-tenant-reviewer`            | Multi-tenant usage review    | lib-commons/multitenancy, tenant isolation, JWT tenantId |
 | `ring:lib-commons-reviewer`             | lib-commons usage review     | Correct lib-commons API usage, reinvented-wheel detection |
@@ -264,19 +261,16 @@ These enforce quality standards:
 | Deep codebase analysis            | `ring:codebase-explorer`                    |
 | Go backend expertise              | `ring:backend-engineer-golang`              |
 | TypeScript/Node.js backend        | `ring:backend-engineer-typescript`          |
-| Infrastructure/DevOps             | `ring:devops-engineer`                      |
 | React/Next.js frontend & BFF      | `ring:frontend-bff-engineer-typescript`     |
 | General frontend development      | `ring:frontend-engineer`                    |
 | Visual design & aesthetics        | `ring:frontend-designer`                    |
 | Helm charts & Kubernetes          | `ring:helm-engineer`                        |
 | UI component development          | `ring:ui-engineer`                          |
 | AI prompt quality review          | `ring:prompt-quality-reviewer`              |
-| Backend quality assurance          | `ring:qa-analyst`                           |
 | Frontend quality assurance         | `ring:qa-analyst-frontend`                  |
 | Performance review                | `ring:performance-reviewer`                 |
 | Multi-tenant usage review         | `ring:multi-tenant-reviewer`                |
 | lib-commons usage review          | `ring:lib-commons-reviewer`                 |
-| Site reliability & operations     | `ring:sre`                                  |
 | Best practices research           | `ring:best-practices-researcher`            |
 | Framework documentation research  | `ring:framework-docs-researcher`            |
 | Repository analysis               | `ring:repo-research-analyst`                |

@@ -17,7 +17,7 @@ description: Scans a Go project and identifies the Service → Module → Resour
 - Project has no external dependencies
 
 ## Related
-**Complementary:** ring:dev-multi-tenant, ring:dev-devops
+**Complementary:** ring:dev-multi-tenant, ring:dev-implementation
 
 ## Prerequisites
 - Go project with go.mod in the current working directory

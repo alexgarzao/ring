@@ -4,7 +4,7 @@
 
 This module covers chaos testing patterns. Chaos tests verify system behavior under failure conditions like network partitions, latency, and connection loss.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 7 (Chaos Testing).
+> **Gate Reference:** This module is available to backend engineers during Gate 0 quality verification when chaos testing is required.
 
 ---
 
@@ -65,7 +65,7 @@ Chaos testing verifies that your system **behaves correctly under failure condit
 //go:build integration
 
 func TestIntegration_Chaos_Redis_ConnectionLoss(t *testing.T) {
-    // Gate 1: Chaos tests disabled by default
+    // Phase 1: Chaos tests disabled by default
     if os.Getenv("CHAOS") != "1" {
         t.Skip("Chaos tests disabled (set CHAOS=1)")
     }
@@ -365,7 +365,7 @@ CHAOS=1 go test -tags=integration -v -run Chaos ./...
 
 ---
 
-## Output Format (Gate 7 - Chaos Testing)
+## Output Format (Gate 0 - Chaos Testing)
 
 ```markdown
 ## Chaos Testing Summary

@@ -50,17 +50,11 @@ All code changes go through `Task(subagent_type=...)`. Announce at start: "Using
 
 | Gate | Cadence | Skill | Agent | Purpose |
 |------|---------|-------|-------|---------|
-| 0 | subtask | ring:dev-implementation | ring:frontend-engineer / ring:ui-engineer / ring:frontend-bff-engineer-typescript | TDD implementation |
-| 1 | task | ring:dev-devops | ring:devops-engineer | Docker/compose/Nginx |
-| 2 | task | ring:dev-frontend-accessibility | ring:qa-analyst-frontend (accessibility) | WCAG 2.1 AA |
-| 3 | subtask | ring:dev-unit-testing | ring:qa-analyst-frontend (unit) | 85%+ coverage |
-| 4 | task | ring:dev-frontend-visual | ring:qa-analyst-frontend (visual) | Snapshot tests |
-| 5 | task | ring:dev-frontend-e2e | ring:qa-analyst-frontend (e2e) | Playwright E2E |
-| 6 | task | ring:dev-frontend-performance | ring:qa-analyst-frontend (performance) | Core Web Vitals + Lighthouse ≥ 90 |
+| 0 | subtask | ring:dev-implementation | ring:frontend-engineer / ring:ui-engineer / ring:frontend-bff-engineer-typescript | TDD, coverage, accessibility, visual/E2E/perf checks, local runtime |
 | 7 | task | ring:codereview | 10 parallel reviewers via ring:codereview | Code review |
 | 8 | subtask | ring:dev-validation | User | Acceptance sign-off |
 
-All 9 gates are MANDATORY. No exceptions.
+All listed gates are MANDATORY. No exceptions.
 
 ## Gate Agent Selection (Gate 0)
 
@@ -82,20 +76,20 @@ Pass `ui_library_mode` to every Gate 0 agent.
 | State management | YES — RED→GREEN | Gate 0 |
 | Conditional rendering | YES — RED→GREEN | Gate 0 |
 | API integration | YES — RED→GREEN | Gate 0 |
-| Layout / styling | NO — test-after | Gate 4 (visual) |
-| Animations | NO — test-after | Gate 4 (visual) |
-| Static presentational | NO — test-after | Gate 4 (visual) |
+| Layout / styling | NO — test-after | Gate 0 visual checks |
+| Animations | NO — test-after | Gate 0 visual checks |
+| Static presentational | NO — test-after | Gate 0 visual checks |
 
 ## Execution Order
 
 ```yaml
 for each task:
   for each subtask:
-    Gate 0 → Gate 3 → Gate 8   # subtask-level
+    Gate 0 → Gate 8   # subtask-level
     [checkpoint if manual_per_subtask]
   
   # task-level (after all subtasks)
-  Gate 1 → Gate 2 → Gate 4 → Gate 5 → Gate 6 → Gate 7
+  Gate 7
 ```
 
 ## Gate Execution Workflow (MANDATORY for every gate)

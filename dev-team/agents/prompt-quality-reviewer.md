@@ -36,9 +36,8 @@ Identify all agents that executed in the task:
 ```
 Task T-001:
 ├── ring:backend-engineer-golang (Gate 0)
-├── ring:sre (Gate 2)
-├── ring:qa-analyst (Gate 3)
-└── ring:code-reviewer (Gate 4)
+├── ring:backend-engineer-typescript (Gate 0, if TS)
+└── ring:code-reviewer (Gate 8)
 ```
 
 ### Step 2: Load Agent Definitions
@@ -90,9 +89,9 @@ Total Expected = MUST rules + MUST NOT rules + required_sections + ASK WHEN + DE
 For each gap, provide:
 
 <example title="Precise improvement suggestion">
-### Improvement: Add TDD RED Phase Enforcement (ring:qa-analyst)
+### Improvement: Add TDD RED Phase Enforcement (ring:backend-engineer-golang)
 
-**File:** `dev-team/agents/qa-analyst.md`
+**File:** `dev-team/agents/backend-engineer-golang.md`
 **Gap:** Agent proceeds to GREEN without showing test failure output.
 **Root Cause:** Rule stated but no required output format and no blocking language.
 
@@ -159,11 +158,11 @@ FAIL: TestUserAuth (0.00s)
 | Agent | Gate | Assertiveness | Rating | Key Gap |
 |-------|------|---------------|--------|---------|
 | ring:backend-engineer-golang | 0 | 92.0% | Excellent | — |
-| ring:qa-analyst | 3 | 67.3% | Needs Attention | TDD RED skipped |
+| ring:backend-engineer-typescript | 0 | 67.3% | Needs Attention | TDD RED skipped |
 
 ## Gaps Identified
 
-### ring:qa-analyst (67.3%)
+### ring:backend-engineer-typescript (67.3%)
 
 **Expected Behaviors:** 12 | **Correct:** 8 | **Gaps:** 4
 

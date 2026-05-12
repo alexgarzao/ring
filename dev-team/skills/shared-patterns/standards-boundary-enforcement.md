@@ -98,16 +98,6 @@ Each agent MUST:
 
 **These are items agents commonly invent that are not typically in standards. Always verify in WebFetch result before flagging.**
 
-#### ring:devops-engineer → devops.md
-
-| Common Hallucination | Action |
-|---------------------|--------|
-| `make proto` | Verify in devops.md "Makefile Standards" section |
-| `make mocks` | Verify in devops.md "Makefile Standards" section |
-| `make migrate-*` | Verify in devops.md "Makefile Standards" section |
-| `make install` | Verify in devops.md "Makefile Standards" section |
-| `make clean` | Verify in devops.md "Makefile Standards" section |
-
 #### ring:backend-engineer-golang → golang.md
 
 | Common Hallucination | Action |
@@ -125,15 +115,6 @@ Each agent MUST:
 | TypeORM | Verify ORM in typescript.md |
 | Jest | Verify testing framework in typescript.md |
 | InversifyJS | Verify DI framework in typescript.md |
-
-#### ring:sre → sre.md
-
-| Common Hallucination | Action |
-|---------------------|--------|
-| Prometheus metrics endpoint | Verify in sre.md if explicitly required |
-| Jaeger UI | Verify in sre.md if explicitly required |
-| Custom dashboards | Verify in sre.md if explicitly required |
-| Alert rules | Verify in sre.md if explicitly required |
 
 #### ring:frontend-designer → frontend.md
 

@@ -84,7 +84,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           "LOW": 0
         }
       },
-      "_comment_subtask_gate_progress": "Subtask-level gate_progress holds SUBTASK-CADENCE gates only: implementation (Gate 0), unit_testing (Gate 3), validation (Gate 9). Task-cadence gates (1, 2, 4, 5, 6w, 7w, 8) live in task.gate_progress, not here.",
+      "_comment_subtask_gate_progress": "Subtask-level gate_progress holds implementation (Gate 0) and validation (Gate 9). Gate 0 includes TDD, coverage, local docker-compose/runtime, and delivery verification. Task-level review (Gate 8) lives in task.gate_progress, not here.",
       "subtasks": [
         {
           "id": "ST-001-01",
@@ -107,12 +107,10 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
                 "completed_at": "ISO timestamp"
               },
               "delivery_verified": false,
-              "files_changed": []
-            },
-            "unit_testing": {
-              "status": "pending|in_progress|completed",
               "coverage_actual": 0.0,
-              "coverage_threshold": 85
+              "coverage_threshold": 85,
+              "local_runtime_verified": false,
+              "files_changed": []
             },
             "validation": {
               "status": "pending|in_progress|completed",
@@ -121,32 +119,8 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           }
         }
       ],
-      "_comment_task_gate_progress": "Task-level gate_progress holds TASK-CADENCE gates only: devops (1), sre (2), fuzz_testing (4), property_testing (5), integration_testing (6w), chaos_testing (7w), review (8). Subtask-cadence gates (0, 3, 9) live in each subtask's gate_progress, not here. Gates 6/7 keep write_mode and execute_mode phases; execute_mode transitions at cycle end (Step 12.1).",
+      "_comment_task_gate_progress": "Task-level gate_progress holds review (Gate 8). Subtask-cadence gates (0, 9) live in each subtask's gate_progress.",
       "gate_progress": {
-        "devops": {"status": "pending"},
-        "sre": {"status": "pending"},
-        "fuzz_testing": {"status": "pending"},
-        "property_testing": {"status": "pending"},
-        "integration_testing": {
-          "write_mode": {
-            "status": "pending|in_progress|completed",
-            "test_files": [],
-            "compilation_passed": false
-          },
-          "execute_mode": "pending|completed",
-          "scenarios_tested": 0,
-          "tests_passed": 0,
-          "tests_failed": 0,
-          "flaky_tests_detected": 0
-        },
-        "chaos_testing": {
-          "write_mode": {
-            "status": "pending|in_progress|completed",
-            "test_files": [],
-            "compilation_passed": false
-          },
-          "execute_mode": "pending|completed"
-        },
         "review": {"status": "pending"}
       },
       "artifacts": {},
@@ -157,134 +131,13 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
           "timestamp": "ISO timestamp",
           "duration_ms": 0,
           "iterations": 1,
+          "coverage_actual": 87.5,
+          "coverage_threshold": 85,
+          "local_runtime_verified": true,
           "standards_compliance": {
             "total_sections": 15,
             "compliant": 14,
             "not_applicable": 1,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "devops": {
-          "agent": "ring:devops-engineer",
-          "output": "## Summary\n...",
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "iterations": 1,
-          "artifacts_created": ["Dockerfile", "docker-compose.yml", ".env.example"],
-          "verification_errors": [],
-          "standards_compliance": {
-            "total_sections": 8,
-            "compliant": 8,
-            "not_applicable": 0,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "sre": {
-          "agent": "ring:sre",
-          "output": "## Summary\n...",
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "iterations": 1,
-          "instrumentation_coverage": "92%",
-          "validation_errors": [],
-          "standards_compliance": {
-            "total_sections": 10,
-            "compliant": 10,
-            "not_applicable": 0,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "unit_testing": {
-          "agent": "ring:qa-analyst",
-          "test_mode": "unit",
-          "output": "## Summary\n...",
-          "verdict": "PASS",
-          "coverage_actual": 87.5,
-          "coverage_threshold": 85,
-          "iterations": 1,
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "failures": [],
-          "uncovered_criteria": [],
-          "standards_compliance": {
-            "total_sections": 6,
-            "compliant": 6,
-            "not_applicable": 0,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "fuzz_testing": {
-          "agent": "ring:qa-analyst",
-          "test_mode": "fuzz",
-          "output": "## Summary\n...",
-          "verdict": "PASS",
-          "corpus_entries": 5,
-          "iterations": 1,
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "standards_compliance": {
-            "total_sections": 5,
-            "compliant": 5,
-            "not_applicable": 0,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "property_testing": {
-          "agent": "ring:qa-analyst",
-          "test_mode": "property",
-          "output": "## Summary\n...",
-          "verdict": "PASS",
-          "properties_tested": 3,
-          "iterations": 1,
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "standards_compliance": {
-            "total_sections": 5,
-            "compliant": 5,
-            "not_applicable": 0,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "integration_testing": {
-          "agent": "ring:qa-analyst",
-          "test_mode": "integration",
-          "output": "## Summary\n...",
-          "verdict": "PASS",
-          "scenarios_tested": 5,
-          "tests_passed": 5,
-          "tests_failed": 0,
-          "flaky_tests_detected": 0,
-          "iterations": 1,
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "standards_compliance": {
-            "total_sections": 10,
-            "compliant": 10,
-            "not_applicable": 0,
-            "non_compliant": 0,
-            "gaps": []
-          }
-        },
-        "chaos_testing": {
-          "agent": "ring:qa-analyst",
-          "test_mode": "chaos",
-          "output": "## Summary\n...",
-          "verdict": "PASS",
-          "failure_scenarios_tested": 4,
-          "recovery_verified": true,
-          "iterations": 1,
-          "timestamp": "ISO timestamp",
-          "duration_ms": 0,
-          "standards_compliance": {
-            "total_sections": 5,
-            "compliant": 5,
-            "not_applicable": 0,
             "non_compliant": 0,
             "gaps": []
           }
@@ -428,14 +281,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
 
 | Gate | Fields to Populate |
 |------|-------------------|
-| Gate 0 (Implementation) | `standards_compliance` (total, compliant, gaps[]) |
-| Gate 1 (DevOps) | `standards_compliance` + `verification_errors[]` |
-| Gate 2 (SRE) | `standards_compliance` + `validation_errors[]` |
-| Gate 3 (Unit Testing) | `standards_compliance` + `failures[]` + `uncovered_criteria[]` |
-| Gate 4 (Fuzz Testing) | `standards_compliance` + `corpus_entries` |
-| Gate 5 (Property Testing) | `standards_compliance` + `properties_tested` |
-| Gate 6 (Integration Testing) | `standards_compliance` + `scenarios_tested` + `tests_passed` + `tests_failed` + `flaky_tests_detected` |
-| Gate 7 (Chaos Testing) | `standards_compliance` + `failure_scenarios_tested` + `recovery_verified` |
+| Gate 0 (Implementation) | `standards_compliance` + `coverage_actual` + `coverage_threshold` + `local_runtime_verified` + `delivery_verified` |
 | Gate 8 (Review) | `standards_compliance` per reviewer + `issues[]` per reviewer |
 
 **All gates track `standards_compliance`:**
@@ -453,7 +299,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
 
 ### After every Gate Transition
 
-You MUST execute these steps after completing any gate (0, 1, 2, 3, 4, or 5):
+You MUST execute these steps after completing any active gate (0, 8, or 9):
 
 ```yaml
 # Step 1: Update state object with gate results
@@ -470,27 +316,20 @@ Write tool:
 
 ### State Persistence Checkpoints
 
-⛔ **Cadence-aware write paths.** Subtask-level gates (0, 3, 9) write to `state.tasks[i].subtasks[j].gate_progress.<gate_name>`. Task-level gates (1, 2, 4, 5, 6w, 7w, 8) write to `state.tasks[i].gate_progress.<gate_name>`. Never write task-level gate status under a subtask and never write subtask-level gate status under the task.
+⛔ **Cadence-aware write paths.** Subtask-level gates (0, 9) write to `state.tasks[i].subtasks[j].gate_progress.<gate_name>`. Task-level Gate 8 writes to `state.tasks[i].gate_progress.review`. Never write task-level gate status under a subtask and never write subtask-level gate status under the task.
 
 | Checkpoint | Cadence | MUST Update | MUST Write File |
 |------------|---------|-------------|-----------------|
 | **Before Gate 0 (task start)** | Task | `task.status = "in_progress"` in JSON **+ tasks.md Status → `🔄 Doing`** | ✅ YES |
 | Gate 0.1 (TDD-RED) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.tdd_red.status` + `.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.tdd_green.status` + `.implementation.status` | ✅ YES |
-| Gate 0 exit (Delivery Verification) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified = true` | ✅ YES |
-| Gate 3 (Unit Testing) | Subtask | `state.tasks[i].subtasks[j].gate_progress.unit_testing.status` + `.coverage_actual` + `agent_outputs.unit_testing` | ✅ YES |
+| Gate 0 exit (Quality + Delivery Verification) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified = true` + `.coverage_actual` + `.local_runtime_verified` | ✅ YES |
 | Gate 9 (Validation) | Subtask | `state.tasks[i].subtasks[j].gate_progress.validation.status` + `.result` (do NOT touch task-level status here) | ✅ YES |
-| Gate 1 (DevOps) | Task | `state.tasks[i].gate_progress.devops.status` + `agent_outputs.devops` | ✅ YES |
-| Gate 2 (SRE) | Task | `state.tasks[i].gate_progress.sre.status` + `agent_outputs.sre` | ✅ YES |
-| Gate 4 (Fuzz Testing) | Task | `state.tasks[i].gate_progress.fuzz_testing.status` + `agent_outputs.fuzz_testing` | ✅ YES |
-| Gate 5 (Property Testing) | Task | `state.tasks[i].gate_progress.property_testing.status` + `agent_outputs.property_testing` | ✅ YES |
-| Gate 6 (Integration — write) | Task | `state.tasks[i].gate_progress.integration_testing.write_mode.status` + `.test_files` + `.compilation_passed` | ✅ YES |
-| Gate 7 (Chaos — write) | Task | `state.tasks[i].gate_progress.chaos_testing.write_mode.status` + `.test_files` + `.compilation_passed` | ✅ YES |
 | Gate 8 (Review) | Task | `state.tasks[i].gate_progress.review.status` + `agent_outputs.review` (reviewers see cumulative task diff) | ✅ YES |
 | Step 11.1 (Subtask Approval) | Subtask | `status = "paused_for_approval"` (subtask-level checkpoint; set only when `execution_mode = manual_per_subtask`) | ✅ YES |
 | Step 11.2 (Task Approval) | Task | `task.status = "completed"` in JSON **+ tasks.md Status → `✅ Done`** + `task.accumulated_metrics` populated (gate_durations_ms, review_iterations, testing_iterations, issues_by_severity); NO dev-report dispatch here (runs ONCE at Step 12.1) | ✅ YES |
 | Step 12.0.5b (Gate 0.5D — Migration Safety, conditional) | Cycle | `state.gate_progress.migration_safety_verification = {status: "completed" \| "skipped" \| "blocked" \| "acknowledged", files_checked, findings: {BLOCKING, WARN, ACKNOWLEDGE}, user_acknowledgment}` | ✅ YES |
-| Step 12.1 (Cycle end — Gate 6/7 execute + dev-report) | Cycle | `state.tasks[i].gate_progress.integration_testing.execute_mode = "completed"` + `.chaos_testing.execute_mode = "completed"`; `state.feedback_loop_completed = true` after the ONE AND ONLY `ring:dev-report` dispatch | ✅ YES |
+| Step 12.1 (Cycle end — dev-report) | Cycle | `state.feedback_loop_completed = true` after the ONE AND ONLY `ring:dev-report` dispatch | ✅ YES |
 | HARD BLOCK (any gate) | Task | `task.status = "failed"` in JSON **+ tasks.md Status → `❌ Failed`** | ✅ YES |
 
 **tasks.md Status update rules (apply at the three checkpoints above):**
@@ -523,4 +362,3 @@ Use Edit tool on state.source_file (tasks.md):
 | "I updated the state variable" | Variable ≠ file. Without Write tool, nothing persists. | **Use Write tool explicitly** |
 
 ---
-

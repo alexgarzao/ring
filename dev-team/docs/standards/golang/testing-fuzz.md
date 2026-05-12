@@ -4,7 +4,7 @@
 
 This module covers native Go fuzz testing patterns. Fuzz tests automatically generate random inputs to find bugs that manual testing misses.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 4 (Fuzz Testing).
+> **Gate Reference:** This module is available to backend engineers during Gate 0 quality verification when fuzz testing is required.
 
 ---
 
@@ -18,7 +18,7 @@ This module covers native Go fuzz testing patterns. Fuzz tests automatically gen
 | 4 | [Input Types](#input-types) | Supported fuzz input types |
 | 5 | [Fuzz Test Quality Gate](#fuzz-test-quality-gate-mandatory) | Checklist before completion |
 
-**Meta-sections:** [Output Format (Gate 4 - Fuzz Testing)](#output-format-gate-4---fuzz-testing), [Anti-Rationalization Table](#anti-rationalization-table-fuzz-testing)
+**Meta-sections:** [Output Format (Gate 0 - Fuzz Testing)](#output-format-gate-0---fuzz-testing), [Anti-Rationalization Table](#anti-rationalization-table-fuzz-testing)
 
 ---
 
@@ -284,7 +284,7 @@ grep -rn "func Fuzz" --include="*_test.go" ./internal
 
 ---
 
-## Output Format (Gate 4 - Fuzz Testing)
+## Output Format (Gate 0 - Fuzz Testing)
 
 ```markdown
 ## Fuzz Testing Summary

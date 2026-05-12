@@ -30,9 +30,6 @@ Canonical source for Standards Compliance detection logic used by all dev-team a
 | `ring:backend-engineer-typescript` | typescript.md | any implementation task |
 | `frontend-bff-engineer-typescript` | typescript.md | any implementation task |
 | `ring:frontend-engineer` | frontend.md | any implementation task |
-| `ring:devops-engineer` | devops.md | any artifact creation |
-| `ring:sre` | sre.md | any validation task |
-| `ring:qa-analyst` | golang.md/typescript.md | any testing task |
 
 **⛔ HARD GATE:** If agent does not output Standards Coverage Table → Output is INCOMPLETE → Orchestrator MUST re-dispatch.
 

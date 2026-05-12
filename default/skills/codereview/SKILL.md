@@ -20,11 +20,11 @@ description: |
 - Code has not been modified since the last completed review cycle
 
 ## Sequence
-**Runs after:** ring:dev-unit-testing
+**Runs after:** ring:dev-implementation
 **Runs before:** ring:dev-validation
 
 ## Related
-**Complementary:** ring:dev-cycle, ring:dev-implementation, ring:dev-unit-testing
+**Complementary:** ring:dev-cycle, ring:dev-implementation
 
 Dispatch all 10 reviewer subagents in **parallel** for fast, comprehensive feedback.
 

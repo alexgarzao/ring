@@ -54,14 +54,11 @@ Ring solves this by:
 
 - `ring:backend-engineer-golang` - Go backend specialist for financial systems
 - `ring:backend-engineer-typescript` - TypeScript/Node.js backend specialist (Express, NestJS, Fastify)
-- `ring:devops-engineer` - DevOps infrastructure specialist
 - `ring:frontend-bff-engineer-typescript` - BFF & React/Next.js frontend with Clean Architecture
 - `ring:frontend-designer` - Visual design specialist
 - `ring:frontend-engineer` - Senior Frontend Engineer (React/Next.js)
 - `ring:prompt-quality-reviewer` - Agent Quality Analyst
-- `ring:qa-analyst` - Quality assurance specialist
 - `ring:qa-analyst-frontend` - Frontend QA specialist (accessibility, visual, E2E, performance)
-- `ring:sre` - Site reliability engineer (monitoring, alerting, SLOs)
 - `ring:ui-engineer` - UI component specialist (design systems, accessibility)
 - `ring:helm-engineer` - Helm chart specialist (chart structure, security, Lerian conventions)
 - `ring:lib-commons-reviewer` - lib-commons usage review (correct API usage, reinvented-wheel opportunities across 35+ packages)
@@ -302,32 +299,25 @@ REFACTOR → Clean up → Stay green
 **Orchestration & Refactoring (7):**
 
 - `ring:using-dev-team` - Introduction to developer specialist agents
-- `ring:dev-cycle` - 10-gate development workflow orchestrator (Gates 0–9, with subtask/task/cycle cadence classification; Gate 0 includes inline delivery verification exit check)
+- `ring:dev-cycle` - Lean backend development workflow orchestrator: Gate 0 implementation-owned TDD/coverage/docker-compose/runtime/delivery verification, Gate 8 review, Gate 9 validation
 - `ring:dev-cycle-frontend` - 9-gate frontend development workflow orchestrator
 - `ring:dev-refactor` - Backend/codebase standards analysis
 - `ring:dev-refactor-frontend` - Frontend standards analysis and task generation
 - `ring:dev-simplify` - Whole-codebase structural simplification sweep (hunts unjustified abstractions, adapters, shims; KILL/REVIEW/KEEP output; DELETE-by-default burden of proof for pre-public applications)
 - `ring:dev-cycle-management` - Development cycle state management (status reporting and cancellation)
 
-**Backend Gate Skills (9):**
+**Backend Gate Skills:**
 
 - `ring:dev-implementation` - Gate 0: TDD implementation
 - `ring:dev-delivery-verification` - DEPRECATED: delivery verification merged into ring:dev-implementation Step 7 (Gate 0 exit criterion). Skill preserved for reference only.
 - `ring:dev-multi-tenant` - Multi-tenant adaptation (database-per-tenant isolation, integrated into Gate 0)
-- `ring:dev-devops` - Gate 1: DevOps setup (Docker, compose)
 - `ring:dev-docker-security` - Docker image security audit for Docker Hub Health Score grade A
 - `ring:dev-helm` - Helm chart creation and maintenance following Lerian conventions
-- `ring:dev-sre` - Gate 2: Observability validation
 - `ring:dev-service-discovery` - Service/module/resource hierarchy scanner for dispatch layer
 - `ring:dev-readyz` - Comprehensive readiness probes (/readyz) with per-dependency status and TLS validation
 
-**Testing & Validation (9):**
+**Testing & Validation:**
 
-- `ring:dev-unit-testing` - Gate 3: Unit test coverage (85%+ threshold)
-- `ring:dev-fuzz-testing` - Gate 4: Fuzz testing with seed corpus for edge case discovery
-- `ring:dev-property-testing` - Gate 5: Property-based tests for domain invariants
-- `ring:dev-integration-testing` - Gate 6: Integration tests with real containers via testcontainers
-- `ring:dev-chaos-testing` - Gate 7: Chaos tests using Toxiproxy for graceful degradation
 - `ring:dev-goroutine-leak-testing` - Goroutine leak detection and regression testing
 - `ring:dev-validation` - Gate 9: User approval
 - `ring:dev-report` - Assertiveness scoring and metrics
@@ -501,7 +491,6 @@ ring/                                  # Monorepo root
 │   └── agents/                      # 15 specialized developer agents
 │       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
 │       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
-│       ├── devops-engineer.md               # DevOps infrastructure (`ring:devops-engineer`)
 │       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js specialist (`ring:frontend-bff-engineer-typescript`)
 │       ├── frontend-designer.md             # Visual design specialist (`ring:frontend-designer`)
 │       ├── frontend-engineer.md             # Frontend engineer (`ring:frontend-engineer`)
@@ -510,9 +499,7 @@ ring/                                  # Monorepo root
 │       ├── multi-tenant-reviewer.md         # Multi-tenant usage review (`ring:multi-tenant-reviewer`)
 │       ├── performance-reviewer.md          # Performance review (`ring:performance-reviewer`)
 │       ├── prompt-quality-reviewer.md       # Agent quality reviewer (`ring:prompt-quality-reviewer`)
-│       ├── qa-analyst.md                    # Backend QA specialist (`ring:qa-analyst`)
 │       ├── qa-analyst-frontend.md           # Frontend QA specialist (`ring:qa-analyst-frontend`)
-│       ├── sre.md                           # Site reliability engineer (`ring:sre`)
 │       └── ui-engineer.md                   # UI component specialist (`ring:ui-engineer`)
 ├── pm-team/                    # Product Planning plugin (ring-pm-team)
 │   └── skills/                      # 18 product planning skills

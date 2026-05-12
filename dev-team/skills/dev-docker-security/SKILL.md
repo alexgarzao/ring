@@ -20,7 +20,7 @@ description: |
 - Using pre-built images without custom Dockerfile
 
 ## Related
-**Complementary:** ring:dev-devops, ring:dev-sre
+**Complementary:** ring:dev-implementation, ring:dev-helm
 
 
 General Dockerfile patterns: `dev-team/docs/standards/devops.md#containers`.

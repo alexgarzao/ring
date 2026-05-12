@@ -123,7 +123,6 @@ default/agents/
 dev-team/agents/
 ├── backend-engineer-golang.md         # Go backend specialist (`ring:backend-engineer-golang`)
 ├── backend-engineer-typescript.md     # TypeScript backend specialist (`ring:backend-engineer-typescript`)
-├── devops-engineer.md                 # DevOps specialist (`ring:devops-engineer`)
 ├── frontend-bff-engineer-typescript.md # BFF specialist (`ring:frontend-bff-engineer-typescript`)
 ├── frontend-designer.md               # Visual design specialist (`ring:frontend-designer`)
 ├── frontend-engineer.md               # Frontend engineer (`ring:frontend-engineer`)
@@ -132,9 +131,7 @@ dev-team/agents/
 ├── multi-tenant-reviewer.md           # Multi-tenant usage review (`ring:multi-tenant-reviewer`)
 ├── performance-reviewer.md              # Performance review (`ring:performance-reviewer`)
 ├── prompt-quality-reviewer.md         # Prompt quality specialist (`ring:prompt-quality-reviewer`)
-├── qa-analyst.md                      # Backend QA specialist (`ring:qa-analyst`)
 ├── qa-analyst-frontend.md             # Frontend QA specialist (`ring:qa-analyst-frontend`)
-├── sre.md                             # Site reliability engineer (`ring:sre`)
 └── ui-engineer.md                     # UI component specialist (`ring:ui-engineer`)
 ```
 
@@ -188,12 +185,9 @@ All ring-dev-team agents include a `## Standards Compliance` section in their ou
 
 - `ring:backend-engineer-golang` → loads `golang.md`
 - `ring:backend-engineer-typescript` → loads `typescript.md`
-- `ring:devops-engineer` → loads `devops.md`
 - `ring:frontend-bff-engineer-typescript` → loads `typescript.md`
 - `ring:frontend-designer` → loads `frontend.md`
-- `ring:qa-analyst` → loads `testing-*.md` (unit/fuzz/property/integration/chaos)
 - `ring:qa-analyst-frontend` → loads `frontend/testing-*.md` (accessibility/visual/e2e/performance)
-- `ring:sre` → loads `sre.md`
 
 **Output Format (when non-compliant):**
 

@@ -108,19 +108,17 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ### Ring Dev Team Plugin
 
-- `ring:using-dev-team` → 10 specialist developer agents
+- `ring:using-dev-team` → specialist developer agents
 - Auto-loads when ring-dev-team plugin is enabled
 - Located: `dev-team/skills/using-dev-team/SKILL.md`
 - Agents (invoke as `ring:{agent-name}`):
   - ring:backend-engineer-golang
   - ring:backend-engineer-typescript
-  - ring:devops-engineer
   - ring:frontend-bff-engineer-typescript
   - ring:frontend-designer
   - ring:frontend-engineer
+  - ring:helm-engineer
   - ring:prompt-quality-reviewer
-  - ring:qa-analyst
-  - ring:sre
   - ring:ui-engineer
 
 ### Ring PM Team Plugin
@@ -202,25 +200,16 @@ Each plugin auto-loads a `using-{plugin}` skill via SessionStart hook to introdu
 
 ## Development Cycle (10-gate — cadence-classified)
 
-`ring:dev-cycle` orchestrates 10 gates at three cadences. Every gate runs; only the frequency changes.
+`ring:dev-cycle` is now a lean backend flow. Backend implementation owns TDD, coverage, docker-compose/local runtime, basic health/observability checks, and delivery verification in Gate 0.
 
 **Subtask cadence** (runs for each subtask, or for the task itself if no subtasks):
 - Gate 0 — Implementation (includes Delivery Verification exit check inline)
-- Gate 3 — Unit Testing
 - Gate 9 — Validation
 
-**Task cadence** (runs once per task, after all subtasks complete the three subtask-cadence gates):
-- Gate 1 — DevOps
-- Gate 2 — SRE
-- Gate 4 — Fuzz Testing
-- Gate 5 — Property Testing
-- Gate 6 — Integration Testing (write mode)
-- Gate 7 — Chaos Testing (write mode)
+**Task cadence** (runs once per task, after all subtasks complete Gate 0 and Gate 9):
 - Gate 8 — Review (10 parallel reviewers on cumulative task diff)
 
 **Cycle cadence** (runs once per cycle at the end):
-- Gate 6 execute — Integration Testing (execute mode)
-- Gate 7 execute — Chaos Testing (execute mode)
 - Multi-Tenant Verify
 - `ring:dev-report` aggregate
 - Final Commit

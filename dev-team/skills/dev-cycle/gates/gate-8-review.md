@@ -1,4 +1,4 @@
-## Step 10: Gate 8 - Review (Per Task — after all subtasks complete Gate 0 + Gate 3 + Gate 9)
+## Step 10: Gate 8 - Review (Per Task — after all subtasks complete Gate 0 + Gate 9)
 
 ⛔ **CADENCE:** This gate runs ONCE per task, NOT per subtask. Reviewers see the CUMULATIVE diff of all subtasks in the task — cross-subtask interaction bugs (contract drift, hidden coupling, duplicated logic) are MORE visible at this cadence, not less.
 
@@ -6,7 +6,7 @@
 
 ### Step 10.1: Prepare Input for ring:codereview Skill
 
-⛔ **Input scope:** TASK-level. `base_sha` is the SHA before the FIRST subtask's Gate 0 (i.e., the task's starting commit); `head_sha` is the current HEAD after all subtasks and task-level gates up to this point. The resulting diff covers ALL subtasks of the task.
+⛔ **Input scope:** TASK-level. `base_sha` is the SHA before the FIRST subtask's Gate 0 (i.e., the task's starting commit); `head_sha` is the current HEAD after all subtasks up to this point. The resulting diff covers ALL subtasks of the task.
 
 ```text
 task = state.tasks[state.current_task_index]
@@ -82,7 +82,7 @@ review_input = {
 5. When ring:codereview skill returns PASS:
 
    Parse from skill output:
-   - reviewers_passed: extract from "## Reviewer Verdicts" (should be "5/5")
+   - reviewers_passed: extract from "## Reviewer Verdicts" (should be "10/10")
    - issues_critical: extract count from "## Issues by Severity"
    - issues_high: extract count from "## Issues by Severity"
    - issues_medium: extract count from "## Issues by Severity"
@@ -94,7 +94,7 @@ review_input = {
        iterations: [count],
        timestamp: "[ISO timestamp]",
        duration_ms: [execution time],
-       reviewers_passed: "5/5",
+       reviewers_passed: "10/10",
        code_reviewer: {
          verdict: "PASS",
          issues_count: N,
@@ -147,7 +147,7 @@ review_input = {
 
 6. Update state:
    - gate_progress.review.status = "completed"
-   - gate_progress.review.reviewers_passed = "5/5"
+   - gate_progress.review.reviewers_passed = "10/10"
 
 7. Proceed to Gate 9
 ```
@@ -176,4 +176,3 @@ review_input = {
 | "It's just a style issue" | "If it's truly cosmetic, reviewers would mark it COSMETIC (non-blocking). MEDIUM means it affects maintainability or correctness. Fixing now." |
 
 ---
-

@@ -1,6 +1,6 @@
 ## Step 2: Gate 0 - Implementation (Per Execution Unit)
 
-ℹ️ **CADENCE:** Subtask-level. Execution unit is always a subtask (or the task-itself when the task has no subtasks). Writes to `state.tasks[i].subtasks[j].gate_progress.implementation`. Task-level gates (1, 2, 4, 5, 6w, 7w, 8) MUST NOT be dispatched from inside this step — they run after the subtask loop.
+ℹ️ **CADENCE:** Subtask-level. Execution unit is always a subtask (or the task-itself when the task has no subtasks). Writes to `state.tasks[i].subtasks[j].gate_progress.implementation`. Task-level review (Gate 8) MUST NOT be dispatched from inside this step — it runs after the subtask loop.
 
 **REQUIRED SUB-SKILL:** Use ring:dev-implementation
 
@@ -33,7 +33,7 @@ After ring:dev-implementation completes, verify generated code:
 | No Must* helpers | `grep -rn "Must[A-Z]" --include="*.go" \| grep -v "regexp\.MustCompile"` | 0 results | Return to Gate 0 with fix instructions |
 | No os.Exit() | `grep -rn "os.Exit" --include="*.go" --exclude="main.go"` | 0 results | Return to Gate 0 with fix instructions |
 
-**If any check fails: DO NOT proceed to Gate 1. Return to Gate 0 with specific fix instructions.**
+**If any check fails: DO NOT proceed. Return to Gate 0 with specific fix instructions.**
 
 ### ⛔ File Size Enforcement (MANDATORY — All Gates)
 
@@ -96,12 +96,12 @@ implementation_input = {
    - "## Implementation Summary" → status (PASS/FAIL), agent used
    - "## TDD Results" → RED/GREEN phase status
    - "## Files Changed" → created/modified files list
-   - "## Handoff to Next Gate" → ready_for_gate_1: YES/NO
+   - "## Handoff to Next Gate" → ready_for_review: YES/NO
 
-   if skill output contains "Status: PASS" and "Ready for Gate 1: YES":
+   if skill output contains "Status: PASS" and "Ready for Review: YES":
      → Gate 0 PASSED. Proceed to Step 2.3.
 
-   if skill output contains "Status: FAIL" or "Ready for Gate 1: NO":
+   if skill output contains "Status: FAIL" or "Ready for Review: NO":
      → Gate 0 BLOCKED.
      → Skill already dispatched fixes to implementation agent
      → Skill already re-ran TDD and standards verification
@@ -156,7 +156,7 @@ implementation_input = {
    │ TDD-GREEN: PASS verified ✓                     │
    │ STANDARDS: [N]/[N] sections compliant ✓        │
    │                                                 │
-   │ Proceeding to Gate 1 (DevOps)...               │
+   │ Ready for validation/review flow.              │
    └─────────────────────────────────────────────────┘
 
 7. MANDATORY: ⛔ Save state to file — Write tool → [state.state_path]
@@ -165,7 +165,7 @@ implementation_input = {
 8. Proceed to Step 2.3.1 (Delivery Verification Exit Check)
 ```
 
-### Step 2.3.1: Delivery Verification Exit Check (MANDATORY before Gate 1)
+### Step 2.3.1: Delivery Verification Exit Check (MANDATORY before Gate 0 completion)
 
 After Gate 0 PASS, delivery verification runs AS EXIT CRITERIA (not as a separate gate).
 This check is performed inside `ring:dev-implementation` as its Step 7 (Delivery
@@ -188,7 +188,7 @@ Verify that the dev-implementation handoff includes `delivery_verification` fiel
 
 IF delivery_verification.result == "PASS":
   → Update state.tasks[current].subtasks[current].gate_progress.implementation.delivery_verified = true
-  → Proceed to Gate 1 (DevOps)
+  → Gate 0 is complete
 
 IF delivery_verification.result == "PARTIAL" or "FAIL":
   → Return control to dev-implementation with remediation instructions (max 2 retries)
@@ -214,4 +214,3 @@ No separate `state.gate_progress.delivery_verification` field — delivery verif
 | "Agent already did TDD internally" | Internal ≠ verified by skill. Skill validates output structure. | **Invoke Skill("ring:dev-implementation")** |
 
 ---
-

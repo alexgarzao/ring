@@ -1,10 +1,9 @@
 ---
 name: ring:dev-cycle
 description: |
-  10-gate development cycle orchestrator with subtask/task/cycle cadence.
-  Subtask-level: Gate 0 (implementation + delivery verification), Gate 3 (unit testing), Gate 9 (validation).
-  Task-level: Gates 1-2, 4-8 (devops, SRE, fuzz, property, integration write, chaos write, review).
-  Cycle-end: Gates 6-7 execute, multi-tenant verify, dev-report, final commit.
+  Lean backend development cycle orchestrator with implementation-owned quality.
+  Backend engineers own TDD, coverage, docker-compose/local runtime, and delivery verification.
+  Task-level review stays separate; user validation closes each subtask.
 ---
 
 # Development Cycle Orchestrator
@@ -24,28 +23,19 @@ You orchestrate. Agents execute. You NEVER read, write, or edit source code dire
 
 ## How This Works
 
-Load tasks from PM output, execute through 10 gates at three cadences. Each gate loads its own sub-skill which tells you how to dispatch the specialist agent.
+Load tasks from PM output and execute the lean backend cycle. Backend implementation owns local runtime and quality so the flow does not dispatch separate QA, SRE, or DevOps gates.
 
-**Announce at start:** "Using ring:dev-cycle to orchestrate through 10 gates (0-9)."
+**Announce at start:** "Using ring:dev-cycle lean backend flow."
 
 ## Gate Map
 
 | Gate | Skill to Load | Agent to Dispatch | Cadence | Mode |
 |------|---------------|-------------------|---------|------|
 | 0 | ring:dev-implementation | ring:backend-engineer-* | Per subtask | Write + Run |
-| 1 | ring:dev-devops | ring:devops-engineer | Per task | Write + Run |
-| 2 | ring:dev-sre | ring:sre | Per task | Write + Run |
-| 3 | ring:dev-unit-testing | ring:qa-analyst (unit) | Per subtask | Write + Run |
-| 4 | ring:dev-fuzz-testing | ring:qa-analyst (fuzz) | Per task | Write + Run |
-| 5 | ring:dev-property-testing | ring:qa-analyst (property) | Per task | Write + Run |
-| 6 | ring:dev-integration-testing | ring:qa-analyst (integration) | Per task | Write only* |
-| 7 | ring:dev-chaos-testing | ring:qa-analyst (chaos) | Per task | Write only* |
 | 8 | ring:codereview | 10 reviewers in parallel | Per task | Run |
 | 9 | ring:dev-validation | N/A (verification) | Per subtask | Run |
 
-*Gates 6-7 write test code per task, execute once at end of cycle (containers spun up once).
-
-All gates are mandatory. No exceptions.
+Gate 0 includes TDD RED/GREEN, coverage threshold enforcement, docker-compose/local runtime updates, basic health/observability verification, and delivery verification. Do not dispatch separate QA, SRE, or DevOps gates as part of this cycle.
 
 ## Execution Order
 
@@ -54,14 +44,14 @@ for each task:
 
   # SUBTASK-LEVEL (per subtask, or task-itself if no subtasks)
   for each subtask:
-    Gate 0 → Gate 3 → Gate 9
+    Gate 0 → Gate 9
     [checkpoint if manual_per_subtask mode]
 
   # TASK-LEVEL (once per task, after all subtasks done)
-  Gate 1 → Gate 2 → Gate 4 → Gate 5 → Gate 6 write → Gate 7 write → Gate 8
+  Gate 8
 
 # CYCLE-END (once, after all tasks done)
-Gate 6 execute → Gate 7 execute → Multi-Tenant Verify → dev-report → Final Commit
+Multi-Tenant Verify → dev-report → Final Commit
 ```
 
 ## Gate Execution Workflow
@@ -69,7 +59,7 @@ Gate 6 execute → Gate 7 execute → Multi-Tenant Verify → dev-report → Fin
 For EVERY gate, follow this exact sequence:
 
 ```
-1. Read gate-specific instructions  → Read("gates/gate-{N}.md") from this skill directory
+1. Read gate-specific instructions  → Read("gates/gate-{N}.md") from this skill directory for Gates 0, 8, and 9 only
 2. Load sub-skill                   → Skill("ring:{sub-skill-name}")
 3. Follow sub-skill dispatch rules  → Sub-skill tells you HOW to dispatch
 4. Dispatch agent                   → Task(subagent_type="ring:{agent}", ...)
@@ -123,7 +113,7 @@ Ask user at cycle start:
 | `manual_per_task` | Checkpoint after each task completes all gates |
 | `manual_per_subtask` | Checkpoint after each subtask completes subtask-level gates |
 
-Mode affects CHECKPOINTS (user approval pauses), not GATES. All gates execute regardless of mode.
+Mode affects CHECKPOINTS (user approval pauses), not GATES. All listed gates execute regardless of mode.
 
 ## Custom Instructions
 
@@ -141,8 +131,7 @@ If user provides custom context at cycle start, store in `state.custom_prompt` a
 
 ## Commit Timing
 
-- Gate 0 (implementation): Commit after GREEN phase passes
-- Gates 1-7 (infra + testing): Commit after each gate passes
+- Gate 0 (implementation): Commit after GREEN phase, coverage, docker-compose/local runtime, and delivery verification pass
 - Gate 8 (review): Commit fixes after all reviewers pass
 - Gate 9 (validation): No commit (verification only)
 - Cycle-end: Final commit with cycle metadata
@@ -161,8 +150,7 @@ Convention: `feat|fix|test|chore(scope): description` — keep commits atomic pe
 ## Gate Completion Rules
 
 A gate is complete ONLY when ALL components succeed:
-- Gate 0: TDD RED + GREEN + delivery verification (all requirements delivered, 0 dead code)
-- Gate 3: Coverage ≥ 85% + all acceptance criteria tested
+- Gate 0: TDD RED + GREEN + coverage ≥ 85% + all acceptance criteria tested + docker-compose/local runtime verified + delivery verification (all requirements delivered, 0 dead code)
 - Gate 8: ALL 10 reviewers pass. 9/10 = FAIL → re-run all 10.
 - Gate 9: Explicit "APPROVED" from user
 

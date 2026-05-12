@@ -26,8 +26,8 @@ This document defines the mandatory separation of responsibilities between revie
 │ • ring:code-reviewer         │          │ • ring:backend-engineer-golang      │
 │ • ring:business-logic-reviewer│          │ • ring:backend-engineer-typescript  │
 │ • ring:security-reviewer     │          │ • ring:frontend-engineer            │
-│ • ring:test-reviewer         │          │ • ring:devops-engineer              │
-│ • ring:nil-safety-reviewer   │          │ • ring:qa-analyst                   │
+│ • ring:test-reviewer         │          │ • ring:backend-engineer-golang      │
+│ • ring:nil-safety-reviewer   │          │ • ring:backend-engineer-typescript  │
 │ • ring:dead-code-reviewer    │          │                                 │
 │                             │          │                                 │
 │ OUTPUT: Report              │          │ OUTPUT: Code changes            │
@@ -143,7 +143,7 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 
 ## Integration with ring:dev-cycle
 
-The `ring:dev-cycle` skill enforces this boundary at Gate 4 (Review):
+The `ring:dev-cycle` skill enforces this boundary at Gate 8 (Review):
 
 1. **Dispatch reviewers in parallel** (code, business-logic, security, test, nil-safety, dead-code, consequences)
 2. **Collect structured reports** from each reviewer
@@ -151,6 +151,6 @@ The `ring:dev-cycle` skill enforces this boundary at Gate 4 (Review):
    - Extract issues from report
    - Dispatch appropriate implementation agent with fix instructions
    - Re-run ALL reviewers after fix
-4. **Only proceed to Gate 5** when all reviewers return PASS
+4. **Only proceed to Gate 9** when all reviewers return PASS
 
 This ensures fixes are always reviewed before proceeding.

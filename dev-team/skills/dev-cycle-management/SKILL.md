@@ -70,7 +70,7 @@ Tasks:
 
 Current:
   Task: AUTH-003 - Implementar refresh token
-  Gate: 3/10 (ring:dev-unit-testing)
+  Gate: 0/8/9 lean flow (ring:dev-implementation)
   Iterations: 1
 
 Metrics (completed tasks):

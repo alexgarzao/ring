@@ -4,7 +4,7 @@
 
 This module covers integration testing patterns with testcontainers for Go projects. Integration tests verify that components work correctly with real external dependencies.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 6 (Integration Testing).
+> **Gate Reference:** This module is available to backend engineers during Gate 0 quality verification when integration testing is required.
 
 ---
 
@@ -572,7 +572,7 @@ BUG IDENTIFIED (not test error):
 
 ---
 
-## Output Format (Gate 6 - Integration Testing)
+## Output Format (Gate 0 - Integration Testing)
 
 ```markdown
 ## Integration Testing Summary

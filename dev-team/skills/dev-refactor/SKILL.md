@@ -60,7 +60,7 @@ Output: docs/ring:dev-refactor/{timestamp}/codebase-report.md
 
 Verify `codebase-report.md` exists before dispatching.
 
-**For Go projects — dispatch all 5 in parallel (single message):**
+**For Go projects — dispatch backend analysis:**
 
 ```yaml
 Task 1: ring:backend-engineer-golang (MODE: ANALYSIS only)
@@ -69,27 +69,12 @@ Task 1: ring:backend-engineer-golang (MODE: ANALYSIS only)
   - Flag framework/library mismatches vs standards
   - File size enforcement: >1000 lines = ISSUE-XXX (HIGH), >1500 = CRITICAL
   - Multi-tenant analysis per shared-patterns/multi-tenant-analysis.md
+  - Check tests, coverage, docker-compose/local runtime, and observability as backend-owned responsibilities
   - Output: Standards Coverage Table + ISSUE-XXX per finding
-
-Task 2: ring:qa-analyst (MODE: ANALYSIS only)
-  - Check all testing sections per standards-coverage-table.md
-  - Output: Standards Coverage Table + ISSUE-XXX for gaps
-
-Task 3: ring:devops-engineer (MODE: ANALYSIS only)
-  - Check Dockerfile, Docker Compose, Makefile, CI/CD
-  - Output: Standards Coverage Table + ISSUE-XXX for gaps
-
-Task 4: ring:sre (MODE: ANALYSIS only)
-  - Check observability (logging, tracing, metrics, readyz)
-  - Output: Standards Coverage Table + ISSUE-XXX for gaps
-
-Task 5: ring:qa-analyst (test_mode: goroutine-leak) (MODE: ANALYSIS only)
-  - Detect goroutine usage; flag leaks
-  - Output: ISSUE-XXX for each leak pattern
 ```
 
-**For TypeScript projects — dispatch 4 in parallel:**
-Tasks 1-4 using `ring:backend-engineer-typescript` for Task 1.
+**For TypeScript projects:**
+Use `ring:backend-engineer-typescript` with the same analysis contract.
 
 ### Step 4: Map Findings → Tasks
 
