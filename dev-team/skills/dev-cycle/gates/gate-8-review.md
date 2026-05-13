@@ -119,6 +119,31 @@ review_input = {
          verdict: "PASS",
          issues_count: N,
          issues: []
+       },
+       consequences_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       dead_code_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       performance_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       multi_tenant_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
+       },
+       lib_commons_reviewer: {
+         verdict: "PASS",
+         issues_count: N,
+         issues: []
        }
      }
    

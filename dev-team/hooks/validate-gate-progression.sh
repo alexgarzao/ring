@@ -12,24 +12,43 @@ INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')
 CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // empty')
 
-if [[ "$FILE_PATH" != *"current-cycle.json" ]] || [[ -z "$CONTENT" ]]; then
-  exit 0
-fi
-
-if ! echo "$CONTENT" | jq empty 2>/dev/null; then
-  jq -n '{
+deny() {
+  local reason="$1"
+  jq -n --arg reason "$reason" '{
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: "Invalid JSON in current-cycle.json write"
+      permissionDecisionReason: $reason
     }
   }'
   exit 0
+}
+
+if [[ "$FILE_PATH" != *"current-cycle.json" ]]; then
+  exit 0
+fi
+
+if [[ -z "$CONTENT" ]]; then
+  deny "Empty content is not allowed for current-cycle.json"
+fi
+
+if ! echo "$CONTENT" | jq empty 2>/dev/null; then
+  deny "Invalid JSON in current-cycle.json write"
 fi
 
 STATE="$CONTENT"
 CURRENT_TASK_INDEX=$(echo "$STATE" | jq -r '.current_task_index // 0')
 TARGET_GATE=$(echo "$STATE" | jq -r '.current_gate // 0')
+TASK_COUNT=$(echo "$STATE" | jq -r '(.tasks // []) | length')
+
+if ! [[ "$CURRENT_TASK_INDEX" =~ ^[0-9]+$ ]]; then
+  deny "Invalid current_task_index: $CURRENT_TASK_INDEX"
+fi
+
+if [[ "$CURRENT_TASK_INDEX" -ge "$TASK_COUNT" ]]; then
+  deny "current_task_index out of range: $CURRENT_TASK_INDEX (tasks: $TASK_COUNT)"
+fi
+
 TASK_GATES=$(echo "$STATE" | jq -c ".tasks[$CURRENT_TASK_INDEX].gate_progress // {}")
 
 errors=()

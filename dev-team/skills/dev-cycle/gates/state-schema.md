@@ -329,7 +329,7 @@ Write tool:
 | **Before Gate 0 (task start)** | Task | `task.status = "in_progress"` in JSON **+ tasks.md Status → `🔄 Doing`** | ✅ YES |
 | Gate 0.1 (TDD-RED) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.tdd_red.status` + `.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.tdd_green.status` + `.implementation.status` | ✅ YES |
-| Gate 0 exit (Quality + Delivery Verification) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified = true` + `.coverage_actual` + `.local_runtime_verified` | ✅ YES |
+| Gate 0 exit (Quality + Delivery Verification) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified = true` + `.coverage_actual` + `.coverage_threshold` + `.local_runtime_verified` | ✅ YES |
 | Gate 9 (Validation) | Subtask | `state.tasks[i].subtasks[j].gate_progress.validation.status` + `.result` (do NOT touch task-level status here) | ✅ YES |
 | Gate 8 (Review) | Task | `state.tasks[i].gate_progress.review.status` + `agent_outputs.review` (reviewers see cumulative task diff) | ✅ YES |
 | Step 11.1 (Subtask Approval) | Subtask | `status = "paused_for_approval"` (subtask-level checkpoint; set only when `execution_mode = manual_per_subtask`) | ✅ YES |
