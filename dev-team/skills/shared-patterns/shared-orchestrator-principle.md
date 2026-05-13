@@ -57,6 +57,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 ✅ Task(subagent_type="ring:frontend-engineer", ...)
 ✅ Task(subagent_type="ring:frontend-designer", ...)
 ✅ Task(subagent_type="ring:frontend-bff-engineer-typescript", ...)
+✅ Task(subagent_type="ring:helm-engineer", ...)
 ✅ Task(subagent_type="ring:prompt-quality-reviewer", ...)
 ```
 
@@ -92,8 +93,8 @@ Gates in dev-cycle operate at three cadences:
 
 | Cadence | Gates (backend) | Gates (frontend) |
 |---------|-----------------|------------------|
-| **Subtask** | 0 (implementation-owned TDD + coverage + docker-compose/local runtime + delivery verify), 9 (validation) | 0, 3, 8 |
-| **Task** | 8 (review) | 1, 2, 4, 5, 6, 7 |
+| **Subtask** | 0 (implementation-owned TDD + coverage + docker-compose/local runtime + delivery verify), 9 (validation) | 0, 8 |
+| **Task** | 8 (review) | 7 |
 | **Cycle** | multi-tenant verify, dev-report, final commit | (minimal cycle-level) |
 
 Sub-skills that run at task cadence receive input aggregated across all subtasks of

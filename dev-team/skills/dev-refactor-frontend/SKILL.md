@@ -74,7 +74,7 @@ package.json dependencies. Output: docs/ring:dev-refactor-frontend/{timestamp}/c
 
 Verify `codebase-report.md` exists before dispatching.
 
-**Dispatch all 5 in ONE message:**
+**Dispatch all 3 in ONE message:**
 
 ```yaml
 Task 1: ring:frontend-engineer (MODE: ANALYSIS only)
@@ -92,7 +92,8 @@ Task 2: ring:qa-analyst-frontend (MODE: ANALYSIS only)
 
 Task 3: ring:ui-engineer (MODE: ANALYSIS only)
   - Check Sindarian UI component usage compliance
-  - If ui_library_mode = "fallback-only", verify fallback UI patterns and document that frontend-engineer + qa-analyst-frontend provide the baseline coverage for non-Sindarian projects
+  - If ui_library_mode = "fallback-only", check custom component WCAG 2.1 AA accessibility, responsive/layout fallback behavior, and design-token/theme fallback usage
+  - For fallback-only mode, output ISSUE-XXX per violation plus a short note that frontend-engineer and qa-analyst-frontend own baseline implementation/testing coverage
   - Output: ISSUE-XXX for non-compliant usage
 ```
 

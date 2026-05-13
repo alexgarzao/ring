@@ -45,14 +45,9 @@ gate_to_num() {
 
 validate_gate_0_for_subtask() {
   local idx="$1"
-  local subtask_id current_gate tdd_red tdd_green delivery coverage threshold runtime_verified
+  local subtask_id tdd_red tdd_green delivery coverage threshold runtime_verified
 
   subtask_id=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].id // \"S-???\"")
-  current_gate=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].gate_progress.current_gate // 0")
-
-  if ! [[ "$current_gate" =~ ^[0-9]+$ ]] || [[ "$current_gate" -lt 0 ]]; then
-    return
-  fi
 
   tdd_red=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].gate_progress.implementation.tdd_red.status // \"pending\"")
   tdd_green=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].gate_progress.implementation.tdd_green.status // \"pending\"")
@@ -92,7 +87,9 @@ validate_gate_0() {
     [[ "$tdd_red" == "completed" ]] || errors+=("Gate 0: TDD-RED not completed")
     [[ "$tdd_green" == "completed" ]] || errors+=("Gate 0: TDD-GREEN not completed")
     [[ "$delivery" == "true" ]] || errors+=("Gate 0: delivery verification missing")
-    if awk "BEGIN {exit !($coverage < $threshold)}"; then
+    if ! [[ "$coverage" =~ ^[0-9]+\.?[0-9]*$ ]] || ! [[ "$threshold" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+      errors+=("Gate 0: invalid coverage data")
+    elif awk "BEGIN {exit !($coverage < $threshold)}"; then
       errors+=("Gate 0: coverage $coverage% < threshold $threshold%")
     fi
     [[ "$runtime_verified" == "true" ]] || errors+=("Gate 0: local runtime verification missing or explicitly false")
@@ -105,11 +102,11 @@ validate_gate_0() {
 }
 
 validate_gate_8() {
-  local status reviewer_count
+  local status pass_count
   status=$(echo "$TASK_GATES" | jq -r '.review.status // "pending"')
   [[ "$status" == "completed" ]] || errors+=("Gate 8 (Review): not completed")
 
-  reviewer_count=$(echo "$STATE" | jq -r --argjson idx "$CURRENT_TASK_INDEX" '
+  pass_count=$(echo "$STATE" | jq -r --argjson idx "$CURRENT_TASK_INDEX" '
     [.tasks[$idx].agent_outputs.review.code_reviewer.verdict,
      .tasks[$idx].agent_outputs.review.business_logic_reviewer.verdict,
      .tasks[$idx].agent_outputs.review.security_reviewer.verdict,
@@ -120,11 +117,11 @@ validate_gate_8() {
      .tasks[$idx].agent_outputs.review.performance_reviewer.verdict,
      .tasks[$idx].agent_outputs.review.multi_tenant_reviewer.verdict,
      .tasks[$idx].agent_outputs.review.lib_commons_reviewer.verdict]
-    | map(select(. != null and . != "")) | length
+    | map(select(. == "PASS")) | length
   ')
 
-  if [[ "$status" == "completed" && "$reviewer_count" -lt 10 ]]; then
-    errors+=("Gate 8 (Review): only $reviewer_count/10 reviewers have verdicts")
+  if [[ "$status" == "completed" && "$pass_count" -lt 10 ]]; then
+    errors+=("Gate 8 (Review): expected 10/10 PASS verdicts, got $pass_count PASS")
   fi
 }
 

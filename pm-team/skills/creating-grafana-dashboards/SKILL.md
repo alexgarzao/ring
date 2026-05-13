@@ -28,7 +28,7 @@ Reference mode:
 ## Skip when
 
 - Service is not a Go project (lib-commons opentelemetry is Go-only at this skill's scope)
-- Service emits no telemetry (pre-instrumentation; add instrumentation in backend implementation first)
+- Service emits no telemetry (pre-instrumentation; use ring:dev-implementation to add backend instrumentation first)
 - Task is purely Grafana folder organization or dashboard import (no authoring)
 - Service is consumer-only sidecar with no metrics surface
 

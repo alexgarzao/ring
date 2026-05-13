@@ -1,4 +1,4 @@
-## Step 10: Gate 8 - Review (Per Task — after all subtasks complete Gate 0 + Gate 9)
+## Step 10: Gate 8 - Review (Per Task — after all subtasks complete Gate 0 and before Gate 9)
 
 ⛔ **CADENCE:** This gate runs ONCE per task, NOT per subtask. Reviewers see the CUMULATIVE diff of all subtasks in the task — cross-subtask interaction bugs (contract drift, hidden coupling, duplicated logic) are MORE visible at this cadence, not less.
 

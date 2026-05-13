@@ -94,6 +94,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             "implementation": {
               "status": "pending|in_progress|completed",
               "started_at": "ISO timestamp",
+              "completed_at": "ISO timestamp",
               "tdd_red": {
                 "status": "pending|in_progress|completed",
                 "test_file": "path/to/test_file.go",
@@ -114,7 +115,8 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
             },
             "validation": {
               "status": "pending|in_progress|completed",
-              "result": "pending|approved|rejected"
+              "result": "pending|approved|rejected",
+              "completed_at": "ISO timestamp"
             }
           }
         }
