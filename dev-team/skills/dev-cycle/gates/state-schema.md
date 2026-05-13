@@ -305,9 +305,13 @@ You MUST execute these steps after completing any active gate (0, 8, or 9):
 
 ```yaml
 # Step 1: Update state object with gate results (cadence-aware path)
-if gate in [0, 9]:
-  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.[gate_name].status = "completed"
-  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.[gate_name].completed_at = "[ISO timestamp]"
+if gate == 0:
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.status = "completed"
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.completed_at = "[ISO timestamp]"
+else if gate == 9:
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.validation.status = "completed"
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.validation.result = "[approved|rejected]"
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.validation.completed_at = "[ISO timestamp]"
 else if gate == 8:
   state.tasks[current_task_index].gate_progress.review.status = "completed"
   state.tasks[current_task_index].gate_progress.review.completed_at = "[ISO timestamp]"
@@ -329,7 +333,7 @@ Write tool:
 | **Before Gate 0 (task start)** | Task | `task.status = "in_progress"` in JSON **+ tasks.md Status → `🔄 Doing`** | ✅ YES |
 | Gate 0.1 (TDD-RED) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.tdd_red.status` + `.failure_output` | ✅ YES |
 | Gate 0.2 (TDD-GREEN) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.tdd_green.status` + `.implementation.status` | ✅ YES |
-| Gate 0 exit (Quality + Delivery Verification) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified = true` + `.coverage_actual` + `.coverage_threshold` + `.local_runtime_verified` | ✅ YES |
+| Gate 0 exit (Quality + Delivery Verification) | Subtask | `state.tasks[i].subtasks[j].gate_progress.implementation.delivery_verified = true` + `.standards_compliance` + `.coverage_actual` + `.coverage_threshold` + `.local_runtime_verified` | ✅ YES |
 | Gate 9 (Validation) | Subtask | `state.tasks[i].subtasks[j].gate_progress.validation.status` + `.result` (do NOT touch task-level status here) | ✅ YES |
 | Gate 8 (Review) | Task | `state.tasks[i].gate_progress.review.status` + `agent_outputs.review` (reviewers see cumulative task diff) | ✅ YES |
 | Step 11.1 (Subtask Approval) | Subtask | `status = "paused_for_approval"` (subtask-level checkpoint; set only when `execution_mode = manual_per_subtask`) | ✅ YES |
