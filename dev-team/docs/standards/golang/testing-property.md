@@ -4,7 +4,7 @@
 
 This module covers property-based testing patterns. Property-based tests verify that **invariants always hold** across many generated inputs.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 5 (Property-Based Testing).
+> **Gate Reference:** This module is available to backend engineers during Gate 0 quality verification when property testing is required.
 
 ---
 
@@ -224,7 +224,7 @@ func TestProperty_Account_BalanceNeverNegative(t *testing.T) {
 
 ## Integration vs Unit Properties
 
-### Unit-Level Properties (Gate 5)
+### Unit-Level Properties (Gate 0)
 
 Test pure functions without external dependencies:
 
@@ -240,7 +240,7 @@ func TestProperty_Money_AdditionCommutative(t *testing.T) {
 }
 ```
 
-### Integration-Level Properties (Gate 6)
+### Integration-Level Properties (Gate 0)
 
 Test properties that require database or external systems:
 
@@ -304,7 +304,7 @@ go test ./... -run Property -v
 
 ---
 
-## Output Format (Gate 5 - Property-Based Testing)
+## Output Format (Gate 0 - Property-Based Testing)
 
 ```markdown
 ## Property-Based Testing Summary

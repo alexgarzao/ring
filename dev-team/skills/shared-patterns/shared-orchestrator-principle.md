@@ -57,9 +57,7 @@ This principle is NON-NEGOTIABLE for all dev-team skills.
 ✅ Task(subagent_type="ring:frontend-engineer", ...)
 ✅ Task(subagent_type="ring:frontend-designer", ...)
 ✅ Task(subagent_type="ring:frontend-bff-engineer-typescript", ...)
-✅ Task(subagent_type="ring:devops-engineer", ...)
-✅ Task(subagent_type="ring:sre", ...)
-✅ Task(subagent_type="ring:qa-analyst", ...)
+✅ Task(subagent_type="ring:helm-engineer", ...)
 ✅ Task(subagent_type="ring:prompt-quality-reviewer", ...)
 ```
 
@@ -95,9 +93,9 @@ Gates in dev-cycle operate at three cadences:
 
 | Cadence | Gates (backend) | Gates (frontend) |
 |---------|-----------------|------------------|
-| **Subtask** | 0 (impl + delivery verify), 3 (unit test), 9 (validation) | 0, 3, 8 |
-| **Task** | 1 (devops), 2 (sre), 4 (fuzz), 5 (property), 6 write, 7 write, 8 (review) | 1, 2, 4, 5, 6, 7 |
-| **Cycle** | 6 execute, 7 execute, multi-tenant verify, dev-report, final commit | (minimal cycle-level) |
+| **Subtask** | 0 (implementation-owned TDD + coverage + docker-compose/local runtime + delivery verify), 9 (validation) | 0, 8 |
+| **Task** | 8 (review) | 7 |
+| **Cycle** | multi-tenant verify, dev-report, final commit | (minimal cycle-level) |
 
 Sub-skills that run at task cadence receive input aggregated across all subtasks of
 the task (e.g., `implementation_files` = UNION of all subtasks' changed files).
@@ -117,12 +115,10 @@ See `shared-patterns/gate-cadence-classification.md` for the full classification
 | 0 | `ring:frontend-engineer` | Implements React/Next.js components, runs TDD |
 | 0 | `ring:frontend-bff-engineer-typescript` | Implements BFF layer, API aggregation |
 | 0 | `ring:frontend-designer` | Reviews UI/UX, accessibility, design system compliance |
-| 1 | `ring:devops-engineer` | Updates Dockerfile, docker-compose, Helm |
-| 2 | `ring:sre` | Validates observability implementation |
-| 3 | `ring:qa-analyst` | Writes tests, validates coverage |
-| 4 | `ring:code-reviewer` | Reviews code quality |
-| 4 | `ring:business-logic-reviewer` | Reviews business logic |
-| 4 | `ring:security-reviewer` | Reviews security |
+| 0 | `ring:helm-engineer` | Implements Helm charts and Kubernetes manifests |
+| 8 | `ring:code-reviewer` | Reviews code quality |
+| 8 | `ring:business-logic-reviewer` | Reviews business logic |
+| 8 | `ring:security-reviewer` | Reviews security |
 
 ### ring:dev-refactor Steps
 
@@ -132,9 +128,6 @@ See `shared-patterns/gate-cadence-classification.md` for the full classification
 | 4 | `ring:backend-engineer-golang` | Go standards compliance analysis |
 | 4 | `ring:backend-engineer-typescript` | TypeScript standards compliance analysis |
 | 4 | `ring:frontend-engineer` | Frontend standards compliance analysis |
-| 4 | `ring:qa-analyst` | Test coverage and pattern analysis |
-| 4 | `ring:devops-engineer` | DevOps setup analysis |
-| 4 | `ring:sre` | Observability analysis |
 
 ## Agent Selection Guide
 
@@ -149,9 +142,10 @@ See `shared-patterns/gate-cadence-classification.md` for the full classification
 | `*.tsx` / `*.jsx` React components | `ring:frontend-engineer` |
 | BFF / API Gateway layer | `ring:frontend-bff-engineer-typescript` |
 | UI/UX review, design system | `ring:frontend-designer` |
-| `Dockerfile`, `docker-compose.yml`, Helm | `ring:devops-engineer` |
-| Logging, tracing | `ring:sre` |
-| Test files (`*_test.go`, `*.spec.ts`) | `ring:qa-analyst` |
+| Local Dockerfile/docker-compose for backend services | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
+| Logging, tracing, health checks in backend code | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
+| Backend test files (`*_test.go`, `*.spec.ts`) | `ring:backend-engineer-golang` or `ring:backend-engineer-typescript` |
+| Helm charts / Kubernetes deployment manifests | `ring:helm-engineer` |
 
 ### Code Review (Always Parallel)
 

@@ -4,7 +4,7 @@
 
 This module covers unit testing patterns for Go projects. Unit tests verify code behavior in isolation with mocked dependencies.
 
-> **Gate Reference:** This module is loaded by `ring:qa-analyst` at Gate 3 (Unit Testing).
+> **Gate Reference:** This module is loaded by backend engineers during Gate 0 quality verification.
 
 ---
 
@@ -628,7 +628,7 @@ grep -rn "func Ptr\[" --include="*_test.go" ./internal ./pkg
 
 | FORBIDDEN | Why | Use Instead |
 |-----------|-----|-------------|
-| testcontainers | Spins up real containers — belongs in Gate 6 (integration) | GoMock interfaces |
+| testcontainers | Spins up real containers — belongs in Gate 0 integration verification | GoMock interfaces |
 | Real PostgreSQL/MongoDB connections | Slow, flaky, not isolated | GoMock repository mocks |
 | Real Redis connections | External dependency | GoMock cache interface mocks |
 | Real RabbitMQ/Kafka | External dependency | GoMock publisher/consumer mocks |
@@ -638,9 +638,9 @@ grep -rn "func Ptr\[" --include="*_test.go" ./internal ./pkg
 ### Boundary Rule
 
 ```text
-Unit Test (Gate 3):     Code → Mock Interface → Assertion
-Integration Test (Gate 6): Code → testcontainers (real DB) → Assertion
-Chaos Test (Gate 7):    Code → Toxiproxy (failure injection) → Assertion
+Unit Test (Gate 0):        Code → Mock Interface → Assertion
+Integration Test (Gate 0): Code → testcontainers (real DB) → Assertion
+Chaos Test (Gate 0):       Code → Toxiproxy (failure injection) → Assertion
 ```
 
 **If your test file imports `testcontainers-go` → it is NOT a unit test. Move it to `*_integration_test.go`.**
@@ -649,7 +649,7 @@ Chaos Test (Gate 7):    Code → Toxiproxy (failure injection) → Assertion
 
 | Rationalization | Why It's WRONG | Required Action |
 |-----------------|----------------|-----------------|
-| "Testing with real DB is more realistic" | Realistic = integration test (Gate 6). Unit tests verify logic in isolation. | **Mock the repository interface with GoMock** |
+| "Testing with real DB is more realistic" | Realistic = integration test. Unit tests verify logic in isolation. | **Mock the repository interface with GoMock** |
 | "GoMock is too verbose for DB tests" | Verbose mocks = explicit contracts. Implicit DB = hidden coupling. | **Use GoMock, complexity is the point** |
 | "I need to verify SQL queries" | SQL verification belongs in integration tests with testcontainers. | **Unit test the service logic, integration test the queries** |
 | "testcontainers is fast enough" | Speed is irrelevant. Unit tests MUST be isolated. No containers. | **Mock all external dependencies** |
@@ -675,7 +675,7 @@ Chaos Test (Gate 7):    Code → Toxiproxy (failure injection) → Assertion
 
 ---
 
-## Output Format (Gate 3 - Unit Testing)
+## Output Format (Gate 0 - Unit Testing)
 
 ```markdown
 ## Unit Testing Summary

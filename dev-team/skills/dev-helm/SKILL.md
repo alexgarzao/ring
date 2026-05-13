@@ -16,14 +16,13 @@ description: |
 
 ## Skip when
 - Modifying only application code (no chart changes)
-- Working on non-Helm deployment (docker-compose only) → use ring:dev-devops
+- Working on non-Helm deployment (docker-compose only) → use backend engineer via ring:dev-implementation
 
 ## Sequence
-**Runs before:** ring:dev-sre
-**Runs after:** ring:dev-devops
+Standalone/on-demand. Not part of the lean backend dev-cycle.
 
 ## Related
-**Complementary:** ring:dev-devops, ring:dev-sre, ring:dev-implementation
+**Complementary:** ring:dev-implementation
 
 
 **Standards reference:** `dev-team/docs/standards/helm/`

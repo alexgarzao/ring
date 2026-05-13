@@ -15,8 +15,7 @@ description: |
 - always — this skill is preserved but not dispatched in normal cycles.
 
 ## Sequence
-**Runs before:** ring:dev-devops
-**Runs after:** ring:dev-implementation
+**Runs inside:** ring:dev-implementation Gate 0 exit
 
 ## Related
 **Complementary:** ring:dev-cycle, ring:dev-implementation, ring:codereview

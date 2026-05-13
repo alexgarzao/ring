@@ -28,7 +28,7 @@ Reference mode:
 ## Skip when
 
 - Service is not a Go project (lib-commons opentelemetry is Go-only at this skill's scope)
-- Service emits no telemetry (pre-instrumentation; run ring:dev-sre first)
+- Service emits no telemetry (pre-instrumentation; instrument the service before dashboard authoring, then use ring:dev-implementation to verify observability checks pass)
 - Task is purely Grafana folder organization or dashboard import (no authoring)
 - Service is consumer-only sidecar with no metrics surface
 
@@ -38,7 +38,7 @@ Reference mode:
 
 ## Related
 
-**Complementary:** ring:dev-sre, ring:codebase-explorer, ring:streaming-event-mapping
+**Complementary:** ring:dev-implementation, ring:codebase-explorer, ring:streaming-event-mapping
 **Similar:** ring:using-runtime, ring:using-assert
 
 ## Prerequisites
@@ -157,7 +157,7 @@ Emit `/tmp/dashboards-recon.json`:
 
 **HARD GATE:**
 - If not Go → STOP.
-- If no opentelemetry package usage detected → STOP, surface "service is not instrumented; run ring:dev-sre first" to user.
+  - If no opentelemetry package usage detected → STOP, surface "service is not instrumented; instrument the service before dashboard authoring, then use ring:dev-implementation to verify observability checks pass" to user.
 - If service has < 3 metric/trace/log emissions → STOP, surface "insufficient telemetry surface for dashboards".
 
 ## Gate 1: Telemetry Sweep (7 Parallel Angles)

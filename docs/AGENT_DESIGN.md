@@ -20,7 +20,7 @@ The agent's body `## Output Format` section MUST instruct the agent to produce t
 - `## Testing`
 - `## Next Steps`
 
-**Used by:** `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`, `ring:devops-engineer`, `ring:qa-analyst`, `ring:sre`
+**Used by:** `ring:backend-engineer-golang`, `ring:backend-engineer-typescript`, `ring:frontend-bff-engineer-typescript`
 
 ---
 
@@ -137,11 +137,10 @@ All ring-dev-team agents support Standards Compliance:
 |-------|------------------|-------------------|
 | `ring:backend-engineer-golang` | `golang.md` | lib-commons, Error Handling, Logging, Config |
 | `ring:backend-engineer-typescript` | `typescript.md` | Type Safety, Error Handling, Validation |
-| `ring:devops-engineer` | `devops.md` | Dockerfile, docker-compose, CI/CD |
 | `ring:frontend-bff-engineer-typescript` | `frontend.md` | Component patterns, State management |
 | `ring:frontend-designer` | `frontend.md` | Accessibility, Design patterns |
-| `ring:qa-analyst` | `qa.md` | Test coverage, Test patterns |
-| `ring:sre` | `sre.md` | Health endpoints, Logging, Tracing |
+
+Backend dev-cycle note: Go/TypeScript backend engineers own docker-compose/local runtime, coverage, TDD evidence, and basic health/observability checks during Gate 0. QA/SRE/DevOps specialists are not part of the active backend dev-cycle.
 
 ### Output Format Examples
 

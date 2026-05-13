@@ -1,6 +1,6 @@
 ## Step 11: Gate 9 - Validation (Per Execution Unit)
 
-ℹ️ **CADENCE:** Subtask-level. Runs after Gate 3 for the current subtask (or task-itself when no subtasks). Writes to `state.tasks[i].subtasks[j].gate_progress.validation`. Task-level gates (1, 2, 4, 5, 6w, 7w, 8) only run AFTER every subtask of the task has passed Gates 0, 3, and 9.
+ℹ️ **CADENCE:** Subtask-level. Runs after Gate 0 for the current subtask (or task-itself when no subtasks). Writes to `state.tasks[i].subtasks[j].gate_progress.validation`. Task-level Gate 8 only runs AFTER every subtask of the task has passed Gates 0 and 9.
 
 ```text
 For current execution unit:
@@ -51,7 +51,7 @@ For current execution unit:
      rarely consumed and cost one visualize dispatch each.
 
 1. Set `status = "paused_for_approval"`, save state
-2. Present summary: Unit ID, Parent Task, Gates 0-9 status, Criteria X/X, Duration, Files Changed, Commit Status
+2. Present summary: Unit ID, Parent Task, Gate 0 + Gate 9 status, Criteria X/X, Duration, Files Changed, Commit Status
 3. **AskUserQuestion:** "Ready to proceed?" Options: (a) Continue (b) Test First (c) Stop Here
 4. **Handle response:**
 
@@ -108,7 +108,7 @@ After completing all subtasks of a task:
    Write into `state.tasks[current_task_index].accumulated_metrics`:
    - `gate_durations_ms`: {gate_name: duration_ms for each completed gate}
    - `review_iterations`: `state.tasks[current].gate_progress.review.iterations`
-   - `testing_iterations`: sum across all testing gates (unit, fuzz, property, integration, chaos)
+   - `testing_iterations`: implementation-owned TDD/coverage iterations from Gate 0
    - `issues_by_severity`: {CRITICAL, HIGH, MEDIUM, LOW counts from Gate 8 output}
 
    Set `state.tasks[current].feedback_loop_completed = true`
@@ -148,7 +148,6 @@ After completing all subtasks of a task:
    │                                                  │
    │ Prompt Quality by Agent:                        │
    │   ring:backend-engineer-golang: 90% (Excellent)     │
-   │   ring:qa-analyst: 75% (Acceptable)                 │
    │   ring:code-reviewer: 88% (Good)               │
    │                                                  │
    │ Improvements Suggested: N                       │
@@ -203,4 +202,3 @@ After completing all subtasks of a task:
 ```
 
 **Note:** Tasks without subtasks execute both 7.1 and 7.2 in sequence.
-

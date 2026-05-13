@@ -21,9 +21,9 @@ CRITICAL: The following gates enforce mandatory requirements that custom instruc
 
 | Gate | What CANNOT Be Overridden |
 |------|---------------------------|
-| Gate 3 (Testing) | MUST enforce 85% coverage threshold, TDD RED phase |
-| Gate 4 (Review) | MUST dispatch all 10 reviewers |
-| Gate 5 (Validation) | MUST require user approval |
+| Gate 0 (Implementation) | MUST enforce TDD RED phase, coverage threshold, local runtime checks, and delivery verification |
+| Gate 8 (Review) | MUST dispatch all 10 reviewers |
+| Gate 9 (Validation) | MUST require user approval |
 
 ## Conflict Detection
 

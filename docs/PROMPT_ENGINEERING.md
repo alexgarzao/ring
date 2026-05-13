@@ -430,8 +430,8 @@ MUST use Task tool with specified agent.
 
 ---
 
-<parallel_dispatch agents="ring:backend-engineer-golang, ring:qa-analyst, ring:devops-engineer, ring:sre">
-Analyze codebase against Ring standards. All agents receive same context:
+<parallel_dispatch agents="ring:backend-engineer-golang, ring:backend-engineer-typescript, ring:code-reviewer">
+Analyze codebase against Ring standards. Backend engineers own implementation quality, coverage, local runtime, and health/observability checks in the active dev-cycle. All agents receive same context:
 - Codebase Report: docs/ring:dev-refactor/{timestamp}/codebase-report.md
 - Project Rules: docs/PROJECT_RULES.md
 </parallel_dispatch>

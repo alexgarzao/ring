@@ -171,7 +171,7 @@ if pass_output is empty or contains "FAIL":
   → Max 3 retries, then STOP and report blocker
 
 if "all STANDARDS MET" = no:
-  → STOP. Cannot proceed to Gate 1.
+  → STOP. Cannot complete Gate 0.
   → Re-dispatch to same agent with fix request:
     "Fix missing standards: [list from compliance checklist]"
   → Max 3 retries, then STOP and report blocker
@@ -191,7 +191,7 @@ if "all STANDARDS MET" = no:
 │  3. Check "all STANDARDS MET" value in Compliance Summary                   │
 │                                                                             │
 │  if "all STANDARDS MET: ✅ YES" and all sections have ✅ or N/A:            │
-│    → Gate 0 PASSED. Proceed to Gate 1 (DevOps)                              │
+│    → Gate 0 PASSED. Ready for validation/review flow                         │
 │                                                                             │
 │  if any section has ❌:                                                      │
 │    → Gate 0 BLOCKED. Standards not implemented.                             │
@@ -297,9 +297,6 @@ See [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio
 | Gate | Agent | Orchestrator Verifies |
 |------|-------|----------------------|
 | Gate 0 (Implementation) | backend-engineer-*, frontend-* | Standards Coverage Table from TDD-GREEN |
-| Gate 1 (DevOps) | ring:devops-engineer | Standards Coverage Table from artifacts |
-| Gate 2 (SRE) | ring:sre | Standards Coverage Table from validation |
-| Gate 3 (Testing) | ring:qa-analyst | Standards Coverage Table from test analysis |
 
 ### State Update After Verification
 
@@ -362,7 +359,7 @@ See [standards-coverage-table.md](https://raw.githubusercontent.com/LerianStudio
 
 **Priority:** Ring Standards > PROJECT_RULES.md (project adds context, not patterns)
 
-**Gate 0 implements standards + observability. Gate 2 (SRE) validates observability.**
+**Gate 0 implements and verifies standards, coverage, local runtime, and basic observability.**
 
 ## How to Use
 

@@ -10,7 +10,7 @@ description: |
 
 ## When to use
 - Code contains goroutine patterns (go func(), go methodCall())
-- After unit testing gate or during code review
+- After implementation or during code review
 - Suspected memory leak in production
 - Need to verify goroutine-heavy code doesn't leak
 
@@ -22,10 +22,10 @@ description: |
 
 ## Sequence
 **Runs before:** ring:codereview
-**Runs after:** ring:dev-unit-testing
+**Runs after:** ring:dev-implementation
 
 ## Related
-**Complementary:** ring:qa-analyst, ring:backend-engineer-golang
+**Complementary:** ring:backend-engineer-golang
 
 
 Standards: WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/architecture.md` → "Goroutine Leak Detection" section.
