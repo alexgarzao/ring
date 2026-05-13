@@ -70,7 +70,7 @@ func TestIntegration_Chaos_Redis_ConnectionLoss(t *testing.T) {
         t.Skip("Chaos tests disabled (set CHAOS=1)")
     }
 
-    // Gate 2: Skip in short mode
+    // Phase 2: Skip in short mode
     if testing.Short() {
         t.Skip("Skipping chaos test in short mode")
     }

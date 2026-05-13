@@ -42,13 +42,17 @@ Gate 0 includes TDD RED/GREEN, coverage threshold enforcement, docker-compose/lo
 ```yaml
 for each task:
 
-  # SUBTASK-LEVEL (per subtask, or task-itself if no subtasks)
+  # SUBTASK-LEVEL implementation (per subtask, or task-itself if no subtasks)
   for each subtask:
-    Gate 0 → Gate 9
+    Gate 0
     [checkpoint if manual_per_subtask mode]
 
-  # TASK-LEVEL (once per task, after all subtasks done)
+  # TASK-LEVEL review (once per task, after all subtasks are ready for review)
   Gate 8
+
+  # SUBTASK-LEVEL validation (after task review passes)
+  for each subtask:
+    Gate 9
 
 # CYCLE-END (once, after all tasks done)
 Multi-Tenant Verify → dev-report → Final Commit
@@ -59,7 +63,7 @@ Multi-Tenant Verify → dev-report → Final Commit
 For EVERY gate, follow this exact sequence:
 
 ```
-1. Read gate-specific instructions  → Read("gates/gate-{N}.md") from this skill directory for Gates 0, 8, and 9 only
+1. Read gate-specific instructions  → Gate 0: Read("gates/gate-0-implementation.md"); Gate 8: Read("gates/gate-8-review.md"); Gate 9: Read("gates/gate-9-validation.md")
 2. Load sub-skill                   → Skill("ring:{sub-skill-name}")
 3. Follow sub-skill dispatch rules  → Sub-skill tells you HOW to dispatch
 4. Dispatch agent                   → Task(subagent_type="ring:{agent}", ...)

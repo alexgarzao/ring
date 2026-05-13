@@ -224,7 +224,7 @@ func TestProperty_Account_BalanceNeverNegative(t *testing.T) {
 
 ## Integration vs Unit Properties
 
-### Unit-Level Properties (Gate 5)
+### Unit-Level Properties (Gate 0)
 
 Test pure functions without external dependencies:
 
@@ -240,7 +240,7 @@ func TestProperty_Money_AdditionCommutative(t *testing.T) {
 }
 ```
 
-### Integration-Level Properties (Gate 6)
+### Integration-Level Properties (Gate 0)
 
 Test properties that require database or external systems:
 

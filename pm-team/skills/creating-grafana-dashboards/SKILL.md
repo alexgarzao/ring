@@ -157,7 +157,7 @@ Emit `/tmp/dashboards-recon.json`:
 
 **HARD GATE:**
 - If not Go → STOP.
-- If no opentelemetry package usage detected → STOP, surface "service is not instrumented; add backend instrumentation first" to user.
+  - If no opentelemetry package usage detected → STOP, surface "service is not instrumented; use ring:dev-implementation to add backend instrumentation first" to user.
 - If service has < 3 metric/trace/log emissions → STOP, surface "insufficient telemetry surface for dashboards".
 
 ## Gate 1: Telemetry Sweep (7 Parallel Angles)

@@ -114,6 +114,7 @@ See `shared-patterns/gate-cadence-classification.md` for the full classification
 | 0 | `ring:frontend-engineer` | Implements React/Next.js components, runs TDD |
 | 0 | `ring:frontend-bff-engineer-typescript` | Implements BFF layer, API aggregation |
 | 0 | `ring:frontend-designer` | Reviews UI/UX, accessibility, design system compliance |
+| 0 | `ring:helm-engineer` | Implements Helm charts and Kubernetes manifests |
 | 8 | `ring:code-reviewer` | Reviews code quality |
 | 8 | `ring:business-logic-reviewer` | Reviews business logic |
 | 8 | `ring:security-reviewer` | Reviews security |

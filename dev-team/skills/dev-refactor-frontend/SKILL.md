@@ -90,8 +90,9 @@ Task 2: ring:qa-analyst-frontend (MODE: ANALYSIS only)
   - UI Library Mode: {ui_library_mode}
   - Output: Standards Coverage Table + ISSUE-XXX for gaps
 
-Task 3: ring:ui-engineer (MODE: ANALYSIS only, if ui_library_mode = "sindarian-ui")
+Task 3: ring:ui-engineer (MODE: ANALYSIS only)
   - Check Sindarian UI component usage compliance
+  - If ui_library_mode = "fallback-only", verify fallback UI patterns and document that frontend-engineer + qa-analyst-frontend provide the baseline coverage for non-Sindarian projects
   - Output: ISSUE-XXX for non-compliant usage
 ```
 

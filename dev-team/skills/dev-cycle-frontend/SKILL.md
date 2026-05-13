@@ -1,9 +1,9 @@
 ---
 name: ring:dev-cycle-frontend
 description: |
-  Frontend development cycle orchestrator with 9 gates. Loads tasks from PM team output
-  or backend handoff and executes through implementation → devops → accessibility →
-  unit testing → visual testing → E2E testing → performance testing → review → validation.
+  Frontend development cycle orchestrator with lean gates. Loads tasks from PM team output
+  or backend handoff and executes through Gate 0 implementation-owned checks,
+  Gate 7 review, and Gate 8 validation.
 ---
 
 # Frontend Development Cycle Orchestrator
@@ -23,7 +23,7 @@ description: |
 
 
 You orchestrate. Agents execute. NEVER read/write/edit source files (*.ts, *.tsx, *.jsx, *.css) directly.
-All code changes go through `Task(subagent_type=...)`. Announce at start: "Using ring:dev-cycle-frontend through 9 gates (Gate 0-8)."
+All code changes go through `Task(subagent_type=...)`. Announce at start: "Using ring:dev-cycle-frontend with lean gate flow (Gate 0, 7, 8)."
 
 ## Step 0: Pre-Execution Setup (MANDATORY)
 
@@ -85,11 +85,15 @@ Pass `ui_library_mode` to every Gate 0 agent.
 ```yaml
 for each task:
   for each subtask:
-    Gate 0 → Gate 8   # subtask-level
+    Gate 0
     [checkpoint if manual_per_subtask]
   
   # task-level (after all subtasks)
   Gate 7
+
+  # subtask-level validation after review passes
+  for each subtask:
+    Gate 8
 ```
 
 ## Gate Execution Workflow (MANDATORY for every gate)
@@ -114,14 +118,10 @@ Invoke `Skill("ring:codereview")`. The codereview skill dispatches its 10-review
 | Gate | Required for COMPLETE |
 |------|-----------------------|
 | 0 | TDD RED captured (behavioral) + GREEN passes; visual: implementation complete |
-| 1 | Dockerfile + docker-compose + .env.example |
-| 2 | 0 WCAG AA violations + keyboard + screen reader |
-| 3 | Coverage ≥ 85% + all AC tested |
-| 4 | All snapshots pass + responsive breakpoints |
-| 5 | All user flows + cross-browser (Chromium/Firefox/WebKit) + 3x stable |
-| 6 | LCP < 2.5s, CLS < 0.1, INP < 200ms, Lighthouse ≥ 90 |
 | 7 | ring:codereview PASS (all 10 reviewers) |
 | 8 | Explicit "APPROVED" from user |
+
+Former Gates 1-6 checks are owned by Gate 0 implementation and local verification.
 
 ## State Management
 

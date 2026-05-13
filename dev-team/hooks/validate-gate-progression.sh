@@ -48,9 +48,9 @@ validate_gate_0_for_subtask() {
   local subtask_id current_gate tdd_red tdd_green delivery coverage threshold runtime_verified
 
   subtask_id=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].id // \"S-???\"")
-  current_gate=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].current_gate // 0")
+  current_gate=$(echo "$STATE" | jq -r ".tasks[$CURRENT_TASK_INDEX].subtasks[$idx].gate_progress.current_gate // 0")
 
-  if ! [[ "$current_gate" =~ ^[0-9]+$ ]] || [[ "$current_gate" -lt 1 ]]; then
+  if ! [[ "$current_gate" =~ ^[0-9]+$ ]] || [[ "$current_gate" -lt 0 ]]; then
     return
   fi
 
@@ -109,17 +109,17 @@ validate_gate_8() {
   status=$(echo "$TASK_GATES" | jq -r '.review.status // "pending"')
   [[ "$status" == "completed" ]] || errors+=("Gate 8 (Review): not completed")
 
-  reviewer_count=$(echo "$TASK_GATES" | jq -r '
-    [.review.code_reviewer.verdict,
-     .review.business_logic_reviewer.verdict,
-     .review.security_reviewer.verdict,
-     .review.nil_safety_reviewer.verdict,
-     .review.test_reviewer.verdict,
-     .review.consequences_reviewer.verdict,
-     .review.dead_code_reviewer.verdict,
-     .review.performance_reviewer.verdict,
-     .review.multi_tenant_reviewer.verdict,
-     .review.lib_commons_reviewer.verdict]
+  reviewer_count=$(echo "$STATE" | jq -r --argjson idx "$CURRENT_TASK_INDEX" '
+    [.tasks[$idx].agent_outputs.review.code_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.business_logic_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.security_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.nil_safety_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.test_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.consequences_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.dead_code_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.performance_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.multi_tenant_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.lib_commons_reviewer.verdict]
     | map(select(. != null and . != "")) | length
   ')
 

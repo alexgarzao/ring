@@ -23,7 +23,7 @@ This module covers integration testing patterns with testcontainers for Go proje
 | 9 | [Guardrails (11 Anti-Patterns)](#guardrails-11-anti-patterns-mandatory) | What not to do |
 | 10 | [Test Failure Analysis](#test-failure-analysis-no-greenwashing) | Root cause tracking |
 
-**Meta-sections:** [Output Format](#output-format-gate-6---integration-testing) | [Anti-Rationalization Table](#anti-rationalization-table-integration-testing)
+**Meta-sections:** [Output Format](#output-format-gate-0---integration-testing) | [Anti-Rationalization Table](#anti-rationalization-table-integration-testing)
 
 ---
 

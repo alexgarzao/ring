@@ -15,7 +15,7 @@ review_input = {
   // REQUIRED - TASK-level
   unit_id: task.id,  // TASK id
   base_sha: task.base_sha,            // SHA before the FIRST subtask started
-  head_sha: [current HEAD],           // SHA after all subtasks + task-level gates so far
+  head_sha: [current HEAD],           // SHA after all subtasks up to this point
 
   // REQUIRED - summary and requirements aggregated from task + subtasks
   implementation_summary: task.title + "\n" +

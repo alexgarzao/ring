@@ -309,12 +309,15 @@ REFACTOR → Clean up → Stay green
 **Backend Gate Skills:**
 
 - `ring:dev-implementation` - Gate 0: TDD implementation
-- `ring:dev-delivery-verification` - DEPRECATED: delivery verification merged into ring:dev-implementation Step 7 (Gate 0 exit criterion). Skill preserved for reference only.
 - `ring:dev-multi-tenant` - Multi-tenant adaptation (database-per-tenant isolation, integrated into Gate 0)
 - `ring:dev-docker-security` - Docker image security audit for Docker Hub Health Score grade A
 - `ring:dev-helm` - Helm chart creation and maintenance following Lerian conventions
 - `ring:dev-service-discovery` - Service/module/resource hierarchy scanner for dispatch layer
 - `ring:dev-readyz` - Comprehensive readiness probes (/readyz) with per-dependency status and TLS validation
+
+**Deprecated Skills (Reference Only):**
+
+- `ring:dev-delivery-verification` - DEPRECATED: delivery verification merged into ring:dev-implementation Step 7 (Gate 0 exit criterion). Skill preserved for reference only.
 
 **Testing & Validation:**
 

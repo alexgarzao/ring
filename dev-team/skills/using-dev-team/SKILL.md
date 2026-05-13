@@ -10,14 +10,14 @@ description: |
 
 ## When to use
 - Need deep expertise for specific technology (Go, TypeScript)
-- Backend local runtime / docker-compose → backend engineer
+- Backend local runtime / docker-compose → ring:backend-engineer-golang or ring:backend-engineer-typescript
 - Frontend with design focus → ring:frontend-designer
 - Frontend UI development (React/Next.js) → ring:frontend-engineer
 - Frontend from product-designer specs → ring:ui-engineer
 - Helm chart creation/maintenance → ring:helm-engineer
-- Backend tests / coverage / TDD → backend engineer
+- Backend tests / coverage / TDD → ring:backend-engineer-golang or ring:backend-engineer-typescript
 - Frontend test strategy → ring:qa-analyst-frontend
-- Backend health/logging/tracing → backend engineer
+- Backend health/logging/tracing → ring:backend-engineer-golang or ring:backend-engineer-typescript
 - Agent/prompt quality evaluation → ring:prompt-quality-reviewer
 
 ## Skip when

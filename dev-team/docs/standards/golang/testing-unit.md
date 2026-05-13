@@ -628,7 +628,7 @@ grep -rn "func Ptr\[" --include="*_test.go" ./internal ./pkg
 
 | FORBIDDEN | Why | Use Instead |
 |-----------|-----|-------------|
-| testcontainers | Spins up real containers — belongs in Gate 6 (integration) | GoMock interfaces |
+| testcontainers | Spins up real containers — belongs in Gate 0 integration verification | GoMock interfaces |
 | Real PostgreSQL/MongoDB connections | Slow, flaky, not isolated | GoMock repository mocks |
 | Real Redis connections | External dependency | GoMock cache interface mocks |
 | Real RabbitMQ/Kafka | External dependency | GoMock publisher/consumer mocks |
@@ -638,9 +638,9 @@ grep -rn "func Ptr\[" --include="*_test.go" ./internal ./pkg
 ### Boundary Rule
 
 ```text
-Unit Test (Gate 3):     Code → Mock Interface → Assertion
-Integration Test (Gate 6): Code → testcontainers (real DB) → Assertion
-Chaos Test (Gate 7):    Code → Toxiproxy (failure injection) → Assertion
+Unit Test (Gate 0):        Code → Mock Interface → Assertion
+Integration Test (Gate 0): Code → testcontainers (real DB) → Assertion
+Chaos Test (Gate 0):       Code → Toxiproxy (failure injection) → Assertion
 ```
 
 **If your test file imports `testcontainers-go` → it is NOT a unit test. Move it to `*_integration_test.go`.**

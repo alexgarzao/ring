@@ -302,9 +302,13 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
 You MUST execute these steps after completing any active gate (0, 8, or 9):
 
 ```yaml
-# Step 1: Update state object with gate results
-state.tasks[current_task_index].gate_progress.[gate_name].status = "completed"
-state.tasks[current_task_index].gate_progress.[gate_name].completed_at = "[ISO timestamp]"
+# Step 1: Update state object with gate results (cadence-aware path)
+if gate in [0, 9]:
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.[gate_name].status = "completed"
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.[gate_name].completed_at = "[ISO timestamp]"
+else if gate == 8:
+  state.tasks[current_task_index].gate_progress.review.status = "completed"
+  state.tasks[current_task_index].gate_progress.review.completed_at = "[ISO timestamp]"
 state.current_gate = [next_gate_number]
 state.updated_at = "[ISO timestamp]"
 

@@ -10,7 +10,7 @@ description: |
 
 ## When to use
 - Code contains goroutine patterns (go func(), go methodCall())
-- After unit testing gate or during code review
+- After implementation or during code review
 - Suspected memory leak in production
 - Need to verify goroutine-heavy code doesn't leak
 
