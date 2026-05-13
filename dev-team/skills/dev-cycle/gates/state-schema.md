@@ -110,8 +110,7 @@ State is persisted to `{state_path}` (either `docs/ring:dev-cycle/current-cycle.
               "delivery_verified": false,
               "coverage_actual": 0.0,
               "coverage_threshold": 85,
-              "local_runtime_verified": false,
-              "files_changed": []
+              "local_runtime_verified": false
             },
             "validation": {
               "status": "pending|in_progress|completed",
@@ -308,6 +307,11 @@ You MUST execute these steps after completing any active gate (0, 8, or 9):
 if gate == 0:
   state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.status = "completed"
   state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.completed_at = "[ISO timestamp]"
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.delivery_verified = true
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.standards_compliance = [standards result]
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.coverage_actual = [coverage percent]
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.coverage_threshold = [required coverage percent]
+  state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.implementation.local_runtime_verified = true
 else if gate == 9:
   state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.validation.status = "completed"
   state.tasks[current_task_index].subtasks[current_subtask_index].gate_progress.validation.result = "[approved|rejected]"
@@ -315,6 +319,7 @@ else if gate == 9:
 else if gate == 8:
   state.tasks[current_task_index].gate_progress.review.status = "completed"
   state.tasks[current_task_index].gate_progress.review.completed_at = "[ISO timestamp]"
+  state.tasks[current_task_index].agent_outputs.review = [all reviewer outputs]
 state.current_gate = [next_gate_number]
 state.updated_at = "[ISO timestamp]"
 
