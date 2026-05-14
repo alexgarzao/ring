@@ -7,86 +7,34 @@ description: |
   Adds lib-observability to go.mod and validates the build.
   Does NOT touch commons/opentelemetry (tracing bootstrap, not deprecated),
   commons/net/http, kafka/streaming, or any non-deprecated lib-commons package.
-
-trigger: |
-  - Application imports one or more deprecated lib-commons observability packages
-  - Team decision to eliminate deprecation warnings from lib-commons shims
-  - lib-commons deprecation notices appear in IDE or go vet output
-
-skip_when: |
-  - Application already imports lib-observability for all observability concerns
-  - Application has no imports of the deprecated lib-commons packages listed below
-  - Application is lib-commons itself
-  - lib-commons version in go.mod does not yet include the delegation shims (commons/log/doc.go has no Deprecated notice) — upgrade lib-commons first
-
-NOT_skip_when: |
-  - "The app only imports log/ from lib-commons" → still migrate; log is deprecated
-  - "The app uses streaming/kafka" → streaming is NOT deprecated; only the 7 shim packages migrate
-  - "The app uses commons/opentelemetry for tracing bootstrap" → that package is NOT deprecated; leave it
-
-sequence:
-  before: []
-  after: []
-
-related:
-  complementary: [ring:dev-cycle, ring:codereview, ring:lint, ring:using-lib-commons]
-
-input_schema:
-  required:
-    - name: repo_path
-      type: string
-      description: "Absolute path to the application repository root"
-  optional:
-    - name: dry_run
-      type: boolean
-      default: false
-      description: "If true, report what would change without writing files"
-    - name: lib_observability_version
-      type: string
-      default: "v1.0.0-beta.3"
-      description: "Version of lib-observability to add to go.mod"
-
-output_schema:
-  format: markdown
-  required_sections:
-    - name: "Discovery"
-      pattern: "^## Discovery"
-      required: true
-    - name: "Migration Plan"
-      pattern: "^## Migration Plan"
-      required: true
-    - name: "Changes Applied"
-      pattern: "^## Changes Applied"
-      required: true
-    - name: "Validation"
-      pattern: "^## Validation"
-      required: true
-  metrics:
-    - name: result
-      type: enum
-      values: [PASS, FAIL, PARTIAL]
-    - name: files_changed
-      type: integer
-    - name: imports_replaced
-      type: integer
-    - name: imports_skipped
-      type: integer
-
-verification:
-  automated:
-    - command: "sh -c 'go build ./... >/dev/null 2>&1; echo $?'"
-      description: "Build exits with status code 0 after migration"
-      success_pattern: "^0$"
-    - command: "sh -c 'go test ./... >/dev/null 2>&1; echo $?'"
-      description: "Tests exit with status code 0 after migration"
-      success_pattern: "^0$"
-  manual:
-    - "Verify no deprecated lib-commons observability imports remain"
-    - "Verify lib-observability appears in go.mod as a direct dependency"
-
 ---
 
 # Migrate Deprecated lib-commons Observability Packages to lib-observability
+
+## When to use
+- Application imports one or more deprecated lib-commons observability packages
+- Team decision to eliminate deprecation warnings from lib-commons shims
+- lib-commons deprecation notices appear in IDE or go vet output
+
+## Skip when
+- Application already imports lib-observability for all observability concerns
+- Application has no imports of the deprecated lib-commons packages listed below
+- Application is lib-commons itself
+- lib-commons version in go.mod does not yet include the delegation shims (commons/log/doc.go has no Deprecated notice) — upgrade lib-commons first
+
+**Do NOT skip when:**
+- "The app only imports log/ from lib-commons" → still migrate; log is deprecated
+- "The app uses streaming/kafka" → streaming is NOT deprecated; only the 7 shim packages migrate
+- "The app uses commons/opentelemetry for tracing bootstrap" → that package is NOT deprecated; leave it
+
+## Sequence
+**Runs before:** (none)
+**Runs after:** (none)
+
+## Related
+**Complementary:** ring:dev-cycle, ring:codereview, ring:lint, ring:using-lib-commons
+
+---
 
 ## Overview
 
@@ -166,16 +114,22 @@ The 7 deprecated lib-commons packages and their lib-observability replacements:
    if not found → report "No lib-commons dependency found. Nothing to migrate." and exit PASS
 4. HARD GATE — Verify lib-commons has the delegation shims:
 
-   Extract the lib-commons version from go.mod, then read its cached commons/log/doc.go:
+   Resolve the effective lib-commons module directory (honours replace directives, workspaces, and custom GOMODCACHE):
 
-   LIB_COMMONS_VERSION=$(grep "lib-commons/v5 " go.mod | awk '{print $2}')
-   DOC_PATH="$(go env GOPATH)/pkg/mod/github.com/!lerian!studio/lib-commons/v5@${LIB_COMMONS_VERSION}/commons/log/doc.go"
+   LIB_COMMONS_DIR=$(go list -m -f '{{.Dir}}' github.com/LerianStudio/lib-commons/v5)
+   DOC_PATH="${LIB_COMMONS_DIR}/commons/log/doc.go"
+
+   Guard — abort immediately if the file cannot be located:
+     if [ ! -f "$DOC_PATH" ]; then
+       echo "HARD BLOCK: unable to locate $DOC_PATH for github.com/LerianStudio/lib-commons/v5"
+       exit 2
+     fi
 
    Check if doc.go contains "Deprecated":
-     cat "$DOC_PATH" 2>/dev/null | grep -c "Deprecated"
+     grep -c "Deprecated" "$DOC_PATH"
 
    If result is 0 → STOP. Report:
-     "HARD BLOCK: lib-commons ${LIB_COMMONS_VERSION} does not include the
+     "HARD BLOCK: lib-commons does not include the
       delegation shims. commons/log.Logger is still the original type, not a
       type alias to lib-observability/log.Logger. Migrating import paths would
       cause type incompatibility at every lib-commons boundary that returns or
