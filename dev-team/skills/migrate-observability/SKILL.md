@@ -74,11 +74,11 @@ output_schema:
 
 verification:
   automated:
-    - command: "go build ./... 2>&1 | grep -c error"
-      description: "Build passes after migration"
+    - command: "sh -c 'go build ./... >/dev/null 2>&1; echo $?'"
+      description: "Build exits with status code 0 after migration"
       success_pattern: "^0$"
-    - command: "go test ./... 2>&1 | grep -c FAIL"
-      description: "Tests pass after migration"
+    - command: "sh -c 'go test ./... >/dev/null 2>&1; echo $?'"
+      description: "Tests exit with status code 0 after migration"
       success_pattern: "^0$"
   manual:
     - "Verify no deprecated lib-commons observability imports remain"
@@ -340,16 +340,16 @@ If build fails:
 ## Step 8: Verify No Remaining Deprecated Imports
 
 ```bash
-grep -r "lib-commons/v5/commons/log\"" . --include="*.go"
-grep -r "lib-commons/v5/commons/zap\"" . --include="*.go"
-grep -r "lib-commons/v5/commons/runtime\"" . --include="*.go"
-grep -r "lib-commons/v5/commons/assert\"" . --include="*.go"
-grep -r "lib-commons/v5/commons/opentelemetry/metrics\"" . --include="*.go"
-grep -r "lib-commons/v5/commons/opentelemetry/constants\"" . --include="*.go"
-grep -r "lib-commons/v5/commons/opentelemetry/redaction\"" . --include="*.go"
+grep -r "lib-commons/v5/commons/log\"" . --include="*.go" | wc -l
+grep -r "lib-commons/v5/commons/zap\"" . --include="*.go" | wc -l
+grep -r "lib-commons/v5/commons/runtime\"" . --include="*.go" | wc -l
+grep -r "lib-commons/v5/commons/assert\"" . --include="*.go" | wc -l
+grep -r "lib-commons/v5/commons/opentelemetry/metrics\"" . --include="*.go" | wc -l
+grep -r "lib-commons/v5/commons/opentelemetry/constants\"" . --include="*.go" | wc -l
+grep -r "lib-commons/v5/commons/opentelemetry/redaction\"" . --include="*.go" | wc -l
 ```
 
-Each should return zero results.
+Each should print `0`.
 
 ---
 
