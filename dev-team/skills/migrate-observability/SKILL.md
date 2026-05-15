@@ -6,9 +6,10 @@ description: |
   middleware symbols to lib-observability. Targets exactly the packages and
   symbols marked // Deprecated: in lib-commons — no more, no less.
   Adds lib-observability to go.mod and validates the build.
-  Does NOT touch commons/opentelemetry (tracing bootstrap, not deprecated),
-  non-observability commons/net/http helpers, kafka/streaming, or any non-deprecated
-  lib-commons package.
+  Migrates commons/opentelemetry only when the effective lib-commons version
+  marks that package deprecated and lib-observability/tracing exposes the same API.
+  Does NOT touch non-observability commons/net/http helpers, kafka/streaming,
+  or any non-deprecated lib-commons package.
 ---
 
 # Migrate Deprecated lib-commons Observability Packages to lib-observability
@@ -27,7 +28,7 @@ description: |
 **Do NOT skip when:**
 - "The app only imports log/ from lib-commons" → still migrate; log is deprecated
 - "The app uses streaming/kafka" → streaming is NOT deprecated; only deprecated observability packages and HTTP/gRPC observability middleware migrate
-- "The app uses commons/opentelemetry for tracing bootstrap" → that package is NOT deprecated; leave it
+- "The app uses commons/opentelemetry for tracing bootstrap" → migrate only if the effective lib-commons package is deprecated and lib-observability/tracing exposes the target API
 
 ## Sequence
 **Runs before:** (none)
@@ -52,13 +53,12 @@ the lib-commons usage unchanged. This keeps lib-commons deprecation notices as
 the source of truth while preventing migrations to APIs that are not available
 in lib-observability yet.
 
-Packages that are NOT deprecated in lib-commons (e.g. `commons/opentelemetry` tracing bootstrap,
-non-observability `commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
+Packages that are NOT deprecated in lib-commons (e.g. non-observability
+`commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
 
 **What changes:** import paths and deprecated symbol qualifiers in `.go` files + `go.mod` dependency.
 **What stays the same:** all non-deprecated lib-commons packages, including infrastructure
-clients (`commons/postgres`, `commons/streaming`, etc.) and the tracing bootstrap
-(`commons/opentelemetry`).
+clients (`commons/postgres`, `commons/streaming`, etc.).
 
 ---
 
@@ -81,12 +81,60 @@ The deprecated lib-commons packages and their lib-observability replacements:
 | `lib-commons/v5/commons/zap` | `lib-observability/zap` | No — qualifier stays `zap` |
 | `lib-commons/v5/commons/runtime` | `lib-observability/runtime` | No — qualifier stays `runtime` |
 | `lib-commons/v5/commons/assert` | `lib-observability/assert` | No — qualifier stays `assert` |
+| `lib-commons/v5/commons/opentelemetry` | `lib-observability/tracing` | Yes if the old import was unaliased: `opentelemetry.X` → `tracing.X`. Preserve explicit aliases. |
 | `lib-commons/v5/commons/opentelemetry/metrics` | `lib-observability/metrics` | No — qualifier stays `metrics` |
 | `lib-commons/v5/commons/opentelemetry/constants` | `lib-observability/constants` | No — qualifier stays `constants` |
 | `lib-commons/v5/commons/opentelemetry/redaction` | `lib-observability/redaction` | No — qualifier stays `redaction` |
 
-> All 7 replacements share the same package qualifier — import path changes only,
+> The metrics/constants/redaction/log/zap/runtime/assert replacements share the same package qualifier — import path changes only,
 > no call-site renames needed in the file body.
+> For root `commons/opentelemetry`, preserve explicit aliases such as
+> `libOpentelemetry` or `libCommonsOtel`. If the import is unaliased, rewrite
+> the package qualifier from `opentelemetry` to `tracing`.
+
+### Deprecated root commons/opentelemetry package
+
+`commons/opentelemetry` is an API-aware package migration. Run it only when the
+effective lib-commons package documentation contains `Deprecated:` and the
+effective `lib-observability/tracing` package exposes the matching bootstrap,
+span, redaction, and propagation APIs.
+
+| Deprecated symbol family | lib-observability replacement |
+|---|---|
+| `TelemetryConfig`, `Telemetry`, `NewTelemetry`, `ApplyGlobals`, `Tracer`, `Meter`, `ShutdownTelemetry*` | `tracing` equivalents |
+| `RedactionRule`, `Redactor`, `NewDefaultRedactor`, `NewAlwaysMaskRedactor`, `NewRedactor`, `ObfuscateStruct` | `tracing` equivalents |
+| `AttrBagSpanProcessor`, `RedactingAttrBagSpanProcessor` | `tracing` equivalents |
+| `HandleSpanBusinessErrorEvent`, `HandleSpanEvent`, `HandleSpanError` | `tracing` equivalents |
+| `SetSpanAttributesFromValue`, `BuildAttributesFromValue`, `SetSpanAttributeForParam` | `tracing` equivalents |
+| `InjectTraceContext`, `ExtractTraceContext`, `InjectHTTPContext`, `ExtractHTTPContext`, `InjectGRPCContext`, `ExtractGRPCContext` | `tracing` equivalents |
+| `InjectQueueTraceContext`, `ExtractQueueTraceContext`, `PrepareQueueHeaders`, `InjectTraceHeadersIntoQueue`, `ExtractTraceContextFromQueueHeaders` | `tracing` equivalents |
+| `GetTraceIDFromContext`, `GetTraceStateFromContext` | `tracing` equivalents |
+
+Migration rule:
+- Preserve explicit aliases. Example:
+  `libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"`
+  becomes `libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"`
+  and call sites remain `libOpentelemetry.X`.
+- If the old import was unaliased, replace the import path and rewrite
+  `opentelemetry.X` call sites to `tracing.X`.
+- Helper-only files may migrate independently. These include calls such as
+  `HandleSpanError`, `HandleSpanBusinessErrorEvent`,
+  `SetSpanAttributesFromValue`, `InjectHTTPContext`, and queue/header
+  propagation helpers. They operate on OpenTelemetry public interfaces and do
+  not require the application's bootstrap `Telemetry` type to move.
+- Bootstrap files that use `Telemetry`, `TelemetryConfig`, `NewTelemetry`,
+  `ApplyGlobals`, `Tracer`, `Meter`, or `ShutdownTelemetry*` must be
+  migrated only if the resulting `*tracing.Telemetry` does not cross a
+  remaining lib-commons API boundary. Typical blockers:
+  `commons/server.NewServerManager(..., *commons/opentelemetry.Telemetry, ...)`
+  and `commons/net/http.NewTelemetryMiddleware(*commons/opentelemetry.Telemetry)`
+  when that middleware call is not also migrated to `lib-observability/middleware`.
+- If bootstrap migration would create a type mismatch, leave that file on
+  `commons/opentelemetry`, migrate the helper-only files, and report the
+  remaining bootstrap import as intentionally blocked.
+- If any referenced symbol is absent from `lib-observability/tracing`, do not
+  migrate that file. Report the missing symbol and leave the lib-commons import
+  unchanged.
 
 ### Deprecated symbols inside commons/net/http
 
@@ -167,7 +215,6 @@ Migration rule:
 
 | Import | Reason |
 |---|---|
-| `lib-commons/v5/commons/opentelemetry` | Tracing bootstrap — NOT deprecated. API diverges from lib-observability/tracing (security-tier enforcement). See Manual Migration note below. |
 | `lib-commons/v5/commons/net/http` non-observability helpers | HTTP helpers — NOT deprecated. Only logging and telemetry middleware symbols migrate. |
 | `lib-commons/v5/commons/streaming` | Kafka/CloudEvents producer — NOT deprecated; uses lib-observability internally |
 | `lib-commons/v5/commons/postgres`, `mongo`, `redis`, `rabbitmq` | Infrastructure clients — NOT deprecated |
@@ -175,20 +222,12 @@ Migration rule:
 | `lib-commons/v5/commons/systemplane` | Runtime config client — NOT deprecated |
 | `lib-commons/v5/commons` non-observability helpers | Root package helpers such as AppConfig, environment, OS, security, pointers, string/time utilities — NOT deprecated. Only observability context helpers migrate. |
 
-### Manual Migration Only (out of scope for this skill)
-
-| Import | Target | Why manual |
-|---|---|---|
-| `lib-commons/v5/commons/opentelemetry` | `lib-observability/tracing` | Package qualifier changes (`opentelemetry.X` → `tracing.X`). Constructor API differs — lib-commons enforces `EffectiveSecurityTier`; lib-observability uses a simpler env-var check. Requires human review per call site. |
-
----
-
 ## Step 1: Validate Input
 
 <verify_before_proceed>
 - repo_path exists and contains a go.mod file
 - go.mod declares module path (to identify lib-commons import prefix)
-- lib-commons version in go.mod includes the delegation shims (HARD GATE — see below)
+- effective lib-commons/lib-observability versions satisfy the per-migration gates below
 </verify_before_proceed>
 
 ```text
@@ -203,7 +242,7 @@ Migration rule:
    deprecated lib-commons imports may still exist. Continue to Step 2 discovery.
    If Step 2 finds zero deprecated imports, report "Migration already complete.
    No deprecated lib-commons observability imports found." and exit PASS.
-5. HARD GATE — Verify lib-commons has the delegation shims and middleware deprecations:
+5. HARD GATE — Verify the effective lib-commons/lib-observability APIs:
 
    Resolve the effective lib-commons module directory (honours replace directives, workspaces, and custom GOMODCACHE):
 
@@ -218,27 +257,30 @@ Migration rule:
    OBS_MIDDLEWARE_PATH="${LIB_OBSERVABILITY_DIR}/middleware/logging.go"
    OBS_TELEMETRY_PATH="${LIB_OBSERVABILITY_DIR}/middleware/telemetry.go"
    OBS_SPAN_HELPERS_PATH="${LIB_OBSERVABILITY_DIR}/middleware/context_span.go"
+   OTEL_DOC_PATH="${LIB_COMMONS_DIR}/commons/opentelemetry/doc.go"
+   OBS_TRACING_PATH="${LIB_OBSERVABILITY_DIR}/tracing/otel.go"
 
-   Guard — abort immediately if the file cannot be located:
+   Guard — if the log doc file cannot be located, package-level log/zap/runtime/assert
+   and root context-helper migration are disabled:
      if [ ! -f "$DOC_PATH" ]; then
-       echo "HARD BLOCK: unable to locate $DOC_PATH for github.com/LerianStudio/lib-commons/v5"
-       exit 2
+       echo "NOTE: unable to locate $DOC_PATH for github.com/LerianStudio/lib-commons/v5.
+       Skipping shim-dependent package/context migrations."
      fi
 
    Check if doc.go contains "Deprecated":
      grep -c "Deprecated" "$DOC_PATH"
 
-   If result is 0 → STOP. Report:
-     "HARD BLOCK: lib-commons does not include the
-      delegation shims. commons/log.Logger is still the original type, not a
-      type alias to lib-observability/log.Logger. Migrating import paths would
-      cause type incompatibility at every lib-commons boundary that returns or
-      accepts Logger (e.g. commons.NewTrackingFromContext, mongo.Config.Logger).
+   If result is 0 → do not migrate commons/log, commons/zap, commons/runtime,
+   commons/assert, or root commons context helpers. Continue evaluating
+   commons/net/http symbol gates and root commons/opentelemetry gates. Report:
+     "NOTE: lib-commons does not include the log delegation shims.
+      Skipping shim-dependent package/context migrations because replacing
+      commons/log.Logger with lib-observability/log.Logger would cause type
+      incompatibility at lib-commons boundaries that still accept or return
+      commons/log.Logger (for example mongo.Config.Logger).
 
-      Required action: Upgrade lib-commons to a version that includes the
-      delegation shims (the refactor/lib-observability-integration PR or later).
-      Once lib-commons is released with the shims, re-run this skill."
-     Exit PARTIAL.
+      Migrations with independent gates, such as deprecated commons/net/http
+      symbols and deprecated commons/opentelemetry, may still proceed."
 
    Check if HTTP/gRPC logging middleware deprecations are available:
      if [ -f "$LOGGING_PATH" ]; then grep -c "Deprecated" "$LOGGING_PATH"; fi
@@ -257,6 +299,12 @@ Migration rule:
 
    Check if the target root lib-observability context helper API exists:
      if [ -f "$OBS_ROOT_PATH" ]; then grep -E "func NewTrackingFromContext|func ContextWithLogger|func ContextWithTracer|func ContextWithMetricFactory|func ContextWithHeaderID|func ContextWithSpanAttributes|func AttributesFromContext|func ReplaceAttributes" "$OBS_ROOT_PATH"; fi
+
+   Check if root commons/opentelemetry package deprecation is available:
+     if [ -f "$OTEL_DOC_PATH" ]; then grep -c "Deprecated" "$OTEL_DOC_PATH"; fi
+
+   Check if the target lib-observability tracing API exists:
+     if [ -f "$OBS_TRACING_PATH" ]; then grep -E "type TelemetryConfig|type Telemetry|func NewTelemetry|func HandleSpanError|func BuildAttributesFromValue|func InjectTraceContext|func GetTraceIDFromContext" "$OBS_TRACING_PATH"; fi
 
    Check if HTTP span helper deprecations are available:
      if [ -f "$SPAN_HELPERS_PATH" ]; then grep -c "Deprecated" "$SPAN_HELPERS_PATH"; fi
@@ -282,6 +330,13 @@ Migration rule:
    run the commons root observability context helper migration. Continue with
    other migrations and report the missing gate.
 
+   If either root opentelemetry gate result is 0 or the file is absent → do not
+   run the commons/opentelemetry package migration. Continue with other
+   migrations and report:
+     "NOTE: lib-commons does not yet mark commons/opentelemetry as deprecated,
+      or lib-observability does not expose the tracing API. Skipping root
+      opentelemetry migration until both gates pass."
+
    If either HTTP span helper gate result is 0 or the file is absent → do not run
    the commons/net/http span helper migration. Continue with other migrations and
    report the missing gate.
@@ -305,6 +360,7 @@ MIGRATE targets (all deprecated in lib-commons):
   lib-commons/v5/commons/zap"
   lib-commons/v5/commons/runtime"
   lib-commons/v5/commons/assert"
+  lib-commons/v5/commons/opentelemetry"
   lib-commons/v5/commons/opentelemetry/metrics"
   lib-commons/v5/commons/opentelemetry/constants"
   lib-commons/v5/commons/opentelemetry/redaction"
@@ -344,7 +400,6 @@ SYMBOL-LEVEL MIGRATE targets (only when used from root lib-commons/v5/commons):
   ReplaceAttributes
 
 DO NOT MIGRATE targets (not deprecated — skip silently):
-  lib-commons/v5/commons/opentelemetry"   ← root tracing bootstrap, NOT deprecated
   lib-commons/v5/commons/net/http"        ← keep unless the file uses deprecated observability middleware symbols from it
   lib-commons/v5/commons/streaming"
   lib-commons/v5/commons/postgres"
@@ -361,6 +416,9 @@ For each found import, record:
   - import alias (if any)
   - full import path
   - for commons/net/http, which deprecated observability middleware symbols are used
+  - for commons/opentelemetry, whether the import has an explicit alias
+  - for commons/opentelemetry, whether the file is helper-only or bootstrap/type-bearing
+  - for bootstrap/type-bearing commons/opentelemetry files, whether the telemetry value crosses a remaining lib-commons API boundary
   - for root commons, which deprecated observability context helper symbols are used
   - whether non-observability commons/net/http symbols are also used
   - whether non-observability root commons symbols are also used
@@ -439,15 +497,20 @@ For each file identified in Step 2:
 1. Read the file
 2. Replace the import path using the mapping table
 3. Preserve any import aliases the file was using
-4. No package qualifier changes needed for the 7 package replacements
+4. No package qualifier changes needed for the same-name package replacements
    (log stays log, assert stays assert, metrics stays metrics, etc.)
-5. For commons/net/http middleware symbols, rewrite only deprecated observability call sites
+5. For root commons/opentelemetry, migrate helper-only files first. Preserve
+   explicit aliases. If the import was unaliased, rewrite `opentelemetry.`
+   call sites to `tracing.`. For bootstrap/type-bearing files, migrate only
+   after confirming the `Telemetry` value does not cross a remaining
+   lib-commons API boundary; otherwise leave that file unchanged and report it.
+6. For commons/net/http middleware symbols, rewrite only deprecated observability call sites
    to the lib-observability/middleware import alias. Preserve the lib-commons HTTP
    import when the file still uses non-observability HTTP helpers.
-6. For root commons observability context helpers, rewrite only deprecated
+7. For root commons observability context helpers, rewrite only deprecated
    observability call sites to the lib-observability import alias. Preserve the
    lib-commons root import when the file still uses non-observability commons helpers.
-7. Write the updated file
+8. Write the updated file
 </dispatch_required>
 
 ---
@@ -503,6 +566,15 @@ grep -r "lib-commons/v5/commons/opentelemetry/redaction\"" . --include="*.go" | 
 ```
 
 Each should print `0`.
+
+For root `commons/opentelemetry`, helper-only imports should be gone. Remaining
+imports are acceptable only when they are bootstrap/type-bearing files blocked
+by a remaining lib-commons API boundary. Report each remaining file and why it
+was kept:
+
+```bash
+grep -r "lib-commons/v5/commons/opentelemetry\"" . --include="*.go"
+```
 
 For `commons/net/http`, do not require the import count to be zero. Instead,
 verify no deprecated observability middleware symbols remain qualified by the lib-commons HTTP
@@ -574,7 +646,7 @@ grep -rE 'libCommons\\.(NewLoggerFromContext|ContextWithLogger|ContextWithTracer
 |---|---|
 | "Only one or two deprecated imports, not worth the effort" | Deprecation warnings accumulate. Migrate now to keep the codebase clean. |
 | "lib-commons shims still work, why change?" | They are deprecated and will be removed in a future major. Earlier migration = smaller blast radius. |
-| "commons/opentelemetry is similar, migrate it too" | It is NOT deprecated in lib-commons. Its API diverges from lib-observability/tracing. Manual migration only — this skill does not touch it. |
+| "commons/opentelemetry is similar, migrate it too" | Migrate it only when the effective lib-commons package is marked `Deprecated:` and `lib-observability/tracing` exposes the required API. Preserve explicit aliases; rewrite unaliased `opentelemetry.` qualifiers to `tracing.`. |
 | "What about commons/net/http telemetry middleware?" | If it is marked deprecated in lib-commons and exists in lib-observability/middleware, it migrates. Otherwise the skill skips it and reports the missing gate. |
 | "Streaming imports will break" | commons/streaming is NOT deprecated. The skill explicitly skips it. |
 | "The import paths are simple, just replace them regardless of lib-commons version" | CANNOT proceed. Without the delegation shims, commons/log.Logger and lib-observability/log.Logger are distinct named types. Every lib-commons boundary (NewTrackingFromContext, mongo.Config.Logger, etc.) returns the old type. Replacing import paths causes compile errors at all those boundaries. Upgrade lib-commons first. |
@@ -585,7 +657,7 @@ grep -rE 'libCommons\\.(NewLoggerFromContext|ContextWithLogger|ContextWithTracer
 
 | Rationalization | Why Wrong | Action |
 |---|---|---|
-| "I'll also replace commons/opentelemetry while I'm at it" | It is NOT deprecated. Its constructor differs from lib-observability/tracing. This is a manual migration requiring human review. | Stop. Only migrate deprecated observability packages and deprecated HTTP/gRPC middleware symbols that exist in lib-observability. |
+| "I'll also replace commons/opentelemetry while I'm at it" | Root `commons/opentelemetry` is allowed only through the same double gate: source `Deprecated:` plus target API exists in `lib-observability/tracing`. | Run the gate checks first. If either gate fails, leave it unchanged and report the block. |
 | "The tests pass even with mixed imports" | Deprecated imports create future breakage risk | Replace all deprecated observability packages and deprecated HTTP/gRPC middleware symbols that pass both gates |
 | "I'll do it later when lib-commons removes the shims" | Migration is harder with more files in flight | Migrate now, reduce future blast radius |
 | "go get failed — the module must not be public" | The sum DB may not have indexed it yet | Use GONOSUMDB + GOPRIVATE as shown in Step 4 |
