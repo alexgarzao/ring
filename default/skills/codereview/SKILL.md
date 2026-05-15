@@ -2,8 +2,8 @@
 name: ring:codereview
 description: |
   Gate 8 of development cycle - dispatches 10 specialized reviewers (code, business-logic,
-  security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons) in parallel for comprehensive code review feedback.
-  Runs at TASK cadence — reviewers see cumulative diff, not per-subtask fragments.
+  security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons) in parallel and reports all findings by severity.
+  Runs at TASK cadence — reviewers see cumulative diff, not per-subtask fragments. Report-only: no automatic remediation.
 ---
 
 # Code Review (Gate 8)
@@ -12,7 +12,7 @@ description: |
 - Gate 8 of development cycle
 - After completing major feature implementation
 - Before merge to main branch
-- After fixing complex bug
+- After completing complex bug work
 
 ## Skip when
 - Task is purely conversational or informational with no code changes
@@ -29,6 +29,8 @@ description: |
 Dispatch all 10 reviewer subagents in **parallel** for fast, comprehensive feedback.
 
 **Announce at start:** "Using ring:codereview to dispatch 10 reviewers in parallel."
+
+**Report-only boundary:** This skill does not remediate findings, dispatch implementation work, write comments into source files, generate external artifacts, invoke secondary review tools, or re-run reviewers automatically. It only dispatches the 10 reviewers once and reports their findings in the current session.
 
 ## Reviewers
 
@@ -51,9 +53,8 @@ Dispatch all 10 reviewer subagents in **parallel** for fast, comprehensive feedb
 
 | Who | Responsibility |
 |-----|----------------|
-| **This Skill** | Dispatch reviewers, aggregate findings, track iterations |
+| **This Skill** | Dispatch reviewers once, aggregate findings, report all severities in-session |
 | **Reviewer Agents** | Analyze code, report issues with severity |
-| **Implementation Agent** | Fix issues found by reviewers |
 
 ## Step 1: Gather Context (Auto-Detect if Not Provided)
 
@@ -63,24 +64,7 @@ Display context banner before dispatching.
 
 ## Step 2: Initialize Review State
 
-Track: unit_id, base/head SHA, reviewer verdicts (10 reviewers), aggregated issues by severity, iterations (max 3).
-
-## Step 2.5: Pre-Analysis Pipeline (MANDATORY)
-
-Install and run `mithril --base=$BASE_SHA --head=$HEAD_SHA --output=docs/codereview`. On failure, continue in DEGRADED MODE.
-
-Read context files from `docs/codereview/context-{reviewer-name}.md` for each of the 10 reviewers. Pass context to reviewers at dispatch time.
-
-## Step 2.7: Review Slicing
-
-See `../shared-patterns/reviewer-slicing-strategy.md` for full rationale.
-
-1. Collect FILE_LIST, DIFF_STATS, PACKAGE_MAP, IMPORT_HINTS, CHANGE_SUMMARY
-2. Dispatch `ring:review-slicer` agent with collected inputs
-3. Parse response: `shouldSlice` bool, `slices[]`, `reasoning`
-4. If `shouldSlice=true`: run all 10 reviewers per slice, then merge+dedup results
-
-**Sliced merge rules:** Exact match dedup by (reviewer+file+line). Fuzzy dedup at >80% similarity (keep more detailed, note cross-detection). Co-located but orthogonal findings = NOT duplicates. Cross-cutting concerns (found in 2+ slices) = surface prominently.
+Track: unit_id, base/head SHA, reviewer verdicts for all 10 reviewers, and aggregated issues by severity: Critical, High, Medium, Low.
 
 ## Step 3: Dispatch All 10 Reviewers in Parallel
 
@@ -89,64 +73,57 @@ See `../shared-patterns/reviewer-slicing-strategy.md` for full rationale.
 Read `reviewers/dispatch-prompts.md` for the full prompt templates for each reviewer. Inject:
 - Task-level scope header (when `scope=task`)
 - `base_sha` / `head_sha` from cumulative_diff_range when task-level
-- Pre-analysis context per reviewer
 - Ring standards slice (cache-first per `shared-patterns/standards-cache-protocol.md`)
+- Explicit instruction that reviewers must report findings only and must not modify files
 
 ## Step 4: Wait and Parse Output
 
-Parse VERDICT and Issues for all 10 reviewers. Aggregate by severity. If sliced, merge results from Step 3-S-Merge.
+Parse `VERDICT` and Issues for all 10 reviewers. Normalize every issue into one of four severity buckets: Critical, High, Medium, Low.
 
-## Step 5: Handle Results
+For each issue, preserve:
+- Severity
+- Title or short description
+- File:line when provided
+- Reviewer
+- Evidence or reasoning
+- Recommendation
 
-```
-blocking = critical + high + medium
-IF blocking == 0 → Step 7.5 (CodeRabbit) → Step 8 (Success)
-IF blocking > 0  → iterations++; IF iterations >= 3 → Step 9 (Escalate); ELSE Step 6 (Fix)
-```
+If a reviewer returns `COSMETIC`, map it to Low.
 
-## Step 6: Dispatch Fixes
+## Step 5: Report Results In Session
 
-**⛔ NEVER edit source files directly. ALWAYS dispatch implementation agent.**
+Produce a detailed Markdown report in the current session. The report must include all Critical, High, Medium, and Low issues.
 
-Send ALL Critical, High, Medium issues to implementation agent in one Task call. Include file:line and recommendations. After fixes committed → Step 7.
-
-## Step 7: Re-Run All Reviewers After Fixes
-
-**⛔ Always re-run ALL 10. Never cherry-pick reviewers.**
-
-## Step 7.5: CodeRabbit CLI Validation
-
-- Installed + authenticated → **MANDATORY**, no prompt, cannot skip
-- Not installed → MUST ask user (install or skip — both valid choices)
-- On issues found: CRITICAL/HIGH → dispatch fix + re-run Ring reviewers; MEDIUM/LOW → add TODO(coderabbit) comments
-
-## Step 8: Visual Report + Success Output
-
-Generate HTML report via `Skill("ring:visualize")`. Save to `docs/codereview/review-report-{unit_id}.html`. Open in browser.
-
-Output: Review Summary (PASS), Issues by Severity count table, **Aggregate Issues section with full per-issue details** (severity, description, file:line, reviewer, recommendation), Reviewer Verdicts table (10 rows), CodeRabbit status, Handoff to next gate.
-
-**⛔ The Aggregate Issues section MUST be populated with actual findings from reviewer output — not just counts. Collect all issues from `review_state.aggregated_issues` and emit one row per issue. If all reviewers passed with zero issues, emit: "No issues found across all 10 reviewers."**
-
-## Step 9: Escalate — Max Iterations Reached
-
-Generate FAIL visual report. Output: unresolved issues (list ALL Critical/High/Medium with file:line, reviewer, and recommendation), reviewer verdicts, `Ready for next gate: NO`, action required from user.
+**⛔ Do not dispatch any follow-up agent to remediate findings. Do not edit files. Do not create reports on disk. Do not open a browser. Report back only.**
 
 ## Completion Rules
 
-- Gate 8 complete ONLY when ALL 10 reviewers PASS
-- 9/10 = FAIL → re-run all 10
-- Critical/High/Medium MUST be fixed before proceeding
-- Low/Cosmetic → add `// TODO(review):` / `// FIXME(nitpick):` comments
-- CodeRabbit: MUST run if installed; MUST ask if not
+- Complete after all 10 reviewer outputs are collected and summarized.
+- `PASS` means all 10 reviewers completed and reported zero issues.
+- `ISSUES_FOUND` means at least one Critical, High, Medium, or Low issue was reported.
+- `INCOMPLETE` means one or more reviewers did not return a parseable result.
+- Low issues are still reported; never omit them from the session report.
+- No automatic remediation, source-file changes, reviewer reruns, external artifacts, or secondary validation tools are part of this skill.
+
+## Red Flags — STOP
+
+- You are about to dispatch any non-reviewer agent.
+- You are about to edit source files.
+- You are about to create or open a separate report artifact.
+- You are about to invoke a secondary review or validation tool.
+- You are about to re-run reviewers without an explicit new user request.
+
+All of these mean: stop and produce the session report instead.
 
 ## Output Format
 
 ```markdown
 ## Review Summary
-**Status:** [PASS|FAIL|NEEDS_FIXES]
+**Status:** [PASS|ISSUES_FOUND|INCOMPLETE]
 **Unit ID:** [unit_id]
-**Iterations:** [N]
+**Base:** [base_sha]
+**Head:** [head_sha]
+**Scope:** [task|branch|provided]
 
 ## Issues by Severity
 | Severity | Count |
@@ -156,28 +133,46 @@ Generate FAIL visual report. Output: unresolved issues (list ALL Critical/High/M
 | Medium   | N |
 | Low      | N |
 
-## Aggregate Issues
+## Critical Issues
 
-**⛔ MANDATORY: List every issue found across ALL reviewers with actual content. Never emit this section as empty or counts-only when issues exist.**
+[List every Critical issue. If none: None.]
 
-| Severity | Description | File:Line | Reviewer | Recommendation |
-|----------|-------------|-----------|----------|----------------|
-| [CRITICAL/HIGH/MEDIUM/LOW] | [actual issue description] | [file:line] | [ring:xxx-reviewer] | [fix] |
+| Issue | File:Line | Reviewer | Evidence | Recommendation |
+|-------|-----------|----------|----------|----------------|
+| [actual issue description] | [file:line] | [ring:xxx-reviewer] | [why it matters] | [recommended action] |
 
-_If all reviewers PASSed with zero issues: "No issues found across all 10 reviewers."_
+## High Issues
+
+[List every High issue. If none: None.]
+
+| Issue | File:Line | Reviewer | Evidence | Recommendation |
+|-------|-----------|----------|----------|----------------|
+| [actual issue description] | [file:line] | [ring:xxx-reviewer] | [why it matters] | [recommended action] |
+
+## Medium Issues
+
+[List every Medium issue. If none: None.]
+
+| Issue | File:Line | Reviewer | Evidence | Recommendation |
+|-------|-----------|----------|----------|----------------|
+| [actual issue description] | [file:line] | [ring:xxx-reviewer] | [why it matters] | [recommended action] |
+
+## Low Issues
+
+[List every Low issue. If none: None.]
+
+| Issue | File:Line | Reviewer | Evidence | Recommendation |
+|-------|-----------|----------|----------|----------------|
+| [actual issue description] | [file:line] | [ring:xxx-reviewer] | [why it matters] | [recommended action] |
 
 ## Reviewer Verdicts
 | Reviewer | Verdict | Issues |
 |----------|---------|--------|
-| ring:code-reviewer | ✅/❌ | N |
+| ring:code-reviewer | PASS/FAIL/INCOMPLETE | N |
 [...10 rows]
 
-## CodeRabbit External Review
-**Status:** [PASS|ISSUES_FOUND|SKIPPED|NOT_INSTALLED]
-**Units Validated:** N | **Issues Found:** N | **Issues Resolved:** N/N
+## Report Boundary
+No files were changed. No remediation agents were dispatched. No external report artifacts were generated.
 
-## Handoff to Next Gate
-- Review status: [COMPLETE|FAILED]
-- Blocking issues: [resolved|N remaining]
-- Ready for next gate: [YES|NO]
+_If all reviewers passed with zero issues: "No issues found across all 10 reviewers."_
 ```
