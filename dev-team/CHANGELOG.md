@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-### Changed — Expand observability migration to HTTP/gRPC logging middleware
+### Changed — Expand observability migration to HTTP/gRPC middleware
 
-- `ring:migrate-observability` now treats deprecated `commons/net/http` HTTP/gRPC access logging symbols as symbol-level migration targets to `lib-observability/middleware`, while keeping non-logging HTTP helpers in lib-commons.
-- Added a hard gate that only enables the HTTP logging migration when the installed lib-commons version exposes those `// Deprecated:` notices and the installed lib-observability version exposes the target middleware API.
+- `ring:migrate-observability` now treats deprecated `commons/net/http` HTTP/gRPC logging and telemetry middleware symbols as symbol-level migration targets to `lib-observability/middleware`, while keeping non-observability HTTP helpers in lib-commons.
+- Added hard gates that only enable each middleware migration when the installed lib-commons version exposes those `// Deprecated:` notices and the installed lib-observability version exposes the target middleware API.
 
 ## [1.56.1] — 2026-04-17
 
