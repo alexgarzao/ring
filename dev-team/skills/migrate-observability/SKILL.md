@@ -115,6 +115,10 @@ symbols marked `// Deprecated:` in lib-commons and present in
 | `TelemetryMiddleware.WithTelemetryInterceptor` | `middleware.TelemetryMiddleware.WithTelemetryInterceptor` |
 | `TelemetryMiddleware.EndTracingSpansInterceptor` | `middleware.TelemetryMiddleware.EndTracingSpansInterceptor` |
 | `StopMetricsCollector` | `middleware.StopMetricsCollector` |
+| `SetHandlerSpanAttributes` | `middleware.SetHandlerSpanAttributes` |
+| `SetTenantSpanAttribute` | `middleware.SetTenantSpanAttribute` |
+| `SetExceptionSpanAttributes` | `middleware.SetExceptionSpanAttributes` |
+| `SetDisputeSpanAttributes` | `middleware.SetDisputeSpanAttributes` |
 
 Migration rule:
 - If a file imports `lib-commons/v5/commons/net/http` and uses only deprecated
@@ -130,6 +134,35 @@ Migration rule:
   CORS/basic-auth helpers, ownership helpers, or any
   `commons/net/http` subpackage.
 
+### Deprecated symbols inside commons root
+
+The root commons package is also mixed. App configuration, environment, OS, security,
+and general helpers stay in lib-commons. Only observability context helpers marked
+Deprecated in lib-commons and present in root lib-observability may migrate.
+
+| Deprecated symbol | lib-observability replacement |
+|---|---|
+| `NewLoggerFromContext` | `observability.NewLoggerFromContext` |
+| `ContextWithLogger` | `observability.ContextWithLogger` |
+| `ContextWithTracer` | `observability.ContextWithTracer` |
+| `ContextWithMetricFactory` | `observability.ContextWithMetricFactory` |
+| `ContextWithHeaderID` | `observability.ContextWithHeaderID` |
+| `TrackingComponents` | `observability.TrackingComponents` |
+| `NewTrackingFromContext` | `observability.NewTrackingFromContext` |
+| `ContextWithSpanAttributes` | `observability.ContextWithSpanAttributes` |
+| `AttributesFromContext` | `observability.AttributesFromContext` |
+| `ReplaceAttributes` | `observability.ReplaceAttributes` |
+
+Migration rule:
+- If a file imports root `lib-commons/v5/commons` and uses only deprecated
+  observability context helpers from that import, replace the import path with
+  `github.com/LerianStudio/lib-observability` and preserve or adjust the alias.
+- If a file imports root commons and also uses non-observability helpers
+  (`AppConfig`, env helpers, security rules, pointer/string/time helpers, etc.),
+  keep the lib-commons import and add a second import for
+  `github.com/LerianStudio/lib-observability`. Rewrite only deprecated
+  observability context helper qualifiers to the lib-observability alias.
+
 ### Do NOT migrate (not deprecated — stays lib-commons)
 
 | Import | Reason |
@@ -140,7 +173,7 @@ Migration rule:
 | `lib-commons/v5/commons/postgres`, `mongo`, `redis`, `rabbitmq` | Infrastructure clients — NOT deprecated |
 | `lib-commons/v5/commons/multitenancy` | Multi-tenant dispatch — NOT deprecated |
 | `lib-commons/v5/commons/systemplane` | Runtime config client — NOT deprecated |
-| `lib-commons/v5/commons` | Root package (AppConfig, etc.) — NOT deprecated |
+| `lib-commons/v5/commons` non-observability helpers | Root package helpers such as AppConfig, environment, OS, security, pointers, string/time utilities — NOT deprecated. Only observability context helpers migrate. |
 
 ### Manual Migration Only (out of scope for this skill)
 
@@ -177,10 +210,14 @@ Migration rule:
    LIB_COMMONS_DIR=$(go list -m -f '{{.Dir}}' github.com/LerianStudio/lib-commons/v5)
    LIB_OBSERVABILITY_DIR=$(go list -m -f '{{.Dir}}' github.com/LerianStudio/lib-observability 2>/dev/null || true)
    DOC_PATH="${LIB_COMMONS_DIR}/commons/log/doc.go"
+   CONTEXT_PATH="${LIB_COMMONS_DIR}/commons/context.go"
    LOGGING_PATH="${LIB_COMMONS_DIR}/commons/net/http/withLogging_middleware.go"
    TELEMETRY_PATH="${LIB_COMMONS_DIR}/commons/net/http/withTelemetry.go"
+   SPAN_HELPERS_PATH="${LIB_COMMONS_DIR}/commons/net/http/context_span.go"
+   OBS_ROOT_PATH="${LIB_OBSERVABILITY_DIR}/observability.go"
    OBS_MIDDLEWARE_PATH="${LIB_OBSERVABILITY_DIR}/middleware/logging.go"
    OBS_TELEMETRY_PATH="${LIB_OBSERVABILITY_DIR}/middleware/telemetry.go"
+   OBS_SPAN_HELPERS_PATH="${LIB_OBSERVABILITY_DIR}/middleware/context_span.go"
 
    Guard — abort immediately if the file cannot be located:
      if [ ! -f "$DOC_PATH" ]; then
@@ -215,6 +252,18 @@ Migration rule:
    Check if the target lib-observability telemetry middleware API exists:
      if [ -f "$OBS_TELEMETRY_PATH" ]; then grep -E "func NewTelemetryMiddleware|func \\(tm \\*TelemetryMiddleware\\) WithTelemetry|func \\(tm \\*TelemetryMiddleware\\) WithTelemetryInterceptor|type TelemetryMiddleware" "$OBS_TELEMETRY_PATH"; fi
 
+   Check if root commons observability context helper deprecations are available:
+     if [ -f "$CONTEXT_PATH" ]; then grep -E "Deprecated: use (NewTrackingFromContext|ContextWithLogger|ContextWithTracer|ContextWithMetricFactory|ContextWithHeaderID|ContextWithSpanAttributes|AttributesFromContext|ReplaceAttributes)" "$CONTEXT_PATH"; fi
+
+   Check if the target root lib-observability context helper API exists:
+     if [ -f "$OBS_ROOT_PATH" ]; then grep -E "func NewTrackingFromContext|func ContextWithLogger|func ContextWithTracer|func ContextWithMetricFactory|func ContextWithHeaderID|func ContextWithSpanAttributes|func AttributesFromContext|func ReplaceAttributes" "$OBS_ROOT_PATH"; fi
+
+   Check if HTTP span helper deprecations are available:
+     if [ -f "$SPAN_HELPERS_PATH" ]; then grep -c "Deprecated" "$SPAN_HELPERS_PATH"; fi
+
+   Check if the target lib-observability span helper API exists:
+     if [ -f "$OBS_SPAN_HELPERS_PATH" ]; then grep -E "func SetHandlerSpanAttributes|func SetTenantSpanAttribute|func SetExceptionSpanAttributes|func SetDisputeSpanAttributes" "$OBS_SPAN_HELPERS_PATH"; fi
+
    If either logging gate result is 0 or the file is absent → do not run the
    commons/net/http logging symbol-level migration. Continue with other
    migrations and report:
@@ -229,7 +278,15 @@ Migration rule:
       deprecated, or lib-observability does not yet expose the telemetry API.
       Skipping commons/net/http telemetry migration until both gates pass."
 
-   If both gate pairs are ≥ 1 → matching middleware symbols may be migrated when discovered.
+   If either root context helper gate result is 0 or the file is absent → do not
+   run the commons root observability context helper migration. Continue with
+   other migrations and report the missing gate.
+
+   If either HTTP span helper gate result is 0 or the file is absent → do not run
+   the commons/net/http span helper migration. Continue with other migrations and
+   report the missing gate.
+
+   If all relevant gate pairs are ≥ 1 → matching symbols may be migrated when discovered.
 ```
 
 ---
@@ -238,6 +295,7 @@ Migration rule:
 
 Scan all `.go` files in the repository for deprecated observability imports and
 deprecated `commons/net/http` observability middleware symbol usage.
+Also scan root `commons` observability context helper usage.
 
 ```text
 Search patterns (grep -r across *.go files):
@@ -268,6 +326,22 @@ SYMBOL-LEVEL MIGRATE targets (only when used from lib-commons/v5/commons/net/htt
   WithTelemetryInterceptor
   EndTracingSpansInterceptor
   StopMetricsCollector
+  SetHandlerSpanAttributes
+  SetTenantSpanAttribute
+  SetExceptionSpanAttributes
+  SetDisputeSpanAttributes
+
+SYMBOL-LEVEL MIGRATE targets (only when used from root lib-commons/v5/commons):
+  NewLoggerFromContext
+  ContextWithLogger
+  ContextWithTracer
+  ContextWithMetricFactory
+  ContextWithHeaderID
+  TrackingComponents
+  NewTrackingFromContext
+  ContextWithSpanAttributes
+  AttributesFromContext
+  ReplaceAttributes
 
 DO NOT MIGRATE targets (not deprecated — skip silently):
   lib-commons/v5/commons/opentelemetry"   ← root tracing bootstrap, NOT deprecated
@@ -279,7 +353,7 @@ DO NOT MIGRATE targets (not deprecated — skip silently):
   lib-commons/v5/commons/rabbitmq"
   lib-commons/v5/commons/multitenancy"
   lib-commons/v5/commons/systemplane"
-  lib-commons/v5/commons"                 ← root package
+  lib-commons/v5/commons"                 ← keep unless the file uses deprecated observability context helper symbols from it
 
 For each found import, record:
   - file path
@@ -287,7 +361,9 @@ For each found import, record:
   - import alias (if any)
   - full import path
   - for commons/net/http, which deprecated observability middleware symbols are used
+  - for root commons, which deprecated observability context helper symbols are used
   - whether non-observability commons/net/http symbols are also used
+  - whether non-observability root commons symbols are also used
 ```
 
 **Output discovery report:**
@@ -368,7 +444,10 @@ For each file identified in Step 2:
 5. For commons/net/http middleware symbols, rewrite only deprecated observability call sites
    to the lib-observability/middleware import alias. Preserve the lib-commons HTTP
    import when the file still uses non-observability HTTP helpers.
-6. Write the updated file
+6. For root commons observability context helpers, rewrite only deprecated
+   observability call sites to the lib-observability import alias. Preserve the
+   lib-commons root import when the file still uses non-observability commons helpers.
+7. Write the updated file
 </dispatch_required>
 
 ---
@@ -436,6 +515,16 @@ grep -rE 'http\\.(RequestInfo|ResponseMetricsWrapper|NewRequestInfo|LogMiddlewar
 ```
 
 Both checks should print `0` for aliases actually used by the target repo.
+
+For root `commons`, do not require the import count to be zero. Instead, verify
+no deprecated observability context helper symbols remain qualified by the
+lib-commons alias:
+
+```bash
+# Replace commons/libCommons with aliases discovered in each file.
+grep -rE 'commons\\.(NewLoggerFromContext|ContextWithLogger|ContextWithTracer|ContextWithMetricFactory|ContextWithHeaderID|TrackingComponents|NewTrackingFromContext|ContextWithSpanAttributes|AttributesFromContext|ReplaceAttributes)' . --include="*.go" | wc -l
+grep -rE 'libCommons\\.(NewLoggerFromContext|ContextWithLogger|ContextWithTracer|ContextWithMetricFactory|ContextWithHeaderID|TrackingComponents|NewTrackingFromContext|ContextWithSpanAttributes|AttributesFromContext|ReplaceAttributes)' . --include="*.go" | wc -l
+```
 
 ---
 
