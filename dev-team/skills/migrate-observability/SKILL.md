@@ -43,8 +43,15 @@ description: |
 This skill replaces imports/usages of the **deprecated** lib-commons observability APIs
 with their canonical lib-observability equivalents.
 
-**Targeting strategy:** Only packages marked `//Deprecated:` in lib-commons are migrated.
-This guarantees precision — every replacement has a known, tested lib-observability counterpart.
+**Targeting strategy:** migrate only APIs that satisfy both gates:
+1. The source API is marked `// Deprecated:` in the effective lib-commons version.
+2. The target API exists in the effective lib-observability version.
+
+If either gate fails, do not migrate that API. Report the missing gate and leave
+the lib-commons usage unchanged. This keeps lib-commons deprecation notices as
+the source of truth while preventing migrations to APIs that are not available
+in lib-observability yet.
+
 Packages that are NOT deprecated in lib-commons (e.g. `commons/opentelemetry` tracing bootstrap,
 non-logging `commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
 
@@ -83,9 +90,9 @@ The deprecated lib-commons packages and their lib-observability replacements:
 
 ### Deprecated symbols inside commons/net/http
 
-`commons/net/http` is a mixed package. Most helpers stay in lib-commons. Only the
-HTTP/gRPC access logging API marked `// Deprecated:` migrates to
-`lib-observability/middleware`.
+`commons/net/http` is a mixed package. Most helpers stay in lib-commons. Only
+symbols marked `// Deprecated:` in lib-commons and present in
+`lib-observability/middleware` may migrate.
 
 | Deprecated symbol | lib-observability replacement |
 |---|---|
@@ -160,8 +167,10 @@ Migration rule:
    Resolve the effective lib-commons module directory (honours replace directives, workspaces, and custom GOMODCACHE):
 
    LIB_COMMONS_DIR=$(go list -m -f '{{.Dir}}' github.com/LerianStudio/lib-commons/v5)
+   LIB_OBSERVABILITY_DIR=$(go list -m -f '{{.Dir}}' github.com/LerianStudio/lib-observability 2>/dev/null || true)
    DOC_PATH="${LIB_COMMONS_DIR}/commons/log/doc.go"
    LOGGING_PATH="${LIB_COMMONS_DIR}/commons/net/http/withLogging_middleware.go"
+   OBS_MIDDLEWARE_PATH="${LIB_OBSERVABILITY_DIR}/middleware/logging.go"
 
    Guard — abort immediately if the file cannot be located:
      if [ ! -f "$DOC_PATH" ]; then
@@ -187,13 +196,16 @@ Migration rule:
    Check if HTTP/gRPC logging middleware deprecations are available:
      if [ -f "$LOGGING_PATH" ]; then grep -c "Deprecated" "$LOGGING_PATH"; fi
 
-   If result is 0 or the file is absent → do not run the commons/net/http
-   symbol-level migration. Continue with the 7 package migrations only and report:
-     "NOTE: lib-commons does not yet mark HTTP/gRPC logging middleware as
-      deprecated. Skipping commons/net/http logging migration until lib-commons
-      includes those deprecation notices."
+   Check if the target lib-observability middleware API exists:
+     if [ -f "$OBS_MIDDLEWARE_PATH" ]; then grep -E "func WithHTTPLogging|func WithGrpcLogging|type RequestInfo|type LogMiddlewareOption" "$OBS_MIDDLEWARE_PATH"; fi
 
-   If result is ≥ 1 → shims are present, and logging symbols may be migrated when discovered.
+   If either result is 0 or the file is absent → do not run the commons/net/http
+   symbol-level migration. Continue with package migrations only and report:
+     "NOTE: lib-commons does not yet mark HTTP/gRPC logging middleware as
+      deprecated, or lib-observability does not yet expose the middleware API.
+      Skipping commons/net/http logging migration until both gates pass."
+
+   If both results are ≥ 1 → logging symbols may be migrated when discovered.
 ```
 
 ---
