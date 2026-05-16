@@ -44,6 +44,15 @@ description: |
 This skill replaces imports/usages of the **deprecated** lib-commons observability APIs
 with their canonical lib-observability equivalents.
 
+**Stable release baseline for this migration:**
+- `github.com/LerianStudio/lib-commons/v5` >= `v5.2.0`
+- `github.com/LerianStudio/lib-observability` >= `v1.0.0`
+
+`v5.2.0` is the planned stable lib-commons release that carries the
+observability deprecation notices and delegation shims. `v1.0.0` is the first
+stable lib-observability release. Do not use beta tags for new migrations unless
+the target application is intentionally pinned to a beta train.
+
 **Targeting strategy:** migrate only APIs that satisfy both gates:
 1. The source API is marked `// Deprecated:` in the effective lib-commons version.
 2. The target API exists in the effective lib-observability version.
@@ -235,6 +244,13 @@ Migration rule:
 2. Extract module name from go.mod
 3. Confirm lib-commons is a dependency: grep "lib-commons" go.mod
    if not found → report "No lib-commons dependency found. Nothing to migrate." and exit PASS
+   If found but older than v5.2.0 → upgrade to the stable migration baseline
+   before editing imports:
+
+   GONOSUMDB="github.com/LerianStudio/lib-commons,github.com/LerianStudio/lib-observability" \
+   GOPRIVATE="github.com/LerianStudio/lib-commons,github.com/LerianStudio/lib-observability" \
+     go get github.com/LerianStudio/lib-commons/v5@v5.2.0
+
 4. Quick check — lib-observability already present?
    grep "lib-observability" go.mod
    if found → note for UX messaging; do NOT exit here.
@@ -473,16 +489,16 @@ If dry_run=true from input, skip this step and show diffs only.
 # Always use GONOSUMDB + GOPRIVATE to avoid sum.golang.org 404 errors.
 GONOSUMDB="github.com/LerianStudio/lib-observability" \
 GOPRIVATE="github.com/LerianStudio/lib-observability" \
-  go get github.com/LerianStudio/lib-observability@v1.0.0-beta.3
+  go get github.com/LerianStudio/lib-observability@v1.0.0
 # Use the version that matches the lib-commons delegation shims.
 # Check the lib-commons release notes or go.mod require block for the minimum
-# compatible version. v1.0.0-beta.3 is the baseline for the current shims.
+# compatible version. v1.0.0 is the stable baseline for lib-commons v5.2.0.
 ```
 
 Verify it appears in go.mod:
 ```bash
 grep "lib-observability" go.mod
-# Expected: github.com/LerianStudio/lib-observability v1.0.0-beta.3
+# Expected: github.com/LerianStudio/lib-observability v1.0.0
 # Note: the entry may be marked "// indirect" at this stage — import paths have
 # not been updated yet (that happens in Step 5). The "// indirect" marker is
 # removed after Step 5 (import replacements) and Step 6 (go mod tidy).
