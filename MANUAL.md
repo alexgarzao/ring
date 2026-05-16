@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 4 plugins with 76 skills and 32 agents for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 4 plugins with 69 skills and 32 agents for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -13,7 +13,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │                                                                                    │
 │  ┌───────────────┐  ┌───────────────┐                                              │
 │  │ ring-default  │  │ ring-dev-team │                                              │
-│  │  Skills(14)   │  │  Skills(38)   │                                              │
+│  │  Skills(14)   │  │  Skills(31)   │                                              │
 │  │  Agents(10)   │  │  Agents(15)   │                                              │
 │  └───────────────┘  └───────────────┘                                              │
 │  ┌───────────────┐  ┌───────────────┐                                              │
@@ -72,7 +72,7 @@ Ring is auto-loaded at session start. Two ways to invoke Ring capabilities:
 
 ## 💡 About Skills
 
-Skills (76) are the primary invocation mechanism for Ring. They can be invoked directly by users (`Skill tool: "ring:skill-name"`) or applied automatically by Claude Code when it detects they're applicable. They handle testing, debugging, verification, planning, code review enforcement, and more.
+Skills (69) are the primary invocation mechanism for Ring. They can be invoked directly by users (`Skill tool: "ring:skill-name"`) or applied automatically by Claude Code when it detects they're applicable. They handle testing, debugging, verification, planning, code review enforcement, and more.
 
 Examples: ring:test-driven-development, ring:codereview, ring:production-readiness-audit (44-dimension audit, up to 10 explorers per batch, incremental report 0-430, max 440 with multi-tenant; see [default/skills/production-readiness-audit/SKILL.md](default/skills/production-readiness-audit/SKILL.md)), etc.
 
@@ -88,7 +88,7 @@ Claude Code matches user intent against the skill's `description` field at Sessi
 
 Invoke via `Task tool with subagent_type: "..."`.
 
-### Code Review (ring-default)
+### Code Review pool (default + dev-team)
 
 **Always dispatch all 10 in parallel** (single message, 10 Task calls):
 
@@ -128,18 +128,21 @@ Use when you need expert depth in specific domains:
 | --------------------------------------- | ---------------------------- | -------------------------------------------------- |
 | `ring:backend-engineer-golang`          | Go microservices & APIs      | Fiber, gRPC, PostgreSQL, MongoDB, Kafka, OAuth2    |
 | `ring:backend-engineer-typescript`      | TypeScript/Node.js backend   | Express, NestJS, Prisma, TypeORM, GraphQL          |
+| `ring:devops-engineer`                  | DevOps & infrastructure      | Docker, Kubernetes, CI/CD, cloud operations         |
 | `ring:frontend-bff-engineer-typescript` | BFF & React/Next.js frontend | Next.js API Routes, Clean Architecture, DDD, React |
 | `ring:frontend-designer`                | Visual design & aesthetics   | Typography, motion, CSS, distinctive UI            |
 | `ring:frontend-engineer`                | General frontend development | React, TypeScript, CSS, component architecture     |
 | `ring:helm-engineer`                    | Helm chart specialist        | Helm charts, Kubernetes, Lerian conventions        |
 | `ring:prompt-quality-reviewer`          | AI prompt quality review     | Prompt engineering, clarity, effectiveness         |
+| `ring:qa-analyst`                       | Backend QA specialist        | Unit, integration, load, chaos, regression testing  |
 | `ring:qa-analyst-frontend`              | Frontend QA specialist       | Accessibility, visual regression, E2E, performance |
+| `ring:sre`                              | SRE specialist               | Observability, reliability, SLOs, incident readiness |
 | `ring:performance-reviewer`             | Performance review           | Go, TypeScript, Python, GOMAXPROCS, GC tuning      |
 | `ring:multi-tenant-reviewer`            | Multi-tenant usage review    | lib-commons/multitenancy, tenant isolation, JWT tenantId |
 | `ring:lib-commons-reviewer`             | lib-commons usage review     | Correct lib-commons API usage, reinvented-wheel detection |
 | `ring:ui-engineer`                      | UI component specialist      | Design systems, accessibility, React               |
 
-**Standards Compliance Output:** All ring-dev-team agents include a `## Standards Compliance` output section with conditional requirement:
+**Standards Compliance Output:** Refactor-capable ring-dev-team agents produce a `## Standards Compliance` output section with conditional requirement:
 
 | Invocation Context      | Standards Compliance | Trigger                                   |
 | ----------------------- | -------------------- | ----------------------------------------- |
@@ -264,10 +267,13 @@ These enforce quality standards:
 | React/Next.js frontend & BFF      | `ring:frontend-bff-engineer-typescript`     |
 | General frontend development      | `ring:frontend-engineer`                    |
 | Visual design & aesthetics        | `ring:frontend-designer`                    |
+| DevOps and infrastructure         | `ring:devops-engineer`                      |
 | Helm charts & Kubernetes          | `ring:helm-engineer`                        |
 | UI component development          | `ring:ui-engineer`                          |
 | AI prompt quality review          | `ring:prompt-quality-reviewer`              |
+| Backend quality assurance         | `ring:qa-analyst`                           |
 | Frontend quality assurance         | `ring:qa-analyst-frontend`                  |
+| Observability and reliability     | `ring:sre`                                  |
 | Performance review                | `ring:performance-reviewer`                 |
 | Multi-tenant usage review         | `ring:multi-tenant-reviewer`                |
 | lib-commons usage review          | `ring:lib-commons-reviewer`                 |
@@ -286,7 +292,7 @@ These enforce quality standards:
 ### Session Startup
 
 1. SessionStart hook runs automatically
-2. All 76 skills are auto-discovered and available
+2. All 69 skills are auto-discovered and available
 3. `ring:using-ring` workflow is activated (skill checking is now mandatory)
 
 ### Agent Dispatching

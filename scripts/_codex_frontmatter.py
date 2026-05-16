@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Transform a source SKILL.md into the codex-flavored variant.
 
-Stdlib only. Invoked per-skill by ring-install.sh.
+Stdlib only. Invoked per-skill by install-symlinks.sh (build subcommand).
 
 Usage:
   python3 scripts/_codex_frontmatter.py \
@@ -15,6 +15,7 @@ Or, to rewrite markdown link paths in an accessory (non-SKILL.md) file:
   python3 scripts/_codex_frontmatter.py --rewrite-paths \
     --source <path> --dest <path> --team <team> --lookup <lookup.json>
 """
+
 from __future__ import annotations
 
 import argparse
@@ -221,9 +222,7 @@ def _merge_metadata(existing_lines: list[str], overrides: dict[str, str]) -> lis
             final_groups.append((key, lines))
     for key, value in overrides.items():
         if key not in seen:
-            final_groups.append(
-                (key, ["  " + key + ": " + _yaml_inline_string(value)])
-            )
+            final_groups.append((key, ["  " + key + ": " + _yaml_inline_string(value)]))
 
     out = ["metadata:"]
     for _, lines in final_groups:
@@ -256,6 +255,7 @@ def _rewrite_link_paths(body: str, lookup: dict[str, str], team: str) -> str:
     The relative-depth math is independent of the file's actual location:
     these transforms preserve directional intent across the renamed codex tree.
     """
+
     def sub(match: re.Match[str]) -> str:
         path = match.group(1)
         title = match.group(2) or ""
@@ -271,9 +271,7 @@ _SIBLING_SKILL_RE = re.compile(r"^\.\./([a-z0-9][a-z0-9-]*)(/|$)")
 _DEEP_CROSS_PLUGIN_RE = re.compile(
     r"^\.\./\.\./\.\./\.\./([a-z0-9][a-z0-9-]+)/skills/(shared-patterns/.+)$"
 )
-_DEEP_REPO_ROOT_RE = re.compile(
-    r"^\.\./\.\./\.\./\.\./skills/(shared-patterns/.+)$"
-)
+_DEEP_REPO_ROOT_RE = re.compile(r"^\.\./\.\./\.\./\.\./skills/(shared-patterns/.+)$")
 
 
 def _rewrite_one_path(path: str, lookup: dict[str, str], team: str) -> str:
@@ -314,7 +312,7 @@ def _rewrite_one_path(path: str, lookup: dict[str, str], team: str) -> str:
         target_team = lookup.get(candidate)
         if target_team == team and candidate not in ("shared-patterns", "docs"):
             new_prefix = "../ring-" + team + "-" + candidate
-            return new_prefix + base[len("../" + candidate):] + frag
+            return new_prefix + base[len("../" + candidate) :] + frag
 
     return path
 
@@ -380,7 +378,9 @@ def transform(
     os.replace(tmp, dest)
 
 
-def rewrite_accessory(source: Path, dest: Path, team: str, lookup: dict[str, str]) -> None:
+def rewrite_accessory(
+    source: Path, dest: Path, team: str, lookup: dict[str, str]
+) -> None:
     """Apply link-path rewrites to an accessory .md file (no frontmatter transform)."""
     text = source.read_text(encoding="utf-8")
     rewritten = _rewrite_link_paths(text, lookup, team)
@@ -399,8 +399,11 @@ def main(argv: list[str]) -> int:
     p.add_argument("--team", default=None)
     p.add_argument("--skill-name", default=None)
     p.add_argument("--lookup", type=Path, default=None)
-    p.add_argument("--rewrite-paths", action="store_true",
-                   help="Rewrite link paths in an accessory .md file only")
+    p.add_argument(
+        "--rewrite-paths",
+        action="store_true",
+        help="Rewrite link paths in an accessory .md file only",
+    )
     args = p.parse_args(argv)
 
     if args.build_lookup is not None:
@@ -415,8 +418,12 @@ def main(argv: list[str]) -> int:
         return 0
 
     if args.rewrite_paths:
-        required = (("--source", args.source), ("--dest", args.dest),
-                    ("--team", args.team), ("--lookup", args.lookup))
+        required = (
+            ("--source", args.source),
+            ("--dest", args.dest),
+            ("--team", args.team),
+            ("--lookup", args.lookup),
+        )
         missing = [n for n, v in required if v is None]
         if missing:
             print("missing required args: " + ", ".join(missing), file=sys.stderr)

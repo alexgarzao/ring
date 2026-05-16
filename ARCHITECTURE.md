@@ -13,7 +13,7 @@
 
 ## Overview
 
-Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **4 active plugins** (76 skills, 32 agents). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
+Ring is a **Claude Code plugin marketplace** that provides a comprehensive skills library and workflow system with **4 active plugins** (69 skills, 32 agents). It extends Claude Code's capabilities through structured, reusable patterns that enforce proven software engineering practices across the software delivery value chain: Product Planning → Development → Documentation.
 
 ### Architecture Philosophy
 
@@ -33,7 +33,7 @@ Ring operates on three core principles:
 │  │                          Ring Marketplace                                  │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
 │  │  │ ring-default         │  │ ring-dev-team        │                       │  │
-│  │  │ Skills(14) Agents(10)│  │ Skills(38) Agents(15)│                       │  │
+│  │  │ Skills(14) Agents(10)│  │ Skills(31) Agents(15)│                       │  │
 │  │  │ Hooks/Lib            │  │                      │                       │  │
 │  │  └──────────────────────┘  └──────────────────────┘                       │  │
 │  │  ┌──────────────────────┐  ┌──────────────────────┐                       │  │
@@ -67,7 +67,7 @@ _Versions managed in `.claude-plugin/marketplace.json`_
 | Plugin               | Description                          | Components                       |
 | -------------------- | ------------------------------------ | -------------------------------- |
 | **ring-default**     | Core skills library                  | 14 skills, 10 agents              |
-| **ring-dev-team**    | Developer agents                     | 38 skills, 15 agents              |
+| **ring-dev-team**    | Developer agents                     | 31 skills, 15 agents              |
 | **ring-pm-team**     | Product planning workflows           | 18 skills, 4 agents               |
 | **ring-tw-team**     | Technical writing specialists        | 6 skills, 3 agents                |
 
@@ -123,6 +123,7 @@ default/agents/
 dev-team/agents/
 ├── backend-engineer-golang.md         # Go backend specialist (`ring:backend-engineer-golang`)
 ├── backend-engineer-typescript.md     # TypeScript backend specialist (`ring:backend-engineer-typescript`)
+├── devops-engineer.md                 # DevOps and infrastructure specialist (`ring:devops-engineer`)
 ├── frontend-bff-engineer-typescript.md # BFF specialist (`ring:frontend-bff-engineer-typescript`)
 ├── frontend-designer.md               # Visual design specialist (`ring:frontend-designer`)
 ├── frontend-engineer.md               # Frontend engineer (`ring:frontend-engineer`)
@@ -131,7 +132,9 @@ dev-team/agents/
 ├── multi-tenant-reviewer.md           # Multi-tenant usage review (`ring:multi-tenant-reviewer`)
 ├── performance-reviewer.md              # Performance review (`ring:performance-reviewer`)
 ├── prompt-quality-reviewer.md         # Prompt quality specialist (`ring:prompt-quality-reviewer`)
+├── qa-analyst.md                      # Backend QA specialist (`ring:qa-analyst`)
 ├── qa-analyst-frontend.md             # Frontend QA specialist (`ring:qa-analyst-frontend`)
+├── sre.md                             # Observability and reliability specialist (`ring:sre`)
 └── ui-engineer.md                     # UI component specialist (`ring:ui-engineer`)
 ```
 
@@ -145,9 +148,9 @@ dev-team/agents/
 
 **Note:** Parallel review orchestration is handled by the `ring:codereview` skill
 
-**Standards Compliance Output (ring-dev-team agents):**
+**Standards Compliance Output (refactor-capable dev-team agents):**
 
-All ring-dev-team agents include a `## Standards Compliance` section in their output schema:
+Refactor-capable ring-dev-team agents produce a `## Standards Compliance` section in their output schema:
 
 ```yaml
 - name: "Standards Compliance"
@@ -679,10 +682,10 @@ _Component counts reflect current state; plugin versions managed in `.claude-plu
 | ------------------------- | ---------- | ---------------------- |
 | Active Plugins            | 4          | All plugin directories |
 | Skills (ring-default)     | 14         | `default/skills/`      |
-| Skills (ring-dev-team)    | 38         | `dev-team/skills/`     |
+| Skills (ring-dev-team)    | 31         | `dev-team/skills/`     |
 | Skills (ring-pm-team)     | 18         | `pm-team/skills/`      |
 | Skills (ring-tw-team)     | 6          | `tw-team/skills/`      |
-| **Total Skills**          | **76**     | **All plugins**        |
+| **Total Skills**          | **69**     | **All plugins**        |
 | Agents (ring-default)     | 10         | `default/agents/`      |
 | Agents (ring-dev-team)    | 15         | `dev-team/agents/`     |
 | Agents (ring-pm-team)     | 4          | `pm-team/agents/`      |
