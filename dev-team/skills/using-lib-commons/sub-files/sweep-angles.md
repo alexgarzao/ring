@@ -763,7 +763,7 @@ metrics := tl.MetricsFactory()
 - Goroutine launches inside hot paths (HTTP handlers, message consumers) without
   `SafeGo` equivalent
 
-**lib-commons Replacement:**
+**lib-observability Replacement:**
 - `lib-observability/runtime.SafeGo(fn)` — wraps goroutine with recovery + observability
 - `lib-observability/runtime.SafeGoWithContextAndComponent(ctx, component, fn)` — attaches
   contextual metadata to panic reports
@@ -782,7 +782,7 @@ go func() {
     }
 }()
 
-// lib-commons (AFTER):
+// lib-observability (AFTER):
 runtime.SafeGoWithContextAndComponent(ctx, "msg-consumer", func(ctx context.Context) {
     for msg := range consumer.Messages() {
         process(ctx, msg) // panic → recovered, logged, metric emitted, traced
@@ -825,7 +825,7 @@ reliability baseline.
   proceeds with corrupt state)
 - Hand-rolled domain predicates (`func isPositiveDecimal(d decimal.Decimal) bool`)
 
-**lib-commons Replacement:**
+**lib-observability Replacement:**
 - `lib-observability/assert.New(logger, metrics)` — assertion handler with observability
 - Domain predicates: `PositiveDecimal`, `NonNegativeDecimal`, `DebitsEqualCredits`,
   `ValidTransactionStatus`, `NotEmpty`, etc.
@@ -843,7 +843,7 @@ if debits != credits {
     return errors.New("unbalanced") // no metric, no trace, silent in dashboards
 }
 
-// lib-commons (AFTER):
+// lib-observability (AFTER):
 a := assert.New(logger, metrics)
 if err := a.PositiveDecimal(ctx, "amount", amount); err != nil {
     return err

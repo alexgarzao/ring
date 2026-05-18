@@ -140,7 +140,12 @@ import libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"
 // ❌ FORBIDDEN in code examples
 package telemetry
 
-import "go.opentelemetry.io/otel/trace"
+import (
+    "context"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/trace"
+)
 
 func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
     tracer := otel.GetTracerProvider().Tracer("my-service")

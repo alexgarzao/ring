@@ -534,7 +534,7 @@ func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
 
 **Severity Ratings:**
 - CRITICAL: lib-commons not in go.mod (HARD GATE violation per Ring standards)
-- CRITICAL: Custom utilities duplicating lib-observability functionality (HARD GATE violation)
+- CRITICAL: Custom utilities duplicating lib-commons or lib-observability functionality (HARD GATE violation)
 - HIGH: Framework versions below Ring minimum requirements
 - MEDIUM: Using alternative libraries for functionality covered by Ring stack
 - LOW: Minor version discrepancies

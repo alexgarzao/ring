@@ -214,7 +214,7 @@ hand-rolled predicates) MUST be addressed before MEDIUM/LOW tiers.
 # REFERENCE MODE
 
 Sections 1–14 below catalog the `lib-observability/assert` package (latest v5.x). Resolve the
-actual version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`.
+actual version at runtime via `gh api repos/LerianStudio/lib-observability/releases/latest --jq .tag_name`.
 Read the sections relevant to your current task. Sweep Mode explorers receive extracts from these sections
 as context for their angle.
 

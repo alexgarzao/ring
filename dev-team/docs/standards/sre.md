@@ -146,48 +146,14 @@ limits_config:
 
 ### OpenTelemetry Configuration
 
+OpenTelemetry setup MUST go through `github.com/LerianStudio/lib-observability`.
+Do not create local `trace.NewTracerProvider`, `otlptracegrpc.New`, or
+`otel.SetTracerProvider` bootstrap code in services. Initialize tracing through the
+centralized lib-observability bootstrap path, then recover the request-scoped tracer
+from context with `observability.NewTrackingFromContext(ctx)`.
+
 ```go
-// Go - OpenTelemetry setup
-import (
-    "go.opentelemetry.io/otel"
-    "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-    "go.opentelemetry.io/otel/sdk/resource"
-    "go.opentelemetry.io/otel/sdk/trace"
-    semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-)
-
-func initTracer(ctx context.Context) (*trace.TracerProvider, error) {
-    exporter, err := otlptracegrpc.New(ctx,
-        otlptracegrpc.WithEndpoint("otel-collector:4317"),
-        otlptracegrpc.WithInsecure(),
-    )
-    if err != nil {
-        return nil, err
-    }
-
-    res, err := resource.New(ctx,
-        resource.WithAttributes(
-            semconv.ServiceName("api"),
-            semconv.ServiceVersion("1.0.0"),
-            semconv.DeploymentEnvironment("production"),
-        ),
-    )
-    if err != nil {
-        return nil, err
-    }
-
-    tp := trace.NewTracerProvider(
-        trace.WithBatcher(exporter),
-        trace.WithResource(res),
-        trace.WithSampler(trace.TraceIDRatioBased(0.1)), // Sample 10%
-    )
-
-    otel.SetTracerProvider(tp)
-    return tp, nil
-}
-
-// Usage
-tracer := otel.Tracer("api")
+logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 ctx, span := tracer.Start(ctx, "processOrder")
 defer span.End()
 
@@ -195,6 +161,8 @@ span.SetAttributes(
     attribute.String("order.id", orderID),
     attribute.Int("order.items", len(items)),
 )
+
+logger.Info("processing order")
 ```
 
 ### Span Naming Conventions
