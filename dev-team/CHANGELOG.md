@@ -7,7 +7,7 @@
 - `ring:migrate-observability` now treats deprecated `commons/net/http` HTTP/gRPC logging and telemetry middleware symbols as symbol-level migration targets to `lib-observability/middleware`, while keeping non-observability HTTP helpers in lib-commons.
 - `ring:migrate-observability` now also migrates deprecated root `commons` observability context helpers to root `lib-observability`.
 - `ring:migrate-observability` now migrates deprecated root `commons/opentelemetry` helper-only usage to `lib-observability/tracing`, preserving explicit aliases and leaving bootstrap/type-bearing files in lib-commons when their `Telemetry` value still crosses a lib-commons API boundary.
-- Added hard gates that only enable each symbol migration when the installed lib-commons version exposes those `// Deprecated:` notices and the installed lib-observability version exposes the target API.
+- Added dual-mode targeting: deprecated-shim mode still uses lib-commons `// Deprecated:` notices as evidence, while removed-api/break-fix mode migrates known observability imports/symbols by static source analysis when lib-commons has already removed the source APIs. Hard gates now depend on lib-observability target APIs, not source-side deprecation notices.
 
 ## [1.56.1] — 2026-04-17
 
