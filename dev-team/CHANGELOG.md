@@ -10,6 +10,8 @@
 - Added dual-mode targeting: deprecated-shim mode still uses lib-commons `// Deprecated:` notices as evidence, while removed-api/break-fix mode migrates known observability imports/symbols by static source analysis when lib-commons has already removed the source APIs. Hard gates now depend on lib-observability target APIs, not source-side deprecation notices.
 - Added pre-removal reference mode so the skill can use the lib-commons ref immediately before the removal commit as source evidence, then fall through to static break-fix migration when the target app has already bumped to the removal commit.
 - Pinned stable migration baselines to lib-commons `v5.2.0` and lib-observability `v1.0.0`.
+- Added stable companion dependency guidance for lib-auth `v2.8.0` and lib-license-go `v2.3.5`, avoiding false blockers from old transitive modules after lib-commons removes observability shims.
+- Tightened root commons alias handling so existing aliases such as `libObservability` are preserved when moving deprecated context helpers to root lib-observability.
 - Added explicit dependency-blocker handling for transitive modules that still import removed lib-commons observability packages after the target application bumps to a removal release.
 - Tightened root opentelemetry qualifier migration so agents rewrite selector expressions only, never `go.opentelemetry.io` module import paths.
 

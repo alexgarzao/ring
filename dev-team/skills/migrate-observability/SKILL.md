@@ -57,11 +57,16 @@ with their canonical lib-observability equivalents.
 **Stable target baseline for this migration:**
 - `github.com/LerianStudio/lib-commons/v5` >= `v5.2.0`
 - `github.com/LerianStudio/lib-observability` >= `v1.0.0`
+- `github.com/LerianStudio/lib-auth/v2` >= `v2.8.0` when present
+- `github.com/LerianStudio/lib-license-go/v2` >= `v2.3.5` when present
 
 `lib-commons/v5.2.0` is the first stable lib-commons release where the
 deprecated observability shims are removed. `lib-observability/v1.0.0` is the
-first stable lib-observability release. Do not use beta tags for new migrations
-unless the target application is intentionally pinned to a beta train.
+first stable lib-observability release. `lib-auth/v2.8.0` and
+`lib-license-go/v2.3.5` are the first stable companion releases known to be
+compatible with the removed lib-commons observability APIs. Do not use beta
+tags for new migrations unless the target application is intentionally pinned
+to a beta train.
 
 **Known lib-commons observability removal refs:**
 - Removal commit: `fe1db9e60ac9e959de4288208b6cf65f7bbfe439`
@@ -90,8 +95,9 @@ already broken by removal; in that case report it as a manual migration blocker.
 In removed-api mode, package-level imports such as `commons/log` can still
 cross non-observability lib-commons boundaries (for example
 `mongo.Config.Logger`, `postgres.Config.Logger`, `WithCORSLogger`,
-`circuitbreaker.NewManager`, streaming builders, or any remaining lib-commons
-API typed as `commons/log.Logger`). Do not invent adapters in the skill.
+`circuitbreaker.NewManager`, auth middleware, outbox/tenant-manager clients,
+streaming builders, or any remaining lib-commons API typed as
+`commons/log.Logger`). Do not invent adapters in the skill.
 Migrate safe source files, run build validation, and if a file fails only
 because a migrated value crosses a remaining lib-commons typed boundary, revert
 that file/family to lib-commons and report it as a manual blocker.
@@ -101,9 +107,21 @@ release. If `go build` fails from `$GOMODCACHE` with errors such as
 `no required module provides package github.com/LerianStudio/lib-commons/v5/commons/log`,
 `commons/zap`, or `commons/opentelemetry`, the target repo was
 migrated as far as local source allows, but one of its dependencies still
-depends on removed lib-commons observability packages. Report the dependency
-module and package as a manual migration blocker; do not try to patch module
-cache files or vendor ad-hoc replacements into the application.
+depends on removed lib-commons observability packages. First try the known
+stable companion bumps when the modules are present:
+
+```bash
+GONOSUMDB="github.com/LerianStudio/*" \
+GOPRIVATE="github.com/LerianStudio/*" \
+  go get github.com/LerianStudio/lib-auth/v2@v2.8.0 \
+         github.com/LerianStudio/lib-license-go/v2@v2.3.5
+go mod tidy
+```
+
+If the dependency is outside that stable set (for example `lib-auth/v3`,
+`lib-streaming`, or `systemplane` packages removed from lib-commons), report
+the dependency module and package as a manual migration blocker; do not try to
+patch module cache files or vendor ad-hoc replacements into the application.
 
 Packages that are NOT deprecated in lib-commons (e.g. non-observability
 `commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
@@ -271,6 +289,10 @@ Migration rule:
 - If a file imports root `lib-commons/v5/commons` and uses only deprecated
   observability context helpers from that import, replace the import path with
   `github.com/LerianStudio/lib-observability` and preserve or adjust the alias.
+  If the old import had an explicit alias, preserve that alias exactly. Example:
+  `libObservability "github.com/LerianStudio/lib-commons/v5/commons"` becomes
+  `libObservability "github.com/LerianStudio/lib-observability"`; do not drop
+  the alias while leaving `libObservability.X` call sites behind.
 - If a file imports root commons and also uses non-observability helpers
   (`AppConfig`, env helpers, security rules, pointer/string/time helpers, etc.),
   keep the lib-commons import and add a second import for
@@ -440,6 +462,21 @@ Migration rule:
 
    If target checks pass → matching known imports/symbols may be migrated when
    discovered, regardless of whether the source package still exists.
+
+7. Companion stable dependencies — when present in go.mod, bump known modules
+   that already adopted the removed lib-commons observability split:
+
+     GONOSUMDB="github.com/LerianStudio/*" \
+     GOPRIVATE="github.com/LerianStudio/*" \
+       go get github.com/LerianStudio/lib-auth/v2@v2.8.0 \
+              github.com/LerianStudio/lib-license-go/v2@v2.3.5
+
+   Do this before final tidy/build validation. These bumps prevent false manual
+   blockers where the application source migrated correctly but older stable
+   transitive modules still import removed lib-commons observability packages.
+   Do not invent versions for other major lines. If the repo depends on
+   lib-auth/v3 or lib-streaming and those modules still import removed
+   lib-commons packages, report them as manual dependency blockers.
 ```
 
 ---
