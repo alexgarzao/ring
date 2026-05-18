@@ -4,7 +4,7 @@ The following dispatch is used when `review_state.slicing.enabled == false` (unc
 
 **⛔ MANDATORY SCOPE HEADER — inject into every reviewer prompt below.**
 
-When `scope == "task"` (the default, set by `ring:dev-cycle` orchestrator), the orchestrator MUST inject the following block into each of the 10 reviewer prompts, immediately after the `## Code Review Request` / `## Business Logic Review Request` / etc. header:
+When `scope == "task"` (the default, set by `ring:dev-cycle` orchestrator), the orchestrator MUST inject the following block into each of the 13 reviewer prompts, immediately after the `## Code Review Request` / `## Business Logic Review Request` / etc. header:
 
 ```markdown
 **REVIEW SCOPE: TASK-LEVEL**
@@ -732,6 +732,255 @@ Task:
     **Scope exclusions (do NOT review):**
     - lib-commons/multitenancy specifically → delegated to ring:multi-tenant-reviewer
     - General code quality → delegated to ring:code-reviewer
+
+    **Include a Standards Compliance section in your output** listing which standards were verified and any violations found.
+
+    ## Required Output
+    ### VERDICT: PASS / FAIL
+
+    ### Issues Found
+    | Severity | Description | File:Line | Recommendation |
+    |----------|-------------|-----------|----------------|
+    | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
+
+    ### Standards Compliance
+    | Standard | Section | Status | Evidence |
+    |----------|---------|--------|----------|
+    | [module.md] | [section name] | ✅/❌ | [file:line or N/A] |
+
+    ### What Was Done Well
+    [positive observations]
+
+# Task 11: lib-observability Reviewer
+Task:
+  subagent_type: "ring:lib-observability-reviewer"
+  description: "lib-observability adoption review for [unit_id]"
+  prompt: |
+    ## lib-observability Adoption Review Request
+
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
+    **Unit ID:** [unit_id]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
+
+    ## What Was Implemented
+    [implementation_summary]
+
+    ## Requirements
+    [requirements]
+
+    ## Files Changed
+    [implementation_files or "Use git diff"]
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:lib-observability-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:lib-observability-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available - DEGRADED MODE. Perform standard review based on git diff._
+
+    ---
+
+    ## Your Focus
+    - Correct usage of `lib-observability/{tracing,metrics,log,zap,runtime,assert,redaction,constants}` packages
+    - Raw OTel SDK / Prometheus / zap / slog / fmt setups that bypass lib-observability bootstrap
+    - Naked goroutines and hand-rolled `defer recover()` instead of `runtime.SafeGo` / `RecoverWithPolicy`
+    - `panic()` used as domain assertion instead of `assert.Asserter`
+    - Hand-rolled PII redaction / sensitive-field masking instead of `redaction.IsSensitiveField` and `tracing.Redactor`
+    - Missing `Inject*Context` / `Extract*Context` at HTTP / gRPC / queue boundaries
+    - Ad-hoc span/metric attribute keys instead of `lib-observability/constants.*`
+    - Deprecated `lib-commons/v5/commons/{assert,runtime,zap,log}` imports still present
+
+    **Language filter:** Go only. For TypeScript/frontend diffs, emit `VERDICT: PASS` immediately — this reviewer does not apply.
+
+    ## ⛔ Ring Standards Verification (MANDATORY)
+
+    **Standards:** Loaded at runtime via WebFetch from:
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/index.md
+
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+
+    **Scope exclusions (do NOT review):**
+    - General lib-commons (non-observability) usage → delegated to ring:lib-commons-reviewer
+    - tenantId-on-log-line propagation → delegated to ring:multi-tenant-reviewer
+    - Nil risks unrelated to observability surface → delegated to ring:nil-safety-reviewer
+    - Performance hotspots → delegated to ring:performance-reviewer
+
+    **Include a Standards Compliance section in your output** listing which standards were verified and any violations found.
+
+    ## Required Output
+    ### VERDICT: PASS / FAIL
+
+    ### Issues Found
+    | Severity | Description | File:Line | Recommendation |
+    |----------|-------------|-----------|----------------|
+    | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
+
+    ### Standards Compliance
+    | Standard | Section | Status | Evidence |
+    |----------|---------|--------|----------|
+    | [module.md] | [section name] | ✅/❌ | [file:line or N/A] |
+
+    ### What Was Done Well
+    [positive observations]
+
+# Task 12: lib-systemplane Reviewer
+Task:
+  subagent_type: "ring:lib-systemplane-reviewer"
+  description: "lib-systemplane adoption review for [unit_id]"
+  prompt: |
+    ## lib-systemplane Adoption Review Request
+
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
+    **Unit ID:** [unit_id]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
+
+    ## What Was Implemented
+    [implementation_summary]
+
+    ## Requirements
+    [requirements]
+
+    ## Files Changed
+    [implementation_files or "Use git diff"]
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:lib-systemplane-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:lib-systemplane-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available - DEGRADED MODE. Perform standard review based on git diff._
+
+    ---
+
+    ## Your Focus
+    - `systemplane` client lifecycle: `NewPostgres`/`NewMongoDB` → `Register` → `Start` → `Close`
+    - Hot-reloadable runtime config flowing through `systemplane.Client.OnChange`, NOT via `fsnotify` / `viper.WatchConfig` / SIGHUP / raw pgx LISTEN
+    - Tenant-scoped reads/writes via `*ForTenant` APIs; fail-closed semantics; no silent fallback to global
+    - `admin.Mount` wired with `WithAuthorizer` (legacy routes) AND `WithTenantAuthorizer` (tenant routes); default DENY-ALL is unsafe
+    - v4 residue: `lib-commons/v4/.../systemplane`, `Supervisor`, `BundleFactory`, `ApplyBehavior`, `SYSTEMPLANE_*` env vars
+    - Bootstrap-only config (DSNs, TLS paths, listen addresses) should NOT live in systemplane — flag misuse
+
+    **Language filter:** Go only. For TypeScript/frontend diffs, emit `VERDICT: PASS` immediately — this reviewer does not apply.
+
+    ## ⛔ Ring Standards Verification (MANDATORY)
+
+    **Standards:** Loaded at runtime via WebFetch from:
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/index.md
+    - https://raw.githubusercontent.com/LerianStudio/lib-systemplane/main/doc.go
+
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+
+    **Scope exclusions (do NOT review):**
+    - General lib-commons usage → delegated to ring:lib-commons-reviewer
+    - Multi-tenant dispatch layer (beyond systemplane tenant APIs) → delegated to ring:multi-tenant-reviewer
+    - Streaming / event emission → delegated to ring:lib-streaming-reviewer
+    - General HTTP routing / middleware → delegated to ring:code-reviewer
+
+    **Include a Standards Compliance section in your output** listing which standards were verified and any violations found.
+
+    ## Required Output
+    ### VERDICT: PASS / FAIL
+
+    ### Issues Found
+    | Severity | Description | File:Line | Recommendation |
+    |----------|-------------|-----------|----------------|
+    | [CRITICAL/HIGH/MEDIUM/LOW/COSMETIC] | [issue] | [location] | [fix] |
+
+    ### Standards Compliance
+    | Standard | Section | Status | Evidence |
+    |----------|---------|--------|----------|
+    | [module.md] | [section name] | ✅/❌ | [file:line or N/A] |
+
+    ### What Was Done Well
+    [positive observations]
+
+# Task 13: lib-streaming Reviewer
+Task:
+  subagent_type: "ring:lib-streaming-reviewer"
+  description: "lib-streaming adoption review for [unit_id]"
+  prompt: |
+    ## lib-streaming Adoption Review Request
+
+    [INJECT REVIEW SCOPE: TASK-LEVEL block here when scope=task]
+
+    **Unit ID:** [unit_id]
+    **Base SHA:** [base_sha or cumulative_diff_range.base_sha when scope=task]
+    **Head SHA:** [head_sha or cumulative_diff_range.head_sha when scope=task]
+
+    ## What Was Implemented
+    [implementation_summary]
+
+    ## Requirements
+    [requirements]
+
+    ## Files Changed
+    [implementation_files or "Use git diff"]
+
+    ## Pre-Analysis Context
+
+    **Static Analysis Results:**
+    The following findings were automatically extracted by the pre-analysis pipeline.
+    Use these to INFORM your review, not REPLACE your analysis.
+
+    ---
+
+    [IF preanalysis_state.context["ring:lib-streaming-reviewer"] exists AND is not empty:]
+    [INSERT the content of preanalysis_state.context["ring:lib-streaming-reviewer"]]
+    [ELSE:]
+    _No pre-analysis context available - DEGRADED MODE. Perform standard review based on git diff._
+
+    ---
+
+    ## Your Focus
+    - Past-tense, durable, tenant-scoped business events flowing through `streaming.Builder` → `Emitter.Emit`
+    - Raw `franz-go/kgo`, `sarama`, `amqp091`, `watermill`, `sqs`, `eventbridge` publishers used for events (bypass)
+    - Hand-rolled outbox tables without `OutboxEnvelope` wire format; broker calls inside DB transactions (send-and-pray)
+    - Manual CloudEvents header construction (`ce-specversion` etc.) instead of `streaming.Event` envelope
+    - Missing `Catalog` registration (events declared inline at emit site)
+    - Hand-built manifest endpoints instead of `NewStreamingHandler` / `BuildManifest`
+    - Missing `NoopEmitter` fallback when `STREAMING_ENABLED=false` or brokers empty
+    - Per-service `gobreaker` instead of `commons/circuitbreaker.Manager` via Builder
+    - `AllowPlaintextSASL` in non-dev paths; missing `WithTLSConfig` for SASL
+    - Missing `IsCallerError(err)` branch in retry policy
+
+    **Producer-only.** Consumer-side `franz-go`/`sarama` usage is out of scope.
+    **Events vs commands.** Internal command queues stay on `lib-commons/v5/commons/rabbitmq` — that is out of scope here.
+
+    **Language filter:** Go only. For TypeScript/frontend diffs, emit `VERDICT: PASS` immediately — this reviewer does not apply.
+
+    ## ⛔ Ring Standards Verification (MANDATORY)
+
+    **Standards:** Loaded at runtime via WebFetch from:
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/CLAUDE.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/docs/standards/golang/index.md
+    - https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/using-lib-streaming/SKILL.md
+
+    See [`shared-patterns/standards-cache-protocol.md`](../../../../dev-team/skills/shared-patterns/standards-cache-protocol.md) for the cache-first resolution protocol (cache hit / cache miss / standalone fallback) and the canonical `<standards>` block format.
+
+    **Scope exclusions (do NOT review):**
+    - Event-propagation effects on consumers → delegated to ring:consequences-reviewer
+    - Past-tense / business-event semantics → delegated to ring:business-logic-reviewer
+    - 13-gate streaming instrumentation sequence → delegated to ring:dev-streaming-instrumentation (skill, not reviewer)
+    - Consumer-side tenant filtering → delegated to ring:multi-tenant-reviewer
+    - General lib-commons usage → delegated to ring:lib-commons-reviewer
 
     **Include a Standards Compliance section in your output** listing which standards were verified and any violations found.
 

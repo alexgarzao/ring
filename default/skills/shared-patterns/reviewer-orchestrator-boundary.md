@@ -28,7 +28,14 @@ This document defines the mandatory separation of responsibilities between revie
 │ • ring:security-reviewer     │          │ • ring:frontend-engineer            │
 │ • ring:test-reviewer         │          │                                 │
 │ • ring:nil-safety-reviewer   │          │                                 │
+│ • ring:consequences-reviewer │          │                                 │
 │ • ring:dead-code-reviewer    │          │                                 │
+│ • ring:performance-reviewer  │          │                                 │
+│ • ring:multi-tenant-reviewer │          │                                 │
+│ • ring:lib-commons-reviewer  │          │                                 │
+│ • ring:lib-observability-reviewer│      │                                 │
+│ • ring:lib-systemplane-reviewer│        │                                 │
+│ • ring:lib-streaming-reviewer│          │                                 │
 │                             │          │                                 │
 │ OUTPUT: Report              │          │ OUTPUT: Code changes            │
 │ ACTION: NONE                │          │ ACTION: Edit, Create, Delete    │
@@ -145,7 +152,7 @@ See [shared-patterns/reviewer-orchestrator-boundary.md](../skills/shared-pattern
 
 The `ring:dev-cycle` skill enforces this boundary at Gate 8 (Review):
 
-1. **Dispatch all 10 reviewers in parallel** (code, business-logic, security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons)
+1. **Dispatch all 13 reviewers in parallel** (code, business-logic, security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons, lib-observability, lib-systemplane, lib-streaming)
 2. **Collect structured reports** from each reviewer
 3. **If any reviewer returns FAIL:**
    - Extract issues from report

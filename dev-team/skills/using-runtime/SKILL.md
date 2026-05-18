@@ -1,15 +1,26 @@
 ---
 name: ring:using-runtime
-description: Dual-mode skill for lib-commons/v5/commons/runtime — the panic observability trident that turns silent goroutine deaths into production signal. Sweep Mode dispatches 6 parallel explorers to find naked goroutines, unobservable defer recover(), and missing panic-metric init. Reference Mode catalogs the API (SafeGo, RecoverWithPolicy, InitPanicMetrics) and framework integrations (Fiber, gRPC, RabbitMQ). Skip for non-Go or frontend code.
+description: Dual-mode skill for lib-observability/runtime — the panic observability trident that turns silent goroutine deaths into production signal. Sweep Mode dispatches 6 parallel explorers to find naked goroutines, unobservable defer recover(), and missing panic-metric init. Reference Mode catalogs the API (SafeGo, RecoverWithPolicy, InitPanicMetrics) and framework integrations (Fiber, gRPC, RabbitMQ). Skip for non-Go or frontend code.
 ---
 
 # ring:using-runtime
+
+## Moved from lib-commons
+
+The `runtime` package lived in `lib-commons` through v4 and the v5 shim period.
+Its canonical home is now **`github.com/LerianStudio/lib-observability/runtime`** (v1.0.0+).
+`lib-commons` v5 keeps a deprecated compatibility shim at
+`github.com/LerianStudio/lib-commons/v5/commons/runtime` that re-exports every symbol
+from lib-observability — existing imports keep compiling, but the shim is marked
+`Deprecated:` in package docs and will be removed in a future lib-commons major. New
+code MUST import from `lib-observability/runtime` directly; sweeps SHOULD also flag
+imports still pointing at the lib-commons shim as a follow-up migration.
 
 ## When to use
 Sweep mode:
 - "Sweep / audit panic handling"
 - "Find naked goroutines"
-- "Migrate this service to commons/runtime"
+- "Migrate this service to lib-observability/runtime"
 - "Are our defer recover() calls observable?"
 
 Reference mode:
@@ -23,12 +34,15 @@ Reference mode:
 - Working on frontend code
 
 ## Related
-**Similar:** ring:using-lib-commons, ring:using-assert
+**Parent:** ring:using-lib-observability (canonical home of the `runtime` package)
+**Similar:** ring:using-lib-commons (lifecycle / App glue still lives there), ring:using-assert
 
 
-Extends `ring:using-lib-commons` Angle 15 (Panic handling DIY) into 6 focused sub-angles
+Extends `ring:using-lib-observability` panic-handling coverage into 6 focused sub-angles
 with deeper detection patterns, full API reference, policy decision tree, and framework integrations.
-Use when panic handling is the primary concern or when Angle 15 surfaced significant findings.
+Also extends `ring:using-lib-commons` Angle 15 (Panic handling DIY) for codebases still
+on the v5 shim path. Use when panic handling is the primary concern or when the parent
+sweep surfaced significant findings.
 
 ## Mode Selection
 
@@ -54,15 +68,22 @@ Phase 4: Consolidated Report      → runtime-sweep-report.md + runtime-sweep-ta
 
 ## Phase 1: Version Reconnaissance
 
-1. Read `go.mod` — extract pinned version of `github.com/LerianStudio/lib-commons/vN`
-2. WebFetch `https://api.github.com/repos/LerianStudio/lib-commons/releases/latest` — extract `tag_name`
-3. Classify drift; emit `/tmp/runtime-version-report.json`
+1. Read `go.mod` — extract pinned version of `github.com/LerianStudio/lib-observability`
+   (canonical) AND any pinned `github.com/LerianStudio/lib-commons/vN` (shim path)
+2. WebFetch `https://api.github.com/repos/LerianStudio/lib-observability/releases/latest`
+   — extract `tag_name` for the canonical library
+3. If the target imports `lib-commons/v5/commons/runtime` (deprecated shim), record
+   `shim_import_detected: true` — this is itself a follow-up migration finding
+4. Classify drift; emit `/tmp/runtime-version-report.json`
 
 ## Phase 2: CHANGELOG Delta Analysis
 
-1. WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/CHANGELOG.md`
-2. Filter entries affecting `commons/runtime`
-3. Emit `/tmp/runtime-delta-report.json`
+1. WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-observability/main/CHANGELOG.md`
+2. Filter entries affecting the `runtime` package
+3. If `shim_import_detected` from Phase 1, also WebFetch
+   `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/CHANGELOG.md` and
+   filter for `commons/runtime` shim-deprecation entries
+4. Emit `/tmp/runtime-delta-report.json`
 
 ## Phase 3: Multi-Angle DIY Sweep
 

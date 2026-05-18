@@ -95,7 +95,7 @@ Orchestrator executes directly. Detect in parallel:
 2. lib-streaming:       grep "lib-streaming" go.mod
 3. HTTP framework:      grep -rn "gofiber/fiber\|labstack/echo\|gin-gonic" internal/ go.mod
 4. gRPC server:         grep -rn "grpc.NewServer" internal/
-5. RabbitMQ consumers:  grep -rn "lib-commons/v5/commons/rabbitmq" internal/
+5. RabbitMQ command consumers:  grep -rn "lib-commons/v5/commons/rabbitmq" internal/   # command-queue plumbing; eventable publish sites should migrate to lib-streaming
 6. Scheduled jobs:      grep -rn "robfig/cron\|time.NewTicker" internal/
 7. Webhook receivers:   grep -rn "webhook\|/hooks/" internal/
 8. Worker patterns:     grep -rn "commons.Launcher\|commons.App" internal/
