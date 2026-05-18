@@ -29,18 +29,20 @@ This module covers the foundational requirements for all Go projects.
 
 ---
 
-## Core Dependency: lib-commons (MANDATORY)
+## Core Dependencies: lib-commons + lib-observability (MANDATORY)
 
-All Lerian Studio Go projects **MUST** use the latest v5.x release of `lib-commons/v5` as the foundation library. This ensures consistency across all services.
+All Lerian Studio Go projects **MUST** use the latest v5.x release of `lib-commons/v5` as the foundation library for infrastructure (HTTP, server lifecycle, database connections, config loading, multi-tenancy, idempotency, security/TLS), and **MUST** use `lib-observability` for observability (logging, tracing, metrics, assertions, runtime panic handling, redaction, OTel constants). This ensures consistency across all services.
 
-### Required Import (lib-commons v5)
+> **Provenance**: Observability packages (`log`, `zap`, `tracing`, `metrics`, `assert`, `runtime`, `redaction`, `constants`) live in `github.com/LerianStudio/lib-observability` as of v1.0.0 — the `lib-commons/v5/commons/{log,zap,opentelemetry,metrics,assert,runtime}` shims are deprecated and MUST NOT be used in new code.
+
+### Required Imports (lib-commons v5 + lib-observability)
 
 ```go
 import (
     libCommons "github.com/LerianStudio/lib-commons/v5/commons"
-    libZap "github.com/LerianStudio/lib-commons/v5/commons/zap"           // Logger initialization (config/bootstrap only)
-    libLog "github.com/LerianStudio/lib-commons/v5/commons/log"           // Logger interface (services, routes, consumers)
-    libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"
+    libZap "github.com/LerianStudio/lib-observability/zap"               // Logger initialization (config/bootstrap only)
+    libLog "github.com/LerianStudio/lib-observability/log"               // Logger interface (services, routes, consumers)
+    libTracing "github.com/LerianStudio/lib-observability/tracing"      // Telemetry initialization and helpers
     libServer "github.com/LerianStudio/lib-commons/v5/commons/server"
     libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"
     libPostgres "github.com/LerianStudio/lib-commons/v5/commons/postgres"
@@ -49,21 +51,24 @@ import (
 )
 ```
 
-> **Note:** v5 uses `lib` prefix aliases (e.g., `libCommons`, `libZap`, `libLog`) to distinguish lib-commons packages from standard library and other imports.
+> **Note:** Both libraries use `lib` prefix aliases (e.g., `libCommons`, `libZap`, `libLog`, `libTracing`) to distinguish them from the standard library and other imports.
 
-### What lib-commons Provides
+### What lib-commons + lib-observability Provide
 
-| Package                 | Purpose                                                | Where Used                            |
-| ----------------------- | ------------------------------------------------------ | ------------------------------------- |
-| `commons`               | Core utilities, config loading, tracking context       | Everywhere                            |
-| `commons/zap`           | Logger initialization/configuration                    | **Config/bootstrap files only**       |
-| `commons/log`           | Logger interface (`log.Logger`) for logging operations | Services, routes, consumers, handlers |
-| `commons/postgres`      | PostgreSQL connection management, pagination           | Bootstrap, repositories               |
-| `commons/mongo`         | MongoDB connection management                          | Bootstrap, repositories               |
-| `commons/redis`         | Redis connection management                            | Bootstrap, repositories               |
-| `commons/opentelemetry` | OpenTelemetry initialization and helpers               | Bootstrap, middleware                 |
-| `commons/net/http`      | HTTP utilities, telemetry middleware, pagination       | Routes, handlers                      |
-| `commons/server`        | Server lifecycle with graceful shutdown                | Bootstrap                             |
+| Package                                 | Purpose                                                | Where Used                            |
+| --------------------------------------- | ------------------------------------------------------ | ------------------------------------- |
+| `lib-commons/v5/commons`                | Core utilities, config loading, tracking context       | Everywhere                            |
+| `lib-observability/zap`                 | Logger initialization/configuration                    | **Config/bootstrap files only**       |
+| `lib-observability/log`                 | Logger interface (`log.Logger`) for logging operations | Services, routes, consumers, handlers |
+| `lib-commons/v5/commons/postgres`       | PostgreSQL connection management, pagination           | Bootstrap, repositories               |
+| `lib-commons/v5/commons/mongo`          | MongoDB connection management                          | Bootstrap, repositories               |
+| `lib-commons/v5/commons/redis`          | Redis connection management                            | Bootstrap, repositories               |
+| `lib-observability/tracing`             | OpenTelemetry initialization and helpers               | Bootstrap, middleware                 |
+| `lib-observability/metrics`             | Metrics factory, OTel-backed counters/histograms       | Bootstrap, instrumentation            |
+| `lib-observability/assert`              | Runtime invariant assertions with observability        | Anywhere (services, repos, handlers)  |
+| `lib-observability/runtime`             | Panic recovery, `SafeGo`, panic metrics                | Anywhere spawning goroutines          |
+| `lib-commons/v5/commons/net/http`       | HTTP utilities, telemetry middleware, pagination       | Routes, handlers                      |
+| `lib-commons/v5/commons/server`         | Server lifecycle with graceful shutdown                | Bootstrap                             |
 
 ### ⛔ FORBIDDEN: Custom Utilities That Duplicate lib-commons (HARD GATE)
 
@@ -74,7 +79,7 @@ import (
 | Category       | lib-commons Provides                                 | FORBIDDEN to Create                    |
 | -------------- | ---------------------------------------------------- | -------------------------------------- |
 | **Logging**    | `libLog.Logger`, `libZap.NewLogger()`                | Custom logger, log wrapper, log helper |
-| **Telemetry**  | `libOpentelemetry.NewCore threeProvider()`, span helpers | Custom tracer, telemetry wrapper       |
+| **Telemetry**  | `libTracing.NewTelemetry()`, span helpers                | Custom tracer, telemetry wrapper       |
 | **HTTP**       | `libHTTP.NewRouter()`, middleware, response helpers  | Custom HTTP utils, response formatters |
 | **Config**     | `libCommons.SetConfigFromEnvVars()`                  | Custom config loader, env parser       |
 | **Server**     | `libServer.NewServer()`, graceful shutdown           | Custom server lifecycle                |
@@ -110,7 +115,7 @@ func NewLogger() *zap.Logger {
 package helpers
 
 func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
-    // DON'T DO THIS - use libOpentelemetry helpers
+    // DON'T DO THIS - use libTracing helpers from lib-observability
 }
 
 // ❌ FORBIDDEN: Custom config loader

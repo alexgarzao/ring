@@ -32,7 +32,7 @@ Load tasks from PM output and execute the lean backend cycle. Backend implementa
 | Gate | Skill to Load | Agent to Dispatch | Cadence | Mode |
 |------|---------------|-------------------|---------|------|
 | 0 | ring:dev-implementation | ring:backend-engineer-* | Per subtask | Write + Run |
-| 8 | ring:codereview | 10 reviewers in parallel | Per task | Run |
+| 8 | ring:codereview | 13 reviewers in parallel | Per task | Run |
 | 9 | ring:dev-validation | N/A (verification) | Per subtask | Run |
 
 Gate 0 includes TDD RED/GREEN, coverage threshold enforcement, docker-compose/local runtime updates, basic health/observability verification, and delivery verification. Do not dispatch separate QA, SRE, or DevOps gates as part of this cycle.
@@ -155,7 +155,7 @@ Convention: `feat|fix|test|chore(scope): description` — keep commits atomic pe
 
 A gate is complete ONLY when ALL components succeed:
 - Gate 0: TDD RED + GREEN + coverage ≥ 85% + all acceptance criteria tested + docker-compose/local runtime verified + delivery verification (all requirements delivered, 0 dead code)
-- Gate 8: ALL 10 reviewers pass. 9/10 = FAIL → re-run all 10.
+- Gate 8: ALL 13 reviewers pass. 12/13 = FAIL → re-run all 13.
 - Gate 9: Explicit "APPROVED" from user
 
 ## Severity of Issues

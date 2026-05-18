@@ -52,7 +52,30 @@ A stream is independent if: files don't import each other, fixes won't conflict,
 
 ## Phase 3: Parallel Agent Dispatch
 
-**Single message with multiple Task calls** — one `ring:general-purpose` agent per stream.
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the agents you intend to launch in this turn.
+- Count MUST equal the number of independent streams you identified in Phase 2.
+- If your dispatch count diverges from your stream count → STOP and reconcile against the Phase 2 grouping.
+- One agent per stream. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All stream agents leave in the SAME TURN, before reading any agent output.
+
+Forbidden sequences:
+- Dispatch agent 1 → read result → dispatch agent 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up agents conditioned on partial output
+- Loop sequentially over the stream list
+
+If you find yourself about to dispatch a stream agent in a turn AFTER any agent has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the phase INCOMPLETE rather than completing the trickle. (The verification loop in Phase 4 may dispatch a fresh round; that round is itself bound by the same rule.)
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all stream Task calls were emitted in that single turn. If fewer went out than scoped streams, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
+**Single turn with multiple Task calls** — one `ring:general-purpose` agent per stream.
 
 Each agent receives: scope (files/dirs), issues (file:line:col + message), constraints (from above).
 
