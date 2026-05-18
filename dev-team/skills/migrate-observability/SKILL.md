@@ -210,7 +210,8 @@ Migration rule:
   a second import for `github.com/LerianStudio/lib-observability/middleware`.
   Rewrite only deprecated observability middleware symbol qualifiers to the middleware alias.
 - Do not migrate response helpers, validation helpers, pagination helpers,
-  CORS/basic-auth helpers, ownership helpers, or any
+  CORS/basic-auth helpers, ownership helpers, `AuthGuard`,
+  `ClientIPMiddleware`, `FaultInjection`, `WithCORSLogger`, or any
   `commons/net/http` subpackage.
 
 ### Deprecated symbols inside commons root
