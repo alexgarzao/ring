@@ -374,7 +374,7 @@ func InitServers() (*Service, error) {
 
     // Initialize logger FIRST (zap package for initialization in bootstrap)
     logger, err := libZap.New(libZap.Config{
-        Environment:     libZap.Environment(cfg.Environment),
+        Environment:     libZap.Environment(cfg.EnvName),
         Level:           cfg.LogLevel,
         OTelLibraryName: cfg.OtelLibraryName,
     })
@@ -684,7 +684,7 @@ func InitServers() (*Service, error) {
     // 2. INITIALIZE LOGGER
     // Must be first after config - all subsequent components need logging
     logger, err := libZap.New(libZap.Config{
-        Environment:     libZap.Environment(cfg.Environment),
+        Environment:     libZap.Environment(cfg.EnvName),
         Level:           cfg.LogLevel,
         OTelLibraryName: cfg.OtelLibraryName,
     })
@@ -1416,4 +1416,3 @@ grep -rn "redis.NewClient" --include="*.go" -A 5 | grep -v "PoolSize"
 | "Client per request is clearer" | Client per request = socket exhaustion. | **Reuse HTTP clients** |
 
 ---
-

@@ -35,8 +35,8 @@ Reference mode:
 - **ring:dev-streaming-instrumentation** — end-to-end 13-gate orchestration that *implements* lib-streaming in a target service. Use that after `ring:streaming-event-mapping` has produced a validated `docs/streaming/instrumentation-map.json`. This skill is the **adoption/reference** counterpart — it does not own the implementation cycle.
 - **ring:streaming-event-mapping** — PM-side identification of eventable points; produces the catalog and instrumentation map this skill's REFERENCE MODE consumes.
 - **ring:using-lib-commons** — lib-streaming depends on lib-commons for circuit breaker, outbox repository, App lifecycle, runtime panic instrumentation, and assertions. The CB / outbox / runtime / assert API surface lives there.
-- **[[using-outbox]]** — `OutboxWriter`, `TransactionalOutboxWriter`, `WithOutboxTx`, and route-aware envelope replay live in the outbox skill. This skill points at the boundary but does NOT duplicate the writer / dispatcher API.
-- **[[using-lib-observability]]** — `log.Logger`, `metrics.MetricsFactory`, and `trace.Tracer` are owned there. Builder setters consume those types; this skill links rather than re-documents.
+- **`ring:using-outbox`** — `OutboxWriter`, `TransactionalOutboxWriter`, `WithOutboxTx`, and route-aware envelope replay live in the outbox skill. This skill points at the boundary but does NOT duplicate the writer / dispatcher API.
+- **`ring:using-lib-observability`** — `log.Logger`, `metrics.MetricsFactory`, and `trace.Tracer` are owned there. Builder setters consume those types; this skill links rather than re-documents.
 
 ## Distinction: adoption/reference vs end-to-end implementation
 
@@ -145,7 +145,7 @@ If no findings: write file with empty findings array and summary "No DIY pattern
 
 - Internal command queues on `lib-commons/v5/commons/rabbitmq` are NOT in scope. lib-streaming and the commons RabbitMQ primitive are orthogonal; neither deprecates the other.
 - Pure consumers (cloudevents-sdk-go + franz-go consumer groups) are NOT in scope — lib-streaming is producer-only.
-- Outbox writer / `WithOutboxTx` / `RegisterOutboxRelay` findings belong in the [[using-outbox]] sweep, not here. Flag them as `cross-skill: using-outbox` rather than including them in the angle output.
+- Outbox writer / `WithOutboxTx` / `RegisterOutboxRelay` findings belong in the `ring:using-outbox` sweep, not here. Flag them as `cross-skill: using-outbox` rather than including them in the angle output.
 
 ## Phase 4: Consolidated Report
 
@@ -158,7 +158,7 @@ Emit:
 2. /tmp/libstreaming-sweep-tasks.json — one task per DIY pattern cluster (same file/package = one task)
 
 MUST NOT invent findings. MUST NOT omit explorer findings. MUST NOT reclassify severity without justification.
-MUST NOT merge cross-skill outbox findings into this report — surface them as a separate "Cross-skill handoff" section pointing to [[using-outbox]].
+MUST NOT merge cross-skill outbox findings into this report — surface them as a separate "Cross-skill handoff" section pointing to `ring:using-outbox`.
 ```
 
 Surface report path + task count to the user; if adoption is feasible (lib-commons v5 already pinned, target service has a real business-event surface), offer handoff to `ring:dev-streaming-instrumentation`. If the service has no validated instrumentation map yet, the handoff is to `ring:streaming-event-mapping` first.
@@ -307,7 +307,7 @@ if !cfg.Enabled || len(cfg.Brokers) == 0 {
 | `OutboxRepository(outbox.OutboxRepository)` | lib-commons outbox repo | Most common path. Adapts the lib-commons outbox surface to lib-streaming's writer boundary |
 | `OutboxWriter(OutboxWriter)` | custom writer | Last-call-wins with `OutboxRepository` |
 
-The outbox semantics, transactional writer, envelope schema, and replay path are documented in **[[using-outbox]]** — that skill is the canonical source. This skill only flags the Builder boundary.
+The outbox semantics, transactional writer, envelope schema, and replay path are documented in **`ring:using-outbox`** — that skill is the canonical source. This skill only flags the Builder boundary.
 
 ### Partition key override
 
@@ -410,7 +410,7 @@ Methods reachable only via type-assertion to `*streaming.Producer`:
 | `RunContext(ctx context.Context, launcher *commons.Launcher) error` | Bootstrap with caller-owned ctx |
 | `CloseContext(ctx context.Context) error` | Initiates shutdown even when caller ctx is already canceled; flush + transport close run under fresh producer-owned deadlines |
 | `Healthy(ctx context.Context) error` | Readiness probe |
-| `RegisterOutboxRelay(registry *outbox.HandlerRegistry) error` | Wire the route-aware outbox replay handler — see [[using-outbox]] |
+| `RegisterOutboxRelay(registry *outbox.HandlerRegistry) error` | Wire the route-aware outbox replay handler — see `ring:using-outbox` |
 | `Descriptor(base PublisherDescriptor) (PublisherDescriptor, error)` | Returns the validated descriptor with the per-process `ProducerID` populated. Feed into `BuildManifest` |
 
 `Close` is idempotent: first call drains every registered target adapter under `STREAMING_CLOSE_TIMEOUT_S`; subsequent calls return nil. After Close, `Emit` returns `ErrEmitterClosed` synchronously before any I/O.
