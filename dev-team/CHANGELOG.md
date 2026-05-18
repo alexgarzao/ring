@@ -10,6 +10,7 @@
 - Added dual-mode targeting: deprecated-shim mode still uses lib-commons `// Deprecated:` notices as evidence, while removed-api/break-fix mode migrates known observability imports/symbols by static source analysis when lib-commons has already removed the source APIs. Hard gates now depend on lib-observability target APIs, not source-side deprecation notices.
 - Added pre-removal reference mode so the skill can use the lib-commons ref immediately before the removal commit as source evidence, then fall through to static break-fix migration when the target app has already bumped to the removal commit.
 - Pinned stable migration baselines to lib-commons `v5.2.0` and lib-observability `v1.0.0`.
+- Added explicit dependency-blocker handling for transitive modules that still import removed lib-commons observability packages after the target application bumps to a removal release.
 
 ## [1.56.1] — 2026-04-17
 

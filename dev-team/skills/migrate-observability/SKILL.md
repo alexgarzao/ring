@@ -96,6 +96,15 @@ Migrate safe source files, run build validation, and if a file fails only
 because a migrated value crosses a remaining lib-commons typed boundary, revert
 that file/family to lib-commons and report it as a manual blocker.
 
+Also check transitive dependencies after bumping lib-commons to a removal
+release. If `go build` fails from `$GOMODCACHE` with errors such as
+`no required module provides package github.com/LerianStudio/lib-commons/v5/commons/log`,
+`commons/zap`, or `commons/opentelemetry`, the target repo was
+migrated as far as local source allows, but one of its dependencies still
+depends on removed lib-commons observability packages. Report the dependency
+module and package as a manual migration blocker; do not try to patch module
+cache files or vendor ad-hoc replacements into the application.
+
 Packages that are NOT deprecated in lib-commons (e.g. non-observability
 `commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
 
@@ -640,6 +649,11 @@ go test ./...
 If build fails:
 1. Read each compilation error
 2. Check for:
+   - Transitive dependency failures from `$GOMODCACHE` importing removed
+     `lib-commons/v5/commons/log`, `zap`, or
+     `opentelemetry` packages. These are dependency blockers. Report the
+     dependency module/version and do not modify application source to work
+     around them.
    - Indirect API differences between shim and lib-observability (rare)
    - Missing symbols that the shim exposed but lib-observability doesn't (report as PARTIAL)
    - Type mismatches at remaining lib-commons boundaries, especially
