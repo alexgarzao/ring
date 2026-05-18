@@ -55,15 +55,18 @@ This skill replaces imports/usages of lib-commons observability APIs
 with their canonical lib-observability equivalents.
 
 **Stable target baseline for this migration:**
+- `github.com/LerianStudio/lib-commons/v5` >= `v5.2.0`
 - `github.com/LerianStudio/lib-observability` >= `v1.0.0`
 
-`v1.0.0` is the first stable lib-observability release. Do not use beta tags
-for new migrations unless the target application is intentionally pinned to a
-beta train.
+`lib-commons/v5.2.0` is the first stable lib-commons release where the
+deprecated observability shims are removed. `lib-observability/v1.0.0` is the
+first stable lib-observability release. Do not use beta tags for new migrations
+unless the target application is intentionally pinned to a beta train.
 
 **Known lib-commons observability removal refs:**
 - Removal commit: `fe1db9e60ac9e959de4288208b6cf65f7bbfe439`
   (`refactor: remove deprecated commons observability shims`)
+- First stable removal release: `v5.2.0`
 - Pre-removal reference: `fe1db9e60ac9e959de4288208b6cf65f7bbfe439^`
   (currently `a33b160ac165cff8b4ddf5c69d8dbb80a10868f6`)
 
