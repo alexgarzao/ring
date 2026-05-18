@@ -173,6 +173,9 @@ Migration rule:
   and call sites remain `libOpentelemetry.X`.
 - If the old import was unaliased, replace the import path and rewrite
   `opentelemetry.X` call sites to `tracing.X`.
+- Qualifier rewrites must apply only to Go selector expressions in the file
+  body. Never rewrite module import paths such as `go.opentelemetry.io/...`,
+  comments, or string literals to `go.tracing.io/...`.
 - Helper-only files may migrate independently. These include calls such as
   `HandleSpanError`, `HandleSpanBusinessErrorEvent`,
   `SetSpanAttributesFromValue`, `InjectHTTPContext`, and queue/header

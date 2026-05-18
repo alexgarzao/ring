@@ -11,6 +11,7 @@
 - Added pre-removal reference mode so the skill can use the lib-commons ref immediately before the removal commit as source evidence, then fall through to static break-fix migration when the target app has already bumped to the removal commit.
 - Pinned stable migration baselines to lib-commons `v5.2.0` and lib-observability `v1.0.0`.
 - Added explicit dependency-blocker handling for transitive modules that still import removed lib-commons observability packages after the target application bumps to a removal release.
+- Tightened root opentelemetry qualifier migration so agents rewrite selector expressions only, never `go.opentelemetry.io` module import paths.
 
 ## [1.56.1] — 2026-04-17
 
