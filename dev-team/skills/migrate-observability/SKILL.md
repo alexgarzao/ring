@@ -13,12 +13,16 @@ description: |
       packages/symbols (sources absent, `go list` or `go build` fails on the
       removed imports). The skill still migrates known source imports/symbols
       by static source analysis of the application repo.
+      It also applies the companion dependency moves required by the same
+      lib-commons removal train: stable lib-streaming/lib-systemplane bumps and
+      direct systemplane imports moved out of lib-commons.
   Targets are gated on the lib-observability target API, not on the presence of
   source-side Deprecated notices. Adds lib-observability to go.mod and validates
   the build. Scope is strictly observability: deprecated/removed observability
   packages, commons/net/http observability middleware/span symbols, root commons
-  observability context helpers, and commons/opentelemetry. Does NOT touch
-  streaming, infrastructure clients, or general commons helpers.
+  observability context helpers, commons/opentelemetry, and direct
+  commons/systemplane imports. Does NOT touch infrastructure clients or general
+  commons helpers.
 ---
 
 # Migrate lib-commons Observability APIs to lib-observability
@@ -59,14 +63,19 @@ with their canonical lib-observability equivalents.
 - `github.com/LerianStudio/lib-observability` >= `v1.0.0`
 - `github.com/LerianStudio/lib-auth/v2` >= `v2.8.0` when present
 - `github.com/LerianStudio/lib-license-go/v2` >= `v2.3.5` when present
+- `github.com/LerianStudio/lib-streaming` >= `v1.3.1` when present
+- `github.com/LerianStudio/lib-systemplane` >= `v1.0.0` when systemplane is used
 
 `lib-commons/v5.2.0` is the first stable lib-commons release where the
 deprecated observability shims are removed. `lib-observability/v1.0.0` is the
 first stable lib-observability release. `lib-auth/v2.8.0` and
 `lib-license-go/v2.3.5` are the first stable companion releases known to be
-compatible with the removed lib-commons observability APIs. Do not use beta
-tags for new migrations unless the target application is intentionally pinned
-to a beta train.
+compatible with the removed lib-commons observability APIs. `lib-streaming/v1.3.1`
+is the first stable streaming release in this validation set that no longer
+imports removed lib-commons observability packages. `lib-systemplane/v1.0.0`
+is the stable package destination for direct `commons/systemplane` imports
+removed from lib-commons. Do not use beta tags for new migrations unless the
+target application is intentionally pinned to a beta train.
 
 **Known lib-commons observability removal refs:**
 - Removal commit: `fe1db9e60ac9e959de4288208b6cf65f7bbfe439`
@@ -114,14 +123,18 @@ stable companion bumps when the modules are present:
 GONOSUMDB="github.com/LerianStudio/*" \
 GOPRIVATE="github.com/LerianStudio/*" \
   go get github.com/LerianStudio/lib-auth/v2@v2.8.0 \
-         github.com/LerianStudio/lib-license-go/v2@v2.3.5
+         github.com/LerianStudio/lib-license-go/v2@v2.3.5 \
+         github.com/LerianStudio/lib-streaming@v1.3.1 \
+         github.com/LerianStudio/lib-systemplane@v1.0.0
 go mod tidy
 ```
 
 If the dependency is outside that stable set (for example `lib-auth/v3`,
-`lib-streaming`, or `systemplane` packages removed from lib-commons), report
-the dependency module and package as a manual migration blocker; do not try to
-patch module cache files or vendor ad-hoc replacements into the application.
+`systemplane` packages removed from lib-commons, or a `lib-streaming` version
+older than `v1.3.1`), first apply the known companion bumps and direct
+systemplane import move. Then report only the remaining module/package as a
+manual blocker; do not try to patch module cache files or vendor ad-hoc
+replacements into the application.
 
 Packages that are NOT deprecated in lib-commons (e.g. non-observability
 `commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
@@ -307,7 +320,7 @@ Migration rule:
 | `lib-commons/v5/commons/streaming` | Kafka/CloudEvents producer — NOT deprecated; uses lib-observability internally |
 | `lib-commons/v5/commons/postgres`, `mongo`, `redis`, `rabbitmq` | Infrastructure clients — NOT deprecated |
 | `lib-commons/v5/commons/multitenancy` | Multi-tenant dispatch — NOT deprecated |
-| `lib-commons/v5/commons/systemplane` | Runtime config client — NOT deprecated |
+| `lib-commons/v5/commons/systemplane` | Removed from lib-commons v5.2.0 — migrate direct imports to `lib-systemplane` |
 | `lib-commons/v5/commons` non-observability helpers | Root package helpers such as AppConfig, environment, OS, security, pointers, string/time utilities — NOT deprecated. Only observability context helpers migrate. |
 
 ## Step 1: Validate Input
@@ -469,14 +482,16 @@ Migration rule:
      GONOSUMDB="github.com/LerianStudio/*" \
      GOPRIVATE="github.com/LerianStudio/*" \
        go get github.com/LerianStudio/lib-auth/v2@v2.8.0 \
-              github.com/LerianStudio/lib-license-go/v2@v2.3.5
+              github.com/LerianStudio/lib-license-go/v2@v2.3.5 \
+              github.com/LerianStudio/lib-streaming@v1.3.1 \
+              github.com/LerianStudio/lib-systemplane@v1.0.0
 
    Do this before final tidy/build validation. These bumps prevent false manual
    blockers where the application source migrated correctly but older stable
    transitive modules still import removed lib-commons observability packages.
    Do not invent versions for other major lines. If the repo depends on
-   lib-auth/v3 or lib-streaming and those modules still import removed
-   lib-commons packages, report them as manual dependency blockers.
+   lib-auth/v3 and that module still imports removed lib-commons packages,
+   report it as a manual dependency blocker.
 ```
 
 ---
@@ -500,6 +515,8 @@ for example /v2, /v4, /v5):
   lib-commons[/vN]/commons/opentelemetry/metrics"
   lib-commons[/vN]/commons/opentelemetry/constants"
   lib-commons[/vN]/commons/opentelemetry/redaction"
+  lib-commons[/vN]/commons/systemplane"
+  lib-commons[/vN]/commons/systemplane/admin"
 
 SYMBOL-LEVEL MIGRATE targets (only when used from lib-commons[/vN]/commons/net/http):
   RequestInfo
@@ -543,7 +560,6 @@ DO NOT MIGRATE targets (not deprecated — skip silently):
   lib-commons[/vN]/commons/redis"
   lib-commons[/vN]/commons/rabbitmq"
   lib-commons[/vN]/commons/multitenancy"
-  lib-commons[/vN]/commons/systemplane"
   lib-commons[/vN]/commons"                 ← keep unless the file uses observability context helper symbols from it
 
 For each found import, record:
@@ -644,7 +660,13 @@ For each file identified in Step 2:
 7. For root commons observability context helpers, rewrite only deprecated
    observability call sites to the lib-observability import alias. Preserve the
    lib-commons root import when the file still uses non-observability commons helpers.
-8. Write the updated file
+8. For direct systemplane imports removed from lib-commons v5.2.0, move:
+   - `github.com/LerianStudio/lib-commons/v5/commons/systemplane` →
+     `github.com/LerianStudio/lib-systemplane`
+   - `github.com/LerianStudio/lib-commons/v5/commons/systemplane/admin` →
+     `github.com/LerianStudio/lib-systemplane/admin`
+   Preserve import aliases and call sites.
+9. Write the updated file
 </dispatch_required>
 
 For package-level `commons/log`, `commons/zap`, `commons/runtime`, and
