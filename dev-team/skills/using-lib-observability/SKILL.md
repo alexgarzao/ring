@@ -69,6 +69,29 @@ If the target does not depend on `lib-observability` directly but depends on `li
 
 ## Phase 2: Multi-Angle DIY Sweep
 
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the explorers you intend to launch in this turn.
+- Count MUST equal 5.
+- If count < 5 → STOP. Do not partial-dispatch. Reconcile against the 5 angles below and try again.
+- The 5 angles are the canonical sweep. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All 5 explorers leave in the SAME TURN, before reading any explorer output.
+
+Forbidden sequences:
+- Dispatch explorer 1 → read result → dispatch explorer 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up explorers conditioned on partial output
+- Loop sequentially over the angle list
+
+If you find yourself about to dispatch an explorer in a turn AFTER any explorer has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the phase INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all 5 Task calls were emitted in that single turn. If fewer than 5 went out, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
 Dispatch all 5 explorer angles in **one batch** (`subagent_type: ring:codebase-explorer`).
 
 Per-explorer dispatch prompt:

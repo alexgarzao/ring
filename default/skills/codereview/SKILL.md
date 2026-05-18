@@ -51,7 +51,7 @@ Dispatch all 13 reviewer subagents in **parallel** for fast, comprehensive feedb
 | 12 | `ring:lib-systemplane-reviewer` | lib-systemplane adoption: hot-reloadable config, tenant-scoped knobs, admin authorizer, v4 residue |
 | 13 | `ring:lib-streaming-reviewer` | lib-streaming adoption: event publishers, outbox writer, CloudEvents, manifest |
 
-**Core principle:** All 13 reviewers run simultaneously in a single message with 13 Task calls.
+**Core principle:** All 13 reviewers run simultaneously in a single turn with 13 Task calls.
 
 ## Role Clarification
 
@@ -72,7 +72,30 @@ Track: unit_id, base/head SHA, reviewer verdicts for all 13 reviewers, and aggre
 
 ## Step 3: Dispatch All 13 Reviewers in Parallel
 
-**⛔ ALL 13 dispatched in a SINGLE message with 13 Task calls.**
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the reviewers you intend to launch in this turn.
+- Count MUST equal 13.
+- If count < 13 → STOP. Do not partial-dispatch. Reconcile against the 13 reviewers listed in the Reviewers table above and try again.
+- The 13 reviewers are the canonical pool. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All 13 reviewers leave in the SAME TURN, before reading any reviewer output.
+
+Forbidden sequences:
+- Dispatch reviewer 1 → read result → dispatch reviewer 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up reviewers conditioned on partial output
+- Loop sequentially over the reviewer list
+
+If you find yourself about to dispatch a reviewer in a turn AFTER any reviewer has already returned a result → STOP. You violated parallel dispatch. Report the violation to the user and mark the gate INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all 13 Task calls were emitted in that single turn. If fewer than 13 went out, the gate did NOT execute correctly. Mark the run INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
+**⛔ ALL 13 dispatched in a SINGLE turn with 13 Task calls.**
 
 Read `reviewers/dispatch-prompts.md` for the full prompt templates for each reviewer. Inject:
 - Task-level scope header (when `scope=task`)

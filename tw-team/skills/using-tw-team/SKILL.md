@@ -62,7 +62,7 @@ The ring-tw-team plugin provides specialized agents for technical documentation.
 
 ## Dispatching Specialists
 
-**Parallel dispatch** for comprehensive documentation (single message, multiple Tasks):
+**Parallel dispatch** for comprehensive documentation (single turn, multiple Tasks):
 
 ```
 Task #1: functional-writer (write the guide)
@@ -72,6 +72,10 @@ Task #2: api-writer (write API reference)
 Then:
 Task #3: docs-reviewer (review both)
 ```
+
+### ⛔ MUST NOT trickle-dispatch
+
+Tasks #1 and #2 leave in the SAME TURN, before reading either's output. Forbidden: dispatch #1 → read result → dispatch #2. If you find yourself about to dispatch #2 in a turn AFTER #1 has already returned → STOP, report the violation, and re-dispatch both together. Task #3 runs only after both #1 and #2 complete — that sequencing is intentional; the trickle inside the parallel pair is not.
 
 ---
 

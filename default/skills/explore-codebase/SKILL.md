@@ -48,7 +48,30 @@ Extract from user request: core subject, context/intent, depth needed. Set explo
 
 ## Phase 1: Discovery Pass
 
-**Dispatch 3-4 discovery agents in a SINGLE message (parallel):**
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the discovery agents you intend to launch in this turn.
+- Count MUST equal the number of discovery perspectives you scoped (typically 3-4: Architecture, Components, Layers, Organization).
+- If your dispatch count diverges from your scoped count → STOP and reconcile.
+- No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All discovery agents leave in the SAME TURN, before reading any agent output.
+
+Forbidden sequences:
+- Dispatch agent 1 → read result → dispatch agent 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up agents conditioned on partial output
+- Loop sequentially over the discovery angles
+
+If you find yourself about to dispatch a discovery agent in a turn AFTER any agent has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the phase INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all scoped Task calls were emitted in that single turn. If fewer went out than scoped, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
+**Dispatch 3-4 discovery agents in a SINGLE turn (parallel):**
 
 **Architecture Discovery:** Find pattern (Hexagonal, Layered, Microservices, Monolith, etc.). Evidence: top-level directory structure, layer separation, file paths. Output: pattern name + confidence + ASCII diagram.
 
@@ -68,7 +91,30 @@ Extract from user request: core subject, context/intent, depth needed. Set explo
 
 ## Phase 2: Deep Dive Pass
 
-**Dispatch N adaptive agents in a SINGLE message (parallel).** One agent per discovered perspective.
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the deep-dive agents you intend to launch in this turn.
+- Count MUST equal the number of perspectives discovered in Phase 1.
+- If your dispatch count diverges from your scoped count → STOP and reconcile.
+- One agent per discovered perspective. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All deep-dive agents leave in the SAME TURN, before reading any agent output.
+
+Forbidden sequences:
+- Dispatch agent 1 → read result → dispatch agent 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up agents conditioned on partial output
+- Loop sequentially over the perspective list
+
+If you find yourself about to dispatch a deep-dive agent in a turn AFTER any agent has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the phase INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all scoped Task calls were emitted in that single turn. If fewer went out than scoped, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
+**Dispatch N adaptive agents in a SINGLE turn (parallel).** One agent per discovered perspective.
 
 Each agent prompt includes:
 - Discovered context (architecture, component responsibility, location)
