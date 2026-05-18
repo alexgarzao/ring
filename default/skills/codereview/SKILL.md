@@ -95,6 +95,16 @@ If you find yourself about to dispatch a reviewer in a turn AFTER any reviewer h
 
 After the dispatch turn, verify all 13 Task calls were emitted in that single turn. If fewer than 13 went out, the gate did NOT execute correctly. Mark the run INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
 
+### Parallel dispatch — atomic batch
+
+Emit all 13 Task calls in a SINGLE TURN, as one atomic batch.
+
+**If your runtime exposes a `multi_tool_use.parallel` wrapper**, use it to dispatch the complete pool in one wrapped invocation. This is the canonical fan-out mechanism on OpenAI-style tool envelopes and on certain Anthropic SDK consumers — naming it explicitly activates parallel emission on runtimes where trickle-dispatch is the default behavior.
+
+**If your runtime emits parallel tool_use blocks natively** (Claude Code with Claude models), `multi_tool_use.parallel` may not be needed — but naming it is harmless and serves as an enforcement anchor.
+
+The STOP-CHECK, anti-trickle, and self-verify guards above remain binding regardless of which mechanism your runtime uses.
+
 **⛔ ALL 13 dispatched in a SINGLE turn with 13 Task calls.**
 
 Read `reviewers/dispatch-prompts.md` for the full prompt templates for each reviewer. Inject:
