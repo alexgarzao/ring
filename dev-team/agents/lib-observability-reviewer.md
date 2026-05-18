@@ -1,7 +1,6 @@
 ---
 name: ring:lib-observability-reviewer
 description: Reviews correct usage of Lerian lib-observability packages (tracing, metrics, log, zap, runtime, assert, constants, redaction) and flags raw OTEL/Prometheus/zap/slog setups, hand-rolled recover/redaction, untraced boundaries, and deprecated lib-commons observability shims. Runs in parallel with other reviewers.
-model: inherit
 ---
 
 # lib-observability Reviewer

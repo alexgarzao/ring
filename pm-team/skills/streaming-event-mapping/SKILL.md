@@ -134,6 +134,29 @@ Dispatch `ring:codebase-explorer` with Pass 1 output to produce `docs/streaming/
 
 ## Gate 3: Pass 3 — Mark (Parallel)
 
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the explorers you intend to launch in this turn.
+- Count MUST equal the number of segments identified in Gate 2.
+- If your dispatch count diverges from the Gate 2 segment count → STOP and reconcile.
+- One explorer per segment. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All segment explorers leave in the SAME TURN, before reading any explorer output.
+
+Forbidden sequences:
+- Dispatch segment 1 → read result → dispatch segment 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up explorers conditioned on partial output
+- Loop sequentially over the segment list
+
+If you find yourself about to dispatch an explorer in a turn AFTER any explorer has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the gate INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all segment Task calls were emitted in that single turn. If fewer went out than the Gate 2 segment count, the gate did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
 For EACH segment from Gate 2, dispatch `ring:codebase-explorer` IN PARALLEL. Each outputs `docs/streaming/_pass3-{segment_name}.json`.
 
 Per-segment JSON shape:

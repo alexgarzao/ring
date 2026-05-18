@@ -87,6 +87,29 @@ Phase 4: Consolidated Report      → runtime-sweep-report.md + runtime-sweep-ta
 
 ## Phase 3: Multi-Angle DIY Sweep
 
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the explorers you intend to launch in this turn.
+- Count MUST equal 6.
+- If count < 6 → STOP. Do not partial-dispatch. Reconcile against the 6 angles below and try again.
+- The 6 angles are the canonical sweep. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All 6 explorers leave in the SAME TURN, before reading any explorer output.
+
+Forbidden sequences:
+- Dispatch explorer 1 → read result → dispatch explorer 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up explorers conditioned on partial output
+- Loop sequentially over the angle list
+
+If you find yourself about to dispatch an explorer in a turn AFTER any explorer has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the phase INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all 6 Task calls were emitted in that single turn. If fewer than 6 went out, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
 Dispatch all 6 explorer angles in **one parallel batch**. Wait for all before Phase 4.
 
 **Per-explorer dispatch** (`subagent_type: ring:codebase-explorer`):

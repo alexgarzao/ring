@@ -100,6 +100,29 @@ Dispatch all 8 explorer angles in **2 batches** (4+4). Wait for each batch befor
 | 1 | 1-4 | Raw transport SDKs (franz-go / sarama / amqp091 / watermill) |
 | 2 | 5-8 | Cross-cutting concerns (AWS SDKs / circuit breakers / manifests / CloudEvents headers) |
 
+### ⛔ STOP-CHECK BEFORE DISPATCH (each batch)
+
+Before emitting any Task call in a batch, count the explorers you intend to launch in this turn.
+- Count MUST equal 4 (each batch is 4 explorers).
+- If count < 4 → STOP. Do not partial-dispatch. Reconcile against the batch row above and try again.
+- No substitutions, no omissions within a batch.
+
+### ⛔ MUST NOT trickle-dispatch within a batch
+
+All 4 explorers in a batch leave in the SAME TURN, before reading any explorer output.
+
+Forbidden sequences:
+- Dispatch explorer 1 → read result → dispatch explorer 2
+- Dispatch a subset of the batch → wait → dispatch the rest
+- Dispatch follow-up explorers conditioned on partial output
+- Loop sequentially over the batch's angle list
+
+If you find yourself about to dispatch an explorer in a turn AFTER any explorer in the SAME batch has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the batch INCOMPLETE rather than completing the trickle. (Sequential batch ordering is intentional; trickle within a batch is not.)
+
+### Self-verify after dispatch
+
+After each batch's dispatch turn, verify all 4 Task calls were emitted in that single turn. If fewer than 4 went out, the batch did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial batch.
+
 **Per-explorer dispatch** (`subagent_type: ring:codebase-explorer`):
 
 ```

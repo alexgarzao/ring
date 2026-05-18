@@ -73,7 +73,7 @@ IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 | Code review | All 13 reviewers via ring:codereview skill |
 | Implementation plan document | ring:write-plan |
 
-**Ring reviewers: always parallel in a single message with multiple Task calls.**
+**Ring reviewers: always parallel in a single turn with multiple Task calls.**
 
 ## Pre-Action Checkpoint (before every Read/Grep/Glob/Bash)
 

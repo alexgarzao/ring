@@ -80,6 +80,29 @@ Dispatch all 22 explorer angles in **3 batches** (8+8+6). Wait for each batch be
 | 2 | 9–16 | Ergonomics + security + observability-shim detection |
 | 3 | 17–22 | Resilience + multi-tenant + utilities |
 
+### ⛔ STOP-CHECK BEFORE DISPATCH (each batch)
+
+Before emitting any Task call in a batch, count the explorers you intend to launch in this turn.
+- Count MUST equal the batch size declared above (8, 8, or 6).
+- If your dispatch count diverges from the batch size → STOP and reconcile against the batch row.
+- No substitutions, no omissions within a batch.
+
+### ⛔ MUST NOT trickle-dispatch within a batch
+
+All explorers in a batch leave in the SAME TURN, before reading any explorer output.
+
+Forbidden sequences:
+- Dispatch explorer 1 → read result → dispatch explorer 2
+- Dispatch a subset of the batch → wait → dispatch the rest
+- Dispatch follow-up explorers conditioned on partial output
+- Loop sequentially over the batch's angle list
+
+If you find yourself about to dispatch an explorer in a turn AFTER any explorer in the SAME batch has already returned a result → STOP. You violated parallel dispatch. Report the violation and mark the batch INCOMPLETE rather than completing the trickle. (Sequential batch ordering is intentional; trickle within a batch is not.)
+
+### Self-verify after dispatch
+
+After each batch's dispatch turn, verify all batched Task calls were emitted in that single turn. If fewer went out than the batch size, the batch did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial batch.
+
 > **Observability angles (14, 15, 16) — scope shift:** these angles still run as part of this sweep, but their **detection logic now targets deprecated lib-commons shim imports** in addition to raw DIY. The canonical replacement is `lib-observability/*`, NOT `commons/zap`, `commons/runtime`, `commons/assert`. For a deep, dedicated audit of the observability layer, dispatch [[using-lib-observability]] (top-level) or [[using-tracing]] / [[using-runtime]] / [[using-assert]] instead — those produce richer findings than the breadth-first single-angle sweep here.
 
 **Per-explorer dispatch** (`subagent_type: ring:codebase-explorer`):
