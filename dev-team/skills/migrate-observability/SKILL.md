@@ -136,6 +136,14 @@ systemplane import move. Then report only the remaining module/package as a
 manual blocker; do not try to patch module cache files or vendor ad-hoc
 replacements into the application.
 
+Known repo-specific dependency drift:
+- `matcher` may depend on `github.com/LerianStudio/lib-auth/v3` as a
+  pseudo-version even though there is no stable lib-auth v3 release in this
+  migration train. If that pseudo-version still imports removed lib-commons
+  observability packages, do not rewrite it automatically. Report it as a
+  dependency blocker and ask the executor whether they want to move matcher back
+  to `github.com/LerianStudio/lib-auth/v2@v2.8.0` for this migration.
+
 Packages that are NOT deprecated in lib-commons (e.g. non-observability
 `commons/net/http` helpers, `commons/streaming`) are explicitly out of scope.
 
@@ -491,7 +499,10 @@ Migration rule:
    transitive modules still import removed lib-commons observability packages.
    Do not invent versions for other major lines. If the repo depends on
    lib-auth/v3 and that module still imports removed lib-commons packages,
-   report it as a manual dependency blocker.
+   report it as a manual dependency blocker. For matcher specifically, ask the
+   executor whether they want to replace the lib-auth/v3 pseudo-version with
+   github.com/LerianStudio/lib-auth/v2@v2.8.0; do not apply that major-path
+   change without explicit confirmation.
 ```
 
 ---
