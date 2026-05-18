@@ -61,6 +61,17 @@ with their canonical lib-observability equivalents.
 for new migrations unless the target application is intentionally pinned to a
 beta train.
 
+**Known lib-commons observability removal refs:**
+- Removal commit: `fe1db9e60ac9e959de4288208b6cf65f7bbfe439`
+  (`refactor: remove deprecated commons observability shims`)
+- Pre-removal reference: `fe1db9e60ac9e959de4288208b6cf65f7bbfe439^`
+  (currently `a33b160ac165cff8b4ddf5c69d8dbb80a10868f6`)
+
+Use the pre-removal reference as the default source-evidence ref when the
+effective lib-commons dependency has already removed the deprecated shims and
+the user did not provide `lib_commons_pre_removal_ref`. That ref still contains
+the `Deprecated:` notices while using lib-observability types internally.
+
 **Targeting strategy:** migrate known observability APIs when the target API
 exists in the effective lib-observability version. Source-side `Deprecated:`
 notices are preferred evidence. Read them from the effective lib-commons version
@@ -284,22 +295,30 @@ Migration rule:
    deprecated lib-commons imports may still exist. Continue to Step 2 discovery.
    If Step 2 finds zero deprecated imports, report "Migration already complete.
    No deprecated lib-commons observability imports found." and exit PASS.
-5. Optional source evidence — resolve pre-removal lib-commons ref when known:
+5. Source evidence — resolve pre-removal lib-commons ref:
 
    If the user provides `lib_commons_pre_removal_ref` (commit, tag, branch, or
    `<removal_commit>^`), inspect lib-commons at that ref for source-side
-   `Deprecated:` notices. This is the preferred source map after the removal
-   PR lands because the effective app dependency may already be missing the
-   source files.
+   `Deprecated:` notices.
+
+   If the user does not provide a ref and the effective lib-commons dependency
+   is missing the deprecated observability source files, default to:
+     `fe1db9e60ac9e959de4288208b6cf65f7bbfe439^`
+
+   This is the preferred source map after the removal PR lands because the
+   effective app dependency may already be missing the source files.
 
    Example:
-     LIB_COMMONS_PRE_REMOVAL_REF="<commit-before-removal>"
+     LIB_COMMONS_PRE_REMOVAL_REF="${lib_commons_pre_removal_ref:-fe1db9e60ac9e959de4288208b6cf65f7bbfe439^}"
      LIB_COMMONS_PRE_REMOVAL_DIR=$(mktemp -d)
      git clone --depth 1 https://github.com/LerianStudio/lib-commons "$LIB_COMMONS_PRE_REMOVAL_DIR"
      git -C "$LIB_COMMONS_PRE_REMOVAL_DIR" fetch origin "$LIB_COMMONS_PRE_REMOVAL_REF"
      git -C "$LIB_COMMONS_PRE_REMOVAL_DIR" checkout FETCH_HEAD
 
    Use this ref only to decide scope/evidence. Do not add it to the target repo.
+   If the default removal commit is not reachable yet from the remote used by
+   the agent, fall back to removed-api mode and report that the pre-removal
+   source-evidence ref could not be fetched.
 
 6. HARD GATE — Verify effective lib-observability target APIs:
 
