@@ -77,6 +77,10 @@ Task #3: docs-reviewer (review both)
 
 Tasks #1 and #2 leave in the SAME TURN, before reading either's output. Forbidden: dispatch #1 → read result → dispatch #2. If you find yourself about to dispatch #2 in a turn AFTER #1 has already returned → STOP, report the violation, and re-dispatch both together. Task #3 runs only after both #1 and #2 complete — that sequencing is intentional; the trickle inside the parallel pair is not.
 
+### Parallel dispatch — atomic batch
+
+Emit both Task calls in a SINGLE TURN as one atomic batch. If your runtime exposes a `multi_tool_use.parallel` wrapper, use it. The anti-trickle guard above remains binding.
+
 ---
 
 ## Available in This Plugin

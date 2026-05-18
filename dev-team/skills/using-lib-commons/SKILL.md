@@ -103,6 +103,16 @@ If you find yourself about to dispatch an explorer in a turn AFTER any explorer 
 
 After each batch's dispatch turn, verify all batched Task calls were emitted in that single turn. If fewer went out than the batch size, the batch did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial batch.
 
+### Parallel dispatch — atomic batch (within this batch)
+
+Emit all Task calls for THIS BATCH in a SINGLE TURN, as one atomic batch. (Batches themselves remain sequential — do not dispatch batch N+1 until batch N has fully returned.)
+
+**If your runtime exposes a `multi_tool_use.parallel` wrapper**, use it to dispatch the complete batch in one wrapped invocation. This is the canonical fan-out mechanism on OpenAI-style tool envelopes and on certain Anthropic SDK consumers — naming it explicitly activates parallel emission on runtimes where trickle-dispatch is the default behavior.
+
+**If your runtime emits parallel tool_use blocks natively** (Claude Code with Claude models), `multi_tool_use.parallel` may not be needed — but naming it is harmless and serves as an enforcement anchor.
+
+The STOP-CHECK, anti-trickle, and self-verify guards above remain binding regardless of which mechanism your runtime uses.
+
 > **Observability angles (14, 15, 16) — scope shift:** these angles still run as part of this sweep, but their **detection logic now targets deprecated lib-commons shim imports** in addition to raw DIY. The canonical replacement is `lib-observability/*`, NOT `commons/zap`, `commons/runtime`, `commons/assert`. For a deep, dedicated audit of the observability layer, dispatch [[using-lib-observability]] (top-level) or [[using-tracing]] / [[using-runtime]] / [[using-assert]] instead — those produce richer findings than the breadth-first single-angle sweep here.
 
 **Per-explorer dispatch** (`subagent_type: ring:codebase-explorer`):

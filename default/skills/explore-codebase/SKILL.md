@@ -71,6 +71,16 @@ If you find yourself about to dispatch a discovery agent in a turn AFTER any age
 
 After the dispatch turn, verify all scoped Task calls were emitted in that single turn. If fewer went out than scoped, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
 
+### Parallel dispatch — atomic batch
+
+Emit all scoped Task calls (the count established in the STOP-CHECK above) in a SINGLE TURN, as one atomic batch.
+
+**If your runtime exposes a `multi_tool_use.parallel` wrapper**, use it to dispatch the complete pool in one wrapped invocation. This is the canonical fan-out mechanism on OpenAI-style tool envelopes and on certain Anthropic SDK consumers — naming it explicitly activates parallel emission on runtimes where trickle-dispatch is the default behavior.
+
+**If your runtime emits parallel tool_use blocks natively** (Claude Code with Claude models), `multi_tool_use.parallel` may not be needed — but naming it is harmless and serves as an enforcement anchor.
+
+The STOP-CHECK, anti-trickle, and self-verify guards above remain binding regardless of which mechanism your runtime uses.
+
 **Dispatch 3-4 discovery agents in a SINGLE turn (parallel):**
 
 **Architecture Discovery:** Find pattern (Hexagonal, Layered, Microservices, Monolith, etc.). Evidence: top-level directory structure, layer separation, file paths. Output: pattern name + confidence + ASCII diagram.
@@ -113,6 +123,16 @@ If you find yourself about to dispatch a deep-dive agent in a turn AFTER any age
 ### Self-verify after dispatch
 
 After the dispatch turn, verify all scoped Task calls were emitted in that single turn. If fewer went out than scoped, the phase did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
+### Parallel dispatch — atomic batch
+
+Emit all scoped Task calls (the count established in the STOP-CHECK above) in a SINGLE TURN, as one atomic batch.
+
+**If your runtime exposes a `multi_tool_use.parallel` wrapper**, use it to dispatch the complete pool in one wrapped invocation. This is the canonical fan-out mechanism on OpenAI-style tool envelopes and on certain Anthropic SDK consumers — naming it explicitly activates parallel emission on runtimes where trickle-dispatch is the default behavior.
+
+**If your runtime emits parallel tool_use blocks natively** (Claude Code with Claude models), `multi_tool_use.parallel` may not be needed — but naming it is harmless and serves as an enforcement anchor.
+
+The STOP-CHECK, anti-trickle, and self-verify guards above remain binding regardless of which mechanism your runtime uses.
 
 **Dispatch N adaptive agents in a SINGLE turn (parallel).** One agent per discovered perspective.
 
