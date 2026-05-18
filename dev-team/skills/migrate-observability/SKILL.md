@@ -3,8 +3,12 @@ name: ring:migrate-observability
 description: |
   Migrates a Lerian Go application's direct observability imports from
   lib-commons (deprecated shims OR already-removed APIs) to lib-observability.
-  Operates in two modes against the same known mapping table:
-    - deprecated-shim mode: lib-commons still ships the shims with `// Deprecated:` notices.
+  Operates in three compatible modes against the same known mapping table:
+    - pre-removal reference mode: when a removal commit is known, inspect the
+      parent/previous lib-commons ref to recover the source-side Deprecated
+      notices and exact migration scope.
+    - deprecated-shim mode: effective lib-commons still ships the shims with
+      `// Deprecated:` notices.
     - removed-api/break-fix mode: lib-commons has already removed the observability
       packages/symbols (sources absent, `go list` or `go build` fails on the
       removed imports). The skill still migrates known source imports/symbols
@@ -59,9 +63,11 @@ beta train.
 
 **Targeting strategy:** migrate known observability APIs when the target API
 exists in the effective lib-observability version. Source-side `Deprecated:`
-notices are useful evidence in deprecated-shim mode, but they are not required:
-if lib-commons has already removed the source package/symbol, the application
-may not compile, and the skill must still migrate by static source analysis.
+notices are preferred evidence. Read them from the effective lib-commons version
+when available; if a removal commit/ref is known, read them from the immediate
+pre-removal lib-commons ref. If neither source is available because lib-commons
+has already removed the package/symbol, the application may not compile, and the
+skill must still migrate by static source analysis.
 
 If a target API is missing from lib-observability, do not migrate that API.
 Report the missing target and leave the lib-commons usage unchanged unless it is
@@ -262,6 +268,7 @@ Migration rule:
 - repo_path exists and contains a go.mod file
 - go.mod declares module path (to identify lib-commons import prefix)
 - effective lib-observability version satisfies the per-migration target gates below
+- optional lib_commons_pre_removal_ref is resolved when provided
 </verify_before_proceed>
 
 ```text
@@ -277,7 +284,24 @@ Migration rule:
    deprecated lib-commons imports may still exist. Continue to Step 2 discovery.
    If Step 2 finds zero deprecated imports, report "Migration already complete.
    No deprecated lib-commons observability imports found." and exit PASS.
-5. HARD GATE — Verify effective lib-observability target APIs:
+5. Optional source evidence — resolve pre-removal lib-commons ref when known:
+
+   If the user provides `lib_commons_pre_removal_ref` (commit, tag, branch, or
+   `<removal_commit>^`), inspect lib-commons at that ref for source-side
+   `Deprecated:` notices. This is the preferred source map after the removal
+   PR lands because the effective app dependency may already be missing the
+   source files.
+
+   Example:
+     LIB_COMMONS_PRE_REMOVAL_REF="<commit-before-removal>"
+     LIB_COMMONS_PRE_REMOVAL_DIR=$(mktemp -d)
+     git clone --depth 1 https://github.com/LerianStudio/lib-commons "$LIB_COMMONS_PRE_REMOVAL_DIR"
+     git -C "$LIB_COMMONS_PRE_REMOVAL_DIR" fetch origin "$LIB_COMMONS_PRE_REMOVAL_REF"
+     git -C "$LIB_COMMONS_PRE_REMOVAL_DIR" checkout FETCH_HEAD
+
+   Use this ref only to decide scope/evidence. Do not add it to the target repo.
+
+6. HARD GATE — Verify effective lib-observability target APIs:
 
    Resolve the effective lib-commons module directory for the module major used
    by the repo (honours replace directives, workspaces, and custom GOMODCACHE):
@@ -303,47 +327,72 @@ Migration rule:
    OTEL_DOC_PATH="${LIB_COMMONS_DIR}/commons/opentelemetry/doc.go"
    OBS_TRACING_PATH="${LIB_OBSERVABILITY_DIR}/tracing/otel.go"
 
+   SOURCE_LOG_DOC_PATH="${DOC_PATH}"
+   SOURCE_CONTEXT_PATH="${CONTEXT_PATH}"
+   SOURCE_LOGGING_PATH="${LOGGING_PATH}"
+   SOURCE_TELEMETRY_PATH="${TELEMETRY_PATH}"
+   SOURCE_SPAN_HELPERS_PATH="${SPAN_HELPERS_PATH}"
+   SOURCE_OTEL_DOC_PATH="${OTEL_DOC_PATH}"
+   if [ -n "${LIB_COMMONS_PRE_REMOVAL_DIR}" ]; then
+     SOURCE_LOG_DOC_PATH="${LIB_COMMONS_PRE_REMOVAL_DIR}/commons/log/doc.go"
+     SOURCE_CONTEXT_PATH="${LIB_COMMONS_PRE_REMOVAL_DIR}/commons/context.go"
+     SOURCE_LOGGING_PATH="${LIB_COMMONS_PRE_REMOVAL_DIR}/commons/net/http/withLogging_middleware.go"
+     SOURCE_TELEMETRY_PATH="${LIB_COMMONS_PRE_REMOVAL_DIR}/commons/net/http/withTelemetry.go"
+     SOURCE_SPAN_HELPERS_PATH="${LIB_COMMONS_PRE_REMOVAL_DIR}/commons/net/http/context_span.go"
+     SOURCE_OTEL_DOC_PATH="${LIB_COMMONS_PRE_REMOVAL_DIR}/commons/opentelemetry/doc.go"
+   fi
+
    Determine source mode:
+     if [ -n "$LIB_COMMONS_PRE_REMOVAL_DIR" ]; then
+       echo "NOTE: using pre-removal reference mode. Source migration evidence
+       comes from the lib-commons ref immediately before observability removals."
+     fi
      if [ ! -f "$DOC_PATH" ]; then
        echo "NOTE: unable to locate lib-commons log docs. Treating source as
        removed-api/break-fix mode for known observability targets; migration is
        gated by lib-observability target APIs and source usage in the app."
      fi
 
-   Check if doc.go contains "Deprecated" when present:
-     grep -c "Deprecated" "$DOC_PATH"
+   Check if doc.go contains "Deprecated" when present. Prefer
+   "$SOURCE_LOG_DOC_PATH":
+     grep -c "Deprecated" "$SOURCE_LOG_DOC_PATH"
 
-   If result is 0 → continue. This means either old source mode or removed-api
-   mode; source deprecation is not a hard gate. Migrate only known observability
-   targets whose lib-observability API exists, then rely on build/test
-   validation to catch remaining type-boundary blockers.
+   If result is 0 → continue. This means old source mode, missing pre-removal
+   evidence, or removed-api mode; source deprecation is not a hard gate. Migrate
+   only known observability targets whose lib-observability API exists, then
+   rely on build/test validation to catch remaining type-boundary blockers.
 
-   Check if HTTP/gRPC logging middleware deprecations are available:
-     if [ -f "$LOGGING_PATH" ]; then grep -c "Deprecated" "$LOGGING_PATH"; fi
+   Check if HTTP/gRPC logging middleware deprecations are available in the
+   preferred source evidence ref when present:
+     if [ -f "$SOURCE_LOGGING_PATH" ]; then grep -c "Deprecated" "$SOURCE_LOGGING_PATH"; fi
 
    Check if the target lib-observability middleware API exists:
      if [ -f "$OBS_MIDDLEWARE_PATH" ]; then grep -E "func WithHTTPLogging|func WithGrpcLogging|type RequestInfo|type LogMiddlewareOption" "$OBS_MIDDLEWARE_PATH"; fi
 
-   Check if HTTP/gRPC telemetry middleware deprecations are available:
-     if [ -f "$TELEMETRY_PATH" ]; then grep -c "Deprecated" "$TELEMETRY_PATH"; fi
+   Check if HTTP/gRPC telemetry middleware deprecations are available in the
+   preferred source evidence ref when present:
+     if [ -f "$SOURCE_TELEMETRY_PATH" ]; then grep -c "Deprecated" "$SOURCE_TELEMETRY_PATH"; fi
 
    Check if the target lib-observability telemetry middleware API exists:
      if [ -f "$OBS_TELEMETRY_PATH" ]; then grep -E "func NewTelemetryMiddleware|func \\(tm \\*TelemetryMiddleware\\) WithTelemetry|func \\(tm \\*TelemetryMiddleware\\) WithTelemetryInterceptor|type TelemetryMiddleware" "$OBS_TELEMETRY_PATH"; fi
 
-   Check if root commons observability context helper deprecations are available:
-     if [ -f "$CONTEXT_PATH" ]; then grep -E "Deprecated: use (NewTrackingFromContext|ContextWithLogger|ContextWithTracer|ContextWithMetricFactory|ContextWithHeaderID|ContextWithSpanAttributes|AttributesFromContext|ReplaceAttributes)" "$CONTEXT_PATH"; fi
+   Check if root commons observability context helper deprecations are available
+   in the preferred source evidence ref when present:
+     if [ -f "$SOURCE_CONTEXT_PATH" ]; then grep -E "Deprecated: use (NewTrackingFromContext|ContextWithLogger|ContextWithTracer|ContextWithMetricFactory|ContextWithHeaderID|ContextWithSpanAttributes|AttributesFromContext|ReplaceAttributes)" "$SOURCE_CONTEXT_PATH"; fi
 
    Check if the target root lib-observability context helper API exists:
      if [ -f "$OBS_ROOT_PATH" ]; then grep -E "func NewTrackingFromContext|func ContextWithLogger|func ContextWithTracer|func ContextWithMetricFactory|func ContextWithHeaderID|func ContextWithSpanAttributes|func AttributesFromContext|func ReplaceAttributes" "$OBS_ROOT_PATH"; fi
 
-   Check if root commons/opentelemetry package deprecation is available:
-     if [ -f "$OTEL_DOC_PATH" ]; then grep -c "Deprecated" "$OTEL_DOC_PATH"; fi
+   Check if root commons/opentelemetry package deprecation is available in the
+   preferred source evidence ref when present:
+     if [ -f "$SOURCE_OTEL_DOC_PATH" ]; then grep -c "Deprecated" "$SOURCE_OTEL_DOC_PATH"; fi
 
    Check if the target lib-observability tracing API exists:
      if [ -f "$OBS_TRACING_PATH" ]; then grep -E "type TelemetryConfig|type Telemetry|func NewTelemetry|func HandleSpanError|func BuildAttributesFromValue|func InjectTraceContext|func GetTraceIDFromContext" "$OBS_TRACING_PATH"; fi
 
-   Check if HTTP span helper deprecations are available:
-     if [ -f "$SPAN_HELPERS_PATH" ]; then grep -c "Deprecated" "$SPAN_HELPERS_PATH"; fi
+   Check if HTTP span helper deprecations are available in the preferred source
+   evidence ref when present:
+     if [ -f "$SOURCE_SPAN_HELPERS_PATH" ]; then grep -c "Deprecated" "$SOURCE_SPAN_HELPERS_PATH"; fi
 
    Check if the target lib-observability span helper API exists:
      if [ -f "$OBS_SPAN_HELPERS_PATH" ]; then grep -E "func SetHandlerSpanAttributes|func SetTenantSpanAttribute|func SetExceptionSpanAttributes|func SetDisputeSpanAttributes" "$OBS_SPAN_HELPERS_PATH"; fi
