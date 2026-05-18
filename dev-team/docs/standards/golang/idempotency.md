@@ -166,7 +166,7 @@ func GetIdempotencyKeyAndTTL(c *fiber.Ctx, defaultTTLSec int) (string, time.Dura
 // internal/adapters/http/in/transaction.go
 func (handler *TransactionHandler) createTransaction(c *fiber.Ctx, ...) error {
     ctx := c.UserContext()
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     _, span := tracer.Start(ctx, "handler.create_transaction")
     defer span.End()
@@ -244,8 +244,9 @@ import (
     "errors"
     "time"
 
+    observability "github.com/LerianStudio/lib-observability"
     libCommons "github.com/LerianStudio/lib-commons/v5/commons"
-    libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"
+    libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"
     "github.com/redis/go-redis/v9"
 )
 
@@ -265,7 +266,7 @@ func (uc *UseCase) CreateOrCheckIdempotencyKey(
     key, hash string,
     ttl time.Duration,
 ) (*string, error) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     ctx, span := tracer.Start(ctx, "command.create_idempotency_key")
     defer span.End()
@@ -331,7 +332,7 @@ func (uc *UseCase) SetValueOnExistingIdempotencyKey(
     t transaction.Transaction,
     ttl time.Duration,
 ) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     ctx, span := tracer.Start(ctx, "command.set_value_idempotency_key")
     defer span.End()
@@ -363,7 +364,7 @@ func (uc *UseCase) SetTransactionIdempotencyMapping(
     transactionID, idempotencyKey string,
     ttl time.Duration,
 ) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     ctx, span := tracer.Start(ctx, "command.set_transaction_idempotency_mapping")
     defer span.End()
@@ -607,4 +608,3 @@ Redis SetNX (atomic lock with empty value)
 - [ ] Reverse mapping with `IdempotencyReverseKey` for transaction lookups (if needed)
 
 ---
-

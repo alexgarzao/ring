@@ -1,6 +1,6 @@
 ---
 name: ring:using-runtime
-description: Dual-mode skill for lib-commons/v5/commons/runtime — the panic observability trident that turns silent goroutine deaths into production signal. Sweep Mode dispatches 6 parallel explorers to find naked goroutines, unobservable defer recover(), and missing panic-metric init. Reference Mode catalogs the API (SafeGo, RecoverWithPolicy, InitPanicMetrics) and framework integrations (Fiber, gRPC, RabbitMQ). Skip for non-Go or frontend code.
+description: Dual-mode skill for lib-observability/runtime — the panic observability trident that turns silent goroutine deaths into production signal. Sweep Mode dispatches 6 parallel explorers to find naked goroutines, unobservable defer recover(), and missing panic-metric init. Reference Mode catalogs the API (SafeGo, RecoverWithPolicy, InitPanicMetrics) and framework integrations (Fiber, gRPC, RabbitMQ). Skip for non-Go or frontend code.
 ---
 
 # ring:using-runtime
@@ -9,7 +9,7 @@ description: Dual-mode skill for lib-commons/v5/commons/runtime — the panic ob
 Sweep mode:
 - "Sweep / audit panic handling"
 - "Find naked goroutines"
-- "Migrate this service to commons/runtime"
+- "Migrate this service to lib-observability/runtime"
 - "Are our defer recover() calls observable?"
 
 Reference mode:
@@ -54,14 +54,14 @@ Phase 4: Consolidated Report      → runtime-sweep-report.md + runtime-sweep-ta
 
 ## Phase 1: Version Reconnaissance
 
-1. Read `go.mod` — extract pinned version of `github.com/LerianStudio/lib-commons/vN`
-2. WebFetch `https://api.github.com/repos/LerianStudio/lib-commons/releases/latest` — extract `tag_name`
+1. Read `go.mod` — extract pinned version of `github.com/LerianStudio/lib-observability`
+2. WebFetch `https://api.github.com/repos/LerianStudio/lib-observability/releases/latest` — extract `tag_name`
 3. Classify drift; emit `/tmp/runtime-version-report.json`
 
 ## Phase 2: CHANGELOG Delta Analysis
 
-1. WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/CHANGELOG.md`
-2. Filter entries affecting `commons/runtime`
+1. WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-observability/main/CHANGELOG.md`
+2. Filter entries affecting `lib-observability/runtime`
 3. Emit `/tmp/runtime-delta-report.json`
 
 ## Phase 3: Multi-Angle DIY Sweep

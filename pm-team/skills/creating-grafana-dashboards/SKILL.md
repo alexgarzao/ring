@@ -1,14 +1,14 @@
 ---
 name: ring:creating-grafana-dashboards
 description: |
-  Author Grafana dashboards for Lerian Go services rooted in real lib-commons/opentelemetry
+  Author Grafana dashboards for Lerian Go services rooted in real lib-observability/tracing
   telemetry. Three phases — Sweep (telemetry inventory), Iterate (PM deliberation on SLIs/SLOs
   and alerts), Author (Grafonnet libsonnet → JSON in CI) — and installs a blocking CI drift gate.
   Use when scaffolding dashboards, building a telemetry dictionary, or auditing observability.
   Skip if service is non-Go, emits no telemetry, or task is just folder organization.
 ---
 
-# Creating Grafana Dashboards (lib-commons/opentelemetry, PM-team)
+# Creating Grafana Dashboards (lib-observability/tracing, PM-team)
 
 ## When to use
 
@@ -27,7 +27,7 @@ Reference mode:
 
 ## Skip when
 
-- Service is not a Go project (lib-commons opentelemetry is Go-only at this skill's scope)
+- Service is not a Go project (lib-observability tracing is Go-only at this skill's scope)
 - Service emits no telemetry (pre-instrumentation; instrument the service before dashboard authoring, then use ring:dev-implementation to verify observability checks pass)
 - Task is purely Grafana folder organization or dashboard import (no authoring)
 - Service is consumer-only sidecar with no metrics surface
@@ -43,7 +43,7 @@ Reference mode:
 
 ## Prerequisites
 
-- Go service with lib-commons/v5 opentelemetry initialized in bootstrap
+- Go service with lib-observability/tracing initialized in bootstrap
 - At least one metric, span, or structured log emission point present
 - docs/ directory writable
 - Grafonnet toolchain available in CI (jsonnet + grafonnet-lib) — installer instructions in ci-drift-check.md
@@ -64,16 +64,16 @@ Orchestrates a 3-phase, 8-gate workflow to produce Grafana dashboards grounded i
 
 # SWEEP MODE
 
-## Telemetry Architecture (lib-commons/opentelemetry)
+## Telemetry Architecture (lib-observability/tracing)
 
-Lerian Go services emit telemetry through `github.com/LerianStudio/lib-commons/v5/commons/opentelemetry`:
+Lerian Go services emit telemetry through `github.com/LerianStudio/lib-observability/tracing`:
 - **Metrics** via `meter.Int64Counter`, `meter.Float64Histogram`, `meter.Int64UpDownCounter`, `meter.Int64ObservableGauge`
 - **Traces** via `tracer.Start(ctx, name, opts...)` returning `context.Context, trace.Span`
-- **Logs** via `commons/log` with structured fields, automatically correlated with active span via `trace_id`/`span_id`
+- **Logs** via `lib-observability/log` with structured fields, automatically correlated with active span via `trace_id`/`span_id`
 - **Cross-cutting** — `tenant_id` propagation through context, error attribution via `span.RecordError` + `span.SetStatus`
 
-**WebFetch canonical docs:** `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/commons/opentelemetry/doc.go`
-**WebFetch changelog:** `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/CHANGELOG.md`
+**WebFetch canonical docs:** `https://raw.githubusercontent.com/LerianStudio/lib-observability/main/tracing/doc.go`
+**WebFetch changelog:** `https://raw.githubusercontent.com/LerianStudio/lib-observability/main/CHANGELOG.md`
 
 ## Authoring Format: Grafonnet (Mandatory)
 
@@ -121,10 +121,10 @@ Orchestrator executes directly. Detect in parallel:
 ```
 1. Go version:                grep "^go " go.mod | head -1
 2. lib-commons version:       grep "lib-commons" go.mod
-3. OTel package present:      grep -rn "lib-commons/v5/commons/opentelemetry" internal/ cmd/
+3. OTel package present:      grep -rn "lib-observability/tracing" internal/ cmd/
 4. Meter init:                grep -rn "Meter(\|NewMeter\|meter.Int64Counter\|meter.Float64Histogram" internal/ cmd/
 5. Tracer init:               grep -rn "Tracer(\|NewTracer\|tracer.Start" internal/ cmd/
-6. Log emission:              grep -rn "lib-commons/v5/commons/log" internal/ cmd/
+6. Log emission:              grep -rn "lib-observability/log" internal/ cmd/
 7. HTTP framework:            grep -rn "gofiber/fiber\|labstack/echo\|gin-gonic" go.mod
 8. gRPC server:               grep -rn "grpc.NewServer" internal/ cmd/
 9. RabbitMQ consumers:        grep -rn "lib-commons/v5/commons/rabbitmq" internal/ cmd/

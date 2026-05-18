@@ -1,16 +1,16 @@
 ---
 name: ring:using-assert
-description: Dual-mode skill for lib-commons/v5/commons/assert — Lerian's production-grade runtime assertion package. Sweep Mode dispatches 6 parallel explorers to find DIY invariant checks, zero-panic violations, hand-rolled domain predicates, and missing metric initialization. Reference Mode catalogs the full API (asserter lifecycle, domain predicates, observability trident, AssertionError unwrapping) and the panic-vs-assert-vs-error decision tree. Skip for non-Go or frontend code.
+description: Dual-mode skill for lib-observability/assert — Lerian's production-grade runtime assertion package. Sweep Mode dispatches 6 parallel explorers to find DIY invariant checks, zero-panic violations, hand-rolled domain predicates, and missing metric initialization. Reference Mode catalogs the full API (asserter lifecycle, domain predicates, observability trident, AssertionError unwrapping) and the panic-vs-assert-vs-error decision tree. Skip for non-Go or frontend code.
 ---
 
 # ring:using-assert
 
 ## When to use
 Sweep mode:
-- "Sweep the codebase for commons/assert opportunities"
+- "Sweep the codebase for lib-observability/assert opportunities"
 - "Audit this service for zero-panic policy compliance"
 - "Find panic()/log.Fatal violations"
-- "Replace DIY invariant checks with commons/assert"
+- "Replace DIY invariant checks with lib-observability/assert"
 
 Reference mode:
 - "What's the signature for assert.DebitsEqualCredits?"
@@ -51,15 +51,15 @@ Phase 4: Consolidated Report      → assert-sweep-report.md + assert-sweep-task
 
 ## Phase 1: Version Reconnaissance
 
-1. Read `go.mod` — extract pinned version of `github.com/LerianStudio/lib-commons/vN`
-2. WebFetch `https://api.github.com/repos/LerianStudio/lib-commons/releases/latest` — extract `tag_name`
+1. Read `go.mod` — extract pinned version of `github.com/LerianStudio/lib-observability`
+2. WebFetch `https://api.github.com/repos/LerianStudio/lib-observability/releases/latest` — extract `tag_name`
 3. Classify drift: up-to-date / minor-drift / moderate-drift / major-upgrade / module-mismatch
 4. Emit `/tmp/assert-version-report.json`: `{pinned_version, latest_version, drift_classification, major_upgrade_required, module_path}`
 
 ## Phase 2: CHANGELOG Delta Analysis
 
-1. WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/CHANGELOG.md`
-2. Filter entries between pinned_version and latest_version that affect `commons/assert`
+1. WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-observability/main/CHANGELOG.md`
+2. Filter entries between pinned_version and latest_version that affect `lib-observability/assert`
 3. Classify: `new-predicate` / `new-method` / `breaking-change` / `security-fix` / `bugfix`
 4. Emit `/tmp/assert-delta-report.json`
 

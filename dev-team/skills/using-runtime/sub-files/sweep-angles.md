@@ -167,7 +167,7 @@ never fire. You get half the trident.
 ```go
 // DIY (BEFORE): bootstrap never wires panic metrics
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 _ = tl.ApplyGlobals()
 
 // launches SafeGo goroutines — metric never emits because factory not registered
@@ -176,7 +176,7 @@ runtime.SafeGoWithContextAndComponent(ctx, logger, "worker", "loop",
 
 // lib-commons (AFTER):
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 _ = tl.ApplyGlobals()
 
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)   // <-- wire metrics first
@@ -189,7 +189,7 @@ runtime.SafeGoWithContextAndComponent(ctx, logger, "worker", "loop",
 **Explorer Dispatch Prompt Template:**
 
 > Sweep the target repo for missing `runtime.InitPanicMetrics` initialization. First,
-> confirm the service actually uses `commons/runtime` by grep'ing for `runtime.SafeGo`,
+> confirm the service actually uses `lib-observability/runtime` by grep'ing for `runtime.SafeGo`,
 > `runtime.RecoverWith`, `runtime.HandlePanicValue`. If the service uses runtime, MUST
 > check for a call to `runtime.InitPanicMetrics` in bootstrap files (`main.go`,
 > `cmd/*/main.go`, `internal/bootstrap/`, `internal/app/`). If the call is missing,
@@ -232,13 +232,13 @@ runtime.SafeGoWithContextAndComponent(ctx, logger, "worker", "loop",
 ```go
 // DIY (BEFORE): no production-mode switch — panic values leak to span events verbatim
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 // missing: SetProductionMode
 
 // lib-commons (AFTER):
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 runtime.SetProductionMode(cfg.Env == "production")  // panic values redacted, stack capped
 ```

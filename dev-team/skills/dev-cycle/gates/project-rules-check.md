@@ -225,7 +225,7 @@ Create tool:
     # Project Rules
     
     > Ring Standards apply automatically. This file documents only what Ring does not cover.
-    > For error handling, logging, testing, architecture, lib-commons → See Ring Standards (auto-loaded by agents)
+    > For error handling, logging, testing, architecture, lib-commons, lib-observability → See Ring Standards (auto-loaded by agents)
     > Generated from legacy project analysis.
     
     ## What Ring Standards Already Cover (DO not ADD HERE)
@@ -455,10 +455,10 @@ Create tool:
     
     The following are defined in Ring Standards and MUST not be duplicated in this file:
     - Error handling patterns (no panic, wrap errors)
-    - Logging standards (structured JSON via lib-commons)
+    - Logging standards (structured JSON via lib-observability)
     - Testing patterns (table-driven tests, mocks)
     - Architecture patterns (Hexagonal, Clean Architecture)
-    - Observability (OpenTelemetry via lib-commons)
+    - Observability (OpenTelemetry via lib-observability)
     - lib-commons / lib-common-js usage and patterns
     - API directory structure (Lerian pattern)
     - Database connections (PostgreSQL, MongoDB, Redis via lib-commons)
@@ -587,4 +587,3 @@ STOP EXECUTION. Do not proceed to Step 1.
 | "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with: Tech Stack (not in Ring), External Integrations, Domain Terminology. Do not duplicate Ring Standards content. Then run `/ring:dev-cycle` again." |
 
 ---
-

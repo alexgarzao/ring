@@ -1,6 +1,6 @@
 ---
 name: ring:using-lib-commons
-description: Dual-mode skill for github.com/LerianStudio/lib-commons v5, Lerian's shared Go library. Sweep Mode dispatches 22 parallel explorers to detect DIY implementations that should use lib-commons, with file:line replacement precision. Reference Mode catalogs all lib-commons packages (database, messaging, multi-tenancy, observability, security, resilience, HTTP, idempotency, TLS) for API discovery. Skip for non-Go code or Ring itself.
+description: Dual-mode skill for github.com/LerianStudio/lib-commons v5, Lerian's shared Go library. Sweep Mode dispatches 22 parallel explorers to detect DIY implementations that should use lib-commons or the companion lib-observability module, with file:line replacement precision. Reference Mode catalogs lib-commons packages (database, messaging, multi-tenancy, security, resilience, HTTP, idempotency, TLS) and points observability work to lib-observability. Skip for non-Go code or Ring itself.
 ---
 
 # ring:using-lib-commons
@@ -73,7 +73,7 @@ Dispatch all 22 explorer angles in **3 batches** (8+8+6). Wait for each batch be
 | Batch | Angles | Focus |
 |---|---|---|
 | 1 | 1–8 | Infrastructure + HTTP |
-| 2 | 9–16 | Ergonomics + security + observability |
+| 2 | 9–16 | Ergonomics + security + lib-observability |
 | 3 | 17–22 | Resilience + multi-tenant + utilities |
 
 **Per-explorer dispatch** (`subagent_type: ring:codebase-explorer`):
@@ -125,7 +125,7 @@ Full API catalog in `sub-files/reference.md`. Load the relevant sections for you
 | 2 | Common Initialization Pattern | Typical service bootstrap |
 | 3 | Database Connections | postgres, mongo, redis, rabbitmq |
 | 4 | HTTP Toolkit | Middleware, rate limiting, pagination, idempotency |
-| 5 | Observability | Logger, tracing, metrics, runtime, assert |
+| 5 | lib-observability | Logger, tracing, metrics, runtime, assert moved out of lib-commons |
 | 6 | Resilience & Utilities | Circuit breaker, backoff, safe math |
 | 7 | Security | JWT, encryption, sensitive fields, TLS |
 | 8 | Transaction Domain | Intent planning, balance posting, outbox |

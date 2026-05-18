@@ -42,16 +42,16 @@ Emit `VERDICT: PASS` immediately when ALL of:
 |---------|-------------------|
 | Manual retry loop with sleep | `commons/backoff`, `commons/circuitbreaker` |
 | `sql.Open` / `pgx.Connect` without pool | `commons/postgres` |
-| Inline Zap/Logrus setup | `commons/log`, `commons/zap` |
-| Bare `go func()` without panic recovery | `commons/runtime` (`SafeGo`) |
+| Inline Zap/Logrus setup | `lib-observability/log`, `lib-observability/zap` |
+| Bare `go func()` without panic recovery | `lib-observability/runtime` (`SafeGo`) |
 | Hand-rolled HMAC, JWT parsing | `commons/jwt`, `commons/crypto` |
 | Inline AMQP connection handling | `commons/rabbitmq` |
 | Custom rate limiting | `commons/net/http/ratelimit` |
-| Manual `recover()` without observability | `commons/runtime`, `commons/assert` |
+| Manual `recover()` without observability | `lib-observability/runtime`, `lib-observability/assert` |
 | Inline Redis client creation | `commons/redis` |
 | Manual UUID generation | `commons` (`GenerateUUIDv7`) |
 | `os.Getenv` without default | `commons.GetenvOrDefault` |
-| Manual panic `if x == nil { panic(...) }` | `commons/assert` |
+| Manual panic `if x == nil { panic(...) }` | `lib-observability/assert` |
 
 **`go.mod` changes touching lib-commons always require full review** (version consistency check).
 

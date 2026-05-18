@@ -1,7 +1,7 @@
 # REFERENCE MODE
 
 Sections 1–15 below catalog lib-commons latest v5.x packages, APIs, and initialization
-patterns. Resolve the actual latest version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`. Read the sections relevant to your current task. Sweep Mode explorers receive
+patterns. Observability APIs are intentionally documented as the companion `github.com/LerianStudio/lib-observability` module, not as lib-commons packages. Resolve the actual latest lib-commons version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`. Read the sections relevant to your current task. Sweep Mode explorers receive
 extracts from these sections as context for their angle.
 
 ## 1. Package Catalog (Quick Reference)
@@ -35,15 +35,15 @@ extracts from these sections as context for their angle.
 | `license` | `commons/license` | License validation failure handling with fail-open/fail-closed policies |
 | `certificate` | `commons/certificate` | **v5.0.0**: Thread-safe TLS certificate manager with hot reload (PKCS#8/PKCS#1/EC keys, DER chain support, zero-downtime `Rotate`) |
 
-### Observability & Runtime
+### Observability & Runtime (lib-observability)
 
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
-| `log` | `commons/log` | Logger interface (`Logger`) — the universal logging contract across all packages |
-| `zap` | `commons/zap` | Zap-backed Logger implementation with OTel log bridge, runtime level adjustment. **v4.3.0+**: timestamp field changed from `"ts"` (Unix epoch) to `"timestamp"` (ISO 8601) |
-| `opentelemetry` | `commons/opentelemetry` | Full OTel lifecycle — TracerProvider, MeterProvider, LoggerProvider, OTLP exporters, redaction. Registers noop global providers when collector endpoint is empty |
-| `opentelemetry/metrics` | `commons/opentelemetry/metrics` | Thread-safe metrics factory with builders (Counter, Gauge, Histogram) |
-| `runtime` | `commons/runtime` | Safe goroutine launching, panic recovery, production mode, error reporter integration |
+| `log` | `lib-observability/log` | Logger interface (`Logger`) — the universal logging contract across all packages |
+| `zap` | `lib-observability/zap` | Zap-backed Logger implementation with OTel log bridge, runtime level adjustment. **v4.3.0+**: timestamp field changed from `"ts"` (Unix epoch) to `"timestamp"` (ISO 8601) |
+| `tracing` | `lib-observability/tracing` | Full OTel lifecycle — TracerProvider, MeterProvider, LoggerProvider, OTLP exporters, redaction. Registers noop global providers when collector endpoint is empty |
+| `metrics` | `lib-observability/metrics` | Thread-safe metrics factory with builders (Counter, Gauge, Histogram) |
+| `runtime` | `lib-observability/runtime` | Safe goroutine launching, panic recovery, production mode, error reporter integration |
 | `server` | `commons/server` | HTTP (Fiber) + gRPC graceful shutdown manager with ordered teardown |
 | `cron` | `commons/cron` | 5-field cron expression parser, computes next execution time |
 
@@ -51,7 +51,7 @@ extracts from these sections as context for their angle.
 
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
-| `net/http` | `commons/net/http` | Fiber HTTP toolkit: middleware (CORS, logging, telemetry, basic auth), validation, 3 cursor pagination styles, health checks, SSRF-safe reverse proxy, ownership verification, response helpers, tenant-scoped ID parsing |
+| `net/http` | `commons/net/http` | Fiber HTTP toolkit: CORS, basic auth, validation, 3 cursor pagination styles, health checks, SSRF-safe reverse proxy, ownership verification, response helpers, tenant-scoped ID parsing. Use `lib-observability/middleware` for logging and telemetry middleware. |
 | `net/http/ratelimit` | `commons/net/http/ratelimit` | Redis-backed distributed fixed-window rate limiting with atomic Lua script, tiered presets, dynamic tier selection, identity extractors, fail-open/fail-closed policy, `X-RateLimit-*` headers |
 | `net/http/idempotency` | `commons/net/http/idempotency` | **v5.0.0**: Fiber middleware for best-effort at-most-once request semantics via Redis SetNX, tenant-scoped keys, faithful response replay (status/headers/body), fail-open on Redis outage |
 
@@ -71,7 +71,7 @@ extracts from these sections as context for their angle.
 | `errgroup` | `commons/errgroup` | Error group with first-error cancellation and panic-to-error recovery |
 | `safe` | `commons/safe` | Panic-free division, bounds-checked slice access, cached regex compilation |
 | `pointers` | `commons/pointers` | Pointer-to-literal helpers (`String`, `Bool`, `Time`, `Int64`, `Float64`) |
-| `assert` | `commons/assert` | Production runtime assertions with OTel span events + metrics on failure |
+| `assert` | `lib-observability/assert` | Production runtime assertions with OTel span events + metrics on failure |
 | `constants` | `commons/constants` | Shared constants (headers, error codes, pagination defaults, OTel attributes) |
 
 ### Multi-Tenancy (Major Subsystem)
@@ -117,7 +117,7 @@ defer logger.Sync(ctx)
 // 2. Telemetry — second because DB/HTTP packages emit traces and metrics
 //    When CollectorExporterEndpoint is empty, noop global providers are registered
 //    so trace/metric calls are no-ops instead of errors.
-tl, _ := opentelemetry.NewTelemetry(opentelemetry.TelemetryConfig{
+tl, _ := tracing.NewTelemetry(tracing.TelemetryConfig{
     LibraryName:               "my-service",
     ServiceName:               "my-service",
     ServiceVersion:            "1.0.0",
@@ -182,8 +182,8 @@ defer rmqConn.Close()
 // 9. Fiber App with middleware
 app := fiber.New(fiber.Config{ErrorHandler: http.FiberErrorHandler})
 app.Use(http.WithCORS())
-app.Use(http.WithHTTPLogging(http.WithCustomLogger(logger)))
-tm := http.NewTelemetryMiddleware(tl)
+app.Use(middleware.WithHTTPLogging(middleware.WithCustomLogger(logger)))
+tm := middleware.NewTelemetryMiddleware(tl)
 app.Use(tm.WithTelemetry(tl, "/health", "/version"))
 app.Get("/health", http.HealthWithDependencies(...))
 app.Get("/version", http.Version)
@@ -306,8 +306,8 @@ CORS → Logging → Telemetry → Rate Limit → Auth → Handler
 | Middleware | Constructor | Purpose |
 |-----------|------------|---------|
 | CORS | `http.WithCORS()` | Cross-origin resource sharing |
-| Logging | `http.WithHTTPLogging(http.WithCustomLogger(logger))` | Request/response logging |
-| Telemetry | `http.NewTelemetryMiddleware(tl).WithTelemetry(tl, skipPaths...)` | OTel span creation, metrics |
+| Logging | `middleware.WithHTTPLogging(middleware.WithCustomLogger(logger))` | Request/response logging |
+| Telemetry | `middleware.NewTelemetryMiddleware(tl).WithTelemetry(tl, skipPaths...)` | OTel span creation, metrics |
 | Rate Limit | `ratelimit.WithDefaultRateLimit(redisConn)` | Distributed rate limiting (one-liner setup) |
 | Basic Auth | `http.WithBasicAuth(username, password)` | HTTP Basic authentication |
 
@@ -530,9 +530,11 @@ All pagination helpers return a standard `CursorPagination` response with `next`
 
 ---
 
-## 5. Observability
+## 5. lib-observability
 
-### Logger (`commons/log` + `commons/zap`)
+Observability was split out of lib-commons. New migrations and examples must import `github.com/LerianStudio/lib-observability` directly for logger, tracing, metrics, runtime, assertions, and HTTP telemetry middleware.
+
+### Logger (`lib-observability/log` + `lib-observability/zap`)
 
 **Interface**: Always program against `log.Logger`. This is the universal logging contract — every package in lib-commons accepts it.
 
@@ -545,9 +547,9 @@ All pagination helpers return a standard `CursorPagination` response with `next`
 - **v4.3.0+**: Timestamp field changed from `"ts"` (Unix epoch float) to `"timestamp"` (ISO 8601 string). If you parse logs programmatically, update your parsers.
 - **Multi-tenant**: In multi-tenant contexts, `tenant_id` is automatically injected into log entries when the tenant context is present.
 
-### Tracing (`commons/opentelemetry`)
+### Tracing (`lib-observability/tracing`)
 
-Every I/O package in lib-commons auto-creates OTel spans. You rarely need to create spans manually.
+Every I/O package that receives the shared logger/telemetry dependencies should emit OTel spans through lib-observability. You rarely need to create spans manually.
 
 **Error recording**: Use `opentelemetry.HandleSpanError(&span, err)` to record errors on spans. This sets the span status and adds the error as an event.
 
@@ -555,7 +557,7 @@ Every I/O package in lib-commons auto-creates OTel spans. You rarely need to cre
 
 **Noop providers**: When `CollectorExporterEndpoint` is empty, `NewTelemetry` registers noop global TracerProvider, MeterProvider, and LoggerProvider. This means services can always call `otel.Tracer()` and `otel.Meter()` without checking whether telemetry is configured — calls simply no-op.
 
-### Metrics (`commons/opentelemetry/metrics`)
+### Metrics (`lib-observability/metrics`)
 
 `tl.MetricsFactory` provides thread-safe builders:
 
@@ -571,7 +573,7 @@ Every I/O package in lib-commons auto-creates OTel spans. You rarely need to cre
 - `runtime_panic_recovered_total` — `runtime.SafeGo`
 - `assertion_failures_total` — `assert`
 
-### Panic Recovery (`commons/runtime`) — Defense-in-Depth Crown Jewel
+### Panic Recovery (`lib-observability/runtime`) — Defense-in-Depth Crown Jewel
 
 The `runtime` package is not just "safe goroutine launching" — it's a **complete panic observability pipeline** that ensures no panic ever goes unnoticed in production. Every recovered panic triggers a three-layer response:
 
@@ -650,7 +652,7 @@ runtime.SetErrorReporter(myReporter) // optional
 
 **For deep patterns, framework integration, testing approaches, and a dedicated 6-angle audit mode for this package, see `ring:using-runtime`.**
 
-### Assertions (`commons/assert`) — Defense-in-Depth Crown Jewel
+### Assertions (`lib-observability/assert`) — Defense-in-Depth Crown Jewel
 
 The `assert` package provides **production-grade runtime assertions** — not test assertions, not debug-only checks. These assertions are designed to remain **permanently enabled in production** and fire a **three-layer observability trident** on every failure:
 
@@ -1761,7 +1763,8 @@ Use this decision tree to find the right package quickly:
 | Publish messages to RabbitMQ | `rabbitmq` (ConfirmablePublisher) |
 | Consume messages from RabbitMQ (multi-tenant) | `rabbitmq` + `tenant-manager/consumer` |
 | **HTTP** | |
-| Add HTTP middleware (CORS, logging, telemetry) | `net/http` |
+| Add HTTP middleware (CORS/basic auth/validation) | `net/http` |
+| Add HTTP logging/telemetry middleware | `lib-observability/middleware` |
 | Rate-limit HTTP endpoints | `net/http/ratelimit` |
 | Enforce idempotency on mutating endpoints | `net/http/idempotency` (v5.0.0) |
 | Paginate API responses | `net/http` (offset, UUID cursor, timestamp cursor, sort cursor) |
@@ -1800,9 +1803,9 @@ Use this decision tree to find the right package quickly:
 | Implement transactional outbox | `outbox` + `outbox/postgres` |
 | **Observability** | |
 | Add structured logging | `log` (interface) + `zap` (implementation) |
-| Set up OpenTelemetry | `opentelemetry` (tracer, meter, logger providers) |
-| Build custom metrics | `opentelemetry/metrics` (Counter, Gauge, Histogram builders) |
-| Add production-safe assertions | `assert` (with OTel observability) |
+| Set up OpenTelemetry | `lib-observability/tracing` (tracer, meter, logger providers) |
+| Build custom metrics | `lib-observability/metrics` (Counter, Gauge, Histogram builders) |
+| Add production-safe assertions | `lib-observability/assert` (with OTel observability) |
 | Manage graceful shutdown | `server` (ServerManager) |
 | **Root Package Utilities** | |
 | Generate UUIDv7 | `commons` (`GenerateUUIDv7`) |
@@ -1830,7 +1833,7 @@ This section documents breaking changes across lib-commons releases. Consult whe
 Patch release — no API changes. Hotfixes:
 
 - `commons/rabbitmq`: Close leaked connections on concurrent reconnect in `EnsureChannelContext`
-- `commons/net/http` telemetry: Copy Fiber context strings before `c.Next()` to prevent `UnsafeString` race (caused corrupted span attributes like `GET` → `GETT`)
+- `lib-observability/middleware` telemetry: Copy Fiber context strings before `c.Next()` to prevent `UnsafeString` race (caused corrupted span attributes like `GET` → `GETT`)
 
 ### v5.0.1
 
@@ -1858,7 +1861,7 @@ Patch release — no API changes. Internal test improvements and minor fixes.
 | `commons/tenant-manager/cache` | `ConfigCache` interface + `InMemoryCache` default implementation for the TM client |
 | `commons/tenant-manager/log` | `TenantAwareLogger` — wraps a `log.Logger` and auto-injects `tenant_id` from context |
 
-No packages were renamed. No public APIs changed signatures — the v5 core (postgres, mongo, redis, rabbitmq, opentelemetry, tenant-manager middleware/consumer/event/core, etc.) is source-compatible with v4.6.0 after the module-path bump.
+No non-observability packages were renamed. No public APIs changed signatures for the v5 lib-commons core (postgres, mongo, redis, rabbitmq, tenant-manager middleware/consumer/event/core, etc.) after the module-path bump. Observability packages should be imported from `github.com/LerianStudio/lib-observability`.
 
 ### v4.6.0
 

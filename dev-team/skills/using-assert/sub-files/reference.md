@@ -7,7 +7,7 @@ exact structure. MUST NOT add sections. MUST NOT reorder sections. MUST populate
 section even if empty (use "None detected" placeholders).
 
 ```markdown
-# commons/assert Sweep Report
+# lib-observability/assert Sweep Report
 
 **Target:** <absolute path to target repo>
 **Generated:** <ISO-8601 timestamp>
@@ -25,7 +25,7 @@ section even if empty (use "None detected" placeholders).
 | Major upgrade required   | <yes / no>        |
 | Module path              | <.../v5>          |
 
-**Assessment:** <one-paragraph narrative — "project is up-to-date on commons/assert,
+**Assessment:** <one-paragraph narrative — "project is up-to-date on lib-observability/assert,
 all recommendations apply to pinned version" or "project pinned to v4.2.0, v5 migration
 required before adopting recommendations below">
 
@@ -33,7 +33,7 @@ required before adopting recommendations below">
 
 ## Unadopted Features
 
-Changes to `commons/assert` between the pinned version and latest stable that the
+Changes to `lib-observability/assert` between the pinned version and latest stable that the
 target has not yet adopted:
 
 | Version | Feature                     | Classification  | Relevant Finding Angle |
@@ -41,7 +41,7 @@ target has not yet adopted:
 | <ver>   | <feature>                   | <classification>| <angle>                |
 
 (If no assert-scoped changes exist in the delta, write "No unadopted features — the
-commons/assert API surface is unchanged between pinned and latest versions.")
+lib-observability/assert API surface is unchanged between pinned and latest versions.")
 
 ---
 
@@ -138,7 +138,7 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
   "estimated_complexity": "moderate",
   "depends_on": [],
   "angle": 1,
-  "replacement_api": "commons/assert.Asserter + domain predicates"
+  "replacement_api": "lib-observability/assert.Asserter + domain predicates"
 }
 ```
 
@@ -148,13 +148,14 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
 [
   {
     "id": "assert-sweep-001",
-    "title": "Upgrade lib-commons from v4.2.0 to latest v5.x",
+    "title": "Upgrade lib-commons from v4.2.0 and import lib-observability/assert",
     "severity": "HIGH",
-    "description": "Target service pins github.com/LerianStudio/lib-commons/v4 at v4.2.0. The commons/assert API surface is source-compatible across v4 → v5, but the module path bump requires updating all imports. All recommendations below assume v5 APIs are available. This task MUST complete before any other assert-sweep task lands.",
+    "description": "Target service pins github.com/LerianStudio/lib-commons/v4 at v4.2.0 and still relies on the old observability surface. Import github.com/LerianStudio/lib-observability/assert directly and keep lib-commons only for non-observability packages. This task MUST complete before any other assert-sweep task lands.",
     "files_affected": ["go.mod", "go.sum", "<all Go files importing lib-commons/v4>"],
     "acceptance_criteria": [
-      "go.mod declares github.com/LerianStudio/lib-commons/v5 at latest v5.x tag",
-      "All imports updated from /v4 to /v5",
+      "go.mod declares github.com/LerianStudio/lib-commons/v5 at latest v5.x tag for non-observability packages",
+      "go.mod declares github.com/LerianStudio/lib-observability at the required tag",
+      "All assert imports use github.com/LerianStudio/lib-observability/assert",
       "go build ./... passes",
       "go test ./... passes"
     ],
@@ -173,7 +174,7 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
     "estimated_complexity": "moderate",
     "depends_on": ["assert-sweep-001"],
     "angle": 1,
-    "replacement_api": "commons/assert.Asserter + domain predicates"
+    "replacement_api": "lib-observability/assert.Asserter + domain predicates"
   },
   {
     "id": "assert-sweep-003",
@@ -189,7 +190,7 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
     "estimated_complexity": "moderate",
     "depends_on": ["assert-sweep-001"],
     "angle": 5,
-    "replacement_api": "commons/assert + DebitsEqualCredits"
+    "replacement_api": "lib-observability/assert + DebitsEqualCredits"
   }
 ]
 ```
@@ -197,7 +198,7 @@ array of tasks shaped for `ring:dev-cycle` consumption. The format matches what
 **Handoff message template** (orchestrator surfaces to user after Phase 4):
 
 ```
-commons/assert sweep complete. Findings: <N> across <M> of 6 angles.
+lib-observability/assert sweep complete. Findings: <N> across <M> of 6 angles.
 - CRITICAL: <N>   HIGH: <N>   MEDIUM: <N>   LOW: <N>
 
 Report: /tmp/assert-sweep-report.md
@@ -212,14 +213,14 @@ hand-rolled predicates) MUST be addressed before MEDIUM/LOW tiers.
 
 # REFERENCE MODE
 
-Sections 1–14 below catalog the `commons/assert` package (latest v5.x). Resolve the
+Sections 1–14 below catalog the `lib-observability/assert` package (latest v5.x). Resolve the
 actual version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`.
 Read the sections relevant to your current task. Sweep Mode explorers receive extracts from these sections
 as context for their angle.
 
 ## 1. API Surface
 
-Full catalog of exported symbols in `github.com/LerianStudio/lib-commons/v5/commons/assert`.
+Full catalog of exported symbols in `github.com/LerianStudio/lib-observability/assert`.
 
 ### Constructor
 
@@ -952,7 +953,7 @@ Proving assertions fire correctly is part of the test suite, not a manual exerci
 ### Inject a test metrics factory
 
 ```go
-import "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry/metrics"
+import "github.com/LerianStudio/lib-observability/metrics"
 
 func TestPostTransaction_FiresAssertionOnUnbalanced(t *testing.T) {
     testFactory := metrics.NewTestFactory()
@@ -1176,7 +1177,7 @@ infrastructure clients → server), see `ring:using-lib-commons` Section 2.
 The two-line addition at the right point:
 
 ```go
-// After opentelemetry.NewTelemetry(...):
+// After tracing.NewTelemetry(...):
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 assert.InitAssertionMetrics(tl.MetricsFactory)
 ```
@@ -1191,7 +1192,7 @@ This skill does not duplicate material available elsewhere. Use these pointers:
 | ----------------------------------------------------------- | -------------------------------------------------------------- |
 | Full lib-commons package catalog (22 packages)              | `ring:using-lib-commons` Section 1                             |
 | Full bootstrap sequence with all clients                    | `ring:using-lib-commons` Section 2                             |
-| Observability overview including panic recovery coverage    | `ring:using-lib-commons` Section 5                             |
+| Observability overview including panic recovery coverage    | `ring:using-lib-commons` Section 5 "lib-observability"         |
 | Single-angle assertions sweep (lower-detail version)        | `ring:using-lib-commons` Angle 16                              |
 | Panic recovery + `SafeGo` + error reporter integration      | `ring:using-runtime`                                           |
 | Running a full codebase standards sweep                     | `ring:dev-refactor`                                            |
@@ -1206,7 +1207,7 @@ they close both halves of the invisible-failure problem in Go services.
 
 ## 13. Cross-Cutting Patterns
 
-Patterns that apply across all `commons/assert` usage.
+Patterns that apply across all `lib-observability/assert` usage.
 
 ### Nil-receiver safety
 
@@ -1254,9 +1255,9 @@ tight loops, request handlers, and message consumers.
 
 ## 14. Breaking Changes
 
-### v4.x → v5.x (commons/assert)
+### v4.x → v5.x (lib-observability/assert)
 
-No API-breaking changes in `commons/assert` across v4.2.0 → v5.x. All method
+No API-breaking changes in `lib-observability/assert` across v4.2.0 → v5.x. All method
 signatures, predicate signatures, and error types are source-compatible.
 
 The module path bump from `github.com/LerianStudio/lib-commons/v4/...` to
@@ -1265,6 +1266,6 @@ Section 15 for the full module-bump migration checklist.
 
 ### v5.0.1+
 
-Patch releases — no API changes to `commons/assert`. Check the latest v5.x tag for current patch level.
+Patch releases — no API changes to `lib-observability/assert`. Check the latest v5.x tag for current patch level.
 
 ---

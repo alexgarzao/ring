@@ -326,7 +326,7 @@ For EACH issue, output MUST include:
 ```{language}
 // file: {path}:{start_line}-{new_end_line}
 // ✅ Ring Standard: {Pattern Name} ({standards_file}:{section})
-{transformed code using lib-commons patterns}
+{transformed code using lib-observability patterns}
 ```
 
 ### Standard References

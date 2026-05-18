@@ -718,7 +718,7 @@ Task:
 
     ## Your Focus
     - Correct usage of lib-commons API patterns across 35+ packages
-    - Reinvented-wheel detection: manual implementations where lib-commons packages exist (resilience, database, observability, http, messaging, security, runtime)
+    - Reinvented-wheel detection: manual implementations where lib-commons packages or lib-observability packages exist (resilience, database, observability, http, messaging, security, runtime)
     - Version consistency (lib-commons version across services)
     - Deprecated API usage
 
@@ -751,4 +751,3 @@ Task:
     ### What Was Done Well
     [positive observations]
 ```
-

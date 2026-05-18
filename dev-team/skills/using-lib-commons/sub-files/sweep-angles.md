@@ -316,10 +316,10 @@ if err := pub.Publish(ctx, payload); err != nil {
 - Hand-rolled request ID / correlation ID propagation
 - Manual `otel.Tracer(...).Start(...)` wrapping handler logic
 
-**lib-commons Replacement:**
+**lib-commons + lib-observability Replacement:**
 - `commons/net/http.WithCORS` — configurable CORS with safe defaults
-- `commons/net/http.WithHTTPLogging` — structured request logging via zap
-- `commons/net/http.NewTelemetryMiddleware` — OTel span per request + metrics emission
+- `lib-observability/middleware.WithHTTPLogging` — structured request logging via `lib-observability/zap`
+- `lib-observability/middleware.NewTelemetryMiddleware` — OTel span per request + metrics emission
 
 **Migration Complexity:** trivial
 
@@ -339,10 +339,10 @@ app.Use(func(c *fiber.Ctx) error {
     return err
 })
 
-// lib-commons (AFTER):
+// lib-commons + lib-observability (AFTER):
 app.Use(http.WithCORS(http.CORSConfig{AllowedOrigins: cfg.AllowedOrigins}))
-app.Use(http.WithHTTPLogging(logger))
-app.Use(http.NewTelemetryMiddleware(tracer, meter))
+app.Use(middleware.WithHTTPLogging(middleware.WithCustomLogger(logger)))
+app.Use(middleware.NewTelemetryMiddleware(tl).WithTelemetry(tl))
 ```
 
 **Explorer Dispatch Prompt Template:**
@@ -704,15 +704,15 @@ ciphertext, err := c.Encrypt(plaintext) // GCM + HMAC
 **Severity:** HIGH
 
 **DIY Patterns to Detect:**
-- Custom `zap.NewProduction()` / `zap.NewDevelopment()` without `commons/zap` wrapper
+- Custom `zap.NewProduction()` / `zap.NewDevelopment()` without `lib-observability/zap` wrapper
 - Manual `otel.Tracer(...)` / `otel.Meter(...)` creation without centralized factory
 - Hardcoded OTLP exporter endpoints in app code
 - Metrics created ad-hoc (`meter.Int64Counter(...)`) without a `MetricsFactory`
 - No trace context propagation between services
 
-**lib-commons Replacement:**
-- `commons/zap.New(cfg)` — structured logger with standard fields
-- `commons/opentelemetry.NewTelemetry(cfg)` — tracer + meter + propagator setup
+**lib-observability Replacement:**
+- `lib-observability/zap.New(cfg)` — structured logger with standard fields
+- `lib-observability/tracing.NewTelemetry(cfg)` — tracer + meter + propagator setup
 - `tl.MetricsFactory` — pre-registered metric builders with standard labels
 
 **Migration Complexity:** moderate
@@ -727,9 +727,9 @@ tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exp))
 otel.SetTracerProvider(tp)
 tracer := otel.Tracer("my-service")
 
-// lib-commons (AFTER):
+// lib-observability (AFTER):
 logger := zap.New(zap.Config{ServiceName: "my-service", Env: cfg.Env})
-tl, err := opentelemetry.NewTelemetry(opentelemetry.Config{
+tl, err := tracing.NewTelemetry(tracing.TelemetryConfig{
     ServiceName: "my-service",
     OTLPEndpoint: cfg.OTLPEndpoint,
 })
@@ -745,7 +745,7 @@ metrics := tl.MetricsFactory()
 > Sweep the target repo for observability DIY. Search for `zap.NewProduction()`,
 > `zap.NewDevelopment()`, `otel.Tracer(`, `otel.Meter(`, direct OTLP exporter setup, and
 > ad-hoc metric creation without a factory. MUST flag hardcoded exporter endpoints. MUST
-> flag logger instantiation outside `commons/zap`. For each finding record file:line and
+> flag logger instantiation outside `lib-observability/zap`. For each finding record file:line and
 > the instrumentation component (logger, tracer, meter, exporter). Severity HIGH —
 > inconsistent instrumentation cripples observability in production.
 
@@ -764,10 +764,10 @@ metrics := tl.MetricsFactory()
   `SafeGo` equivalent
 
 **lib-commons Replacement:**
-- `commons/runtime.SafeGo(fn)` — wraps goroutine with recovery + observability
-- `commons/runtime.SafeGoWithContextAndComponent(ctx, component, fn)` — attaches
+- `lib-observability/runtime.SafeGo(fn)` — wraps goroutine with recovery + observability
+- `lib-observability/runtime.SafeGoWithContextAndComponent(ctx, component, fn)` — attaches
   contextual metadata to panic reports
-- `commons/runtime.RecoverWithPolicyAndContext(ctx, policy)` — deferred recovery inside
+- `lib-observability/runtime.RecoverWithPolicyAndContext(ctx, policy)` — deferred recovery inside
   existing functions with policy-driven response
 
 **Migration Complexity:** moderate
@@ -801,14 +801,14 @@ reliability baseline.
 **Explorer Dispatch Prompt Template:**
 
 > Sweep the target repo for panic-handling DIY. MUST find every `go func()` and
-> `go someFunction(...)` in the codebase that isn't wrapped by `commons/runtime.SafeGo`
+> `go someFunction(...)` in the codebase that isn't wrapped by `lib-observability/runtime.SafeGo`
 > or equivalent. MUST find every `defer recover()` that lacks observability emission
 > (metric, log, span). For each finding record file:line and whether the goroutine is
 > long-lived (consumer loop, worker) or short-lived (request fan-out). Severity CRITICAL
 > — silent goroutine crashes are the highest-signal reliability defect this sweep
 > catches.
 
-> **Scope note:** This is the breadth-first single-angle sweep. For a dedicated 6-angle deep audit of commons/runtime (naked goroutines, unobservable recover, missing InitPanicMetrics, production mode, framework integration, policy mismatch), dispatch `ring:using-runtime` in Sweep Mode.
+> **Scope note:** This is the breadth-first single-angle sweep. For a dedicated 6-angle deep audit of lib-observability/runtime (naked goroutines, unobservable recover, missing InitPanicMetrics, production mode, framework integration, policy mismatch), dispatch `ring:using-runtime` in Sweep Mode.
 
 ---
 
@@ -826,7 +826,7 @@ reliability baseline.
 - Hand-rolled domain predicates (`func isPositiveDecimal(d decimal.Decimal) bool`)
 
 **lib-commons Replacement:**
-- `commons/assert.New(logger, metrics)` — assertion handler with observability
+- `lib-observability/assert.New(logger, metrics)` — assertion handler with observability
 - Domain predicates: `PositiveDecimal`, `NonNegativeDecimal`, `DebitsEqualCredits`,
   `ValidTransactionStatus`, `NotEmpty`, etc.
 
@@ -862,7 +862,7 @@ if err := a.DebitsEqualCredits(ctx, debits, credits); err != nil {
 > file:line and the invariant being checked. Severity HIGH — panics crash services,
 > silent invariant violations corrupt state.
 
-> **Scope note:** This is the breadth-first single-angle sweep. For a dedicated 6-angle deep audit of commons/assert (panic in non-test code, defensive checks without metrics, hand-rolled predicates, missing InitAssertionMetrics, test-only invariants, AssertionError unwrapping), dispatch `ring:using-assert` in Sweep Mode.
+> **Scope note:** This is the breadth-first single-angle sweep. For a dedicated 6-angle deep audit of lib-observability/assert (panic in non-test code, defensive checks without metrics, hand-rolled predicates, missing InitAssertionMetrics, test-only invariants, AssertionError unwrapping), dispatch `ring:using-assert` in Sweep Mode.
 
 ---
 

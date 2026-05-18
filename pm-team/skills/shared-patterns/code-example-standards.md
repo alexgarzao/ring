@@ -4,17 +4,17 @@ This file defines MANDATORY rules for code examples in pre-dev documents (PRDs, 
 
 ---
 
-## ⛔ HARD GATE: lib-commons First (Go Projects)
+## ⛔ HARD GATE: Standard Modules First (Go Projects)
 
-MUST use lib-commons instead of creating custom utilities when generating Go code examples.
+MUST use lib-commons for non-observability infrastructure and lib-observability for logging/telemetry instead of creating custom utilities when generating Go code examples.
 
-### What lib-commons Already Provides (do not recreate)
+### What lib-commons/lib-observability Already Provide (do not recreate)
 
-| Category | lib-commons Package | What It Provides |
+| Category | Standard Package | What It Provides |
 |----------|---------------------|------------------|
-| **Logging** | `libLog "github.com/LerianStudio/lib-commons/v5/commons/log"` | Logger interface for all logging |
-| **Logger Init** | `libZap "github.com/LerianStudio/lib-commons/v5/commons/zap"` | Logger initialization (bootstrap only) |
-| **Telemetry** | `libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"` | Tracing, spans, metrics |
+| **Logging** | `libLog "github.com/LerianStudio/lib-observability/log"` | Logger interface for all logging |
+| **Logger Init** | `libZap "github.com/LerianStudio/lib-observability/zap"` | Logger initialization (bootstrap only) |
+| **Telemetry** | `libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"` | Tracing, spans, metrics |
 | **Config** | `libCommons "github.com/LerianStudio/lib-commons/v5/commons"` | `SetConfigFromEnvVars()` |
 | **HTTP** | `libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"` | Router, middleware, responses |
 | **PostgreSQL** | `libPostgres "github.com/LerianStudio/lib-commons/v5/commons/postgres"` | Connection, pagination |
@@ -35,7 +35,8 @@ Before writing any Go code example in subtasks:
 [ ] 5. Does this example need telemetry?      → Use libOpentelemetry
 [ ] 6. Does this example need server setup?   → Use libServer
 
-If yes to any → Use lib-commons. Do not create custom helpers.
+If yes to logging or telemetry → Use lib-observability (`libZap` in bootstrap, `libLog`/`libOpentelemetry` at runtime).
+If yes to config, HTTP, DB, or server setup → Use lib-commons. Do not create custom helpers.
 ```
 
 ---
@@ -61,12 +62,12 @@ func LogInfo(msg string, fields ...zap.Field) {
 }
 ```
 
-**✅ CORRECT: Use lib-commons**
+**✅ CORRECT: Use lib-observability**
 
 ```go
 import (
-    libZap "github.com/LerianStudio/lib-commons/v5/commons/zap"
-    libLog "github.com/LerianStudio/lib-commons/v5/commons/log"
+    libZap "github.com/LerianStudio/lib-observability/zap"
+    libLog "github.com/LerianStudio/lib-observability/log"
 )
 
 // Bootstrap only
@@ -142,20 +143,20 @@ package telemetry
 import "go.opentelemetry.io/otel/trace"
 
 func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
-    tracer := otel.GetCore threeProvider().Core three("my-service")
+    tracer := otel.GetTracerProvider().Tracer("my-service")
     return tracer.Start(ctx, name)
 }
 ```
 
-**✅ CORRECT: Use lib-commons**
+**✅ CORRECT: Use lib-observability/tracing**
 
 ```go
-import libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"
+import libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"
 
 // Initialize in bootstrap
-provider := libOpentelemetry.NewCore threeProvider(/* config */)
+provider := libOpentelemetry.NewTracerProvider(/* config */)
 
-// Use standard otel APIs with lib-commons provider
+// Use standard otel APIs with the lib-observability provider
 ```
 
 ---
@@ -164,9 +165,9 @@ provider := libOpentelemetry.NewCore threeProvider(/* config */)
 
 | Scenario | Allowed? | Condition |
 |----------|----------|-----------|
-| Infrastructure utilities (logging, config, HTTP, DB) | ❌ NO | Use lib-commons |
+| Infrastructure utilities (logging, config, HTTP, DB) | ❌ NO | Use lib-commons for non-observability infrastructure and lib-observability for logging/telemetry |
 | Domain-specific business logic | ✅ YES | Business rules are project-specific |
-| Service layer code | ✅ YES | Uses lib-commons for infrastructure |
+| Service layer code | ✅ YES | Uses lib-commons/lib-observability for infrastructure |
 | Repository implementations | ✅ YES | Uses libPostgres/libMongo for connections |
 | API handlers | ✅ YES | Uses libHTTP for middleware |
 | Validation logic | ✅ YES | Domain validation is project-specific |
@@ -178,13 +179,13 @@ provider := libOpentelemetry.NewCore threeProvider(/* config */)
 
 | Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
-| "Custom helper is simpler for this example" | Examples teach patterns. Teach the right pattern (lib-commons). | **Use lib-commons** in example |
-| "lib-commons import is too verbose" | Verbosity is intentional for clarity. Don't hide dependencies. | **Show full lib-commons imports** |
-| "I don't know if lib-commons has this" | Check before writing. See table above. | **Verify lib-commons first** |
+| "Custom helper is simpler for this example" | Examples teach patterns. Teach the right pattern (lib-commons/lib-observability). | **Use standard modules** in example |
+| "lib-commons/lib-observability import is too verbose" | Verbosity is intentional for clarity. Don't hide dependencies. | **Show full imports** |
+| "I don't know if lib-commons has this" | Check before writing. Observability belongs in lib-observability. | **Verify the standard module first** |
 | "The example is just pseudocode" | Pseudocode with custom helpers trains wrong patterns. | **Use real lib-commons calls** |
-| "Engineers will replace with lib-commons later" | Later = never. Show correct pattern from start. | **Use lib-commons now** |
-| "This is just a quick example" | Quick examples become production code. Do it right. | **Use lib-commons** |
-| "Custom utils are easier to understand" | Understanding wrong patterns is worse than not understanding. | **Use lib-commons** |
+| "Engineers will replace with lib-commons later" | Later = never. Show correct pattern from start. | **Use standard modules now** |
+| "This is just a quick example" | Quick examples become production code. Do it right. | **Use standard modules** |
+| "Custom utils are easier to understand" | Understanding wrong patterns is worse than not understanding. | **Use standard modules** |
 
 ---
 
@@ -193,8 +194,8 @@ provider := libOpentelemetry.NewCore threeProvider(/* config */)
 When creating subtasks with code examples (Gate 8), apply these rules:
 
 1. **Step 1 (Write failing test)**: Tests can use custom test helpers
-2. **Step 3 (Write implementation)**: Implementation MUST use lib-commons for infrastructure
-3. **Imports**: Always show complete lib-commons imports with `lib` prefix aliases
+2. **Step 3 (Write implementation)**: Implementation MUST use lib-commons for non-observability infrastructure and lib-observability for logging/telemetry
+3. **Imports**: Always show complete lib-commons/lib-observability imports with `lib` prefix aliases
 
 **Example subtask code block:**
 
@@ -207,7 +208,7 @@ package service
 import (
     "context"
 
-    libLog "github.com/LerianStudio/lib-commons/v5/commons/log"
+    libLog "github.com/LerianStudio/lib-observability/log"
 
     "github.com/your-org/your-service/internal/domain"
     "github.com/your-org/your-service/internal/repository"
@@ -215,7 +216,7 @@ import (
 
 type UserService struct {
     repo   repository.UserRepository
-    logger libLog.Logger  // ✅ lib-commons logger interface
+    logger libLog.Logger  // ✅ lib-observability logger interface
 }
 
 func NewUserService(repo repository.UserRepository, logger libLog.Logger) *UserService {
@@ -226,7 +227,7 @@ func NewUserService(repo repository.UserRepository, logger libLog.Logger) *UserS
 }
 
 func (s *UserService) CreateUser(ctx context.Context, input domain.CreateUserInput) (*domain.User, error) {
-    s.logger.Info("Creating user", "email", input.Email)  // ✅ Using lib-commons logger
+    s.logger.Info("Creating user", "email", input.Email)  // ✅ Using lib-observability logger
     // ... implementation
 }
 ```

@@ -38,9 +38,9 @@ All Lerian Studio Go projects **MUST** use the latest v5.x release of `lib-commo
 ```go
 import (
     libCommons "github.com/LerianStudio/lib-commons/v5/commons"
-    libZap "github.com/LerianStudio/lib-commons/v5/commons/zap"           // Logger initialization (config/bootstrap only)
-    libLog "github.com/LerianStudio/lib-commons/v5/commons/log"           // Logger interface (services, routes, consumers)
-    libOpentelemetry "github.com/LerianStudio/lib-commons/v5/commons/opentelemetry"
+    libZap "github.com/LerianStudio/lib-observability/zap"           // Logger initialization (config/bootstrap only)
+    libLog "github.com/LerianStudio/lib-observability/log"           // Logger interface (services, routes, consumers)
+    libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"
     libServer "github.com/LerianStudio/lib-commons/v5/commons/server"
     libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"
     libPostgres "github.com/LerianStudio/lib-commons/v5/commons/postgres"
@@ -49,19 +49,19 @@ import (
 )
 ```
 
-> **Note:** v5 uses `lib` prefix aliases (e.g., `libCommons`, `libZap`, `libLog`) to distinguish lib-commons packages from standard library and other imports.
+> **Note:** v5 uses `lib` prefix aliases (e.g., `libCommons` for lib-commons, `libZap`/`libLog` for lib-observability) to distinguish standard modules from standard library and other imports.
 
 ### What lib-commons Provides
 
 | Package                 | Purpose                                                | Where Used                            |
 | ----------------------- | ------------------------------------------------------ | ------------------------------------- |
 | `commons`               | Core utilities, config loading, tracking context       | Everywhere                            |
-| `commons/zap`           | Logger initialization/configuration                    | **Config/bootstrap files only**       |
-| `commons/log`           | Logger interface (`log.Logger`) for logging operations | Services, routes, consumers, handlers |
+| `lib-observability/zap`           | Logger initialization/configuration                    | **Config/bootstrap files only**       |
+| `lib-observability/log`           | Logger interface (`log.Logger`) for logging operations | Services, routes, consumers, handlers |
 | `commons/postgres`      | PostgreSQL connection management, pagination           | Bootstrap, repositories               |
 | `commons/mongo`         | MongoDB connection management                          | Bootstrap, repositories               |
 | `commons/redis`         | Redis connection management                            | Bootstrap, repositories               |
-| `commons/opentelemetry` | OpenTelemetry initialization and helpers               | Bootstrap, middleware                 |
+| `lib-observability/tracing` | OpenTelemetry initialization and helpers               | Bootstrap, middleware                 |
 | `commons/net/http`      | HTTP utilities, telemetry middleware, pagination       | Routes, handlers                      |
 | `commons/server`        | Server lifecycle with graceful shutdown                | Bootstrap                             |
 
@@ -74,7 +74,7 @@ import (
 | Category       | lib-commons Provides                                 | FORBIDDEN to Create                    |
 | -------------- | ---------------------------------------------------- | -------------------------------------- |
 | **Logging**    | `libLog.Logger`, `libZap.NewLogger()`                | Custom logger, log wrapper, log helper |
-| **Telemetry**  | `libOpentelemetry.NewCore threeProvider()`, span helpers | Custom tracer, telemetry wrapper       |
+| **Telemetry**  | `libOpentelemetry.NewTracerProvider()`, span helpers | Custom tracer, telemetry wrapper       |
 | **HTTP**       | `libHTTP.NewRouter()`, middleware, response helpers  | Custom HTTP utils, response formatters |
 | **Config**     | `libCommons.SetConfigFromEnvVars()`                  | Custom config loader, env parser       |
 | **Server**     | `libServer.NewServer()`, graceful shutdown           | Custom server lifecycle                |
@@ -87,12 +87,15 @@ import (
 #### Detection Commands (Run Before Creating Any Utility)
 
 ```bash
-# BEFORE creating any utility, search lib-commons first
+# BEFORE creating any utility, search lib-commons/lib-observability first
 # Clone or browse: https://github.com/LerianStudio/lib-commons
+# Clone or browse: https://github.com/LerianStudio/lib-observability
 
 # Search for existing functionality
 grep -rn "func.*Logger" ./vendor/github.com/LerianStudio/lib-commons/
 grep -rn "func.*Trace" ./vendor/github.com/LerianStudio/lib-commons/
+grep -rn "func.*Logger" ./vendor/github.com/LerianStudio/lib-observability/
+grep -rn "func.*Trace" ./vendor/github.com/LerianStudio/lib-observability/
 grep -rn "func.*Config" ./vendor/github.com/LerianStudio/lib-commons/
 ```
 
@@ -163,7 +166,7 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 | Rationalization                           | Why It's WRONG                                                  | Required Action              |
 | ----------------------------------------- | --------------------------------------------------------------- | ---------------------------- |
 | "My wrapper is simpler"                   | Simpler ≠ better. Consistency > convenience.                    | **Use lib-commons**          |
-| "lib-commons is too complex for this"     | Complexity exists for good reasons (telemetry, error handling). | **Use lib-commons**          |
+| "lib-commons/lib-observability is too complex for this" | Complexity exists for good reasons (telemetry, error handling). | **Use lib-commons/lib-observability** |
 | "I need a slightly different interface"   | Adapt your code to lib-commons, not the other way around.       | **Use lib-commons**          |
 | "It's just a small helper"                | Small helpers grow. Today's helper is tomorrow's tech debt.     | **Use lib-commons**          |
 | "I'll migrate to lib-commons later"       | Later = never. Start with lib-commons.                          | **Use lib-commons now**      |
@@ -183,7 +186,7 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 | `fiber/v2`                 | v2.52.0         | HTTP framework                                   |
 | `pgx/v5`                   | v5.7.0          | PostgreSQL driver                                |
 | `go.opentelemetry.io/otel` | v1.38.0         | Telemetry                                        |
-| `zap`                      | v1.27.0         | Logging implementation (internal to lib-commons) |
+| `zap`                      | v1.27.0         | Logging implementation used by lib-observability |
 | `testify`                  | v1.10.0         | Testing                                          |
 | `gomock`                   | v0.5.0          | Mock generation                                  |
 | `mongo-driver`             | v1.17.0         | MongoDB driver                                   |
