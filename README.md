@@ -6,7 +6,7 @@
 
 **Proven engineering practices, enforced through skills.**
 
-Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **4 active plugins** and **69 skills** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
+Ring is a comprehensive skills library and workflow system for AI agents that transforms how AI assistants approach software development. Currently implemented as a **Claude Code plugin marketplace** with **4 active plugins**, **69 skills**, and **35 agents** (see `.claude-plugin/marketplace.json` for current versions), the skills themselves are agent-agnostic and can be used with any AI agent system. Ring provides battle-tested patterns, mandatory workflows, and systematic approaches across the entire software delivery value chain.
 
 ## ✨ Why Ring?
 
@@ -22,7 +22,7 @@ Ring solves this by:
 
 - **Enforcing proven workflows** - Test-driven development, systematic debugging, proper planning
 - **Providing 69 specialized skills** (14 core + 31 dev-team + 18 product planning + 6 technical writing)
-- **32 specialized agents** - 10 review/planning + 15 developer + 4 product research + 3 technical writing
+- **35 specialized agents** - 10 review/planning + 18 developer + 4 product research + 3 technical writing
 - **Automating skill discovery** - Skills load automatically at session start
 - **Preventing common failures** - Built-in anti-patterns and mandatory checklists
 
@@ -64,7 +64,10 @@ Ring solves this by:
 - `ring:sre` - Observability and reliability specialist
 - `ring:ui-engineer` - UI component specialist (design systems, accessibility)
 - `ring:helm-engineer` - Helm chart specialist (chart structure, security, Lerian conventions)
-- `ring:lib-commons-reviewer` - lib-commons usage review (correct API usage, reinvented-wheel opportunities across 35+ packages)
+- `ring:lib-commons-reviewer` - lib-commons non-observability package usage review (lifecycle, tenancy, http, idempotency, security, database, messaging, outbox-repo side; reinvented-wheel opportunities)
+- `ring:lib-observability-reviewer` - lib-observability adoption review (tracing, metrics, log, zap, runtime, assert, redaction, constants; raw OTel/Prometheus/zap/slog detection; deprecated lib-commons observability shims)
+- `ring:lib-streaming-reviewer` - lib-streaming adoption review (Builder/Emitter, outbox writer, CloudEvents, manifest, NoopEmitter fallback; raw kgo/sarama/amqp/watermill bypasses)
+- `ring:lib-systemplane-reviewer` - lib-systemplane adoption review (hot-reloadable runtime config, tenant-scoped knobs, admin authorizer, v4 residue, DIY config-watching)
 - `ring:multi-tenant-reviewer` - Multi-tenant usage review (lib-commons/multitenancy patterns, tenant isolation, JWT tenantId propagation)
 - `ring:performance-reviewer` - Performance review (code hotspots, infra misconfigurations, Go/TypeScript/Python)
 
@@ -236,7 +239,7 @@ When you start a new Claude Code session with Ring installed, you'll see:
 ## Available Skills:
 - ring:using-ring (Check for skills BEFORE any task)
 - ring:test-driven-development (RED-GREEN-REFACTOR cycle)
-- ring:codereview (Parallel 10-reviewer dispatch)
+- ring:codereview (Parallel 13-reviewer dispatch)
 - ring:explore-codebase (Two-phase codebase exploration)
 ... and 65 more skills
 ```
@@ -272,7 +275,7 @@ REFACTOR → Clean up → Stay green
 
 **Collaboration & Planning (3):**
 
-- `ring:codereview` - **Parallel 10-reviewer dispatch** with severity-based handling
+- `ring:codereview` - **Parallel 13-reviewer dispatch** with severity-based handling
 - `ring:worktree` - Isolated development
 - `ring:commit` - Smart commit organization with atomic grouping, conventional commits, and trailers
 
@@ -403,7 +406,7 @@ Claude: I'm using ring:pre-dev-feature to scope this feature...
 Claude: I'm using ring:test-driven-development to implement...
         [RED-GREEN-REFACTOR cycle for each component]
 Claude: I'm using ring:codereview to validate...
-        [10-reviewer parallel dispatch]
+        [13-reviewer parallel dispatch]
 ```
 
 ### Fixing a Bug
@@ -428,15 +431,16 @@ Claude: I'll use the pre-dev workflow to plan this systematically...
         ... [Through all 10 gates]
 ```
 
-### Code Review (Parallel, 10 Reviewers!)
+### Code Review (Parallel, 13 Reviewers!)
 
 ```
 User: "Review my authentication implementation"
-Claude: Dispatching all 10 reviewers in parallel...
+Claude: Dispatching all 13 reviewers in parallel...
         [Launches ring:code-reviewer, ring:business-logic-reviewer, ring:security-reviewer,
          ring:test-reviewer, ring:nil-safety-reviewer, ring:consequences-reviewer,
          ring:dead-code-reviewer, ring:performance-reviewer, ring:multi-tenant-reviewer,
-         ring:lib-commons-reviewer simultaneously]
+         ring:lib-commons-reviewer, ring:lib-observability-reviewer,
+         ring:lib-systemplane-reviewer, ring:lib-streaming-reviewer simultaneously]
 
         Code reviewer: PASS. Clean architecture, good tests.
         Business reviewer: FAIL. Missing password reset flow (HIGH severity).
@@ -447,6 +451,9 @@ Claude: Dispatching all 10 reviewers in parallel...
         Performance reviewer: PASS. No hotspots or goroutine leaks found.
         Multi-tenant reviewer: PASS. No multi-tenant code in scope.
         lib-commons reviewer: PASS. Correct usage of lib-commons/resilience, no reinvented wheels detected.
+        lib-observability reviewer: PASS. Tracing and metrics flow through lib-observability bootstrap.
+        lib-systemplane reviewer: PASS. No hot-reloadable knobs in scope.
+        lib-streaming reviewer: PASS. No event emission in scope.
 
         Aggregating issues by severity:
         - CRITICAL: JWT secret hardcoded in auth.ts:42
@@ -455,7 +462,7 @@ Claude: Dispatching all 10 reviewers in parallel...
         Dispatching fix subagent to address Critical/High issues...
         [Fixes applied]
 
-        Re-running all 10 reviewers in parallel...
+        Re-running all 13 reviewers in parallel...
         All reviewers: PASS. Ready for production.
 ```
 
@@ -495,8 +502,8 @@ ring/                                  # Monorepo root
 │   │   ├── write-plan.md                # Implementation planning (`ring:write-plan`)
 │   │   └── codebase-explorer.md         # Deep architecture analysis (`ring:codebase-explorer`)
 │   └── docs/                       # Documentation
-├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 31 skills, 15 agents
-│   └── agents/                      # 15 specialized developer agents
+├── dev-team/                      # Developer Agents plugin (ring-dev-team) - 31 skills, 18 agents
+│   └── agents/                      # 18 specialized developer agents
 │       ├── backend-engineer-golang.md       # Go backend specialist (`ring:backend-engineer-golang`)
 │       ├── backend-engineer-typescript.md   # TypeScript/Node.js backend specialist (`ring:backend-engineer-typescript`)
 │       ├── frontend-bff-engineer-typescript.md # BFF & React/Next.js specialist (`ring:frontend-bff-engineer-typescript`)
@@ -504,7 +511,10 @@ ring/                                  # Monorepo root
 │       ├── frontend-designer.md             # Visual design specialist (`ring:frontend-designer`)
 │       ├── frontend-engineer.md             # Frontend engineer (`ring:frontend-engineer`)
 │       ├── helm-engineer.md                 # Helm chart specialist (`ring:helm-engineer`)
-│       ├── lib-commons-reviewer.md          # lib-commons usage review (`ring:lib-commons-reviewer`)
+│       ├── lib-commons-reviewer.md          # lib-commons non-observability usage review (`ring:lib-commons-reviewer`)
+│       ├── lib-observability-reviewer.md    # lib-observability adoption review (`ring:lib-observability-reviewer`)
+│       ├── lib-streaming-reviewer.md        # lib-streaming adoption review (`ring:lib-streaming-reviewer`)
+│       ├── lib-systemplane-reviewer.md      # lib-systemplane adoption review (`ring:lib-systemplane-reviewer`)
 │       ├── multi-tenant-reviewer.md         # Multi-tenant usage review (`ring:multi-tenant-reviewer`)
 │       ├── performance-reviewer.md          # Performance review (`ring:performance-reviewer`)
 │       ├── prompt-quality-reviewer.md       # Agent quality reviewer (`ring:prompt-quality-reviewer`)

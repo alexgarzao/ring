@@ -1,9 +1,11 @@
 ---
 name: ring:using-lib-commons
-description: Dual-mode skill for github.com/LerianStudio/lib-commons v5, Lerian's shared Go library. Sweep Mode dispatches 22 parallel explorers to detect DIY implementations that should use lib-commons, with file:line replacement precision. Reference Mode catalogs all lib-commons packages (database, messaging, multi-tenancy, observability, security, resilience, HTTP, idempotency, TLS) for API discovery. Skip for non-Go code or Ring itself.
+description: Dual-mode skill for github.com/LerianStudio/lib-commons v5, Lerian's shared Go library — the non-observability surface. Sweep Mode dispatches parallel explorers to detect DIY implementations that should use lib-commons, with file:line replacement precision. Reference Mode catalogs lib-commons packages for lifecycle (Launcher), outbox repository, circuit breakers, tenant management, idempotency, security/TLS, database, messaging, HTTP toolkit. Observability (log, metrics, tracing, assertions, panic recovery, redaction) moved out of lib-commons into lib-observability v1.0.0 — see [[using-lib-observability]] and its sub-skills [[using-tracing]], [[using-runtime]], [[using-assert]]. Skip for non-Go code or Ring itself.
 ---
 
 # ring:using-lib-commons
+
+> **Scope note (lib-observability v1.0.0):** The observability layer — `log`, `metrics`, `tracing`, `zap`, `assert`, `runtime` (panic recovery), `redaction`, and OTel attribute constants — **moved out of lib-commons into `github.com/LerianStudio/lib-observability`** as of v1.0.0. lib-commons v5 keeps deprecated shims for back-compat, but this skill is no longer the canonical reference for those packages. For observability work, dispatch [[using-lib-observability]] (top-level) or its dedicated sub-skills [[using-tracing]] / [[using-runtime]] / [[using-assert]]. This skill now focuses on lib-commons's non-observability surface: lifecycle (`commons.Launcher`), outbox repository (writer side lives in [[using-lib-streaming]]), circuit breakers, tenant management, idempotency, security/TLS, database connections, messaging (RabbitMQ command queues; events go through [[using-lib-streaming]]), HTTP toolkit.
 
 ## When to use
 Sweep mode:
@@ -26,7 +28,9 @@ Reference mode:
 - Target codebase is Ring itself (no lib-commons dependency)
 
 ## Related
-**Similar:** ring:using-dev-team, ring:dev-refactor, ring:using-runtime, ring:using-assert
+**Similar:** ring:using-dev-team, ring:dev-refactor
+**Observability layer (moved to lib-observability):** [[using-lib-observability]], [[using-tracing]], [[using-runtime]], [[using-assert]]
+**Adjacent libs:** [[using-outbox]], [[using-lib-streaming]], [[using-lib-systemplane]]
 
 
 ## Mode Selection
@@ -73,8 +77,10 @@ Dispatch all 22 explorer angles in **3 batches** (8+8+6). Wait for each batch be
 | Batch | Angles | Focus |
 |---|---|---|
 | 1 | 1–8 | Infrastructure + HTTP |
-| 2 | 9–16 | Ergonomics + security + observability |
+| 2 | 9–16 | Ergonomics + security + observability-shim detection |
 | 3 | 17–22 | Resilience + multi-tenant + utilities |
+
+> **Observability angles (14, 15, 16) — scope shift:** these angles still run as part of this sweep, but their **detection logic now targets deprecated lib-commons shim imports** in addition to raw DIY. The canonical replacement is `lib-observability/*`, NOT `commons/zap`, `commons/runtime`, `commons/assert`. For a deep, dedicated audit of the observability layer, dispatch [[using-lib-observability]] (top-level) or [[using-tracing]] / [[using-runtime]] / [[using-assert]] instead — those produce richer findings than the breadth-first single-angle sweep here.
 
 **Per-explorer dispatch** (`subagent_type: ring:codebase-explorer`):
 
@@ -125,7 +131,7 @@ Full API catalog in `sub-files/reference.md`. Load the relevant sections for you
 | 2 | Common Initialization Pattern | Typical service bootstrap |
 | 3 | Database Connections | postgres, mongo, redis, rabbitmq |
 | 4 | HTTP Toolkit | Middleware, rate limiting, pagination, idempotency |
-| 5 | Observability | Logger, tracing, metrics, runtime, assert |
+| 5 | Observability *(moved)* | Logger, tracing, metrics, runtime, assert — now in [[using-lib-observability]] |
 | 6 | Resilience & Utilities | Circuit breaker, backoff, safe math |
 | 7 | Security | JWT, encryption, sensitive fields, TLS |
 | 8 | Transaction Domain | Intent planning, balance posting, outbox |

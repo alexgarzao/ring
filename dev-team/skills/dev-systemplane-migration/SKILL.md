@@ -1,9 +1,9 @@
 ---
 name: ring:dev-systemplane-migration
-description: Migrates Lerian Go services from .env/YAML configuration of operational knobs (log levels, feature flags, rate limits, timeouts) to the lib-commons v5 systemplane runtime config client — a hot-reloadable plane using Postgres LISTEN/NOTIFY or MongoDB change streams. Use when adding hot-reloadable runtime configuration or migrating from v4 systemplane. Detects deleted v4 residue (Supervisor, BundleFactory, SYSTEMPLANE_* env vars).
+description: Migrates Lerian Go services from .env/YAML configuration of operational knobs (log levels, feature flags, rate limits, timeouts) to the lib-systemplane runtime config client — a hot-reloadable plane using Postgres LISTEN/NOTIFY or MongoDB change streams. Use when adding hot-reloadable runtime configuration or migrating from v4 systemplane (formerly lib-commons/v5/commons/systemplane). Detects deleted v4 residue (Supervisor, BundleFactory, SYSTEMPLANE_* env vars).
 ---
 
-# Systemplane Migration (lib-commons v5)
+# Systemplane Migration (lib-systemplane)
 
 ## When to use
 - User requests systemplane integration for a Go service
@@ -22,24 +22,24 @@ You orchestrate. Agents implement. NEVER use Edit/Write/Bash on Go source files.
 All code changes go through `Task(subagent_type="ring:backend-engineer-golang")`.
 TDD mandatory for all implementation gates (RED → GREEN → REFACTOR).
 
-## Systemplane Architecture (v5)
+## Systemplane Architecture
 
 Three-step lifecycle:
 1. `systemplane.NewPostgres` / `systemplane.NewMongoDB` — construct client (pass open `*sql.DB` or `*mongo.Client`)
 2. `client.Register(namespace, key, defaultValue, opts...)` — declare every key BEFORE `Start`
 3. `client.Start(ctx)` — begin listening; `Get*` for reads, `OnChange` for reactions
 
-**Standards reference:** WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/commons/systemplane/doc.go`
+**Standards reference:** WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-systemplane/main/doc.go`
 
 **Canonical import paths:**
 
 | Alias | Import Path | Purpose |
 |-------|-------------|---------|
-| `systemplane` | `github.com/LerianStudio/lib-commons/v5/commons/systemplane` | Client, constructors, options |
-| `admin` | `github.com/LerianStudio/lib-commons/v5/commons/systemplane/admin` | HTTP admin routes |
-| `systemplanetest` | `github.com/LerianStudio/lib-commons/v5/commons/systemplane/systemplanetest` | Contract test suite |
+| `systemplane` | `github.com/LerianStudio/lib-systemplane` | Client, constructors, options |
+| `admin` | `github.com/LerianStudio/lib-systemplane/admin` | HTTP admin routes |
+| `systemplanetest` | `github.com/LerianStudio/lib-systemplane/systemplanetest` | Contract test suite |
 
-**v4 packages are DELETED** — do not use `lib-commons/v4/...`, `Supervisor`, `BundleFactory`, `ApplyBehavior`.
+**Legacy paths are DELETED** — do not use `lib-commons/v4/...` or `lib-commons/v5/commons/systemplane` (extracted to its own module), and do not use `Supervisor`, `BundleFactory`, `ApplyBehavior`.
 
 **Scope: operational knobs only** — values that can mutate in-place (log levels, feature flags, rate limits, timeouts, poll intervals).
 NOT for settings requiring resource teardown: DSNs, TLS material, listen addresses → keep in env vars + restart.
@@ -58,10 +58,16 @@ Any key storing credentials MUST use `RedactFull`.
 
 **Mandatory agent instruction (include in EVERY dispatch):**
 
-> WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-commons/main/commons/systemplane/doc.go`.
-> Use only canonical v5 import paths. v4 packages do not exist in v5.
+> WebFetch `https://raw.githubusercontent.com/LerianStudio/lib-systemplane/main/doc.go`.
+> Use only canonical `github.com/LerianStudio/lib-systemplane` import paths. v4 packages and the legacy `lib-commons/v5/commons/systemplane` path no longer exist.
 > systemplane is for operational knobs only — not DSNs, TLS, or listen addresses.
 > TDD: RED → GREEN → REFACTOR for every gate.
+
+## Related Skills
+
+- [[using-lib-systemplane]] — adoption sweep + API reference for the lib-systemplane module
+- [[using-lib-commons]] — non-observability lib-commons packages (lifecycle, outbox, tenancy)
+- [[using-lib-observability]] — tracing, metrics, logging, assert, runtime, redaction
 
 ## Gate Overview
 
@@ -77,7 +83,7 @@ Any key storing credentials MUST use `RedactFull`.
 | 6 | Admin HTTP Mount + Authorizer | Skip only if service has no admin surface (justify) | ring:backend-engineer-golang |
 | 7 | Wiring + Lifecycle + Backward Compat | Always — NEVER skippable | ring:backend-engineer-golang |
 | 8 | Tests | Always | ring:backend-engineer-golang |
-| 9 | Code Review | Always | 10 parallel reviewers |
+| 9 | Code Review | Always | 13 parallel reviewers |
 | 10 | User Validation | Always | User |
 | 11 | Activation Guide | Always | Orchestrator |
 
@@ -89,17 +95,18 @@ Orchestrator executes directly. Three phases:
 
 **Phase 1: Stack Detection**
 ```bash
-grep "lib-commons" go.mod         # check v4 vs v5
-grep -rn "systemplane" internal/  # existing usage
-grep -rn "SYSTEMPLANE_" .         # v4 env vars
-grep "postgresql\|postgres" go.mod # backend type
+grep "lib-commons\|lib-systemplane" go.mod  # check legacy v4/v5 paths vs new module
+grep -rn "systemplane" internal/             # existing usage
+grep -rn "SYSTEMPLANE_" .                    # v4 env vars
+grep "postgresql\|postgres" go.mod           # backend type
 grep "mongodb\|mongo" go.mod
 # Non-canonical:
 grep -rn "fsnotify\|viper.Watch\|Supervisor\|BundleFactory\|ApplyBehavior" internal/
+grep -rn "lib-commons/v5/commons/systemplane\|lib-commons/v4" internal/  # legacy paths
 ```
 
-**Phase 2: v5 Compliance Audit** (if systemplane code detected)
-- No v4 imports or types
+**Phase 2: Compliance Audit** (if systemplane code detected)
+- No legacy imports (`lib-commons/v4/...`, `lib-commons/v5/commons/systemplane`)
 - `Register` called before `Start`
 - `OnChange` wired for hot-reloadable keys
 - `admin.Mount` with `admin.WithAuthorizer`
@@ -108,12 +115,13 @@ grep -rn "fsnotify\|viper.Watch\|Supervisor\|BundleFactory\|ApplyBehavior" inter
 **Phase 3: Non-Canonical Detection**
 - Any `fsnotify` / `viper.WatchConfig` / `envconfig.Watch` for runtime config → MUST replace
 - Any v4 sub-packages (`domain/`, `ports/`, `registry/`, `service/`, `bootstrap/`) → MUST remove
+- Any `lib-commons/v5/commons/systemplane` imports → MUST migrate to `lib-systemplane`
 
 ## Severity Reference
 
 | Severity | Criteria |
 |----------|----------|
-| CRITICAL | v4 import (build fails); `admin.Mount` without authorizer; secret with `RedactNone` |
+| CRITICAL | Legacy import (`lib-commons/v4/...` or `lib-commons/v5/commons/systemplane`); `admin.Mount` without authorizer; secret with `RedactNone` |
 | HIGH | No `Register` before `Start`; no `OnChange` for live key; `SYSTEMPLANE_*` env vars in code |
 | MEDIUM | Missing `WithLogger`/`WithTelemetry`; no validator on numeric range |
 | LOW | Missing `WithDescription`; inconsistent namespace naming |

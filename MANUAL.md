@@ -1,6 +1,6 @@
 # Ring Marketplace Manual
 
-Quick reference guide for the Ring skills library and workflow system. This monorepo provides 4 plugins with 69 skills and 32 agents for enforcing proven software engineering practices across the entire software delivery value chain.
+Quick reference guide for the Ring skills library and workflow system. This monorepo provides 4 plugins with 69 skills and 35 agents for enforcing proven software engineering practices across the entire software delivery value chain.
 
 ---
 
@@ -14,7 +14,7 @@ Quick reference guide for the Ring skills library and workflow system. This mono
 │  ┌───────────────┐  ┌───────────────┐                                              │
 │  │ ring-default  │  │ ring-dev-team │                                              │
 │  │  Skills(14)   │  │  Skills(31)   │                                              │
-│  │  Agents(10)   │  │  Agents(15)   │                                              │
+│  │  Agents(10)   │  │  Agents(18)   │                                              │
 │  └───────────────┘  └───────────────┘                                              │
 │  ┌───────────────┐  ┌───────────────┐                                              │
 │  │ ring-pm-team  │  │ ring-tw-team  │                                              │
@@ -90,22 +90,25 @@ Invoke via `Task tool with subagent_type: "..."`.
 
 ### Code Review pool (default + dev-team)
 
-**Always dispatch all 10 in parallel** (single message, 10 Task calls):
+**Always dispatch all 13 in parallel** (single message, 13 Task calls):
 
-| Agent                          | Purpose                                      |
-| ------------------------------ | -------------------------------------------- |
-| `ring:code-reviewer`           | Architecture, patterns, maintainability      |
-| `ring:business-logic-reviewer` | Domain correctness, edge cases, requirements |
-| `ring:security-reviewer`       | Vulnerabilities, OWASP, auth, validation     |
-| `ring:test-reviewer`           | Test coverage, quality, and completeness     |
-| `ring:nil-safety-reviewer`     | Nil/null pointer safety analysis             |
-| `ring:consequences-reviewer`   | Ripple effect, caller impact, downstream consequences |
-| `ring:dead-code-reviewer`      | Unused code, unreachable paths, dead exports          |
-| `ring:performance-reviewer`    | Performance hotspots, allocations, goroutine leaks, N+1 queries |
-| `ring:multi-tenant-reviewer`   | lib-commons/multitenancy patterns, tenant isolation, tenantId propagation |
-| `ring:lib-commons-reviewer`    | lib-commons package usage and reinvented-wheel opportunities |
+| Agent                                | Purpose                                      |
+| ------------------------------------ | -------------------------------------------- |
+| `ring:code-reviewer`                 | Architecture, patterns, maintainability      |
+| `ring:business-logic-reviewer`       | Domain correctness, edge cases, requirements |
+| `ring:security-reviewer`             | Vulnerabilities, OWASP, auth, validation     |
+| `ring:test-reviewer`                 | Test coverage, quality, and completeness     |
+| `ring:nil-safety-reviewer`           | Nil/null pointer safety analysis             |
+| `ring:consequences-reviewer`         | Ripple effect, caller impact, downstream consequences |
+| `ring:dead-code-reviewer`            | Unused code, unreachable paths, dead exports          |
+| `ring:performance-reviewer`          | Performance hotspots, allocations, goroutine leaks, N+1 queries |
+| `ring:multi-tenant-reviewer`         | lib-commons/multitenancy patterns, tenant isolation, tenantId propagation |
+| `ring:lib-commons-reviewer`          | lib-commons non-observability package usage and reinvented-wheel opportunities |
+| `ring:lib-observability-reviewer`    | lib-observability adoption: tracing, metrics, log, zap, runtime, assert, redaction, constants |
+| `ring:lib-systemplane-reviewer`      | lib-systemplane adoption: hot-reloadable config, tenant-scoped knobs, admin authorizer, v4 residue |
+| `ring:lib-streaming-reviewer`        | lib-streaming adoption: event publishers, outbox writer, CloudEvents, manifest |
 
-**Example:** Before merging, run all 10 parallel reviewers via `ring:codereview` skill
+**Example:** Before merging, run all 13 parallel reviewers via `ring:codereview` skill
 
 ### Orchestration (ring-default)
 
@@ -139,7 +142,10 @@ Use when you need expert depth in specific domains:
 | `ring:sre`                              | SRE specialist               | Observability, reliability, SLOs, incident readiness |
 | `ring:performance-reviewer`             | Performance review           | Go, TypeScript, Python, GOMAXPROCS, GC tuning      |
 | `ring:multi-tenant-reviewer`            | Multi-tenant usage review    | lib-commons/multitenancy, tenant isolation, JWT tenantId |
-| `ring:lib-commons-reviewer`             | lib-commons usage review     | Correct lib-commons API usage, reinvented-wheel detection |
+| `ring:lib-commons-reviewer`             | lib-commons non-observability usage review | lifecycle, tenancy, http, idempotency, security, database, messaging |
+| `ring:lib-observability-reviewer`       | lib-observability adoption review | tracing, metrics, log, zap, runtime, assert, redaction, constants |
+| `ring:lib-systemplane-reviewer`         | lib-systemplane adoption review | hot-reloadable config, tenant-scoped knobs, admin authorizer, v4 residue |
+| `ring:lib-streaming-reviewer`           | lib-streaming adoption review | Builder/Emitter, outbox writer, CloudEvents, manifest, NoopEmitter fallback |
 | `ring:ui-engineer`                      | UI component specialist      | Design systems, accessibility, React               |
 
 **Standards Compliance Output:** Refactor-capable ring-dev-team agents produce a `## Standards Compliance` output section with conditional requirement:
@@ -199,7 +205,7 @@ For documentation creation and review:
 1. **Plan** → Use `ring:pre-dev-feature` skill (or `ring:pre-dev-full` if complex)
 2. **Isolate** → Use `ring:worktree` skill
 3. **Implement** → Use `ring:test-driven-development` skill
-4. **Review** → Use `ring:codereview` skill (dispatches 10 reviewers)
+4. **Review** → Use `ring:codereview` skill (dispatches 13 reviewers)
 5. **Commit** → Use `ring:commit` skill
 
 ### Bug Investigation
@@ -223,6 +229,9 @@ Runs in parallel:
   • ring:performance-reviewer
   • ring:multi-tenant-reviewer
   • ring:lib-commons-reviewer
+  • ring:lib-observability-reviewer
+  • ring:lib-systemplane-reviewer
+  • ring:lib-streaming-reviewer
     ↓
 Consolidated report with recommendations
 ```
@@ -258,7 +267,7 @@ These enforce quality standards:
 
 | Need                              | Agent to Use                                |
 | --------------------------------- | ------------------------------------------- |
-| General code quality review       | 10 parallel reviewers via `ring:codereview` skill |
+| General code quality review       | 13 parallel reviewers via `ring:codereview` skill |
 | Large PR review (15+ files)       | Auto-sliced via `ring:review-slicer`        |
 | Implementation planning           | `ring:write-plan`                           |
 | Deep codebase analysis            | `ring:codebase-explorer`                    |
@@ -277,6 +286,9 @@ These enforce quality standards:
 | Performance review                | `ring:performance-reviewer`                 |
 | Multi-tenant usage review         | `ring:multi-tenant-reviewer`                |
 | lib-commons usage review          | `ring:lib-commons-reviewer`                 |
+| lib-observability adoption review | `ring:lib-observability-reviewer`           |
+| lib-systemplane adoption review   | `ring:lib-systemplane-reviewer`             |
+| lib-streaming adoption review     | `ring:lib-streaming-reviewer`               |
 | Best practices research           | `ring:best-practices-researcher`            |
 | Framework documentation research  | `ring:framework-docs-researcher`            |
 | Repository analysis               | `ring:repo-research-analyst`                |
@@ -310,7 +322,7 @@ Returns structured markdown output per the agent's documented sections
 ### Parallel Review Pattern
 
 ```
-Single message with 10 Task calls (not sequential):
+Single message with 13 Task calls (not sequential):
 
 Task #1: ring:code-reviewer
 Task #2: ring:business-logic-reviewer
@@ -322,6 +334,9 @@ Task #7: ring:dead-code-reviewer
 Task #8: ring:performance-reviewer
 Task #9: ring:multi-tenant-reviewer
 Task #10: ring:lib-commons-reviewer
+Task #11: ring:lib-observability-reviewer
+Task #12: ring:lib-systemplane-reviewer
+Task #13: ring:lib-streaming-reviewer
     ↓
 All run in parallel (saves ~15 minutes vs sequential)
     ↓
