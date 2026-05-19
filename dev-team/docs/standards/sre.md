@@ -716,6 +716,17 @@ func (h *HealthChecker) ReadinessHandler(w http.ResponseWriter, r *http.Request)
 }
 ```
 
+### Probe Logging Contract
+
+Kubernetes hits readiness probes every 5s. INFO on probe success is FORBIDDEN — it drowns log pipelines (≈17k events/day per pod) without diagnostic value.
+
+| Outcome | Level |
+|---------|-------|
+| Success (all dependencies up) | DEBUG |
+| Failure (any dependency down/degraded) | WARN |
+
+Steady-state observability is the job of probe metrics (`readyz_check_status`, `readyz_check_duration`), not logs. Access-log middleware MUST exclude `/readyz`, `/health`, `/metrics` from request logging. See `ring:dev-readyz` for the full contract and Go reference implementation in `golang/bootstrap.md`.
+
 ### Kubernetes Configuration
 
 ```yaml
