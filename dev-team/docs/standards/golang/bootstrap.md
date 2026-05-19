@@ -1150,7 +1150,7 @@ Kubernetes hits `/readyz` every 5s (`periodSeconds: 5` below) — ≈17,280 call
 | All checks `up` | DEBUG |
 | Any check `down`/`degraded` | WARN |
 
-`skipTelemetryPaths` (see access-log middleware) MUST exclude `/readyz`, `/health`, `/metrics` from request logging — confirm with `grep -n 'skipTelemetryPaths\|/readyz' internal/`. Inside the handler, log per check at DEBUG on success, WARN on failure:
+Access-log middleware MUST exclude `/readyz`, `/health`, `/metrics` from request logging. On `lib-observability`, both the logging and telemetry middlewares apply this automatically via `defaultLogExcludedRoutes` (`middleware/logging.go`) — append project-specific paths with `middleware.WithExcludedRoutes(...)`. Services not on `lib-observability` must keep the manual `skipTelemetryPaths` filter; confirm with `grep -n 'skipTelemetryPaths\|WithExcludedRoutes\|/readyz' internal/`. Inside the handler, log per check at DEBUG on success, WARN on failure:
 
 ```go
 f.Get("/readyz", func(c *fiber.Ctx) error {

@@ -78,7 +78,7 @@ Kubernetes hits `/readyz` every 5s (≈17,280 calls/day per pod). Per-iteration 
 | Success (all checks `up`) | DEBUG |
 | Failure (any check `down`/`degraded`) | WARN |
 
-INFO/ERROR are not used by the probe handler. Steady-state observability is the job of `readyz_check_status` / `readyz_check_duration` metrics (Gate 5) — logs are diagnostic only. Access-log middleware MUST already exclude `/readyz`, `/health`, `/metrics` from request logging (`skipTelemetryPaths` in bootstrap standards).
+INFO/ERROR are not used by the probe handler. Steady-state observability is the job of `readyz_check_status` / `readyz_check_duration` metrics (Gate 5) — logs are diagnostic only. Access-log middleware MUST exclude `/readyz`, `/health`, `/metrics` from request logging — `lib-observability` applies this by default (`defaultLogExcludedRoutes` in `middleware/logging.go`); use `middleware.WithExcludedRoutes(...)` to append more paths. Services not on `lib-observability` must keep an explicit `skipTelemetryPaths` filter.
 
 **Endpoint paths:**
 
@@ -152,7 +152,7 @@ grep "DEPLOYMENT_MODE\|saas" .env* internal/
 - S7: `ValidateSaaSTLS()` called at bootstrap for SaaS mode
 - S8: Three readyz metrics emitted
 - S9: Startup self-probe gates `/health`
-- S10: Probe logging follows the contract (success = DEBUG, failure = WARN; no INFO from probe handler; access-log middleware excludes `/readyz`)
+- S10: Probe logging follows the contract (success = DEBUG, failure = WARN; no INFO from probe handler; `/readyz`, `/health`, `/metrics` excluded from access log — automatic on `lib-observability`, manual `skipTelemetryPaths` otherwise)
 
 **Phase 3: Anti-Pattern Detection**
 Check for each of the 8 forbidden anti-patterns. Any match = COMPLIANT: false.
