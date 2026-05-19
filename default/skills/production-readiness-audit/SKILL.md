@@ -109,6 +109,7 @@ If you find yourself about to dispatch an explorer in a turn AFTER any explorer 
 ### Self-verify after dispatch
 
 After each batch's dispatch turn, verify all batched Task calls were emitted in that single turn. If fewer went out than the batch size, the batch did NOT execute correctly. Mark INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial batch.
+
 ### Parallel dispatch — atomic batch (within this batch)
 
 Emit all Task calls for THIS BATCH in a SINGLE TURN, as one atomic batch. (Batches themselves remain sequential — do not dispatch batch N+1 until batch N has fully returned.)
