@@ -120,6 +120,7 @@ Emit all Task calls for THIS BATCH in a SINGLE TURN, as one atomic batch. (Batch
 
 The STOP-CHECK, anti-trickle, and self-verify guards above remain binding regardless of which mechanism your runtime uses.
 
+
 ### Step 7: Consolidate Report
 
 1. Read `dimensions/scoring.md` for scoring rules
