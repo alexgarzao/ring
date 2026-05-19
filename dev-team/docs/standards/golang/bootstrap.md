@@ -1141,6 +1141,36 @@ f.Get("/readyz", func(c *fiber.Ctx) error {
 
 If the project's libHTTP does not provide `ServiceUnavailable`, use the project's equivalent wrapper that returns 503 with the same error payload (e.g. a custom helper or domain error mapped to 503 in the error handler).
 
+### Probe Logging (MANDATORY)
+
+Kubernetes hits `/readyz` every 5s (`periodSeconds: 5` below) — ≈17,280 calls/day per pod. INFO on probe success is FORBIDDEN.
+
+| Outcome | Level |
+|---------|-------|
+| All checks `up` | DEBUG |
+| Any check `down`/`degraded` | WARN |
+
+Access-log middleware MUST exclude `/readyz`, `/health`, `/metrics` from request logging. On `lib-observability`, both the logging and telemetry middlewares apply this automatically via `defaultLogExcludedRoutes` (`middleware/logging.go`) — append project-specific paths with `middleware.WithExcludedRoutes(...)`. Services not on `lib-observability` must keep the manual `skipTelemetryPaths` filter; confirm with `grep -n 'skipTelemetryPaths\|WithExcludedRoutes\|/readyz' internal/`. Inside the handler, log per check at DEBUG on success, WARN on failure:
+
+```go
+f.Get("/readyz", func(c *fiber.Ctx) error {
+    ctx := c.UserContext()
+    logger, _, _, _ := observability.NewTrackingFromContext(ctx)
+
+    if err := postgresConn.PingContext(ctx); err != nil {
+        logger.Warn("readyz check failed", "dependency", "postgres", "error", err.Error())
+        return libHTTP.ServiceUnavailable(c, "NOT_READY", "Service Unavailable", "postgres: "+err.Error())
+    }
+    logger.Debug("readyz check ok", "dependency", "postgres")
+
+    // ... repeat for each dependency ...
+
+    return libHTTP.OK(c, fiber.Map{"status": "ready"})
+})
+```
+
+Steady-state observability lives in the readyz metrics (Gate 5 of `ring:dev-readyz`): `readyz_check_status`, `readyz_check_duration`, `readyz_aggregate_status`. Logs are diagnostic, not aggregation.
+
 ### Kubernetes Configuration (REQUIRED)
 
 ```yaml

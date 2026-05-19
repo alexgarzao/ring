@@ -69,6 +69,17 @@ TDD mandatory for all implementation gates (RED → GREEN → REFACTOR).
 
 **Aggregation rule:** top-level `"unhealthy"` + HTTP 503 if ANY check is `down` or `degraded`.
 
+**Probe logging contract (MANDATORY):**
+
+Kubernetes hits `/readyz` every 5s (≈17,280 calls/day per pod). Per-iteration INFO logging drowns log pipelines.
+
+| Outcome | Log level |
+|---------|-----------|
+| Success (all checks `up`) | DEBUG |
+| Failure (any check `down`/`degraded`) | WARN |
+
+INFO/ERROR are not used by the probe handler. Steady-state observability is the job of `readyz_check_status` / `readyz_check_duration` metrics (Gate 5) — logs are diagnostic only. Access-log middleware MUST exclude `/readyz`, `/health`, `/metrics` from request logging — `lib-observability` applies this by default (`defaultLogExcludedRoutes` in `middleware/logging.go`); use `middleware.WithExcludedRoutes(...)` to append more paths. Services not on `lib-observability` must keep an explicit `skipTelemetryPaths` filter.
+
 **Endpoint paths:**
 
 | Stack | Readiness | Liveness |
@@ -85,13 +96,15 @@ TDD mandatory for all implementation gates (RED → GREEN → REFACTOR).
 5. Reflection on `*amqp.Connection` for TLS state
 6. Inline TLS checks at each connection site — use `ValidateSaaSTLS()`
 7. `process.exit()` in Next.js `instrumentation.ts` on probe failure
+8. INFO log on probe success — see Probe logging contract; success is DEBUG, failure is WARN
 
 **Mandatory agent instruction (include in EVERY dispatch):**
 
 > WebFetch `https://raw.githubusercontent.com/LerianStudio/ring/main/dev-team/skills/dev-readyz/SKILL.md` and `sre.md`.
 > Follow the canonical response contract exactly. Five-value status vocabulary.
 > Aggregation: 503 iff any check is `down` or `degraded`.
-> Forbidden anti-patterns 1-7: MUST NOT introduce any.
+> Probe logging: success at DEBUG, failure at WARN. No INFO from the probe handler.
+> Forbidden anti-patterns 1-8: MUST NOT introduce any.
 > TDD: RED → GREEN → REFACTOR.
 
 ## Gate Overview
@@ -129,7 +142,7 @@ grep -rn "circuitbreaker\|gobreaker" internal/
 grep "DEPLOYMENT_MODE\|saas" .env* internal/
 ```
 
-**Phase 2: Compliance Audit (S1-S9)** (if /readyz code detected)
+**Phase 2: Compliance Audit (S1-S10)** (if /readyz code detected)
 - S1: Response contract shape (all required fields present)
 - S2: Status vocabulary (only 5 valid values)
 - S3: Aggregation rule (503 on down/degraded)
@@ -139,15 +152,16 @@ grep "DEPLOYMENT_MODE\|saas" .env* internal/
 - S7: `ValidateSaaSTLS()` called at bootstrap for SaaS mode
 - S8: Three readyz metrics emitted
 - S9: Startup self-probe gates `/health`
+- S10: Probe logging follows the contract (success = DEBUG, failure = WARN; no INFO from probe handler; `/readyz`, `/health`, `/metrics` excluded from access log — automatic on `lib-observability`, manual `skipTelemetryPaths` otherwise)
 
 **Phase 3: Anti-Pattern Detection**
-Check for each of the 7 forbidden anti-patterns. Any match = COMPLIANT: false.
+Check for each of the 8 forbidden anti-patterns. Any match = COMPLIANT: false.
 
 ## Severity Reference
 
 | Severity | Criteria |
 |----------|----------|
 | CRITICAL | `DEPLOYMENT_MODE=saas` without ValidateSaaSTLS; TLS reflection; response caching |
-| HIGH | Wrong status vocabulary; aggregation rule wrong; metrics not emitted; self-probe missing |
+| HIGH | Wrong status vocabulary; aggregation rule wrong; metrics not emitted; self-probe missing; INFO logging on probe success |
 | MEDIUM | Missing `reason` on skipped/n/a; drain grace too short |
 | LOW | Missing per-dep description; inconsistent version string |
