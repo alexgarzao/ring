@@ -1155,7 +1155,7 @@ Kubernetes hits `/readyz` every 5s (`periodSeconds: 5` below) — ≈17,280 call
 ```go
 f.Get("/readyz", func(c *fiber.Ctx) error {
     ctx := c.UserContext()
-    logger := log.FromContext(ctx)
+    logger, _, _, _ := observability.NewTrackingFromContext(ctx)
 
     if err := postgresConn.PingContext(ctx); err != nil {
         logger.Warn("readyz check failed", "dependency", "postgres", "error", err.Error())
