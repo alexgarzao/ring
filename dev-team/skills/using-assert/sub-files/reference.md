@@ -1217,7 +1217,7 @@ infrastructure clients → server), see `ring:using-lib-observability` (or
 The two-line addition at the right point:
 
 ```go
-// After opentelemetry.NewTelemetry(...):
+// After tracing.NewTelemetry(...):
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 assert.InitAssertionMetrics(tl.MetricsFactory)
 ```

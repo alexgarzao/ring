@@ -11,7 +11,7 @@ The canonical home for this package is now `github.com/LerianStudio/lib-observab
 
 ## When to use
 Sweep mode:
-- "Sweep the codebase for assert opportunities"
+- "Sweep the codebase for lib-observability/assert opportunities"
 - "Audit this service for zero-panic policy compliance"
 - "Find panic()/log.Fatal violations"
 - "Replace DIY invariant checks with lib-observability/assert"

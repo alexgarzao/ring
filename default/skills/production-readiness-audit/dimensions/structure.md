@@ -512,10 +512,10 @@ func ConnectDB(dsn string) (*sql.DB, error) {
     // Custom connection logic duplicating lib-commons/mpostgres
 }
 
-// BAD: Custom telemetry wrapper duplicating lib-commons
+// BAD: Custom telemetry wrapper duplicating lib-observability
 // internal/common/tracing.go
 func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
-    // Custom wrapper duplicating lib-commons/NewTrackingFromContext
+    // Custom wrapper duplicating lib-observability/NewTrackingFromContext
 }
 
 // BAD: Missing lib-commons entirely
@@ -534,7 +534,7 @@ func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
 
 **Severity Ratings:**
 - CRITICAL: lib-commons not in go.mod (HARD GATE violation per Ring standards)
-- CRITICAL: Custom utilities duplicating lib-commons functionality (HARD GATE violation)
+- CRITICAL: Custom utilities duplicating lib-commons or lib-observability functionality (HARD GATE violation)
 - HIGH: Framework versions below Ring minimum requirements
 - MEDIUM: Using alternative libraries for functionality covered by Ring stack
 - LOW: Minor version discrepancies
@@ -1453,4 +1453,3 @@ async function fetchData(url: string): Promise<Response> {
 1. ...
 ```
 ```
-

@@ -204,7 +204,7 @@ Refactor-capable ring-dev-team agents produce a `## Standards Compliance` sectio
 
 | Category | Current Pattern | Expected Pattern | Status           | File/Location |
 | -------- | --------------- | ---------------- | ---------------- | ------------- |
-| Logging  | fmt.Println     | lib-commons/zap  | ⚠️ Non-Compliant | service/\*.go |
+| Logging  | fmt.Println     | lib-observability/zap  | ⚠️ Non-Compliant | service/\*.go |
 
 ### Compliance Summary
 

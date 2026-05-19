@@ -1,7 +1,7 @@
 # REFERENCE MODE
 
 Sections 1–15 below catalog lib-commons latest v5.x packages, APIs, and initialization
-patterns. Resolve the actual latest version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`. Read the sections relevant to your current task. Sweep Mode explorers receive
+patterns. Observability APIs are intentionally documented as the companion `github.com/LerianStudio/lib-observability` module, not as lib-commons packages. Resolve the actual latest lib-commons version at runtime via `gh api repos/LerianStudio/lib-commons/releases/latest --jq .tag_name`. Read the sections relevant to your current task. Sweep Mode explorers receive
 extracts from these sections as context for their angle.
 
 ## 1. Package Catalog (Quick Reference)
@@ -61,7 +61,7 @@ lib-commons v5 still ships deprecated shims at the old import paths so existing 
 
 | Package | Import Path Suffix | Purpose |
 |---|---|---|
-| `net/http` | `commons/net/http` | Fiber HTTP toolkit: middleware (CORS, logging, telemetry, basic auth), validation, 3 cursor pagination styles, health checks, SSRF-safe reverse proxy, ownership verification, response helpers, tenant-scoped ID parsing |
+| `net/http` | `commons/net/http` | Fiber HTTP toolkit: CORS, basic auth, validation, 3 cursor pagination styles, health checks, SSRF-safe reverse proxy, ownership verification, response helpers, tenant-scoped ID parsing. Use `lib-observability/middleware` for logging and telemetry middleware. |
 | `net/http/ratelimit` | `commons/net/http/ratelimit` | Redis-backed distributed fixed-window rate limiting with atomic Lua script, tiered presets, dynamic tier selection, identity extractors, fail-open/fail-closed policy, `X-RateLimit-*` headers |
 | `net/http/idempotency` | `commons/net/http/idempotency` | **v5.0.0**: Fiber middleware for best-effort at-most-once request semantics via Redis SetNX, tenant-scoped keys, faithful response replay (status/headers/body), fail-open on Redis outage |
 
@@ -193,8 +193,8 @@ defer rmqConn.Close()
 // 9. Fiber App with middleware
 app := fiber.New(fiber.Config{ErrorHandler: http.FiberErrorHandler})
 app.Use(http.WithCORS())
-app.Use(http.WithHTTPLogging(http.WithCustomLogger(logger)))
-tm := http.NewTelemetryMiddleware(tl)
+app.Use(middleware.WithHTTPLogging(middleware.WithCustomLogger(logger)))
+tm := middleware.NewTelemetryMiddleware(tl)
 app.Use(tm.WithTelemetry(tl, "/health", "/version"))
 app.Get("/health", http.HealthWithDependencies(...))
 app.Get("/version", http.Version)
@@ -317,8 +317,8 @@ CORS → Logging → Telemetry → Rate Limit → Auth → Handler
 | Middleware | Constructor | Purpose |
 |-----------|------------|---------|
 | CORS | `http.WithCORS()` | Cross-origin resource sharing |
-| Logging | `http.WithHTTPLogging(http.WithCustomLogger(logger))` | Request/response logging |
-| Telemetry | `http.NewTelemetryMiddleware(tl).WithTelemetry(tl, skipPaths...)` | OTel span creation, metrics |
+| Logging | `middleware.WithHTTPLogging(middleware.WithCustomLogger(logger))` | Request/response logging |
+| Telemetry | `middleware.NewTelemetryMiddleware(tl).WithTelemetry(tl, skipPaths...)` | OTel span creation, metrics |
 | Rate Limit | `ratelimit.WithDefaultRateLimit(redisConn)` | Distributed rate limiting (one-liner setup) |
 | Basic Auth | `http.WithBasicAuth(username, password)` | HTTP Basic authentication |
 
@@ -1518,7 +1518,8 @@ Use this decision tree to find the right package quickly:
 | Publish messages to RabbitMQ | `rabbitmq` (ConfirmablePublisher) |
 | Consume messages from RabbitMQ (multi-tenant) | `rabbitmq` + `tenant-manager/consumer` |
 | **HTTP** | |
-| Add HTTP middleware (CORS, logging, telemetry) | `net/http` |
+| Add HTTP middleware (CORS/basic auth/validation) | `net/http` |
+| Add HTTP logging/telemetry middleware | `lib-observability/middleware` |
 | Rate-limit HTTP endpoints | `net/http/ratelimit` |
 | Enforce idempotency on mutating endpoints | `net/http/idempotency` (v5.0.0) |
 | Paginate API responses | `net/http` (offset, UUID cursor, timestamp cursor, sort cursor) |
@@ -1598,7 +1599,7 @@ The observability surface was extracted from lib-commons into a new module: `git
 Patch release — no API changes. Hotfixes:
 
 - `commons/rabbitmq`: Close leaked connections on concurrent reconnect in `EnsureChannelContext`
-- `commons/net/http` telemetry: Copy Fiber context strings before `c.Next()` to prevent `UnsafeString` race (caused corrupted span attributes like `GET` → `GETT`)
+- `lib-observability/middleware` telemetry: Copy Fiber context strings before `c.Next()` to prevent `UnsafeString` race (caused corrupted span attributes like `GET` → `GETT`)
 
 ### v5.0.1
 
@@ -1626,7 +1627,7 @@ Patch release — no API changes. Internal test improvements and minor fixes.
 | `commons/tenant-manager/cache` | `ConfigCache` interface + `InMemoryCache` default implementation for the TM client |
 | `commons/tenant-manager/log` | `TenantAwareLogger` — wraps a `log.Logger` and auto-injects `tenant_id` from context |
 
-No packages were renamed. No public APIs changed signatures — the v5 core (postgres, mongo, redis, rabbitmq, opentelemetry, tenant-manager middleware/consumer/event/core, etc.) is source-compatible with v4.6.0 after the module-path bump.
+No non-observability packages were renamed. No public APIs changed signatures for the v5 lib-commons core (postgres, mongo, redis, rabbitmq, tenant-manager middleware/consumer/event/core, etc.) after the module-path bump. Observability packages should be imported from `github.com/LerianStudio/lib-observability`.
 
 ### v4.6.0
 

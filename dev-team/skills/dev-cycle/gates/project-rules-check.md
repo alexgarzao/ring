@@ -593,4 +593,3 @@ STOP EXECUTION. Do not proceed to Step 1.
 | "I'll fill in PROJECT_RULES.md myself" | "That works! Create `docs/PROJECT_RULES.md` with: Tech Stack (not in Ring), External Integrations, Domain Terminology. Do not duplicate Ring Standards content. Then run `/ring:dev-cycle` again." |
 
 ---
-

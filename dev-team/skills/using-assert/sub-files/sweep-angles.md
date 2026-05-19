@@ -226,7 +226,7 @@ Absence:   grep -r 'assert.InitAssertionMetrics' → returns no results
 Add to the bootstrap sequence, AFTER telemetry is set up, ALONGSIDE `runtime.InitPanicMetrics`:
 
 ```go
-// After: tl, _ := opentelemetry.NewTelemetry(...)
+// After: tl, _ := tracing.NewTelemetry(...)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 assert.InitAssertionMetrics(tl.MetricsFactory)  // add this
 ```
@@ -237,12 +237,12 @@ assert.InitAssertionMetrics(tl.MetricsFactory)  // add this
 
 ```go
 // BEFORE — metrics factory wired, panic metrics initialized, assert metrics forgotten:
-tl, _ := opentelemetry.NewTelemetry(telemetryConfig)
+tl, _ := tracing.NewTelemetry(telemetryConfig)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 // assertion_failed_total counter will never fire even when assertions do
 
 // AFTER:
-tl, _ := opentelemetry.NewTelemetry(telemetryConfig)
+tl, _ := tracing.NewTelemetry(telemetryConfig)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 assert.InitAssertionMetrics(tl.MetricsFactory)
 ```

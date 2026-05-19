@@ -162,7 +162,7 @@ No migration actions required.
 | Category | Current Pattern | Expected Pattern | Status | File/Location |
 |----------|----------------|------------------|--------|---------------|
 | Error Handling | Using panic() | Return error | Non-Compliant | handler.go:45 |
-| Logging | Uses fmt.Println | lib-commons/zap | Non-Compliant | service/*.go |
+| Logging | Uses fmt.Println | lib-observability/zap | Non-Compliant | service/*.go |
 | Config | os.Getenv direct | SetConfigFromEnvVars() | Non-Compliant | config.go:15 |
 
 ### Compliance Summary
@@ -182,7 +182,7 @@ No migration actions required.
 2. **Logging Migration**
    - Replace: `fmt.Println("debug info")`
    - With: `logger.Info("debug info", zap.String("key", "value"))`
-   - Import: `import "github.com/LerianStudio/lib-commons/zap"`
+   - Import: `import "github.com/LerianStudio/lib-observability/zap"`
    - Files affected: internal/service/*.go
 ```
 

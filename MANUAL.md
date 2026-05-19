@@ -170,7 +170,7 @@ Use when you need expert depth in specific domains:
 
 | Category | Current     | Expected        | Status | Location      |
 | -------- | ----------- | --------------- | ------ | ------------- |
-| Logging  | fmt.Println | lib-commons/zap | ⚠️     | service/\*.go |
+| Logging  | fmt.Println | lib-observability/zap | ⚠️     | service/\*.go |
 ```
 
 **Cross-references:** CLAUDE.md (Standards Compliance section), `dev-team/skills/dev-refactor/SKILL.md`

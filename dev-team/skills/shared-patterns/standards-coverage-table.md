@@ -269,7 +269,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 |---|------------------|------|--------|-----------------|
 | 1 | Version | core.md | `#version` | Go 1.24+ |
 | 2 | Core Dependency: lib-commons | core.md | `#core-dependency-lib-commons-mandatory` | **HARD GATE:** No duplicate utils/helpers - use lib-commons |
-| 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v5, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock, **validator v10 migration (MANDATORY)** |
+| 3 | Frameworks & Libraries | core.md | `#frameworks--libraries` | lib-commons v5, lib-observability, Fiber v2, pgx/v5, OpenTelemetry, zap, testify, gomock, **validator v10 migration (MANDATORY)** |
 | 4 | Configuration | core.md | `#configuration` | Environment variable handling |
 | 5 | Database Naming Convention (snake_case) | core.md | `#database-naming-convention-snake-case-mandatory` | Table and column naming |
 | 6 | Database Migrations | core.md | `#database-migrations-mandatory` | golang-migrate requirement |
@@ -299,7 +299,7 @@ These sections describe HOW to use the standards, not WHAT the standards are.
 | 30 | Handler Constructor Pattern | api-patterns.md | `#handler-constructor-pattern-mandatory` | **Dependency injection via constructor (MANDATORY)**, validation at startup, detection commands |
 | 31 | Input Validation | api-patterns.md | `#input-validation-mandatory` | **Defense in depth (MANDATORY)**, validator v10 tags, **numeric query param validation**, error translation |
 | 32 | Testing | quality.md | `#testing` | Table-driven tests, edge cases, **t.Setenv (MANDATORY)**, **b.Loop (MANDATORY)** |
-| 33 | Logging | quality.md | `#logging` | Structured logging with lib-commons |
+| 33 | Logging | quality.md | `#logging` | Structured logging with lib-observability |
 | 34 | Linting | quality.md | `#linting` | **Import ordering (MANDATORY)**, **Post-implementation linting (MANDATORY)**, **.golangci.yml requirement (MANDATORY)**, **14 mandatory linters**, magic numbers (mnd) |
 | 35 | Migration Guidance for Mandatory Linter Promotion | quality.md | `#migration-guidance-for-mandatory-linter-promotion` | **Phased rollout (MANDATORY)**, per-linter common violations, batch fix commands |
 | 36 | Production Config Validation | quality.md | `#production-config-validation-mandatory` | **Startup validation (MANDATORY)**, fail-fast, detailed error messages |

@@ -207,7 +207,7 @@ FAIL: TestTransactionService_GetByID_Found — method GetByID undefined
 **Step 3: Implement**
 ```go
 func (s *transactionService) GetByID(ctx context.Context, id string) (*domain.Transaction, error) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
     ctx, span := tracer.Start(ctx, "service.transaction.get_by_id")
     defer span.End()
 

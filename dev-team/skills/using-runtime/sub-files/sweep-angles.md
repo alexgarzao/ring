@@ -167,7 +167,7 @@ never fire. You get half the trident.
 ```go
 // DIY (BEFORE): bootstrap never wires panic metrics
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 _ = tl.ApplyGlobals()
 
 // launches SafeGo goroutines — metric never emits because factory not registered
@@ -176,7 +176,7 @@ runtime.SafeGoWithContextAndComponent(ctx, logger, "worker", "loop",
 
 // lib-observability (AFTER):
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 _ = tl.ApplyGlobals()
 
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)   // <-- wire metrics first
@@ -232,13 +232,13 @@ runtime.SafeGoWithContextAndComponent(ctx, logger, "worker", "loop",
 ```go
 // DIY (BEFORE): no production-mode switch — panic values leak to span events verbatim
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 // missing: SetProductionMode
 
 // lib-observability (AFTER):
 logger, _ := zap.New(zapCfg)
-tl, _ := opentelemetry.NewTelemetry(otelCfg)
+tl, _ := tracing.NewTelemetry(otelCfg)
 runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 runtime.SetProductionMode(cfg.Env == "production")  // panic values redacted, stack capped
 ```

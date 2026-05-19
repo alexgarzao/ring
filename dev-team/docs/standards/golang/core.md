@@ -92,12 +92,15 @@ import (
 #### Detection Commands (Run Before Creating Any Utility)
 
 ```bash
-# BEFORE creating any utility, search lib-commons first
+# BEFORE creating any utility, search lib-commons/lib-observability first
 # Clone or browse: https://github.com/LerianStudio/lib-commons
+# Clone or browse: https://github.com/LerianStudio/lib-observability
 
 # Search for existing functionality
 grep -rn "func.*Logger" ./vendor/github.com/LerianStudio/lib-commons/
 grep -rn "func.*Trace" ./vendor/github.com/LerianStudio/lib-commons/
+grep -rn "func.*Logger" ./vendor/github.com/LerianStudio/lib-observability/
+grep -rn "func.*Trace" ./vendor/github.com/LerianStudio/lib-observability/
 grep -rn "func.*Config" ./vendor/github.com/LerianStudio/lib-commons/
 ```
 
@@ -168,7 +171,7 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 | Rationalization                           | Why It's WRONG                                                  | Required Action              |
 | ----------------------------------------- | --------------------------------------------------------------- | ---------------------------- |
 | "My wrapper is simpler"                   | Simpler ≠ better. Consistency > convenience.                    | **Use lib-commons**          |
-| "lib-commons is too complex for this"     | Complexity exists for good reasons (telemetry, error handling). | **Use lib-commons**          |
+| "lib-commons/lib-observability is too complex for this" | Complexity exists for good reasons (telemetry, error handling). | **Use lib-commons/lib-observability** |
 | "I need a slightly different interface"   | Adapt your code to lib-commons, not the other way around.       | **Use lib-commons**          |
 | "It's just a small helper"                | Small helpers grow. Today's helper is tomorrow's tech debt.     | **Use lib-commons**          |
 | "I'll migrate to lib-commons later"       | Later = never. Start with lib-commons.                          | **Use lib-commons now**      |
@@ -188,7 +191,7 @@ If you checked YES to #2 or #3 → STOP. Use lib-commons.
 | `fiber/v2`                 | v2.52.0         | HTTP framework                                   |
 | `pgx/v5`                   | v5.7.0          | PostgreSQL driver                                |
 | `go.opentelemetry.io/otel` | v1.38.0         | Telemetry                                        |
-| `zap`                      | v1.27.0         | Logging implementation (internal to lib-commons) |
+| `zap`                      | v1.27.0         | Logging implementation used by lib-observability |
 | `testify`                  | v1.10.0         | Testing                                          |
 | `gomock`                   | v0.5.0          | Mock generation                                  |
 | `mongo-driver`             | v1.17.0         | MongoDB driver                                   |

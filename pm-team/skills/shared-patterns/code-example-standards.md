@@ -158,7 +158,12 @@ import libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"
 // ❌ FORBIDDEN in code examples
 package telemetry
 
-import "go.opentelemetry.io/otel/trace"
+import (
+    "context"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/trace"
+)
 
 func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
     tracer := otel.GetTracerProvider().Tracer("my-service")
@@ -190,9 +195,9 @@ factory := libMetrics.NewFactory(tel.Meter())
 
 | Scenario | Allowed? | Condition |
 |----------|----------|-----------|
-| Infrastructure utilities (logging, config, HTTP, DB) | ❌ NO | Use lib-commons |
+| Infrastructure utilities (logging, config, HTTP, DB) | ❌ NO | Use lib-commons for non-observability infrastructure and lib-observability for logging/telemetry |
 | Domain-specific business logic | ✅ YES | Business rules are project-specific |
-| Service layer code | ✅ YES | Uses lib-commons for infrastructure |
+| Service layer code | ✅ YES | Uses lib-commons/lib-observability for infrastructure |
 | Repository implementations | ✅ YES | Uses libPostgres/libMongo for connections |
 | API handlers | ✅ YES | Uses libHTTP for middleware |
 | Validation logic | ✅ YES | Domain validation is project-specific |
@@ -204,13 +209,13 @@ factory := libMetrics.NewFactory(tel.Meter())
 
 | Rationalization | Why it's wrong | Required Action |
 |-----------------|----------------|-----------------|
-| "Custom helper is simpler for this example" | Examples teach patterns. Teach the right pattern (lib-commons). | **Use lib-commons** in example |
-| "lib-commons import is too verbose" | Verbosity is intentional for clarity. Don't hide dependencies. | **Show full lib-commons imports** |
-| "I don't know if lib-commons has this" | Check before writing. See table above. | **Verify lib-commons first** |
+| "Custom helper is simpler for this example" | Examples teach patterns. Teach the right pattern (lib-commons/lib-observability). | **Use standard modules** in example |
+| "lib-commons/lib-observability import is too verbose" | Verbosity is intentional for clarity. Don't hide dependencies. | **Show full imports** |
+| "I don't know if lib-commons has this" | Check before writing. Observability belongs in lib-observability. | **Verify the standard module first** |
 | "The example is just pseudocode" | Pseudocode with custom helpers trains wrong patterns. | **Use real lib-commons calls** |
-| "Engineers will replace with lib-commons later" | Later = never. Show correct pattern from start. | **Use lib-commons now** |
-| "This is just a quick example" | Quick examples become production code. Do it right. | **Use lib-commons** |
-| "Custom utils are easier to understand" | Understanding wrong patterns is worse than not understanding. | **Use lib-commons** |
+| "Engineers will replace with lib-commons later" | Later = never. Show correct pattern from start. | **Use standard modules now** |
+| "This is just a quick example" | Quick examples become production code. Do it right. | **Use standard modules** |
+| "Custom utils are easier to understand" | Understanding wrong patterns is worse than not understanding. | **Use standard modules** |
 
 ---
 
@@ -219,8 +224,8 @@ factory := libMetrics.NewFactory(tel.Meter())
 When creating subtasks with code examples (Gate 8), apply these rules:
 
 1. **Step 1 (Write failing test)**: Tests can use custom test helpers
-2. **Step 3 (Write implementation)**: Implementation MUST use lib-commons for infrastructure
-3. **Imports**: Always show complete lib-commons imports with `lib` prefix aliases
+2. **Step 3 (Write implementation)**: Implementation MUST use lib-commons for non-observability infrastructure and lib-observability for logging/telemetry
+3. **Imports**: Always show complete lib-commons/lib-observability imports with `lib` prefix aliases
 
 **Example subtask code block:**
 
@@ -241,7 +246,7 @@ import (
 
 type UserService struct {
     repo   repository.UserRepository
-    logger libLog.Logger  // ✅ lib-commons logger interface
+    logger libLog.Logger  // ✅ lib-observability logger interface
 }
 
 func NewUserService(repo repository.UserRepository, logger libLog.Logger) *UserService {
@@ -252,7 +257,7 @@ func NewUserService(repo repository.UserRepository, logger libLog.Logger) *UserS
 }
 
 func (s *UserService) CreateUser(ctx context.Context, input domain.CreateUserInput) (*domain.User, error) {
-    s.logger.Info("Creating user", "email", input.Email)  // ✅ Using lib-commons logger
+    s.logger.Info("Creating user", "email", input.Email)  // ✅ Using lib-observability logger
     // ... implementation
 }
 ```

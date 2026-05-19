@@ -622,7 +622,7 @@ func (r *EntityPostgreSQLRepository) getDB(ctx context.Context) (dbresolver.DB, 
 }
 
 func (r *EntityPostgreSQLRepository) Create(ctx context.Context, entity *mmodel.Entity) (*mmodel.Entity, error) {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     ctx, span := tracer.Start(ctx, "postgres.create_entity")
     defer span.End()
@@ -648,7 +648,7 @@ func (r *EntityPostgreSQLRepository) Create(ctx context.Context, entity *mmodel.
 ```go
 // internal/adapters/redis/repository.go
 func (r *RedisRepository) Set(ctx context.Context, key, value string, ttl time.Duration) error {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     ctx, span := tracer.Start(ctx, "redis.set")
     defer span.End()
@@ -837,7 +837,7 @@ func (r *MetadataMongoDBRepository) getMongoDB(ctx context.Context) (*mongo.Data
 }
 
 func (r *MetadataMongoDBRepository) Create(ctx context.Context, collection string, metadata *Metadata) error {
-    logger, tracer, _, _ := libCommons.NewTrackingFromContext(ctx)
+    logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 
     ctx, span := tracer.Start(ctx, "mongodb.create_metadata")
     defer span.End()

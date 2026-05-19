@@ -316,10 +316,10 @@ if err := pub.Publish(ctx, payload); err != nil {
 - Hand-rolled request ID / correlation ID propagation
 - Manual `otel.Tracer(...).Start(...)` wrapping handler logic
 
-**lib-commons Replacement:**
+**lib-commons + lib-observability Replacement:**
 - `commons/net/http.WithCORS` — configurable CORS with safe defaults
-- `commons/net/http.WithHTTPLogging` — structured request logging via zap
-- `commons/net/http.NewTelemetryMiddleware` — OTel span per request + metrics emission
+- `lib-observability/middleware.WithHTTPLogging` — structured request logging via `lib-observability/zap`
+- `lib-observability/middleware.NewTelemetryMiddleware` — OTel span per request + metrics emission
 
 **Migration Complexity:** trivial
 
@@ -339,10 +339,10 @@ app.Use(func(c *fiber.Ctx) error {
     return err
 })
 
-// lib-commons (AFTER):
+// lib-commons + lib-observability (AFTER):
 app.Use(http.WithCORS(http.CORSConfig{AllowedOrigins: cfg.AllowedOrigins}))
-app.Use(http.WithHTTPLogging(logger))
-app.Use(http.NewTelemetryMiddleware(tracer, meter))
+app.Use(middleware.WithHTTPLogging(middleware.WithCustomLogger(logger)))
+app.Use(middleware.NewTelemetryMiddleware(tl).WithTelemetry(tl))
 ```
 
 **Explorer Dispatch Prompt Template:**

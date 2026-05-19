@@ -337,8 +337,8 @@ REFACTOR → Clean up → Stay green
 **Migration & Reference (6):**
 
 - `ring:using-lib-commons` - Comprehensive reference for lib-commons v5.0.2 (Lerian's shared Go library with 30+ packages)
-- `ring:using-runtime` - Deep reference and 6-angle audit for commons/runtime: SafeGo, panic recovery, observability trident, policy selection, framework integration. Catches naked goroutine launches that cause silent production failures.
-- `ring:using-assert` - Deep reference and 6-angle audit for commons/assert: production runtime assertions with observability trident, full domain predicate catalog (double-entry, transaction state machine, financial validations), AssertionError unwrapping patterns. Converts financial invariants into production-enforced rules.
+- `ring:using-runtime` - Deep reference and 6-angle audit for lib-observability/runtime: SafeGo, panic recovery, observability trident, policy selection, framework integration. Catches naked goroutine launches that cause silent production failures.
+- `ring:using-assert` - Deep reference and 6-angle audit for lib-observability/assert: production runtime assertions with observability trident, full domain predicate catalog (double-entry, transaction state machine, financial validations), AssertionError unwrapping patterns. Converts financial invariants into production-enforced rules.
 - `ring:dev-systemplane-migration` - Migrate Lerian Go services from .env/YAML config to systemplane (database-backed hot-reloadable config)
 - `ring:dev-llms-txt` - Generate or audit llms.txt files following llmstxt.org spec for AI-friendly repository entry points
 - `ring:dev-licensing` - Repository license management (Apache 2.0, Elastic v2, Proprietary)

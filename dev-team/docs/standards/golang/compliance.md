@@ -32,7 +32,7 @@ When producing a Standards Compliance report (used by ring:dev-refactor workflow
 | Config Struct | `Config` struct with `env` tags | Single struct with `env` tags | ✅ Compliant | `internal/bootstrap/config.go:15` |
 | Config Loading | `libCommons.SetConfigFromEnvVars(&cfg)` | `libCommons.SetConfigFromEnvVars(&cfg)` | ✅ Compliant | `internal/bootstrap/config.go:42` |
 | Logger Init | `libZap.InitializeLogger()` | `libZap.InitializeLogger()` (bootstrap only) | ✅ Compliant | `internal/bootstrap/config.go:45` |
-| Telemetry Init | `libOpentelemetry.InitializeTelemetry()` | `libOpentelemetry.InitializeTelemetry()` | ✅ Compliant | `internal/bootstrap/config.go:48` |
+| Telemetry Init | `libOpentelemetry.NewTelemetry()` | `libOpentelemetry.NewTelemetry()` | ✅ Compliant | `internal/bootstrap/config.go:48` |
 | ... | ... | ... | ✅ Compliant | ... |
 
 #### Context & Tracking
@@ -125,7 +125,7 @@ Before submitting Go code, verify:
 - [ ] Configuration loaded via `SetConfigFromEnvVars`
 - [ ] Telemetry initialized and middleware configured
 - [ ] Logger/tracer recovered from context via `NewTrackingFromContext`
-- [ ] **No direct imports of `go.opentelemetry.io/otel/*` packages** (use lib-commons wrappers)
+- [ ] **No direct imports of `go.opentelemetry.io/otel/*` packages** (use lib-observability helpers)
 - [ ] **No direct Fiber responses** (`c.JSON()`, `c.Send()`) - use `libHTTP.OK()`, `libHTTP.WithError()`
 - [ ] All errors are checked and wrapped with context
 - [ ] Error codes use service prefix (e.g., PLT-0001)

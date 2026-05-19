@@ -826,7 +826,7 @@ Where `lib-observability/runtime` setup fits in service initialization.
 
 ```
 1. Logger                (zap.New)
-2. Telemetry             (opentelemetry.NewTelemetry + ApplyGlobals)
+2. Telemetry             (tracing.NewTelemetry + ApplyGlobals)
 3. runtime.InitPanicMetrics(tl.MetricsFactory, logger)
 4. runtime.SetProductionMode(cfg.Env == "production")
 5. runtime.SetErrorReporter(reporter)     // optional
