@@ -19,6 +19,7 @@ description: |
 - Frontend test strategy → ring:qa-analyst-frontend
 - Backend health/logging/tracing → ring:backend-engineer-golang or ring:backend-engineer-typescript
 - Agent/prompt quality evaluation → ring:prompt-quality-reviewer
+- Migrating deprecated lib-commons observability shims to lib-observability → ring:migrate-observability
 
 ## Skip when
 - General code review → use default plugin reviewers

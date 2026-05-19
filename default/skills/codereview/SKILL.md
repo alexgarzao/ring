@@ -1,8 +1,9 @@
 ---
 name: ring:codereview
 description: |
-  Gate 8 of development cycle - dispatches 10 specialized reviewers (code, business-logic,
-  security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons) in parallel and reports all findings by severity.
+  Gate 8 of development cycle - dispatches 13 specialized reviewers (code, business-logic,
+  security, test, nil-safety, consequences, dead-code, performance, multi-tenant, lib-commons,
+  lib-observability, lib-systemplane, lib-streaming) in parallel and reports all findings by severity.
   Runs at TASK cadence — reviewers see cumulative diff, not per-subtask fragments. Report-only: no automatic remediation.
 ---
 
@@ -26,11 +27,11 @@ description: |
 ## Related
 **Complementary:** ring:dev-cycle, ring:dev-implementation
 
-Dispatch all 10 reviewer subagents in **parallel** for fast, comprehensive feedback.
+Dispatch all 13 reviewer subagents in **parallel** for fast, comprehensive feedback.
 
-**Announce at start:** "Using ring:codereview to dispatch 10 reviewers in parallel."
+**Announce at start:** "Using ring:codereview to dispatch 13 reviewers in parallel."
 
-**Report-only boundary:** This skill does not remediate findings, dispatch implementation work, write comments into source files, generate external artifacts, invoke secondary review tools, or re-run reviewers automatically. It only dispatches the 10 reviewers once and reports their findings in the current session.
+**Report-only boundary:** This skill does not remediate findings, dispatch implementation work, write comments into source files, generate external artifacts, invoke secondary review tools, or re-run reviewers automatically. It only dispatches the 13 reviewers once and reports their findings in the current session.
 
 ## Reviewers
 
@@ -45,9 +46,12 @@ Dispatch all 10 reviewer subagents in **parallel** for fast, comprehensive feedb
 | 7 | `ring:dead-code-reviewer` | Orphaned code detection, reachability analysis |
 | 8 | `ring:performance-reviewer` | Performance hotspots, allocations, goroutine leaks, N+1 |
 | 9 | `ring:multi-tenant-reviewer` | Multi-tenant patterns, tenantId propagation, DB isolation |
-| 10 | `ring:lib-commons-reviewer` | lib-commons package usage and reinvented-wheel opportunities |
+| 10 | `ring:lib-commons-reviewer` | lib-commons non-observability package usage and reinvented-wheel opportunities |
+| 11 | `ring:lib-observability-reviewer` | lib-observability adoption: tracing, metrics, log, zap, runtime, assert, redaction, constants |
+| 12 | `ring:lib-systemplane-reviewer` | lib-systemplane adoption: hot-reloadable config, tenant-scoped knobs, admin authorizer, v4 residue |
+| 13 | `ring:lib-streaming-reviewer` | lib-streaming adoption: event publishers, outbox writer, CloudEvents, manifest |
 
-**Core principle:** All 10 reviewers run simultaneously in a single message with 10 Task calls.
+**Core principle:** All 13 reviewers run simultaneously in a single turn with 13 Task calls.
 
 ## Role Clarification
 
@@ -64,11 +68,44 @@ Display context banner before dispatching.
 
 ## Step 2: Initialize Review State
 
-Track: unit_id, base/head SHA, reviewer verdicts for all 10 reviewers, and aggregated issues by severity: Critical, High, Medium, Low.
+Track: unit_id, base/head SHA, reviewer verdicts for all 13 reviewers, and aggregated issues by severity: Critical, High, Medium, Low.
 
-## Step 3: Dispatch All 10 Reviewers in Parallel
+## Step 3: Dispatch All 13 Reviewers in Parallel
 
-**⛔ ALL 10 dispatched in a SINGLE message with 10 Task calls.**
+### ⛔ STOP-CHECK BEFORE DISPATCH
+
+Before emitting any Task call, count the reviewers you intend to launch in this turn.
+- Count MUST equal 13.
+- If count < 13 → STOP. Do not partial-dispatch. Reconcile against the 13 reviewers listed in the Reviewers table above and try again.
+- The 13 reviewers are the canonical pool. No substitutions, no omissions.
+
+### ⛔ MUST NOT trickle-dispatch
+
+All 13 reviewers leave in the SAME TURN, before reading any reviewer output.
+
+Forbidden sequences:
+- Dispatch reviewer 1 → read result → dispatch reviewer 2
+- Dispatch a subset → wait → dispatch the rest
+- Dispatch follow-up reviewers conditioned on partial output
+- Loop sequentially over the reviewer list
+
+If you find yourself about to dispatch a reviewer in a turn AFTER any reviewer has already returned a result → STOP. You violated parallel dispatch. Report the violation to the user and mark the gate INCOMPLETE rather than completing the trickle.
+
+### Self-verify after dispatch
+
+After the dispatch turn, verify all 13 Task calls were emitted in that single turn. If fewer than 13 went out, the gate did NOT execute correctly. Mark the run INCOMPLETE and surface the dispatch failure — do NOT silently continue with a partial pool.
+
+### Parallel dispatch — atomic batch
+
+Emit all 13 Task calls in a SINGLE TURN, as one atomic batch.
+
+**If your runtime exposes a `multi_tool_use.parallel` wrapper**, use it to dispatch the complete pool in one wrapped invocation. This is the canonical fan-out mechanism on OpenAI-style tool envelopes and on certain Anthropic SDK consumers — naming it explicitly activates parallel emission on runtimes where trickle-dispatch is the default behavior.
+
+**If your runtime emits parallel tool_use blocks natively** (Claude Code with Claude models), `multi_tool_use.parallel` may not be needed — but naming it is harmless and serves as an enforcement anchor.
+
+The STOP-CHECK, anti-trickle, and self-verify guards above remain binding regardless of which mechanism your runtime uses.
+
+**⛔ ALL 13 dispatched in a SINGLE turn with 13 Task calls.**
 
 Read `reviewers/dispatch-prompts.md` for the full prompt templates for each reviewer. Inject:
 - Task-level scope header (when `scope=task`)
@@ -78,7 +115,7 @@ Read `reviewers/dispatch-prompts.md` for the full prompt templates for each revi
 
 ## Step 4: Wait and Parse Output
 
-Parse `VERDICT` and Issues for all 10 reviewers. Normalize every issue into one of four severity buckets: Critical, High, Medium, Low.
+Parse `VERDICT` and Issues for all 13 reviewers. Normalize every issue into one of four severity buckets: Critical, High, Medium, Low.
 
 For each issue, preserve:
 - Severity
@@ -98,8 +135,8 @@ Produce a detailed Markdown report in the current session. The report must inclu
 
 ## Completion Rules
 
-- Complete after all 10 reviewer outputs are collected and summarized.
-- `PASS` means all 10 reviewers completed and reported zero issues.
+- Complete after all 13 reviewer outputs are collected and summarized.
+- `PASS` means all 13 reviewers completed and reported zero issues.
 - `ISSUES_FOUND` means at least one Critical, High, Medium, or Low issue was reported.
 - `INCOMPLETE` means one or more reviewers did not return a parseable result.
 - Low issues are still reported; never omit them from the session report.
@@ -169,10 +206,10 @@ All of these mean: stop and produce the session report instead.
 | Reviewer | Verdict | Issues |
 |----------|---------|--------|
 | ring:code-reviewer | PASS/FAIL/INCOMPLETE | N |
-[...10 rows]
+[...13 rows]
 
 ## Report Boundary
 No files were changed. No remediation agents were dispatched. No external report artifacts were generated.
 
-_If all reviewers passed with zero issues: "No issues found across all 10 reviewers."_
+_If all reviewers passed with zero issues: "No issues found across all 13 reviewers."_
 ```

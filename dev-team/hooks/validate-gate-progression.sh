@@ -135,12 +135,15 @@ validate_gate_8() {
      .tasks[$idx].agent_outputs.review.dead_code_reviewer.verdict,
      .tasks[$idx].agent_outputs.review.performance_reviewer.verdict,
      .tasks[$idx].agent_outputs.review.multi_tenant_reviewer.verdict,
-     .tasks[$idx].agent_outputs.review.lib_commons_reviewer.verdict]
+     .tasks[$idx].agent_outputs.review.lib_commons_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.lib_observability_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.lib_systemplane_reviewer.verdict,
+     .tasks[$idx].agent_outputs.review.lib_streaming_reviewer.verdict]
     | map(select(. == "PASS")) | length
   ')
 
-  if [[ "$status" == "completed" && "$pass_count" -lt 10 ]]; then
-    errors+=("Gate 8 (Review): expected 10/10 PASS verdicts, got $pass_count PASS")
+  if [[ "$status" == "completed" && "$pass_count" -lt 13 ]]; then
+    errors+=("Gate 8 (Review): expected 13/13 PASS verdicts, got $pass_count PASS")
   fi
 }
 

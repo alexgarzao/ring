@@ -89,17 +89,18 @@ No migration actions required. All categories verified against Lerian/Ring Go St
 2. **Logger Migration**
    - Replace: Custom logger or `log.Println()`
    - With: lib-observability structured logger
+   - Provenance: Observability packages (`log`, `zap`, `tracing`, `metrics`, `assert`, `runtime`, `redaction`, `constants`) live in `github.com/LerianStudio/lib-observability` as of v1.0.0 — the `lib-commons/v5/commons/{log,zap,opentelemetry,metrics,assert,runtime}` shims are deprecated and MUST NOT be used in new code.
    - Bootstrap import: `libZap "github.com/LerianStudio/lib-observability/zap"` (initialization)
    - Application import: `libLog "github.com/LerianStudio/lib-observability/log"` (interface for logging calls)
-   - Bootstrap usage: `logger := libZap.InitializeLogger()` (returns `libLog.Logger` interface)
+   - Bootstrap usage: `logger, err := libZap.New(libZap.Config{Environment, Level, OTelLibraryName})` (returns `*libZap.Logger` which implements `libLog.Logger`)
    - Application usage: Use `libLog.Logger` interface for all logging calls
    - Files affected: [list files]
 
 3. **Telemetry Migration**
    - Replace: No tracing or custom tracing
-   - With: OpenTelemetry integration
-   - Import: `libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"`
-   - Usage: `telemetry := libOpentelemetry.NewTelemetry(libOpentelemetry.TelemetryConfig{...})`
+   - With: OpenTelemetry integration via lib-observability
+   - Import: `libTracing "github.com/LerianStudio/lib-observability/tracing"`
+   - Usage: `telemetry, err := libTracing.NewTelemetry(libTracing.TelemetryConfig{..., Logger: logger})`
    - Files affected: [list files]
 
 4. **[Next Category] Migration**

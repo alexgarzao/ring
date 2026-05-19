@@ -4,23 +4,38 @@ This file defines MANDATORY rules for code examples in pre-dev documents (PRDs, 
 
 ---
 
-## ⛔ HARD GATE: Standard Modules First (Go Projects)
+## ⛔ HARD GATE: Lerian Libraries First (Go Projects)
 
-MUST use lib-commons for non-observability infrastructure and lib-observability for logging/telemetry instead of creating custom utilities when generating Go code examples.
+MUST use the canonical Lerian libraries instead of creating custom utilities when generating Go code examples. Four libraries cover the surface:
 
-### What lib-commons/lib-observability Already Provide (do not recreate)
+- **lib-commons** (v5) — HTTP, DB drivers, idempotency, security/TLS, lifecycle, outbox, tenant management, RabbitMQ command queues
+- **lib-observability** (v1.0.0) — logging, metrics, tracing, OTel constants, assertions, panic recovery (see [[using-lib-observability]], [[using-tracing]])
+- **lib-systemplane** — hot-reloadable runtime config (Postgres LISTEN/NOTIFY + MongoDB change streams) (see [[using-lib-systemplane]])
+- **lib-streaming** — past-tense, durable, tenant-scoped business event emission (CloudEvents, outbox-backed) (see [[using-lib-streaming]], [[using-outbox]])
 
-| Category | Standard Package | What It Provides |
-|----------|---------------------|------------------|
-| **Logging** | `libLog "github.com/LerianStudio/lib-observability/log"` | Logger interface for all logging |
-| **Logger Init** | `libZap "github.com/LerianStudio/lib-observability/zap"` | Logger initialization (bootstrap only) |
-| **Telemetry** | `libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"` | Tracing, spans, metrics |
-| **Config** | `libCommons "github.com/LerianStudio/lib-commons/v5/commons"` | `SetConfigFromEnvVars()` |
+> **Deprecated shims:** `lib-commons/v5/commons/{opentelemetry,zap,log,metrics,assert,runtime,systemplane}` still compile but now route through their canonical homes. New code MUST import the canonical library directly.
+
+### What These Libraries Already Provide (do not recreate)
+
+| Category | Canonical Package | What It Provides |
+|----------|-------------------|------------------|
+| **Logging interface** | `libLog "github.com/LerianStudio/lib-observability/log"` | Logger interface for all logging |
+| **Logger init** | `libZap "github.com/LerianStudio/lib-observability/zap"` | Logger initialization (bootstrap only) |
+| **Tracing** | `libTracing "github.com/LerianStudio/lib-observability/tracing"` | Tracer + meter + propagator setup, span helpers |
+| **Metrics** | `libMetrics "github.com/LerianStudio/lib-observability/metrics"` | Thread-safe OTel metric factory with fluent builders |
+| **OTel constants** | `libConstants "github.com/LerianStudio/lib-observability/constants"` | Canonical attribute/metric/event name strings + label sanitizer |
+| **Assertions** | `libAssert "github.com/LerianStudio/lib-observability/assert"` | Runtime invariant checks with panic-or-error policy |
+| **Panic recovery** | `libRuntime "github.com/LerianStudio/lib-observability/runtime"` | `SafeGo`, `RecoverWithPolicy`, panic metrics |
+| **Runtime config** | `libSystemplane "github.com/LerianStudio/lib-systemplane"` | Hot-reloadable config via Postgres LISTEN/NOTIFY or Mongo change streams |
+| **Event emission** | `libStreaming "github.com/LerianStudio/lib-streaming"` | Past-tense business events to per-tenant SaaS subscribers (CloudEvents, outbox-backed) |
+| **Config loader** | `libCommons "github.com/LerianStudio/lib-commons/v5/commons"` | `SetConfigFromEnvVars()` |
 | **HTTP** | `libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"` | Router, middleware, responses |
 | **PostgreSQL** | `libPostgres "github.com/LerianStudio/lib-commons/v5/commons/postgres"` | Connection, pagination |
 | **MongoDB** | `libMongo "github.com/LerianStudio/lib-commons/v5/commons/mongo"` | Connection management |
 | **Redis** | `libRedis "github.com/LerianStudio/lib-commons/v5/commons/redis"` | Connection management |
-| **Server** | `libServer "github.com/LerianStudio/lib-commons/v5/commons/server"` | Lifecycle, graceful shutdown |
+| **Server lifecycle** | `libServer "github.com/LerianStudio/lib-commons/v5/commons/server"` | Lifecycle, graceful shutdown |
+| **RabbitMQ commands** | `libRabbit "github.com/LerianStudio/lib-commons/v5/commons/rabbitmq"` | Command-queue producers/consumers (NOT business events — those use lib-streaming) |
+| **Outbox** | `libOutbox "github.com/LerianStudio/lib-commons/v5/commons/outbox"` | Transactional outbox repository (consumed by lib-streaming) |
 | **Context** | `libCommons.TrackingContext` | Request context propagation |
 
 ### Verification Before Writing Code Examples
@@ -28,15 +43,18 @@ MUST use lib-commons for non-observability infrastructure and lib-observability 
 ```text
 Before writing any Go code example in subtasks:
 
-[ ] 1. Does this example need logging?        → Use libLog.Logger
-[ ] 2. Does this example need config loading? → Use libCommons.SetConfigFromEnvVars()
-[ ] 3. Does this example need HTTP handling?  → Use libHTTP helpers
-[ ] 4. Does this example need DB connection?  → Use libPostgres/libMongo/libRedis
-[ ] 5. Does this example need telemetry?      → Use libOpentelemetry
-[ ] 6. Does this example need server setup?   → Use libServer
+[ ] 1. Does this example need logging?           → Use libLog.Logger (lib-observability/log)
+[ ] 2. Does this example need config loading?    → Use libCommons.SetConfigFromEnvVars()
+[ ] 3. Does this example need hot-reloadable config? → Use libSystemplane (lib-systemplane)
+[ ] 4. Does this example need HTTP handling?     → Use libHTTP helpers
+[ ] 5. Does this example need DB connection?     → Use libPostgres/libMongo/libRedis
+[ ] 6. Does this example need tracing?           → Use libTracing (lib-observability/tracing)
+[ ] 7. Does this example need metrics?           → Use libMetrics (lib-observability/metrics)
+[ ] 8. Does this example need server setup?      → Use libServer
+[ ] 9. Does this example emit business events?   → Use libStreaming (lib-streaming) — past-tense, tenant-scoped, outbox-backed
+[ ] 10. Does this example dispatch commands?     → Use libRabbit (lib-commons/v5/commons/rabbitmq) — command queues only
 
-If yes to logging or telemetry → Use lib-observability (`libZap` in bootstrap, `libLog`/`libOpentelemetry` at runtime).
-If yes to config, HTTP, DB, or server setup → Use lib-commons. Do not create custom helpers.
+If yes to any → Use the canonical library. Do not create custom helpers.
 ```
 
 ---
@@ -153,15 +171,22 @@ func StartSpan(ctx context.Context, name string) (context.Context, trace.Span) {
 }
 ```
 
-**✅ CORRECT: Use lib-observability/tracing**
+**✅ CORRECT: Use lib-observability**
 
 ```go
-import libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"
+import (
+    libTracing "github.com/LerianStudio/lib-observability/tracing"
+    libMetrics "github.com/LerianStudio/lib-observability/metrics"
+)
 
 // Initialize in bootstrap
-provider := libOpentelemetry.NewTracerProvider(/* config */)
+tel, err := libTracing.NewTelemetry(cfg) // tracer + meter + propagator
+if err != nil {
+    return nil, fmt.Errorf("init telemetry: %w", err)
+}
 
-// Use standard otel APIs with the lib-observability provider
+// Use standard otel APIs with lib-observability provider
+factory := libMetrics.NewFactory(tel.Meter())
 ```
 
 ---
@@ -244,13 +269,16 @@ func (s *UserService) CreateUser(ctx context.Context, input domain.CreateUserInp
 Before finalizing any document with Go code examples:
 
 ```text
-[ ] 1. No custom logger creation (use libLog/libZap)
+[ ] 1. No custom logger creation (use libLog/libZap from lib-observability)
 [ ] 2. No custom config loader (use libCommons.SetConfigFromEnvVars)
 [ ] 3. No custom HTTP helpers (use libHTTP)
-[ ] 4. No custom telemetry wrapper (use libOpentelemetry)
+[ ] 4. No custom tracing/metrics wrapper (use libTracing/libMetrics from lib-observability)
 [ ] 5. No custom DB connection helpers (use libPostgres/libMongo/libRedis)
 [ ] 6. No custom server lifecycle (use libServer)
-[ ] 7. All imports show full lib-commons paths with lib prefix
+[ ] 7. No custom event-emission helpers (use libStreaming from lib-streaming for past-tense business events)
+[ ] 8. No custom hot-reload config (use libSystemplane from lib-systemplane)
+[ ] 9. No deprecated shim imports (lib-commons/v5/commons/{opentelemetry,zap,log,metrics,assert,runtime,systemplane})
+[ ] 10. All imports show full canonical paths with lib prefix aliases
 
 If any checkbox is unchecked → Fix code example before publishing.
 ```

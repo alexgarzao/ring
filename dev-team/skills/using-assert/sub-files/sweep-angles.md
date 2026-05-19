@@ -143,7 +143,7 @@ func postToLedger(ctx context.Context, a *assert.Asserter, txnID string, account
 | ------------------------------ | ---------------------------------------------- |
 | `isPositive(n int64)`          | `assert.Positive(n)`                           |
 | `isNonNegative(n int64)`       | `assert.NonNegative(n)`                        |
-| `isInRange(n, min, max)`       | `assert.InRange(n, min, max)`                  |
+| `isInRange(n, min, max)`       | `assert.InRange(n, minVal, maxVal)`            |
 | `isPositiveAmount(d decimal)`  | `assert.PositiveDecimal(d)`                    |
 | `isNonNegativeAmount(d)`       | `assert.NonNegativeDecimal(d)`                 |
 | `isValidAmount(d)`             | `assert.ValidAmount(d)`                        |

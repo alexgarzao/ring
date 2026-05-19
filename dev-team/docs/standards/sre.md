@@ -210,9 +210,11 @@ ctx := otel.GetTextMapPropagator().Extract(
 
 ## OpenTelemetry with lib-observability (MANDATORY for Go)
 
-All Go services **MUST** integrate OpenTelemetry using `github.com/LerianStudio/lib-observability`. This ensures consistent observability patterns across all Lerian Studio services.
+All Go services **MUST** integrate OpenTelemetry using `lib-observability`. This ensures consistent observability patterns across all Lerian Studio services.
 
-> **Reference**: See `dev-team/docs/standards/golang.md` for complete lib-commons integration patterns.
+> **Provenance**: Observability packages (`log`, `zap`, `tracing`, `metrics`, `assert`, `runtime`, `redaction`, `constants`) live in `github.com/LerianStudio/lib-observability` as of v1.0.0 — the `lib-commons/v5/commons/{log,zap,opentelemetry,metrics,assert,runtime}` shims are deprecated and MUST NOT be used in new code.
+
+> **Reference**: See `dev-team/docs/standards/golang.md` for complete lib-commons / lib-observability integration patterns.
 
 ### Required Imports
 
@@ -220,9 +222,9 @@ All Go services **MUST** integrate OpenTelemetry using `github.com/LerianStudio/
 import (
     observability "github.com/LerianStudio/lib-observability"
     libCommons "github.com/LerianStudio/lib-commons/v5/commons"
-    libZap "github.com/LerianStudio/lib-observability/zap"           // Logger initialization (bootstrap only)
-    libLog "github.com/LerianStudio/lib-observability/log"           // Logger interface (services, routes, consumers)
-    libOpentelemetry "github.com/LerianStudio/lib-observability/tracing"
+    libZap "github.com/LerianStudio/lib-observability/zap"               // Logger initialization (bootstrap only)
+    libLog "github.com/LerianStudio/lib-observability/log"               // Logger interface (services, routes, consumers)
+    libTracing "github.com/LerianStudio/lib-observability/tracing"      // Telemetry initialization and types
     libHTTP "github.com/LerianStudio/lib-commons/v5/commons/net/http"
     libMiddleware "github.com/LerianStudio/lib-observability/middleware"
     libServer "github.com/LerianStudio/lib-commons/v5/commons/server"
@@ -234,7 +236,7 @@ import (
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. BOOTSTRAP (config.go)                                        │
-│    telemetry := libOpentelemetry.NewTelemetry(config)   │
+│    telemetry, err := libTracing.NewTelemetry(cfg)               │
 │    → Creates OpenTelemetry provider once at startup             │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
@@ -277,10 +279,17 @@ func InitServers() (*Service, error) {
     }
 
     // Initialize logger FIRST (zap package for initialization in bootstrap)
-    logger := libZap.InitializeLogger()
+    logger, err := libZap.New(libZap.Config{
+        Environment:     libZap.Environment(cfg.Environment),
+        Level:           cfg.LogLevel,
+        OTelLibraryName: cfg.OtelLibraryName,
+    })
+    if err != nil {
+        return nil, fmt.Errorf("failed to initialize logger: %w", err)
+    }
 
     // Initialize telemetry with config
-    telemetry := libOpentelemetry.NewTelemetry(libOpentelemetry.TelemetryConfig{
+    telemetry, err := libTracing.NewTelemetry(libTracing.TelemetryConfig{
         LibraryName:               cfg.OtelLibraryName,
         ServiceName:               cfg.OtelServiceName,
         ServiceVersion:            cfg.OtelServiceVersion,
@@ -289,6 +298,9 @@ func InitServers() (*Service, error) {
         EnableTelemetry:           cfg.EnableTelemetry,
         Logger:                    logger,
     })
+    if err != nil {
+        return nil, fmt.Errorf("failed to initialize telemetry: %w", err)
+    }
 
     // Pass telemetry to router...
 }
@@ -298,7 +310,7 @@ func InitServers() (*Service, error) {
 
 ```go
 // adapters/http/in/routes.go
-func NewRouter(lg libLog.Logger, tl *libOpentelemetry.Telemetry, ...) *fiber.App {
+func NewRouter(lg libLog.Logger, tl *libTracing.Telemetry, ...) *fiber.App {
     f := fiber.New(fiber.Config{
         DisableStartupMessage: true,
         ErrorHandler: func(ctx *fiber.Ctx, err error) error {
@@ -350,14 +362,14 @@ func (s *Service) ProcessEntity(ctx context.Context, id string) error {
 ```go
 // For technical errors (unexpected failures)
 if err != nil {
-    libOpentelemetry.HandleSpanError(&span, "Failed to connect database", err)
+    libTracing.HandleSpanError(&span, "Failed to connect database", err)
     logger.Errorf("Database error: %v", err)
     return nil, err
 }
 
 // For business errors (expected validation failures)
 if err != nil {
-    libOpentelemetry.HandleSpanBusinessErrorEvent(&span, "Validation failed", err)
+    libTracing.HandleSpanBusinessErrorEvent(&span, "Validation failed", err)
     logger.Warnf("Validation error: %v", err)
     return nil, err
 }
@@ -371,7 +383,7 @@ type Server struct {
     app           *fiber.App
     serverAddress string
     logger        libLog.Logger
-    telemetry     libOpentelemetry.Telemetry
+    telemetry     libTracing.Telemetry
 }
 
 func (s *Server) Run(l *libCommons.Launcher) error {
@@ -397,7 +409,7 @@ func (s *Server) Run(l *libCommons.Launcher) error {
 
 | Check | What to Verify | Status |
 |-------|----------------|--------|
-| Bootstrap Init | `libOpentelemetry.NewTelemetry()` called in bootstrap | Required |
+| Bootstrap Init | `libTracing.NewTelemetry()` called in bootstrap | Required |
 | Middleware Order | `WithTelemetry()` is FIRST, `EndTracingSpans` is LAST | Required |
 | Context Recovery | All layers use `observability.NewTrackingFromContext(ctx)` | Required |
 | Span Creation | Operations create spans via `tracer.Start(ctx, "name")` | Required |
@@ -419,7 +431,7 @@ logger := zap.NewLogger()  // DON'T do this in services
 s.repo.Update(id)  // DON'T forget context
 
 // CORRECT: Always use lib-observability patterns
-telemetry := libOpentelemetry.NewTelemetry(config)
+telemetry, err := libTracing.NewTelemetry(cfg)
 logger, tracer, _, _ := observability.NewTrackingFromContext(ctx)
 s.repo.Update(ctx, id)  // Context propagates trace
 ```
@@ -430,8 +442,8 @@ When evaluating a codebase for lib-observability telemetry compliance, check the
 
 | Category | Expected Pattern | Evidence Location |
 |----------|------------------|-------------------|
-| Telemetry Init | `libOpentelemetry.NewTelemetry()` | `internal/bootstrap/config.go` |
-| Logger Init | `libZap.InitializeLogger()` (bootstrap only) | `internal/bootstrap/config.go` |
+| Telemetry Init | `libTracing.NewTelemetry()` | `internal/bootstrap/config.go` |
+| Logger Init | `libZap.New(libZap.Config{...})` (bootstrap only) | `internal/bootstrap/config.go` |
 | Middleware Setup | `NewTelemetryMiddleware()` + `WithTelemetry()` | `internal/adapters/http/in/routes.go` |
 | Middleware Order | `WithTelemetry` first, `EndTracingSpans` last | `internal/adapters/http/in/routes.go` |
 | Context Recovery | `observability.NewTrackingFromContext(ctx)` | All handlers, services, repositories |

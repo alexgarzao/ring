@@ -225,18 +225,21 @@ Create tool:
     # Project Rules
     
     > Ring Standards apply automatically. This file documents only what Ring does not cover.
-    > For error handling, logging, testing, architecture, lib-commons, lib-observability → See Ring Standards (auto-loaded by agents)
+    > For error handling, logging, testing, architecture, lib-commons, lib-observability, lib-systemplane, lib-streaming → See Ring Standards (auto-loaded by agents)
     > Generated from legacy project analysis.
     
     ## What Ring Standards Already Cover (DO not ADD HERE)
     
     The following are defined in Ring Standards and MUST not be duplicated:
     - Error handling patterns (no panic, wrap errors)
-    - Logging standards (structured JSON, zerolog/zap)
+    - Logging standards (structured JSON via lib-observability `log`/`zap` adapters)
     - Testing patterns (table-driven tests, mocks)
     - Architecture patterns (Hexagonal, Clean Architecture)
-    - Observability (OpenTelemetry, trace correlation)
-    - lib-commons usage and patterns
+    - Observability (OpenTelemetry tracing/metrics, panic recovery, assertions, redaction) — via lib-observability
+    - lib-commons usage and patterns (lifecycle, outbox repository, circuit breakers, tenant management, HTTP, idempotency)
+    - lib-observability usage and patterns (tracing, metrics, logging, assert, runtime, redaction) — see [[using-lib-observability]]
+    - lib-systemplane usage and patterns (hot-reloadable runtime config: log levels, feature flags, rate limits, timeouts) — see [[using-lib-systemplane]]
+    - lib-streaming usage and patterns (past-tense business event emission to per-tenant SaaS subscribers) — see [[using-lib-streaming]]
     - API directory structure
     
     ---
@@ -455,11 +458,14 @@ Create tool:
     
     The following are defined in Ring Standards and MUST not be duplicated in this file:
     - Error handling patterns (no panic, wrap errors)
-    - Logging standards (structured JSON via lib-observability)
+    - Logging standards (structured JSON via lib-observability `log`/`zap` adapters)
     - Testing patterns (table-driven tests, mocks)
     - Architecture patterns (Hexagonal, Clean Architecture)
-    - Observability (OpenTelemetry via lib-observability)
-    - lib-commons / lib-common-js usage and patterns
+    - Observability (OpenTelemetry tracing/metrics, panic recovery, assertions, redaction) — via lib-observability
+    - lib-commons / lib-common-js usage and patterns (lifecycle, outbox repository, circuit breakers, tenant management, HTTP, idempotency)
+    - lib-observability usage and patterns (tracing, metrics, logging, assert, runtime, redaction) — see [[using-lib-observability]]
+    - lib-systemplane usage and patterns (hot-reloadable runtime config: log levels, feature flags, rate limits, timeouts) — see [[using-lib-systemplane]]
+    - lib-streaming usage and patterns (past-tense business event emission to per-tenant SaaS subscribers) — see [[using-lib-streaming]]
     - API directory structure (Lerian pattern)
     - Database connections (PostgreSQL, MongoDB, Redis via lib-commons)
     - Bootstrap pattern (config.go, service.go, server.go)
